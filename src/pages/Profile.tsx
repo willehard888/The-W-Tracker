@@ -74,6 +74,16 @@ const Profile = () => {
           </span>
           <span className="text-xs text-muted-foreground">• Level {profile.level}</span>
         </div>
+
+        {/* Badge Showcase — top earned badges */}
+        {earnedBadges && earnedBadges.length > 0 && (
+          <div className="mt-4">
+            <BadgeShowcase
+              badges={earnedBadges}
+              onBadgeClick={(b) => setPreviewBadge(b)}
+            />
+          </div>
+        )}
       </div>
 
       {/* Actions */}

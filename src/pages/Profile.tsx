@@ -47,6 +47,8 @@ const Profile = () => {
     enabled: !!profile,
   });
 
+  const earnedBadges = (allBadges || []).filter((b) => earnedBadgeIds?.includes(b.id));
+
   if (!profile) return null;
 
   const tierLabel = profile.status_tier === "elite" ? "Elite" :

@@ -140,7 +140,7 @@ const EliteFeed = () => {
       </div>
 
       {/* Create Post (Elite Only) */}
-      {isElite && (
+      {canPost && (
         <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-gold/20 bg-card p-4 mb-6">
           <textarea
             value={newPost}

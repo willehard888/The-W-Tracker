@@ -618,6 +618,115 @@ const Battles = () => {
         </div>
       )}
 
+      {/* Community Voting — Tied Battles */}
+      {(communityVotingBattles && communityVotingBattles.length > 0) && (
+        <div className="animate-reveal animate-reveal-delay-2 mb-6">
+          <h2 className="font-display font-bold text-sm mb-3 tracking-tight flex items-center gap-2">
+            <Vote size={14} className="text-purple-400" />
+            Community Vote — Tied Battles
+          </h2>
+          <p className="text-[10px] text-muted-foreground mb-3">These battles ended in a tie. Cast your vote to decide the winner!</p>
+          <div className="space-y-3">
+            {communityVotingBattles.map((battle: any) => {
+              const typeInfo = getBattleTypeInfo(battle.battle_type);
+              const myVote = myVotes?.[battle.id];
+              const counts = voteCounts?.[battle.id] || {};
+              const challengerVotes = counts[battle.challenger_id] || 0;
+              const opponentVotes = counts[battle.opponent_id] || 0;
+              const totalVotes = challengerVotes + opponentVotes;
+
+              return (
+                <div key={battle.id} className="rounded-xl border border-purple-500/20 bg-card overflow-hidden card-depth">
+                  <div className="flex items-center justify-between px-4 pt-3 pb-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1">
+                      {typeInfo.emoji} {typeInfo.label} Battle — TIE
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>
+                  </div>
+
+                  {/* Proof photos side by side */}
+                  <div className="flex gap-2 px-4 py-3">
+                    <div className="flex-1 text-center">
+                      <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary mb-2">
+                        {battle.challenger_proof_url ? (
+                          <img src={battle.challenger_proof_url} alt="Challenger proof" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
+                            <Image size={24} />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs font-bold truncate mb-1">@{battle.challengerProfile?.username || "?"}</p>
+                      <button
+                        onClick={() => handleVote(battle.id, battle.challenger_id)}
+                        disabled={!!myVote}
+                        className={cn(
+                          "w-full py-2 rounded-lg text-xs font-bold transition-all active:scale-95 border",
+                          myVote === battle.challenger_id
+                            ? "bg-purple-500/20 border-purple-500/40 text-purple-400"
+                            : myVote
+                              ? "bg-secondary/50 border-border text-muted-foreground cursor-not-allowed"
+                              : "bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20"
+                        )}
+                      >
+                        {myVote === battle.challenger_id ? `Voted ✓ (${challengerVotes})` : myVote ? `${challengerVotes}` : `Vote (${challengerVotes})`}
+                      </button>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center px-1">
+                      <span className="text-lg font-black text-muted-foreground/30">VS</span>
+                    </div>
+
+                    <div className="flex-1 text-center">
+                      <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary mb-2">
+                        {battle.opponent_proof_url ? (
+                          <img src={battle.opponent_proof_url} alt="Opponent proof" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
+                            <Image size={24} />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs font-bold truncate mb-1">@{battle.opponentProfile?.username || "?"}</p>
+                      <button
+                        onClick={() => handleVote(battle.id, battle.opponent_id)}
+                        disabled={!!myVote}
+                        className={cn(
+                          "w-full py-2 rounded-lg text-xs font-bold transition-all active:scale-95 border",
+                          myVote === battle.opponent_id
+                            ? "bg-purple-500/20 border-purple-500/40 text-purple-400"
+                            : myVote
+                              ? "bg-secondary/50 border-border text-muted-foreground cursor-not-allowed"
+                              : "bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20"
+                        )}
+                      >
+                        {myVote === battle.opponent_id ? `Voted ✓ (${opponentVotes})` : myVote ? `${opponentVotes}` : `Vote (${opponentVotes})`}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Vote bar */}
+                  {totalVotes > 0 && (
+                    <div className="px-4 pb-3">
+                      <div className="h-2 rounded-full bg-secondary overflow-hidden flex">
+                        <div
+                          className="h-full bg-purple-500 transition-all duration-500"
+                          style={{ width: `${(challengerVotes / totalVotes) * 100}%` }}
+                        />
+                        <div
+                          className="h-full bg-gold transition-all duration-500"
+                          style={{ width: `${(opponentVotes / totalVotes) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Completed Battles */}
       {completedBattles.length > 0 && (
         <div className="animate-reveal animate-reveal-delay-3">

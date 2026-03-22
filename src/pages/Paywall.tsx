@@ -100,31 +100,7 @@ const Paywall = () => {
           <div className="flex items-center justify-center py-8">
             <Loader2 size={24} className="animate-spin text-gold" />
           </div>
-        ) : packages.length > 0 ? (
-          <div className="space-y-3">
-            {packages.map((pkg) => {
-              const product = pkg.webBillingProduct;
-              return (
-              <Button
-                key={pkg.identifier}
-                variant="gold"
-                size="xl"
-                className="w-full"
-                disabled={purchasing}
-                onClick={() => handlePurchase(pkg)}
-              >
-                {purchasing ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  <Crown size={18} />
-                )}
-                {product.title || "Elite"} — {product.currentPrice.formattedPrice || "€15.99/kk"}
-              </Button>
-              );
-            })}
-          </div>
         ) : (
-          /* Fallback when no RC packages configured yet */
           <div className="rounded-xl border border-gold/20 bg-card p-6 text-center">
             <p className="text-lg font-display font-black text-gold mb-1">€15.99<span className="text-sm font-semibold text-muted-foreground">/kk</span></p>
             <p className="text-xs text-muted-foreground mb-4">Elite Membership</p>
@@ -133,16 +109,20 @@ const Paywall = () => {
               size="xl"
               className="w-full"
               disabled={purchasing}
-              onClick={async () => {
-                setPurchasing(true);
-                try {
-                  toast.info("Subscription packages are being set up. Please try again shortly.");
-                } finally {
-                  setPurchasing(false);
+              onClick={() => {
+                const monthlyPkg = packages.find(p => p.identifier === "$rc_monthly");
+                if (monthlyPkg) {
+                  handlePurchase(monthlyPkg);
+                } else {
+                  toast.info("Subscription is being set up. Please try again shortly.");
                 }
               }}
             >
-              <Crown size={18} />
+              {purchasing ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <Crown size={18} />
+              )}
               Unlock Elite — €15.99/kk
             </Button>
           </div>

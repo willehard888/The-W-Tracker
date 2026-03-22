@@ -17,6 +17,7 @@ const UserProfile = () => {
   const { profile: myProfile } = useAuth();
   const { isElite } = useRevenueCat();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showBattleModal, setShowBattleModal] = useState(false);
   const [battleType, setBattleType] = useState("xp");
   const [duration, setDuration] = useState(7);

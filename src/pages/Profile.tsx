@@ -201,8 +201,8 @@ const Profile = () => {
       <div className="grid grid-cols-2 gap-3 mb-6 animate-reveal animate-reveal-delay-2">
         <StatCard icon={Zap} label="Total XP" value={profile.xp.toLocaleString()} variant="gold" />
         <StatCard icon={Flame} label="Streak" value={`${profile.streak}d`} variant="streak" />
-        <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} />
-        <StatCard icon={Shield} label="Badges" value={earnedBadgeIds?.length || 0} />
+        <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
+        <StatCard icon={Shield} label="Badges" value={earnedBadgeIds?.length || 0} variant="purple" />
       </div>
 
       {/* Badge Vault */}

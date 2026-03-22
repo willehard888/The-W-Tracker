@@ -49,7 +49,7 @@ const EliteFeed = () => {
       const userIds = [...new Set(data.map((p) => p.user_id))];
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("user_id, username, avatar_url, status_tier, streak, level")
+        .select("user_id, username, avatar_url, status_tier, streak, level, is_elite")
         .in("user_id", userIds);
       const profileMap = Object.fromEntries((profiles || []).map((p) => [p.user_id, p]));
       return data.map((post) => ({ ...post, profile: profileMap[post.user_id] }));

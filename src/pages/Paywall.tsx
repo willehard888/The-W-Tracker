@@ -19,8 +19,13 @@ const ELITE_FEATURES = [
 
 const Paywall = () => {
   const { isElite, packages, purchase, restorePurchases, loading } = useRevenueCat();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [purchasing, setPurchasing] = useState(false);
+
+  const stripeUrl = user?.email
+    ? `${STRIPE_CHECKOUT_URL}?prefilled_email=${encodeURIComponent(user.email)}`
+    : STRIPE_CHECKOUT_URL;
 
   if (isElite) {
     return (

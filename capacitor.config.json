@@ -1,0 +1,14 @@
+{
+  "appId": "app.lovable.wtracker",
+  "appName": "The W Tracker",
+  "webDir": "dist",
+  "server": {
+    "url": "https://63367557-2053-428a-aff3-29e365e38acb.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  },
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  }
+}

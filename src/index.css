@@ -6,52 +6,57 @@
 
 @layer base {
   :root {
-    --background: 220 15% 6%;
-    --foreground: 40 10% 92%;
+    --background: 225 20% 4%;
+    --foreground: 40 8% 94%;
 
-    --card: 220 12% 9%;
-    --card-foreground: 40 10% 92%;
+    --card: 225 16% 7%;
+    --card-foreground: 40 8% 94%;
 
-    --popover: 220 12% 9%;
-    --popover-foreground: 40 10% 92%;
+    --popover: 225 16% 7%;
+    --popover-foreground: 40 8% 94%;
 
-    --primary: 43 60% 52%;
-    --primary-foreground: 220 15% 6%;
+    --primary: 42 78% 54%;
+    --primary-foreground: 225 20% 4%;
 
-    --secondary: 220 10% 14%;
-    --secondary-foreground: 40 10% 85%;
+    --secondary: 225 14% 11%;
+    --secondary-foreground: 40 8% 80%;
 
-    --muted: 220 10% 14%;
-    --muted-foreground: 220 8% 50%;
+    --muted: 225 14% 11%;
+    --muted-foreground: 225 10% 44%;
 
-    --accent: 43 60% 52%;
-    --accent-foreground: 220 15% 6%;
+    --accent: 42 78% 54%;
+    --accent-foreground: 225 20% 4%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 10% 16%;
-    --input: 220 10% 16%;
-    --ring: 43 60% 52%;
+    --border: 225 14% 13%;
+    --input: 225 14% 13%;
+    --ring: 42 78% 54%;
 
     --radius: 0.75rem;
 
-    --gold: 43 60% 52%;
-    --gold-light: 43 70% 68%;
-    --gold-dark: 43 50% 38%;
-    --surface-elevated: 220 12% 12%;
-    --xp-green: 142 60% 50%;
-    --streak-orange: 25 95% 55%;
-    --elite-glow: 43 80% 60%;
+    --gold: 42 78% 54%;
+    --gold-light: 42 85% 70%;
+    --gold-dark: 42 60% 36%;
+    --surface-elevated: 225 16% 10%;
+    --xp-green: 152 68% 46%;
+    --streak-orange: 18 95% 58%;
+    --elite-glow: 42 90% 62%;
 
-    --sidebar-background: 220 12% 9%;
-    --sidebar-foreground: 40 10% 92%;
-    --sidebar-primary: 43 60% 52%;
-    --sidebar-primary-foreground: 220 15% 6%;
-    --sidebar-accent: 220 10% 14%;
-    --sidebar-accent-foreground: 40 10% 92%;
-    --sidebar-border: 220 10% 16%;
-    --sidebar-ring: 43 60% 52%;
+    --badge-common: 225 10% 52%;
+    --badge-rare: 210 90% 56%;
+    --badge-epic: 275 80% 60%;
+    --badge-legendary: 42 78% 54%;
+
+    --sidebar-background: 225 16% 7%;
+    --sidebar-foreground: 40 8% 94%;
+    --sidebar-primary: 42 78% 54%;
+    --sidebar-primary-foreground: 225 20% 4%;
+    --sidebar-accent: 225 14% 11%;
+    --sidebar-accent-foreground: 40 8% 94%;
+    --sidebar-border: 225 14% 13%;
+    --sidebar-ring: 42 78% 54%;
   }
 }
 
@@ -90,15 +95,15 @@
   }
 
   .glow-gold {
-    box-shadow: 0 0 20px hsl(var(--gold) / 0.3), 0 0 60px hsl(var(--gold) / 0.1);
+    box-shadow: 0 0 24px hsl(var(--gold) / 0.25), 0 0 80px hsl(var(--gold) / 0.08);
   }
 
   .glow-gold-sm {
-    box-shadow: 0 0 10px hsl(var(--gold) / 0.2);
+    box-shadow: 0 0 12px hsl(var(--gold) / 0.18);
   }
 
   .glow-gold-text {
-    text-shadow: 0 0 20px hsl(var(--gold) / 0.5);
+    text-shadow: 0 0 24px hsl(var(--gold) / 0.5), 0 0 60px hsl(var(--gold) / 0.2);
   }
 
   .gradient-gold {
@@ -106,7 +111,11 @@
   }
 
   .gradient-dark {
-    background: linear-gradient(180deg, hsl(220 15% 8%), hsl(220 15% 4%));
+    background: linear-gradient(180deg, hsl(225 20% 5%), hsl(225 22% 3%));
+  }
+
+  .gradient-surface {
+    background: linear-gradient(145deg, hsl(var(--surface-elevated)), hsl(var(--card)));
   }
 
   .card-hover {
@@ -115,7 +124,7 @@
 
   .card-hover:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px hsl(var(--gold) / 0.08);
+    box-shadow: 0 8px 32px hsl(var(--gold) / 0.06), 0 2px 8px hsl(0 0% 0% / 0.3);
   }
 
   .badge-shine {
@@ -129,6 +138,22 @@
     animation: shine 3s ease-in-out infinite;
   }
 
+  .badge-glow-common {
+    box-shadow: 0 0 12px hsl(var(--badge-common) / 0.15);
+  }
+
+  .badge-glow-rare {
+    box-shadow: 0 0 18px hsl(var(--badge-rare) / 0.25), 0 0 4px hsl(var(--badge-rare) / 0.1);
+  }
+
+  .badge-glow-epic {
+    box-shadow: 0 0 24px hsl(var(--badge-epic) / 0.3), 0 0 6px hsl(var(--badge-epic) / 0.15);
+  }
+
+  .badge-glow-legendary {
+    box-shadow: 0 0 32px hsl(var(--gold) / 0.35), 0 0 80px hsl(var(--gold) / 0.1), inset 0 0 20px hsl(var(--gold) / 0.05);
+  }
+
   .animate-reveal {
     animation: reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
@@ -137,6 +162,18 @@
   .animate-reveal-delay-2 { animation-delay: 160ms; }
   .animate-reveal-delay-3 { animation-delay: 240ms; }
   .animate-reveal-delay-4 { animation-delay: 320ms; }
+
+  .animate-badge-pulse {
+    animation: badge-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 8s linear infinite;
+  }
 }
 
 @keyframes shine {
@@ -165,4 +202,31 @@
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
+}
+
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes badge-unlock-burst {
+  0% { transform: scale(0); opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes badge-ring-expand {
+  0% { transform: scale(0.8); opacity: 0; }
+  40% { opacity: 1; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes streak-fire {
+  0%, 100% { transform: scaleY(1) translateY(0); opacity: 0.8; }
+  50% { transform: scaleY(1.2) translateY(-3px); opacity: 1; }
 }

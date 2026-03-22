@@ -1,6 +1,7 @@
 import { Flame, Zap, Award, Shield, Settings, Share2, Crown, LogOut } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import BadgeCard from "@/components/BadgeCard";
+import BadgeShowcase from "@/components/BadgeShowcase";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -46,6 +47,8 @@ const Profile = () => {
     enabled: !!profile,
   });
 
+  const earnedBadges = (allBadges || []).filter((b) => earnedBadgeIds?.includes(b.id));
+
   if (!profile) return null;
 
   const tierLabel = profile.status_tier === "elite" ? "Elite" :
@@ -73,6 +76,16 @@ const Profile = () => {
           </span>
           <span className="text-xs text-muted-foreground">• Level {profile.level}</span>
         </div>
+
+        {/* Badge Showcase — top earned badges */}
+        {earnedBadges && earnedBadges.length > 0 && (
+          <div className="mt-4">
+            <BadgeShowcase
+              badges={earnedBadges}
+              onBadgeClick={(b) => setPreviewBadge(b)}
+            />
+          </div>
+        )}
       </div>
 
       {/* Actions */}

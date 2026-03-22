@@ -157,6 +157,46 @@
     color: hsl(var(--purple));
   }
 
+  .text-teal {
+    color: hsl(var(--teal));
+  }
+
+  .bg-teal {
+    background-color: hsl(var(--teal));
+  }
+
+  .glow-teal {
+    box-shadow: 0 0 20px hsl(var(--teal) / 0.2), 0 0 60px hsl(var(--teal) / 0.06);
+  }
+
+  .glow-teal-sm {
+    box-shadow: 0 0 10px hsl(var(--teal) / 0.15);
+  }
+
+  .gradient-teal {
+    background: linear-gradient(135deg, hsl(var(--teal-dark)), hsl(var(--teal)), hsl(var(--teal-light)));
+  }
+
+  .text-rose-brand {
+    color: hsl(var(--rose));
+  }
+
+  .glow-rose-sm {
+    box-shadow: 0 0 10px hsl(var(--rose) / 0.15);
+  }
+
+  .gradient-rose {
+    background: linear-gradient(135deg, hsl(var(--rose-dark)), hsl(var(--rose)), hsl(var(--rose-light)));
+  }
+
+  .text-amber-brand {
+    color: hsl(var(--amber));
+  }
+
+  .gradient-amber {
+    background: linear-gradient(135deg, hsl(var(--amber-dark)), hsl(var(--amber)), hsl(var(--amber-light)));
+  }
+
   .card-hover {
     @apply transition-all duration-300 ease-out;
     box-shadow: 0 1px 3px hsl(0 0% 0% / 0.2), 0 1px 2px hsl(0 0% 0% / 0.15);

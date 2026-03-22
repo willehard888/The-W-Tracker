@@ -10,6 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
+import ConfettiBurst from "@/components/ConfettiBurst";
+import XpCounter from "@/components/XpCounter";
 
 interface ToggleItemProps {
   icon: React.ElementType;

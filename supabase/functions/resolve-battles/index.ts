@@ -6,70 +6,74 @@ Deno.serve(async () => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  // Find active battles that have expired
-  const { data: expiredBattles, error } = await supabase
+  let resolved = 0;
+
+  // 1. Resolve expired active battles
+  const { data: expiredBattles } = await supabase
     .from("battles")
     .select("*")
     .eq("status", "active")
     .not("started_at", "is", null);
 
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
-  }
-
   const now = Date.now();
-  let resolved = 0;
 
   for (const battle of expiredBattles || []) {
-    const startDate = new Date(battle.started_at).getTime();
-    const endDate = startDate + battle.duration_days * 24 * 60 * 60 * 1000;
+    const endDate = new Date(battle.started_at).getTime() + battle.duration_days * 86400000;
+    if (now < endDate) continue;
 
-    if (now < endDate) continue; // Not expired yet
-
-    const challengerHasProof = !!battle.challenger_proof_url;
-    const opponentHasProof = !!battle.opponent_proof_url;
-
+    const cProof = !!battle.challenger_proof_url;
+    const oProof = !!battle.opponent_proof_url;
     let winnerId: string | null = null;
 
-    if (!challengerHasProof && !opponentHasProof) {
-      // Both forfeit — no winner
-      winnerId = null;
-    } else if (!challengerHasProof) {
-      // Challenger forfeits
-      winnerId = battle.opponent_id;
-    } else if (!opponentHasProof) {
-      // Opponent forfeits
-      winnerId = battle.challenger_id;
+    if (!cProof && !oProof) winnerId = null;
+    else if (!cProof) winnerId = battle.opponent_id;
+    else if (!oProof) winnerId = battle.challenger_id;
+    else if (battle.challenger_score > battle.opponent_score) winnerId = battle.challenger_id;
+    else if (battle.opponent_score > battle.challenger_score) winnerId = battle.opponent_id;
+    // else tie → voting
+
+    if (cProof && oProof && battle.challenger_score === battle.opponent_score) {
+      await supabase.from("battles").update({ status: "voting", ended_at: new Date().toISOString() }).eq("id", battle.id);
     } else {
-      // Both have proof — decide by score
-      if (battle.challenger_score > battle.opponent_score) {
-        winnerId = battle.challenger_id;
-      } else if (battle.opponent_score > battle.challenger_score) {
-        winnerId = battle.opponent_id;
-      } else {
-        winnerId = null; // Tie
-      }
+      await supabase.from("battles").update({ status: "completed", ended_at: new Date().toISOString(), winner_id: winnerId }).eq("id", battle.id);
+      if (winnerId) await supabase.rpc("update_status_tier", { target_user_id: winnerId });
     }
+    resolved++;
+  }
 
-    await supabase
-      .from("battles")
-      .update({
-        status: "completed",
-        ended_at: new Date().toISOString(),
-        winner_id: winnerId,
-      })
-      .eq("id", battle.id);
+  // 2. Resolve voting battles older than 1 hour
+  const { data: votingBattles } = await supabase
+    .from("battles")
+    .select("*")
+    .eq("status", "voting");
 
-    // Award XP to winner
-    if (winnerId) {
-      await supabase.rpc("update_status_tier", { target_user_id: winnerId });
-    }
+  for (const battle of votingBattles || []) {
+    const endedAt = new Date(battle.ended_at).getTime();
+    const hoursSinceVoting = (now - endedAt) / 3600000;
 
+    if (hoursSinceVoting < 1) continue; // Not yet 1 hour
+
+    // Count votes
+    const { data: votes } = await supabase
+      .from("battle_votes")
+      .select("voted_for")
+      .eq("battle_id", battle.id);
+
+    const challengerVotes = (votes || []).filter(v => v.voted_for === battle.challenger_id).length;
+    const opponentVotes = (votes || []).filter(v => v.voted_for === battle.opponent_id).length;
+
+    let winnerId: string | null = null;
+    if (challengerVotes > opponentVotes) winnerId = battle.challenger_id;
+    else if (opponentVotes > challengerVotes) winnerId = battle.opponent_id;
+    // else still tie → no winner
+
+    await supabase.from("battles").update({ status: "completed", winner_id: winnerId }).eq("id", battle.id);
+    if (winnerId) await supabase.rpc("update_status_tier", { target_user_id: winnerId });
     resolved++;
   }
 
   return new Response(
-    JSON.stringify({ resolved, checked: expiredBattles?.length || 0 }),
+    JSON.stringify({ resolved }),
     { headers: { "Content-Type": "application/json" } }
   );
 });

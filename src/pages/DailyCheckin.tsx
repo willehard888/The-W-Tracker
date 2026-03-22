@@ -119,6 +119,20 @@ const DailyCheckin = () => {
 
   const totalXp = isElite ? baseXp * 2 : baseXp;
 
+  // Reactive performance score
+  const completedCount = [workout, extraWorkout, coldShower, healthyFood, protein, meditationAm, meditationPm, noPhoneAm, noPhonePm, hydration >= 3, sleep >= 7 && sleep <= 9].filter(Boolean).length;
+  const maxCount = 11;
+  const perfPercent = Math.round((completedCount / maxCount) * 100);
+
+  const getPerfLabel = () => {
+    if (perfPercent === 100) return { text: "Perfect Day 🔥", color: "text-gold", icon: Trophy, bg: "bg-gold/10 border-gold/30" };
+    if (perfPercent >= 80) return { text: "Strong Execution 💪", color: "text-emerald-400", icon: TrendingUp, bg: "bg-emerald-500/10 border-emerald-500/30" };
+    if (perfPercent >= 50) return { text: "Decent Day — Push Harder", color: "text-amber-400", icon: TrendingUp, bg: "bg-amber-500/10 border-amber-500/30" };
+    return { text: "Low Output — Step Up", color: "text-destructive", icon: AlertTriangle, bg: "bg-destructive/10 border-destructive/30" };
+  };
+
+  const perf = getPerfLabel();
+
   const handleSubmit = async () => {
     if (!user || submitting || !canCheckin || honest !== true) return;
     setSubmitting(true);

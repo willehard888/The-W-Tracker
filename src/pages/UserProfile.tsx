@@ -68,6 +68,45 @@ const UserProfile = () => {
     enabled: !!userId,
   });
 
+  // Friendship status
+  const { data: friendship } = useQuery({
+    queryKey: ["friendship", myProfile?.user_id, userId],
+    queryFn: async () => {
+      if (!myProfile || !userId || myProfile.user_id === userId) return null;
+      const { data } = await supabase
+        .from("friendships")
+        .select("*")
+        .or(`and(requester_id.eq.${myProfile.user_id},addressee_id.eq.${userId}),and(requester_id.eq.${userId},addressee_id.eq.${myProfile.user_id})`)
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!myProfile && !!userId && myProfile.user_id !== userId,
+  });
+
+  const handleFriendAction = async (action: "send" | "accept" | "decline" | "cancel" | "remove") => {
+    if (!myProfile || !userId) return;
+    try {
+      if (action === "send") {
+        await supabase.from("friendships").insert({ requester_id: myProfile.user_id, addressee_id: userId });
+        toast.success("Friend request sent! 🤝");
+      } else if (action === "accept" && friendship) {
+        await supabase.from("friendships").update({ status: "accepted" as any, updated_at: new Date().toISOString() }).eq("id", friendship.id);
+        toast.success("Friend request accepted! 🎉");
+      } else if (action === "decline" && friendship) {
+        await supabase.from("friendships").update({ status: "declined" as any, updated_at: new Date().toISOString() }).eq("id", friendship.id);
+        toast("Request declined");
+      } else if ((action === "cancel" || action === "remove") && friendship) {
+        await supabase.from("friendships").delete().eq("id", friendship.id);
+        toast(action === "cancel" ? "Request cancelled" : "Friend removed");
+      }
+      queryClient.invalidateQueries({ queryKey: ["friendship"] });
+      queryClient.invalidateQueries({ queryKey: ["friends"] });
+    } catch {
+      toast.error("Something went wrong");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

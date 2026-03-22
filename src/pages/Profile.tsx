@@ -4,7 +4,6 @@ import BadgeCard from "@/components/BadgeCard";
 import BadgeShowcase from "@/components/BadgeShowcase";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useRef } from "react";

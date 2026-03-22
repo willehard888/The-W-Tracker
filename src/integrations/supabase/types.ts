@@ -258,6 +258,9 @@ export type Database = {
           is_elite: boolean
           level: number
           longest_streak: number
+          referral_code: string | null
+          referral_count: number
+          referred_by: string | null
           status_tier: Database["public"]["Enums"]["status_tier"]
           streak: number
           updated_at: string
@@ -273,6 +276,9 @@ export type Database = {
           is_elite?: boolean
           level?: number
           longest_streak?: number
+          referral_code?: string | null
+          referral_count?: number
+          referred_by?: string | null
           status_tier?: Database["public"]["Enums"]["status_tier"]
           streak?: number
           updated_at?: string
@@ -288,12 +294,47 @@ export type Database = {
           is_elite?: boolean
           level?: number
           longest_streak?: number
+          referral_code?: string | null
+          referral_count?: number
+          referred_by?: string | null
           status_tier?: Database["public"]["Enums"]["status_tier"]
           streak?: number
           updated_at?: string
           user_id?: string
           username?: string
           xp?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+          rewarded: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+          rewarded?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+          rewarded?: boolean
         }
         Relationships: []
       }

@@ -13,6 +13,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Battles from "./pages/Battles";
 import Profile from "./pages/Profile";
 import EliteFeed from "./pages/EliteFeed";
+import Referrals from "./pages/Referrals";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

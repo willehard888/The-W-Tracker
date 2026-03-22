@@ -116,11 +116,27 @@
   }
 
   .gradient-dark {
-    background: linear-gradient(180deg, hsl(225 20% 5%), hsl(225 22% 3%));
+    background: linear-gradient(180deg, hsl(260 18% 5%), hsl(265 20% 3%));
   }
 
   .gradient-surface {
     background: linear-gradient(145deg, hsl(var(--surface-elevated)), hsl(var(--card)));
+  }
+
+  .gradient-purple {
+    background: linear-gradient(135deg, hsl(var(--purple-dark)), hsl(var(--purple)), hsl(var(--purple-light)));
+  }
+
+  .glow-purple {
+    box-shadow: 0 0 20px hsl(var(--purple) / 0.2), 0 0 60px hsl(var(--purple) / 0.06);
+  }
+
+  .glow-purple-sm {
+    box-shadow: 0 0 10px hsl(var(--purple) / 0.15);
+  }
+
+  .text-purple-brand {
+    color: hsl(var(--purple));
   }
 
   .card-hover {

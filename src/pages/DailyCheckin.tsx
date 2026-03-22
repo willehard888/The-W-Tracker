@@ -285,6 +285,7 @@ const DailyCheckin = () => {
           <p className="text-xs text-muted-foreground">Log your day. Earn your status.</p>
         </div>
         <div className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gold/10 border border-gold/20">
+          {isElite && <span className="text-[10px] font-bold text-gold mr-1">2×</span>}
           <Zap size={14} className="text-gold" />
           <span className="text-sm font-bold text-gold tabular-nums">{totalXp}</span>
           <span className="text-xs text-gold/60">XP</span>

@@ -5,7 +5,7 @@ import { useAuth } from "./AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 const RC_API_KEY = "test_kCEnAIbFZcOhMhYfZnVXSERwGVp";
-const ENTITLEMENT_ID = "elite";
+const ENTITLEMENT_ID = "The W Tracker Pro";
 
 interface RevenueCatContextType {
   isElite: boolean;

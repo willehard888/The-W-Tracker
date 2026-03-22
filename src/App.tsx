@@ -17,6 +17,7 @@ import Profile from "./pages/Profile";
 import EliteFeed from "./pages/EliteFeed";
 import Referrals from "./pages/Referrals";
 import Paywall from "./pages/Paywall";
+import BadgeCompare from "./pages/BadgeCompare";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const AppRoutes = () => {
         <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
         <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
         <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />
+        <Route path="/badges/compare" element={<ProtectedRoute><BadgeCompare /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />

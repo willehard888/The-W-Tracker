@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import {
   Moon, Dumbbell, Snowflake, Apple, Droplets,
   Brain, Smartphone, Camera, ChevronLeft, Zap, Plus,
-  TrendingUp, AlertTriangle, Trophy, Crown
+  TrendingUp, AlertTriangle, Trophy, Crown, ChevronDown
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -54,6 +54,20 @@ const ToggleItem = ({ icon: Icon, label, sublabel, active, onToggle, bonus }: To
   </button>
 );
 
+const SPORT_CATEGORIES = [
+  { id: "none", label: "No workout", xp: 0, emoji: "—" },
+  { id: "walk", label: "Walking / Light Cardio", xp: 10, emoji: "🚶" },
+  { id: "run", label: "Running / Jogging", xp: 20, emoji: "🏃" },
+  { id: "gym", label: "Gym / Weights", xp: 30, emoji: "🏋️" },
+  { id: "swim", label: "Swimming", xp: 25, emoji: "🏊" },
+  { id: "yoga", label: "Yoga / Stretching", xp: 15, emoji: "🧘" },
+  { id: "combat", label: "Thai Boxing / MMA", xp: 35, emoji: "🥊" },
+  { id: "hiit", label: "HIIT / CrossFit", xp: 30, emoji: "⚡" },
+  { id: "team", label: "Team Sports", xp: 25, emoji: "⚽" },
+  { id: "cycling", label: "Cycling", xp: 20, emoji: "🚴" },
+  { id: "other", label: "Other Sport", xp: 20, emoji: "🏅" },
+];
+
 const DailyCheckin = () => {
   const navigate = useNavigate();
   const { user, refreshProfile } = useAuth();
@@ -88,7 +102,8 @@ const DailyCheckin = () => {
   };
 
   const [sleep, setSleep] = useState(8);
-  const [workout, setWorkout] = useState(false);
+  const [sportCategory, setSportCategory] = useState("none");
+  const [sportOpen, setSportOpen] = useState(false);
   const [extraWorkout, setExtraWorkout] = useState(false);
   const [coldShower, setColdShower] = useState(false);
   const [healthyFood, setHealthyFood] = useState(false);
@@ -103,8 +118,11 @@ const DailyCheckin = () => {
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
   const [honest, setHonest] = useState<boolean | null>(null);
 
+  const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory)!;
+  const workout = sportCategory !== "none";
+
   const baseXp = [
-    workout && 50,
+    selectedSport.xp,
     extraWorkout && 25,
     coldShower && 30,
     healthyFood && 20,
@@ -328,9 +346,67 @@ const DailyCheckin = () => {
         <input type="range" min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
       </div>
 
-      {/* Toggles */}
+      {/* Sport Category Selector */}
+      <div className="animate-reveal animate-reveal-delay-2 mb-2.5">
+        <button
+          onClick={() => setSportOpen(!sportOpen)}
+          className={cn(
+            "flex items-center gap-3 w-full rounded-xl border p-4 transition-all duration-200 text-left active:scale-[0.97]",
+            workout ? "border-gold/40 bg-gold/5" : "border-border bg-card hover:bg-secondary/50"
+          )}
+        >
+          <div className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-lg shrink-0 transition-colors",
+            workout ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground"
+          )}>
+            <Dumbbell size={20} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className={cn("font-semibold text-sm", workout && "text-gold")}>
+              {workout ? `${selectedSport.emoji} ${selectedSport.label}` : "Select Workout"}
+            </p>
+            <p className="text-xs text-muted-foreground">Choose your sport category</p>
+          </div>
+          {workout && (
+            <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+{selectedSport.xp} XP</span>
+          )}
+          <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", sportOpen && "rotate-180")} />
+        </button>
+
+        {sportOpen && (
+          <div className="mt-1 rounded-xl border border-border bg-card overflow-hidden">
+            {SPORT_CATEGORIES.filter((s) => s.id !== "none").map((sport) => (
+              <button
+                key={sport.id}
+                onClick={() => {
+                  setSportCategory(sport.id);
+                  setSportOpen(false);
+                }}
+                className={cn(
+                  "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border last:border-0 active:scale-[0.98]",
+                  sportCategory === sport.id ? "bg-gold/5" : "hover:bg-secondary/50"
+                )}
+              >
+                <span className="text-lg w-7 text-center">{sport.emoji}</span>
+                <span className="text-sm font-medium flex-1">{sport.label}</span>
+                <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
+              </button>
+            ))}
+            {sportCategory !== "none" && (
+              <button
+                onClick={() => { setSportCategory("none"); setSportOpen(false); }}
+                className="flex items-center gap-3 w-full px-4 py-3 text-left text-muted-foreground hover:bg-secondary/50 transition-colors"
+              >
+                <span className="text-lg w-7 text-center">✗</span>
+                <span className="text-sm font-medium">Clear selection</span>
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Other Toggles */}
       <div className="space-y-2.5 animate-reveal animate-reveal-delay-2">
-        <ToggleItem icon={Dumbbell} label="Workout" sublabel="Gym, combat sports, cardio" active={workout} onToggle={() => setWorkout(!workout)} bonus="+50 XP" />
         <ToggleItem icon={Plus} label="Extra Workout" sublabel="Second session today" active={extraWorkout} onToggle={() => setExtraWorkout(!extraWorkout)} bonus="+25 XP" />
         <ToggleItem icon={Snowflake} label="Cold Shower" sublabel="Build mental toughness" active={coldShower} onToggle={() => setColdShower(!coldShower)} bonus="+30 XP" />
         <ToggleItem icon={Apple} label="Healthy Food" sublabel="Clean meals all day" active={healthyFood} onToggle={() => setHealthyFood(!healthyFood)} bonus="+20 XP" />

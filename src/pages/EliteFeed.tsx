@@ -1,5 +1,4 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
@@ -25,8 +24,7 @@ const TIER_STYLES: Record<string, string> = {
 };
 
 const EliteFeed = () => {
-  const { user, profile } = useAuth();
-  const { isElite } = useRevenueCat();
+  const { user, profile, isElite } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [newPost, setNewPost] = useState("");

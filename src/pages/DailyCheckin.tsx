@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
@@ -70,8 +69,7 @@ const SPORT_CATEGORIES = [
 
 const DailyCheckin = () => {
   const navigate = useNavigate();
-  const { user, refreshProfile } = useAuth();
-  const { isElite } = useRevenueCat();
+  const { user, refreshProfile, isElite } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: lastCheckin } = useQuery({

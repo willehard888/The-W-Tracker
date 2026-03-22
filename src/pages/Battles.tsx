@@ -3,7 +3,6 @@ import { Swords, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crow
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
@@ -20,8 +19,7 @@ const BATTLE_TYPES = [
 ] as const;
 
 const Battles = () => {
-  const { profile } = useAuth();
-  const { isElite } = useRevenueCat();
+  const { profile, isElite } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);

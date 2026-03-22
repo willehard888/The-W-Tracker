@@ -1,12 +1,10 @@
-import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Crown, Flame, Trophy, Swords, Shield, Zap, Check, ArrowLeft, Loader2, CreditCard } from "lucide-react";
+import { Crown, Flame, Trophy, Swords, Shield, Zap, Check, ArrowLeft, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
-const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/test_aFa9AS9eth1Jd910Nvc3m01";
+import { supabase } from "@/integrations/supabase/client";
 
 const ELITE_FEATURES = [
   { icon: Trophy, text: "Full global leaderboard access" },
@@ -18,14 +16,9 @@ const ELITE_FEATURES = [
 ];
 
 const Paywall = () => {
-  const { isElite, packages, purchase, restorePurchases, loading } = useRevenueCat();
-  const { user } = useAuth();
+  const { isElite, checkSubscription } = useAuth();
   const navigate = useNavigate();
   const [purchasing, setPurchasing] = useState(false);
-
-  const stripeUrl = user?.email
-    ? `${STRIPE_CHECKOUT_URL}?prefilled_email=${encodeURIComponent(user.email)}`
-    : STRIPE_CHECKOUT_URL;
 
   if (isElite) {
     return (
@@ -43,31 +36,30 @@ const Paywall = () => {
     );
   }
 
-  const handlePurchase = async (pkg: any) => {
+  const handleCheckout = async () => {
     setPurchasing(true);
     try {
-      await purchase(pkg);
-      toast.success("Welcome to Elite! All features unlocked.");
-      navigate("/profile");
+      const { data, error } = await supabase.functions.invoke("create-checkout");
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+        // Poll for subscription after checkout
+        const pollInterval = setInterval(async () => {
+          await checkSubscription();
+        }, 5000);
+        setTimeout(() => clearInterval(pollInterval), 120000);
+      } else {
+        throw new Error("No checkout URL received");
+      }
     } catch (e: any) {
-      toast.error(e?.message || "Purchase failed. Please try again.");
+      toast.error(e?.message || "Could not start checkout. Try again.");
     } finally {
       setPurchasing(false);
     }
   };
 
-  const handleRestore = async () => {
-    try {
-      await restorePurchases();
-      toast.success("Purchases restored.");
-    } catch {
-      toast.error("Could not restore purchases.");
-    }
-  };
-
   return (
     <div className="min-h-screen pb-24 px-4 pt-6">
-      {/* Back button */}
       <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
         <ArrowLeft size={16} />
         Back
@@ -104,70 +96,31 @@ const Paywall = () => {
 
       {/* Pricing */}
       <div className="animate-reveal animate-reveal-delay-2">
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 size={24} className="animate-spin text-gold" />
-          </div>
-        ) : (
-          <div className="rounded-xl border border-gold/20 bg-card p-6 text-center space-y-3">
-            <p className="text-lg font-display font-black text-gold mb-1">15.99€<span className="text-sm font-semibold text-muted-foreground">/kk</span></p>
-            <p className="text-xs text-muted-foreground mb-4">Elite Membership</p>
+        <div className="rounded-xl border border-gold/20 bg-card p-6 text-center space-y-4">
+          <p className="text-lg font-display font-black text-gold mb-1">15.99€<span className="text-sm font-semibold text-muted-foreground">/mo</span></p>
+          <p className="text-xs text-muted-foreground">Elite Membership</p>
 
-            {/* In-App Purchase via RevenueCat */}
-            <Button
-              variant="gold"
-              size="xl"
-              className="w-full"
-              disabled={purchasing}
-              onClick={() => {
-                const monthlyPkg = packages.find(p => p.identifier === "$rc_monthly");
-                if (monthlyPkg) {
-                  handlePurchase(monthlyPkg);
-                } else {
-                  toast.info("Subscription is being set up. Please try again shortly.");
-                }
-              }}
-            >
-              {purchasing ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <Crown size={18} />
-              )}
-              Unlock Elite — 15.99€/kk
-            </Button>
-
-            {/* Divider */}
-            <div className="flex items-center gap-3 py-1">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">or</span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-
-            {/* Stripe Checkout */}
-            <Button
-              variant="gold-outline"
-              size="lg"
-              className="w-full"
-              onClick={() => window.open(stripeUrl, "_blank")}
-            >
-              <CreditCard size={18} />
-              Pay with Card
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Restore */}
-      <div className="text-center mt-6 animate-reveal animate-reveal-delay-3">
-        <button onClick={handleRestore} className="text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2">
-          Restore purchases
-        </button>
+          <Button
+            variant="gold"
+            size="xl"
+            className="w-full"
+            disabled={purchasing}
+            onClick={handleCheckout}
+          >
+            {purchasing ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Crown size={18} />
+            )}
+            Unlock Elite — 15.99€/mo
+          </Button>
+        </div>
       </div>
 
       {/* Trust line */}
-      <div className="text-center mt-8 animate-reveal animate-reveal-delay-4">
+      <div className="text-center mt-8 animate-reveal animate-reveal-delay-3">
         <p className="text-[10px] text-muted-foreground tracking-wider uppercase">
-          Secure payment • Cancel anytime
+          Secure payment via Stripe • Cancel anytime
         </p>
       </div>
     </div>

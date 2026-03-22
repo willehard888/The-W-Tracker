@@ -4,7 +4,6 @@ import BadgeCard from "@/components/BadgeCard";
 import BadgeShowcase from "@/components/BadgeShowcase";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useRef } from "react";
@@ -15,8 +14,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const Profile = () => {
-  const { profile, signOut } = useAuth();
-  const { isElite } = useRevenueCat();
+  const { profile, signOut, isElite } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [previewBadge, setPreviewBadge] = useState<any>(null);

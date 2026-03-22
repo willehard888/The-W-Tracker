@@ -130,7 +130,7 @@ const EliteFeed = () => {
     },
   });
 
-  const isElite = profile?.is_elite;
+  const canPost = isElite;
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6">

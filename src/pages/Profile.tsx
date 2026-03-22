@@ -1,6 +1,7 @@
 import { Flame, Zap, Award, Shield, Settings, Share2, Crown, LogOut } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import BadgeCard from "@/components/BadgeCard";
+import BadgeShowcase from "@/components/BadgeShowcase";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";

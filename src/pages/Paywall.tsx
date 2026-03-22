@@ -1,4 +1,5 @@
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Crown, Flame, Trophy, Swords, Shield, Zap, Check, ArrowLeft, Loader2, CreditCard } from "lucide-react";

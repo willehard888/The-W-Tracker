@@ -201,6 +201,27 @@ const DailyCheckin = () => {
     setSubmitting(false);
   };
 
+  // 24h lock screen
+  if (!canCheckin && !submitted) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center pb-24">
+        <div className="animate-reveal">
+          <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
+            <Moon size={36} className="text-muted-foreground" />
+          </div>
+          <h1 className="font-display text-2xl font-black tracking-tight mb-2">Already Logged Today</h1>
+          <p className="text-muted-foreground text-sm mb-2">You can only check in once every 24 hours.</p>
+          <p className="text-gold font-display text-lg font-bold mb-8">
+            Next check-in in {getTimeUntilCheckin()}
+          </p>
+          <Button variant="gold-outline" size="lg" onClick={() => navigate("/")}>
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (submitted) {
     return (
       <>

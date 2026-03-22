@@ -105,12 +105,41 @@ const Profile = () => {
       {/* Profile Header */}
       <div className="animate-reveal text-center mb-6">
         <div className="relative inline-block mb-3">
-          <div className="h-20 w-20 rounded-full gradient-gold flex items-center justify-center glow-gold text-3xl font-black font-display text-primary-foreground">
-            {profile.username?.charAt(0)?.toUpperCase()}
-          </div>
-          <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-card border-2 border-gold flex items-center justify-center">
-            <Crown size={14} className="text-gold" />
-          </div>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarUpload}
+          />
+          {profile.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt={profile.username}
+              className="h-20 w-20 rounded-full object-cover border-2 border-gold glow-gold"
+            />
+          ) : (
+            <div className="h-20 w-20 rounded-full gradient-gold flex items-center justify-center glow-gold text-3xl font-black font-display text-primary-foreground">
+              {profile.username?.charAt(0)?.toUpperCase()}
+            </div>
+          )}
+          {isElite ? (
+            <button
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-card border-2 border-gold flex items-center justify-center transition-all hover:bg-gold/10 active:scale-95"
+            >
+              {uploadingAvatar ? (
+                <span className="text-[8px] text-gold animate-pulse">...</span>
+              ) : (
+                <Camera size={12} className="text-gold" />
+              )}
+            </button>
+          ) : (
+            <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-card border-2 border-gold flex items-center justify-center">
+              <Crown size={14} className="text-gold" />
+            </div>
+          )}
         </div>
         <h1 className="font-display text-xl font-bold tracking-tight">@{profile.username}</h1>
         <div className="flex items-center justify-center gap-2 mt-1">

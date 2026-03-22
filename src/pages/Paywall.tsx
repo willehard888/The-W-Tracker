@@ -1,10 +1,12 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Crown, Flame, Trophy, Swords, Shield, Zap, Check, ArrowLeft, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { isNativePlatform } from "@/lib/platform";
 
 const ELITE_FEATURES = [
   { icon: Trophy, text: "Full global leaderboard access" },
@@ -17,8 +19,10 @@ const ELITE_FEATURES = [
 
 const Paywall = () => {
   const { isElite, checkSubscription } = useAuth();
+  const { packages, purchase, restorePurchases, rcLoading } = useRevenueCat();
   const navigate = useNavigate();
   const [purchasing, setPurchasing] = useState(false);
+  const isNative = isNativePlatform();
 
   if (isElite) {
     return (
@@ -36,14 +40,14 @@ const Paywall = () => {
     );
   }
 
-  const handleCheckout = async () => {
+  // Stripe checkout (web)
+  const handleStripeCheckout = async () => {
     setPurchasing(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout");
       if (error) throw error;
       if (data?.url) {
         window.open(data.url, "_blank");
-        // Poll for subscription after checkout
         const pollInterval = setInterval(async () => {
           await checkSubscription();
         }, 5000);
@@ -55,6 +59,34 @@ const Paywall = () => {
       toast.error(e?.message || "Could not start checkout. Try again.");
     } finally {
       setPurchasing(false);
+    }
+  };
+
+  // RevenueCat purchase (native)
+  const handleNativePurchase = async () => {
+    const monthlyPkg = packages.find(p => p.identifier === "$rc_monthly");
+    if (!monthlyPkg) {
+      toast.info("Subscription is being set up. Please try again shortly.");
+      return;
+    }
+    setPurchasing(true);
+    try {
+      await purchase(monthlyPkg);
+      toast.success("Welcome to Elite! All features unlocked.");
+      navigate("/profile");
+    } catch (e: any) {
+      toast.error(e?.message || "Purchase failed. Please try again.");
+    } finally {
+      setPurchasing(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    try {
+      await restorePurchases();
+      toast.success("Purchases restored.");
+    } catch {
+      toast.error("Could not restore purchases.");
     }
   };
 
@@ -96,31 +128,46 @@ const Paywall = () => {
 
       {/* Pricing */}
       <div className="animate-reveal animate-reveal-delay-2">
-        <div className="rounded-xl border border-gold/20 bg-card p-6 text-center space-y-4">
-          <p className="text-lg font-display font-black text-gold mb-1">15.99€<span className="text-sm font-semibold text-muted-foreground">/mo</span></p>
-          <p className="text-xs text-muted-foreground">Elite Membership</p>
+        {(isNative && rcLoading) ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 size={24} className="animate-spin text-gold" />
+          </div>
+        ) : (
+          <div className="rounded-xl border border-gold/20 bg-card p-6 text-center space-y-4">
+            <p className="text-lg font-display font-black text-gold mb-1">15.99€<span className="text-sm font-semibold text-muted-foreground">/mo</span></p>
+            <p className="text-xs text-muted-foreground">Elite Membership</p>
 
-          <Button
-            variant="gold"
-            size="xl"
-            className="w-full"
-            disabled={purchasing}
-            onClick={handleCheckout}
-          >
-            {purchasing ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <Crown size={18} />
-            )}
-            Unlock Elite — 15.99€/mo
-          </Button>
-        </div>
+            <Button
+              variant="gold"
+              size="xl"
+              className="w-full"
+              disabled={purchasing}
+              onClick={isNative ? handleNativePurchase : handleStripeCheckout}
+            >
+              {purchasing ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <Crown size={18} />
+              )}
+              Unlock Elite — 15.99€/mo
+            </Button>
+          </div>
+        )}
       </div>
+
+      {/* Restore (native only) */}
+      {isNative && (
+        <div className="text-center mt-6 animate-reveal animate-reveal-delay-3">
+          <button onClick={handleRestore} className="text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2">
+            Restore purchases
+          </button>
+        </div>
+      )}
 
       {/* Trust line */}
       <div className="text-center mt-8 animate-reveal animate-reveal-delay-3">
         <p className="text-[10px] text-muted-foreground tracking-wider uppercase">
-          Secure payment via Stripe • Cancel anytime
+          {isNative ? "Secure in-app purchase • Cancel anytime" : "Secure payment via Stripe • Cancel anytime"}
         </p>
       </div>
     </div>

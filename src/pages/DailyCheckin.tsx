@@ -119,7 +119,7 @@ const DailyCheckin = () => {
   const totalXp = isElite ? baseXp * 2 : baseXp;
 
   const handleSubmit = async () => {
-    if (!user || submitting || !canCheckin) return;
+    if (!user || submitting || !canCheckin || honest !== true) return;
     setSubmitting(true);
 
     try {

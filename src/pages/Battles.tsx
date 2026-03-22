@@ -69,7 +69,89 @@ const Battles = () => {
   const pendingBattles = battles?.filter((b: any) => b.status === "pending" && b.opponent_id === profile?.user_id) || [];
   const activeBattles = battles?.filter((b: any) => b.status === "active") || [];
   const myPending = battles?.filter((b: any) => b.status === "pending" && b.challenger_id === profile?.user_id) || [];
+  const myVotingBattles = battles?.filter((b: any) => b.status === "voting") || [];
   const completedBattles = battles?.filter((b: any) => b.status === "completed") || [];
+
+  // Fetch all community voting battles (including ones user is NOT part of)
+  const { data: communityVotingBattles } = useQuery({
+    queryKey: ["community-voting-battles", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return [];
+      const { data } = await supabase
+        .from("battles")
+        .select("*")
+        .eq("status", "voting")
+        .neq("challenger_id", profile.user_id)
+        .neq("opponent_id", profile.user_id)
+        .order("ended_at", { ascending: false })
+        .limit(20);
+      if (!data || data.length === 0) return [];
+      // Fetch profiles for participants
+      const ids = [...new Set(data.flatMap((b) => [b.challenger_id, b.opponent_id]))];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, username, avatar_url")
+        .in("user_id", ids);
+      const profMap = Object.fromEntries((profs || []).map((p) => [p.user_id, p]));
+      return data.map((b) => ({ ...b, challengerProfile: profMap[b.challenger_id], opponentProfile: profMap[b.opponent_id] }));
+    },
+    enabled: !!profile,
+  });
+
+  // Fetch user's existing votes
+  const { data: myVotes } = useQuery({
+    queryKey: ["my-battle-votes", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return {};
+      const { data } = await supabase
+        .from("battle_votes")
+        .select("battle_id, voted_for")
+        .eq("voter_id", profile.user_id);
+      const map: Record<string, string> = {};
+      data?.forEach((v: any) => { map[v.battle_id] = v.voted_for; });
+      return map;
+    },
+    enabled: !!profile,
+  });
+
+  // Fetch vote counts for voting battles
+  const votingBattleIds = [
+    ...(myVotingBattles?.map((b: any) => b.id) || []),
+    ...(communityVotingBattles?.map((b: any) => b.id) || []),
+  ];
+  const { data: voteCounts } = useQuery({
+    queryKey: ["vote-counts", votingBattleIds.join(",")],
+    queryFn: async () => {
+      if (!votingBattleIds.length) return {};
+      const { data } = await supabase
+        .from("battle_votes")
+        .select("battle_id, voted_for")
+        .in("battle_id", votingBattleIds);
+      const counts: Record<string, Record<string, number>> = {};
+      data?.forEach((v: any) => {
+        if (!counts[v.battle_id]) counts[v.battle_id] = {};
+        counts[v.battle_id][v.voted_for] = (counts[v.battle_id][v.voted_for] || 0) + 1;
+      });
+      return counts;
+    },
+    enabled: votingBattleIds.length > 0,
+  });
+
+  const handleVote = async (battleId: string, votedFor: string) => {
+    if (!profile) return;
+    try {
+      await supabase.from("battle_votes").insert({
+        battle_id: battleId,
+        voter_id: profile.user_id,
+        voted_for: votedFor,
+      });
+      toast.success("Vote cast! 🗳️");
+      queryClient.invalidateQueries({ queryKey: ["my-battle-votes"] });
+      queryClient.invalidateQueries({ queryKey: ["vote-counts"] });
+    } catch {
+      toast.error("Failed to vote");
+    }
+  };
 
   const handleCreate = async () => {
     if (!profile || !opponentUsername.trim()) return;

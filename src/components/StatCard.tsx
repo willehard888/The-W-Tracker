@@ -6,7 +6,7 @@ interface StatCardProps {
   label: string;
   value: string | number;
   sublabel?: string;
-  variant?: "default" | "gold" | "streak" | "elite";
+  variant?: "default" | "gold" | "streak" | "elite" | "teal" | "rose" | "purple";
   className?: string;
 }
 

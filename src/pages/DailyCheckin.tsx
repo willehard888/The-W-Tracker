@@ -56,6 +56,7 @@ const ToggleItem = ({ icon: Icon, label, sublabel, active, onToggle, bonus }: To
 const DailyCheckin = () => {
   const navigate = useNavigate();
   const { user, refreshProfile } = useAuth();
+  const { isElite } = useRevenueCat();
   const queryClient = useQueryClient();
 
   const { data: lastCheckin } = useQuery({

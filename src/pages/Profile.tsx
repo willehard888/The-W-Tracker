@@ -1,4 +1,4 @@
-import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image } from "lucide-react";
+import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import BadgeCard from "@/components/BadgeCard";
 import BadgeShowcase from "@/components/BadgeShowcase";

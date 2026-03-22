@@ -53,6 +53,12 @@ const StatCard = ({ icon: Icon, label, value, sublabel, variant = "default", cla
               ? "bg-[hsl(var(--streak-orange))]/15 text-[hsl(var(--streak-orange))]"
               : variant === "elite"
               ? "gradient-gold text-primary-foreground shadow-[0_0_12px_hsl(var(--gold)/0.3)]"
+              : variant === "teal"
+              ? "bg-[hsl(var(--teal))]/15 text-[hsl(var(--teal))]"
+              : variant === "rose"
+              ? "bg-[hsl(var(--rose))]/15 text-[hsl(var(--rose))]"
+              : variant === "purple"
+              ? "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))]"
               : "bg-secondary text-muted-foreground"
           )}
         >

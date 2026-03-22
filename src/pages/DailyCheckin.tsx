@@ -112,7 +112,7 @@ const DailyCheckin = () => {
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
 
   const handleSubmit = async () => {
-    if (!user || submitting) return;
+    if (!user || submitting || !canCheckin) return;
     setSubmitting(true);
 
     try {

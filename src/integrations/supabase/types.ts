@@ -407,7 +407,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_status_tier: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       badge_rarity: "common" | "rare" | "epic" | "legendary"

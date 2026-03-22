@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import {
   Moon, Dumbbell, Snowflake, Apple, Droplets,
   Brain, Smartphone, Camera, ChevronLeft, Zap, Plus,
-  TrendingUp, AlertTriangle, Trophy
+  TrendingUp, AlertTriangle, Trophy, Crown
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -341,12 +341,27 @@ const DailyCheckin = () => {
         <ToggleItem icon={Smartphone} label="No Phone Before Sleep" sublabel="30 min screen-free" active={noPhonePm} onToggle={() => setNoPhonePm(!noPhonePm)} bonus="+20 XP" />
       </div>
 
-      {/* Proof Photo */}
+      {/* Proof Photo — Elite only */}
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
-        <button className="flex items-center gap-3 w-full rounded-xl border border-dashed border-border p-4 hover:bg-secondary/50 transition-colors active:scale-[0.97]">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Camera size={20} /></div>
-          <div className="text-left"><p className="font-semibold text-sm">Upload Proof Photo</p><p className="text-xs text-muted-foreground">Optional — earns bonus XP</p></div>
-        </button>
+        {isElite ? (
+          <label className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] cursor-pointer">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold"><Camera size={20} /></div>
+            <div className="text-left">
+              <p className="font-semibold text-sm">Upload Proof Photo</p>
+              <p className="text-xs text-muted-foreground">Elite perk — earns +30 bonus XP</p>
+            </div>
+            <input type="file" accept="image/*" className="hidden" onChange={() => {/* TODO: handle upload */}} />
+          </label>
+        ) : (
+          <div className="flex items-center gap-3 w-full rounded-xl border border-dashed border-border p-4 opacity-50">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Camera size={20} /></div>
+            <div className="text-left">
+              <p className="font-semibold text-sm">Upload Proof Photo</p>
+              <p className="text-xs text-muted-foreground">Elite feature — unlock to use</p>
+            </div>
+            <Crown size={16} className="ml-auto text-gold" />
+          </div>
+        )}
       </div>
 
       {/* Performance Score */}

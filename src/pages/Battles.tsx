@@ -435,11 +435,21 @@ const Battles = () => {
                     {amWinning ? "You're winning 🔥" : "You're behind — grind harder"}
                   </div>
 
-                  {/* Proof Section */}
+                  {/* Proof Section — REQUIRED */}
                   <div className="p-4 pt-3 border-t border-border mt-3">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
-                      <Camera size={10} /> Proof Photos
+                      <Camera size={10} /> Proof Photos <span className="text-destructive ml-1">(required)</span>
                     </p>
+
+                    {!myProof && (
+                      <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-2.5 mb-3 flex items-center gap-2">
+                        <Camera size={14} className="text-destructive shrink-0" />
+                        <p className="text-[11px] text-destructive font-semibold">
+                          Upload your proof to validate this battle. No proof = automatic forfeit.
+                        </p>
+                      </div>
+                    )}
+
                     <div className="flex gap-2">
                       {/* My proof */}
                       <div className="flex-1">
@@ -457,14 +467,14 @@ const Battles = () => {
                               fileInputRef.current?.click();
                             }}
                             disabled={uploadingProof === battle.id}
-                            className="w-full aspect-square rounded-lg border-2 border-dashed border-gold/30 bg-gold/5 flex flex-col items-center justify-center gap-1 transition-all hover:bg-gold/10 active:scale-95"
+                            className="w-full aspect-square rounded-lg border-2 border-dashed border-destructive/40 bg-destructive/5 flex flex-col items-center justify-center gap-1 transition-all hover:bg-destructive/10 active:scale-95 animate-pulse"
                           >
                             {uploadingProof === battle.id ? (
                               <span className="text-[10px] text-muted-foreground animate-pulse">Uploading...</span>
                             ) : (
                               <>
-                                <Camera size={16} className="text-gold" />
-                                <span className="text-[9px] font-bold text-gold">Upload Proof</span>
+                                <Camera size={20} className="text-destructive" />
+                                <span className="text-[9px] font-bold text-destructive">UPLOAD NOW</span>
                               </>
                             )}
                           </button>
@@ -483,7 +493,7 @@ const Battles = () => {
                         ) : (
                           <div className="w-full aspect-square rounded-lg border border-border bg-secondary/50 flex flex-col items-center justify-center gap-1">
                             <Image size={16} className="text-muted-foreground/40" />
-                            <span className="text-[9px] text-muted-foreground">Waiting...</span>
+                            <span className="text-[9px] text-muted-foreground">No proof yet</span>
                           </div>
                         )}
                       </div>

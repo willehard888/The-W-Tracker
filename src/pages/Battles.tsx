@@ -225,7 +225,7 @@ const Battles = () => {
 
       {/* Create Battle CTA */}
       {!showCreate ? (
-        <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-gold/20 bg-card p-6 text-center mb-6">
+        <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-gold/20 bg-card p-6 text-center mb-6 card-depth-lg">
           <div className="h-16 w-16 rounded-full gradient-gold flex items-center justify-center glow-gold mx-auto mb-4">
             <Swords size={30} className="text-primary-foreground" />
           </div>

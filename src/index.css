@@ -49,6 +49,18 @@
     --purple-dark: 270 45% 38%;
     --purple-muted: 268 30% 20%;
 
+    --teal: 172 66% 50%;
+    --teal-light: 172 72% 66%;
+    --teal-dark: 172 55% 34%;
+
+    --rose: 346 77% 60%;
+    --rose-light: 346 80% 72%;
+    --rose-dark: 346 65% 42%;
+
+    --amber: 32 95% 56%;
+    --amber-light: 32 100% 70%;
+    --amber-dark: 32 80% 38%;
+
     --badge-common: 255 10% 52%;
     --badge-rare: 210 90% 56%;
     --badge-epic: 275 80% 60%;

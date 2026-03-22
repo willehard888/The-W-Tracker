@@ -330,7 +330,7 @@ const EliteFeed = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <p className="text-sm font-bold truncate">@{post.profile?.username || "unknown"}</p>
+                    <p className={cn("text-sm font-bold truncate", isOwn && "text-gold")}>@{post.profile?.username || "unknown"} {isOwn && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}</p>
                     {post.profile?.status_tier === "elite" && (
                       <Crown size={12} className="text-gold shrink-0" />
                     )}

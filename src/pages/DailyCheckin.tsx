@@ -349,11 +349,31 @@ const DailyCheckin = () => {
         </button>
       </div>
 
+      {/* Performance Score */}
+      <div className="mt-4 animate-reveal animate-reveal-delay-3">
+        <div className={cn("rounded-xl border p-4 transition-all duration-300", perf.bg)}>
+          <div className="flex items-center gap-3 mb-2">
+            <perf.icon size={20} className={perf.color} />
+            <p className={cn("font-display font-bold text-sm", perf.color)}>{perf.text}</p>
+            <span className={cn("ml-auto font-display font-black text-lg tabular-nums", perf.color)}>{perfPercent}%</span>
+          </div>
+          <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
+            <div
+              className={cn("h-full rounded-full transition-all duration-500",
+                perfPercent === 100 ? "bg-gold" : perfPercent >= 80 ? "bg-emerald-400" : perfPercent >= 50 ? "bg-amber-400" : "bg-destructive"
+              )}
+              style={{ width: `${perfPercent}%` }}
+            />
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-2">{completedCount}/{maxCount} tasks completed</p>
+        </div>
+      </div>
+
       {/* Honesty check */}
       <div className="mt-4 animate-reveal animate-reveal-delay-4">
         <div className="rounded-xl border border-border bg-card p-4">
-          <p className="font-semibold text-sm mb-3">Olitko rehellinen? 🤝</p>
-          <p className="text-xs text-muted-foreground mb-3">Vastaa rehellisesti — valheella ei voi grindata.</p>
+          <p className="font-semibold text-sm mb-3">Were you honest? 🤝</p>
+          <p className="text-xs text-muted-foreground mb-3">Answer truthfully — you can't grind with lies.</p>
           <div className="flex gap-3">
             <button
               onClick={() => setHonest(true)}
@@ -364,7 +384,7 @@ const DailyCheckin = () => {
                   : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80"
               )}
             >
-              Kyllä ✅
+              Yes ✅
             </button>
             <button
               onClick={() => setHonest(false)}
@@ -375,11 +395,11 @@ const DailyCheckin = () => {
                   : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80"
               )}
             >
-              Ei ❌
+              No ❌
             </button>
           </div>
           {honest === false && (
-            <p className="text-xs text-destructive mt-2">Ole rehellinen itsellesi. Palaa ja korjaa vastauksesi.</p>
+            <p className="text-xs text-destructive mt-2">Be honest with yourself. Go back and fix your answers.</p>
           )}
         </div>
       </div>

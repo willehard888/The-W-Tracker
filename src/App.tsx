@@ -19,6 +19,8 @@ import Referrals from "./pages/Referrals";
 import Paywall from "./pages/Paywall";
 import BadgeCompare from "./pages/BadgeCompare";
 import UserProfile from "./pages/UserProfile";
+import Messages from "./pages/Messages";
+import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

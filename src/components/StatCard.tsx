@@ -69,7 +69,10 @@ const StatCard = ({ icon: Icon, label, value, sublabel, variant = "default", cla
           <p className={cn(
             "text-2xl font-bold font-display tracking-tight leading-tight mt-0.5",
             variant === "gold" && "text-gold glow-gold-text",
-            variant === "elite" && "text-gold font-black drop-shadow-[0_0_6px_hsl(var(--gold)/0.4)]"
+            variant === "elite" && "text-gold font-black drop-shadow-[0_0_6px_hsl(var(--gold)/0.4)]",
+            variant === "teal" && "text-[hsl(var(--teal))]",
+            variant === "rose" && "text-[hsl(var(--rose))]",
+            variant === "purple" && "text-[hsl(var(--purple))]",
           )}>
             {value}
           </p>

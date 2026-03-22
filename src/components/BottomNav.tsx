@@ -1,4 +1,4 @@
-import { Home, Target, Trophy, User, Swords, Flame } from "lucide-react";
+import { Home, Target, Trophy, User, Swords, Flame, MessageCircle } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -6,6 +6,7 @@ const tabs = [
   { icon: Home, label: "Home", path: "/" },
   { icon: Target, label: "Check-in", path: "/checkin" },
   { icon: Flame, label: "Feed", path: "/feed" },
+  { icon: MessageCircle, label: "DMs", path: "/messages" },
   { icon: Trophy, label: "Ranks", path: "/leaderboard" },
   { icon: Swords, label: "Battles", path: "/battles" },
   { icon: User, label: "Profile", path: "/profile" },

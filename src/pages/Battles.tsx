@@ -142,7 +142,7 @@ const Battles = () => {
         <p className="text-sm text-muted-foreground mb-6 max-w-xs">Battles are exclusive to Elite members. Upgrade to challenge others.</p>
         <Button variant="gold" size="lg" onClick={() => navigate("/paywall")}>
           <Crown size={16} />
-          Unlock Elite — €49/mo
+          Unlock Elite — €15.99/kk
         </Button>
       </div>
     );

@@ -118,7 +118,7 @@ const Paywall = () => {
                 ) : (
                   <Crown size={18} />
                 )}
-                {product.title || "Elite"} — {product.currentPrice.formattedPrice || "€49/mo"}
+                {product.title || "Elite"} — {product.currentPrice.formattedPrice || "€15.99/kk"}
               </Button>
               );
             })}

@@ -91,6 +91,11 @@ const Auth = () => {
               <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
                 <Flame size={10} className="text-gold" /> Locked permanently once set
               </p>
+              {refCode && (
+                <p className="text-[10px] text-gold/70 mt-1">
+                  🎁 Referred by: <span className="font-bold">{refCode}</span>
+                </p>
+              )}
             </div>
           )}
 

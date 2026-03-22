@@ -159,6 +159,17 @@ const UserProfile = () => {
             Message
           </Button>
         </div>
+        <div className="animate-reveal animate-reveal-delay-1 mb-6">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="w-full rounded-full"
+            onClick={() => navigate(`/badges/compare?user=${profile.username}`)}
+          >
+            <GitCompare size={14} />
+            Compare Badges
+          </Button>
+        </div>
       )}
 
       {/* Battle Type Modal */}

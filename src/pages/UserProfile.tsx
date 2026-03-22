@@ -181,15 +181,42 @@ const UserProfile = () => {
       {!isOwnProfile && (
         <>
           <div className="animate-reveal animate-reveal-delay-1 mb-3 flex gap-2">
+            {/* Friend button */}
+            {!friendship ? (
+              <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("send")}>
+                <UserPlus size={14} /> Add Friend
+              </Button>
+            ) : friendship.status === "pending" && friendship.requester_id === myProfile?.user_id ? (
+              <Button variant="secondary" size="sm" className="rounded-full opacity-70" onClick={() => handleFriendAction("cancel")}>
+                <Clock size={14} /> Pending
+              </Button>
+            ) : friendship.status === "pending" && friendship.addressee_id === myProfile?.user_id ? (
+              <div className="flex gap-1.5">
+                <Button variant="gold" size="sm" className="rounded-full" onClick={() => handleFriendAction("accept")}>
+                  <UserCheck size={14} /> Accept
+                </Button>
+                <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("decline")}>
+                  <UserX size={14} />
+                </Button>
+              </div>
+            ) : friendship.status === "accepted" ? (
+              <Button variant="secondary" size="sm" className="rounded-full border-[hsl(var(--teal))]/30 text-[hsl(var(--teal))]" onClick={() => handleFriendAction("remove")}>
+                <UserCheck size={14} /> Friends
+              </Button>
+            ) : (
+              <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("send")}>
+                <UserPlus size={14} /> Add Friend
+              </Button>
+            )}
             <Button variant="gold" size="sm" className="flex-1 rounded-full" onClick={() => setShowBattleModal(true)}>
               <Swords size={14} /> Challenge
             </Button>
+          </div>
+          <div className="animate-reveal animate-reveal-delay-1 mb-3 flex gap-2">
             <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/chat/${userId}`)}>
               <MessageCircle size={14} /> Message
             </Button>
-          </div>
-          <div className="animate-reveal animate-reveal-delay-1 mb-6">
-            <Button variant="secondary" size="sm" className="w-full rounded-full" onClick={() => navigate(`/badges/compare?user=${profile.username}`)}>
+            <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/badges/compare?user=${profile.username}`)}>
               <GitCompare size={14} /> Compare Badges
             </Button>
           </div>

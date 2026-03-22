@@ -24,8 +24,14 @@ const StatCard = ({ icon: Icon, label, value, sublabel, variant = "default", cla
         className
       )}
     >
-      {variant === "gold" && (
-        <div className="absolute inset-0 bg-gradient-to-br from-gold/5 to-transparent pointer-events-none" />
+      {(variant === "gold" || variant === "teal" || variant === "rose" || variant === "purple") && (
+        <div className={cn(
+          "absolute inset-0 bg-gradient-to-br to-transparent pointer-events-none",
+          variant === "gold" && "from-gold/5",
+          variant === "teal" && "from-[hsl(var(--teal))]/5",
+          variant === "rose" && "from-[hsl(var(--rose))]/5",
+          variant === "purple" && "from-[hsl(var(--purple))]/5",
+        )} />
       )}
       {variant === "elite" && (
         <>

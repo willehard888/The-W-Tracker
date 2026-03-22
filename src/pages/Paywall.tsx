@@ -102,7 +102,9 @@ const Paywall = () => {
           </div>
         ) : packages.length > 0 ? (
           <div className="space-y-3">
-            {packages.map((pkg) => (
+            {packages.map((pkg) => {
+              const product = pkg.webBillingProduct;
+              return (
               <Button
                 key={pkg.identifier}
                 variant="gold"

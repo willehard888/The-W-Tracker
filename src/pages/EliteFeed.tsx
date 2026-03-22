@@ -171,11 +171,15 @@ const EliteFeed = () => {
         </div>
       )}
 
-      {!isElite && user && (
+      {!canPost && user && (
         <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border bg-card p-6 text-center mb-6">
-          <Flame size={24} className="text-gold mx-auto mb-2" />
+          <Lock size={24} className="text-muted-foreground mx-auto mb-2" />
           <p className="text-sm font-semibold">Elite members can post to the feed</p>
-          <p className="text-xs text-muted-foreground mt-1">Upgrade to share your discipline proof</p>
+          <p className="text-xs text-muted-foreground mt-1 mb-3">Upgrade to share your discipline proof</p>
+          <Button variant="gold" size="sm" onClick={() => navigate("/paywall")}>
+            <Crown size={14} />
+            Unlock Elite
+          </Button>
         </div>
       )}
 

@@ -118,9 +118,10 @@ const Paywall = () => {
                 ) : (
                   <Crown size={18} />
                 )}
-                {pkg.product.title || "Elite"} — {pkg.product.priceString || "€49/mo"}
+                {product.title || "Elite"} — {product.currentPrice.formattedPrice || "€49/mo"}
               </Button>
-            ))}
+              );
+            })}
           </div>
         ) : (
           /* Fallback when no RC packages configured yet */

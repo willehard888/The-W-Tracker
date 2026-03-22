@@ -1,24 +1,54 @@
-import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare } from "lucide-react";
+import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import BadgeCard from "@/components/BadgeCard";
 import BadgeShowcase from "@/components/BadgeShowcase";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
+import { useRevenueCat } from "@/contexts/RevenueCatContext";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import StoryShareModal from "@/components/StoryShareModal";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const Profile = () => {
   const { profile, signOut } = useAuth();
+  const { isElite } = useRevenueCat();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [previewBadge, setPreviewBadge] = useState<any>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [shareModal, setShareModal] = useState<{ open: boolean; variant: "stats" | "streak" | "badge"; badgeData?: any }>({
     open: false,
     variant: "stats",
   });
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+    setUploadingAvatar(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `avatars/${profile.user_id}-${Date.now()}.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, file);
+      if (uploadErr) throw uploadErr;
+      const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
+      await supabase.from("profiles").update({ avatar_url: urlData.publicUrl }).eq("user_id", profile.user_id);
+      toast.success("Profile photo updated! 📸");
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      // Force reload profile
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload photo");
+    }
+    setUploadingAvatar(false);
+    e.target.value = "";
+  };
 
   const { data: allBadges } = useQuery({
     queryKey: ["all-badges"],
@@ -75,12 +105,41 @@ const Profile = () => {
       {/* Profile Header */}
       <div className="animate-reveal text-center mb-6">
         <div className="relative inline-block mb-3">
-          <div className="h-20 w-20 rounded-full gradient-gold flex items-center justify-center glow-gold text-3xl font-black font-display text-primary-foreground">
-            {profile.username?.charAt(0)?.toUpperCase()}
-          </div>
-          <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-card border-2 border-gold flex items-center justify-center">
-            <Crown size={14} className="text-gold" />
-          </div>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarUpload}
+          />
+          {profile.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt={profile.username}
+              className="h-20 w-20 rounded-full object-cover border-2 border-gold glow-gold"
+            />
+          ) : (
+            <div className="h-20 w-20 rounded-full gradient-gold flex items-center justify-center glow-gold text-3xl font-black font-display text-primary-foreground">
+              {profile.username?.charAt(0)?.toUpperCase()}
+            </div>
+          )}
+          {isElite ? (
+            <button
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-card border-2 border-gold flex items-center justify-center transition-all hover:bg-gold/10 active:scale-95"
+            >
+              {uploadingAvatar ? (
+                <span className="text-[8px] text-gold animate-pulse">...</span>
+              ) : (
+                <Camera size={12} className="text-gold" />
+              )}
+            </button>
+          ) : (
+            <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-card border-2 border-gold flex items-center justify-center">
+              <Crown size={14} className="text-gold" />
+            </div>
+          )}
         </div>
         <h1 className="font-display text-xl font-bold tracking-tight">@{profile.username}</h1>
         <div className="flex items-center justify-center gap-2 mt-1">

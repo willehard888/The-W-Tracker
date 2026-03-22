@@ -5,7 +5,7 @@ import { useAuth } from "./AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 const RC_API_KEY = "test_kCEnAIbFZcOhMhYfZnVXSERwGVp";
-const ENTITLEMENT_ID = "elite";
+const ENTITLEMENT_ID = "The W Tracker Pro";
 
 interface RevenueCatContextType {
   isElite: boolean;
@@ -25,21 +25,27 @@ export const useRevenueCat = () => {
 };
 
 export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasesInstance, setPurchasesInstance] = useState<Purchases | null>(null);
 
-  const isElite = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
+  // Elite if RC entitlement is active OR profile.is_elite is set (by Stripe webhook)
+  const rcElite = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
+  const isElite = rcElite || !!profile?.is_elite;
 
-  // Sync elite status to Supabase profile
+  // Sync elite status to Supabase profile — only SET to true, never reset to false
+  // (Stripe webhook may have set elite independently)
   const syncEliteStatus = useCallback(async (elite: boolean) => {
     if (!user) return;
-    await supabase
-      .from("profiles")
-      .update({ is_elite: elite })
-      .eq("user_id", user.id);
+    if (elite) {
+      await supabase
+        .from("profiles")
+        .update({ is_elite: true })
+        .eq("user_id", user.id);
+    }
+    // Don't set is_elite: false — Stripe may have granted it separately
   }, [user]);
 
   useEffect(() => {

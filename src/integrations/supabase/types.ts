@@ -320,6 +320,33 @@ export type Database = {
           },
         ]
       }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: Database["public"]["Enums"]["friendship_status"]
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: Database["public"]["Enums"]["friendship_status"]
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: Database["public"]["Enums"]["friendship_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -510,6 +537,7 @@ export type Database = {
     Enums: {
       badge_rarity: "common" | "rare" | "epic" | "legendary"
       battle_status: "pending" | "active" | "completed" | "declined" | "voting"
+      friendship_status: "pending" | "accepted" | "declined"
       status_tier: "normal" | "rising" | "high_performer" | "elite"
     }
     CompositeTypes: {
@@ -640,6 +668,7 @@ export const Constants = {
     Enums: {
       badge_rarity: ["common", "rare", "epic", "legendary"],
       battle_status: ["pending", "active", "completed", "declined", "voting"],
+      friendship_status: ["pending", "accepted", "declined"],
       status_tier: ["normal", "rising", "high_performer", "elite"],
     },
   },

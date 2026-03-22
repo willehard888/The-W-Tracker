@@ -51,6 +51,8 @@ const AppRoutes = () => {
         <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />
         <Route path="/badges/compare" element={<ProtectedRoute><BadgeCompare /></ProtectedRoute>} />
         <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+        <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+        <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />

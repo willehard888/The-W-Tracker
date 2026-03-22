@@ -17,14 +17,39 @@ const Leaderboard = () => {
         .from("profiles")
         .select("username, xp, level, streak, user_id")
         .order("xp", { ascending: false })
-        .limit(20);
+        .limit(50);
       return data || [];
     },
   });
 
-  const myRank = leaders?.findIndex((l) => l.user_id === profile?.user_id);
-  const totalUsers = leaders?.length || 1;
-  const percentile = myRank !== undefined && myRank >= 0 ? Math.max(1, Math.round(((totalUsers - myRank) / totalUsers) * 100)) : 50;
+  // Get total user count for real percentile
+  const { data: totalCount } = useQuery({
+    queryKey: ["total-users"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true });
+      return count || 1;
+    },
+  });
+
+  // Count how many users have more XP than me for real rank
+  const { data: myRealRank } = useQuery({
+    queryKey: ["my-rank", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return null;
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .gt("xp", profile.xp);
+      return (count ?? 0) + 1;
+    },
+    enabled: !!profile,
+  });
+
+  const totalUsers = totalCount || 1;
+  const rank = myRealRank || null;
+  const percentile = rank ? Math.max(1, Math.round(((totalUsers - rank) / totalUsers) * 100)) : 0;
 
   const isElite = profile?.is_elite;
 

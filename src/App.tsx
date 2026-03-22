@@ -30,7 +30,7 @@ const AppRoutes = () => {
   return (
     <div className="max-w-md mx-auto min-h-screen relative">
       <Routes>
-        <Route path="/landing" element={<Landing />} />
+        <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
         <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
         <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
         <Route path="/checkin" element={<ProtectedRoute><DailyCheckin /></ProtectedRoute>} />

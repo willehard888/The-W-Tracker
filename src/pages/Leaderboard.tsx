@@ -104,45 +104,20 @@ const Leaderboard = () => {
         ))}
       </div>
 
-      {/* Locked / Full list */}
+      {/* Full list */}
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
-        {isElite ? (
-          <div className="space-y-2">
-            {leaders?.slice(3).map((user, i) => (
-              <div key={user.user_id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
-                <div className="font-display font-black text-xl w-8 text-center text-muted-foreground tabular-nums">{i + 4}</div>
-                <div className="flex-1">
-                  <p className="font-semibold text-sm">@{user.username}</p>
-                  <p className="text-xs text-muted-foreground">Level {user.level}</p>
-                </div>
-                <p className="font-display font-bold text-sm tabular-nums">{user.xp.toLocaleString()}</p>
+        <div className="space-y-2">
+          {leaders?.slice(3).map((user, i) => (
+            <div key={user.user_id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
+              <div className="font-display font-black text-xl w-8 text-center text-muted-foreground tabular-nums">{i + 4}</div>
+              <div className="flex-1">
+                <p className="font-semibold text-sm">@{user.username}</p>
+                <p className="text-xs text-muted-foreground">Level {user.level}</p>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="relative">
-            <div className="space-y-2 opacity-20 pointer-events-none">
-              {(leaders?.slice(3, 7) || []).map((user, i) => (
-                <div key={user.user_id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
-                  <div className="font-display font-black text-xl w-8 text-center text-muted-foreground tabular-nums">{i + 4}</div>
-                  <div className="flex-1"><p className="font-semibold text-sm">@{user.username}</p></div>
-                  <p className="font-display font-bold text-sm tabular-nums">{user.xp.toLocaleString()}</p>
-                </div>
-              ))}
+              <p className="font-display font-bold text-sm tabular-nums">{user.xp.toLocaleString()}</p>
             </div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-card/90 backdrop-blur-sm border border-gold/20">
-                <Lock size={28} className="text-gold" />
-                <p className="font-display font-bold text-sm">Unlock Full Leaderboard</p>
-                <p className="text-xs text-muted-foreground text-center max-w-[200px]">Go Elite to see all rankings</p>
-                <Button variant="gold" size="default" onClick={() => navigate("/paywall")}>
-                  <Trophy size={16} />
-                  Go Elite — €15.99/kk
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
     </div>
   );

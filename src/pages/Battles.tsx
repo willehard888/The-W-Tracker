@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Swords, Trophy, Zap, ChevronRight, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock } from "lucide-react";
+import { useState, useRef } from "react";
+import { Swords, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +10,15 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
+const BATTLE_TYPES = [
+  { id: "xp", label: "Total XP", emoji: "⚡", icon: Zap, description: "Most XP earned wins", color: "text-gold" },
+  { id: "cold_shower", label: "Cold Showers", emoji: "🧊", icon: Snowflake, description: "Most cold showers taken", color: "text-blue-400" },
+  { id: "workout", label: "Workouts", emoji: "💪", icon: Dumbbell, description: "Most workouts completed", color: "text-[hsl(var(--streak-orange))]" },
+  { id: "meditation", label: "Meditation", emoji: "🧘", icon: Brain, description: "Most meditation sessions", color: "text-purple-400" },
+  { id: "hydration", label: "Hydration", emoji: "💧", icon: Droplets, description: "Most liters of water", color: "text-cyan-400" },
+  { id: "streak", label: "Streak", emoji: "🔥", icon: Flame, description: "Longest streak during battle", color: "text-[hsl(var(--streak-orange))]" },
+] as const;
+
 const Battles = () => {
   const { profile } = useAuth();
   const { isElite } = useRevenueCat();
@@ -18,9 +27,12 @@ const Battles = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [opponentUsername, setOpponentUsername] = useState("");
   const [duration, setDuration] = useState(7);
+  const [battleType, setBattleType] = useState("xp");
   const [creating, setCreating] = useState(false);
+  const [uploadingProof, setUploadingProof] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeProofBattleId, setActiveProofBattleId] = useState<string | null>(null);
 
-  // Fetch all battles for this user
   const { data: battles, isLoading } = useQuery({
     queryKey: ["battles", profile?.user_id],
     queryFn: async () => {
@@ -35,9 +47,8 @@ const Battles = () => {
     enabled: !!profile,
   });
 
-  // Fetch profiles for all battle participants
   const participantIds = battles
-    ? [...new Set(battles.flatMap((b) => [b.challenger_id, b.opponent_id]))]
+    ? [...new Set(battles.flatMap((b: any) => [b.challenger_id, b.opponent_id]))]
     : [];
 
   const { data: participants } = useQuery({
@@ -55,17 +66,15 @@ const Battles = () => {
     enabled: participantIds.length > 0,
   });
 
-  const pendingBattles = battles?.filter((b) => b.status === "pending" && b.opponent_id === profile?.user_id) || [];
-  const activeBattles = battles?.filter((b) => b.status === "active") || [];
-  const myPending = battles?.filter((b) => b.status === "pending" && b.challenger_id === profile?.user_id) || [];
-  const completedBattles = battles?.filter((b) => b.status === "completed") || [];
+  const pendingBattles = battles?.filter((b: any) => b.status === "pending" && b.opponent_id === profile?.user_id) || [];
+  const activeBattles = battles?.filter((b: any) => b.status === "active") || [];
+  const myPending = battles?.filter((b: any) => b.status === "pending" && b.challenger_id === profile?.user_id) || [];
+  const completedBattles = battles?.filter((b: any) => b.status === "completed") || [];
 
   const handleCreate = async () => {
     if (!profile || !opponentUsername.trim()) return;
     setCreating(true);
-
     try {
-      // Find opponent
       const { data: opponent, error: findErr } = await supabase
         .from("profiles")
         .select("user_id, username")
@@ -77,7 +86,6 @@ const Battles = () => {
         setCreating(false);
         return;
       }
-
       if (opponent.user_id === profile.user_id) {
         toast.error("Can't challenge yourself!");
         setCreating(false);
@@ -88,14 +96,15 @@ const Battles = () => {
         challenger_id: profile.user_id,
         opponent_id: opponent.user_id,
         duration_days: duration,
-        battle_type: "xp",
+        battle_type: battleType,
       });
-
       if (error) throw error;
 
-      toast.success("Battle challenge sent!", { description: `@${opponent.username} has been challenged.` });
+      const typeLabel = BATTLE_TYPES.find(t => t.id === battleType)?.label || battleType;
+      toast.success("Battle challenge sent!", { description: `${typeLabel} battle vs @${opponent.username}` });
       setShowCreate(false);
       setOpponentUsername("");
+      setBattleType("xp");
       queryClient.invalidateQueries({ queryKey: ["battles"] });
     } catch (err) {
       console.error(err);
@@ -125,9 +134,53 @@ const Battles = () => {
     }
   };
 
+  const handleProofUpload = async (battleId: string, file: File) => {
+    if (!profile) return;
+    setUploadingProof(battleId);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `battle-proofs/${battleId}/${profile.user_id}-${Date.now()}.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, file);
+      if (uploadErr) throw uploadErr;
+
+      const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
+
+      const battle = battles?.find((b: any) => b.id === battleId);
+      if (!battle) return;
+
+      const isChallenger = battle.challenger_id === profile.user_id;
+      const updateField = isChallenger ? "challenger_proof_url" : "opponent_proof_url";
+
+      await supabase
+        .from("battles")
+        .update({ [updateField]: urlData.publicUrl } as any)
+        .eq("id", battleId);
+
+      toast.success("Proof uploaded! 📸");
+      queryClient.invalidateQueries({ queryKey: ["battles"] });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload proof");
+    }
+    setUploadingProof(null);
+    setActiveProofBattleId(null);
+  };
+
   const getOpponent = (battle: any) => {
     const oppId = battle.challenger_id === profile?.user_id ? battle.opponent_id : battle.challenger_id;
     return participants?.[oppId] || { username: "...", xp: 0, streak: 0 };
+  };
+
+  const getBattleTypeInfo = (typeId: string) => BATTLE_TYPES.find(t => t.id === typeId) || BATTLE_TYPES[0];
+
+  const getMyProof = (battle: any) => {
+    if (!profile) return null;
+    return battle.challenger_id === profile.user_id ? battle.challenger_proof_url : battle.opponent_proof_url;
+  };
+
+  const getOppProof = (battle: any) => {
+    if (!profile) return null;
+    return battle.challenger_id === profile.user_id ? battle.opponent_proof_url : battle.challenger_proof_url;
   };
 
   if (!profile) return null;
@@ -150,6 +203,21 @@ const Battles = () => {
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file && activeProofBattleId) {
+            handleProofUpload(activeProofBattleId, file);
+          }
+          e.target.value = "";
+        }}
+      />
+
       <div className="animate-reveal mb-6">
         <h1 className="font-display text-2xl font-bold tracking-tight">Battles</h1>
         <p className="text-xs text-muted-foreground mt-1">Challenge others. Prove your discipline.</p>
@@ -163,7 +231,7 @@ const Battles = () => {
           </div>
           <h2 className="font-display font-bold text-lg mb-1">1v1 Discipline Battle</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Challenge anyone. Most XP earned during the battle wins.
+            Challenge anyone to XP, cold showers, workouts & more.
           </p>
           <Button variant="gold" size="lg" className="w-full max-w-xs" onClick={() => setShowCreate(true)}>
             <Swords size={18} />
@@ -174,22 +242,50 @@ const Battles = () => {
         <div className="animate-reveal rounded-xl border border-gold/30 bg-card p-5 mb-6">
           <h3 className="font-display font-bold text-sm mb-4">Challenge an opponent</h3>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
+            {/* Opponent */}
             <div>
               <label className="text-xs text-muted-foreground font-medium mb-1 block">Opponent Username</label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
-                  <Input
-                    value={opponentUsername}
-                    onChange={(e) => setOpponentUsername(e.target.value)}
-                    placeholder="username"
-                    className="pl-7 bg-secondary border-border"
-                  />
-                </div>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
+                <Input
+                  value={opponentUsername}
+                  onChange={(e) => setOpponentUsername(e.target.value)}
+                  placeholder="username"
+                  className="pl-7 bg-secondary border-border"
+                />
               </div>
             </div>
 
+            {/* Battle Type */}
+            <div>
+              <label className="text-xs text-muted-foreground font-medium mb-2 block">Battle Type</label>
+              <div className="grid grid-cols-3 gap-2">
+                {BATTLE_TYPES.map((type) => {
+                  const Icon = type.icon;
+                  return (
+                    <button
+                      key={type.id}
+                      onClick={() => setBattleType(type.id)}
+                      className={cn(
+                        "flex flex-col items-center gap-1 py-3 px-2 rounded-xl text-xs font-bold transition-all active:scale-95 border",
+                        battleType === type.id
+                          ? "bg-gold/10 border-gold/30 text-gold shadow-[0_0_12px_hsl(var(--gold)/0.15)]"
+                          : "bg-secondary border-border text-muted-foreground hover:bg-secondary/80"
+                      )}
+                    >
+                      <Icon size={18} className={battleType === type.id ? type.color : ""} />
+                      <span className="leading-tight text-center">{type.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
+                {getBattleTypeInfo(battleType).description}
+              </p>
+            </div>
+
+            {/* Duration */}
             <div>
               <label className="text-xs text-muted-foreground font-medium mb-2 block">Duration</label>
               <div className="flex gap-2">
@@ -198,10 +294,10 @@ const Battles = () => {
                     key={d}
                     onClick={() => setDuration(d)}
                     className={cn(
-                      "flex-1 py-2 rounded-lg text-sm font-bold transition-all active:scale-95",
+                      "flex-1 py-2 rounded-lg text-sm font-bold transition-all active:scale-95 border",
                       duration === d
-                        ? "bg-gold/15 text-gold border border-gold/30"
-                        : "bg-secondary text-muted-foreground border border-border hover:bg-secondary/80"
+                        ? "bg-gold/15 text-gold border-gold/30"
+                        : "bg-secondary text-muted-foreground border-border hover:bg-secondary/80"
                     )}
                   >
                     {d}d
@@ -215,7 +311,7 @@ const Battles = () => {
                 <Swords size={16} />
                 {creating ? "Sending..." : "Send Challenge"}
               </Button>
-              <Button variant="secondary" onClick={() => setShowCreate(false)}>Cancel</Button>
+              <Button variant="secondary" onClick={() => { setShowCreate(false); setBattleType("xp"); }}>Cancel</Button>
             </div>
           </div>
         </div>
@@ -229,8 +325,9 @@ const Battles = () => {
             Incoming Challenges
           </h2>
           <div className="space-y-2">
-            {pendingBattles.map((battle) => {
+            {pendingBattles.map((battle: any) => {
               const opp = getOpponent(battle);
+              const typeInfo = getBattleTypeInfo(battle.battle_type);
               return (
                 <div key={battle.id} className="rounded-xl border border-gold/20 bg-card p-4">
                   <div className="flex items-center gap-3 mb-3">
@@ -239,7 +336,10 @@ const Battles = () => {
                     </div>
                     <div className="flex-1">
                       <p className="font-bold text-sm">@{opp.username}</p>
-                      <p className="text-xs text-muted-foreground">{battle.duration_days}-day {battle.battle_type} battle</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <span>{typeInfo.emoji}</span>
+                        {battle.duration_days}d {typeInfo.label} battle
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-muted-foreground">{opp.xp.toLocaleString()} XP</p>
@@ -268,22 +368,29 @@ const Battles = () => {
             <Flame size={14} className="text-[hsl(var(--streak-orange))]" />
             Active Battles
           </h2>
-          <div className="space-y-2">
-            {activeBattles.map((battle) => {
+          <div className="space-y-3">
+            {activeBattles.map((battle: any) => {
               const opp = getOpponent(battle);
-              const myXp = profile.xp;
-              const oppXp = opp.xp;
-              const amWinning = myXp >= oppXp;
+              const typeInfo = getBattleTypeInfo(battle.battle_type);
+              const TypeIcon = typeInfo.icon;
+              const myScore = battle.challenger_id === profile.user_id ? battle.challenger_score : battle.opponent_score;
+              const oppScore = battle.challenger_id === profile.user_id ? battle.opponent_score : battle.challenger_score;
+              const amWinning = myScore >= oppScore;
               const startDate = battle.started_at ? new Date(battle.started_at) : new Date();
               const endDate = new Date(startDate.getTime() + battle.duration_days * 24 * 60 * 60 * 1000);
               const daysLeft = Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+              const myProof = getMyProof(battle);
+              const oppProof = getOppProof(battle);
 
               return (
-                <div key={battle.id} className="rounded-xl border border-gold/20 bg-card p-4 badge-glow-common">
-                  <div className="flex items-center justify-between mb-3">
+                <div key={battle.id} className="rounded-xl border border-gold/20 bg-card overflow-hidden">
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-4 pb-2">
                     <div className="flex items-center gap-2">
-                      <Swords size={14} className="text-gold" />
-                      <span className="text-xs font-bold text-gold uppercase tracking-wider">Live Battle</span>
+                      <TypeIcon size={14} className={typeInfo.color} />
+                      <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(var(--gold))" }}>
+                        {typeInfo.emoji} {typeInfo.label} Battle
+                      </span>
                     </div>
                     <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[hsl(var(--streak-orange))]/10 border border-[hsl(var(--streak-orange))]/20">
                       <Clock size={10} className="text-[hsl(var(--streak-orange))]" />
@@ -292,16 +399,16 @@ const Battles = () => {
                   </div>
 
                   {/* VS Display */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 px-4 py-3">
                     <div className="flex-1 text-center">
                       <div className="h-12 w-12 rounded-full gradient-gold flex items-center justify-center text-lg font-black text-primary-foreground mx-auto mb-1">
                         {profile.username?.charAt(0)?.toUpperCase()}
                       </div>
                       <p className="text-xs font-bold truncate">@{profile.username}</p>
                       <p className={cn("text-lg font-black font-display tabular-nums", amWinning ? "text-gold" : "text-muted-foreground")}>
-                        {myXp.toLocaleString()}
+                        {myScore}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">XP</p>
+                      <p className="text-[10px] text-muted-foreground">{typeInfo.label}</p>
                     </div>
 
                     <div className="flex flex-col items-center gap-1">
@@ -314,17 +421,73 @@ const Battles = () => {
                       </div>
                       <p className="text-xs font-bold truncate">@{opp.username}</p>
                       <p className={cn("text-lg font-black font-display tabular-nums", !amWinning ? "text-gold" : "text-muted-foreground")}>
-                        {oppXp.toLocaleString()}
+                        {oppScore}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">XP</p>
+                      <p className="text-[10px] text-muted-foreground">{typeInfo.label}</p>
                     </div>
                   </div>
 
                   <div className={cn(
-                    "mt-3 text-center text-xs font-bold py-1.5 rounded-lg",
+                    "text-center text-xs font-bold py-1.5 mx-4",
+                    "rounded-lg",
                     amWinning ? "bg-gold/10 text-gold" : "bg-destructive/10 text-destructive"
                   )}>
                     {amWinning ? "You're winning 🔥" : "You're behind — grind harder"}
+                  </div>
+
+                  {/* Proof Section */}
+                  <div className="p-4 pt-3 border-t border-border mt-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
+                      <Camera size={10} /> Proof Photos
+                    </p>
+                    <div className="flex gap-2">
+                      {/* My proof */}
+                      <div className="flex-1">
+                        {myProof ? (
+                          <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
+                            <img src={myProof} alt="My proof" className="w-full h-full object-cover" />
+                            <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
+                              <span className="text-[9px] font-bold text-white">You ✅</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setActiveProofBattleId(battle.id);
+                              fileInputRef.current?.click();
+                            }}
+                            disabled={uploadingProof === battle.id}
+                            className="w-full aspect-square rounded-lg border-2 border-dashed border-gold/30 bg-gold/5 flex flex-col items-center justify-center gap-1 transition-all hover:bg-gold/10 active:scale-95"
+                          >
+                            {uploadingProof === battle.id ? (
+                              <span className="text-[10px] text-muted-foreground animate-pulse">Uploading...</span>
+                            ) : (
+                              <>
+                                <Camera size={16} className="text-gold" />
+                                <span className="text-[9px] font-bold text-gold">Upload Proof</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Opponent proof */}
+                      <div className="flex-1">
+                        {oppProof ? (
+                          <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
+                            <img src={oppProof} alt="Opponent proof" className="w-full h-full object-cover" />
+                            <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
+                              <span className="text-[9px] font-bold text-white">@{opp.username} ✅</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-full aspect-square rounded-lg border border-border bg-secondary/50 flex flex-col items-center justify-center gap-1">
+                            <Image size={16} className="text-muted-foreground/40" />
+                            <span className="text-[9px] text-muted-foreground">Waiting...</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
@@ -341,8 +504,9 @@ const Battles = () => {
             Awaiting Response
           </h2>
           <div className="space-y-2">
-            {myPending.map((battle) => {
+            {myPending.map((battle: any) => {
               const opp = getOpponent(battle);
+              const typeInfo = getBattleTypeInfo(battle.battle_type);
               return (
                 <div key={battle.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
                   <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-sm font-black text-muted-foreground">
@@ -350,7 +514,7 @@ const Battles = () => {
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-sm">@{opp.username}</p>
-                    <p className="text-xs text-muted-foreground">{battle.duration_days}-day challenge</p>
+                    <p className="text-xs text-muted-foreground">{typeInfo.emoji} {battle.duration_days}d {typeInfo.label}</p>
                   </div>
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1 rounded-full bg-secondary">
                     Pending
@@ -367,9 +531,10 @@ const Battles = () => {
         <div className="animate-reveal animate-reveal-delay-3">
           <h2 className="font-display font-bold text-sm mb-3 tracking-tight">Battle History</h2>
           <div className="space-y-2">
-            {completedBattles.map((battle) => {
+            {completedBattles.map((battle: any) => {
               const opp = getOpponent(battle);
               const won = battle.winner_id === profile.user_id;
+              const typeInfo = getBattleTypeInfo(battle.battle_type);
               return (
                 <div key={battle.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
                   <div className={cn(
@@ -380,7 +545,7 @@ const Battles = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm">vs @{opp.username}</p>
-                    <p className="text-xs text-muted-foreground">{battle.duration_days}-day battle</p>
+                    <p className="text-xs text-muted-foreground">{typeInfo.emoji} {battle.duration_days}d {typeInfo.label}</p>
                   </div>
                   <div className={cn(
                     "text-sm font-bold font-display",

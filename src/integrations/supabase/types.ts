@@ -54,11 +54,15 @@ export type Database = {
         Row: {
           battle_type: string
           challenger_id: string
+          challenger_proof_url: string | null
+          challenger_score: number
           created_at: string
           duration_days: number
           ended_at: string | null
           id: string
           opponent_id: string
+          opponent_proof_url: string | null
+          opponent_score: number
           started_at: string | null
           status: Database["public"]["Enums"]["battle_status"]
           winner_id: string | null
@@ -66,11 +70,15 @@ export type Database = {
         Insert: {
           battle_type?: string
           challenger_id: string
+          challenger_proof_url?: string | null
+          challenger_score?: number
           created_at?: string
           duration_days?: number
           ended_at?: string | null
           id?: string
           opponent_id: string
+          opponent_proof_url?: string | null
+          opponent_score?: number
           started_at?: string | null
           status?: Database["public"]["Enums"]["battle_status"]
           winner_id?: string | null
@@ -78,11 +86,15 @@ export type Database = {
         Update: {
           battle_type?: string
           challenger_id?: string
+          challenger_proof_url?: string | null
+          challenger_score?: number
           created_at?: string
           duration_days?: number
           ended_at?: string | null
           id?: string
           opponent_id?: string
+          opponent_proof_url?: string | null
+          opponent_score?: number
           started_at?: string | null
           status?: Database["public"]["Enums"]["battle_status"]
           winner_id?: string | null

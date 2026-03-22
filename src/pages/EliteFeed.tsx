@@ -337,6 +337,12 @@ const EliteFeed = () => {
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                     <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+                    {post.profile?.level > 0 && (
+                      <>
+                        <span>•</span>
+                        <span className="font-semibold">Lv.{post.profile.level}</span>
+                      </>
+                    )}
                     {post.profile?.streak > 0 && (
                       <>
                         <span>•</span>

@@ -29,6 +29,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppRoutes = () => {
   const { user } = useAuth();
+  usePushNotifications();
 
   return (
     <div className="max-w-md mx-auto min-h-screen relative">

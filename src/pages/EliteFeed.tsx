@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 
 const EliteFeed = () => {
   const { user, profile } = useAuth();
+  const { isElite } = useRevenueCat();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [newPost, setNewPost] = useState("");
   const [showComments, setShowComments] = useState<string | null>(null);

@@ -118,7 +118,7 @@ const Paywall = () => {
                 ) : (
                   <Crown size={18} />
                 )}
-                {product.title || "Elite"} — {product.currentPrice.formattedPrice || "€49/mo"}
+                {product.title || "Elite"} — {product.currentPrice.formattedPrice || "€15.99/kk"}
               </Button>
               );
             })}
@@ -126,7 +126,7 @@ const Paywall = () => {
         ) : (
           /* Fallback when no RC packages configured yet */
           <div className="rounded-xl border border-gold/20 bg-card p-6 text-center">
-            <p className="text-lg font-display font-black text-gold mb-1">€49<span className="text-sm font-semibold text-muted-foreground">/mo</span></p>
+            <p className="text-lg font-display font-black text-gold mb-1">€15.99<span className="text-sm font-semibold text-muted-foreground">/kk</span></p>
             <p className="text-xs text-muted-foreground mb-4">Elite Membership</p>
             <Button
               variant="gold"
@@ -136,7 +136,6 @@ const Paywall = () => {
               onClick={async () => {
                 setPurchasing(true);
                 try {
-                  // Direct purchase flow when no packages configured
                   toast.info("Subscription packages are being set up. Please try again shortly.");
                 } finally {
                   setPurchasing(false);
@@ -144,7 +143,7 @@ const Paywall = () => {
               }}
             >
               <Crown size={18} />
-              Unlock Elite — €49/mo
+              Unlock Elite — €15.99/kk
             </Button>
           </div>
         )}

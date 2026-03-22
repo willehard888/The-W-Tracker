@@ -8,7 +8,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 
 interface ToggleItemProps {
@@ -54,6 +54,34 @@ const DailyCheckin = () => {
   const navigate = useNavigate();
   const { user, refreshProfile } = useAuth();
   const queryClient = useQueryClient();
+
+  const { data: lastCheckin } = useQuery({
+    queryKey: ["last-checkin", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("daily_checkins")
+        .select("checked_in_at")
+        .eq("user_id", user.id)
+        .order("checked_in_at", { ascending: false })
+        .limit(1)
+        .single();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const canCheckin = !lastCheckin || (Date.now() - new Date(lastCheckin.checked_in_at).getTime() > 24 * 60 * 60 * 1000);
+
+  const getTimeUntilCheckin = () => {
+    if (!lastCheckin || canCheckin) return null;
+    const nextTime = new Date(lastCheckin.checked_in_at).getTime() + 24 * 60 * 60 * 1000;
+    const diff = nextTime - Date.now();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${mins}m`;
+  };
+
   const [sleep, setSleep] = useState(8);
   const [workout, setWorkout] = useState(false);
   const [extraWorkout, setExtraWorkout] = useState(false);
@@ -84,7 +112,7 @@ const DailyCheckin = () => {
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
 
   const handleSubmit = async () => {
-    if (!user || submitting) return;
+    if (!user || submitting || !canCheckin) return;
     setSubmitting(true);
 
     try {
@@ -172,6 +200,27 @@ const DailyCheckin = () => {
     }
     setSubmitting(false);
   };
+
+  // 24h lock screen
+  if (!canCheckin && !submitted) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center pb-24">
+        <div className="animate-reveal">
+          <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
+            <Moon size={36} className="text-muted-foreground" />
+          </div>
+          <h1 className="font-display text-2xl font-black tracking-tight mb-2">Already Logged Today</h1>
+          <p className="text-muted-foreground text-sm mb-2">You can only check in once every 24 hours.</p>
+          <p className="text-gold font-display text-lg font-bold mb-8">
+            Next check-in in {getTimeUntilCheckin()}
+          </p>
+          <Button variant="gold-outline" size="lg" onClick={() => navigate("/")}>
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (

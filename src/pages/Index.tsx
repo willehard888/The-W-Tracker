@@ -153,7 +153,7 @@ const Index = () => {
       <div className="grid grid-cols-2 gap-3 mb-6 animate-reveal animate-reveal-delay-2">
         <StatCard icon={Zap} label="Total XP" value={profile.xp.toLocaleString()} variant="gold" />
         <StatCard icon={Flame} label="Streak" value={`${profile.streak}d`} sublabel={`Best: ${profile.longest_streak}d`} variant="streak" />
-        <StatCard icon={TrendingUp} label="Status" value={tierLabel} />
+        <StatCard icon={TrendingUp} label="Status" value={tierLabel} variant={profile.status_tier === "elite" ? "elite" : "default"} />
         <StatCard icon={Award} label="Level" value={profile.level} />
       </div>
 

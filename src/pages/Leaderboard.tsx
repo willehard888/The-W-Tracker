@@ -92,7 +92,7 @@ const Leaderboard = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/15 text-gold font-display font-bold">
-                #{myRank !== undefined ? myRank + 1 : "?"}
+                #{rank || "?"}
               </div>
               <div>
                 <p className="font-semibold text-sm">Your Position</p>

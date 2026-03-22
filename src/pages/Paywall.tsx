@@ -148,7 +148,7 @@ const Paywall = () => {
               variant="gold-outline"
               size="lg"
               className="w-full"
-              onClick={() => window.open(STRIPE_CHECKOUT_URL, "_blank")}
+              onClick={() => window.open(stripeUrl, "_blank")}
             >
               <CreditCard size={18} />
               Pay with Card

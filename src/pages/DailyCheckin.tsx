@@ -334,9 +334,44 @@ const DailyCheckin = () => {
         </button>
       </div>
 
+      {/* Honesty check */}
+      <div className="mt-4 animate-reveal animate-reveal-delay-4">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="font-semibold text-sm mb-3">Olitko rehellinen? 🤝</p>
+          <p className="text-xs text-muted-foreground mb-3">Vastaa rehellisesti — valheella ei voi grindata.</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setHonest(true)}
+              className={cn(
+                "flex-1 rounded-xl border p-3 text-sm font-bold transition-all active:scale-[0.97]",
+                honest === true
+                  ? "border-gold/40 bg-gold/10 text-gold"
+                  : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80"
+              )}
+            >
+              Kyllä ✅
+            </button>
+            <button
+              onClick={() => setHonest(false)}
+              className={cn(
+                "flex-1 rounded-xl border p-3 text-sm font-bold transition-all active:scale-[0.97]",
+                honest === false
+                  ? "border-destructive/40 bg-destructive/10 text-destructive"
+                  : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80"
+              )}
+            >
+              Ei ❌
+            </button>
+          </div>
+          {honest === false && (
+            <p className="text-xs text-destructive mt-2">Ole rehellinen itsellesi. Palaa ja korjaa vastauksesi.</p>
+          )}
+        </div>
+      </div>
+
       {/* Submit */}
       <div className="mt-6 animate-reveal animate-reveal-delay-4">
-        <Button variant="gold" size="xl" className="w-full" onClick={handleSubmit} disabled={submitting}>
+        <Button variant="gold" size="xl" className="w-full" onClick={handleSubmit} disabled={submitting || honest !== true}>
           <Zap size={20} />
           {submitting ? "Submitting..." : `Submit Day — Earn ${totalXp} XP`}
         </Button>

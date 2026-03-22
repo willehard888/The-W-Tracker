@@ -3,13 +3,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const tabs = [
-  { icon: Home, label: "Home", path: "/" },
-  { icon: Target, label: "Check-in", path: "/checkin" },
-  { icon: Flame, label: "Feed", path: "/feed" },
-  { icon: MessageCircle, label: "DMs", path: "/messages" },
-  { icon: Trophy, label: "Ranks", path: "/leaderboard" },
-  { icon: Swords, label: "Battles", path: "/battles" },
-  { icon: User, label: "Profile", path: "/profile" },
+  { icon: Home, label: "Home", path: "/", color: "text-gold" },
+  { icon: Target, label: "Check-in", path: "/checkin", color: "text-[hsl(var(--teal))]" },
+  { icon: Flame, label: "Feed", path: "/feed", color: "text-[hsl(var(--streak-orange))]" },
+  { icon: MessageCircle, label: "DMs", path: "/messages", color: "text-[hsl(var(--purple))]" },
+  { icon: Trophy, label: "Ranks", path: "/leaderboard", color: "text-gold" },
+  { icon: Swords, label: "Battles", path: "/battles", color: "text-[hsl(var(--rose))]" },
+  { icon: User, label: "Profile", path: "/profile", color: "text-gold" },
 ];
 
 const BottomNav = () => {

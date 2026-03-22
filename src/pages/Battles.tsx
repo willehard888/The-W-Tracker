@@ -1,15 +1,19 @@
 import { useState } from "react";
-import { Swords, Trophy, Zap, ChevronRight, UserPlus, Clock, CheckCircle, XCircle, Flame } from "lucide-react";
+import { Swords, Trophy, Zap, ChevronRight, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Battles = () => {
   const { profile } = useAuth();
+  const { isElite } = useRevenueCat();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [opponentUsername, setOpponentUsername] = useState("");

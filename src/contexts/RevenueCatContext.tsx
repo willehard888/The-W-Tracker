@@ -60,9 +60,9 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       await syncEliteStatus(elite);
 
       try {
-        const { offerings } = await CapPurchases.getOfferings();
-        if (offerings.current) {
-          setPackages(offerings.current.availablePackages);
+        const offeringsResult = await CapPurchases.getOfferings();
+        if (offeringsResult.current) {
+          setPackages(offeringsResult.current.availablePackages);
         }
       } catch (e) {
         console.log("No offerings configured yet:", e);

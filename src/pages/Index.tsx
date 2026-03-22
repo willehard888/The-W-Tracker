@@ -70,10 +70,36 @@ const Index = () => {
         <p className="text-sm text-muted-foreground font-medium">Welcome back</p>
         <div className="flex items-center justify-between mt-1">
           <h1 className="font-display text-2xl font-bold tracking-tight">@{profile.username}</h1>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-gold/30 bg-gold/5">
-            <Award size={14} className="text-gold" />
-            <span className="text-xs font-bold text-gold">{tierLabel}</span>
-          </div>
+
+          {/* Tier Badge — Elite gets premium treatment */}
+          {profile.status_tier === "elite" ? (
+            <div className="relative group">
+              {/* Animated glow ring */}
+              <div className="absolute -inset-1 rounded-full opacity-70 blur-md animate-pulse"
+                style={{ background: "linear-gradient(135deg, hsl(42 90% 55%), hsl(38 85% 45%), hsl(42 90% 55%))" }}
+              />
+              <div className="relative flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-gold/50 shadow-[0_0_20px_hsl(var(--gold)/0.25),inset_0_1px_0_hsl(var(--gold-light)/0.3)]"
+                style={{ background: "linear-gradient(135deg, hsl(42 78% 54% / 0.25), hsl(42 60% 36% / 0.15))" }}
+              >
+                <Crown size={14} className="text-gold drop-shadow-[0_0_4px_hsl(var(--gold)/0.6)]" />
+                <span className="text-xs font-black text-gold tracking-wider uppercase drop-shadow-[0_0_6px_hsl(var(--gold)/0.4)]">
+                  Elite
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className={cn(
+              "flex items-center gap-1.5 px-3 py-1 rounded-full border",
+              profile.status_tier === "high_performer"
+                ? "border-purple-500/30 bg-purple-500/5 text-purple-400"
+                : profile.status_tier === "rising"
+                  ? "border-sky-500/30 bg-sky-500/5 text-sky-400"
+                  : "border-border bg-secondary text-muted-foreground"
+            )}>
+              <Shield size={12} />
+              <span className="text-xs font-bold">{tierLabel}</span>
+            </div>
+          )}
         </div>
       </div>
 

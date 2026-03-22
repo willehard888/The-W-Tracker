@@ -33,6 +33,7 @@ const Landing = () => {
           </h1>
 
           <p className="text-muted-foreground text-base leading-relaxed max-w-sm mx-auto mb-10">
+            The W Tracker turns self-improvement into a visible status game.
             Track your discipline. Compete with others. Earn your status.
             The world sees who puts in the work.
           </p>

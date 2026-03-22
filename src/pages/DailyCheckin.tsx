@@ -162,7 +162,8 @@ const DailyCheckin = () => {
           })
           .eq("user_id", user.id);
 
-        // Check for streak badges
+        // Auto-update status tier based on percentile
+        await supabase.rpc("update_status_tier", { target_user_id: user.id });
         const streakBadges = [
           { streak: 3, name: "3-Day Streak" },
           { streak: 7, name: "7-Day Streak" },

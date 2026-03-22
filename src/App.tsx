@@ -17,6 +17,7 @@ import Profile from "./pages/Profile";
 import EliteFeed from "./pages/EliteFeed";
 import Referrals from "./pages/Referrals";
 import Paywall from "./pages/Paywall";
+import BadgeCompare from "./pages/BadgeCompare";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

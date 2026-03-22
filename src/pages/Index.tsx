@@ -9,6 +9,24 @@ import { supabase } from "@/integrations/supabase/client";
 import XpCounter from "@/components/XpCounter";
 import { cn } from "@/lib/utils";
 
+const motivationalQuotes = [
+  "Grind never stops 🔥",
+  "Tänään rakennetaan legendaa",
+  "Discipline beats talent",
+  "Ei tekosyitä, vain tuloksia",
+  "Champions train, losers complain",
+  "Yksi päivä kerrallaan 💪",
+  "Hard work pays off",
+  "Tee tänään se mitä muut eivät",
+  "Level up or get left behind",
+  "Jokainen repi tuo sut lähemmäs",
+  "Stay hungry, stay humble",
+  "Ei oikotietä huipulle",
+  "Prove them wrong 🏆",
+  "Consistency is king",
+  "Tänään on sun päivä",
+];
+
 const Index = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();

@@ -101,7 +101,7 @@ const DailyCheckin = () => {
   const [submitting, setSubmitting] = useState(false);
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
 
-  const totalXp = [
+  const baseXp = [
     workout && 50,
     extraWorkout && 25,
     coldShower && 30,
@@ -114,6 +114,8 @@ const DailyCheckin = () => {
     hydration >= 3 && 20,
     sleep >= 7 && sleep <= 9 && 25,
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
+
+  const totalXp = isElite ? baseXp * 2 : baseXp;
 
   const handleSubmit = async () => {
     if (!user || submitting || !canCheckin) return;

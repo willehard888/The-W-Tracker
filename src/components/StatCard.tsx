@@ -14,7 +14,7 @@ const StatCard = ({ icon: Icon, label, value, sublabel, variant = "default", cla
   return (
     <div
       className={cn(
-        "relative rounded-xl border border-border bg-card p-4 card-hover overflow-hidden",
+        "relative rounded-xl border border-border bg-card p-4 card-hover card-depth overflow-hidden",
         variant === "gold" && "border-gold/30 glow-gold-sm",
         variant === "streak" && "border-[hsl(var(--streak-orange))]/30",
         variant === "elite" && "border-gold/40 shadow-[0_0_20px_hsl(var(--gold)/0.15)]",

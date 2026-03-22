@@ -2,7 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, UserCheck, UserPlus } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -11,11 +11,57 @@ const Messages = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Fetch accepted friends
+  const { data: friends } = useQuery({
+    queryKey: ["friends", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase
+        .from("friendships")
+        .select("*")
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
+        .eq("status", "accepted" as any);
+      if (!data || data.length === 0) return [];
+
+      const friendIds = data.map((f: any) => f.requester_id === user.id ? f.addressee_id : f.requester_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, username, avatar_url, status_tier")
+        .in("user_id", friendIds);
+      return profiles || [];
+    },
+    enabled: !!user,
+  });
+
+  // Fetch pending incoming requests
+  const { data: pendingRequests } = useQuery({
+    queryKey: ["pending-friend-requests", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase
+        .from("friendships")
+        .select("*")
+        .eq("addressee_id", user.id)
+        .eq("status", "pending" as any);
+      if (!data || data.length === 0) return [];
+
+      const requesterIds = data.map((f: any) => f.requester_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, username, avatar_url, status_tier")
+        .in("user_id", requesterIds);
+      return (data || []).map((f: any) => ({
+        ...f,
+        profile: (profiles || []).find((p) => p.user_id === f.requester_id),
+      }));
+    },
+    enabled: !!user,
+  });
+
   const { data: conversations, isLoading } = useQuery({
     queryKey: ["conversations", user?.id],
     queryFn: async () => {
       if (!user) return [];
-      // Get all messages involving this user
       const { data: msgs } = await supabase
         .from("direct_messages")
         .select("*")
@@ -23,16 +69,11 @@ const Messages = () => {
         .order("created_at", { ascending: false });
       if (!msgs || msgs.length === 0) return [];
 
-      // Group by conversation partner
       const convMap = new Map<string, { partnerId: string; lastMessage: any; unread: number }>();
       for (const msg of msgs) {
         const partnerId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
         if (!convMap.has(partnerId)) {
-          convMap.set(partnerId, {
-            partnerId,
-            lastMessage: msg,
-            unread: 0,
-          });
+          convMap.set(partnerId, { partnerId, lastMessage: msg, unread: 0 });
         }
         const conv = convMap.get(partnerId)!;
         if (!msg.read && msg.receiver_id === user.id) {
@@ -40,7 +81,6 @@ const Messages = () => {
         }
       }
 
-      // Fetch profiles
       const partnerIds = [...convMap.keys()];
       const { data: profiles } = await supabase
         .from("profiles")
@@ -56,6 +96,16 @@ const Messages = () => {
     enabled: !!user,
   });
 
+  const friendIds = new Set((friends || []).map((f) => f.user_id));
+
+  // Split conversations: friends first, then others
+  const friendConvos = (conversations || []).filter((c) => friendIds.has(c.partnerId));
+  const otherConvos = (conversations || []).filter((c) => !friendIds.has(c.partnerId));
+  // Friends without conversations
+  const friendsWithoutConvo = (friends || []).filter(
+    (f) => !conversations?.some((c) => c.partnerId === f.user_id)
+  );
+
   return (
     <div className="min-h-screen pb-24 px-4 pt-6">
       <div className="animate-reveal mb-6">
@@ -69,6 +119,85 @@ const Messages = () => {
           </div>
         </div>
       </div>
+
+      {/* Pending Friend Requests */}
+      {pendingRequests && pendingRequests.length > 0 && (
+        <div className="animate-reveal animate-reveal-delay-1 mb-4">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
+            <UserPlus size={10} /> Friend Requests
+          </p>
+          <div className="space-y-2">
+            {pendingRequests.map((req: any) => (
+              <div key={req.id} className="flex items-center gap-3 rounded-xl border border-[hsl(var(--teal))]/20 bg-[hsl(var(--teal))]/5 p-3 card-depth">
+                <Avatar className="h-9 w-9 shrink-0">
+                  {req.profile?.avatar_url ? <AvatarImage src={req.profile.avatar_url} /> : null}
+                  <AvatarFallback className="text-xs font-bold bg-secondary">
+                    {req.profile?.username?.charAt(0)?.toUpperCase() || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">@{req.profile?.username || "unknown"}</p>
+                  <p className="text-[10px] text-muted-foreground">Wants to be friends</p>
+                </div>
+                <button
+                  onClick={async () => {
+                    await supabase.from("friendships").update({ status: "accepted" as any }).eq("id", req.id);
+                    window.location.reload();
+                  }}
+                  className="h-7 px-3 rounded-full bg-[hsl(var(--teal))]/15 text-[hsl(var(--teal))] text-[10px] font-bold border border-[hsl(var(--teal))]/30 active:scale-95 transition-transform"
+                >
+                  Accept
+                </button>
+                <button
+                  onClick={async () => {
+                    await supabase.from("friendships").update({ status: "declined" as any }).eq("id", req.id);
+                    window.location.reload();
+                  }}
+                  className="h-7 px-2 rounded-full bg-secondary text-muted-foreground text-[10px] font-bold border border-border active:scale-95 transition-transform"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Friends Section */}
+      {(friends && friends.length > 0) && (
+        <div className="animate-reveal animate-reveal-delay-1 mb-4">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
+            <UserCheck size={10} /> Friends
+          </p>
+
+          {/* Friends with conversations */}
+          <div className="space-y-2">
+            {friendConvos.map((conv) => (
+              <ConversationRow key={conv.partnerId} conv={conv} userId={user?.id} navigate={navigate} isFriend />
+            ))}
+            {/* Friends without conversations */}
+            {friendsWithoutConvo.map((friend) => (
+              <button
+                key={friend.user_id}
+                onClick={() => navigate(`/chat/${friend.user_id}`)}
+                className="w-full flex items-center gap-3 rounded-xl border border-[hsl(var(--teal))]/15 bg-card p-4 text-left transition-all active:scale-[0.98] card-depth"
+              >
+                <Avatar className="h-10 w-10 shrink-0">
+                  {friend.avatar_url ? <AvatarImage src={friend.avatar_url} /> : null}
+                  <AvatarFallback className="text-xs font-bold bg-secondary">
+                    {friend.username?.charAt(0)?.toUpperCase() || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">@{friend.username}</p>
+                  <p className="text-xs text-muted-foreground/50">Start a conversation</p>
+                </div>
+                <MessageCircle size={14} className="text-muted-foreground/30" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {isLoading && (
         <div className="space-y-3">
@@ -84,7 +213,21 @@ const Messages = () => {
         </div>
       )}
 
-      {!isLoading && (!conversations || conversations.length === 0) && (
+      {/* Other Conversations */}
+      {otherConvos.length > 0 && (
+        <div className="animate-reveal animate-reveal-delay-2">
+          {friends && friends.length > 0 && (
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2">Others</p>
+          )}
+          <div className="space-y-2">
+            {otherConvos.map((conv) => (
+              <ConversationRow key={conv.partnerId} conv={conv} userId={user?.id} navigate={navigate} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!isLoading && (!conversations || conversations.length === 0) && (!friends || friends.length === 0) && (
         <div className="text-center py-16 animate-reveal animate-reveal-delay-1">
           <div className="h-16 w-16 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto mb-4">
             <MessageCircle size={28} className="text-purple-400/40" />
@@ -93,50 +236,51 @@ const Messages = () => {
           <p className="text-xs text-muted-foreground/60 mt-1">Visit a user's profile to start a conversation</p>
         </div>
       )}
-
-      <div className="space-y-2 animate-reveal animate-reveal-delay-1">
-        {conversations?.map((conv) => (
-          <button
-            key={conv.partnerId}
-            onClick={() => navigate(`/chat/${conv.partnerId}`)}
-            className={cn(
-              "w-full flex items-center gap-3 rounded-xl border p-4 text-left transition-all active:scale-[0.98] card-depth",
-              conv.unread > 0 ? "border-purple-500/30 bg-purple-500/5" : "border-border bg-card"
-            )}
-          >
-            <Avatar className="h-10 w-10 shrink-0">
-              {conv.profile?.avatar_url ? <AvatarImage src={conv.profile.avatar_url} /> : null}
-              <AvatarFallback className="text-xs font-bold bg-secondary">
-                {conv.profile?.username?.charAt(0)?.toUpperCase() || "?"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <p className={cn("text-sm font-semibold truncate", conv.unread > 0 && "text-foreground")}>
-                  @{conv.profile?.username || "unknown"}
-                </p>
-                <span className="text-[10px] text-muted-foreground shrink-0">
-                  {formatDistanceToNow(new Date(conv.lastMessage.created_at), { addSuffix: true })}
-                </span>
-              </div>
-              <p className={cn(
-                "text-xs truncate mt-0.5",
-                conv.unread > 0 ? "text-foreground/80 font-medium" : "text-muted-foreground"
-              )}>
-                {conv.lastMessage.sender_id === user?.id && "You: "}
-                {conv.lastMessage.content}
-              </p>
-            </div>
-            {conv.unread > 0 && (
-              <div className="h-5 min-w-5 px-1.5 rounded-full bg-purple-500 flex items-center justify-center">
-                <span className="text-[10px] font-bold text-white">{conv.unread}</span>
-              </div>
-            )}
-          </button>
-        ))}
-      </div>
     </div>
   );
 };
+
+const ConversationRow = ({ conv, userId, navigate, isFriend }: { conv: any; userId?: string; navigate: any; isFriend?: boolean }) => (
+  <button
+    onClick={() => navigate(`/chat/${conv.partnerId}`)}
+    className={cn(
+      "w-full flex items-center gap-3 rounded-xl border p-4 text-left transition-all active:scale-[0.98] card-depth",
+      conv.unread > 0
+        ? "border-purple-500/30 bg-purple-500/5"
+        : isFriend
+          ? "border-[hsl(var(--teal))]/15 bg-card"
+          : "border-border bg-card"
+    )}
+  >
+    <Avatar className="h-10 w-10 shrink-0">
+      {conv.profile?.avatar_url ? <AvatarImage src={conv.profile.avatar_url} /> : null}
+      <AvatarFallback className="text-xs font-bold bg-secondary">
+        {conv.profile?.username?.charAt(0)?.toUpperCase() || "?"}
+      </AvatarFallback>
+    </Avatar>
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center justify-between">
+        <p className={cn("text-sm font-semibold truncate", conv.unread > 0 && "text-foreground")}>
+          @{conv.profile?.username || "unknown"}
+        </p>
+        <span className="text-[10px] text-muted-foreground shrink-0">
+          {formatDistanceToNow(new Date(conv.lastMessage.created_at), { addSuffix: true })}
+        </span>
+      </div>
+      <p className={cn(
+        "text-xs truncate mt-0.5",
+        conv.unread > 0 ? "text-foreground/80 font-medium" : "text-muted-foreground"
+      )}>
+        {conv.lastMessage.sender_id === userId && "You: "}
+        {conv.lastMessage.content}
+      </p>
+    </div>
+    {conv.unread > 0 && (
+      <div className="h-5 min-w-5 px-1.5 rounded-full bg-purple-500 flex items-center justify-center">
+        <span className="text-[10px] font-bold text-white">{conv.unread}</span>
+      </div>
+    )}
+  </button>
+);
 
 export default Messages;

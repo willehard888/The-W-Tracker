@@ -1,9 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
-import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare } from "lucide-react";
+import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
@@ -17,6 +17,7 @@ const UserProfile = () => {
   const { profile: myProfile } = useAuth();
   const { isElite } = useRevenueCat();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showBattleModal, setShowBattleModal] = useState(false);
   const [battleType, setBattleType] = useState("xp");
   const [duration, setDuration] = useState(7);
@@ -66,6 +67,45 @@ const UserProfile = () => {
     },
     enabled: !!userId,
   });
+
+  // Friendship status
+  const { data: friendship } = useQuery({
+    queryKey: ["friendship", myProfile?.user_id, userId],
+    queryFn: async () => {
+      if (!myProfile || !userId || myProfile.user_id === userId) return null;
+      const { data } = await supabase
+        .from("friendships")
+        .select("*")
+        .or(`and(requester_id.eq.${myProfile.user_id},addressee_id.eq.${userId}),and(requester_id.eq.${userId},addressee_id.eq.${myProfile.user_id})`)
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!myProfile && !!userId && myProfile.user_id !== userId,
+  });
+
+  const handleFriendAction = async (action: "send" | "accept" | "decline" | "cancel" | "remove") => {
+    if (!myProfile || !userId) return;
+    try {
+      if (action === "send") {
+        await supabase.from("friendships").insert({ requester_id: myProfile.user_id, addressee_id: userId });
+        toast.success("Friend request sent! 🤝");
+      } else if (action === "accept" && friendship) {
+        await supabase.from("friendships").update({ status: "accepted" as any, updated_at: new Date().toISOString() }).eq("id", friendship.id);
+        toast.success("Friend request accepted! 🎉");
+      } else if (action === "decline" && friendship) {
+        await supabase.from("friendships").update({ status: "declined" as any, updated_at: new Date().toISOString() }).eq("id", friendship.id);
+        toast("Request declined");
+      } else if ((action === "cancel" || action === "remove") && friendship) {
+        await supabase.from("friendships").delete().eq("id", friendship.id);
+        toast(action === "cancel" ? "Request cancelled" : "Friend removed");
+      }
+      queryClient.invalidateQueries({ queryKey: ["friendship"] });
+      queryClient.invalidateQueries({ queryKey: ["friends"] });
+    } catch {
+      toast.error("Something went wrong");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -141,15 +181,42 @@ const UserProfile = () => {
       {!isOwnProfile && (
         <>
           <div className="animate-reveal animate-reveal-delay-1 mb-3 flex gap-2">
+            {/* Friend button */}
+            {!friendship ? (
+              <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("send")}>
+                <UserPlus size={14} /> Add Friend
+              </Button>
+            ) : friendship.status === "pending" && friendship.requester_id === myProfile?.user_id ? (
+              <Button variant="secondary" size="sm" className="rounded-full opacity-70" onClick={() => handleFriendAction("cancel")}>
+                <Clock size={14} /> Pending
+              </Button>
+            ) : friendship.status === "pending" && friendship.addressee_id === myProfile?.user_id ? (
+              <div className="flex gap-1.5">
+                <Button variant="gold" size="sm" className="rounded-full" onClick={() => handleFriendAction("accept")}>
+                  <UserCheck size={14} /> Accept
+                </Button>
+                <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("decline")}>
+                  <UserX size={14} />
+                </Button>
+              </div>
+            ) : friendship.status === "accepted" ? (
+              <Button variant="secondary" size="sm" className="rounded-full border-[hsl(var(--teal))]/30 text-[hsl(var(--teal))]" onClick={() => handleFriendAction("remove")}>
+                <UserCheck size={14} /> Friends
+              </Button>
+            ) : (
+              <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("send")}>
+                <UserPlus size={14} /> Add Friend
+              </Button>
+            )}
             <Button variant="gold" size="sm" className="flex-1 rounded-full" onClick={() => setShowBattleModal(true)}>
               <Swords size={14} /> Challenge
             </Button>
+          </div>
+          <div className="animate-reveal animate-reveal-delay-1 mb-3 flex gap-2">
             <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/chat/${userId}`)}>
               <MessageCircle size={14} /> Message
             </Button>
-          </div>
-          <div className="animate-reveal animate-reveal-delay-1 mb-6">
-            <Button variant="secondary" size="sm" className="w-full rounded-full" onClick={() => navigate(`/badges/compare?user=${profile.username}`)}>
+            <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/badges/compare?user=${profile.username}`)}>
               <GitCompare size={14} /> Compare Badges
             </Button>
           </div>

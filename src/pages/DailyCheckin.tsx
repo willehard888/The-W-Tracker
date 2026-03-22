@@ -228,15 +228,39 @@ const DailyCheckin = () => {
     return (
       <>
         <BadgeUnlockModal badge={unlockedBadge} onClose={() => setUnlockedBadge(null)} />
-        <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-          <div className="animate-reveal">
-            <div className="h-20 w-20 rounded-full gradient-gold flex items-center justify-center glow-gold mx-auto mb-6">
-              <Zap size={36} className="text-primary-foreground" />
+        <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center relative overflow-hidden">
+          <ConfettiBurst active={submitted} />
+
+          {/* Radial glow bg */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: "radial-gradient(circle at 50% 40%, hsl(42 78% 54% / 0.08) 0%, transparent 60%)",
+          }} />
+
+          <div className="animate-reveal relative">
+            {/* Pulsing ring */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="h-28 w-28 rounded-full border border-gold/20" style={{
+                animation: "badge-ring-expand 2s ease-out infinite",
+              }} />
             </div>
-            <h1 className="font-display text-3xl font-black tracking-tight mb-2">Day Logged</h1>
-            <p className="text-gold font-display text-4xl font-black glow-gold-text mb-2">+{totalXp} XP</p>
-            <p className="text-muted-foreground text-sm mb-8">Your discipline is building. Keep going.</p>
-            <Button variant="gold-outline" size="lg" onClick={() => navigate("/")}>
+
+            <div className="h-24 w-24 rounded-full gradient-gold flex items-center justify-center glow-gold mx-auto mb-6 relative">
+              <Zap size={40} className="text-primary-foreground" />
+            </div>
+
+            <h1 className="font-display text-3xl font-black tracking-tight mb-3">Day Logged 🔥</h1>
+
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <span className="text-gold font-display text-5xl font-black glow-gold-text">+</span>
+              <XpCounter value={totalXp} className="text-gold font-display text-5xl font-black glow-gold-text" />
+            </div>
+            <p className="text-sm text-gold/60 font-semibold mb-2">EXPERIENCE EARNED</p>
+
+            <p className="text-muted-foreground text-sm mb-8 max-w-[250px] mx-auto leading-relaxed">
+              Your discipline is building. The grind never lies.
+            </p>
+
+            <Button variant="gold" size="lg" onClick={() => navigate("/")} className="w-full max-w-[200px]">
               Back to Dashboard
             </Button>
           </div>

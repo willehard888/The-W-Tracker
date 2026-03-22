@@ -109,6 +109,10 @@ const Index = () => {
         <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none" style={{
           background: "radial-gradient(circle, hsl(42 78% 54% / 0.12) 0%, transparent 70%)",
         }} />
+        {/* Ambient purple glow */}
+        <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full pointer-events-none" style={{
+          background: "radial-gradient(circle, hsl(270 60% 58% / 0.08) 0%, transparent 70%)",
+        }} />
         <div className="relative">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">

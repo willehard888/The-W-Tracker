@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -7,6 +7,9 @@ interface AuthContextType {
   session: Session | null;
   profile: any | null;
   loading: boolean;
+  isElite: boolean;
+  subscriptionEnd: string | null;
+  checkSubscription: () => Promise<void>;
   signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -26,6 +29,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isElite, setIsElite] = useState(false);
+  const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
@@ -34,11 +39,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .eq("user_id", userId)
       .single();
     setProfile(data);
+    if (data?.is_elite) setIsElite(true);
   };
 
   const refreshProfile = async () => {
     if (user) await fetchProfile(user.id);
   };
+
+  const checkSubscription = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("check-subscription");
+      if (error) {
+        console.error("check-subscription error:", error);
+        return;
+      }
+      if (data?.subscribed) {
+        setIsElite(true);
+        setSubscriptionEnd(data.subscription_end);
+      } else if (data && !data.error) {
+        setIsElite(false);
+        setSubscriptionEnd(null);
+      }
+      // Refresh profile to get synced is_elite
+      if (user) await fetchProfile(user.id);
+    } catch (e) {
+      console.error("Failed to check subscription:", e);
+    }
+  }, [user]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -49,6 +76,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setTimeout(() => fetchProfile(session.user.id), 0);
         } else {
           setProfile(null);
+          setIsElite(false);
+          setSubscriptionEnd(null);
         }
         setLoading(false);
       }
@@ -65,6 +94,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Check subscription on login and periodically
+  useEffect(() => {
+    if (!user) return;
+    checkSubscription();
+    const interval = setInterval(checkSubscription, 60000);
+    return () => clearInterval(interval);
+  }, [user, checkSubscription]);
 
   const signUp = async (email: string, password: string, username: string) => {
     const { error } = await supabase.auth.signUp({
@@ -86,10 +123,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
+    setIsElite(false);
+    setSubscriptionEnd(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signUp, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, isElite, subscriptionEnd, checkSubscription, signUp, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

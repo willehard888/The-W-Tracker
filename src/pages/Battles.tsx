@@ -404,7 +404,7 @@ const Battles = () => {
                       <div className="h-12 w-12 rounded-full gradient-gold flex items-center justify-center text-lg font-black text-primary-foreground mx-auto mb-1">
                         {profile.username?.charAt(0)?.toUpperCase()}
                       </div>
-                      <p className="text-xs font-bold truncate">@{profile.username}</p>
+                      <p className="text-xs font-bold truncate text-gold">@{profile.username} <span className="text-[10px] text-gold/70 font-medium">(you)</span></p>
                       <p className={cn("text-lg font-black font-display tabular-nums", amWinning ? "text-gold" : "text-muted-foreground")}>
                         {myScore}
                       </p>

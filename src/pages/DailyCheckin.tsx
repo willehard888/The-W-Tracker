@@ -117,10 +117,13 @@ const DailyCheckin = () => {
   const [submitting, setSubmitting] = useState(false);
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
   const [honest, setHonest] = useState<boolean | null>(null);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreview, setProofPreview] = useState<string | null>(null);
 
   const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory)!;
   const workout = sportCategory !== "none";
 
+  const proofBonus = isElite && proofFile ? 30 : 0;
   const baseXp = [
     selectedSport.xp,
     extraWorkout && 25,
@@ -133,6 +136,7 @@ const DailyCheckin = () => {
     noPhonePm && 20,
     hydration >= 3 && 20,
     sleep >= 7 && sleep <= 9 && 25,
+    proofBonus,
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
 
   const totalXp = isElite ? baseXp * 2 : baseXp;
@@ -156,6 +160,16 @@ const DailyCheckin = () => {
     setSubmitting(true);
 
     try {
+      // Upload proof photo if provided
+      let proof_photo_url: string | null = null;
+      if (proofFile && isElite) {
+        const ext = proofFile.name.split(".").pop();
+        const path = `${user.id}/${Date.now()}.${ext}`;
+        await supabase.storage.from("proof-photos").upload(path, proofFile);
+        const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
+        proof_photo_url = urlData.publicUrl;
+      }
+
       // Insert check-in
       await supabase.from("daily_checkins").insert({
         user_id: user.id,
@@ -171,6 +185,7 @@ const DailyCheckin = () => {
         no_phone_morning: noPhoneAm,
         no_phone_evening: noPhonePm,
         xp_earned: totalXp,
+        proof_photo_url,
       });
 
       // Update profile XP and streak
@@ -420,14 +435,36 @@ const DailyCheckin = () => {
       {/* Proof Photo — Elite only */}
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
         {isElite ? (
-          <label className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] cursor-pointer">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold"><Camera size={20} /></div>
-            <div className="text-left">
-              <p className="font-semibold text-sm">Upload Proof Photo</p>
-              <p className="text-xs text-muted-foreground">Elite perk — earns +30 bonus XP</p>
-            </div>
-            <input type="file" accept="image/*" className="hidden" onChange={() => {/* TODO: handle upload */}} />
-          </label>
+          <div>
+            <label className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] cursor-pointer">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold"><Camera size={20} /></div>
+              <div className="text-left flex-1">
+                <p className="font-semibold text-sm">Upload Proof Photo</p>
+                <p className="text-xs text-muted-foreground">Elite perk — earns <span className="text-gold font-bold">+30 bonus XP</span></p>
+              </div>
+              {proofFile && <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+30 XP</span>}
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setProofFile(file);
+                  const reader = new FileReader();
+                  reader.onload = () => setProofPreview(reader.result as string);
+                  reader.readAsDataURL(file);
+                }
+              }} />
+            </label>
+            {proofPreview && (
+              <div className="relative mt-2 rounded-xl overflow-hidden">
+                <img src={proofPreview} alt="Proof" className="w-full max-h-40 object-cover rounded-xl" />
+                <button
+                  onClick={() => { setProofFile(null); setProofPreview(null); }}
+                  className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="flex items-center gap-3 w-full rounded-xl border border-dashed border-border p-4 opacity-50">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Camera size={20} /></div>

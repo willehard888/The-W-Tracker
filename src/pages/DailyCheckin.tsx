@@ -313,7 +313,7 @@ const DailyCheckin = () => {
         <div className="flex items-center gap-3 mb-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Moon size={20} /></div>
           <div><p className="font-semibold text-sm">Sleep</p><p className="text-xs text-muted-foreground">Optimal: 8–9 hours</p></div>
-          <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", sleep >= 7 && sleep <= 9 ? "text-gold" : "text-muted-foreground")}>{sleep}h</span>
+          <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", sleep >= 7 && sleep <= 9 ? "text-gold" : "text-muted-foreground")}>{sleep}h {sleep >= 8 && sleep <= 9 ? "😴" : sleep >= 7 ? "👍" : sleep <= 5 ? "💀" : "😐"}</span>
         </div>
         <input type="range" min={4} max={12} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
       </div>

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
-import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock } from "lucide-react";
+import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
@@ -139,26 +139,21 @@ const UserProfile = () => {
 
       {/* Action buttons */}
       {!isOwnProfile && (
-        <div className="animate-reveal animate-reveal-delay-1 mb-6 flex gap-2">
-          <Button
-            variant="gold"
-            size="sm"
-            className="flex-1 rounded-full"
-            onClick={() => setShowBattleModal(true)}
-          >
-            <Swords size={14} />
-            Challenge
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="flex-1 rounded-full"
-            onClick={() => navigate(`/chat/${userId}`)}
-          >
-            <MessageCircle size={14} />
-            Message
-          </Button>
-        </div>
+        <>
+          <div className="animate-reveal animate-reveal-delay-1 mb-3 flex gap-2">
+            <Button variant="gold" size="sm" className="flex-1 rounded-full" onClick={() => setShowBattleModal(true)}>
+              <Swords size={14} /> Challenge
+            </Button>
+            <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/chat/${userId}`)}>
+              <MessageCircle size={14} /> Message
+            </Button>
+          </div>
+          <div className="animate-reveal animate-reveal-delay-1 mb-6">
+            <Button variant="secondary" size="sm" className="w-full rounded-full" onClick={() => navigate(`/badges/compare?user=${profile.username}`)}>
+              <GitCompare size={14} /> Compare Badges
+            </Button>
+          </div>
+        </>
       )}
 
       {/* Battle Type Modal */}

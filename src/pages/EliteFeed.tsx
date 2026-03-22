@@ -1,14 +1,18 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Flame, Heart, MessageCircle, Send, Image, Flag } from "lucide-react";
+import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 const EliteFeed = () => {
   const { user, profile } = useAuth();
+  const { isElite } = useRevenueCat();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [newPost, setNewPost] = useState("");
   const [showComments, setShowComments] = useState<string | null>(null);
@@ -126,7 +130,7 @@ const EliteFeed = () => {
     },
   });
 
-  const isElite = profile?.is_elite;
+  const canPost = isElite;
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6">
@@ -136,7 +140,7 @@ const EliteFeed = () => {
       </div>
 
       {/* Create Post (Elite Only) */}
-      {isElite && (
+      {canPost && (
         <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-gold/20 bg-card p-4 mb-6">
           <textarea
             value={newPost}
@@ -167,11 +171,15 @@ const EliteFeed = () => {
         </div>
       )}
 
-      {!isElite && user && (
+      {!canPost && user && (
         <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border bg-card p-6 text-center mb-6">
-          <Flame size={24} className="text-gold mx-auto mb-2" />
+          <Lock size={24} className="text-muted-foreground mx-auto mb-2" />
           <p className="text-sm font-semibold">Elite members can post to the feed</p>
-          <p className="text-xs text-muted-foreground mt-1">Upgrade to share your discipline proof</p>
+          <p className="text-xs text-muted-foreground mt-1 mb-3">Upgrade to share your discipline proof</p>
+          <Button variant="gold" size="sm" onClick={() => navigate("/paywall")}>
+            <Crown size={14} />
+            Unlock Elite
+          </Button>
         </div>
       )}
 

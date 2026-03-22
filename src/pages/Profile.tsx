@@ -174,7 +174,7 @@ const Profile = () => {
         <div className="mt-8 rounded-xl border border-gold/20 bg-card p-5 text-center animate-reveal animate-reveal-delay-4">
           <h3 className="font-display font-bold text-sm mb-1">Unlock Elite Status</h3>
           <p className="text-xs text-muted-foreground mb-3">Full leaderboard, battles, elite feed, XP multiplier</p>
-          <Button variant="gold" size="lg" className="w-full">
+          <Button variant="gold" size="lg" className="w-full" onClick={() => navigate("/paywall")}>
             Go Elite — €49/mo
           </Button>
         </div>

@@ -1,15 +1,19 @@
 import { useState } from "react";
-import { Swords, Trophy, Zap, ChevronRight, UserPlus, Clock, CheckCircle, XCircle, Flame } from "lucide-react";
+import { Swords, Trophy, Zap, ChevronRight, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Battles = () => {
   const { profile } = useAuth();
+  const { isElite } = useRevenueCat();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [opponentUsername, setOpponentUsername] = useState("");
@@ -127,6 +131,22 @@ const Battles = () => {
   };
 
   if (!profile) return null;
+
+  if (!isElite) {
+    return (
+      <div className="min-h-screen pb-24 px-4 pt-6 flex flex-col items-center justify-center text-center">
+        <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mb-4">
+          <Lock size={32} className="text-muted-foreground" />
+        </div>
+        <h1 className="font-display text-2xl font-bold mb-2">Elite Only</h1>
+        <p className="text-sm text-muted-foreground mb-6 max-w-xs">Battles are exclusive to Elite members. Upgrade to challenge others.</p>
+        <Button variant="gold" size="lg" onClick={() => navigate("/paywall")}>
+          <Crown size={16} />
+          Unlock Elite — €49/mo
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6">

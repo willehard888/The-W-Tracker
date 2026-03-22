@@ -104,7 +104,7 @@ const Index = () => {
       </div>
 
       {/* XP Progress */}
-      <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-gold/20 bg-card p-5 mb-6 relative overflow-hidden">
+      <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-gold/20 bg-card p-5 mb-6 relative overflow-hidden card-depth-lg">
         {/* Ambient gold glow */}
         <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none" style={{
           background: "radial-gradient(circle, hsl(42 78% 54% / 0.12) 0%, transparent 70%)",

@@ -160,6 +160,16 @@ const DailyCheckin = () => {
     setSubmitting(true);
 
     try {
+      // Upload proof photo if provided
+      let proof_photo_url: string | null = null;
+      if (proofFile && isElite) {
+        const ext = proofFile.name.split(".").pop();
+        const path = `${user.id}/${Date.now()}.${ext}`;
+        await supabase.storage.from("proof-photos").upload(path, proofFile);
+        const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
+        proof_photo_url = urlData.publicUrl;
+      }
+
       // Insert check-in
       await supabase.from("daily_checkins").insert({
         user_id: user.id,
@@ -175,6 +185,7 @@ const DailyCheckin = () => {
         no_phone_morning: noPhoneAm,
         no_phone_evening: noPhonePm,
         xp_earned: totalXp,
+        proof_photo_url,
       });
 
       // Update profile XP and streak

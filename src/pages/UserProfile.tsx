@@ -15,7 +15,12 @@ import { toast } from "sonner";
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const { profile: myProfile } = useAuth();
+  const { isElite } = useRevenueCat();
   const navigate = useNavigate();
+  const [showBattleModal, setShowBattleModal] = useState(false);
+  const [battleType, setBattleType] = useState("xp");
+  const [duration, setDuration] = useState(7);
+  const [creating, setCreating] = useState(false);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["user-profile", userId],

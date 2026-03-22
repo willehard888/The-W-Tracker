@@ -383,7 +383,7 @@ const Battles = () => {
               const oppProof = getOppProof(battle);
 
               return (
-                <div key={battle.id} className="rounded-xl border border-gold/20 bg-card overflow-hidden">
+                <div key={battle.id} className="rounded-xl border border-gold/20 bg-card overflow-hidden card-depth-lg">
                   {/* Header */}
                   <div className="flex items-center justify-between p-4 pb-2">
                     <div className="flex items-center gap-2">

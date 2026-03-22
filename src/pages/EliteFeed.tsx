@@ -313,9 +313,8 @@ const EliteFeed = () => {
             <div
               key={post.id}
               className={cn(
-                "rounded-2xl border bg-card overflow-hidden transition-all",
-                "shadow-[0_1px_8px_rgba(0,0,0,0.04)]",
-                "hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)]",
+                "rounded-2xl border bg-card overflow-hidden transition-all card-depth",
+                "hover:shadow-[0_8px_32px_hsl(0_0%_0%/0.35),0_4px_12px_hsl(var(--gold)/0.06)]",
                 liked ? "border-gold/20" : "border-border"
               )}
               style={{ animationDelay: `${index * 60}ms` }}

@@ -132,7 +132,7 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="mt-3 h-4 rounded-full bg-secondary/80 overflow-hidden border border-border/50">
+          <div className="mt-3 h-4 rounded-full bg-secondary/80 overflow-hidden border border-border/50 surface-inset">
             <div
               className="h-full rounded-full gradient-gold transition-all duration-1000 ease-out relative"
               style={{ width: `${Math.max(4, xpPercent)}%` }}

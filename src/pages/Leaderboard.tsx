@@ -119,6 +119,10 @@ const Leaderboard = () => {
             <div className={cn("font-display font-black text-xl w-8 text-center tabular-nums", rankColors[i] || "text-muted-foreground")}>
               {i === 0 ? <Crown size={22} className="text-gold mx-auto" /> : i + 1}
             </div>
+            <Avatar className="h-9 w-9 shrink-0">
+              {user.avatar_url ? <AvatarImage src={user.avatar_url} alt={user.username} /> : null}
+              <AvatarFallback className={cn("text-xs font-bold", i === 0 ? "bg-gold/20 text-gold" : "bg-secondary")}>{user.username?.charAt(0)?.toUpperCase()}</AvatarFallback>
+            </Avatar>
             <div className="flex-1 min-w-0">
               <p className={cn("font-semibold text-sm truncate", user.user_id === profile?.user_id && "text-gold")}>@{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}</p>
               <p className="text-xs text-muted-foreground">Level {user.level} • {user.streak}d streak</p>

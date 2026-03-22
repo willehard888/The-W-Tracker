@@ -132,6 +132,22 @@ const Battles = () => {
 
   if (!profile) return null;
 
+  if (!isElite) {
+    return (
+      <div className="min-h-screen pb-24 px-4 pt-6 flex flex-col items-center justify-center text-center">
+        <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mb-4">
+          <Lock size={32} className="text-muted-foreground" />
+        </div>
+        <h1 className="font-display text-2xl font-bold mb-2">Elite Only</h1>
+        <p className="text-sm text-muted-foreground mb-6 max-w-xs">Battles are exclusive to Elite members. Upgrade to challenge others.</p>
+        <Button variant="gold" size="lg" onClick={() => navigate("/paywall")}>
+          <Crown size={16} />
+          Unlock Elite — €49/mo
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pb-24 px-4 pt-6">
       <div className="animate-reveal mb-6">

@@ -14,7 +14,353 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      badges: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          rarity: Database["public"]["Enums"]["badge_rarity"]
+          requirement_type: string | null
+          requirement_value: number | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon: string
+          id?: string
+          name: string
+          rarity?: Database["public"]["Enums"]["badge_rarity"]
+          requirement_type?: string | null
+          requirement_value?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          rarity?: Database["public"]["Enums"]["badge_rarity"]
+          requirement_type?: string | null
+          requirement_value?: number | null
+        }
+        Relationships: []
+      }
+      battles: {
+        Row: {
+          battle_type: string
+          challenger_id: string
+          created_at: string
+          duration_days: number
+          ended_at: string | null
+          id: string
+          opponent_id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["battle_status"]
+          winner_id: string | null
+        }
+        Insert: {
+          battle_type?: string
+          challenger_id: string
+          created_at?: string
+          duration_days?: number
+          ended_at?: string | null
+          id?: string
+          opponent_id: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["battle_status"]
+          winner_id?: string | null
+        }
+        Update: {
+          battle_type?: string
+          challenger_id?: string
+          created_at?: string
+          duration_days?: number
+          ended_at?: string | null
+          id?: string
+          opponent_id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["battle_status"]
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
+      daily_checkins: {
+        Row: {
+          checked_in_at: string
+          cold_shower: boolean
+          created_at: string
+          extra_workout: boolean
+          healthy_food: boolean
+          hydration_liters: number
+          id: string
+          meditation_evening: boolean
+          meditation_morning: boolean
+          no_phone_evening: boolean
+          no_phone_morning: boolean
+          proof_photo_url: string | null
+          protein_intake: boolean
+          sleep_hours: number
+          user_id: string
+          workout: boolean
+          xp_earned: number
+        }
+        Insert: {
+          checked_in_at?: string
+          cold_shower?: boolean
+          created_at?: string
+          extra_workout?: boolean
+          healthy_food?: boolean
+          hydration_liters?: number
+          id?: string
+          meditation_evening?: boolean
+          meditation_morning?: boolean
+          no_phone_evening?: boolean
+          no_phone_morning?: boolean
+          proof_photo_url?: string | null
+          protein_intake?: boolean
+          sleep_hours?: number
+          user_id: string
+          workout?: boolean
+          xp_earned?: number
+        }
+        Update: {
+          checked_in_at?: string
+          cold_shower?: boolean
+          created_at?: string
+          extra_workout?: boolean
+          healthy_food?: boolean
+          hydration_liters?: number
+          id?: string
+          meditation_evening?: boolean
+          meditation_morning?: boolean
+          no_phone_evening?: boolean
+          no_phone_morning?: boolean
+          proof_photo_url?: string | null
+          protein_intake?: boolean
+          sleep_hours?: number
+          user_id?: string
+          workout?: boolean
+          xp_earned?: number
+        }
+        Relationships: []
+      }
+      feed_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_posts: {
+        Row: {
+          comments_count: number
+          content: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          likes_count: number
+          reported: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comments_count?: number
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes_count?: number
+          reported?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comments_count?: number
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes_count?: number
+          reported?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      feed_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          reaction_type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          reaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          is_elite: boolean
+          level: number
+          longest_streak: number
+          status_tier: Database["public"]["Enums"]["status_tier"]
+          streak: number
+          updated_at: string
+          user_id: string
+          username: string
+          xp: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_elite?: boolean
+          level?: number
+          longest_streak?: number
+          status_tier?: Database["public"]["Enums"]["status_tier"]
+          streak?: number
+          updated_at?: string
+          user_id: string
+          username: string
+          xp?: number
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_elite?: boolean
+          level?: number
+          longest_streak?: number
+          status_tier?: Database["public"]["Enums"]["status_tier"]
+          streak?: number
+          updated_at?: string
+          user_id?: string
+          username?: string
+          xp?: number
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string | null
+          reason: string
+          reporter_id: string
+          resolved: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          reason: string
+          reporter_id: string
+          resolved?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          reason?: string
+          reporter_id?: string
+          resolved?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +369,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      badge_rarity: "common" | "rare" | "epic" | "legendary"
+      battle_status: "pending" | "active" | "completed" | "declined"
+      status_tier: "normal" | "rising" | "high_performer" | "elite"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +498,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      badge_rarity: ["common", "rare", "epic", "legendary"],
+      battle_status: ["pending", "active", "completed", "declined"],
+      status_tier: ["normal", "rising", "high_performer", "elite"],
+    },
   },
 } as const

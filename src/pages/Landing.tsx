@@ -39,11 +39,11 @@ const Landing = () => {
           </p>
 
           <div className="flex flex-col gap-3 w-full max-w-xs mx-auto animate-reveal animate-reveal-delay-2">
-            <Button variant="gold" size="xl" onClick={() => navigate("/")} className="w-full group">
+            <Button variant="gold" size="xl" onClick={() => navigate("/auth")} className="w-full group">
               Join the Movement
               <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
             </Button>
-            <Button variant="gold-outline" size="lg" onClick={() => navigate("/leaderboard")}>
+            <Button variant="gold-outline" size="lg" onClick={() => navigate("/auth")}>
               View Leaderboard
             </Button>
           </div>

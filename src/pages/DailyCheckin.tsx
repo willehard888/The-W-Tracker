@@ -6,6 +6,10 @@ import {
   Brain, Smartphone, Camera, ChevronLeft, Zap, Plus
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 
 interface ToggleItemProps {
   icon: React.ElementType;
@@ -21,9 +25,7 @@ const ToggleItem = ({ icon: Icon, label, sublabel, active, onToggle, bonus }: To
     onClick={onToggle}
     className={cn(
       "flex items-center gap-3 w-full rounded-xl border p-4 transition-all duration-200 text-left active:scale-[0.97]",
-      active
-        ? "border-gold/40 bg-gold/5"
-        : "border-border bg-card hover:bg-secondary/50"
+      active ? "border-gold/40 bg-gold/5" : "border-border bg-card hover:bg-secondary/50"
     )}
   >
     <div className={cn(
@@ -50,6 +52,8 @@ const ToggleItem = ({ icon: Icon, label, sublabel, active, onToggle, bonus }: To
 
 const DailyCheckin = () => {
   const navigate = useNavigate();
+  const { user, refreshProfile } = useAuth();
+  const queryClient = useQueryClient();
   const [sleep, setSleep] = useState(8);
   const [workout, setWorkout] = useState(false);
   const [extraWorkout, setExtraWorkout] = useState(false);
@@ -62,6 +66,8 @@ const DailyCheckin = () => {
   const [noPhoneAm, setNoPhoneAm] = useState(false);
   const [noPhonePm, setNoPhonePm] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
 
   const totalXp = [
     workout && 50,
@@ -77,27 +83,119 @@ const DailyCheckin = () => {
     sleep >= 7 && sleep <= 9 && 25,
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
 
+  const handleSubmit = async () => {
+    if (!user || submitting) return;
+    setSubmitting(true);
+
+    try {
+      // Insert check-in
+      await supabase.from("daily_checkins").insert({
+        user_id: user.id,
+        sleep_hours: sleep,
+        workout,
+        extra_workout: extraWorkout,
+        cold_shower: coldShower,
+        healthy_food: healthyFood,
+        protein_intake: protein,
+        meditation_morning: meditationAm,
+        meditation_evening: meditationPm,
+        hydration_liters: hydration,
+        no_phone_morning: noPhoneAm,
+        no_phone_evening: noPhonePm,
+        xp_earned: totalXp,
+      });
+
+      // Update profile XP and streak
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (profile) {
+        const newXp = profile.xp + totalXp;
+        const newLevel = Math.floor(newXp / 500) + 1;
+        const newStreak = profile.streak + 1;
+        const longestStreak = Math.max(profile.longest_streak, newStreak);
+
+        await supabase
+          .from("profiles")
+          .update({
+            xp: newXp,
+            level: newLevel,
+            streak: newStreak,
+            longest_streak: longestStreak,
+          })
+          .eq("user_id", user.id);
+
+        // Check for streak badges
+        const streakBadges = [
+          { streak: 3, name: "3-Day Streak" },
+          { streak: 7, name: "7-Day Streak" },
+          { streak: 30, name: "30-Day Streak" },
+        ];
+
+        for (const sb of streakBadges) {
+          if (newStreak >= sb.streak) {
+            const { data: badge } = await supabase
+              .from("badges")
+              .select("*")
+              .eq("name", sb.name)
+              .single();
+
+            if (badge) {
+              const { data: existing } = await supabase
+                .from("user_badges")
+                .select("id")
+                .eq("user_id", user.id)
+                .eq("badge_id", badge.id)
+                .single();
+
+              if (!existing) {
+                await supabase.from("user_badges").insert({
+                  user_id: user.id,
+                  badge_id: badge.id,
+                });
+                setUnlockedBadge(badge);
+              }
+            }
+          }
+        }
+      }
+
+      await refreshProfile();
+      queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
+      queryClient.invalidateQueries({ queryKey: ["user-badges"] });
+      setSubmitted(true);
+    } catch (err) {
+      console.error(err);
+    }
+    setSubmitting(false);
+  };
+
   if (submitted) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-        <div className="animate-reveal">
-          <div className="h-20 w-20 rounded-full gradient-gold flex items-center justify-center glow-gold mx-auto mb-6">
-            <Zap size={36} className="text-primary-foreground" />
+      <>
+        <BadgeUnlockModal badge={unlockedBadge} onClose={() => setUnlockedBadge(null)} />
+        <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+          <div className="animate-reveal">
+            <div className="h-20 w-20 rounded-full gradient-gold flex items-center justify-center glow-gold mx-auto mb-6">
+              <Zap size={36} className="text-primary-foreground" />
+            </div>
+            <h1 className="font-display text-3xl font-black tracking-tight mb-2">Day Logged</h1>
+            <p className="text-gold font-display text-4xl font-black glow-gold-text mb-2">+{totalXp} XP</p>
+            <p className="text-muted-foreground text-sm mb-8">Your discipline is building. Keep going.</p>
+            <Button variant="gold-outline" size="lg" onClick={() => navigate("/")}>
+              Back to Dashboard
+            </Button>
           </div>
-          <h1 className="font-display text-3xl font-black tracking-tight mb-2">Day Logged</h1>
-          <p className="text-gold font-display text-4xl font-black glow-gold-text mb-2">+{totalXp} XP</p>
-          <p className="text-muted-foreground text-sm mb-8">Your discipline is building. Keep going.</p>
-          <Button variant="gold-outline" size="lg" onClick={() => navigate("/")}>
-            Back to Dashboard
-          </Button>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
     <div className="min-h-screen pb-28 px-4 pt-4">
-      {/* Header */}
       <div className="flex items-center gap-3 mb-6 animate-reveal">
         <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
           <ChevronLeft size={20} />
@@ -113,55 +211,24 @@ const DailyCheckin = () => {
         </div>
       </div>
 
-      {/* Sleep Slider */}
+      {/* Sleep */}
       <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border bg-card p-4 mb-3">
         <div className="flex items-center gap-3 mb-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
-            <Moon size={20} />
-          </div>
-          <div>
-            <p className="font-semibold text-sm">Sleep</p>
-            <p className="text-xs text-muted-foreground">Optimal: 8–9 hours</p>
-          </div>
-          <span className={cn(
-            "ml-auto text-2xl font-bold font-display tabular-nums",
-            sleep >= 7 && sleep <= 9 ? "text-gold" : "text-muted-foreground"
-          )}>{sleep}h</span>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Moon size={20} /></div>
+          <div><p className="font-semibold text-sm">Sleep</p><p className="text-xs text-muted-foreground">Optimal: 8–9 hours</p></div>
+          <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", sleep >= 7 && sleep <= 9 ? "text-gold" : "text-muted-foreground")}>{sleep}h</span>
         </div>
-        <input
-          type="range"
-          min={4}
-          max={12}
-          value={sleep}
-          onChange={(e) => setSleep(Number(e.target.value))}
-          className="w-full accent-[hsl(var(--gold))] h-1.5"
-        />
+        <input type="range" min={4} max={12} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
       </div>
 
-      {/* Hydration Slider */}
+      {/* Hydration */}
       <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border bg-card p-4 mb-3">
         <div className="flex items-center gap-3 mb-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400">
-            <Droplets size={20} />
-          </div>
-          <div>
-            <p className="font-semibold text-sm">Hydration</p>
-            <p className="text-xs text-muted-foreground">Target: 3L+</p>
-          </div>
-          <span className={cn(
-            "ml-auto text-2xl font-bold font-display tabular-nums",
-            hydration >= 3 ? "text-gold" : "text-muted-foreground"
-          )}>{hydration}L</span>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400"><Droplets size={20} /></div>
+          <div><p className="font-semibold text-sm">Hydration</p><p className="text-xs text-muted-foreground">Target: 3L+</p></div>
+          <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
         </div>
-        <input
-          type="range"
-          min={0}
-          max={5}
-          step={0.5}
-          value={hydration}
-          onChange={(e) => setHydration(Number(e.target.value))}
-          className="w-full accent-[hsl(var(--gold))] h-1.5"
-        />
+        <input type="range" min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
       </div>
 
       {/* Toggles */}
@@ -180,21 +247,16 @@ const DailyCheckin = () => {
       {/* Proof Photo */}
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
         <button className="flex items-center gap-3 w-full rounded-xl border border-dashed border-border p-4 hover:bg-secondary/50 transition-colors active:scale-[0.97]">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
-            <Camera size={20} />
-          </div>
-          <div className="text-left">
-            <p className="font-semibold text-sm">Upload Proof Photo</p>
-            <p className="text-xs text-muted-foreground">Optional — earns bonus XP</p>
-          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Camera size={20} /></div>
+          <div className="text-left"><p className="font-semibold text-sm">Upload Proof Photo</p><p className="text-xs text-muted-foreground">Optional — earns bonus XP</p></div>
         </button>
       </div>
 
       {/* Submit */}
       <div className="mt-6 animate-reveal animate-reveal-delay-4">
-        <Button variant="gold" size="xl" className="w-full" onClick={() => setSubmitted(true)}>
+        <Button variant="gold" size="xl" className="w-full" onClick={handleSubmit} disabled={submitting}>
           <Zap size={20} />
-          Submit Day — Earn {totalXp} XP
+          {submitting ? "Submitting..." : `Submit Day — Earn ${totalXp} XP`}
         </Button>
       </div>
     </div>

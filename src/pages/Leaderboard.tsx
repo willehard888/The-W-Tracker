@@ -34,6 +34,26 @@ const Leaderboard = () => {
     2: "text-amber-700",
   };
 
+  if (!isElite) {
+    return (
+      <div className="min-h-screen pb-24 px-4 pt-6 flex flex-col items-center justify-center text-center">
+        <div className="animate-reveal">
+          <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
+            <Lock size={32} className="text-gold" />
+          </div>
+          <h1 className="font-display text-2xl font-black tracking-tight mb-2">Elite Only</h1>
+          <p className="text-sm text-muted-foreground mb-6 max-w-[250px]">
+            The global leaderboard is exclusive to Elite members. Upgrade to see where you rank.
+          </p>
+          <Button variant="gold" size="lg" onClick={() => navigate("/paywall")}>
+            <Crown size={16} />
+            Unlock Elite — €15.99/kk
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pb-24 px-4 pt-6">
       <div className="animate-reveal mb-6">

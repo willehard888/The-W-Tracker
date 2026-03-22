@@ -69,8 +69,7 @@ const SPORT_CATEGORIES = [
 
 const DailyCheckin = () => {
   const navigate = useNavigate();
-  const { user, refreshProfile } = useAuth();
-  const { isElite } = useRevenueCat();
+  const { user, refreshProfile, isElite } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: lastCheckin } = useQuery({

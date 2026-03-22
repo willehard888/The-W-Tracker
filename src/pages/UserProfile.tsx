@@ -13,8 +13,7 @@ import { toast } from "sonner";
 
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
-  const { profile: myProfile } = useAuth();
-  const { isElite } = useRevenueCat();
+  const { profile: myProfile, isElite } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showBattleModal, setShowBattleModal] = useState(false);

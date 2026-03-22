@@ -19,8 +19,7 @@ const BATTLE_TYPES = [
 ] as const;
 
 const Battles = () => {
-  const { profile } = useAuth();
-  const { isElite } = useRevenueCat();
+  const { profile, isElite } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);

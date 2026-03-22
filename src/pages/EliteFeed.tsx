@@ -24,8 +24,7 @@ const TIER_STYLES: Record<string, string> = {
 };
 
 const EliteFeed = () => {
-  const { user, profile } = useAuth();
-  const { isElite } = useRevenueCat();
+  const { user, profile, isElite } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [newPost, setNewPost] = useState("");

@@ -14,8 +14,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const Profile = () => {
-  const { profile, signOut } = useAuth();
-  const { isElite } = useRevenueCat();
+  const { profile, signOut, isElite } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [previewBadge, setPreviewBadge] = useState<any>(null);

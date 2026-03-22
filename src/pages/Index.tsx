@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import XpCounter from "@/components/XpCounter";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -76,17 +77,35 @@ const Index = () => {
       </div>
 
       {/* XP Progress */}
-      <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border bg-card p-4 mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-muted-foreground tracking-wide uppercase">Level {profile.level}</span>
-          <span className="text-xs text-muted-foreground tabular-nums">{profile.xp.toLocaleString()} / {xpToNext.toLocaleString()} XP</span>
+      <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border bg-card p-4 mb-6 relative overflow-hidden">
+        {/* Subtle gold shimmer */}
+        <div className="absolute inset-0 pointer-events-none opacity-30" style={{
+          background: `linear-gradient(90deg, transparent 0%, hsl(42 78% 54% / 0.06) ${xpPercent}%, transparent ${xpPercent + 2}%)`,
+        }} />
+        <div className="relative">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-muted-foreground tracking-wide uppercase">Level {profile.level}</span>
+            <div className="flex items-center gap-1">
+              <XpCounter value={profile.xp} className="text-xs text-muted-foreground tabular-nums" />
+              <span className="text-xs text-muted-foreground"> / {xpToNext.toLocaleString()} XP</span>
+            </div>
+          </div>
+          <div className="h-3 rounded-full bg-secondary overflow-hidden">
+            <div
+              className="h-full rounded-full gradient-gold transition-all duration-1000 ease-out relative"
+              style={{ width: `${xpPercent}%` }}
+            >
+              {/* Animated shine on the bar */}
+              <div className="absolute inset-0 overflow-hidden rounded-full">
+                <div className="absolute inset-0 -translate-x-full animate-[shine_3s_ease-in-out_infinite]"
+                  style={{ background: "linear-gradient(90deg, transparent, hsl(42 85% 70% / 0.4), transparent)" }} />
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            <span className="text-gold font-bold">{Math.max(0, xpToNext - profile.xp).toLocaleString()}</span> XP to Level {profile.level + 1}
+          </p>
         </div>
-        <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
-          <div className="h-full rounded-full gradient-gold transition-all duration-700 ease-out" style={{ width: `${xpPercent}%` }} />
-        </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          <span className="text-gold font-semibold">{Math.max(0, xpToNext - profile.xp)}</span> XP to Level {profile.level + 1}
-        </p>
       </div>
 
       {/* Stats */}

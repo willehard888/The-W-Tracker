@@ -1,0 +1,1 @@
+UPDATE public.profiles SET is_elite = true WHERE id = (SELECT id FROM public.profiles LIMIT 1);

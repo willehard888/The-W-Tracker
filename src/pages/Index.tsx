@@ -62,6 +62,8 @@ const Index = () => {
     enabled: !!profile,
   });
 
+  const dailyQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+
   if (!profile) return null;
 
   const xpToNext = profile.level * 500;

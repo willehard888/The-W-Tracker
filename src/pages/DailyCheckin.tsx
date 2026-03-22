@@ -54,6 +54,20 @@ const ToggleItem = ({ icon: Icon, label, sublabel, active, onToggle, bonus }: To
   </button>
 );
 
+const SPORT_CATEGORIES = [
+  { id: "none", label: "No workout", xp: 0, emoji: "—" },
+  { id: "walk", label: "Walking / Light Cardio", xp: 10, emoji: "🚶" },
+  { id: "run", label: "Running / Jogging", xp: 20, emoji: "🏃" },
+  { id: "gym", label: "Gym / Weights", xp: 30, emoji: "🏋️" },
+  { id: "swim", label: "Swimming", xp: 25, emoji: "🏊" },
+  { id: "yoga", label: "Yoga / Stretching", xp: 15, emoji: "🧘" },
+  { id: "combat", label: "Thai Boxing / MMA", xp: 35, emoji: "🥊" },
+  { id: "hiit", label: "HIIT / CrossFit", xp: 30, emoji: "⚡" },
+  { id: "team", label: "Team Sports", xp: 25, emoji: "⚽" },
+  { id: "cycling", label: "Cycling", xp: 20, emoji: "🚴" },
+  { id: "other", label: "Other Sport", xp: 20, emoji: "🏅" },
+];
+
 const DailyCheckin = () => {
   const navigate = useNavigate();
   const { user, refreshProfile } = useAuth();

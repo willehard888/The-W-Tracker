@@ -102,7 +102,8 @@ const DailyCheckin = () => {
   };
 
   const [sleep, setSleep] = useState(8);
-  const [workout, setWorkout] = useState(false);
+  const [sportCategory, setSportCategory] = useState("none");
+  const [sportOpen, setSportOpen] = useState(false);
   const [extraWorkout, setExtraWorkout] = useState(false);
   const [coldShower, setColdShower] = useState(false);
   const [healthyFood, setHealthyFood] = useState(false);

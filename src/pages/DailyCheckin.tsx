@@ -117,6 +117,8 @@ const DailyCheckin = () => {
   const [submitting, setSubmitting] = useState(false);
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
   const [honest, setHonest] = useState<boolean | null>(null);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreview, setProofPreview] = useState<string | null>(null);
 
   const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory)!;
   const workout = sportCategory !== "none";

@@ -1,0 +1,1 @@
+UPDATE public.profiles SET is_elite = true WHERE user_id = '63752d9b-c1ce-498f-9994-d38c462c3c6b';

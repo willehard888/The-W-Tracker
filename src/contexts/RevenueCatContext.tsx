@@ -25,13 +25,15 @@ export const useRevenueCat = () => {
 };
 
 export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasesInstance, setPurchasesInstance] = useState<Purchases | null>(null);
 
-  const isElite = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
+  // Elite if RC entitlement is active OR profile.is_elite is set (by Stripe webhook)
+  const rcElite = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
+  const isElite = rcElite || !!profile?.is_elite;
 
   // Sync elite status to Supabase profile — only SET to true, never reset to false
   // (Stripe webhook may have set elite independently)

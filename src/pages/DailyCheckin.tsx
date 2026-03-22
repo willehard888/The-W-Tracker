@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
@@ -55,6 +56,7 @@ const ToggleItem = ({ icon: Icon, label, sublabel, active, onToggle, bonus }: To
 const DailyCheckin = () => {
   const navigate = useNavigate();
   const { user, refreshProfile } = useAuth();
+  const { isElite } = useRevenueCat();
   const queryClient = useQueryClient();
 
   const { data: lastCheckin } = useQuery({
@@ -99,7 +101,7 @@ const DailyCheckin = () => {
   const [submitting, setSubmitting] = useState(false);
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
 
-  const totalXp = [
+  const baseXp = [
     workout && 50,
     extraWorkout && 25,
     coldShower && 30,
@@ -112,6 +114,8 @@ const DailyCheckin = () => {
     hydration >= 3 && 20,
     sleep >= 7 && sleep <= 9 && 25,
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
+
+  const totalXp = isElite ? baseXp * 2 : baseXp;
 
   const handleSubmit = async () => {
     if (!user || submitting || !canCheckin) return;
@@ -158,7 +162,8 @@ const DailyCheckin = () => {
           })
           .eq("user_id", user.id);
 
-        // Check for streak badges
+        // Auto-update status tier based on percentile
+        await supabase.rpc("update_status_tier", { target_user_id: user.id });
         const streakBadges = [
           { streak: 3, name: "3-Day Streak" },
           { streak: 7, name: "7-Day Streak" },
@@ -280,6 +285,7 @@ const DailyCheckin = () => {
           <p className="text-xs text-muted-foreground">Log your day. Earn your status.</p>
         </div>
         <div className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gold/10 border border-gold/20">
+          {isElite && <span className="text-[10px] font-bold text-gold mr-1">2×</span>}
           <Zap size={14} className="text-gold" />
           <span className="text-sm font-bold text-gold tabular-nums">{totalXp}</span>
           <span className="text-xs text-gold/60">XP</span>

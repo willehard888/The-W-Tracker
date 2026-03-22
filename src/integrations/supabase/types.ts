@@ -50,6 +50,38 @@ export type Database = {
         }
         Relationships: []
       }
+      battle_votes: {
+        Row: {
+          battle_id: string
+          created_at: string
+          id: string
+          voted_for: string
+          voter_id: string
+        }
+        Insert: {
+          battle_id: string
+          created_at?: string
+          id?: string
+          voted_for: string
+          voter_id: string
+        }
+        Update: {
+          battle_id?: string
+          created_at?: string
+          id?: string
+          voted_for?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_votes_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "battles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       battles: {
         Row: {
           battle_type: string
@@ -477,7 +509,7 @@ export type Database = {
     }
     Enums: {
       badge_rarity: "common" | "rare" | "epic" | "legendary"
-      battle_status: "pending" | "active" | "completed" | "declined"
+      battle_status: "pending" | "active" | "completed" | "declined" | "voting"
       status_tier: "normal" | "rising" | "high_performer" | "elite"
     }
     CompositeTypes: {
@@ -607,7 +639,7 @@ export const Constants = {
   public: {
     Enums: {
       badge_rarity: ["common", "rare", "epic", "legendary"],
-      battle_status: ["pending", "active", "completed", "declined"],
+      battle_status: ["pending", "active", "completed", "declined", "voting"],
       status_tier: ["normal", "rising", "high_performer", "elite"],
     },
   },

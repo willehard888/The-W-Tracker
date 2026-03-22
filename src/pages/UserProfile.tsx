@@ -137,19 +137,60 @@ const UserProfile = () => {
         </div>
       </div>
 
-      {/* Challenge button */}
+      {/* Action buttons */}
       {!isOwnProfile && (
-        <div className="animate-reveal animate-reveal-delay-1 mb-6">
+        <div className="animate-reveal animate-reveal-delay-1 mb-6 flex gap-2">
           <Button
             variant="gold"
             size="sm"
-            className="w-full rounded-full"
-            onClick={() => navigate("/battles")}
+            className="flex-1 rounded-full"
+            onClick={() => setShowBattleModal(true)}
           >
             <Swords size={14} />
-            Challenge @{profile.username}
+            Challenge
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="flex-1 rounded-full"
+            onClick={() => navigate(`/chat/${userId}`)}
+          >
+            <MessageCircle size={14} />
+            Message
           </Button>
         </div>
+      )}
+
+      {/* Battle Type Modal */}
+      {showBattleModal && profile && (
+        <BattleChallengeModal
+          username={profile.username}
+          userId={userId!}
+          myUserId={myProfile?.user_id || ""}
+          battleType={battleType}
+          setBattleType={setBattleType}
+          duration={duration}
+          setDuration={setDuration}
+          creating={creating}
+          onClose={() => setShowBattleModal(false)}
+          onChallenge={async () => {
+            if (!myProfile) return;
+            setCreating(true);
+            try {
+              await supabase.from("battles").insert({
+                challenger_id: myProfile.user_id,
+                opponent_id: userId!,
+                battle_type: battleType,
+                duration_days: duration,
+              });
+              toast.success(`Challenge sent to @${profile.username}! ⚔️`);
+              setShowBattleModal(false);
+            } catch {
+              toast.error("Failed to send challenge");
+            }
+            setCreating(false);
+          }}
+        />
       )}
 
       {/* Stats */}

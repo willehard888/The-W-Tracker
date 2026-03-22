@@ -19,6 +19,8 @@ import Referrals from "./pages/Referrals";
 import Paywall from "./pages/Paywall";
 import BadgeCompare from "./pages/BadgeCompare";
 import UserProfile from "./pages/UserProfile";
+import Messages from "./pages/Messages";
+import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +51,8 @@ const AppRoutes = () => {
         <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />
         <Route path="/badges/compare" element={<ProtectedRoute><BadgeCompare /></ProtectedRoute>} />
         <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+        <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+        <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />

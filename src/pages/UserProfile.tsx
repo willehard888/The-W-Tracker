@@ -2,17 +2,25 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Flame, Zap, Award, Shield, ChevronLeft, Swords } from "lucide-react";
+import { useRevenueCat } from "@/contexts/RevenueCatContext";
+import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
 import BadgeCard from "@/components/BadgeCard";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const { profile: myProfile } = useAuth();
+  const { isElite } = useRevenueCat();
   const navigate = useNavigate();
+  const [showBattleModal, setShowBattleModal] = useState(false);
+  const [battleType, setBattleType] = useState("xp");
+  const [duration, setDuration] = useState(7);
+  const [creating, setCreating] = useState(false);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["user-profile", userId],
@@ -129,19 +137,60 @@ const UserProfile = () => {
         </div>
       </div>
 
-      {/* Challenge button */}
+      {/* Action buttons */}
       {!isOwnProfile && (
-        <div className="animate-reveal animate-reveal-delay-1 mb-6">
+        <div className="animate-reveal animate-reveal-delay-1 mb-6 flex gap-2">
           <Button
             variant="gold"
             size="sm"
-            className="w-full rounded-full"
-            onClick={() => navigate("/battles")}
+            className="flex-1 rounded-full"
+            onClick={() => setShowBattleModal(true)}
           >
             <Swords size={14} />
-            Challenge @{profile.username}
+            Challenge
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="flex-1 rounded-full"
+            onClick={() => navigate(`/chat/${userId}`)}
+          >
+            <MessageCircle size={14} />
+            Message
           </Button>
         </div>
+      )}
+
+      {/* Battle Type Modal */}
+      {showBattleModal && profile && (
+        <BattleChallengeModal
+          username={profile.username}
+          userId={userId!}
+          myUserId={myProfile?.user_id || ""}
+          battleType={battleType}
+          setBattleType={setBattleType}
+          duration={duration}
+          setDuration={setDuration}
+          creating={creating}
+          onClose={() => setShowBattleModal(false)}
+          onChallenge={async () => {
+            if (!myProfile) return;
+            setCreating(true);
+            try {
+              await supabase.from("battles").insert({
+                challenger_id: myProfile.user_id,
+                opponent_id: userId!,
+                battle_type: battleType,
+                duration_days: duration,
+              });
+              toast.success(`Challenge sent to @${profile.username}! ⚔️`);
+              setShowBattleModal(false);
+            } catch {
+              toast.error("Failed to send challenge");
+            }
+            setCreating(false);
+          }}
+        />
       )}
 
       {/* Stats */}
@@ -177,5 +226,82 @@ const UserProfile = () => {
     </div>
   );
 };
+
+const BATTLE_TYPES = [
+  { id: "xp", label: "Total XP", emoji: "⚡", icon: Zap, description: "Most XP earned wins" },
+  { id: "cold_shower", label: "Cold Showers", emoji: "🧊", icon: Snowflake, description: "Most cold showers" },
+  { id: "workout", label: "Workouts", emoji: "💪", icon: Dumbbell, description: "Most workouts done" },
+  { id: "meditation", label: "Meditation", emoji: "🧘", icon: Brain, description: "Most meditation sessions" },
+  { id: "hydration", label: "Hydration", emoji: "💧", icon: Droplets, description: "Most liters of water" },
+  { id: "streak", label: "Streak", emoji: "🔥", icon: Flame, description: "Longest streak during battle" },
+];
+
+const DURATIONS = [3, 7, 14, 30];
+
+const BattleChallengeModal = ({
+  username, battleType, setBattleType, duration, setDuration, creating, onClose, onChallenge,
+}: {
+  username: string; userId: string; myUserId: string;
+  battleType: string; setBattleType: (v: string) => void;
+  duration: number; setDuration: (v: number) => void;
+  creating: boolean; onClose: () => void; onChallenge: () => void;
+}) => (
+  <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="w-full max-w-md bg-card border-t border-border rounded-t-3xl p-6 animate-reveal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="w-10 h-1 rounded-full bg-border mx-auto mb-4" />
+      <h2 className="font-display font-bold text-lg mb-1">Challenge @{username}</h2>
+      <p className="text-xs text-muted-foreground mb-4">Pick a battle type and duration</p>
+
+      {/* Battle types */}
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        {BATTLE_TYPES.map((bt) => {
+          const Icon = bt.icon;
+          const selected = battleType === bt.id;
+          return (
+            <button
+              key={bt.id}
+              onClick={() => setBattleType(bt.id)}
+              className={cn(
+                "flex items-center gap-2 rounded-xl border p-3 text-left transition-all active:scale-[0.97]",
+                selected ? "border-gold/40 bg-gold/5" : "border-border bg-secondary/30 hover:bg-secondary/60"
+              )}
+            >
+              <span className="text-lg">{bt.emoji}</span>
+              <div>
+                <p className={cn("text-xs font-semibold", selected && "text-gold")}>{bt.label}</p>
+                <p className="text-[10px] text-muted-foreground">{bt.description}</p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Duration */}
+      <p className="text-xs font-semibold mb-2 flex items-center gap-1"><Clock size={12} /> Duration</p>
+      <div className="flex gap-2 mb-5">
+        {DURATIONS.map((d) => (
+          <button
+            key={d}
+            onClick={() => setDuration(d)}
+            className={cn(
+              "flex-1 rounded-lg border py-2 text-xs font-bold transition-all active:scale-95",
+              duration === d ? "border-gold/40 bg-gold/10 text-gold" : "border-border bg-secondary/30"
+            )}
+          >
+            {d}d
+          </button>
+        ))}
+      </div>
+
+      <Button variant="gold" className="w-full rounded-full" onClick={onChallenge} disabled={creating}>
+        <Swords size={14} />
+        {creating ? "Sending..." : "Send Challenge"}
+      </Button>
+    </div>
+  </div>
+);
 
 export default UserProfile;

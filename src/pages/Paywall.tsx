@@ -1,9 +1,11 @@
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Crown, Flame, Trophy, Swords, Shield, Zap, Check, ArrowLeft, Loader2 } from "lucide-react";
+import { Crown, Flame, Trophy, Swords, Shield, Zap, Check, ArrowLeft, Loader2, CreditCard } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+
+const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/test_aFa9AS9eth1Jd910Nvc3m01";
 
 const ELITE_FEATURES = [
   { icon: Trophy, text: "Full global leaderboard access" },
@@ -101,9 +103,11 @@ const Paywall = () => {
             <Loader2 size={24} className="animate-spin text-gold" />
           </div>
         ) : (
-          <div className="rounded-xl border border-gold/20 bg-card p-6 text-center">
-            <p className="text-lg font-display font-black text-gold mb-1">€15.99<span className="text-sm font-semibold text-muted-foreground">/kk</span></p>
+          <div className="rounded-xl border border-gold/20 bg-card p-6 text-center space-y-3">
+            <p className="text-lg font-display font-black text-gold mb-1">15.99€<span className="text-sm font-semibold text-muted-foreground">/kk</span></p>
             <p className="text-xs text-muted-foreground mb-4">Elite Membership</p>
+
+            {/* In-App Purchase via RevenueCat */}
             <Button
               variant="gold"
               size="xl"
@@ -123,7 +127,25 @@ const Paywall = () => {
               ) : (
                 <Crown size={18} />
               )}
-              Unlock Elite — €15.99/kk
+              Unlock Elite — 15.99€/kk
+            </Button>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">or</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            {/* Stripe Checkout */}
+            <Button
+              variant="gold-outline"
+              size="lg"
+              className="w-full"
+              onClick={() => window.open(STRIPE_CHECKOUT_URL, "_blank")}
+            >
+              <CreditCard size={18} />
+              Pay with Card
             </Button>
           </div>
         )}
@@ -139,7 +161,7 @@ const Paywall = () => {
       {/* Trust line */}
       <div className="text-center mt-8 animate-reveal animate-reveal-delay-4">
         <p className="text-[10px] text-muted-foreground tracking-wider uppercase">
-          Secure payment • Cancel anytime • Powered by RevenueCat
+          Secure payment • Cancel anytime
         </p>
       </div>
     </div>

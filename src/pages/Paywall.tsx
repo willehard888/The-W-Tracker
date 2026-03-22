@@ -1,4 +1,5 @@
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Crown, Flame, Trophy, Swords, Shield, Zap, Check, ArrowLeft, Loader2, CreditCard } from "lucide-react";
@@ -18,8 +19,13 @@ const ELITE_FEATURES = [
 
 const Paywall = () => {
   const { isElite, packages, purchase, restorePurchases, loading } = useRevenueCat();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [purchasing, setPurchasing] = useState(false);
+
+  const stripeUrl = user?.email
+    ? `${STRIPE_CHECKOUT_URL}?prefilled_email=${encodeURIComponent(user.email)}`
+    : STRIPE_CHECKOUT_URL;
 
   if (isElite) {
     return (
@@ -142,7 +148,7 @@ const Paywall = () => {
               variant="gold-outline"
               size="lg"
               className="w-full"
-              onClick={() => window.open(STRIPE_CHECKOUT_URL, "_blank")}
+              onClick={() => window.open(stripeUrl, "_blank")}
             >
               <CreditCard size={18} />
               Pay with Card

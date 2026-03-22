@@ -1,5 +1,4 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";

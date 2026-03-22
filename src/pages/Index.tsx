@@ -9,6 +9,24 @@ import { supabase } from "@/integrations/supabase/client";
 import XpCounter from "@/components/XpCounter";
 import { cn } from "@/lib/utils";
 
+const motivationalQuotes = [
+  "Grind never stops 🔥",
+  "Tänään rakennetaan legendaa",
+  "Discipline beats talent",
+  "Ei tekosyitä, vain tuloksia",
+  "Champions train, losers complain",
+  "Yksi päivä kerrallaan 💪",
+  "Hard work pays off",
+  "Tee tänään se mitä muut eivät",
+  "Level up or get left behind",
+  "Jokainen repi tuo sut lähemmäs",
+  "Stay hungry, stay humble",
+  "Ei oikotietä huipulle",
+  "Prove them wrong 🏆",
+  "Consistency is king",
+  "Tänään on sun päivä",
+];
+
 const Index = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
@@ -44,6 +62,8 @@ const Index = () => {
     enabled: !!profile,
   });
 
+  const dailyQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+
   if (!profile) return null;
 
   const xpToNext = profile.level * 500;
@@ -67,7 +87,7 @@ const Index = () => {
   return (
     <div className="min-h-screen pb-24 px-4 pt-6">
       <div className="animate-reveal mb-6">
-        <p className="text-sm text-muted-foreground font-medium">Welcome back</p>
+        <p className="text-sm text-muted-foreground font-medium">{dailyQuote}</p>
         <div className="flex items-center justify-between mt-1">
           <h1 className="font-display text-2xl font-bold tracking-tight">@{profile.username}</h1>
 

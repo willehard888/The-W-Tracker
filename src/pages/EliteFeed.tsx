@@ -330,7 +330,12 @@ const EliteFeed = () => {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <p className={cn("text-sm font-bold truncate", isOwn && "text-gold")}>@{post.profile?.username || "unknown"} {isOwn && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}</p>
+                    <button
+                      onClick={() => navigate(`/user/${post.user_id}`)}
+                      className={cn("text-sm font-bold truncate hover:underline", isOwn && "text-gold")}
+                    >
+                      @{post.profile?.username || "unknown"} {isOwn && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}
+                    </button>
                     {post.profile?.status_tier === "elite" && (
                       <Crown size={12} className="text-gold shrink-0" />
                     )}

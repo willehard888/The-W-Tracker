@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import XpCounter from "@/components/XpCounter";
+import { cn } from "@/lib/utils";
 
 const Index = () => {
   const navigate = useNavigate();

@@ -1,4 +1,4 @@
-import { Flame, Zap, Award, Shield, Settings, Share2, Crown, LogOut } from "lucide-react";
+import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import BadgeCard from "@/components/BadgeCard";
 import BadgeShowcase from "@/components/BadgeShowcase";
@@ -7,11 +7,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
+import StoryShareModal from "@/components/StoryShareModal";
 
 const Profile = () => {
   const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
   const [previewBadge, setPreviewBadge] = useState<any>(null);
+  const [shareModal, setShareModal] = useState<{ open: boolean; variant: "stats" | "streak" | "badge"; badgeData?: any }>({
+    open: false,
+    variant: "stats",
+  });
 
   const { data: allBadges } = useQuery({
     queryKey: ["all-badges"],
@@ -58,6 +65,12 @@ const Profile = () => {
   return (
     <div className="min-h-screen pb-24 px-4 pt-6">
       <BadgeUnlockModal badge={previewBadge} onClose={() => setPreviewBadge(null)} />
+      <StoryShareModal
+        open={shareModal.open}
+        onClose={() => setShareModal({ ...shareModal, open: false })}
+        variant={shareModal.variant}
+        badgeData={shareModal.badgeData}
+      />
 
       {/* Profile Header */}
       <div className="animate-reveal text-center mb-6">
@@ -77,7 +90,6 @@ const Profile = () => {
           <span className="text-xs text-muted-foreground">• Level {profile.level}</span>
         </div>
 
-        {/* Badge Showcase — top earned badges */}
         {earnedBadges && earnedBadges.length > 0 && (
           <div className="mt-4">
             <BadgeShowcase
@@ -89,10 +101,30 @@ const Profile = () => {
       </div>
 
       {/* Actions */}
+      <div className="flex gap-2 mb-3 animate-reveal animate-reveal-delay-1">
+        <Button
+          variant="gold-outline"
+          size="sm"
+          className="flex-1"
+          onClick={() => setShareModal({ open: true, variant: "stats" })}
+        >
+          <Image size={14} />
+          Share Stats
+        </Button>
+        <Button
+          variant="gold-outline"
+          size="sm"
+          className="flex-1"
+          onClick={() => setShareModal({ open: true, variant: "streak" })}
+        >
+          <Flame size={14} />
+          Share Streak
+        </Button>
+      </div>
       <div className="flex gap-2 mb-6 animate-reveal animate-reveal-delay-1">
-        <Button variant="gold-outline" size="sm" className="flex-1">
-          <Share2 size={14} />
-          Share Profile
+        <Button variant="gold-outline" size="sm" className="flex-1" onClick={() => navigate("/referrals")}>
+          <Users size={14} />
+          Invite Friends
         </Button>
         <Button variant="secondary" size="sm" className="flex-1" onClick={signOut}>
           <LogOut size={14} />
@@ -115,7 +147,15 @@ const Profile = () => {
           {allBadges?.map((badge) => {
             const earned = earnedBadgeIds?.includes(badge.id) || false;
             return (
-              <div key={badge.id} onClick={() => earned && setPreviewBadge(badge)} className={earned ? "cursor-pointer" : ""}>
+              <div
+                key={badge.id}
+                onClick={() => {
+                  if (earned) {
+                    setPreviewBadge(badge);
+                  }
+                }}
+                className={earned ? "cursor-pointer" : ""}
+              >
                 <BadgeCard
                   name={badge.name}
                   icon={badge.icon}

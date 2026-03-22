@@ -39,6 +39,7 @@ const AppRoutes = () => {
         <Route path="/battles" element={<ProtectedRoute><Battles /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
+        <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />

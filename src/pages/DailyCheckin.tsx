@@ -123,6 +123,7 @@ const DailyCheckin = () => {
   const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory)!;
   const workout = sportCategory !== "none";
 
+  const proofBonus = isElite && proofFile ? 30 : 0;
   const baseXp = [
     selectedSport.xp,
     extraWorkout && 25,
@@ -135,6 +136,7 @@ const DailyCheckin = () => {
     noPhonePm && 20,
     hydration >= 3 && 20,
     sleep >= 7 && sleep <= 9 && 25,
+    proofBonus,
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
 
   const totalXp = isElite ? baseXp * 2 : baseXp;

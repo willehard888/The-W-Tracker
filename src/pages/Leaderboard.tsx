@@ -141,6 +141,10 @@ const Leaderboard = () => {
           {leaders?.slice(3).map((user, i) => (
             <div key={user.user_id} className={cn("flex items-center gap-3 rounded-xl border p-4", user.user_id === profile?.user_id ? "border-gold/30 bg-gold/5 ring-1 ring-gold/40" : "border-border bg-card")}>
               <div className="font-display font-black text-xl w-8 text-center text-muted-foreground tabular-nums">{i + 4}</div>
+              <Avatar className="h-8 w-8 shrink-0">
+                {user.avatar_url ? <AvatarImage src={user.avatar_url} alt={user.username} /> : null}
+                <AvatarFallback className="text-xs font-bold bg-secondary">{user.username?.charAt(0)?.toUpperCase()}</AvatarFallback>
+              </Avatar>
               <div className="flex-1">
                 <p className={cn("font-semibold text-sm", user.user_id === profile?.user_id && "text-gold")}>@{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}</p>
                 <p className="text-xs text-muted-foreground">Level {user.level}</p>

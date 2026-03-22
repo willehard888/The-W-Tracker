@@ -322,12 +322,12 @@ const EliteFeed = () => {
             >
               {/* Post Header */}
               <div className="flex items-center gap-3 p-4 pb-0">
-                <div className={cn(
-                  "h-10 w-10 rounded-full flex items-center justify-center text-xs font-black text-white shrink-0",
-                  tierStyle
-                )}>
-                  {post.profile?.username?.charAt(0)?.toUpperCase() || "?"}
-                </div>
+                <Avatar className={cn("h-10 w-10 shrink-0 ring-2", post.profile?.status_tier === "elite" ? "ring-gold/40" : "ring-border/30")}>
+                  {post.profile?.avatar_url ? <AvatarImage src={post.profile.avatar_url} alt={post.profile.username} /> : null}
+                  <AvatarFallback className={cn("text-xs font-black text-white", tierStyle)}>
+                    {post.profile?.username?.charAt(0)?.toUpperCase() || "?"}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <p className={cn("text-sm font-bold truncate", isOwn && "text-gold")}>@{post.profile?.username || "unknown"} {isOwn && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}</p>

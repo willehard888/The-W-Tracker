@@ -16,12 +16,39 @@ import { cn } from "@/lib/utils";
 
 const Profile = () => {
   const { profile, signOut } = useAuth();
+  const { isElite } = useRevenueCat();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [previewBadge, setPreviewBadge] = useState<any>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [shareModal, setShareModal] = useState<{ open: boolean; variant: "stats" | "streak" | "badge"; badgeData?: any }>({
     open: false,
     variant: "stats",
   });
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+    setUploadingAvatar(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `avatars/${profile.user_id}-${Date.now()}.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, file);
+      if (uploadErr) throw uploadErr;
+      const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
+      await supabase.from("profiles").update({ avatar_url: urlData.publicUrl }).eq("user_id", profile.user_id);
+      toast.success("Profile photo updated! 📸");
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      // Force reload profile
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload photo");
+    }
+    setUploadingAvatar(false);
+    e.target.value = "";
+  };
 
   const { data: allBadges } = useQuery({
     queryKey: ["all-badges"],

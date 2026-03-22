@@ -100,6 +100,7 @@ const DailyCheckin = () => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
+  const [honest, setHonest] = useState<boolean | null>(null);
 
   const baseXp = [
     workout && 50,

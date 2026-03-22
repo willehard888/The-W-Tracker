@@ -329,7 +329,7 @@ const Battles = () => {
               const opp = getOpponent(battle);
               const typeInfo = getBattleTypeInfo(battle.battle_type);
               return (
-                <div key={battle.id} className="rounded-xl border border-gold/20 bg-card p-4">
+                <div key={battle.id} className="rounded-xl border border-gold/20 bg-card p-4 card-depth">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="h-10 w-10 rounded-full gradient-gold flex items-center justify-center text-sm font-black text-primary-foreground">
                       {opp.username?.charAt(0)?.toUpperCase()}

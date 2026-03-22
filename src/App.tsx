@@ -46,6 +46,7 @@ const AppRoutes = () => {
         <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
         <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
         <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />
+        <Route path="/badges/compare" element={<ProtectedRoute><BadgeCompare /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />

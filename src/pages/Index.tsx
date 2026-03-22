@@ -77,34 +77,48 @@ const Index = () => {
       </div>
 
       {/* XP Progress */}
-      <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border bg-card p-4 mb-6 relative overflow-hidden">
-        {/* Subtle gold shimmer */}
-        <div className="absolute inset-0 pointer-events-none opacity-30" style={{
-          background: `linear-gradient(90deg, transparent 0%, hsl(42 78% 54% / 0.06) ${xpPercent}%, transparent ${xpPercent + 2}%)`,
+      <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-gold/20 bg-card p-5 mb-6 relative overflow-hidden">
+        {/* Ambient gold glow */}
+        <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none" style={{
+          background: "radial-gradient(circle, hsl(42 78% 54% / 0.12) 0%, transparent 70%)",
         }} />
         <div className="relative">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-muted-foreground tracking-wide uppercase">Level {profile.level}</span>
-            <div className="flex items-center gap-1">
-              <XpCounter value={profile.xp} className="text-xs text-muted-foreground tabular-nums" />
-              <span className="text-xs text-muted-foreground"> / {xpToNext.toLocaleString()} XP</span>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg gradient-gold flex items-center justify-center">
+                <span className="text-xs font-black text-primary-foreground">{profile.level}</span>
+              </div>
+              <div>
+                <p className="font-display font-black text-sm tracking-tight">Level {profile.level}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Rank Progress</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="flex items-center gap-1">
+                <XpCounter value={profile.xp} className="font-display font-black text-gold text-lg tabular-nums glow-gold-text" />
+              </div>
+              <p className="text-[10px] text-muted-foreground">/ {xpToNext.toLocaleString()} XP</p>
             </div>
           </div>
-          <div className="h-3 rounded-full bg-secondary overflow-hidden">
+
+          <div className="mt-3 h-4 rounded-full bg-secondary/80 overflow-hidden border border-border/50">
             <div
               className="h-full rounded-full gradient-gold transition-all duration-1000 ease-out relative"
-              style={{ width: `${xpPercent}%` }}
+              style={{ width: `${Math.max(4, xpPercent)}%` }}
             >
-              {/* Animated shine on the bar */}
               <div className="absolute inset-0 overflow-hidden rounded-full">
                 <div className="absolute inset-0 -translate-x-full animate-[shine_3s_ease-in-out_infinite]"
-                  style={{ background: "linear-gradient(90deg, transparent, hsl(42 85% 70% / 0.4), transparent)" }} />
+                  style={{ background: "linear-gradient(90deg, transparent, hsl(42 85% 70% / 0.5), transparent)" }} />
               </div>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            <span className="text-gold font-bold">{Math.max(0, xpToNext - profile.xp).toLocaleString()}</span> XP to Level {profile.level + 1}
-          </p>
+
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-xs text-muted-foreground">
+              <span className="text-gold font-bold">{Math.max(0, xpToNext - profile.xp).toLocaleString()}</span> XP to next level
+            </p>
+            <p className="text-[10px] font-bold text-gold/60 tabular-nums">{xpPercent}%</p>
+          </div>
         </div>
       </div>
 

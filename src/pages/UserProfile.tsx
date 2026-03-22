@@ -1,0 +1,181 @@
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Flame, Zap, Award, Shield, ChevronLeft, Swords } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import StatCard from "@/components/StatCard";
+import BadgeCard from "@/components/BadgeCard";
+import { cn } from "@/lib/utils";
+
+const UserProfile = () => {
+  const { userId } = useParams<{ userId: string }>();
+  const { profile: myProfile } = useAuth();
+  const navigate = useNavigate();
+
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ["user-profile", userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId!)
+        .single();
+      return data;
+    },
+    enabled: !!userId,
+  });
+
+  const { data: allBadges } = useQuery({
+    queryKey: ["all-badges"],
+    queryFn: async () => {
+      const { data } = await supabase.from("badges").select("*").order("rarity");
+      return data || [];
+    },
+  });
+
+  const { data: earnedBadgeIds } = useQuery({
+    queryKey: ["user-earned-badges", userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_badges")
+        .select("badge_id")
+        .eq("user_id", userId!);
+      return data?.map((b) => b.badge_id) || [];
+    },
+    enabled: !!userId,
+  });
+
+  const { data: battleStats } = useQuery({
+    queryKey: ["user-battle-stats", userId],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("battles")
+        .select("*", { count: "exact", head: true })
+        .eq("winner_id", userId!);
+      return { won: count || 0 };
+    },
+    enabled: !!userId,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen pb-24 px-4 pt-6 text-center">
+        <p className="text-muted-foreground mt-20">User not found</p>
+        <Button variant="ghost" size="sm" className="mt-4" onClick={() => navigate(-1)}>
+          <ChevronLeft size={16} /> Go back
+        </Button>
+      </div>
+    );
+  }
+
+  const isOwnProfile = myProfile?.user_id === userId;
+  const tierLabel =
+    profile.status_tier === "elite" ? "Elite" :
+    profile.status_tier === "high_performer" ? "High Performer" :
+    profile.status_tier === "rising" ? "Rising" : "Normal";
+
+  const tierColor =
+    profile.status_tier === "elite" ? "text-gold bg-gold/10 border-gold/20" :
+    profile.status_tier === "high_performer" ? "text-purple-400 bg-purple-500/10 border-purple-500/20" :
+    profile.status_tier === "rising" ? "text-sky-400 bg-sky-500/10 border-sky-500/20" :
+    "text-muted-foreground bg-secondary border-border";
+
+  const earnedBadges = (allBadges || []).filter((b) => earnedBadgeIds?.includes(b.id));
+
+  return (
+    <div className="min-h-screen pb-24 px-4 pt-6">
+      {/* Back button */}
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4"
+      >
+        <ChevronLeft size={16} />
+        Back
+      </button>
+
+      {/* Profile Header */}
+      <div className="animate-reveal text-center mb-6">
+        <Avatar className={cn(
+          "h-20 w-20 mx-auto mb-3 ring-2",
+          profile.status_tier === "elite" ? "ring-gold/40" : "ring-border/30"
+        )}>
+          {profile.avatar_url ? (
+            <AvatarImage src={profile.avatar_url} alt={profile.username} />
+          ) : null}
+          <AvatarFallback className="text-3xl font-black font-display gradient-gold text-primary-foreground">
+            {profile.username?.charAt(0)?.toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+
+        <h1 className="font-display text-xl font-bold tracking-tight">
+          @{profile.username}
+          {isOwnProfile && <span className="text-xs text-gold/70 ml-1">(you)</span>}
+        </h1>
+        <div className="flex items-center justify-center gap-2 mt-1">
+          <span className={cn("text-xs font-bold px-2.5 py-0.5 rounded-full border", tierColor)}>
+            {tierLabel}
+          </span>
+          <span className="text-xs text-muted-foreground">• Level {profile.level}</span>
+        </div>
+      </div>
+
+      {/* Challenge button */}
+      {!isOwnProfile && (
+        <div className="animate-reveal animate-reveal-delay-1 mb-6">
+          <Button
+            variant="gold"
+            size="sm"
+            className="w-full rounded-full"
+            onClick={() => navigate("/battles")}
+          >
+            <Swords size={14} />
+            Challenge @{profile.username}
+          </Button>
+        </div>
+      )}
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 mb-6 animate-reveal animate-reveal-delay-1">
+        <StatCard icon={Zap} label="Total XP" value={profile.xp.toLocaleString()} variant="gold" />
+        <StatCard icon={Flame} label="Streak" value={`${profile.streak}d`} variant="streak" />
+        <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} />
+        <StatCard icon={Shield} label="Badges" value={earnedBadgeIds?.length || 0} />
+      </div>
+
+      {/* Earned Badges */}
+      <div className="animate-reveal animate-reveal-delay-2">
+        <h2 className="font-display font-bold text-sm mb-3 tracking-tight">
+          Badges ({earnedBadges.length})
+        </h2>
+        {earnedBadges.length === 0 ? (
+          <p className="text-xs text-muted-foreground/60 text-center py-6">No badges earned yet</p>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            {earnedBadges.map((badge) => (
+              <BadgeCard
+                key={badge.id}
+                name={badge.name}
+                icon={badge.icon}
+                rarity={badge.rarity}
+                earned
+                description={badge.description || undefined}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default UserProfile;

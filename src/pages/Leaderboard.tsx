@@ -124,7 +124,9 @@ const Leaderboard = () => {
               <AvatarFallback className={cn("text-xs font-bold", i === 0 ? "bg-gold/20 text-gold" : "bg-secondary")}>{user.username?.charAt(0)?.toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className={cn("font-semibold text-sm truncate", user.user_id === profile?.user_id && "text-gold")}>@{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}</p>
+              <button onClick={() => navigate(`/user/${user.user_id}`)} className={cn("text-sm font-semibold truncate hover:underline text-left", user.user_id === profile?.user_id && "text-gold")}>
+                @{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}
+              </button>
               <p className="text-xs text-muted-foreground">Level {user.level} • {user.streak}d streak</p>
             </div>
             <div className="text-right">
@@ -146,7 +148,9 @@ const Leaderboard = () => {
                 <AvatarFallback className="text-xs font-bold bg-secondary">{user.username?.charAt(0)?.toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <p className={cn("font-semibold text-sm", user.user_id === profile?.user_id && "text-gold")}>@{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}</p>
+                <button onClick={() => navigate(`/user/${user.user_id}`)} className={cn("text-sm font-semibold hover:underline text-left", user.user_id === profile?.user_id && "text-gold")}>
+                  @{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}
+                </button>
                 <p className="text-xs text-muted-foreground">Level {user.level}</p>
               </div>
               <p className="font-display font-bold text-sm tabular-nums">{user.xp.toLocaleString()}</p>

@@ -33,13 +33,17 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
 
   const isElite = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
 
-  // Sync elite status to Supabase profile
+  // Sync elite status to Supabase profile — only SET to true, never reset to false
+  // (Stripe webhook may have set elite independently)
   const syncEliteStatus = useCallback(async (elite: boolean) => {
     if (!user) return;
-    await supabase
-      .from("profiles")
-      .update({ is_elite: elite })
-      .eq("user_id", user.id);
+    if (elite) {
+      await supabase
+        .from("profiles")
+        .update({ is_elite: true })
+        .eq("user_id", user.id);
+    }
+    // Don't set is_elite: false — Stripe may have granted it separately
   }, [user]);
 
   useEffect(() => {

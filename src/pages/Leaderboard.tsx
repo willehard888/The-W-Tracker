@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 const Leaderboard = () => {
   const { profile } = useAuth();
+  const navigate = useNavigate();
 
   const { data: leaders } = useQuery({
     queryKey: ["leaderboard"],

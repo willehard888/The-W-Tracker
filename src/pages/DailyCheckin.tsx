@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Moon, Dumbbell, Snowflake, Apple, Droplets,
-  Brain, Smartphone, Camera, ChevronLeft, Zap, Plus
+  Brain, Smartphone, Camera, ChevronLeft, Zap, Plus,
+  TrendingUp, AlertTriangle, Trophy
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";

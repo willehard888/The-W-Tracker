@@ -1,105 +1,213 @@
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface BadgeUnlockModalProps {
   badge: { name: string; icon: string; rarity: string; description?: string } | null;
   onClose: () => void;
 }
 
-const rarityColors: Record<string, { glow: string; text: string; ring: string }> = {
-  common: { glow: "shadow-[0_0_40px_hsl(220,10%,50%,0.3)]", text: "text-foreground", ring: "border-muted-foreground/30" },
-  rare: { glow: "shadow-[0_0_60px_hsl(210,80%,55%,0.4)]", text: "text-blue-400", ring: "border-blue-500/40" },
-  epic: { glow: "shadow-[0_0_80px_hsl(270,70%,55%,0.5)]", text: "text-purple-400", ring: "border-purple-500/40" },
-  legendary: { glow: "glow-gold", text: "text-gold", ring: "border-gold/50" },
+const rarityConfig: Record<string, {
+  glow: string;
+  text: string;
+  ring: string;
+  gradient: string;
+  particleColor: string;
+}> = {
+  common: {
+    glow: "badge-glow-common",
+    text: "text-[hsl(var(--badge-common))]",
+    ring: "border-[hsl(var(--badge-common)_/_0.3)]",
+    gradient: "from-[hsl(var(--badge-common)_/_0.1)] to-transparent",
+    particleColor: "bg-[hsl(var(--badge-common)_/_0.5)]",
+  },
+  rare: {
+    glow: "badge-glow-rare",
+    text: "text-[hsl(var(--badge-rare))]",
+    ring: "border-[hsl(var(--badge-rare)_/_0.4)]",
+    gradient: "from-[hsl(var(--badge-rare)_/_0.1)] to-transparent",
+    particleColor: "bg-[hsl(var(--badge-rare)_/_0.6)]",
+  },
+  epic: {
+    glow: "badge-glow-epic",
+    text: "text-[hsl(var(--badge-epic))]",
+    ring: "border-[hsl(var(--badge-epic)_/_0.4)]",
+    gradient: "from-[hsl(var(--badge-epic)_/_0.12)] to-transparent",
+    particleColor: "bg-[hsl(var(--badge-epic)_/_0.6)]",
+  },
+  legendary: {
+    glow: "badge-glow-legendary",
+    text: "text-gold",
+    ring: "border-gold/50",
+    gradient: "from-gold/[0.12] to-transparent",
+    particleColor: "bg-gold/60",
+  },
 };
 
 const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
-  const [phase, setPhase] = useState<"enter" | "reveal" | "details">("enter");
+  const [phase, setPhase] = useState<"enter" | "burst" | "reveal" | "details">("enter");
 
   useEffect(() => {
     if (!badge) return;
     setPhase("enter");
-    const t1 = setTimeout(() => setPhase("reveal"), 400);
-    const t2 = setTimeout(() => setPhase("details"), 1200);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    const t1 = setTimeout(() => setPhase("burst"), 300);
+    const t2 = setTimeout(() => setPhase("reveal"), 800);
+    const t3 = setTimeout(() => setPhase("details"), 1500);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [badge]);
 
   if (!badge) return null;
 
-  const style = rarityColors[badge.rarity] || rarityColors.common;
+  const style = rarityConfig[badge.rarity] || rarityConfig.common;
+  const isLegendary = badge.rarity === "legendary";
+  const isEpicPlus = badge.rarity === "epic" || isLegendary;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center" onClick={onClose}>
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-background/90 backdrop-blur-md transition-opacity duration-500"
+        className="absolute inset-0 bg-background/95 backdrop-blur-xl transition-opacity duration-700"
         style={{ opacity: phase === "enter" ? 0 : 1 }}
       />
 
+      {/* Radial burst */}
+      {phase !== "enter" && (
+        <div
+          className={cn(
+            "absolute w-64 h-64 rounded-full bg-gradient-radial",
+            style.gradient,
+            "pointer-events-none"
+          )}
+          style={{
+            animation: "badge-unlock-burst 1.2s ease-out forwards",
+            background: `radial-gradient(circle, ${
+              isLegendary ? "hsl(42 78% 54% / 0.15)" :
+              badge.rarity === "epic" ? "hsl(275 80% 60% / 0.12)" :
+              badge.rarity === "rare" ? "hsl(210 90% 56% / 0.1)" :
+              "hsl(225 10% 52% / 0.08)"
+            }, transparent 70%)`,
+          }}
+        />
+      )}
+
       {/* Content */}
       <div className="relative flex flex-col items-center gap-6 p-8">
-        {/* Particles */}
-        {phase !== "enter" && (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {Array.from({ length: 12 }).map((_, i) => (
+        {/* Expanding rings for epic+ */}
+        {isEpicPlus && phase !== "enter" && (
+          <>
+            {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="absolute w-1.5 h-1.5 rounded-full bg-gold/60"
+                className={cn(
+                  "absolute w-32 h-32 rounded-full border",
+                  isLegendary ? "border-gold/20" : "border-[hsl(var(--badge-epic)_/_0.15)]"
+                )}
                 style={{
-                  left: `${50 + Math.cos((i * 30 * Math.PI) / 180) * 40}%`,
-                  top: `${50 + Math.sin((i * 30 * Math.PI) / 180) * 40}%`,
-                  animation: `float ${1.5 + Math.random()}s ease-in-out infinite`,
-                  animationDelay: `${i * 0.1}s`,
-                  opacity: phase === "details" ? 1 : 0,
-                  transition: "opacity 0.5s ease-out",
+                  animation: "badge-ring-expand 2s ease-out infinite",
+                  animationDelay: `${i * 0.6}s`,
                 }}
               />
             ))}
+          </>
+        )}
+
+        {/* Particles */}
+        {phase !== "enter" && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {Array.from({ length: 16 }).map((_, i) => {
+              const angle = (i * 22.5 * Math.PI) / 180;
+              const distance = 35 + Math.random() * 25;
+              return (
+                <div
+                  key={i}
+                  className={cn("absolute rounded-full", style.particleColor)}
+                  style={{
+                    width: `${2 + Math.random() * 3}px`,
+                    height: `${2 + Math.random() * 3}px`,
+                    left: `${50 + Math.cos(angle) * distance}%`,
+                    top: `${50 + Math.sin(angle) * distance}%`,
+                    animation: `float ${1.5 + Math.random() * 1.5}s ease-in-out infinite`,
+                    animationDelay: `${i * 0.08}s`,
+                    opacity: phase === "details" || phase === "reveal" ? 1 : 0,
+                    transition: "opacity 0.6s ease-out",
+                  }}
+                />
+              );
+            })}
           </div>
         )}
 
         {/* Badge Icon */}
         <div
-          className={`transition-all duration-700 ease-out ${
-            phase === "enter"
-              ? "scale-0 opacity-0"
-              : phase === "reveal"
-              ? "scale-150 opacity-100"
-              : "scale-100 opacity-100"
-          }`}
+          className={cn(
+            "transition-all ease-out",
+            phase === "enter" && "scale-0 opacity-0 duration-300",
+            phase === "burst" && "scale-[2] opacity-80 duration-500",
+            phase === "reveal" && "scale-110 opacity-100 duration-600",
+            phase === "details" && "scale-100 opacity-100 duration-500"
+          )}
         >
           <div
-            className={`h-28 w-28 rounded-full border-2 flex items-center justify-center text-5xl transition-all duration-500 ${style.ring} ${style.glow}`}
+            className={cn(
+              "relative h-32 w-32 rounded-full border-2 flex items-center justify-center text-6xl transition-all duration-700",
+              style.ring,
+              style.glow,
+              isLegendary && "badge-shine"
+            )}
             style={{
-              background: badge.rarity === "legendary"
-                ? "linear-gradient(135deg, hsl(43,50%,15%), hsl(43,60%,25%))"
+              background: isLegendary
+                ? "linear-gradient(135deg, hsl(42,50%,12%), hsl(42,60%,22%), hsl(42,50%,12%))"
                 : badge.rarity === "epic"
-                ? "linear-gradient(135deg, hsl(270,30%,15%), hsl(270,40%,25%))"
-                : "hsl(220, 12%, 12%)",
+                ? "linear-gradient(135deg, hsl(275,25%,10%), hsl(275,35%,18%), hsl(275,25%,10%))"
+                : badge.rarity === "rare"
+                ? "linear-gradient(135deg, hsl(210,25%,10%), hsl(210,35%,18%), hsl(210,25%,10%))"
+                : "hsl(225, 16%, 10%)",
             }}
           >
             {badge.icon}
+            {/* Decorative outer ring */}
+            {isEpicPlus && (
+              <div className={cn(
+                "absolute inset-[-5px] rounded-full border-2 opacity-30",
+                isLegendary ? "border-gold/40" : "border-[hsl(var(--badge-epic)_/_0.3)]"
+              )} />
+            )}
           </div>
         </div>
 
         {/* Title */}
         <div
-          className={`text-center transition-all duration-500 ${
-            phase === "details" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          }`}
+          className={cn(
+            "text-center transition-all duration-600",
+            phase === "details" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+          )}
         >
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold mb-2">Badge Unlocked</p>
-          <h2 className="font-display text-3xl font-black tracking-tight mb-1">{badge.name}</h2>
-          <p className={`text-xs font-bold uppercase tracking-widest ${style.text}`}>{badge.rarity}</p>
+          <p className={cn(
+            "text-[10px] font-black uppercase tracking-[0.3em] mb-3",
+            isLegendary ? "text-gold" : "text-muted-foreground"
+          )}>
+            {isLegendary ? "⚡ Legendary Badge Unlocked ⚡" : "Badge Unlocked"}
+          </p>
+          <h2 className="font-display text-3xl font-black tracking-tight mb-2">{badge.name}</h2>
+          <div className={cn(
+            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full border",
+            style.ring,
+            isLegendary ? "bg-gold/[0.08]" : "bg-card"
+          )}>
+            <span className={cn("text-[10px] font-black uppercase tracking-[0.2em]", style.text)}>
+              {badge.rarity}
+            </span>
+          </div>
           {badge.description && (
-            <p className="text-sm text-muted-foreground mt-2 max-w-[250px]">{badge.description}</p>
+            <p className="text-sm text-muted-foreground mt-3 max-w-[260px] leading-relaxed">{badge.description}</p>
           )}
         </div>
 
         {/* Tap to dismiss */}
         <p
-          className={`text-xs text-muted-foreground transition-all duration-500 ${
-            phase === "details" ? "opacity-60" : "opacity-0"
-          }`}
+          className={cn(
+            "text-xs text-muted-foreground transition-all duration-500 mt-2",
+            phase === "details" ? "opacity-50" : "opacity-0"
+          )}
         >
           Tap anywhere to continue
         </p>

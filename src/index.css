@@ -6,32 +6,32 @@
 
 @layer base {
   :root {
-    --background: 225 20% 4%;
+    --background: 260 18% 4%;
     --foreground: 40 8% 94%;
 
-    --card: 225 16% 7%;
+    --card: 255 14% 7%;
     --card-foreground: 40 8% 94%;
 
-    --popover: 225 16% 7%;
+    --popover: 255 14% 7%;
     --popover-foreground: 40 8% 94%;
 
     --primary: 42 78% 54%;
-    --primary-foreground: 225 20% 4%;
+    --primary-foreground: 260 18% 4%;
 
-    --secondary: 225 14% 11%;
+    --secondary: 260 12% 11%;
     --secondary-foreground: 40 8% 80%;
 
-    --muted: 225 14% 11%;
-    --muted-foreground: 225 10% 44%;
+    --muted: 260 12% 11%;
+    --muted-foreground: 255 8% 44%;
 
     --accent: 42 78% 54%;
-    --accent-foreground: 225 20% 4%;
+    --accent-foreground: 260 18% 4%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 225 14% 13%;
-    --input: 225 14% 13%;
+    --border: 260 12% 14%;
+    --input: 260 12% 14%;
     --ring: 42 78% 54%;
 
     --radius: 0.75rem;
@@ -39,23 +39,28 @@
     --gold: 42 78% 54%;
     --gold-light: 42 85% 70%;
     --gold-dark: 42 60% 36%;
-    --surface-elevated: 225 16% 10%;
+    --surface-elevated: 258 14% 10%;
     --xp-green: 152 68% 46%;
     --streak-orange: 18 95% 58%;
     --elite-glow: 42 90% 62%;
 
-    --badge-common: 225 10% 52%;
+    --purple: 270 60% 58%;
+    --purple-light: 270 70% 72%;
+    --purple-dark: 270 45% 38%;
+    --purple-muted: 268 30% 20%;
+
+    --badge-common: 255 10% 52%;
     --badge-rare: 210 90% 56%;
     --badge-epic: 275 80% 60%;
     --badge-legendary: 42 78% 54%;
 
-    --sidebar-background: 225 16% 7%;
+    --sidebar-background: 255 14% 7%;
     --sidebar-foreground: 40 8% 94%;
     --sidebar-primary: 42 78% 54%;
-    --sidebar-primary-foreground: 225 20% 4%;
-    --sidebar-accent: 225 14% 11%;
+    --sidebar-primary-foreground: 260 18% 4%;
+    --sidebar-accent: 260 12% 11%;
     --sidebar-accent-foreground: 40 8% 94%;
-    --sidebar-border: 225 14% 13%;
+    --sidebar-border: 260 12% 14%;
     --sidebar-ring: 42 78% 54%;
   }
 }
@@ -111,11 +116,27 @@
   }
 
   .gradient-dark {
-    background: linear-gradient(180deg, hsl(225 20% 5%), hsl(225 22% 3%));
+    background: linear-gradient(180deg, hsl(260 18% 5%), hsl(265 20% 3%));
   }
 
   .gradient-surface {
     background: linear-gradient(145deg, hsl(var(--surface-elevated)), hsl(var(--card)));
+  }
+
+  .gradient-purple {
+    background: linear-gradient(135deg, hsl(var(--purple-dark)), hsl(var(--purple)), hsl(var(--purple-light)));
+  }
+
+  .glow-purple {
+    box-shadow: 0 0 20px hsl(var(--purple) / 0.2), 0 0 60px hsl(var(--purple) / 0.06);
+  }
+
+  .glow-purple-sm {
+    box-shadow: 0 0 10px hsl(var(--purple) / 0.15);
+  }
+
+  .text-purple-brand {
+    color: hsl(var(--purple));
   }
 
   .card-hover {

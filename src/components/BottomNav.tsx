@@ -18,7 +18,7 @@ const BottomNav = () => {
   if (["/landing", "/auth"].includes(location.pathname)) return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md" style={{ borderImage: "linear-gradient(90deg, hsl(270 60% 58% / 0.2), hsl(42 78% 54% / 0.3), hsl(270 60% 58% / 0.2)) 1" }}>
       <div className="max-w-md mx-auto flex items-center justify-around px-1 py-1.5">
         {tabs.map(({ icon: Icon, label, path }) => {
           const active = location.pathname === path;

@@ -134,10 +134,10 @@ const Leaderboard = () => {
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
         <div className="space-y-2">
           {leaders?.slice(3).map((user, i) => (
-            <div key={user.user_id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
+            <div key={user.user_id} className={cn("flex items-center gap-3 rounded-xl border p-4", user.user_id === profile?.user_id ? "border-gold/30 bg-gold/5 ring-1 ring-gold/40" : "border-border bg-card")}>
               <div className="font-display font-black text-xl w-8 text-center text-muted-foreground tabular-nums">{i + 4}</div>
               <div className="flex-1">
-                <p className="font-semibold text-sm">@{user.username}</p>
+                <p className={cn("font-semibold text-sm", user.user_id === profile?.user_id && "text-gold")}>@{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}</p>
                 <p className="text-xs text-muted-foreground">Level {user.level}</p>
               </div>
               <p className="font-display font-bold text-sm tabular-nums">{user.xp.toLocaleString()}</p>

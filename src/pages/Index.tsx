@@ -75,14 +75,14 @@ const Index = () => {
           {profile.status_tier === "elite" ? (
             <div className="relative group">
               {/* Animated glow ring */}
-              <div className="absolute -inset-1 rounded-full opacity-70 blur-md animate-pulse"
-                style={{ background: "linear-gradient(135deg, hsl(42 90% 55%), hsl(38 85% 45%), hsl(42 90% 55%))" }}
+              <div className="absolute -inset-1 rounded-full opacity-40 blur-md animate-pulse"
+                style={{ background: "linear-gradient(135deg, hsl(270 60% 58%), hsl(42 90% 55%), hsl(270 60% 58%))" }}
               />
-              <div className="relative flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-gold/50 shadow-[0_0_20px_hsl(var(--gold)/0.25),inset_0_1px_0_hsl(var(--gold-light)/0.3)]"
-                style={{ background: "linear-gradient(135deg, hsl(42 78% 54% / 0.25), hsl(42 60% 36% / 0.15))" }}
+              <div className="relative flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[hsl(var(--purple))]/50 shadow-[0_0_16px_hsl(var(--purple)/0.2),inset_0_1px_0_hsl(var(--purple-light)/0.2)]"
+                style={{ background: "linear-gradient(135deg, hsl(270 60% 58% / 0.12), hsl(42 78% 54% / 0.08))" }}
               >
-                <Crown size={14} className="text-gold drop-shadow-[0_0_4px_hsl(var(--gold)/0.6)]" />
-                <span className="text-xs font-black text-gold tracking-wider uppercase drop-shadow-[0_0_6px_hsl(var(--gold)/0.4)]">
+                <Crown size={14} className="text-gold/70 drop-shadow-[0_0_4px_hsl(var(--purple)/0.4)]" />
+                <span className="text-xs font-black text-gold/80 tracking-wider uppercase drop-shadow-[0_0_4px_hsl(var(--purple)/0.3)]">
                   Elite
                 </span>
               </div>

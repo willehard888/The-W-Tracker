@@ -121,11 +121,17 @@ const Profile = () => {
           Share Streak
         </Button>
       </div>
-      <div className="flex gap-2 mb-6 animate-reveal animate-reveal-delay-1">
+      <div className="flex gap-2 mb-3 animate-reveal animate-reveal-delay-1">
         <Button variant="gold-outline" size="sm" className="flex-1" onClick={() => navigate("/referrals")}>
           <Users size={14} />
           Invite Friends
         </Button>
+        <Button variant="gold-outline" size="sm" className="flex-1" onClick={() => navigate("/badges/compare")}>
+          <GitCompare size={14} />
+          Compare Badges
+        </Button>
+      </div>
+      <div className="flex gap-2 mb-6 animate-reveal animate-reveal-delay-1">
         <Button variant="secondary" size="sm" className="flex-1" onClick={signOut}>
           <LogOut size={14} />
           Sign Out

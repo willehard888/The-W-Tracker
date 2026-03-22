@@ -54,6 +54,34 @@ const DailyCheckin = () => {
   const navigate = useNavigate();
   const { user, refreshProfile } = useAuth();
   const queryClient = useQueryClient();
+
+  const { data: lastCheckin } = useQuery({
+    queryKey: ["last-checkin", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("daily_checkins")
+        .select("checked_in_at")
+        .eq("user_id", user.id)
+        .order("checked_in_at", { ascending: false })
+        .limit(1)
+        .single();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const canCheckin = !lastCheckin || (Date.now() - new Date(lastCheckin.checked_in_at).getTime() > 24 * 60 * 60 * 1000);
+
+  const getTimeUntilCheckin = () => {
+    if (!lastCheckin || canCheckin) return null;
+    const nextTime = new Date(lastCheckin.checked_in_at).getTime() + 24 * 60 * 60 * 1000;
+    const diff = nextTime - Date.now();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${mins}m`;
+  };
+
   const [sleep, setSleep] = useState(8);
   const [workout, setWorkout] = useState(false);
   const [extraWorkout, setExtraWorkout] = useState(false);

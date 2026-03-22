@@ -18,6 +18,9 @@ const StatCard = ({ icon: Icon, label, value, sublabel, variant = "default", cla
         variant === "gold" && "border-gold/30 glow-gold-sm",
         variant === "streak" && "border-[hsl(var(--streak-orange))]/30",
         variant === "elite" && "border-gold/40 shadow-[0_0_20px_hsl(var(--gold)/0.15)]",
+        variant === "teal" && "border-[hsl(var(--teal))]/25 glow-teal-sm",
+        variant === "rose" && "border-[hsl(var(--rose))]/25 glow-rose-sm",
+        variant === "purple" && "border-[hsl(var(--purple))]/25 glow-purple-sm",
         className
       )}
     >

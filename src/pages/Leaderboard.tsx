@@ -115,7 +115,7 @@ const Leaderboard = () => {
                 <Lock size={28} className="text-gold" />
                 <p className="font-display font-bold text-sm">Unlock Full Leaderboard</p>
                 <p className="text-xs text-muted-foreground text-center max-w-[200px]">Go Elite to see all rankings</p>
-                <Button variant="gold" size="default">
+                <Button variant="gold" size="default" onClick={() => navigate("/paywall")}>
                   <Trophy size={16} />
                   Go Elite — €49/mo
                 </Button>

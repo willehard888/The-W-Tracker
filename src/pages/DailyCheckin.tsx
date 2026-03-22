@@ -118,8 +118,11 @@ const DailyCheckin = () => {
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
   const [honest, setHonest] = useState<boolean | null>(null);
 
+  const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory)!;
+  const workout = sportCategory !== "none";
+
   const baseXp = [
-    workout && 50,
+    selectedSport.xp,
     extraWorkout && 25,
     coldShower && 30,
     healthyFood && 20,

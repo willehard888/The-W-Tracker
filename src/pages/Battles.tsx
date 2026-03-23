@@ -235,9 +235,24 @@ const Battles = () => {
   const handleRespond = async (battleId: string, accept: boolean) => {
     try {
       if (accept) {
+        // Get both players' current XP to record starting point
+        const battle = battles?.find((b: any) => b.id === battleId);
+        if (!battle) return;
+        const { data: playerProfiles } = await supabase
+          .from("profiles")
+          .select("user_id, xp")
+          .in("user_id", [battle.challenger_id, battle.opponent_id]);
+        const challengerXp = playerProfiles?.find((p) => p.user_id === battle.challenger_id)?.xp ?? 0;
+        const opponentXp = playerProfiles?.find((p) => p.user_id === battle.opponent_id)?.xp ?? 0;
+
         await supabase
           .from("battles")
-          .update({ status: "active", started_at: new Date().toISOString() })
+          .update({
+            status: "active",
+            started_at: new Date().toISOString(),
+            challenger_start_xp: challengerXp,
+            opponent_start_xp: opponentXp,
+          })
           .eq("id", battleId);
         toast.success("Battle accepted! ⚔️");
       } else {

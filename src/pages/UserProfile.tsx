@@ -6,6 +6,7 @@ import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflak
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
+import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -271,7 +272,7 @@ const UserProfile = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 mb-6 animate-reveal animate-reveal-delay-1">
         <StatCard icon={Zap} label="Total XP" value={profile.xp.toLocaleString()} variant="gold" />
-        <StatCard icon={Flame} label="Streak" value={`${profile.streak}d`} variant="streak" />
+        <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} />
         <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
         <StatCard icon={Shield} label="Badges" value={earnedBadgeIds?.length || 0} variant="purple" />
       </div>

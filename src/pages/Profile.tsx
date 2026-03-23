@@ -1,5 +1,6 @@
 import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart } from "lucide-react";
 import StatCard from "@/components/StatCard";
+import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
 import BadgeShowcase from "@/components/BadgeShowcase";
 import { Button } from "@/components/ui/button";
@@ -214,7 +215,7 @@ const Profile = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 mb-6 animate-reveal animate-reveal-delay-2">
         <StatCard icon={Zap} label="Total XP" value={profile.xp.toLocaleString()} variant="gold" />
-        <StatCard icon={Flame} label="Streak" value={`${profile.streak}d`} variant="streak" />
+        <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} />
         <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
         <StatCard icon={Shield} label="Badges" value={earnedBadgeIds?.length || 0} variant="purple" />
       </div>

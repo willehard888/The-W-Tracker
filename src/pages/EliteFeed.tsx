@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2 } from "lucide-react";
+import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
@@ -13,6 +13,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -39,16 +40,40 @@ const EliteFeed = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [showReported, setShowReported] = useState(false);
+  const [showReportsPanel, setShowReportsPanel] = useState(false);
+
+  // Check if current user is admin
+  const { data: isAdmin } = useQuery({
+    queryKey: ["user-role-admin", user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      return !!data;
+    },
+    enabled: !!user,
+  });
 
   const { data: posts, isLoading } = useQuery({
-    queryKey: ["feed-posts"],
+    queryKey: ["feed-posts", showReported],
     queryFn: async () => {
-      const { data } = await supabase
+      let query = supabase
         .from("feed_posts")
         .select("*")
-        .eq("reported", false)
         .order("created_at", { ascending: false })
         .limit(50);
+
+      // Non-admins or admins not viewing reported: hide reported posts
+      if (!showReported) {
+        query = query.eq("reported", false);
+      }
+
+      const { data } = await query;
       if (!data) return [];
       const userIds = [...new Set(data.map((p) => p.user_id))];
       const { data: profiles } = await supabase
@@ -58,6 +83,33 @@ const EliteFeed = () => {
       const profileMap = Object.fromEntries((profiles || []).map((p) => [p.user_id, p]));
       return data.map((post) => ({ ...post, profile: profileMap[post.user_id] }));
     },
+  });
+
+  // Fetch reports for admin panel
+  const { data: reports } = useQuery({
+    queryKey: ["admin-reports"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("reports")
+        .select("*")
+        .eq("resolved", false)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (!data || data.length === 0) return [];
+      // Get post info and reporter info
+      const postIds = [...new Set(data.filter(r => r.post_id).map(r => r.post_id!))];
+      const reporterIds = [...new Set(data.map(r => r.reporter_id))];
+      const [{ data: postData }, { data: reporterData }] = await Promise.all([
+        postIds.length > 0
+          ? supabase.from("feed_posts").select("id, content, user_id, image_url").in("id", postIds)
+          : Promise.resolve({ data: [] }),
+        supabase.from("profiles").select("user_id, username").in("user_id", reporterIds),
+      ]);
+      const postMap = Object.fromEntries((postData || []).map(p => [p.id, p]));
+      const reporterMap = Object.fromEntries((reporterData || []).map(p => [p.user_id, p]));
+      return data.map(r => ({ ...r, post: postMap[r.post_id!], reporter: reporterMap[r.reporter_id] }));
+    },
+    enabled: !!isAdmin,
   });
 
   const { data: reactions } = useQuery({
@@ -169,7 +221,6 @@ const EliteFeed = () => {
         post_id: postId,
         reason: "Reported by user",
       });
-      // Also flag the post
       await supabase.from("feed_posts").update({ reported: true }).eq("id", postId);
     },
     onSuccess: () => {
@@ -181,6 +232,19 @@ const EliteFeed = () => {
     },
   });
 
+  // Admin: delete any post
+  const adminDeletePost = useMutation({
+    mutationFn: async (postId: string) => {
+      await supabase.from("feed_posts").delete().eq("id", postId);
+    },
+    onSuccess: () => {
+      toast.success("Post removed by admin");
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
+    },
+  });
+
+  // Own post delete
   const deletePost = useMutation({
     mutationFn: async (postId: string) => {
       if (!user) return;
@@ -192,27 +256,44 @@ const EliteFeed = () => {
     },
   });
 
+  // Admin: unreport post
+  const unreportPost = useMutation({
+    mutationFn: async (postId: string) => {
+      await supabase.from("feed_posts").update({ reported: false }).eq("id", postId);
+    },
+    onSuccess: () => {
+      toast.success("Post approved");
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
+    },
+  });
+
+  // Admin: resolve report
+  const resolveReport = useMutation({
+    mutationFn: async ({ reportId, action }: { reportId: string; postId?: string; action: "approve" | "delete" }) => {
+      await supabase.from("reports").update({ resolved: true }).eq("id", reportId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
+    },
+  });
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const lowerName = file.name.toLowerCase();
     const isSupportedMime = SUPPORTED_IMAGE_MIME_TYPES.includes(file.type);
     const isSupportedExt = SUPPORTED_IMAGE_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
-
     if (isUnsupportedHeic(lowerName) || (!isSupportedMime && !isSupportedExt)) {
       toast.error("Use JPG, PNG or WEBP image format.");
       e.target.value = "";
       return;
     }
-
     if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
       toast.error(`Image is too large. Max ${MAX_IMAGE_SIZE_MB}MB.`);
       e.target.value = "";
       return;
     }
-
-
     setImageFile(file);
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result as string);
@@ -221,19 +302,121 @@ const EliteFeed = () => {
 
   const canPost = isElite;
 
+  const unresolvedReportsCount = reports?.length || 0;
+
   return (
     <div className="min-h-screen pb-24 px-4 pt-6">
       <div className="animate-reveal mb-6">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg gradient-gold flex items-center justify-center">
-            <Flame size={16} className="text-primary-foreground" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg gradient-gold flex items-center justify-center">
+              <Flame size={16} className="text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="font-display text-xl font-bold tracking-tight leading-none">Elite Feed</h1>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Discipline proof from top performers</p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-display text-xl font-bold tracking-tight leading-none">Elite Feed</h1>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Discipline proof from top performers</p>
-          </div>
+
+          {/* Admin controls */}
+          {isAdmin && (
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setShowReported(!showReported)}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
+                  showReported
+                    ? "bg-destructive/15 text-destructive border border-destructive/30"
+                    : "bg-secondary text-muted-foreground hover:text-foreground border border-border"
+                )}
+              >
+                {showReported ? <EyeOff size={12} /> : <Eye size={12} />}
+                {showReported ? "Hide flagged" : "Flagged"}
+              </button>
+              <button
+                onClick={() => setShowReportsPanel(!showReportsPanel)}
+                className={cn(
+                  "relative flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
+                  showReportsPanel
+                    ? "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))] border border-[hsl(var(--purple))]/30"
+                    : "bg-secondary text-muted-foreground hover:text-foreground border border-border"
+                )}
+              >
+                <ShieldCheck size={12} />
+                Reports
+                {unresolvedReportsCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-black flex items-center justify-center">
+                    {unresolvedReportsCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Admin Reports Panel */}
+      {isAdmin && showReportsPanel && (
+        <div className="animate-reveal rounded-2xl border border-[hsl(var(--purple))]/30 bg-card p-4 mb-6 shadow-[0_0_20px_hsl(var(--purple)/0.08)]">
+          <div className="flex items-center gap-2 mb-3">
+            <ShieldCheck size={16} className="text-[hsl(var(--purple))]" />
+            <h2 className="font-display text-sm font-bold">Pending Reports</h2>
+            <span className="text-[10px] text-muted-foreground">({unresolvedReportsCount})</span>
+          </div>
+          {unresolvedReportsCount === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-4">No pending reports 🎉</p>
+          ) : (
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {reports?.map((report: any) => (
+                <div key={report.id} className="rounded-xl border border-border bg-secondary/30 p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] text-muted-foreground">
+                        Reported by <span className="font-semibold text-foreground">@{report.reporter?.username || "unknown"}</span>
+                        {" · "}
+                        {formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{report.reason}</p>
+                      {report.post && (
+                        <div className="mt-2 rounded-lg border border-border/50 bg-card p-2">
+                          <p className="text-xs text-foreground/80 line-clamp-2">{report.post.content || "(image only)"}</p>
+                          {report.post.image_url && (
+                            <img src={report.post.image_url} alt="" className="mt-1 h-16 w-24 object-cover rounded" />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {/* Approve (unreport) */}
+                      <button
+                        onClick={async () => {
+                          if (report.post_id) await unreportPost.mutateAsync(report.post_id);
+                          resolveReport.mutate({ reportId: report.id, action: "approve" });
+                        }}
+                        className="h-7 px-2.5 rounded-lg bg-[hsl(var(--xp-green))]/15 text-[hsl(var(--xp-green))] text-[10px] font-bold hover:bg-[hsl(var(--xp-green))]/25 transition-colors flex items-center gap-1"
+                      >
+                        <CheckCircle size={12} />
+                        Keep
+                      </button>
+                      {/* Delete post */}
+                      <button
+                        onClick={async () => {
+                          if (report.post_id) await adminDeletePost.mutateAsync(report.post_id);
+                          resolveReport.mutate({ reportId: report.id, action: "delete" });
+                        }}
+                        className="h-7 px-2.5 rounded-lg bg-destructive/15 text-destructive text-[10px] font-bold hover:bg-destructive/25 transition-colors flex items-center gap-1"
+                      >
+                        <Trash2 size={12} />
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Create Post (Elite Only) */}
       {canPost && (
@@ -252,7 +435,6 @@ const EliteFeed = () => {
             />
           </div>
 
-          {/* Image Preview */}
           {imagePreview && (
             <div className="relative mt-3 rounded-xl overflow-hidden">
               <img src={imagePreview} alt="Preview" className="w-full max-h-48 object-cover rounded-xl" />
@@ -346,10 +528,34 @@ const EliteFeed = () => {
               className={cn(
                 "rounded-2xl border bg-card overflow-hidden transition-all card-depth",
                 "hover:shadow-[0_8px_32px_hsl(0_0%_0%/0.35),0_4px_12px_hsl(var(--gold)/0.06)]",
-                liked ? "border-gold/20" : "border-border"
+                post.reported ? "border-destructive/30 bg-destructive/[0.02]" : liked ? "border-gold/20" : "border-border"
               )}
               style={{ animationDelay: `${index * 60}ms` }}
             >
+              {/* Reported banner */}
+              {post.reported && isAdmin && (
+                <div className="flex items-center justify-between px-4 py-2 bg-destructive/10 border-b border-destructive/20">
+                  <div className="flex items-center gap-1.5">
+                    <AlertTriangle size={12} className="text-destructive" />
+                    <span className="text-[10px] font-bold text-destructive uppercase tracking-wider">Reported</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => unreportPost.mutate(post.id)}
+                      className="px-2 py-1 rounded text-[10px] font-bold bg-[hsl(var(--xp-green))]/15 text-[hsl(var(--xp-green))] hover:bg-[hsl(var(--xp-green))]/25 transition-colors"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => adminDeletePost.mutate(post.id)}
+                      className="px-2 py-1 rounded text-[10px] font-bold bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Post Header */}
               <div className="flex items-center gap-3 p-4 pb-0">
                 <Avatar className={cn("h-10 w-10 shrink-0 ring-2", post.profile?.status_tier === "elite" ? "ring-gold/40" : "ring-border/30")}>
@@ -387,7 +593,7 @@ const EliteFeed = () => {
                   </div>
                 </div>
 
-                {/* Post menu (report/delete) */}
+                {/* Post menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/60 hover:text-muted-foreground">
@@ -395,7 +601,7 @@ const EliteFeed = () => {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="min-w-[160px]">
-                    {isOwn ? (
+                    {isOwn && (
                       <DropdownMenuItem
                         onClick={() => deletePost.mutate(post.id)}
                         className="text-destructive focus:text-destructive"
@@ -403,7 +609,8 @@ const EliteFeed = () => {
                         <Trash2 size={14} className="mr-2" />
                         Delete post
                       </DropdownMenuItem>
-                    ) : (
+                    )}
+                    {!isOwn && (
                       <DropdownMenuItem
                         onClick={() => reportPost.mutate(post.id)}
                         className="text-destructive focus:text-destructive"
@@ -411,6 +618,19 @@ const EliteFeed = () => {
                         <AlertTriangle size={14} className="mr-2" />
                         Report post
                       </DropdownMenuItem>
+                    )}
+                    {/* Admin actions */}
+                    {isAdmin && !isOwn && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => adminDeletePost.mutate(post.id)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <ShieldCheck size={14} className="mr-2" />
+                          Admin: Remove
+                        </DropdownMenuItem>
+                      </>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>

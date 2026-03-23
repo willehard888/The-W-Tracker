@@ -88,6 +88,7 @@ export type Database = {
           challenger_id: string
           challenger_proof_url: string | null
           challenger_score: number
+          challenger_start_xp: number
           created_at: string
           duration_days: number
           ended_at: string | null
@@ -95,6 +96,7 @@ export type Database = {
           opponent_id: string
           opponent_proof_url: string | null
           opponent_score: number
+          opponent_start_xp: number
           started_at: string | null
           status: Database["public"]["Enums"]["battle_status"]
           winner_id: string | null
@@ -104,6 +106,7 @@ export type Database = {
           challenger_id: string
           challenger_proof_url?: string | null
           challenger_score?: number
+          challenger_start_xp?: number
           created_at?: string
           duration_days?: number
           ended_at?: string | null
@@ -111,6 +114,7 @@ export type Database = {
           opponent_id: string
           opponent_proof_url?: string | null
           opponent_score?: number
+          opponent_start_xp?: number
           started_at?: string | null
           status?: Database["public"]["Enums"]["battle_status"]
           winner_id?: string | null
@@ -120,6 +124,7 @@ export type Database = {
           challenger_id?: string
           challenger_proof_url?: string | null
           challenger_score?: number
+          challenger_start_xp?: number
           created_at?: string
           duration_days?: number
           ended_at?: string | null
@@ -127,6 +132,7 @@ export type Database = {
           opponent_id?: string
           opponent_proof_url?: string | null
           opponent_score?: number
+          opponent_start_xp?: number
           started_at?: string | null
           status?: Database["public"]["Enums"]["battle_status"]
           winner_id?: string | null

@@ -25,14 +25,28 @@ Deno.serve(async () => {
     const oProof = !!battle.opponent_proof_url;
     let winnerId: string | null = null;
 
+    // For XP battles, calculate delta XP from start
+    let cScore = battle.challenger_score;
+    let oScore = battle.opponent_score;
+    if (battle.battle_type === "xp") {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, xp")
+        .in("user_id", [battle.challenger_id, battle.opponent_id]);
+      const cXp = profs?.find((p: any) => p.user_id === battle.challenger_id)?.xp ?? 0;
+      const oXp = profs?.find((p: any) => p.user_id === battle.opponent_id)?.xp ?? 0;
+      cScore = Math.max(0, cXp - (battle.challenger_start_xp ?? 0));
+      oScore = Math.max(0, oXp - (battle.opponent_start_xp ?? 0));
+    }
+
     if (!cProof && !oProof) winnerId = null;
     else if (!cProof) winnerId = battle.opponent_id;
     else if (!oProof) winnerId = battle.challenger_id;
-    else if (battle.challenger_score > battle.opponent_score) winnerId = battle.challenger_id;
-    else if (battle.opponent_score > battle.challenger_score) winnerId = battle.opponent_id;
+    else if (cScore > oScore) winnerId = battle.challenger_id;
+    else if (oScore > cScore) winnerId = battle.opponent_id;
     // else tie → voting
 
-    if (cProof && oProof && battle.challenger_score === battle.opponent_score) {
+    if (cProof && oProof && cScore === oScore) {
       await supabase.from("battles").update({ status: "voting", ended_at: new Date().toISOString() }).eq("id", battle.id);
     } else {
       await supabase.from("battles").update({ status: "completed", ended_at: new Date().toISOString(), winner_id: winnerId }).eq("id", battle.id);

@@ -509,10 +509,10 @@ const Battles = () => {
               const TypeIcon = typeInfo.icon;
               const isXpBattle = battle.battle_type === "xp";
               const challengerScore = isXpBattle
-                ? (participants?.[battle.challenger_id]?.xp ?? 0)
+                ? Math.max(0, (participants?.[battle.challenger_id]?.xp ?? 0) - (battle.challenger_start_xp ?? 0))
                 : battle.challenger_score;
               const opponentScore = isXpBattle
-                ? (participants?.[battle.opponent_id]?.xp ?? 0)
+                ? Math.max(0, (participants?.[battle.opponent_id]?.xp ?? 0) - (battle.opponent_start_xp ?? 0))
                 : battle.opponent_score;
               const myScore = battle.challenger_id === profile.user_id ? challengerScore : opponentScore;
               const oppScore = battle.challenger_id === profile.user_id ? opponentScore : challengerScore;

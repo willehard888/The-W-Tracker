@@ -1,4 +1,4 @@
-import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera } from "lucide-react";
+import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import BadgeCard from "@/components/BadgeCard";
 import BadgeShowcase from "@/components/BadgeShowcase";
@@ -12,6 +12,7 @@ import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import StoryShareModal from "@/components/StoryShareModal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
 
 const Profile = () => {
   const { profile, signOut, isElite } = useAuth();

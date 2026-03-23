@@ -878,11 +878,28 @@ const Battles = () => {
                     <p className="font-semibold text-sm">vs @{opp.username}</p>
                     <p className="text-xs text-muted-foreground">{typeInfo.emoji} {battle.duration_days}d {typeInfo.label}</p>
                   </div>
-                  <div className={cn(
-                    "text-sm font-bold font-display",
-                    won ? "text-gold" : "text-destructive"
-                  )}>
-                    {won ? "Victory 🏆" : "Defeat"}
+                  <div className="flex items-center gap-2">
+                    <div className={cn(
+                      "text-sm font-bold font-display",
+                      won ? "text-gold" : "text-destructive"
+                    )}>
+                      {won ? "Victory 🏆" : "Defeat"}
+                    </div>
+                    {isAdmin && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-1 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/40 hover:text-muted-foreground">
+                            <MoreHorizontal size={14} />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => adminDeleteBattle(battle.id)} className="text-destructive focus:text-destructive">
+                            <Trash2 size={14} className="mr-2" />
+                            Delete battle
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 </div>
               );

@@ -62,6 +62,8 @@ const Battles = () => {
       return map;
     },
     enabled: participantIds.length > 0,
+    refetchInterval: 10000,
+    refetchIntervalInBackground: true,
   });
 
   const pendingBattles = battles?.filter((b: any) => b.status === "pending" && b.opponent_id === profile?.user_id) || [];
@@ -135,7 +137,7 @@ const Battles = () => {
     enabled: votingBattleIds.length > 0,
   });
 
-  // Realtime: refresh battles & participant XP on changes
+  // Realtime: refresh battles, scores and votes immediately
   useEffect(() => {
     if (!profile) return;
     const channel = supabase
@@ -146,22 +148,30 @@ const Battles = () => {
         () => {
           queryClient.invalidateQueries({ queryKey: ["battles"] });
           queryClient.invalidateQueries({ queryKey: ["battle-participants"] });
-          queryClient.invalidateQueries({ queryKey: ["vote-counts"] });
           queryClient.invalidateQueries({ queryKey: ["community-voting-battles"] });
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["battle-participants"] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "battle_votes" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["vote-counts"] });
+          queryClient.invalidateQueries({ queryKey: ["my-battle-votes"] });
+        }
+      )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [profile, queryClient]);
 
-  // Auto-refresh participant XP every 30s for live score updates
-  useEffect(() => {
-    if (!participantIds.length) return;
-    const interval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ["battle-participants"] });
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [participantIds.join(","), queryClient]);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile, queryClient]);
 
 
   const handleVote = async (battleId: string, votedFor: string) => {
@@ -482,8 +492,15 @@ const Battles = () => {
               const opp = getOpponent(battle);
               const typeInfo = getBattleTypeInfo(battle.battle_type);
               const TypeIcon = typeInfo.icon;
-              const myScore = battle.challenger_id === profile.user_id ? battle.challenger_score : battle.opponent_score;
-              const oppScore = battle.challenger_id === profile.user_id ? battle.opponent_score : battle.challenger_score;
+              const isXpBattle = battle.battle_type === "xp";
+              const challengerScore = isXpBattle
+                ? (participants?.[battle.challenger_id]?.xp ?? 0)
+                : battle.challenger_score;
+              const opponentScore = isXpBattle
+                ? (participants?.[battle.opponent_id]?.xp ?? 0)
+                : battle.opponent_score;
+              const myScore = battle.challenger_id === profile.user_id ? challengerScore : opponentScore;
+              const oppScore = battle.challenger_id === profile.user_id ? opponentScore : challengerScore;
               const amWinning = myScore >= oppScore;
               const startDate = battle.started_at ? new Date(battle.started_at) : new Date();
               const endDate = new Date(startDate.getTime() + battle.duration_days * 24 * 60 * 60 * 1000);

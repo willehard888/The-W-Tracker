@@ -135,7 +135,35 @@ const Battles = () => {
     enabled: votingBattleIds.length > 0,
   });
 
-  const handleVote = async (battleId: string, votedFor: string) => {
+  // Realtime: refresh battles & participant XP on changes
+  useEffect(() => {
+    if (!profile) return;
+    const channel = supabase
+      .channel("battles-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "battles" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["battles"] });
+          queryClient.invalidateQueries({ queryKey: ["battle-participants"] });
+          queryClient.invalidateQueries({ queryKey: ["vote-counts"] });
+          queryClient.invalidateQueries({ queryKey: ["community-voting-battles"] });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [profile, queryClient]);
+
+  // Auto-refresh participant XP every 30s for live score updates
+  useEffect(() => {
+    if (!participantIds.length) return;
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["battle-participants"] });
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [participantIds.join(","), queryClient]);
+
+
     if (!profile) return;
     try {
       await supabase.from("battle_votes").insert({

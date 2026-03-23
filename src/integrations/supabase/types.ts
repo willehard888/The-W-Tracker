@@ -530,17 +530,43 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       update_status_tier: {
         Args: { target_user_id: string }
         Returns: undefined
       }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       badge_rarity: "common" | "rare" | "epic" | "legendary"
       battle_status: "pending" | "active" | "completed" | "declined" | "voting"
       friendship_status: "pending" | "accepted" | "declined"
@@ -672,6 +698,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       badge_rarity: ["common", "rare", "epic", "legendary"],
       battle_status: ["pending", "active", "completed", "declined", "voting"],
       friendship_status: ["pending", "accepted", "declined"],

@@ -194,12 +194,28 @@ const EliteFeed = () => {
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const lowerName = file.name.toLowerCase();
+    const isSupportedMime = SUPPORTED_IMAGE_MIME_TYPES.includes(file.type);
+    const isSupportedExt = SUPPORTED_IMAGE_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
+
+    if (isUnsupportedHeic(lowerName) || (!isSupportedMime && !isSupportedExt)) {
+      toast.error("Use JPG, PNG or WEBP image format.");
+      e.target.value = "";
+      return;
     }
+
+    if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+      toast.error(`Image is too large. Max ${MAX_IMAGE_SIZE_MB}MB.`);
+      e.target.value = "";
+      return;
+    }
+
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const canPost = isElite;

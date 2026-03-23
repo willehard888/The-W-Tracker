@@ -583,9 +583,30 @@ const Battles = () => {
                         {typeInfo.emoji} {typeInfo.label} Battle
                       </span>
                     </div>
-                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[hsl(var(--streak-orange))]/10 border border-[hsl(var(--streak-orange))]/20">
-                      <Clock size={10} className="text-[hsl(var(--streak-orange))]" />
-                      <span className="text-[10px] font-bold text-[hsl(var(--streak-orange))]">{daysLeft}d left</span>
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[hsl(var(--streak-orange))]/10 border border-[hsl(var(--streak-orange))]/20">
+                        <Clock size={10} className="text-[hsl(var(--streak-orange))]" />
+                        <span className="text-[10px] font-bold text-[hsl(var(--streak-orange))]">{daysLeft}d left</span>
+                      </div>
+                      {isAdmin && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/60 hover:text-muted-foreground">
+                              <MoreHorizontal size={14} />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="min-w-[160px]">
+                            <DropdownMenuItem onClick={() => adminCancelBattle(battle.id)} className="text-[hsl(var(--streak-orange))]">
+                              <ShieldCheck size={14} className="mr-2" />
+                              Cancel battle
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => adminDeleteBattle(battle.id)} className="text-destructive focus:text-destructive">
+                              <Trash2 size={14} className="mr-2" />
+                              Delete battle
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                   </div>
 

@@ -23,6 +23,12 @@ const TIER_STYLES: Record<string, string> = {
   normal: "bg-secondary",
 };
 
+const SUPPORTED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+const MAX_IMAGE_SIZE_MB = 8;
+
+const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
+
 const EliteFeed = () => {
   const { user, profile, isElite } = useAuth();
   const navigate = useNavigate();
@@ -72,11 +78,13 @@ const EliteFeed = () => {
       if (!user) return;
       let image_url = null;
       if (imageFile) {
-        const ext = imageFile.name.split(".").pop();
-        const path = `${user.id}/${Date.now()}.${ext}`;
+        const fileExt = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        const safeExt = fileExt === "jpeg" ? "jpg" : fileExt;
+        const path = `${user.id}/${Date.now()}.${safeExt}`;
         const { error: uploadErr } = await supabase.storage.from("feed-images").upload(path, imageFile, {
           cacheControl: "3600",
           upsert: false,
+          contentType: imageFile.type || `image/${safeExt}`,
         });
         if (uploadErr) throw new Error(`Image upload failed: ${uploadErr.message}`);
         const { data: urlData } = supabase.storage.from("feed-images").getPublicUrl(path);
@@ -186,12 +194,28 @@ const EliteFeed = () => {
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const lowerName = file.name.toLowerCase();
+    const isSupportedMime = SUPPORTED_IMAGE_MIME_TYPES.includes(file.type);
+    const isSupportedExt = SUPPORTED_IMAGE_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
+
+    if (isUnsupportedHeic(lowerName) || (!isSupportedMime && !isSupportedExt)) {
+      toast.error("Use JPG, PNG or WEBP image format.");
+      e.target.value = "";
+      return;
     }
+
+    if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+      toast.error(`Image is too large. Max ${MAX_IMAGE_SIZE_MB}MB.`);
+      e.target.value = "";
+      return;
+    }
+
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const canPost = isElite;
@@ -242,7 +266,7 @@ const EliteFeed = () => {
 
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
             <div className="flex items-center gap-1">
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleImageSelect} />
               <button
                 onClick={() => fileRef.current?.click()}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-medium"
@@ -399,12 +423,18 @@ const EliteFeed = () => {
               {/* Image */}
               {post.image_url && (
                 <div className="mt-3 mx-4 rounded-xl overflow-hidden">
-                  <img
-                    src={post.image_url}
-                    alt=""
-                    className="w-full max-h-96 object-cover transition-transform"
-                    loading="lazy"
-                  />
+                  {isUnsupportedHeic(post.image_url) ? (
+                    <div className="rounded-xl border border-border bg-muted/40 p-4 text-xs text-muted-foreground">
+                      This image format is not supported in all devices. Please upload JPG, PNG or WEBP.
+                    </div>
+                  ) : (
+                    <img
+                      src={post.image_url}
+                      alt=""
+                      className="w-full max-h-96 object-cover transition-transform"
+                      loading="lazy"
+                    />
+                  )}
                 </div>
               )}
 

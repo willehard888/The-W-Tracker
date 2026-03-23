@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX } from "lucide-react";
+import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
@@ -10,6 +10,7 @@ import BadgeCard from "@/components/BadgeCard";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
 
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -62,6 +63,20 @@ const UserProfile = () => {
         .select("*", { count: "exact", head: true })
         .eq("winner_id", userId!);
       return { won: count || 0 };
+    },
+    enabled: !!userId,
+  });
+
+  const { data: userPosts } = useQuery({
+    queryKey: ["user-posts", userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("feed_posts")
+        .select("*")
+        .eq("user_id", userId!)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return data || [];
     },
     enabled: !!userId,
   });
@@ -283,6 +298,28 @@ const UserProfile = () => {
           </div>
         )}
       </div>
+
+      {/* User Posts */}
+      {userPosts && userPosts.length > 0 && (
+        <div className="mt-6 animate-reveal animate-reveal-delay-3">
+          <h2 className="font-display font-bold text-sm mb-3 tracking-tight">Posts ({userPosts.length})</h2>
+          <div className="space-y-3">
+            {userPosts.map((post) => (
+              <div key={post.id} className="rounded-xl border border-border bg-card p-4">
+                {post.content && <p className="text-sm mb-2">{post.content}</p>}
+                {post.image_url && (
+                  <img src={post.image_url} alt="Post" className="w-full rounded-lg object-cover max-h-48 mb-2" />
+                )}
+                <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-1"><Heart size={10} /> {post.likes_count}</span>
+                  <span className="flex items-center gap-1"><MessageSquare size={10} /> {post.comments_count}</span>
+                  <span className="ml-auto">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

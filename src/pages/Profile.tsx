@@ -1,4 +1,4 @@
-import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera } from "lucide-react";
+import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import BadgeCard from "@/components/BadgeCard";
 import BadgeShowcase from "@/components/BadgeShowcase";
@@ -12,6 +12,7 @@ import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import StoryShareModal from "@/components/StoryShareModal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
 
 const Profile = () => {
   const { profile, signOut, isElite } = useAuth();
@@ -78,6 +79,21 @@ const Profile = () => {
         .select("*", { count: "exact", head: true })
         .eq("winner_id", profile.user_id);
       return { won: count || 0 };
+    },
+    enabled: !!profile,
+  });
+
+  const { data: userPosts } = useQuery({
+    queryKey: ["user-posts", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return [];
+      const { data } = await supabase
+        .from("feed_posts")
+        .select("*")
+        .eq("user_id", profile.user_id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return data || [];
     },
     enabled: !!profile,
   });
@@ -231,6 +247,28 @@ const Profile = () => {
           })}
         </div>
       </div>
+
+      {/* User Posts */}
+      {userPosts && userPosts.length > 0 && (
+        <div className="mt-6 animate-reveal animate-reveal-delay-4">
+          <h2 className="font-display font-bold text-sm mb-3 tracking-tight">Posts ({userPosts.length})</h2>
+          <div className="space-y-3">
+            {userPosts.map((post) => (
+              <div key={post.id} className="rounded-xl border border-border bg-card p-4">
+                {post.content && <p className="text-sm mb-2">{post.content}</p>}
+                {post.image_url && (
+                  <img src={post.image_url} alt="Post" className="w-full rounded-lg object-cover max-h-48 mb-2" />
+                )}
+                <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-1"><Heart size={10} /> {post.likes_count}</span>
+                  <span className="flex items-center gap-1"><MessageSquare size={10} /> {post.comments_count}</span>
+                  <span className="ml-auto">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Elite CTA */}
       {!profile.is_elite && (

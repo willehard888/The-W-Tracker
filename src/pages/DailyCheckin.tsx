@@ -208,6 +208,12 @@ const DailyCheckin = () => {
         const newStreak = profile.streak + 1;
         const longestStreak = Math.max(profile.longest_streak, newStreak);
 
+        // Detect level-up
+        if (newLevel > profile.level) {
+          setNewLevelReached(newLevel);
+          setShowLevelUp(true);
+        }
+
         await supabase
           .from("profiles")
           .update({

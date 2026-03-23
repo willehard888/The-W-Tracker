@@ -142,7 +142,7 @@ const DailyCheckin = () => {
     proofBonus,
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
 
-  const totalXp = isElite ? baseXp * 2 : baseXp;
+  const totalXp = (isElite ? baseXp * 2 : baseXp) + questBonusXp;
 
   // Reactive performance score
   const completedCount = [workout, extraWorkout, coldShower, healthyFood, protein, meditationAm, meditationPm, noPhoneAm, noPhonePm, hydration >= 3, sleep >= 7 && sleep <= 9].filter(Boolean).length;

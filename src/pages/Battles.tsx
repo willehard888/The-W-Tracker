@@ -492,8 +492,15 @@ const Battles = () => {
               const opp = getOpponent(battle);
               const typeInfo = getBattleTypeInfo(battle.battle_type);
               const TypeIcon = typeInfo.icon;
-              const myScore = battle.challenger_id === profile.user_id ? battle.challenger_score : battle.opponent_score;
-              const oppScore = battle.challenger_id === profile.user_id ? battle.opponent_score : battle.challenger_score;
+              const isXpBattle = battle.battle_type === "xp";
+              const challengerScore = isXpBattle
+                ? (participants?.[battle.challenger_id]?.xp ?? 0)
+                : battle.challenger_score;
+              const opponentScore = isXpBattle
+                ? (participants?.[battle.opponent_id]?.xp ?? 0)
+                : battle.opponent_score;
+              const myScore = battle.challenger_id === profile.user_id ? challengerScore : opponentScore;
+              const oppScore = battle.challenger_id === profile.user_id ? opponentScore : challengerScore;
               const amWinning = myScore >= oppScore;
               const startDate = battle.started_at ? new Date(battle.started_at) : new Date();
               const endDate = new Date(startDate.getTime() + battle.duration_days * 24 * 60 * 60 * 1000);

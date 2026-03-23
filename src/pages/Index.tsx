@@ -181,7 +181,17 @@ const Index = () => {
         <StatCard icon={Award} label="Level" value={profile.level} variant="teal" />
       </div>
 
-      {/* Check-in CTA */}
+      {/* Daily Quests Preview */}
+      {canCheckin && (
+        <div className="animate-reveal animate-reveal-delay-3 mb-6">
+          <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-4 text-center">
+            <p className="text-sm font-bold text-purple-300 mb-1">🎯 Daily Quests Available</p>
+            <p className="text-xs text-muted-foreground">Complete bonus objectives during check-in for extra XP</p>
+          </div>
+        </div>
+      )}
+
+      {/* Check-in CTA — moved after quests */}
       <div className="animate-reveal animate-reveal-delay-3 mb-6">
         <Button
           variant="gold"

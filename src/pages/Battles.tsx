@@ -37,6 +37,22 @@ const Battles = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeProofBattleId, setActiveProofBattleId] = useState<string | null>(null);
 
+  // Check if current user is admin
+  const { data: isAdmin } = useQuery({
+    queryKey: ["user-role-admin-battles", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return false;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", profile.user_id)
+        .eq("role", "admin")
+        .maybeSingle();
+      return !!data;
+    },
+    enabled: !!profile,
+  });
+
   const { data: battles, isLoading } = useQuery({
     queryKey: ["battles", profile?.user_id],
     queryFn: async () => {

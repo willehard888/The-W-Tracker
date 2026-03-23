@@ -478,14 +478,19 @@ const DailyCheckin = () => {
                 <p className="text-xs text-muted-foreground">Elite perk — earns <span className="text-gold font-bold">+30 bonus XP</span></p>
               </div>
               {proofFile && <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+30 XP</span>}
-              <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) {
-                  setProofFile(file);
-                  const reader = new FileReader();
-                  reader.onload = () => setProofPreview(reader.result as string);
-                  reader.readAsDataURL(file);
+                if (!file) return;
+                const fileAge = Date.now() - file.lastModified;
+                if (fileAge > 5 * 60 * 1000) {
+                  toast.error("Please take a fresh photo right now. Gallery photos are not allowed.");
+                  e.target.value = "";
+                  return;
                 }
+                setProofFile(file);
+                const reader = new FileReader();
+                reader.onload = () => setProofPreview(reader.result as string);
+                reader.readAsDataURL(file);
               }} />
             </label>
             {proofPreview && (

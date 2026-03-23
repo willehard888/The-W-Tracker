@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Flame, Trophy, Swords, Shield } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -10,9 +11,7 @@ const Landing = () => {
       {/* Header */}
       <header className="flex items-center justify-between px-6 pt-6 pb-4 animate-reveal">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg gradient-gold flex items-center justify-center">
-            <span className="text-sm font-black text-primary-foreground">W</span>
-          </div>
+          <img src={logo} alt="The W Tracker" className="h-9 w-auto" />
           <span className="font-display font-bold text-lg tracking-tight">The W Tracker</span>
         </div>
       </header>

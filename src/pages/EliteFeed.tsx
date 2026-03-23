@@ -95,6 +95,9 @@ const EliteFeed = () => {
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
       toast.success("Posted! 🔥");
     },
+    onError: (error: any) => {
+      toast.error(error?.message || "Failed to create post. Try again.");
+    },
   });
 
   const toggleReaction = useMutation({

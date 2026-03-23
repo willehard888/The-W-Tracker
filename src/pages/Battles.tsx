@@ -196,6 +196,27 @@ const Battles = () => {
   }, [profile, queryClient]);
 
 
+  // Admin: cancel/delete battle
+  const adminCancelBattle = async (battleId: string) => {
+    try {
+      await supabase.from("battles").update({ status: "completed", ended_at: new Date().toISOString(), winner_id: null }).eq("id", battleId);
+      toast.success("Battle cancelled by admin");
+      queryClient.invalidateQueries({ queryKey: ["battles"] });
+    } catch {
+      toast.error("Failed to cancel battle");
+    }
+  };
+
+  const adminDeleteBattle = async (battleId: string) => {
+    try {
+      await supabase.from("battles").delete().eq("id", battleId);
+      toast.success("Battle deleted by admin");
+      queryClient.invalidateQueries({ queryKey: ["battles"] });
+    } catch {
+      toast.error("Failed to delete battle");
+    }
+  };
+
   const handleVote = async (battleId: string, votedFor: string) => {
     if (!profile) return;
     try {

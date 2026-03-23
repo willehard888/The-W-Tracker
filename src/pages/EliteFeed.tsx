@@ -23,6 +23,12 @@ const TIER_STYLES: Record<string, string> = {
   normal: "bg-secondary",
 };
 
+const SUPPORTED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+const MAX_IMAGE_SIZE_MB = 8;
+
+const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
+
 const EliteFeed = () => {
   const { user, profile, isElite } = useAuth();
   const navigate = useNavigate();

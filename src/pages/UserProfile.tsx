@@ -67,6 +67,20 @@ const UserProfile = () => {
     enabled: !!userId,
   });
 
+  const { data: userPosts } = useQuery({
+    queryKey: ["user-posts", userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("feed_posts")
+        .select("*")
+        .eq("user_id", userId!)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
   // Friendship status
   const { data: friendship } = useQuery({
     queryKey: ["friendship", myProfile?.user_id, userId],

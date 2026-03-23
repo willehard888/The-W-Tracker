@@ -1,5 +1,6 @@
 import { Flame, Zap, TrendingUp, Award, ChevronRight, Crown, Shield } from "lucide-react";
 import StatCard from "@/components/StatCard";
+import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -176,7 +177,7 @@ const Index = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 mb-6 animate-reveal animate-reveal-delay-2">
         <StatCard icon={Zap} label="Total XP" value={profile.xp.toLocaleString()} variant="gold" />
-        <StatCard icon={Flame} label="Streak" value={`${profile.streak}d`} sublabel={`Best: ${profile.longest_streak}d`} variant="streak" />
+        <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} />
         <StatCard icon={TrendingUp} label="Status" value={tierLabel} variant={profile.status_tier === "elite" ? "elite" : "purple"} />
         <StatCard icon={Award} label="Level" value={profile.level} variant="teal" />
       </div>

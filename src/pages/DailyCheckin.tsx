@@ -446,6 +446,27 @@ const DailyCheckin = () => {
         <ToggleItem icon={Smartphone} label="No Phone Before Sleep" sublabel="30 min screen-free" active={noPhonePm} onToggle={() => setNoPhonePm(!noPhonePm)} bonus="+20 XP" />
       </div>
 
+      {/* Daily Quests */}
+      <div className="mt-4 animate-reveal animate-reveal-delay-3">
+        <DailyQuests
+          checkinData={{
+            sleep,
+            sportCategory,
+            extraWorkout,
+            coldShower,
+            healthyFood,
+            protein,
+            meditationAm,
+            meditationPm,
+            hydration,
+            noPhoneAm,
+            noPhonePm,
+            completedCount,
+          }}
+          onBonusXpChange={setQuestBonusXp}
+        />
+      </div>
+
       {/* Proof Photo — Elite only */}
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
         {isElite ? (

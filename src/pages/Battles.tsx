@@ -62,6 +62,8 @@ const Battles = () => {
       return map;
     },
     enabled: participantIds.length > 0,
+    refetchInterval: 10000,
+    refetchIntervalInBackground: true,
   });
 
   const pendingBattles = battles?.filter((b: any) => b.status === "pending" && b.opponent_id === profile?.user_id) || [];
@@ -135,7 +137,7 @@ const Battles = () => {
     enabled: votingBattleIds.length > 0,
   });
 
-  // Realtime: refresh battles & participant XP on changes
+  // Realtime: refresh battles, scores and votes immediately
   useEffect(() => {
     if (!profile) return;
     const channel = supabase
@@ -146,22 +148,30 @@ const Battles = () => {
         () => {
           queryClient.invalidateQueries({ queryKey: ["battles"] });
           queryClient.invalidateQueries({ queryKey: ["battle-participants"] });
-          queryClient.invalidateQueries({ queryKey: ["vote-counts"] });
           queryClient.invalidateQueries({ queryKey: ["community-voting-battles"] });
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["battle-participants"] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "battle_votes" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["vote-counts"] });
+          queryClient.invalidateQueries({ queryKey: ["my-battle-votes"] });
+        }
+      )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [profile, queryClient]);
 
-  // Auto-refresh participant XP every 30s for live score updates
-  useEffect(() => {
-    if (!participantIds.length) return;
-    const interval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ["battle-participants"] });
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [participantIds.join(","), queryClient]);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile, queryClient]);
 
 
   const handleVote = async (battleId: string, votedFor: string) => {

@@ -423,12 +423,18 @@ const EliteFeed = () => {
               {/* Image */}
               {post.image_url && (
                 <div className="mt-3 mx-4 rounded-xl overflow-hidden">
-                  <img
-                    src={post.image_url}
-                    alt=""
-                    className="w-full max-h-96 object-cover transition-transform"
-                    loading="lazy"
-                  />
+                  {isUnsupportedHeic(post.image_url) ? (
+                    <div className="rounded-xl border border-border bg-muted/40 p-4 text-xs text-muted-foreground">
+                      This image format is not supported in all devices. Please upload JPG, PNG or WEBP.
+                    </div>
+                  ) : (
+                    <img
+                      src={post.image_url}
+                      alt=""
+                      className="w-full max-h-96 object-cover transition-transform"
+                      loading="lazy"
+                    />
+                  )}
                 </div>
               )}
 

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Swords, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image, Vote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

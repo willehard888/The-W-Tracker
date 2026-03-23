@@ -164,6 +164,7 @@ const Battles = () => {
   }, [participantIds.join(","), queryClient]);
 
 
+  const handleVote = async (battleId: string, votedFor: string) => {
     if (!profile) return;
     try {
       await supabase.from("battle_votes").insert({

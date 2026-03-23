@@ -13,7 +13,7 @@ const XpCounter = ({ value, className, duration = 1200 }: XpCounterProps) => {
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
-    if (value === 0) { setDisplay(0); return; }
+    if (value === 0) {setDisplay(0);return;}
     const start = performance.now();
     startRef.current = display;
     const from = startRef.current;
@@ -33,10 +33,10 @@ const XpCounter = ({ value, className, duration = 1200 }: XpCounterProps) => {
   }, [value, duration]);
 
   return (
-    <span className={cn("tabular-nums", className)}>
+    <span className={cn("tabular-nums text-5xl", className)}>
       {display.toLocaleString()}
-    </span>
-  );
+    </span>);
+
 };
 
 export default XpCounter;

@@ -6,6 +6,7 @@ import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflak
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
+import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
 import { cn } from "@/lib/utils";
 import { useState } from "react";

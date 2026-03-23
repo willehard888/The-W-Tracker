@@ -1,5 +1,6 @@
 import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart } from "lucide-react";
 import StatCard from "@/components/StatCard";
+import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
 import BadgeShowcase from "@/components/BadgeShowcase";
 import { Button } from "@/components/ui/button";

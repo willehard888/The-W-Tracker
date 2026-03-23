@@ -163,7 +163,11 @@ const DailyCheckin = () => {
       if (proofFile && isElite) {
         const ext = proofFile.name.split(".").pop();
         const path = `${user.id}/${Date.now()}.${ext}`;
-        await supabase.storage.from("proof-photos").upload(path, proofFile);
+        const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, proofFile, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+        if (uploadErr) throw new Error(`Photo upload failed: ${uploadErr.message}`);
         const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
         proof_photo_url = urlData.publicUrl;
       }

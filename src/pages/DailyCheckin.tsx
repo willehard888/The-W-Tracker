@@ -13,6 +13,8 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import ConfettiBurst from "@/components/ConfettiBurst";
 import XpCounter from "@/components/XpCounter";
+import DailyQuests from "@/components/DailyQuests";
+import LevelUpCelebration from "@/components/LevelUpCelebration";
 
 interface ToggleItemProps {
   icon: React.ElementType;

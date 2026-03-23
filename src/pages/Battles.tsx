@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Swords, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image, Vote } from "lucide-react";
+import { Swords, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image, Vote, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +8,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const BATTLE_TYPES = [
   { id: "xp", label: "Total XP", emoji: "⚡", icon: Zap, description: "Most XP earned wins", color: "text-gold" },
@@ -30,6 +36,22 @@ const Battles = () => {
   const [uploadingProof, setUploadingProof] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeProofBattleId, setActiveProofBattleId] = useState<string | null>(null);
+
+  // Check if current user is admin
+  const { data: isAdmin } = useQuery({
+    queryKey: ["user-role-admin-battles", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return false;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", profile.user_id)
+        .eq("role", "admin")
+        .maybeSingle();
+      return !!data;
+    },
+    enabled: !!profile,
+  });
 
   const { data: battles, isLoading } = useQuery({
     queryKey: ["battles", profile?.user_id],
@@ -173,6 +195,27 @@ const Battles = () => {
     };
   }, [profile, queryClient]);
 
+
+  // Admin: cancel/delete battle
+  const adminCancelBattle = async (battleId: string) => {
+    try {
+      await supabase.from("battles").update({ status: "completed", ended_at: new Date().toISOString(), winner_id: null }).eq("id", battleId);
+      toast.success("Battle cancelled by admin");
+      queryClient.invalidateQueries({ queryKey: ["battles"] });
+    } catch {
+      toast.error("Failed to cancel battle");
+    }
+  };
+
+  const adminDeleteBattle = async (battleId: string) => {
+    try {
+      await supabase.from("battles").delete().eq("id", battleId);
+      toast.success("Battle deleted by admin");
+      queryClient.invalidateQueries({ queryKey: ["battles"] });
+    } catch {
+      toast.error("Failed to delete battle");
+    }
+  };
 
   const handleVote = async (battleId: string, votedFor: string) => {
     if (!profile) return;
@@ -540,9 +583,30 @@ const Battles = () => {
                         {typeInfo.emoji} {typeInfo.label} Battle
                       </span>
                     </div>
-                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[hsl(var(--streak-orange))]/10 border border-[hsl(var(--streak-orange))]/20">
-                      <Clock size={10} className="text-[hsl(var(--streak-orange))]" />
-                      <span className="text-[10px] font-bold text-[hsl(var(--streak-orange))]">{daysLeft}d left</span>
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[hsl(var(--streak-orange))]/10 border border-[hsl(var(--streak-orange))]/20">
+                        <Clock size={10} className="text-[hsl(var(--streak-orange))]" />
+                        <span className="text-[10px] font-bold text-[hsl(var(--streak-orange))]">{daysLeft}d left</span>
+                      </div>
+                      {isAdmin && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/60 hover:text-muted-foreground">
+                              <MoreHorizontal size={14} />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="min-w-[160px]">
+                            <DropdownMenuItem onClick={() => adminCancelBattle(battle.id)} className="text-[hsl(var(--streak-orange))]">
+                              <ShieldCheck size={14} className="mr-2" />
+                              Cancel battle
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => adminDeleteBattle(battle.id)} className="text-destructive focus:text-destructive">
+                              <Trash2 size={14} className="mr-2" />
+                              Delete battle
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                   </div>
 
@@ -814,11 +878,28 @@ const Battles = () => {
                     <p className="font-semibold text-sm">vs @{opp.username}</p>
                     <p className="text-xs text-muted-foreground">{typeInfo.emoji} {battle.duration_days}d {typeInfo.label}</p>
                   </div>
-                  <div className={cn(
-                    "text-sm font-bold font-display",
-                    won ? "text-gold" : "text-destructive"
-                  )}>
-                    {won ? "Victory 🏆" : "Defeat"}
+                  <div className="flex items-center gap-2">
+                    <div className={cn(
+                      "text-sm font-bold font-display",
+                      won ? "text-gold" : "text-destructive"
+                    )}>
+                      {won ? "Victory 🏆" : "Defeat"}
+                    </div>
+                    {isAdmin && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-1 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/40 hover:text-muted-foreground">
+                            <MoreHorizontal size={14} />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => adminDeleteBattle(battle.id)} className="text-destructive focus:text-destructive">
+                            <Trash2 size={14} className="mr-2" />
+                            Delete battle
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 </div>
               );

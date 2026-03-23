@@ -155,20 +155,30 @@ const Paywall = () => {
         )}
       </div>
 
-      {/* Restore (native only) */}
-      {isNative && (
-        <div className="text-center mt-6 animate-reveal animate-reveal-delay-3">
-          <button onClick={handleRestore} className="text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2">
-            Restore purchases
-          </button>
-        </div>
-      )}
+
+      {/* Restore (always visible) */}
+      <div className="text-center mt-6 animate-reveal animate-reveal-delay-3">
+        <button onClick={handleRestore} className="text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2">
+          Restore purchases
+        </button>
+      </div>
 
       {/* Trust line */}
-      <div className="text-center mt-8 animate-reveal animate-reveal-delay-3">
+      <div className="text-center mt-4 animate-reveal animate-reveal-delay-3">
         <p className="text-[10px] text-muted-foreground tracking-wider uppercase">
           {isNative ? "Secure in-app purchase • Cancel anytime" : "Secure payment via Stripe • Cancel anytime"}
         </p>
+      </div>
+
+      {/* Legal links */}
+      <div className="flex items-center justify-center gap-4 mt-4 mb-8 animate-reveal animate-reveal-delay-3">
+        <button onClick={() => navigate("/privacy")} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2">
+          Privacy Policy
+        </button>
+        <span className="text-[10px] text-muted-foreground">•</span>
+        <button onClick={() => navigate("/terms")} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2">
+          Terms of Use
+        </button>
       </div>
     </div>
   );

@@ -356,3 +356,10 @@
   80% { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(1.1); }
 }
+
+@keyframes levelup-particle {
+  0% { opacity: 0; transform: rotate(inherit) translateY(-80px) scale(0); }
+  20% { opacity: 1; transform: rotate(inherit) translateY(-120px) scale(1); }
+  80% { opacity: 0.6; transform: rotate(inherit) translateY(-160px) scale(0.8); }
+  100% { opacity: 0; transform: rotate(inherit) translateY(-200px) scale(0); }
+}

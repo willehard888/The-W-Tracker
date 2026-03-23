@@ -13,6 +13,8 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import ConfettiBurst from "@/components/ConfettiBurst";
 import XpCounter from "@/components/XpCounter";
+import DailyQuests from "@/components/DailyQuests";
+import LevelUpCelebration from "@/components/LevelUpCelebration";
 
 interface ToggleItemProps {
   icon: React.ElementType;
@@ -117,6 +119,9 @@ const DailyCheckin = () => {
   const [honest, setHonest] = useState<boolean | null>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [proofPreview, setProofPreview] = useState<string | null>(null);
+  const [questBonusXp, setQuestBonusXp] = useState(0);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [newLevelReached, setNewLevelReached] = useState(0);
 
   const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory)!;
   const workout = sportCategory !== "none";
@@ -137,7 +142,7 @@ const DailyCheckin = () => {
     proofBonus,
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
 
-  const totalXp = isElite ? baseXp * 2 : baseXp;
+  const totalXp = (isElite ? baseXp * 2 : baseXp) + questBonusXp;
 
   // Reactive performance score
   const completedCount = [workout, extraWorkout, coldShower, healthyFood, protein, meditationAm, meditationPm, noPhoneAm, noPhonePm, hydration >= 3, sleep >= 7 && sleep <= 9].filter(Boolean).length;
@@ -202,6 +207,12 @@ const DailyCheckin = () => {
         const newLevel = Math.floor(newXp / 500) + 1;
         const newStreak = profile.streak + 1;
         const longestStreak = Math.max(profile.longest_streak, newStreak);
+
+        // Detect level-up
+        if (newLevel > profile.level) {
+          setNewLevelReached(newLevel);
+          setShowLevelUp(true);
+        }
 
         await supabase
           .from("profiles")
@@ -283,6 +294,7 @@ const DailyCheckin = () => {
   if (submitted) {
     return (
       <>
+        {showLevelUp && <LevelUpCelebration newLevel={newLevelReached} onComplete={() => setShowLevelUp(false)} />}
         <BadgeUnlockModal badge={unlockedBadge} onClose={() => setUnlockedBadge(null)} />
         <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center relative overflow-hidden">
           <ConfettiBurst active={submitted} />
@@ -432,6 +444,27 @@ const DailyCheckin = () => {
         <ToggleItem icon={Brain} label="Evening Meditation" sublabel="Reflect and wind down" active={meditationPm} onToggle={() => setMeditationPm(!meditationPm)} bonus="+15 XP" />
         <ToggleItem icon={Smartphone} label="No Phone After Waking" sublabel="30 min screen-free" active={noPhoneAm} onToggle={() => setNoPhoneAm(!noPhoneAm)} bonus="+20 XP" />
         <ToggleItem icon={Smartphone} label="No Phone Before Sleep" sublabel="30 min screen-free" active={noPhonePm} onToggle={() => setNoPhonePm(!noPhonePm)} bonus="+20 XP" />
+      </div>
+
+      {/* Daily Quests */}
+      <div className="mt-4 animate-reveal animate-reveal-delay-3">
+        <DailyQuests
+          checkinData={{
+            sleep,
+            sportCategory,
+            extraWorkout,
+            coldShower,
+            healthyFood,
+            protein,
+            meditationAm,
+            meditationPm,
+            hydration,
+            noPhoneAm,
+            noPhonePm,
+            completedCount,
+          }}
+          onBonusXpChange={setQuestBonusXp}
+        />
       </div>
 
       {/* Proof Photo — Elite only */}

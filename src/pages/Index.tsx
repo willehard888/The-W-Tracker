@@ -1,5 +1,6 @@
 import { Flame, Zap, TrendingUp, Award, ChevronRight, Crown, Shield } from "lucide-react";
 import StatCard from "@/components/StatCard";
+import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";

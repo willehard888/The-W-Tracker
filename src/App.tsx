@@ -21,6 +21,8 @@ import BadgeCompare from "./pages/BadgeCompare";
 import UserProfile from "./pages/UserProfile";
 import Messages from "./pages/Messages";
 import Chat from "./pages/Chat";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfUse from "./pages/TermsOfUse";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

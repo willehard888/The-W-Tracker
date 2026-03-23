@@ -93,11 +93,32 @@ const Chat = () => {
   const handleSend = async () => {
     if (!user || !partnerId || !text.trim()) return;
     setSending(true);
+    const messageContent = text.trim();
     await supabase.from("direct_messages").insert({
       sender_id: user.id,
       receiver_id: partnerId,
-      content: text.trim(),
+      content: messageContent,
     });
+
+    // Trigger push notification for receiver
+    try {
+      const { data: senderProfile } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("user_id", user.id)
+        .single();
+      
+      await supabase.functions.invoke("notify-message", {
+        body: {
+          receiver_id: partnerId,
+          sender_username: senderProfile?.username || "Someone",
+          message_preview: messageContent,
+        },
+      });
+    } catch (e) {
+      console.log("Push notification failed (non-critical):", e);
+    }
+
     setText("");
     setSending(false);
     queryClient.invalidateQueries({ queryKey: ["chat-messages", partnerId] });

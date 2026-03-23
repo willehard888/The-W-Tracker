@@ -270,6 +270,15 @@ const Battles = () => {
 
   const handleProofUpload = async (battleId: string, file: File) => {
     if (!profile) return;
+
+    // Validate the photo was taken just now (within last 5 minutes)
+    const fileAge = Date.now() - file.lastModified;
+    const MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
+    if (fileAge > MAX_AGE_MS) {
+      toast.error("Please take a fresh photo right now. Gallery photos are not allowed.");
+      return;
+    }
+
     setUploadingProof(battleId);
     try {
       const ext = file.name.split(".").pop();
@@ -280,14 +289,12 @@ const Battles = () => {
       const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
 
       const battle = battles?.find((b: any) => b.id === battleId);
-      if (!battle) return;
-
-      const isChallenger = battle.challenger_id === profile.user_id;
+      const isChallenger = battle?.challenger_id === profile.user_id;
       const updateField = isChallenger ? "challenger_proof_url" : "opponent_proof_url";
 
       await supabase
         .from("battles")
-        .update({ [updateField]: urlData.publicUrl } as any)
+        .update({ [updateField]: urlData.publicUrl })
         .eq("id", battleId);
 
       toast.success("Proof uploaded! 📸");

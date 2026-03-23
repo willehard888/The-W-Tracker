@@ -1,4 +1,4 @@
-import { Flame, Zap, TrendingUp, Award, ChevronRight, Crown, Shield } from "lucide-react";
+import { Flame, TrendingUp, Award, ChevronRight, Crown, Shield } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";

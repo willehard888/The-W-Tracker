@@ -83,6 +83,21 @@ const Profile = () => {
     enabled: !!profile,
   });
 
+  const { data: userPosts } = useQuery({
+    queryKey: ["user-posts", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return [];
+      const { data } = await supabase
+        .from("feed_posts")
+        .select("*")
+        .eq("user_id", profile.user_id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return data || [];
+    },
+    enabled: !!profile,
+  });
+
   const earnedBadges = (allBadges || []).filter((b) => earnedBadgeIds?.includes(b.id));
 
   if (!profile) return null;

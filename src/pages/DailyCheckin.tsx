@@ -294,6 +294,7 @@ const DailyCheckin = () => {
   if (submitted) {
     return (
       <>
+        {showLevelUp && <LevelUpCelebration newLevel={newLevelReached} onComplete={() => setShowLevelUp(false)} />}
         <BadgeUnlockModal badge={unlockedBadge} onClose={() => setUnlockedBadge(null)} />
         <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center relative overflow-hidden">
           <ConfettiBurst active={submitted} />

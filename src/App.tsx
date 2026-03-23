@@ -55,6 +55,8 @@ const AppRoutes = () => {
         <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
         <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfUse />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />

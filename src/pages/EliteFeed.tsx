@@ -74,7 +74,11 @@ const EliteFeed = () => {
       if (imageFile) {
         const ext = imageFile.name.split(".").pop();
         const path = `${user.id}/${Date.now()}.${ext}`;
-        await supabase.storage.from("feed-images").upload(path, imageFile);
+        const { error: uploadErr } = await supabase.storage.from("feed-images").upload(path, imageFile, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+        if (uploadErr) throw new Error(`Image upload failed: ${uploadErr.message}`);
         const { data: urlData } = supabase.storage.from("feed-images").getPublicUrl(path);
         image_url = urlData.publicUrl;
       }

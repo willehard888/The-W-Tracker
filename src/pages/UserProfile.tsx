@@ -10,6 +10,7 @@ import BadgeCard from "@/components/BadgeCard";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
 
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();

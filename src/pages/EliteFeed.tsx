@@ -120,6 +120,39 @@ const EliteFeed = () => {
     enabled: !!isAdmin,
   });
 
+  // Kudos: which posts the user has kudos'd
+  const { data: userKudosPosts } = useQuery({
+    queryKey: ["user-kudos-posts", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase
+        .from("kudos")
+        .select("post_id")
+        .eq("giver_id", user.id);
+      return data?.map((k: any) => k.post_id) || [];
+    },
+    enabled: !!user,
+  });
+
+  // Kudos: how many the user has given this month
+  const { data: kudosGivenThisMonth } = useQuery({
+    queryKey: ["kudos-given-month", user?.id],
+    queryFn: async () => {
+      if (!user) return 0;
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const { count } = await supabase
+        .from("kudos")
+        .select("id", { count: "exact", head: true })
+        .eq("giver_id", user.id)
+        .gte("created_at", startOfMonth);
+      return count || 0;
+    },
+    enabled: !!user,
+  });
+
+  const kudosRemaining = Math.max(0, 2 - (kudosGivenThisMonth || 0));
+
   const { data: reactions } = useQuery({
     queryKey: ["feed-reactions", user?.id],
     queryFn: async () => {

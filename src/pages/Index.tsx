@@ -177,7 +177,7 @@ const Index = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 mb-6 animate-reveal animate-reveal-delay-2">
         <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} />
-        <StatCard icon={Award} label="Level" value={profile.level} variant="teal" />
+        <LevelCard level={profile.level} />
       </div>
 
       {/* Daily Quests Preview */}

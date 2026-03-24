@@ -236,6 +236,34 @@ const EliteFeed = () => {
     },
   });
 
+  const giveKudos = useMutation({
+    mutationFn: async ({ postId, receiverId }: { postId: string; receiverId: string }) => {
+      if (!user || !isElite) return;
+      if (kudosRemaining <= 0) {
+        throw new Error("Kuukausittaiset kudosit käytetty");
+      }
+      const alreadyGiven = userKudosPosts?.includes(postId);
+      if (alreadyGiven) {
+        await supabase.from("kudos").delete().eq("post_id", postId).eq("giver_id", user.id);
+      } else {
+        await supabase.from("kudos").insert({
+          giver_id: user.id,
+          post_id: postId,
+          receiver_id: receiverId,
+        } as any);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-kudos-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["kudos-given-month"] });
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+      toast.success("Kudos! 🏆");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Kudos failed");
+    },
+  });
+
   const { data: comments } = useQuery({
     queryKey: ["feed-comments", showComments],
     queryFn: async () => {

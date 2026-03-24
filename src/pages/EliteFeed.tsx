@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
+import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
@@ -732,12 +733,7 @@ const EliteFeed = () => {
               {/* Video */}
               {(post as any).video_url && (
                 <div className="mt-3 mx-4 rounded-xl overflow-hidden">
-                  <video
-                    src={(post as any).video_url}
-                    className="w-full max-h-96 rounded-xl"
-                    controls
-                    preload="metadata"
-                  />
+                  <LazyVideoPlayer src={(post as any).video_url} />
                 </div>
               )}
 

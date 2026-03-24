@@ -1,0 +1,1 @@
+ALTER TABLE public.feed_posts ADD COLUMN IF NOT EXISTS video_url text DEFAULT NULL;

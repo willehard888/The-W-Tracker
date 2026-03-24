@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle } from "lucide-react";
+import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
@@ -26,9 +26,13 @@ const TIER_STYLES: Record<string, string> = {
 
 const SUPPORTED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+const SUPPORTED_VIDEO_MIME_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+const SUPPORTED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
 const MAX_IMAGE_SIZE_MB = 8;
+const MAX_VIDEO_SIZE_MB = 50;
 
 const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
+const isVideoUrl = (url: string) => SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.toLowerCase().includes(ext));
 
 const EliteFeed = () => {
   const { user, profile, isElite } = useAuth();
@@ -38,8 +42,11 @@ const EliteFeed = () => {
   const [showComments, setShowComments] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [showReported, setShowReported] = useState(false);
   const [showReportsPanel, setShowReportsPanel] = useState(false);
 
@@ -129,6 +136,8 @@ const EliteFeed = () => {
     mutationFn: async () => {
       if (!user) return;
       let image_url = null;
+      let video_url = null;
+
       if (imageFile) {
         const fileExt = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
         const safeExt = fileExt === "jpeg" ? "jpg" : fileExt;
@@ -142,16 +151,33 @@ const EliteFeed = () => {
         const { data: urlData } = supabase.storage.from("feed-images").getPublicUrl(path);
         image_url = urlData.publicUrl;
       }
+
+      if (videoFile) {
+        const fileExt = videoFile.name.split(".").pop()?.toLowerCase() || "mp4";
+        const path = `${user.id}/${Date.now()}.${fileExt}`;
+        const { error: uploadErr } = await supabase.storage.from("feed-images").upload(path, videoFile, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: videoFile.type || `video/${fileExt}`,
+        });
+        if (uploadErr) throw new Error(`Video upload failed: ${uploadErr.message}`);
+        const { data: urlData } = supabase.storage.from("feed-images").getPublicUrl(path);
+        video_url = urlData.publicUrl;
+      }
+
       await supabase.from("feed_posts").insert({
         user_id: user.id,
         content: newPost || null,
         image_url,
-      });
+        video_url,
+      } as any);
     },
     onSuccess: () => {
       setNewPost("");
       setImageFile(null);
       setImagePreview(null);
+      setVideoFile(null);
+      setVideoPreview(null);
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
       toast.success("Posted! 🔥");
     },
@@ -294,10 +320,34 @@ const EliteFeed = () => {
       e.target.value = "";
       return;
     }
+    setVideoFile(null);
+    setVideoPreview(null);
     setImageFile(file);
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
+  };
+
+  const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const lowerName = file.name.toLowerCase();
+    const isSupportedMime = SUPPORTED_VIDEO_MIME_TYPES.includes(file.type);
+    const isSupportedExt = SUPPORTED_VIDEO_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
+    if (!isSupportedMime && !isSupportedExt) {
+      toast.error("Use MP4, WEBM or MOV video format.");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
+      toast.error(`Video is too large. Max ${MAX_VIDEO_SIZE_MB}MB.`);
+      e.target.value = "";
+      return;
+    }
+    setImageFile(null);
+    setImagePreview(null);
+    setVideoFile(file);
+    setVideoPreview(URL.createObjectURL(file));
   };
 
   const canPost = isElite;
@@ -447,9 +497,22 @@ const EliteFeed = () => {
             </div>
           )}
 
+          {videoPreview && (
+            <div className="relative mt-3 rounded-xl overflow-hidden">
+              <video src={videoPreview} className="w-full max-h-48 rounded-xl" controls />
+              <button
+                onClick={() => { setVideoFile(null); setVideoPreview(null); }}
+                className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
             <div className="flex items-center gap-1">
               <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleImageSelect} />
+              <input ref={videoRef} type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden" onChange={handleVideoSelect} />
               <button
                 onClick={() => fileRef.current?.click()}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-medium"
@@ -457,12 +520,19 @@ const EliteFeed = () => {
                 <Image size={14} />
                 Photo
               </button>
+              <button
+                onClick={() => videoRef.current?.click()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-medium"
+              >
+                <Video size={14} />
+                Video
+              </button>
             </div>
             <Button
               variant="gold"
               size="sm"
               onClick={() => createPost.mutate()}
-              disabled={createPost.isPending || (!newPost.trim() && !imageFile)}
+              disabled={createPost.isPending || (!newPost.trim() && !imageFile && !videoFile)}
               className="rounded-full px-5"
             >
               <Send size={12} />
@@ -656,6 +726,18 @@ const EliteFeed = () => {
                       loading="lazy"
                     />
                   )}
+                </div>
+              )}
+
+              {/* Video */}
+              {(post as any).video_url && (
+                <div className="mt-3 mx-4 rounded-xl overflow-hidden">
+                  <video
+                    src={(post as any).video_url}
+                    className="w-full max-h-96 rounded-xl"
+                    controls
+                    preload="metadata"
+                  />
                 </div>
               )}
 

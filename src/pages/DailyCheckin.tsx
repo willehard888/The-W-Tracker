@@ -261,9 +261,23 @@ const DailyCheckin = () => {
         }
       }
 
+      // Elite: auto-post proof photo to feed
+      if (isElite && proof_photo_url) {
+        const sportLabel = selectedSport.id !== "none" ? `${selectedSport.emoji} ${selectedSport.label}` : null;
+        const content = sportLabel
+          ? `Daily check-in ✅ ${sportLabel} — ${totalXp} XP earned 🔥`
+          : `Daily check-in ✅ — ${totalXp} XP earned 🔥`;
+        await supabase.from("feed_posts").insert({
+          user_id: user.id,
+          content,
+          image_url: proof_photo_url,
+        });
+      }
+
       await refreshProfile();
       queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
       queryClient.invalidateQueries({ queryKey: ["user-badges"] });
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
       setSubmitted(true);
     } catch (err) {
       console.error(err);

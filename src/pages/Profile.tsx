@@ -1,4 +1,4 @@
-import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart } from "lucide-react";
+import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
@@ -95,6 +95,19 @@ const Profile = () => {
         .order("created_at", { ascending: false })
         .limit(20);
       return data || [];
+    },
+    enabled: !!profile,
+  });
+
+  const { data: kudosReceived } = useQuery({
+    queryKey: ["kudos-received", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return 0;
+      const { count } = await supabase
+        .from("kudos")
+        .select("*", { count: "exact", head: true })
+        .eq("receiver_id", profile.user_id);
+      return count || 0;
     },
     enabled: !!profile,
   });
@@ -218,6 +231,7 @@ const Profile = () => {
         <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} />
         <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
         <StatCard icon={Shield} label="Badges" value={earnedBadgeIds?.length || 0} variant="purple" />
+        <StatCard icon={Trophy} label="Kudos Received" value={kudosReceived || 0} variant="gold" />
       </div>
 
       {/* Badge Vault */}

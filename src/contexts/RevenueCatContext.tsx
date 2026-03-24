@@ -10,7 +10,8 @@ import { Purchases as CapPurchases } from "@revenuecat/purchases-capacitor";
 import { Purchases as WebPurchases } from "@revenuecat/purchases-js";
 import type { CustomerInfo as WebCustomerInfo, Package as WebPackage } from "@revenuecat/purchases-js";
 
-const RC_API_KEY_APPLE = "appl_YOUR_REVENUECAT_APPLE_API_KEY"; // Replace with your RevenueCat Apple API key
+const RC_API_KEY_APPLE = "appl_YOUR_REVENUECAT_APPLE_API_KEY"; // Replace with your Apple API key from RevenueCat
+const RC_API_KEY_GOOGLE = "goog_YOUR_REVENUECAT_GOOGLE_API_KEY"; // Replace with your Google API key from RevenueCat
 const RC_API_KEY_WEB = "test_kCEnAIbFZcOhMhYfZnVXSERwGVp";
 const ENTITLEMENT_ID = "The W Tracker Pro";
 

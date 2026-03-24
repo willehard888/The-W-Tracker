@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle, Video } from "lucide-react";
+import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle, Video, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
@@ -120,6 +120,39 @@ const EliteFeed = () => {
     enabled: !!isAdmin,
   });
 
+  // Kudos: which posts the user has kudos'd
+  const { data: userKudosPosts } = useQuery({
+    queryKey: ["user-kudos-posts", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase
+        .from("kudos")
+        .select("post_id")
+        .eq("giver_id", user.id);
+      return data?.map((k: any) => k.post_id) || [];
+    },
+    enabled: !!user,
+  });
+
+  // Kudos: how many the user has given this month
+  const { data: kudosGivenThisMonth } = useQuery({
+    queryKey: ["kudos-given-month", user?.id],
+    queryFn: async () => {
+      if (!user) return 0;
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const { count } = await supabase
+        .from("kudos")
+        .select("id", { count: "exact", head: true })
+        .eq("giver_id", user.id)
+        .gte("created_at", startOfMonth);
+      return count || 0;
+    },
+    enabled: !!user,
+  });
+
+  const kudosRemaining = Math.max(0, 2 - (kudosGivenThisMonth || 0));
+
   const { data: reactions } = useQuery({
     queryKey: ["feed-reactions", user?.id],
     queryFn: async () => {
@@ -200,6 +233,34 @@ const EliteFeed = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed-reactions"] });
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+    },
+  });
+
+  const giveKudos = useMutation({
+    mutationFn: async ({ postId, receiverId }: { postId: string; receiverId: string }) => {
+      if (!user || !isElite) return;
+      if (kudosRemaining <= 0) {
+        throw new Error("Kuukausittaiset kudosit käytetty");
+      }
+      const alreadyGiven = userKudosPosts?.includes(postId);
+      if (alreadyGiven) {
+        await supabase.from("kudos").delete().eq("post_id", postId).eq("giver_id", user.id);
+      } else {
+        await supabase.from("kudos").insert({
+          giver_id: user.id,
+          post_id: postId,
+          receiver_id: receiverId,
+        } as any);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-kudos-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["kudos-given-month"] });
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+      toast.success("Kudos! 🏆");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Kudos failed");
     },
   });
 
@@ -592,6 +653,7 @@ const EliteFeed = () => {
           const isOwn = post.user_id === user?.id;
           const tierStyle = TIER_STYLES[post.profile?.status_tier] || TIER_STYLES.normal;
           const liked = reactions?.includes(post.id);
+          const hasGivenKudos = userKudosPosts?.includes(post.id);
 
           return (
             <div
@@ -767,6 +829,44 @@ const EliteFeed = () => {
                   <MessageCircle size={15} />
                   {post.comments_count > 0 && post.comments_count}
                 </button>
+
+                {/* Kudos button - only for non-own posts, elite users */}
+                {!isOwn && isElite && (
+                  <button
+                    onClick={() => {
+                      if (!hasGivenKudos && kudosRemaining <= 0) {
+                        toast.error("Olet käyttänyt molemmat kudosit tässä kuussa");
+                        return;
+                      }
+                      giveKudos.mutate({ postId: post.id, receiverId: post.user_id });
+                    }}
+                    disabled={giveKudos.isPending}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95",
+                      hasGivenKudos
+                        ? "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))]"
+                        : kudosRemaining > 0
+                          ? "text-muted-foreground hover:bg-[hsl(var(--purple))]/10 hover:text-[hsl(var(--purple))]"
+                          : "text-muted-foreground/40 cursor-not-allowed"
+                    )}
+                    title={`${kudosRemaining}/2 kudos jäljellä tässä kuussa`}
+                  >
+                    <Award
+                      size={15}
+                      fill={hasGivenKudos ? "currentColor" : "none"}
+                      className={cn(hasGivenKudos && "animate-scale-in")}
+                    />
+                    {(post.kudos_count || 0) > 0 && (post.kudos_count || 0)}
+                  </button>
+                )}
+
+                {/* Show kudos count for own posts */}
+                {isOwn && (post.kudos_count || 0) > 0 && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-[hsl(var(--purple))]">
+                    <Award size={15} fill="currentColor" />
+                    {post.kudos_count}
+                  </div>
+                )}
               </div>
 
               {/* Comments Section */}

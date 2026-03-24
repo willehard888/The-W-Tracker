@@ -136,6 +136,8 @@ const EliteFeed = () => {
     mutationFn: async () => {
       if (!user) return;
       let image_url = null;
+      let video_url = null;
+
       if (imageFile) {
         const fileExt = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
         const safeExt = fileExt === "jpeg" ? "jpg" : fileExt;
@@ -149,11 +151,26 @@ const EliteFeed = () => {
         const { data: urlData } = supabase.storage.from("feed-images").getPublicUrl(path);
         image_url = urlData.publicUrl;
       }
+
+      if (videoFile) {
+        const fileExt = videoFile.name.split(".").pop()?.toLowerCase() || "mp4";
+        const path = `${user.id}/${Date.now()}.${fileExt}`;
+        const { error: uploadErr } = await supabase.storage.from("feed-images").upload(path, videoFile, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: videoFile.type || `video/${fileExt}`,
+        });
+        if (uploadErr) throw new Error(`Video upload failed: ${uploadErr.message}`);
+        const { data: urlData } = supabase.storage.from("feed-images").getPublicUrl(path);
+        video_url = urlData.publicUrl;
+      }
+
       await supabase.from("feed_posts").insert({
         user_id: user.id,
         content: newPost || null,
         image_url,
-      });
+        video_url,
+      } as any);
     },
     onSuccess: () => {
       setNewPost("");

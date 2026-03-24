@@ -320,10 +320,34 @@ const EliteFeed = () => {
       e.target.value = "";
       return;
     }
+    setVideoFile(null);
+    setVideoPreview(null);
     setImageFile(file);
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
+  };
+
+  const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const lowerName = file.name.toLowerCase();
+    const isSupportedMime = SUPPORTED_VIDEO_MIME_TYPES.includes(file.type);
+    const isSupportedExt = SUPPORTED_VIDEO_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
+    if (!isSupportedMime && !isSupportedExt) {
+      toast.error("Use MP4, WEBM or MOV video format.");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
+      toast.error(`Video is too large. Max ${MAX_VIDEO_SIZE_MB}MB.`);
+      e.target.value = "";
+      return;
+    }
+    setImageFile(null);
+    setImagePreview(null);
+    setVideoFile(file);
+    setVideoPreview(URL.createObjectURL(file));
   };
 
   const canPost = isElite;

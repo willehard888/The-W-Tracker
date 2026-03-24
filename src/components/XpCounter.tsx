@@ -33,7 +33,7 @@ const XpCounter = ({ value, className, duration = 1200 }: XpCounterProps) => {
   }, [value, duration]);
 
   return (
-    <span className={cn("tabular-nums text-5xl", className)}>
+    <span className={cn("tabular-nums text-3xl", className)}>
       {display.toLocaleString()}
     </span>);
 

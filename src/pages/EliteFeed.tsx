@@ -176,6 +176,8 @@ const EliteFeed = () => {
       setNewPost("");
       setImageFile(null);
       setImagePreview(null);
+      setVideoFile(null);
+      setVideoPreview(null);
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
       toast.success("Posted! 🔥");
     },

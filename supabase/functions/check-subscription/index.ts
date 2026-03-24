@@ -7,18 +7,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const ELITE_PRODUCT_ID = "prod_UCDf2wNiIe8cX9";
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
-
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
-  );
 
   try {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -28,10 +20,25 @@ serve(async (req) => {
     if (!authHeader) throw new Error("No authorization header");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+
+    // Use anon key client for auth verification (works with asymmetric JWTs)
+    const anonClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+    );
+
+    const { data: userData, error: userError } = await anonClient.auth.getUser(token);
     if (userError) throw new Error(`Auth error: ${userError.message}`);
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated");
+
+    // Use service role client for DB operations
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+    );
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -60,14 +67,12 @@ serve(async (req) => {
         subscriptionEnd = new Date(periodEnd * 1000).toISOString();
       }
 
-      // Sync elite status to profiles
-      await supabaseClient
+      await serviceClient
         .from("profiles")
         .update({ is_elite: true })
         .eq("user_id", user.id);
     } else {
-      // No active sub — remove elite (unless manually set)
-      await supabaseClient
+      await serviceClient
         .from("profiles")
         .update({ is_elite: false })
         .eq("user_id", user.id);

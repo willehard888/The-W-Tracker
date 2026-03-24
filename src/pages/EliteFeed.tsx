@@ -829,6 +829,44 @@ const EliteFeed = () => {
                   <MessageCircle size={15} />
                   {post.comments_count > 0 && post.comments_count}
                 </button>
+
+                {/* Kudos button - only for non-own posts, elite users */}
+                {!isOwn && isElite && (
+                  <button
+                    onClick={() => {
+                      if (!hasGivenKudos && kudosRemaining <= 0) {
+                        toast.error("Olet käyttänyt molemmat kudosit tässä kuussa");
+                        return;
+                      }
+                      giveKudos.mutate({ postId: post.id, receiverId: post.user_id });
+                    }}
+                    disabled={giveKudos.isPending}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95",
+                      hasGivenKudos
+                        ? "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))]"
+                        : kudosRemaining > 0
+                          ? "text-muted-foreground hover:bg-[hsl(var(--purple))]/10 hover:text-[hsl(var(--purple))]"
+                          : "text-muted-foreground/40 cursor-not-allowed"
+                    )}
+                    title={`${kudosRemaining}/2 kudos jäljellä tässä kuussa`}
+                  >
+                    <Award
+                      size={15}
+                      fill={hasGivenKudos ? "currentColor" : "none"}
+                      className={cn(hasGivenKudos && "animate-scale-in")}
+                    />
+                    {(post.kudos_count || 0) > 0 && (post.kudos_count || 0)}
+                  </button>
+                )}
+
+                {/* Show kudos count for own posts */}
+                {isOwn && (post.kudos_count || 0) > 0 && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-[hsl(var(--purple))]">
+                    <Award size={15} fill="currentColor" />
+                    {post.kudos_count}
+                  </div>
+                )}
               </div>
 
               {/* Comments Section */}

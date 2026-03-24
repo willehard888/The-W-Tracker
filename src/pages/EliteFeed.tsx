@@ -497,9 +497,22 @@ const EliteFeed = () => {
             </div>
           )}
 
+          {videoPreview && (
+            <div className="relative mt-3 rounded-xl overflow-hidden">
+              <video src={videoPreview} className="w-full max-h-48 rounded-xl" controls />
+              <button
+                onClick={() => { setVideoFile(null); setVideoPreview(null); }}
+                className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
             <div className="flex items-center gap-1">
               <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleImageSelect} />
+              <input ref={videoRef} type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden" onChange={handleVideoSelect} />
               <button
                 onClick={() => fileRef.current?.click()}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-medium"
@@ -507,12 +520,19 @@ const EliteFeed = () => {
                 <Image size={14} />
                 Photo
               </button>
+              <button
+                onClick={() => videoRef.current?.click()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-medium"
+              >
+                <Video size={14} />
+                Video
+              </button>
             </div>
             <Button
               variant="gold"
               size="sm"
               onClick={() => createPost.mutate()}
-              disabled={createPost.isPending || (!newPost.trim() && !imageFile)}
+              disabled={createPost.isPending || (!newPost.trim() && !imageFile && !videoFile)}
               className="rounded-full px-5"
             >
               <Send size={12} />

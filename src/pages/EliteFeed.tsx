@@ -26,9 +26,13 @@ const TIER_STYLES: Record<string, string> = {
 
 const SUPPORTED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+const SUPPORTED_VIDEO_MIME_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+const SUPPORTED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
 const MAX_IMAGE_SIZE_MB = 8;
+const MAX_VIDEO_SIZE_MB = 50;
 
 const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
+const isVideoUrl = (url: string) => SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.toLowerCase().includes(ext));
 
 const EliteFeed = () => {
   const { user, profile, isElite } = useAuth();

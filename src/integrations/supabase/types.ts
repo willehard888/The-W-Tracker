@@ -265,6 +265,7 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          kudos_count: number
           likes_count: number
           reported: boolean
           updated_at: string
@@ -277,6 +278,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          kudos_count?: number
           likes_count?: number
           reported?: boolean
           updated_at?: string
@@ -289,6 +291,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          kudos_count?: number
           likes_count?: number
           reported?: boolean
           updated_at?: string
@@ -355,6 +358,38 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      kudos: {
+        Row: {
+          created_at: string
+          giver_id: string
+          id: string
+          post_id: string
+          receiver_id: string
+        }
+        Insert: {
+          created_at?: string
+          giver_id: string
+          id?: string
+          post_id: string
+          receiver_id: string
+        }
+        Update: {
+          created_at?: string
+          giver_id?: string
+          id?: string
+          post_id?: string
+          receiver_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kudos_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

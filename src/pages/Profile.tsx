@@ -276,6 +276,7 @@ const Profile = () => {
                 )}
                 <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                   <span className="flex items-center gap-1"><Heart size={10} /> {post.likes_count}</span>
+                  <span className="flex items-center gap-1"><Trophy size={10} className="text-gold" /> {post.kudos_count}</span>
                   <span className="flex items-center gap-1"><MessageSquare size={10} /> {post.comments_count}</span>
                   <span className="ml-auto">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
                 </div>

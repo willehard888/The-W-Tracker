@@ -1,5 +1,5 @@
 import { Flame, Award, ChevronRight, Crown, Shield } from "lucide-react";
-import StatCard from "@/components/StatCard";
+import LevelCard from "@/components/LevelCard";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
 import { Button } from "@/components/ui/button";

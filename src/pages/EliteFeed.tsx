@@ -653,6 +653,7 @@ const EliteFeed = () => {
           const isOwn = post.user_id === user?.id;
           const tierStyle = TIER_STYLES[post.profile?.status_tier] || TIER_STYLES.normal;
           const liked = reactions?.includes(post.id);
+          const hasGivenKudos = userKudosPosts?.includes(post.id);
 
           return (
             <div

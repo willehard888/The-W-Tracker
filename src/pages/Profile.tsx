@@ -231,6 +231,7 @@ const Profile = () => {
         <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} />
         <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
         <StatCard icon={Shield} label="Badges" value={earnedBadgeIds?.length || 0} variant="purple" />
+        <StatCard icon={Trophy} label="Kudos Received" value={kudosReceived || 0} variant="gold" />
       </div>
 
       {/* Badge Vault */}

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { isNativePlatform } from "@/lib/platform";
+import { isNativePlatform, getPlatform } from "@/lib/platform";
 
 // Native SDK
 import { Purchases as CapPurchases } from "@revenuecat/purchases-capacitor";

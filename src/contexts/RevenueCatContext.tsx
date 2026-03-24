@@ -50,8 +50,10 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   // ─── Native init (Capacitor plugin) ───
   const initNative = useCallback(async (userId: string) => {
     try {
+      const platform = getPlatform();
+      const apiKey = platform === "android" ? RC_API_KEY_GOOGLE : RC_API_KEY_APPLE;
       await CapPurchases.configure({
-        apiKey: RC_API_KEY_APPLE,
+        apiKey,
         appUserID: userId,
       });
 

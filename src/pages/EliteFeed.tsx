@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
+import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";

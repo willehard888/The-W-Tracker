@@ -99,6 +99,19 @@ const Profile = () => {
     enabled: !!profile,
   });
 
+  const { data: kudosReceived } = useQuery({
+    queryKey: ["kudos-received", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return 0;
+      const { count } = await supabase
+        .from("kudos")
+        .select("*", { count: "exact", head: true })
+        .eq("receiver_id", profile.user_id);
+      return count || 0;
+    },
+    enabled: !!profile,
+  });
+
   const earnedBadges = (allBadges || []).filter((b) => earnedBadgeIds?.includes(b.id));
 
   if (!profile) return null;

@@ -729,6 +729,18 @@ const EliteFeed = () => {
                 </div>
               )}
 
+              {/* Video */}
+              {(post as any).video_url && (
+                <div className="mt-3 mx-4 rounded-xl overflow-hidden">
+                  <video
+                    src={(post as any).video_url}
+                    className="w-full max-h-96 rounded-xl"
+                    controls
+                    preload="metadata"
+                  />
+                </div>
+              )}
+
               {/* Actions */}
               <div className="flex items-center gap-1 px-4 py-3 mt-1">
                 <button

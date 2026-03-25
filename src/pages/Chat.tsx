@@ -147,7 +147,7 @@ const Chat = () => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2 pb-20">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
         {(!messages || messages.length === 0) && (
           <p className="text-xs text-muted-foreground/50 text-center py-8">Start the conversation</p>
         )}
@@ -177,8 +177,8 @@ const Chat = () => {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <div className="fixed bottom-16 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border px-4 py-3">
+      {/* Input - sticky at bottom, above BottomNav */}
+      <div className="sticky bottom-0 z-40 bg-card/95 backdrop-blur-md border-t border-border px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="max-w-md mx-auto flex gap-2">
           <input
             value={text}

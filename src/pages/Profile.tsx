@@ -292,7 +292,7 @@ const Profile = () => {
           <h3 className="font-display font-bold text-sm mb-1">Unlock Elite Status</h3>
           <p className="text-xs text-muted-foreground mb-3">Full leaderboard, battles, elite feed, XP multiplier</p>
           <Button variant="gold" size="lg" className="w-full" onClick={() => navigate("/paywall")}>
-            Go Elite — €15.99/kk
+            Go Elite — 9,99€/kk
           </Button>
         </div>
       )}

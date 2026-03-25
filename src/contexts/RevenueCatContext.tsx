@@ -1,14 +1,10 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { isNativePlatform, getPlatform } from "@/lib/platform";
+import { isNativePlatform } from "@/lib/platform";
 
 // Native SDK
 import { Purchases as CapPurchases } from "@revenuecat/purchases-capacitor";
-
-// Web SDK
-import { Purchases as WebPurchases } from "@revenuecat/purchases-js";
-import type { CustomerInfo as WebCustomerInfo, Package as WebPackage } from "@revenuecat/purchases-js";
 
 const RC_API_KEY_APPLE = "appl_7BLDG4P4CU";
 const ENTITLEMENT_ID = "The W Tracker Pro";

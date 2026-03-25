@@ -29,7 +29,8 @@ const getStreakTier = (streak: number) => {
 const StreakDisplay = ({ streak, longestStreak, className }: StreakDisplayProps) => {
   const tier = getStreakTier(streak);
   const isHot = tier.index >= 1;
-  const isBlazing = tier.index >= 3;
+  const isOnFire = tier.index >= 2; // 14+ days
+  const isBlazing = tier.index >= 3; // 30+ days
 
   // Find current and next milestone
   const currentMilestone = [...MILESTONES].reverse().find((m) => streak >= m.days);

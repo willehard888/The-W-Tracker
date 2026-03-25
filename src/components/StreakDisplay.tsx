@@ -29,7 +29,8 @@ const getStreakTier = (streak: number) => {
 const StreakDisplay = ({ streak, longestStreak, className }: StreakDisplayProps) => {
   const tier = getStreakTier(streak);
   const isHot = tier.index >= 1;
-  const isBlazing = tier.index >= 3;
+  const isOnFire = tier.index >= 2; // 14+ days
+  const isBlazing = tier.index >= 3; // 30+ days
 
   // Find current and next milestone
   const currentMilestone = [...MILESTONES].reverse().find((m) => streak >= m.days);
@@ -45,8 +46,9 @@ const StreakDisplay = ({ streak, longestStreak, className }: StreakDisplayProps)
       className={cn(
         "relative rounded-xl border bg-card p-4 overflow-hidden transition-all",
         !isHot && "border-border",
-        isHot && !isBlazing && "border-[hsl(var(--streak-orange))]/40 shadow-[0_0_16px_hsl(var(--streak-orange)/0.12)]",
-        isBlazing && "border-gold/40 shadow-[0_0_24px_hsl(var(--gold)/0.15)]",
+        isHot && !isOnFire && "border-[hsl(var(--streak-orange))]/40 shadow-[0_0_16px_hsl(var(--streak-orange)/0.12)]",
+        isOnFire && !isBlazing && "border-[hsl(var(--streak-orange))]/50 animate-[streak-pulse-glow_3s_ease-in-out_infinite]",
+        isBlazing && "border-gold/50 animate-[streak-pulse-glow-gold_3s_ease-in-out_infinite]",
         className
       )}>
       
@@ -55,7 +57,9 @@ const StreakDisplay = ({ streak, longestStreak, className }: StreakDisplayProps)
       <div className="absolute inset-0 pointer-events-none"
       style={{
         background: isBlazing ?
-        "linear-gradient(135deg, hsl(42 78% 54% / 0.06), transparent 60%)" :
+        "linear-gradient(135deg, hsl(42 78% 54% / 0.08), transparent 60%)" :
+        isOnFire ?
+        "linear-gradient(135deg, hsl(18 95% 58% / 0.1), hsl(42 78% 54% / 0.04), transparent 70%)" :
         "linear-gradient(135deg, hsl(18 95% 58% / 0.06), transparent 60%)"
       }} />
 
@@ -65,24 +69,27 @@ const StreakDisplay = ({ streak, longestStreak, className }: StreakDisplayProps)
         {/* Header: Flame + Number + Label */}
         <div className="flex items-center gap-3 mb-3">
           <div className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-xl shrink-0",
+            "flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-all",
             !isHot && "bg-secondary text-muted-foreground",
-            isHot && !isBlazing && "bg-[hsl(var(--streak-orange))]/15 text-[hsl(var(--streak-orange))]",
-            isBlazing && "gradient-gold text-primary-foreground shadow-[0_0_12px_hsl(var(--gold)/0.3)]"
+            isHot && !isOnFire && "bg-[hsl(var(--streak-orange))]/15 text-[hsl(var(--streak-orange))]",
+            isOnFire && !isBlazing && "bg-[hsl(var(--streak-orange))]/20 text-[hsl(var(--streak-orange))] shadow-[0_0_16px_hsl(var(--streak-orange)/0.25)]",
+            isBlazing && "gradient-gold text-primary-foreground shadow-[0_0_20px_hsl(var(--gold)/0.4)]"
           )}>
             <Flame size={20} className={cn(
-              isHot && "animate-[streak-fire_2.2s_ease-in-out_infinite]",
-              isBlazing && "animate-[streak-fire_1.5s_ease-in-out_infinite]"
+              isHot && !isOnFire && "animate-[streak-fire_2.2s_ease-in-out_infinite]",
+              isOnFire && !isBlazing && "animate-[streak-fire_1.6s_ease-in-out_infinite]",
+              isBlazing && "animate-[streak-fire_1.2s_ease-in-out_infinite]"
             )} />
           </div>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-1.5">
-              <span className={cn("font-black font-display tabular-nums leading-none tracking-tighter text-7xl text-destructive",
-
-              !isHot && "text-foreground",
-              isHot && !isBlazing && "text-[hsl(var(--streak-orange))]",
-              isBlazing && "text-gold"
+              <span className={cn(
+                "font-black font-display tabular-nums leading-none tracking-tighter text-7xl",
+                !isHot && "text-foreground",
+                isHot && !isOnFire && "text-[hsl(var(--streak-orange))]",
+                isOnFire && !isBlazing && "text-[hsl(var(--streak-orange))] animate-[streak-number-pulse_3s_ease-in-out_infinite]",
+                isBlazing && "text-gold animate-[streak-number-pulse_2.5s_ease-in-out_infinite]"
               )}>
                 {streak}
               </span>
@@ -93,8 +100,9 @@ const StreakDisplay = ({ streak, longestStreak, className }: StreakDisplayProps)
               <span className={cn(
                 "text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md",
                 !isHot && "bg-[hsl(var(--streak-orange))]/10 text-[hsl(var(--streak-orange))]/80",
-                isHot && !isBlazing && "bg-[hsl(var(--streak-orange))]/15 text-[hsl(var(--streak-orange))]",
-                isBlazing && "bg-gold/15 text-gold"
+                isHot && !isOnFire && "bg-[hsl(var(--streak-orange))]/15 text-[hsl(var(--streak-orange))]",
+                isOnFire && !isBlazing && "bg-[hsl(var(--streak-orange))]/20 text-[hsl(var(--streak-orange))] shadow-[0_0_8px_hsl(var(--streak-orange)/0.15)]",
+                isBlazing && "bg-gold/15 text-gold shadow-[0_0_8px_hsl(var(--gold)/0.2)]"
               )}>
                   {tier.name}
                 </span>

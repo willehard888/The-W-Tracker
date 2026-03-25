@@ -348,11 +348,11 @@
 
     "@remix-run/router": ["@remix-run/router@1.23.0", "", {}, "sha512-O3rHJzAQKamUz1fvE0Qaw0xSFqsA/yafi2iqeE0pvdFtCO1viYx8QL6f3Ln/aCCTLxs68SLf0KPM9eSeM8yBnA=="],
 
-    "@revenuecat/purchases-capacitor": ["@revenuecat/purchases-capacitor@12.3.0", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@revenuecat/purchases-capacitor/-/purchases-capacitor-12.3.0.tgz", { "dependencies": { "@revenuecat/purchases-typescript-internal-esm": "17.52.0" }, "peerDependencies": { "@capacitor/core": ">=8.0.0" } }, "sha512-TvtEYPMiE+9s2tT1KUl5QqgUd0H96YCrRhpXv3ZWR30ve63Apl53xHYU3mf4vOInXc3wm1oEDJKz+1thuiTTBA=="],
+    "@revenuecat/purchases-capacitor": ["@revenuecat/purchases-capacitor@12.3.0", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@revenuecat/purchases-capacitor/-/purchases-capacitor-12.3.0.tgz", { "dependencies": { "@revenuecat/purchases-typescript-internal-esm": "17.52.0" }, "peerDependencies": { "@capacitor/core": ">=8.0.0" } }, "sha512-TvtEYPMiE+9s2tT1KUl5QqgUd0H96YCrRhpXv3ZWR30ve63Apl53xHYU3mf4vOInXc3wm1oEDJKz+1thuiTTBA=="],
 
-    "@revenuecat/purchases-js": ["@revenuecat/purchases-js@1.29.1", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@revenuecat/purchases-js/-/purchases-js-1.29.1.tgz", {}, "sha512-e/zrC/AGih4NeayqaYD+NLLh0dn1kFhxf6vvQiDIKXiQ0qOnslQYhGCDo1+8Hn8CnSDxESSE1MWBXb2c+sCTXw=="],
+    "@revenuecat/purchases-js": ["@revenuecat/purchases-js@1.29.1", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@revenuecat/purchases-js/-/purchases-js-1.29.1.tgz", {}, "sha512-e/zrC/AGih4NeayqaYD+NLLh0dn1kFhxf6vvQiDIKXiQ0qOnslQYhGCDo1+8Hn8CnSDxESSE1MWBXb2c+sCTXw=="],
 
-    "@revenuecat/purchases-typescript-internal-esm": ["@revenuecat/purchases-typescript-internal-esm@17.52.0", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@revenuecat/purchases-typescript-internal-esm/-/purchases-typescript-internal-esm-17.52.0.tgz", {}, "sha512-xB75VkbgJVotnbnK/OoYLyyCqLgi3Qm/7T8NUBG6e3OvxUOVkF2XQLMbNz1e/1MJjcQxVWXY4RxnA4MHl0TxcA=="],
+    "@revenuecat/purchases-typescript-internal-esm": ["@revenuecat/purchases-typescript-internal-esm@17.52.0", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@revenuecat/purchases-typescript-internal-esm/-/purchases-typescript-internal-esm-17.52.0.tgz", {}, "sha512-xB75VkbgJVotnbnK/OoYLyyCqLgi3Qm/7T8NUBG6e3OvxUOVkF2XQLMbNz1e/1MJjcQxVWXY4RxnA4MHl0TxcA=="],
 
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.0-beta.27", "", {}, "sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA=="],
 

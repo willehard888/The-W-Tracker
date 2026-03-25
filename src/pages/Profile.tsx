@@ -169,12 +169,12 @@ const Profile = () => {
             </div>
           )}
         </div>
-        <h1 className="font-display text-xl font-bold tracking-tight">@{profile.username}</h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight">@{profile.username}</h1>
         <div className="flex items-center justify-center gap-2 mt-1">
-          <span className="text-xs font-bold text-gold bg-gold/10 px-2.5 py-0.5 rounded-full border border-gold/20">
+          <span className="text-sm font-bold text-gold bg-gold/10 px-2.5 py-0.5 rounded-full border border-gold/20">
             {tierLabel}
           </span>
-          <span className="text-xs text-muted-foreground">• Level {profile.level}</span>
+          <span className="text-sm text-muted-foreground">• Level {profile.level}</span>
         </div>
 
         {earnedBadges && earnedBadges.length > 0 && (
@@ -236,7 +236,7 @@ const Profile = () => {
 
       {/* Badge Vault */}
       <div className="animate-reveal animate-reveal-delay-3">
-        <h2 className="font-display font-bold text-sm mb-3 tracking-tight">Badge Vault</h2>
+        <h2 className="font-display font-bold text-base mb-3 tracking-tight">Badge Vault</h2>
         <div className="grid grid-cols-3 gap-3">
           {allBadges?.map((badge) => {
             const earned = earnedBadgeIds?.includes(badge.id) || false;
@@ -266,11 +266,11 @@ const Profile = () => {
       {/* User Posts */}
       {userPosts && userPosts.length > 0 && (
         <div className="mt-6 animate-reveal animate-reveal-delay-4">
-          <h2 className="font-display font-bold text-sm mb-3 tracking-tight">Posts ({userPosts.length})</h2>
+          <h2 className="font-display font-bold text-base mb-3 tracking-tight">Posts ({userPosts.length})</h2>
           <div className="space-y-3">
             {userPosts.map((post) => (
               <div key={post.id} className="rounded-xl border border-border bg-card p-4">
-                {post.content && <p className="text-sm mb-2">{post.content}</p>}
+                {post.content && <p className="text-base mb-2">{post.content}</p>}
                 {post.image_url && (
                   <img src={post.image_url} alt="Post" className="w-full rounded-lg object-cover max-h-48 mb-2" />
                 )}
@@ -289,8 +289,8 @@ const Profile = () => {
       {/* Elite CTA */}
       {!profile.is_elite && (
         <div className="mt-8 rounded-xl border border-gold/20 bg-card p-5 text-center animate-reveal animate-reveal-delay-4">
-          <h3 className="font-display font-bold text-sm mb-1">Unlock Elite Status</h3>
-          <p className="text-xs text-muted-foreground mb-3">Full leaderboard, battles, elite feed, XP multiplier</p>
+          <h3 className="font-display font-bold text-base mb-1">Unlock Elite Status</h3>
+          <p className="text-sm text-muted-foreground mb-3">Full leaderboard, battles, elite feed, XP multiplier</p>
           <Button variant="gold" size="lg" className="w-full" onClick={() => navigate("/paywall")}>
             Go Elite — 9,99€/kk
           </Button>

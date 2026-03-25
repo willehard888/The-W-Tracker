@@ -114,8 +114,8 @@ const Messages = () => {
             <MessageCircle size={16} className="text-purple-400" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold tracking-tight leading-none py-[10px]">Messages</h1>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Direct messages</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight leading-none py-[10px]">Messages</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Direct messages</p>
           </div>
         </div>
       </div>

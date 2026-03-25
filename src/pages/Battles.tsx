@@ -375,8 +375,8 @@ const Battles = () => {
         <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mb-4">
           <Lock size={32} className="text-muted-foreground" />
         </div>
-        <h1 className="font-display text-2xl font-bold mb-2">Elite Only</h1>
-        <p className="text-sm text-muted-foreground mb-6 max-w-xs">Battles are exclusive to Elite members. Upgrade to challenge others.</p>
+         <h1 className="font-display text-3xl font-bold mb-2">Elite Only</h1>
+        <p className="text-base text-muted-foreground mb-6 max-w-xs">Battles are exclusive to Elite members. Upgrade to challenge others.</p>
         <Button variant="gold" size="lg" onClick={() => navigate("/paywall")}>
           <Crown size={16} />
           Unlock Elite — 9,99€/kk
@@ -403,8 +403,8 @@ const Battles = () => {
       />
 
       <div className="animate-reveal mb-6">
-        <h1 className="font-display text-2xl font-bold tracking-tight">Battles</h1>
-        <p className="text-xs text-muted-foreground mt-1">Challenge others. Prove your discipline.</p>
+        <h1 className="font-display text-3xl font-bold tracking-tight">Battles</h1>
+        <p className="text-sm text-muted-foreground mt-1">Challenge others. Prove your discipline.</p>
       </div>
 
       {/* Create Battle CTA */}

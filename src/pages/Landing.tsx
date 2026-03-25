@@ -30,14 +30,14 @@ const Landing = () => {
             <span className="text-xs font-semibold text-gold tracking-wide">DISCIPLINE IS THE NEW FLEX</span>
           </div>
 
-          <h1 className="font-display text-5xl sm:text-6xl font-black tracking-tight leading-[0.95] mb-5">
+          <h1 className="font-display text-[2.75rem] sm:text-6xl font-black tracking-tight leading-[0.95] mb-5">
             You either{" "}
             <span className="text-gold glow-gold-text">level up</span>
             <br />
             or fall behind.
           </h1>
 
-          <p className="text-muted-foreground text-base leading-relaxed max-w-sm mx-auto mb-10">
+          <p className="text-muted-foreground text-lg leading-relaxed max-w-sm mx-auto mb-10">
             The W Tracker turns self-improvement into a visible status game.
             Track your discipline. Compete with others. Earn your status.
             The world sees who puts in the work.

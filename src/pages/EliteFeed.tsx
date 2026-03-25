@@ -425,8 +425,8 @@ const EliteFeed = () => {
               <Flame size={16} className="text-primary-foreground" />
             </div>
             <div>
-              <h1 className="font-display text-xl font-bold tracking-tight leading-none my-[10px] py-[10px]">Elite Feed</h1>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Discipline proof from top performers</p>
+              <h1 className="font-display text-2xl font-bold tracking-tight leading-none my-[10px] py-[10px]">Elite Feed</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">Discipline proof from top performers</p>
             </div>
           </div>
 

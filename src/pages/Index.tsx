@@ -88,9 +88,9 @@ const Index = () => {
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 safe-top">
       <div className="animate-reveal mb-6">
-        <p className="text-sm text-muted-foreground font-medium">{dailyQuote}</p>
+        <p className="text-base text-muted-foreground font-medium">{dailyQuote}</p>
         <div className="flex items-center justify-between mt-1">
-          <h1 className="font-display text-2xl font-bold tracking-tight">@{profile.username}</h1>
+          <h1 className="font-display text-3xl font-bold tracking-tight">@{profile.username}</h1>
 
           {/* Tier Badge — Elite gets premium treatment */}
           {profile.status_tier === "elite" ?
@@ -141,13 +141,13 @@ const Index = () => {
                 <span className="font-black text-primary-foreground text-xl">{profile.level}</span>
               </div>
               <div>
-                <p className="font-display font-black tracking-tight text-base">Level {profile.level}</p>
+                <p className="font-display font-black tracking-tight text-lg">Level {profile.level}</p>
                 <p className="text-muted-foreground uppercase tracking-widest text-sm">Rank Progress</p>
               </div>
             </div>
             <div className="text-right">
               <div className="flex items-center gap-1">
-                <XpCounter value={profile.xp} className="font-display font-black text-gold text-lg tabular-nums glow-gold-text" />
+                <XpCounter value={profile.xp} className="font-display font-black text-gold text-xl tabular-nums glow-gold-text" />
               </div>
               <p className="text-muted-foreground text-sm">/ {xpToNext.toLocaleString()} XP</p>
             </div>
@@ -166,7 +166,7 @@ const Index = () => {
           </div>
 
           <div className="flex items-center justify-between mt-2">
-            <p className="text-muted-foreground text-base">
+            <p className="text-muted-foreground text-sm">
               <span className="text-gold font-bold">{Math.max(0, xpToNext - profile.xp).toLocaleString()}</span> XP to next level
             </p>
             <p className="font-bold text-gold/60 tabular-nums text-sm">{xpPercent}%</p>
@@ -184,8 +184,8 @@ const Index = () => {
       {canCheckin &&
       <div className="animate-reveal animate-reveal-delay-3 mb-6">
           <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-4 text-center">
-            <p className="text-sm font-bold text-purple-300 mb-1">🎯 Daily Quests Available</p>
-            <p className="text-xs text-muted-foreground">Complete bonus objectives during check-in for extra XP</p>
+            <p className="text-base font-bold text-purple-300 mb-1">🎯 Daily Quests Available</p>
+            <p className="text-sm text-muted-foreground">Complete bonus objectives during check-in for extra XP</p>
           </div>
         </div>
       }
@@ -210,7 +210,7 @@ const Index = () => {
       {/* Recent Badges */}
       <div className="animate-reveal animate-reveal-delay-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display font-bold text-sm tracking-tight">Recent Badges</h2>
+          <h2 className="font-display font-bold text-base tracking-tight">Recent Badges</h2>
           <button onClick={() => navigate("/profile")} className="flex items-center gap-1 text-xs text-gold font-medium hover:underline">
             View All <ChevronRight size={14} />
           </button>

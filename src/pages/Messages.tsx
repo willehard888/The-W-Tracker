@@ -138,6 +138,60 @@ const Messages = () => {
         </div>
       </div>
 
+      {/* Search */}
+      <div className="animate-reveal mb-4">
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search users..."
+            className="w-full h-10 pl-9 pr-9 rounded-xl border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-purple-500/30 transition-shadow"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground">
+              <X size={14} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Search Results */}
+      {searchQuery.trim().length >= 2 && searchResults && searchResults.length > 0 && (
+        <div className="animate-reveal mb-4">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
+            <Search size={10} /> Results
+          </p>
+          <div className="space-y-2">
+            {searchResults.map((u) => (
+              <button
+                key={u.user_id}
+                onClick={() => { setSearchQuery(""); navigate(`/chat/${u.user_id}`); }}
+                className="w-full flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-all active:scale-[0.98] card-depth"
+              >
+                <Avatar className="h-10 w-10 shrink-0">
+                  {u.avatar_url ? <AvatarImage src={u.avatar_url} /> : null}
+                  <AvatarFallback className="text-xs font-bold bg-secondary">
+                    {u.username?.charAt(0)?.toUpperCase() || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">@{u.username}</p>
+                  <p className="text-xs text-muted-foreground/50">Level {u.level || 1}</p>
+                </div>
+                <MessageCircle size={14} className="text-muted-foreground/30" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {searchQuery.trim().length >= 2 && searchResults && searchResults.length === 0 && (
+        <div className="text-center py-6 mb-4 animate-reveal">
+          <p className="text-xs text-muted-foreground/60">No users found</p>
+        </div>
+      )}
+
       {/* Pending Friend Requests */}
       {pendingRequests && pendingRequests.length > 0 && (
         <div className="animate-reveal animate-reveal-delay-1 mb-4">

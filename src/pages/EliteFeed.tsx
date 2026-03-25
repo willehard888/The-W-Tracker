@@ -417,7 +417,7 @@ const EliteFeed = () => {
   const unresolvedReportsCount = reports?.length || 0;
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6">
+    <div className="min-h-screen pb-24 px-4 pt-6 safe-top">
       <div className="animate-reveal mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

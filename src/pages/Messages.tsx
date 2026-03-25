@@ -2,14 +2,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, UserCheck, UserPlus } from "lucide-react";
+import { MessageCircle, UserCheck, UserPlus, Search, X } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { useState } from "react";
 
 const Messages = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch accepted friends
   const { data: friends } = useQuery({

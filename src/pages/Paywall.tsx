@@ -158,7 +158,7 @@ const Paywall = () => {
           </div>
         ) : (
           <div className="rounded-xl border border-gold/20 bg-card p-6 text-center space-y-4">
-            <p className="text-lg font-display font-black text-gold mb-1">15.99€<span className="text-sm font-semibold text-muted-foreground">/mo</span></p>
+            <p className="text-lg font-display font-black text-gold mb-1">{isNative ? "9.99€" : "15.99€"}<span className="text-sm font-semibold text-muted-foreground">/mo</span></p>
             <p className="text-xs text-muted-foreground">Elite Membership</p>
 
             <Button
@@ -173,7 +173,7 @@ const Paywall = () => {
               ) : (
                 <Crown size={18} />
               )}
-              Unlock Elite — 15.99€/mo
+              Unlock Elite — {isNative ? "9.99€" : "15.99€"}/mo
             </Button>
           </div>
         )}

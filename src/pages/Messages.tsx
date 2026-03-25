@@ -107,7 +107,7 @@ const Messages = () => {
   );
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6">
+    <div className="min-h-screen pb-24 px-4 pt-6 safe-top">
       <div className="animate-reveal mb-6">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center">

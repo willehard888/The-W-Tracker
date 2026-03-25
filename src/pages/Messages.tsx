@@ -60,6 +60,22 @@ const Messages = () => {
     enabled: !!user,
   });
 
+  // Search users
+  const { data: searchResults } = useQuery({
+    queryKey: ["search-users", searchQuery],
+    queryFn: async () => {
+      if (!user || !searchQuery.trim()) return [];
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, username, avatar_url, status_tier, level")
+        .neq("user_id", user.id)
+        .ilike("username", `%${searchQuery.trim()}%`)
+        .limit(10);
+      return data || [];
+    },
+    enabled: !!user && searchQuery.trim().length >= 2,
+  });
+
   const { data: conversations, isLoading } = useQuery({
     queryKey: ["conversations", user?.id],
     queryFn: async () => {

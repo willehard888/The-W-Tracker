@@ -21,17 +21,18 @@ serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
 
-    // Use anon key client for auth verification (works with asymmetric JWTs)
     const anonClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+      { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: userData, error: userError } = await anonClient.auth.getUser(token);
-    if (userError) throw new Error(`Auth error: ${userError.message}`);
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated");
+    const { data: claimsData, error: claimsError } = await anonClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) throw new Error(`Auth error: ${claimsError?.message || "Invalid token"}`);
+    
+    const userId = claimsData.claims.sub;
+    const userEmail = claimsData.claims.email as string;
+    if (!userId || !userEmail) throw new Error("User not authenticated");
 
     // Use service role client for DB operations
     const serviceClient = createClient(

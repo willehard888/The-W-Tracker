@@ -100,8 +100,9 @@ const StreakDisplay = ({ streak, longestStreak, className }: StreakDisplayProps)
               <span className={cn(
                 "text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md",
                 !isHot && "bg-[hsl(var(--streak-orange))]/10 text-[hsl(var(--streak-orange))]/80",
-                isHot && !isBlazing && "bg-[hsl(var(--streak-orange))]/15 text-[hsl(var(--streak-orange))]",
-                isBlazing && "bg-gold/15 text-gold"
+                isHot && !isOnFire && "bg-[hsl(var(--streak-orange))]/15 text-[hsl(var(--streak-orange))]",
+                isOnFire && !isBlazing && "bg-[hsl(var(--streak-orange))]/20 text-[hsl(var(--streak-orange))] shadow-[0_0_8px_hsl(var(--streak-orange)/0.15)]",
+                isBlazing && "bg-gold/15 text-gold shadow-[0_0_8px_hsl(var(--gold)/0.2)]"
               )}>
                   {tier.name}
                 </span>

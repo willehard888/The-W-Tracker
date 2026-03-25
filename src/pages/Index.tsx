@@ -86,7 +86,7 @@ const Index = () => {
   profile.status_tier === "rising" ? "Rising" : "Normal";
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6">
+    <div className="min-h-screen pb-24 px-4 pt-6 safe-top">
       <div className="animate-reveal mb-6">
         <p className="text-sm text-muted-foreground font-medium">{dailyQuote}</p>
         <div className="flex items-center justify-between mt-1">

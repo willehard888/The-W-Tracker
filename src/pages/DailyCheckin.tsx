@@ -353,7 +353,7 @@ const DailyCheckin = () => {
   }
 
   return (
-    <div className="min-h-screen pb-28 px-4 pt-4">
+    <div className="min-h-screen pb-28 px-4 pt-4 safe-top">
       <div className="flex items-center gap-3 mb-6 animate-reveal mx-0 my-[10px] py-[10px]">
         <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
           <ChevronLeft size={20} />

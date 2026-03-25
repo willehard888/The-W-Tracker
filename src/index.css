@@ -388,6 +388,15 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* ── Safe area utilities for native iOS ── */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
 
 @keyframes confetti-fly {
   0% { transform: translate(0, 0) rotate(0deg); }

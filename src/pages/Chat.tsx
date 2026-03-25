@@ -126,9 +126,9 @@ const Chat = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col safe-top">
+    <div className="fixed inset-0 flex flex-col safe-top bg-background z-30">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-card/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center gap-3">
+      <div className="shrink-0 bg-card/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate("/messages")} className="text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft size={20} />
         </button>

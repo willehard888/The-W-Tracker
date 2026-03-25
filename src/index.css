@@ -347,6 +347,48 @@
   50% { text-shadow: 0 0 20px currentColor, 0 0 40px currentColor; opacity: 1; }
 }
 
+@keyframes streak-pulse-glow-diamond {
+  0%, 100% { box-shadow: 0 0 20px hsl(200 80% 65% / 0.2), 0 0 40px hsl(42 78% 54% / 0.1); }
+  50% { box-shadow: 0 0 32px hsl(200 80% 65% / 0.4), 0 0 60px hsl(42 78% 54% / 0.2); }
+}
+
+@keyframes streak-pulse-glow-legendary {
+  0%, 100% { box-shadow: 0 0 24px hsl(280 70% 60% / 0.25), 0 0 48px hsl(42 78% 54% / 0.12), 0 0 64px hsl(350 80% 60% / 0.08); }
+  50% { box-shadow: 0 0 40px hsl(280 70% 60% / 0.45), 0 0 72px hsl(42 78% 54% / 0.2), 0 0 96px hsl(350 80% 60% / 0.12); }
+}
+
+@keyframes streak-particle {
+  0% { transform: translateY(0) scale(0); opacity: 0; }
+  15% { opacity: 0.8; transform: translateY(-20px) scale(1); }
+  80% { opacity: 0.4; }
+  100% { transform: translateY(-100px) scale(0.3); opacity: 0; }
+}
+
+@keyframes streak-rainbow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@keyframes streak-badge-shimmer {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; box-shadow: 0 0 16px hsl(280 70% 60% / 0.3); }
+}
+
+.streak-diamond-text {
+  background: linear-gradient(135deg, hsl(200 80% 60%), hsl(42 78% 54%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.streak-legendary-text {
+  background: linear-gradient(135deg, hsl(280 70% 60%), hsl(42 78% 54%), hsl(350 80% 60%), hsl(200 80% 65%));
+  background-size: 300% 100%;
+  animation: streak-rainbow 4s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
 @keyframes confetti-fly {
   0% { transform: translate(0, 0) rotate(0deg); }
   100% { transform: translate(var(--end-x), var(--end-y)) rotate(var(--end-rotate)); }

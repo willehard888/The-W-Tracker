@@ -32,7 +32,7 @@ const BottomNav = () => {
                 active ? color : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Icon size={18} strokeWidth={active ? 2.5 : 1.8} />
+              <Icon size={18} strokeWidth={active ? 2.5 : 1.8} className="my-[10px]" />
               <span className="text-[9px] font-medium tracking-wide">{label}</span>
               {active && (
                 <div className={cn(

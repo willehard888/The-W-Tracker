@@ -23,6 +23,7 @@ import Messages from "./pages/Messages";
 import Chat from "./pages/Chat";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" /></div>;
   if (!user) return <Navigate to="/landing" replace />;
+
+  // Show onboarding on first login
+  const onboardingDone = localStorage.getItem("w_onboarding_done");
+  if (!onboardingDone && window.location.pathname !== "/onboarding") {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return <>{children}</>;
 };
 

@@ -1,18 +1,12 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { isNativePlatform, getPlatform } from "@/lib/platform";
+import { isNativePlatform } from "@/lib/platform";
 
-// Native SDK
+// Native SDK (iOS)
 import { Purchases as CapPurchases } from "@revenuecat/purchases-capacitor";
 
-// Web SDK
-import { Purchases as WebPurchases } from "@revenuecat/purchases-js";
-import type { CustomerInfo as WebCustomerInfo, Package as WebPackage } from "@revenuecat/purchases-js";
-
-const RC_API_KEY_APPLE = "appl_GYV7A8DGZQ";
-const RC_API_KEY_GOOGLE = "goog_YOUR_REVENUECAT_GOOGLE_API_KEY"; // Replace with your Google API key from RevenueCat
-const RC_API_KEY_WEB = "test_kCEnAIbFZcOhMhYfZnVXSERwGVp";
+const RC_API_KEY_APPLE = "appl_7BLDG4P4CU";
 const ENTITLEMENT_ID = "The W Tracker Pro";
 
 interface RevenueCatContextType {
@@ -36,7 +30,6 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const [rcElite, setRcElite] = useState(false);
   const [packages, setPackages] = useState<any[]>([]);
   const [rcLoading, setRcLoading] = useState(true);
-  const [webInstance, setWebInstance] = useState<WebPurchases | null>(null);
 
   const syncEliteStatus = useCallback(async (elite: boolean) => {
     if (!user || !elite) return;
@@ -47,13 +40,11 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     return !!entitlements?.active?.[ENTITLEMENT_ID];
   };
 
-  // ─── Native init (Capacitor plugin) ───
+  // ─── Native init (iOS Capacitor plugin) ───
   const initNative = useCallback(async (userId: string) => {
     try {
-      const platform = getPlatform();
-      const apiKey = platform === "android" ? RC_API_KEY_GOOGLE : RC_API_KEY_APPLE;
       await CapPurchases.configure({
-        apiKey,
+        apiKey: RC_API_KEY_APPLE,
         appUserID: userId,
       });
 
@@ -77,97 +68,41 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [syncEliteStatus]);
 
-  // ─── Web init (JS SDK) ───
-  const initWeb = useCallback(async (userId: string) => {
-    try {
-      const purchases = WebPurchases.configure(RC_API_KEY_WEB, userId);
-      setWebInstance(purchases);
-
-      const info = await purchases.getCustomerInfo();
-      const elite = checkEntitlements(info.entitlements);
-      setRcElite(elite);
-      await syncEliteStatus(elite);
-
-      try {
-        const offerings = await purchases.getOfferings();
-        if (offerings.current) {
-          setPackages(offerings.current.availablePackages);
-        }
-      } catch (e) {
-        console.log("No offerings configured yet:", e);
-      }
-    } catch (e) {
-      console.error("RevenueCat web init error:", e);
-    } finally {
-      setRcLoading(false);
-    }
-  }, [syncEliteStatus]);
-
   useEffect(() => {
     if (!user) {
       setRcElite(false);
       setPackages([]);
       setRcLoading(false);
-      setWebInstance(null);
       return;
     }
 
     if (isNativePlatform()) {
       initNative(user.id);
     } else {
-      // Web: skip RC init, Stripe handles payments
+      // Web: Stripe handles payments, skip RC
       setRcLoading(false);
     }
-  }, [user, initNative, initWeb]);
+  }, [user, initNative]);
 
-  // ─── Native purchase ───
-  const purchaseNative = async (pkg: any) => {
+  // ─── Native purchase (iOS) ───
+  const purchase = async (pkg: any) => {
     try {
       const { customerInfo } = await CapPurchases.purchasePackage({ aPackage: pkg });
       const elite = checkEntitlements(customerInfo.entitlements);
       setRcElite(elite);
       await syncEliteStatus(elite);
     } catch (e: any) {
-      if (e.code === "1" || e.userCancelled) return; // User cancelled
+      if (e.code === "1" || e.userCancelled) return;
       throw e;
-    }
-  };
-
-  // ─── Web purchase ───
-  const purchaseWeb = async (pkg: WebPackage) => {
-    if (!webInstance) return;
-    try {
-      const { customerInfo } = await webInstance.purchase({ rcPackage: pkg });
-      const elite = checkEntitlements(customerInfo.entitlements);
-      setRcElite(elite);
-      await syncEliteStatus(elite);
-    } catch (e: any) {
-      if (e.userCancelled) return;
-      throw e;
-    }
-  };
-
-  const purchase = async (pkg: any) => {
-    if (isNativePlatform()) {
-      await purchaseNative(pkg);
-    } else {
-      await purchaseWeb(pkg);
     }
   };
 
   const restorePurchases = async () => {
     try {
-      if (isNativePlatform()) {
-        const { customerInfo } = await CapPurchases.restorePurchases();
-        const elite = checkEntitlements(customerInfo.entitlements);
-        setRcElite(elite);
-        await syncEliteStatus(elite);
-      } else if (webInstance) {
-        const info = await webInstance.getCustomerInfo();
-        const elite = checkEntitlements(info.entitlements);
-        setRcElite(elite);
-        await syncEliteStatus(elite);
-      }
+      const { customerInfo } = await CapPurchases.restorePurchases();
+      const elite = checkEntitlements(customerInfo.entitlements);
+      setRcElite(elite);
+      await syncEliteStatus(elite);
     } catch (e) {
       console.error("Restore purchases error:", e);
       throw e;

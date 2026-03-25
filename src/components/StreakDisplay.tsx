@@ -28,7 +28,7 @@ const getStreakTier = (streak: number) => {
 
 const StreakDisplay = ({ streak, longestStreak, className }: StreakDisplayProps) => {
   const tier = getStreakTier(streak);
-  const isHot = tier.index >= 2;
+  const isHot = tier.index >= 1;
   const isBlazing = tier.index >= 3;
 
   // Find current and next milestone
@@ -71,6 +71,7 @@ const StreakDisplay = ({ streak, longestStreak, className }: StreakDisplayProps)
             isBlazing && "gradient-gold text-primary-foreground shadow-[0_0_12px_hsl(var(--gold)/0.3)]"
           )}>
             <Flame size={20} className={cn(
+              isHot && "animate-[streak-fire_2.2s_ease-in-out_infinite]",
               isBlazing && "animate-[streak-fire_1.5s_ease-in-out_infinite]"
             )} />
           </div>

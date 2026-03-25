@@ -41,8 +41,8 @@ const ToggleItem = ({ icon: Icon, label, sublabel, active, onToggle, bonus }: To
       <Icon size={20} />
     </div>
     <div className="flex-1 min-w-0">
-      <p className={cn("font-semibold text-sm", active && "text-gold")}>{label}</p>
-      {sublabel && <p className="text-xs text-muted-foreground">{sublabel}</p>}
+      <p className={cn("font-semibold text-base", active && "text-gold")}>{label}</p>
+      {sublabel && <p className="text-sm text-muted-foreground">{sublabel}</p>}
     </div>
     {bonus && active && (
       <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">{bonus}</span>
@@ -359,8 +359,8 @@ const DailyCheckin = () => {
           <ChevronLeft size={20} />
         </button>
         <div>
-          <h1 className="font-display text-xl font-bold tracking-tight">Daily Execution</h1>
-          <p className="text-xs text-muted-foreground">Log your day. Earn your status.</p>
+          <h1 className="font-display text-2xl font-bold tracking-tight">Daily Execution</h1>
+          <p className="text-sm text-muted-foreground">Log your day. Earn your status.</p>
         </div>
         <div className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gold/10 border border-gold/20">
           {isElite && <span className="text-[10px] font-bold text-gold mr-1">2×</span>}

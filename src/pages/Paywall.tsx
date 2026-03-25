@@ -3,10 +3,11 @@ import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Crown, Flame, Trophy, Swords, Shield, Zap, Check, ArrowLeft, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
+import EliteUnlockCelebration from "@/components/EliteUnlockCelebration";
 
 const ELITE_FEATURES = [
   { icon: Trophy, text: "Full global leaderboard access" },
@@ -22,7 +23,28 @@ const Paywall = () => {
   const { packages, purchase, restorePurchases, rcLoading } = useRevenueCat();
   const navigate = useNavigate();
   const [purchasing, setPurchasing] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const wasEliteRef = useRef(isElite);
   const isNative = isNativePlatform();
+
+  // Detect real-time elite unlock
+  useEffect(() => {
+    if (isElite && !wasEliteRef.current) {
+      setShowCelebration(true);
+    }
+    wasEliteRef.current = isElite;
+  }, [isElite]);
+
+  if (showCelebration) {
+    return (
+      <EliteUnlockCelebration
+        onComplete={() => {
+          setShowCelebration(false);
+          navigate("/profile");
+        }}
+      />
+    );
+  }
 
   if (isElite) {
     return (
@@ -48,10 +70,11 @@ const Paywall = () => {
       if (error) throw error;
       if (data?.url) {
         window.open(data.url, "_blank");
+        // Poll for subscription status — celebration triggers automatically via useEffect
         const pollInterval = setInterval(async () => {
           await checkSubscription();
-        }, 5000);
-        setTimeout(() => clearInterval(pollInterval), 120000);
+        }, 4000);
+        setTimeout(() => clearInterval(pollInterval), 180000);
       } else {
         throw new Error("No checkout URL received");
       }
@@ -72,8 +95,8 @@ const Paywall = () => {
     setPurchasing(true);
     try {
       await purchase(monthlyPkg);
-      toast.success("Welcome to Elite! All features unlocked.");
-      navigate("/profile");
+      // checkSubscription will update isElite → triggers celebration via useEffect
+      await checkSubscription();
     } catch (e: any) {
       toast.error(e?.message || "Purchase failed. Please try again.");
     } finally {
@@ -84,7 +107,8 @@ const Paywall = () => {
   const handleRestore = async () => {
     try {
       await restorePurchases();
-      toast.success("Purchases restored.");
+      await checkSubscription();
+      if (!isElite) toast.success("Purchases restored.");
     } catch {
       toast.error("Could not restore purchases.");
     }
@@ -155,8 +179,7 @@ const Paywall = () => {
         )}
       </div>
 
-
-      {/* Restore (always visible) */}
+      {/* Restore */}
       <div className="text-center mt-6 animate-reveal animate-reveal-delay-3">
         <button onClick={handleRestore} className="text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2">
           Restore purchases

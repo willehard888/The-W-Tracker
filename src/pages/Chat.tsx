@@ -178,7 +178,7 @@ const Chat = () => {
       </div>
 
       {/* Input - sticky at bottom, above BottomNav */}
-      <div className="sticky bottom-0 z-40 bg-card/95 backdrop-blur-md border-t border-border px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+      <div className="shrink-0 bg-card/95 backdrop-blur-md border-t border-border px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="max-w-md mx-auto flex gap-2">
           <input
             value={text}

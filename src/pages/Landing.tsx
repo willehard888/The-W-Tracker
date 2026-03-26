@@ -1,14 +1,11 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Flame, Trophy, Swords, Shield, Play } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { ArrowRight, Flame, Trophy, Swords, Shield } from "lucide-react";
+import logo from "@/assets/logo.png";
 import logo from "@/assets/logo.png";
 
 const Landing = () => {
   const navigate = useNavigate();
-  const [demoLoading, setDemoLoading] = useState(false);
 
   return (
     <div className="min-h-screen gradient-dark flex flex-col overflow-hidden relative">

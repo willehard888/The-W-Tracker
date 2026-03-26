@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";

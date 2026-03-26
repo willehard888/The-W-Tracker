@@ -64,36 +64,6 @@ const Landing = () => {
             <Button variant="gold-outline" size="lg" onClick={() => navigate("/auth")}>
               View Leaderboard
             </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full border-gold/30 text-gold hover:bg-gold/10"
-              disabled={demoLoading}
-              onClick={async () => {
-                setDemoLoading(true);
-                try {
-                  const { data, error } = await supabase.functions.invoke("demo-login");
-                  if (error) throw error;
-                  if (data?.access_token && data?.refresh_token) {
-                    await supabase.auth.setSession({
-                      access_token: data.access_token,
-                      refresh_token: data.refresh_token,
-                    });
-                    localStorage.setItem("w_onboarding_done", "true");
-                    navigate("/");
-                  } else {
-                    throw new Error(data?.error || "Demo login failed");
-                  }
-                } catch (e: any) {
-                  toast.error("Demo login failed. Try again.");
-                } finally {
-                  setDemoLoading(false);
-                }
-              }}
-            >
-              <Play size={16} />
-              {demoLoading ? "Loading..." : "Try Demo"}
-            </Button>
           </div>
         </div>
 

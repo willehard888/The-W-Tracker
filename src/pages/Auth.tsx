@@ -162,42 +162,6 @@ const Auth = () => {
             </span>
           </button>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-            <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">or</span></div>
-          </div>
-
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full border-gold/30 text-gold hover:bg-gold/10"
-            disabled={demoLoading}
-            onClick={async () => {
-              setDemoLoading(true);
-              setError("");
-              try {
-                const { data, error } = await supabase.functions.invoke("demo-login");
-                if (error) throw error;
-                if (data?.access_token && data?.refresh_token) {
-                  await supabase.auth.setSession({
-                    access_token: data.access_token,
-                    refresh_token: data.refresh_token,
-                  });
-                  localStorage.setItem("w_onboarding_done", "true");
-                  navigate("/");
-                } else {
-                  throw new Error(data?.error || "Demo login failed");
-                }
-              } catch (e: any) {
-                setError(e?.message || "Demo login failed");
-              } finally {
-                setDemoLoading(false);
-              }
-            }}
-          >
-            <Play size={16} />
-            {demoLoading ? "Loading Demo..." : "Try Demo Account"}
-          </Button>
         </div>
       </div>
     </div>

@@ -86,8 +86,12 @@ const Index = () => {
   profile.status_tier === "rising" ? "Rising" : "Normal";
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 safe-top">
-      <div className="animate-reveal mb-6">
+    <div className="min-h-screen pb-24 px-4 pt-6 safe-top relative">
+      {/* Dramatic ambient top glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] pointer-events-none z-0"
+        style={{ background: "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.08) 0%, transparent 70%)" }}
+      />
+      <div className="animate-reveal mb-6 relative z-10">
         <p className="text-base text-muted-foreground font-medium">{dailyQuote}</p>
         <div className="flex items-center justify-between mt-1">
           <h1 className="font-display text-3xl font-bold tracking-tight">@{profile.username}</h1>
@@ -125,7 +129,7 @@ const Index = () => {
       </div>
 
       {/* XP Progress */}
-      <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-gold/20 bg-card p-5 mb-6 relative overflow-hidden card-depth-lg">
+      <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-gold/25 bg-card p-5 mb-6 relative overflow-hidden card-depth-lg shadow-[0_0_40px_hsl(42_78%_54%/0.06)]">
         {/* Ambient gold glow */}
         <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none" style={{
           background: "radial-gradient(circle, hsl(42 78% 54% / 0.12) 0%, transparent 70%)"

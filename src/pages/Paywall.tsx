@@ -135,7 +135,7 @@ const Paywall = () => {
       </div>
 
       {/* Features */}
-      <div className="rounded-xl border border-gold/20 bg-card p-5 mb-6 animate-reveal animate-reveal-delay-1">
+      <div className="rounded-xl glass-card-gold p-5 mb-6 animate-reveal animate-reveal-delay-1 gradient-border-animated shimmer-overlay">
         <h2 className="font-display font-bold text-sm mb-4 text-gold">What you unlock</h2>
         <div className="space-y-3">
           {ELITE_FEATURES.map(({ icon: Icon, text }) => (
@@ -157,14 +157,14 @@ const Paywall = () => {
             <Loader2 size={24} className="animate-spin text-gold" />
           </div>
         ) : (
-          <div className="rounded-xl border border-gold/20 bg-card p-6 text-center space-y-4">
+          <div className="rounded-xl glass-card-gold p-6 text-center space-y-4 gradient-border-animated">
             <p className="text-lg font-display font-black text-gold mb-1">9,99€<span className="text-sm font-semibold text-muted-foreground">/kk</span></p>
             <p className="text-xs text-muted-foreground">Elite-jäsenyys</p>
 
             <Button
               variant="gold"
               size="xl"
-              className="w-full"
+              className={cn("w-full", !purchasing && "breathing-glow")}
               disabled={purchasing}
               onClick={isNative ? handleNativePurchase : handleStripeCheckout}
             >

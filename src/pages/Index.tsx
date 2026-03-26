@@ -87,9 +87,17 @@ const Index = () => {
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 safe-top relative">
-      {/* Dramatic ambient top glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] pointer-events-none z-0"
-        style={{ background: "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.08) 0%, transparent 70%)" }}
+      {/* Dramatic ambient top glow — intensified */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] pointer-events-none z-0"
+        style={{ background: "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.14) 0%, hsl(42 78% 54% / 0.05) 40%, transparent 75%)" }}
+      />
+      {/* Secondary purple glow */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] pointer-events-none z-0"
+        style={{ background: "radial-gradient(ellipse at center, hsl(270 60% 58% / 0.06) 0%, transparent 65%)" }}
+      />
+      {/* Bottom gold accent */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[250px] pointer-events-none z-0"
+        style={{ background: "radial-gradient(ellipse at center bottom, hsl(42 78% 54% / 0.06) 0%, transparent 70%)" }}
       />
       <div className="animate-reveal mb-6 relative z-10">
         <p className="text-base text-muted-foreground font-medium">{dailyQuote}</p>
@@ -129,14 +137,18 @@ const Index = () => {
       </div>
 
       {/* XP Progress */}
-      <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-gold/25 bg-card p-5 mb-6 relative overflow-hidden card-depth-lg shadow-[0_0_40px_hsl(42_78%_54%/0.06)]">
-        {/* Ambient gold glow */}
-        <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none" style={{
-          background: "radial-gradient(circle, hsl(42 78% 54% / 0.12) 0%, transparent 70%)"
+      <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-gold/30 bg-card/80 backdrop-blur-sm p-5 mb-6 relative overflow-hidden card-depth-lg shadow-[0_0_60px_hsl(42_78%_54%/0.1),0_0_120px_hsl(42_78%_54%/0.04)]">
+        {/* Ambient gold glow — intensified */}
+        <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none" style={{
+          background: "radial-gradient(circle, hsl(42 78% 54% / 0.18) 0%, hsl(42 78% 54% / 0.06) 50%, transparent 75%)"
         }} />
-        {/* Ambient purple glow */}
-        <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full pointer-events-none" style={{
-          background: "radial-gradient(circle, hsl(270 60% 58% / 0.08) 0%, transparent 70%)"
+        {/* Ambient purple glow — intensified */}
+        <div className="absolute -bottom-20 -left-20 w-56 h-56 rounded-full pointer-events-none" style={{
+          background: "radial-gradient(circle, hsl(270 60% 58% / 0.12) 0%, hsl(270 60% 58% / 0.04) 50%, transparent 75%)"
+        }} />
+        {/* Center highlight */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-32 pointer-events-none" style={{
+          background: "radial-gradient(ellipse, hsl(42 78% 54% / 0.04) 0%, transparent 70%)"
         }} />
         <div className="relative">
           <div className="flex items-center justify-between mb-1">
@@ -187,7 +199,7 @@ const Index = () => {
       {/* Daily Quests Preview */}
       {canCheckin &&
       <div className="animate-reveal animate-reveal-delay-3 mb-6">
-          <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-4 text-center">
+          <div className="rounded-xl border border-purple-500/25 bg-purple-500/8 backdrop-blur-sm p-4 text-center shadow-[0_0_30px_hsl(270_60%_58%/0.08)]">
             <p className="text-base font-bold text-purple-300 mb-1">🎯 Daily Quests Available</p>
             <p className="text-sm text-muted-foreground">Complete bonus objectives during check-in for extra XP</p>
           </div>
@@ -226,7 +238,7 @@ const Index = () => {
           )}
           </div> :
 
-        <div className="rounded-xl border border-border bg-card p-6 text-center">
+        <div className="rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm p-6 text-center shadow-[0_2px_20px_hsl(0_0%_0%/0.3)]">
             <p className="text-sm text-muted-foreground">Complete check-ins to earn badges</p>
           </div>
         }

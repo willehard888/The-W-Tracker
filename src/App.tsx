@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
+import AmbientParticles from "@/components/AmbientParticles";
 import BottomNav from "@/components/BottomNav";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
@@ -47,7 +48,7 @@ const AppRoutes = () => {
   usePushNotifications();
 
   return (
-    <div className="max-w-md mx-auto min-h-screen relative">
+    <div className="max-w-md mx-auto min-h-screen relative z-10">
       <Routes>
         <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
         <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
@@ -81,6 +82,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <RevenueCatProvider>
+            <AmbientParticles />
             <AppRoutes />
           </RevenueCatProvider>
         </AuthProvider>

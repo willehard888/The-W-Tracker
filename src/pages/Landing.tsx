@@ -11,11 +11,20 @@ const Landing = () => {
   const [demoLoading, setDemoLoading] = useState(false);
 
   return (
-    <div className="min-h-screen gradient-dark flex flex-col overflow-hidden">
+    <div className="min-h-screen gradient-dark flex flex-col overflow-hidden relative">
+      {/* Dramatic top light cone */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.12) 0%, hsl(42 78% 54% / 0.04) 40%, transparent 70%)" }}
+      />
+      {/* Side vignettes */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse 120% 100% at 50% 50%, transparent 50%, hsl(260 18% 2% / 0.8) 100%)" }}
+      />
+
       {/* Header */}
-      <header className="flex items-center justify-between px-6 pt-6 pb-4 animate-reveal">
+      <header className="relative flex items-center justify-between px-6 pt-6 pb-4 animate-reveal">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg gradient-gold flex items-center justify-center">
+          <div className="h-9 w-9 rounded-xl gradient-gold flex items-center justify-center shadow-[0_0_20px_hsl(42_78%_54%/0.3)]">
             <span className="text-sm font-black text-primary-foreground">W</span>
           </div>
           <span className="font-display font-bold text-lg tracking-tight">The W Tracker</span>
@@ -23,9 +32,9 @@ const Landing = () => {
       </header>
 
       {/* Hero */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+      <main className="relative flex-1 flex flex-col items-center justify-center px-6 text-center">
         <div className="animate-reveal max-w-md mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gold/20 bg-gold/5 mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold/25 bg-gold/8 mb-8 backdrop-blur-sm shadow-[0_0_20px_hsl(42_78%_54%/0.1)]">
             <Flame size={14} className="text-gold" />
             <span className="text-xs font-semibold text-gold tracking-wide">DISCIPLINE IS THE NEW FLEX</span>
           </div>
@@ -44,7 +53,7 @@ const Landing = () => {
           </p>
 
           <div className="flex flex-col gap-3 w-full max-w-xs mx-auto animate-reveal animate-reveal-delay-2">
-            <Button variant="gold" size="xl" onClick={() => navigate("/auth")} className="w-full group">
+            <Button variant="gold" size="xl" onClick={() => navigate("/auth")} className="w-full group shadow-[0_0_30px_hsl(42_78%_54%/0.2)]">
               Join the Movement
               <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
             </Button>
@@ -94,7 +103,7 @@ const Landing = () => {
           ].map(({ icon: Icon, text }) => (
             <div
               key={text}
-              className="flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card/50 backdrop-blur-sm"
+              className="flex items-center gap-2 px-4 py-2 rounded-full border border-gold/15 bg-card/60 backdrop-blur-sm shadow-[0_2px_12px_hsl(0_0%_0%/0.3)]"
             >
               <Icon size={14} className="text-gold" />
               <span className="text-xs font-medium text-foreground">{text}</span>
@@ -104,7 +113,7 @@ const Landing = () => {
       </main>
 
       {/* Bottom tagline */}
-      <footer className="pb-8 pt-4 text-center animate-reveal animate-reveal-delay-4">
+      <footer className="relative pb-8 pt-4 text-center animate-reveal animate-reveal-delay-4">
         <p className="text-xs text-muted-foreground tracking-widest uppercase">
           Built for those who refuse to be average
         </p>

@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const ELITE_PRICE_ID = "price_1TDpEJBm4ZLIG9fvSitfq91N";
+const ELITE_PRICE_ID = "price_1TFEFvBm4ZLIG9fvnzdsqL6m";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

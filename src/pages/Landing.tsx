@@ -1,30 +1,50 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Flame, Trophy, Swords, Shield } from "lucide-react";
-import logo from "@/assets/logo.png";
+import { ArrowRight, Flame, Trophy, Swords, Shield, Sparkles } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen gradient-dark flex flex-col overflow-hidden relative">
-      {/* Dramatic top light cone — intensified */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.18) 0%, hsl(42 78% 54% / 0.06) 35%, transparent 65%)" }}
+      {/* Dramatic top light cone */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.2) 0%, hsl(42 78% 54% / 0.06) 35%, transparent 65%)",
+        }}
       />
       {/* Secondary purple bloom */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[350px] pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at center, hsl(270 60% 58% / 0.08) 0%, transparent 60%)" }}
+      <div
+        className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[350px] pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, hsl(270 60% 58% / 0.1) 0%, transparent 60%)",
+        }}
       />
-      {/* Side vignettes — deeper */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse 120% 100% at 50% 50%, transparent 45%, hsl(260 18% 2% / 0.9) 100%)" }}
+      {/* Side vignettes */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 120% 100% at 50% 50%, transparent 45%, hsl(260 18% 2% / 0.9) 100%)",
+        }}
+      />
+      {/* Animated light sweep */}
+      <div
+        className="absolute top-[40%] left-0 right-0 h-[1px] pointer-events-none z-10 opacity-15"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent 10%, hsl(42 78% 54% / 0.5) 50%, transparent 90%)",
+          animation: "shimmer-slide 8s ease-in-out infinite",
+        }}
       />
 
       {/* Header */}
       <header className="relative flex items-center justify-between px-6 pt-6 pb-4 animate-reveal">
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl gradient-gold flex items-center justify-center shadow-[0_0_20px_hsl(42_78%_54%/0.3)]">
+          <div className="h-9 w-9 rounded-xl gradient-gold flex items-center justify-center shadow-[0_0_20px_hsl(42_78%_54%/0.3)] float-subtle">
             <span className="text-sm font-black text-primary-foreground">W</span>
           </div>
           <span className="font-display font-bold text-lg tracking-tight">The W Tracker</span>
@@ -34,9 +54,11 @@ const Landing = () => {
       {/* Hero */}
       <main className="relative flex-1 flex flex-col items-center justify-center px-6 text-center">
         <div className="animate-reveal max-w-md mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold/30 bg-gold/10 mb-8 backdrop-blur-sm shadow-[0_0_30px_hsl(42_78%_54%/0.15)]">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border-gold/30 mb-8 shimmer-overlay">
             <Flame size={14} className="text-gold" />
-            <span className="text-xs font-semibold text-gold tracking-wide">DISCIPLINE IS THE NEW FLEX</span>
+            <span className="text-xs font-semibold text-gold tracking-wide">
+              DISCIPLINE IS THE NEW FLEX
+            </span>
           </div>
 
           <h1 className="font-display text-[2.75rem] sm:text-6xl font-black tracking-tight leading-[0.95] mb-5">
@@ -47,15 +69,22 @@ const Landing = () => {
           </h1>
 
           <p className="text-muted-foreground text-lg leading-relaxed max-w-sm mx-auto mb-10">
-            The W Tracker turns self-improvement into a visible status game.
-            Track your discipline. Compete with others. Earn your status.
-            The world sees who puts in the work.
+            The W Tracker turns self-improvement into a visible status game. Track your discipline.
+            Compete with others. Earn your status. The world sees who puts in the work.
           </p>
 
           <div className="flex flex-col gap-3 w-full max-w-xs mx-auto animate-reveal animate-reveal-delay-2">
-            <Button variant="gold" size="xl" onClick={() => navigate("/auth")} className="w-full group shadow-[0_0_50px_hsl(42_78%_54%/0.25),0_0_100px_hsl(42_78%_54%/0.08)]">
+            <Button
+              variant="gold"
+              size="xl"
+              onClick={() => navigate("/auth")}
+              className="w-full group breathing-glow"
+            >
               Join the Movement
-              <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+              <ArrowRight
+                size={18}
+                className="transition-transform group-hover:translate-x-1"
+              />
             </Button>
             <Button variant="gold-outline" size="lg" onClick={() => navigate("/auth")}>
               View Leaderboard
@@ -63,7 +92,7 @@ const Landing = () => {
           </div>
         </div>
 
-        {/* Feature pills */}
+        {/* Feature pills — glassmorphism */}
         <div className="flex flex-wrap justify-center gap-3 mt-16 animate-reveal animate-reveal-delay-3">
           {[
             { icon: Flame, text: "Streak System" },
@@ -73,7 +102,7 @@ const Landing = () => {
           ].map(({ icon: Icon, text }) => (
             <div
               key={text}
-              className="flex items-center gap-2 px-4 py-2 rounded-full border border-gold/20 bg-card/70 backdrop-blur-md shadow-[0_4px_20px_hsl(0_0%_0%/0.4),0_0_12px_hsl(42_78%_54%/0.06)]"
+              className="flex items-center gap-2 px-4 py-2 rounded-full glass-card shimmer-overlay"
             >
               <Icon size={14} className="text-gold" />
               <span className="text-xs font-medium text-foreground">{text}</span>
@@ -84,9 +113,13 @@ const Landing = () => {
 
       {/* Bottom tagline */}
       <footer className="relative pb-8 pt-4 text-center animate-reveal animate-reveal-delay-4">
-        <p className="text-xs text-muted-foreground tracking-widest uppercase">
-          Built for those who refuse to be average
-        </p>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Sparkles size={12} className="text-gold/40" />
+          <p className="text-xs text-muted-foreground tracking-widest uppercase">
+            Built for those who refuse to be average
+          </p>
+          <Sparkles size={12} className="text-gold/40" />
+        </div>
       </footer>
     </div>
   );

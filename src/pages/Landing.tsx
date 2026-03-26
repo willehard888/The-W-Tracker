@@ -12,13 +12,17 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen gradient-dark flex flex-col overflow-hidden relative">
-      {/* Dramatic top light cone */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.12) 0%, hsl(42 78% 54% / 0.04) 40%, transparent 70%)" }}
+      {/* Dramatic top light cone — intensified */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.18) 0%, hsl(42 78% 54% / 0.06) 35%, transparent 65%)" }}
       />
-      {/* Side vignettes */}
+      {/* Secondary purple bloom */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[350px] pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at center, hsl(270 60% 58% / 0.08) 0%, transparent 60%)" }}
+      />
+      {/* Side vignettes — deeper */}
       <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse 120% 100% at 50% 50%, transparent 50%, hsl(260 18% 2% / 0.8) 100%)" }}
+        style={{ background: "radial-gradient(ellipse 120% 100% at 50% 50%, transparent 45%, hsl(260 18% 2% / 0.9) 100%)" }}
       />
 
       {/* Header */}
@@ -34,7 +38,7 @@ const Landing = () => {
       {/* Hero */}
       <main className="relative flex-1 flex flex-col items-center justify-center px-6 text-center">
         <div className="animate-reveal max-w-md mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold/25 bg-gold/8 mb-8 backdrop-blur-sm shadow-[0_0_20px_hsl(42_78%_54%/0.1)]">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold/30 bg-gold/10 mb-8 backdrop-blur-sm shadow-[0_0_30px_hsl(42_78%_54%/0.15)]">
             <Flame size={14} className="text-gold" />
             <span className="text-xs font-semibold text-gold tracking-wide">DISCIPLINE IS THE NEW FLEX</span>
           </div>
@@ -53,7 +57,7 @@ const Landing = () => {
           </p>
 
           <div className="flex flex-col gap-3 w-full max-w-xs mx-auto animate-reveal animate-reveal-delay-2">
-            <Button variant="gold" size="xl" onClick={() => navigate("/auth")} className="w-full group shadow-[0_0_30px_hsl(42_78%_54%/0.2)]">
+            <Button variant="gold" size="xl" onClick={() => navigate("/auth")} className="w-full group shadow-[0_0_50px_hsl(42_78%_54%/0.25),0_0_100px_hsl(42_78%_54%/0.08)]">
               Join the Movement
               <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
             </Button>
@@ -103,7 +107,7 @@ const Landing = () => {
           ].map(({ icon: Icon, text }) => (
             <div
               key={text}
-              className="flex items-center gap-2 px-4 py-2 rounded-full border border-gold/15 bg-card/60 backdrop-blur-sm shadow-[0_2px_12px_hsl(0_0%_0%/0.3)]"
+              className="flex items-center gap-2 px-4 py-2 rounded-full border border-gold/20 bg-card/70 backdrop-blur-md shadow-[0_4px_20px_hsl(0_0%_0%/0.4),0_0_12px_hsl(42_78%_54%/0.06)]"
             >
               <Icon size={14} className="text-gold" />
               <span className="text-xs font-medium text-foreground">{text}</span>

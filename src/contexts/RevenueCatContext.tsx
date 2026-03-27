@@ -6,7 +6,7 @@ import { isNativePlatform } from "@/lib/platform";
 // Native SDK (iOS)
 import { Purchases as CapPurchases } from "@revenuecat/purchases-capacitor";
 
-const RC_API_KEY_APPLE = "appl_7BLDG4P4CU";
+const RC_API_KEY_APPLE = "appl_qgpDFJEtyXTeNTJZxBoHzxzgiTr";
 const ENTITLEMENT_ID = "The W Tracker Pro";
 
 interface RevenueCatContextType {

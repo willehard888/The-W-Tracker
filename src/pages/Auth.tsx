@@ -159,8 +159,11 @@ const Auth = () => {
           <div className="flex-1 h-px bg-border" />
         </div>
 
-        {/* Apple Sign In */}
-        <AppleSignInButton />
+        {/* Social Sign In */}
+        <div className="space-y-3">
+          <GoogleSignInButton />
+          <AppleSignInButton />
+        </div>
 
         <div className="mt-4 text-center space-y-3">
           <button

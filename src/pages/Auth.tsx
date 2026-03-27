@@ -59,6 +59,28 @@ const Auth = () => {
     setLoading(false);
   };
 
+  if (emailSent) {
+    return (
+      <div className="min-h-screen gradient-dark flex flex-col items-center justify-center px-6">
+        <div className="w-full max-w-sm animate-reveal text-center">
+          <div className="h-14 w-14 mx-auto rounded-xl gradient-gold flex items-center justify-center glow-gold mb-6">
+            <span className="text-xl font-black text-primary-foreground">✉️</span>
+          </div>
+          <h1 className="font-display text-2xl font-bold tracking-tight mb-2">Check your email</h1>
+          <p className="text-sm text-muted-foreground mb-6">
+            We sent a verification link to <span className="text-gold font-semibold">{email}</span>. Click the link to activate your account.
+          </p>
+          <button
+            onClick={() => { setEmailSent(false); setMode("login"); }}
+            className="text-sm text-gold hover:text-gold/80 transition-colors font-semibold"
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen gradient-dark flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm animate-reveal">

@@ -87,12 +87,15 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   // ─── Native purchase (iOS) ───
   const purchase = async (pkg: any) => {
     try {
+      console.log("Starting purchase for package:", pkg.identifier);
       const { customerInfo } = await CapPurchases.purchasePackage({ aPackage: pkg });
+      console.log("Purchase completed, entitlements:", JSON.stringify(customerInfo.entitlements));
       const elite = checkEntitlements(customerInfo.entitlements);
       setRcElite(elite);
       await syncEliteStatus(elite);
     } catch (e: any) {
-      if (e.code === "1" || e.userCancelled) return;
+      console.error("Purchase error:", JSON.stringify(e));
+      if (e.code === "1" || e.code === 1 || e.userCancelled) return;
       throw e;
     }
   };

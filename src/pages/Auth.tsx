@@ -14,6 +14,7 @@ const Auth = () => {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ const Auth = () => {
       if (err) {
         setError(err.message);
       } else {
-        navigate("/");
+        setEmailSent(true);
       }
     } else {
       const { error: err } = await signIn(email, password);

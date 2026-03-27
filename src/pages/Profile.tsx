@@ -1,4 +1,5 @@
-import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy } from "lucide-react";
+import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy, CreditCard } from "lucide-react";
+import { isNativePlatform } from "@/lib/platform";
 import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
@@ -218,6 +219,30 @@ const Profile = () => {
           Compare Badges
         </Button>
       </div>
+      {isElite && (
+        <div className="flex gap-2 mb-3 animate-reveal animate-reveal-delay-1">
+          <Button
+            variant="gold-outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => {
+              if (isNativePlatform()) {
+                // iOS: open App Store subscription management
+                window.open("https://apps.apple.com/account/subscriptions", "_blank");
+              } else {
+                // Web: open Stripe customer portal
+                supabase.functions.invoke("customer-portal").then(({ data, error }) => {
+                  if (data?.url) window.open(data.url, "_blank");
+                  else toast.error("Could not open subscription management");
+                });
+              }
+            }}
+          >
+            <CreditCard size={14} />
+            Manage Subscription
+          </Button>
+        </div>
+      )}
       <div className="flex gap-2 mb-6 animate-reveal animate-reveal-delay-1">
         <Button variant="secondary" size="sm" className="flex-1" onClick={signOut}>
           <LogOut size={14} />

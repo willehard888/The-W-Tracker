@@ -175,12 +175,13 @@ const EliteFeed = () => {
 
       if (imageFile) {
         const fileExt = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
-        const safeExt = fileExt === "jpeg" ? "jpg" : fileExt;
+        const safeExt = ["jpeg", "jpg", "png", "webp", "heic", "heif"].includes(fileExt) ? fileExt : "jpg";
         const path = `${user.id}/${Date.now()}.${safeExt}`;
+        const contentType = imageFile.type || `image/${safeExt === "jpg" ? "jpeg" : safeExt}`;
         const { error: uploadErr } = await supabase.storage.from("feed-images").upload(path, imageFile, {
           cacheControl: "3600",
           upsert: false,
-          contentType: imageFile.type || `image/${safeExt}`,
+          contentType,
         });
         if (uploadErr) throw new Error(`Image upload failed: ${uploadErr.message}`);
         const { data: urlData } = supabase.storage.from("feed-images").getPublicUrl(path);
@@ -371,10 +372,14 @@ const EliteFeed = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     const lowerName = file.name.toLowerCase();
-    const isSupportedMime = SUPPORTED_IMAGE_MIME_TYPES.includes(file.type);
-    const isSupportedExt = SUPPORTED_IMAGE_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
-    if (isUnsupportedHeic(lowerName) || (!isSupportedMime && !isSupportedExt)) {
-      toast.error("Use JPG, PNG or WEBP image format.");
+    
+    // On iOS, camera photos may come as image/heic or without proper MIME
+    // Accept any image/* type, plus known extensions
+    const isImage = file.type.startsWith("image/") || 
+      SUPPORTED_IMAGE_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
+    
+    if (!isImage) {
+      toast.error("Please select an image file.");
       e.target.value = "";
       return;
     }
@@ -394,11 +399,12 @@ const EliteFeed = () => {
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const lowerName = file.name.toLowerCase();
-    const isSupportedMime = SUPPORTED_VIDEO_MIME_TYPES.includes(file.type);
-    const isSupportedExt = SUPPORTED_VIDEO_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
-    if (!isSupportedMime && !isSupportedExt) {
-      toast.error("Use MP4, WEBM or MOV video format.");
+    
+    const isVideo = file.type.startsWith("video/") || 
+      SUPPORTED_VIDEO_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(ext));
+    
+    if (!isVideo) {
+      toast.error("Please select a video file.");
       e.target.value = "";
       return;
     }
@@ -576,8 +582,8 @@ const EliteFeed = () => {
 
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
             <div className="flex items-center gap-1">
-              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleImageSelect} />
-              <input ref={videoRef} type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden" onChange={handleVideoSelect} />
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+              <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
               <button
                 onClick={() => fileRef.current?.click()}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-medium"

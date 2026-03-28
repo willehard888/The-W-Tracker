@@ -426,9 +426,7 @@ const EliteFeed = () => {
       <div className="animate-reveal mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg gradient-gold flex items-center justify-center">
-              <Flame size={16} className="text-primary-foreground" />
-            </div>
+            <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />
             <div>
               <h1 className="font-display text-2xl font-bold tracking-tight leading-none my-[10px] py-[10px]">Elite Feed</h1>
               <p className="text-sm text-muted-foreground mt-0.5">Discipline proof from top performers</p>

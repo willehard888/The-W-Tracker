@@ -358,6 +358,7 @@ const DailyCheckin = () => {
         <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
           <ChevronLeft size={20} />
         </button>
+        <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight">Daily Execution</h1>
           <p className="text-sm text-muted-foreground">Log your day. Earn your status.</p>

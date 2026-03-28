@@ -128,9 +128,7 @@ const Messages = () => {
     <div className="min-h-screen pb-24 px-4 pt-6 safe-top">
       <div className="animate-reveal mb-6">
         <div className="flex items-center gap-2 my-[10px]">
-          <div className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
-            <MessageCircle size={16} className="text-purple-400" />
-          </div>
+          <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />
           <div>
             <h1 className="font-display text-2xl font-bold tracking-tight leading-none py-[10px]">Messages</h1>
             <p className="text-sm text-muted-foreground mt-0.5">Direct messages</p>

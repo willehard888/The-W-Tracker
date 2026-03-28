@@ -72,6 +72,7 @@ const BadgeCompare = () => {
         <button onClick={() => navigate("/profile")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
           <ChevronLeft size={20} />
         </button>
+        <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />
         <div>
           <h1 className="font-display text-xl font-bold tracking-tight">Badge Compare</h1>
           <p className="text-xs text-muted-foreground">See how your collection stacks up</p>

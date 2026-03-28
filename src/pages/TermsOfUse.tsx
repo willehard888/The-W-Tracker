@@ -5,7 +5,7 @@ const TermsOfUse = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-2xl mx-auto">
+    <div className="min-h-screen pb-28 px-4 pt-6 max-w-2xl mx-auto">
       <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
         <ArrowLeft size={16} /> Back
       </button>

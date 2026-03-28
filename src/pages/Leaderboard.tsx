@@ -64,7 +64,7 @@ const Leaderboard = () => {
 
   if (!isElite) {
     return (
-      <div className="min-h-screen pb-24 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
+      <div className="min-h-screen pb-28 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
         <div className="animate-reveal">
           <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
             <Lock size={32} className="text-gold" />
@@ -83,7 +83,7 @@ const Leaderboard = () => {
   }
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 safe-top">
+    <div className="min-h-screen pb-28 px-4 pt-6 safe-top">
       <div className="animate-reveal mb-6">
         <div className="flex items-center gap-2 mb-1">
           <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />

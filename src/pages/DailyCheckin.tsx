@@ -288,7 +288,7 @@ const DailyCheckin = () => {
   // 24h lock screen
   if (!canCheckin && !submitted) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center pb-24">
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center pb-28">
         <div className="animate-reveal">
           <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
             <Moon size={36} className="text-muted-foreground" />

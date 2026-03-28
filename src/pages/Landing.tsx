@@ -44,9 +44,7 @@ const Landing = () => {
       {/* Header */}
       <header className="relative flex items-center justify-between px-6 pt-6 pb-4 animate-reveal">
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl gradient-gold flex items-center justify-center shadow-[0_0_20px_hsl(42_78%_54%/0.3)] float-subtle">
-            <span className="text-sm font-black text-primary-foreground">W</span>
-          </div>
+          <img src="/app-icon.png" alt="The W Tracker" className="h-9 w-9 rounded-xl shadow-[0_0_20px_hsl(42_78%_54%/0.3)] float-subtle" />
           <span className="font-display font-bold text-lg tracking-tight">The W Tracker</span>
         </div>
       </header>

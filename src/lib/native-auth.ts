@@ -1,51 +1,5 @@
 import { isNativePlatform, getPlatform } from "@/lib/platform";
 import { supabase } from "@/integrations/supabase/client";
-
-/**
- * Native Google Sign-In using @codetrix-studio/capacitor-google-auth
- * Falls back to Lovable Cloud OAuth on web.
- */
-export const nativeGoogleSignIn = async (): Promise<{ error?: Error }> => {
-  if (!isNativePlatform()) {
-    // On web, use Lovable Cloud managed OAuth
-    const { lovable } = await import("@/integrations/lovable/index");
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result?.error) return { error: result.error as Error };
-    return {};
-  }
-
-  try {
-    const { GoogleAuth } = await import("@codetrix-studio/capacitor-google-auth");
-
-    // Initialize (no-op if already initialized)
-    await GoogleAuth.initialize({
-      clientId: "", // Set your Google Web Client ID here for production
-      scopes: ["profile", "email"],
-      grantOfflineAccess: true,
-    });
-
-    const user = await GoogleAuth.signIn();
-
-    if (!user.authentication?.idToken) {
-      return { error: new Error("No ID token received from Google") };
-    }
-
-    // Exchange the Google ID token for a Supabase session
-    const { error } = await supabase.auth.signInWithIdToken({
-      provider: "google",
-      token: user.authentication.idToken,
-    });
-
-    if (error) return { error };
-    return {};
-  } catch (e: any) {
-    console.error("Native Google sign-in error:", e);
-    return { error: e instanceof Error ? e : new Error(String(e)) };
-  }
-};
-
 /**
  * Native Apple Sign-In using @capacitor-community/apple-sign-in
  * Falls back to Lovable Cloud OAuth on web.

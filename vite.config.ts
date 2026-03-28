@@ -4,27 +4,26 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-    hmr: {
-      overlay: false,
-    },
-  },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
-  build: {
-    rollupOptions: {
-      external: mode === "production" ? [] : [],
-      onwarn(warning, warn) {
-        if (warning.message?.includes("@lovable.dev/cloud-auth-js")) return;
-        warn(warning);
+export default defineConfig(({ mode }) => {
+  const isCapacitorBuild = process.env.CAPACITOR_BUILD === "true";
+
+  return {
+    server: {
+      host: "::",
+      port: 8080,
+      hmr: {
+        overlay: false,
       },
     },
-  },
-}));
+    plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+        // Mock cloud-auth for local Capacitor builds
+        ...(isCapacitorBuild
+          ? { "@lovable.dev/cloud-auth-js": path.resolve(__dirname, "./src/mocks/cloud-auth.ts") }
+          : {}),
+      },
+    },
+  };
+});

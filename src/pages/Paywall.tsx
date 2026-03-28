@@ -136,9 +136,7 @@ const Paywall = () => {
 
       {/* Hero */}
       <div className="text-center mb-8 animate-reveal">
-        <div className="h-20 w-20 mx-auto rounded-full gradient-gold flex items-center justify-center glow-gold mb-4">
-          <Crown size={36} className="text-primary-foreground" />
-        </div>
+        <img src="/app-icon.png" alt="The W Tracker" className="h-20 w-20 mx-auto rounded-2xl glow-gold mb-4" />
         <h1 className="font-display text-3xl font-black tracking-tight mb-2">
           Go <span className="text-gold glow-gold-text">Elite</span>
         </h1>

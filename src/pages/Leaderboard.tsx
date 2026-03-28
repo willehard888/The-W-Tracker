@@ -17,6 +17,7 @@ const Leaderboard = () => {
       const { data } = await supabase
         .from("profiles")
         .select("username, xp, level, streak, user_id, avatar_url")
+        .gt("xp", 0)
         .order("xp", { ascending: false })
         .limit(50);
       return data || [];
@@ -29,7 +30,8 @@ const Leaderboard = () => {
     queryFn: async () => {
       const { count } = await supabase
         .from("profiles")
-        .select("*", { count: "exact", head: true });
+        .select("*", { count: "exact", head: true })
+        .gt("xp", 0);
       return count || 1;
     },
   });

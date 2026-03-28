@@ -92,7 +92,7 @@ const Index = () => {
       : "Normal";
 
   return (
-    <div className="min-h-screen pb-28 px-4 pt-6 safe-top relative">
+    <div className="min-h-screen pb-4 px-4 pt-6 safe-top relative">
       {/* Dramatic ambient top glow */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] pointer-events-none z-0"

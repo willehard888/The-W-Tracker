@@ -131,7 +131,7 @@ const UserProfile = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen pb-28 px-4 pt-6 text-center">
+      <div className="min-h-screen pb-4 px-4 pt-6 text-center">
         <p className="text-muted-foreground mt-20">User not found</p>
         <Button variant="ghost" size="sm" className="mt-4" onClick={() => navigate(-1)}>
           <ChevronLeft size={16} /> Go back
@@ -155,7 +155,7 @@ const UserProfile = () => {
   const earnedBadges = (allBadges || []).filter((b) => earnedBadgeIds?.includes(b.id));
 
   return (
-    <div className="min-h-screen pb-28 px-4 pt-6 safe-top">
+    <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
       {/* Back button */}
       <button
         onClick={() => navigate(-1)}

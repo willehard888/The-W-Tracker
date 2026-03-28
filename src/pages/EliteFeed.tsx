@@ -460,7 +460,29 @@ const EliteFeed = () => {
   }
 
   return (
-    <div className="min-h-screen pb-28 px-4 pt-6 safe-top overflow-y-auto">
+    <div
+      ref={scrollRef}
+      className="min-h-screen pb-28 px-4 pt-6 safe-top overflow-y-auto"
+      onTouchStart={handlePullStart}
+      onTouchMove={handlePullMove}
+      onTouchEnd={handlePullEnd}
+    >
+      {/* Pull-to-refresh indicator */}
+      <div
+        className="flex items-center justify-center overflow-hidden transition-all duration-300"
+        style={{ height: pullDistance > 0 ? pullDistance : 0 }}
+      >
+        <div
+          className={cn(
+            "w-8 h-8 rounded-full border-2 border-gold border-t-transparent",
+            isRefreshing ? "animate-spin" : ""
+          )}
+          style={{
+            opacity: Math.min(pullDistance / PULL_THRESHOLD, 1),
+            transform: `rotate(${pullDistance * 3}deg) scale(${Math.min(pullDistance / PULL_THRESHOLD, 1)})`,
+          }}
+        />
+      </div>
       <div className="animate-reveal mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

@@ -13,7 +13,6 @@ const Leaderboard = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["leaderboard"]]);
-  const navigate = useNavigate();
 
   const { data: leaders } = useQuery({
     queryKey: ["leaderboard"],

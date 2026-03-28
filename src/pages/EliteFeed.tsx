@@ -428,7 +428,7 @@ const EliteFeed = () => {
   }
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 safe-top">
+    <div className="min-h-screen pb-28 px-4 pt-6 safe-top overflow-y-auto">
       <div className="animate-reveal mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

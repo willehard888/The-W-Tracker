@@ -21,12 +21,15 @@ const ELITE_FEATURES = [
 
 const Paywall = () => {
   const { isElite, checkSubscription } = useAuth();
-  const { packages, purchase, restorePurchases, rcLoading } = useRevenueCat();
+  const { packages, purchase, purchaseProduct, restorePurchases, rcLoading, rcReady } = useRevenueCat();
   const navigate = useNavigate();
   const [purchasing, setPurchasing] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const wasEliteRef = useRef(isElite);
   const isNative = isNativePlatform();
+
+  // Your App Store Connect product ID for the monthly subscription
+  const PRODUCT_ID = "w_tracker_pro_monthly";
 
   // Detect real-time elite unlock
   useEffect(() => {
@@ -86,17 +89,26 @@ const Paywall = () => {
     }
   };
 
-  // RevenueCat purchase (native)
+  // RevenueCat purchase (native) — try package first, fallback to product ID
   const handleNativePurchase = async () => {
-    const monthlyPkg = packages.find(p => p.identifier === "$rc_monthly");
-    if (!monthlyPkg) {
-      toast.info("Subscription is being set up. Please try again shortly.");
+    if (!rcReady) {
+      toast.info("Loading store… please wait a moment.");
       return;
     }
     setPurchasing(true);
     try {
-      await purchase(monthlyPkg);
-      // checkSubscription will update isElite → triggers celebration via useEffect
+      const monthlyPkg = packages.find(p =>
+        p.identifier === "$rc_monthly" || p.identifier === "monthly"
+      );
+
+      if (monthlyPkg) {
+        await purchase(monthlyPkg);
+      } else {
+        // Fallback: purchase directly by App Store product ID
+        console.log("No offerings found, purchasing by product ID:", PRODUCT_ID);
+        await purchaseProduct(PRODUCT_ID);
+      }
+
       await checkSubscription();
     } catch (e: any) {
       toast.error(e?.message || "Purchase failed. Please try again.");

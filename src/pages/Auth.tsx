@@ -4,6 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff, Flame, Loader2 } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { isNativePlatform } from "@/lib/platform";
 
 const Auth = () => {

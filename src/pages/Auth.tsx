@@ -4,6 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff, Flame, Loader2 } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { isNativePlatform } from "@/lib/platform";
 
 const Auth = () => {
@@ -189,6 +191,21 @@ const Auth = () => {
         </div>
 
         <div className="mt-4 text-center space-y-3">
+          {mode === "login" && (
+            <button
+              onClick={async () => {
+                if (!email) { toast.error("Enter your email first"); return; }
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                  redirectTo: `${window.location.origin}/reset-password`,
+                });
+                if (error) toast.error(error.message);
+                else toast.success("Password reset link sent! Check your email.");
+              }}
+              className="text-xs text-muted-foreground hover:text-gold transition-colors"
+            >
+              Forgot password?
+            </button>
+          )}
           <button
             onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }}
             className="text-sm text-muted-foreground hover:text-gold transition-colors"

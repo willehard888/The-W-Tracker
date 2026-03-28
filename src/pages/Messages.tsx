@@ -7,11 +7,14 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
+import { usePullRefresh } from "@/hooks/use-pull-refresh";
+import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 
 const Messages = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["friends"], ["conversations"]]);
 
   // Fetch accepted friends
   const { data: friends } = useQuery({
@@ -125,7 +128,8 @@ const Messages = () => {
   );
 
   return (
-    <div className="min-h-screen pb-28 px-4 pt-6 safe-top">
+    <div ref={scrollRef} className="min-h-screen pb-28 px-4 pt-6 safe-top" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
       <div className="animate-reveal mb-6">
         <div className="flex items-center gap-2 my-[10px]">
           <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />

@@ -6,10 +6,13 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { usePullRefresh } from "@/hooks/use-pull-refresh";
+import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 
 const Leaderboard = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["leaderboard"]]);
 
   const { data: leaders } = useQuery({
     queryKey: ["leaderboard"],
@@ -83,7 +86,8 @@ const Leaderboard = () => {
   }
 
   return (
-    <div className="min-h-screen pb-28 px-4 pt-6 safe-top">
+    <div ref={scrollRef} className="min-h-screen pb-28 px-4 pt-6 safe-top" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
       <div className="animate-reveal mb-6">
         <div className="flex items-center gap-2 mb-1">
           <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />

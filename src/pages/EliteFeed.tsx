@@ -3,7 +3,9 @@ import EliteFeedTeaser from "@/components/EliteFeedTeaser";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
+import { usePullRefresh } from "@/hooks/use-pull-refresh";
+import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { Button } from "@/components/ui/button";
 import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle, Video, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -52,37 +54,8 @@ const EliteFeed = () => {
   const [showReported, setShowReported] = useState(false);
   const [showReportsPanel, setShowReportsPanel] = useState(false);
 
-  // Pull-to-refresh state
-  const [pullDistance, setPullDistance] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const touchStartY = useRef(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const PULL_THRESHOLD = 80;
-
-  const handlePullStart = useCallback((e: React.TouchEvent) => {
-    if (scrollRef.current && scrollRef.current.scrollTop <= 0) {
-      touchStartY.current = e.touches[0].clientY;
-    }
-  }, []);
-
-  const handlePullMove = useCallback((e: React.TouchEvent) => {
-    if (isRefreshing) return;
-    if (scrollRef.current && scrollRef.current.scrollTop > 0) return;
-    const diff = e.touches[0].clientY - touchStartY.current;
-    if (diff > 0) {
-      setPullDistance(Math.min(diff * 0.5, 120));
-    }
-  }, [isRefreshing]);
-
-  const handlePullEnd = useCallback(async () => {
-    if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
-      setIsRefreshing(true);
-      setPullDistance(PULL_THRESHOLD);
-      await queryClient.invalidateQueries({ queryKey: ["elite-feed"] });
-      setIsRefreshing(false);
-    }
-    setPullDistance(0);
-  }, [pullDistance, isRefreshing, queryClient]);
+  // Pull-to-refresh
+  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["elite-feed"]]);
 
   // Check if current user is admin
   const { data: isAdmin } = useQuery({
@@ -462,27 +435,12 @@ const EliteFeed = () => {
   return (
     <div
       ref={scrollRef}
-      className="min-h-screen pb-28 px-4 pt-6 safe-top overflow-y-auto"
-      onTouchStart={handlePullStart}
-      onTouchMove={handlePullMove}
-      onTouchEnd={handlePullEnd}
+      className="min-h-screen pb-28 px-4 pt-6 safe-top"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
     >
-      {/* Pull-to-refresh indicator */}
-      <div
-        className="flex items-center justify-center overflow-hidden transition-all duration-300"
-        style={{ height: pullDistance > 0 ? pullDistance : 0 }}
-      >
-        <div
-          className={cn(
-            "w-8 h-8 rounded-full border-2 border-gold border-t-transparent",
-            isRefreshing ? "animate-spin" : ""
-          )}
-          style={{
-            opacity: Math.min(pullDistance / PULL_THRESHOLD, 1),
-            transform: `rotate(${pullDistance * 3}deg) scale(${Math.min(pullDistance / PULL_THRESHOLD, 1)})`,
-          }}
-        />
-      </div>
+      <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
       <div className="animate-reveal mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

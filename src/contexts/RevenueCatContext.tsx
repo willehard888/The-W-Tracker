@@ -50,6 +50,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
         apiKey: RC_API_KEY_APPLE,
         appUserID: userId,
       });
+      setRcReady(true);
 
       const { customerInfo } = await CapPurchases.getCustomerInfo();
       const elite = checkEntitlements(customerInfo.entitlements);
@@ -62,7 +63,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
           setPackages(offeringsResult.current.availablePackages);
         }
       } catch (e) {
-        console.log("No offerings configured yet:", e);
+        console.log("No offerings configured yet — purchaseProduct will be used:", e);
       }
     } catch (e) {
       console.error("RevenueCat native init error:", e);
@@ -76,18 +77,18 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       setRcElite(false);
       setPackages([]);
       setRcLoading(false);
+      setRcReady(false);
       return;
     }
 
     if (isNativePlatform()) {
       initNative(user.id);
     } else {
-      // Web: Stripe handles payments, skip RC
       setRcLoading(false);
     }
   }, [user, initNative]);
 
-  // ─── Native purchase (iOS) ───
+  // ─── Purchase via package (if offerings loaded) ───
   const purchase = async (pkg: any) => {
     try {
       console.log("Starting purchase for package:", pkg.identifier);
@@ -98,6 +99,26 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       await syncEliteStatus(elite);
     } catch (e: any) {
       console.error("Purchase error:", JSON.stringify(e));
+      if (e.code === "1" || e.code === 1 || e.userCancelled) return;
+      throw e;
+    }
+  };
+
+  // ─── Purchase directly by product ID (fallback when no offerings) ───
+  const purchaseProduct = async (productId: string) => {
+    try {
+      console.log("Purchasing product by ID:", productId);
+      const { products } = await CapPurchases.getProducts({ productIdentifiers: [productId] });
+      if (!products || products.length === 0) {
+        throw new Error(`Product "${productId}" not found in App Store`);
+      }
+      const { customerInfo } = await CapPurchases.purchaseStoreProduct({ product: products[0] });
+      console.log("Purchase completed, entitlements:", JSON.stringify(customerInfo.entitlements));
+      const elite = checkEntitlements(customerInfo.entitlements);
+      setRcElite(elite);
+      await syncEliteStatus(elite);
+    } catch (e: any) {
+      console.error("Purchase product error:", JSON.stringify(e));
       if (e.code === "1" || e.code === 1 || e.userCancelled) return;
       throw e;
     }
@@ -116,7 +137,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <RevenueCatContext.Provider value={{ rcElite, packages, rcLoading, purchase, restorePurchases }}>
+    <RevenueCatContext.Provider value={{ rcElite, packages, rcLoading, rcReady, purchase, purchaseProduct, restorePurchases }}>
       {children}
     </RevenueCatContext.Provider>
   );

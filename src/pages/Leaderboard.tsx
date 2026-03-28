@@ -20,7 +20,21 @@ const Leaderboard = () => {
         .gt("xp", 0)
         .order("xp", { ascending: false })
         .limit(50);
-      return data || [];
+      if (!data || data.length === 0) return [];
+      
+      // Fetch check-in counts for these users
+      const userIds = data.map(u => u.user_id);
+      const { data: checkins } = await supabase
+        .from("daily_checkins")
+        .select("user_id")
+        .in("user_id", userIds);
+      
+      const checkinCounts: Record<string, number> = {};
+      (checkins || []).forEach((c: any) => {
+        checkinCounts[c.user_id] = (checkinCounts[c.user_id] || 0) + 1;
+      });
+      
+      return data.map(u => ({ ...u, checkin_count: checkinCounts[u.user_id] || 0 }));
     },
   });
 

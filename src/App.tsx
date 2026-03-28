@@ -67,6 +67,7 @@ const AppRoutes = () => {
         <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfUse />} />
+        <Route path="/~oauth" element={<div className="min-h-screen flex items-center justify-center"><div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" /></div>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />

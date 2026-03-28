@@ -128,7 +128,8 @@ const Messages = () => {
   );
 
   return (
-    <div className="min-h-screen pb-28 px-4 pt-6 safe-top">
+    <div ref={scrollRef} className="min-h-screen pb-28 px-4 pt-6 safe-top" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
       <div className="animate-reveal mb-6">
         <div className="flex items-center gap-2 my-[10px]">
           <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />

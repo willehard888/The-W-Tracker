@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Flame, ChevronRight, Crown, Shield, Sparkles } from "lucide-react";
 import LevelCard from "@/components/LevelCard";
 import StreakDisplay from "@/components/StreakDisplay";
@@ -63,7 +64,12 @@ const Index = () => {
     enabled: !!profile,
   });
 
-  const dailyQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+  const dailyQuote = useMemo(() => {
+    const today = new Date().toDateString();
+    let hash = 0;
+    for (let i = 0; i < today.length; i++) hash = ((hash << 5) - hash) + today.charCodeAt(i);
+    return motivationalQuotes[Math.abs(hash) % motivationalQuotes.length];
+  }, []);
 
   if (!profile) return null;
 
@@ -92,7 +98,7 @@ const Index = () => {
       : "Normal";
 
   return (
-    <div className="h-full pb-4 px-4 pt-6 safe-top relative overflow-hidden">
+    <div className="h-full pb-4 px-4 pt-6 safe-top relative overflow-y-auto overflow-x-hidden">
       {/* Dramatic ambient top glow */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] pointer-events-none z-0"

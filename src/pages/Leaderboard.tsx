@@ -20,21 +20,7 @@ const Leaderboard = () => {
         .gt("xp", 0)
         .order("xp", { ascending: false })
         .limit(50);
-      if (!data || data.length === 0) return [];
-      
-      // Fetch check-in counts for these users
-      const userIds = data.map(u => u.user_id);
-      const { data: checkins } = await supabase
-        .from("daily_checkins")
-        .select("user_id")
-        .in("user_id", userIds);
-      
-      const checkinCounts: Record<string, number> = {};
-      (checkins || []).forEach((c: any) => {
-        checkinCounts[c.user_id] = (checkinCounts[c.user_id] || 0) + 1;
-      });
-      
-      return data.map(u => ({ ...u, checkin_count: checkinCounts[u.user_id] || 0 }));
+      return data || [];
     },
   });
 
@@ -146,7 +132,7 @@ const Leaderboard = () => {
               <button onClick={() => navigate(`/user/${user.user_id}`)} className={cn("text-base font-semibold truncate hover:underline text-left", user.user_id === profile?.user_id && "text-gold")}>
                 @{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}
               </button>
-              <p className="text-sm text-muted-foreground">Level {user.level} • {user.streak}d streak • {(user as any).checkin_count} check-ins</p>
+              <p className="text-sm text-muted-foreground">Level {user.level} • {user.streak}d streak</p>
             </div>
             <div className="text-right">
               <p className={cn("font-display font-bold text-sm tabular-nums", i === 0 && "text-gold")}>{user.xp.toLocaleString()}</p>
@@ -170,7 +156,7 @@ const Leaderboard = () => {
                 <button onClick={() => navigate(`/user/${user.user_id}`)} className={cn("text-sm font-semibold hover:underline text-left", user.user_id === profile?.user_id && "text-gold")}>
                   @{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}
                 </button>
-                <p className="text-xs text-muted-foreground">Level {user.level} • {(user as any).checkin_count} check-ins</p>
+                <p className="text-xs text-muted-foreground">Level {user.level}</p>
               </div>
               <p className="font-display font-bold text-sm tabular-nums">{user.xp.toLocaleString()}</p>
             </div>

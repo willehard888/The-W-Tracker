@@ -146,7 +146,7 @@ const Leaderboard = () => {
               <button onClick={() => navigate(`/user/${user.user_id}`)} className={cn("text-base font-semibold truncate hover:underline text-left", user.user_id === profile?.user_id && "text-gold")}>
                 @{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}
               </button>
-              <p className="text-sm text-muted-foreground">Level {user.level} • {user.streak}d streak</p>
+              <p className="text-sm text-muted-foreground">Level {user.level} • {user.streak}d streak • {(user as any).checkin_count} check-ins</p>
             </div>
             <div className="text-right">
               <p className={cn("font-display font-bold text-sm tabular-nums", i === 0 && "text-gold")}>{user.xp.toLocaleString()}</p>
@@ -170,7 +170,7 @@ const Leaderboard = () => {
                 <button onClick={() => navigate(`/user/${user.user_id}`)} className={cn("text-sm font-semibold hover:underline text-left", user.user_id === profile?.user_id && "text-gold")}>
                   @{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}
                 </button>
-                <p className="text-xs text-muted-foreground">Level {user.level}</p>
+                <p className="text-xs text-muted-foreground">Level {user.level} • {(user as any).checkin_count} check-ins</p>
               </div>
               <p className="font-display font-bold text-sm tabular-nums">{user.xp.toLocaleString()}</p>
             </div>

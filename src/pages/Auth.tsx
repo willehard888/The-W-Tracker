@@ -3,10 +3,9 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff, Flame, Loader2 } from "lucide-react";
-import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { isNativePlatform } from "@/lib/platform";
+import { nativeGoogleSignIn, nativeAppleSignIn } from "@/lib/native-auth";
 
 const Auth = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -225,12 +224,11 @@ const GoogleSignInButton = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result?.error) throw result.error;
+      const { error } = await nativeGoogleSignIn();
+      if (error) throw error;
     } catch (e: any) {
       console.error("Google sign in error:", e);
+      toast.error(e?.message || "Google sign-in failed");
       setLoading(false);
     }
   };
@@ -265,12 +263,11 @@ const AppleSignInButton = () => {
   const handleAppleSignIn = async () => {
     setLoading(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: window.location.origin,
-      });
-      if (result?.error) throw result.error;
+      const { error } = await nativeAppleSignIn();
+      if (error) throw error;
     } catch (e: any) {
       console.error("Apple sign in error:", e);
+      toast.error(e?.message || "Apple sign-in failed");
       setLoading(false);
     }
   };

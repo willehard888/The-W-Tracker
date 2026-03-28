@@ -53,7 +53,7 @@ const LevelCard = ({ level, className }: LevelCardProps) => {
   return (
     <div
       className={cn(
-        "relative rounded-xl border bg-card p-4 card-hover card-depth overflow-hidden",
+        "relative rounded-xl border bg-card p-4 card-3d inner-light overflow-hidden",
         colors.border,
         tier.glow && colors.glowClass,
         className

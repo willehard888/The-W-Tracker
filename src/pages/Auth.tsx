@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { isNativePlatform } from "@/lib/platform";
 
-const Auth = () => {
+const Auth = React.forwardRef<HTMLDivElement>((_, ref) => {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -217,9 +217,11 @@ const Auth = () => {
       </div>
     </div>
   );
-};
+});
 
-const GoogleSignInButton = () => {
+Auth.displayName = "Auth";
+
+const GoogleSignInButton = React.forwardRef<HTMLDivElement>((_, ref) => {
   const [loading, setLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
@@ -257,9 +259,11 @@ const GoogleSignInButton = () => {
       Continue with Google
     </Button>
   );
-};
+});
 
-const AppleSignInButton = () => {
+GoogleSignInButton.displayName = "GoogleSignInButton";
+
+const AppleSignInButton = React.forwardRef<HTMLDivElement>((_, ref) => {
   const [loading, setLoading] = useState(false);
 
   const handleAppleSignIn = async () => {
@@ -294,6 +298,8 @@ const AppleSignInButton = () => {
       Continue with Apple
     </Button>
   );
-};
+});
+
+AppleSignInButton.displayName = "AppleSignInButton";
 
 export default Auth;

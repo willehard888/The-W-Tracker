@@ -6,6 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { usePullRefresh } from "@/hooks/use-pull-refresh";
+import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 
 const Leaderboard = () => {
   const { profile } = useAuth();

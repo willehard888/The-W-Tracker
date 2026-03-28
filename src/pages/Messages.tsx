@@ -7,6 +7,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
+import { usePullRefresh } from "@/hooks/use-pull-refresh";
+import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 
 const Messages = () => {
   const { user } = useAuth();

@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { isNativePlatform } from "@/lib/platform";
 
-const Auth = React.forwardRef<HTMLDivElement>((_, ref) => {
+const Auth = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -217,11 +217,9 @@ const Auth = React.forwardRef<HTMLDivElement>((_, ref) => {
       </div>
     </div>
   );
-});
+};
 
-Auth.displayName = "Auth";
-
-const GoogleSignInButton = React.forwardRef<HTMLDivElement>((_, ref) => {
+const GoogleSignInButton = () => {
   const [loading, setLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
@@ -259,11 +257,9 @@ const GoogleSignInButton = React.forwardRef<HTMLDivElement>((_, ref) => {
       Continue with Google
     </Button>
   );
-});
+};
 
-GoogleSignInButton.displayName = "GoogleSignInButton";
-
-const AppleSignInButton = React.forwardRef<HTMLDivElement>((_, ref) => {
+const AppleSignInButton = () => {
   const [loading, setLoading] = useState(false);
 
   const handleAppleSignIn = async () => {
@@ -298,8 +294,6 @@ const AppleSignInButton = React.forwardRef<HTMLDivElement>((_, ref) => {
       Continue with Apple
     </Button>
   );
-});
-
-AppleSignInButton.displayName = "AppleSignInButton";
+};
 
 export default Auth;

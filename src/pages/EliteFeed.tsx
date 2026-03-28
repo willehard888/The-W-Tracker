@@ -175,12 +175,13 @@ const EliteFeed = () => {
 
       if (imageFile) {
         const fileExt = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
-        const safeExt = fileExt === "jpeg" ? "jpg" : fileExt;
+        const safeExt = ["jpeg", "jpg", "png", "webp", "heic", "heif"].includes(fileExt) ? fileExt : "jpg";
         const path = `${user.id}/${Date.now()}.${safeExt}`;
+        const contentType = imageFile.type || `image/${safeExt === "jpg" ? "jpeg" : safeExt}`;
         const { error: uploadErr } = await supabase.storage.from("feed-images").upload(path, imageFile, {
           cacheControl: "3600",
           upsert: false,
-          contentType: imageFile.type || `image/${safeExt}`,
+          contentType,
         });
         if (uploadErr) throw new Error(`Image upload failed: ${uploadErr.message}`);
         const { data: urlData } = supabase.storage.from("feed-images").getPublicUrl(path);

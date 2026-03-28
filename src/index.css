@@ -441,6 +441,25 @@
       0 16px 40px -8px hsl(0 0% 0% / 0.15),
       inset 0 1px 0 hsl(0 0% 100% / 0.08),
       inset 0 -1px 0 hsl(0 0% 0% / 0.15);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Caustic light refraction on glass cards */
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background:
+      radial-gradient(ellipse 30% 20% at 30% 30%, hsl(42 78% 54% / 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse 25% 15% at 70% 60%, hsl(270 60% 58% / 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse 20% 20% at 50% 80%, hsl(172 66% 50% / 0.02) 0%, transparent 50%);
+    animation: caustic-drift 12s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 1;
   }
 
   .glass-card-gold {

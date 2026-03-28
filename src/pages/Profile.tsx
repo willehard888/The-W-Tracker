@@ -122,7 +122,7 @@ const Profile = () => {
     profile.status_tier === "rising" ? "Rising" : "Normal";
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 safe-top">
+    <div className="min-h-screen pb-28 px-4 pt-6 safe-top">
       <BadgeUnlockModal badge={previewBadge} onClose={() => setPreviewBadge(null)} />
       <StoryShareModal
         open={shareModal.open}

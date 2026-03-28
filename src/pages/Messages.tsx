@@ -125,7 +125,7 @@ const Messages = () => {
   );
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 safe-top">
+    <div className="min-h-screen pb-28 px-4 pt-6 safe-top">
       <div className="animate-reveal mb-6">
         <div className="flex items-center gap-2 my-[10px]">
           <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />

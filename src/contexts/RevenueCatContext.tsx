@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
 import { useAuth } from "./AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
@@ -13,7 +13,9 @@ interface RevenueCatContextType {
   rcElite: boolean;
   packages: any[];
   rcLoading: boolean;
+  rcReady: boolean;
   purchase: (pkg: any) => Promise<void>;
+  purchaseProduct: (productId: string) => Promise<void>;
   restorePurchases: () => Promise<void>;
 }
 
@@ -30,6 +32,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const [rcElite, setRcElite] = useState(false);
   const [packages, setPackages] = useState<any[]>([]);
   const [rcLoading, setRcLoading] = useState(true);
+  const [rcReady, setRcReady] = useState(false);
 
   const syncEliteStatus = useCallback(async (elite: boolean) => {
     if (!user || !elite) return;

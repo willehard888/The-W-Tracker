@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
-import AmbientParticles from "@/components/AmbientParticles";
+import Ambient3DScene from "@/components/Ambient3DScene";
 import BottomNav from "@/components/BottomNav";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
@@ -85,7 +85,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <RevenueCatProvider>
-            <AmbientParticles />
+            <Ambient3DScene />
             <AppRoutes />
           </RevenueCatProvider>
         </AuthProvider>

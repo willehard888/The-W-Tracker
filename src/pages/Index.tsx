@@ -119,7 +119,10 @@ const Index = () => {
 
       {/* Header */}
       <div className="animate-reveal mb-6 relative z-10">
-        <p className="text-base text-muted-foreground font-medium">{dailyQuote}</p>
+        <div className="flex items-center gap-2 mb-1">
+          <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />
+          <p className="text-base text-muted-foreground font-medium">{dailyQuote}</p>
+        </div>
         <div className="flex items-center justify-between mt-1">
           <h1 className="font-display text-3xl font-bold tracking-tight">@{profile.username}</h1>
 

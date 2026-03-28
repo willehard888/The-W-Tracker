@@ -49,29 +49,31 @@ const AppRoutes = () => {
   usePushNotifications();
 
   return (
-    <div className="max-w-md mx-auto min-h-screen relative z-10">
-      <Routes>
-        <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
-        <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
-        <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-        <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-        <Route path="/checkin" element={<ProtectedRoute><DailyCheckin /></ProtectedRoute>} />
-        <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-        <Route path="/battles" element={<ProtectedRoute><Battles /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
-        <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
-        <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />
-        <Route path="/badges/compare" element={<ProtectedRoute><BadgeCompare /></ProtectedRoute>} />
-        <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-        <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-        <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/terms" element={<TermsOfUse />} />
-        <Route path="/~oauth" element={<div className="min-h-screen flex items-center justify-center"><div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" /></div>} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+    <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
+      <div className="flex-1 overflow-y-auto">
+        <Routes>
+          <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
+          <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
+          <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+          <Route path="/checkin" element={<ProtectedRoute><DailyCheckin /></ProtectedRoute>} />
+          <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+          <Route path="/battles" element={<ProtectedRoute><Battles /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
+          <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
+          <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />
+          <Route path="/badges/compare" element={<ProtectedRoute><BadgeCompare /></ProtectedRoute>} />
+          <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+          <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+          <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/terms" element={<TermsOfUse />} />
+          <Route path="/~oauth" element={<div className="min-h-screen flex items-center justify-center"><div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" /></div>} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
       <BottomNav />
     </div>
   );

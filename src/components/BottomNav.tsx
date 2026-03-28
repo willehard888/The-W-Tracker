@@ -1,6 +1,7 @@
 import { Home, Target, Trophy, User, Swords, Flame, MessageCircle } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { hapticImpact } from "@/lib/haptics";
 
 const tabs = [
   { icon: Home, label: "Home", path: "/", color: "text-gold" },
@@ -26,7 +27,7 @@ const BottomNav = () => {
           return (
             <button
               key={path}
-              onClick={() => navigate(path)}
+              onClick={() => { hapticImpact("light"); navigate(path); }}
               className={cn(
                 "relative flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-all duration-200 active:scale-95",
                 active ? color : "text-muted-foreground hover:text-foreground"

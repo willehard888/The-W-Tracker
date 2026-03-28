@@ -18,4 +18,13 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      external: mode === "production" ? [] : [],
+      onwarn(warning, warn) {
+        if (warning.message?.includes("@lovable.dev/cloud-auth-js")) return;
+        warn(warning);
+      },
+    },
+  },
 }));

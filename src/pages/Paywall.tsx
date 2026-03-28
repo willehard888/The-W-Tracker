@@ -29,7 +29,7 @@ const Paywall = () => {
   const isNative = isNativePlatform();
 
   // Your App Store Connect product ID for the monthly subscription
-  const PRODUCT_ID = "w_tracker_pro_monthly";
+  const PRODUCT_ID = "elitemonthly999";
 
   // Detect real-time elite unlock
   useEffect(() => {

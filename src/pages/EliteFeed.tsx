@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
+import EliteFeedTeaser from "@/components/EliteFeedTeaser";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -413,8 +414,12 @@ const EliteFeed = () => {
   };
 
   const canPost = isElite;
-
   const unresolvedReportsCount = reports?.length || 0;
+
+  // Show mysterious teaser for non-Elite users
+  if (!isElite) {
+    return <EliteFeedTeaser />;
+  }
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 safe-top">

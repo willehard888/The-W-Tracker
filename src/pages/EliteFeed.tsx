@@ -54,37 +54,8 @@ const EliteFeed = () => {
   const [showReported, setShowReported] = useState(false);
   const [showReportsPanel, setShowReportsPanel] = useState(false);
 
-  // Pull-to-refresh state
-  const [pullDistance, setPullDistance] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const touchStartY = useRef(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const PULL_THRESHOLD = 80;
-
-  const handlePullStart = useCallback((e: React.TouchEvent) => {
-    if (scrollRef.current && scrollRef.current.scrollTop <= 0) {
-      touchStartY.current = e.touches[0].clientY;
-    }
-  }, []);
-
-  const handlePullMove = useCallback((e: React.TouchEvent) => {
-    if (isRefreshing) return;
-    if (scrollRef.current && scrollRef.current.scrollTop > 0) return;
-    const diff = e.touches[0].clientY - touchStartY.current;
-    if (diff > 0) {
-      setPullDistance(Math.min(diff * 0.5, 120));
-    }
-  }, [isRefreshing]);
-
-  const handlePullEnd = useCallback(async () => {
-    if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
-      setIsRefreshing(true);
-      setPullDistance(PULL_THRESHOLD);
-      await queryClient.invalidateQueries({ queryKey: ["elite-feed"] });
-      setIsRefreshing(false);
-    }
-    setPullDistance(0);
-  }, [pullDistance, isRefreshing, queryClient]);
+  // Pull-to-refresh
+  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["elite-feed"]]);
 
   // Check if current user is admin
   const { data: isAdmin } = useQuery({

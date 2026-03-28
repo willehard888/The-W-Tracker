@@ -371,10 +371,14 @@ const EliteFeed = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     const lowerName = file.name.toLowerCase();
-    const isSupportedMime = SUPPORTED_IMAGE_MIME_TYPES.includes(file.type);
-    const isSupportedExt = SUPPORTED_IMAGE_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
-    if (isUnsupportedHeic(lowerName) || (!isSupportedMime && !isSupportedExt)) {
-      toast.error("Use JPG, PNG or WEBP image format.");
+    
+    // On iOS, camera photos may come as image/heic or without proper MIME
+    // Accept any image/* type, plus known extensions
+    const isImage = file.type.startsWith("image/") || 
+      SUPPORTED_IMAGE_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
+    
+    if (!isImage) {
+      toast.error("Please select an image file.");
       e.target.value = "";
       return;
     }
@@ -394,11 +398,12 @@ const EliteFeed = () => {
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const lowerName = file.name.toLowerCase();
-    const isSupportedMime = SUPPORTED_VIDEO_MIME_TYPES.includes(file.type);
-    const isSupportedExt = SUPPORTED_VIDEO_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
-    if (!isSupportedMime && !isSupportedExt) {
-      toast.error("Use MP4, WEBM or MOV video format.");
+    
+    const isVideo = file.type.startsWith("video/") || 
+      SUPPORTED_VIDEO_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(ext));
+    
+    if (!isVideo) {
+      toast.error("Please select a video file.");
       e.target.value = "";
       return;
     }

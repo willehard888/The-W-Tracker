@@ -65,7 +65,7 @@ const Referrals = () => {
   ];
 
   return (
-    <div className="min-h-screen pb-28 px-4 pt-4 safe-top">
+    <div className="min-h-screen pb-4 px-4 pt-4 safe-top">
       <div className="flex items-center gap-3 mb-6 animate-reveal">
         <button onClick={() => navigate(-1)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
           <ChevronLeft size={20} />

@@ -288,7 +288,7 @@ const DailyCheckin = () => {
   // 24h lock screen
   if (!canCheckin && !submitted) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center pb-28">
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center pb-4">
         <div className="animate-reveal">
           <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
             <Moon size={36} className="text-muted-foreground" />
@@ -353,7 +353,7 @@ const DailyCheckin = () => {
   }
 
   return (
-    <div className="min-h-screen pb-28 px-4 pt-4 safe-top">
+    <div className="min-h-screen pb-4 px-4 pt-4 safe-top">
       <div className="flex items-center gap-3 mb-6 animate-reveal mx-0 my-[10px] py-[10px]">
         <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
           <ChevronLeft size={20} />

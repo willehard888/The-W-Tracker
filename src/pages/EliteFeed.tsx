@@ -435,7 +435,7 @@ const EliteFeed = () => {
   return (
     <div
       ref={scrollRef}
-      className="min-h-screen pb-28 px-4 pt-6 safe-top"
+      className="min-h-screen pb-4 px-4 pt-6 safe-top"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}

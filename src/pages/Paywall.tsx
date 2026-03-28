@@ -52,7 +52,7 @@ const Paywall = () => {
 
   if (isElite) {
     return (
-      <div className="min-h-screen pb-28 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
+      <div className="min-h-screen pb-4 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
         <div className="h-20 w-20 rounded-full gradient-gold flex items-center justify-center glow-gold mb-4">
           <Crown size={36} className="text-primary-foreground" />
         </div>
@@ -128,7 +128,7 @@ const Paywall = () => {
   };
 
   return (
-    <div className="min-h-screen pb-28 px-4 pt-6 safe-top">
+    <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
       <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
         <ArrowLeft size={16} />
         Back

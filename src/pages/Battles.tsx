@@ -371,7 +371,7 @@ const Battles = () => {
 
   if (!isElite) {
     return (
-      <div className="min-h-screen pb-28 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
+      <div className="min-h-screen pb-4 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
         <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mb-4">
           <Lock size={32} className="text-muted-foreground" />
         </div>
@@ -386,7 +386,7 @@ const Battles = () => {
   }
 
   return (
-    <div className="min-h-screen pb-28 px-4 pt-6 safe-top">
+    <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
       <input
         ref={fileInputRef}
         type="file"

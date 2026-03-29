@@ -110,7 +110,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       console.log("Purchasing product by ID:", productId);
       const { products } = await CapPurchases.getProducts({ productIdentifiers: [productId] });
       if (!products || products.length === 0) {
-        throw new Error(`Product "${productId}" not found in App Store`);
+        throw new Error(`Product "${productId}" not found in App Store. Make sure the product is created in App Store Connect with status "Ready to Submit" and added to RevenueCat.`);
       }
       const { customerInfo } = await CapPurchases.purchaseStoreProduct({ product: products[0] });
       console.log("Purchase completed, entitlements:", JSON.stringify(customerInfo.entitlements));

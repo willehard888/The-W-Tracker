@@ -24,6 +24,15 @@ ensure_spm_lockfile() {
         "revision": "9b99aee60dd4f8b5a2e96f074f4d0b8adc53beee",
         "version": "17.52.0"
       }
+    },
+    {
+      "identity": "purchases-ios-spm",
+      "kind": "remoteSourceControl",
+      "location": "https://github.com/RevenueCat/purchases-ios-spm",
+      "state": {
+        "revision": "9755c68799edb79ec03f90b22b5e35c3829d4ec8",
+        "version": "5.65.0"
+      }
     }
   ],
   "version": 2
@@ -78,6 +87,10 @@ if [[ ! -f "$ROOT_DIR/$RESOLVED" ]]; then
 fi
 if ! python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$ROOT_DIR/$RESOLVED" 2>/dev/null; then
   echo "❌ Package.resolved is not valid JSON"
+  exit 1
+fi
+if ! python3 -c "import json,sys; d=json.load(open(sys.argv[1])); ids={p['identity'] for p in d.get('pins',[])}; req={'capacitor-swift-pm','purchases-hybrid-common','purchases-ios-spm'}; missing=req-ids; import sys as _s; _s.exit(0 if not missing else 1)" "$ROOT_DIR/$RESOLVED"; then
+  echo "❌ Package.resolved is missing required pins (capacitor-swift-pm, purchases-hybrid-common, purchases-ios-spm)"
   exit 1
 fi
 echo "✅ Package.resolved exists and is valid JSON"

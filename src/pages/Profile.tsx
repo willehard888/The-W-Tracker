@@ -15,7 +15,8 @@ import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import StoryShareModal from "@/components/StoryShareModal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow, subDays, startOfDay } from "date-fns";
+import { formatDistanceToNow, subDays } from "date-fns";
+import { getBadgeProgress } from "@/lib/badge-awards";
 
 const Profile = () => {
   const { profile, signOut, isElite } = useAuth();
@@ -157,7 +158,27 @@ const Profile = () => {
     enabled: !!profile,
   });
 
+  const { data: badgeProgress } = useQuery({
+    queryKey: ["badge-progress", profile?.user_id],
+    queryFn: () => getBadgeProgress(profile!.user_id),
+    enabled: !!profile,
+  });
+
   const earnedBadges = (allBadges || []).filter((b) => earnedBadgeIds?.includes(b.id));
+
+  const featuredBadge = useMemo(() => {
+    if (!profile?.featured_badge_id || !allBadges) return null;
+    return allBadges.find((b) => b.id === profile.featured_badge_id) || null;
+  }, [profile?.featured_badge_id, allBadges]);
+
+  const handleSetFeatured = async (badgeId: string) => {
+    if (!profile) return;
+    const newId = profile.featured_badge_id === badgeId ? null : badgeId;
+    await supabase.from("profiles").update({ featured_badge_id: newId } as any).eq("user_id", profile.user_id);
+    toast.success(newId ? "Title badge set! 🏅" : "Title badge removed");
+    queryClient.invalidateQueries({ queryKey: ["profile"] });
+    window.location.reload();
+  };
 
   if (!profile) return null;
 

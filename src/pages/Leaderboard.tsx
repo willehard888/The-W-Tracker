@@ -204,7 +204,7 @@ const Leaderboard = () => {
           </div>
           <h1 className="font-display text-3xl font-black tracking-tight mb-2">Elite Only</h1>
           <p className="text-base text-muted-foreground mb-6 max-w-[280px]">
-            Leaderboardit ovat Elite-jäsenille. Päivitä nähdäksesi sijoituksesi.
+            The global leaderboard is exclusive to Elite members. Upgrade to see where you rank.
           </p>
           <Button variant="gold" size="lg" onClick={() => navigate("/paywall")}>
             <Crown size={16} />
@@ -228,7 +228,7 @@ const Leaderboard = () => {
 
       <div className="animate-reveal mb-4">
         <h1 className="font-display text-3xl font-bold tracking-tight">Leaderboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">Kausittainen + all time ranking samassa näkymässä.</p>
+        <p className="text-sm text-muted-foreground mt-1">Season & all time rankings in one view.</p>
       </div>
 
       <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-gold/30 bg-gold/5 p-4 mb-4">
@@ -244,7 +244,7 @@ const Leaderboard = () => {
             </p>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">#1 saa Season Champion -palkinnon + pysyvän merkin profiiliin.</p>
+        <p className="text-xs text-muted-foreground mt-2">#1 earns Season Champion reward + permanent profile badge.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-2 mb-4 animate-reveal animate-reveal-delay-1">

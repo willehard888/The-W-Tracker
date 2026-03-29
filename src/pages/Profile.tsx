@@ -25,6 +25,7 @@ const Profile = () => {
   const [previewBadge, setPreviewBadge] = useState<any>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const syncedBadgesForUserRef = useRef<string | null>(null);
   const [shareModal, setShareModal] = useState<{ open: boolean; variant: "stats" | "streak" | "badge"; badgeData?: any }>({
     open: false,
     variant: "stats",
@@ -163,6 +164,32 @@ const Profile = () => {
     queryFn: () => getBadgeProgress(profile!.user_id),
     enabled: !!profile,
   });
+
+  useEffect(() => {
+    if (!profile?.user_id) return;
+    if (syncedBadgesForUserRef.current === profile.user_id) return;
+
+    syncedBadgesForUserRef.current = profile.user_id;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        await checkAndAwardBadges(profile.user_id);
+        if (cancelled) return;
+
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["earned-badges", profile.user_id] }),
+          queryClient.invalidateQueries({ queryKey: ["badge-progress", profile.user_id] }),
+        ]);
+      } catch (error) {
+        console.error("Badge sync failed", error);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.user_id, queryClient]);
 
   const earnedBadges = (allBadges || []).filter((b) => earnedBadgeIds?.includes(b.id));
 

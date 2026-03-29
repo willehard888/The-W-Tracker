@@ -496,6 +496,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           display_name: string | null
+          featured_badge_id: string | null
           id: string
           is_elite: boolean
           level: number
@@ -514,6 +515,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          featured_badge_id?: string | null
           id?: string
           is_elite?: boolean
           level?: number
@@ -532,6 +534,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          featured_badge_id?: string | null
           id?: string
           is_elite?: boolean
           level?: number
@@ -547,6 +550,13 @@ export type Database = {
           xp?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_featured_badge_id_fkey"
+            columns: ["featured_badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_referred_by_fkey"
             columns: ["referred_by"]

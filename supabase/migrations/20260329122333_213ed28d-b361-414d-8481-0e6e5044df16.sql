@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN featured_badge_id uuid REFERENCES public.badges(id) ON DELETE SET NULL DEFAULT NULL;

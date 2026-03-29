@@ -391,6 +391,103 @@ export type Database = {
           },
         ]
       }
+      leaderboard_champions: {
+        Row: {
+          created_at: string
+          id: string
+          reward_type: string
+          season_id: string
+          season_points: number
+          user_id: string
+          username_snapshot: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reward_type?: string
+          season_id: string
+          season_points?: number
+          user_id: string
+          username_snapshot?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reward_type?: string
+          season_id?: string
+          season_points?: number
+          user_id?: string
+          username_snapshot?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_champions_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "leaderboard_seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leaderboard_season_baselines: {
+        Row: {
+          baseline_xp: number
+          created_at: string
+          id: string
+          season_id: string
+          user_id: string
+        }
+        Insert: {
+          baseline_xp?: number
+          created_at?: string
+          id?: string
+          season_id: string
+          user_id: string
+        }
+        Update: {
+          baseline_xp?: number
+          created_at?: string
+          id?: string
+          season_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_season_baselines_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "leaderboard_seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leaderboard_seasons: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          name: string
+          starts_at: string
+          status: Database["public"]["Enums"]["leaderboard_season_status"]
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          id?: string
+          name: string
+          starts_at: string
+          status?: Database["public"]["Enums"]["leaderboard_season_status"]
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          name?: string
+          starts_at?: string
+          status?: Database["public"]["Enums"]["leaderboard_season_status"]
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -591,6 +688,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ensure_active_leaderboard_season: {
+        Args: never
+        Returns: {
+          created_at: string
+          ends_at: string
+          id: string
+          name: string
+          starts_at: string
+          status: Database["public"]["Enums"]["leaderboard_season_status"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "leaderboard_seasons"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      finalize_expired_leaderboard_seasons: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -608,6 +723,7 @@ export type Database = {
       badge_rarity: "common" | "rare" | "epic" | "legendary"
       battle_status: "pending" | "active" | "completed" | "declined" | "voting"
       friendship_status: "pending" | "accepted" | "declined"
+      leaderboard_season_status: "active" | "completed"
       status_tier: "normal" | "rising" | "high_performer" | "elite"
     }
     CompositeTypes: {
@@ -740,6 +856,7 @@ export const Constants = {
       badge_rarity: ["common", "rare", "epic", "legendary"],
       battle_status: ["pending", "active", "completed", "declined", "voting"],
       friendship_status: ["pending", "accepted", "declined"],
+      leaderboard_season_status: ["active", "completed"],
       status_tier: ["normal", "rising", "high_performer", "elite"],
     },
   },

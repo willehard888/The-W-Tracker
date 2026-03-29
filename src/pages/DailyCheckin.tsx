@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  Moon, Dumbbell, Snowflake, Apple, Droplets,
+  Moon, Dumbbell, Snowflake, Apple, Droplets, BookOpen,
   Brain, Smartphone, Camera, ChevronLeft, Zap, Plus,
   TrendingUp, AlertTriangle, Trophy, Crown, ChevronDown
 } from "lucide-react";
@@ -114,6 +114,7 @@ const DailyCheckin = () => {
   const [hydration, setHydration] = useState(2);
   const [noPhoneAm, setNoPhoneAm] = useState(false);
   const [noPhonePm, setNoPhonePm] = useState(false);
+  const [reading, setReading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
@@ -127,8 +128,12 @@ const DailyCheckin = () => {
   const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory)!;
   const workout = sportCategory !== "none";
 
+  // Sleep quality XP modifier
+  const sleepMultiplier = sleep >= 7 && sleep <= 9 ? 1.0 : sleep >= 6 ? 0.85 : sleep >= 5 ? 0.7 : 0.5;
+  const sleepPenaltyLabel = sleepMultiplier < 1 ? `${Math.round((1 - sleepMultiplier) * 100)}% XP penalty` : null;
+
   const proofBonus = isElite && proofFile ? 30 : 0;
-  const baseXp = [
+  const rawXp = [
     selectedSport.xp,
     extraWorkout && 25,
     coldShower && 30,
@@ -140,14 +145,16 @@ const DailyCheckin = () => {
     noPhonePm && 20,
     hydration >= 3 && 20,
     sleep >= 7 && sleep <= 9 && 25,
+    reading && 20,
     proofBonus,
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
 
+  const baseXp = Math.round(rawXp * sleepMultiplier);
   const totalXp = (isElite ? baseXp * 2 : baseXp) + questBonusXp;
 
   // Reactive performance score
-  const completedCount = [workout, extraWorkout, coldShower, healthyFood, protein, meditationAm, meditationPm, noPhoneAm, noPhonePm, hydration >= 3, sleep >= 7 && sleep <= 9].filter(Boolean).length;
-  const maxCount = 11;
+  const completedCount = [workout, extraWorkout, coldShower, healthyFood, protein, meditationAm, meditationPm, noPhoneAm, noPhonePm, hydration >= 3, sleep >= 7 && sleep <= 9, reading].filter(Boolean).length;
+  const maxCount = 12;
   const perfPercent = Math.round((completedCount / maxCount) * 100);
 
   const getPerfLabel = () => {
@@ -192,6 +199,7 @@ const DailyCheckin = () => {
         hydration_liters: hydration,
         no_phone_morning: noPhoneAm,
         no_phone_evening: noPhonePm,
+        reading,
         xp_earned: totalXp,
         proof_photo_url,
       });
@@ -376,9 +384,12 @@ const DailyCheckin = () => {
         <div className="flex items-center gap-3 mb-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Moon size={20} /></div>
           <div><p className="font-semibold text-sm">Sleep</p><p className="text-xs text-muted-foreground">Optimal: 8–9 hours</p></div>
-          <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", sleep >= 7 && sleep <= 9 ? "text-gold" : "text-muted-foreground")}>{sleep}h {sleep >= 8 && sleep <= 9 ? "🚀" : sleep >= 7 ? "👍" : sleep <= 5 ? "💀" : "😐"}</span>
+          <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", sleep >= 7 && sleep <= 9 ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground")}>{sleep}h {sleep >= 8 && sleep <= 9 ? "🚀" : sleep >= 7 ? "👍" : sleep <= 5 ? "💀" : "😐"}</span>
         </div>
         <input type="range" min={4} max={12} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
+        {sleepPenaltyLabel && (
+          <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ Poor sleep — {sleepPenaltyLabel}</p>
+        )}
       </div>
 
       {/* Hydration */}
@@ -389,6 +400,9 @@ const DailyCheckin = () => {
           <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
         </div>
         <input type="range" min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
+        {sleepPenaltyLabel && (
+          <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ Poor sleep — {sleepPenaltyLabel}</p>
+        )}
       </div>
 
       {/* Sport Category Selector */}
@@ -460,6 +474,7 @@ const DailyCheckin = () => {
         <ToggleItem icon={Brain} label="Evening Meditation" sublabel="Reflect and wind down" active={meditationPm} onToggle={() => setMeditationPm(!meditationPm)} bonus="+15 XP" />
         <ToggleItem icon={Smartphone} label="No Phone After Waking" sublabel="30 min screen-free" active={noPhoneAm} onToggle={() => setNoPhoneAm(!noPhoneAm)} bonus="+20 XP" />
         <ToggleItem icon={Smartphone} label="No Phone Before Sleep" sublabel="30 min screen-free" active={noPhonePm} onToggle={() => setNoPhonePm(!noPhonePm)} bonus="+20 XP" />
+        <ToggleItem icon={BookOpen} label="Read / Learn Something New" sublabel="Books, articles, courses" active={reading} onToggle={() => setReading(!reading)} bonus="+20 XP" />
       </div>
 
       {/* Daily Quests */}
@@ -477,6 +492,7 @@ const DailyCheckin = () => {
             hydration,
             noPhoneAm,
             noPhonePm,
+            reading,
             completedCount,
           }}
           onBonusXpChange={setQuestBonusXp}

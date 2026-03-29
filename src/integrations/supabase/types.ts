@@ -154,6 +154,7 @@ export type Database = {
           no_phone_morning: boolean
           proof_photo_url: string | null
           protein_intake: boolean
+          reading: boolean
           sleep_hours: number
           user_id: string
           workout: boolean
@@ -173,6 +174,7 @@ export type Database = {
           no_phone_morning?: boolean
           proof_photo_url?: string | null
           protein_intake?: boolean
+          reading?: boolean
           sleep_hours?: number
           user_id: string
           workout?: boolean
@@ -192,6 +194,7 @@ export type Database = {
           no_phone_morning?: boolean
           proof_photo_url?: string | null
           protein_intake?: boolean
+          reading?: boolean
           sleep_hours?: number
           user_id?: string
           workout?: boolean

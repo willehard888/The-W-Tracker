@@ -114,6 +114,24 @@ const Profile = () => {
     enabled: !!profile,
   });
 
+  const { data: weeklySleep } = useQuery({
+    queryKey: ["weekly-sleep", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return null;
+      const sevenDaysAgo = subDays(new Date(), 7).toISOString();
+      const { data } = await supabase
+        .from("daily_checkins")
+        .select("sleep_hours")
+        .eq("user_id", profile.user_id)
+        .gte("checked_in_at", sevenDaysAgo);
+      if (!data || data.length === 0) return null;
+      const avg = data.reduce((sum, d) => sum + Number(d.sleep_hours), 0) / data.length;
+      const multiplier = avg >= 7 ? 1.0 : avg >= 6 ? 0.85 : avg >= 5 ? 0.7 : 0.5;
+      return { avg: Math.round(avg * 10) / 10, days: data.length, multiplier };
+    },
+    enabled: !!profile,
+  });
+
   const { data: championHistory } = useQuery({
     queryKey: ["champion-history", profile?.user_id],
     queryFn: async () => {

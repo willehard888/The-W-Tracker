@@ -54,6 +54,12 @@ const BadgeVault = ({
     return CATEGORIES.filter((c) => c.id === "all" || cats.has(c.id));
   }, [allBadges]);
 
+  const isBadgeEarned = (badgeId: string) => {
+    const p = progress?.[badgeId];
+    const achievedByProgress = !!p && p.current >= p.target;
+    return earnedSet.has(badgeId) || achievedByProgress;
+  };
+
   const filteredBadges = useMemo(() => {
     const filtered = activeCategory === "all"
       ? allBadges
@@ -61,11 +67,10 @@ const BadgeVault = ({
 
     // Sort: earned first (by rarity), then unearned (by progress %)
     return [...filtered].sort((a, b) => {
-      const aEarned = earnedSet.has(a.id);
-      const bEarned = earnedSet.has(b.id);
+      const aEarned = isBadgeEarned(a.id);
+      const bEarned = isBadgeEarned(b.id);
       if (aEarned !== bEarned) return aEarned ? -1 : 1;
       if (aEarned && bEarned) return (RARITY_ORDER[a.rarity] ?? 4) - (RARITY_ORDER[b.rarity] ?? 4);
-      // Unearned: sort by progress
       const aProgress = progress?.[a.id]?.percent ?? 0;
       const bProgress = progress?.[b.id]?.percent ?? 0;
       if (aProgress !== bProgress) return bProgress - aProgress;
@@ -73,7 +78,7 @@ const BadgeVault = ({
     });
   }, [allBadges, activeCategory, earnedSet, progress]);
 
-  const totalEarned = earnedBadgeIds.length;
+  const totalEarned = useMemo(() => allBadges.filter((b) => isBadgeEarned(b.id)).length, [allBadges, earnedSet, progress]);
   const totalBadges = allBadges.length;
   const rarityCounts = useMemo(() => {
     const counts: Record<string, { earned: number; total: number }> = {
@@ -84,10 +89,10 @@ const BadgeVault = ({
     };
     for (const b of allBadges) {
       counts[b.rarity].total++;
-      if (earnedSet.has(b.id)) counts[b.rarity].earned++;
+      if (isBadgeEarned(b.id)) counts[b.rarity].earned++;
     }
     return counts;
-  }, [allBadges, earnedSet]);
+  }, [allBadges, earnedSet, progress]);
 
   return (
     <div>
@@ -149,9 +154,9 @@ const BadgeVault = ({
       {/* Badge Grid */}
       <div className="grid grid-cols-3 gap-3">
         {filteredBadges.map((badge) => {
-          const earned = earnedSet.has(badge.id);
-          const isFeatured = badge.id === featuredBadgeId;
           const badgeProgress = progress?.[badge.id];
+          const earned = isBadgeEarned(badge.id);
+          const isFeatured = badge.id === featuredBadgeId;
 
           return (
             <div key={badge.id} className="relative">

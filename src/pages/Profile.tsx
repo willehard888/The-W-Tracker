@@ -305,7 +305,42 @@ const Profile = () => {
         <StatCard icon={Trophy} label="Kudos Received" value={kudosReceived || 0} variant="gold" />
       </div>
 
-      {/* Champion History */}
+      {/* Weekly Sleep Stats */}
+      {weeklySleep && (
+        <div className="mb-6 animate-reveal animate-reveal-delay-2">
+          <div className={cn(
+            "rounded-xl border p-4",
+            weeklySleep.multiplier >= 1 ? "border-emerald-500/30 bg-emerald-500/5" : 
+            weeklySleep.multiplier >= 0.85 ? "border-yellow-500/30 bg-yellow-500/5" :
+            "border-red-500/30 bg-red-500/5"
+          )}>
+            <div className="flex items-center gap-2 mb-2">
+              <Moon size={16} className={cn(
+                weeklySleep.multiplier >= 1 ? "text-emerald-400" : 
+                weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
+              )} />
+              <h2 className="font-display font-bold text-sm tracking-tight">Weekly Sleep</h2>
+              <span className="ml-auto text-xs font-bold tabular-nums">
+                {weeklySleep.avg}h avg ({weeklySleep.days} days)
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">XP Multiplier</span>
+              <span className={cn(
+                "font-bold",
+                weeklySleep.multiplier >= 1 ? "text-emerald-400" : 
+                weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
+              )}>
+                {weeklySleep.multiplier >= 1 ? "100% ✓" : `${Math.round(weeklySleep.multiplier * 100)}% ⚠️`}
+              </span>
+            </div>
+            {weeklySleep.multiplier < 1 && (
+              <p className="text-[10px] text-muted-foreground mt-1">Sleep 7+ hours to earn full XP</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {championHistory && championHistory.wins > 0 && (
         <div className="mb-6 animate-reveal animate-reveal-delay-2">
           <div className="rounded-xl border border-gold/30 bg-gold/5 p-4 glow-gold-sm">

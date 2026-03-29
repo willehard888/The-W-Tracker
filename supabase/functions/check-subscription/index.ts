@@ -27,11 +27,11 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: claimsData, error: claimsError } = await anonClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) throw new Error(`Auth error: ${claimsError?.message || "Invalid token"}`);
+    const { data: { user: authUser }, error: userError } = await anonClient.auth.getUser();
+    if (userError || !authUser) throw new Error(`Auth error: ${userError?.message || "Invalid token"}`);
     
-    const userId = claimsData.claims.sub;
-    const userEmail = claimsData.claims.email as string;
+    const userId = authUser.id;
+    const userEmail = authUser.email;
     if (!userId || !userEmail) throw new Error("User not authenticated");
 
     // Use service role client for DB operations

@@ -22,6 +22,7 @@ const ALL_QUESTS: Quest[] = [
   { id: "extra_grind", title: "Double Session", description: "Complete an extra workout", xpReward: 20, emoji: "💪", checkFn: (d) => d.extraWorkout },
   { id: "early_bird", title: "Early Bird", description: "Sleep 7h+ and no phone in the morning", xpReward: 15, emoji: "🌅", checkFn: (d) => d.sleep >= 7 && d.noPhoneAm },
   { id: "total_discipline", title: "Total Discipline", description: "Complete 8+ tasks in one day", xpReward: 30, emoji: "👑", checkFn: (d) => d.completedCount >= 8 },
+  { id: "bookworm", title: "Bookworm", description: "Read for 30 minutes today", xpReward: 15, emoji: "📖", checkFn: (d) => d.reading },
 ];
 
 // Seeded random based on date to get consistent daily quests

@@ -15,7 +15,7 @@ import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import StoryShareModal from "@/components/StoryShareModal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, subDays, startOfDay } from "date-fns";
 
 const Profile = () => {
   const { profile, signOut, isElite } = useAuth();

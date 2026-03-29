@@ -1,0 +1,1 @@
+ALTER TABLE public.daily_checkins ADD COLUMN IF NOT EXISTS reading boolean NOT NULL DEFAULT false;

@@ -82,4 +82,12 @@ if ! python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$ROOT_DIR/$RESO
 fi
 echo "✅ Package.resolved exists and is valid JSON"
 
+# ── Copy app icon ──
+ICON_SRC="$ROOT_DIR/public/app-icon.png"
+ICON_DST="$ROOT_DIR/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
+if [[ -f "$ICON_SRC" ]]; then
+  cp "$ICON_SRC" "$ICON_DST"
+  echo "✅ App icon copied"
+fi
+
 echo "✅ post-clone setup complete"

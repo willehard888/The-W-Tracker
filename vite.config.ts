@@ -5,7 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const isCapacitorBuild = process.env.CAPACITOR_BUILD === "true";
+  const useCloudAuthMock = process.env.MOCK_CLOUD_AUTH === "true";
 
   return {
     server: {
@@ -19,8 +19,8 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
-        // Mock cloud-auth for local Capacitor builds
-        ...(isCapacitorBuild
+        // Optional local-only fallback mock (disabled by default)
+        ...(useCloudAuthMock
           ? { "@lovable.dev/cloud-auth-js": path.resolve(__dirname, "./src/mocks/cloud-auth.ts") }
           : {}),
       },

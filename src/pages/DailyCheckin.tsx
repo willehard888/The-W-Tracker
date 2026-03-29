@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  Moon, Dumbbell, Snowflake, Apple, Droplets,
+  Moon, Dumbbell, Snowflake, Apple, Droplets, BookOpen,
   Brain, Smartphone, Camera, ChevronLeft, Zap, Plus,
   TrendingUp, AlertTriangle, Trophy, Crown, ChevronDown
 } from "lucide-react";
@@ -114,6 +114,7 @@ const DailyCheckin = () => {
   const [hydration, setHydration] = useState(2);
   const [noPhoneAm, setNoPhoneAm] = useState(false);
   const [noPhonePm, setNoPhonePm] = useState(false);
+  const [reading, setReading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
@@ -127,8 +128,12 @@ const DailyCheckin = () => {
   const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory)!;
   const workout = sportCategory !== "none";
 
+  // Sleep quality XP modifier
+  const sleepMultiplier = sleep >= 7 && sleep <= 9 ? 1.0 : sleep >= 6 ? 0.85 : sleep >= 5 ? 0.7 : 0.5;
+  const sleepPenaltyLabel = sleepMultiplier < 1 ? `${Math.round((1 - sleepMultiplier) * 100)}% XP penalty` : null;
+
   const proofBonus = isElite && proofFile ? 30 : 0;
-  const baseXp = [
+  const rawXp = [
     selectedSport.xp,
     extraWorkout && 25,
     coldShower && 30,
@@ -140,14 +145,16 @@ const DailyCheckin = () => {
     noPhonePm && 20,
     hydration >= 3 && 20,
     sleep >= 7 && sleep <= 9 && 25,
+    reading && 20,
     proofBonus,
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
 
+  const baseXp = Math.round(rawXp * sleepMultiplier);
   const totalXp = (isElite ? baseXp * 2 : baseXp) + questBonusXp;
 
   // Reactive performance score
-  const completedCount = [workout, extraWorkout, coldShower, healthyFood, protein, meditationAm, meditationPm, noPhoneAm, noPhonePm, hydration >= 3, sleep >= 7 && sleep <= 9].filter(Boolean).length;
-  const maxCount = 11;
+  const completedCount = [workout, extraWorkout, coldShower, healthyFood, protein, meditationAm, meditationPm, noPhoneAm, noPhonePm, hydration >= 3, sleep >= 7 && sleep <= 9, reading].filter(Boolean).length;
+  const maxCount = 12;
   const perfPercent = Math.round((completedCount / maxCount) * 100);
 
   const getPerfLabel = () => {

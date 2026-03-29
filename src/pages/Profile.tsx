@@ -1,3 +1,4 @@
+import AppLogoHeader from "@/components/AppLogoHeader";
 import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy, CreditCard } from "lucide-react";
 import { isNativePlatform } from "@/lib/platform";
 import StatCard from "@/components/StatCard";
@@ -131,11 +132,7 @@ const Profile = () => {
         badgeData={shareModal.badgeData}
       />
 
-      {/* App Logo Header */}
-      <div className="flex items-center justify-center gap-2 mb-5">
-        <img src="/app-icon.png" alt="The W Tracker" className="h-8 w-8 rounded-lg" />
-        <span className="font-display text-lg font-bold tracking-tight text-foreground">The W Tracker</span>
-      </div>
+      <AppLogoHeader />
 
       {/* Profile Header */}
       <div className="animate-reveal text-center mb-6">

@@ -1,3 +1,4 @@
+import AppLogoHeader from "@/components/AppLogoHeader";
 import { Trophy, Lock, Crown, TrendingUp } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -88,6 +89,7 @@ const Leaderboard = () => {
   return (
     <div ref={scrollRef} className="min-h-screen pb-4 px-4 pt-6 safe-top" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
+      <AppLogoHeader />
       <div className="animate-reveal mb-6">
         <div className="flex items-center gap-2 mb-1">
           <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />

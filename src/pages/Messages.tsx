@@ -1,3 +1,4 @@
+import AppLogoHeader from "@/components/AppLogoHeader";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -130,6 +131,7 @@ const Messages = () => {
   return (
     <div ref={scrollRef} className="min-h-screen pb-4 px-4 pt-6 safe-top" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
+      <AppLogoHeader />
       <div className="animate-reveal mb-6">
         <div className="flex items-center gap-2 my-[10px]">
           <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />

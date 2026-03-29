@@ -1,5 +1,5 @@
 import AppLogoHeader from "@/components/AppLogoHeader";
-import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy, CreditCard } from "lucide-react";
+import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy, CreditCard, Medal } from "lucide-react";
 import { isNativePlatform } from "@/lib/platform";
 import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
@@ -110,6 +110,31 @@ const Profile = () => {
         .select("*", { count: "exact", head: true })
         .eq("receiver_id", profile.user_id);
       return count || 0;
+    },
+    enabled: !!profile,
+  });
+
+  const { data: championHistory } = useQuery({
+    queryKey: ["champion-history", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return { wins: 0, seasons: [] };
+      const db = supabase as any;
+      const [{ data: champions }, { data: seasons }] = await Promise.all([
+        db
+          .from("leaderboard_champions")
+          .select("season_id, season_points, created_at")
+          .eq("user_id", profile.user_id)
+          .order("created_at", { ascending: false }),
+        db.from("leaderboard_seasons").select("id, name"),
+      ]);
+      const seasonNames = new Map<string, string>((seasons || []).map((s: any) => [s.id, s.name]));
+      return {
+        wins: (champions || []).length,
+        seasons: (champions || []).map((c: any) => ({
+          name: seasonNames.get(c.season_id) || "Season",
+          points: c.season_points,
+        })),
+      };
     },
     enabled: !!profile,
   });
@@ -262,7 +287,26 @@ const Profile = () => {
         <StatCard icon={Trophy} label="Kudos Received" value={kudosReceived || 0} variant="gold" />
       </div>
 
-      {/* Badge Vault */}
+      {/* Champion History */}
+      {championHistory && championHistory.wins > 0 && (
+        <div className="mb-6 animate-reveal animate-reveal-delay-2">
+          <div className="rounded-xl border border-gold/30 bg-gold/5 p-4 glow-gold-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <Medal size={18} className="text-gold" />
+              <h2 className="font-display font-bold text-base tracking-tight">Season Champion</h2>
+              <span className="ml-auto text-gold font-display font-bold text-lg">{championHistory.wins}x</span>
+            </div>
+            <div className="space-y-1.5">
+              {championHistory.seasons.map((s: any, i: number) => (
+                <div key={i} className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{s.name}</span>
+                  <span className="font-semibold tabular-nums">{s.points.toLocaleString()} XP</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="animate-reveal animate-reveal-delay-3">
         <h2 className="font-display font-bold text-base mb-3 tracking-tight">Badge Vault</h2>
         <div className="grid grid-cols-3 gap-3">

@@ -199,6 +199,7 @@ const DailyCheckin = () => {
         hydration_liters: hydration,
         no_phone_morning: noPhoneAm,
         no_phone_evening: noPhonePm,
+        reading,
         xp_earned: totalXp,
         proof_photo_url,
       });
@@ -383,9 +384,12 @@ const DailyCheckin = () => {
         <div className="flex items-center gap-3 mb-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Moon size={20} /></div>
           <div><p className="font-semibold text-sm">Sleep</p><p className="text-xs text-muted-foreground">Optimal: 8–9 hours</p></div>
-          <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", sleep >= 7 && sleep <= 9 ? "text-gold" : "text-muted-foreground")}>{sleep}h {sleep >= 8 && sleep <= 9 ? "🚀" : sleep >= 7 ? "👍" : sleep <= 5 ? "💀" : "😐"}</span>
+          <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", sleep >= 7 && sleep <= 9 ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground")}>{sleep}h {sleep >= 8 && sleep <= 9 ? "🚀" : sleep >= 7 ? "👍" : sleep <= 5 ? "💀" : "😐"}</span>
         </div>
         <input type="range" min={4} max={12} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
+        {sleepPenaltyLabel && (
+          <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ Poor sleep — {sleepPenaltyLabel}</p>
+        )}
       </div>
 
       {/* Hydration */}
@@ -396,6 +400,9 @@ const DailyCheckin = () => {
           <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
         </div>
         <input type="range" min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
+        {sleepPenaltyLabel && (
+          <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ Poor sleep — {sleepPenaltyLabel}</p>
+        )}
       </div>
 
       {/* Sport Category Selector */}
@@ -467,6 +474,7 @@ const DailyCheckin = () => {
         <ToggleItem icon={Brain} label="Evening Meditation" sublabel="Reflect and wind down" active={meditationPm} onToggle={() => setMeditationPm(!meditationPm)} bonus="+15 XP" />
         <ToggleItem icon={Smartphone} label="No Phone After Waking" sublabel="30 min screen-free" active={noPhoneAm} onToggle={() => setNoPhoneAm(!noPhoneAm)} bonus="+20 XP" />
         <ToggleItem icon={Smartphone} label="No Phone Before Sleep" sublabel="30 min screen-free" active={noPhonePm} onToggle={() => setNoPhonePm(!noPhonePm)} bonus="+20 XP" />
+        <ToggleItem icon={BookOpen} label="Read / Learn Something New" sublabel="Books, articles, courses" active={reading} onToggle={() => setReading(!reading)} bonus="+20 XP" />
       </div>
 
       {/* Daily Quests */}
@@ -484,6 +492,7 @@ const DailyCheckin = () => {
             hydration,
             noPhoneAm,
             noPhonePm,
+            reading,
             completedCount,
           }}
           onBonusXpChange={setQuestBonusXp}

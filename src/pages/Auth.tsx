@@ -229,6 +229,7 @@ const AppleSignInButton = () => {
     } catch (e: any) {
       console.error("Apple sign in error:", e);
       toast.error(e?.message || "Apple sign-in failed");
+    } finally {
       setLoading(false);
     }
   };

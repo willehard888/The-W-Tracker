@@ -6,10 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 // On native iOS/Android: listen for deep link callbacks from OAuth
 if (Capacitor.isNativePlatform()) {
-  // Dynamic import to avoid issues on web
-  import("@capacitor/core").then(({ App: CapApp }) => {
-    // Listen for URL opens (deep links from OAuth redirect)
-    (CapApp as any)?.addListener?.("appUrlOpen", async (data: { url: string }) => {
+  try {
+    const { App: CapApp } = await import("@capacitor/app");
+    CapApp.addListener("appUrlOpen", async (data: { url: string }) => {
       try {
         const url = new URL(data.url);
         if (url.hash) {
@@ -27,7 +26,9 @@ if (Capacitor.isNativePlatform()) {
         console.error("Deep link handling error:", e);
       }
     });
-  }).catch(() => {});
+  } catch {
+    // @capacitor/app not available, skip
+  }
 }
 
 createRoot(document.getElementById("root")!).render(<App />);

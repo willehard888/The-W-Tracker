@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
+import { checkAndAwardBadges } from "@/lib/badge-awards";
 import ConfettiBurst from "@/components/ConfettiBurst";
 import XpCounter from "@/components/XpCounter";
 import DailyQuests from "@/components/DailyQuests";
@@ -235,37 +236,11 @@ const DailyCheckin = () => {
 
         // Auto-update status tier based on percentile
         await supabase.rpc("update_status_tier", { target_user_id: user.id });
-        const streakBadges = [
-          { streak: 3, name: "3-Day Streak" },
-          { streak: 7, name: "7-Day Streak" },
-          { streak: 30, name: "30-Day Streak" },
-        ];
 
-        for (const sb of streakBadges) {
-          if (newStreak >= sb.streak) {
-            const { data: badge } = await supabase
-              .from("badges")
-              .select("*")
-              .eq("name", sb.name)
-              .single();
-
-            if (badge) {
-              const { data: existing } = await supabase
-                .from("user_badges")
-                .select("id")
-                .eq("user_id", user.id)
-                .eq("badge_id", badge.id)
-                .single();
-
-              if (!existing) {
-                await supabase.from("user_badges").insert({
-                  user_id: user.id,
-                  badge_id: badge.id,
-                });
-                setUnlockedBadge(badge);
-              }
-            }
-          }
+        // Check and award ALL applicable badges (streak, XP, level, checkins, workouts, etc.)
+        const newBadge = await checkAndAwardBadges(user.id);
+        if (newBadge?.isNew) {
+          setUnlockedBadge(newBadge.badge);
         }
       }
 

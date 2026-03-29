@@ -3,7 +3,7 @@ import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitComp
 import { isNativePlatform } from "@/lib/platform";
 import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
-import BadgeCard from "@/components/BadgeCard";
+import BadgeVault from "@/components/BadgeVault";
 import BadgeShowcase from "@/components/BadgeShowcase";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";

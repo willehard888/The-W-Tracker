@@ -6,5 +6,9 @@
     "PushNotifications": {
       "presentationOptions": ["badge", "sound", "alert"]
     }
+  },
+  "server": {
+    "hostname": "status-level-up.lovable.app",
+    "androidScheme": "https"
   }
 }

@@ -91,10 +91,7 @@ const Leaderboard = () => {
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
       <AppLogoHeader />
       <div className="animate-reveal mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />
-          <h1 className="font-display text-3xl font-bold tracking-tight">Leaderboard</h1>
-        </div>
+        <h1 className="font-display text-3xl font-bold tracking-tight">Leaderboard</h1>
         <p className="text-sm text-muted-foreground mt-1">Top performers. Real discipline.</p>
       </div>
 

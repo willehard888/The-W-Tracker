@@ -45,7 +45,7 @@ export const checkAndAwardBadges = async (userId: string): Promise<BadgeCheckRes
   ]);
 
   // Count "perfect days" (all main habits done)
-  const { data: perfectDayData } = await supabase
+  const perfectDayResult = await supabase
     .from("daily_checkins")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)

@@ -72,6 +72,8 @@ const AppRoutes = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/terms" element={<TermsOfUse />} />
           <Route path="/~oauth" element={<OAuthCallback />} />
+          <Route path="/oauth/callback" element={<OAuthCallback />} />
+          <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

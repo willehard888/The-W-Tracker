@@ -75,7 +75,7 @@ export const checkAndAwardBadges = async (userId: string): Promise<BadgeCheckRes
     double_workout: doubleWorkoutStats.count || 0,
     meditation: meditationTotal,
     proofs: proofStats.count || 0,
-    perfect_day: perfectDayData?.count || 0,
+    perfect_day: perfectDayResult.count || 0,
     xp: profile.xp,
     level: profile.level,
     streak: profile.streak,

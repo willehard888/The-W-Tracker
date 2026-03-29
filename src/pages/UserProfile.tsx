@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare } from "lucide-react";
+import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
@@ -78,6 +78,26 @@ const UserProfile = () => {
         .order("created_at", { ascending: false })
         .limit(20);
       return data || [];
+    },
+    enabled: !!userId,
+  });
+
+  const { data: championHistory } = useQuery({
+    queryKey: ["champion-history", userId],
+    queryFn: async () => {
+      const db = supabase as any;
+      const [{ data: champions }, { data: seasons }] = await Promise.all([
+        db.from("leaderboard_champions").select("season_id, season_points, created_at").eq("user_id", userId!).order("created_at", { ascending: false }),
+        db.from("leaderboard_seasons").select("id, name"),
+      ]);
+      const seasonNames = new Map<string, string>((seasons || []).map((s: any) => [s.id, s.name]));
+      return {
+        wins: (champions || []).length,
+        seasons: (champions || []).map((c: any) => ({
+          name: seasonNames.get(c.season_id) || "Season",
+          points: c.season_points,
+        })),
+      };
     },
     enabled: !!userId,
   });
@@ -276,6 +296,27 @@ const UserProfile = () => {
         <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
         <StatCard icon={Shield} label="Badges" value={earnedBadgeIds?.length || 0} variant="purple" />
       </div>
+
+      {/* Champion History */}
+      {championHistory && championHistory.wins > 0 && (
+        <div className="mb-6 animate-reveal animate-reveal-delay-1">
+          <div className="rounded-xl border border-gold/30 bg-gold/5 p-4 glow-gold-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <Medal size={18} className="text-gold" />
+              <h2 className="font-display font-bold text-base tracking-tight">Season Champion</h2>
+              <span className="ml-auto text-gold font-display font-bold text-lg">{championHistory.wins}x</span>
+            </div>
+            <div className="space-y-1.5">
+              {championHistory.seasons.map((s: any, i: number) => (
+                <div key={i} className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{s.name}</span>
+                  <span className="text-gold font-semibold">{s.points.toLocaleString()} XP</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Earned Badges */}
       <div className="animate-reveal animate-reveal-delay-2">

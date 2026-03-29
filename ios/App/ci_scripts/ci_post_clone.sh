@@ -70,4 +70,16 @@ echo "🔄 Syncing Capacitor iOS project..."
 npx cap sync ios
 ensure_spm_lockfile
 
+# ── Validate Package.resolved ──
+RESOLVED="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+if [[ ! -f "$ROOT_DIR/$RESOLVED" ]]; then
+  echo "❌ Package.resolved not found at $RESOLVED"
+  exit 1
+fi
+if ! python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$ROOT_DIR/$RESOLVED" 2>/dev/null; then
+  echo "❌ Package.resolved is not valid JSON"
+  exit 1
+fi
+echo "✅ Package.resolved exists and is valid JSON"
+
 echo "✅ post-clone setup complete"

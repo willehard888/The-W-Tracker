@@ -56,6 +56,7 @@ interface DailyQuestsProps {
     noPhoneAm: boolean;
     noPhonePm: boolean;
     completedCount: number;
+    reading: boolean;
   };
   onBonusXpChange: (bonusXp: number) => void;
 }

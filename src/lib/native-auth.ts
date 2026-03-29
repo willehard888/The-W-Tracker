@@ -1,20 +1,20 @@
+import { isNativePlatform } from "@/lib/platform";
+
 /**
  * Apple Sign-In via Lovable Cloud managed OAuth on all platforms.
- * This avoids native SPM plugin version conflicts in Capacitor iOS builds.
+ * Uses published domain on native to avoid localhost/capacitor callback issues.
  */
 export const nativeAppleSignIn = async (): Promise<{ error?: Error }> => {
   try {
     const { lovable } = await import("@/integrations/lovable/index");
 
-    // On native Capacitor, window.location.origin is "capacitor://localhost"
-    // which won't work for OAuth redirects. Use the published web URL instead.
-    const isCapacitor = window.location.origin.includes("capacitor://") || window.location.origin.includes("localhost");
-    const redirectOrigin = isCapacitor
+    const redirectOrigin = isNativePlatform()
       ? "https://status-level-up.lovable.app"
       : window.location.origin;
 
+    // Pass only origin; OAuth handler resolves callback path itself.
     const result = await lovable.auth.signInWithOAuth("apple", {
-      redirect_uri: `${redirectOrigin}/~oauth`,
+      redirect_uri: redirectOrigin,
     });
 
     if (result?.error) return { error: result.error as Error };

@@ -239,6 +239,12 @@ const Profile = () => {
         </div>
         <h1 className="font-display text-2xl font-bold tracking-tight">@{profile.username}</h1>
         <div className="flex items-center justify-center gap-2 mt-1">
+          {featuredBadge && (
+            <span className="text-sm flex items-center gap-1 bg-gold/10 px-2 py-0.5 rounded-full border border-gold/20">
+              <span>{featuredBadge.icon}</span>
+              <span className="font-bold text-gold text-xs">{featuredBadge.name}</span>
+            </span>
+          )}
           <span className="text-sm font-bold text-gold bg-gold/10 px-2.5 py-0.5 rounded-full border border-gold/20">
             {tierLabel}
           </span>
@@ -382,31 +388,14 @@ const Profile = () => {
         </div>
       )}
       <div className="animate-reveal animate-reveal-delay-3">
-        <h2 className="font-display font-bold text-base mb-3 tracking-tight">Badge Vault</h2>
-        <div className="grid grid-cols-3 gap-3">
-          {allBadges?.map((badge) => {
-            const earned = earnedBadgeIds?.includes(badge.id) || false;
-            return (
-              <div
-                key={badge.id}
-                onClick={() => {
-                  if (earned) {
-                    setPreviewBadge(badge);
-                  }
-                }}
-                className={earned ? "cursor-pointer" : ""}
-              >
-                <BadgeCard
-                  name={badge.name}
-                  icon={badge.icon}
-                  rarity={badge.rarity}
-                  earned={earned}
-                  description={badge.description || undefined}
-                />
-              </div>
-            );
-          })}
-        </div>
+        <BadgeVault
+          allBadges={allBadges || []}
+          earnedBadgeIds={earnedBadgeIds || []}
+          progress={badgeProgress}
+          featuredBadgeId={profile.featured_badge_id}
+          onBadgeClick={(b) => setPreviewBadge(b)}
+          onSetFeatured={handleSetFeatured}
+        />
       </div>
 
       {/* User Posts */}

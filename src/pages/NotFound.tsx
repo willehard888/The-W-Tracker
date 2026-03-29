@@ -1,22 +1,23 @@
-import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const NotFound = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
-  }, [location.pathname]);
+  const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">404</h1>
-        <p className="mb-4 text-xl text-muted-foreground">Oops! Page not found</p>
-        <a href="/" className="text-primary underline hover:text-primary/90">
-          Return to Home
-        </a>
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+      <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mb-6">
+        <span className="text-4xl">🔍</span>
       </div>
+      <h1 className="font-display text-3xl font-bold mb-2">Page Not Found</h1>
+      <p className="text-sm text-muted-foreground mb-6 max-w-xs">
+        The page you're looking for doesn't exist or has been moved.
+      </p>
+      <Button variant="gold-outline" onClick={() => navigate("/")}>
+        <ArrowLeft size={14} />
+        Back to Dashboard
+      </Button>
     </div>
   );
 };

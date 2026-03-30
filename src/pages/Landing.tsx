@@ -36,8 +36,8 @@ const Landing = () => {
       <header className="relative flex items-center justify-between px-6 pt-6 pb-4 animate-reveal">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="absolute -inset-1 rounded-xl opacity-50 blur-md" style={{ background: "hsl(42 78% 54% / 0.3)" }} />
-            <img src="/app-icon.png" alt="The W Tracker" className="relative h-10 w-10 rounded-xl" />
+            <div className="absolute -inset-2 rounded-2xl opacity-50 blur-lg" style={{ background: "hsl(42 78% 54% / 0.35)" }} />
+            <img src="/app-icon.png" alt="The W Tracker" className="relative h-14 w-14 rounded-2xl" />
           </div>
           <span className="font-display font-bold text-lg tracking-tight text-gradient-gold">The W Tracker</span>
         </div>

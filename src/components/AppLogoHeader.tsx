@@ -10,10 +10,10 @@ const AppLogoHeader = () => (
       <img
         src="/app-icon.png"
         alt="The W Tracker"
-        className="relative h-24 w-24 rounded-2xl shadow-[0_8px_32px_hsl(42_78%_54%/0.25),0_2px_8px_hsl(0_0%_0%/0.4)]"
+        className="relative h-16 w-16 rounded-2xl shadow-[0_6px_24px_hsl(42_78%_54%/0.2),0_2px_6px_hsl(0_0%_0%/0.3)]"
       />
     </div>
-    <span className="font-display text-2xl font-bold tracking-tight text-gradient-gold">
+    <span className="font-display text-xl font-bold tracking-tight text-gradient-gold">
       The W Tracker
     </span>
   </div>

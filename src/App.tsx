@@ -84,7 +84,8 @@ const AppRoutes = () => {
           <Route path="/oauth/callback" element={<OAuthCallback />} />
           <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </div>
       <BottomNav />
     </div>

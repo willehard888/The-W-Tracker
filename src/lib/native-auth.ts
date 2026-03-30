@@ -1,6 +1,7 @@
 import { isNativePlatform } from "@/lib/platform";
 
 const PRODUCTION_URL = "https://status-level-up.lovable.app";
+const OAUTH_CALLBACK_PATH = "/~oauth/callback";
 
 /**
  * Apple Sign-In via Lovable Cloud managed OAuth.
@@ -15,10 +16,10 @@ export const nativeAppleSignIn = async (): Promise<{ error?: Error }> => {
   try {
     const { lovable } = await import("@/integrations/lovable/index");
 
-    // Native must redirect to published domain, not capacitor://localhost
+    // Route OAuth back to a dedicated callback route we control.
     const redirectUri = isNativePlatform()
-      ? PRODUCTION_URL
-      : window.location.origin;
+      ? `${PRODUCTION_URL}${OAUTH_CALLBACK_PATH}`
+      : `${window.location.origin}${OAUTH_CALLBACK_PATH}`;
 
     const result = await lovable.auth.signInWithOAuth("apple", {
       redirect_uri: redirectUri,

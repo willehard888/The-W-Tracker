@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
@@ -11,32 +12,39 @@ import BottomNav from "@/components/BottomNav";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
-import DailyCheckin from "./pages/DailyCheckin";
-import Leaderboard from "./pages/Leaderboard";
-import Battles from "./pages/Battles";
-import Profile from "./pages/Profile";
-import EliteFeed from "./pages/EliteFeed";
-import Referrals from "./pages/Referrals";
-import Paywall from "./pages/Paywall";
-import BadgeCompare from "./pages/BadgeCompare";
-import UserProfile from "./pages/UserProfile";
-import Messages from "./pages/Messages";
-import Chat from "./pages/Chat";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfUse from "./pages/TermsOfUse";
-import Onboarding from "./pages/Onboarding";
-import ResetPassword from "./pages/ResetPassword";
 import OAuthCallback from "./pages/OAuthCallback";
 import NotFound from "./pages/NotFound";
 
+// Lazy-loaded pages for code-splitting
+const DailyCheckin = lazy(() => import("./pages/DailyCheckin"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
+const Battles = lazy(() => import("./pages/Battles"));
+const Profile = lazy(() => import("./pages/Profile"));
+const EliteFeed = lazy(() => import("./pages/EliteFeed"));
+const Referrals = lazy(() => import("./pages/Referrals"));
+const Paywall = lazy(() => import("./pages/Paywall"));
+const BadgeCompare = lazy(() => import("./pages/BadgeCompare"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
+const Messages = lazy(() => import("./pages/Messages"));
+const Chat = lazy(() => import("./pages/Chat"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+
 const queryClient = new QueryClient();
+
+const LazyFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+  </div>
+);
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" /></div>;
+  if (loading) return <LazyFallback />;
   if (!user) return <Navigate to="/landing" replace />;
 
-  // Show onboarding on first login
   const onboardingDone = localStorage.getItem("w_onboarding_done");
   if (!onboardingDone && window.location.pathname !== "/onboarding") {
     return <Navigate to="/onboarding" replace />;
@@ -52,7 +60,8 @@ const AppRoutes = () => {
   return (
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <div className="flex-1 overflow-y-auto">
-        <Routes>
+        <Suspense fallback={<LazyFallback />}>
+          <Routes>
           <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
           <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
@@ -75,7 +84,8 @@ const AppRoutes = () => {
           <Route path="/oauth/callback" element={<OAuthCallback />} />
           <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </div>
       <BottomNav />
     </div>

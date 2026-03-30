@@ -54,7 +54,7 @@ const rarityConfig: Record<BadgeRarity, {
   },
 };
 
-const BadgeCard = ({ name, icon, rarity, earned = true, description, showcase = false }: BadgeCardProps) => {
+const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(({ name, icon, rarity, earned = true, description, showcase = false }, ref) => {
   const style = rarityConfig[rarity];
 
   if (showcase) {

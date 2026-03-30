@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 export type BadgeRarity = "common" | "rare" | "epic" | "legendary";

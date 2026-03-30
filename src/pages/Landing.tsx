@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Flame, Trophy, Swords, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, Flame, Trophy, Swords, Shield, Sparkles, Star } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -9,18 +9,18 @@ const Landing = () => {
     <div className="min-h-screen gradient-dark flex flex-col overflow-hidden relative">
       {/* Dramatic top light cone */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] pointer-events-none"
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.2) 0%, hsl(42 78% 54% / 0.06) 35%, transparent 65%)",
+            "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.22) 0%, hsl(42 78% 54% / 0.06) 35%, transparent 65%)",
         }}
       />
       {/* Secondary purple bloom */}
       <div
-        className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[350px] pointer-events-none"
+        className="absolute top-32 left-1/2 -translate-x-1/2 w-[600px] h-[400px] pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at center, hsl(270 60% 58% / 0.1) 0%, transparent 60%)",
+            "radial-gradient(ellipse at center, hsl(270 60% 58% / 0.12) 0%, transparent 60%)",
         }}
       />
       {/* Side vignettes */}
@@ -31,44 +31,38 @@ const Landing = () => {
             "radial-gradient(ellipse 120% 100% at 50% 50%, transparent 45%, hsl(260 18% 2% / 0.9) 100%)",
         }}
       />
-      {/* Animated light sweep */}
-      <div
-        className="absolute top-[40%] left-0 right-0 h-[1px] pointer-events-none z-10 opacity-15"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent 10%, hsl(42 78% 54% / 0.5) 50%, transparent 90%)",
-          animation: "shimmer-slide 8s ease-in-out infinite",
-        }}
-      />
 
       {/* Header */}
       <header className="relative flex items-center justify-between px-6 pt-6 pb-4 animate-reveal">
-        <div className="flex items-center gap-2">
-          <img src="/app-icon.png" alt="The W Tracker" className="h-9 w-9 rounded-xl shadow-[0_0_20px_hsl(42_78%_54%/0.3)] float-subtle" />
-          <span className="font-display font-bold text-lg tracking-tight">The W Tracker</span>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <div className="absolute -inset-1 rounded-xl opacity-50 blur-md" style={{ background: "hsl(42 78% 54% / 0.3)" }} />
+            <img src="/app-icon.png" alt="The W Tracker" className="relative h-10 w-10 rounded-xl" />
+          </div>
+          <span className="font-display font-bold text-lg tracking-tight text-gradient-gold">The W Tracker</span>
         </div>
       </header>
 
       {/* Hero */}
       <main className="relative flex-1 flex flex-col items-center justify-center px-6 text-center">
         <div className="animate-reveal max-w-md mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border-gold/30 mb-8 shimmer-overlay">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border-gold/30 mb-10 shimmer-overlay">
             <Flame size={14} className="text-gold" />
-            <span className="text-xs font-semibold text-gold tracking-wide">
-              DISCIPLINE IS THE NEW FLEX
+            <span className="text-[11px] font-bold text-gold tracking-widest uppercase">
+              Discipline is the new flex
             </span>
           </div>
 
-          <h1 className="font-display text-[2.75rem] sm:text-6xl font-black tracking-tight leading-[0.95] mb-5">
+          <h1 className="font-display text-[2.75rem] sm:text-6xl font-black tracking-tight leading-[0.92] mb-6">
             You either{" "}
-            <span className="text-gold glow-gold-text">level up</span>
+            <span className="text-gradient-gold">level up</span>
             <br />
             or fall behind.
           </h1>
 
-          <p className="text-muted-foreground text-lg leading-relaxed max-w-sm mx-auto mb-10">
-            The W Tracker turns self-improvement into a visible status game. Track your discipline.
-            Compete with others. Earn your status. The world sees who puts in the work.
+          <p className="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-sm mx-auto mb-12">
+            Turn self-improvement into a visible status game. Track discipline. Compete with others.{" "}
+            <span className="text-foreground font-medium">Earn your status.</span>
           </p>
 
           <div className="flex flex-col gap-3 w-full max-w-xs mx-auto animate-reveal animate-reveal-delay-2">
@@ -76,34 +70,35 @@ const Landing = () => {
               variant="gold"
               size="xl"
               onClick={() => navigate("/auth")}
-              className="w-full group breathing-glow"
+              className="w-full group breathing-glow text-base"
             >
-              Join the Movement
+              Start Your Journey
               <ArrowRight
                 size={18}
                 className="transition-transform group-hover:translate-x-1"
               />
             </Button>
-            <Button variant="gold-outline" size="lg" onClick={() => navigate("/auth")}>
-              View Leaderboard
+            <Button variant="gold-outline" size="lg" onClick={() => navigate("/auth")} className="text-sm">
+              I already have an account
             </Button>
           </div>
         </div>
 
-        {/* Feature pills — glassmorphism */}
-        <div className="flex flex-wrap justify-center gap-3 mt-16 animate-reveal animate-reveal-delay-3">
+        {/* Feature pills */}
+        <div className="flex flex-wrap justify-center gap-2.5 mt-16 animate-reveal animate-reveal-delay-3">
           {[
-            { icon: Flame, text: "Streak System" },
-            { icon: Trophy, text: "Status Ranks" },
+            { icon: Flame, text: "Streaks" },
+            { icon: Trophy, text: "Ranks" },
             { icon: Swords, text: "1v1 Battles" },
-            { icon: Shield, text: "Badge Vault" },
+            { icon: Shield, text: "Badges" },
+            { icon: Star, text: "Leaderboard" },
           ].map(({ icon: Icon, text }) => (
             <div
               key={text}
-              className="flex items-center gap-2 px-4 py-2 rounded-full glass-card shimmer-overlay"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-full border border-border/50 bg-card/40 backdrop-blur-sm"
             >
-              <Icon size={14} className="text-gold" />
-              <span className="text-xs font-medium text-foreground">{text}</span>
+              <Icon size={13} className="text-gold" />
+              <span className="text-[11px] font-semibold text-foreground/80">{text}</span>
             </div>
           ))}
         </div>
@@ -111,12 +106,12 @@ const Landing = () => {
 
       {/* Bottom tagline */}
       <footer className="relative pb-8 pt-4 text-center animate-reveal animate-reveal-delay-4">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Sparkles size={12} className="text-gold/40" />
-          <p className="text-xs text-muted-foreground tracking-widest uppercase">
+        <div className="flex items-center justify-center gap-2">
+          <Sparkles size={10} className="text-gold/30" />
+          <p className="text-[10px] text-muted-foreground/60 tracking-[0.2em] uppercase font-medium">
             Built for those who refuse to be average
           </p>
-          <Sparkles size={12} className="text-gold/40" />
+          <Sparkles size={10} className="text-gold/30" />
         </div>
       </footer>
     </div>

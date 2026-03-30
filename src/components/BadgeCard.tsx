@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 export type BadgeRarity = "common" | "rare" | "epic" | "legendary";
@@ -53,12 +54,12 @@ const rarityConfig: Record<BadgeRarity, {
   },
 };
 
-const BadgeCard = ({ name, icon, rarity, earned = true, description, showcase = false }: BadgeCardProps) => {
+const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(({ name, icon, rarity, earned = true, description, showcase = false }, ref) => {
   const style = rarityConfig[rarity];
 
   if (showcase) {
     return (
-      <div className={cn(
+      <div ref={ref} className={cn(
         "relative flex flex-col items-center gap-1",
         !earned && "opacity-20 grayscale"
       )}>
@@ -80,6 +81,7 @@ const BadgeCard = ({ name, icon, rarity, earned = true, description, showcase = 
 
   return (
     <div
+      ref={ref}
       className={cn(
         "group relative flex flex-col items-center gap-2.5 rounded-xl border p-4 transition-all duration-500",
         style.border,
@@ -137,6 +139,8 @@ const BadgeCard = ({ name, icon, rarity, earned = true, description, showcase = 
       )}
     </div>
   );
-};
+});
+
+BadgeCard.displayName = "BadgeCard";
 
 export default BadgeCard;

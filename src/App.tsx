@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
@@ -11,23 +12,25 @@ import BottomNav from "@/components/BottomNav";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
-import DailyCheckin from "./pages/DailyCheckin";
-import Leaderboard from "./pages/Leaderboard";
-import Battles from "./pages/Battles";
-import Profile from "./pages/Profile";
-import EliteFeed from "./pages/EliteFeed";
-import Referrals from "./pages/Referrals";
-import Paywall from "./pages/Paywall";
-import BadgeCompare from "./pages/BadgeCompare";
-import UserProfile from "./pages/UserProfile";
-import Messages from "./pages/Messages";
-import Chat from "./pages/Chat";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfUse from "./pages/TermsOfUse";
-import Onboarding from "./pages/Onboarding";
-import ResetPassword from "./pages/ResetPassword";
 import OAuthCallback from "./pages/OAuthCallback";
 import NotFound from "./pages/NotFound";
+
+// Lazy-loaded pages for code-splitting
+const DailyCheckin = lazy(() => import("./pages/DailyCheckin"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
+const Battles = lazy(() => import("./pages/Battles"));
+const Profile = lazy(() => import("./pages/Profile"));
+const EliteFeed = lazy(() => import("./pages/EliteFeed"));
+const Referrals = lazy(() => import("./pages/Referrals"));
+const Paywall = lazy(() => import("./pages/Paywall"));
+const BadgeCompare = lazy(() => import("./pages/BadgeCompare"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
+const Messages = lazy(() => import("./pages/Messages"));
+const Chat = lazy(() => import("./pages/Chat"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 const queryClient = new QueryClient();
 

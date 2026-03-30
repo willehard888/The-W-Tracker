@@ -3,6 +3,10 @@ import { isNativePlatform } from "@/lib/platform";
 const PRODUCTION_URL = "https://status-level-up.lovable.app";
 const OAUTH_CALLBACK_PATH = "/~oauth/callback";
 
+const isPreviewHost = (hostname: string): boolean => {
+  return hostname.includes("-preview--") || hostname.includes(".lovableproject.com");
+};
+
 /**
  * Apple Sign-In via Lovable Cloud managed OAuth.
  * 
@@ -16,10 +20,12 @@ export const nativeAppleSignIn = async (): Promise<{ error?: Error }> => {
   try {
     const { lovable } = await import("@/integrations/lovable/index");
 
-    // Route OAuth back to a dedicated callback route we control.
-    const redirectUri = isNativePlatform()
-      ? `${PRODUCTION_URL}${OAUTH_CALLBACK_PATH}`
-      : `${window.location.origin}${OAUTH_CALLBACK_PATH}`;
+    // Route OAuth to production callback when native OR preview to avoid preview auth proxy issues.
+    const redirectBase =
+      isNativePlatform() || isPreviewHost(window.location.hostname)
+        ? PRODUCTION_URL
+        : window.location.origin;
+    const redirectUri = `${redirectBase}${OAUTH_CALLBACK_PATH}`;
 
     const result = await lovable.auth.signInWithOAuth("apple", {
       redirect_uri: redirectUri,

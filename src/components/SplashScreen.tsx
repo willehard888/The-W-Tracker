@@ -137,7 +137,7 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
         }`}
         style={{ color: "hsl(42 78% 54% / 0.7)" }}
       >
-        Earn Your Status
+        Join The Movement
       </p>
 
       {/* Decorative line */}

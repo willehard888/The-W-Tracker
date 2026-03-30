@@ -208,7 +208,7 @@ const Leaderboard = () => {
           </p>
           <Button variant="gold" size="lg" onClick={() => navigate("/paywall")}>
             <Crown size={16} />
-            Unlock Elite — 9,99€/kk
+            Unlock Elite — €4.99/kk
           </Button>
         </div>
       </div>

@@ -138,6 +138,8 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(({ name, icon, rari
       )}
     </div>
   );
-};
+});
+
+BadgeCard.displayName = "BadgeCard";
 
 export default BadgeCard;

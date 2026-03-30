@@ -59,7 +59,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(({ name, icon, rari
 
   if (showcase) {
     return (
-      <div className={cn(
+      <div ref={ref} className={cn(
         "relative flex flex-col items-center gap-1",
         !earned && "opacity-20 grayscale"
       )}>

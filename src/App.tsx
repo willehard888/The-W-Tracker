@@ -34,12 +34,17 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 const queryClient = new QueryClient();
 
+const LazyFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+  </div>
+);
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" /></div>;
+  if (loading) return <LazyFallback />;
   if (!user) return <Navigate to="/landing" replace />;
 
-  // Show onboarding on first login
   const onboardingDone = localStorage.getItem("w_onboarding_done");
   if (!onboardingDone && window.location.pathname !== "/onboarding") {
     return <Navigate to="/onboarding" replace />;
@@ -55,7 +60,8 @@ const AppRoutes = () => {
   return (
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <div className="flex-1 overflow-y-auto">
-        <Routes>
+        <Suspense fallback={<LazyFallback />}>
+          <Routes>
           <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
           <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />

@@ -1,4 +1,5 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useCallback } from "react";
+import SplashScreen from "@/components/SplashScreen";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";

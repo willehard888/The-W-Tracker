@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { applySessionFromUrl } from "@/lib/oauth-session";
 
 const OAuthCallback = () => {
   const { user, loading } = useAuth();
@@ -11,23 +11,11 @@ const OAuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Check for tokens in URL hash (from OAuth redirect)
-        const hash = window.location.hash;
-        if (hash) {
-          const params = new URLSearchParams(hash.substring(1));
-          const accessToken = params.get("access_token");
-          const refreshToken = params.get("refresh_token");
-          if (accessToken && refreshToken) {
-            await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
-            // Small delay to let auth state propagate
-            await new Promise((r) => setTimeout(r, 500));
-          }
+        const appliedSession = await applySessionFromUrl(window.location.href);
+        if (appliedSession) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
         }
 
-        // Check for error in URL params
         const searchParams = new URLSearchParams(window.location.search);
         const error = searchParams.get("error");
         if (error) {

@@ -1,22 +1,62 @@
 /**
  * Native Apple Sign-In (iOS)
  *
- * Uses Lovable Cloud's managed OAuth flow.
- * Apple requires an HTTPS redirect URI registered on the Service ID,
- * so we always route through the production web callback.
- * The OAuthCallback page detects the iOS browser and redirects tokens
- * back into the native app via the custom URL scheme.
+ * Root cause of the previous failure:
+ * the Lovable auth SDK uses a popup-oriented flow unless it detects a
+ * specific mobile-app user agent. In Capacitor iOS that detection does not
+ * reliably happen, so Safari handoff was interpreted as "Sign in was cancelled".
+ *
+ * Fix:
+ * for native iOS we bypass the popup flow entirely and open the managed
+ * OAuth initiate URL in Capacitor Browser, then return to the app through
+ * the existing custom URL scheme + deep-link session handler.
  */
 
+import { Capacitor } from "@capacitor/core";
+
 const PRODUCTION_URL = "https://status-level-up.lovable.app";
+const OAUTH_INITIATE = "/~oauth/initiate";
 const OAUTH_CALLBACK = "/~oauth/callback";
+
+function createState(): string {
+  if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {
+    return [...crypto.getRandomValues(new Uint8Array(16))]
+      .map((value) => value.toString(16).padStart(2, "0"))
+      .join("");
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function buildNativeAppleAuthUrl(): string {
+  const params = new URLSearchParams({
+    provider: "apple",
+    redirect_uri: `${PRODUCTION_URL}${OAUTH_CALLBACK}`,
+    state: createState(),
+  });
+
+  return `${PRODUCTION_URL}${OAUTH_INITIATE}?${params.toString()}`;
+}
+
+async function startNativeIosAppleSignIn(): Promise<{ error?: Error }> {
+  const { Browser } = await import("@capacitor/browser");
+  const authUrl = buildNativeAppleAuthUrl();
+
+  console.log("[AppleAuth] Starting native iOS sign-in via Browser.open:", authUrl);
+  await Browser.open({ url: authUrl });
+
+  return {};
+}
 
 export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
   try {
-    const { lovable } = await import("@/integrations/lovable/index");
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios") {
+      return await startNativeIosAppleSignIn();
+    }
 
+    const { lovable } = await import("@/integrations/lovable/index");
     const redirectUri = `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
-    console.log("[AppleAuth] Starting sign-in, redirect →", redirectUri);
+    console.log("[AppleAuth] Starting web sign-in, redirect →", redirectUri);
 
     const result = await lovable.auth.signInWithOAuth("apple", {
       redirect_uri: redirectUri,

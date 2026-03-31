@@ -107,18 +107,39 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   // ─── Purchase directly by product ID (fallback when no offerings) ───
   const purchaseProduct = async (productId: string) => {
     try {
-      console.log("Purchasing product by ID:", productId);
+      console.log("[RC] Fetching product by ID:", productId);
       const { products } = await CapPurchases.getProducts({ productIdentifiers: [productId] });
+      console.log("[RC] Products returned:", JSON.stringify(products));
+      
       if (!products || products.length === 0) {
-        throw new Error(`Product "${productId}" not found in App Store. Make sure the product is created in App Store Connect with status "Ready to Submit" and added to RevenueCat.`);
+        // Try alternate product ID formats
+        const altIds = [`${productId}`, `com.app.${productId}`, `app.lovable.wtracker.${productId}`];
+        console.log("[RC] Primary product not found, trying alternates:", altIds);
+        
+        for (const altId of altIds) {
+          try {
+            const altResult = await CapPurchases.getProducts({ productIdentifiers: [altId] });
+            if (altResult.products?.length > 0) {
+              console.log("[RC] Found product with alt ID:", altId);
+              const { customerInfo } = await CapPurchases.purchaseStoreProduct({ product: altResult.products[0] });
+              const elite = checkEntitlements(customerInfo.entitlements);
+              setRcElite(elite);
+              await syncEliteStatus(elite);
+              return;
+            }
+          } catch { /* skip */ }
+        }
+        
+        throw new Error(`Tuotetta "${productId}" ei löydy App Storesta. Varmista että tuote on luotu App Store Connectiin ja lisätty RevenueCatiin.`);
       }
+      
       const { customerInfo } = await CapPurchases.purchaseStoreProduct({ product: products[0] });
-      console.log("Purchase completed, entitlements:", JSON.stringify(customerInfo.entitlements));
+      console.log("[RC] Purchase completed, entitlements:", JSON.stringify(customerInfo.entitlements));
       const elite = checkEntitlements(customerInfo.entitlements);
       setRcElite(elite);
       await syncEliteStatus(elite);
     } catch (e: any) {
-      console.error("Purchase product error:", JSON.stringify(e));
+      console.error("[RC] Purchase product error:", JSON.stringify(e));
       if (e.code === "1" || e.code === 1 || e.userCancelled) return;
       throw e;
     }

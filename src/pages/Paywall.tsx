@@ -3,12 +3,17 @@ import { cn } from "@/lib/utils";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Crown, Flame, Trophy, Swords, Shield, Zap, Check, ArrowLeft, Loader2 } from "lucide-react";
+import {
+  Crown, Flame, Trophy, Swords, Shield, Zap, Check, ArrowLeft, Loader2,
+} from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import EliteUnlockCelebration from "@/components/EliteUnlockCelebration";
+
+// ─── Constants ──────────────────────────────────────────
+const PRODUCT_ID = "elitemonthly499";
 
 const ELITE_FEATURES = [
   { icon: Trophy, text: "Full global leaderboard access" },
@@ -17,46 +22,41 @@ const ELITE_FEATURES = [
   { icon: Zap, text: "2× XP multiplier on all check-ins" },
   { icon: Shield, text: "Exclusive Elite badges" },
   { icon: Crown, text: "Elite status tier & profile glow" },
-];
+] as const;
 
+// ─── Component ──────────────────────────────────────────
 const Paywall = () => {
   const { isElite, checkSubscription } = useAuth();
-  const { packages, purchase, purchaseProduct, restorePurchases, rcLoading, rcReady, monthlyPriceLabel } = useRevenueCat();
+  const {
+    packages, purchase, purchaseProduct, restorePurchases,
+    rcLoading, rcReady, monthlyPriceLabel,
+  } = useRevenueCat();
   const navigate = useNavigate();
+
   const [purchasing, setPurchasing] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const wasEliteRef = useRef(isElite);
   const isNative = isNativePlatform();
 
-  // Your App Store Connect product ID for the monthly subscription
-  const PRODUCT_ID = "elitemonthly499";
-  const displayPrice = isNative ? (monthlyPriceLabel ?? "€4.99") : "€4.99";
+  // Dynamic price from store, fallback to static
+  const displayPrice = isNative ? (monthlyPriceLabel ?? "4,99 €") : "4,99 €";
 
-  const isMonthlyPackage = (pkg: any) => {
-    const productId = pkg?.product?.identifier ?? pkg?.storeProduct?.identifier ?? pkg?.productIdentifier;
-
-    return productId === PRODUCT_ID;
-  };
-
-  // Detect real-time elite unlock
+  // Detect upgrade → celebration
   useEffect(() => {
-    if (isElite && !wasEliteRef.current) {
-      setShowCelebration(true);
-    }
+    if (isElite && !wasEliteRef.current) setShowCelebration(true);
     wasEliteRef.current = isElite;
   }, [isElite]);
 
+  // ─── Celebration ────────────────────────────────────
   if (showCelebration) {
     return (
       <EliteUnlockCelebration
-        onComplete={() => {
-          setShowCelebration(false);
-          navigate("/profile");
-        }}
+        onComplete={() => { setShowCelebration(false); navigate("/profile"); }}
       />
     );
   }
 
+  // ─── Already Elite ──────────────────────────────────
   if (isElite) {
     return (
       <div className="min-h-screen pb-4 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
@@ -66,57 +66,53 @@ const Paywall = () => {
         <h1 className="font-display text-2xl font-bold mb-2">You're Elite</h1>
         <p className="text-sm text-muted-foreground mb-6">All premium features are unlocked.</p>
         <Button variant="gold-outline" onClick={() => navigate("/profile")}>
-          <ArrowLeft size={14} />
-          Back to Profile
+          <ArrowLeft size={14} /> Back to Profile
         </Button>
       </div>
     );
   }
 
-  // Stripe checkout (web)
+  // ─── Handlers ───────────────────────────────────────
+
+  /** Web: Stripe checkout */
   const handleStripeCheckout = async () => {
     setPurchasing(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout");
       if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, "_blank");
-        // Poll for subscription status — celebration triggers automatically via useEffect
-        const pollInterval = setInterval(async () => {
-          await checkSubscription();
-        }, 4000);
-        setTimeout(() => clearInterval(pollInterval), 180000);
-      } else {
-        throw new Error("No checkout URL received");
-      }
+      if (!data?.url) throw new Error("No checkout URL received");
+
+      window.open(data.url, "_blank");
+      // Poll for subscription completion
+      const poll = setInterval(() => checkSubscription(), 4000);
+      setTimeout(() => clearInterval(poll), 180_000);
     } catch (e: any) {
-      toast.error(e?.message || "Could not start checkout. Try again.");
+      toast.error(e?.message || "Could not start checkout.");
     } finally {
       setPurchasing(false);
     }
   };
 
-  // RevenueCat purchase (native) — try package first, fallback to product ID
+  /** Native: RevenueCat purchase (package → fallback to product ID) */
   const handleNativePurchase = async () => {
-    if (!rcReady) {
-      toast.info("Loading store… please wait a moment.");
-      return;
-    }
+    if (!rcReady) { toast.info("Loading store… please wait."); return; }
     setPurchasing(true);
     try {
-      const monthlyPkg = packages.find(isMonthlyPackage);
+      // Find the package whose underlying product matches our ID
+      const monthlyPkg = packages.find((pkg: any) => {
+        const id = pkg?.product?.identifier ?? pkg?.storeProduct?.identifier;
+        return id === PRODUCT_ID;
+      });
 
       if (monthlyPkg) {
         await purchase(monthlyPkg);
       } else {
-        // Fallback: purchase directly by App Store product ID
-        console.log("No offerings found, purchasing by product ID:", PRODUCT_ID);
+        console.log("[Paywall] No matching package, purchasing by product ID");
         await purchaseProduct(PRODUCT_ID);
       }
-
       await checkSubscription();
     } catch (e: any) {
-      toast.error(e?.message || "Purchase failed. Please try again.");
+      toast.error(e?.message || "Purchase failed.");
     } finally {
       setPurchasing(false);
     }
@@ -132,11 +128,14 @@ const Paywall = () => {
     }
   };
 
+  // ─── Render ─────────────────────────────────────────
   return (
     <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
-        <ArrowLeft size={16} />
-        Back
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+      >
+        <ArrowLeft size={16} /> Back
       </button>
 
       {/* Hero */}
@@ -168,13 +167,16 @@ const Paywall = () => {
 
       {/* Pricing */}
       <div className="animate-reveal animate-reveal-delay-2">
-        {(isNative && rcLoading) ? (
+        {isNative && rcLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 size={24} className="animate-spin text-gold" />
           </div>
         ) : (
           <div className="rounded-xl glass-card-gold p-6 text-center space-y-4 gradient-border-animated">
-            <p className="text-lg font-display font-black text-gold mb-1">{displayPrice}<span className="text-sm font-semibold text-muted-foreground">/kk</span></p>
+            <p className="text-lg font-display font-black text-gold mb-1">
+              {displayPrice}
+              <span className="text-sm font-semibold text-muted-foreground">/kk</span>
+            </p>
             <p className="text-xs text-muted-foreground">Elite Membership</p>
 
             <Button
@@ -184,11 +186,7 @@ const Paywall = () => {
               disabled={purchasing}
               onClick={isNative ? handleNativePurchase : handleStripeCheckout}
             >
-              {purchasing ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <Crown size={18} />
-              )}
+              {purchasing ? <Loader2 size={18} className="animate-spin" /> : <Crown size={18} />}
               Unlock Elite — {displayPrice}/kk
             </Button>
           </div>
@@ -202,14 +200,14 @@ const Paywall = () => {
         </button>
       </div>
 
-      {/* Trust line */}
+      {/* Trust */}
       <div className="text-center mt-4 animate-reveal animate-reveal-delay-3">
         <p className="text-[10px] text-muted-foreground tracking-wider uppercase">
           {isNative ? "Secure in-app purchase • Cancel anytime" : "Secure payment via Stripe • Cancel anytime"}
         </p>
       </div>
 
-      {/* Legal links */}
+      {/* Legal */}
       <div className="flex items-center justify-center gap-4 mt-4 mb-8 animate-reveal animate-reveal-delay-3">
         <button onClick={() => navigate("/privacy")} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2">
           Privacy Policy

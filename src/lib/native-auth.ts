@@ -1,25 +1,36 @@
-const PRODUCTION_URL = "https://status-level-up.lovable.app";
-const OAUTH_CALLBACK_PATH = "/~oauth/callback";
-
 /**
- * Apple Sign-In via Lovable Cloud managed OAuth.
+ * Native Apple Sign-In (iOS)
  *
- * Apple web auth requires an HTTPS redirect URI registered on the Service ID.
- * Using the native app URL scheme here causes Apple's "invalid web redirect url"
- * error, so we always send users through the production callback.
+ * Uses Lovable Cloud's managed OAuth flow.
+ * Apple requires an HTTPS redirect URI registered on the Service ID,
+ * so we always route through the production web callback.
+ * The OAuthCallback page detects the iOS browser and redirects tokens
+ * back into the native app via the custom URL scheme.
  */
-export const nativeAppleSignIn = async (): Promise<{ error?: Error }> => {
+
+const PRODUCTION_URL = "https://status-level-up.lovable.app";
+const OAUTH_CALLBACK = "/~oauth/callback";
+
+export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
   try {
     const { lovable } = await import("@/integrations/lovable/index");
 
+    const redirectUri = `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
+    console.log("[AppleAuth] Starting sign-in, redirect →", redirectUri);
+
     const result = await lovable.auth.signInWithOAuth("apple", {
-      redirect_uri: `${PRODUCTION_URL}${OAUTH_CALLBACK_PATH}`,
+      redirect_uri: redirectUri,
     });
 
-    if (result?.error) return { error: result.error as Error };
+    if (result?.error) {
+      console.error("[AppleAuth] Provider returned error:", result.error);
+      return { error: result.error as Error };
+    }
+
     return {};
-  } catch (e: any) {
-    console.error("Apple sign-in error:", e);
-    return { error: e instanceof Error ? e : new Error(String(e)) };
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    console.error("[AppleAuth] Unexpected error:", error);
+    return { error };
   }
-};
+}

@@ -1,36 +1,49 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const getParamsFromUrl = (url: URL) => {
-  const searchParams = new URLSearchParams(url.search);
-  const hashParams = new URLSearchParams(url.hash.startsWith("#") ? url.hash.slice(1) : url.hash);
+/**
+ * Extracts access_token and refresh_token from both URL search params
+ * and hash fragment (Apple/OAuth providers use either).
+ */
+function extractTokens(url: URL) {
+  const search = new URLSearchParams(url.search);
+  const hash = new URLSearchParams(
+    url.hash.startsWith("#") ? url.hash.slice(1) : url.hash,
+  );
 
   return {
-    accessToken: hashParams.get("access_token") ?? searchParams.get("access_token"),
-    refreshToken: hashParams.get("refresh_token") ?? searchParams.get("refresh_token"),
+    accessToken: search.get("access_token") ?? hash.get("access_token"),
+    refreshToken: search.get("refresh_token") ?? hash.get("refresh_token"),
   };
-};
+}
 
-export const applySessionFromUrl = async (input: string | URL): Promise<boolean> => {
+/**
+ * Apply an OAuth session from any URL that contains token params.
+ * Works for both web callbacks and native deep-link URLs.
+ */
+export async function applySessionFromUrl(
+  input: string | URL,
+): Promise<boolean> {
   try {
     const url = input instanceof URL ? input : new URL(input, window.location.origin);
-    const { accessToken, refreshToken } = getParamsFromUrl(url);
+    const { accessToken, refreshToken } = extractTokens(url);
 
     if (!accessToken || !refreshToken) {
+      console.log("[OAuth] No tokens found in URL");
       return false;
     }
 
+    console.log("[OAuth] Applying session from URL tokens");
     const { error } = await supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
     });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
+    console.log("[OAuth] Session applied successfully");
     return true;
-  } catch (error) {
-    console.error("Failed to apply OAuth session from URL:", error);
+  } catch (err) {
+    console.error("[OAuth] Failed to apply session:", err);
     return false;
   }
-};
+}

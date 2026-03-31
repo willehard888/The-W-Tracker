@@ -95,8 +95,12 @@ const AppRoutes = () => {
 };
 
 const App = () => {
-  const [splashDone, setSplashDone] = useState(false);
-  const handleSplashComplete = useCallback(() => setSplashDone(true), []);
+  const alreadyShown = sessionStorage.getItem("w_splash_shown") === "1";
+  const [splashDone, setSplashDone] = useState(alreadyShown);
+  const handleSplashComplete = useCallback(() => {
+    sessionStorage.setItem("w_splash_shown", "1");
+    setSplashDone(true);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

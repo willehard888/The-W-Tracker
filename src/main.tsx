@@ -9,13 +9,19 @@ if (Capacitor.isNativePlatform()) {
   import("@capacitor/app")
     .then(({ App: CapApp }) => {
       CapApp.addListener("appUrlOpen", async (data: { url: string }) => {
+        console.log("[DeepLink] Received URL:", data.url);
         try {
           const didApplySession = await applySessionFromUrl(data.url);
-          if (!didApplySession) {
-            console.warn("OAuth callback opened without session tokens:", data.url);
+          if (didApplySession) {
+            console.log("[DeepLink] Session applied successfully, navigating to home");
+            // Force navigation to home after successful OAuth
+            window.location.hash = "";
+            window.location.pathname = "/";
+          } else {
+            console.warn("[DeepLink] No session tokens in URL:", data.url);
           }
         } catch (e) {
-          console.error("Deep link handling error:", e);
+          console.error("[DeepLink] Error handling deep link:", e);
         }
       });
     })

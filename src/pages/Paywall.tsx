@@ -21,7 +21,7 @@ const ELITE_FEATURES = [
 
 const Paywall = () => {
   const { isElite, checkSubscription } = useAuth();
-  const { packages, purchase, purchaseProduct, restorePurchases, rcLoading, rcReady } = useRevenueCat();
+  const { packages, purchase, purchaseProduct, restorePurchases, rcLoading, rcReady, monthlyPriceLabel } = useRevenueCat();
   const navigate = useNavigate();
   const [purchasing, setPurchasing] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -30,6 +30,17 @@ const Paywall = () => {
 
   // Your App Store Connect product ID for the monthly subscription
   const PRODUCT_ID = "elitemonthly499";
+  const displayPrice = isNative ? (monthlyPriceLabel ?? "€4.99") : "€4.99";
+
+  const isMonthlyPackage = (pkg: any) => {
+    const productId = pkg?.product?.identifier ?? pkg?.storeProduct?.identifier ?? pkg?.productIdentifier;
+
+    return (
+      pkg?.identifier === "$rc_monthly" ||
+      pkg?.identifier === "monthly" ||
+      productId === PRODUCT_ID
+    );
+  };
 
   // Detect real-time elite unlock
   useEffect(() => {
@@ -97,9 +108,7 @@ const Paywall = () => {
     }
     setPurchasing(true);
     try {
-      const monthlyPkg = packages.find(p =>
-        p.identifier === "$rc_monthly" || p.identifier === "monthly"
-      );
+      const monthlyPkg = packages.find(isMonthlyPackage);
 
       if (monthlyPkg) {
         await purchase(monthlyPkg);
@@ -169,7 +178,7 @@ const Paywall = () => {
           </div>
         ) : (
           <div className="rounded-xl glass-card-gold p-6 text-center space-y-4 gradient-border-animated">
-            <p className="text-lg font-display font-black text-gold mb-1">€4.99<span className="text-sm font-semibold text-muted-foreground">/kk</span></p>
+            <p className="text-lg font-display font-black text-gold mb-1">{displayPrice}<span className="text-sm font-semibold text-muted-foreground">/kk</span></p>
             <p className="text-xs text-muted-foreground">Elite Membership</p>
 
             <Button
@@ -184,7 +193,7 @@ const Paywall = () => {
               ) : (
                 <Crown size={18} />
               )}
-              Unlock Elite — €4.99/kk
+              Unlock Elite — {displayPrice}/kk
             </Button>
           </div>
         )}

@@ -14,7 +14,14 @@ if (Capacitor.isNativePlatform()) {
           const didApplySession = await applySessionFromUrl(data.url);
           if (didApplySession) {
             console.log("[DeepLink] Session applied successfully, navigating to home");
+            import("@capacitor/browser")
+              .then(({ Browser }) => Browser.close())
+              .catch(() => {
+                // Browser plugin may not be available in all environments
+              });
+
             // Force navigation to home after successful OAuth
+            window.history.replaceState({}, "", "/");
             window.location.hash = "";
             window.location.pathname = "/";
           } else {

@@ -8,12 +8,14 @@ import { Purchases as CapPurchases } from "@revenuecat/purchases-capacitor";
 
 const RC_API_KEY_APPLE = "appl_qgpDFJEtyXTeNTJZxBoHzxzgiTr";
 const ENTITLEMENT_ID = "The W Tracker Pro";
+const MONTHLY_PRODUCT_ID = "elitemonthly499";
 
 interface RevenueCatContextType {
   rcElite: boolean;
   packages: any[];
   rcLoading: boolean;
   rcReady: boolean;
+  monthlyPriceLabel: string | null;
   purchase: (pkg: any) => Promise<void>;
   purchaseProduct: (productId: string) => Promise<void>;
   restorePurchases: () => Promise<void>;
@@ -33,6 +35,8 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const [packages, setPackages] = useState<any[]>([]);
   const [rcLoading, setRcLoading] = useState(true);
   const [rcReady, setRcReady] = useState(false);
+  const [monthlyPriceLabel, setMonthlyPriceLabel] = useState<string | null>(null);
+  const displayedPriceRef = useRef<string | null>(null);
 
   const syncEliteStatus = useCallback(async (elite: boolean) => {
     if (!user || !elite) return;
@@ -42,6 +46,77 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const checkEntitlements = (entitlements: any) => {
     return !!entitlements?.active?.[ENTITLEMENT_ID];
   };
+
+  const getStoreProduct = useCallback((value: any) => {
+    return value?.product ?? value?.storeProduct ?? value ?? null;
+  }, []);
+
+  const getProductIdentifier = useCallback((value: any) => {
+    return value?.identifier ?? value?.productIdentifier ?? value?.id ?? null;
+  }, []);
+
+  const getProductPriceLabel = useCallback((value: any) => {
+    if (typeof value?.priceString === "string" && value.priceString.length > 0) return value.priceString;
+    if (typeof value?.priceFormatted === "string" && value.priceFormatted.length > 0) return value.priceFormatted;
+    if (typeof value?.price === "number") {
+      try {
+        return new Intl.NumberFormat("fi-FI", {
+          style: "currency",
+          currency: value?.currencyCode || "EUR",
+        }).format(value.price);
+      } catch {
+        return `${value.price}`;
+      }
+    }
+    return null;
+  }, []);
+
+  const syncDisplayedProduct = useCallback((value: any) => {
+    const product = getStoreProduct(value);
+    const productId = getProductIdentifier(product);
+    const priceLabel = getProductPriceLabel(product);
+
+    if (!productId && !priceLabel) return;
+
+    console.log("[RC] Active store product:", JSON.stringify({ productId, priceLabel }));
+
+    if (priceLabel && displayedPriceRef.current !== priceLabel) {
+      displayedPriceRef.current = priceLabel;
+      setMonthlyPriceLabel(priceLabel);
+    }
+  }, [getProductIdentifier, getProductPriceLabel, getStoreProduct]);
+
+  const isMatchingMonthlyPackage = useCallback((pkg: any) => {
+    const product = getStoreProduct(pkg);
+    const productId = getProductIdentifier(product);
+
+    return (
+      pkg?.identifier === "$rc_monthly" ||
+      pkg?.identifier === "monthly" ||
+      productId === MONTHLY_PRODUCT_ID
+    );
+  }, [getProductIdentifier, getStoreProduct]);
+
+  const preloadMonthlyProduct = useCallback(async () => {
+    try {
+      const { products } = await CapPurchases.getProducts({ productIdentifiers: [MONTHLY_PRODUCT_ID] });
+      console.log(
+        "[RC] Direct products:",
+        JSON.stringify(
+          (products || []).map((product: any) => ({
+            identifier: getProductIdentifier(product),
+            priceLabel: getProductPriceLabel(product),
+          }))
+        )
+      );
+
+      if (products?.[0]) {
+        syncDisplayedProduct(products[0]);
+      }
+    } catch (e) {
+      console.warn("[RC] Direct product preload failed:", e);
+    }
+  }, [getProductIdentifier, getProductPriceLabel, syncDisplayedProduct]);
 
   // ─── Native init (iOS Capacitor plugin) ───
   const initNative = useCallback(async (userId: string) => {
@@ -60,22 +135,46 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       try {
         const offeringsResult = await CapPurchases.getOfferings();
         if (offeringsResult.current) {
-          setPackages(offeringsResult.current.availablePackages);
+          const availablePackages = offeringsResult.current.availablePackages;
+          setPackages(availablePackages);
+
+          console.log(
+            "[RC] Available packages:",
+            JSON.stringify(
+              availablePackages.map((pkg: any) => ({
+                identifier: pkg?.identifier,
+                productId: getProductIdentifier(getStoreProduct(pkg)),
+                priceLabel: getProductPriceLabel(getStoreProduct(pkg)),
+              }))
+            )
+          );
+
+          const monthlyPkg = availablePackages.find(isMatchingMonthlyPackage);
+          if (monthlyPkg) {
+            syncDisplayedProduct(monthlyPkg);
+          }
+        }
+
+        if (!displayedPriceRef.current) {
+          await preloadMonthlyProduct();
         }
       } catch (e) {
         console.log("No offerings configured yet — purchaseProduct will be used:", e);
+        await preloadMonthlyProduct();
       }
     } catch (e) {
       console.error("RevenueCat native init error:", e);
     } finally {
       setRcLoading(false);
     }
-  }, [syncEliteStatus]);
+  }, [getProductIdentifier, getProductPriceLabel, getStoreProduct, isMatchingMonthlyPackage, preloadMonthlyProduct, syncDisplayedProduct, syncEliteStatus]);
 
   useEffect(() => {
     if (!user) {
       setRcElite(false);
       setPackages([]);
+      setMonthlyPriceLabel(null);
+      displayedPriceRef.current = null;
       setRcLoading(false);
       setRcReady(false);
       return;
@@ -92,6 +191,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const purchase = async (pkg: any) => {
     try {
       console.log("Starting purchase for package:", pkg.identifier);
+      syncDisplayedProduct(pkg);
       const { customerInfo } = await CapPurchases.purchasePackage({ aPackage: pkg });
       console.log("Purchase completed, entitlements:", JSON.stringify(customerInfo.entitlements));
       const elite = checkEntitlements(customerInfo.entitlements);
@@ -121,6 +221,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
             const altResult = await CapPurchases.getProducts({ productIdentifiers: [altId] });
             if (altResult.products?.length > 0) {
               console.log("[RC] Found product with alt ID:", altId);
+              syncDisplayedProduct(altResult.products[0]);
               const { customerInfo } = await CapPurchases.purchaseStoreProduct({ product: altResult.products[0] });
               const elite = checkEntitlements(customerInfo.entitlements);
               setRcElite(elite);
@@ -133,6 +234,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(`Tuotetta "${productId}" ei löydy App Storesta. Varmista että tuote on luotu App Store Connectiin ja lisätty RevenueCatiin.`);
       }
       
+      syncDisplayedProduct(products[0]);
       const { customerInfo } = await CapPurchases.purchaseStoreProduct({ product: products[0] });
       console.log("[RC] Purchase completed, entitlements:", JSON.stringify(customerInfo.entitlements));
       const elite = checkEntitlements(customerInfo.entitlements);
@@ -158,7 +260,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <RevenueCatContext.Provider value={{ rcElite, packages, rcLoading, rcReady, purchase, purchaseProduct, restorePurchases }}>
+    <RevenueCatContext.Provider value={{ rcElite, packages, rcLoading, rcReady, monthlyPriceLabel, purchase, purchaseProduct, restorePurchases }}>
       {children}
     </RevenueCatContext.Provider>
   );

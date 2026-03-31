@@ -35,11 +35,7 @@ const Paywall = () => {
   const isMonthlyPackage = (pkg: any) => {
     const productId = pkg?.product?.identifier ?? pkg?.storeProduct?.identifier ?? pkg?.productIdentifier;
 
-    return (
-      pkg?.identifier === "$rc_monthly" ||
-      pkg?.identifier === "monthly" ||
-      productId === PRODUCT_ID
-    );
+    return productId === PRODUCT_ID;
   };
 
   // Detect real-time elite unlock

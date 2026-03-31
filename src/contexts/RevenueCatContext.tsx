@@ -76,7 +76,10 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     const productId = getProductIdentifier(product);
     const priceLabel = getProductPriceLabel(product);
 
-    if (!productId && !priceLabel) return;
+    if (productId !== MONTHLY_PRODUCT_ID) {
+      console.log("[RC] Ignoring non-monthly product for paywall display:", JSON.stringify({ productId, priceLabel }));
+      return;
+    }
 
     console.log("[RC] Active store product:", JSON.stringify({ productId, priceLabel }));
 
@@ -90,11 +93,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     const product = getStoreProduct(pkg);
     const productId = getProductIdentifier(product);
 
-    return (
-      pkg?.identifier === "$rc_monthly" ||
-      pkg?.identifier === "monthly" ||
-      productId === MONTHLY_PRODUCT_ID
-    );
+    return productId === MONTHLY_PRODUCT_ID;
   }, [getProductIdentifier, getStoreProduct]);
 
   const preloadMonthlyProduct = useCallback(async () => {

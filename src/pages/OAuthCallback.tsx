@@ -5,6 +5,19 @@ import { applySessionFromUrl } from "@/lib/oauth-session";
 
 const NATIVE_SCHEME = "app.lovable.wtracker";
 
+const buildNativeCallbackUrl = (input: string): string => {
+  const url = new URL(input);
+  const params = new URLSearchParams(url.search);
+  const hashParams = new URLSearchParams(url.hash.startsWith("#") ? url.hash.slice(1) : url.hash);
+
+  hashParams.forEach((value, key) => {
+    params.set(key, value);
+  });
+
+  const query = params.toString();
+  return `${NATIVE_SCHEME}://oauth/callback${query ? `?${query}` : ""}`;
+};
+
 /**
  * Detects if the callback was opened from a native iOS app
  * and should redirect tokens back via custom URL scheme.
@@ -12,15 +25,19 @@ const NATIVE_SCHEME = "app.lovable.wtracker";
 const shouldRedirectToNativeApp = (): boolean => {
   const url = new URL(window.location.href);
   // Check if tokens are present (meaning this is a real OAuth callback)
-  const hasTokens =
+  const hasCallbackState =
     url.searchParams.has("access_token") ||
-    url.hash.includes("access_token");
+    url.searchParams.has("refresh_token") ||
+    url.searchParams.has("error") ||
+    url.hash.includes("access_token") ||
+    url.hash.includes("refresh_token") ||
+    url.hash.includes("error");
 
-  // If opened in Safari (not in a WebView), redirect to native app
-  const isSafari = /Safari/.test(navigator.userAgent) && !/CriOS|FxiOS/.test(navigator.userAgent);
+  // Redirect any iOS browser callback back into the native app.
+  const isIOSBrowser = /iPhone|iPad|iPod/.test(navigator.userAgent);
   const isNotWebView = !navigator.userAgent.includes("CapacitorWebView");
 
-  return hasTokens && isSafari && isNotWebView;
+  return hasCallbackState && isIOSBrowser && isNotWebView;
 };
 
 const OAuthCallback = () => {
@@ -36,11 +53,7 @@ const OAuthCallback = () => {
 
         // If opened in Safari with tokens, redirect back to native app
         if (shouldRedirectToNativeApp()) {
-          const url = new URL(currentUrl);
-          // Build the native deep link with all OAuth params
-          const params = url.search || "";
-          const hash = url.hash || "";
-          const nativeUrl = `${NATIVE_SCHEME}://oauth/callback${params}${hash}`;
+          const nativeUrl = buildNativeCallbackUrl(currentUrl);
 
           console.log("Redirecting OAuth tokens to native app:", nativeUrl);
           setRedirectedToApp(true);

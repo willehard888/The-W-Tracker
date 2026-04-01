@@ -10,6 +10,7 @@ import { useAuth } from "./AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import { Purchases as CapPurchases } from "@revenuecat/purchases-capacitor";
+import { pushIosDebugLog, updateRevenueCatDebug } from "@/lib/ios-debug";
 
 // ─── Constants ──────────────────────────────────────────
 const RC_API_KEY_APPLE = "appl_qgpDFJEtyXTeNTJZxBoHzxzgiTr";
@@ -83,6 +84,16 @@ function isCancellation(e: any): boolean {
   return e?.code === "1" || e?.code === 1 || !!e?.userCancelled;
 }
 
+function toMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return String(err);
+  }
+}
+
 // ─── Provider ───────────────────────────────────────────
 
 export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
@@ -107,6 +118,9 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     async (info: any) => {
       const elite = hasElite(info);
       setRcElite(elite);
+      updateRevenueCatDebug({
+        entitlement: elite ? ENTITLEMENT : null,
+      });
       await syncElite(elite);
     },
     [syncElite],
@@ -118,14 +132,42 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       const { products } = await CapPurchases.getProducts({
         productIdentifiers: [PRODUCT_ID],
       });
+      const loadedProductIds = (products ?? [])
+        .map((x: any) => productId(x))
+        .filter((id: string | null): id is string => Boolean(id));
+
       const p = products?.find((x: any) => productId(x) === PRODUCT_ID);
       if (p) {
         const label = priceLabel(p);
         console.log("[RC] Monthly product:", productId(p), label);
         if (label) setMonthlyPriceLabel(label);
+        updateRevenueCatDebug({
+          loadedProductIds,
+          monthlyPriceLabel: label,
+          lastProductFetchError: null,
+        });
+        pushIosDebugLog("RevenueCat", "Monthly product loaded", {
+          loadedProductIds,
+          priceLabel: label,
+        });
+      } else {
+        const message = `Product ${PRODUCT_ID} not returned by store`;
+        updateRevenueCatDebug({
+          loadedProductIds,
+          lastProductFetchError: message,
+        });
+        pushIosDebugLog("RevenueCat", "Monthly product missing from store response", {
+          loadedProductIds,
+        });
       }
     } catch (e) {
       console.warn("[RC] Could not load monthly product:", e);
+      const message = toMessage(e);
+      updateRevenueCatDebug({
+        loadedProductIds: [],
+        lastProductFetchError: message,
+      });
+      pushIosDebugLog("RevenueCat", "Monthly product fetch failed", { message });
     }
   }, []);
 
@@ -137,6 +179,10 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       setMonthlyPriceLabel(null);
       setRcLoading(false);
       setRcReady(false);
+      updateRevenueCatDebug({
+        appUserId: null,
+        entitlement: null,
+      });
       return;
     }
 
@@ -153,6 +199,17 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
         await CapPurchases.configure({ apiKey: RC_API_KEY_APPLE, appUserID: user.id });
         if (cancelled) return;
         setRcReady(true);
+        updateRevenueCatDebug({
+          appUserId: user.id,
+          entitlement: null,
+          lastOfferingError: null,
+          lastProductFetchError: null,
+        });
+        pushIosDebugLog("RevenueCat", "SDK configured", {
+          appUserId: user.id,
+          entitlement: ENTITLEMENT,
+          productId: PRODUCT_ID,
+        });
 
         // 2. Check entitlements
         const { customerInfo } = await CapPurchases.getCustomerInfo();
@@ -165,14 +222,46 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
           if (cancelled) return;
           if (current?.availablePackages) {
             setPackages(current.availablePackages);
+            const offeringPackageIds = current.availablePackages
+              .map((pkg: any) => pkg?.identifier)
+              .filter((id: string | undefined): id is string => Boolean(id));
+            const offeringProductIds = current.availablePackages
+              .map((pkg: any) => productId(storeProduct(pkg)))
+              .filter((id: string | null): id is string => Boolean(id));
+
             const monthly = current.availablePackages.find(isMonthly);
             if (monthly) {
               const label = priceLabel(storeProduct(monthly));
               if (label) setMonthlyPriceLabel(label);
+              updateRevenueCatDebug({ monthlyPriceLabel: label });
             }
+
+            updateRevenueCatDebug({
+              offeringPackageIds,
+              offeringProductIds,
+              lastOfferingError: null,
+            });
+            pushIosDebugLog("RevenueCat", "Offerings loaded", {
+              offeringPackageIds,
+              offeringProductIds,
+            });
+          } else {
+            updateRevenueCatDebug({
+              offeringPackageIds: [],
+              offeringProductIds: [],
+              lastOfferingError: "No available packages in current offering",
+            });
+            pushIosDebugLog("RevenueCat", "No available packages in current offering");
           }
         } catch (e) {
           console.log("[RC] No offerings configured, using direct product:", e);
+          const message = toMessage(e);
+          updateRevenueCatDebug({
+            offeringPackageIds: [],
+            offeringProductIds: [],
+            lastOfferingError: message,
+          });
+          pushIosDebugLog("RevenueCat", "Offerings fetch failed", { message });
         }
 
         // 4. Always fetch the actual product to guarantee correct price
@@ -192,11 +281,23 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     async (pkg: any) => {
       try {
         console.log("[RC] Purchasing package:", pkg?.identifier);
+        updateRevenueCatDebug({
+          lastPurchaseError: null,
+          lastPurchasedProductId: productId(storeProduct(pkg)),
+        });
+        pushIosDebugLog("RevenueCat", "Package purchase started", {
+          packageId: pkg?.identifier,
+          productId: productId(storeProduct(pkg)),
+        });
+
         const { customerInfo } = await CapPurchases.purchasePackage({ aPackage: pkg });
         await applyElite(customerInfo);
       } catch (e: any) {
         if (isCancellation(e)) return;
         console.error("[RC] Package purchase error:", e);
+        const message = toMessage(e);
+        updateRevenueCatDebug({ lastPurchaseError: message });
+        pushIosDebugLog("RevenueCat", "Package purchase failed", { message });
         throw e;
       }
     },
@@ -208,7 +309,25 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     async (id: string) => {
       try {
         console.log("[RC] Purchasing product:", id);
+        updateRevenueCatDebug({
+          lastPurchaseError: null,
+          lastPurchasedProductId: id,
+        });
+        pushIosDebugLog("RevenueCat", "Direct product purchase started", {
+          productId: id,
+        });
+
         const { products } = await CapPurchases.getProducts({ productIdentifiers: [id] });
+        const loadedProductIds = (products ?? [])
+          .map((x: any) => productId(x))
+          .filter((pid: string | null): pid is string => Boolean(pid));
+
+        updateRevenueCatDebug({
+          loadedProductIds,
+          lastProductFetchError: loadedProductIds.includes(id)
+            ? null
+            : `Product ${id} not returned by store`,
+        });
 
         if (!products?.length) {
           throw new Error(
@@ -223,6 +342,9 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       } catch (e: any) {
         if (isCancellation(e)) return;
         console.error("[RC] Product purchase error:", e);
+        const message = toMessage(e);
+        updateRevenueCatDebug({ lastPurchaseError: message });
+        pushIosDebugLog("RevenueCat", "Direct product purchase failed", { message });
         throw e;
       }
     },
@@ -232,10 +354,15 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   // ─── Restore ────────────────────────────────────────
   const restorePurchases = useCallback(async () => {
     try {
+      updateRevenueCatDebug({ lastRestoreError: null });
+      pushIosDebugLog("RevenueCat", "Restore purchases started");
       const { customerInfo } = await CapPurchases.restorePurchases();
       await applyElite(customerInfo);
     } catch (e) {
       console.error("[RC] Restore error:", e);
+      const message = toMessage(e);
+      updateRevenueCatDebug({ lastRestoreError: message });
+      pushIosDebugLog("RevenueCat", "Restore purchases failed", { message });
       throw e;
     }
   }, [applyElite]);

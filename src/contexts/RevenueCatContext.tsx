@@ -15,7 +15,8 @@ import { pushIosDebugLog, updateRevenueCatDebug } from "@/lib/ios-debug";
 // ─── Constants ──────────────────────────────────────────
 const RC_API_KEY_APPLE = "appl_qgpDFJEtyXTeNTJZxBoHzxzgiTr";
 const ENTITLEMENT = "The W Tracker Pro";
-const PRODUCT_ID = "elitemonthly499";
+const PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"] as const;
+const PRIMARY_PRODUCT_ID = PRODUCT_IDS[0];
 
 // ─── Types ──────────────────────────────────────────────
 interface RevenueCatContextType {
@@ -57,6 +58,10 @@ function productId(value: any): string | null {
   return value?.identifier ?? value?.productIdentifier ?? value?.id ?? null;
 }
 
+function isKnownMonthlyId(id: string | null): boolean {
+  return !!id && PRODUCT_IDS.includes(id as (typeof PRODUCT_IDS)[number]);
+}
+
 /** Get a formatted price string. */
 function priceLabel(value: any): string | null {
   if (typeof value?.priceString === "string" && value.priceString) return value.priceString;
@@ -76,7 +81,7 @@ function priceLabel(value: any): string | null {
 
 /** True when product matches our monthly subscription. */
 function isMonthly(value: any): boolean {
-  return productId(storeProduct(value)) === PRODUCT_ID;
+  return isKnownMonthlyId(productId(storeProduct(value)));
 }
 
 /** True when user cancelled (not a real error). */
@@ -130,13 +135,13 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const loadMonthlyPrice = useCallback(async () => {
     try {
       const { products } = await CapPurchases.getProducts({
-        productIdentifiers: [PRODUCT_ID],
+        productIdentifiers: [...PRODUCT_IDS],
       });
       const loadedProductIds = (products ?? [])
         .map((x: any) => productId(x))
         .filter((id: string | null): id is string => Boolean(id));
 
-      const p = products?.find((x: any) => productId(x) === PRODUCT_ID);
+      const p = products?.find((x: any) => isKnownMonthlyId(productId(x)));
       if (p) {
         const label = priceLabel(p);
         console.log("[RC] Monthly product:", productId(p), label);
@@ -151,7 +156,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
           priceLabel: label,
         });
       } else {
-        const message = `Product ${PRODUCT_ID} not returned by store`;
+        const message = `Monthly product missing. Expected one of: ${PRODUCT_IDS.join(", ")}. Store returned: ${loadedProductIds.join(", ") || "none"}`;
         updateRevenueCatDebug({
           loadedProductIds,
           lastProductFetchError: message,
@@ -208,7 +213,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
         pushIosDebugLog("RevenueCat", "SDK configured", {
           appUserId: user.id,
           entitlement: ENTITLEMENT,
-          productId: PRODUCT_ID,
+          productIds: PRODUCT_IDS,
         });
 
         // 2. Check entitlements
@@ -317,26 +322,33 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
           productId: id,
         });
 
-        const { products } = await CapPurchases.getProducts({ productIdentifiers: [id] });
+        const fallbackIds = PRODUCT_IDS.filter((pid) => pid !== id);
+        const requestedIds = [id, ...fallbackIds];
+        const { products } = await CapPurchases.getProducts({ productIdentifiers: requestedIds });
         const loadedProductIds = (products ?? [])
           .map((x: any) => productId(x))
           .filter((pid: string | null): pid is string => Boolean(pid));
 
+        const selectedProduct =
+          products?.find((p: any) => productId(p) === id) ??
+          products?.find((p: any) => isKnownMonthlyId(productId(p))) ??
+          null;
+
         updateRevenueCatDebug({
           loadedProductIds,
-          lastProductFetchError: loadedProductIds.includes(id)
+          lastProductFetchError: selectedProduct
             ? null
-            : `Product ${id} not returned by store`,
+            : `Tuotetta ei löydy. Odotettiin yhtä näistä: ${requestedIds.join(", ")}. Store palautti: ${loadedProductIds.join(", ") || "none"}`,
         });
 
-        if (!products?.length) {
+        if (!selectedProduct) {
           throw new Error(
-            `Tuotetta "${id}" ei löydy. Varmista että se on luotu App Store Connectiin ja lisätty RevenueCatiin.`,
+            `Tuotetta "${id}" ei löydy. Varmista että App Store Connectissa ja RevenueCatissa on sama Product ID (${requestedIds.join(" tai ")}).`,
           );
         }
 
         const { customerInfo } = await CapPurchases.purchaseStoreProduct({
-          product: products[0],
+          product: selectedProduct,
         });
         await applyElite(customerInfo);
       } catch (e: any) {

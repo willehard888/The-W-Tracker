@@ -122,7 +122,7 @@ const Paywall = () => {
     try {
       await restorePurchases();
       await checkSubscription();
-      if (!isElite) toast.success("Purchases restored.");
+      toast.success("Purchases restored.");
     } catch {
       toast.error("Could not restore purchases.");
     }

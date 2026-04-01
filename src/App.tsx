@@ -85,6 +85,9 @@ const AppRoutes = () => {
           <Route path="/ios-debug" element={<IosDebug />} />
           <Route path="/~oauth" element={<OAuthCallback />} />
           <Route path="/~oauth/callback" element={<OAuthCallback />} />
+          <Route path="/oauth" element={<OAuthCallback />} />
+          <Route path="/callback" element={<OAuthCallback />} />
+          <Route path="/oauth/:segment" element={<OAuthCallback />} />
           <Route path="/oauth/callback" element={<OAuthCallback />} />
           <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="*" element={<NotFound />} />

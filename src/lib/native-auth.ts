@@ -19,18 +19,12 @@ const PRODUCTION_URL = "https://status-level-up.lovable.app";
 const OAUTH_CALLBACK = "/~oauth/callback";
 const APP_SCHEME = "app.lovable.wtracker";
 
-function createState(): string {
-  if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {
-    return [...crypto.getRandomValues(new Uint8Array(16))]
-      .map((value) => value.toString(16).padStart(2, "0"))
-      .join("");
-  }
-
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+function getWebAppleRedirectUri(): string {
+  return `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
 }
 
-function getAppleRedirectUri(): string {
-  return `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
+function getNativeAppleRedirectUri(): string {
+  return `${APP_SCHEME}://oauth/callback`;
 }
 
 function errorMessage(err: unknown): string {
@@ -45,12 +39,11 @@ function errorMessage(err: unknown): string {
 
 async function startNativeIosAppleSignIn(): Promise<{ error?: Error }> {
   const { lovable } = await import("@/integrations/lovable/index");
-  const redirectUri = getAppleRedirectUri();
-  const state = createState();
+  const redirectUri = getNativeAppleRedirectUri();
 
   updateOauthDebug({
     redirectUri,
-    sentState: state,
+    sentState: null,
     error: null,
     errorDescription: null,
     sessionApplied: null,
@@ -61,14 +54,11 @@ async function startNativeIosAppleSignIn(): Promise<{ error?: Error }> {
   console.log("[AppleAuth] Starting native iOS sign-in via Lovable OAuth redirect:", redirectUri);
   pushIosDebugLog("AppleAuth", "Starting native iOS OAuth flow", {
     redirectUri,
-    sentState: state,
+    sentState: null,
   });
 
   const result = await lovable.auth.signInWithOAuth("apple", {
     redirect_uri: redirectUri,
-    extraParams: {
-      state,
-    },
   });
 
   if (result?.error) {
@@ -93,12 +83,11 @@ export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
     }
 
     const { lovable } = await import("@/integrations/lovable/index");
-    const redirectUri = getAppleRedirectUri();
-    const state = createState();
+    const redirectUri = getWebAppleRedirectUri();
 
     updateOauthDebug({
       redirectUri,
-      sentState: state,
+      sentState: null,
       error: null,
       errorDescription: null,
       sessionApplied: null,
@@ -109,14 +98,11 @@ export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
     console.log("[AppleAuth] Starting web sign-in, redirect →", redirectUri);
     pushIosDebugLog("AppleAuth", "Starting web OAuth flow", {
       redirectUri,
-      sentState: state,
+      sentState: null,
     });
 
     const result = await lovable.auth.signInWithOAuth("apple", {
       redirect_uri: redirectUri,
-      extraParams: {
-        state,
-      },
     });
 
     if (result?.error) {

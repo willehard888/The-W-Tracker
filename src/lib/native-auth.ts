@@ -17,6 +17,7 @@ import { Capacitor } from "@capacitor/core";
 const PRODUCTION_URL = "https://status-level-up.lovable.app";
 const OAUTH_INITIATE = "/~oauth/initiate";
 const OAUTH_CALLBACK = "/~oauth/callback";
+const APP_SCHEME = "app.lovable.wtracker";
 
 function createState(): string {
   if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {
@@ -38,12 +39,30 @@ function buildNativeAppleAuthUrl(): string {
   return `${PRODUCTION_URL}${OAUTH_INITIATE}?${params.toString()}`;
 }
 
-async function startNativeIosAppleSignIn(): Promise<{ error?: Error }> {
-  const { Browser } = await import("@capacitor/browser");
-  const authUrl = buildNativeAppleAuthUrl();
+function getAppleRedirectUri(): string {
+  if (Capacitor.isNativePlatform()) {
+    return `${APP_SCHEME}://oauth/callback`;
+  }
 
-  console.log("[AppleAuth] Starting native iOS sign-in via Browser.open:", authUrl);
-  await Browser.open({ url: authUrl });
+  return `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
+}
+
+async function startNativeIosAppleSignIn(): Promise<{ error?: Error }> {
+  const { lovable } = await import("@/integrations/lovable/index");
+  const redirectUri = getAppleRedirectUri();
+
+  console.log("[AppleAuth] Starting native iOS sign-in via Lovable OAuth redirect:", redirectUri);
+  const result = await lovable.auth.signInWithOAuth("apple", {
+    redirect_uri: redirectUri,
+    extraParams: {
+      state: createState(),
+    },
+  });
+
+  if (result?.error) {
+    console.error("[AppleAuth] Native provider returned error:", result.error);
+    return { error: result.error as Error };
+  }
 
   return {};
 }
@@ -55,7 +74,7 @@ export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
     }
 
     const { lovable } = await import("@/integrations/lovable/index");
-    const redirectUri = `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
+    const redirectUri = getAppleRedirectUri();
     console.log("[AppleAuth] Starting web sign-in, redirect →", redirectUri);
 
     const result = await lovable.auth.signInWithOAuth("apple", {

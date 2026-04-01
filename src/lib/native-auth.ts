@@ -30,10 +30,6 @@ function createState(): string {
 }
 
 function getAppleRedirectUri(): string {
-  if (Capacitor.isNativePlatform()) {
-    return `${APP_SCHEME}://oauth/callback`;
-  }
-
   return `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
 }
 

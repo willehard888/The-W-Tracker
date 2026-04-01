@@ -195,6 +195,12 @@ const Paywall = () => {
 
       {/* Restore */}
       <div className="text-center mt-6 animate-reveal animate-reveal-delay-3">
+        <button
+          onClick={() => navigate("/ios-debug")}
+          className="mr-3 text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2"
+        >
+          iOS Debug
+        </button>
         <button onClick={handleRestore} className="text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2">
           Restore purchases
         </button>

@@ -187,6 +187,12 @@ const Auth = () => {
         </div>
 
         <div className="mt-4 text-center space-y-3">
+          <button
+            onClick={() => navigate("/ios-debug")}
+            className="text-xs text-muted-foreground hover:text-gold transition-colors"
+          >
+            Open iOS Debug
+          </button>
           {mode === "login" && (
             <button
               onClick={async () => {

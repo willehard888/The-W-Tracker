@@ -13,9 +13,9 @@
  */
 
 import { Capacitor } from "@capacitor/core";
+import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 
 const PRODUCTION_URL = "https://status-level-up.lovable.app";
-const OAUTH_INITIATE = "/~oauth/initiate";
 const OAUTH_CALLBACK = "/~oauth/callback";
 const APP_SCHEME = "app.lovable.wtracker";
 
@@ -29,16 +29,6 @@ function createState(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-function buildNativeAppleAuthUrl(): string {
-  const params = new URLSearchParams({
-    provider: "apple",
-    redirect_uri: `${PRODUCTION_URL}${OAUTH_CALLBACK}`,
-    state: createState(),
-  });
-
-  return `${PRODUCTION_URL}${OAUTH_INITIATE}?${params.toString()}`;
-}
-
 function getAppleRedirectUri(): string {
   if (Capacitor.isNativePlatform()) {
     return `${APP_SCHEME}://oauth/callback`;
@@ -47,22 +37,55 @@ function getAppleRedirectUri(): string {
   return `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
 }
 
+function errorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return String(err);
+  }
+}
+
 async function startNativeIosAppleSignIn(): Promise<{ error?: Error }> {
   const { lovable } = await import("@/integrations/lovable/index");
   const redirectUri = getAppleRedirectUri();
+  const state = createState();
+
+  updateOauthDebug({
+    redirectUri,
+    sentState: state,
+    error: null,
+    errorDescription: null,
+    sessionApplied: null,
+    deepLinkUrl: null,
+    handoffToApp: false,
+  });
 
   console.log("[AppleAuth] Starting native iOS sign-in via Lovable OAuth redirect:", redirectUri);
+  pushIosDebugLog("AppleAuth", "Starting native iOS OAuth flow", {
+    redirectUri,
+    sentState: state,
+  });
+
   const result = await lovable.auth.signInWithOAuth("apple", {
     redirect_uri: redirectUri,
     extraParams: {
-      state: createState(),
+      state,
     },
   });
 
   if (result?.error) {
     console.error("[AppleAuth] Native provider returned error:", result.error);
+    const message = errorMessage(result.error);
+    updateOauthDebug({ error: message });
+    pushIosDebugLog("AppleAuth", "Native iOS OAuth error", result.error);
     return { error: result.error as Error };
   }
+
+  pushIosDebugLog("AppleAuth", "Native iOS OAuth redirect started", {
+    redirected: result?.redirected ?? true,
+  });
 
   return {};
 }
@@ -75,21 +98,51 @@ export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
 
     const { lovable } = await import("@/integrations/lovable/index");
     const redirectUri = getAppleRedirectUri();
+    const state = createState();
+
+    updateOauthDebug({
+      redirectUri,
+      sentState: state,
+      error: null,
+      errorDescription: null,
+      sessionApplied: null,
+      deepLinkUrl: null,
+      handoffToApp: false,
+    });
+
     console.log("[AppleAuth] Starting web sign-in, redirect →", redirectUri);
+    pushIosDebugLog("AppleAuth", "Starting web OAuth flow", {
+      redirectUri,
+      sentState: state,
+    });
 
     const result = await lovable.auth.signInWithOAuth("apple", {
       redirect_uri: redirectUri,
+      extraParams: {
+        state,
+      },
     });
 
     if (result?.error) {
       console.error("[AppleAuth] Provider returned error:", result.error);
+      const message = errorMessage(result.error);
+      updateOauthDebug({ error: message });
+      pushIosDebugLog("AppleAuth", "Web OAuth error", result.error);
       return { error: result.error as Error };
     }
+
+    pushIosDebugLog("AppleAuth", "Web OAuth redirect started", {
+      redirected: result?.redirected ?? true,
+    });
 
     return {};
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
     console.error("[AppleAuth] Unexpected error:", error);
+    updateOauthDebug({ error: error.message });
+    pushIosDebugLog("AppleAuth", "Unexpected OAuth exception", {
+      message: error.message,
+    });
     return { error };
   }
 }

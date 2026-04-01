@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { isNativePlatform } from "@/lib/platform";
 
 interface AuthContextType {
   user: User | null;
@@ -47,6 +48,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const checkSubscription = useCallback(async () => {
+    if (isNativePlatform()) {
+      if (user) await fetchProfile(user.id);
+      return;
+    }
+
     try {
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) {

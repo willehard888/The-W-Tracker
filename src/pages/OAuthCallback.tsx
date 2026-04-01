@@ -2,8 +2,19 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { applySessionFromUrl } from "@/lib/oauth-session";
+import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 
 const APP_SCHEME = "app.lovable.wtracker";
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
 
 // ─── Helpers ────────────────────────────────────────────
 
@@ -45,27 +56,70 @@ const OAuthCallback = () => {
     (async () => {
       try {
         const merged = mergeTokensToQuery(window.location.href);
+        const oauthError = merged.get("error");
+        const oauthErrorDescription = merged.get("error_description");
+
+        updateOauthDebug({
+          callbackUrl: window.location.href,
+          callbackPath: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+          callbackAt: new Date().toISOString(),
+          returnedState: merged.get("state"),
+          error: oauthError,
+          errorDescription: oauthErrorDescription,
+          hasAccessToken: merged.has("access_token"),
+          hasRefreshToken: merged.has("refresh_token"),
+          handoffToApp: false,
+          deepLinkUrl: null,
+          sessionApplied: null,
+        });
+
+        pushIosDebugLog("OAuthCallback", "Callback opened", {
+          pathname: window.location.pathname,
+          hasAccessToken: merged.has("access_token"),
+          hasRefreshToken: merged.has("refresh_token"),
+          state: merged.get("state"),
+          error: oauthError,
+        });
 
         // ① iOS external browser → forward tokens to native app via URL scheme
         if (hasOAuthParams(merged) && isIOSExternalBrowser()) {
           const qs = merged.toString();
           const deepLink = `${APP_SCHEME}://oauth/callback${qs ? `?${qs}` : ""}`;
           console.log("[OAuthCB] Redirecting to native app:", deepLink);
+          updateOauthDebug({
+            deepLinkUrl: deepLink,
+            handoffToApp: true,
+          });
+          pushIosDebugLog("OAuthCallback", "Forwarding callback to app deep link", {
+            deepLink,
+          });
           setSentToApp(true);
           window.location.href = deepLink;
           return;
         }
 
         // ② Web flow → apply session directly
-        await applySessionFromUrl(window.location.href);
+        const sessionApplied = await applySessionFromUrl(window.location.href);
+        updateOauthDebug({ sessionApplied });
+        pushIosDebugLog("OAuthCallback", "Session apply result", {
+          sessionApplied,
+        });
 
         // Log any OAuth error params
-        const err = merged.get("error");
-        if (err) {
-          console.error("[OAuthCB] Error:", err, merged.get("error_description"));
+        if (oauthError) {
+          console.error("[OAuthCB] Error:", oauthError, oauthErrorDescription);
+          pushIosDebugLog("OAuthCallback", "OAuth provider error in callback", {
+            error: oauthError,
+            errorDescription: oauthErrorDescription,
+          });
         }
       } catch (e) {
         console.error("[OAuthCB] Unexpected:", e);
+        const message = getErrorMessage(e);
+        updateOauthDebug({ error: message });
+        pushIosDebugLog("OAuthCallback", "Unexpected callback exception", {
+          message,
+        });
       }
       setProcessing(false);
     })();

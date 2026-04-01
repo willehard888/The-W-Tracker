@@ -32,6 +32,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const IosDebug = lazy(() => import("./pages/IosDebug"));
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ const AppRoutes = () => {
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/terms" element={<TermsOfUse />} />
+          <Route path="/ios-debug" element={<IosDebug />} />
           <Route path="/~oauth" element={<OAuthCallback />} />
           <Route path="/~oauth/callback" element={<OAuthCallback />} />
           <Route path="/oauth/callback" element={<OAuthCallback />} />

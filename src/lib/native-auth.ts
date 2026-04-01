@@ -1,18 +1,6 @@
-/**
- * Native Apple Sign-In (iOS)
- *
- * Root cause of the previous failure:
- * the Lovable auth SDK uses a popup-oriented flow unless it detects a
- * specific mobile-app user agent. In Capacitor iOS that detection does not
- * reliably happen, so Safari handoff was interpreted as "Sign in was cancelled".
- *
- * Fix:
- * for native iOS we bypass the popup flow entirely and open the managed
- * OAuth initiate URL in Capacitor Browser, then return to the app through
- * the existing custom URL scheme + deep-link session handler.
- */
-
 import { Capacitor } from "@capacitor/core";
+import { SignInWithApple } from "@capacitor-community/apple-sign-in";
+import { supabase } from "@/integrations/supabase/client";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 
 const PRODUCTION_URL = "https://status-level-up.lovable.app";
@@ -37,9 +25,62 @@ function errorMessage(err: unknown): string {
   }
 }
 
-async function startNativeIosAppleSignIn(): Promise<{ error?: Error }> {
+/**
+ * Native Apple Sign-In using the @capacitor-community/apple-sign-in plugin.
+ * This provides a native iOS experience and is required for App Store approval.
+ */
+async function startNativeAppleSignIn(): Promise<{ error?: Error }> {
+  try {
+    console.log("[AppleAuth] Starting native iOS Apple Sign-In");
+    pushIosDebugLog("AppleAuth", "Starting native Apple Sign-In flow");
+
+    const result = await SignInWithApple.authorize({
+      clientId: "app.lovable.wtracker", // This should match your Service ID or Bundle ID
+      redirectURI: getNativeAppleRedirectUri(),
+      scopes: "email name",
+    });
+
+    if (result.response && result.response.identityToken) {
+      console.log("[AppleAuth] Native sign-in successful, signing in to Supabase");
+      pushIosDebugLog("AppleAuth", "Native sign-in successful, sending to Supabase");
+
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: "apple",
+        token: result.response.identityToken,
+        // Optional: result.response.nonce if you provided one
+      });
+
+      if (error) {
+        console.error("[AppleAuth] Supabase sign-in error:", error);
+        pushIosDebugLog("AppleAuth", "Supabase sign-in error", error);
+        return { error };
+      }
+
+      console.log("[AppleAuth] Supabase session established:", data.session?.user?.id);
+      pushIosDebugLog("AppleAuth", "Supabase session established");
+      return {};
+    } else {
+      throw new Error("No identity token received from Apple");
+    }
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    // Check if user cancelled
+    if (error.message.includes("cancel") || (err as any).code === "1") {
+      console.log("[AppleAuth] User cancelled sign-in");
+      return {};
+    }
+    console.error("[AppleAuth] Native sign-in error:", error);
+    pushIosDebugLog("AppleAuth", "Native sign-in error", error);
+    return { error };
+  }
+}
+
+/**
+ * Fallback to web-based OAuth if native is not available or fails.
+ */
+async function startWebAppleSignIn(): Promise<{ error?: Error }> {
   const { lovable } = await import("@/integrations/lovable/index");
-  const redirectUri = getNativeAppleRedirectUri();
+  const redirectUri = getWebAppleRedirectUri();
 
   updateOauthDebug({
     redirectUri,
@@ -51,27 +92,20 @@ async function startNativeIosAppleSignIn(): Promise<{ error?: Error }> {
     handoffToApp: false,
   });
 
-  console.log("[AppleAuth] Starting native iOS sign-in via Lovable OAuth redirect:", redirectUri);
-  pushIosDebugLog("AppleAuth", "Starting native iOS OAuth flow", {
-    redirectUri,
-    sentState: null,
-  });
+  console.log("[AppleAuth] Starting web sign-in, redirect →", redirectUri);
+  pushIosDebugLog("AppleAuth", "Starting web OAuth flow", { redirectUri });
 
   const result = await lovable.auth.signInWithOAuth("apple", {
     redirect_uri: redirectUri,
   });
 
   if (result?.error) {
-    console.error("[AppleAuth] Native provider returned error:", result.error);
+    console.error("[AppleAuth] Web provider returned error:", result.error);
     const message = errorMessage(result.error);
     updateOauthDebug({ error: message });
-    pushIosDebugLog("AppleAuth", "Native iOS OAuth error", result.error);
+    pushIosDebugLog("AppleAuth", "Web OAuth error", result.error);
     return { error: result.error as Error };
   }
-
-  pushIosDebugLog("AppleAuth", "Native iOS OAuth redirect started", {
-    redirected: result?.redirected ?? true,
-  });
 
   return {};
 }
@@ -79,52 +113,14 @@ async function startNativeIosAppleSignIn(): Promise<{ error?: Error }> {
 export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
   try {
     if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios") {
-      return await startNativeIosAppleSignIn();
+      return await startNativeAppleSignIn();
     }
-
-    const { lovable } = await import("@/integrations/lovable/index");
-    const redirectUri = getWebAppleRedirectUri();
-
-    updateOauthDebug({
-      redirectUri,
-      sentState: null,
-      error: null,
-      errorDescription: null,
-      sessionApplied: null,
-      deepLinkUrl: null,
-      handoffToApp: false,
-    });
-
-    console.log("[AppleAuth] Starting web sign-in, redirect →", redirectUri);
-    pushIosDebugLog("AppleAuth", "Starting web OAuth flow", {
-      redirectUri,
-      sentState: null,
-    });
-
-    const result = await lovable.auth.signInWithOAuth("apple", {
-      redirect_uri: redirectUri,
-    });
-
-    if (result?.error) {
-      console.error("[AppleAuth] Provider returned error:", result.error);
-      const message = errorMessage(result.error);
-      updateOauthDebug({ error: message });
-      pushIosDebugLog("AppleAuth", "Web OAuth error", result.error);
-      return { error: result.error as Error };
-    }
-
-    pushIosDebugLog("AppleAuth", "Web OAuth redirect started", {
-      redirected: result?.redirected ?? true,
-    });
-
-    return {};
+    return await startWebAppleSignIn();
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
     console.error("[AppleAuth] Unexpected error:", error);
     updateOauthDebug({ error: error.message });
-    pushIosDebugLog("AppleAuth", "Unexpected OAuth exception", {
-      message: error.message,
-    });
+    pushIosDebugLog("AppleAuth", "Unexpected OAuth exception", { message: error.message });
     return { error };
   }
 }

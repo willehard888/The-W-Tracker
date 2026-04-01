@@ -13,7 +13,8 @@ import { isNativePlatform } from "@/lib/platform";
 import EliteUnlockCelebration from "@/components/EliteUnlockCelebration";
 
 // ─── Constants ──────────────────────────────────────────
-const PRODUCT_ID = "elitemonthly499";
+// Product IDs from RevenueCatContext
+const PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"];
 
 const ELITE_FEATURES = [
   { icon: Trophy, text: "Full global leaderboard access" },
@@ -43,7 +44,10 @@ const Paywall = () => {
 
   // Detect upgrade → celebration
   useEffect(() => {
-    if (isElite && !wasEliteRef.current) setShowCelebration(true);
+    if (isElite && !wasEliteRef.current) {
+      setShowCelebration(true);
+      toast.success("Welcome to Elite!");
+    }
     wasEliteRef.current = isElite;
   }, [isElite]);
 
@@ -98,20 +102,29 @@ const Paywall = () => {
     if (!rcReady) { toast.info("Loading store… please wait."); return; }
     setPurchasing(true);
     try {
-      // Find the package whose underlying product matches our ID
+      // Find any package that matches our known product IDs
       const monthlyPkg = packages.find((pkg: any) => {
         const id = pkg?.product?.identifier ?? pkg?.storeProduct?.identifier;
-        return id === PRODUCT_ID;
+        return PRODUCT_IDS.includes(id);
       });
 
       if (monthlyPkg) {
+        console.log("[Paywall] Purchasing package:", monthlyPkg.identifier);
         await purchase(monthlyPkg);
       } else {
-        console.log("[Paywall] No matching package, purchasing by product ID");
-        await purchaseProduct(PRODUCT_ID);
+        // Try the first product ID as a direct purchase fallback
+        console.log("[Paywall] No matching package, purchasing by product ID:", PRODUCT_IDS[0]);
+        await purchaseProduct(PRODUCT_IDS[0]);
       }
+      
+      // Force a subscription check after purchase
       await checkSubscription();
     } catch (e: any) {
+      // Check for cancellation to avoid showing error toast
+      if (e?.userCancelled || e?.code === "1") {
+        console.log("[Paywall] Purchase cancelled by user");
+        return;
+      }
       toast.error(e?.message || "Purchase failed.");
     } finally {
       setPurchasing(false);

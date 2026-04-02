@@ -5,7 +5,15 @@ const PRODUCTION_URL = "https://status-level-up.lovable.app";
 const OAUTH_CALLBACK = "/~oauth/callback";
 const APP_SCHEME = "app.lovable.wtracker";
 
-function getWebAppleRedirectUri(): string {
+function getAppleRedirectUri(): string {
+  if (Capacitor.isNativePlatform()) {
+    return `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
+  }
+
+  if (typeof window !== "undefined") {
+    return `${window.location.origin}${OAUTH_CALLBACK}`;
+  }
+
   return `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
 }
 
@@ -21,7 +29,7 @@ function errorMessage(err: unknown): string {
 
 async function startManagedAppleOAuth(): Promise<{ error?: Error }> {
   const { lovable } = await import("@/integrations/lovable/index");
-  const redirectUri = getWebAppleRedirectUri();
+  const redirectUri = getAppleRedirectUri();
 
   updateOauthDebug({
     redirectUri,
@@ -36,6 +44,7 @@ async function startManagedAppleOAuth(): Promise<{ error?: Error }> {
   console.log("[AppleAuth] Starting managed OAuth, redirect →", redirectUri);
   pushIosDebugLog("AppleAuth", "Starting managed Apple OAuth flow", {
     redirectUri,
+    appScheme: APP_SCHEME,
     platform: Capacitor.getPlatform(),
     native: Capacitor.isNativePlatform(),
   });

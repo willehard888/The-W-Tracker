@@ -16,7 +16,7 @@ import { pushIosDebugLog, updateRevenueCatDebug } from "@/lib/ios-debug";
 const RC_API_KEY_APPLE = "appl_qgpDFJEtyXTeNTJZxBoHzxzgiTr";
 const ENTITLEMENT = "The W Tracker Pro";
 const PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"] as const;
-const PRIMARY_PRODUCT_ID = PRODUCT_IDS[0];
+const PRIMARY_PRODUCT_ID = "elitemonthly499";
 
 // ─── Types ──────────────────────────────────────────────
 interface RevenueCatContextType {
@@ -112,8 +112,8 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   /** Sync elite status to database. */
   const syncElite = useCallback(
     async (elite: boolean) => {
-      if (!user || !elite) return;
-      await supabase.from("profiles").update({ is_elite: true }).eq("user_id", user.id);
+      if (!user) return;
+      await supabase.from("profiles").update({ is_elite: elite }).eq("user_id", user.id);
     },
     [user],
   );
@@ -141,7 +141,9 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
         .map((x: any) => productId(x))
         .filter((id: string | null): id is string => Boolean(id));
 
-      const p = products?.find((x: any) => isKnownMonthlyId(productId(x)));
+      const p =
+        products?.find((x: any) => productId(x) === PRIMARY_PRODUCT_ID) ??
+        products?.find((x: any) => isKnownMonthlyId(productId(x)));
       if (p) {
         const label = priceLabel(p);
         console.log("[RC] Monthly product:", productId(p), label);
@@ -234,7 +236,9 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
               .map((pkg: any) => productId(storeProduct(pkg)))
               .filter((id: string | null): id is string => Boolean(id));
 
-            const monthly = current.availablePackages.find(isMonthly);
+            const monthly =
+              current.availablePackages.find((pkg: any) => productId(storeProduct(pkg)) === PRIMARY_PRODUCT_ID) ??
+              current.availablePackages.find(isMonthly);
             if (monthly) {
               const label = priceLabel(storeProduct(monthly));
               if (label) setMonthlyPriceLabel(label);

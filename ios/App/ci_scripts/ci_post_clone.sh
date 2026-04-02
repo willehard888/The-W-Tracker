@@ -38,13 +38,13 @@ npm run build
 echo "🔄 Syncing Capacitor iOS project..."
 npx cap sync ios
 
-# ── Ensure pinned Package.resolved exists and is up-to-date ──
+# ── Ensure pinned Package.resolved exists and matches the local Swift package graph ──
 RESOLVED_FILE="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
 mkdir -p "$(dirname "$RESOLVED_FILE")"
 
 cat > "$RESOLVED_FILE" << 'RESOLVEDEOF'
 {
-  "originHash" : "",
+  "originHash" : "608e7cffacbdb2c959bc4cf23fc793ae01215c287b360f0231cb150f64a03cf2",
   "pins" : [
     {
       "identity" : "capacitor-swift-pm",
@@ -78,12 +78,20 @@ cat > "$RESOLVED_FILE" << 'RESOLVEDEOF'
 }
 RESOLVEDEOF
 
-if command -v xcodebuild >/dev/null 2>&1; then
-  echo "📦 Refreshing Swift package lockfile..."
-  xcodebuild -resolvePackageDependencies \
-    -project ios/App/App.xcodeproj \
-    -scheme App || echo "⚠️ Could not refresh Package.resolved, using pinned file"
-fi
+python3 - << 'PY'
+import json
+from pathlib import Path
+
+resolved = Path("/dev-server/ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved")
+data = json.loads(resolved.read_text())
+assert data["originHash"] == "608e7cffacbdb2c959bc4cf23fc793ae01215c287b360f0231cb150f64a03cf2"
+assert [pin["identity"] for pin in data["pins"]] == [
+    "capacitor-swift-pm",
+    "purchases-hybrid-common",
+    "purchases-ios-spm",
+]
+print("✅ Package.resolved validated")
+PY
 
 if [[ -f "$RESOLVED_FILE" ]]; then
   echo "✅ Package.resolved ready"

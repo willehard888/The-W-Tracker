@@ -43,12 +43,13 @@ RESOLVED_FILE="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Pa
 SPM_MANIFEST="ios/App/CapApp-SPM/Package.swift"
 mkdir -p "$(dirname "$RESOLVED_FILE")"
 
-python3 - << 'PY'
+python3 - "$ROOT_DIR" << 'PY'
 import hashlib
 import json
+import sys
 from pathlib import Path
 
-root = Path("/dev-server")
+root = Path(sys.argv[1])
 manifest = root / "ios/App/CapApp-SPM/Package.swift"
 resolved = root / "ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
 

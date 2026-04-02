@@ -38,7 +38,7 @@ npm run build
 echo "🔄 Syncing Capacitor iOS project..."
 npx cap sync ios
 
-# ── Ensure Package.resolved matches the current Swift package graph ──
+# ── Ensure Package.resolved exists for Xcode Cloud lockfile-only builds ──
 RESOLVED_FILE="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
 SPM_MANIFEST="ios/App/CapApp-SPM/Package.swift"
 mkdir -p "$(dirname "$RESOLVED_FILE")"
@@ -122,19 +122,8 @@ print(f"✅ Package.resolved fallback generated ({origin_hash})")
 PY
 
 if command -v xcodebuild >/dev/null 2>&1; then
-  echo "📦 Resolving Swift packages to refresh Package.resolved..."
-  rm -f "$RESOLVED_FILE"
-  RESOLVE_LOG="${TMPDIR:-/tmp}/xcode-package-resolve.log"
-
-  if xcodebuild -resolvePackageDependencies \
-    -project ios/App/App.xcodeproj \
-    -scheme App > "$RESOLVE_LOG" 2>&1; then
-    tail -20 "$RESOLVE_LOG"
-  else
-    tail -100 "$RESOLVE_LOG"
-    echo "❌ Swift package resolution failed"
-    exit 1
-  fi
+  echo "ℹ️ Xcode Cloud uses the committed Package.resolved when automatic package resolution is disabled"
+  echo "ℹ️ Skipping xcodebuild package resolution so the lockfile stays intact"
 fi
 
 if [[ -f "$RESOLVED_FILE" ]]; then

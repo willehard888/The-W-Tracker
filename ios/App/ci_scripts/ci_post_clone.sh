@@ -38,7 +38,7 @@ npm run build
 echo "🔄 Syncing Capacitor iOS project..."
 npx cap sync ios
 
-# ── Ensure pinned Package.resolved matches the current local Swift package graph ──
+# ── Ensure Package.resolved matches the current Swift package graph ──
 RESOLVED_FILE="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
 SPM_MANIFEST="ios/App/CapApp-SPM/Package.swift"
 mkdir -p "$(dirname "$RESOLVED_FILE")"
@@ -46,6 +46,7 @@ mkdir -p "$(dirname "$RESOLVED_FILE")"
 python3 - "$ROOT_DIR" << 'PY'
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -56,7 +57,32 @@ resolved = root / "ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftp
 if not manifest.exists():
     raise SystemExit(f"Missing Swift package manifest: {manifest}")
 
-origin_hash = hashlib.sha256(manifest.read_bytes()).hexdigest()
+pattern = re.compile(r'\.package\((?:name:\s*"[^"]+",\s*)?path:\s*"([^"]+)"')
+
+def collect_manifests(entry: Path, seen: set[Path], ordered: list[Path]) -> None:
+    entry = entry.resolve()
+    if entry in seen:
+        return
+    seen.add(entry)
+    ordered.append(entry)
+    contents = entry.read_text()
+    for rel_path in pattern.findall(contents):
+        child = (entry.parent / rel_path / "Package.swift").resolve()
+        if not child.exists():
+            raise SystemExit(f"Missing local Swift package manifest: {child}")
+        collect_manifests(child, seen, ordered)
+
+manifests: list[Path] = []
+collect_manifests(manifest, set(), manifests)
+
+digest = hashlib.sha256()
+for item in manifests:
+    digest.update(str(item.relative_to(root)).encode("utf-8"))
+    digest.update(b"\0")
+    digest.update(item.read_bytes())
+    digest.update(b"\0")
+
+origin_hash = digest.hexdigest()
 data = {
     "originHash": origin_hash,
     "pins": [
@@ -92,16 +118,24 @@ data = {
 }
 
 resolved.write_text(json.dumps(data, indent=2) + "\n")
-
-written = json.loads(resolved.read_text())
-assert written["originHash"] == origin_hash
-assert [pin["identity"] for pin in written["pins"]] == [
-    "capacitor-swift-pm",
-    "purchases-hybrid-common",
-    "purchases-ios-spm",
-]
-print(f"✅ Package.resolved validated ({origin_hash})")
+print(f"✅ Package.resolved fallback generated ({origin_hash})")
 PY
+
+if command -v xcodebuild >/dev/null 2>&1; then
+  echo "📦 Resolving Swift packages to refresh Package.resolved..."
+  rm -f "$RESOLVED_FILE"
+  RESOLVE_LOG="${TMPDIR:-/tmp}/xcode-package-resolve.log"
+
+  if xcodebuild -resolvePackageDependencies \
+    -project ios/App/App.xcodeproj \
+    -scheme App > "$RESOLVE_LOG" 2>&1; then
+    tail -20 "$RESOLVE_LOG"
+  else
+    tail -100 "$RESOLVE_LOG"
+    echo "❌ Swift package resolution failed"
+    exit 1
+  fi
+fi
 
 if [[ -f "$RESOLVED_FILE" ]]; then
   echo "✅ Package.resolved ready"

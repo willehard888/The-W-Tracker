@@ -23,6 +23,7 @@ SCRIPT_ROOT="$(pwd)"
 python3 - "$SCRIPT_ROOT" << 'PY'
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -33,7 +34,32 @@ resolved = root / "ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftp
 if not manifest.exists():
     raise SystemExit(f"Missing Swift package manifest: {manifest}")
 
-origin_hash = hashlib.sha256(manifest.read_bytes()).hexdigest()
+pattern = re.compile(r'\.package\((?:name:\s*"[^"]+",\s*)?path:\s*"([^"]+)"')
+
+def collect_manifests(entry: Path, seen: set[Path], ordered: list[Path]) -> None:
+    entry = entry.resolve()
+    if entry in seen:
+        return
+    seen.add(entry)
+    ordered.append(entry)
+    contents = entry.read_text()
+    for rel_path in pattern.findall(contents):
+        child = (entry.parent / rel_path / "Package.swift").resolve()
+        if not child.exists():
+            raise SystemExit(f"Missing local Swift package manifest: {child}")
+        collect_manifests(child, seen, ordered)
+
+manifests: list[Path] = []
+collect_manifests(manifest, set(), manifests)
+
+digest = hashlib.sha256()
+for item in manifests:
+    digest.update(str(item.relative_to(root)).encode("utf-8"))
+    digest.update(b"\0")
+    digest.update(item.read_bytes())
+    digest.update(b"\0")
+
+origin_hash = digest.hexdigest()
 data = {
     "originHash": origin_hash,
     "pins": [
@@ -69,11 +95,12 @@ data = {
 }
 
 resolved.write_text(json.dumps(data, indent=2) + "\n")
-print(f"✅ Package.resolved generated ({origin_hash})")
+print(f"✅ Package.resolved fallback generated ({origin_hash})")
 PY
 
 if command -v xcodebuild >/dev/null 2>&1; then
   echo "📦 Resolving Swift packages..."
+  rm -f "$RESOLVED_DIR/Package.resolved"
   xcodebuild -resolvePackageDependencies \
     -project ios/App/App.xcodeproj \
     -scheme App \

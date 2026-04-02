@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { nativeAppleSignIn } from "@/lib/native-auth";
 
-const Auth = () => {
+const Auth = React.forwardRef<HTMLDivElement>((_props, ref) => {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -62,7 +62,7 @@ const Auth = () => {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen gradient-dark flex flex-col items-center justify-center px-6">
+      <div ref={ref} className="min-h-screen gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm animate-reveal text-center">
           <div className="h-14 w-14 mx-auto rounded-xl gradient-gold flex items-center justify-center glow-gold mb-6">
             <span className="text-xl font-black text-primary-foreground">✉️</span>
@@ -83,7 +83,7 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen gradient-dark flex flex-col items-center justify-center px-6">
+    <div ref={ref} className="min-h-screen gradient-dark flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm animate-reveal">
         {/* Logo */}
         <div className="flex flex-col items-center mb-10">
@@ -221,10 +221,12 @@ const Auth = () => {
       </div>
     </div>
   );
-};
+});
 
 
-const AppleSignInButton = () => {
+Auth.displayName = "Auth";
+
+const AppleSignInButton = React.forwardRef<HTMLButtonElement>((_props, ref) => {
   const [loading, setLoading] = useState(false);
 
   const handleAppleSignIn = async () => {
@@ -242,6 +244,7 @@ const AppleSignInButton = () => {
 
   return (
     <Button
+      ref={ref}
       type="button"
       variant="outline"
       size="xl"
@@ -259,6 +262,8 @@ const AppleSignInButton = () => {
       Continue with Apple
     </Button>
   );
-};
+});
+
+AppleSignInButton.displayName = "AppleSignInButton";
 
 export default Auth;

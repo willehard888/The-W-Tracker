@@ -103,18 +103,10 @@ assert [pin["identity"] for pin in written["pins"]] == [
 print(f"✅ Package.resolved validated ({origin_hash})")
 PY
 
-if command -v xcodebuild &>/dev/null; then
-  echo "📦 Verifying Swift package resolution..."
-  xcodebuild -resolvePackageDependencies \
-    -project ios/App/App.xcodeproj \
-    -scheme App \
-    2>&1 | tail -20
-fi
-
 if [[ -f "$RESOLVED_FILE" ]]; then
   echo "✅ Package.resolved ready"
 else
-  echo "❌ Package.resolved missing — Xcode Cloud requires it"
+  echo "❌ Package.resolved missing after generation"
   exit 1
 fi
 

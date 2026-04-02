@@ -8,6 +8,7 @@
     }
   },
   "server": {
+    "url": "https://status-level-up.lovable.app",
     "hostname": "status-level-up.lovable.app",
     "androidScheme": "https"
   }

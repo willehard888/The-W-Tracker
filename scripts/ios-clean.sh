@@ -100,16 +100,21 @@ PY
 
 if command -v xcodebuild >/dev/null 2>&1; then
   echo "📦 Resolving Swift packages..."
-  rm -f "$RESOLVED_DIR/Package.resolved"
-  xcodebuild -resolvePackageDependencies \
+  RESOLVE_LOG="${TMPDIR:-/tmp}/xcode-package-resolve.log"
+
+  if xcodebuild -resolvePackageDependencies \
     -project ios/App/App.xcodeproj \
-    -scheme App \
-    2>&1 | tail -5
+    -scheme App > "$RESOLVE_LOG" 2>&1; then
+    tail -20 "$RESOLVE_LOG"
+  else
+    tail -100 "$RESOLVE_LOG"
+    echo "⚠️ Swift package resolution failed — keeping generated fallback Package.resolved"
+  fi
 
   if [[ -f "$RESOLVED_DIR/Package.resolved" ]]; then
     echo "✅ Package.resolved generated"
   else
-    echo "⚠️ Package.resolved not generated — Xcode will resolve on first open"
+    echo "⚠️ Package.resolved not generated — keeping existing lockfile state"
   fi
 else
   echo "ℹ️ xcodebuild not found, skipping package resolution"

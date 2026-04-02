@@ -15,17 +15,54 @@ const Auth = () => {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get("ref");
+  const appleSignInRequested = searchParams.get("apple_sign_in") === "1";
 
   // Auto-switch to signup if referral link
   useEffect(() => {
     if (refCode) setMode("signup");
   }, [refCode]);
+
+  useEffect(() => {
+    if (!appleSignInRequested) return;
+
+    let cancelled = false;
+
+    const startAppleSignIn = async () => {
+      setAppleLoading(true);
+      setError("");
+
+      try {
+        const { error } = await nativeAppleSignIn();
+        if (error && !cancelled) {
+          setError(error.message);
+          toast.error(error.message);
+        }
+      } catch (e: any) {
+        if (!cancelled) {
+          const message = e?.message || "Apple sign-in failed";
+          setError(message);
+          toast.error(message);
+        }
+      } finally {
+        if (!cancelled) {
+          setAppleLoading(false);
+        }
+      }
+    };
+
+    void startAppleSignIn();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [appleSignInRequested]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,7 +220,7 @@ const Auth = () => {
 
         {/* Social Sign In */}
         <div className="space-y-3">
-          <AppleSignInButton />
+          <AppleSignInButton externalLoading={appleLoading} />
         </div>
 
         <div className="mt-4 text-center space-y-3">
@@ -223,8 +260,9 @@ const Auth = () => {
   );
 };
 
-const AppleSignInButton = () => {
+const AppleSignInButton = ({ externalLoading = false }: { externalLoading?: boolean }) => {
   const [loading, setLoading] = useState(false);
+  const isLoading = loading || externalLoading;
 
   const handleAppleSignIn = async () => {
     setLoading(true);
@@ -246,9 +284,9 @@ const AppleSignInButton = () => {
       size="xl"
       className="w-full gap-3 bg-card border-border hover:bg-card/80"
       onClick={handleAppleSignIn}
-      disabled={loading}
+      disabled={isLoading}
     >
-      {loading ? (
+      {isLoading ? (
         <Loader2 size={18} className="animate-spin" />
       ) : (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">

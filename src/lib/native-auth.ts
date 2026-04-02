@@ -6,6 +6,34 @@ const OAUTH_CALLBACK = "/~oauth/callback";
 const APP_SCHEME = "app.lovable.wtracker";
 const PUBLISHED_CALLBACK_URL = `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
 
+function shouldStartAppleAuthOnPublishedSite(): boolean {
+  if (typeof window === "undefined") return false;
+  if (Capacitor.isNativePlatform()) return false;
+
+  return window.location.origin !== PRODUCTION_URL;
+}
+
+function getPublishedAuthUrl(): string {
+  const url = new URL("/auth", PRODUCTION_URL);
+  url.searchParams.set("apple_sign_in", "1");
+  return url.toString();
+}
+
+function redirectToPublishedAuthPage() {
+  const targetUrl = getPublishedAuthUrl();
+
+  try {
+    if (window.top && window.top !== window) {
+      window.top.location.href = targetUrl;
+      return;
+    }
+  } catch {
+    // Ignore cross-origin access issues and fall back to current window.
+  }
+
+  window.location.href = targetUrl;
+}
+
 function getAppleRedirectUri(): string {
   if (typeof window !== "undefined" && window.location.origin === PRODUCTION_URL) {
     return `${window.location.origin}${OAUTH_CALLBACK}`;
@@ -74,6 +102,27 @@ async function startManagedAppleOAuth(): Promise<{ error?: Error }> {
 
 export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
   try {
+    if (shouldStartAppleAuthOnPublishedSite()) {
+      const targetUrl = getPublishedAuthUrl();
+
+      updateOauthDebug({
+        redirectUri: PUBLISHED_CALLBACK_URL,
+        error: null,
+        errorDescription: null,
+        sessionApplied: null,
+        deepLinkUrl: null,
+        handoffToApp: false,
+      });
+
+      pushIosDebugLog("AppleAuth", "Redirecting Apple Sign In to published auth page", {
+        currentOrigin: window.location.origin,
+        targetUrl,
+      });
+
+      redirectToPublishedAuthPage();
+      return {};
+    }
+
     return await startManagedAppleOAuth();
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));

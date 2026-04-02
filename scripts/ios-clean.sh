@@ -19,12 +19,14 @@ npx cap sync ios
 RESOLVED_DIR="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm"
 mkdir -p "$RESOLVED_DIR"
 
-python3 - << 'PY'
+SCRIPT_ROOT="$(pwd)"
+python3 - "$SCRIPT_ROOT" << 'PY'
 import hashlib
 import json
+import sys
 from pathlib import Path
 
-root = Path("/dev-server")
+root = Path(sys.argv[1])
 manifest = root / "ios/App/CapApp-SPM/Package.swift"
 resolved = root / "ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
 

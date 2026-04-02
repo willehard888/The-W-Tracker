@@ -43,12 +43,13 @@ RESOLVED_FILE="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Pa
 SPM_MANIFEST="ios/App/CapApp-SPM/Package.swift"
 mkdir -p "$(dirname "$RESOLVED_FILE")"
 
-python3 - << 'PY'
+python3 - "$ROOT_DIR" << 'PY'
 import hashlib
 import json
+import sys
 from pathlib import Path
 
-root = Path("/dev-server")
+root = Path(sys.argv[1])
 manifest = root / "ios/App/CapApp-SPM/Package.swift"
 resolved = root / "ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
 
@@ -102,18 +103,10 @@ assert [pin["identity"] for pin in written["pins"]] == [
 print(f"✅ Package.resolved validated ({origin_hash})")
 PY
 
-if command -v xcodebuild &>/dev/null; then
-  echo "📦 Verifying Swift package resolution..."
-  xcodebuild -resolvePackageDependencies \
-    -project ios/App/App.xcodeproj \
-    -scheme App \
-    2>&1 | tail -20
-fi
-
 if [[ -f "$RESOLVED_FILE" ]]; then
   echo "✅ Package.resolved ready"
 else
-  echo "❌ Package.resolved missing — Xcode Cloud requires it"
+  echo "❌ Package.resolved missing after generation"
   exit 1
 fi
 

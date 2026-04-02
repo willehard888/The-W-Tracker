@@ -34,6 +34,11 @@ resolved = root / "ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftp
 if not manifest.exists():
     raise SystemExit(f"Missing Swift package manifest: {manifest}")
 
+manifest_text = manifest.read_text()
+
+if "@capacitor-community/apple-sign-in" in manifest_text or "CapacitorCommunityAppleSignIn" in manifest_text:
+    raise SystemExit("Unsupported Swift package remains in CapApp-SPM: @capacitor-community/apple-sign-in")
+
 pattern = re.compile(r'\.package\((?:name:\s*"[^"]+",\s*)?path:\s*"([^"]+)"')
 
 def collect_manifests(entry: Path, seen: set[Path], ordered: list[Path]) -> None:

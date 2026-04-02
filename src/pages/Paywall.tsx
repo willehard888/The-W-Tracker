@@ -15,6 +15,7 @@ import EliteUnlockCelebration from "@/components/EliteUnlockCelebration";
 // ─── Constants ──────────────────────────────────────────
 // Product IDs from RevenueCatContext
 const PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"];
+const PRIMARY_PRODUCT_ID = PRODUCT_IDS[0];
 
 const ELITE_FEATURES = [
   { icon: Trophy, text: "Full global leaderboard access" },
@@ -105,6 +106,9 @@ const Paywall = () => {
       // Find any package that matches our known product IDs
       const monthlyPkg = packages.find((pkg: any) => {
         const id = pkg?.product?.identifier ?? pkg?.storeProduct?.identifier;
+        return id === PRIMARY_PRODUCT_ID;
+      }) ?? packages.find((pkg: any) => {
+        const id = pkg?.product?.identifier ?? pkg?.storeProduct?.identifier;
         return PRODUCT_IDS.includes(id);
       });
 
@@ -113,8 +117,8 @@ const Paywall = () => {
         await purchase(monthlyPkg);
       } else {
         // Try the first product ID as a direct purchase fallback
-        console.log("[Paywall] No matching package, purchasing by product ID:", PRODUCT_IDS[0]);
-        await purchaseProduct(PRODUCT_IDS[0]);
+        console.log("[Paywall] No matching package, purchasing by product ID:", PRIMARY_PRODUCT_ID);
+        await purchaseProduct(PRIMARY_PRODUCT_ID);
       }
       
       // Force a subscription check after purchase

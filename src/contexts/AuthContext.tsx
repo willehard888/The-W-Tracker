@@ -33,23 +33,62 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isElite, setIsElite] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
 
-  const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
+  const buildFallbackUsername = (authUser: User) => {
+    const rawUsername = String(
+      authUser.user_metadata?.username ?? authUser.email?.split("@")[0] ?? "user",
+    )
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+
+    const base = rawUsername || "user";
+    return `${base.slice(0, 13)}_${authUser.id.slice(0, 6)}`.slice(0, 20);
+  };
+
+  const ensureProfile = async (authUser: User) => {
+    const username = buildFallbackUsername(authUser);
+
+    await supabase.from("profiles").upsert(
+      {
+        user_id: authUser.id,
+        username,
+        referral_code: `${username}_${authUser.id.slice(0, 6)}`.slice(0, 20),
+      },
+      { onConflict: "user_id" },
+    );
+  };
+
+  const fetchProfile = async (authUser: User) => {
+    let { data } = await supabase
       .from("profiles")
       .select("*")
-      .eq("user_id", userId)
-      .single();
+      .eq("user_id", authUser.id)
+      .maybeSingle();
+
+    if (!data) {
+      await ensureProfile(authUser);
+
+      const retry = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+
+      data = retry.data ?? null;
+    }
+
     setProfile(data);
-    if (data?.is_elite) setIsElite(true);
+    setIsElite(Boolean(data?.is_elite));
   };
 
   const refreshProfile = async () => {
-    if (user) await fetchProfile(user.id);
+    if (user) await fetchProfile(user);
   };
 
   const checkSubscription = useCallback(async () => {
     if (isNativePlatform()) {
-      if (user) await fetchProfile(user.id);
+      if (user) await fetchProfile(user);
       return;
     }
 
@@ -67,7 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSubscriptionEnd(null);
       }
       // Refresh profile to get synced is_elite
-      if (user) await fetchProfile(user.id);
+      if (user) await fetchProfile(user);
     } catch (e) {
       console.error("Failed to check subscription:", e);
     }
@@ -79,7 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchProfile(session.user.id), 0);
+          setTimeout(() => fetchProfile(session.user), 0);
         } else {
           setProfile(null);
           setIsElite(false);
@@ -93,7 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchProfile(session.user);
       }
       setLoading(false);
     });

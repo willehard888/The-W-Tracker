@@ -38,60 +38,77 @@ npm run build
 echo "🔄 Syncing Capacitor iOS project..."
 npx cap sync ios
 
-# ── Ensure pinned Package.resolved exists and matches the local Swift package graph ──
+# ── Ensure pinned Package.resolved matches the current local Swift package graph ──
 RESOLVED_FILE="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+SPM_MANIFEST="ios/App/CapApp-SPM/Package.swift"
 mkdir -p "$(dirname "$RESOLVED_FILE")"
 
-cat > "$RESOLVED_FILE" << 'RESOLVEDEOF'
-{
-  "originHash" : "608e7cffacbdb2c959bc4cf23fc793ae01215c287b360f0231cb150f64a03cf2",
-  "pins" : [
-    {
-      "identity" : "capacitor-swift-pm",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ionic-team/capacitor-swift-pm.git",
-      "state" : {
-        "revision" : "0e862e6ff13852a710c8a484180ca4d6a2cc9761",
-        "version" : "8.2.0"
-      }
-    },
-    {
-      "identity" : "purchases-hybrid-common",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/RevenueCat/purchases-hybrid-common.git",
-      "state" : {
-        "revision" : "9b99aee60dd4f8b5a2e96f074f4d0b8adc53beee",
-        "version" : "17.52.0"
-      }
-    },
-    {
-      "identity" : "purchases-ios-spm",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/RevenueCat/purchases-ios-spm.git",
-      "state" : {
-        "revision" : "9755c68799edb79ec03f90b22b5e35c3829d4ec8",
-        "version" : "5.65.0"
-      }
-    }
-  ],
-  "version" : 3
-}
-RESOLVEDEOF
-
 python3 - << 'PY'
+import hashlib
 import json
 from pathlib import Path
 
-resolved = Path("/dev-server/ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved")
-data = json.loads(resolved.read_text())
-assert data["originHash"] == "608e7cffacbdb2c959bc4cf23fc793ae01215c287b360f0231cb150f64a03cf2"
-assert [pin["identity"] for pin in data["pins"]] == [
+root = Path("/dev-server")
+manifest = root / "ios/App/CapApp-SPM/Package.swift"
+resolved = root / "ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+
+if not manifest.exists():
+    raise SystemExit(f"Missing Swift package manifest: {manifest}")
+
+origin_hash = hashlib.sha256(manifest.read_bytes()).hexdigest()
+data = {
+    "originHash": origin_hash,
+    "pins": [
+        {
+            "identity": "capacitor-swift-pm",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/ionic-team/capacitor-swift-pm.git",
+            "state": {
+                "revision": "0e862e6ff13852a710c8a484180ca4d6a2cc9761",
+                "version": "8.2.0",
+            },
+        },
+        {
+            "identity": "purchases-hybrid-common",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/RevenueCat/purchases-hybrid-common.git",
+            "state": {
+                "revision": "9b99aee60dd4f8b5a2e96f074f4d0b8adc53beee",
+                "version": "17.52.0",
+            },
+        },
+        {
+            "identity": "purchases-ios-spm",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/RevenueCat/purchases-ios-spm.git",
+            "state": {
+                "revision": "9755c68799edb79ec03f90b22b5e35c3829d4ec8",
+                "version": "5.65.0",
+            },
+        },
+    ],
+    "version": 3,
+}
+
+resolved.write_text(json.dumps(data, indent=2) + "\n")
+
+written = json.loads(resolved.read_text())
+assert written["originHash"] == origin_hash
+assert [pin["identity"] for pin in written["pins"]] == [
     "capacitor-swift-pm",
     "purchases-hybrid-common",
     "purchases-ios-spm",
 ]
-print("✅ Package.resolved validated")
+print(f"✅ Package.resolved validated ({origin_hash})")
 PY
+
+if command -v xcodebuild &>/dev/null; then
+  echo "📦 Verifying Swift package resolution..."
+  xcodebuild -resolvePackageDependencies \
+    -project ios/App/App.xcodeproj \
+    -scheme App \
+    2>&1 | tail -20
+fi
 
 if [[ -f "$RESOLVED_FILE" ]]; then
   echo "✅ Package.resolved ready"

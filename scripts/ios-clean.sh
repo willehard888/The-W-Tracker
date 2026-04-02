@@ -18,41 +18,57 @@ npx cap sync ios
 
 RESOLVED_DIR="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm"
 mkdir -p "$RESOLVED_DIR"
-cat > "$RESOLVED_DIR/Package.resolved" << 'RESOLVEDEOF'
-{
-  "originHash" : "608e7cffacbdb2c959bc4cf23fc793ae01215c287b360f0231cb150f64a03cf2",
-  "pins" : [
-    {
-      "identity" : "capacitor-swift-pm",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ionic-team/capacitor-swift-pm.git",
-      "state" : {
-        "revision" : "0e862e6ff13852a710c8a484180ca4d6a2cc9761",
-        "version" : "8.2.0"
-      }
-    },
-    {
-      "identity" : "purchases-hybrid-common",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/RevenueCat/purchases-hybrid-common.git",
-      "state" : {
-        "revision" : "9b99aee60dd4f8b5a2e96f074f4d0b8adc53beee",
-        "version" : "17.52.0"
-      }
-    },
-    {
-      "identity" : "purchases-ios-spm",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/RevenueCat/purchases-ios-spm.git",
-      "state" : {
-        "revision" : "9755c68799edb79ec03f90b22b5e35c3829d4ec8",
-        "version" : "5.65.0"
-      }
-    }
-  ],
-  "version" : 3
+
+python3 - << 'PY'
+import hashlib
+import json
+from pathlib import Path
+
+root = Path("/dev-server")
+manifest = root / "ios/App/CapApp-SPM/Package.swift"
+resolved = root / "ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+
+if not manifest.exists():
+    raise SystemExit(f"Missing Swift package manifest: {manifest}")
+
+origin_hash = hashlib.sha256(manifest.read_bytes()).hexdigest()
+data = {
+    "originHash": origin_hash,
+    "pins": [
+        {
+            "identity": "capacitor-swift-pm",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/ionic-team/capacitor-swift-pm.git",
+            "state": {
+                "revision": "0e862e6ff13852a710c8a484180ca4d6a2cc9761",
+                "version": "8.2.0",
+            },
+        },
+        {
+            "identity": "purchases-hybrid-common",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/RevenueCat/purchases-hybrid-common.git",
+            "state": {
+                "revision": "9b99aee60dd4f8b5a2e96f074f4d0b8adc53beee",
+                "version": "17.52.0",
+            },
+        },
+        {
+            "identity": "purchases-ios-spm",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/RevenueCat/purchases-ios-spm.git",
+            "state": {
+                "revision": "9755c68799edb79ec03f90b22b5e35c3829d4ec8",
+                "version": "5.65.0",
+            },
+        },
+    ],
+    "version": 3,
 }
-RESOLVEDEOF
+
+resolved.write_text(json.dumps(data, indent=2) + "\n")
+print(f"✅ Package.resolved generated ({origin_hash})")
+PY
 
 if command -v xcodebuild >/dev/null 2>&1; then
   echo "📦 Resolving Swift packages..."

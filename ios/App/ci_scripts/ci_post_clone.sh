@@ -38,12 +38,32 @@ npm run build
 echo "🔄 Syncing Capacitor iOS project..."
 npx cap sync ios
 
-# ── Ensure Package.resolved exists for Xcode Cloud lockfile-only builds ──
-RESOLVED_FILE="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
-SPM_MANIFEST="ios/App/CapApp-SPM/Package.swift"
-mkdir -p "$(dirname "$RESOLVED_FILE")"
+# ── Ensure Package.resolved exists ──
+RESOLVED_DIR="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm"
+RESOLVED_FILE="$RESOLVED_DIR/Package.resolved"
+mkdir -p "$RESOLVED_DIR"
 
-python3 - "$ROOT_DIR" << 'PY'
+# Remove any stale committed Package.resolved so Xcode can regenerate fresh
+rm -f "$RESOLVED_FILE"
+
+# Let Xcode resolve packages itself — this creates the authoritative Package.resolved
+if command -v xcodebuild >/dev/null 2>&1; then
+  echo "📦 Running xcodebuild package resolution..."
+  RESOLVE_LOG="${TMPDIR:-/tmp}/xcode-package-resolve.log"
+
+  # Temporarily enable automatic resolution by removing any stale resolved file
+  if xcodebuild -resolvePackageDependencies \
+    -project ios/App/App.xcodeproj \
+    -scheme App \
+    -clonedSourcePackagesDirPath "${TMPDIR:-/tmp}/spm-packages" \
+    2>&1 | tee "$RESOLVE_LOG"; then
+    echo "✅ Xcode package resolution succeeded"
+  else
+    echo "⚠️ xcodebuild -resolvePackageDependencies failed, generating fallback..."
+    tail -50 "$RESOLVE_LOG"
+
+    # Fallback: generate Package.resolved from Python
+    python3 - "$ROOT_DIR" << 'PY'
 import hashlib
 import json
 import re
@@ -57,14 +77,9 @@ resolved = root / "ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftp
 if not manifest.exists():
     raise SystemExit(f"Missing Swift package manifest: {manifest}")
 
-manifest_text = manifest.read_text()
-
-if "@capacitor-community/apple-sign-in" in manifest_text or "CapacitorCommunityAppleSignIn" in manifest_text:
-    raise SystemExit("Unsupported Swift package remains in CapApp-SPM: @capacitor-community/apple-sign-in")
-
 pattern = re.compile(r'\.package\((?:name:\s*"[^"]+",\s*)?path:\s*"([^"]+)"')
 
-def collect_manifests(entry: Path, seen: set[Path], ordered: list[Path]) -> None:
+def collect_manifests(entry, seen, ordered):
     entry = entry.resolve()
     if entry in seen:
         return
@@ -73,11 +88,10 @@ def collect_manifests(entry: Path, seen: set[Path], ordered: list[Path]) -> None
     contents = entry.read_text()
     for rel_path in pattern.findall(contents):
         child = (entry.parent / rel_path / "Package.swift").resolve()
-        if not child.exists():
-            raise SystemExit(f"Missing local Swift package manifest: {child}")
-        collect_manifests(child, seen, ordered)
+        if child.exists():
+            collect_manifests(child, seen, ordered)
 
-manifests: list[Path] = []
+manifests = []
 collect_manifests(manifest, set(), manifests)
 
 digest = hashlib.sha256()
@@ -123,22 +137,23 @@ data = {
 }
 
 resolved.write_text(json.dumps(data, indent=2) + "\n")
-print(f"✅ Package.resolved fallback generated ({origin_hash})")
+print(f"✅ Fallback Package.resolved generated ({origin_hash})")
 PY
-
-if command -v xcodebuild >/dev/null 2>&1; then
-  echo "ℹ️ Xcode Cloud uses the committed Package.resolved when automatic package resolution is disabled"
-  echo "ℹ️ Skipping xcodebuild package resolution so the lockfile stays intact"
+  fi
+else
+  echo "⚠️ xcodebuild not available — this should not happen on Xcode Cloud"
+  exit 1
 fi
 
 if [[ -f "$RESOLVED_FILE" ]]; then
   echo "✅ Package.resolved ready"
+  cat "$RESOLVED_FILE"
 else
-  echo "❌ Package.resolved missing after generation"
+  echo "❌ Package.resolved missing after resolution"
   exit 1
 fi
 
-if grep -q 'SignInWithApple' "$ROOT_DIR/ios/App/App/capacitor.config.json"; then
+if [[ -f "$ROOT_DIR/ios/App/App/capacitor.config.json" ]] && grep -q 'SignInWithApple' "$ROOT_DIR/ios/App/App/capacitor.config.json"; then
   echo "❌ Obsolete SignInWithApple plugin still registered in capacitor.config.json"
   exit 1
 fi

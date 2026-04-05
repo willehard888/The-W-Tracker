@@ -6,9 +6,10 @@ const OAUTH_CALLBACK = "/~oauth/callback";
 const APP_SCHEME = "app.lovable.wtracker";
 const PUBLISHED_CALLBACK_URL = `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
 
-function shouldStartAppleAuthOnPublishedSite(): boolean {
+function shouldUsePublishedAuthPage(): boolean {
   if (typeof window === "undefined") return false;
-  if (Capacitor.isNativePlatform()) return false;
+
+  if (Capacitor.isNativePlatform()) return true;
 
   return window.location.origin !== PRODUCTION_URL;
 }
@@ -32,6 +33,21 @@ function redirectToPublishedAuthPage() {
   }
 
   window.location.href = targetUrl;
+}
+
+async function openPublishedAuthPageInSystemBrowser() {
+  const targetUrl = getPublishedAuthUrl();
+
+  try {
+    const { Browser } = await import("@capacitor/browser");
+    await Browser.open({ url: targetUrl });
+  } catch (error) {
+    pushIosDebugLog("AppleAuth", "Failed to open system browser, falling back to in-app redirect", {
+      message: errorMessage(error),
+      targetUrl,
+    });
+    redirectToPublishedAuthPage();
+  }
 }
 
 function getAppleRedirectUri(): string {
@@ -103,7 +119,7 @@ async function startManagedAppleOAuth(): Promise<{ error?: Error }> {
 
 export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
   try {
-    if (shouldStartAppleAuthOnPublishedSite()) {
+    if (shouldUsePublishedAuthPage()) {
       const targetUrl = getPublishedAuthUrl();
 
       updateOauthDebug({
@@ -116,11 +132,17 @@ export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
       });
 
       pushIosDebugLog("AppleAuth", "Redirecting Apple Sign In to published auth page", {
+        native: Capacitor.isNativePlatform(),
         currentOrigin: window.location.origin,
         targetUrl,
       });
 
-      redirectToPublishedAuthPage();
+      if (Capacitor.isNativePlatform()) {
+        await openPublishedAuthPageInSystemBrowser();
+      } else {
+        redirectToPublishedAuthPage();
+      }
+
       return {};
     }
 

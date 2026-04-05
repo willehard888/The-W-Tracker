@@ -6,6 +6,20 @@ import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 
 const APP_SCHEME = "app.lovable.wtracker";
 
+function getRequestedAppScheme(merged: URLSearchParams): string {
+  return merged.get("app_scheme") || APP_SCHEME;
+}
+
+function shouldForceNativeHandoff(merged: URLSearchParams): boolean {
+  return merged.get("native_handoff") === "1";
+}
+
+function buildNativeCallbackUrl(merged: URLSearchParams): string {
+  const scheme = getRequestedAppScheme(merged);
+  const qs = merged.toString();
+  return `${scheme}://oauth/callback${qs ? `?${qs}` : ""}`;
+}
+
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   if (typeof error === "string") return error;
@@ -82,9 +96,8 @@ const OAuthCallback = () => {
         });
 
         // ① iOS external browser → forward tokens to native app via URL scheme
-        if (hasOAuthParams(merged) && isIOSExternalBrowser()) {
-          const qs = merged.toString();
-          const deepLink = `${APP_SCHEME}://oauth/callback${qs ? `?${qs}` : ""}`;
+        if (hasOAuthParams(merged) && (isIOSExternalBrowser() || shouldForceNativeHandoff(merged))) {
+          const deepLink = buildNativeCallbackUrl(merged);
           console.log("[OAuthCB] Redirecting to native app:", deepLink);
           updateOauthDebug({
             deepLinkUrl: deepLink,
@@ -143,7 +156,10 @@ const OAuthCallback = () => {
           Kirjautuminen onnistui! Palaa sovellukseen.
         </p>
         <button
-          onClick={() => { window.location.href = `${APP_SCHEME}://`; }}
+          onClick={() => {
+            const merged = mergeTokensToQuery(window.location.href);
+            window.location.href = buildNativeCallbackUrl(merged);
+          }}
           className="text-gold underline text-sm"
         >
           Avaa sovellus

@@ -18,7 +18,16 @@ class NativeBridgeViewController: CAPBridgeViewController {
             return
         }
 
-        var request = URLRequest(url: url)
+        var freshURL = url
+        if var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            var items = components.queryItems ?? []
+            items.removeAll(where: { $0.name == "native_cb" })
+            items.append(URLQueryItem(name: "native_cb", value: String(Int(Date().timeIntervalSince1970))))
+            components.queryItems = items
+            freshURL = components.url ?? url
+        }
+
+        var request = URLRequest(url: freshURL)
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.timeoutInterval = 60
 

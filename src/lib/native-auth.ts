@@ -6,6 +6,18 @@ const OAUTH_CALLBACK = "/~oauth/callback";
 const APP_SCHEME = "app.lovable.wtracker";
 const PUBLISHED_CALLBACK_URL = `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
 
+function createCacheBuster() {
+  return `${Date.now()}`;
+}
+
+function shouldForceNativeHandoff(): boolean {
+  if (Capacitor.isNativePlatform()) return true;
+  if (typeof window === "undefined") return false;
+
+  const params = new URLSearchParams(window.location.search);
+  return params.get("native_handoff") === "1";
+}
+
 function shouldUsePublishedAuthPage(): boolean {
   if (typeof window === "undefined") return false;
 
@@ -17,6 +29,9 @@ function shouldUsePublishedAuthPage(): boolean {
 function getPublishedAuthUrl(): string {
   const url = new URL("/auth", PRODUCTION_URL);
   url.searchParams.set("apple_sign_in", "1");
+  url.searchParams.set("native_handoff", "1");
+  url.searchParams.set("app_scheme", APP_SCHEME);
+  url.searchParams.set("cb", createCacheBuster());
   return url.toString();
 }
 
@@ -51,11 +66,20 @@ async function openPublishedAuthPageInSystemBrowser() {
 }
 
 function getAppleRedirectUri(): string {
-  if (typeof window !== "undefined" && window.location.origin === PRODUCTION_URL) {
-    return `${window.location.origin}${OAUTH_CALLBACK}`;
+  const callbackUrl = new URL(OAUTH_CALLBACK, PRODUCTION_URL);
+
+  if (shouldForceNativeHandoff()) {
+    callbackUrl.searchParams.set("native_handoff", "1");
+    callbackUrl.searchParams.set("app_scheme", APP_SCHEME);
   }
 
-  return PUBLISHED_CALLBACK_URL;
+  callbackUrl.searchParams.set("cb", createCacheBuster());
+
+  if (typeof window !== "undefined" && window.location.origin === PRODUCTION_URL) {
+    return callbackUrl.toString();
+  }
+
+  return callbackUrl.toString();
 }
 
 function errorMessage(err: unknown): string {
@@ -88,6 +112,7 @@ async function startManagedAppleOAuth(): Promise<{ error?: Error }> {
     appScheme: APP_SCHEME,
     currentOrigin: typeof window !== "undefined" ? window.location.origin : null,
     usingPublishedCallback: redirectUri === PUBLISHED_CALLBACK_URL,
+    forceNativeHandoff: shouldForceNativeHandoff(),
     nativeUsesWebCallback: Capacitor.isNativePlatform(),
     platform: Capacitor.getPlatform(),
     native: Capacitor.isNativePlatform(),
@@ -135,6 +160,7 @@ export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
         native: Capacitor.isNativePlatform(),
         currentOrigin: window.location.origin,
         targetUrl,
+        forceNativeHandoff: true,
       });
 
       if (Capacitor.isNativePlatform()) {

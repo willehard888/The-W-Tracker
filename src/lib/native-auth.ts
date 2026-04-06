@@ -3,11 +3,41 @@ import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 
 const PRODUCTION_URL = "https://status-level-up.lovable.app";
 const OAUTH_CALLBACK = "/~oauth/callback";
+const APPLE_AUTH_LAUNCH = "/apple-auth-launch";
 const APP_SCHEME = "app.lovable.wtracker";
 const PUBLISHED_CALLBACK_URL = `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
+const PUBLISHED_LAUNCH_ATTEMPT_KEY = "w_apple_launch_attempt";
 
 function createCacheBuster() {
   return `${Date.now()}`;
+}
+
+function createAttemptId() {
+  return `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function getSearchParams() {
+  if (typeof window === "undefined") return new URLSearchParams();
+  return new URLSearchParams(window.location.search);
+}
+
+function getCurrentAttemptId() {
+  return getSearchParams().get("attempt");
+}
+
+function getStoredAttemptId() {
+  if (typeof window === "undefined") return null;
+  return window.sessionStorage.getItem(PUBLISHED_LAUNCH_ATTEMPT_KEY);
+}
+
+function markAttemptStarted(attemptId: string) {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.setItem(PUBLISHED_LAUNCH_ATTEMPT_KEY, attemptId);
+}
+
+function clearStoredAttempt() {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.removeItem(PUBLISHED_LAUNCH_ATTEMPT_KEY);
 }
 
 function shouldForceNativeHandoff(): boolean {
@@ -27,10 +57,10 @@ function shouldUsePublishedAuthPage(): boolean {
 }
 
 function getPublishedAuthUrl(): string {
-  const url = new URL("/auth", PRODUCTION_URL);
-  url.searchParams.set("apple_sign_in", "1");
+  const url = new URL(APPLE_AUTH_LAUNCH, PRODUCTION_URL);
   url.searchParams.set("native_handoff", "1");
   url.searchParams.set("app_scheme", APP_SCHEME);
+  url.searchParams.set("attempt", createAttemptId());
   url.searchParams.set("cb", createCacheBuster());
   return url.toString();
 }
@@ -55,6 +85,11 @@ async function openPublishedAuthPageInSystemBrowser() {
 
   try {
     const { Browser } = await import("@capacitor/browser");
+    try {
+      await Browser.close();
+    } catch {
+      // Ignore if no browser session is open.
+    }
     await Browser.open({ url: targetUrl });
   } catch (error) {
     pushIosDebugLog("AppleAuth", "Failed to open system browser, falling back to in-app redirect", {
@@ -140,6 +175,37 @@ async function startManagedAppleOAuth(): Promise<{ error?: Error }> {
 
   pushIosDebugLog("AppleAuth", "Managed Apple OAuth finished without redirect", result);
   return {};
+}
+
+export async function startPublishedAppleSignIn(): Promise<{ error?: Error }> {
+  const attemptId = getCurrentAttemptId() ?? createAttemptId();
+  const alreadyStarted = getStoredAttemptId() === attemptId;
+
+  if (alreadyStarted) {
+    pushIosDebugLog("AppleAuth", "Skipped duplicate published Apple launch", {
+      attemptId,
+      href: typeof window !== "undefined" ? window.location.href : null,
+    });
+    return {};
+  }
+
+  markAttemptStarted(attemptId);
+  pushIosDebugLog("AppleAuth", "Starting published Apple launch", {
+    attemptId,
+    href: typeof window !== "undefined" ? window.location.href : null,
+  });
+
+  const result = await startManagedAppleOAuth();
+
+  if (result.error) {
+    clearStoredAttempt();
+  }
+
+  return result;
+}
+
+export function clearPublishedAppleAttempt() {
+  clearStoredAttempt();
 }
 
 export async function nativeAppleSignIn(): Promise<{ error?: Error }> {

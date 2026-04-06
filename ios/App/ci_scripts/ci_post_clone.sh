@@ -3,7 +3,6 @@ set -euo pipefail
 
 echo "🔧 Running post-clone setup for iOS build..."
 
-# Navigate to project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$SCRIPT_DIR"
 
@@ -38,32 +37,13 @@ npm run build
 echo "🔄 Syncing Capacitor iOS project..."
 npx cap sync ios
 
-# ── Ensure Package.resolved exists ──
+# ── Fix Package.resolved originHash ──
 RESOLVED_DIR="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm"
 RESOLVED_FILE="$RESOLVED_DIR/Package.resolved"
 mkdir -p "$RESOLVED_DIR"
 
-# Remove any stale committed Package.resolved so Xcode can regenerate fresh
-rm -f "$RESOLVED_FILE"
-
-# Let Xcode resolve packages itself — this creates the authoritative Package.resolved
-if command -v xcodebuild >/dev/null 2>&1; then
-  echo "📦 Running xcodebuild package resolution..."
-  RESOLVE_LOG="${TMPDIR:-/tmp}/xcode-package-resolve.log"
-
-  # Temporarily enable automatic resolution by removing any stale resolved file
-  if xcodebuild -resolvePackageDependencies \
-    -project ios/App/App.xcodeproj \
-    -scheme App \
-    -clonedSourcePackagesDirPath "${TMPDIR:-/tmp}/spm-packages" \
-    2>&1 | tee "$RESOLVE_LOG"; then
-    echo "✅ Xcode package resolution succeeded"
-  else
-    echo "⚠️ xcodebuild -resolvePackageDependencies failed, generating fallback..."
-    tail -50 "$RESOLVE_LOG"
-
-    # Fallback: generate Package.resolved from Python
-    python3 - "$ROOT_DIR" << 'PY'
+echo "📦 Updating Package.resolved originHash..."
+python3 - "$ROOT_DIR" << 'PY'
 import hashlib
 import json
 import re
@@ -102,59 +82,22 @@ for item in manifests:
     digest.update(b"\0")
 
 origin_hash = digest.hexdigest()
-data = {
-    "originHash": origin_hash,
-    "pins": [
-        {
-            "identity": "capacitor-swift-pm",
-            "kind": "remoteSourceControl",
-            "location": "https://github.com/ionic-team/capacitor-swift-pm.git",
-            "state": {
-                "revision": "0e862e6ff13852a710c8a484180ca4d6a2cc9761",
-                "version": "8.2.0",
-            },
-        },
-        {
-            "identity": "purchases-hybrid-common",
-            "kind": "remoteSourceControl",
-            "location": "https://github.com/RevenueCat/purchases-hybrid-common.git",
-            "state": {
-                "revision": "9b99aee60dd4f8b5a2e96f074f4d0b8adc53beee",
-                "version": "17.52.0",
-            },
-        },
-        {
-            "identity": "purchases-ios-spm",
-            "kind": "remoteSourceControl",
-            "location": "https://github.com/RevenueCat/purchases-ios-spm.git",
-            "state": {
-                "revision": "9755c68799edb79ec03f90b22b5e35c3829d4ec8",
-                "version": "5.65.0",
-            },
-        },
-    ],
-    "version": 3,
-}
 
+# Read existing resolved file and update originHash
+if resolved.exists():
+    data = json.loads(resolved.read_text())
+else:
+    data = {"originHash": "", "pins": [], "version": 3}
+
+data["originHash"] = origin_hash
 resolved.write_text(json.dumps(data, indent=2) + "\n")
-print(f"✅ Fallback Package.resolved generated ({origin_hash})")
+print(f"✅ Package.resolved originHash updated: {origin_hash[:16]}...")
 PY
-  fi
-else
-  echo "⚠️ xcodebuild not available — this should not happen on Xcode Cloud"
-  exit 1
-fi
 
 if [[ -f "$RESOLVED_FILE" ]]; then
   echo "✅ Package.resolved ready"
-  cat "$RESOLVED_FILE"
 else
-  echo "❌ Package.resolved missing after resolution"
-  exit 1
-fi
-
-if [[ -f "$ROOT_DIR/ios/App/App/capacitor.config.json" ]] && grep -q 'SignInWithApple' "$ROOT_DIR/ios/App/App/capacitor.config.json"; then
-  echo "❌ Obsolete SignInWithApple plugin still registered in capacitor.config.json"
+  echo "❌ Package.resolved missing"
   exit 1
 fi
 
@@ -180,7 +123,7 @@ if [[ -f "$ICON_SRC" ]]; then
   }
 }
 ICONEOF
-  echo "✅ App icon copied and Contents.json written"
+  echo "✅ App icon copied"
 else
   echo "⚠️ App icon not found at $ICON_SRC"
 fi

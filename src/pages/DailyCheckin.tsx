@@ -215,8 +215,20 @@ const DailyCheckin = () => {
       if (profile) {
         const newXp = profile.xp + totalXp;
         const newLevel = Math.floor(newXp / 500) + 1;
-        const newStreak = profile.streak + 1;
+
+        // Streak logic: reset to 1 if last checkin was more than 48h ago (missed a day)
+        const lastCheckinTime = lastCheckin ? new Date(lastCheckin.checked_in_at).getTime() : 0;
+        const hoursSinceLastCheckin = lastCheckinTime ? (Date.now() - lastCheckinTime) / (1000 * 60 * 60) : 999;
+        const streakBroken = hoursSinceLastCheckin > 48;
+        const newStreak = streakBroken ? 1 : profile.streak + 1;
         const longestStreak = Math.max(profile.longest_streak, newStreak);
+
+        // Streak broken warning
+        if (streakBroken && profile.streak > 0) {
+          toast.error(`💀 Streak lost! Your ${profile.streak}-day streak was reset.`, {
+            duration: 5000,
+          });
+        }
 
         // Detect level-up
         if (newLevel > profile.level) {

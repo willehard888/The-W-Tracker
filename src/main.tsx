@@ -4,6 +4,7 @@ import "./index.css";
 import { Capacitor } from "@capacitor/core";
 import { applySessionFromUrl } from "@/lib/oauth-session";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
+import { toast } from "sonner";
 
 let lastHandledUrl: string | null = null;
 
@@ -46,6 +47,7 @@ async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
 
     if (!didApplySession) {
       pushIosDebugLog("DeepLink", "No OAuth tokens found in callback URL", { source, url });
+      toast.error("Sign in failed — no session received. Please try again.");
       return;
     }
 
@@ -61,6 +63,7 @@ async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
   } catch (e) {
     console.error("[DeepLink] Error handling deep link:", e);
     const message = e instanceof Error ? e.message : String(e);
+    toast.error(`Sign in error: ${message}`);
     updateOauthDebug({ error: message });
     pushIosDebugLog("DeepLink", "Deep link processing failed", { source, message, url });
   }

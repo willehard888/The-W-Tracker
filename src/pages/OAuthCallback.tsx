@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { applySessionFromUrl } from "@/lib/oauth-session";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
+import { toast } from "sonner";
 
 const APP_SCHEME = "app.lovable.wtracker";
 
@@ -121,14 +122,20 @@ const OAuthCallback = () => {
         // Log any OAuth error params
         if (oauthError) {
           console.error("[OAuthCB] Error:", oauthError, oauthErrorDescription);
+          toast.error(`Sign in failed: ${oauthErrorDescription || oauthError}`);
           pushIosDebugLog("OAuthCallback", "OAuth provider error in callback", {
             error: oauthError,
             errorDescription: oauthErrorDescription,
           });
         }
+
+        if (!sessionApplied && !oauthError && !sentToApp) {
+          toast.error("Session could not be established. Please try again.");
+        }
       } catch (e) {
         console.error("[OAuthCB] Unexpected:", e);
         const message = getErrorMessage(e);
+        toast.error(`Sign in error: ${message}`);
         updateOauthDebug({ error: message });
         pushIosDebugLog("OAuthCallback", "Unexpected callback exception", {
           message,

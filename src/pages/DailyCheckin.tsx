@@ -223,6 +223,13 @@ const DailyCheckin = () => {
         const newStreak = streakBroken ? 1 : profile.streak + 1;
         const longestStreak = Math.max(profile.longest_streak, newStreak);
 
+        // Streak broken warning
+        if (streakBroken && profile.streak > 0) {
+          toast.error(`💀 Streak lost! Your ${profile.streak}-day streak was reset.`, {
+            duration: 5000,
+          });
+        }
+
         // Detect level-up
         if (newLevel > profile.level) {
           setNewLevelReached(newLevel);

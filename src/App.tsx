@@ -33,6 +33,7 @@ const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const IosDebug = lazy(() => import("./pages/IosDebug"));
+const AppleAuthLaunch = lazy(() => import("./pages/AppleAuthLaunch"));
 
 const queryClient = new QueryClient();
 
@@ -83,6 +84,7 @@ const AppRoutes = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/terms" element={<TermsOfUse />} />
           <Route path="/ios-debug" element={<IosDebug />} />
+          <Route path="/apple-auth-launch" element={<AppleAuthLaunch />} />
           <Route path="/~oauth" element={<OAuthCallback />} />
           <Route path="/~oauth/callback" element={<OAuthCallback />} />
           <Route path="/oauth" element={<OAuthCallback />} />

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { applySessionFromUrl } from "@/lib/oauth-session";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
+import { clearPublishedAppleAttempt } from "@/lib/native-auth";
 import { toast } from "sonner";
 
 const APP_SCHEME = "app.lovable.wtracker";
@@ -19,6 +20,18 @@ function buildNativeCallbackUrl(merged: URLSearchParams): string {
   const scheme = getRequestedAppScheme(merged);
   const qs = merged.toString();
   return `${scheme}://oauth/callback${qs ? `?${qs}` : ""}`;
+}
+
+function openNativeApp(deepLink: string) {
+  window.location.replace(deepLink);
+
+  window.setTimeout(() => {
+    try {
+      window.location.assign(deepLink);
+    } catch {
+      // no-op
+    }
+  }, 700);
 }
 
 function getErrorMessage(error: unknown): string {
@@ -100,6 +113,7 @@ const OAuthCallback = () => {
         if (hasOAuthParams(merged) && (isIOSExternalBrowser() || shouldForceNativeHandoff(merged))) {
           const deepLink = buildNativeCallbackUrl(merged);
           console.log("[OAuthCB] Redirecting to native app:", deepLink);
+          clearPublishedAppleAttempt();
           updateOauthDebug({
             deepLinkUrl: deepLink,
             handoffToApp: true,
@@ -108,12 +122,13 @@ const OAuthCallback = () => {
             deepLink,
           });
           setSentToApp(true);
-          window.location.href = deepLink;
+          openNativeApp(deepLink);
           return;
         }
 
         // ② Web flow → apply session directly
         const sessionApplied = await applySessionFromUrl(window.location.href);
+        clearPublishedAppleAttempt();
         updateOauthDebug({ sessionApplied });
         pushIosDebugLog("OAuthCallback", "Session apply result", {
           sessionApplied,
@@ -130,12 +145,14 @@ const OAuthCallback = () => {
         }
 
         if (!sessionApplied && !oauthError && !sentToApp) {
+          clearPublishedAppleAttempt();
           toast.error("Session could not be established. Please try again.");
         }
       } catch (e) {
         console.error("[OAuthCB] Unexpected:", e);
         const message = getErrorMessage(e);
         toast.error(`Sign in error: ${message}`);
+        clearPublishedAppleAttempt();
         updateOauthDebug({ error: message });
         pushIosDebugLog("OAuthCallback", "Unexpected callback exception", {
           message,
@@ -165,7 +182,7 @@ const OAuthCallback = () => {
         <button
           onClick={() => {
             const merged = mergeTokensToQuery(window.location.href);
-            window.location.href = buildNativeCallbackUrl(merged);
+            openNativeApp(buildNativeCallbackUrl(merged));
           }}
           className="text-gold underline text-sm"
         >

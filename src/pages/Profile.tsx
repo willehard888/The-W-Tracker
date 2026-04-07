@@ -136,6 +136,24 @@ const Profile = () => {
 
   const { data: championHistory } = useQuery({
     queryKey: ["champion-history", profile?.user_id],
+  const { data: lastCheckin } = useQuery({
+    queryKey: ["last-checkin-profile", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return null;
+      const { data } = await supabase
+        .from("daily_checkins")
+        .select("checked_in_at")
+        .eq("user_id", profile.user_id)
+        .order("checked_in_at", { ascending: false })
+        .limit(1)
+        .single();
+      return data;
+    },
+    enabled: !!profile,
+  });
+
+  const { data: championHistory } = useQuery({
+    queryKey: ["champion-history", profile?.user_id],
     queryFn: async () => {
       if (!profile) return { wins: 0, seasons: [] };
       const db = supabase as any;

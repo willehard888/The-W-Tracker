@@ -6,6 +6,7 @@ interface StreakDisplayProps {
   streak: number;
   longestStreak: number;
   className?: string;
+  lastCheckinAt?: string | null;
 }
 
 const MILESTONES = [
@@ -65,13 +66,28 @@ const StreakParticles = ({ isDiamond, isLegendary }: { isDiamond: boolean; isLeg
   );
 };
 
-const StreakDisplay = ({ streak, longestStreak, className }: StreakDisplayProps) => {
+const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: StreakDisplayProps) => {
   const tier = getStreakTier(streak);
   const isHot = tier.index >= 1;
   const isOnFire = tier.index >= 2;   // 14+
   const isBlazing = tier.index >= 3;  // 30+
   const isDiamond = tier.index >= 4;  // 60+
   const isLegendary = tier.index >= 5; // 100+
+
+
+  // Calculate time until streak loss (48h from last checkin)
+  const getStreakDeadline = () => {
+    if (!lastCheckinAt || streak === 0) return null;
+    const deadlineMs = new Date(lastCheckinAt).getTime() + 48 * 60 * 60 * 1000;
+    const remainingMs = deadlineMs - Date.now();
+    if (remainingMs <= 0) return { expired: true, hours: 0, mins: 0, urgent: true };
+    const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+    const mins = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+    const urgent = hours < 6;
+    return { expired: false, hours, mins, urgent };
+  };
+
+  const deadline = getStreakDeadline();
 
   const currentMilestone = [...MILESTONES].reverse().find((m) => streak >= m.days);
   const nextMilestone = MILESTONES.find((m) => streak < m.days);
@@ -307,6 +323,35 @@ const StreakDisplay = ({ streak, longestStreak, className }: StreakDisplayProps)
             )}>
               🏆 All milestones reached!
             </span>
+          </div>
+        )}
+
+        {/* Streak deadline warning */}
+        {deadline && streak > 0 && (
+          <div className={cn(
+            "flex items-center justify-between mt-2 pt-2 border-t",
+            deadline.expired
+              ? "border-destructive/30"
+              : deadline.urgent
+              ? "border-destructive/20"
+              : "border-border/30"
+          )}>
+            {deadline.expired ? (
+              <p className="text-[10px] font-bold text-destructive animate-pulse">
+                💀 Streak at risk! Check in NOW
+              </p>
+            ) : (
+              <p className="text-[10px] text-muted-foreground">
+                <span className={cn(
+                  "font-bold tabular-nums",
+                  deadline.urgent ? "text-destructive" : "text-foreground"
+                )}>
+                  {deadline.urgent && "⚠️ "}
+                  {deadline.hours}h {deadline.mins}m
+                </span>
+                {" "}until streak loss
+              </p>
+            )}
           </div>
         )}
       </div>

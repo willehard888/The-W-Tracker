@@ -134,8 +134,6 @@ const Profile = () => {
     enabled: !!profile,
   });
 
-  const { data: championHistory } = useQuery({
-    queryKey: ["champion-history", profile?.user_id],
   const { data: lastCheckin } = useQuery({
     queryKey: ["last-checkin-profile", profile?.user_id],
     queryFn: async () => {

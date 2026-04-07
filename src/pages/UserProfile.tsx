@@ -292,7 +292,7 @@ const UserProfile = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 mb-6 animate-reveal animate-reveal-delay-1">
         <StatCard icon={Zap} label="Total XP" value={profile.xp.toLocaleString()} variant="gold" />
-        <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} />
+        <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} lastCheckinAt={null} />
         <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
         <StatCard icon={Shield} label="Badges" value={earnedBadgeIds?.length || 0} variant="purple" />
       </div>

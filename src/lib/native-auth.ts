@@ -291,31 +291,49 @@ export function clearPublishedAppleAttempt() {
 
 export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
   try {
-    if (shouldUsePublishedAuthPage()) {
-      const targetUrl = getPublishedAuthUrl();
+    // Native iOS: open broker directly in system browser with deep link callback
+    if (Capacitor.isNativePlatform()) {
+      const state = createOAuthState();
+      const attemptId = createAttemptId();
+      markExpectedState(state);
+      markAttemptStarted(attemptId);
+
+      const brokerUrl = getNativeBrokerUrl(state, attemptId);
 
       updateOauthDebug({
-        redirectUri: PUBLISHED_CALLBACK_URL,
+        redirectUri: getNativeAppCallbackUrl(),
+        sentState: state,
         error: null,
         errorDescription: null,
         sessionApplied: null,
         deepLinkUrl: null,
-        handoffToApp: false,
+        handoffToApp: true,
       });
 
-      pushIosDebugLog("AppleAuth", "Redirecting Apple Sign In to published auth page", {
-        native: Capacitor.isNativePlatform(),
-        currentOrigin: window.location.origin,
-        targetUrl,
-        forceNativeHandoff: true,
+      pushIosDebugLog("AppleAuth", "Opening broker directly in system browser with deep link callback", {
+        brokerUrl,
+        callbackUrl: getNativeAppCallbackUrl(),
+        state,
+        attemptId,
       });
 
-      if (Capacitor.isNativePlatform()) {
-        await openPublishedAuthPageInSystemBrowser();
-      } else {
-        redirectToPublishedAuthPage();
+      try {
+        const { Browser } = await import("@capacitor/browser");
+        try { await Browser.close(); } catch { /* no-op */ }
+        await Browser.open({ url: brokerUrl });
+      } catch (browserErr) {
+        pushIosDebugLog("AppleAuth", "Browser.open failed, using window.location", {
+          message: errorMessage(browserErr),
+        });
+        window.location.href = brokerUrl;
       }
 
+      return {};
+    }
+
+    // Non-native preview environments: redirect to published auth page
+    if (shouldUsePublishedAuthPage()) {
+      redirectToPublishedAuthPage();
       return {};
     }
 

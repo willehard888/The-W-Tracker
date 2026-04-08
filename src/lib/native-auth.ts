@@ -133,13 +133,7 @@ async function openPublishedAuthPageInSystemBrowser() {
   const targetUrl = getPublishedAuthUrl();
 
   try {
-    const { Browser } = await import("@capacitor/browser");
-    try {
-      await Browser.close();
-    } catch {
-      // Ignore if no browser session is open.
-    }
-    await Browser.open({ url: targetUrl });
+    await openUrlOutsideApp(targetUrl);
   } catch (error) {
     pushIosDebugLog("AppleAuth", "Failed to open system browser, falling back to in-app redirect", {
       message: errorMessage(error),
@@ -174,6 +168,31 @@ function errorMessage(err: unknown): string {
   } catch {
     return String(err);
   }
+}
+
+async function openUrlOutsideApp(url: string) {
+  try {
+    const { AppLauncher } = await import("@capacitor/app-launcher");
+    const result = await AppLauncher.openUrl({ url });
+    pushIosDebugLog("AppleAuth", "Opened OAuth URL with AppLauncher", {
+      url,
+      completed: result.completed,
+    });
+    if (result.completed) return;
+  } catch (error) {
+    pushIosDebugLog("AppleAuth", "AppLauncher open failed, falling back to Browser", {
+      url,
+      message: errorMessage(error),
+    });
+  }
+
+  const { Browser } = await import("@capacitor/browser");
+  try {
+    await Browser.close();
+  } catch {
+    // Ignore if no browser session is open.
+  }
+  await Browser.open({ url });
 }
 
 async function startManagedAppleOAuth(): Promise<{ error?: Error }> {
@@ -318,11 +337,9 @@ export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
       });
 
       try {
-        const { Browser } = await import("@capacitor/browser");
-        try { await Browser.close(); } catch { /* no-op */ }
-        await Browser.open({ url: brokerUrl });
+        await openUrlOutsideApp(brokerUrl);
       } catch (browserErr) {
-        pushIosDebugLog("AppleAuth", "Browser.open failed, using window.location", {
+        pushIosDebugLog("AppleAuth", "External OAuth launch failed, using window.location", {
           message: errorMessage(browserErr),
         });
         window.location.href = brokerUrl;

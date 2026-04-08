@@ -17,6 +17,7 @@ import ConfettiBurst from "@/components/ConfettiBurst";
 import XpCounter from "@/components/XpCounter";
 import DailyQuests from "@/components/DailyQuests";
 import LevelUpCelebration from "@/components/LevelUpCelebration";
+import { syncStreakWarningNotification } from "@/lib/streak-notifications";
 
 interface ToggleItemProps {
   icon: React.ElementType;
@@ -172,6 +173,8 @@ const DailyCheckin = () => {
     setSubmitting(true);
 
     try {
+      const checkinTimestamp = new Date().toISOString();
+
       // Upload proof photo if provided
       let proof_photo_url: string | null = null;
       if (proofFile && isElite) {
@@ -189,6 +192,7 @@ const DailyCheckin = () => {
       // Insert check-in
       await supabase.from("daily_checkins").insert({
         user_id: user.id,
+        checked_in_at: checkinTimestamp,
         sleep_hours: sleep,
         workout,
         extra_workout: extraWorkout,
@@ -245,6 +249,11 @@ const DailyCheckin = () => {
             longest_streak: longestStreak,
           })
           .eq("user_id", user.id);
+
+        await syncStreakWarningNotification({
+          lastCheckinAt: checkinTimestamp,
+          streak: newStreak,
+        });
 
         // Auto-update status tier based on percentile
         await supabase.rpc("update_status_tier", { target_user_id: user.id });

@@ -132,6 +132,13 @@ function redirectToPublishedAuthPage() {
 async function openPublishedAuthPageInSystemBrowser() {
   const targetUrl = getPublishedAuthUrl();
 
+  pushIosDebugLog("AppleAuth", "Opening published Apple auth page in system browser", {
+    native: Capacitor.isNativePlatform(),
+    currentOrigin: typeof window !== "undefined" ? window.location.origin : null,
+    targetUrl,
+    forceNativeHandoff: true,
+  });
+
   try {
     await openUrlOutsideApp(targetUrl);
   } catch (error) {
@@ -290,10 +297,6 @@ export async function startPublishedAppleSignIn(): Promise<{ error?: Error }> {
     href: typeof window !== "undefined" ? window.location.href : null,
   });
 
-  if (shouldForceNativeHandoff()) {
-    return startNativeBrokerAppleOAuth(attemptId, state);
-  }
-
   const result = await startManagedAppleOAuth();
 
   if (result.error) {
@@ -310,41 +313,8 @@ export function clearPublishedAppleAttempt() {
 
 export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
   try {
-    // Native iOS: open broker directly in system browser with deep link callback
     if (Capacitor.isNativePlatform()) {
-      const state = createOAuthState();
-      const attemptId = createAttemptId();
-      markExpectedState(state);
-      markAttemptStarted(attemptId);
-
-      const brokerUrl = getNativeBrokerUrl(state, attemptId);
-
-      updateOauthDebug({
-        redirectUri: getNativeAppCallbackUrl(),
-        sentState: state,
-        error: null,
-        errorDescription: null,
-        sessionApplied: null,
-        deepLinkUrl: null,
-        handoffToApp: true,
-      });
-
-      pushIosDebugLog("AppleAuth", "Opening broker directly in system browser with deep link callback", {
-        brokerUrl,
-        callbackUrl: getNativeAppCallbackUrl(),
-        state,
-        attemptId,
-      });
-
-      try {
-        await openUrlOutsideApp(brokerUrl);
-      } catch (browserErr) {
-        pushIosDebugLog("AppleAuth", "External OAuth launch failed, using window.location", {
-          message: errorMessage(browserErr),
-        });
-        window.location.href = brokerUrl;
-      }
-
+      await openPublishedAuthPageInSystemBrowser();
       return {};
     }
 

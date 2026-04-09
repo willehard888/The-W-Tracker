@@ -726,6 +726,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      respond_to_battle: {
+        Args: { accept: boolean; battle_id: string }
+        Returns: undefined
+      }
+      submit_battle_proof: {
+        Args: { battle_id: string; proof_url: string }
+        Returns: undefined
+      }
       update_status_tier: {
         Args: { target_user_id: string }
         Returns: undefined

@@ -1,5 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
+import { markAppleUsernameSelectionPending } from "@/lib/apple-username";
 
 const PRODUCTION_URL = "https://status-level-up.lovable.app";
 const OAUTH_BROKER = "/~oauth/initiate";
@@ -150,6 +151,41 @@ async function openPublishedAuthPageInSystemBrowser() {
   }
 }
 
+async function openNativeBrokerInSystemBrowser(attemptId: string, state: string): Promise<{ error?: Error }> {
+  const brokerUrl = getNativeBrokerUrl(state, attemptId);
+
+  updateOauthDebug({
+    redirectUri: getNativeAppCallbackUrl(),
+    sentState: state,
+    error: null,
+    errorDescription: null,
+    sessionApplied: null,
+    deepLinkUrl: null,
+    handoffToApp: true,
+  });
+
+  pushIosDebugLog("AppleAuth", "Opening broker directly in system browser with deep link callback", {
+    brokerUrl,
+    callbackUrl: getNativeAppCallbackUrl(),
+    state,
+    attemptId,
+  });
+
+  try {
+    await openUrlOutsideApp(brokerUrl);
+    return {};
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    clearPublishedAppleAttempt();
+    updateOauthDebug({ error: error.message });
+    pushIosDebugLog("AppleAuth", "Failed to open native broker URL", {
+      brokerUrl,
+      message: error.message,
+    });
+    return { error };
+  }
+}
+
 function getAppleRedirectUri(): string {
   const callbackUrl = new URL(OAUTH_CALLBACK, PRODUCTION_URL);
 
@@ -297,13 +333,7 @@ export async function startPublishedAppleSignIn(): Promise<{ error?: Error }> {
     href: typeof window !== "undefined" ? window.location.href : null,
   });
 
-  const result = await startManagedAppleOAuth();
-
-  if (result.error) {
-    clearStoredAttempt();
-  }
-
-  return result;
+  return startNativeBrokerAppleOAuth(attemptId, state);
 }
 
 export function clearPublishedAppleAttempt() {
@@ -313,9 +343,14 @@ export function clearPublishedAppleAttempt() {
 
 export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
   try {
+    markAppleUsernameSelectionPending();
+
     if (Capacitor.isNativePlatform()) {
-      await openPublishedAuthPageInSystemBrowser();
-      return {};
+      const attemptId = createAttemptId();
+      const state = createOAuthState();
+      markAttemptStarted(attemptId);
+      markExpectedState(state);
+      return await openNativeBrokerInSystemBrowser(attemptId, state);
     }
 
     // Non-native preview environments: redirect to published auth page

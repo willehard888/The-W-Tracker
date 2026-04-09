@@ -15,6 +15,7 @@ import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import OAuthCallback from "./pages/OAuthCallback";
 import NotFound from "./pages/NotFound";
+import { isAppleUsernameSelectionPending } from "@/lib/apple-username";
 
 // Lazy-loaded pages for code-splitting
 const DailyCheckin = lazy(() => import("./pages/DailyCheckin"));
@@ -34,6 +35,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const IosDebug = lazy(() => import("./pages/IosDebug"));
 const AppleAuthLaunch = lazy(() => import("./pages/AppleAuthLaunch"));
+const AppleUsername = lazy(() => import("./pages/AppleUsername"));
 
 const queryClient = new QueryClient();
 
@@ -48,8 +50,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (loading) return <LazyFallback />;
   if (!user) return <Navigate to="/landing" replace />;
 
+  if (isAppleUsernameSelectionPending() && window.location.pathname !== "/apple-username") {
+    return <Navigate to="/apple-username" replace />;
+  }
+
   const onboardingDone = localStorage.getItem("w_onboarding_done");
-  if (!onboardingDone && window.location.pathname !== "/onboarding") {
+  if (!onboardingDone && window.location.pathname !== "/onboarding" && window.location.pathname !== "/apple-username") {
     return <Navigate to="/onboarding" replace />;
   }
 
@@ -68,6 +74,7 @@ const AppRoutes = () => {
           <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
           <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+          <Route path="/apple-username" element={<ProtectedRoute><AppleUsername /></ProtectedRoute>} />
           <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
           <Route path="/checkin" element={<ProtectedRoute><DailyCheckin /></ProtectedRoute>} />
           <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />

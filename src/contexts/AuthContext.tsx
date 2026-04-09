@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, ReactNode 
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
+import { clearAppleUsernameSelectionPending, isAppleUsernameSelectionPending } from "@/lib/apple-username";
 
 interface AuthContextType {
   user: User | null;
@@ -80,6 +81,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     setProfile(data);
     setIsElite(Boolean(data?.is_elite));
+
+    if (data?.username && isAppleUsernameSelectionPending()) {
+      const fallbackUsername = buildFallbackUsername(authUser);
+      if (data.username !== fallbackUsername) {
+        clearAppleUsernameSelectionPending();
+      }
+    }
   };
 
   const refreshProfile = async () => {
@@ -167,6 +175,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    clearAppleUsernameSelectionPending();
     setProfile(null);
     setIsElite(false);
     setSubscriptionEnd(null);

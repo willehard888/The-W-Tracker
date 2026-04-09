@@ -278,37 +278,16 @@ const Battles = () => {
 
   const handleRespond = async (battleId: string, accept: boolean) => {
     try {
-      if (accept) {
-        // Get both players' current XP to record starting point
-        const battle = battles?.find((b: any) => b.id === battleId);
-        if (!battle) return;
-        const { data: playerProfiles } = await supabase
-          .from("profiles")
-          .select("user_id, xp")
-          .in("user_id", [battle.challenger_id, battle.opponent_id]);
-        const challengerXp = playerProfiles?.find((p) => p.user_id === battle.challenger_id)?.xp ?? 0;
-        const opponentXp = playerProfiles?.find((p) => p.user_id === battle.opponent_id)?.xp ?? 0;
-
-        await supabase
-          .from("battles")
-          .update({
-            status: "active",
-            started_at: new Date().toISOString(),
-            challenger_start_xp: challengerXp,
-            opponent_start_xp: opponentXp,
-          })
-          .eq("id", battleId);
-        toast.success("Battle accepted! ⚔️");
-      } else {
-        await supabase
-          .from("battles")
-          .update({ status: "declined" })
-          .eq("id", battleId);
-        toast("Battle declined");
-      }
+      const { error } = await supabase.rpc("respond_to_battle", {
+        battle_id: battleId,
+        accept,
+      });
+      if (error) throw error;
+      toast.success(accept ? "Battle accepted! ⚔️" : "Battle declined");
       queryClient.invalidateQueries({ queryKey: ["battles"] });
     } catch (err) {
       console.error(err);
+      toast.error("Failed to respond to battle");
     }
   };
 
@@ -326,20 +305,17 @@ const Battles = () => {
     setUploadingProof(battleId);
     try {
       const ext = file.name.split(".").pop();
-      const path = `battle-proofs/${battleId}/${profile.user_id}-${Date.now()}.${ext}`;
+      const path = `${profile.user_id}/battle-${battleId}-${Date.now()}.${ext}`;
       const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, file);
       if (uploadErr) throw uploadErr;
 
       const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
 
-      const battle = battles?.find((b: any) => b.id === battleId);
-      const isChallenger = battle?.challenger_id === profile.user_id;
-      const updateField = isChallenger ? "challenger_proof_url" : "opponent_proof_url";
-
-      await supabase
-        .from("battles")
-        .update({ [updateField]: urlData.publicUrl })
-        .eq("id", battleId);
+      const { error: rpcErr } = await supabase.rpc("submit_battle_proof", {
+        battle_id: battleId,
+        proof_url: urlData.publicUrl,
+      });
+      if (rpcErr) throw rpcErr;
 
       toast.success("Proof uploaded! 📸");
       queryClient.invalidateQueries({ queryKey: ["battles"] });

@@ -130,12 +130,12 @@ export const checkAndAwardBadges = async (userId: string): Promise<BadgeCheckRes
 
     const currentValue = stats[statKey] || 0;
     if (currentValue >= badge.requirement_value) {
-      const { error } = await supabase.from("user_badges").insert({
-        user_id: userId,
-        badge_id: badge.id,
+      const { data: awarded, error } = await supabase.rpc("award_badge_if_earned", {
+        p_user_id: userId,
+        p_badge_id: badge.id,
       });
 
-      if (!error && !firstNewBadge) {
+      if (!error && awarded && !firstNewBadge) {
         firstNewBadge = { badge, isNew: true };
       }
     }

@@ -701,6 +701,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_badge_if_earned: {
+        Args: { p_badge_id: string; p_user_id: string }
+        Returns: boolean
+      }
       ensure_active_leaderboard_season: {
         Args: never
         Returns: {

@@ -113,7 +113,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const syncElite = useCallback(
     async (elite: boolean) => {
       if (!user) return;
-      await supabase.from("profiles").update({ is_elite: elite }).eq("user_id", user.id);
+      await supabase.rpc("set_elite_status", { target_user_id: user.id, elite });
     },
     [user],
   );

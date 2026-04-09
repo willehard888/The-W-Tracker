@@ -41,7 +41,7 @@ const Profile = () => {
       const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, file);
       if (uploadErr) throw uploadErr;
       const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
-      await supabase.from("profiles").update({ avatar_url: urlData.publicUrl }).eq("user_id", profile.user_id);
+      await supabase.rpc("update_own_profile", { new_avatar_url: urlData.publicUrl });
       toast.success("Profile photo updated! 📸");
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       // Force reload profile
@@ -217,7 +217,11 @@ const Profile = () => {
   const handleSetFeatured = async (badgeId: string) => {
     if (!profile) return;
     const newId = profile.featured_badge_id === badgeId ? null : badgeId;
-    await supabase.from("profiles").update({ featured_badge_id: newId } as any).eq("user_id", profile.user_id);
+    if (newId) {
+      await supabase.rpc("update_own_profile", { new_featured_badge_id: newId });
+    } else {
+      await supabase.rpc("update_own_profile", { clear_featured_badge: true });
+    }
     toast.success(newId ? "Title badge set! 🏅" : "Title badge removed");
     queryClient.invalidateQueries({ queryKey: ["profile"] });
     window.location.reload();

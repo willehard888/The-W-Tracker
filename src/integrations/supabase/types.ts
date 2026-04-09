@@ -730,8 +730,22 @@ export type Database = {
         Args: { accept: boolean; battle_id: string }
         Returns: undefined
       }
+      set_elite_status: {
+        Args: { elite: boolean; target_user_id: string }
+        Returns: undefined
+      }
       submit_battle_proof: {
         Args: { battle_id: string; proof_url: string }
+        Returns: undefined
+      }
+      update_own_profile: {
+        Args: {
+          clear_featured_badge?: boolean
+          new_avatar_url?: string
+          new_display_name?: string
+          new_featured_badge_id?: string
+          new_username?: string
+        }
         Returns: undefined
       }
       update_status_tier: {

@@ -248,9 +248,8 @@ const Profile = () => {
 
   if (!profile) return null;
 
-  const tierLabel = profile.status_tier === "elite" ? "Elite" :
-    profile.status_tier === "high_performer" ? "High Performer" :
-    profile.status_tier === "rising" ? "Rising" : "Normal";
+  const tier = profile.status_tier || 'recruit';
+  const tierConfig = getTierConfig(tier);
 
   return (
     <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
@@ -311,15 +310,14 @@ const Profile = () => {
               <span className="font-bold text-gold text-xs">{featuredBadge.name}</span>
             </span>
           )}
-          <span className="text-sm font-bold text-gold bg-gold/10 px-2.5 py-0.5 rounded-full border border-gold/20">
-            {tierLabel}
-          </span>
+          <StatusBadge tier={tier} size="sm" />
           <span className="text-sm text-muted-foreground">• Level {profile.level}</span>
         </div>
 
-        {earnedBadges && earnedBadges.length > 0 && (
-          <div className="mt-4">
-            <BadgeShowcase
+        {/* Tier message */}
+        <p className="text-[10px] text-muted-foreground/50 font-semibold tracking-wider mt-2 italic">
+          {tierConfig.message}
+        </p>
               badges={earnedBadges}
               onBadgeClick={(b) => setPreviewBadge(b)}
             />

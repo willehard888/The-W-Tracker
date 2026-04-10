@@ -763,7 +763,16 @@ export type Database = {
       battle_status: "pending" | "active" | "completed" | "declined" | "voting"
       friendship_status: "pending" | "accepted" | "declined"
       leaderboard_season_status: "active" | "completed"
-      status_tier: "normal" | "rising" | "high_performer" | "elite"
+      status_tier:
+        | "normal"
+        | "rising"
+        | "high_performer"
+        | "elite"
+        | "recruit"
+        | "operator"
+        | "performer"
+        | "apex"
+        | "legend"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -896,7 +905,17 @@ export const Constants = {
       battle_status: ["pending", "active", "completed", "declined", "voting"],
       friendship_status: ["pending", "accepted", "declined"],
       leaderboard_season_status: ["active", "completed"],
-      status_tier: ["normal", "rising", "high_performer", "elite"],
+      status_tier: [
+        "normal",
+        "rising",
+        "high_performer",
+        "elite",
+        "recruit",
+        "operator",
+        "performer",
+        "apex",
+        "legend",
+      ],
     },
   },
 } as const

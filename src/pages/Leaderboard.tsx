@@ -10,6 +10,8 @@ import { useNavigate } from "react-router-dom";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { useEffect, useMemo, useState } from "react";
+import StatusBadge from "@/components/StatusBadge";
+import { getTierConfig } from "@/lib/status-tiers";
 
 type LeaderRow = {
   username: string;
@@ -267,8 +269,17 @@ const Leaderboard = () => {
                 <p className="text-xs text-muted-foreground mt-0.5">Season wins: <span className="text-gold font-semibold">{mySeasonWins}</span></p>
               </div>
             </div>
-            <TrendingUp size={20} className="text-gold" />
+            <div className="flex flex-col items-end gap-1">
+              <StatusBadge tier={profile.status_tier || 'recruit'} size="sm" showAura={false} />
+              <TrendingUp size={16} className="text-gold" />
+            </div>
           </div>
+          {percentile < 50 && (
+            <p className="text-[10px] text-destructive font-semibold mt-2 text-center">⚠️ You're falling behind. Others are gaining.</p>
+          )}
+          {percentile >= 90 && (
+            <p className="text-[10px] text-emerald-400 font-semibold mt-2 text-center">🔥 You're in the top {100 - percentile}%. Don't lose it.</p>
+          )}
         </div>
       )}
 

@@ -501,11 +501,14 @@ export type Database = {
           is_elite: boolean
           level: number
           longest_streak: number
+          rank_score: number
+          rank_score_updated_at: string
           referral_code: string | null
           referral_count: number
           referred_by: string | null
           status_tier: Database["public"]["Enums"]["status_tier"]
           streak: number
+          trust_multiplier: number
           updated_at: string
           user_id: string
           username: string
@@ -520,11 +523,14 @@ export type Database = {
           is_elite?: boolean
           level?: number
           longest_streak?: number
+          rank_score?: number
+          rank_score_updated_at?: string
           referral_code?: string | null
           referral_count?: number
           referred_by?: string | null
           status_tier?: Database["public"]["Enums"]["status_tier"]
           streak?: number
+          trust_multiplier?: number
           updated_at?: string
           user_id: string
           username: string
@@ -539,11 +545,14 @@ export type Database = {
           is_elite?: boolean
           level?: number
           longest_streak?: number
+          rank_score?: number
+          rank_score_updated_at?: string
           referral_code?: string | null
           referral_count?: number
           referred_by?: string | null
           status_tier?: Database["public"]["Enums"]["status_tier"]
           streak?: number
+          trust_multiplier?: number
           updated_at?: string
           user_id?: string
           username?: string
@@ -705,6 +714,7 @@ export type Database = {
         Args: { p_badge_id: string; p_user_id: string }
         Returns: boolean
       }
+      calculate_rank_score: { Args: { p_user_id: string }; Returns: number }
       ensure_active_leaderboard_season: {
         Args: never
         Returns: {
@@ -742,6 +752,7 @@ export type Database = {
         Args: { battle_id: string; proof_url: string }
         Returns: undefined
       }
+      update_all_status_tiers: { Args: never; Returns: undefined }
       update_own_profile: {
         Args: {
           clear_featured_badge?: boolean
@@ -763,7 +774,16 @@ export type Database = {
       battle_status: "pending" | "active" | "completed" | "declined" | "voting"
       friendship_status: "pending" | "accepted" | "declined"
       leaderboard_season_status: "active" | "completed"
-      status_tier: "normal" | "rising" | "high_performer" | "elite"
+      status_tier:
+        | "normal"
+        | "rising"
+        | "high_performer"
+        | "elite"
+        | "recruit"
+        | "operator"
+        | "performer"
+        | "apex"
+        | "legend"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -896,7 +916,17 @@ export const Constants = {
       battle_status: ["pending", "active", "completed", "declined", "voting"],
       friendship_status: ["pending", "accepted", "declined"],
       leaderboard_season_status: ["active", "completed"],
-      status_tier: ["normal", "rising", "high_performer", "elite"],
+      status_tier: [
+        "normal",
+        "rising",
+        "high_performer",
+        "elite",
+        "recruit",
+        "operator",
+        "performer",
+        "apex",
+        "legend",
+      ],
     },
   },
 } as const

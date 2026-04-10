@@ -5,6 +5,8 @@ import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeVault from "@/components/BadgeVault";
 import BadgeShowcase from "@/components/BadgeShowcase";
+import StatusBadge from "@/components/StatusBadge";
+import RankPressureCard from "@/components/RankPressureCard";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -17,6 +19,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow, subDays } from "date-fns";
 import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
+import { getTierConfig } from "@/lib/status-tiers";
 
 const Profile = () => {
   const { profile, signOut, isElite } = useAuth();
@@ -181,6 +184,22 @@ const Profile = () => {
     enabled: !!profile,
   });
 
+  const { data: rankData } = useQuery({
+    queryKey: ["my-rank-profile", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return null;
+      const [{ count: ahead }, { count: total }] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact", head: true }).gt("rank_score" as any, (profile as any).rank_score || 0),
+        supabase.from("profiles").select("*", { count: "exact", head: true }).gt("xp", 0),
+      ]);
+      const rank = (ahead ?? 0) + 1;
+      const totalUsers = total ?? 1;
+      const percentile = Math.max(1, Math.round(((totalUsers - rank) / totalUsers) * 100));
+      return { rank, totalUsers, percentile };
+    },
+    enabled: !!profile,
+  });
+
   useEffect(() => {
     if (!profile?.user_id) return;
     if (syncedBadgesForUserRef.current === profile.user_id) return;
@@ -229,9 +248,8 @@ const Profile = () => {
 
   if (!profile) return null;
 
-  const tierLabel = profile.status_tier === "elite" ? "Elite" :
-    profile.status_tier === "high_performer" ? "High Performer" :
-    profile.status_tier === "rising" ? "Rising" : "Normal";
+  const tier = profile.status_tier || 'recruit';
+  const tierConfig = getTierConfig(tier);
 
   return (
     <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
@@ -292,11 +310,14 @@ const Profile = () => {
               <span className="font-bold text-gold text-xs">{featuredBadge.name}</span>
             </span>
           )}
-          <span className="text-sm font-bold text-gold bg-gold/10 px-2.5 py-0.5 rounded-full border border-gold/20">
-            {tierLabel}
-          </span>
+          <StatusBadge tier={tier} size="sm" />
           <span className="text-sm text-muted-foreground">• Level {profile.level}</span>
         </div>
+
+        {/* Tier message */}
+        <p className="text-[10px] text-muted-foreground/50 font-semibold tracking-wider mt-2 italic">
+          {tierConfig.message}
+        </p>
 
         {earnedBadges && earnedBadges.length > 0 && (
           <div className="mt-4">
@@ -307,6 +328,19 @@ const Profile = () => {
           </div>
         )}
       </div>
+
+      {/* Rank Position */}
+      {rankData && (
+        <div className="animate-reveal animate-reveal-delay-1 mb-3">
+          <RankPressureCard
+            tier={tier}
+            rank={rankData.rank}
+            totalUsers={rankData.totalUsers}
+            percentile={rankData.percentile}
+            rankScore={(profile as any).rank_score}
+          />
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex gap-2 mb-3 animate-reveal animate-reveal-delay-1">

@@ -184,6 +184,22 @@ const Profile = () => {
     enabled: !!profile,
   });
 
+  const { data: rankData } = useQuery({
+    queryKey: ["my-rank-profile", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return null;
+      const [{ count: ahead }, { count: total }] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact", head: true }).gt("rank_score" as any, (profile as any).rank_score || 0),
+        supabase.from("profiles").select("*", { count: "exact", head: true }).gt("xp", 0),
+      ]);
+      const rank = (ahead ?? 0) + 1;
+      const totalUsers = total ?? 1;
+      const percentile = Math.max(1, Math.round(((totalUsers - rank) / totalUsers) * 100));
+      return { rank, totalUsers, percentile };
+    },
+    enabled: !!profile,
+  });
+
   useEffect(() => {
     if (!profile?.user_id) return;
     if (syncedBadgesForUserRef.current === profile.user_id) return;

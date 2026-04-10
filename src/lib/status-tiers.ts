@@ -1,0 +1,167 @@
+/**
+ * Status Tier Configuration — the core hierarchy of The W Tracker
+ * 
+ * Status is earned, visible, competitive, and fragile.
+ */
+
+export type StatusTier = 'recruit' | 'normal' | 'operator' | 'performer' | 'high_performer' | 'elite' | 'apex' | 'legend';
+
+export interface TierConfig {
+  label: string;
+  shortLabel: string;
+  emoji: string;
+  percentile: string;
+  message: string;
+  pressureMessage: string;
+  color: string;
+  borderClass: string;
+  bgClass: string;
+  textClass: string;
+  glowClass: string;
+  auraSize: 'none' | 'small' | 'medium' | 'large' | 'huge';
+  badgeVariant: string;
+  rank: number; // 0=lowest
+}
+
+export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
+  recruit: {
+    label: "Recruit",
+    shortLabel: "REC",
+    emoji: "⬛",
+    percentile: "Bottom 50%",
+    message: "You haven't earned your place yet",
+    pressureMessage: "Others are moving ahead of you",
+    color: "muted",
+    borderClass: "border-border",
+    bgClass: "bg-secondary/30",
+    textClass: "text-muted-foreground",
+    glowClass: "",
+    auraSize: 'none',
+    badgeVariant: "default",
+    rank: 0,
+  },
+  normal: {
+    label: "Recruit",
+    shortLabel: "REC",
+    emoji: "⬛",
+    percentile: "Bottom 50%",
+    message: "You haven't earned your place yet",
+    pressureMessage: "Others are moving ahead of you",
+    color: "muted",
+    borderClass: "border-border",
+    bgClass: "bg-secondary/30",
+    textClass: "text-muted-foreground",
+    glowClass: "",
+    auraSize: 'none',
+    badgeVariant: "default",
+    rank: 0,
+  },
+  operator: {
+    label: "Operator",
+    shortLabel: "OPR",
+    emoji: "🟢",
+    percentile: "Top 50%",
+    message: "You're in the game",
+    pressureMessage: "Don't lose your position",
+    color: "teal",
+    borderClass: "border-[hsl(var(--teal))]/30",
+    bgClass: "bg-[hsl(var(--teal))]/5",
+    textClass: "text-[hsl(var(--teal))]",
+    glowClass: "",
+    auraSize: 'none',
+    badgeVariant: "teal",
+    rank: 1,
+  },
+  performer: {
+    label: "Performer",
+    shortLabel: "PRF",
+    emoji: "🔵",
+    percentile: "Top 25%",
+    message: "Rising through the ranks",
+    pressureMessage: "You're ahead — for now",
+    color: "blue",
+    borderClass: "border-[hsl(210_90%_56%)]/30",
+    bgClass: "bg-[hsl(210_90%_56%)]/5",
+    textClass: "text-[hsl(210_90%_56%)]",
+    glowClass: "shadow-[0_0_12px_hsl(210_90%_56%/0.15)]",
+    auraSize: 'none',
+    badgeVariant: "blue",
+    rank: 2,
+  },
+  high_performer: {
+    label: "High Performer",
+    shortLabel: "HPR",
+    emoji: "🟣",
+    percentile: "Top 10%",
+    message: "The top notice you now",
+    pressureMessage: "Others are catching up",
+    color: "purple",
+    borderClass: "border-[hsl(var(--purple))]/40",
+    bgClass: "bg-[hsl(var(--purple))]/5",
+    textClass: "text-[hsl(var(--purple))]",
+    glowClass: "shadow-[0_0_16px_hsl(var(--purple)/0.2)]",
+    auraSize: 'small',
+    badgeVariant: "purple",
+    rank: 3,
+  },
+  elite: {
+    label: "Elite",
+    shortLabel: "ELT",
+    emoji: "👑",
+    percentile: "Top 5%",
+    message: "You are now visible",
+    pressureMessage: "Don't lose your status",
+    color: "gold",
+    borderClass: "border-gold/50",
+    bgClass: "bg-gold/5",
+    textClass: "text-gold",
+    glowClass: "shadow-[0_0_20px_hsl(var(--gold)/0.25)]",
+    auraSize: 'medium',
+    badgeVariant: "gold",
+    rank: 4,
+  },
+  apex: {
+    label: "Apex",
+    shortLabel: "APX",
+    emoji: "⚡",
+    percentile: "Top 1%",
+    message: "Among the elite few",
+    pressureMessage: "Every day matters at this level",
+    color: "apex",
+    borderClass: "border-[hsl(18_95%_58%)]/50",
+    bgClass: "bg-gradient-to-br from-[hsl(18_95%_58%)]/8 to-gold/5",
+    textClass: "text-[hsl(18_95%_58%)]",
+    glowClass: "shadow-[0_0_24px_hsl(18_95%_58%/0.3)]",
+    auraSize: 'large',
+    badgeVariant: "apex",
+    rank: 5,
+  },
+  legend: {
+    label: "Legend",
+    shortLabel: "LGD",
+    emoji: "🔱",
+    percentile: "Top 0.1%",
+    message: "Few ever reach this",
+    pressureMessage: "The world is watching",
+    color: "legend",
+    borderClass: "border-[hsl(280_70%_60%)]/50",
+    bgClass: "bg-gradient-to-br from-[hsl(280_70%_55%)]/10 via-gold/5 to-[hsl(350_80%_55%)]/5",
+    textClass: "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(280_70%_65%)] via-gold to-[hsl(350_80%_60%)]",
+    glowClass: "shadow-[0_0_32px_hsl(280_70%_60%/0.4)]",
+    auraSize: 'huge',
+    badgeVariant: "legend",
+    rank: 6,
+  },
+};
+
+export const getTierConfig = (tier: string): TierConfig => {
+  return TIER_CONFIG[tier as StatusTier] || TIER_CONFIG.recruit;
+};
+
+export const TIER_ORDER: StatusTier[] = ['recruit', 'operator', 'performer', 'high_performer', 'elite', 'apex', 'legend'];
+
+export const getNextTier = (current: string): TierConfig | null => {
+  const idx = TIER_ORDER.indexOf(current as StatusTier);
+  if (idx < 0 || idx >= TIER_ORDER.length - 1) return null;
+  return TIER_CONFIG[TIER_ORDER[idx + 1]];
+};

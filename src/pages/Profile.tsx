@@ -318,12 +318,29 @@ const Profile = () => {
         <p className="text-[10px] text-muted-foreground/50 font-semibold tracking-wider mt-2 italic">
           {tierConfig.message}
         </p>
+
+        {earnedBadges && earnedBadges.length > 0 && (
+          <div className="mt-4">
+            <BadgeShowcase
               badges={earnedBadges}
               onBadgeClick={(b) => setPreviewBadge(b)}
             />
           </div>
         )}
       </div>
+
+      {/* Rank Position */}
+      {rankData && (
+        <div className="animate-reveal animate-reveal-delay-1 mb-3">
+          <RankPressureCard
+            tier={tier}
+            rank={rankData.rank}
+            totalUsers={rankData.totalUsers}
+            percentile={rankData.percentile}
+            rankScore={(profile as any).rank_score}
+          />
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex gap-2 mb-3 animate-reveal animate-reveal-delay-1">

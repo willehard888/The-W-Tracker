@@ -5,6 +5,8 @@ import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeVault from "@/components/BadgeVault";
 import BadgeShowcase from "@/components/BadgeShowcase";
+import StatusBadge from "@/components/StatusBadge";
+import RankPressureCard from "@/components/RankPressureCard";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -17,6 +19,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow, subDays } from "date-fns";
 import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
+import { getTierConfig } from "@/lib/status-tiers";
 
 const Profile = () => {
   const { profile, signOut, isElite } = useAuth();

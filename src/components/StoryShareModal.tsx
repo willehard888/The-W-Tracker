@@ -31,13 +31,17 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
       const card = cardRef.current;
       const canvas = document.createElement("canvas");
       const scale = 3;
-      canvas.width = card.offsetWidth * scale;
-      canvas.height = card.offsetHeight * scale;
+      const w = 1080;
+      const h = 1440; // 3:4 aspect
+      canvas.width = w;
+      canvas.height = h;
       const ctx = canvas.getContext("2d")!;
-      ctx.scale(scale, scale);
+      const s = w / card.offsetWidth;
+      ctx.scale(s, s);
+      const cardH = h / s;
 
       // Background gradient based on tier
-      const gradient = ctx.createLinearGradient(0, 0, card.offsetWidth, card.offsetHeight);
+      const gradient = ctx.createLinearGradient(0, 0, card.offsetWidth, cardH);
       if (tier === 'legend') {
         gradient.addColorStop(0, "#1a0a2e");
         gradient.addColorStop(0.5, "#0d1117");
@@ -53,7 +57,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
         gradient.addColorStop(1, "#060810");
       }
       ctx.fillStyle = gradient;
-      ctx.roundRect(0, 0, card.offsetWidth, card.offsetHeight, 24);
+      ctx.roundRect(0, 0, card.offsetWidth, cardH, 24);
       ctx.fill();
 
       // Top accent line
@@ -77,7 +81,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
       ctx.fillRect(30, 14, card.offsetWidth - 60, 3);
 
       // Bottom accent
-      ctx.fillRect(30, card.offsetHeight - 17, card.offsetWidth - 60, 1);
+      ctx.fillRect(30, cardH - 17, card.offsetWidth - 60, 1);
 
       // Title
       ctx.fillStyle = "rgba(202, 158, 62, 0.9)";
@@ -140,7 +144,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
 
         ctx.fillStyle = "rgba(255,255,255,0.2)";
         ctx.font = "700 9px 'Inter', system-ui, sans-serif";
-        ctx.fillText("DISCIPLINE IS THE NEW FLEX", card.offsetWidth / 2, 310);
+        ctx.fillText("DISCIPLINE IS THE NEW FLEX", card.offsetWidth / 2, cardH - 30);
 
       } else if (variant === "streak") {
         ctx.fillStyle = "#f0ece4";
@@ -177,7 +181,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
 
         ctx.fillStyle = "rgba(255,255,255,0.12)";
         ctx.font = "600 8px 'Inter', system-ui, sans-serif";
-        ctx.fillText(`Best: ${profile.longest_streak} days`, card.offsetWidth / 2, 312);
+        ctx.fillText(`Best: ${profile.longest_streak} days`, card.offsetWidth / 2, cardH - 30);
 
       } else if (variant === "badge" && badgeData) {
         ctx.fillStyle = "#f0ece4";
@@ -211,7 +215,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
 
         ctx.fillStyle = "rgba(255,255,255,0.2)";
         ctx.font = "600 9px 'Inter', system-ui, sans-serif";
-        ctx.fillText("BADGE UNLOCKED", card.offsetWidth / 2, 310);
+        ctx.fillText("BADGE UNLOCKED", card.offsetWidth / 2, cardH - 30);
       }
 
       canvas.toBlob((blob) => {

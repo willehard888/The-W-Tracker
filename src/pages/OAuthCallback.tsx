@@ -22,6 +22,12 @@ function buildNativeCallbackUrl(merged: URLSearchParams): string {
   return `${scheme}://oauth/callback${qs ? `?${qs}` : ""}`;
 }
 
+function buildAppCallbackUrlFromCurrentLocation() {
+  const url = new URL(window.location.href);
+  const merged = mergeTokensToQuery(url.toString());
+  return buildNativeCallbackUrl(merged);
+}
+
 function openNativeApp(deepLink: string) {
   window.location.replace(deepLink);
 
@@ -111,10 +117,11 @@ const OAuthCallback = () => {
 
         // ① iOS external browser → forward tokens to native app via URL scheme
         if (hasOAuthParams(merged) && (isIOSExternalBrowser() || shouldForceNativeHandoff(merged))) {
-          const deepLink = buildNativeCallbackUrl(merged);
+          const deepLink = buildAppCallbackUrlFromCurrentLocation();
           console.log("[OAuthCB] Redirecting to native app:", deepLink);
           clearPublishedAppleAttempt();
           updateOauthDebug({
+            callbackUrl: window.location.href,
             deepLinkUrl: deepLink,
             handoffToApp: true,
           });
@@ -181,8 +188,7 @@ const OAuthCallback = () => {
         </p>
         <button
           onClick={() => {
-            const merged = mergeTokensToQuery(window.location.href);
-            openNativeApp(buildNativeCallbackUrl(merged));
+              openNativeApp(buildAppCallbackUrlFromCurrentLocation());
           }}
           className="text-gold underline text-sm"
         >

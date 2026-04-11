@@ -3,13 +3,10 @@ import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 import { markAppleUsernameSelectionPending } from "@/lib/apple-username";
 
 const PRODUCTION_URL = "https://status-level-up.lovable.app";
-const OAUTH_BROKER = "/~oauth/initiate";
-const OAUTH_CALLBACK = "/~oauth/callback";
+const WEB_OAUTH_CALLBACK = "/oauth/callback";
 const APPLE_AUTH_LAUNCH = "/apple-auth-launch";
 const APP_SCHEME = "app.lovable.wtracker";
-const PUBLISHED_CALLBACK_URL = `${PRODUCTION_URL}${OAUTH_CALLBACK}`;
 const PUBLISHED_LAUNCH_ATTEMPT_KEY = "w_apple_launch_attempt";
-const PUBLISHED_OAUTH_STATE_KEY = "w_apple_oauth_state";
 
 function createCacheBuster() {
   return `${Date.now()}`;
@@ -17,16 +14,6 @@ function createCacheBuster() {
 
 function createAttemptId() {
   return `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function createOAuthState() {
-  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
-    return [...crypto.getRandomValues(new Uint8Array(16))]
-      .map((byte) => byte.toString(16).padStart(2, "0"))
-      .join("");
-  }
-
-  return `${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
 }
 
 function getSearchParams() {
@@ -53,25 +40,6 @@ function clearStoredAttempt() {
   window.sessionStorage.removeItem(PUBLISHED_LAUNCH_ATTEMPT_KEY);
 }
 
-function getRequestedState() {
-  return getSearchParams().get("state");
-}
-
-function markExpectedState(state: string) {
-  if (typeof window === "undefined") return;
-  window.sessionStorage.setItem(PUBLISHED_OAUTH_STATE_KEY, state);
-}
-
-export function getStoredAppleOAuthState() {
-  if (typeof window === "undefined") return null;
-  return window.sessionStorage.getItem(PUBLISHED_OAUTH_STATE_KEY);
-}
-
-function clearStoredOAuthState() {
-  if (typeof window === "undefined") return;
-  window.sessionStorage.removeItem(PUBLISHED_OAUTH_STATE_KEY);
-}
-
 function shouldForceNativeHandoff(): boolean {
   if (Capacitor.isNativePlatform()) return true;
   if (typeof window === "undefined") return false;
@@ -90,27 +58,9 @@ function shouldUsePublishedAuthPage(): boolean {
 
 function getPublishedAuthUrl(): string {
   const url = new URL(APPLE_AUTH_LAUNCH, PRODUCTION_URL);
-  const state = createOAuthState();
-
-  markExpectedState(state);
   url.searchParams.set("native_handoff", "1");
   url.searchParams.set("app_scheme", APP_SCHEME);
   url.searchParams.set("attempt", createAttemptId());
-  url.searchParams.set("state", state);
-  url.searchParams.set("cb", createCacheBuster());
-  return url.toString();
-}
-
-function getNativeAppCallbackUrl() {
-  return `${APP_SCHEME}://oauth/callback`;
-}
-
-function getNativeBrokerUrl(state: string, attemptId: string) {
-  const url = new URL(OAUTH_BROKER, PRODUCTION_URL);
-  url.searchParams.set("provider", "apple");
-  url.searchParams.set("redirect_uri", getNativeAppCallbackUrl());
-  url.searchParams.set("state", state);
-  url.searchParams.set("attempt", attemptId);
   url.searchParams.set("cb", createCacheBuster());
   return url.toString();
 }
@@ -151,54 +101,20 @@ async function openPublishedAuthPageInSystemBrowser() {
   }
 }
 
-async function openNativeBrokerInSystemBrowser(attemptId: string, state: string): Promise<{ error?: Error }> {
-  const brokerUrl = getNativeBrokerUrl(state, attemptId);
-
-  updateOauthDebug({
-    redirectUri: getNativeAppCallbackUrl(),
-    sentState: state,
-    error: null,
-    errorDescription: null,
-    sessionApplied: null,
-    deepLinkUrl: null,
-    handoffToApp: true,
-  });
-
-  pushIosDebugLog("AppleAuth", "Opening broker directly in system browser with deep link callback", {
-    brokerUrl,
-    callbackUrl: getNativeAppCallbackUrl(),
-    state,
-    attemptId,
-  });
-
-  try {
-    await openUrlOutsideApp(brokerUrl);
-    return {};
-  } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err));
-    clearPublishedAppleAttempt();
-    updateOauthDebug({ error: error.message });
-    pushIosDebugLog("AppleAuth", "Failed to open native broker URL", {
-      brokerUrl,
-      message: error.message,
-    });
-    return { error };
-  }
-}
-
 function getAppleRedirectUri(): string {
-  const callbackUrl = new URL(OAUTH_CALLBACK, PRODUCTION_URL);
+  const callbackUrl = new URL(WEB_OAUTH_CALLBACK, PRODUCTION_URL);
+  const attemptId = getCurrentAttemptId();
 
   if (shouldForceNativeHandoff()) {
     callbackUrl.searchParams.set("native_handoff", "1");
     callbackUrl.searchParams.set("app_scheme", APP_SCHEME);
   }
 
-  callbackUrl.searchParams.set("cb", createCacheBuster());
-
-  if (typeof window !== "undefined" && window.location.origin === PRODUCTION_URL) {
-    return callbackUrl.toString();
+  if (attemptId) {
+    callbackUrl.searchParams.set("attempt", attemptId);
   }
+
+  callbackUrl.searchParams.set("cb", createCacheBuster());
 
   return callbackUrl.toString();
 }
@@ -257,7 +173,7 @@ async function startManagedAppleOAuth(): Promise<{ error?: Error }> {
     redirectUri,
     appScheme: APP_SCHEME,
     currentOrigin: typeof window !== "undefined" ? window.location.origin : null,
-    usingPublishedCallback: redirectUri === PUBLISHED_CALLBACK_URL,
+    usingPublishedCallback: redirectUri.startsWith(`${PRODUCTION_URL}${WEB_OAUTH_CALLBACK}`),
     forceNativeHandoff: shouldForceNativeHandoff(),
     nativeUsesWebCallback: Capacitor.isNativePlatform(),
     platform: Capacitor.getPlatform(),
@@ -288,33 +204,8 @@ async function startManagedAppleOAuth(): Promise<{ error?: Error }> {
   return {};
 }
 
-function startNativeBrokerAppleOAuth(attemptId: string, state: string): { error?: Error } {
-  const brokerUrl = getNativeBrokerUrl(state, attemptId);
-
-  updateOauthDebug({
-    redirectUri: getNativeAppCallbackUrl(),
-    sentState: state,
-    error: null,
-    errorDescription: null,
-    sessionApplied: null,
-    deepLinkUrl: null,
-    handoffToApp: true,
-  });
-
-  pushIosDebugLog("AppleAuth", "Starting native broker Apple OAuth flow", {
-    attemptId,
-    state,
-    brokerUrl,
-    callbackUrl: getNativeAppCallbackUrl(),
-  });
-
-  window.location.href = brokerUrl;
-  return {};
-}
-
 export async function startPublishedAppleSignIn(): Promise<{ error?: Error }> {
   const attemptId = getCurrentAttemptId() ?? createAttemptId();
-  const state = getRequestedState() ?? createOAuthState();
   const alreadyStarted = getStoredAttemptId() === attemptId;
 
   if (alreadyStarted) {
@@ -326,19 +217,16 @@ export async function startPublishedAppleSignIn(): Promise<{ error?: Error }> {
   }
 
   markAttemptStarted(attemptId);
-  markExpectedState(state);
   pushIosDebugLog("AppleAuth", "Starting published Apple launch", {
     attemptId,
-    state,
     href: typeof window !== "undefined" ? window.location.href : null,
   });
 
-  return startNativeBrokerAppleOAuth(attemptId, state);
+  return startManagedAppleOAuth();
 }
 
 export function clearPublishedAppleAttempt() {
   clearStoredAttempt();
-  clearStoredOAuthState();
 }
 
 export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
@@ -346,11 +234,8 @@ export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
     markAppleUsernameSelectionPending();
 
     if (Capacitor.isNativePlatform()) {
-      const attemptId = createAttemptId();
-      const state = createOAuthState();
-      markAttemptStarted(attemptId);
-      markExpectedState(state);
-      return await openNativeBrokerInSystemBrowser(attemptId, state);
+      await openPublishedAuthPageInSystemBrowser();
+      return {};
     }
 
     // Non-native preview environments: redirect to published auth page

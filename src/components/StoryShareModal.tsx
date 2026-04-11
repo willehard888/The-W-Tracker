@@ -256,18 +256,18 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
     tier === 'elite' ? "border-gold/30" : "border-gold/15";
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center px-6" onClick={onClose}>
+    <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center px-4 pb-6 sm:pb-0" onClick={onClose}>
       <div className="absolute inset-0 bg-background/90 backdrop-blur-md" />
 
-      <div className="relative flex flex-col items-center gap-4 w-full max-w-[320px]" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute -top-2 -right-2 z-10 p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
+      <div className="relative flex flex-col items-center gap-3 w-full max-w-[320px]" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute -top-1 -right-1 z-10 p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
           <X size={16} />
         </button>
 
         {/* Preview Card */}
         <div
           ref={cardRef}
-          className={cn("w-full aspect-[9/16] max-h-[360px] rounded-2xl overflow-hidden relative border", cardBorderGlow)}
+          className={cn("w-full aspect-[3/4] rounded-2xl overflow-hidden relative border", cardBorderGlow)}
           style={{
             background: tier === 'legend' ? "linear-gradient(160deg, #1a0a2e, #0d1117, #1a0515)"
               : tier === 'apex' ? "linear-gradient(160deg, #1a0f08, #0d1117)"
@@ -288,12 +288,12 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
           />
 
           {/* Bottom accent */}
-          <div className="absolute bottom-4 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
+          <div className="absolute bottom-3 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
 
           <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-            <p className="text-[9px] font-bold tracking-[0.3em] text-gold/80 mb-1">THE W TRACKER</p>
+            <p className="text-[10px] font-bold tracking-[0.3em] text-gold/80 mb-1">THE W TRACKER</p>
             <p className={cn(
-              "text-[8px] font-black tracking-[0.2em] mb-4",
+              "text-[9px] font-black tracking-[0.2em] mb-3",
               tier === 'legend' ? "text-[hsl(280_70%_65%)]" :
               tier === 'apex' ? "text-[hsl(18_95%_58%)]" :
               tier === 'elite' ? "text-gold" : "text-muted-foreground/50"
@@ -303,23 +303,23 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
 
             {variant === "stats" && (
               <>
-                <p className="font-display text-lg font-black text-foreground mb-4">@{profile.username}</p>
+                <p className="font-display text-lg font-black text-foreground mb-3">@{profile.username}</p>
                 <p className={cn(
-                  "font-display text-5xl font-black mb-0.5",
+                  "font-display text-4xl font-black mb-0.5",
                   tier === 'legend' ? "bg-gradient-to-r from-[hsl(280_70%_65%)] via-gold to-[hsl(350_80%_60%)] bg-clip-text text-transparent" :
                   "text-gold glow-gold-text"
                 )}>
                   {profile.xp.toLocaleString()}
                 </p>
                 <p className="text-[10px] text-gold/50 font-bold tracking-wider mb-5">TOTAL XP</p>
-                <div className="flex gap-6">
+                <div className="flex gap-5">
                   {[
                     { v: `🔥 ${profile.streak}d`, l: "STREAK" },
                     { v: `⚡ ${profile.level}`, l: "LEVEL" },
                     { v: `🏆 ${profile.longest_streak}d`, l: "BEST" },
                   ].map((s) => (
                     <div key={s.l} className="text-center">
-                      <p className="font-display text-base font-black">{s.v}</p>
+                      <p className="font-display text-sm font-black">{s.v}</p>
                       <p className="text-[7px] text-muted-foreground font-bold tracking-wider">{s.l}</p>
                     </div>
                   ))}
@@ -330,16 +330,16 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
             {variant === "streak" && (
               <>
                 <p className="font-display text-base font-black text-foreground mb-2">@{profile.username}</p>
-                <p className="text-5xl mb-1" style={{ filter: "drop-shadow(0 0 20px rgba(235, 87, 27, 0.5))" }}>🔥</p>
+                <p className="text-4xl mb-1" style={{ filter: "drop-shadow(0 0 20px rgba(235, 87, 27, 0.5))" }}>🔥</p>
                 <p className={cn(
-                  "font-display text-5xl font-black",
+                  "font-display text-4xl font-black",
                   tier === 'legend' ? "bg-gradient-to-r from-[hsl(280_70%_65%)] via-gold to-[hsl(350_80%_60%)] bg-clip-text text-transparent" :
                   "text-gold glow-gold-text"
                 )}>
                   {profile.streak}
                 </p>
-                <p className="font-display text-xl font-black text-gold/80">DAY STREAK</p>
-                <p className="text-[9px] text-muted-foreground/40 font-bold mt-3">
+                <p className="font-display text-lg font-black text-gold/80">DAY STREAK</p>
+                <p className="text-[9px] text-muted-foreground/40 font-bold mt-2">
                   {profile.streak >= 30 ? "MOST FAIL BEFORE THIS →" : profile.streak >= 7 ? "DON'T BREAK NOW →" : "BEAT MY STREAK →"}
                 </p>
                 <p className="text-[8px] text-muted-foreground/25 mt-1">Best: {profile.longest_streak} days</p>
@@ -348,8 +348,8 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
 
             {variant === "badge" && badgeData && (
               <>
-                <p className="font-display text-base font-black text-foreground mb-3">@{profile.username}</p>
-                <p className="text-5xl mb-2" style={{
+                <p className="font-display text-base font-black text-foreground mb-2">@{profile.username}</p>
+                <p className="text-4xl mb-2" style={{
                   filter: badgeData.rarity === 'legendary' ? "drop-shadow(0 0 20px rgba(202, 158, 62, 0.6))" :
                           badgeData.rarity === 'epic' ? "drop-shadow(0 0 15px rgba(138, 79, 255, 0.5))" : "none",
                 }}>{badgeData.icon}</p>
@@ -374,12 +374,12 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 w-full">
-          <Button variant="gold" size="lg" className="flex-1" onClick={handleDownload} disabled={downloading}>
+        <div className="flex gap-2 w-full pb-safe">
+          <Button variant="gold" size="default" className="flex-1" onClick={handleDownload} disabled={downloading}>
             <Download size={16} />
             {downloading ? "Saving..." : "Save Image"}
           </Button>
-          <Button variant="gold-outline" size="lg" className="flex-1" onClick={handleShare}>
+          <Button variant="gold-outline" size="default" className="flex-1" onClick={handleShare}>
             <Share2 size={16} />
             Share
           </Button>

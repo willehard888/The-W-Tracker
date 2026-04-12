@@ -6,20 +6,21 @@ import { applySessionFromUrl } from "@/lib/oauth-session";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 import { toast } from "sonner";
 
-let lastHandledUrl: string | null = null;
+let oauthHandled = false;
 
 async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
-  if (!url || url === lastHandledUrl) return;
-  lastHandledUrl = url;
+  if (!url || oauthHandled) return;
 
-  console.log(`[DeepLink] Received ${source} URL:`, url);
+  // Only handle OAuth callback URLs
+  if (!url.includes("access_token") && !url.includes("refresh_token")) return;
+
+  oauthHandled = true;
+  console.log(`[DeepLink] Processing ${source} OAuth callback`);
 
   try {
     const parsed = new URL(url, window.location.origin);
     const search = parsed.searchParams;
     const hash = new URLSearchParams(parsed.hash.startsWith("#") ? parsed.hash.slice(1) : parsed.hash);
-    const hasAccessToken = search.has("access_token") || hash.has("access_token");
-    const hasRefreshToken = search.has("refresh_token") || hash.has("refresh_token");
 
     updateOauthDebug({
       callbackUrl: url,
@@ -28,44 +29,32 @@ async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
       deepLinkUrl: url,
       handoffToApp: false,
       returnedState: search.get("state") ?? hash.get("state"),
-      error: search.get("error") ?? hash.get("error"),
-      errorDescription: search.get("error_description") ?? hash.get("error_description"),
-      hasAccessToken,
-      hasRefreshToken,
+      hasAccessToken: search.has("access_token") || hash.has("access_token"),
+      hasRefreshToken: search.has("refresh_token") || hash.has("refresh_token"),
       sessionApplied: null,
     });
 
-    pushIosDebugLog("DeepLink", "Native OAuth callback received", {
-      source,
-      url,
-      hasAccessToken,
-      hasRefreshToken,
-    });
+    pushIosDebugLog("DeepLink", "Native OAuth callback received", { source, url: url.slice(0, 120) + "..." });
 
     const didApplySession = await applySessionFromUrl(url);
     updateOauthDebug({ sessionApplied: didApplySession });
 
     if (!didApplySession) {
-      pushIosDebugLog("DeepLink", "No OAuth tokens found in callback URL", { source, url });
-      toast.error("Sign in failed — no session received. Please try again.");
+      pushIosDebugLog("DeepLink", "No session from callback", { source });
+      toast.error("Sign in failed. Please try again.");
+      oauthHandled = false;
       return;
     }
 
     pushIosDebugLog("DeepLink", "OAuth session applied successfully", { source });
 
-    import("@capacitor/browser")
-      .then(({ Browser }) => Browser.close())
-      .catch(() => {
-        // Browser plugin may not be available in all environments
-      });
-
-    window.location.replace("/");
+    // Don't reload — AuthContext will pick up the session change automatically
   } catch (e) {
-    console.error("[DeepLink] Error handling deep link:", e);
+    console.error("[DeepLink] Error:", e);
     const message = e instanceof Error ? e.message : String(e);
     toast.error(`Sign in error: ${message}`);
     updateOauthDebug({ error: message });
-    pushIosDebugLog("DeepLink", "Deep link processing failed", { source, message, url });
+    oauthHandled = false;
   }
 }
 

@@ -248,7 +248,7 @@ const EliteFeed = () => {
     mutationFn: async ({ postId, receiverId }: { postId: string; receiverId: string }) => {
       if (!user || !isElite) return;
       if (kudosRemaining <= 0) {
-        throw new Error("Kuukausittaiset kudosit käytetty");
+        throw new Error("Monthly kudos used up");
       }
       const alreadyGiven = userKudosPosts?.includes(postId);
       if (alreadyGiven) {

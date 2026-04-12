@@ -192,7 +192,7 @@ const Paywall = () => {
           <div className="rounded-xl glass-card-gold p-6 text-center space-y-4 gradient-border-animated">
             <p className="text-lg font-display font-black text-gold mb-1">
               {displayPrice}
-              <span className="text-sm font-semibold text-muted-foreground">/kk</span>
+              <span className="text-sm font-semibold text-muted-foreground">/mo</span>
             </p>
             <p className="text-xs text-muted-foreground">Elite Membership</p>
 
@@ -204,7 +204,7 @@ const Paywall = () => {
               onClick={isNative ? handleNativePurchase : handleStripeCheckout}
             >
               {purchasing ? <Loader2 size={18} className="animate-spin" /> : <Crown size={18} />}
-              Unlock Elite — {displayPrice}/kk
+              Unlock Elite — {displayPrice}/mo
             </Button>
           </div>
         )}

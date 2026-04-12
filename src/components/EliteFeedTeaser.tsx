@@ -100,7 +100,7 @@ const EliteFeedTeaser = () => {
                 onClick={() => navigate("/paywall")}
               >
                 <Crown size={18} />
-                Unlock Elite — €4.99/kk
+                Unlock Elite — $4.99/mo
               </Button>
 
               <p className="text-[10px] text-muted-foreground mt-3 tracking-wider uppercase">

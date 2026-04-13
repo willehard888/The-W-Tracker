@@ -1,6 +1,6 @@
 import { Flame, ChevronRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEffect, useRef } from "react";
+import { getEffectiveStreak, getStreakDeadlineState } from "@/lib/streak";
 
 interface StreakDisplayProps {
   streak: number;
@@ -28,7 +28,6 @@ const getStreakTier = (streak: number) => {
   return { name: "Start", color: "muted", index: -1 };
 };
 
-// Floating particle component for 60+/100+ tiers
 const StreakParticles = ({ isDiamond, isLegendary }: { isDiamond: boolean; isLegendary: boolean }) => {
   const particles = isLegendary ? 12 : 6;
   const colors = isLegendary
@@ -67,33 +66,20 @@ const StreakParticles = ({ isDiamond, isLegendary }: { isDiamond: boolean; isLeg
 };
 
 const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: StreakDisplayProps) => {
-  const tier = getStreakTier(streak);
+  const displayStreak = getEffectiveStreak(streak, lastCheckinAt);
+  const deadline = getStreakDeadlineState(streak, lastCheckinAt);
+  const tier = getStreakTier(displayStreak);
   const isHot = tier.index >= 1;
-  const isOnFire = tier.index >= 2;   // 14+
-  const isBlazing = tier.index >= 3;  // 30+
-  const isDiamond = tier.index >= 4;  // 60+
-  const isLegendary = tier.index >= 5; // 100+
+  const isOnFire = tier.index >= 2;
+  const isBlazing = tier.index >= 3;
+  const isDiamond = tier.index >= 4;
+  const isLegendary = tier.index >= 5;
 
-
-  // Calculate time until streak loss (48h from last checkin)
-  const getStreakDeadline = () => {
-    if (!lastCheckinAt || streak === 0) return null;
-    const deadlineMs = new Date(lastCheckinAt).getTime() + 48 * 60 * 60 * 1000;
-    const remainingMs = deadlineMs - Date.now();
-    if (remainingMs <= 0) return { expired: true, hours: 0, mins: 0, urgent: true };
-    const hours = Math.floor(remainingMs / (1000 * 60 * 60));
-    const mins = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
-    const urgent = hours < 6;
-    return { expired: false, hours, mins, urgent };
-  };
-
-  const deadline = getStreakDeadline();
-
-  const currentMilestone = [...MILESTONES].reverse().find((m) => streak >= m.days);
-  const nextMilestone = MILESTONES.find((m) => streak < m.days);
+  const currentMilestone = [...MILESTONES].reverse().find((m) => displayStreak >= m.days);
+  const nextMilestone = MILESTONES.find((m) => displayStreak < m.days);
   const prevDays = currentMilestone?.days || 0;
   const nextDays = nextMilestone?.days || 365;
-  const segmentProgress = Math.min(100, ((streak - prevDays) / (nextDays - prevDays)) * 100);
+  const segmentProgress = Math.min(100, ((displayStreak - prevDays) / (nextDays - prevDays)) * 100);
 
   return (
     <div

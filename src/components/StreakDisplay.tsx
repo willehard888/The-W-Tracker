@@ -173,7 +173,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
                   isLegendary && "streak-legendary-text animate-[streak-number-pulse_1.8s_ease-in-out_infinite]"
                 )}
               >
-                {streak}
+                {displayStreak}
               </span>
               <span className="text-sm font-bold text-muted-foreground">days</span>
             </div>
@@ -293,7 +293,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
                     : "text-foreground"
                 )}
               >
-                {nextMilestone.days - streak}d
+                {nextMilestone.days - displayStreak}d
               </span>{" "}
               to {nextMilestone.emoji} {nextMilestone.label} milestone
             </p>

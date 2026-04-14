@@ -326,7 +326,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
         )}
 
         {/* Streak deadline warning */}
-        {deadline && streak > 0 && (
+        {deadline && displayStreak > 0 && (
           <div className={cn(
             "flex items-center justify-between mt-2 pt-2 border-t",
             deadline.expired

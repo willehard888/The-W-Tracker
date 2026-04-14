@@ -98,24 +98,26 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
       ctx.fillText(`${tierConfig.emoji} ${tierConfig.label.toUpperCase()}`, card.offsetWidth / 2, 60);
 
       if (variant === "stats") {
+        const centerY = cardH / 2;
+        
         ctx.fillStyle = "#f0ece4";
         ctx.font = "800 26px 'Space Grotesk', system-ui, sans-serif";
-        ctx.fillText(`@${profile.username}`, card.offsetWidth / 2, 100);
+        ctx.fillText(`@${profile.username}`, card.offsetWidth / 2, centerY - 80);
 
         // XP with glow effect
         ctx.shadowColor = "rgba(202, 158, 62, 0.5)";
         ctx.shadowBlur = 20;
         ctx.fillStyle = "rgba(202, 158, 62, 1)";
         ctx.font = "900 56px 'Space Grotesk', system-ui, sans-serif";
-        ctx.fillText(`${profile.xp.toLocaleString()}`, card.offsetWidth / 2, 175);
+        ctx.fillText(`${profile.xp.toLocaleString()}`, card.offsetWidth / 2, centerY - 5);
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = "rgba(202, 158, 62, 0.5)";
         ctx.font = "bold 13px 'Inter', system-ui, sans-serif";
-        ctx.fillText("TOTAL XP", card.offsetWidth / 2, 198);
+        ctx.fillText("TOTAL XP", card.offsetWidth / 2, centerY + 18);
 
         // Stats row with separators
-        const statsY = 246;
+        const statsY = centerY + 66;
         const stats = [
           { label: "STREAK", value: `${profile.streak}d`, emoji: "🔥" },
           { label: "LEVEL", value: `${profile.level}`, emoji: "⚡" },

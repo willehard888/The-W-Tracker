@@ -11,16 +11,53 @@ Deno.serve(async (req) => {
   }
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+  const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
   try {
-    const { receiver_id, sender_username, message_preview } = await req.json();
-    if (!receiver_id) throw new Error("receiver_id required");
+    // Authenticate the caller
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
+
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { receiver_id, message_preview } = await req.json();
+    if (!receiver_id) {
+      return new Response(JSON.stringify({ error: "receiver_id required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const serviceClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Look up sender username from DB instead of trusting request body
+    const { data: senderProfile } = await serviceClient
+      .from("profiles")
+      .select("username")
+      .eq("user_id", user.id)
+      .single();
+
+    const senderUsername = senderProfile?.username || "Someone";
 
     // Get receiver's push tokens
-    const { data: tokens } = await supabase
+    const { data: tokens } = await serviceClient
       .from("push_tokens")
       .select("token, platform")
       .eq("user_id", receiver_id);
@@ -32,10 +69,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Note: In production, send via FCM/APNs here
-    // For now, log the notification payload
     const payload = {
-      title: `💬 ${sender_username || "Someone"} sent you a message`,
+      title: `💬 ${senderUsername} sent you a message`,
       body: message_preview?.substring(0, 100) || "You have a new message",
       data: { route: "/messages" },
     };
@@ -49,7 +84,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("Notify error:", err);
     return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

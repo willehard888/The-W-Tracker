@@ -28,14 +28,12 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
-    // User-context client to validate the JWT
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
     const { data: { user: authUser }, error: userError } = await userClient.auth.getUser();
     if (userError || !authUser) {
-      console.error("Auth validation failed:", userError?.message);
       return new Response(JSON.stringify({ subscribed: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -51,7 +49,6 @@ serve(async (req) => {
       });
     }
 
-    // Service role client for DB operations
     const serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     });
@@ -95,8 +92,8 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    console.error("check-subscription error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("check-subscription error:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

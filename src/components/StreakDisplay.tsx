@@ -302,13 +302,13 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
         )}
 
         {/* Pressure microcopy */}
-        {streak >= 3 && (
+        {displayStreak >= 3 && (
           <div className="mt-2 pt-2 border-t border-border/20">
             <p className="text-[9px] text-muted-foreground/60 font-semibold text-center italic">
-              {streak >= 60 ? "🔱 Few ever reach this. Don't stop." :
-               streak >= 30 ? "👑 Most fail before this point." :
-               streak >= 14 ? "💪 Don't break now. Keep pushing." :
-               streak >= 7 ? "⚡ You're heating up. Stay locked in." :
+              {displayStreak >= 60 ? "🔱 Few ever reach this. Don't stop." :
+               displayStreak >= 30 ? "👑 Most fail before this point." :
+               displayStreak >= 14 ? "💪 Don't break now. Keep pushing." :
+               displayStreak >= 7 ? "⚡ You're heating up. Stay locked in." :
                "🔥 Keep going. Consistency is everything."}
             </p>
           </div>

@@ -36,7 +36,6 @@ serve(async (req) => {
 
     const { data: { user }, error: userError } = await userClient.auth.getUser();
     if (userError || !user) {
-      console.error("sync-streaks auth error:", userError?.message);
       return json({ error: "Unauthorized" }, 401);
     }
 
@@ -92,7 +91,7 @@ serve(async (req) => {
 
     return json({ syncedCount: expiredUserIds.length });
   } catch (error) {
-    console.error("sync-streaks error:", error instanceof Error ? error.message : error);
-    return json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);
+    console.error("sync-streaks error:", error);
+    return json({ error: "Internal server error" }, 500);
   }
 });

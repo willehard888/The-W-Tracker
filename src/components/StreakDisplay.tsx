@@ -173,7 +173,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
                   isLegendary && "streak-legendary-text animate-[streak-number-pulse_1.8s_ease-in-out_infinite]"
                 )}
               >
-                {streak}
+                {displayStreak}
               </span>
               <span className="text-sm font-bold text-muted-foreground">days</span>
             </div>
@@ -293,7 +293,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
                     : "text-foreground"
                 )}
               >
-                {nextMilestone.days - streak}d
+                {nextMilestone.days - displayStreak}d
               </span>{" "}
               to {nextMilestone.emoji} {nextMilestone.label} milestone
             </p>
@@ -302,13 +302,13 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
         )}
 
         {/* Pressure microcopy */}
-        {streak >= 3 && (
+        {displayStreak >= 3 && (
           <div className="mt-2 pt-2 border-t border-border/20">
             <p className="text-[9px] text-muted-foreground/60 font-semibold text-center italic">
-              {streak >= 60 ? "🔱 Few ever reach this. Don't stop." :
-               streak >= 30 ? "👑 Most fail before this point." :
-               streak >= 14 ? "💪 Don't break now. Keep pushing." :
-               streak >= 7 ? "⚡ You're heating up. Stay locked in." :
+              {displayStreak >= 60 ? "🔱 Few ever reach this. Don't stop." :
+               displayStreak >= 30 ? "👑 Most fail before this point." :
+               displayStreak >= 14 ? "💪 Don't break now. Keep pushing." :
+               displayStreak >= 7 ? "⚡ You're heating up. Stay locked in." :
                "🔥 Keep going. Consistency is everything."}
             </p>
           </div>
@@ -326,7 +326,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
         )}
 
         {/* Streak deadline warning */}
-        {deadline && streak > 0 && (
+        {deadline && displayStreak > 0 && (
           <div className={cn(
             "flex items-center justify-between mt-2 pt-2 border-t",
             deadline.expired

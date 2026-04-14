@@ -98,24 +98,26 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
       ctx.fillText(`${tierConfig.emoji} ${tierConfig.label.toUpperCase()}`, card.offsetWidth / 2, 60);
 
       if (variant === "stats") {
+        const centerY = cardH / 2;
+        
         ctx.fillStyle = "#f0ece4";
         ctx.font = "800 26px 'Space Grotesk', system-ui, sans-serif";
-        ctx.fillText(`@${profile.username}`, card.offsetWidth / 2, 100);
+        ctx.fillText(`@${profile.username}`, card.offsetWidth / 2, centerY - 80);
 
         // XP with glow effect
         ctx.shadowColor = "rgba(202, 158, 62, 0.5)";
         ctx.shadowBlur = 20;
         ctx.fillStyle = "rgba(202, 158, 62, 1)";
         ctx.font = "900 56px 'Space Grotesk', system-ui, sans-serif";
-        ctx.fillText(`${profile.xp.toLocaleString()}`, card.offsetWidth / 2, 175);
+        ctx.fillText(`${profile.xp.toLocaleString()}`, card.offsetWidth / 2, centerY - 5);
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = "rgba(202, 158, 62, 0.5)";
         ctx.font = "bold 13px 'Inter', system-ui, sans-serif";
-        ctx.fillText("TOTAL XP", card.offsetWidth / 2, 198);
+        ctx.fillText("TOTAL XP", card.offsetWidth / 2, centerY + 18);
 
         // Stats row with separators
-        const statsY = 246;
+        const statsY = centerY + 66;
         const stats = [
           { label: "STREAK", value: `${profile.streak}d`, emoji: "🔥" },
           { label: "LEVEL", value: `${profile.level}`, emoji: "⚡" },
@@ -147,27 +149,29 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
         ctx.fillText("DISCIPLINE IS THE NEW FLEX", card.offsetWidth / 2, cardH - 30);
 
       } else if (variant === "streak") {
+        const centerY = cardH / 2;
+        
         ctx.fillStyle = "#f0ece4";
         ctx.font = "800 22px 'Space Grotesk', system-ui, sans-serif";
-        ctx.fillText(`@${profile.username}`, card.offsetWidth / 2, 92);
+        ctx.fillText(`@${profile.username}`, card.offsetWidth / 2, centerY - 80);
 
         // Large fire with glow
         ctx.font = "72px serif";
         ctx.shadowColor = "rgba(235, 87, 27, 0.5)";
         ctx.shadowBlur = 30;
-        ctx.fillText("🔥", card.offsetWidth / 2, 175);
+        ctx.fillText("🔥", card.offsetWidth / 2, centerY - 5);
         ctx.shadowBlur = 0;
 
         ctx.shadowColor = "rgba(202, 158, 62, 0.4)";
         ctx.shadowBlur = 15;
         ctx.fillStyle = "rgba(202, 158, 62, 1)";
         ctx.font = "900 52px 'Space Grotesk', system-ui, sans-serif";
-        ctx.fillText(`${profile.streak}`, card.offsetWidth / 2, 232);
+        ctx.fillText(`${profile.streak}`, card.offsetWidth / 2, centerY + 52);
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = "rgba(202, 158, 62, 0.7)";
         ctx.font = "900 18px 'Space Grotesk', system-ui, sans-serif";
-        ctx.fillText("DAY STREAK", card.offsetWidth / 2, 256);
+        ctx.fillText("DAY STREAK", card.offsetWidth / 2, centerY + 76);
 
         // Pressure text
         ctx.fillStyle = "rgba(255,255,255,0.25)";
@@ -176,7 +180,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
           profile.streak >= 30 ? "MOST FAIL BEFORE THIS →" :
           profile.streak >= 7 ? "DON'T BREAK NOW →" :
           "BEAT MY STREAK →",
-          card.offsetWidth / 2, 295
+          card.offsetWidth / 2, centerY + 110
         );
 
         ctx.fillStyle = "rgba(255,255,255,0.12)";
@@ -184,20 +188,22 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
         ctx.fillText(`Best: ${profile.longest_streak} days`, card.offsetWidth / 2, cardH - 30);
 
       } else if (variant === "badge" && badgeData) {
+        const centerY = cardH / 2;
+        
         ctx.fillStyle = "#f0ece4";
         ctx.font = "800 22px 'Space Grotesk', system-ui, sans-serif";
-        ctx.fillText(`@${profile.username}`, card.offsetWidth / 2, 86);
+        ctx.fillText(`@${profile.username}`, card.offsetWidth / 2, centerY - 65);
 
         ctx.font = "64px serif";
         ctx.shadowColor = badgeData.rarity === 'legendary' ? "rgba(202, 158, 62, 0.6)" :
                           badgeData.rarity === 'epic' ? "rgba(138, 79, 255, 0.5)" : "rgba(0,0,0,0)";
         ctx.shadowBlur = badgeData.rarity === 'legendary' || badgeData.rarity === 'epic' ? 25 : 0;
-        ctx.fillText(badgeData.icon, card.offsetWidth / 2, 170);
+        ctx.fillText(badgeData.icon, card.offsetWidth / 2, centerY + 15);
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = "#f0ece4";
         ctx.font = "800 20px 'Space Grotesk', system-ui, sans-serif";
-        ctx.fillText(badgeData.name, card.offsetWidth / 2, 216);
+        ctx.fillText(badgeData.name, card.offsetWidth / 2, centerY + 60);
 
         const rarityColor = badgeData.rarity === 'legendary' ? "rgba(202, 158, 62, 0.9)" :
                            badgeData.rarity === 'epic' ? "rgba(138, 79, 255, 0.9)" :
@@ -205,12 +211,12 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
                            "rgba(255,255,255,0.4)";
         ctx.fillStyle = rarityColor;
         ctx.font = "bold 10px 'Inter', system-ui, sans-serif";
-        ctx.fillText(badgeData.rarity.toUpperCase(), card.offsetWidth / 2, 238);
+        ctx.fillText(badgeData.rarity.toUpperCase(), card.offsetWidth / 2, centerY + 82);
 
         if (badgeData.rarity === 'legendary') {
           ctx.fillStyle = "rgba(202, 158, 62, 0.3)";
           ctx.font = "600 9px 'Inter', system-ui, sans-serif";
-          ctx.fillText("ONLY TOP 1% EARN THIS", card.offsetWidth / 2, 260);
+          ctx.fillText("ONLY TOP 1% EARN THIS", card.offsetWidth / 2, centerY + 102);
         }
 
         ctx.fillStyle = "rgba(255,255,255,0.2)";

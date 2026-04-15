@@ -160,11 +160,12 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
             />
           )}
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-baseline gap-1.5">
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <div className="flex items-baseline gap-1">
               <span
                 className={cn(
-                  "font-black font-display tabular-nums leading-none tracking-tighter text-7xl",
+                  "font-black font-display tabular-nums leading-none tracking-tighter",
+                  displayStreak >= 100 ? "text-4xl" : displayStreak >= 10 ? "text-5xl" : "text-6xl",
                   !isHot && "text-foreground",
                   isHot && !isOnFire && "text-[hsl(var(--streak-orange))]",
                   isOnFire && !isBlazing && "text-[hsl(var(--streak-orange))] animate-[streak-number-pulse_3s_ease-in-out_infinite]",

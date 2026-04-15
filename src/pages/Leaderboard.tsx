@@ -12,6 +12,7 @@ import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { useEffect, useMemo, useState } from "react";
 import StatusBadge from "@/components/StatusBadge";
 import { getTierConfig } from "@/lib/status-tiers";
+import FeatureGateScreen from "@/components/FeatureGateScreen";
 
 type LeaderRow = {
   username: string;
@@ -197,23 +198,21 @@ const Leaderboard = () => {
 
   const countdownText = useMemo(() => formatCountdown(activeSeason?.ends_at), [activeSeason]);
 
-  if (!isElite) {
+  // Gate: require Performer tier (rank >= 2) OR Elite subscription
+  const userTier = (profile?.status_tier || 'recruit') as any;
+  const tierRank = getTierConfig(userTier).rank;
+  const hasAccess = isElite || tierRank >= 2; // performer+
+
+  if (!hasAccess) {
     return (
-      <div className="min-h-screen pb-4 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
-        <div className="animate-reveal">
-          <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
-            <Lock size={32} className="text-gold" />
-          </div>
-          <h1 className="font-display text-3xl font-black tracking-tight mb-2">Elite Only</h1>
-          <p className="text-base text-muted-foreground mb-6 max-w-[280px]">
-            The global leaderboard is exclusive to Elite members. Upgrade to see where you rank.
-          </p>
-          <Button variant="gold" size="lg" onClick={() => navigate("/paywall")}>
-            <Crown size={16} />
-            Unlock Elite — €4.99/kk
-          </Button>
-        </div>
-      </div>
+      <FeatureGateScreen
+        requiredTier="performer"
+        currentTier={userTier}
+        featureName="Leaderboard"
+        description="Reach Performer status or go Elite to see global rankings and compete for Season Champion."
+        icon={Trophy}
+        requiresElite={false}
+      />
     );
   }
 

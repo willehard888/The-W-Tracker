@@ -1,6 +1,7 @@
 import AppLogoHeader from "@/components/AppLogoHeader";
 import { useState, useRef, useEffect } from "react";
 import { Swords, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image, Vote, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
+import FeatureGateScreen from "@/components/FeatureGateScreen";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -348,17 +349,14 @@ const Battles = () => {
 
   if (!isElite) {
     return (
-      <div className="min-h-screen pb-4 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
-        <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mb-4">
-          <Lock size={32} className="text-muted-foreground" />
-        </div>
-         <h1 className="font-display text-3xl font-bold mb-2">Elite Only</h1>
-        <p className="text-base text-muted-foreground mb-6 max-w-xs">Battles are exclusive to Elite members. Upgrade to challenge others.</p>
-        <Button variant="gold" size="lg" onClick={() => navigate("/paywall")}>
-          <Crown size={16} />
-          Unlock Elite — $4.99/mo
-        </Button>
-      </div>
+      <FeatureGateScreen
+        requiredTier="elite"
+        currentTier={(profile?.status_tier || 'recruit') as any}
+        featureName="1v1 Battles"
+        description="Challenge other users in discipline battles. Available exclusively for Elite members."
+        icon={Swords}
+        requiresElite={true}
+      />
     );
   }
 

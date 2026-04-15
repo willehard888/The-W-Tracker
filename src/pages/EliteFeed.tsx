@@ -1,6 +1,7 @@
 import AppLogoHeader from "@/components/AppLogoHeader";
 import { useAuth } from "@/contexts/AuthContext";
 import EliteFeedTeaser from "@/components/EliteFeedTeaser";
+import FeatureGateScreen from "@/components/FeatureGateScreen";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,6 +11,7 @@ import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { Button } from "@/components/ui/button";
 import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle, Video, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getTierConfig } from "@/lib/status-tiers";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -428,9 +430,22 @@ const EliteFeed = () => {
   const canPost = isElite;
   const unresolvedReportsCount = reports?.length || 0;
 
-  // Show mysterious teaser for non-Elite users
-  if (!isElite) {
-    return <EliteFeedTeaser />;
+  // Tier-based gating: High Performer+ can view, Elite can post
+  const userTier = profile?.status_tier || 'recruit';
+  const tierRank = getTierConfig(userTier).rank;
+  const canView = isElite || tierRank >= 3; // high_performer+
+
+  if (!canView) {
+    return (
+      <FeatureGateScreen
+        requiredTier="high_performer"
+        currentTier={userTier as any}
+        featureName="Elite Feed"
+        description="See what top performers are doing. Reach High Performer status to unlock viewing access."
+        icon={Flame}
+        requiresElite={false}
+      />
+    );
   }
 
   return (

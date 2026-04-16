@@ -27,7 +27,9 @@ echo "ℹ️  Node $(node -v) / npm $(npm -v)"
 
 # ── Install npm dependencies ──
 echo "📦 Installing npm dependencies..."
-npm ci || npm install
+# Regenerate package-lock.json to guarantee it matches package.json
+rm -f package-lock.json
+npm install --legacy-peer-deps
 
 # ── Build web assets ──
 echo "🔨 Building web assets..."
@@ -83,7 +85,6 @@ for item in manifests:
 
 origin_hash = digest.hexdigest()
 
-# Read existing resolved file and update originHash
 if resolved.exists():
     data = json.loads(resolved.read_text())
 else:

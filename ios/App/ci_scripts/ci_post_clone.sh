@@ -39,6 +39,11 @@ npm run build
 echo "🔄 Syncing Capacitor iOS project..."
 npx cap sync ios
 
+echo "📦 Resolving Swift package dependencies..."
+xcodebuild -resolvePackageDependencies \
+  -project "$ROOT_DIR/ios/App/App.xcodeproj" \
+  -scheme App
+
 # ── Fix Package.resolved originHash ──
 RESOLVED_DIR="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm"
 RESOLVED_FILE="$RESOLVED_DIR/Package.resolved"

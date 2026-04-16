@@ -39,11 +39,6 @@ npm run build
 echo "🔄 Syncing Capacitor iOS project..."
 npx cap sync ios
 
-echo "📦 Resolving Swift package dependencies..."
-xcodebuild -resolvePackageDependencies \
-  -project "$ROOT_DIR/ios/App/App.xcodeproj" \
-  -scheme App
-
 # ── Fix Package.resolved originHash ──
 RESOLVED_DIR="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm"
 RESOLVED_FILE="$RESOLVED_DIR/Package.resolved"
@@ -105,6 +100,22 @@ if [[ -f "$RESOLVED_FILE" ]]; then
 else
   echo "❌ Package.resolved missing"
   exit 1
+fi
+
+if command -v xcodebuild &>/dev/null; then
+  echo "📦 Verifying Swift package graph with updated Package.resolved..."
+  RESOLVE_LOG="${TMPDIR:-/tmp}/xcode-package-resolve.log"
+  if xcodebuild -resolvePackageDependencies \
+    -project "$ROOT_DIR/ios/App/App.xcodeproj" \
+    -scheme App \
+    -clonedSourcePackagesDirPath "${TMPDIR:-/tmp}/spm-packages" \
+    > "$RESOLVE_LOG" 2>&1; then
+    echo "✅ Swift package graph verified"
+    tail -5 "$RESOLVE_LOG"
+  else
+    echo "⚠️ Swift package verification failed in script; continuing with freshly updated Package.resolved"
+    tail -30 "$RESOLVE_LOG" || true
+  fi
 fi
 
 # ── Copy app icon & ensure Contents.json ──

@@ -20,29 +20,9 @@ RESOLVED_DIR="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm"
 RESOLVED_FILE="$RESOLVED_DIR/Package.resolved"
 mkdir -p "$RESOLVED_DIR"
 
-# Try xcodebuild first (macOS only)
-if command -v xcodebuild >/dev/null 2>&1; then
-  echo "📦 Resolving Swift packages via Xcode..."
-  rm -f "$RESOLVED_FILE"
-
-  RESOLVE_LOG="${TMPDIR:-/tmp}/xcode-package-resolve.log"
-  if xcodebuild -resolvePackageDependencies \
-    -project ios/App/App.xcodeproj \
-    -scheme App \
-    -clonedSourcePackagesDirPath "${TMPDIR:-/tmp}/spm-packages" \
-    > "$RESOLVE_LOG" 2>&1; then
-    echo "✅ Xcode package resolution succeeded"
-    tail -5 "$RESOLVE_LOG"
-  else
-    echo "⚠️ Xcode resolution failed — generating fallback"
-    tail -30 "$RESOLVE_LOG"
-  fi
-fi
-
-# Fallback: generate Package.resolved if Xcode didn't create it
-if [[ ! -f "$RESOLVED_FILE" ]]; then
-  SCRIPT_ROOT="$(pwd)"
-  python3 - "$SCRIPT_ROOT" << 'PY'
+# Generate/update Package.resolved before asking Xcode to verify it
+SCRIPT_ROOT="$(pwd)"
+python3 - "$SCRIPT_ROOT" << 'PY'
 import hashlib
 import json
 import re
@@ -109,6 +89,21 @@ data = {
 resolved.write_text(json.dumps(data, indent=2) + "\n")
 print(f"✅ Package.resolved fallback generated ({origin_hash})")
 PY
+
+if command -v xcodebuild >/dev/null 2>&1; then
+  echo "📦 Verifying Swift packages via Xcode..."
+  RESOLVE_LOG="${TMPDIR:-/tmp}/xcode-package-resolve.log"
+  if xcodebuild -resolvePackageDependencies \
+    -project ios/App/App.xcodeproj \
+    -scheme App \
+    -clonedSourcePackagesDirPath "${TMPDIR:-/tmp}/spm-packages" \
+    > "$RESOLVE_LOG" 2>&1; then
+    echo "✅ Xcode package resolution succeeded"
+    tail -5 "$RESOLVE_LOG"
+  else
+    echo "⚠️ Xcode verification failed — keeping generated Package.resolved"
+    tail -30 "$RESOLVE_LOG" || true
+  fi
 fi
 
 if [[ -f "$RESOLVED_FILE" ]]; then

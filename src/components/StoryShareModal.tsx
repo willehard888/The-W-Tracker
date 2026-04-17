@@ -301,83 +301,14 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
           <div className="absolute bottom-3 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
 
           <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-            <p className="text-[10px] font-bold tracking-[0.3em] text-gold/80 mb-1">THE W TRACKER</p>
-            <p className={cn(
-              "text-[9px] font-black tracking-[0.2em] mb-3",
-              tier === 'legend' ? "text-[hsl(280_70%_65%)]" :
-              tier === 'apex' ? "text-[hsl(18_95%_58%)]" :
-              tier === 'elite' ? "text-gold" : "text-muted-foreground/50"
-            )}>
-              {tierConfig.emoji} {tierConfig.label.toUpperCase()}
-            </p>
-
-            {variant === "stats" && (
-              <>
-                <p className="font-display text-lg font-black text-foreground mb-3">@{profile.username}</p>
-                <p className={cn(
-                  "font-display text-4xl font-black mb-0.5",
-                  tier === 'legend' ? "bg-gradient-to-r from-[hsl(280_70%_65%)] via-gold to-[hsl(350_80%_60%)] bg-clip-text text-transparent" :
-                  "text-gold glow-gold-text"
-                )}>
-                  {profile.xp.toLocaleString()}
-                </p>
-                <p className="text-[10px] text-gold/50 font-bold tracking-wider mb-5">TOTAL XP</p>
-                <div className="flex gap-5">
-                  {[
-                    { v: `🔥 ${profile.streak}d`, l: "STREAK" },
-                    { v: `⚡ ${profile.level}`, l: "LEVEL" },
-                    { v: `🏆 ${profile.longest_streak}d`, l: "BEST" },
-                  ].map((s) => (
-                    <div key={s.l} className="text-center">
-                      <p className="font-display text-sm font-black">{s.v}</p>
-                      <p className="text-[7px] text-muted-foreground font-bold tracking-wider">{s.l}</p>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {variant === "streak" && (
-              <>
-                <p className="font-display text-base font-black text-foreground mb-2">@{profile.username}</p>
-                <p className="text-4xl mb-1" style={{ filter: "drop-shadow(0 0 20px rgba(235, 87, 27, 0.5))" }}>🔥</p>
-                <p className={cn(
-                  "font-display text-4xl font-black",
-                  tier === 'legend' ? "bg-gradient-to-r from-[hsl(280_70%_65%)] via-gold to-[hsl(350_80%_60%)] bg-clip-text text-transparent" :
-                  "text-gold glow-gold-text"
-                )}>
-                  {profile.streak}
-                </p>
-                <p className="font-display text-lg font-black text-gold/80">DAY STREAK</p>
-                <p className="text-[9px] text-muted-foreground/40 font-bold mt-2">
+            <p className="font-bold tracking-[0.3em] text-gold/80 mb-1 text-lg">THE W TRACKER</p>
+// ... keep existing code
+                <p className="text-muted-foreground/40 font-bold mt-2 text-xs">
                   {profile.streak >= 30 ? "MOST FAIL BEFORE THIS →" : profile.streak >= 7 ? "DON'T BREAK NOW →" : "BEAT MY STREAK →"}
                 </p>
-                <p className="text-[8px] text-muted-foreground/25 mt-1">Best: {profile.longest_streak} days</p>
-              </>
-            )}
-
-            {variant === "badge" && badgeData && (
-              <>
-                <p className="font-display text-base font-black text-foreground mb-2">@{profile.username}</p>
-                <p className="text-4xl mb-2" style={{
-                  filter: badgeData.rarity === 'legendary' ? "drop-shadow(0 0 20px rgba(202, 158, 62, 0.6))" :
-                          badgeData.rarity === 'epic' ? "drop-shadow(0 0 15px rgba(138, 79, 255, 0.5))" : "none",
-                }}>{badgeData.icon}</p>
-                <p className="font-display text-lg font-black">{badgeData.name}</p>
-                <p className={cn(
-                  "text-[9px] font-bold tracking-[0.2em] mt-1",
-                  badgeData.rarity === 'legendary' ? "text-gold" :
-                  badgeData.rarity === 'epic' ? "text-[hsl(275_80%_60%)]" :
-                  badgeData.rarity === 'rare' ? "text-[hsl(210_90%_56%)]" : "text-muted-foreground/60"
-                )}>{badgeData.rarity.toUpperCase()}</p>
-                {badgeData.rarity === 'legendary' && (
-                  <p className="text-[8px] text-gold/40 mt-1.5 font-semibold">ONLY TOP 1% EARN THIS</p>
-                )}
-                <p className="text-[9px] text-muted-foreground/30 font-semibold mt-4">BADGE UNLOCKED</p>
-              </>
-            )}
-
-            <p className="absolute bottom-4 text-[7px] text-muted-foreground/20 font-semibold tracking-[0.3em]">
+                <p className="text-muted-foreground/25 mt-1 text-sm">Best: {profile.longest_streak} days</p>
+// ... keep existing code
+            <p className="absolute bottom-4 text-muted-foreground/20 font-semibold tracking-[0.3em] text-xl">
               DISCIPLINE IS THE NEW FLEX
             </p>
           </div>

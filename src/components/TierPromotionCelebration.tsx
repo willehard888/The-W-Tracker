@@ -158,7 +158,7 @@ const TierPromotionCelebration = () => {
                   className="w-full"
                   onClick={() => {
                     setShareOpen(true);
-                    triggerHaptic("light");
+                    hapticImpact("light");
                   }}
                 >
                   <Share2 size={16} />

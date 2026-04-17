@@ -419,37 +419,37 @@ const Profile = () => {
         <StatCard icon={Trophy} label="Kudos Received" value={kudosReceived || 0} variant="gold" />
       </div>
 
-      {/* Weekly Sleep Stats */}
+      {/* Weekly Sleep Stats — prominent */}
       {weeklySleep && (
         <div className="mb-6 animate-reveal animate-reveal-delay-2">
           <div className={cn(
-            "rounded-xl border p-4",
-            weeklySleep.multiplier >= 1 ? "border-emerald-500/30 bg-emerald-500/5" : 
-            weeklySleep.multiplier >= 0.85 ? "border-yellow-500/30 bg-yellow-500/5" :
-            "border-red-500/30 bg-red-500/5"
+            "rounded-2xl border-2 p-5 shadow-lg",
+            weeklySleep.multiplier >= 1 ? "border-emerald-500/50 bg-emerald-500/10 shadow-emerald-500/20" :
+            weeklySleep.multiplier >= 0.85 ? "border-yellow-500/50 bg-yellow-500/10 shadow-yellow-500/20" :
+            "border-red-500/50 bg-red-500/10 shadow-red-500/20"
           )}>
-            <div className="flex items-center gap-2 mb-2">
-              <Moon size={16} className={cn(
-                weeklySleep.multiplier >= 1 ? "text-emerald-400" : 
+            <div className="flex items-center gap-2 mb-3">
+              <Moon size={22} className={cn(
+                weeklySleep.multiplier >= 1 ? "text-emerald-400" :
                 weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
               )} />
-              <h2 className="font-display font-bold text-sm tracking-tight">Weekly Sleep</h2>
-              <span className="ml-auto text-xs font-bold tabular-nums">
+              <h2 className="font-display font-black text-lg tracking-tight">Weekly Sleep</h2>
+              <span className="ml-auto text-base font-bold tabular-nums">
                 {weeklySleep.avg}h avg ({weeklySleep.days} days)
               </span>
             </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">XP Multiplier</span>
+            <div className="flex items-center justify-between text-base">
+              <span className="text-muted-foreground font-semibold">XP Multiplier</span>
               <span className={cn(
-                "font-bold",
-                weeklySleep.multiplier >= 1 ? "text-emerald-400" : 
+                "font-display font-black text-2xl",
+                weeklySleep.multiplier >= 1 ? "text-emerald-400" :
                 weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
               )}>
                 {weeklySleep.multiplier >= 1 ? "100% ✓" : `${Math.round(weeklySleep.multiplier * 100)}% ⚠️`}
               </span>
             </div>
             {weeklySleep.multiplier < 1 && (
-              <p className="text-[10px] text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-2">
                 {weeklySleep.isChronicOversleep
                   ? `Chronic oversleep — ${weeklySleep.oversleepCount} nights of 10h+ this week. Aim for 7.5–9h.`
                   : weeklySleep.avg < 7.5
@@ -463,17 +463,17 @@ const Profile = () => {
 
       {championHistory && championHistory.wins > 0 && (
         <div className="mb-6 animate-reveal animate-reveal-delay-2">
-          <div className="rounded-xl border border-gold/30 bg-gold/5 p-4 glow-gold-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <Medal size={18} className="text-gold" />
-              <h2 className="font-display font-bold text-base tracking-tight">Season Champion</h2>
-              <span className="ml-auto text-gold font-display font-bold text-lg">{championHistory.wins}x</span>
+          <div className="rounded-2xl border-2 border-gold/50 bg-gold/10 p-5 glow-gold shadow-lg shadow-gold/20">
+            <div className="flex items-center gap-2 mb-4">
+              <Medal size={24} className="text-gold drop-shadow-[0_0_8px_hsl(42_78%_54%/0.6)]" />
+              <h2 className="font-display font-black text-xl tracking-tight">Season Champion</h2>
+              <span className="ml-auto text-gold font-display font-black text-2xl">{championHistory.wins}x</span>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {championHistory.seasons.map((s: any, i: number) => (
-                <div key={i} className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{s.name}</span>
-                  <span className="font-semibold tabular-nums">{s.points.toLocaleString()} XP</span>
+                <div key={i} className="flex items-center justify-between text-base">
+                  <span className="text-muted-foreground font-medium">{s.name}</span>
+                  <span className="font-display font-bold tabular-nums text-foreground">{s.points.toLocaleString()} XP</span>
                 </div>
               ))}
             </div>

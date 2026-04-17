@@ -1,4 +1,3 @@
-import AppLogoHeader from "@/components/AppLogoHeader";
 import { useMemo } from "react";
 import { Flame, ChevronRight, Crown, Sparkles } from "lucide-react";
 import LevelCard from "@/components/LevelCard";
@@ -137,12 +136,12 @@ const Index = () => {
         }}
       />
 
-      {/* Header */}
-      <div className="animate-reveal mb-4 relative z-10">
-        <AppLogoHeader />
-        <p className="text-base text-muted-foreground font-medium text-center -mt-3 mb-2 italic">{dailyQuote}</p>
-        <div className="flex items-center justify-between mt-1">
-          <h1 className="font-display text-3xl font-bold tracking-tight">@{profile.username}</h1>
+      {/* Daily quote */}
+      <div className="animate-reveal mb-4 relative z-10 pt-2">
+        <p className="text-sm text-muted-foreground font-medium text-center mb-3 italic">
+          {dailyQuote}
+        </p>
+        <div className="flex items-center justify-end">
           <StatusBadge tier={tier} size="md" />
         </div>
       </div>

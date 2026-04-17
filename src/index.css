@@ -789,7 +789,10 @@
   .conic-aura::before,
   .text-shimmer-sweep,
   .breathing-glow,
-  .float-subtle {
+  .float-subtle,
+  .gentle-float,
+  .soft-glow-pulse,
+  .edge-sheen::after {
     animation: none !important;
   }
 }

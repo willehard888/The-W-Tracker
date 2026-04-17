@@ -43,10 +43,10 @@ const StatCard = ({ icon: Icon, label, value, sublabel, variant = "default", cla
         
         </>
       }
-      <div className="relative flex items-start gap-3">
+      <div className="relative flex items-center gap-3">
         <div
           className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-lg",
+            "flex h-9 w-9 items-center justify-center rounded-lg shrink-0",
             variant === "gold" ?
             "bg-gold/15 text-gold" :
             variant === "streak" ?
@@ -65,19 +65,18 @@ const StatCard = ({ icon: Icon, label, value, sublabel, variant = "default", cla
           <Icon size={18} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium tracking-wide uppercase text-[10px] leading-tight text-primary break-words">{label}</p>
-          <p className={cn("font-bold font-display tracking-tight leading-tight mt-1 text-3xl",
-
+          <p className="font-semibold text-sm text-foreground truncate">{label}</p>
+          {sublabel && <p className="text-xs text-muted-foreground mt-0.5 truncate">{sublabel}</p>}
+        </div>
+        <p className={cn("font-bold font-display tracking-tight leading-none text-2xl shrink-0",
           variant === "gold" && "text-gold glow-gold-text",
           variant === "elite" && "text-gold font-black drop-shadow-[0_0_6px_hsl(var(--gold)/0.4)]",
           variant === "teal" && "text-[hsl(var(--teal))]",
           variant === "rose" && "text-[hsl(var(--rose))]",
           variant === "purple" && "text-[hsl(var(--purple))]"
-          )}>
-            {value}
-          </p>
-          {sublabel && <p className="text-xs text-muted-foreground mt-0.5">{sublabel}</p>}
-        </div>
+        )}>
+          {value}
+        </p>
       </div>
     </div>);
 

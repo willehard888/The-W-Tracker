@@ -122,16 +122,16 @@ const StatusHeader = () => {
         {/* Brand strip */}
         <button
           onClick={() => navigate("/")}
-          className="w-full flex items-center justify-center gap-2.5 pt-2 pb-0.5 active:opacity-80 transition-opacity"
+          className="w-full flex items-center justify-center gap-3 pt-2.5 pb-1 active:opacity-80 transition-opacity"
           aria-label="The W-Tracker — Home"
         >
           <img
             src="/app-icon.png"
             alt=""
             aria-hidden
-            className="h-8 w-8 rounded-lg shadow-[0_2px_10px_hsl(42_78%_54%/0.35)]"
+            className="h-12 w-12 rounded-xl shadow-[0_4px_16px_hsl(42_78%_54%/0.45)]"
           />
-          <span className="font-display text-base font-black tracking-[0.14em] uppercase text-gradient-gold leading-none">
+          <span className="font-display text-lg font-black tracking-[0.14em] uppercase text-gradient-gold leading-none">
             The W-Tracker
           </span>
         </button>

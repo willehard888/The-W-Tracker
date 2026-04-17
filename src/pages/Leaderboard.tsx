@@ -21,6 +21,7 @@ type LeaderRow = {
   streak: number;
   user_id: string;
   avatar_url: string | null;
+  status_tier?: string | null;
   season_points?: number;
 };
 
@@ -64,13 +65,7 @@ const Leaderboard = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("username, xp, level, streak, user_id, avatar_url")
-        .gt("xp", 0)
-        .order("xp", { ascending: false })
-        .limit(BOARD_LIMIT);
-      return (data || []) as LeaderRow[];
-    },
-  });
+        .select("username, xp, level, streak, user_id, avatar_url, status_tier")
 
   const { data: totalCount } = useQuery({
     queryKey: ["total-users"],
@@ -133,7 +128,7 @@ const Leaderboard = () => {
           .eq("season_id", activeSeason.id),
         supabase
           .from("profiles")
-          .select("username, xp, level, streak, user_id, avatar_url")
+          .select("username, xp, level, streak, user_id, avatar_url, status_tier")
           .gt("xp", 0),
       ]);
 

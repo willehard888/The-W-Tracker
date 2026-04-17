@@ -135,9 +135,9 @@ const Profile = () => {
 
       // Match per-checkin tiers using weekly avg
       let multiplier: number;
-      if (avg >= 8 && avg <= 9) multiplier = 1.0;
+      if (avg >= 7.5 && avg <= 9) multiplier = 1.0;
       else if (avg >= 10) multiplier = isChronicOversleep ? 0.6 : 0.95;
-      else if (avg >= 7) multiplier = 0.85; // 7h avg = sub-optimal
+      else if (avg >= 7) multiplier = 0.85; // 7–7.4h avg = sub-optimal
       else if (avg >= 6) multiplier = 0.7;
       else if (avg >= 5) multiplier = 0.55;
       else multiplier = 0.4;

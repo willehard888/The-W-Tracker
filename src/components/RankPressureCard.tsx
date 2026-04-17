@@ -63,11 +63,12 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, class
       transition={{ duration: 0.45, ease: "easeOut" }}
       className={cn("relative", className)}
     >
-      {/* Conic-rotating aura for high tiers */}
+      {/* Static tier aura — animated spin removed for perf (was causing flicker) */}
       {conicGlow && (
         <div
-          className="absolute -inset-[1.5px] rounded-2xl opacity-70 blur-[2px] pointer-events-none animate-spin-slow"
+          className="absolute -inset-[1px] rounded-2xl opacity-60 pointer-events-none"
           style={{ background: conicGlow }}
+          aria-hidden
         />
       )}
 
@@ -95,14 +96,6 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, class
           }}
         />
 
-        {/* Subtle floating sparkle on legendary */}
-        {isLegend && (
-          <motion.div
-            className="absolute top-2 right-2 w-1 h-1 rounded-full bg-white/80 pointer-events-none"
-            animate={{ opacity: [0, 1, 0], scale: [0.5, 1.4, 0.5] }}
-            transition={{ duration: 2.4, repeat: Infinity }}
-          />
-        )}
 
         <div className="relative">
           {/* Header row */}
@@ -144,9 +137,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, class
               </div>
             </div>
 
-            <motion.div
-              animate={isRising ? { y: [0, -3, 0] } : isFalling ? { y: [0, 3, 0] } : {}}
-              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            <div
               className={cn(
                 "flex h-9 w-9 items-center justify-center rounded-full",
                 isRising
@@ -163,7 +154,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, class
               ) : (
                 <TrendingUp size={16} strokeWidth={2.5} />
               )}
-            </motion.div>
+            </div>
           </div>
 
           {/* Animated percentile bar */}

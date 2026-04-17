@@ -62,11 +62,12 @@ const LevelCard = ({ level, className }: LevelCardProps) => {
   return (
     <div
       className={cn(
-        "relative rounded-xl border bg-card p-4 card-3d inner-light overflow-hidden magnetic-press ambient-aura",
+        "relative rounded-xl border bg-card p-4 card-3d inner-light overflow-hidden magnetic-press ambient-aura edge-sheen",
         colors.border,
         tier.glow && colors.glowClass,
         tier.glow && auraHaloClass,
-        tier.pulse && "conic-aura",
+        tier.glow && "gentle-float",
+        tier.pulse && "conic-aura soft-glow-pulse",
         className
       )}
     >

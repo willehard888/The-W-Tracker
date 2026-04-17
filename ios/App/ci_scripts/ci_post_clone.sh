@@ -27,7 +27,10 @@ echo "ℹ️  Node $(node -v) / npm $(npm -v)"
 echo "📦 Installing npm dependencies..."
 if [[ -f package-lock.json ]]; then
   echo "🔒 Using committed package-lock.json for deterministic dependency versions..."
-  npm ci --legacy-peer-deps
+  if ! npm ci --legacy-peer-deps; then
+    echo "⚠️ package-lock.json is out of sync with package.json in CI; falling back to npm install"
+    npm install --legacy-peer-deps
+  fi
 else
   echo "⚠️ package-lock.json missing, falling back to npm install"
   npm install --legacy-peer-deps

@@ -4,7 +4,7 @@ import { clearAppleAuthStarted, clearAppleUsernameSelectionPending, markAppleAut
 import { supabase } from "@/integrations/supabase/client";
 
 const PRODUCTION_URL = "https://status-level-up.lovable.app";
-const WEB_OAUTH_CALLBACK = "/oauth/callback";
+const WEB_OAUTH_CALLBACK = "/~oauth/callback";
 const APPLE_AUTH_LAUNCH = "/apple-auth-launch";
 const APP_SCHEME = "app.lovable.wtracker";
 const PUBLISHED_LAUNCH_ATTEMPT_KEY = "w_apple_launch_attempt";

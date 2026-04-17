@@ -93,7 +93,20 @@ const StatusHeader = () => {
         )}
       />
       <div className="relative backdrop-blur-xl bg-background/55 border-b border-border/30">
-        <div className="flex items-center gap-3 px-3 pt-2 pb-1.5">
+        {/* Brand strip */}
+        <div className="flex items-center justify-center gap-2 pt-1.5 pb-0.5">
+          <img
+            src="/app-icon.png"
+            alt=""
+            aria-hidden
+            className="h-5 w-5 rounded-md shadow-[0_2px_8px_hsl(42_78%_54%/0.25)]"
+          />
+          <span className="font-display text-[11px] font-black tracking-[0.18em] uppercase text-gradient-gold">
+            The W Tracker
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3 px-3 pt-1 pb-1.5">
           <button
             onClick={() => navigate("/profile")}
             className="shrink-0 active:scale-95 transition-transform"

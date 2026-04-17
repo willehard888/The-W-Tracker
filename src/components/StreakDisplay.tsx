@@ -176,7 +176,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
               >
                 {displayStreak}
               </span>
-              <span className="text-sm font-bold text-muted-foreground">days</span>
+              <span className="font-bold text-muted-foreground mx-0 my-0 px-0 py-0 font-sans text-xs">days</span>
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
               {tier.index >= 0 && (

@@ -482,67 +482,6 @@ const Profile = () => {
         <StatCard icon={Trophy} label="Kudos Received" value={kudosReceived || 0} variant="gold" />
       </div>
 
-      {/* Weekly Sleep Stats — prominent */}
-      {weeklySleep && (
-        <div className="mb-6 animate-reveal animate-reveal-delay-2">
-          <div className={cn(
-            "rounded-2xl border-2 p-5 shadow-lg",
-            weeklySleep.multiplier >= 1 ? "border-emerald-500/50 bg-emerald-500/10 shadow-emerald-500/20" :
-            weeklySleep.multiplier >= 0.85 ? "border-yellow-500/50 bg-yellow-500/10 shadow-yellow-500/20" :
-            "border-red-500/50 bg-red-500/10 shadow-red-500/20"
-          )}>
-            <div className="flex items-center gap-2 mb-3">
-              <Moon size={22} className={cn(
-                weeklySleep.multiplier >= 1 ? "text-emerald-400" :
-                weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
-              )} />
-              <h2 className="font-display font-black text-lg tracking-tight">Weekly Sleep</h2>
-              <span className="ml-auto text-base font-bold tabular-nums">
-                {weeklySleep.avg}h avg ({weeklySleep.days} days)
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-base">
-              <span className="text-muted-foreground font-semibold">XP Multiplier</span>
-              <span className={cn(
-                "font-display font-black text-2xl",
-                weeklySleep.multiplier >= 1 ? "text-emerald-400" :
-                weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
-              )}>
-                {weeklySleep.multiplier >= 1 ? "100% ✓" : `${Math.round(weeklySleep.multiplier * 100)}% ⚠️`}
-              </span>
-            </div>
-            {weeklySleep.multiplier < 1 && (
-              <p className="text-xs text-muted-foreground mt-2">
-                {weeklySleep.isChronicOversleep
-                  ? `Chronic oversleep — ${weeklySleep.oversleepCount} nights of 10h+ this week. Aim for 7.5–9h.`
-                  : weeklySleep.avg < 7.5
-                  ? "Sleep 7.5–9 hours to earn full XP"
-                  : "Occasional long sleep is fine — keep most nights at 7.5–9h"}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {championHistory && championHistory.wins > 0 && (
-        <div className="mb-6 animate-reveal animate-reveal-delay-2">
-          <div className="rounded-2xl border-2 border-gold/50 bg-gold/10 p-5 glow-gold shadow-lg shadow-gold/20">
-            <div className="flex items-center gap-2 mb-4">
-              <Medal size={24} className="text-gold drop-shadow-[0_0_8px_hsl(42_78%_54%/0.6)]" />
-              <h2 className="font-display font-black text-xl tracking-tight">Season Champion</h2>
-              <span className="ml-auto text-gold font-display font-black text-2xl">{championHistory.wins}x</span>
-            </div>
-            <div className="space-y-2">
-              {championHistory.seasons.map((s: any, i: number) => (
-                <div key={i} className="flex items-center justify-between text-base">
-                  <span className="text-muted-foreground font-medium">{s.name}</span>
-                  <span className="font-display font-bold tabular-nums text-foreground">{s.points.toLocaleString()} XP</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
       <div className="animate-reveal animate-reveal-delay-3">
         <BadgeVault
           allBadges={allBadges || []}

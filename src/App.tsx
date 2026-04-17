@@ -93,6 +93,7 @@ const AppRoutes = () => {
           <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+          <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/terms" element={<TermsOfUse />} />
@@ -111,6 +112,7 @@ const AppRoutes = () => {
         </Suspense>
       </div>
       <BottomNav />
+      {user && <TierPromotionCelebration />}
     </div>
   );
 };

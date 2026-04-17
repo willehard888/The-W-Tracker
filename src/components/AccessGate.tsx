@@ -30,7 +30,8 @@ const AccessGate = ({ children }: { children: ReactNode }) => {
     location.pathname.startsWith("/oauth") ||
     location.pathname.startsWith("/callback") ||
     location.pathname.startsWith("/~oauth") ||
-    location.pathname.startsWith("/auth/");
+    location.pathname.startsWith("/auth/") ||
+    location.pathname.startsWith("/u/");
 
   if (isAllowed) return <>{children}</>;
   return <Navigate to="/paywall" replace />;

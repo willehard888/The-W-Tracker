@@ -111,83 +111,62 @@ const StatusHeader = () => {
 
   return (
     <header className="sticky top-0 z-40 safe-top">
-      {/* Animated tier-tinted backdrop */}
+      {/* Tier-tinted backdrop glow */}
       <div
         className={cn(
-          "absolute inset-0 pointer-events-none bg-gradient-to-b",
+          "absolute inset-0 pointer-events-none bg-gradient-to-b opacity-90",
           tierGlow,
         )}
       />
-      <div className="relative backdrop-blur-xl bg-background/55 border-b border-border/30">
-        {/* Brand strip */}
-        <button
-          onClick={() => navigate("/")}
-          className="w-full flex items-center justify-center gap-3 pt-2.5 pb-1 active:opacity-80 transition-opacity"
-          aria-label="The W-Tracker — Home"
-        >
-          <img
-            src="/app-icon.png"
-            alt=""
-            aria-hidden
-            className="h-12 w-12 rounded-xl shadow-[0_4px_16px_hsl(42_78%_54%/0.45)]"
-          />
-          <span className="font-display text-lg font-black tracking-[0.14em] uppercase text-gradient-gold leading-none">
-            The W-Tracker
-          </span>
-        </button>
-        <p className="text-[11px] text-muted-foreground/80 italic font-medium text-center pb-1.5 px-3 truncate">
-          {dailyQuote}
-        </p>
+      {/* Subtle radial spotlight from top center */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 0%, hsl(42 78% 54% / 0.18), transparent 65%)",
+        }}
+      />
 
-        <div className="flex items-center gap-3 px-3 pt-1 pb-1.5">
+      <div className="relative backdrop-blur-xl bg-background/65 border-b border-gold/15">
+        {/* Top shimmer accent line */}
+        <div className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
+
+        {/* Compact brand + status row */}
+        <div className="flex items-center gap-2.5 px-3 pt-2 pb-2">
+          {/* Logo */}
           <button
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/")}
             className="shrink-0 active:scale-95 transition-transform"
-            aria-label="Open profile"
+            aria-label="The W-Tracker — Home"
           >
-            <StatusAvatar
-              src={profile.avatar_url}
-              name={profile.username}
-              tier={tier}
-              size="md"
+            <img
+              src="/app-icon.png"
+              alt=""
+              aria-hidden
+              className="h-9 w-9 rounded-lg shadow-[0_2px_10px_hsl(42_78%_54%/0.5)]"
             />
           </button>
 
+          {/* Brand wordmark + tagline */}
           <button
-            onClick={() => navigate("/leaderboard")}
-            className="flex-1 min-w-0 text-left active:opacity-80 transition-opacity"
+            onClick={() => navigate("/")}
+            className="min-w-0 flex-1 text-left active:opacity-80 transition-opacity"
           >
-            <div className="flex items-center gap-1.5">
-              <span
-                className={cn(
-                  "text-[10px] uppercase tracking-[0.12em] font-bold leading-none",
-                  config.textClass,
-                )}
-              >
-                {config.label}
-              </span>
-              <span className="text-[9px] text-muted-foreground leading-none">
-                · {config.percentile}
-              </span>
-            </div>
-            <div className="flex items-center gap-1 mt-0.5">
-              <p className="text-sm font-black truncate leading-tight">
-                @{profile.username}
-              </p>
-              {streak > 0 && (
-                <span className="flex items-center gap-0.5 text-[10px] font-bold text-[hsl(var(--orange,18_95%_58%))]">
-                  <Flame size={10} className="text-[hsl(18_95%_58%)]" />
-                  {streak}
-                </span>
-              )}
-            </div>
+            <p className="font-display font-black tracking-[0.18em] uppercase text-gradient-gold leading-none text-[13px]">
+              The W-Tracker
+            </p>
+            <p className="text-[9px] text-muted-foreground/70 italic font-medium leading-tight mt-0.5 truncate">
+              {dailyQuote}
+            </p>
           </button>
 
+          {/* Status pill */}
           <div className="shrink-0 flex items-center gap-1.5">
             {isElite ? (
               <motion.button
                 onClick={() => navigate("/paywall")}
-                className="relative flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-gold/20 via-gold/15 to-gold/20 border border-gold/60 shadow-[0_0_12px_hsl(42_78%_54%/0.5)]"
+                className="relative flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-gold/20 via-gold/15 to-gold/20 border border-gold/60"
                 whileTap={{ scale: 0.95 }}
                 animate={{
                   boxShadow: [
@@ -198,10 +177,6 @@ const StatusHeader = () => {
                 }}
                 transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
               >
-                <span
-                  className="absolute -inset-0.5 rounded-full blur-md opacity-60 pointer-events-none"
-                  style={{ background: "linear-gradient(135deg, hsl(42 78% 54% / 0.5), hsl(42 90% 65% / 0.3))" }}
-                />
                 <Crown size={11} className="relative text-gold drop-shadow-[0_0_4px_hsl(42_78%_54%/0.8)]" />
                 <span className="relative text-[10px] font-black text-gold uppercase tracking-wider">
                   Elite
@@ -229,26 +204,62 @@ const StatusHeader = () => {
           </div>
         </div>
 
-        {/* Progress to next tier */}
-        <button
-          onClick={() => navigate("/leaderboard")}
-          className="w-full px-3 pb-1.5 active:opacity-80 transition-opacity"
-        >
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
-              {next ? `Next: ${next.label}` : "Apex of the hierarchy"}
-            </span>
-            <ChevronRight size={10} className="text-muted-foreground" />
-          </div>
-          <div className="h-1 rounded-full bg-secondary/60 overflow-hidden">
-            <motion.div
-              className={cn("h-full rounded-full", progressBarColor)}
-              initial={{ width: 0 }}
-              animate={{ width: `${Math.max(6, tierProgress * 100)}%` }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+        {/* User strip: avatar + identity + tier progress */}
+        <div className="flex items-center gap-2.5 px-3 pb-2">
+          <button
+            onClick={() => navigate("/profile")}
+            className="shrink-0 active:scale-95 transition-transform"
+            aria-label="Open profile"
+          >
+            <StatusAvatar
+              src={profile.avatar_url}
+              name={profile.username}
+              tier={tier}
+              size="sm"
             />
-          </div>
-        </button>
+          </button>
+
+          <button
+            onClick={() => navigate("/leaderboard")}
+            className="flex-1 min-w-0 text-left active:opacity-80 transition-opacity"
+          >
+            <div className="flex items-center gap-1.5 leading-none">
+              <p className="text-sm font-black truncate">@{profile.username}</p>
+              {streak > 0 && (
+                <span className="flex items-center gap-0.5 text-[10px] font-bold text-[hsl(18_95%_58%)]">
+                  <Flame size={10} />
+                  {streak}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span
+                className={cn(
+                  "text-[9px] uppercase tracking-[0.14em] font-black leading-none",
+                  config.textClass,
+                )}
+              >
+                {config.label}
+              </span>
+              <span className="text-[9px] text-muted-foreground/70 leading-none">
+                · {config.percentile}
+              </span>
+              <span className="ml-auto flex items-center gap-0.5 text-[9px] uppercase tracking-wider text-muted-foreground/70 font-bold">
+                {next ? `→ ${next.label}` : "Apex"}
+                <ChevronRight size={9} />
+              </span>
+            </div>
+            {/* Tier progress bar */}
+            <div className="h-1 rounded-full bg-secondary/60 overflow-hidden mt-1.5">
+              <motion.div
+                className={cn("h-full rounded-full", progressBarColor)}
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.max(6, tierProgress * 100)}%` }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              />
+            </div>
+          </button>
+        </div>
       </div>
     </header>
   );

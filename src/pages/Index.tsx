@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { Flame, ChevronRight, Crown, Sparkles } from "lucide-react";
 import LevelCard from "@/components/LevelCard";
 import StreakDisplay from "@/components/StreakDisplay";
@@ -14,23 +13,6 @@ import XpCounter from "@/components/XpCounter";
 import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
 
-const pressureQuotes = [
-  "Grind never stops 🔥",
-  "Discipline beats talent",
-  "Level up or get left behind",
-  "Stay hungry, stay humble",
-  "Prove them wrong 🏆",
-  "Consistency is king",
-  "No excuses, only results",
-  "Outwork everyone 💪",
-  "Built different",
-  "Earn your status",
-  "Legends are made, not born",
-  "Don't break now",
-  "Most fail before this",
-  "You're ahead — for now",
-  "Others are catching up",
-];
 
 const Index = () => {
   const navigate = useNavigate();
@@ -83,12 +65,6 @@ const Index = () => {
     enabled: !!profile,
   });
 
-  const dailyQuote = useMemo(() => {
-    const today = new Date().toDateString();
-    let hash = 0;
-    for (let i = 0; i < today.length; i++) hash = ((hash << 5) - hash) + today.charCodeAt(i);
-    return pressureQuotes[Math.abs(hash) % pressureQuotes.length];
-  }, []);
 
   if (!profile) return null;
 
@@ -136,14 +112,9 @@ const Index = () => {
         }}
       />
 
-      {/* Daily quote */}
-      <div className="animate-reveal mb-4 relative z-10 pt-2">
-        <p className="text-sm text-muted-foreground font-medium text-center mb-3 italic">
-          {dailyQuote}
-        </p>
-        <div className="flex items-center justify-end">
-          <StatusBadge tier={tier} size="md" />
-        </div>
+      {/* Status badge */}
+      <div className="animate-reveal mb-4 relative z-10 pt-2 flex items-center justify-end">
+        <StatusBadge tier={tier} size="md" />
       </div>
 
       {/* Rank Pressure Card */}

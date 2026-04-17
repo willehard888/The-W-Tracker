@@ -36,7 +36,11 @@ resolved = root / "ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftp
 if not manifest.exists():
     raise SystemExit(f"Missing Swift package manifest: {manifest}")
 
-pattern = re.compile(r'\.package\((?:name:\s*"[^"]+",\s*)?path:\s*"([^"]+)"')
+local_pattern = re.compile(r'\.package\((?:name:\s*"[^"]+",\s*)?path:\s*"([^"]+)"')
+remote_pattern = re.compile(r'\.package\(url:\s*"([^"]+)",\s*(exact|from):\s*"([^"]+)"')
+
+def package_identity(url):
+    return url.rstrip("/").split("/")[-1].removesuffix(".git").lower()
 
 def collect_manifests(entry, seen, ordered):
     entry = entry.resolve()
@@ -45,7 +49,7 @@ def collect_manifests(entry, seen, ordered):
     seen.add(entry)
     ordered.append(entry)
     contents = entry.read_text()
-    for rel_path in pattern.findall(contents):
+    for rel_path in local_pattern.findall(contents):
         child = (entry.parent / rel_path / "Package.swift").resolve()
         if child.exists():
             collect_manifests(child, seen, ordered)
@@ -61,28 +65,61 @@ for item in manifests:
     digest.update(b"\0")
 
 origin_hash = digest.hexdigest()
+
+if resolved.exists():
+    data = json.loads(resolved.read_text())
+else:
+    data = {"originHash": "", "pins": [], "version": 3}
+
+existing_pins = {pin["identity"]: pin for pin in data.get("pins", [])}
+fallback_revisions = {
+    "capacitor-swift-pm": {
+        "8.2.0": "0e862e6ff13852a710c8a484180ca4d6a2cc9761",
+    },
+    "purchases-hybrid-common": {
+        "17.52.0": "9b99aee60dd4f8b5a2e96f074f4d0b8adc53beee",
+    },
+}
+
+required_pins = {}
+for item in manifests:
+    contents = item.read_text()
+    for url, requirement_type, version in remote_pattern.findall(contents):
+        identity = package_identity(url)
+        existing = required_pins.get(identity)
+        if existing is None or requirement_type == "exact" or existing["requirement_type"] != "exact":
+            required_pins[identity] = {
+                "identity": identity,
+                "kind": "remoteSourceControl",
+                "location": url,
+                "version": version,
+                "requirement_type": requirement_type,
+            }
+
+pins = []
+for identity in sorted(required_pins):
+    spec = required_pins[identity]
+    existing_pin = existing_pins.get(identity)
+    if existing_pin and existing_pin.get("state", {}).get("version") == spec["version"]:
+        state = existing_pin["state"]
+    else:
+        state = {"version": spec["version"]}
+        revision = fallback_revisions.get(identity, {}).get(spec["version"])
+        if revision:
+            state = {"revision": revision, "version": spec["version"]}
+
+    pins.append(
+        {
+            "identity": identity,
+            "kind": spec["kind"],
+            "location": spec["location"],
+            "state": state,
+        }
+    )
+
 data = {
     "originHash": origin_hash,
-    "pins": [
-        {
-            "identity": "capacitor-swift-pm",
-            "kind": "remoteSourceControl",
-            "location": "https://github.com/ionic-team/capacitor-swift-pm.git",
-            "state": {"revision": "0e862e6ff13852a710c8a484180ca4d6a2cc9761", "version": "8.2.0"},
-        },
-        {
-            "identity": "purchases-hybrid-common",
-            "kind": "remoteSourceControl",
-            "location": "https://github.com/RevenueCat/purchases-hybrid-common.git",
-            "state": {"revision": "9b99aee60dd4f8b5a2e96f074f4d0b8adc53beee", "version": "17.52.0"},
-        },
-        {
-            "identity": "purchases-ios-spm",
-            "kind": "remoteSourceControl",
-            "location": "https://github.com/RevenueCat/purchases-ios-spm.git",
-            "state": {"revision": "9755c68799edb79ec03f90b22b5e35c3829d4ec8", "version": "5.65.0"},
-        },
-    ],
+    "pins": pins,
     "version": 3,
 }
 

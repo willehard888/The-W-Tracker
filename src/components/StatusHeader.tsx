@@ -118,94 +118,39 @@ const StatusHeader = () => {
           tierGlow,
         )}
       />
-      {/* Subtle radial spotlight from top center */}
+      {/* Subtle radial spotlight */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 0%, hsl(42 78% 54% / 0.18), transparent 65%)",
+            "radial-gradient(ellipse at 50% 0%, hsl(42 78% 54% / 0.16), transparent 65%)",
         }}
       />
 
-      <div className="relative backdrop-blur-xl bg-background/65 border-b border-gold/15">
-        {/* Top shimmer accent line */}
+      <div className="relative backdrop-blur-xl bg-background/70 border-b border-gold/15">
+        {/* Top shimmer accent */}
         <div className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
 
-        {/* Compact brand + status row */}
-        <div className="flex items-center gap-2.5 px-3 pt-2 pb-2">
-          {/* Logo */}
-          <button
-            onClick={() => navigate("/")}
-            className="shrink-0 active:scale-95 transition-transform"
-            aria-label="The W-Tracker — Home"
-          >
-            <img
-              src="/app-icon.png"
-              alt=""
-              aria-hidden
-              className="h-9 w-9 rounded-lg shadow-[0_2px_10px_hsl(42_78%_54%/0.5)]"
-            />
-          </button>
+        {/* Brand strip — minimal */}
+        <button
+          onClick={() => navigate("/")}
+          className="w-full flex items-center justify-center gap-2 pt-2 pb-1.5 active:opacity-80 transition-opacity"
+          aria-label="The W-Tracker — Home"
+        >
+          <img
+            src="/app-icon.png"
+            alt=""
+            aria-hidden
+            className="h-5 w-5 rounded-md shadow-[0_2px_8px_hsl(42_78%_54%/0.5)]"
+          />
+          <span className="font-display font-black tracking-[0.22em] uppercase text-gradient-gold leading-none text-[11px]">
+            The W-Tracker
+          </span>
+        </button>
 
-          {/* Brand wordmark + tagline */}
-          <button
-            onClick={() => navigate("/")}
-            className="min-w-0 flex-1 text-left active:opacity-80 transition-opacity"
-          >
-            <p className="font-display font-black tracking-[0.18em] uppercase text-gradient-gold leading-none text-[13px]">
-              The W-Tracker
-            </p>
-            <p className="text-[9px] text-muted-foreground/70 italic font-medium leading-tight mt-0.5 truncate">
-              {dailyQuote}
-            </p>
-          </button>
-
-          {/* Status pill */}
-          <div className="shrink-0 flex items-center gap-1.5">
-            {isElite ? (
-              <motion.button
-                onClick={() => navigate("/paywall")}
-                className="relative flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-gold/20 via-gold/15 to-gold/20 border border-gold/60"
-                whileTap={{ scale: 0.95 }}
-                animate={{
-                  boxShadow: [
-                    "0 0 8px hsl(42 78% 54% / 0.4)",
-                    "0 0 18px hsl(42 78% 54% / 0.7)",
-                    "0 0 8px hsl(42 78% 54% / 0.4)",
-                  ],
-                }}
-                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Crown size={11} className="relative text-gold drop-shadow-[0_0_4px_hsl(42_78%_54%/0.8)]" />
-                <span className="relative text-[10px] font-black text-gold uppercase tracking-wider">
-                  Elite
-                </span>
-              </motion.button>
-            ) : isInTrial ? (
-              <motion.button
-                onClick={() => navigate("/paywall")}
-                className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1 rounded-full border",
-                  trialUrgent
-                    ? "bg-destructive/15 border-destructive/50 text-destructive"
-                    : "bg-secondary/70 border-border text-foreground",
-                )}
-                whileTap={{ scale: 0.95 }}
-                animate={trialUrgent ? { scale: [1, 1.05, 1] } : {}}
-                transition={{ duration: 1.8, repeat: Infinity }}
-              >
-                <Clock size={11} />
-                <span className="text-[10px] font-black uppercase tracking-wider">
-                  {trialLabel}
-                </span>
-              </motion.button>
-            ) : null}
-          </div>
-        </div>
-
-        {/* User strip: avatar + identity + tier progress */}
-        <div className="flex items-center gap-2.5 px-3 pb-2">
+        {/* Single status row: avatar + identity + tier progress + pill */}
+        <div className="flex items-center gap-3 px-3 pb-2.5">
           <button
             onClick={() => navigate("/profile")}
             className="shrink-0 active:scale-95 transition-transform"
@@ -215,7 +160,7 @@ const StatusHeader = () => {
               src={profile.avatar_url}
               name={profile.username}
               tier={tier}
-              size="sm"
+              size="md"
             />
           </button>
 
@@ -223,33 +168,41 @@ const StatusHeader = () => {
             onClick={() => navigate("/leaderboard")}
             className="flex-1 min-w-0 text-left active:opacity-80 transition-opacity"
           >
-            <div className="flex items-center gap-1.5 leading-none">
-              <p className="text-sm font-black truncate">@{profile.username}</p>
+            {/* Row 1: name + streak */}
+            <div className="flex items-center gap-2">
+              <p className="text-base font-black truncate leading-none">
+                @{profile.username}
+              </p>
               {streak > 0 && (
-                <span className="flex items-center gap-0.5 text-[10px] font-bold text-[hsl(18_95%_58%)]">
-                  <Flame size={10} />
+                <span className="flex items-center gap-0.5 text-xs font-black text-[hsl(18_95%_58%)] leading-none">
+                  <Flame size={12} />
                   {streak}
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span
-                className={cn(
-                  "text-[9px] uppercase tracking-[0.14em] font-black leading-none",
-                  config.textClass,
-                )}
-              >
-                {config.label}
-              </span>
-              <span className="text-[9px] text-muted-foreground/70 leading-none">
-                · {config.percentile}
-              </span>
-              <span className="ml-auto flex items-center gap-0.5 text-[9px] uppercase tracking-wider text-muted-foreground/70 font-bold">
+
+            {/* Row 2: tier label + next */}
+            <div className="flex items-center justify-between gap-2 mt-1.5">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span
+                  className={cn(
+                    "text-[10px] uppercase tracking-[0.16em] font-black leading-none",
+                    config.textClass,
+                  )}
+                >
+                  {config.label}
+                </span>
+                <span className="text-[10px] text-muted-foreground/70 leading-none">
+                  · {config.percentile}
+                </span>
+              </div>
+              <span className="flex items-center gap-0.5 text-[9px] uppercase tracking-wider text-muted-foreground/70 font-bold leading-none whitespace-nowrap">
                 {next ? `→ ${next.label}` : "Apex"}
                 <ChevronRight size={9} />
               </span>
             </div>
-            {/* Tier progress bar */}
+
+            {/* Row 3: progress bar */}
             <div className="h-1 rounded-full bg-secondary/60 overflow-hidden mt-1.5">
               <motion.div
                 className={cn("h-full rounded-full", progressBarColor)}
@@ -259,6 +212,46 @@ const StatusHeader = () => {
               />
             </div>
           </button>
+
+          {/* Status pill */}
+          {isElite ? (
+            <motion.button
+              onClick={() => navigate("/paywall")}
+              className="shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-gold/20 via-gold/15 to-gold/20 border border-gold/60"
+              whileTap={{ scale: 0.95 }}
+              animate={{
+                boxShadow: [
+                  "0 0 8px hsl(42 78% 54% / 0.4)",
+                  "0 0 18px hsl(42 78% 54% / 0.7)",
+                  "0 0 8px hsl(42 78% 54% / 0.4)",
+                ],
+              }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Crown size={11} className="text-gold drop-shadow-[0_0_4px_hsl(42_78%_54%/0.8)]" />
+              <span className="text-[10px] font-black text-gold uppercase tracking-wider">
+                Elite
+              </span>
+            </motion.button>
+          ) : isInTrial ? (
+            <motion.button
+              onClick={() => navigate("/paywall")}
+              className={cn(
+                "shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border",
+                trialUrgent
+                  ? "bg-destructive/15 border-destructive/50 text-destructive"
+                  : "bg-secondary/70 border-border text-foreground",
+              )}
+              whileTap={{ scale: 0.95 }}
+              animate={trialUrgent ? { scale: [1, 1.05, 1] } : {}}
+              transition={{ duration: 1.8, repeat: Infinity }}
+            >
+              <Clock size={11} />
+              <span className="text-[10px] font-black uppercase tracking-wider">
+                {trialLabel}
+              </span>
+            </motion.button>
+          ) : null}
         </div>
       </div>
     </header>

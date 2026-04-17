@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import { getTierConfig, getNextTier, TIER_ORDER } from "@/lib/status-tiers";
@@ -6,6 +7,24 @@ import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
 import { Crown, Clock, ChevronRight, Flame } from "lucide-react";
 import { motion } from "framer-motion";
+
+const PRESSURE_QUOTES = [
+  "Grind never stops 🔥",
+  "Discipline beats talent",
+  "Level up or get left behind",
+  "Stay hungry, stay humble",
+  "Prove them wrong 🏆",
+  "Consistency is king",
+  "No excuses, only results",
+  "Outwork everyone 💪",
+  "Built different",
+  "Earn your status",
+  "Legends are made, not born",
+  "Don't break now",
+  "Most fail before this",
+  "You're ahead — for now",
+  "Others are catching up",
+];
 
 const HIDDEN_ROUTES = new Set([
   "/landing",

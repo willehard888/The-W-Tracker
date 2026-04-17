@@ -108,7 +108,6 @@ const AppRoutes = () => {
           </AccessGate>
         </Suspense>
       </div>
-      <StatusStripe />
       <BottomNav />
     </div>
   );

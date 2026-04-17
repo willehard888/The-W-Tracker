@@ -10,6 +10,9 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
 import AmbientParticles from "@/components/AmbientParticles";
 import BottomNav from "@/components/BottomNav";
+import StatusHeader from "@/components/StatusHeader";
+import StatusStripe from "@/components/StatusStripe";
+import AccessGate from "@/components/AccessGate";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -68,8 +71,10 @@ const AppRoutes = () => {
 
   return (
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
+      <StatusHeader />
       <div className="flex-1 overflow-y-auto">
         <Suspense fallback={<LazyFallback />}>
+          <AccessGate>
           <Routes>
           <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
@@ -101,8 +106,10 @@ const AppRoutes = () => {
           <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="*" element={<NotFound />} />
           </Routes>
+          </AccessGate>
         </Suspense>
       </div>
+      <StatusStripe />
       <BottomNav />
     </div>
   );

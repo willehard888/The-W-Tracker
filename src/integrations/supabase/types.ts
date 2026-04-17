@@ -508,6 +508,7 @@ export type Database = {
           referred_by: string | null
           status_tier: Database["public"]["Enums"]["status_tier"]
           streak: number
+          trial_started_at: string
           trust_multiplier: number
           updated_at: string
           user_id: string
@@ -530,6 +531,7 @@ export type Database = {
           referred_by?: string | null
           status_tier?: Database["public"]["Enums"]["status_tier"]
           streak?: number
+          trial_started_at?: string
           trust_multiplier?: number
           updated_at?: string
           user_id: string
@@ -552,6 +554,7 @@ export type Database = {
           referred_by?: string | null
           status_tier?: Database["public"]["Enums"]["status_tier"]
           streak?: number
+          trial_started_at?: string
           trust_multiplier?: number
           updated_at?: string
           user_id?: string
@@ -733,6 +736,7 @@ export type Database = {
         }
       }
       finalize_expired_leaderboard_seasons: { Args: never; Returns: undefined }
+      has_active_access: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -50,12 +50,23 @@ const LevelCard = ({ level, className }: LevelCardProps) => {
   const colors = COLOR_MAP[tier.color];
   const Icon = tier.icon;
 
+  const auraHaloClass =
+    tier.color === "purple"
+      ? "aura-halo aura-halo-purple"
+      : tier.color === "teal"
+      ? "aura-halo aura-halo-teal"
+      : tier.color === "rose"
+      ? "aura-halo aura-halo-rose"
+      : "aura-halo";
+
   return (
     <div
       className={cn(
-        "relative rounded-xl border bg-card p-4 card-3d inner-light overflow-hidden",
+        "relative rounded-xl border bg-card p-4 card-3d inner-light overflow-hidden magnetic-press ambient-aura",
         colors.border,
         tier.glow && colors.glowClass,
+        tier.glow && auraHaloClass,
+        tier.pulse && "conic-aura",
         className
       )}
     >
@@ -71,7 +82,7 @@ const LevelCard = ({ level, className }: LevelCardProps) => {
       )}
 
       <div className="relative flex items-start gap-3">
-        <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg", colors.icon)}>
+        <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg transition-transform duration-500 hover:rotate-6 hover:scale-110", colors.icon)}>
           <Icon size={18} />
         </div>
         <div className="flex-1 min-w-0">
@@ -79,6 +90,7 @@ const LevelCard = ({ level, className }: LevelCardProps) => {
           <p className={cn(
             "font-bold font-display tracking-tight leading-tight mt-0.5 text-5xl",
             colors.text,
+            tier.glow && "text-shimmer-sweep",
             tier.pulse && "font-black drop-shadow-[0_0_6px_hsl(var(--gold)/0.4)]"
           )}>
             {level}

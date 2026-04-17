@@ -1,4 +1,4 @@
-import AppLogoHeader from "@/components/AppLogoHeader";
+
 import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy, CreditCard, Medal, Moon } from "lucide-react";
 import { isNativePlatform } from "@/lib/platform";
 import StatCard from "@/components/StatCard";
@@ -258,7 +258,7 @@ const Profile = () => {
         badgeData={shareModal.badgeData}
       />
 
-      <AppLogoHeader />
+      
 
       {/* Profile Header */}
       <div className="animate-reveal text-center mb-6">

@@ -1,12 +1,29 @@
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, registerPlugin } from "@capacitor/core";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
-import { markAppleUsernameSelectionPending } from "@/lib/apple-username";
+import { clearAppleAuthStarted, clearAppleUsernameSelectionPending, markAppleAuthStarted } from "@/lib/apple-username";
+import { supabase } from "@/integrations/supabase/client";
 
 const PRODUCTION_URL = "https://status-level-up.lovable.app";
 const WEB_OAUTH_CALLBACK = "/oauth/callback";
 const APPLE_AUTH_LAUNCH = "/apple-auth-launch";
 const APP_SCHEME = "app.lovable.wtracker";
 const PUBLISHED_LAUNCH_ATTEMPT_KEY = "w_apple_launch_attempt";
+
+type NativeAppleSignInResult = {
+  identityToken: string;
+  authorizationCode?: string | null;
+  nonce?: string | null;
+  user?: string | null;
+  email?: string | null;
+  givenName?: string | null;
+  familyName?: string | null;
+};
+
+type NativeAppleAuthPlugin = {
+  signIn(): Promise<NativeAppleSignInResult>;
+};
+
+const NativeAppleAuth = registerPlugin<NativeAppleAuthPlugin>("NativeAppleAuth");
 
 function createCacheBuster() {
   return `${Date.now()}`;
@@ -129,6 +146,80 @@ function errorMessage(err: unknown): string {
   }
 }
 
+function getFriendlyAppleError(err: unknown): Error {
+  const message = errorMessage(err).toLowerCase();
+
+  if (
+    message.includes("canceled") ||
+    message.includes("cancelled") ||
+    message.includes("authorizationerror error 1001") ||
+    message.includes("user canceled") ||
+    message.includes("user cancelled")
+  ) {
+    return new Error("APPLE_CANCELLED");
+  }
+
+  if (
+    message.includes("network") ||
+    message.includes("internet") ||
+    message.includes("offline") ||
+    message.includes("timed out")
+  ) {
+    return new Error("Connection error. Try again.");
+  }
+
+  return new Error("Apple sign-in failed. Please try again.");
+}
+
+async function signInWithAppleIdToken(identityToken: string, nonce?: string | null) {
+  return supabase.auth.signInWithIdToken({
+    provider: "apple",
+    token: identityToken,
+    nonce: nonce ?? undefined,
+  });
+}
+
+async function nativeDirectAppleSignIn(): Promise<{ error?: Error }> {
+  try {
+    const credentials = await NativeAppleAuth.signIn();
+
+    if (!credentials?.identityToken) {
+      clearAppleAuthStarted();
+      clearAppleUsernameSelectionPending();
+      return { error: new Error("Apple sign-in failed. Please try again.") };
+    }
+
+    const { data, error } = await signInWithAppleIdToken(credentials.identityToken, credentials.nonce);
+
+    if (error) {
+      clearAppleAuthStarted();
+      clearAppleUsernameSelectionPending();
+      return { error: new Error("Apple sign-in failed. Please try again.") };
+    }
+
+    const provider = data.user?.app_metadata?.provider;
+    const providers = Array.isArray(data.user?.app_metadata?.providers)
+      ? data.user?.app_metadata?.providers
+      : [];
+    const isAppleUser = provider === "apple" || providers.includes("apple");
+    const identities = Array.isArray(data.user?.identities) ? data.user.identities : [];
+    const hasNonAppleIdentity = identities.some((identity) => identity.provider && identity.provider !== "apple");
+    const providerAssignedUsername = data.user?.user_metadata?.username;
+    if (isAppleUser && !hasNonAppleIdentity) {
+      markAppleAuthStarted();
+    } else {
+      clearAppleAuthStarted();
+      clearAppleUsernameSelectionPending();
+    }
+
+    return {};
+  } catch (err) {
+    clearAppleAuthStarted();
+    clearAppleUsernameSelectionPending();
+    return { error: getFriendlyAppleError(err) };
+  }
+}
+
 async function openUrlOutsideApp(url: string) {
   try {
     const { AppLauncher } = await import("@capacitor/app-launcher");
@@ -231,11 +322,8 @@ export function clearPublishedAppleAttempt() {
 
 export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
   try {
-    markAppleUsernameSelectionPending();
-
     if (Capacitor.isNativePlatform()) {
-      await openPublishedAuthPageInSystemBrowser();
-      return {};
+      return await nativeDirectAppleSignIn();
     }
 
     // Non-native preview environments: redirect to published auth page

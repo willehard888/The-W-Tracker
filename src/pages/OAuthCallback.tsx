@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { applySessionFromUrl } from "@/lib/oauth-session";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 import { clearPublishedAppleAttempt } from "@/lib/native-auth";
+import { clearAppleAuthStarted, clearAppleUsernameSelectionPending } from "@/lib/apple-username";
 import { toast } from "sonner";
 
 const APP_SCHEME = "app.lovable.wtracker";
@@ -144,7 +145,9 @@ const OAuthCallback = () => {
         // Log any OAuth error params
         if (oauthError) {
           console.error("[OAuthCB] Error:", oauthError, oauthErrorDescription);
-          toast.error(`Sign in failed: ${oauthErrorDescription || oauthError}`);
+          clearAppleAuthStarted();
+          clearAppleUsernameSelectionPending();
+          toast.error("Apple sign-in failed. Please try again.");
           pushIosDebugLog("OAuthCallback", "OAuth provider error in callback", {
             error: oauthError,
             errorDescription: oauthErrorDescription,
@@ -153,12 +156,16 @@ const OAuthCallback = () => {
 
         if (!sessionApplied && !oauthError && !sentToApp) {
           clearPublishedAppleAttempt();
-          toast.error("Session could not be established. Please try again.");
+          clearAppleAuthStarted();
+          clearAppleUsernameSelectionPending();
+          toast.error("Connection error. Try again.");
         }
       } catch (e) {
         console.error("[OAuthCB] Unexpected:", e);
-        const message = getErrorMessage(e);
-        toast.error(`Sign in error: ${message}`);
+        clearAppleAuthStarted();
+        clearAppleUsernameSelectionPending();
+        const message = "Connection error. Try again.";
+        toast.error(message);
         clearPublishedAppleAttempt();
         updateOauthDebug({ error: message });
         pushIosDebugLog("OAuthCallback", "Unexpected callback exception", {

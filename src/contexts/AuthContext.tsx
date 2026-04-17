@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, ReactNode 
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
-import { clearAppleUsernameSelectionPending, isAppleUsernameSelectionPending } from "@/lib/apple-username";
+import { clearAppleAuthStarted, clearAppleUsernameSelectionPending, isAppleAuthStarted, markAppleUsernameSelectionPending } from "@/lib/apple-username";
 
 interface AuthContextType {
   user: User | null;
@@ -60,6 +60,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const shouldForceAppleUsernameSetup = (authUser: User, nextProfile: any | null) => {
+    if (!isAppleAuthStarted()) return false;
+
+    const provider = authUser.app_metadata?.provider;
+    const providers = Array.isArray(authUser.app_metadata?.providers) ? authUser.app_metadata.providers : [];
+    const isAppleUser = provider === "apple" || providers.includes("apple");
+    const username = nextProfile?.username?.trim?.() || "";
+    const fallbackUsername = buildFallbackUsername(authUser);
+
+    return isAppleUser && (!username || username === fallbackUsername);
+  };
+
   const fetchProfile = async (authUser: User) => {
     let { data } = await supabase
       .from("profiles")
@@ -82,12 +94,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setProfile(data);
     setIsElite(Boolean(data?.is_elite));
 
-    if (data?.username && isAppleUsernameSelectionPending()) {
-      const fallbackUsername = buildFallbackUsername(authUser);
-      if (data.username !== fallbackUsername) {
-        clearAppleUsernameSelectionPending();
+    if (shouldForceAppleUsernameSetup(authUser, data)) {
+      if (!data?.username || data.username === buildFallbackUsername(authUser)) {
+        clearAppleAuthStarted();
+        markAppleUsernameSelectionPending();
+        return;
       }
     }
+
+    clearAppleAuthStarted();
+    clearAppleUsernameSelectionPending();
   };
 
   const refreshProfile = async () => {
@@ -175,6 +191,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    clearAppleAuthStarted();
     clearAppleUsernameSelectionPending();
     setProfile(null);
     setIsElite(false);

@@ -420,12 +420,23 @@ const DailyCheckin = () => {
       <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border bg-card p-4 mb-3">
         <div className="flex items-center gap-3 mb-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Moon size={20} /></div>
-          <div><p className="font-semibold text-sm">Sleep</p><p className="text-xs text-muted-foreground">Optimal: 8–9 hours</p></div>
-          <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", sleep >= 7 && sleep <= 9 ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground")}>{sleep}h {sleep >= 8 && sleep <= 9 ? "🚀" : sleep >= 7 ? "👍" : sleep <= 5 ? "💀" : "😐"}</span>
+          <div>
+            <p className="font-semibold text-sm">Sleep</p>
+            <p className="text-xs text-muted-foreground">Optimal: 8–9 hours</p>
+          </div>
+          <span className={cn(
+            "ml-auto text-2xl font-bold font-display tabular-nums",
+            isOptimalSleep ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground"
+          )}>
+            {sleep}h {sleep >= 8 && sleep <= 9 ? "🚀" : (sleep >= 10 && sleep <= 12 && !isChronicOversleep) ? "✨" : sleep === 7 ? "😐" : sleep <= 5 ? "💀" : sleep >= 10 ? "😴" : "⚠️"}
+          </span>
         </div>
         <input type="range" min={4} max={12} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
         {sleepPenaltyLabel && (
-          <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ Poor sleep — {sleepPenaltyLabel}</p>
+          <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ {sleepPenaltyLabel}</p>
+        )}
+        {isChronicOversleep && sleep >= 10 && (
+          <p className="text-[10px] text-muted-foreground mt-1">You've slept 10h+ {oversleepCount} of the last 7 nights — occasional long nights help, chronic oversleep hurts.</p>
         )}
       </div>
 
@@ -437,9 +448,6 @@ const DailyCheckin = () => {
           <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
         </div>
         <input type="range" min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
-        {sleepPenaltyLabel && (
-          <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ Poor sleep — {sleepPenaltyLabel}</p>
-        )}
       </div>
 
       {/* Sport Category Selector */}

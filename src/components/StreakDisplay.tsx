@@ -202,18 +202,19 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
         </div>
 
         {/* Milestone progress track */}
-        <div className="flex items-center gap-[3px]">
+        <div className="flex items-center gap-1">
           {MILESTONES.map((m) => {
             const reached = streak >= m.days;
             const isNext = nextMilestone?.days === m.days;
             const isPast = currentMilestone && m.days <= currentMilestone.days;
 
             return (
-              <div key={m.days} className="flex-1 flex flex-col items-center gap-1">
+              <div key={m.days} className="flex-1 flex flex-col items-center gap-1.5">
                 <div
                   className={cn(
-                    "w-full h-2 rounded-full overflow-hidden transition-all duration-500",
-                    !reached && "bg-secondary/60"
+                    "w-full h-2.5 rounded-full overflow-hidden transition-all duration-500",
+                    !reached && "bg-secondary/60",
+                    isNext && "ring-1 ring-[hsl(var(--streak-orange))]/40"
                   )}
                 >
                   {isPast ? (
@@ -257,15 +258,16 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
                   ) : null}
                 </div>
 
-                <div className={cn("text-center transition-all", reached ? "opacity-100" : isNext ? "opacity-70" : "opacity-30")}>
+                <div className={cn("text-center transition-all", reached ? "opacity-100" : isNext ? "opacity-90" : "opacity-50")}>
                   <span
                     className={cn(
-                      "text-[8px] font-bold tabular-nums block leading-none",
+                      "text-[11px] font-black tabular-nums block leading-none tracking-tight",
                       reached && isLegendary && "text-[hsl(280_70%_65%)]",
                       reached && isDiamond && !isLegendary && "text-[hsl(200_80%_65%)]",
                       reached && isBlazing && !isDiamond && "text-gold",
                       reached && !isBlazing && "text-[hsl(var(--streak-orange))]",
-                      !reached && "text-muted-foreground"
+                      isNext && !reached && "text-[hsl(var(--streak-orange))]/90",
+                      !reached && !isNext && "text-muted-foreground"
                     )}
                   >
                     {m.label}
@@ -278,11 +280,11 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
 
         {/* Next milestone CTA */}
         {nextMilestone && (
-          <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-border/30">
-            <p className="text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-border/30">
+            <p className="text-xs text-muted-foreground">
               <span
                 className={cn(
-                  "font-bold",
+                  "font-black tabular-nums text-sm",
                   isLegendary
                     ? "text-[hsl(280_70%_65%)]"
                     : isDiamond
@@ -296,16 +298,16 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
               >
                 {nextMilestone.days - displayStreak}d
               </span>{" "}
-              to {nextMilestone.emoji} {nextMilestone.label} milestone
+              to <span className="font-bold text-foreground">{nextMilestone.emoji} {nextMilestone.label}</span> milestone
             </p>
-            <ChevronRight size={12} className="text-muted-foreground/40" />
+            <ChevronRight size={14} className="text-muted-foreground/50" />
           </div>
         )}
 
         {/* Pressure microcopy */}
         {displayStreak >= 3 && (
           <div className="mt-2 pt-2 border-t border-border/20">
-            <p className="text-[9px] text-muted-foreground/60 font-semibold text-center italic">
+            <p className="text-[11px] text-muted-foreground/75 font-semibold text-center italic">
               {displayStreak >= 60 ? "🔱 Few ever reach this. Don't stop." :
                displayStreak >= 30 ? "👑 Most fail before this point." :
                displayStreak >= 14 ? "💪 Don't break now. Keep pushing." :
@@ -316,9 +318,9 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
         )}
 
         {!nextMilestone && (
-          <div className="flex items-center justify-center mt-2.5 pt-2 border-t border-gold/20">
+          <div className="flex items-center justify-center mt-3 pt-2.5 border-t border-gold/20">
             <span className={cn(
-              "text-[10px] font-bold",
+              "text-xs font-black",
               isLegendary ? "text-[hsl(280_70%_65%)]" : "text-gold"
             )}>
               🏆 All milestones reached!
@@ -337,13 +339,13 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
               : "border-border/30"
           )}>
             {deadline.expired ? (
-              <p className="text-[10px] font-bold text-destructive animate-pulse">
+              <p className="text-xs font-black text-destructive animate-pulse">
                 💀 Streak at risk! Check in NOW
               </p>
             ) : (
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 <span className={cn(
-                  "font-bold tabular-nums",
+                  "font-black tabular-nums",
                   deadline.urgent ? "text-destructive" : "text-foreground"
                 )}>
                   {deadline.urgent && "⚠️ "}

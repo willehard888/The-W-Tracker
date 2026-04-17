@@ -147,7 +147,7 @@ const DailyCheckin = () => {
   const workout = sportCategory !== "none";
 
   // Sleep quality logic
-  // - 8–9h is optimal
+  // - 7.5–9h is optimal
   // - 10–12h is good occasionally, but penalized if chronic (≥3 nights of 10h+ in last 7 days)
   // - 7h is sub-optimal (poor)
   // - <7h is poor / dangerous
@@ -155,22 +155,22 @@ const DailyCheckin = () => {
   const isChronicOversleep = oversleepCount >= 3;
 
   const isOptimalSleep =
-    (sleep >= 8 && sleep <= 9) ||
+    (sleep >= 7.5 && sleep <= 9) ||
     (sleep >= 10 && sleep <= 12 && !isChronicOversleep);
 
   let sleepMultiplier = 1.0;
-  if (sleep >= 8 && sleep <= 9) sleepMultiplier = 1.0;
+  if (sleep >= 7.5 && sleep <= 9) sleepMultiplier = 1.0;
   else if (sleep >= 10 && sleep <= 12) sleepMultiplier = isChronicOversleep ? 0.6 : 0.95;
-  else if (sleep === 7) sleepMultiplier = 0.8;
-  else if (sleep === 6) sleepMultiplier = 0.65;
-  else if (sleep === 5) sleepMultiplier = 0.5;
+  else if (sleep >= 7 && sleep < 7.5) sleepMultiplier = 0.8;
+  else if (sleep >= 6 && sleep < 7) sleepMultiplier = 0.65;
+  else if (sleep >= 5 && sleep < 6) sleepMultiplier = 0.5;
   else sleepMultiplier = 0.4; // <5h
 
   let sleepPenaltyLabel: string | null = null;
   if (sleepMultiplier < 1) {
     const pct = `${Math.round((1 - sleepMultiplier) * 100)}% XP penalty`;
     if (isChronicOversleep && sleep >= 10) sleepPenaltyLabel = `Chronic oversleep — ${pct}`;
-    else if (sleep === 7) sleepPenaltyLabel = `Sub-optimal sleep — ${pct}`;
+    else if (sleep >= 7 && sleep < 7.5) sleepPenaltyLabel = `Sub-optimal sleep — ${pct}`;
     else if (sleep < 7) sleepPenaltyLabel = `Poor sleep — ${pct}`;
     else sleepPenaltyLabel = pct;
   }
@@ -422,16 +422,16 @@ const DailyCheckin = () => {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Moon size={20} /></div>
           <div>
             <p className="font-semibold text-sm">Sleep</p>
-            <p className="text-xs text-muted-foreground">Optimal: 8–9 hours</p>
+            <p className="text-xs text-muted-foreground">Optimal: 7.5–9 hours</p>
           </div>
           <span className={cn(
             "ml-auto text-2xl font-bold font-display tabular-nums",
             isOptimalSleep ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground"
           )}>
-            {sleep}h {sleep >= 8 && sleep <= 9 ? "🚀" : (sleep >= 10 && sleep <= 12 && !isChronicOversleep) ? "✨" : sleep === 7 ? "😐" : sleep <= 5 ? "💀" : sleep >= 10 ? "😴" : "⚠️"}
+            {sleep}h {sleep >= 7.5 && sleep <= 9 ? "🚀" : (sleep >= 10 && sleep <= 12 && !isChronicOversleep) ? "✨" : sleep >= 7 && sleep < 7.5 ? "😐" : sleep <= 5 ? "💀" : sleep >= 10 ? "😴" : "⚠️"}
           </span>
         </div>
-        <input type="range" min={4} max={12} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
+        <input type="range" min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
         {sleepPenaltyLabel && (
           <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ {sleepPenaltyLabel}</p>
         )}

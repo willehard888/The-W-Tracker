@@ -171,11 +171,10 @@ function getFriendlyAppleError(err: unknown): Error {
   return new Error("Apple sign-in failed. Please try again.");
 }
 
-async function signInWithAppleIdToken(identityToken: string, accessToken?: string | null, nonce?: string | null) {
+async function signInWithAppleIdToken(identityToken: string, nonce?: string | null) {
   return supabase.auth.signInWithIdToken({
     provider: "apple",
     token: identityToken,
-    access_token: accessToken ?? undefined,
     nonce: nonce ?? undefined,
   });
 }
@@ -190,7 +189,7 @@ async function nativeDirectAppleSignIn(): Promise<{ error?: Error }> {
       return { error: new Error("Apple sign-in failed. Please try again.") };
     }
 
-    const { data, error } = await signInWithAppleIdToken(credentials.identityToken, credentials.authorizationCode, credentials.nonce);
+    const { data, error } = await signInWithAppleIdToken(credentials.identityToken, credentials.nonce);
 
     if (error) {
       clearAppleAuthStarted();

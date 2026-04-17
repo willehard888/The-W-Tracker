@@ -6,6 +6,7 @@ import { applySessionFromUrl } from "@/lib/oauth-session";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 import { toast } from "sonner";
 import { clearAppleAuthStarted, clearAppleUsernameSelectionPending } from "@/lib/apple-username";
+import { supabase } from "@/integrations/supabase/client";
 
 let oauthHandled = false;
 
@@ -50,6 +51,18 @@ async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
     }
 
     pushIosDebugLog("DeepLink", "OAuth session applied successfully", { source });
+
+    const { data } = await supabase.auth.getUser();
+    const authUser = data?.user;
+    if (!authUser) return;
+
+    const provider = authUser.app_metadata?.provider;
+    const providers = Array.isArray(authUser.app_metadata?.providers) ? authUser.app_metadata.providers : [];
+    const isAppleUser = provider === "apple" || providers.includes("apple");
+    if (!isAppleUser) {
+      clearAppleAuthStarted();
+      clearAppleUsernameSelectionPending();
+    }
 
     // Don't reload — AuthContext will pick up the session change automatically
   } catch (e) {

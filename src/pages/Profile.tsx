@@ -1,5 +1,5 @@
 
-import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy, CreditCard, Medal, Moon } from "lucide-react";
+import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy, CreditCard, Medal, Moon, Trash2 } from "lucide-react";
 import { isNativePlatform } from "@/lib/platform";
 import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
@@ -8,6 +8,7 @@ import BadgeShowcase from "@/components/BadgeShowcase";
 import StatusBadge from "@/components/StatusBadge";
 import RankPressureCard from "@/components/RankPressureCard";
 import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +28,7 @@ const Profile = () => {
   const queryClient = useQueryClient();
   const [previewBadge, setPreviewBadge] = useState<any>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const syncedBadgesForUserRef = useRef<string | null>(null);
   const [shareModal, setShareModal] = useState<{ open: boolean; variant: "stats" | "streak" | "badge"; badgeData?: any }>({
@@ -509,6 +511,45 @@ const Profile = () => {
           <LogOut size={14} />
           Sign Out
         </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline" size="sm" className="flex-1">
+              <Trash2 size={14} />
+              Delete Account
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This permanently removes your account and profile. If you have an active subscription, cancel it first from subscription management so billing stops correctly.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Keep Account</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={async () => {
+                  setDeletingAccount(true);
+                  try {
+                    const { error } = await supabase.functions.invoke("delete-account");
+                    if (error) throw error;
+                    await signOut();
+                    toast.success("Account deleted");
+                    navigate("/landing", { replace: true });
+                  } catch {
+                    toast.error("Could not delete account");
+                  } finally {
+                    setDeletingAccount(false);
+                  }
+                }}
+                disabled={deletingAccount}
+              >
+                {deletingAccount ? "Deleting..." : "Delete Permanently"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       {/* Stats */}

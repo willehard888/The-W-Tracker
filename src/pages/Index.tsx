@@ -65,12 +65,6 @@ const Index = () => {
     enabled: !!profile,
   });
 
-  const dailyQuote = useMemo(() => {
-    const today = new Date().toDateString();
-    let hash = 0;
-    for (let i = 0; i < today.length; i++) hash = ((hash << 5) - hash) + today.charCodeAt(i);
-    return pressureQuotes[Math.abs(hash) % pressureQuotes.length];
-  }, []);
 
   if (!profile) return null;
 

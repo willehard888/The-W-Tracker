@@ -45,6 +45,13 @@ const StatusHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const dailyQuote = useMemo(() => {
+    const today = new Date().toDateString();
+    let hash = 0;
+    for (let i = 0; i < today.length; i++) hash = ((hash << 5) - hash) + today.charCodeAt(i);
+    return PRESSURE_QUOTES[Math.abs(hash) % PRESSURE_QUOTES.length];
+  }, []);
+
   if (!user || !profile) return null;
   if (HIDDEN_ROUTES.has(location.pathname)) return null;
   if (
@@ -59,13 +66,6 @@ const StatusHeader = () => {
   const config = getTierConfig(tier);
   const next = getNextTier(tier);
   const streak = profile.streak || 0;
-
-  const dailyQuote = useMemo(() => {
-    const today = new Date().toDateString();
-    let hash = 0;
-    for (let i = 0; i < today.length; i++) hash = ((hash << 5) - hash) + today.charCodeAt(i);
-    return PRESSURE_QUOTES[Math.abs(hash) % PRESSURE_QUOTES.length];
-  }, []);
 
   // Tier progress: position within full hierarchy (0..1)
   const tierProgress = (TIER_ORDER.indexOf(tier as any) + 1) / TIER_ORDER.length;

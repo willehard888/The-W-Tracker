@@ -7,7 +7,7 @@ import { getTierConfig, TIER_ORDER, StatusTier } from "@/lib/status-tiers";
 import { useAuth } from "@/contexts/AuthContext";
 import StoryShareModal from "@/components/StoryShareModal";
 import ConfettiBurst from "@/components/ConfettiBurst";
-import { triggerHaptic } from "@/lib/haptics";
+import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
 const STORAGE_KEY = "w_last_tier_seen";
 
@@ -34,7 +34,7 @@ const TierPromotionCelebration = () => {
     if (stored !== currentTier && tierRank(currentTier) > tierRank(stored)) {
       setPreviousTier(stored);
       setShowCelebration(true);
-      triggerHaptic("success");
+      hapticNotification("success");
       localStorage.setItem(`${STORAGE_KEY}_${user.id}`, currentTier);
     } else if (stored !== currentTier) {
       // Demotion or sideways — silently update
@@ -68,7 +68,7 @@ const TierPromotionCelebration = () => {
             className="fixed inset-0 z-[100] flex items-center justify-center px-6"
             style={{ background: heroGradient, backdropFilter: "blur(20px)" }}
           >
-            <ConfettiBurst trigger={showCelebration} />
+            <ConfettiBurst active={showCelebration} />
 
             <button
               onClick={() => setShowCelebration(false)}

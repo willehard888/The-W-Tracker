@@ -112,11 +112,6 @@ const Index = () => {
         }}
       />
 
-      {/* Status badge */}
-      <div className="animate-reveal mb-4 relative z-10 pt-2 flex items-center justify-end">
-        <StatusBadge tier={tier} size="md" />
-      </div>
-
       {/* Rank Pressure Card */}
       {rankData && (
         <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">

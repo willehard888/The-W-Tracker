@@ -302,12 +302,77 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
 
           <div className="flex flex-col items-center justify-center h-full px-6 text-center">
             <p className="font-bold tracking-[0.3em] text-gold/80 mb-1 text-lg">THE W TRACKER</p>
-// ... keep existing code
+            <p className={cn(
+              "font-black uppercase tracking-wider mb-4 text-[10px]",
+              tier === 'legend' ? "text-[hsl(280_70%_60%)]" :
+              tier === 'apex' ? "text-[hsl(18_95%_58%)]" :
+              tier === 'elite' ? "text-gold" : "text-muted-foreground/40"
+            )}>
+              {tierConfig.emoji} {tierConfig.label}
+            </p>
+
+            {variant === "stats" && (
+              <>
+                <p className="font-extrabold text-foreground mb-2 text-2xl">@{profile.username}</p>
+                <p className="font-black text-gold text-5xl drop-shadow-[0_0_20px_hsl(42_78%_54%/0.5)]">
+                  {profile.xp.toLocaleString()}
+                </p>
+                <p className="font-bold tracking-widest text-gold/50 mb-6 text-xs">TOTAL XP</p>
+                <div className="grid grid-cols-3 gap-2 w-full">
+                  {[
+                    { label: "STREAK", value: `${profile.streak}d`, emoji: "🔥" },
+                    { label: "LEVEL", value: `${profile.level}`, emoji: "⚡" },
+                    { label: "BEST", value: `${profile.longest_streak}d`, emoji: "🏆" },
+                  ].map((s) => (
+                    <div key={s.label} className="flex flex-col items-center">
+                      <p className="font-black text-foreground text-lg">{s.emoji} {s.value}</p>
+                      <p className="font-bold tracking-widest text-muted-foreground/30 text-[8px]">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {variant === "streak" && (
+              <>
+                <p className="font-extrabold text-foreground mb-3 text-xl">@{profile.username}</p>
+                <p className="text-7xl drop-shadow-[0_0_25px_hsl(18_95%_58%/0.5)]">🔥</p>
+                <p className="font-black text-gold mt-2 text-5xl drop-shadow-[0_0_15px_hsl(42_78%_54%/0.4)]">
+                  {profile.streak}
+                </p>
+                <p className="font-black text-gold/70 tracking-wider text-base">DAY STREAK</p>
                 <p className="text-muted-foreground/40 font-bold mt-2 text-xs">
                   {profile.streak >= 30 ? "MOST FAIL BEFORE THIS →" : profile.streak >= 7 ? "DON'T BREAK NOW →" : "BEAT MY STREAK →"}
                 </p>
                 <p className="text-muted-foreground/25 mt-1 text-sm">Best: {profile.longest_streak} days</p>
-// ... keep existing code
+              </>
+            )}
+
+            {variant === "badge" && badgeData && (
+              <>
+                <p className="font-extrabold text-foreground mb-3 text-xl">@{profile.username}</p>
+                <p className={cn(
+                  "text-6xl",
+                  badgeData.rarity === 'legendary' && "drop-shadow-[0_0_25px_hsl(42_78%_54%/0.6)]",
+                  badgeData.rarity === 'epic' && "drop-shadow-[0_0_25px_hsl(280_70%_60%/0.5)]"
+                )}>
+                  {badgeData.icon}
+                </p>
+                <p className="font-extrabold text-foreground mt-3 text-lg">{badgeData.name}</p>
+                <p className={cn(
+                  "font-bold tracking-widest mt-1 text-xs",
+                  badgeData.rarity === 'legendary' ? "text-gold" :
+                  badgeData.rarity === 'epic' ? "text-[hsl(280_70%_60%)]" :
+                  badgeData.rarity === 'rare' ? "text-[hsl(217_91%_60%)]" : "text-muted-foreground/40"
+                )}>
+                  {badgeData.rarity.toUpperCase()}
+                </p>
+                {badgeData.rarity === 'legendary' && (
+                  <p className="text-gold/40 font-semibold mt-2 text-[10px]">ONLY TOP 1% EARN THIS</p>
+                )}
+              </>
+            )}
+
             <p className="absolute bottom-4 text-muted-foreground/20 font-semibold tracking-[0.3em] text-xl">
               DISCIPLINE IS THE NEW FLEX
             </p>

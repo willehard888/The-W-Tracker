@@ -31,7 +31,8 @@ const StatusHeader = () => {
   if (
     location.pathname.startsWith("/oauth") ||
     location.pathname.startsWith("/callback") ||
-    location.pathname.startsWith("/~oauth")
+    location.pathname.startsWith("/~oauth") ||
+    location.pathname.startsWith("/u/")
   )
     return null;
 

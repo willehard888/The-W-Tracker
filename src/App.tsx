@@ -12,6 +12,7 @@ import AmbientParticles from "@/components/AmbientParticles";
 import BottomNav from "@/components/BottomNav";
 import StatusHeader from "@/components/StatusHeader";
 import AccessGate from "@/components/AccessGate";
+import TierPromotionCelebration from "@/components/TierPromotionCelebration";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -38,6 +39,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const IosDebug = lazy(() => import("./pages/IosDebug"));
 const AppleAuthLaunch = lazy(() => import("./pages/AppleAuthLaunch"));
 const AppleUsername = lazy(() => import("./pages/AppleUsername"));
+const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 
 const queryClient = new QueryClient();
 
@@ -91,6 +93,7 @@ const AppRoutes = () => {
           <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+          <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/terms" element={<TermsOfUse />} />
@@ -109,6 +112,7 @@ const AppRoutes = () => {
         </Suspense>
       </div>
       <BottomNav />
+      {user && <TierPromotionCelebration />}
     </div>
   );
 };

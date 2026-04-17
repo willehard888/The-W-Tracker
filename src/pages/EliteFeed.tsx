@@ -13,6 +13,7 @@ import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizo
 import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import StatusAvatar from "@/components/StatusAvatar";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -726,12 +727,7 @@ const EliteFeed = () => {
 
               {/* Post Header */}
               <div className="flex items-center gap-3 p-4 pb-0">
-                <Avatar className={cn("h-10 w-10 shrink-0 ring-2", post.profile?.status_tier === "elite" ? "ring-gold/40" : "ring-border/30")}>
-                  {post.profile?.avatar_url ? <AvatarImage src={post.profile.avatar_url} alt={post.profile.username} /> : null}
-                  <AvatarFallback className={cn("text-xs font-black text-white", tierStyle)}>
-                    {post.profile?.username?.charAt(0)?.toUpperCase() || "?"}
-                  </AvatarFallback>
-                </Avatar>
+                <StatusAvatar src={post.profile?.avatar_url} name={post.profile?.username} tier={post.profile?.status_tier || 'recruit'} size="sm" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <button

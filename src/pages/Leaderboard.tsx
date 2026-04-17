@@ -1,6 +1,6 @@
 import AppLogoHeader from "@/components/AppLogoHeader";
 import { Trophy, Lock, Crown, TrendingUp, Clock3, Medal } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +21,7 @@ type LeaderRow = {
   streak: number;
   user_id: string;
   avatar_url: string | null;
+  status_tier?: string | null;
   season_points?: number;
 };
 
@@ -64,7 +65,7 @@ const Leaderboard = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("username, xp, level, streak, user_id, avatar_url")
+        .select("username, xp, level, streak, user_id, avatar_url, status_tier")
         .gt("xp", 0)
         .order("xp", { ascending: false })
         .limit(BOARD_LIMIT);
@@ -133,7 +134,7 @@ const Leaderboard = () => {
           .eq("season_id", activeSeason.id),
         supabase
           .from("profiles")
-          .select("username, xp, level, streak, user_id, avatar_url")
+          .select("username, xp, level, streak, user_id, avatar_url, status_tier")
           .gt("xp", 0),
       ]);
 
@@ -299,12 +300,7 @@ const Leaderboard = () => {
               <div className={cn("font-display font-black text-xl w-8 text-center tabular-nums", rankColors[i] || "text-muted-foreground")}>
                 {i === 0 ? <Crown size={22} className="text-gold mx-auto" /> : i + 1}
               </div>
-              <Avatar className="h-9 w-9 shrink-0">
-                {user.avatar_url ? <AvatarImage src={user.avatar_url} alt={user.username} /> : null}
-                <AvatarFallback className={cn("text-xs font-bold", i === 0 ? "bg-gold/20 text-gold" : "bg-secondary")}>
-                  {user.username?.charAt(0)?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <StatusAvatar src={user.avatar_url} name={user.username} tier={user.status_tier || 'recruit'} size="sm" />
               <div className="flex-1 min-w-0">
                 <button
                   onClick={() => navigate(`/user/${user.user_id}`)}
@@ -343,10 +339,7 @@ const Leaderboard = () => {
                 )}
               >
                 <div className="font-display font-black text-xl w-8 text-center text-muted-foreground tabular-nums">{i + 4}</div>
-                <Avatar className="h-8 w-8 shrink-0">
-                  {user.avatar_url ? <AvatarImage src={user.avatar_url} alt={user.username} /> : null}
-                  <AvatarFallback className="text-xs font-bold bg-secondary">{user.username?.charAt(0)?.toUpperCase()}</AvatarFallback>
-                </Avatar>
+                <StatusAvatar src={user.avatar_url} name={user.username} tier={user.status_tier || 'recruit'} size="sm" />
                 <div className="flex-1 min-w-0">
                   <button
                     onClick={() => navigate(`/user/${user.user_id}`)}

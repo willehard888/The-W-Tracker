@@ -209,9 +209,8 @@ const Index = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 mb-4 animate-reveal animate-reveal-delay-2">
+      <div className="mb-4 animate-reveal animate-reveal-delay-2">
         <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} lastCheckinAt={lastCheckin?.checked_in_at} />
-        <LevelCard level={profile.level} />
       </div>
 
       {/* Streak Pressure Warning */}

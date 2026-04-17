@@ -1,4 +1,4 @@
-import AppLogoHeader from "@/components/AppLogoHeader";
+
 import { useAuth } from "@/contexts/AuthContext";
 import EliteFeedTeaser from "@/components/EliteFeedTeaser";
 import FeatureGateScreen from "@/components/FeatureGateScreen";
@@ -458,7 +458,7 @@ const EliteFeed = () => {
       onTouchEnd={onTouchEnd}
     >
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
-      <AppLogoHeader />
+      
       <div className="animate-reveal mb-6">
         <div className="flex items-center justify-between">
           <div>

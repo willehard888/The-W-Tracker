@@ -1,4 +1,4 @@
-import AppLogoHeader from "@/components/AppLogoHeader";
+
 import { Trophy, Lock, Crown, TrendingUp, Clock3, Medal } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
@@ -226,7 +226,7 @@ const Leaderboard = () => {
       onTouchEnd={onTouchEnd}
     >
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
-      <AppLogoHeader />
+      
 
       <div className="animate-reveal mb-4">
         <h1 className="font-display text-3xl font-bold tracking-tight">Leaderboard</h1>

@@ -1,4 +1,4 @@
-import AppLogoHeader from "@/components/AppLogoHeader";
+
 import { useState, useRef, useEffect } from "react";
 import { Swords, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image, Vote, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
 import FeatureGateScreen from "@/components/FeatureGateScreen";
@@ -362,7 +362,7 @@ const Battles = () => {
 
   return (
     <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
-      <AppLogoHeader />
+      
       <input
         ref={fileInputRef}
         type="file"

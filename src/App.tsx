@@ -1,7 +1,8 @@
-import { lazy, Suspense, useState, useCallback } from "react";
+import { lazy, Suspense, useState, useCallback, useEffect } from "react";
 import SplashScreen from "@/components/SplashScreen";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
+import { registerDeepLinkHandler } from "@/lib/deep-link-handler";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";

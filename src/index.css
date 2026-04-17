@@ -706,9 +706,42 @@
       hsl(var(--gold) / 0.4)
     );
     filter: blur(8px);
-    opacity: 0.55;
+    opacity: 0.5;
     z-index: -1;
-    animation: conic-rotate 8s linear infinite;
+    animation: conic-rotate 14s linear infinite;
+  }
+
+  /* Gentle float — hengittävä, luonnollinen liike */
+  .gentle-float {
+    animation: gentle-float 6s ease-in-out infinite;
+  }
+
+  /* Soft inner glow pulse — luonnollinen hengitys */
+  .soft-glow-pulse {
+    animation: soft-glow-pulse 4.5s ease-in-out infinite;
+  }
+
+  /* Edge sheen — kevyt valokaista reunan yli */
+  .edge-sheen {
+    position: relative;
+    overflow: hidden;
+  }
+  .edge-sheen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      hsl(0 0% 100% / 0.06) 50%,
+      transparent 100%
+    );
+    transform: skewX(-20deg);
+    animation: edge-sheen-slide 7s ease-in-out infinite;
+    pointer-events: none;
   }
 }
 

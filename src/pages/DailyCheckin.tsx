@@ -422,16 +422,16 @@ const DailyCheckin = () => {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Moon size={20} /></div>
           <div>
             <p className="font-semibold text-sm">Sleep</p>
-            <p className="text-xs text-muted-foreground">Optimal: 8–9 hours</p>
+            <p className="text-xs text-muted-foreground">Optimal: 7.5–9 hours</p>
           </div>
           <span className={cn(
             "ml-auto text-2xl font-bold font-display tabular-nums",
             isOptimalSleep ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground"
           )}>
-            {sleep}h {sleep >= 8 && sleep <= 9 ? "🚀" : (sleep >= 10 && sleep <= 12 && !isChronicOversleep) ? "✨" : sleep === 7 ? "😐" : sleep <= 5 ? "💀" : sleep >= 10 ? "😴" : "⚠️"}
+            {sleep}h {sleep >= 7.5 && sleep <= 9 ? "🚀" : (sleep >= 10 && sleep <= 12 && !isChronicOversleep) ? "✨" : sleep >= 7 && sleep < 7.5 ? "😐" : sleep <= 5 ? "💀" : sleep >= 10 ? "😴" : "⚠️"}
           </span>
         </div>
-        <input type="range" min={4} max={12} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
+        <input type="range" min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
         {sleepPenaltyLabel && (
           <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ {sleepPenaltyLabel}</p>
         )}

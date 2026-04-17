@@ -66,6 +66,12 @@ const Leaderboard = () => {
       const { data } = await supabase
         .from("profiles")
         .select("username, xp, level, streak, user_id, avatar_url, status_tier")
+        .gt("xp", 0)
+        .order("xp", { ascending: false })
+        .limit(BOARD_LIMIT);
+      return (data || []) as LeaderRow[];
+    },
+  });
 
   const { data: totalCount } = useQuery({
     queryKey: ["total-users"],

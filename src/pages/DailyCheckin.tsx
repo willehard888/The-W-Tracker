@@ -199,26 +199,16 @@ const DailyCheckin = () => {
   const completedCount = [workout, extraWorkout, coldShower, healthyFood, protein, meditationAm, meditationPm, noPhoneAm, noPhonePm, hydration >= 3, isOptimalSleep, reading].filter(Boolean).length;
   const maxCount = 12;
   const perfPercent = Math.round((completedCount / maxCount) * 100);
-  const proofBonus = isElite && proofFile ? 30 : 0;
-  const rawXp = [
-    selectedSport.xp,
-    extraWorkout && 25,
-    coldShower && 30,
-    healthyFood && 20,
-    protein && 15,
-    meditationAm && 15,
-    meditationPm && 15,
   // Sleep quality logic
-  // - 8h is optimal
-  // - 9–12h is good ONLY if not chronic (≥3 nights of 10h+ in last 7 days = oversleep pattern)
-  // - 7h = sub-optimal (poor)
-  // - <7h = poor / dangerous
+  // - 8–9h is optimal
+  // - 10–12h is good occasionally, but penalized if chronic (≥3 nights of 10h+ in last 7 days)
+  // - 7h is sub-optimal (poor)
+  // - <7h is poor / dangerous
   const oversleepCount = (recentSleep || []).filter((h) => h >= 10).length;
   const isChronicOversleep = oversleepCount >= 3;
 
   const isOptimalSleep =
-    sleep === 8 ||
-    sleep === 9 ||
+    (sleep >= 8 && sleep <= 9) ||
     (sleep >= 10 && sleep <= 12 && !isChronicOversleep);
 
   let sleepMultiplier = 1.0;

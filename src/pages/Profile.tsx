@@ -46,9 +46,7 @@ const Profile = () => {
       const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
       await supabase.rpc("update_own_profile", { new_avatar_url: urlData.publicUrl });
       toast.success("Profile photo updated! 📸");
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      // Force reload profile
-      window.location.reload();
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
     } catch (err) {
       console.error(err);
       toast.error("Failed to upload photo");
@@ -242,8 +240,7 @@ const Profile = () => {
       await supabase.rpc("update_own_profile", { clear_featured_badge: true });
     }
     toast.success(newId ? "Title badge set! 🏅" : "Title badge removed");
-    queryClient.invalidateQueries({ queryKey: ["profile"] });
-    window.location.reload();
+    await queryClient.invalidateQueries({ queryKey: ["profile"] });
   };
 
   if (!profile) return null;

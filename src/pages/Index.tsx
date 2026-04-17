@@ -112,14 +112,9 @@ const Index = () => {
         }}
       />
 
-      {/* Daily quote */}
-      <div className="animate-reveal mb-4 relative z-10 pt-2">
-        <p className="text-sm text-muted-foreground font-medium text-center mb-3 italic">
-          {dailyQuote}
-        </p>
-        <div className="flex items-center justify-end">
-          <StatusBadge tier={tier} size="md" />
-        </div>
+      {/* Status badge */}
+      <div className="animate-reveal mb-4 relative z-10 pt-2 flex items-center justify-end">
+        <StatusBadge tier={tier} size="md" />
       </div>
 
       {/* Rank Pressure Card */}

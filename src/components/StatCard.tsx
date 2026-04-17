@@ -65,8 +65,8 @@ const StatCard = ({ icon: Icon, label, value, sublabel, variant = "default", cla
           <Icon size={18} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium tracking-wide uppercase text-base text-primary">{label}</p>
-          <p className={cn("font-bold font-display tracking-tight leading-tight mt-0.5 text-4xl",
+          <p className="font-medium tracking-wide uppercase text-[10px] leading-tight text-primary break-words">{label}</p>
+          <p className={cn("font-bold font-display tracking-tight leading-tight mt-1 text-3xl",
 
           variant === "gold" && "text-gold glow-gold-text",
           variant === "elite" && "text-gold font-black drop-shadow-[0_0_6px_hsl(var(--gold)/0.4)]",

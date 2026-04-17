@@ -12,6 +12,7 @@ const PUBLISHED_LAUNCH_ATTEMPT_KEY = "w_apple_launch_attempt";
 type NativeAppleSignInResult = {
   identityToken: string;
   authorizationCode?: string | null;
+  nonce?: string | null;
   user?: string | null;
   email?: string | null;
   givenName?: string | null;
@@ -170,11 +171,12 @@ function getFriendlyAppleError(err: unknown): Error {
   return new Error("Apple sign-in failed. Please try again.");
 }
 
-async function signInWithAppleIdToken(identityToken: string, accessToken?: string | null) {
+async function signInWithAppleIdToken(identityToken: string, accessToken?: string | null, nonce?: string | null) {
   return supabase.auth.signInWithIdToken({
     provider: "apple",
     token: identityToken,
     access_token: accessToken ?? undefined,
+    nonce: nonce ?? undefined,
   });
 }
 
@@ -188,10 +190,7 @@ async function nativeDirectAppleSignIn(): Promise<{ error?: Error }> {
       return { error: new Error("Apple sign-in failed. Please try again.") };
     }
 
-    const { data, error } = await signInWithAppleIdToken(
-      credentials.identityToken,
-      credentials.authorizationCode,
-    );
+    const { data, error } = await signInWithAppleIdToken(credentials.identityToken, credentials.authorizationCode, credentials.nonce);
 
     if (error) {
       clearAppleAuthStarted();
@@ -207,14 +206,7 @@ async function nativeDirectAppleSignIn(): Promise<{ error?: Error }> {
     const identities = Array.isArray(data.user?.identities) ? data.user.identities : [];
     const hasNonAppleIdentity = identities.some((identity) => identity.provider && identity.provider !== "apple");
     const providerAssignedUsername = data.user?.user_metadata?.username;
-    const shouldPromptUsername = Boolean(
-      isAppleUser &&
-      !hasNonAppleIdentity &&
-      !providerAssignedUsername &&
-      !credentials.email,
-    );
-
-    if (shouldPromptUsername) {
+    if (isAppleUser && !hasNonAppleIdentity) {
       markAppleAuthStarted();
     } else {
       clearAppleAuthStarted();

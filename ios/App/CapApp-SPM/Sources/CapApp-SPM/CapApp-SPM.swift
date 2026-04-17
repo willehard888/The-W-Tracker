@@ -1,6 +1,8 @@
 import Foundation
 import Capacitor
 import AuthenticationServices
+import CryptoKit
+import Security
 
 @objc(NativeAppleAuthPlugin)
 public class NativeAppleAuthPlugin: CAPPlugin, CAPBridgedPlugin, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
@@ -63,17 +65,30 @@ public class NativeAppleAuthPlugin: CAPPlugin, CAPBridgedPlugin, ASAuthorization
             return
         }
 
-        let authorizationCode = credential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) }
+            let authorizationCode = credential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) }
 
-        call.resolve([
+        var payload: [String: Any] = [
             "identityToken": identityToken,
-            "authorizationCode": authorizationCode as Any,
-            "user": credential.user,
-            "email": credential.email as Any,
-            "givenName": credential.fullName?.givenName as Any,
-            "familyName": credential.fullName?.familyName as Any,
-            "nonce": currentNonce as Any
-        ])
+            "user": credential.user
+        ]
+
+        if let authorizationCode {
+            payload["authorizationCode"] = authorizationCode
+        }
+        if let email = credential.email {
+            payload["email"] = email
+        }
+        if let givenName = credential.fullName?.givenName {
+            payload["givenName"] = givenName
+        }
+        if let familyName = credential.fullName?.familyName {
+            payload["familyName"] = familyName
+        }
+        if let currentNonce {
+            payload["nonce"] = currentNonce
+        }
+
+        call.resolve(payload)
     }
 
     public func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
@@ -122,19 +137,10 @@ public class NativeAppleAuthPlugin: CAPPlugin, CAPBridgedPlugin, ASAuthorization
     }
 
     private static func sha256(_ input: String) -> String {
-        let data = Data(input.utf8)
-        if #available(iOS 13.0, *) {
-            importCryptoKit()
-            return SHA256.hash(data: data).compactMap { String(format: "%02x", $0) }.joined()
-        }
-        return input
+        let inputData = Data(input.utf8)
+        let hashed = SHA256.hash(data: inputData)
+        return hashed.compactMap { String(format: "%02x", $0) }.joined()
     }
 }
-
-@available(iOS 13.0, *)
-private func importCryptoKit() {}
-
-@available(iOS 13.0, *)
-import CryptoKit
 
 public let isCapacitorApp = true

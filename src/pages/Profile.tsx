@@ -454,10 +454,10 @@ const Profile = () => {
             {weeklySleep.multiplier < 1 && (
               <p className="text-[10px] text-muted-foreground mt-1">
                 {weeklySleep.isChronicOversleep
-                  ? `Chronic oversleep — ${weeklySleep.oversleepCount} nights of 10h+ this week. Aim for 8–9h.`
-                  : weeklySleep.avg < 8
-                  ? "Sleep 8–9 hours to earn full XP"
-                  : "Occasional long sleep is fine — keep most nights at 8–9h"}
+                  ? `Chronic oversleep — ${weeklySleep.oversleepCount} nights of 10h+ this week. Aim for 7.5–9h.`
+                  : weeklySleep.avg < 7.5
+                  ? "Sleep 7.5–9 hours to earn full XP"
+                  : "Occasional long sleep is fine — keep most nights at 7.5–9h"}
               </p>
             )}
           </div>

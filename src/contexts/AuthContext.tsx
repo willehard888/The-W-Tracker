@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, ReactNode 
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
-import { clearAppleAuthStarted, clearAppleUsernameSelectionPending, isAppleAuthStarted } from "@/lib/apple-username";
+import { clearAppleAuthStarted, clearAppleUsernameSelectionPending, isAppleAuthStarted, markAppleUsernameSelectionPending } from "@/lib/apple-username";
 
 interface AuthContextType {
   user: User | null;
@@ -97,7 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (shouldForceAppleUsernameSetup(authUser, data)) {
       if (!data?.username || data.username === buildFallbackUsername(authUser)) {
         clearAppleAuthStarted();
-        window.sessionStorage.setItem("w_apple_username_pending", "1");
+        markAppleUsernameSelectionPending();
         return;
       }
     }

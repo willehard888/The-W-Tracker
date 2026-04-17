@@ -1,6 +1,7 @@
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 import { clearAppleAuthStarted, clearAppleUsernameSelectionPending, markAppleAuthStarted } from "@/lib/apple-username";
+import { supabase } from "@/integrations/supabase/client";
 
 const PRODUCTION_URL = "https://status-level-up.lovable.app";
 const WEB_OAUTH_CALLBACK = "/oauth/callback";

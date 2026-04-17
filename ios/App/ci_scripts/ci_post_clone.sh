@@ -43,37 +43,14 @@ npm run build
 echo "🔄 Syncing Capacitor iOS project..."
 npx cap sync ios
 
-# ── Regenerate Swift package resolution from scratch ──
-RESOLVED_DIR="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm"
-RESOLVED_FILE="$RESOLVED_DIR/Package.resolved"
-SPM_CACHE_DIR="${TMPDIR:-/tmp}/spm-packages"
-mkdir -p "$RESOLVED_DIR"
-
-echo "🧹 Clearing stale Swift package resolution state..."
-rm -f "$RESOLVED_FILE"
-rm -rf "$SPM_CACHE_DIR"
-
-if command -v xcodebuild &>/dev/null; then
-  echo "📦 Resolving Swift package graph..."
-  RESOLVE_LOG="${TMPDIR:-/tmp}/xcode-package-resolve.log"
-  if xcodebuild -resolvePackageDependencies \
-    -project "$ROOT_DIR/ios/App/App.xcodeproj" \
-    -scheme App \
-    -clonedSourcePackagesDirPath "$SPM_CACHE_DIR" \
-    > "$RESOLVE_LOG" 2>&1; then
-    echo "✅ Swift package graph resolved"
-    tail -20 "$RESOLVE_LOG" || true
-  else
-    echo "❌ Swift package resolution failed"
-    tail -80 "$RESOLVE_LOG" || true
-    exit 1
-  fi
-fi
-
-if [[ -f "$RESOLVED_FILE" ]]; then
-  echo "✅ Package.resolved regenerated"
+# ── Install CocoaPods dependencies ──
+if command -v pod &>/dev/null; then
+  echo "📦 Installing CocoaPods dependencies..."
+  cd "$ROOT_DIR/ios/App"
+  pod install --repo-update
+  cd "$ROOT_DIR"
 else
-  echo "⚠️ Package.resolved not generated, but build can continue if Xcode resolves it during archive"
+  echo "⚠️ CocoaPods not found; skipping pod install"
 fi
 
 # ── Copy app icon & ensure Contents.json ──

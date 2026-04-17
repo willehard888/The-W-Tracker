@@ -553,6 +553,197 @@
   .float-subtle {
     animation: float-subtle 4s ease-in-out infinite;
   }
+
+  /* ─────────────────────────────────────────────
+     AURA & SATISFYING MOTION UTILITIES
+     ───────────────────────────────────────────── */
+
+  /* Soft expanding aura halo behind a card/element */
+  .aura-halo {
+    position: relative;
+  }
+  .aura-halo::before {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    border-radius: inherit;
+    background: radial-gradient(
+      ellipse at center,
+      hsl(var(--gold) / 0.18) 0%,
+      hsl(var(--gold) / 0.06) 30%,
+      transparent 65%
+    );
+    filter: blur(24px);
+    opacity: 0;
+    z-index: -1;
+    pointer-events: none;
+    animation: aura-breathe 5s ease-in-out infinite;
+  }
+
+  .aura-halo-purple::before {
+    background: radial-gradient(
+      ellipse at center,
+      hsl(var(--purple) / 0.22) 0%,
+      hsl(var(--purple) / 0.07) 30%,
+      transparent 65%
+    );
+  }
+
+  .aura-halo-teal::before {
+    background: radial-gradient(
+      ellipse at center,
+      hsl(var(--teal) / 0.2) 0%,
+      hsl(var(--teal) / 0.06) 30%,
+      transparent 65%
+    );
+  }
+
+  .aura-halo-rose::before {
+    background: radial-gradient(
+      ellipse at center,
+      hsl(var(--rose) / 0.2) 0%,
+      hsl(var(--rose) / 0.06) 30%,
+      transparent 65%
+    );
+  }
+
+  /* Magnetic spring-press — applies a satisfying scale/lift on press */
+  .magnetic-press {
+    transition: transform 0.45s cubic-bezier(0.16, 1.2, 0.32, 1),
+                box-shadow 0.45s cubic-bezier(0.16, 1.2, 0.32, 1);
+    will-change: transform;
+  }
+  .magnetic-press:hover {
+    transform: translateY(-2px) scale(1.012);
+  }
+  .magnetic-press:active {
+    transform: translateY(1px) scale(0.985);
+    transition-duration: 120ms;
+  }
+
+  /* Shimmering text sweep — premium aura over headlines/numbers */
+  .text-shimmer-sweep {
+    position: relative;
+    background-image: linear-gradient(
+      110deg,
+      currentColor 0%,
+      currentColor 40%,
+      hsl(0 0% 100% / 0.85) 50%,
+      currentColor 60%,
+      currentColor 100%
+    );
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: text-shimmer-sweep 4.5s ease-in-out infinite;
+  }
+
+  /* Ambient floating ember — subtle drifting glow */
+  .ambient-aura {
+    position: relative;
+    overflow: hidden;
+  }
+  .ambient-aura::after {
+    content: '';
+    position: absolute;
+    width: 60%;
+    height: 60%;
+    top: -20%;
+    left: -20%;
+    background: radial-gradient(
+      circle,
+      hsl(var(--gold) / 0.12) 0%,
+      transparent 60%
+    );
+    filter: blur(28px);
+    pointer-events: none;
+    animation: aura-drift 14s ease-in-out infinite alternate;
+  }
+
+  /* Tap ripple — appears once, satisfying click feedback */
+  .tap-ripple {
+    position: relative;
+    overflow: hidden;
+  }
+  .tap-ripple::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle at center,
+      hsl(var(--gold) / 0.25) 0%,
+      transparent 60%
+    );
+    opacity: 0;
+    transform: scale(0.4);
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tap-ripple:active::after {
+    opacity: 1;
+    transform: scale(1);
+    transition-duration: 0ms;
+  }
+
+  /* Slow conic rotating aura — for legendary/elite items */
+  .conic-aura {
+    position: relative;
+  }
+  .conic-aura::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from 0deg,
+      hsl(var(--gold) / 0.4),
+      hsl(var(--purple) / 0.25),
+      hsl(var(--rose) / 0.2),
+      hsl(var(--teal) / 0.25),
+      hsl(var(--gold) / 0.4)
+    );
+    filter: blur(8px);
+    opacity: 0.55;
+    z-index: -1;
+    animation: conic-rotate 8s linear infinite;
+  }
+}
+
+/* ──────────── AURA KEYFRAMES ──────────── */
+
+@keyframes aura-breathe {
+  0%, 100% { opacity: 0.45; transform: scale(0.96); }
+  50% { opacity: 0.85; transform: scale(1.04); }
+}
+
+@keyframes aura-drift {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  50% { transform: translate(40%, 30%) scale(1.2); opacity: 0.9; }
+  100% { transform: translate(80%, 60%) scale(1); opacity: 0.5; }
+}
+
+@keyframes text-shimmer-sweep {
+  0% { background-position: 200% 50%; }
+  60%, 100% { background-position: -100% 50%; }
+}
+
+@keyframes conic-rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Reduced motion — respect user prefs */
+@media (prefers-reduced-motion: reduce) {
+  .aura-halo::before,
+  .ambient-aura::after,
+  .conic-aura::before,
+  .text-shimmer-sweep,
+  .breathing-glow,
+  .float-subtle {
+    animation: none !important;
+  }
 }
 
 @keyframes shine {

@@ -93,6 +93,22 @@ const DailyCheckin = () => {
     enabled: !!user,
   });
 
+  // Recent sleep history (last 7 days) — used to detect chronic over-sleep
+  const { data: recentSleep } = useQuery({
+    queryKey: ["recent-sleep-7d", user?.id],
+    queryFn: async () => {
+      if (!user) return [] as number[];
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await supabase
+        .from("daily_checkins")
+        .select("sleep_hours")
+        .eq("user_id", user.id)
+        .gte("checked_in_at", sevenDaysAgo);
+      return (data || []).map((d) => Number(d.sleep_hours));
+    },
+    enabled: !!user,
+  });
+
   const canCheckin = !lastCheckin || (Date.now() - new Date(lastCheckin.checked_in_at).getTime() > 24 * 60 * 60 * 1000);
 
   const getTimeUntilCheckin = () => {
@@ -130,9 +146,34 @@ const DailyCheckin = () => {
   const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory)!;
   const workout = sportCategory !== "none";
 
-  // Sleep quality XP modifier
-  const sleepMultiplier = sleep >= 7 && sleep <= 9 ? 1.0 : sleep >= 6 ? 0.85 : sleep >= 5 ? 0.7 : 0.5;
-  const sleepPenaltyLabel = sleepMultiplier < 1 ? `${Math.round((1 - sleepMultiplier) * 100)}% XP penalty` : null;
+  // Sleep quality logic
+  // - 8–9h is optimal
+  // - 10–12h is good occasionally, but penalized if chronic (≥3 nights of 10h+ in last 7 days)
+  // - 7h is sub-optimal (poor)
+  // - <7h is poor / dangerous
+  const oversleepCount = (recentSleep || []).filter((h) => h >= 10).length;
+  const isChronicOversleep = oversleepCount >= 3;
+
+  const isOptimalSleep =
+    (sleep >= 8 && sleep <= 9) ||
+    (sleep >= 10 && sleep <= 12 && !isChronicOversleep);
+
+  let sleepMultiplier = 1.0;
+  if (sleep >= 8 && sleep <= 9) sleepMultiplier = 1.0;
+  else if (sleep >= 10 && sleep <= 12) sleepMultiplier = isChronicOversleep ? 0.6 : 0.95;
+  else if (sleep === 7) sleepMultiplier = 0.8;
+  else if (sleep === 6) sleepMultiplier = 0.65;
+  else if (sleep === 5) sleepMultiplier = 0.5;
+  else sleepMultiplier = 0.4; // <5h
+
+  let sleepPenaltyLabel: string | null = null;
+  if (sleepMultiplier < 1) {
+    const pct = `${Math.round((1 - sleepMultiplier) * 100)}% XP penalty`;
+    if (isChronicOversleep && sleep >= 10) sleepPenaltyLabel = `Chronic oversleep — ${pct}`;
+    else if (sleep === 7) sleepPenaltyLabel = `Sub-optimal sleep — ${pct}`;
+    else if (sleep < 7) sleepPenaltyLabel = `Poor sleep — ${pct}`;
+    else sleepPenaltyLabel = pct;
+  }
 
   const proofBonus = isElite && proofFile ? 30 : 0;
   const rawXp = [
@@ -146,7 +187,7 @@ const DailyCheckin = () => {
     noPhoneAm && 20,
     noPhonePm && 20,
     hydration >= 3 && 20,
-    sleep >= 7 && sleep <= 9 && 25,
+    isOptimalSleep && 25,
     reading && 20,
     proofBonus,
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
@@ -155,7 +196,7 @@ const DailyCheckin = () => {
   const totalXp = (isElite ? baseXp * 2 : baseXp) + questBonusXp;
 
   // Reactive performance score
-  const completedCount = [workout, extraWorkout, coldShower, healthyFood, protein, meditationAm, meditationPm, noPhoneAm, noPhonePm, hydration >= 3, sleep >= 7 && sleep <= 9, reading].filter(Boolean).length;
+  const completedCount = [workout, extraWorkout, coldShower, healthyFood, protein, meditationAm, meditationPm, noPhoneAm, noPhonePm, hydration >= 3, isOptimalSleep, reading].filter(Boolean).length;
   const maxCount = 12;
   const perfPercent = Math.round((completedCount / maxCount) * 100);
 
@@ -379,12 +420,23 @@ const DailyCheckin = () => {
       <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border bg-card p-4 mb-3">
         <div className="flex items-center gap-3 mb-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Moon size={20} /></div>
-          <div><p className="font-semibold text-sm">Sleep</p><p className="text-xs text-muted-foreground">Optimal: 8–9 hours</p></div>
-          <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", sleep >= 7 && sleep <= 9 ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground")}>{sleep}h {sleep >= 8 && sleep <= 9 ? "🚀" : sleep >= 7 ? "👍" : sleep <= 5 ? "💀" : "😐"}</span>
+          <div>
+            <p className="font-semibold text-sm">Sleep</p>
+            <p className="text-xs text-muted-foreground">Optimal: 8–9 hours</p>
+          </div>
+          <span className={cn(
+            "ml-auto text-2xl font-bold font-display tabular-nums",
+            isOptimalSleep ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground"
+          )}>
+            {sleep}h {sleep >= 8 && sleep <= 9 ? "🚀" : (sleep >= 10 && sleep <= 12 && !isChronicOversleep) ? "✨" : sleep === 7 ? "😐" : sleep <= 5 ? "💀" : sleep >= 10 ? "😴" : "⚠️"}
+          </span>
         </div>
         <input type="range" min={4} max={12} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
         {sleepPenaltyLabel && (
-          <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ Poor sleep — {sleepPenaltyLabel}</p>
+          <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ {sleepPenaltyLabel}</p>
+        )}
+        {isChronicOversleep && sleep >= 10 && (
+          <p className="text-[10px] text-muted-foreground mt-1">You've slept 10h+ {oversleepCount} of the last 7 nights — occasional long nights help, chronic oversleep hurts.</p>
         )}
       </div>
 
@@ -396,9 +448,6 @@ const DailyCheckin = () => {
           <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
         </div>
         <input type="range" min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
-        {sleepPenaltyLabel && (
-          <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ Poor sleep — {sleepPenaltyLabel}</p>
-        )}
       </div>
 
       {/* Sport Category Selector */}

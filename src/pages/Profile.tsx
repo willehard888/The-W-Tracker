@@ -128,9 +128,21 @@ const Profile = () => {
         .eq("user_id", profile.user_id)
         .gte("checked_in_at", sevenDaysAgo);
       if (!data || data.length === 0) return null;
-      const avg = data.reduce((sum, d) => sum + Number(d.sleep_hours), 0) / data.length;
-      const multiplier = avg >= 7 ? 1.0 : avg >= 6 ? 0.85 : avg >= 5 ? 0.7 : 0.5;
-      return { avg: Math.round(avg * 10) / 10, days: data.length, multiplier };
+      const hours = data.map((d) => Number(d.sleep_hours));
+      const avg = hours.reduce((s, h) => s + h, 0) / hours.length;
+      const oversleepCount = hours.filter((h) => h >= 10).length;
+      const isChronicOversleep = oversleepCount >= 3;
+
+      // Match per-checkin tiers using weekly avg
+      let multiplier: number;
+      if (avg >= 8 && avg <= 9) multiplier = 1.0;
+      else if (avg >= 10) multiplier = isChronicOversleep ? 0.6 : 0.95;
+      else if (avg >= 7) multiplier = 0.85; // 7h avg = sub-optimal
+      else if (avg >= 6) multiplier = 0.7;
+      else if (avg >= 5) multiplier = 0.55;
+      else multiplier = 0.4;
+
+      return { avg: Math.round(avg * 10) / 10, days: data.length, multiplier, isChronicOversleep, oversleepCount };
     },
     enabled: !!profile,
   });
@@ -440,7 +452,13 @@ const Profile = () => {
               </span>
             </div>
             {weeklySleep.multiplier < 1 && (
-              <p className="text-[10px] text-muted-foreground mt-1">Sleep 7+ hours to earn full XP</p>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {weeklySleep.isChronicOversleep
+                  ? `Chronic oversleep — ${weeklySleep.oversleepCount} nights of 10h+ this week. Aim for 8–9h.`
+                  : weeklySleep.avg < 8
+                  ? "Sleep 8–9 hours to earn full XP"
+                  : "Occasional long sleep is fine — keep most nights at 8–9h"}
+              </p>
             )}
           </div>
         </div>

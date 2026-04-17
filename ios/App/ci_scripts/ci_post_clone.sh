@@ -42,14 +42,15 @@ npm run build
 echo "🔄 Syncing Capacitor iOS project..."
 npx cap sync ios
 
-if command -v pod &>/dev/null; then
-  echo "📦 Installing CocoaPods dependencies..."
-  cd "$ROOT_DIR/ios/App"
-  pod install --repo-update
-  cd "$ROOT_DIR"
-else
-  echo "⚠️ CocoaPods not found; skipping pod install"
+if ! command -v pod &>/dev/null; then
+  echo "📥 CocoaPods not found – installing via Homebrew..."
+  brew install cocoapods || sudo gem install cocoapods
 fi
+
+echo "📦 Installing CocoaPods dependencies (required for Capacitor module resolution)..."
+cd "$ROOT_DIR/ios/App"
+pod install --repo-update
+cd "$ROOT_DIR"
 
 ICON_SRC="$ROOT_DIR/public/app-icon.png"
 ICON_DIR="$ROOT_DIR/ios/App/App/Assets.xcassets/AppIcon.appiconset"

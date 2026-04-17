@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, Send } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
@@ -133,12 +133,7 @@ const Chat = () => {
           <ChevronLeft size={20} />
         </button>
         <button onClick={() => navigate(`/user/${partnerId}`)} className="flex items-center gap-2.5">
-          <Avatar className="h-8 w-8">
-            {partner?.avatar_url ? <AvatarImage src={partner.avatar_url} /> : null}
-            <AvatarFallback className="text-xs font-bold bg-secondary">
-              {partner?.username?.charAt(0)?.toUpperCase() || "?"}
-            </AvatarFallback>
-          </Avatar>
+          <StatusAvatar src={partner?.avatar_url} name={partner?.username} tier={(partner as any)?.status_tier || 'recruit'} size="xs" />
           <div className="text-left">
             <p className="text-sm font-semibold leading-none">@{partner?.username || "..."}</p>
             <p className="text-[10px] text-muted-foreground">Level {partner?.level || "?"}</p>

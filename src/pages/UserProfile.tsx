@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import StatusAvatar from "@/components/StatusAvatar";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
@@ -187,17 +188,9 @@ const UserProfile = () => {
 
       {/* Profile Header */}
       <div className="animate-reveal text-center mb-6">
-        <Avatar className={cn(
-          "h-20 w-20 mx-auto mb-3 ring-2",
-          profile.status_tier === "elite" ? "ring-gold/40" : "ring-border/30"
-        )}>
-          {profile.avatar_url ? (
-            <AvatarImage src={profile.avatar_url} alt={profile.username} />
-          ) : null}
-          <AvatarFallback className="text-3xl font-black font-display gradient-gold text-primary-foreground">
-            {profile.username?.charAt(0)?.toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <div className="flex justify-center mb-3">
+          <StatusAvatar src={profile.avatar_url} name={profile.username} tier={profile.status_tier || 'recruit'} size="xl" />
+        </div>
 
         <h1 className="font-display text-xl font-bold tracking-tight">
           @{profile.username}

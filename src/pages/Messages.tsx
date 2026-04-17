@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { MessageCircle, UserCheck, UserPlus, Search, X } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
@@ -168,12 +168,7 @@ const Messages = () => {
                 onClick={() => { setSearchQuery(""); navigate(`/chat/${u.user_id}`); }}
                 className="w-full flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-all active:scale-[0.98] card-depth"
               >
-                <Avatar className="h-10 w-10 shrink-0">
-                  {u.avatar_url ? <AvatarImage src={u.avatar_url} /> : null}
-                  <AvatarFallback className="text-xs font-bold bg-secondary">
-                    {u.username?.charAt(0)?.toUpperCase() || "?"}
-                  </AvatarFallback>
-                </Avatar>
+                <StatusAvatar src={u.avatar_url} name={u.username} tier={(u as any).status_tier || 'recruit'} size="sm" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">@{u.username}</p>
                   <p className="text-xs text-muted-foreground/50">Level {u.level || 1}</p>
@@ -200,12 +195,7 @@ const Messages = () => {
           <div className="space-y-2">
             {pendingRequests.map((req: any) => (
               <div key={req.id} className="flex items-center gap-3 rounded-xl border border-[hsl(var(--teal))]/20 bg-[hsl(var(--teal))]/5 p-3 card-depth">
-                <Avatar className="h-9 w-9 shrink-0">
-                  {req.profile?.avatar_url ? <AvatarImage src={req.profile.avatar_url} /> : null}
-                  <AvatarFallback className="text-xs font-bold bg-secondary">
-                    {req.profile?.username?.charAt(0)?.toUpperCase() || "?"}
-                  </AvatarFallback>
-                </Avatar>
+                <StatusAvatar src={req.profile?.avatar_url} name={req.profile?.username} tier={req.profile?.status_tier || 'recruit'} size="sm" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">@{req.profile?.username || "unknown"}</p>
                   <p className="text-[10px] text-muted-foreground">Wants to be friends</p>
@@ -253,12 +243,7 @@ const Messages = () => {
                 onClick={() => navigate(`/chat/${friend.user_id}`)}
                 className="w-full flex items-center gap-3 rounded-xl border border-[hsl(var(--teal))]/15 bg-card p-4 text-left transition-all active:scale-[0.98] card-depth"
               >
-                <Avatar className="h-10 w-10 shrink-0">
-                  {friend.avatar_url ? <AvatarImage src={friend.avatar_url} /> : null}
-                  <AvatarFallback className="text-xs font-bold bg-secondary">
-                    {friend.username?.charAt(0)?.toUpperCase() || "?"}
-                  </AvatarFallback>
-                </Avatar>
+                <StatusAvatar src={friend.avatar_url} name={friend.username} tier={(friend as any).status_tier || 'recruit'} size="sm" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">@{friend.username}</p>
                   <p className="text-xs text-muted-foreground/50">Start a conversation</p>
@@ -323,12 +308,7 @@ const ConversationRow = ({ conv, userId, navigate, isFriend }: { conv: any; user
           : "border-border bg-card"
     )}
   >
-    <Avatar className="h-10 w-10 shrink-0">
-      {conv.profile?.avatar_url ? <AvatarImage src={conv.profile.avatar_url} /> : null}
-      <AvatarFallback className="text-xs font-bold bg-secondary">
-        {conv.profile?.username?.charAt(0)?.toUpperCase() || "?"}
-      </AvatarFallback>
-    </Avatar>
+    <StatusAvatar src={conv.profile?.avatar_url} name={conv.profile?.username} tier={conv.profile?.status_tier || 'recruit'} size="sm" />
     <div className="flex-1 min-w-0">
       <div className="flex items-center justify-between">
         <p className={cn("text-sm font-semibold truncate", conv.unread > 0 && "text-foreground")}>

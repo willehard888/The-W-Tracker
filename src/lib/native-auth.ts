@@ -181,6 +181,18 @@ async function signInWithAppleIdToken(identityToken: string, nonce?: string | nu
 
 async function nativeDirectAppleSignIn(): Promise<{ error?: Error }> {
   try {
+    // Check if the native NativeAppleAuth plugin is actually registered.
+    // If not (which is the case in our current iOS build, since we don't
+    // ship a Swift implementation of it), fall back to the managed OAuth
+    // flow which opens Apple Sign In in Safari/ASWebAuthenticationSession.
+    const isPluginAvailable = Capacitor.isPluginAvailable("NativeAppleAuth");
+    if (!isPluginAvailable) {
+      pushIosDebugLog("AppleAuth", "NativeAppleAuth plugin not available, using managed OAuth", {
+        platform: Capacitor.getPlatform(),
+      });
+      return await startManagedAppleOAuth();
+    }
+
     const credentials = await NativeAppleAuth.signIn();
 
     if (!credentials?.identityToken) {

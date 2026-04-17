@@ -767,6 +767,21 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes soft-glow-pulse {
+  0%, 100% { box-shadow: 0 0 18px hsl(var(--gold) / 0.12), inset 0 0 12px hsl(var(--gold) / 0.04); }
+  50% { box-shadow: 0 0 28px hsl(var(--gold) / 0.22), inset 0 0 18px hsl(var(--gold) / 0.08); }
+}
+
+@keyframes edge-sheen-slide {
+  0% { left: -100%; }
+  60%, 100% { left: 200%; }
+}
+
 /* Reduced motion — respect user prefs */
 @media (prefers-reduced-motion: reduce) {
   .aura-halo::before,

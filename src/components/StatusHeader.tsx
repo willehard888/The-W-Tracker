@@ -215,10 +215,8 @@ const StatusHeader = () => {
 
           {/* Status pill */}
           {isElite ? (
-            <motion.button
-              onClick={() => navigate("/paywall")}
+            <motion.div
               className="shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-gold/20 via-gold/15 to-gold/20 border border-gold/60"
-              whileTap={{ scale: 0.95 }}
               animate={{
                 boxShadow: [
                   "0 0 8px hsl(42 78% 54% / 0.4)",
@@ -232,7 +230,7 @@ const StatusHeader = () => {
               <span className="text-[10px] font-black text-gold uppercase tracking-wider">
                 Elite
               </span>
-            </motion.button>
+            </motion.div>
           ) : isInTrial ? (
             <motion.button
               onClick={() => navigate("/paywall")}

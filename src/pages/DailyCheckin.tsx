@@ -93,6 +93,22 @@ const DailyCheckin = () => {
     enabled: !!user,
   });
 
+  // Recent sleep history (last 7 days) — used to detect chronic over-sleep
+  const { data: recentSleep } = useQuery({
+    queryKey: ["recent-sleep-7d", user?.id],
+    queryFn: async () => {
+      if (!user) return [] as number[];
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await supabase
+        .from("daily_checkins")
+        .select("sleep_hours")
+        .eq("user_id", user.id)
+        .gte("checked_in_at", sevenDaysAgo);
+      return (data || []).map((d) => Number(d.sleep_hours));
+    },
+    enabled: !!user,
+  });
+
   const canCheckin = !lastCheckin || (Date.now() - new Date(lastCheckin.checked_in_at).getTime() > 24 * 60 * 60 * 1000);
 
   const getTimeUntilCheckin = () => {

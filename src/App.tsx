@@ -11,7 +11,6 @@ import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
 import AmbientParticles from "@/components/AmbientParticles";
 import BottomNav from "@/components/BottomNav";
 import StatusHeader from "@/components/StatusHeader";
-import StatusStripe from "@/components/StatusStripe";
 import AccessGate from "@/components/AccessGate";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
@@ -109,7 +108,6 @@ const AppRoutes = () => {
           </AccessGate>
         </Suspense>
       </div>
-      <StatusStripe />
       <BottomNav />
     </div>
   );

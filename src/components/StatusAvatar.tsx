@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getTierConfig } from "@/lib/status-tiers";
@@ -31,14 +32,14 @@ const sizeMap = {
   xl: { avatar: "h-24 w-24", ring: "p-[3.5px]", badge: "h-8 w-8", icon: 16 },
 };
 
-const StatusAvatar = ({
+const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
   src,
   name,
   tier,
   size = "md",
   showBadge = true,
   className,
-}: StatusAvatarProps) => {
+}, ref) => {
   const config = getTierConfig(tier);
   const Icon = tierIcons[tier] || Shield;
   const sizes = sizeMap[size];
@@ -63,7 +64,7 @@ const StatusAvatar = ({
   const initials = (name || "?").slice(0, 2).toUpperCase();
 
   return (
-    <div className={cn("relative inline-block", className)}>
+    <div ref={ref} className={cn("relative inline-block", className)}>
       <div
         className={cn(
           "rounded-full",
@@ -118,6 +119,8 @@ const StatusAvatar = ({
       )}
     </div>
   );
-};
+});
+
+StatusAvatar.displayName = "StatusAvatar";
 
 export default StatusAvatar;

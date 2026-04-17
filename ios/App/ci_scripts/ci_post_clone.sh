@@ -50,6 +50,20 @@ fi
 echo "📦 Installing CocoaPods dependencies (required for Capacitor module resolution)..."
 cd "$ROOT_DIR/ios/App"
 pod install --repo-update
+
+# Verify Pods were installed correctly
+if [[ ! -d "Pods" ]]; then
+  echo "❌ Pods directory was not created — CocoaPods install failed!"
+  exit 1
+fi
+
+if [[ ! -f "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig" ]]; then
+  echo "❌ Pods xcconfig missing — Capacitor module will not resolve!"
+  exit 1
+fi
+
+echo "✅ Pods installed successfully"
+ls Pods/ | head -10
 cd "$ROOT_DIR"
 
 ICON_SRC="$ROOT_DIR/public/app-icon.png"

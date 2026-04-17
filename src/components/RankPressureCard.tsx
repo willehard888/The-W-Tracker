@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { getTierConfig, getNextTier } from "@/lib/status-tiers";
-import { TrendingUp, TrendingDown, AlertTriangle, ChevronUp } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, ChevronRight, Flame, Trophy } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface RankPressureCardProps {
   tier: string;
@@ -15,97 +16,217 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, class
   const config = getTierConfig(tier);
   const nextTier = getNextTier(tier);
 
-  const pressureTexts = [
-    percentile > 90 ? "You're ahead — for now" : null,
-    percentile > 50 && percentile <= 90 ? "Others are catching up" : null,
-    percentile <= 50 ? "You're falling behind" : null,
-  ].filter(Boolean);
-
   const isRising = percentile > 75;
   const isFalling = percentile < 30;
+  const isLegend = tier === "legend";
+  const isApex = tier === "apex";
+  const isElite = tier === "elite";
+  const isHighTier = isLegend || isApex || isElite;
+
+  const pressureText =
+    isRising
+      ? "Others are catching up"
+      : isFalling
+      ? "You're falling behind"
+      : config.pressureMessage;
+
+  // Tier-specific accent gradient for the rank chip + bar fill
+  const accentGradient =
+    isLegend
+      ? "from-[hsl(280_70%_60%)] via-gold to-[hsl(350_80%_60%)]"
+      : isApex
+      ? "from-[hsl(18_95%_58%)] to-gold"
+      : isElite
+      ? "from-gold-dark via-gold to-gold-light"
+      : tier === "high_performer"
+      ? "from-[hsl(var(--purple))] to-[hsl(280_70%_65%)]"
+      : tier === "performer"
+      ? "from-[hsl(210_90%_56%)] to-[hsl(190_85%_60%)]"
+      : tier === "operator"
+      ? "from-[hsl(var(--teal))] to-[hsl(170_70%_50%)]"
+      : "from-secondary to-muted";
+
+  // Conic glow color for premium tiers
+  const conicGlow =
+    isLegend
+      ? "conic-gradient(from_0deg,hsl(280_70%_58%/0.5),hsl(42_90%_55%/0.4),hsl(350_80%_55%/0.5),hsl(280_70%_58%/0.5))"
+      : isApex
+      ? "conic-gradient(from_0deg,hsl(18_95%_58%/0.5),hsl(42_90%_55%/0.4),hsl(18_95%_58%/0.5))"
+      : isElite
+      ? "conic-gradient(from_0deg,hsl(42_90%_55%/0.4),hsl(42_78%_45%/0.2),hsl(42_90%_55%/0.4))"
+      : null;
 
   return (
-    <div
-      className={cn(
-        "rounded-xl border p-4 relative overflow-hidden",
-        config.borderClass,
-        config.glowClass,
-        className
-      )}
-      style={{ background: "linear-gradient(135deg, hsl(255 14% 7% / 0.8), hsl(260 18% 4% / 0.9))" }}
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+      className={cn("relative", className)}
     >
-      {/* Ambient tier glow */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-30"
-        style={{
-          background: tier === 'legend'
-            ? "linear-gradient(135deg, hsl(280 70% 60% / 0.15), hsl(42 78% 54% / 0.08), transparent 60%)"
-            : tier === 'apex'
-            ? "linear-gradient(135deg, hsl(18 95% 58% / 0.12), hsl(42 78% 54% / 0.06), transparent 60%)"
-            : tier === 'elite'
-            ? "linear-gradient(135deg, hsl(42 78% 54% / 0.1), transparent 60%)"
-            : "linear-gradient(135deg, hsl(var(--purple) / 0.06), transparent 60%)",
-        }}
-      />
+      {/* Conic-rotating aura for high tiers */}
+      {conicGlow && (
+        <div
+          className="absolute -inset-[1.5px] rounded-2xl opacity-70 blur-[2px] pointer-events-none animate-spin-slow"
+          style={{ background: conicGlow }}
+        />
+      )}
 
-      <div className="relative">
-        {/* Rank position */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className={cn(
-              "flex h-10 w-10 items-center justify-center rounded-lg font-display font-black text-lg",
-              tier === 'legend' ? "bg-gradient-to-br from-[hsl(280_70%_55%)] to-gold text-white" :
-              tier === 'apex' ? "bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold text-white" :
-              tier === 'elite' ? "gradient-gold text-primary-foreground" :
-              "bg-secondary text-foreground"
-            )}>
-              #{rank || "?"}
+      <div
+        className={cn(
+          "relative rounded-2xl border p-4 overflow-hidden",
+          isHighTier ? "border-transparent" : config.borderClass,
+        )}
+        style={{
+          background:
+            "linear-gradient(135deg, hsl(255 14% 7% / 0.92), hsl(260 18% 4% / 0.96))",
+        }}
+      >
+        {/* Inner ambient tier glow */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: isLegend
+              ? "radial-gradient(ellipse at top right, hsl(280 70% 60% / 0.18), transparent 60%)"
+              : isApex
+              ? "radial-gradient(ellipse at top right, hsl(18 95% 58% / 0.16), transparent 60%)"
+              : isElite
+              ? "radial-gradient(ellipse at top right, hsl(42 78% 54% / 0.14), transparent 60%)"
+              : "radial-gradient(ellipse at top right, hsl(var(--purple) / 0.06), transparent 60%)",
+          }}
+        />
+
+        {/* Subtle floating sparkle on legendary */}
+        {isLegend && (
+          <motion.div
+            className="absolute top-2 right-2 w-1 h-1 rounded-full bg-white/80 pointer-events-none"
+            animate={{ opacity: [0, 1, 0], scale: [0.5, 1.4, 0.5] }}
+            transition={{ duration: 2.4, repeat: Infinity }}
+          />
+        )}
+
+        <div className="relative">
+          {/* Header row */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <motion.div
+                whileHover={{ scale: 1.05, rotate: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className={cn(
+                  "relative flex h-12 w-12 items-center justify-center rounded-xl font-display font-black text-xl shadow-lg",
+                  `bg-gradient-to-br ${accentGradient}`,
+                  isHighTier ? "text-background" : "text-foreground",
+                )}
+                style={{
+                  boxShadow: isHighTier
+                    ? "0 4px 20px -4px hsl(var(--gold) / 0.4)"
+                    : undefined,
+                }}
+              >
+                {/* Glossy highlight */}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+                <span className="relative">#{rank || "?"}</span>
+              </motion.div>
+
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <Trophy size={11} className={cn("shrink-0", config.textClass)} />
+                  <p className="font-display font-black text-sm uppercase tracking-wider">
+                    Your Position
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Ahead of{" "}
+                  <span className={cn("font-black tabular-nums", config.textClass)}>
+                    {percentile}%
+                  </span>{" "}
+                  of users
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="font-display font-bold text-sm">Your Position</p>
-              <p className="text-xs text-muted-foreground">
-                Ahead of <span className={cn("font-bold", config.textClass)}>{percentile}%</span> of users
-              </p>
+
+            <motion.div
+              animate={isRising ? { y: [0, -3, 0] } : isFalling ? { y: [0, 3, 0] } : {}}
+              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+              className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-full",
+                isRising
+                  ? "bg-emerald-500/15 text-emerald-400"
+                  : isFalling
+                  ? "bg-destructive/15 text-destructive"
+                  : "bg-gold/10 text-gold/70",
+              )}
+            >
+              {isRising ? (
+                <TrendingUp size={16} strokeWidth={2.5} />
+              ) : isFalling ? (
+                <TrendingDown size={16} strokeWidth={2.5} />
+              ) : (
+                <TrendingUp size={16} strokeWidth={2.5} />
+              )}
+            </motion.div>
+          </div>
+
+          {/* Animated percentile bar */}
+          <div className="mb-3">
+            <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
+              <motion.div
+                className={cn("h-full rounded-full bg-gradient-to-r", accentGradient)}
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.max(4, percentile)}%` }}
+                transition={{ duration: 1, ease: "easeOut", delay: 0.15 }}
+              />
             </div>
           </div>
-          {isRising ? (
-            <TrendingUp size={18} className="text-emerald-400" />
-          ) : isFalling ? (
-            <TrendingDown size={18} className="text-destructive" />
+
+          {/* Pressure microcopy */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className={cn(
+              "rounded-xl px-3 py-2 text-xs font-bold text-center mb-3 flex items-center justify-center gap-1.5",
+              isFalling
+                ? "bg-destructive/10 text-destructive border border-destructive/25"
+                : isRising
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/25"
+                : "bg-gold/8 text-gold/85 border border-gold/20",
+            )}
+          >
+            {isFalling ? (
+              <AlertTriangle size={12} />
+            ) : isRising ? (
+              <Flame size={12} />
+            ) : null}
+            {pressureText}
+          </motion.div>
+
+          {/* Next tier */}
+          {nextTier ? (
+            <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/30">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <ChevronRight size={12} className="text-muted-foreground/60 shrink-0" />
+                <p className="text-[10px] text-muted-foreground truncate">
+                  Next:{" "}
+                  <span className="font-black text-foreground">{nextTier.label}</span>
+                  <span className="text-muted-foreground/60"> · {nextTier.percentile}</span>
+                </p>
+              </div>
+              {rankScore !== undefined && (
+                <p className="text-[9px] text-muted-foreground/50 tabular-nums shrink-0">
+                  Score: <span className="text-muted-foreground">{rankScore.toFixed(1)}</span>
+                </p>
+              )}
+            </div>
           ) : (
-            <TrendingUp size={18} className="text-gold/50" />
+            rankScore !== undefined && (
+              <p className="text-[9px] text-muted-foreground/50 mt-2 text-right tabular-nums">
+                Score: <span className="text-muted-foreground">{rankScore.toFixed(1)}</span>
+              </p>
+            )
           )}
         </div>
-
-        {/* Pressure microcopy */}
-        <div className={cn(
-          "rounded-lg px-3 py-2 text-xs font-semibold text-center mb-3",
-          isFalling ? "bg-destructive/10 text-destructive border border-destructive/20" :
-          isRising ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
-          "bg-gold/5 text-gold/80 border border-gold/15"
-        )}>
-          {isFalling && <AlertTriangle size={12} className="inline mr-1" />}
-          {pressureTexts[0] || config.pressureMessage}
-        </div>
-
-        {/* Next tier progress */}
-        {nextTier && (
-          <div className="flex items-center gap-2">
-            <ChevronUp size={14} className="text-muted-foreground/50" />
-            <p className="text-[10px] text-muted-foreground flex-1">
-              Next: <span className="font-bold text-foreground">{nextTier.label}</span>
-              <span className="text-muted-foreground/60"> ({nextTier.percentile})</span>
-            </p>
-          </div>
-        )}
-
-        {rankScore !== undefined && (
-          <p className="text-[9px] text-muted-foreground/40 mt-2 text-right tabular-nums">
-            Score: {rankScore.toFixed(1)}
-          </p>
-        )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

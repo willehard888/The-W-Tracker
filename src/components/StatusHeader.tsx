@@ -60,6 +60,13 @@ const StatusHeader = () => {
   const next = getNextTier(tier);
   const streak = profile.streak || 0;
 
+  const dailyQuote = useMemo(() => {
+    const today = new Date().toDateString();
+    let hash = 0;
+    for (let i = 0; i < today.length; i++) hash = ((hash << 5) - hash) + today.charCodeAt(i);
+    return PRESSURE_QUOTES[Math.abs(hash) % PRESSURE_QUOTES.length];
+  }, []);
+
   // Tier progress: position within full hierarchy (0..1)
   const tierProgress = (TIER_ORDER.indexOf(tier as any) + 1) / TIER_ORDER.length;
 
@@ -115,8 +122,8 @@ const StatusHeader = () => {
         {/* Brand strip */}
         <button
           onClick={() => navigate("/")}
-          className="w-full flex items-center justify-center gap-2.5 pt-2 pb-1 active:opacity-80 transition-opacity"
-          aria-label="The W Tracker — Home"
+          className="w-full flex items-center justify-center gap-2.5 pt-2 pb-0.5 active:opacity-80 transition-opacity"
+          aria-label="The W-Tracker — Home"
         >
           <img
             src="/app-icon.png"
@@ -128,6 +135,9 @@ const StatusHeader = () => {
             The W-Tracker
           </span>
         </button>
+        <p className="text-[11px] text-muted-foreground/80 italic font-medium text-center pb-1.5 px-3 truncate">
+          {dailyQuote}
+        </p>
 
         <div className="flex items-center gap-3 px-3 pt-1 pb-1.5">
           <button

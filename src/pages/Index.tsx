@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { Flame, ChevronRight, Crown, Sparkles } from "lucide-react";
 import LevelCard from "@/components/LevelCard";
 import StreakDisplay from "@/components/StreakDisplay";
@@ -14,23 +13,6 @@ import XpCounter from "@/components/XpCounter";
 import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
 
-const pressureQuotes = [
-  "Grind never stops 🔥",
-  "Discipline beats talent",
-  "Level up or get left behind",
-  "Stay hungry, stay humble",
-  "Prove them wrong 🏆",
-  "Consistency is king",
-  "No excuses, only results",
-  "Outwork everyone 💪",
-  "Built different",
-  "Earn your status",
-  "Legends are made, not born",
-  "Don't break now",
-  "Most fail before this",
-  "You're ahead — for now",
-  "Others are catching up",
-];
 
 const Index = () => {
   const navigate = useNavigate();

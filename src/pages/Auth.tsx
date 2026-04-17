@@ -41,14 +41,15 @@ const Auth = () => {
       try {
         const { error } = await nativeAppleSignIn();
         if (error && !cancelled) {
-          setError(error.message);
-          toast.error(error.message);
+          const message = error.message === "APPLE_CANCELLED" ? "" : error.message;
+          setError(message);
+          if (message) toast.error(message);
         }
       } catch (e: any) {
         if (!cancelled) {
-          const message = e?.message || "Apple sign-in failed";
+          const message = e?.message === "APPLE_CANCELLED" ? "" : e?.message || "Apple sign-in failed. Please try again.";
           setError(message);
-          toast.error(message);
+          if (message) toast.error(message);
         }
       } finally {
         if (!cancelled) {
@@ -271,7 +272,8 @@ const AppleSignInButton = ({ externalLoading = false }: { externalLoading?: bool
       if (error) throw error;
     } catch (e: any) {
       console.error("Apple sign in error:", e);
-      toast.error(e?.message || "Apple sign-in failed");
+      const message = e?.message === "APPLE_CANCELLED" ? "" : e?.message || "Apple sign-in failed. Please try again.";
+      if (message) toast.error(message);
     } finally {
       setLoading(false);
     }

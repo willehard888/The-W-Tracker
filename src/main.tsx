@@ -5,6 +5,7 @@ import { Capacitor } from "@capacitor/core";
 import { applySessionFromUrl } from "@/lib/oauth-session";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 import { toast } from "sonner";
+import { clearAppleAuthStarted, clearAppleUsernameSelectionPending } from "@/lib/apple-username";
 
 let oauthHandled = false;
 
@@ -41,7 +42,9 @@ async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
 
     if (!didApplySession) {
       pushIosDebugLog("DeepLink", "No session from callback", { source });
-      toast.error("Sign in failed. Please try again.");
+      clearAppleAuthStarted();
+      clearAppleUsernameSelectionPending();
+      toast.error("Connection error. Try again.");
       oauthHandled = false;
       return;
     }
@@ -51,8 +54,10 @@ async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
     // Don't reload — AuthContext will pick up the session change automatically
   } catch (e) {
     console.error("[DeepLink] Error:", e);
-    const message = e instanceof Error ? e.message : String(e);
-    toast.error(`Sign in error: ${message}`);
+    clearAppleAuthStarted();
+    clearAppleUsernameSelectionPending();
+    const message = "Connection error. Try again.";
+    toast.error(message);
     updateOauthDebug({ error: message });
     oauthHandled = false;
   }

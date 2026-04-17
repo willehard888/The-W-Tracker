@@ -272,70 +272,105 @@ const Profile = () => {
 
       
 
-      {/* Profile Header */}
-      <div className="animate-reveal text-center mb-6">
-        <div className="relative inline-block mb-3">
-          <input
-            ref={avatarInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarUpload}
-          />
-          {profile.avatar_url ? (
-            <img
-              src={profile.avatar_url}
-              alt={profile.username}
-              className="h-20 w-20 rounded-full object-cover border-2 border-gold glow-gold"
-            />
-          ) : (
-            <div className="h-20 w-20 rounded-full gradient-gold flex items-center justify-center glow-gold text-3xl font-black font-display text-primary-foreground">
-              {profile.username?.charAt(0)?.toUpperCase()}
-            </div>
-          )}
-          {isElite ? (
-            <button
-              onClick={() => avatarInputRef.current?.click()}
-              disabled={uploadingAvatar}
-              className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-card border-2 border-gold flex items-center justify-center transition-all hover:bg-gold/10 active:scale-95"
-            >
-              {uploadingAvatar ? (
-                <span className="text-[8px] text-gold animate-pulse">...</span>
-              ) : (
-                <Camera size={12} className="text-gold" />
-              )}
-            </button>
-          ) : (
-            <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-card border-2 border-gold flex items-center justify-center">
-              <Crown size={14} className="text-gold" />
-            </div>
-          )}
-        </div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">@{profile.username}</h1>
-        <div className="flex items-center justify-center gap-2 mt-1">
-          {featuredBadge && (
-            <span className="text-sm flex items-center gap-1 bg-gold/10 px-2 py-0.5 rounded-full border border-gold/20">
-              <span>{featuredBadge.icon}</span>
-              <span className="font-bold text-gold text-xs">{featuredBadge.name}</span>
-            </span>
-          )}
-          <StatusBadge tier={tier} size="sm" />
-          <span className="text-sm text-muted-foreground">• Level {profile.level}</span>
-        </div>
+      {/* Profile Header — cinematic */}
+      <div className="animate-reveal relative mb-6 overflow-hidden rounded-3xl border border-gold/20 bg-gradient-to-b from-card via-card/80 to-background p-6 pt-8">
+        {/* Ambient gold glow */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-60"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 0%, hsl(42 78% 54% / 0.25), transparent 60%)",
+          }}
+        />
+        {/* Top accent line */}
+        <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
 
-        {/* Tier message */}
-        <p className="text-[10px] text-muted-foreground/50 font-semibold tracking-wider mt-2 italic">
-          {tierConfig.message}
-        </p>
-
-        {earnedBadges && earnedBadges.length > 0 && (
-          <div className="mt-4">
-            <BadgeShowcase
-              badges={earnedBadges}
-              onBadgeClick={(b) => setPreviewBadge(b)}
+        <div className="relative flex flex-col items-center text-center">
+          {/* Avatar */}
+          <div className="relative mb-4">
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarUpload}
             />
+            <div className="absolute inset-0 -m-2 rounded-full bg-gold/30 blur-2xl" aria-hidden />
+            {profile.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt={profile.username}
+                className="relative h-28 w-28 rounded-full object-cover border-2 border-gold glow-gold"
+              />
+            ) : (
+              <div className="relative h-28 w-28 rounded-full gradient-gold flex items-center justify-center glow-gold text-4xl font-black font-display text-primary-foreground">
+                {profile.username?.charAt(0)?.toUpperCase()}
+              </div>
+            )}
+            {isElite ? (
+              <button
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="absolute -bottom-1 -right-1 h-9 w-9 rounded-full bg-card border-2 border-gold flex items-center justify-center transition-all hover:bg-gold/10 active:scale-95 shadow-lg shadow-gold/30"
+              >
+                {uploadingAvatar ? (
+                  <span className="text-[10px] text-gold animate-pulse">...</span>
+                ) : (
+                  <Camera size={16} className="text-gold" />
+                )}
+              </button>
+            ) : (
+              <div className="absolute -bottom-1 -right-1 h-9 w-9 rounded-full bg-card border-2 border-gold flex items-center justify-center shadow-lg shadow-gold/30">
+                <Crown size={18} className="text-gold" />
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Username */}
+          <h1 className="font-display text-3xl font-black tracking-tight bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent">
+            @{profile.username}
+          </h1>
+
+          {/* Status row */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
+            <StatusBadge tier={tier} size="sm" />
+            <span className="text-xs font-bold tracking-widest text-muted-foreground/70 uppercase">
+              Level {profile.level}
+            </span>
+            {featuredBadge && (
+              <span className="flex items-center gap-1.5 bg-gold/10 px-2.5 py-1 rounded-full border border-gold/30">
+                <span className="text-sm">{featuredBadge.icon}</span>
+                <span className="font-bold text-gold text-[10px] tracking-wider uppercase">{featuredBadge.name}</span>
+              </span>
+            )}
+          </div>
+
+          {/* Hero XP */}
+          <div className="mt-5 flex flex-col items-center">
+            <p className="font-display font-black text-5xl text-gold drop-shadow-[0_0_20px_hsl(42_78%_54%/0.5)] tabular-nums">
+              {profile.xp.toLocaleString()}
+            </p>
+            <p className="text-[10px] font-bold tracking-[0.3em] text-gold/60 mt-1">TOTAL XP</p>
+          </div>
+
+          {/* Tier message */}
+          <p className="text-xs text-muted-foreground/60 font-semibold tracking-wide mt-4 italic max-w-[260px]">
+            {tierConfig.message}
+          </p>
+
+          {earnedBadges && earnedBadges.length > 0 && (
+            <div className="mt-5 w-full">
+              <BadgeShowcase
+                badges={earnedBadges}
+                onBadgeClick={(b) => setPreviewBadge(b)}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Bottom accent line */}
+        <div className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
       </div>
 
       {/* Rank Position */}

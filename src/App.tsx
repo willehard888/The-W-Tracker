@@ -126,6 +126,12 @@ const App = () => {
     setSplashDone(true);
   }, []);
 
+  // Register native deep-link handler for Apple OAuth callback (iOS).
+  // Safe no-op on web.
+  useEffect(() => {
+    registerDeepLinkHandler();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

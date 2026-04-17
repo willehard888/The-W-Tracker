@@ -363,30 +363,6 @@ const Profile = () => {
           Share Streak
         </Button>
       </div>
-      {/* Public profile link */}
-      <div className="mb-3 animate-reveal animate-reveal-delay-1">
-        <Button
-          variant="gold-outline"
-          size="sm"
-          className="w-full"
-          onClick={async () => {
-            const url = `${window.location.origin}/u/${profile?.username}`;
-            const text = `Check my status on The W Tracker — @${profile?.username}`;
-            if (navigator.share) {
-              try { await navigator.share({ title: text, url }); return; } catch {}
-            }
-            try {
-              await navigator.clipboard.writeText(url);
-              toast.success("Public profile link copied!");
-            } catch {
-              toast.error("Could not copy link");
-            }
-          }}
-        >
-          <Share2 size={14} />
-          Share my profile link
-        </Button>
-      </div>
       <div className="flex gap-2 mb-3 animate-reveal animate-reveal-delay-1">
         <Button variant="gold-outline" size="sm" className="flex-1" onClick={() => navigate("/referrals")}>
           <Users size={14} />

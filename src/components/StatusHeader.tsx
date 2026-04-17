@@ -187,11 +187,23 @@ const StatusHeader = () => {
             {isElite ? (
               <motion.button
                 onClick={() => navigate("/paywall")}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-gold/12 border border-gold/40"
+                className="relative flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-gold/20 via-gold/15 to-gold/20 border border-gold/60 shadow-[0_0_12px_hsl(42_78%_54%/0.5)]"
                 whileTap={{ scale: 0.95 }}
+                animate={{
+                  boxShadow: [
+                    "0 0 8px hsl(42 78% 54% / 0.4)",
+                    "0 0 18px hsl(42 78% 54% / 0.7)",
+                    "0 0 8px hsl(42 78% 54% / 0.4)",
+                  ],
+                }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
               >
-                <Crown size={11} className="text-gold" />
-                <span className="text-[10px] font-black text-gold uppercase tracking-wider">
+                <span
+                  className="absolute -inset-0.5 rounded-full blur-md opacity-60 pointer-events-none"
+                  style={{ background: "linear-gradient(135deg, hsl(42 78% 54% / 0.5), hsl(42 90% 65% / 0.3))" }}
+                />
+                <Crown size={11} className="relative text-gold drop-shadow-[0_0_4px_hsl(42_78%_54%/0.8)]" />
+                <span className="relative text-[10px] font-black text-gold uppercase tracking-wider">
                   Elite
                 </span>
               </motion.button>

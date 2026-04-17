@@ -1,4 +1,3 @@
-import AppLogoHeader from "@/components/AppLogoHeader";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";

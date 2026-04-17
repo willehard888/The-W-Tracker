@@ -128,7 +128,7 @@ const StatusHeader = () => {
         }}
       />
 
-      <div className="relative backdrop-blur-xl bg-background/70 border-b border-gold/15">
+      <div className="relative backdrop-blur-xl bg-background/90 border-b border-gold/20">
         {/* Top shimmer accent */}
         <div className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
 

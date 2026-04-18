@@ -70,7 +70,10 @@ const Referrals = () => {
         <button onClick={() => navigate(-1)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
           <ChevronLeft size={20} />
         </button>
-        <img src="/app-icon.png" alt="W" className="h-8 w-8 rounded-lg" />
+        <picture>
+          <source srcSet="/app-icon.webp 1x, /app-icon@2x.webp 2x" type="image/webp" />
+          <img src="/app-icon.webp" alt="W" width={32} height={32} decoding="async" className="h-8 w-8 rounded-lg" />
+        </picture>
         <div>
           <h1 className="font-display text-xl font-bold tracking-tight">Invite Friends</h1>
           <p className="text-xs text-muted-foreground">Share the movement. Earn rewards.</p>

@@ -25,13 +25,24 @@ target 'App' do
   # Add your Pods here
 end
 
+DYNAMIC_PODS = %w[
+  Capacitor
+  CapacitorCordova
+  CapacitorApp
+  CapacitorAppLauncher
+  CapacitorBrowser
+  CapacitorHaptics
+  CapacitorLocalNotifications
+  CapacitorPushNotifications
+  RevenuecatPurchasesCapacitor
+  PurchasesHybridCommon
+  RevenueCat
+].freeze
+
 pre_install do |installer|
   installer.pod_targets.each do |pod|
-    next unless ['Capacitor', 'CapacitorCordova', 'CapacitorApp', 'CapacitorAppLauncher', 'CapacitorBrowser', 'CapacitorHaptics', 'CapacitorLocalNotifications', 'CapacitorPushNotifications', 'RevenuecatPurchasesCapacitor', 'PurchasesHybridCommon', 'RevenueCat'].include?(pod.name)
-
-    def pod.build_type
-      Pod::BuildType.dynamic_framework
-    end
+    next unless DYNAMIC_PODS.include?(pod.name)
+    pod.define_singleton_method(:build_type) { Pod::BuildType.dynamic_framework }
   end
 end
 

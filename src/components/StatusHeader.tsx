@@ -7,6 +7,7 @@ import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
 import { Crown, Clock, ChevronRight, Flame } from "lucide-react";
 import { motion } from "framer-motion";
+import BrandLogo from "@/components/BrandLogo";
 
 const PRESSURE_QUOTES = [
   "Grind never stops 🔥",

@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import EliteUnlockCelebration from "@/components/EliteUnlockCelebration";
+import BrandLogo from "@/components/BrandLogo";
 
 // ─── Constants ──────────────────────────────────────────
 // Product IDs from RevenueCatContext

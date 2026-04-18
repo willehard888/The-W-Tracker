@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Flame, Trophy, Swords, Shield, Sparkles, Star } from "lucide-react";
+import BrandLogo from "@/components/BrandLogo";
 
 const Landing = () => {
   const navigate = useNavigate();

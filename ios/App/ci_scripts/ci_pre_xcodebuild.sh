@@ -36,6 +36,26 @@ fi
 echo "✅ Pods directory present at $IOS_APP_DIR/Pods"
 ls -la "$IOS_APP_DIR/Pods" | head -20
 
+echo "🧹 Verifying generated Pods configs do not reference missing MetalToolchain paths..."
+python3 - <<'PY'
+from pathlib import Path
+
+root = Path('/dev-server/ios/App')
+invalid = '$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)'
+
+for path in list(root.glob('Pods/Target Support Files/**/*.xcconfig')) + [root / 'Pods/Pods.xcodeproj/project.pbxproj']:
+    if not path.exists() or not path.is_file():
+        continue
+    content = path.read_text()
+    if invalid not in content:
+        continue
+    updated = content.replace(f' {invalid}', '').replace(f'"{invalid}"', '')
+    updated = updated.replace(invalid + ' ', '').replace(invalid, '')
+    if updated != content:
+        path.write_text(updated)
+        print(f'patched {path}')
+PY
+
 # Confirm workspace contains Pods reference
 if grep -q "Pods.xcodeproj" "$IOS_APP_DIR/App.xcworkspace/contents.xcworkspacedata"; then
   echo "✅ Workspace references Pods.xcodeproj"

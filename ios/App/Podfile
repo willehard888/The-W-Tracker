@@ -25,6 +25,16 @@ target 'App' do
   # Add your Pods here
 end
 
+pre_install do |installer|
+  installer.pod_targets.each do |pod|
+    next unless ['Capacitor', 'CapacitorCordova', 'CapacitorApp', 'CapacitorAppLauncher', 'CapacitorBrowser', 'CapacitorHaptics', 'CapacitorLocalNotifications', 'CapacitorPushNotifications', 'RevenuecatPurchasesCapacitor', 'PurchasesHybridCommon', 'RevenueCat'].include?(pod.name)
+
+    def pod.build_type
+      Pod::BuildType.dynamic_framework
+    end
+  end
+end
+
 post_install do |installer|
   assertDeploymentTarget(installer)
 

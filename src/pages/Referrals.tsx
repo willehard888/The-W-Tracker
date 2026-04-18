@@ -71,9 +71,7 @@ const Referrals = () => {
         <button onClick={() => navigate(-1)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
           <ChevronLeft size={20} />
         </button>
-        <picture>
-          <BrandLogo size={32} className="rounded-lg" alt="W" />
-        </picture>
+        <BrandLogo size={32} className="rounded-lg" alt="W" />
         <div>
           <h1 className="font-display text-xl font-bold tracking-tight">Invite Friends</h1>
           <p className="text-xs text-muted-foreground">Share the movement. Earn rewards.</p>

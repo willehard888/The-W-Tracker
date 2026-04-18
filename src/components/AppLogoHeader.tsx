@@ -7,11 +7,18 @@ const AppLogoHeader = () => (
           background: "radial-gradient(circle, hsl(42 78% 54% / 0.4), transparent 70%)",
         }}
       />
-      <img
-        src="/app-icon.png"
-        alt="The W Tracker"
-        className="relative h-16 w-16 rounded-2xl shadow-[0_6px_24px_hsl(42_78%_54%/0.2),0_2px_6px_hsl(0_0%_0%/0.3)]"
-      />
+      <picture>
+        <source srcSet="/app-icon.webp 1x, /app-icon@2x.webp 2x" type="image/webp" />
+        <img
+          src="/app-icon.webp"
+          alt="The W Tracker"
+          width={64}
+          height={64}
+          fetchPriority="high"
+          decoding="async"
+          className="relative h-16 w-16 rounded-2xl shadow-[0_6px_24px_hsl(42_78%_54%/0.2),0_2px_6px_hsl(0_0%_0%/0.3)]"
+        />
+      </picture>
     </div>
     <span className="font-display text-xl font-bold tracking-tight text-gradient-gold">
       The W Tracker

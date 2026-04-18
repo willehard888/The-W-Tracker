@@ -7,28 +7,18 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen gradient-dark flex flex-col overflow-hidden relative">
-      {/* Dramatic top light cone */}
+      {/* Single composited atmosphere layer — replaces three stacked gradients */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.22) 0%, hsl(42 78% 54% / 0.06) 35%, transparent 65%)",
-        }}
-      />
-      {/* Secondary purple bloom */}
-      <div
-        className="absolute top-32 left-1/2 -translate-x-1/2 w-[600px] h-[400px] pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse at center, hsl(270 60% 58% / 0.12) 0%, transparent 60%)",
-        }}
-      />
-      {/* Side vignettes */}
-      <div
+        aria-hidden
         className="absolute inset-0 pointer-events-none"
         style={{
-          background:
+          backgroundImage: [
+            "radial-gradient(ellipse 70% 45% at 50% 0%, hsl(42 78% 54% / 0.2) 0%, transparent 60%)",
+            "radial-gradient(ellipse 55% 35% at 50% 22%, hsl(270 60% 58% / 0.1) 0%, transparent 65%)",
             "radial-gradient(ellipse 120% 100% at 50% 50%, transparent 45%, hsl(260 18% 2% / 0.9) 100%)",
+          ].join(","),
+          transform: "translateZ(0)",
+          willChange: "opacity",
         }}
       />
 
@@ -46,7 +36,7 @@ const Landing = () => {
       {/* Hero */}
       <main className="relative flex-1 flex flex-col items-center justify-center px-6 text-center">
         <div className="animate-reveal max-w-md mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border-gold/30 mb-10 shimmer-overlay">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border-gold/30 mb-10">
             <Flame size={14} className="text-gold" />
             <span className="text-[11px] font-bold text-gold tracking-widest uppercase">
               Discipline is the new flex
@@ -70,7 +60,7 @@ const Landing = () => {
               variant="gold"
               size="xl"
               onClick={() => navigate("/auth")}
-              className="w-full group breathing-glow text-base"
+              className="w-full group text-base"
             >
               Start Your Journey
               <ArrowRight

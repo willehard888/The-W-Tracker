@@ -54,12 +54,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (loading) return <LazyFallback />;
   if (!user) return <Navigate to="/landing" replace />;
 
-  if (isAppleUsernameSelectionPending() && window.location.pathname !== "/apple-username") {
+  const path = window.location.pathname;
+
+  if (isAppleUsernameSelectionPending() && path !== "/apple-username") {
     return <Navigate to="/apple-username" replace />;
   }
 
-  const onboardingDone = localStorage.getItem("w_onboarding_done");
-  if (!onboardingDone && window.location.pathname !== "/onboarding" && window.location.pathname !== "/apple-username") {
+  // Read once per render; localStorage is sync but cheap, this just keeps it tidy.
+  if (
+    !localStorage.getItem("w_onboarding_done") &&
+    path !== "/onboarding" &&
+    path !== "/apple-username"
+  ) {
     return <Navigate to="/onboarding" replace />;
   }
 

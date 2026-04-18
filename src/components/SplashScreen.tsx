@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import BrandLogo from "./BrandLogo";
 
 const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
   const [phase, setPhase] = useState<"reveal" | "settle" | "exit">("reveal");
@@ -80,22 +81,11 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
               filter: "blur(8px)",
             }}
           />
-          <picture>
-            <source srcSet="/app-icon.webp 1x, /app-icon@2x.webp 2x" type="image/webp" />
-            <img
-              src="/app-icon@2x.webp"
-              alt="The W Tracker"
-              width={112}
-              height={112}
-              fetchPriority="high"
-              decoding="async"
-              className="relative h-28 w-28 rounded-3xl"
-              style={{
-                boxShadow:
-                  "0 0 0 1px hsl(42 90% 60% / 0.25), 0 20px 60px hsl(42 90% 50% / 0.35), 0 0 100px hsl(42 90% 55% / 0.25)",
-              }}
-            />
-          </picture>
+          <BrandLogo
+            size={112}
+            priority
+            className="relative rounded-3xl"
+          />
 
           {/* Shimmer sweep */}
           <div

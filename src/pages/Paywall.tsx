@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import EliteUnlockCelebration from "@/components/EliteUnlockCelebration";
+import BrandLogo from "@/components/BrandLogo";
 
 // ─── Constants ──────────────────────────────────────────
 // Product IDs from RevenueCatContext
@@ -157,17 +158,7 @@ const Paywall = () => {
 
       {/* Hero */}
       <div className="text-center mb-8 animate-reveal">
-        <picture>
-          <source srcSet="/app-icon.webp 1x, /app-icon@2x.webp 2x" type="image/webp" />
-          <img
-            src="/app-icon.webp"
-            alt="The W Tracker"
-            width={80}
-            height={80}
-            decoding="async"
-            className="h-20 w-20 mx-auto rounded-2xl glow-gold mb-4"
-          />
-        </picture>
+        <BrandLogo size={80} priority className="mx-auto rounded-2xl glow-gold mb-4" />
         <h1 className="font-display text-3xl font-black tracking-tight mb-2">
           Go <span className="text-gold glow-gold-text">Elite</span>
         </h1>

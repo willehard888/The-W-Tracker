@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import BrandLogo from "@/components/BrandLogo";
 
 const Referrals = () => {
   const { profile } = useAuth();
@@ -70,10 +71,7 @@ const Referrals = () => {
         <button onClick={() => navigate(-1)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
           <ChevronLeft size={20} />
         </button>
-        <picture>
-          <source srcSet="/app-icon.webp 1x, /app-icon@2x.webp 2x" type="image/webp" />
-          <img src="/app-icon.webp" alt="W" width={32} height={32} decoding="async" className="h-8 w-8 rounded-lg" />
-        </picture>
+        <BrandLogo size={32} className="rounded-lg" alt="W" />
         <div>
           <h1 className="font-display text-xl font-bold tracking-tight">Invite Friends</h1>
           <p className="text-xs text-muted-foreground">Share the movement. Earn rewards.</p>

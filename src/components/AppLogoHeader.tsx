@@ -3,16 +3,26 @@ import BrandLogo from "./BrandLogo";
 const AppLogoHeader = () => (
   <div className="flex flex-col items-center justify-center gap-2 mb-6 pt-2">
     <div className="relative">
+      {/* Outer ambient glow */}
       <div
-        className="absolute -inset-3 rounded-3xl opacity-40 blur-xl"
+        aria-hidden
+        className="absolute -inset-6 rounded-[2rem] opacity-60 blur-2xl pointer-events-none"
         style={{
-          background: "radial-gradient(circle, hsl(42 78% 54% / 0.4), transparent 70%)",
+          background: "radial-gradient(circle, hsl(42 78% 54% / 0.55), transparent 70%)",
+        }}
+      />
+      {/* Inner tight glow */}
+      <div
+        aria-hidden
+        className="absolute -inset-2 rounded-3xl opacity-70 blur-lg pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, hsl(42 85% 60% / 0.45), transparent 65%)",
         }}
       />
       <BrandLogo
         size={64}
         priority
-        className="relative rounded-2xl shadow-[0_6px_24px_hsl(42_78%_54%/0.2),0_2px_6px_hsl(0_0%_0%/0.3)]"
+        className="relative rounded-2xl shadow-[0_8px_32px_hsl(42_78%_54%/0.35),0_2px_8px_hsl(0_0%_0%/0.4)]"
       />
     </div>
     <span className="font-display text-xl font-bold tracking-tight text-gradient-gold">

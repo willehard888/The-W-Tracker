@@ -10,11 +10,52 @@ import { supabase } from "@/integrations/supabase/client";
 
 let oauthHandled = false;
 
+function summarizeUrl(url: string) {
+  try {
+    const parsed = new URL(url, window.location.origin);
+    const hash = parsed.hash.startsWith("#") ? parsed.hash.slice(1) : parsed.hash;
+    const search = new URLSearchParams(parsed.search);
+    const hashParams = new URLSearchParams(hash);
+    return {
+      scheme: parsed.protocol,
+      host: parsed.host,
+      pathname: parsed.pathname,
+      search: parsed.search ? "present" : "absent",
+      hash: hash ? "present" : "absent",
+      hasAccessToken: search.has("access_token") || hashParams.has("access_token"),
+      hasRefreshToken: search.has("refresh_token") || hashParams.has("refresh_token"),
+      hasError: search.has("error") || hashParams.has("error"),
+      attempt: search.get("attempt") || hashParams.get("attempt") || null,
+      state: search.get("state") || hashParams.get("state") || null,
+      length: url.length,
+    };
+  } catch (e) {
+    return { parseError: e instanceof Error ? e.message : String(e), length: url.length };
+  }
+}
+
 async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
-  if (!url || oauthHandled) return;
+  if (!url) {
+    pushIosDebugLog("DeepLink", "Ignored empty deep link", { source });
+    return;
+  }
+
+  pushIosDebugLog("DeepLink", "Deep link received", {
+    source,
+    alreadyHandled: oauthHandled,
+    summary: summarizeUrl(url),
+  });
+
+  if (oauthHandled) {
+    pushIosDebugLog("DeepLink", "Skipping duplicate OAuth callback", { source });
+    return;
+  }
 
   // Only handle OAuth callback URLs
-  if (!url.includes("access_token") && !url.includes("refresh_token")) return;
+  if (!url.includes("access_token") && !url.includes("refresh_token")) {
+    pushIosDebugLog("DeepLink", "Deep link did not contain OAuth tokens, ignoring", { source });
+    return;
+  }
 
   oauthHandled = true;
   console.log(`[DeepLink] Processing ${source} OAuth callback`);
@@ -78,22 +119,46 @@ async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
 
 // On native iOS/Android: listen for deep link callbacks from OAuth
 if (Capacitor.isNativePlatform()) {
+  pushIosDebugLog("DeepLink", "Registering native deep link listeners", {
+    platform: Capacitor.getPlatform(),
+  });
+
   import("@capacitor/app")
     .then(({ App: CapApp }) => {
-      CapApp.getLaunchUrl().then((data) => {
-        if (data?.url) {
-          void handleOAuthUrl(data.url, "launch");
-        }
-      }).catch(() => {
-        // Ignore launch URL lookup failures
-      });
+      CapApp.getLaunchUrl()
+        .then((data) => {
+          pushIosDebugLog("DeepLink", "getLaunchUrl resolved", {
+            hasUrl: Boolean(data?.url),
+            summary: data?.url ? summarizeUrl(data.url) : null,
+          });
+          if (data?.url) {
+            void handleOAuthUrl(data.url, "launch");
+          }
+        })
+        .catch((err) => {
+          pushIosDebugLog("DeepLink", "getLaunchUrl failed", {
+            message: err instanceof Error ? err.message : String(err),
+          });
+        });
 
       CapApp.addListener("appUrlOpen", (data: { url: string }) => {
+        pushIosDebugLog("DeepLink", "appUrlOpen fired", {
+          summary: summarizeUrl(data.url),
+        });
         void handleOAuthUrl(data.url, "appUrlOpen");
       });
+
+      CapApp.addListener("resume", () => {
+        pushIosDebugLog("DeepLink", "App resumed", {
+          oauthHandled,
+          href: window.location.href.slice(0, 160),
+        });
+      });
     })
-    .catch(() => {
-      // @capacitor/app not available, skip
+    .catch((err) => {
+      pushIosDebugLog("DeepLink", "@capacitor/app import failed", {
+        message: err instanceof Error ? err.message : String(err),
+      });
     });
 }
 

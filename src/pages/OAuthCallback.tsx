@@ -30,15 +30,39 @@ function buildAppCallbackUrlFromCurrentLocation() {
 }
 
 function openNativeApp(deepLink: string) {
+  pushIosDebugLog("OAuthCallback", "Opening native app via deep link", {
+    schemePrefix: deepLink.slice(0, deepLink.indexOf("://") + 3),
+    length: deepLink.length,
+  });
   window.location.replace(deepLink);
 
   window.setTimeout(() => {
     try {
+      pushIosDebugLog("OAuthCallback", "Retrying deep link after 700ms (no app return detected)", {
+        stillVisible: typeof document !== "undefined" ? document.visibilityState : "unknown",
+      });
       window.location.assign(deepLink);
-    } catch {
-      // no-op
+    } catch (err) {
+      pushIosDebugLog("OAuthCallback", "Retry deep link failed", {
+        message: err instanceof Error ? err.message : String(err),
+      });
     }
   }, 700);
+
+  if (typeof document !== "undefined") {
+    const onVisibility = () => {
+      pushIosDebugLog("OAuthCallback", "Visibility changed after deep link", {
+        state: document.visibilityState,
+      });
+      if (document.visibilityState === "hidden") {
+        document.removeEventListener("visibilitychange", onVisibility);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.setTimeout(() => {
+      document.removeEventListener("visibilitychange", onVisibility);
+    }, 5000);
+  }
 }
 
 function getErrorMessage(error: unknown): string {

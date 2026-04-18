@@ -29,21 +29,23 @@ const AmbientParticles = () => {
   useEffect(() => {
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
+    // Skip entirely on tiny / very low-memory devices (e.g. old phones) — saves real frames.
+    const mem = (navigator as any).deviceMemory || 4;
+    if (window.innerWidth < 360 || mem <= 1) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1);
     let w = 0;
     let h = 0;
 
     const computeCount = () => {
       const area = window.innerWidth * window.innerHeight;
-      const mem = (navigator as any).deviceMemory || 4;
-      // Base ~ 1 particle per 24k px², clamped, scaled down for low-mem devices.
-      const base = Math.min(40, Math.max(14, Math.round(area / 24000)));
+      // Sparser field — looks ambient, costs almost nothing.
+      const base = Math.min(26, Math.max(10, Math.round(area / 38000)));
       return mem <= 2 ? Math.round(base * 0.5) : base;
     };
 
@@ -77,8 +79,15 @@ const AmbientParticles = () => {
     };
     document.addEventListener("visibilitychange", onVisibility);
 
-    const animate = () => {
+    // Throttle to ~30 fps — visually identical for ambient drift, halves the GPU cost.
+    const FRAME_MS = 1000 / 30;
+    let last = 0;
+    const animate = (now: number) => {
       if (!running.current) return;
+      raf.current = requestAnimationFrame(animate);
+      if (now - last < FRAME_MS) return;
+      last = now;
+
       ctx.clearRect(0, 0, w, h);
 
       const list = particles.current;
@@ -98,8 +107,6 @@ const AmbientParticles = () => {
         ctx.fillStyle = `hsla(${p.hue},80%,${p.lightness}%,${p.opacity})`;
         ctx.fill();
       }
-
-      raf.current = requestAnimationFrame(animate);
     };
 
     raf.current = requestAnimationFrame(animate);

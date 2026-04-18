@@ -805,13 +805,11 @@
 @keyframes reveal {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.98);
-    filter: blur(6px);
+    transform: translate3d(0, 14px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 

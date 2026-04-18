@@ -167,8 +167,46 @@ const Paywall = () => {
         </p>
       </div>
 
+      {/* Pricing — moved above features */}
+      <div className="animate-reveal animate-reveal-delay-1 mb-6">
+        {isNative && rcLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 size={24} className="animate-spin text-gold" />
+          </div>
+        ) : (
+          <div className="rounded-xl glass-card-gold p-6 text-center gradient-border-animated relative overflow-hidden">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/15 border border-gold/30 mb-3">
+              <Zap size={12} className="text-gold" />
+              <span className="text-[10px] font-bold text-gold tracking-widest uppercase">
+                7-day free trial
+              </span>
+            </div>
+
+            <p className="text-3xl font-display font-black text-gold mb-1 leading-none">
+              {displayPrice}
+              <span className="text-base font-semibold text-muted-foreground">/mo</span>
+            </p>
+            <p className="text-xs text-muted-foreground mb-1">Elite Membership</p>
+            <p className="text-[11px] text-muted-foreground/80 mb-4">
+              Free for 7 days, then {displayPrice}/mo. Cancel anytime.
+            </p>
+
+            <Button
+              variant="gold"
+              size="xl"
+              className={cn("w-full", !purchasing && "breathing-glow")}
+              disabled={purchasing}
+              onClick={isNative ? handleNativePurchase : handleStripeCheckout}
+            >
+              {purchasing ? <Loader2 size={18} className="animate-spin" /> : <Crown size={18} />}
+              Start 7-Day Free Trial
+            </Button>
+          </div>
+        )}
+      </div>
+
       {/* Features */}
-      <div className="rounded-xl glass-card-gold p-5 mb-6 animate-reveal animate-reveal-delay-1 gradient-border-animated shimmer-overlay">
+      <div className="rounded-xl glass-card-gold p-5 mb-6 animate-reveal animate-reveal-delay-2 gradient-border-animated shimmer-overlay">
         <h2 className="font-display font-bold text-sm mb-4 text-gold">What you unlock</h2>
         <div className="space-y-3">
           {ELITE_FEATURES.map(({ icon: Icon, text }) => (
@@ -181,34 +219,6 @@ const Paywall = () => {
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Pricing */}
-      <div className="animate-reveal animate-reveal-delay-2">
-        {isNative && rcLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 size={24} className="animate-spin text-gold" />
-          </div>
-        ) : (
-          <div className="rounded-xl glass-card-gold p-6 text-center space-y-4 gradient-border-animated">
-            <p className="text-lg font-display font-black text-gold mb-1">
-              {displayPrice}
-              <span className="text-sm font-semibold text-muted-foreground">/mo</span>
-            </p>
-            <p className="text-xs text-muted-foreground">Elite Membership</p>
-
-            <Button
-              variant="gold"
-              size="xl"
-              className={cn("w-full", !purchasing && "breathing-glow")}
-              disabled={purchasing}
-              onClick={isNative ? handleNativePurchase : handleStripeCheckout}
-            >
-              {purchasing ? <Loader2 size={18} className="animate-spin" /> : <Crown size={18} />}
-              Unlock Elite — {displayPrice}/mo
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Restore */}

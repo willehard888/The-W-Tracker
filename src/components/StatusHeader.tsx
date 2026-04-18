@@ -138,18 +138,7 @@ const StatusHeader = () => {
           className="w-full flex items-center justify-center gap-2 pt-2 pb-1.5 active:opacity-80 transition-opacity"
           aria-label="The W-Tracker — Home"
         >
-          <picture>
-            <source srcSet="/app-icon.webp 1x, /app-icon@2x.webp 2x" type="image/webp" />
-            <img
-              src="/app-icon.webp"
-              alt=""
-              aria-hidden
-              width={20}
-              height={20}
-              decoding="async"
-              className="h-5 w-5 rounded-md shadow-[0_2px_8px_hsl(42_78%_54%/0.5)]"
-            />
-          </picture>
+          <BrandLogo size={20} alt="" className="rounded-md shadow-[0_2px_8px_hsl(42_78%_54%/0.5)]" />
           <span className="font-display font-black tracking-[0.22em] uppercase text-gradient-gold leading-none text-[11px]">
             The W-Tracker
           </span>

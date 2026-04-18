@@ -71,8 +71,7 @@ const Referrals = () => {
           <ChevronLeft size={20} />
         </button>
         <picture>
-          <source srcSet="/app-icon.webp 1x, /app-icon@2x.webp 2x" type="image/webp" />
-          <img src="/app-icon.webp" alt="W" width={32} height={32} decoding="async" className="h-8 w-8 rounded-lg" />
+          <BrandLogo size={32} className="rounded-lg" alt="W" />
         </picture>
         <div>
           <h1 className="font-display text-xl font-bold tracking-tight">Invite Friends</h1>

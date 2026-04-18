@@ -27,18 +27,7 @@ const Landing = () => {
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="absolute -inset-2 rounded-2xl opacity-50 blur-lg" style={{ background: "hsl(42 78% 54% / 0.35)" }} />
-            <picture>
-              <source srcSet="/app-icon.webp 1x, /app-icon@2x.webp 2x" type="image/webp" />
-              <img
-                src="/app-icon.webp"
-                alt="The W Tracker"
-                width={80}
-                height={80}
-                fetchPriority="high"
-                decoding="async"
-                className="relative h-20 w-20 rounded-2xl"
-              />
-            </picture>
+            <BrandLogo size={80} priority className="relative rounded-2xl" />
           </div>
           <span className="font-display font-bold text-lg tracking-tight text-gradient-gold">The W Tracker</span>
         </div>

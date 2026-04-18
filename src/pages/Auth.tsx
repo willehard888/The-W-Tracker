@@ -6,6 +6,7 @@ import { ArrowRight, Eye, EyeOff, Flame, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { nativeAppleSignIn } from "@/lib/native-auth";
+import BrandLogo from "@/components/BrandLogo";
 
 const Auth = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -125,18 +126,7 @@ const Auth = () => {
       <div className="w-full max-w-sm animate-reveal">
         {/* Logo */}
         <div className="flex flex-col items-center mb-10">
-          <picture>
-            <source srcSet="/app-icon.webp 1x, /app-icon@2x.webp 2x" type="image/webp" />
-            <img
-              src="/app-icon.webp"
-              alt="The W Tracker"
-              width={56}
-              height={56}
-              fetchPriority="high"
-              decoding="async"
-              className="h-14 w-14 rounded-xl glow-gold mb-4"
-            />
-          </picture>
+          <BrandLogo size={56} priority className="rounded-xl glow-gold mb-4" />
           <h1 className="font-display text-2xl font-bold tracking-tight">
             {mode === "login" ? "Welcome Back" : "Join the Movement"}
           </h1>

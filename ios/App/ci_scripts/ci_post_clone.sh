@@ -51,6 +51,26 @@ echo "📦 Installing CocoaPods dependencies (required for Capacitor module reso
 cd "$ROOT_DIR/ios/App"
 pod install --repo-update
 
+echo "🧹 Removing broken MetalToolchain Swift search paths from generated Pods configs..."
+python3 - <<'PY'
+from pathlib import Path
+
+root = Path(".")
+invalid = '$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)'
+
+for path in list(root.glob('Pods/Target Support Files/**/*.xcconfig')) + [root / 'Pods/Pods.xcodeproj/project.pbxproj']:
+    if not path.exists() or not path.is_file():
+        continue
+    content = path.read_text()
+    if invalid not in content:
+        continue
+    updated = content.replace(f' {invalid}', '').replace(f'"{invalid}"', '')
+    updated = updated.replace(invalid + ' ', '').replace(invalid, '')
+    if updated != content:
+        path.write_text(updated)
+        print(f'patched {path}')
+PY
+
 # Verify Pods were installed correctly
 if [[ ! -d "Pods" ]]; then
   echo "❌ Pods directory was not created — CocoaPods install failed!"

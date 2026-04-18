@@ -184,13 +184,15 @@ async function nativeDirectAppleSignIn(): Promise<{ error?: Error }> {
     // Check if the native NativeAppleAuth plugin is actually registered.
     // If not (which is the case in our current iOS build, since we don't
     // ship a Swift implementation of it), fall back to the managed OAuth
-    // flow which opens Apple Sign In in Safari/ASWebAuthenticationSession.
+    // flow from the system browser so the OAuth state stays in the same
+    // browser context for the full round-trip.
     const isPluginAvailable = Capacitor.isPluginAvailable("NativeAppleAuth");
     if (!isPluginAvailable) {
-      pushIosDebugLog("AppleAuth", "NativeAppleAuth plugin not available, using managed OAuth", {
+      pushIosDebugLog("AppleAuth", "NativeAppleAuth plugin not available, launching published Apple auth in system browser", {
         platform: Capacitor.getPlatform(),
       });
-      return await startManagedAppleOAuth();
+      await openPublishedAuthPageInSystemBrowser();
+      return {};
     }
 
     const credentials = await NativeAppleAuth.signIn();

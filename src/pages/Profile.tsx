@@ -274,23 +274,23 @@ const Profile = () => {
 
       
 
-      {/* Profile Header — cinematic */}
-      <div className="animate-reveal relative mb-6 overflow-hidden rounded-3xl border border-gold/20 bg-gradient-to-b from-card via-card/80 to-background p-6 pt-8">
-        {/* Ambient gold glow */}
+      {/* Profile Header — cinematic hero card */}
+      <div className="animate-reveal relative mb-6 overflow-hidden rounded-3xl border border-gold/25 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(42_70%_18%/0.55),hsl(255_14%_6%)_60%)] p-6 pt-10 pb-7">
+        {/* Top vignette glow */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-60"
+          className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[160%] h-64 blur-3xl opacity-70"
           style={{
             background:
-              "radial-gradient(circle at 50% 0%, hsl(42 78% 54% / 0.25), transparent 60%)",
+              "radial-gradient(ellipse at center, hsl(42 78% 54% / 0.35), transparent 70%)",
           }}
         />
         {/* Top accent line */}
-        <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
 
         <div className="relative flex flex-col items-center text-center">
-          {/* Avatar */}
-          <div className="relative mb-4">
+          {/* Avatar — large, gold ring, soft glow, camera/crown badge */}
+          <div className="relative mb-5">
             <input
               ref={avatarInputRef}
               type="file"
@@ -298,15 +298,15 @@ const Profile = () => {
               className="hidden"
               onChange={handleAvatarUpload}
             />
-            <div className="absolute inset-0 -m-2 rounded-full bg-gold/30 blur-2xl" aria-hidden />
+            <div className="absolute inset-0 -m-3 rounded-full bg-gold/35 blur-2xl" aria-hidden />
             {profile.avatar_url ? (
               <img
                 src={profile.avatar_url}
                 alt={profile.username}
-                className="relative h-28 w-28 rounded-full object-cover border-2 border-gold glow-gold"
+                className="relative h-32 w-32 rounded-full object-cover ring-2 ring-gold ring-offset-4 ring-offset-background"
               />
             ) : (
-              <div className="relative h-28 w-28 rounded-full gradient-gold flex items-center justify-center glow-gold text-4xl font-black font-display text-primary-foreground">
+              <div className="relative h-32 w-32 rounded-full gradient-gold flex items-center justify-center text-5xl font-black font-display text-primary-foreground ring-2 ring-gold ring-offset-4 ring-offset-background">
                 {profile.username?.charAt(0)?.toUpperCase()}
               </div>
             )}
@@ -314,7 +314,7 @@ const Profile = () => {
               <button
                 onClick={() => avatarInputRef.current?.click()}
                 disabled={uploadingAvatar}
-                className="absolute -bottom-1 -right-1 h-9 w-9 rounded-full bg-card border-2 border-gold flex items-center justify-center transition-all hover:bg-gold/10 active:scale-95 shadow-lg shadow-gold/30"
+                className="absolute -bottom-1 -right-1 h-10 w-10 rounded-full bg-background border border-gold/40 flex items-center justify-center transition-all hover:bg-gold/10 active:scale-95 shadow-lg shadow-gold/20"
               >
                 {uploadingAvatar ? (
                   <span className="text-[10px] text-gold animate-pulse">...</span>
@@ -323,46 +323,62 @@ const Profile = () => {
                 )}
               </button>
             ) : (
-              <div className="absolute -bottom-1 -right-1 h-9 w-9 rounded-full bg-card border-2 border-gold flex items-center justify-center shadow-lg shadow-gold/30">
+              <div className="absolute -bottom-1 -right-1 h-10 w-10 rounded-full bg-background border border-gold/40 flex items-center justify-center shadow-lg shadow-gold/20">
                 <Crown size={18} className="text-gold" />
               </div>
             )}
           </div>
 
-          {/* Username */}
-          <h1 className="font-display text-3xl font-black tracking-tight bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent">
+          {/* Username — bold, light weight pop */}
+          <h1 className="font-display text-[34px] leading-none font-black tracking-tight text-foreground/95">
             @{profile.username}
           </h1>
 
-          {/* Status row */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
-            <StatusBadge tier={tier} size="sm" />
-            <span className="text-xs font-bold tracking-widest text-muted-foreground/70 uppercase">
-              Level {profile.level}
+          {/* Status pills — Elite · Level · Season Champion */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+            {isElite && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
+                <Crown size={12} className="text-gold" />
+                <span className="text-[11px] font-black text-gold tracking-wider uppercase">Elite</span>
+              </span>
+            )}
+            <span className="inline-flex items-center px-3 py-1.5 rounded-full">
+              <span className="text-[11px] font-black tracking-wider text-muted-foreground/80 uppercase">
+                Level {profile.level}
+              </span>
             </span>
-            {featuredBadge && (
-              <span className="flex items-center gap-1.5 bg-gold/10 px-2.5 py-1 rounded-full border border-gold/30">
-                <span className="text-sm">{featuredBadge.icon}</span>
-                <span className="font-bold text-gold text-[10px] tracking-wider uppercase">{featuredBadge.name}</span>
+            {championHistory && championHistory.wins > 0 && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
+                <Trophy size={12} className="text-gold" />
+                <span className="text-[11px] font-black text-gold tracking-wider uppercase">Season Champion</span>
               </span>
             )}
           </div>
 
-          {/* Hero XP */}
-          <div className="mt-5 flex flex-col items-center">
-            <p className="font-display font-black text-5xl text-gold drop-shadow-[0_0_20px_hsl(42_78%_54%/0.5)] tabular-nums">
-              {profile.xp.toLocaleString()}
+          {/* Hero XP — massive */}
+          <div className="mt-6 flex flex-col items-center">
+            <p className="font-display font-black text-[64px] leading-none text-gold drop-shadow-[0_0_24px_hsl(42_78%_54%/0.55)] tabular-nums">
+              {profile.xp.toLocaleString().replace(/,/g, " ")}
             </p>
-            <p className="text-[10px] font-bold tracking-[0.3em] text-gold/60 mt-1">TOTAL XP</p>
+            <p className="text-[10px] font-black tracking-[0.32em] text-gold/70 mt-2">TOTAL XP</p>
           </div>
 
-          {/* Tier message */}
-          <p className="text-xs text-muted-foreground/60 font-semibold tracking-wide mt-4 italic max-w-[260px]">
+          {/* Tier message — italic, subtle */}
+          <p className="text-sm text-muted-foreground/70 font-medium italic mt-5 max-w-[280px]">
             {tierConfig.message}
           </p>
 
+          {/* Featured badge title (kept, subtle, only if set) */}
+          {featuredBadge && (
+            <span className="mt-4 flex items-center gap-1.5 bg-gold/10 px-2.5 py-1 rounded-full border border-gold/30">
+              <span className="text-sm">{featuredBadge.icon}</span>
+              <span className="font-bold text-gold text-[10px] tracking-wider uppercase">{featuredBadge.name}</span>
+            </span>
+          )}
+
+          {/* Badge row — circular icons, like the reference */}
           {earnedBadges && earnedBadges.length > 0 && (
-            <div className="mt-5 w-full">
+            <div className="mt-7 w-full">
               <BadgeShowcase
                 badges={earnedBadges}
                 onBadgeClick={(b) => setPreviewBadge(b)}

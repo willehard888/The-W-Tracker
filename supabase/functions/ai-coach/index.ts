@@ -1,4 +1,5 @@
 // AI Coach edge function — Elite-only, streaming chat using Lovable AI Gateway (GPT-5)
+// Now with 7-day stats memory + latest briefing insights injected into system prompt
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -12,13 +13,65 @@ interface ChatMessage {
   content: string;
 }
 
-const buildSystemPrompt = (profile: any) => {
+interface Checkin {
+  checked_in_at: string;
+  xp_earned: number;
+  workout: boolean;
+  cold_shower: boolean;
+  healthy_food: boolean;
+  protein_intake: boolean;
+  hydration_liters: number;
+  sleep_hours: number;
+  reading: boolean;
+  no_phone_morning: boolean;
+  no_phone_evening: boolean;
+}
+
+const summarize7d = (checkins: Checkin[]) => {
+  if (!checkins || checkins.length === 0) return "No check-ins in the last 7 days.";
+  const days = checkins.length;
+  const avgSleep = checkins.reduce((s, c) => s + Number(c.sleep_hours ?? 0), 0) / days;
+  const avgHydr = checkins.reduce((s, c) => s + Number(c.hydration_liters ?? 0), 0) / days;
+  const totalXp = checkins.reduce((s, c) => s + (c.xp_earned ?? 0), 0);
+  const workouts = checkins.filter((c) => c.workout).length;
+  const cold = checkins.filter((c) => c.cold_shower).length;
+  const perfect = checkins.filter(
+    (c) =>
+      c.workout &&
+      c.cold_shower &&
+      c.healthy_food &&
+      c.protein_intake &&
+      c.hydration_liters >= 3 &&
+      c.reading &&
+      c.no_phone_morning &&
+      c.no_phone_evening,
+  ).length;
+  const last = checkins[checkins.length - 1];
+  return `Last 7d: ${days}/7 check-ins, ${totalXp} XP total, avg sleep ${avgSleep.toFixed(1)}h, avg hydration ${avgHydr.toFixed(1)}L, ${workouts} workouts, ${cold} cold showers, ${perfect} perfect days.
+Yesterday: sleep ${last.sleep_hours}h, ${last.workout ? "workout✓" : "no workout"}, ${last.cold_shower ? "cold✓" : "no cold"}, hydration ${last.hydration_liters}L.`;
+};
+
+const buildSystemPrompt = (
+  profile: any,
+  checkins7d: Checkin[],
+  briefingInsights: any[] | null,
+) => {
   const tier = profile?.status_tier ?? "recruit";
   const xp = profile?.xp ?? 0;
   const level = profile?.level ?? 1;
   const streak = profile?.streak ?? 0;
   const longest = profile?.longest_streak ?? 0;
   const username = profile?.username ?? "operator";
+
+  const recentSummary = summarize7d(checkins7d);
+
+  const insightsBlock =
+    briefingInsights && briefingInsights.length > 0
+      ? `\n\nFrom last week's briefing:\n${briefingInsights
+          .slice(0, 3)
+          .map((i: any) => `- ${i.title}: ${i.detail}`)
+          .join("\n")}`
+      : "";
 
   return `You are W Coach — an elite, no-nonsense performance coach inside the W app, an iOS app for self-discipline, daily check-ins, streaks, XP, battles, and status tiers.
 
@@ -29,11 +82,14 @@ Your user:
 - Total XP: ${xp}
 - Current streak: ${streak} days (longest: ${longest})
 
+Recent activity:
+${recentSummary}${insightsBlock}
+
 Style rules:
 - Speak like a sharp, calm coach. Direct. No fluff. No motivational clichés.
 - Short paragraphs. Use markdown (bold, lists) when it adds clarity.
 - Adapt tone to the user's language (reply in the same language they write in).
-- Reference their stats only when relevant — don't list them back unprompted.
+- Reference the user's recent stats when relevant — but don't list them back unprompted.
 - Be specific and actionable. Prescribe concrete protocols (sets, reps, minutes, routines).
 - If the user vents, acknowledge briefly, then redirect to action.
 - Domains you cover: training, nutrition, sleep, recovery, habits, mindset, focus, cold exposure, mobility, discipline, social pressure, dating discipline, money discipline.
@@ -78,10 +134,12 @@ Deno.serve(async (req) => {
       });
     }
 
+    const userId = userData.user.id;
+
     const { data: profile } = await supabase
       .from("profiles")
       .select("username, xp, level, streak, longest_streak, status_tier, is_elite")
-      .eq("user_id", userData.user.id)
+      .eq("user_id", userId)
       .maybeSingle();
 
     if (!profile?.is_elite) {
@@ -90,6 +148,26 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Fetch last 7 days of checkins + latest briefing in parallel
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const [checkinsRes, briefingRes] = await Promise.all([
+      supabase
+        .from("daily_checkins")
+        .select(
+          "checked_in_at, xp_earned, workout, cold_shower, healthy_food, protein_intake, hydration_liters, sleep_hours, reading, no_phone_morning, no_phone_evening",
+        )
+        .eq("user_id", userId)
+        .gte("checked_in_at", sevenDaysAgo)
+        .order("checked_in_at", { ascending: true }),
+      supabase
+        .from("weekly_briefings")
+        .select("key_insights")
+        .eq("user_id", userId)
+        .order("generated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
 
     const body = await req.json();
     const messages: ChatMessage[] = Array.isArray(body?.messages) ? body.messages : [];
@@ -100,11 +178,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Cap to last 20 turns to keep context tight
     const trimmed = messages.slice(-20).map((m) => ({
       role: m.role === "assistant" ? "assistant" : "user",
       content: String(m.content ?? "").slice(0, 4000),
     }));
+
+    const systemPrompt = buildSystemPrompt(
+      profile,
+      (checkinsRes.data ?? []) as Checkin[],
+      (briefingRes.data?.key_insights as any[]) ?? null,
+    );
 
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -115,10 +198,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: "openai/gpt-5",
         stream: true,
-        messages: [
-          { role: "system", content: buildSystemPrompt(profile) },
-          ...trimmed,
-        ],
+        messages: [{ role: "system", content: systemPrompt }, ...trimmed],
       }),
     });
 

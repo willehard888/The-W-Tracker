@@ -46,7 +46,7 @@ const Landing = () => {
 
           <h1 className="font-display text-[2.75rem] sm:text-6xl font-black tracking-tight leading-[0.92] mb-6">
             You either{" "}
-            <span className="text-gradient-gold">level up</span>
+            <span className="text-gradient-gold opacity-100">level up</span>
             <br />
             or fall behind.
           </h1>

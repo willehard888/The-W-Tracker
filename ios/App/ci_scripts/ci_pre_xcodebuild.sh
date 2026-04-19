@@ -33,6 +33,21 @@ if [[ ! -d "$IOS_APP_DIR/Pods" ]]; then
   pod install --repo-update
 fi
 
+if [[ ! -f "$IOS_APP_DIR/Pods/Local Podspecs/Capacitor.podspec.json" ]]; then
+  echo "❌ Capacitor podspec missing after pod install"
+  exit 1
+fi
+
+if [[ ! -f "$IOS_APP_DIR/Pods/Local Podspecs/CapacitorCordova.podspec.json" ]]; then
+  echo "❌ CapacitorCordova podspec missing after pod install"
+  exit 1
+fi
+
+if [[ ! -d "$IOS_APP_DIR/Pods/Target Support Files/CapacitorCordova" ]]; then
+  echo "❌ CapacitorCordova target support files missing after pod install"
+  exit 1
+fi
+
 echo "✅ Pods directory present at $IOS_APP_DIR/Pods"
 ls -la "$IOS_APP_DIR/Pods" | head -20
 

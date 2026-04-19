@@ -51,6 +51,30 @@ echo "📦 Installing CocoaPods dependencies (required for Capacitor module reso
 cd "$ROOT_DIR/ios/App"
 pod install --repo-update
 
+echo "🔎 Verifying Capacitor CocoaPods targets were generated..."
+if [[ ! -d "Pods/Local Podspecs" ]]; then
+  echo "❌ Pods/Local Podspecs missing — CocoaPods did not materialize local Capacitor pods"
+  exit 1
+fi
+
+if [[ ! -f "Pods/Local Podspecs/Capacitor.podspec.json" ]]; then
+  echo "❌ Capacitor podspec missing from Pods/Local Podspecs"
+  exit 1
+fi
+
+if [[ ! -f "Pods/Local Podspecs/CapacitorCordova.podspec.json" ]]; then
+  echo "❌ CapacitorCordova podspec missing from Pods/Local Podspecs — Cordova module will not resolve"
+  exit 1
+fi
+
+if [[ ! -d "Pods/Target Support Files/CapacitorCordova" ]]; then
+  echo "❌ CapacitorCordova target support files missing — Cordova module will not resolve"
+  exit 1
+fi
+
+ls "Pods/Local Podspecs" | grep -E 'Capacitor|Cordova' || true
+ls "Pods/Target Support Files" | grep -E 'Capacitor|Cordova' || true
+
 echo "🧹 Removing broken MetalToolchain Swift search paths from generated Pods configs..."
 python3 - <<'PY'
 from pathlib import Path

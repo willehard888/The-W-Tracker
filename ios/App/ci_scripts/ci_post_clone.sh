@@ -1,7 +1,12 @@
 #!/bin/bash
-set -euo pipefail
+# NOTE: intentionally NOT using `set -e` at the top — we want to log every
+# failure point explicitly so Xcode Cloud surfaces *which* step failed.
+set -uo pipefail
 
 echo "🔧 Running post-clone setup for iOS build..."
+echo "ℹ️  PWD=$(pwd)"
+echo "ℹ️  USER=$(whoami)"
+echo "ℹ️  Shell=$BASH_VERSION"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$SCRIPT_DIR"
@@ -11,72 +16,113 @@ while [[ ! -f "$ROOT_DIR/package.json" && "$ROOT_DIR" != "/" ]]; do
 done
 
 if [[ ! -f "$ROOT_DIR/package.json" ]]; then
-  echo "❌ package.json not found. Aborting."
+  echo "❌ package.json not found walking up from $SCRIPT_DIR. Aborting."
   exit 1
 fi
 
+echo "ℹ️  ROOT_DIR=$ROOT_DIR"
 cd "$ROOT_DIR"
 
+# ---------------------------------------------------------------------------
+# Node.js
+# ---------------------------------------------------------------------------
 if ! command -v node &>/dev/null; then
   echo "📥 Node.js not found – installing via Homebrew..."
-  brew install node
+  if ! brew install node; then
+    echo "❌ Failed to install Node.js via Homebrew"
+    exit 1
+  fi
 fi
 
 echo "ℹ️  Node $(node -v) / npm $(npm -v)"
 
+# ---------------------------------------------------------------------------
+# npm dependencies — try npm ci, fall back to npm install on ANY failure
+# ---------------------------------------------------------------------------
 echo "📦 Installing npm dependencies..."
+npm_installed=0
 if [[ -f package-lock.json ]]; then
-  echo "🔒 Using committed package-lock.json for deterministic dependency versions..."
-  if ! npm ci --legacy-peer-deps; then
-    echo "⚠️ package-lock.json is out of sync with package.json in CI; falling back to npm install"
-    npm install --legacy-peer-deps
+  echo "🔒 package-lock.json present, attempting npm ci..."
+  if npm ci --legacy-peer-deps --no-audit --no-fund 2>&1; then
+    npm_installed=1
+  else
+    echo "⚠️ npm ci failed (likely lockfile/package.json drift) — falling back to npm install"
   fi
-else
-  echo "⚠️ package-lock.json missing, falling back to npm install"
-  npm install --legacy-peer-deps
 fi
 
+if [[ "$npm_installed" -eq 0 ]]; then
+  if ! npm install --legacy-peer-deps --no-audit --no-fund 2>&1; then
+    echo "❌ npm install failed"
+    exit 1
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# Web build
+# ---------------------------------------------------------------------------
 echo "🔨 Building web assets..."
-npm run build
+if ! npm run build 2>&1; then
+  echo "❌ Web build failed"
+  exit 1
+fi
 
+# ---------------------------------------------------------------------------
+# Capacitor sync — non-fatal: pod install runs explicitly below
+# ---------------------------------------------------------------------------
 echo "🔄 Syncing Capacitor iOS project..."
-if ! npx cap sync ios; then
-  echo "⚠️ Capacitor sync hit a pod install error in CI — continuing with explicit CocoaPods install..."
+npx cap sync ios 2>&1 || echo "⚠️ Capacitor sync had warnings — continuing with explicit CocoaPods install..."
+
+# ---------------------------------------------------------------------------
+# CocoaPods
+# ---------------------------------------------------------------------------
+if ! command -v pod &>/dev/null; then
+  echo "📥 CocoaPods not found – installing..."
+  if ! brew install cocoapods 2>&1; then
+    echo "⚠️ Homebrew CocoaPods install failed, trying gem..."
+    if ! sudo gem install cocoapods 2>&1; then
+      echo "❌ Could not install CocoaPods"
+      exit 1
+    fi
+  fi
 fi
 
-if ! command -v pod &>/dev/null; then
-  echo "📥 CocoaPods not found – installing via Homebrew..."
-  brew install cocoapods || sudo gem install cocoapods
-fi
+echo "ℹ️  CocoaPods $(pod --version)"
 
 echo "📦 Installing CocoaPods dependencies (required for Capacitor module resolution)..."
 cd "$ROOT_DIR/ios/App"
-pod install --repo-update
+if ! pod install --repo-update 2>&1; then
+  echo "❌ pod install failed"
+  exit 1
+fi
 
+# ---------------------------------------------------------------------------
+# Verify Capacitor pods materialized
+# ---------------------------------------------------------------------------
 echo "🔎 Verifying Capacitor CocoaPods targets were generated..."
-if [[ ! -d "Pods/Local Podspecs" ]]; then
-  echo "❌ Pods/Local Podspecs missing — CocoaPods did not materialize local Capacitor pods"
-  exit 1
-fi
+missing=0
+for f in \
+  "Pods/Local Podspecs/Capacitor.podspec.json" \
+  "Pods/Local Podspecs/CapacitorCordova.podspec.json" \
+  "Pods/Target Support Files/CapacitorCordova" \
+  "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"
+do
+  if [[ ! -e "$f" ]]; then
+    echo "❌ Missing: $f"
+    missing=1
+  fi
+done
 
-if [[ ! -f "Pods/Local Podspecs/Capacitor.podspec.json" ]]; then
-  echo "❌ Capacitor podspec missing from Pods/Local Podspecs"
-  exit 1
-fi
-
-if [[ ! -f "Pods/Local Podspecs/CapacitorCordova.podspec.json" ]]; then
-  echo "❌ CapacitorCordova podspec missing from Pods/Local Podspecs — Cordova module will not resolve"
-  exit 1
-fi
-
-if [[ ! -d "Pods/Target Support Files/CapacitorCordova" ]]; then
-  echo "❌ CapacitorCordova target support files missing — Cordova module will not resolve"
+if [[ "$missing" -eq 1 ]]; then
+  echo "❌ CocoaPods did not materialize required Capacitor artifacts"
+  ls "Pods/Local Podspecs" 2>/dev/null || echo "(no Local Podspecs dir)"
   exit 1
 fi
 
 ls "Pods/Local Podspecs" | grep -E 'Capacitor|Cordova' || true
-ls "Pods/Target Support Files" | grep -E 'Capacitor|Cordova' || true
 
+# ---------------------------------------------------------------------------
+# Patch out broken MetalToolchain Swift search paths (Xcode 26 bug)
+# ---------------------------------------------------------------------------
 echo "🧹 Removing broken MetalToolchain Swift search paths from generated Pods configs..."
 python3 - <<'PY'
 from pathlib import Path
@@ -97,21 +143,13 @@ for path in list(root.glob('Pods/Target Support Files/**/*.xcconfig')) + [root /
         print(f'patched {path}')
 PY
 
-# Verify Pods were installed correctly
-if [[ ! -d "Pods" ]]; then
-  echo "❌ Pods directory was not created — CocoaPods install failed!"
-  exit 1
-fi
-
-if [[ ! -f "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig" ]]; then
-  echo "❌ Pods xcconfig missing — Capacitor module will not resolve!"
-  exit 1
-fi
-
 echo "✅ Pods installed successfully"
 ls Pods/ | head -10
 cd "$ROOT_DIR"
 
+# ---------------------------------------------------------------------------
+# App icon (non-fatal)
+# ---------------------------------------------------------------------------
 ICON_SRC="$ROOT_DIR/public/app-icon.png"
 ICON_DIR="$ROOT_DIR/ios/App/App/Assets.xcassets/AppIcon.appiconset"
 mkdir -p "$ICON_DIR"
@@ -135,7 +173,8 @@ if [[ -f "$ICON_SRC" ]]; then
 ICONEOF
   echo "✅ App icon copied"
 else
-  echo "⚠️ App icon not found at $ICON_SRC"
+  echo "⚠️ App icon not found at $ICON_SRC (non-fatal)"
 fi
 
 echo "✅ post-clone setup complete"
+exit 0

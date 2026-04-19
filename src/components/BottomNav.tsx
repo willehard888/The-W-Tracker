@@ -1,12 +1,14 @@
-import { Home, Target, Trophy, User, Swords, Flame, MessageCircle } from "lucide-react";
+import { Home, Target, Trophy, User, Swords, Flame, MessageCircle, Sparkles } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
+import { useAuth } from "@/contexts/AuthContext";
 
-const tabs = [
+const baseTabs = [
   { icon: Home, label: "Home", path: "/", color: "gold" },
   { icon: Target, label: "Check-in", path: "/checkin", color: "teal" },
   { icon: Flame, label: "Feed", path: "/feed", color: "orange" },
+  { icon: Sparkles, label: "Coach", path: "/coach", color: "gold", eliteOnly: true as const },
   { icon: MessageCircle, label: "DMs", path: "/messages", color: "purple" },
   { icon: Trophy, label: "Ranks", path: "/leaderboard", color: "gold" },
   { icon: Swords, label: "Battles", path: "/battles", color: "rose" },
@@ -24,8 +26,11 @@ const colorMap: Record<string, { active: string; dot: string; glow: string }> = 
 const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isElite } = useAuth();
 
   if (["/landing", "/auth", "/onboarding"].includes(location.pathname) || location.pathname.startsWith("/chat/")) return null;
+
+  const tabs = baseTabs.filter((t) => !("eliteOnly" in t && t.eliteOnly) || isElite);
 
   return (
     <nav

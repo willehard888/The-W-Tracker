@@ -40,6 +40,7 @@ const IosDebug = lazy(() => import("./pages/IosDebug"));
 const AppleAuthLaunch = lazy(() => import("./pages/AppleAuthLaunch"));
 const AppleUsername = lazy(() => import("./pages/AppleUsername"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
+const Coach = lazy(() => import("./pages/Coach"));
 
 const queryClient = new QueryClient();
 
@@ -99,6 +100,7 @@ const AppRoutes = () => {
           <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+          <Route path="/coach" element={<ProtectedRoute><Coach /></ProtectedRoute>} />
           <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/reset-password" element={<ResetPassword />} />

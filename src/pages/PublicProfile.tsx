@@ -80,79 +80,122 @@ const PublicProfile = () => {
   }
 
   const tier = getTierConfig(profile.status_tier || 'recruit');
-  const isLegend = profile.status_tier === 'legend';
-  const isApex = profile.status_tier === 'apex';
-  const isElite = profile.status_tier === 'elite';
-
-  const heroBg = isLegend
-    ? "linear-gradient(160deg, hsl(280 70% 14% / 0.6), hsl(255 14% 5%), hsl(350 60% 12% / 0.5))"
-    : isApex
-    ? "linear-gradient(160deg, hsl(18 80% 16% / 0.55), hsl(255 14% 5%))"
-    : isElite
-    ? "linear-gradient(160deg, hsl(42 60% 14% / 0.55), hsl(255 14% 5%))"
-    : "linear-gradient(160deg, hsl(255 14% 9%), hsl(255 14% 5%))";
 
   return (
     <div className="min-h-[100dvh] relative">
       <AmbientParticles />
 
-      {/* Hero */}
-      <div
-        className="relative pt-12 pb-10 px-6"
-        style={{ background: heroBg }}
+      {/* Back button */}
+      <button
+        onClick={() => navigate(-1)}
+        className="absolute top-4 left-4 z-20 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
       >
-        <button
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft size={14} /> Back
-        </button>
+        <ChevronLeft size={14} /> Back
+      </button>
 
-        <div className="text-center relative z-10">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gold/70 mb-3">The W Tracker</p>
+      <div className="px-4 pt-12">
+        {/* Cinematic hero card — matches /profile */}
+        <div className="animate-reveal relative mb-6 overflow-hidden rounded-3xl border border-gold/25 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(42_70%_18%/0.55),hsl(255_14%_6%)_60%)] p-6 pt-10 pb-7">
+          {/* Top vignette glow */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[160%] h-64 blur-3xl opacity-70"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, hsl(42 78% 54% / 0.35), transparent 70%)",
+            }}
+          />
+          <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
 
-          <motion.div
-            initial={{ scale: 0.85, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="flex justify-center mb-4"
-          >
-            <StatusAvatar
-              src={profile.avatar_url}
-              name={profile.username}
-              tier={profile.status_tier || 'recruit'}
-              size="xl"
-            />
-          </motion.div>
+          <div className="relative flex flex-col items-center text-center">
+            <p className="text-[10px] font-black uppercase tracking-[0.32em] text-gold/70 mb-3">
+              The W Tracker
+            </p>
 
-          <h1 className="font-display text-2xl font-black tracking-tight">
-            @{profile.username}
-          </h1>
-          {profile.display_name && (
-            <p className="text-sm text-muted-foreground mt-0.5">{profile.display_name}</p>
-          )}
+            {/* Avatar — large, gold ring with offset */}
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="relative mb-5"
+            >
+              <div className="absolute inset-0 -m-3 rounded-full bg-gold/35 blur-2xl" aria-hidden />
+              <div className="relative">
+                <StatusAvatar
+                  src={profile.avatar_url}
+                  name={profile.username}
+                  tier={profile.status_tier || 'recruit'}
+                  size="xl"
+                />
+              </div>
+            </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className={cn(
-              "inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full border",
-              tier.borderClass,
-              tier.bgClass,
+            {/* Username */}
+            <motion.h1
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="font-display text-[34px] leading-none font-black tracking-tight text-foreground/95"
+            >
+              @{profile.username}
+            </motion.h1>
+            {profile.display_name && (
+              <p className="text-sm text-muted-foreground mt-1.5">{profile.display_name}</p>
             )}
-          >
-            <span className="text-base leading-none">{tier.emoji}</span>
-            <span className={cn("text-xs font-black uppercase tracking-wider", tier.textClass)}>
-              {tier.label}
-            </span>
-            <span className="text-[10px] text-muted-foreground">· {tier.percentile}</span>
-          </motion.div>
-        </div>
-      </div>
 
-      {/* Stats grid */}
-      <div className="px-4 py-5">
+            {/* Status pills — Elite · Tier · Level */}
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="flex flex-wrap items-center justify-center gap-2 mt-4"
+            >
+              {profile.is_elite && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
+                  <Crown size={12} className="text-gold" />
+                  <span className="text-[11px] font-black text-gold tracking-wider uppercase">Elite</span>
+                </span>
+              )}
+              <span className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border",
+                tier.borderClass,
+                tier.bgClass,
+              )}>
+                <span className="text-sm leading-none">{tier.emoji}</span>
+                <span className={cn("text-[11px] font-black tracking-wider uppercase", tier.textClass)}>
+                  {tier.label}
+                </span>
+              </span>
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full">
+                <span className="text-[11px] font-black tracking-wider text-muted-foreground/80 uppercase">
+                  Level {profile.level}
+                </span>
+              </span>
+            </motion.div>
+
+            {/* Hero XP — massive */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.35 }}
+              className="mt-6 flex flex-col items-center"
+            >
+              <p className="font-display font-black text-[64px] leading-none text-gold drop-shadow-[0_0_24px_hsl(42_78%_54%/0.55)] tabular-nums">
+                {profile.xp.toLocaleString().replace(/,/g, " ")}
+              </p>
+              <p className="text-[10px] font-black tracking-[0.32em] text-gold/70 mt-2">TOTAL XP</p>
+            </motion.div>
+
+            {/* Percentile / pressure line */}
+            <p className="text-sm text-muted-foreground/70 font-medium italic mt-5 max-w-[280px]">
+              {tier.percentile}
+            </p>
+          </div>
+
+          <div className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+        </div>
+
+        {/* Quick stats row */}
         <div className="grid grid-cols-3 gap-2 mb-4">
           {[
             { icon: Zap, label: "LEVEL", value: profile.level, color: "text-gold" },
@@ -165,7 +208,7 @@ const PublicProfile = () => {
                 key={s.label}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + i * 0.05 }}
+                transition={{ delay: 0.4 + i * 0.05 }}
                 className="rounded-xl border border-border bg-card p-3 text-center"
               >
                 <Icon size={14} className={cn("mx-auto mb-1", s.color)} />
@@ -179,26 +222,6 @@ const PublicProfile = () => {
             );
           })}
         </div>
-
-        {/* XP bar */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="rounded-xl border border-gold/20 bg-card p-4 mb-4"
-        >
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Total XP</p>
-            {profile.is_elite && (
-              <span className="flex items-center gap-1 text-[10px] font-black text-gold">
-                <Crown size={10} /> ELITE
-              </span>
-            )}
-          </div>
-          <p className="font-display text-3xl font-black text-gold glow-gold-text tabular-nums">
-            {profile.xp.toLocaleString()}
-          </p>
-        </motion.div>
 
         {/* Badges */}
         {badges && badges.length > 0 && (

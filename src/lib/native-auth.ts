@@ -20,7 +20,7 @@ type NativeAppleSignInResult = {
 };
 
 type NativeAppleAuthPlugin = {
-  signIn(): Promise<NativeAppleSignInResult>;
+  signIn(options?: { scopes?: string[] }): Promise<NativeAppleSignInResult>;
 };
 
 const NativeAppleAuth = registerPlugin<NativeAppleAuthPlugin>("NativeAppleAuth");
@@ -179,13 +179,12 @@ async function signInWithAppleIdToken(identityToken: string, nonce?: string | nu
   });
 }
 
-async function nativeDirectAppleSignIn(): Promise<{ error?: Error }> {
+async function nativeDirectAppleSignIn(options?: { hideEmail?: boolean }): Promise<{ error?: Error }> {
   try {
     // Check if the native NativeAppleAuth plugin is actually registered.
-    // If not (which is the case in our current iOS build, since we don't
-    // ship a Swift implementation of it), fall back to the managed OAuth
-    // flow from the system browser so the OAuth state stays in the same
-    // browser context for the full round-trip.
+    // It IS registered for production iOS builds via NativeAppleAuth.swift +
+    // NativeAppleAuthPlugin.m. If the bridge is not available (Lovable
+    // preview, web fallback, etc.) we fall back to the managed OAuth flow.
     const isPluginAvailable = Capacitor.isPluginAvailable("NativeAppleAuth");
     if (!isPluginAvailable) {
       pushIosDebugLog("AppleAuth", "NativeAppleAuth plugin not available, launching published Apple auth in system browser", {
@@ -195,7 +194,14 @@ async function nativeDirectAppleSignIn(): Promise<{ error?: Error }> {
       return {};
     }
 
-    const credentials = await NativeAppleAuth.signIn();
+    // Apple's "Hide My Email" toggle is shown automatically when `email` is
+    // in `requestedScopes`. If the caller asks us to skip the email scope,
+    // Apple will sign the user in without revealing or relaying any email,
+    // and Supabase will receive an identity token whose `email` claim is
+    // absent — exactly what "hide email" should mean for first-party use.
+    const scopes = options?.hideEmail ? ["fullName"] : ["fullName", "email"];
+    pushIosDebugLog("AppleAuth", "Calling native NativeAppleAuth.signIn", { scopes });
+    const credentials = await NativeAppleAuth.signIn({ scopes });
 
     if (!credentials?.identityToken) {
       clearAppleAuthStarted();
@@ -334,10 +340,10 @@ export function clearPublishedAppleAttempt() {
   clearStoredAttempt();
 }
 
-export async function nativeAppleSignIn(): Promise<{ error?: Error }> {
+export async function nativeAppleSignIn(options?: { hideEmail?: boolean }): Promise<{ error?: Error }> {
   try {
     if (Capacitor.isNativePlatform()) {
-      return await nativeDirectAppleSignIn();
+      return await nativeDirectAppleSignIn(options);
     }
 
     // Non-native preview environments: redirect to published auth page

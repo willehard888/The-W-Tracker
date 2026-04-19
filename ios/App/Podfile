@@ -20,12 +20,12 @@ def capacitor_pods
 end
 
 target 'App' do
-  # Capacitor (Swift) depends on CapacitorCordova which uses a custom module map,
-  # and RevenueCat is a Swift framework. Linking everything as static frameworks
-  # satisfies both: it generates module maps for Cordova and avoids dynamic-framework
-  # embed warnings for RevenueCat. Required by CocoaPods to integrate Swift pods
-  # that depend on non-modular ones.
-  use_frameworks! :linkage => :static
+  # Capacitor depends on CapacitorCordova's custom module map (Cordova), while
+  # RevenueCat ships Swift code. Xcode Cloud + Xcode 26 breaks when CocoaPods
+  # tries to wrap this graph as frameworks, so keep pods static and force
+  # modular headers instead. This satisfies CocoaPods' Swift/module checks
+  # without breaking Cordova module resolution during archive builds.
+  use_modular_headers!
 
   capacitor_pods
   # Add your Pods here
@@ -47,6 +47,9 @@ post_install do |installer|
       config.build_settings['SWIFT_INCLUDE_PATHS'] = swift_include_paths.reject { |path| path == invalid_toolchain_path }
       config.build_settings['SWIFT_ENABLE_EXPLICIT_MODULES'] = 'NO'
       config.build_settings['CLANG_ENABLE_EXPLICIT_MODULES'] = 'NO'
+      if ['Capacitor', 'CapacitorCordova', 'RevenuecatPurchasesCapacitor'].include?(target.name)
+        config.build_settings['DEFINES_MODULE'] = 'YES'
+      end
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
       config.build_settings['ENABLE_BITCODE'] = 'NO'
       # Suppress deprecation warnings from third-party pods

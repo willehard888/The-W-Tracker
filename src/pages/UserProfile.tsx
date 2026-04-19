@@ -164,133 +164,242 @@ const UserProfile = () => {
   }
 
   const isOwnProfile = myProfile?.user_id === userId;
-  const tierLabel =
-    profile.status_tier === "elite" ? "Elite" :
-    profile.status_tier === "high_performer" ? "High Performer" :
-    profile.status_tier === "rising" ? "Rising" : "Normal";
+  const tier = getTierConfig(profile.status_tier || 'recruit');
+  const isLegend = profile.status_tier === 'legend';
+  const isApex = profile.status_tier === 'apex';
+  const isElite = profile.status_tier === 'elite' || profile.is_elite;
+  const isHigh = profile.status_tier === 'high_performer';
 
-  const tierColor =
-    profile.status_tier === "elite" ? "text-gold bg-gold/10 border-gold/20" :
-    profile.status_tier === "high_performer" ? "text-purple-400 bg-purple-500/10 border-purple-500/20" :
-    profile.status_tier === "rising" ? "text-sky-400 bg-sky-500/10 border-sky-500/20" :
-    "text-muted-foreground bg-secondary border-border";
+  // Cinematic tier-based hero gradient
+  const heroBg = isLegend
+    ? "radial-gradient(120% 80% at 50% 0%, hsl(280 70% 18% / 0.85) 0%, hsl(255 14% 7%) 55%, hsl(350 60% 12% / 0.6) 100%)"
+    : isApex
+    ? "radial-gradient(120% 80% at 50% 0%, hsl(18 80% 20% / 0.7) 0%, hsl(255 14% 6%) 60%)"
+    : isElite
+    ? "radial-gradient(120% 80% at 50% 0%, hsl(42 60% 16% / 0.7) 0%, hsl(255 14% 6%) 60%)"
+    : isHigh
+    ? "radial-gradient(120% 80% at 50% 0%, hsl(270 50% 16% / 0.6) 0%, hsl(255 14% 6%) 60%)"
+    : "radial-gradient(120% 80% at 50% 0%, hsl(255 14% 11%) 0%, hsl(255 14% 5%) 60%)";
 
   const earnedBadges = (allBadges || []).filter((b) => earnedBadgeIds?.includes(b.id));
 
+  const handleShare = async () => {
+    const url = `${window.location.origin}/u/${profile.username}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `@${profile.username} on The W Tracker`, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Profile link copied");
+      }
+    } catch {
+      // user cancelled
+    }
+  };
+
   return (
-    <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
-      {/* Back button */}
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4"
+    <div className="min-h-screen pb-6 relative">
+      <AmbientParticles />
+
+      {/* Hero */}
+      <div
+        className="relative px-4 pt-12 pb-6 overflow-hidden"
+        style={{ background: heroBg }}
       >
-        <ChevronLeft size={16} />
-        Back
-      </button>
-
-      {/* Profile Header */}
-      <div className="animate-reveal text-center mb-6">
-        <div className="flex justify-center mb-3">
-          <StatusAvatar src={profile.avatar_url} name={profile.username} tier={profile.status_tier || 'recruit'} size="xl" />
-        </div>
-
-        <h1 className="font-display text-xl font-bold tracking-tight">
-          @{profile.username}
-          {isOwnProfile && <span className="text-xs text-gold/70 ml-1">(you)</span>}
-        </h1>
-        <div className="flex items-center justify-center gap-2 mt-1">
-          <span className={cn("text-xs font-bold px-2.5 py-0.5 rounded-full border", tierColor)}>
-            {tierLabel}
-          </span>
-          <span className="text-xs text-muted-foreground">• Level {profile.level}</span>
-        </div>
-      </div>
-
-      {/* Action buttons */}
-      {!isOwnProfile && (
-        <>
-          <div className="animate-reveal animate-reveal-delay-1 mb-3 flex gap-2">
-            {/* Friend button */}
-            {!friendship ? (
-              <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("send")}>
-                <UserPlus size={14} /> Add Friend
-              </Button>
-            ) : friendship.status === "pending" && friendship.requester_id === myProfile?.user_id ? (
-              <Button variant="secondary" size="sm" className="rounded-full opacity-70" onClick={() => handleFriendAction("cancel")}>
-                <Clock size={14} /> Pending
-              </Button>
-            ) : friendship.status === "pending" && friendship.addressee_id === myProfile?.user_id ? (
-              <div className="flex gap-1.5">
-                <Button variant="gold" size="sm" className="rounded-full" onClick={() => handleFriendAction("accept")}>
-                  <UserCheck size={14} /> Accept
-                </Button>
-                <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("decline")}>
-                  <UserX size={14} />
-                </Button>
-              </div>
-            ) : friendship.status === "accepted" ? (
-              <Button variant="secondary" size="sm" className="rounded-full border-[hsl(var(--teal))]/30 text-[hsl(var(--teal))]" onClick={() => handleFriendAction("remove")}>
-                <UserCheck size={14} /> Friends
-              </Button>
-            ) : (
-              <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("send")}>
-                <UserPlus size={14} /> Add Friend
-              </Button>
-            )}
-            <Button variant="gold" size="sm" className="flex-1 rounded-full" onClick={() => setShowBattleModal(true)}>
-              <Swords size={14} /> Challenge
-            </Button>
-          </div>
-          <div className="animate-reveal animate-reveal-delay-1 mb-3 flex gap-2">
-            <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/chat/${userId}`)}>
-              <MessageCircle size={14} /> Message
-            </Button>
-            <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/badges/compare?user=${profile.username}`)}>
-              <GitCompare size={14} /> Compare Badges
-            </Button>
-          </div>
-        </>
-      )}
-
-      {/* Battle Type Modal */}
-      {showBattleModal && profile && (
-        <BattleChallengeModal
-          username={profile.username}
-          userId={userId!}
-          myUserId={myProfile?.user_id || ""}
-          battleType={battleType}
-          setBattleType={setBattleType}
-          duration={duration}
-          setDuration={setDuration}
-          creating={creating}
-          onClose={() => setShowBattleModal(false)}
-          onChallenge={async () => {
-            if (!myProfile) return;
-            setCreating(true);
-            try {
-              await supabase.from("battles").insert({
-                challenger_id: myProfile.user_id,
-                opponent_id: userId!,
-                battle_type: battleType,
-                duration_days: duration,
-              });
-              toast.success(`Challenge sent to @${profile.username}! ⚔️`);
-              setShowBattleModal(false);
-            } catch {
-              toast.error("Failed to send challenge");
-            }
-            setCreating(false);
-          }}
+        <div
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-64 blur-3xl opacity-60",
+            isLegend && "bg-[radial-gradient(ellipse_at_center,hsl(280_70%_55%/0.4),transparent_70%)]",
+            isApex && "bg-[radial-gradient(ellipse_at_center,hsl(18_95%_58%/0.35),transparent_70%)]",
+            isElite && !isApex && !isLegend && "bg-[radial-gradient(ellipse_at_center,hsl(var(--gold)/0.3),transparent_70%)]",
+            isHigh && "bg-[radial-gradient(ellipse_at_center,hsl(var(--purple)/0.3),transparent_70%)]",
+          )}
         />
-      )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 mb-6 animate-reveal animate-reveal-delay-1">
-        <StatCard icon={Zap} label="Total XP" value={profile.xp.toLocaleString()} variant="gold" />
-        <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} lastCheckinAt={null} />
-        <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
-        <StatCard icon={Shield} label="Badges" value={earnedBadgeIds?.length || 0} variant="purple" />
+        <div className="relative z-10 flex items-center justify-between mb-6 safe-top">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft size={16} /> Back
+          </button>
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1.5 rounded-full border border-border/50 bg-card/40 backdrop-blur-sm"
+          >
+            <Share2 size={12} /> Share
+          </button>
+        </div>
+
+        <div className="relative z-10 text-center">
+          <motion.div
+            initial={{ scale: 0.85, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="flex justify-center mb-4"
+          >
+            <StatusAvatar
+              src={profile.avatar_url}
+              name={profile.username}
+              tier={profile.status_tier || 'recruit'}
+              size="xl"
+            />
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="font-display text-2xl font-black tracking-tight"
+          >
+            @{profile.username}
+            {isOwnProfile && <span className="text-xs text-gold/70 ml-1.5 font-semibold">(you)</span>}
+          </motion.h1>
+          {profile.display_name && (
+            <p className="text-sm text-muted-foreground mt-0.5">{profile.display_name}</p>
+          )}
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.25 }}
+            className={cn(
+              "inline-flex items-center gap-1.5 mt-3 px-3.5 py-1.5 rounded-full border backdrop-blur-sm",
+              tier.borderClass,
+              tier.bgClass,
+              tier.glowClass,
+            )}
+          >
+            <span className="text-base leading-none">{tier.emoji}</span>
+            <span className={cn("text-xs font-black uppercase tracking-wider", tier.textClass)}>
+              {tier.label}
+            </span>
+            <span className="text-[10px] text-muted-foreground">· {tier.percentile}</span>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="mt-4 flex items-center justify-center gap-4 text-xs"
+          >
+            <div className="flex items-center gap-1.5">
+              <TrendingUp size={12} className="text-gold" />
+              <span className="text-muted-foreground">Level</span>
+              <span className="font-display font-black text-gold">{profile.level}</span>
+            </div>
+            <div className="h-3 w-px bg-border" />
+            <div className="flex items-center gap-1.5">
+              <Zap size={12} className="text-gold" />
+              <span className="font-display font-black text-gold tabular-nums">{profile.xp.toLocaleString()}</span>
+              <span className="text-muted-foreground">XP</span>
+            </div>
+            {isElite && (
+              <>
+                <div className="h-3 w-px bg-border" />
+                <div className="flex items-center gap-1 text-gold">
+                  <Crown size={11} />
+                  <span className="font-black text-[10px] tracking-wider">ELITE</span>
+                </div>
+              </>
+            )}
+          </motion.div>
+        </div>
       </div>
+
+      <div className="px-4 -mt-2">
+        {!isOwnProfile && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mb-4 mt-4 space-y-2"
+          >
+            <div className="flex gap-2">
+              {!friendship ? (
+                <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("send")}>
+                  <UserPlus size={14} /> Add Friend
+                </Button>
+              ) : friendship.status === "pending" && friendship.requester_id === myProfile?.user_id ? (
+                <Button variant="secondary" size="sm" className="rounded-full opacity-70" onClick={() => handleFriendAction("cancel")}>
+                  <Clock size={14} /> Pending
+                </Button>
+              ) : friendship.status === "pending" && friendship.addressee_id === myProfile?.user_id ? (
+                <div className="flex gap-1.5">
+                  <Button variant="gold" size="sm" className="rounded-full" onClick={() => handleFriendAction("accept")}>
+                    <UserCheck size={14} /> Accept
+                  </Button>
+                  <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("decline")}>
+                    <UserX size={14} />
+                  </Button>
+                </div>
+              ) : friendship.status === "accepted" ? (
+                <Button variant="secondary" size="sm" className="rounded-full border-[hsl(var(--teal))]/30 text-[hsl(var(--teal))]" onClick={() => handleFriendAction("remove")}>
+                  <UserCheck size={14} /> Friends
+                </Button>
+              ) : (
+                <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("send")}>
+                  <UserPlus size={14} /> Add Friend
+                </Button>
+              )}
+              <Button variant="gold" size="sm" className="flex-1 rounded-full" onClick={() => setShowBattleModal(true)}>
+                <Swords size={14} /> Challenge
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/chat/${userId}`)}>
+                <MessageCircle size={14} /> Message
+              </Button>
+              <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/badges/compare?user=${profile.username}`)}>
+                <GitCompare size={14} /> Compare
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {showBattleModal && profile && (
+          <BattleChallengeModal
+            username={profile.username}
+            userId={userId!}
+            myUserId={myProfile?.user_id || ""}
+            battleType={battleType}
+            setBattleType={setBattleType}
+            duration={duration}
+            setDuration={setDuration}
+            creating={creating}
+            onClose={() => setShowBattleModal(false)}
+            onChallenge={async () => {
+              if (!myProfile) return;
+              setCreating(true);
+              try {
+                await supabase.from("battles").insert({
+                  challenger_id: myProfile.user_id,
+                  opponent_id: userId!,
+                  battle_type: battleType,
+                  duration_days: duration,
+                });
+                toast.success(`Challenge sent to @${profile.username}! ⚔️`);
+                setShowBattleModal(false);
+              } catch {
+                toast.error("Failed to send challenge");
+              }
+              setCreating(false);
+            }}
+          />
+        )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="grid grid-cols-2 gap-3 mb-6 mt-2"
+        >
+          <StatCard icon={Zap} label="Total XP" value={profile.xp.toLocaleString()} variant="gold" />
+          <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} lastCheckinAt={null} />
+          <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
+          <StatCard icon={Shield} label="Badges" value={earnedBadgeIds?.length || 0} variant="purple" />
+        </motion.div>
 
       {/* Champion History */}
       {championHistory && championHistory.wins > 0 && (

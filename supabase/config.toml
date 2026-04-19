@@ -1,1 +1,7 @@
 project_id = "zjdljojkgrpgxurugixf"
+
+[functions.og-image]
+verify_jwt = false
+
+[functions.og-profile]
+verify_jwt = false

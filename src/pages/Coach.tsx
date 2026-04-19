@@ -45,6 +45,21 @@ const Coach = () => {
     });
   }, [messages, streaming]);
 
+  // Prefill input from coach nudge context (set by CoachNudgeCard)
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("w_coach_nudge_context");
+      if (raw) {
+        const { headline, content } = JSON.parse(raw);
+        const prompt = headline
+          ? `About your nudge "${headline}" — ${content}\n\nGive me more detail and a concrete plan for today.`
+          : `About your nudge — ${content}\n\nGive me more detail.`;
+        setInput(prompt);
+        sessionStorage.removeItem("w_coach_nudge_context");
+      }
+    } catch {}
+  }, []);
+
   if (!isElite) {
     return (
       <FeatureGateScreen

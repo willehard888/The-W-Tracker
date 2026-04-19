@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   Moon, Dumbbell, Snowflake, Apple, Droplets, BookOpen,
   Brain, Smartphone, Camera, ChevronLeft, Zap, Plus,
-  TrendingUp, AlertTriangle, Trophy, Crown, ChevronDown
+  TrendingUp, AlertTriangle, Trophy, Crown, ChevronDown, NotebookPen
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -133,6 +133,7 @@ const DailyCheckin = () => {
   const [noPhoneAm, setNoPhoneAm] = useState(false);
   const [noPhonePm, setNoPhonePm] = useState(false);
   const [reading, setReading] = useState(false);
+  const [journal, setJournal] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
@@ -248,6 +249,7 @@ const DailyCheckin = () => {
         reading,
         xp_earned: totalXp,
         proof_photo_url,
+        journal_entry: journal.trim() ? journal.trim().slice(0, 1000) : null,
       });
 
       // Update profile XP and streak
@@ -594,7 +596,35 @@ const DailyCheckin = () => {
         )}
       </div>
 
-      {/* Performance Score */}
+      {/* Journal */}
+      <div className="mt-4 animate-reveal animate-reveal-delay-3">
+        <div className={cn(
+          "rounded-xl border p-4 transition-all duration-200",
+          journal.trim() ? "border-gold/40 bg-gold/5" : "border-border bg-card"
+        )}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className={cn(
+              "flex h-10 w-10 items-center justify-center rounded-lg shrink-0 transition-colors",
+              journal.trim() ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground"
+            )}>
+              <NotebookPen size={20} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={cn("font-semibold text-sm", journal.trim() && "text-gold")}>Journal</p>
+              <p className="text-xs text-muted-foreground">Reflect on your day — wins, lessons, what's next</p>
+            </div>
+            <span className="text-[10px] text-muted-foreground tabular-nums">{journal.length}/1000</span>
+          </div>
+          <textarea
+            value={journal}
+            onChange={(e) => setJournal(e.target.value.slice(0, 1000))}
+            placeholder="What went well? What did you learn? What will you fix tomorrow?"
+            rows={4}
+            className="w-full rounded-lg bg-background/60 border border-border/60 p-3 text-sm text-foreground placeholder:text-muted-foreground/60 resize-none focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/30 transition-colors"
+          />
+        </div>
+      </div>
+
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
         <div className={cn("rounded-xl border p-4 transition-all duration-300", perf.bg)}>
           <div className="flex items-center gap-3 mb-2">

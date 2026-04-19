@@ -1,0 +1,1 @@
+ALTER TABLE public.daily_checkins ADD COLUMN journal_entry text;

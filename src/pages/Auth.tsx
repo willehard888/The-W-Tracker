@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, Eye, EyeOff, Flame, MailX } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { nativeAppleSignIn } from "@/lib/native-auth";
@@ -19,8 +19,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const [hideAppleEmail, setHideAppleEmail] = useState(false);
-  
+
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -42,7 +41,7 @@ const Auth = () => {
       setError("");
 
       try {
-        const { error } = await nativeAppleSignIn({ hideEmail: hideAppleEmail });
+        const { error } = await nativeAppleSignIn();
         if (error && !cancelled) {
           const message = error.message === "APPLE_CANCELLED" ? "" : error.message;
           setError(message);
@@ -222,25 +221,12 @@ const Auth = () => {
           <div className="flex-1 h-px bg-border" />
         </div>
 
-        {/* Social Sign In */}
-        <div className="space-y-3">
-          <label className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-border bg-card/60 cursor-pointer select-none">
-            <span className="flex items-center gap-2 text-sm text-foreground">
-              <MailX size={16} className="text-gold" />
-              Hide my email from this app
-            </span>
-            <input
-              type="checkbox"
-              className="h-4 w-4 accent-gold cursor-pointer"
-              checked={hideAppleEmail}
-              onChange={(e) => setHideAppleEmail(e.target.checked)}
-              aria-label="Hide my email when signing in with Apple"
-            />
-          </label>
-          <p className="text-[10px] text-muted-foreground -mt-1 leading-snug">
-            When enabled, Apple will sign you in without sharing your real email address.
+        {/* Social Sign In — Apple shows its own "Hide My Email" toggle in the native sheet */}
+        <div className="space-y-2">
+          <AppleSignInButton externalLoading={appleLoading} />
+          <p className="text-[10px] text-muted-foreground text-center leading-snug px-2">
+            Apple will let you choose to share or hide your email on the next screen.
           </p>
-          <AppleSignInButton externalLoading={appleLoading} hideEmail={hideAppleEmail} />
         </div>
 
         <div className="mt-4 text-center space-y-3">

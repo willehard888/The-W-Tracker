@@ -20,13 +20,11 @@ import { cn } from "@/lib/utils";
 
 interface AppleSignInButtonProps {
   externalLoading?: boolean;
-  hideEmail?: boolean;
   className?: string;
 }
 
 const AppleSignInButton = ({
   externalLoading = false,
-  hideEmail = false,
   className,
 }: AppleSignInButtonProps) => {
   const [loading, setLoading] = useState(false);
@@ -36,7 +34,9 @@ const AppleSignInButton = ({
     if (isLoading) return;
     setLoading(true);
     try {
-      const { error } = await nativeAppleSignIn({ hideEmail });
+      // Always request both scopes so Apple shows its native
+      // "Share My Email / Hide My Email" toggle in the system sheet.
+      const { error } = await nativeAppleSignIn();
       if (error) {
         const message =
           error.message === "APPLE_CANCELLED"

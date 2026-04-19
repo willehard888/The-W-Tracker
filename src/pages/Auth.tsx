@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, Eye, EyeOff, Flame, Loader2, MailX } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Flame, MailX } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { nativeAppleSignIn } from "@/lib/native-auth";
 import BrandLogo from "@/components/BrandLogo";
+import AppleSignInButton from "@/components/AppleSignInButton";
 
 const Auth = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -276,51 +277,6 @@ const Auth = () => {
         </div>
       </div>
     </div>
-  );
-};
-
-const AppleSignInButton = ({
-  externalLoading = false,
-  hideEmail = false,
-}: {
-  externalLoading?: boolean;
-  hideEmail?: boolean;
-}) => {
-  const [loading, setLoading] = useState(false);
-  const isLoading = loading || externalLoading;
-
-  const handleAppleSignIn = async () => {
-    setLoading(true);
-    try {
-      const { error } = await nativeAppleSignIn({ hideEmail });
-      if (error) throw error;
-    } catch (e: any) {
-      console.error("Apple sign in error:", e);
-      const message = e?.message === "APPLE_CANCELLED" ? "" : e?.message || "Apple sign-in failed. Please try again.";
-      if (message) toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Button
-      type="button"
-      variant="outline"
-      size="xl"
-      className="w-full gap-3 bg-card border-border hover:bg-card/80"
-      onClick={handleAppleSignIn}
-      disabled={isLoading}
-    >
-      {isLoading ? (
-        <Loader2 size={18} className="animate-spin" />
-      ) : (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-        </svg>
-      )}
-      Continue with Apple
-    </Button>
   );
 };
 

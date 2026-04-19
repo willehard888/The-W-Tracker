@@ -1,6 +1,10 @@
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
-import { clearAppleAuthStarted, clearAppleUsernameSelectionPending, markAppleAuthStarted } from "@/lib/apple-username";
+import {
+  clearAppleAuthStarted,
+  clearAppleUsernameSelectionPending,
+  markAppleAuthStarted,
+} from "@/lib/apple-username";
 import { supabase } from "@/integrations/supabase/client";
 
 const PRODUCTION_URL = "https://status-level-up.lovable.app";
@@ -67,9 +71,7 @@ function shouldForceNativeHandoff(): boolean {
 
 function shouldUsePublishedAuthPage(): boolean {
   if (typeof window === "undefined") return false;
-
   if (Capacitor.isNativePlatform()) return true;
-
   return window.location.origin !== PRODUCTION_URL;
 }
 
@@ -95,27 +97,6 @@ function redirectToPublishedAuthPage() {
   }
 
   window.location.href = targetUrl;
-}
-
-async function openPublishedAuthPageInSystemBrowser() {
-  const targetUrl = getPublishedAuthUrl();
-
-  pushIosDebugLog("AppleAuth", "Opening published Apple auth page in system browser", {
-    native: Capacitor.isNativePlatform(),
-    currentOrigin: typeof window !== "undefined" ? window.location.origin : null,
-    targetUrl,
-    forceNativeHandoff: true,
-  });
-
-  try {
-    await openUrlOutsideApp(targetUrl);
-  } catch (error) {
-    pushIosDebugLog("AppleAuth", "Failed to open system browser, falling back to in-app redirect", {
-      message: errorMessage(error),
-      targetUrl,
-    });
-    redirectToPublishedAuthPage();
-  }
 }
 
 function getAppleRedirectUri(): string {
@@ -150,6 +131,7 @@ function getFriendlyAppleError(err: unknown): Error {
   const message = errorMessage(err).toLowerCase();
 
   if (
+    message.includes("apple_cancelled") ||
     message.includes("canceled") ||
     message.includes("cancelled") ||
     message.includes("authorizationerror error 1001") ||
@@ -171,6 +153,16 @@ function getFriendlyAppleError(err: unknown): Error {
   return new Error("Apple sign-in failed. Please try again.");
 }
 
+/**
+ * Reset every piece of state that could prevent a fresh Apple sign-in.
+ * Called BEFORE every attempt so logout → relogin always works.
+ */
+function resetAppleAuthState() {
+  clearAppleAuthStarted();
+  clearAppleUsernameSelectionPending();
+  clearStoredAttempt();
+}
+
 async function signInWithAppleIdToken(identityToken: string, nonce?: string | null) {
   return supabase.auth.signInWithIdToken({
     provider: "apple",
@@ -180,40 +172,50 @@ async function signInWithAppleIdToken(identityToken: string, nonce?: string | nu
 }
 
 async function nativeDirectAppleSignIn(options?: { hideEmail?: boolean }): Promise<{ error?: Error }> {
+  // Always start from a clean slate so a previous successful sign-in
+  // (or aborted one) cannot block the next attempt.
+  resetAppleAuthState();
+
   try {
-    // Check if the native NativeAppleAuth plugin is actually registered.
-    // It IS registered for production iOS builds via NativeAppleAuth.swift +
-    // NativeAppleAuthPlugin.m. If the bridge is not available (Lovable
-    // preview, web fallback, etc.) we fall back to the managed OAuth flow.
     const isPluginAvailable = Capacitor.isPluginAvailable("NativeAppleAuth");
     if (!isPluginAvailable) {
-      pushIosDebugLog("AppleAuth", "NativeAppleAuth plugin not available, launching published Apple auth in system browser", {
+      pushIosDebugLog("AppleAuth", "NativeAppleAuth plugin not available", {
         platform: Capacitor.getPlatform(),
       });
-      await openPublishedAuthPageInSystemBrowser();
-      return {};
+      return {
+        error: new Error(
+          "Apple Sign In is not available in this build. Please update the app.",
+        ),
+      };
     }
 
     // Apple's "Hide My Email" toggle is shown automatically when `email` is
     // in `requestedScopes`. If the caller asks us to skip the email scope,
-    // Apple will sign the user in without revealing or relaying any email,
-    // and Supabase will receive an identity token whose `email` claim is
-    // absent — exactly what "hide email" should mean for first-party use.
+    // Apple will sign the user in without revealing or relaying any email.
     const scopes = options?.hideEmail ? ["fullName"] : ["fullName", "email"];
     pushIosDebugLog("AppleAuth", "Calling native NativeAppleAuth.signIn", { scopes });
+
     const credentials = await NativeAppleAuth.signIn({ scopes });
 
     if (!credentials?.identityToken) {
-      clearAppleAuthStarted();
-      clearAppleUsernameSelectionPending();
+      pushIosDebugLog("AppleAuth", "Native plugin returned no identity token");
       return { error: new Error("Apple sign-in failed. Please try again.") };
     }
 
-    const { data, error } = await signInWithAppleIdToken(credentials.identityToken, credentials.nonce);
+    pushIosDebugLog("AppleAuth", "Native plugin succeeded, exchanging with Supabase", {
+      hasNonce: Boolean(credentials.nonce),
+      hasEmail: Boolean(credentials.email),
+    });
+
+    const { data, error } = await signInWithAppleIdToken(
+      credentials.identityToken,
+      credentials.nonce,
+    );
 
     if (error) {
-      clearAppleAuthStarted();
-      clearAppleUsernameSelectionPending();
+      pushIosDebugLog("AppleAuth", "Supabase signInWithIdToken failed", {
+        message: error.message,
+      });
       return { error: new Error("Apple sign-in failed. Please try again.") };
     }
 
@@ -223,46 +225,26 @@ async function nativeDirectAppleSignIn(options?: { hideEmail?: boolean }): Promi
       : [];
     const isAppleUser = provider === "apple" || providers.includes("apple");
     const identities = Array.isArray(data.user?.identities) ? data.user.identities : [];
-    const hasNonAppleIdentity = identities.some((identity) => identity.provider && identity.provider !== "apple");
-    const providerAssignedUsername = data.user?.user_metadata?.username;
+    const hasNonAppleIdentity = identities.some(
+      (identity) => identity.provider && identity.provider !== "apple",
+    );
+
     if (isAppleUser && !hasNonAppleIdentity) {
       markAppleAuthStarted();
-    } else {
-      clearAppleAuthStarted();
-      clearAppleUsernameSelectionPending();
     }
+
+    pushIosDebugLog("AppleAuth", "Native Apple sign-in completed", {
+      userId: data.user?.id,
+      isAppleUser,
+    });
 
     return {};
   } catch (err) {
-    clearAppleAuthStarted();
-    clearAppleUsernameSelectionPending();
+    pushIosDebugLog("AppleAuth", "Native Apple sign-in threw", {
+      message: errorMessage(err),
+    });
     return { error: getFriendlyAppleError(err) };
   }
-}
-
-async function openUrlOutsideApp(url: string) {
-  try {
-    const { AppLauncher } = await import("@capacitor/app-launcher");
-    const result = await AppLauncher.openUrl({ url });
-    pushIosDebugLog("AppleAuth", "Opened OAuth URL with AppLauncher", {
-      url,
-      completed: result.completed,
-    });
-    if (result.completed) return;
-  } catch (error) {
-    pushIosDebugLog("AppleAuth", "AppLauncher open failed, falling back to Browser", {
-      url,
-      message: errorMessage(error),
-    });
-  }
-
-  const { Browser } = await import("@capacitor/browser");
-  try {
-    await Browser.close();
-  } catch {
-    // Ignore if no browser session is open.
-  }
-  await Browser.open({ url });
 }
 
 async function startManagedAppleOAuth(): Promise<{ error?: Error }> {
@@ -286,9 +268,6 @@ async function startManagedAppleOAuth(): Promise<{ error?: Error }> {
     currentOrigin: typeof window !== "undefined" ? window.location.origin : null,
     usingPublishedCallback: redirectUri.startsWith(`${PRODUCTION_URL}${WEB_OAUTH_CALLBACK}`),
     forceNativeHandoff: shouldForceNativeHandoff(),
-    nativeUsesWebCallback: Capacitor.isNativePlatform(),
-    platform: Capacitor.getPlatform(),
-    native: Capacitor.isNativePlatform(),
   });
 
   const result = await lovable.auth.signInWithOAuth("apple", {
@@ -322,16 +301,12 @@ export async function startPublishedAppleSignIn(): Promise<{ error?: Error }> {
   if (alreadyStarted) {
     pushIosDebugLog("AppleAuth", "Skipped duplicate published Apple launch", {
       attemptId,
-      href: typeof window !== "undefined" ? window.location.href : null,
     });
     return {};
   }
 
   markAttemptStarted(attemptId);
-  pushIosDebugLog("AppleAuth", "Starting published Apple launch", {
-    attemptId,
-    href: typeof window !== "undefined" ? window.location.href : null,
-  });
+  pushIosDebugLog("AppleAuth", "Starting published Apple launch", { attemptId });
 
   return startManagedAppleOAuth();
 }
@@ -342,16 +317,22 @@ export function clearPublishedAppleAttempt() {
 
 export async function nativeAppleSignIn(options?: { hideEmail?: boolean }): Promise<{ error?: Error }> {
   try {
+    // 1. Native iOS / Android: always use the native Apple plugin so the user
+    //    sees Apple's own native sheet with Face ID / Touch ID — no browser.
     if (Capacitor.isNativePlatform()) {
       return await nativeDirectAppleSignIn(options);
     }
 
-    // Non-native preview environments: redirect to published auth page
+    // 2. Non-production preview: redirect to the published auth page so Apple
+    //    accepts the redirect_uri (Apple requires a registered domain).
     if (shouldUsePublishedAuthPage()) {
+      resetAppleAuthState();
       redirectToPublishedAuthPage();
       return {};
     }
 
+    // 3. Production web: start managed OAuth directly.
+    resetAppleAuthState();
     return await startManagedAppleOAuth();
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));

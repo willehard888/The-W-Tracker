@@ -250,10 +250,7 @@ const Coach = () => {
       </div>
 
       {/* Input */}
-      <div
-        className="shrink-0 border-t border-border/30 bg-background/80 backdrop-blur-xl px-3 pt-2"
-        style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 8px)" }}
-      >
+      <div className="shrink-0 border-t border-border/30 bg-background/80 backdrop-blur-xl px-3 pt-3 pb-3">
         <div className="flex items-end gap-2">
           <textarea
             value={input}

@@ -133,7 +133,7 @@ const DailyCheckin = () => {
   const [noPhoneAm, setNoPhoneAm] = useState(false);
   const [noPhonePm, setNoPhonePm] = useState(false);
   const [reading, setReading] = useState(false);
-  const [journal, setJournal] = useState("");
+  const [journaling, setJournaling] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
@@ -190,6 +190,7 @@ const DailyCheckin = () => {
     hydration >= 3 && 20,
     isOptimalSleep && 25,
     reading && 20,
+    journaling && 15,
     proofBonus,
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
 
@@ -197,8 +198,8 @@ const DailyCheckin = () => {
   const totalXp = (isElite ? baseXp * 2 : baseXp) + questBonusXp;
 
   // Reactive performance score
-  const completedCount = [workout, extraWorkout, coldShower, healthyFood, protein, meditationAm, meditationPm, noPhoneAm, noPhonePm, hydration >= 3, isOptimalSleep, reading].filter(Boolean).length;
-  const maxCount = 12;
+  const completedCount = [workout, extraWorkout, coldShower, healthyFood, protein, meditationAm, meditationPm, noPhoneAm, noPhonePm, hydration >= 3, isOptimalSleep, reading, journaling].filter(Boolean).length;
+  const maxCount = 13;
   const perfPercent = Math.round((completedCount / maxCount) * 100);
 
   const getPerfLabel = () => {
@@ -249,7 +250,7 @@ const DailyCheckin = () => {
         reading,
         xp_earned: totalXp,
         proof_photo_url,
-        journal_entry: journal.trim() ? journal.trim().slice(0, 1000) : null,
+        journal_entry: journaling ? "logged" : null,
       });
 
       // Update profile XP and streak

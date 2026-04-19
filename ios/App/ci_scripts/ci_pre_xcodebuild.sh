@@ -26,7 +26,9 @@ if [[ ! -d "$IOS_APP_DIR/Pods" ]]; then
     cd "$ROOT_DIR"
     npm ci --legacy-peer-deps || npm install --legacy-peer-deps
     npm run build
-    npx cap sync ios
+    if ! npx cap sync ios; then
+      echo "⚠️ Capacitor sync hit a pod install error in CI — continuing with explicit CocoaPods install..."
+    fi
     cd "$IOS_APP_DIR"
   fi
 

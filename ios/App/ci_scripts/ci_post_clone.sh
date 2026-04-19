@@ -40,7 +40,9 @@ echo "🔨 Building web assets..."
 npm run build
 
 echo "🔄 Syncing Capacitor iOS project..."
-npx cap sync ios
+if ! npx cap sync ios; then
+  echo "⚠️ Capacitor sync hit a pod install error in CI — continuing with explicit CocoaPods install..."
+fi
 
 if ! command -v pod &>/dev/null; then
   echo "📥 CocoaPods not found – installing via Homebrew..."

@@ -139,6 +139,33 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_nudges: {
+        Row: {
+          content: string
+          created_at: string
+          headline: string | null
+          id: string
+          seen_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          headline?: string | null
+          id?: string
+          seen_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          headline?: string | null
+          id?: string
+          seen_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_checkins: {
         Row: {
           checked_in_at: string
@@ -708,6 +735,48 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_briefings: {
+        Row: {
+          generated_at: string
+          headline: string
+          id: string
+          key_insights: Json
+          next_week_protocol: Json
+          stats_snapshot: Json
+          summary_md: string
+          user_id: string
+          viewed_at: string | null
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          generated_at?: string
+          headline: string
+          id?: string
+          key_insights?: Json
+          next_week_protocol?: Json
+          stats_snapshot?: Json
+          summary_md: string
+          user_id: string
+          viewed_at?: string | null
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          generated_at?: string
+          headline?: string
+          id?: string
+          key_insights?: Json
+          next_week_protocol?: Json
+          stats_snapshot?: Json
+          summary_md?: string
+          user_id?: string
+          viewed_at?: string | null
+          week_end?: string
+          week_start?: string
         }
         Relationships: []
       }

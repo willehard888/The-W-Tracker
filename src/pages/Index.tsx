@@ -1,9 +1,10 @@
-import { Flame, ChevronRight, Crown, Sparkles } from "lucide-react";
+import { Flame, ChevronRight, Crown, Sparkles, FileText } from "lucide-react";
 import LevelCard from "@/components/LevelCard";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
 import StatusBadge from "@/components/StatusBadge";
 import RankPressureCard from "@/components/RankPressureCard";
+import CoachNudgeCard from "@/components/CoachNudgeCard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,7 +17,42 @@ import { getTierConfig } from "@/lib/status-tiers";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, isElite } = useAuth();
+
+  const { data: latestNudge } = useQuery({
+    queryKey: ["latest-coach-nudge", profile?.user_id],
+    queryFn: async () => {
+      if (!profile || !isElite) return null;
+      const { data } = await supabase
+        .from("coach_nudges")
+        .select("id, headline, content, seen_at, created_at")
+        .eq("user_id", profile.user_id)
+        .is("seen_at", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!profile && isElite,
+  });
+
+  const { data: latestBriefing } = useQuery({
+    queryKey: ["latest-briefing", profile?.user_id],
+    queryFn: async () => {
+      if (!profile || !isElite) return null;
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await supabase
+        .from("weekly_briefings")
+        .select("id, headline, viewed_at, generated_at")
+        .eq("user_id", profile.user_id)
+        .gte("generated_at", sevenDaysAgo)
+        .order("generated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!profile && isElite,
+  });
 
   const { data: userBadges } = useQuery({
     queryKey: ["user-badges", profile?.user_id],
@@ -125,7 +161,40 @@ const Index = () => {
         </div>
       )}
 
-      {/* XP Progress — glassmorphism card */}
+      {/* Coach Nudge (Elite, unseen) */}
+      {latestNudge && (
+        <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
+          <CoachNudgeCard
+            nudgeId={latestNudge.id}
+            headline={latestNudge.headline}
+            content={latestNudge.content}
+          />
+        </div>
+      )}
+
+      {/* Latest Weekly Briefing (Elite, < 7 days old) */}
+      {latestBriefing && (
+        <button
+          onClick={() => navigate(`/briefing/${latestBriefing.id}`)}
+          className="w-full animate-reveal animate-reveal-delay-1 mb-4 relative z-10 rounded-2xl glass-card-gold p-4 text-left active:scale-[0.99] transition-transform border border-gold/25"
+        >
+          <div className="flex items-start gap-3">
+            <div className="h-9 w-9 rounded-lg gradient-gold flex items-center justify-center shrink-0">
+              <FileText size={16} className="text-primary-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] uppercase tracking-widest text-gold/80 font-bold mb-0.5">
+                {latestBriefing.viewed_at ? "Weekly Briefing" : "New Weekly Briefing"}
+              </p>
+              <p className="font-bold text-sm leading-tight line-clamp-2">
+                {latestBriefing.headline}
+              </p>
+            </div>
+            <ChevronRight size={18} className="text-gold/60 shrink-0 mt-1" />
+          </div>
+        </button>
+      )}
+
       <div className="animate-reveal animate-reveal-delay-1 rounded-2xl glass-card-gold p-5 mb-4 relative overflow-hidden gradient-border-animated shimmer-overlay">
         <div
           className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none"

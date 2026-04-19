@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, Eye, EyeOff, Flame, Loader2 } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Flame, Loader2, MailX } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { nativeAppleSignIn } from "@/lib/native-auth";
@@ -18,6 +18,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [hideAppleEmail, setHideAppleEmail] = useState(false);
   
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ const Auth = () => {
       setError("");
 
       try {
-        const { error } = await nativeAppleSignIn();
+        const { error } = await nativeAppleSignIn({ hideEmail: hideAppleEmail });
         if (error && !cancelled) {
           const message = error.message === "APPLE_CANCELLED" ? "" : error.message;
           setError(message);
@@ -222,7 +223,23 @@ const Auth = () => {
 
         {/* Social Sign In */}
         <div className="space-y-3">
-          <AppleSignInButton externalLoading={appleLoading} />
+          <label className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-border bg-card/60 cursor-pointer select-none">
+            <span className="flex items-center gap-2 text-sm text-foreground">
+              <MailX size={16} className="text-gold" />
+              Hide my email from this app
+            </span>
+            <input
+              type="checkbox"
+              className="h-4 w-4 accent-gold cursor-pointer"
+              checked={hideAppleEmail}
+              onChange={(e) => setHideAppleEmail(e.target.checked)}
+              aria-label="Hide my email when signing in with Apple"
+            />
+          </label>
+          <p className="text-[10px] text-muted-foreground -mt-1 leading-snug">
+            When enabled, Apple will sign you in without sharing your real email address.
+          </p>
+          <AppleSignInButton externalLoading={appleLoading} hideEmail={hideAppleEmail} />
         </div>
 
         <div className="mt-4 text-center space-y-3">
@@ -262,14 +279,20 @@ const Auth = () => {
   );
 };
 
-const AppleSignInButton = ({ externalLoading = false }: { externalLoading?: boolean }) => {
+const AppleSignInButton = ({
+  externalLoading = false,
+  hideEmail = false,
+}: {
+  externalLoading?: boolean;
+  hideEmail?: boolean;
+}) => {
   const [loading, setLoading] = useState(false);
   const isLoading = loading || externalLoading;
 
   const handleAppleSignIn = async () => {
     setLoading(true);
     try {
-      const { error } = await nativeAppleSignIn();
+      const { error } = await nativeAppleSignIn({ hideEmail });
       if (error) throw error;
     } catch (e: any) {
       console.error("Apple sign in error:", e);

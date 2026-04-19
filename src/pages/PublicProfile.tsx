@@ -80,17 +80,6 @@ const PublicProfile = () => {
   }
 
   const tier = getTierConfig(profile.status_tier || 'recruit');
-  const isLegend = profile.status_tier === 'legend';
-  const isApex = profile.status_tier === 'apex';
-  const isElite = profile.status_tier === 'elite';
-
-  const heroBg = isLegend
-    ? "linear-gradient(160deg, hsl(280 70% 14% / 0.6), hsl(255 14% 5%), hsl(350 60% 12% / 0.5))"
-    : isApex
-    ? "linear-gradient(160deg, hsl(18 80% 16% / 0.55), hsl(255 14% 5%))"
-    : isElite
-    ? "linear-gradient(160deg, hsl(42 60% 14% / 0.55), hsl(255 14% 5%))"
-    : "linear-gradient(160deg, hsl(255 14% 9%), hsl(255 14% 5%))";
 
   return (
     <div className="min-h-[100dvh] relative">

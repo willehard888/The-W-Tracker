@@ -523,6 +523,7 @@ const DailyCheckin = () => {
         <ToggleItem icon={Smartphone} label="No Phone After Waking" sublabel="30 min screen-free" active={noPhoneAm} onToggle={() => setNoPhoneAm(!noPhoneAm)} bonus="+20 XP" />
         <ToggleItem icon={Smartphone} label="No Phone Before Sleep" sublabel="30 min screen-free" active={noPhonePm} onToggle={() => setNoPhonePm(!noPhonePm)} bonus="+20 XP" />
         <ToggleItem icon={BookOpen} label="Read / Learn Something New" sublabel="Books, articles, courses" active={reading} onToggle={() => setReading(!reading)} bonus="+20 XP" />
+        <ToggleItem icon={NotebookPen} label="Journaling" sublabel="Reflect on wins, lessons, next steps" active={journaling} onToggle={() => setJournaling(!journaling)} bonus="+15 XP" />
       </div>
 
       {/* Daily Quests */}

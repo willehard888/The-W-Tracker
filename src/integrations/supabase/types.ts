@@ -148,6 +148,7 @@ export type Database = {
           healthy_food: boolean
           hydration_liters: number
           id: string
+          journal_entry: string | null
           meditation_evening: boolean
           meditation_morning: boolean
           no_phone_evening: boolean
@@ -168,6 +169,7 @@ export type Database = {
           healthy_food?: boolean
           hydration_liters?: number
           id?: string
+          journal_entry?: string | null
           meditation_evening?: boolean
           meditation_morning?: boolean
           no_phone_evening?: boolean
@@ -188,6 +190,7 @@ export type Database = {
           healthy_food?: boolean
           hydration_liters?: number
           id?: string
+          journal_entry?: string | null
           meditation_evening?: boolean
           meditation_morning?: boolean
           no_phone_evening?: boolean

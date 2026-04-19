@@ -1,7 +1,6 @@
 require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '15.0'
-use_frameworks! :linkage => :dynamic
 
 # workaround to avoid Xcode caching of Pods that requires
 # Product -> Clean Build Folder after new Cordova plugins installed
@@ -23,27 +22,6 @@ end
 target 'App' do
   capacitor_pods
   # Add your Pods here
-end
-
-DYNAMIC_PODS = %w[
-  Capacitor
-  CapacitorCordova
-  CapacitorApp
-  CapacitorAppLauncher
-  CapacitorBrowser
-  CapacitorHaptics
-  CapacitorLocalNotifications
-  CapacitorPushNotifications
-  RevenuecatPurchasesCapacitor
-  PurchasesHybridCommon
-  RevenueCat
-].freeze
-
-pre_install do |installer|
-  installer.pod_targets.each do |pod|
-    next unless DYNAMIC_PODS.include?(pod.name)
-    pod.define_singleton_method(:build_type) { Pod::BuildType.dynamic_framework }
-  end
 end
 
 post_install do |installer|

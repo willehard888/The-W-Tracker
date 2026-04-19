@@ -1,9 +1,10 @@
-import { Flame, ChevronRight, Crown, Sparkles } from "lucide-react";
+import { Flame, ChevronRight, Crown, Sparkles, FileText } from "lucide-react";
 import LevelCard from "@/components/LevelCard";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
 import StatusBadge from "@/components/StatusBadge";
 import RankPressureCard from "@/components/RankPressureCard";
+import CoachNudgeCard from "@/components/CoachNudgeCard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,7 +17,42 @@ import { getTierConfig } from "@/lib/status-tiers";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, isElite } = useAuth();
+
+  const { data: latestNudge } = useQuery({
+    queryKey: ["latest-coach-nudge", profile?.user_id],
+    queryFn: async () => {
+      if (!profile || !isElite) return null;
+      const { data } = await supabase
+        .from("coach_nudges")
+        .select("id, headline, content, seen_at, created_at")
+        .eq("user_id", profile.user_id)
+        .is("seen_at", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!profile && isElite,
+  });
+
+  const { data: latestBriefing } = useQuery({
+    queryKey: ["latest-briefing", profile?.user_id],
+    queryFn: async () => {
+      if (!profile || !isElite) return null;
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await supabase
+        .from("weekly_briefings")
+        .select("id, headline, viewed_at, generated_at")
+        .eq("user_id", profile.user_id)
+        .gte("generated_at", sevenDaysAgo)
+        .order("generated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!profile && isElite,
+  });
 
   const { data: userBadges } = useQuery({
     queryKey: ["user-badges", profile?.user_id],

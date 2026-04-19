@@ -18,7 +18,7 @@ import { motion } from "framer-motion";
 
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
-  const { profile: myProfile, isElite } = useAuth();
+  const { profile: myProfile } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showBattleModal, setShowBattleModal] = useState(false);

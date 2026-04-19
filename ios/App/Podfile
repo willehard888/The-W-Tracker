@@ -20,6 +20,13 @@ def capacitor_pods
 end
 
 target 'App' do
+  # Capacitor (Swift) depends on CapacitorCordova which uses a custom module map,
+  # and RevenueCat is a Swift framework. Linking everything as static frameworks
+  # satisfies both: it generates module maps for Cordova and avoids dynamic-framework
+  # embed warnings for RevenueCat. Required by CocoaPods to integrate Swift pods
+  # that depend on non-modular ones.
+  use_frameworks! :linkage => :static
+
   capacitor_pods
   # Add your Pods here
 end

@@ -88,6 +88,24 @@ fi
 
 echo "ℹ️  CocoaPods $(pod --version)"
 
+echo "🩹 Patching Capacitor podspec module maps for Xcode 26 compatibility..."
+python3 - <<'PY'
+from pathlib import Path
+
+for path in [
+    Path('/Volumes/workspace/repository/node_modules/@capacitor/ios/Capacitor.podspec'),
+    Path('/Volumes/workspace/repository/node_modules/@capacitor/ios/CapacitorCordova.podspec'),
+]:
+    if not path.exists():
+        continue
+    original = path.read_text()
+    patched_lines = [line for line in original.splitlines(True) if 's.module_map =' not in line]
+    patched = ''.join(patched_lines)
+    if patched != original:
+        path.write_text(patched)
+        print(f'patched {path.name}')
+PY
+
 echo "📦 Installing CocoaPods dependencies (required for Capacitor module resolution)..."
 cd "$ROOT_DIR/ios/App"
 if ! pod install --repo-update 2>&1; then

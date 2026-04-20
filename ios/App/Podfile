@@ -20,13 +20,11 @@ def capacitor_pods
 end
 
 target 'App' do
-  # NOTE: Do NOT add `use_modular_headers!` globally — CapacitorCordova ships a
-  # custom module.modulemap, and CocoaPods refuses to wrap Swift static libs
-  # that have custom module maps. Instead, force modular headers ONLY for the
-  # Swift pods that actually need them (RevenueCat + PurchasesHybridCommon).
-  # Capacitor pods keep their own module map and stay non-modular.
-  pod 'PurchasesHybridCommon', :modular_headers => true
-  pod 'RevenueCat', :modular_headers => true
+  # RevenueCat adds Swift pods, while Capacitor depends on CapacitorCordova.
+  # CocoaPods refuses to integrate this graph as static libraries because
+  # CapacitorCordova does not define modules for that mode.
+  # The supported workaround is to use static frameworks for the target.
+  use_frameworks! :linkage => :static
 
   capacitor_pods
   # Add your Pods here

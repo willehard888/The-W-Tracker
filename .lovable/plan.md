@@ -1,125 +1,117 @@
 
-Käyttäjä haluaa molemmat: **Sunday Briefing** ensin, sitten **AI Coach memory + proaktiivisuus**. Suunnitelma rakentuu nykyisen `ai-coach`-edge-funktion ja `daily_checkins`-taulun päälle.
 
-## Vaihe 1 — Sunday Briefing (viikkoraportti)
+## Hard paywall + 7 päivän koukuttava kokeilu (RevenueCat-fokus)
 
-### Mitä rakennetaan
-Joka sunnuntai-ilta käyttäjä saa **AI-generoidun viikkoraportin** push-notifikaationa. Avaaminen vie uudelle `/briefing/:id` -näkymälle, jossa raportti + jaettava kuva.
+Lukitaan koko app 7 päivän ilmaisen kokeilun taakse. RevenueCat hoitaa maksuflow'n iOS-puolella (Stripe vain webissä). Trial muutetaan 9→7 päivään ja appi tehdään psykologisesti koukuttavaksi: jokainen päivä jättää selvän jäljen, FOMO kasvaa loppua kohti, ja päättymispäivänä lukko iskee.
 
-### Komponentit
+### 1. RevenueCat-integraation viimeistely
 
-**A) Tietokanta** — uusi taulu `weekly_briefings`
-- `id`, `user_id`, `week_start`, `week_end`
-- `summary_md` (AI:n tuottama markdown), `headline` (1 lause), `key_insights` (jsonb: 3 havaintoa)
-- `next_week_protocol` (jsonb: 3 toimintapistettä)
-- `stats_snapshot` (jsonb: viikon XP, streak-muutos, paras/heikoin päivä, completion%)
-- `generated_at`, `viewed_at`
-- RLS: käyttäjä näkee vain omansa, vain edge function (service role) voi insertoida
-- Unique: `(user_id, week_start)`
+**Mitä on jo paikallaan:**
+- `RevenueCatContext` lataa packages, hoitaa `purchase`, `purchaseProduct`, `restorePurchases`
+- `revenuecat-webhook` edge function käsittelee `INITIAL_PURCHASE`, `RENEWAL`, `EXPIRATION`, `CANCELLATION`, `BILLING_ISSUE` → päivittää `profiles.is_elite`
+- `Paywall.tsx` käyttää RC:tä natiivilla, Stripeä webissä
 
-**B) Edge function `weekly-briefing-generate`** (cron, sunnuntaisin 19:00 UTC)
-- Hakee kaikki Elite-käyttäjät, joilla ≥3 check-iniä kuluneella viikolla
-- Per käyttäjä: kerää viikon `daily_checkins` + nykyinen profiili
-- Lähettää Lovable AI Gatewayyn (`google/gemini-3-flash-preview`) **structured output (tool calling)** → palauttaa JSON: headline, insights, protocol, summary_md
-- Tallentaa `weekly_briefings`-tauluun
-- Lähettää push-notifikaation (käyttää nykyistä `push_tokens`-taulua + APNs/FCM samalla tavalla kuin `notify-message`)
+**Mitä viimeistellään:**
+- **App User ID -alignment:** Varmistetaan että RevenueCat-konteksti kutsuu `Purchases.logIn(user.id)` heti kun Supabase-user on saatavilla, jotta webhookin `app_user_id` matchaa Supabase-user_id:n. Tarkistetaan tämä `RevenueCatContext`:istä — jos puuttuu, lisätään.
+- **Trial-tilan luku RC:ltä:** Lisätään `customerInfo.entitlements.active.elite.willRenew` ja `periodType === 'trial'` -lippujen luku RC-konteksiin, jotta UI voi näyttää "RC trial active" -tilan natiivilla (ei sekoiteta omaan 7 päivän appitrialiin)
+- **Webhook täydennys:** Lisätään `SUBSCRIPTION_PAUSED` ja `PRODUCT_CHANGE` käsittely + logataan `entitlement_id` debugia varten
+- **Restore-flow viimeistely:** Restoren jälkeen pakotetaan `checkSubscription()` + näytetään selkeä toast onnistumisesta/ei-tilauksesta
 
-**C) Cron-skeduli** — `pg_cron` joka sunnuntai 19:00 UTC kutsuu edge-funktiota
+### 2. Trial-pituuden muutos 9 → 7 päivää
 
-**D) Frontend** — `src/pages/WeeklyBriefing.tsx`
-- Hakee briefingin id:llä, merkitsee `viewed_at`
-- Hero: headline iso, gold-gradientti
-- Stats-grid: viikon XP, streak-muutos, perfect days, paras päivä
-- "3 Key Insights" lista (gold-iconit)
-- "Next Week Protocol" — 3 actionable korttia
-- "Share" nappi → käyttää nykyistä `StoryShareModal`-pattern (3:4 PNG)
-- Reitti `/briefing/:id` lisätään `App.tsx` -reititykseen
-- `Index.tsx`-sivulle "View latest briefing" -kortti, jos viimeisin briefing < 7 pv eikä viewed
+- SQL-migraatio: `has_active_access` → `interval '7 days'`
+- `useTrialAccess.ts`: `TRIAL_DURATION_DAYS = 7`
+- Kaikki "9 days" → "7 days" copyt
 
-**E) AI-promptin runko** (edge functionissa, ei clientillä)
-- System: "Olet W Coach. Tee viikkoraportti datasta. Kirjoita käyttäjän kielellä. Suora, ei kliseitä. Konkreettiset luvut."
-- Tool schema: `{ headline, key_insights[3], next_week_protocol[3], summary_md }`
-- Käyttäjän viikon data raakana → AI tekee analyysin
+### 3. Trial-banneri koko appiin (intensifioituu päivittäin)
 
-## Vaihe 2 — AI Coach memory + proaktiivisuus
+Uusi `TrialBanner` `StatusHeader`:n alle. Klikkaus → `/paywall`. Piilotettu Eliteltä ja auth/legal-reiteiltä.
 
-### Mitä rakennetaan
+| Päivät | Tyyli | Teksti |
+|---|---|---|
+| 7 | Subtle gold | "7 days free — explore everything" |
+| 5–6 | Gold pulse | "X days left in your free trial" |
+| 3–4 | Amber pulse | "Only X days left — lock in Elite" |
+| 1–2 | Red, tuntilaskuri | "Trial ends in Xh — don't lose your streak" |
+| 0 | Red, sekuntilaskuri | "Trial ends at 23:59 — Upgrade now" |
 
-**A) Coach-muisti** — `ai-coach`-funktion systeemiprompti laajenee:
-- Hakee käyttäjän viim. **7 päivän check-init** (workout, sleep, cold, journal, hydration, perfect days)
-- Hakee viim. briefingin `key_insights`
-- Injektoi tiivistettynä system-promptiin (ei lähetetä raakadataa, vaan AI-readable yhteenveto)
-- Coach voi viitata: "Eilen ei treeniä, 5h unta — tänään kevyt päivä"
+### 4. Koukuttavat trial-momentit
 
-**B) Proaktiivinen aamuviesti** — uusi edge function `coach-morning-nudge`
-- Cron joka aamu 07:00 (käyttäjän paikallisesta aikavyöhykkeestä → MVP: 07:00 UTC, myöhemmin tz-tuki)
-- Per Elite-käyttäjä, jolla check-in eilen: AI generoi 1-2 lauseen päivän fokuksen
-- Tallennetaan uuteen tauluun `coach_nudges` (id, user_id, content, created_at, seen_at)
-- Push-notifikaatio: "Coach: [headline]"
+**A) Index-sivun `TrialProgressCard`:** 7 ympyrää (päivittäin täyttyvä), iso "Lock it in" CTA (gold, pulse päivänä 5+), näyttää konkreettisesti mitä menettää: "X XP earned · Y day streak · Z badges"
 
-**C) Coach Insight -kortti `Index.tsx`-sivulle** (Elite vain)
-- Näyttää tämän aamun nudgen, jos olemassa eikä `seen_at`
-- Tap → `/coach`, lähettää nudgen seuraavaksi viestiksi kontekstina
-- Compact gold-card, sparkles-icon
+**B) Daily check-in -toast:** "Day X/7 done. After 7 days, only Elite members keep their streak alive."
 
-### Tietokanta — `coach_nudges`
-- `id`, `user_id`, `content` (text), `created_at`, `seen_at`
-- RLS: käyttäjä näkee/päivittää vain omansa, service role insertoi
-- Index: `(user_id, created_at desc)`
+**C) Feature-teasers:**
+- Battles: "Battle wins won't count after trial — go Elite"
+- Leaderboard: trial-rivit himmenevät viimeisinä päivinä, "Fading out in Xd" tooltip
 
-## Tekninen yhteenveto
+**D) Push-notifikaatiot — uusi edge function `trial-nudge` (pg_cron 10:00 UTC päivittäin):**
+- Päivä 3: "You're 3 days in. Streak: X. Don't break it."
+- Päivä 5: "2 days left. Lock in Elite for €4.99/mo."
+- Päivä 6: "Tomorrow your trial ends. Your X-day streak goes with it."
+- Päivä 7: "Last day. Continue with Elite to keep everything."
+
+### 5. Paywall-sivun expired-tila
+
+`Paywall.tsx` saa kaksi tilaa:
+
+**A) Trialissa (hasAccess):** yläbanner "X days free trial active", pehmeä CTA, "Maybe later" vie Indexiin
+
+**B) Trial päättynyt (isExpired && !isElite):**
+- Hero punaisena: "Your free trial has ended"
+- Streak/XP/badges näytetään "FROZEN" -leimalla
+- VAIN yksi gold-CTA: "Continue with Elite — €4.99/mo"
+- Ei "Maybe later" -linkkiä — vain Sign out alimpana (App Store -vaatimus)
+- Native: kutsuu RevenueCat `purchase()`. Web: Stripe checkout.
+
+### 6. AccessGate + BottomNav -lukitus
+
+- `AccessGate` toimii jo — vain trial-pituus muuttuu
+- `BottomNav` piilotetaan kun `isExpired && !isElite` (käyttäjä näkee VAIN paywallin)
+- `App.tsx`: `TrialBanner` `StatusHeader`:n perään, BottomNav conditional
+
+### 7. Onboarding + demo-tili
+
+- Onboarding viimeisellä stepillä: "7 days completely free · Then €4.99/month · Cancel anytime · No credit card required to start"
+- SQL: `demo@thewtracker.com` → `is_elite = true` (App Store -tarkistaja)
+
+### Tekninen yhteenveto
 
 ```text
-Sunday Briefing flow
-─────────────────────
-pg_cron (Sun 19:00) ──► weekly-briefing-generate
-                              │
-                              ├─► fetch elite users + 7d checkins
-                              ├─► AI Gateway (gemini-3-flash, tool call)
-                              ├─► insert weekly_briefings
-                              └─► push notification ──► /briefing/:id
-
-Coach Memory + Nudge flow
-─────────────────────────
-User opens /coach ──► ai-coach edge fn
-                         └─► system prompt + 7d stats summary
-
-pg_cron (daily 07:00) ──► coach-morning-nudge
-                              ├─► AI Gateway per user
-                              ├─► insert coach_nudges
-                              └─► push notification
-
-Index.tsx (Elite) ──► shows latest unseen nudge as gold card
+Signup → trial_started_at = now() → Purchases.logIn(user.id)
+   │
+   ├─ Päivä 1–4: gold banner + progress card
+   ├─ Päivä 5–6: amber pulse + push notifications
+   ├─ Päivä 7: red countdown + "Last day" push
+   └─ Päivä 8+: AccessGate → /paywall (expired, FROZEN-leimat)
+        │
+        ├─ Native: RevenueCat purchase() → webhook → is_elite=true
+        └─ Web:    Stripe checkout    → webhook → is_elite=true
+              │
+              └─ has_active_access=true → täysi pääsy palautuu
 ```
 
 ### Tiedostot
 
 **Uudet:**
-- `supabase/migrations/<ts>_weekly_briefings.sql`
-- `supabase/migrations/<ts>_coach_nudges.sql`
-- `supabase/functions/weekly-briefing-generate/index.ts`
-- `supabase/functions/coach-morning-nudge/index.ts`
-- `src/pages/WeeklyBriefing.tsx`
-- `src/components/CoachNudgeCard.tsx`
-- `src/components/BriefingShareCard.tsx` (3:4 jakokuva)
+- `src/components/TrialBanner.tsx`
+- `src/components/TrialProgressCard.tsx`
+- `supabase/functions/trial-nudge/index.ts`
+- `supabase/migrations/<ts>_trial_7_days_demo_elite.sql`
 
 **Muokattavat:**
-- `supabase/functions/ai-coach/index.ts` — laajennettu system prompt 7d statseilla
-- `src/App.tsx` — reitti `/briefing/:id`
-- `src/pages/Index.tsx` — Coach Nudge -kortti + Latest Briefing -kortti
-- `supabase/config.toml` — function configs jos tarpeen
-- `mem://features/ai-coach` ja uusi `mem://features/sunday-briefing`
+- `src/contexts/RevenueCatContext.tsx` (logIn alignment, trial-info exposure, varmistetaan että `customerInfo` haetaan login-yhteydessä)
+- `src/hooks/use-trial-access.ts` (7 päivää, urgencyLevel)
+- `src/components/AccessGate.tsx` (BottomNav-flag expired-tilassa)
+- `src/App.tsx` (TrialBanner + conditional BottomNav)
+- `src/pages/Paywall.tsx` (expired-tila, FROZEN-leimat)
+- `src/pages/Index.tsx` (TrialProgressCard)
+- `src/pages/DailyCheckin.tsx` (trial-toast)
+- `src/pages/Onboarding.tsx` (7 days free copy)
+- `supabase/functions/revenuecat-webhook/index.ts` (PAUSED + PRODUCT_CHANGE + parempi loggaus)
 
-### Kustannus & rate limits
-- Briefing: 1 AI-kutsu per Elite-käyttäjä per viikko (halpa)
-- Nudge: 1 AI-kutsu per Elite-käyttäjä per päivä (gemini-3-flash → halpa)
-- 429/402 errorit logataan, briefing/nudge skipataan kyseisen kierroksen ajaksi (tallentamatta)
+### Mitä EI tehdä
+- Ei muuteta hintaa (€4.99/mo)
+- Ei pakoteta maksukorttia rekisteröinnissä (soft trial)
+- Ei lisätä uusia maksutapoja
 
-### Miksi tässä järjestyksessä
-1. Briefing valmiiksi → testaa AI-pipeline + structured output + push-flow
-2. Coach memory käyttää samaa pipelinea + briefing-dataa systeemipromptissa → luonnollinen jatko
-
-### Mitä **ei** tehdä tässä vaiheessa
-- Ei aikavyöhyketukea nudgille (MVP: 07:00 UTC, seuraava iteraatio lisää tz)
-- Ei manuaalista "generate now" -nappia briefingille (vain cron, pidetään yksinkertaisena)
-- Ei historiaa briefingeistä erillisellä sivulla — vain viimeisin Indexissä, suora linkki id:llä

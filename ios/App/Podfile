@@ -2,14 +2,33 @@ require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '15.0'
 
+def patch_capacitor_module_maps
+  [
+    '../../node_modules/@capacitor/ios/Capacitor.podspec',
+    '../../node_modules/@capacitor/ios/CapacitorCordova.podspec',
+  ].each do |relative_path|
+    podspec_path = File.expand_path(relative_path, __dir__)
+    next unless File.exist?(podspec_path)
+
+    original = File.read(podspec_path)
+    patched = original.gsub(/^\s*s\.module_map\s*=.*\n/, '')
+    next if patched == original
+
+    File.write(podspec_path, patched)
+    Pod::UI.puts "Patched #{File.basename(podspec_path)} for modular headers"
+  end
+end
+
+patch_capacitor_module_maps
+
 # workaround to avoid Xcode caching of Pods that requires
 # Product -> Clean Build Folder after new Cordova plugins installed
 # Requires CocoaPods 1.6 or newer
 install! 'cocoapods', :disable_input_output_paths => true
 
 def capacitor_pods
-  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
-  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios', :modular_headers => true
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios', :modular_headers => true
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorAppLauncher', :path => '../../node_modules/@capacitor/app-launcher'
   pod 'CapacitorBrowser', :path => '../../node_modules/@capacitor/browser'
@@ -20,12 +39,8 @@ def capacitor_pods
 end
 
 target 'App' do
-  # RevenueCat adds Swift pods, while Capacitor depends on CapacitorCordova.
-  # CocoaPods refuses to integrate this graph as static libraries because
-  # CapacitorCordova does not define modules for that mode.
-  # The supported workaround is to use static frameworks for the target.
-  use_frameworks! :linkage => :static
-
+  # Xcode 26 + RevenueCat + Capacitor 8 archive reliably when Capacitor pods
+  # are integrated as modular static libraries instead of static frameworks.
   capacitor_pods
   # Add your Pods here
 end

@@ -20,12 +20,13 @@ def capacitor_pods
 end
 
 target 'App' do
-  # Capacitor depends on CapacitorCordova's custom module map (Cordova), while
-  # RevenueCat ships Swift code. Xcode Cloud + Xcode 26 breaks when CocoaPods
-  # tries to wrap this graph as frameworks, so keep pods static and force
-  # modular headers instead. This satisfies CocoaPods' Swift/module checks
-  # without breaking Cordova module resolution during archive builds.
-  use_modular_headers!
+  # NOTE: Do NOT add `use_modular_headers!` globally — CapacitorCordova ships a
+  # custom module.modulemap, and CocoaPods refuses to wrap Swift static libs
+  # that have custom module maps. Instead, force modular headers ONLY for the
+  # Swift pods that actually need them (RevenueCat + PurchasesHybridCommon).
+  # Capacitor pods keep their own module map and stay non-modular.
+  pod 'PurchasesHybridCommon', :modular_headers => true
+  pod 'RevenueCat', :modular_headers => true
 
   capacitor_pods
   # Add your Pods here

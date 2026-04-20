@@ -34,6 +34,7 @@ Elite: €4.99/mo subscription. Unlocks exclusive Feed + AI Coach + Weekly Brief
 - [Elite Subscription](mem://monetization/elite-subscription) — €4.99/mo, RLS protection, check-subscription Edge Function
 - [RevenueCat Sub Sync](mem://technical/subscription-sync) — Webhook handles INITIAL_PURCHASE, RENEWAL, EXPIRATION
 - [Push Notifications](mem://technical/push-notifications) — Capacitor + Supabase Edge Functions for daily reminders/messages
+- [APNs Push](mem://technical/apns-push) — Direct iOS push via Apple .p8 token auth, ES256 JWT in Deno
 - [Role-Based Access Control](mem://technical/access-control) — RBAC via user_roles, admin powers (willehard)
 - [Backend Security Policies](mem://technical/backend-architecture-security) — SECURITY DEFINER RPCs, strict RLS, JWT Edge Functions
 - [Proof Validation Rules](mem://constraints/proof-validation) — Real-time camera requirement, 5-minute expiry for proofs

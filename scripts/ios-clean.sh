@@ -1,11 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "🧹 Removing old iOS platform..."
-rm -rf ios
-
-echo "📱 Adding iOS platform..."
-npx cap add ios
+echo "🧹 Removing old Pods, Podfile.lock and node_modules..."
+rm -rf ios/App/Pods ios/App/Podfile.lock node_modules
 
 echo "📦 Installing npm dependencies..."
 npm install
@@ -15,6 +12,9 @@ npm run build
 
 echo "🔄 Syncing Capacitor..."
 npx cap sync ios
+
+echo "📦 Running pod install (with repo update)..."
+( cd ios/App && pod install --repo-update )
 
 RESOLVED_DIR="ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm"
 RESOLVED_FILE="$RESOLVED_DIR/Package.resolved"

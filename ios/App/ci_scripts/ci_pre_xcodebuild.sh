@@ -10,6 +10,24 @@ ROOT_DIR="$(cd "$IOS_APP_DIR/../.." && pwd)"
 echo "ℹ️  ROOT_DIR=$ROOT_DIR"
 echo "ℹ️  IOS_APP_DIR=$IOS_APP_DIR"
 
+echo "🩹 Patching Capacitor podspec module maps for Xcode 26 compatibility..."
+python3 - <<'PY'
+from pathlib import Path
+
+for path in [
+    Path('/dev-server/node_modules/@capacitor/ios/Capacitor.podspec'),
+    Path('/dev-server/node_modules/@capacitor/ios/CapacitorCordova.podspec'),
+]:
+    if not path.exists():
+        continue
+    original = path.read_text()
+    patched_lines = [line for line in original.splitlines(True) if 's.module_map =' not in line]
+    patched = ''.join(patched_lines)
+    if patched != original:
+        path.write_text(patched)
+        print(f'patched {path.name}')
+PY
+
 # Verify Pods directory exists; if not, run pod install again.
 if [[ ! -d "$IOS_APP_DIR/Pods" ]]; then
   echo "⚠️ Pods directory missing — running pod install now..."

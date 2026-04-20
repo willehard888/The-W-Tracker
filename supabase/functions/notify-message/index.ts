@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendApnsBatch } from "../_shared/apns.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -75,10 +76,26 @@ Deno.serve(async (req) => {
       data: { route: "/messages" },
     };
 
-    console.log(`Push notification for ${receiver_id}:`, payload, `Tokens: ${tokens.length}`);
+    const results = await sendApnsBatch(tokens, payload);
+    const sent = results.filter((r) => r.status === 200).length;
+    const failed = results.filter((r) => r.status !== 200);
+
+    if (failed.length > 0) {
+      console.warn("APNs failures:", failed);
+      // Clean up invalid tokens (BadDeviceToken / Unregistered)
+      const dead = failed
+        .filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered")
+        .map((r) => r.token);
+      if (dead.length > 0) {
+        await serviceClient.from("push_tokens").delete().in("token", dead);
+        console.log(`Cleaned up ${dead.length} invalid tokens`);
+      }
+    }
+
+    console.log(`Push for ${receiver_id}: sent=${sent}, failed=${failed.length}`);
 
     return new Response(
-      JSON.stringify({ message: `Notification queued for ${tokens.length} devices`, payload }),
+      JSON.stringify({ sent, failed: failed.length, total: tokens.length }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

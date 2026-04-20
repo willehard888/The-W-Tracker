@@ -144,7 +144,7 @@ const App = () => {
         <BrowserRouter>
           <AuthProvider>
             <RevenueCatProvider>
-              <AmbientParticles />
+              {splashDone && <AmbientParticles />}
               <AppRoutes />
             </RevenueCatProvider>
           </AuthProvider>

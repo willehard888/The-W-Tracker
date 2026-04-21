@@ -257,6 +257,44 @@ if [[ -f "$CAPCORDOVA_CFG" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Sanity gate: detect unquoted "Target Support Files" paths in Capacitor's
+# generated xcconfig. The Podfile post_install hook injects Cordova modulemap
+# visibility into SWIFT_INCLUDE_PATHS / HEADER_SEARCH_PATHS / OTHER_SWIFT_FLAGS;
+# every value MUST be wrapped in escaped double quotes because Xcode's flag
+# tokenizer splits on unquoted whitespace, which produced this regression in
+# archive build 401:
+#   error: Unexpected input file: .../Pods/Support
+#   error: Unexpected input file: .../Pods/Files/CapacitorCordova/CapacitorCordova.modulemap
+# ---------------------------------------------------------------------------
+echo "🔒 Verifying Capacitor xcconfig has no unquoted 'Target Support Files' paths..."
+unquoted_violations=0
+for cfg_path in \
+  "$IOS_APP_DIR/Pods/Target Support Files/Capacitor/Capacitor.release.xcconfig" \
+  "$IOS_APP_DIR/Pods/Target Support Files/Capacitor/Capacitor.debug.xcconfig"; do
+  [[ -f "$cfg_path" ]] || continue
+  while IFS= read -r line; do
+    case "$line" in
+      SWIFT_INCLUDE_PATHS*|HEADER_SEARCH_PATHS*|OTHER_SWIFT_FLAGS*)
+        # Strip every "..." quoted span, then look for the literal substring
+        # 'Target Support Files'. If it survives stripping, it was unquoted.
+        stripped=$(printf '%s' "$line" | sed -E 's/"[^"]*"//g')
+        if printf '%s' "$stripped" | grep -q 'Target Support Files'; then
+          echo "❌ Unquoted 'Target Support Files' in $(basename "$cfg_path"):"
+          echo "    $line"
+          unquoted_violations=$((unquoted_violations + 1))
+        fi
+        ;;
+    esac
+  done < "$cfg_path"
+done
+if [[ "$unquoted_violations" -gt 0 ]]; then
+  echo "❌ ${unquoted_violations} unquoted-path violation(s) — Xcode will tokenize on the whitespace and fail with 'Unexpected input file: .../Pods/Support'."
+  echo "   Fix: ensure the Podfile post_install hook wraps every Cordova path in escaped double quotes."
+  exit 1
+fi
+echo "✅ Capacitor xcconfig paths all properly quoted"
+
+# ---------------------------------------------------------------------------
 # Self-healing: ensure Swift-target xcconfigs are pinned to SWIFT_VERSION = 5.
 # The Podfile post_install hook writes these settings into build_settings, but
 # CocoaPods occasionally omits default-matching values from the emitted

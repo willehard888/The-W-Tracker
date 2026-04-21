@@ -89,7 +89,7 @@ const AppRoutes = () => {
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
       <div className="flex-1 overflow-y-auto">
-        <Suspense fallback={<LazyFallback />}>
+        <Suspense fallback={<RouteFallback />}>
           <AccessGate>
           <Routes>
           <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />

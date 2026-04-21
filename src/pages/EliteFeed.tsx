@@ -959,41 +959,86 @@ const EliteFeed = () => {
 
               {/* Comments Section */}
               {showComments === post.id && (
-                <div className="border-t border-border/50 px-4 py-3 space-y-3 bg-secondary/20">
-                  {comments?.length === 0 && (
-                    <p className="text-xs text-muted-foreground/60 text-center py-2">No comments yet</p>
-                  )}
-                  {comments?.map((comment: any) => (
-                    <div key={comment.id} className="flex gap-2.5">
-                      <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
-                        {comment.profile?.username?.charAt(0)?.toUpperCase() || "?"}
+                <div className="border-t border-border/50 px-4 py-3 bg-secondary/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+                      Discussion
+                    </p>
+                    <p className="text-[10px] text-muted-foreground/60 tabular-nums">
+                      {post.comments_count || 0} {post.comments_count === 1 ? "reply" : "replies"}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2.5 mb-3 max-h-72 overflow-y-auto">
+                    {comments?.length === 0 && (
+                      <p className="text-xs text-muted-foreground/60 text-center py-3">
+                        No comments yet — start the conversation
+                      </p>
+                    )}
+                    {comments?.map((comment: any) => (
+                      <div key={comment.id} className="flex gap-2.5 animate-fade-in">
+                        <div className="h-7 w-7 rounded-full gradient-gold flex items-center justify-center text-[10px] font-black text-primary-foreground shrink-0 mt-0.5">
+                          {comment.profile?.username?.charAt(0)?.toUpperCase() || "?"}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="bg-card border border-border/40 rounded-2xl rounded-tl-sm px-3 py-2 inline-block max-w-full">
+                            <span className="text-[11px] font-bold text-gold">@{comment.profile?.username || "anon"}</span>
+                            <p className="text-xs text-foreground/90 leading-relaxed break-words">{comment.content}</p>
+                          </div>
+                          <p className="text-[9px] text-muted-foreground/50 mt-0.5 ml-3">
+                            {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                          </p>
+                        </div>
                       </div>
-                      <div className="bg-secondary/80 rounded-2xl rounded-tl-sm px-3 py-1.5 max-w-[85%]">
-                        <span className="text-[11px] font-bold text-gold">@{comment.profile?.username || "anon"}</span>
-                        <p className="text-xs text-foreground/90 leading-relaxed">{comment.content}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+
+                  {/* Composer */}
                   {user && (
-                    <div className="flex gap-2 pt-1">
-                      <input
-                        value={commentText}
-                        onChange={(e) => setCommentText(e.target.value)}
-                        placeholder="Add a comment..."
-                        maxLength={300}
-                        className="flex-1 h-8 px-3 rounded-full border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-shadow"
-                        onKeyDown={(e) => e.key === "Enter" && addComment.mutate()}
-                      />
-                      <button
-                        onClick={() => addComment.mutate()}
-                        disabled={!commentText.trim()}
-                        className={cn(
-                          "h-8 w-8 rounded-full flex items-center justify-center transition-all active:scale-95",
-                          commentText.trim() ? "gradient-gold text-primary-foreground" : "bg-secondary text-muted-foreground"
-                        )}
-                      >
-                        <Send size={12} />
-                      </button>
+                    <div className="pt-2 border-t border-border/30">
+                      <div className="flex items-end gap-2">
+                        <div className="h-8 w-8 rounded-full gradient-gold flex items-center justify-center text-[10px] font-black text-primary-foreground shrink-0">
+                          {profile?.username?.charAt(0)?.toUpperCase() || "?"}
+                        </div>
+                        <div className="flex-1 min-w-0 relative">
+                          <input
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            placeholder="Add a comment..."
+                            maxLength={300}
+                            className="w-full h-9 pl-3 pr-12 rounded-full border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold/40 transition-all"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && commentText.trim()) {
+                                hapticImpact("light");
+                                addComment.mutate();
+                              }
+                            }}
+                          />
+                          {commentText.length > 0 && (
+                            <span
+                              className={cn(
+                                "absolute right-12 top-1/2 -translate-y-1/2 text-[9px] font-semibold tabular-nums",
+                                commentText.length > 270 ? "text-destructive" : "text-muted-foreground/50"
+                              )}
+                            >
+                              {300 - commentText.length}
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => { hapticImpact("light"); addComment.mutate(); }}
+                          disabled={!commentText.trim() || addComment.isPending}
+                          aria-label="Send comment"
+                          className={cn(
+                            "h-9 w-9 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0",
+                            commentText.trim()
+                              ? "gradient-gold text-primary-foreground glow-gold"
+                              : "bg-secondary text-muted-foreground/40 cursor-not-allowed"
+                          )}
+                        >
+                          <Send size={13} />
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1002,6 +1047,22 @@ const EliteFeed = () => {
           );
         })}
       </div>
+
+      {/* Premium full-screen image preview */}
+      <ImageLightbox
+        open={!!lightboxPost}
+        imageUrl={lightboxPost?.image_url ?? null}
+        username={lightboxPost?.profile?.username}
+        avatarUrl={lightboxPost?.profile?.avatar_url}
+        tier={lightboxPost?.profile?.status_tier || "recruit"}
+        level={lightboxPost?.profile?.level}
+        streak={lightboxPost?.profile?.streak}
+        likes={lightboxPost?.likes_count}
+        comments={lightboxPost?.comments_count}
+        kudos={lightboxPost?.kudos_count}
+        caption={lightboxPost?.content}
+        onClose={() => setLightboxPost(null)}
+      />
     </div>
   );
 };

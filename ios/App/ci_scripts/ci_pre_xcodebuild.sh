@@ -132,15 +132,35 @@ else
   exit 1
 fi
 
+# Dump the actual aggregate xcconfig for visibility — invaluable when SwiftCompile
+# fails and we don't know what flags Xcode is actually being handed.
+APP_RELEASE_CFG="$IOS_APP_DIR/Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"
+echo "📄 Pods-App.release.xcconfig contents:"
+if [[ -f "$APP_RELEASE_CFG" ]]; then
+  cat "$APP_RELEASE_CFG"
+else
+  echo "  (missing — pod install did not generate it)"
+  exit 1
+fi
+
+CAP_RELEASE_CFG="$IOS_APP_DIR/Pods/Target Support Files/Capacitor/Capacitor.release.xcconfig"
+echo "📄 Capacitor.release.xcconfig (first 50 lines):"
+if [[ -f "$CAP_RELEASE_CFG" ]]; then
+  head -n 50 "$CAP_RELEASE_CFG"
+else
+  echo "  (missing)"
+fi
+
 # Sanity gate: fail fast if Xcode 26 explicit modules slipped back into any xcconfig.
 echo "🔒 Verifying explicit modules are disabled in all generated xcconfigs..."
 if grep -RIE 'SWIFT_ENABLE_EXPLICIT_MODULES\s*=\s*YES|CLANG_ENABLE_EXPLICIT_MODULES\s*=\s*YES' \
      "$IOS_APP_DIR/Pods/Target Support Files" 2>/dev/null; then
   echo "❌ Explicit modules still enabled in one or more xcconfigs above."
-  echo "   This will cause SwiftCompile to fail under Xcode 26 + static frameworks."
   exit 1
 fi
 echo "✅ explicit modules disabled across all Pods xcconfigs"
+
+echo "✅ pre-xcodebuild setup complete"
 
 # Sanity gate: ensure CapacitorCordova ended up dynamic (mh_dylib), not static.
 # A residual -force_load .../libCapacitorCordova.a in Pods-App.release.xcconfig

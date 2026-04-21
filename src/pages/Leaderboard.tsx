@@ -406,4 +406,76 @@ const Leaderboard = () => {
   );
 };
 
+interface PodiumCardProps {
+  user: LeaderRow;
+  rank: 1 | 2 | 3;
+  points: number;
+  mode: "season" | "all_time";
+  isMe: boolean;
+  wins: number;
+  onClick: () => void;
+}
+
+const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCardProps) => {
+  const isFirst = rank === 1;
+  const isSecond = rank === 2;
+  const heightClass = isFirst ? "pt-6 pb-5" : isSecond ? "pt-4 pb-4 mt-4" : "pt-4 pb-3.5 mt-6";
+  const rankLabel = isFirst ? "1st" : isSecond ? "2nd" : "3rd";
+  const accent = isFirst
+    ? "border-gold/60 bg-gradient-to-b from-gold/[0.18] via-gold/[0.06] to-card glow-gold-sm"
+    : isSecond
+    ? "border-foreground/25 bg-gradient-to-b from-foreground/[0.08] via-foreground/[0.02] to-card"
+    : "border-amber-700/40 bg-gradient-to-b from-amber-700/[0.12] via-amber-700/[0.04] to-card";
+
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "relative rounded-2xl border overflow-hidden flex flex-col items-center px-2 text-center transition-transform active:scale-[0.97]",
+        heightClass,
+        accent,
+        isMe && "ring-2 ring-gold/60",
+      )}
+    >
+      {isFirst && (
+        <Crown size={20} className="text-gold mb-1 drop-shadow-[0_0_6px_hsl(var(--gold)/0.6)]" />
+      )}
+      <div className={cn("absolute top-1.5 right-1.5 font-display font-black text-[10px] tabular-nums uppercase tracking-wider",
+        isFirst ? "text-gold" : isSecond ? "text-foreground/60" : "text-amber-600"
+      )}>
+        {rankLabel}
+      </div>
+      <div className={cn("relative", isFirst && "scale-110")}>
+        <StatusAvatar
+          src={user.avatar_url}
+          name={user.username}
+          tier={user.status_tier || "recruit"}
+          size={isFirst ? "md" : "sm"}
+        />
+      </div>
+      <p className={cn(
+        "font-display font-bold text-xs mt-2 truncate max-w-full px-1",
+        isMe && "text-gold",
+      )}>
+        @{user.username}
+      </p>
+      {isMe && <span className="text-[9px] text-gold/70 font-medium -mt-0.5">(you)</span>}
+      <p className={cn(
+        "font-display font-black tabular-nums mt-1",
+        isFirst ? "text-gold text-lg" : "text-foreground text-sm",
+      )}>
+        {points.toLocaleString()}
+      </p>
+      <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">
+        {mode === "season" ? "Season XP" : "XP"}
+      </p>
+      {wins > 0 && (
+        <p className="text-[9px] text-gold/80 mt-1 flex items-center gap-0.5">
+          <Medal size={9} /> {wins}x
+        </p>
+      )}
+    </button>
+  );
+};
+
 export default Leaderboard;

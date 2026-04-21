@@ -77,22 +77,48 @@ if ! pod_install_with_retry; then
 fi
 
 # ---------------------------------------------------------------------------
+# Verify cap sync produced a clean iOS project (no module errors).
+# This catches regressions of the "CapacitorCordova does not define modules"
+# class of failures BEFORE we hand off to Xcode.
+# ---------------------------------------------------------------------------
+echo "🔄 Re-verifying Capacitor sync..."
+SYNC_LOG="${TMPDIR:-/tmp}/cap-sync-verify.log"
+if npx cap sync ios > "$SYNC_LOG" 2>&1; then
+  if grep -qi "does not define modules" "$SYNC_LOG"; then
+    echo "❌ cap sync reported a 'does not define modules' error:"
+    grep -i "does not define modules" "$SYNC_LOG" || true
+    exit 2
+  fi
+  echo "✅ cap sync verification passed"
+else
+  echo "⚠️ cap sync exited non-zero — dumping tail of log:"
+  tail -40 "$SYNC_LOG" || true
+  if grep -qi "does not define modules" "$SYNC_LOG"; then
+    echo "❌ Hard module-resolution failure detected"
+    exit 2
+  fi
+  echo "ℹ️  Continuing — non-module sync warnings are non-fatal here"
+fi
+
+# ---------------------------------------------------------------------------
 # Optional: regenerate Package.resolved if a SPM manifest exists.
-# In the current project layout there is no ios/App/CapApp-SPM/Package.swift
-# so we skip silently instead of crashing.
+# Two supported cases:
+#   A) CapApp-SPM/Package.swift PRESENT → regenerate + verify Package.resolved
+#   B) CapApp-SPM/Package.swift MISSING → skip silently (CocoaPods-only project)
+# Only exits non-zero if case A is detected AND every recovery option fails.
 # ---------------------------------------------------------------------------
 SPM_MANIFEST="$IOS_APP_DIR/CapApp-SPM/Package.swift"
 RESOLVED_DIR="$IOS_APP_DIR/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm"
 RESOLVED_FILE="$RESOLVED_DIR/Package.resolved"
 
-if [[ -f "$SPM_MANIFEST" ]]; then
-  echo "📦 SPM manifest found — regenerating Package.resolved fallback..."
+regenerate_package_resolved() {
   mkdir -p "$RESOLVED_DIR"
   ROOT_FOR_PY="$ROOT_DIR" MANIFEST_FOR_PY="$SPM_MANIFEST" RESOLVED_FOR_PY="$RESOLVED_FILE" python3 - <<'PY'
 import hashlib
 import json
 import os
 import re
+import sys
 from pathlib import Path
 
 root = Path(os.environ['ROOT_FOR_PY'])
@@ -118,7 +144,11 @@ def collect_manifests(entry, seen, ordered):
             collect_manifests(child, seen, ordered)
 
 manifests = []
-collect_manifests(manifest, set(), manifests)
+try:
+    collect_manifests(manifest, set(), manifests)
+except Exception as e:
+    print(f"::error:: failed to read SPM manifest: {e}", file=sys.stderr)
+    sys.exit(1)
 
 digest = hashlib.sha256()
 for item in manifests:
@@ -134,18 +164,17 @@ for item in manifests:
 origin_hash = digest.hexdigest()
 
 if resolved.exists():
-    data = json.loads(resolved.read_text())
+    try:
+        data = json.loads(resolved.read_text())
+    except json.JSONDecodeError:
+        data = {"originHash": "", "pins": [], "version": 3}
 else:
     data = {"originHash": "", "pins": [], "version": 3}
 
 existing_pins = {pin["identity"]: pin for pin in data.get("pins", [])}
 fallback_revisions = {
-    "capacitor-swift-pm": {
-        "8.2.0": "0e862e6ff13852a710c8a484180ca4d6a2cc9761",
-    },
-    "purchases-hybrid-common": {
-        "17.52.0": "9b99aee60dd4f8b5a2e96f074f4d0b8adc53beee",
-    },
+    "capacitor-swift-pm": {"8.2.0": "0e862e6ff13852a710c8a484180ca4d6a2cc9761"},
+    "purchases-hybrid-common": {"17.52.0": "9b99aee60dd4f8b5a2e96f074f4d0b8adc53beee"},
 }
 
 required_pins = {}
@@ -174,55 +203,76 @@ for identity in sorted(required_pins):
         revision = fallback_revisions.get(identity, {}).get(spec["version"])
         if revision:
             state = {"revision": revision, "version": spec["version"]}
+    pins.append({
+        "identity": identity,
+        "kind": spec["kind"],
+        "location": spec["location"],
+        "state": state,
+    })
 
-    pins.append(
-        {
-            "identity": identity,
-            "kind": spec["kind"],
-            "location": spec["location"],
-            "state": state,
-        }
-    )
-
-data = {
-    "originHash": origin_hash,
-    "pins": pins,
-    "version": 3,
-}
-
+data = {"originHash": origin_hash, "pins": pins, "version": 3}
 resolved.write_text(json.dumps(data, indent=2) + "\n")
 print(f"✅ Package.resolved fallback generated ({origin_hash})")
 PY
+}
 
-  if command -v xcodebuild >/dev/null 2>&1; then
-    echo "📦 Verifying Swift packages via Xcode..."
-    RESOLVE_LOG="${TMPDIR:-/tmp}/xcode-package-resolve.log"
-    if xcodebuild -resolvePackageDependencies \
-      -project "$IOS_APP_DIR/App.xcodeproj" \
-      -scheme App \
-      -clonedSourcePackagesDirPath "${TMPDIR:-/tmp}/spm-packages" \
-      > "$RESOLVE_LOG" 2>&1; then
-      echo "✅ Xcode package resolution succeeded"
-      tail -5 "$RESOLVE_LOG"
+verify_with_xcode() {
+  if ! command -v xcodebuild >/dev/null 2>&1; then
+    echo "ℹ️  xcodebuild not available — skipping Xcode SPM verification"
+    return 0
+  fi
+  echo "📦 Verifying Swift packages via Xcode..."
+  local resolve_log="${TMPDIR:-/tmp}/xcode-package-resolve.log"
+  if xcodebuild -resolvePackageDependencies \
+    -project "$IOS_APP_DIR/App.xcodeproj" \
+    -scheme App \
+    -clonedSourcePackagesDirPath "${TMPDIR:-/tmp}/spm-packages" \
+    > "$resolve_log" 2>&1; then
+    echo "✅ Xcode package resolution succeeded"
+    tail -5 "$resolve_log" || true
+    return 0
+  fi
+  echo "⚠️ Xcode verification failed — log tail:"
+  tail -30 "$resolve_log" || true
+  return 1
+}
+
+if [[ -f "$SPM_MANIFEST" ]]; then
+  echo "📦 SPM manifest found at $SPM_MANIFEST"
+  spm_ok=0
+
+  echo "📦 Attempt 1/2 — generating Package.resolved from manifest..."
+  if regenerate_package_resolved && [[ -f "$RESOLVED_FILE" ]]; then
+    if verify_with_xcode; then
+      spm_ok=1
     else
-      echo "⚠️ Xcode verification failed — keeping generated Package.resolved"
-      tail -30 "$RESOLVE_LOG" || true
+      echo "🔁 Attempt 2/2 — wiping cached SPM clone and retrying..."
+      rm -rf "${TMPDIR:-/tmp}/spm-packages"
+      rm -f "$RESOLVED_FILE"
+      if regenerate_package_resolved && [[ -f "$RESOLVED_FILE" ]] && verify_with_xcode; then
+        spm_ok=1
+      fi
     fi
+  else
+    echo "⚠️ Initial Package.resolved generation failed"
   fi
 
-  if [[ -f "$RESOLVED_FILE" ]]; then
-    echo "✅ Package.resolved generated"
+  if [[ "$spm_ok" -eq 1 ]]; then
+    echo "✅ Package.resolved present and verified"
   else
-    echo "⚠️ Package.resolved not generated"
+    echo "❌ All SPM recovery options exhausted (regenerate + xcode-resolve)"
+    exit 3
   fi
 else
-  echo "ℹ️  No SPM manifest at $SPM_MANIFEST — skipping Package.resolved generation"
+  echo "ℹ️  No SPM manifest at $SPM_MANIFEST — CocoaPods-only project, skipping SPM step"
 fi
 
 if [[ "$(uname -s)" == "Darwin" ]]; then
   echo "🚀 Opening Xcode..."
-  npx cap open ios
+  npx cap open ios || echo "⚠️ cap open ios failed — open $IOS_APP_DIR/App.xcworkspace manually"
   echo "✅ Done! Open App.xcworkspace in Xcode"
 else
   echo "✅ Done! iOS project prepared at $IOS_APP_DIR/App.xcworkspace"
 fi
+
+exit 0

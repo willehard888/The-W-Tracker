@@ -605,6 +605,11 @@ const Profile = () => {
         <StatCard icon={Trophy} label="Kudos Received" value={kudosReceived || 0} variant="gold" />
       </div>
 
+      {/* Tier Ladder — full progression map */}
+      <div className="mb-6 animate-reveal animate-reveal-delay-3">
+        <TierLadder currentTier={profile.status_tier || "recruit"} />
+      </div>
+
       <div className="animate-reveal animate-reveal-delay-3">
         <BadgeVault
           allBadges={allBadges || []}

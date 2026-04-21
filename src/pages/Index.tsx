@@ -5,6 +5,9 @@ import BadgeCard from "@/components/BadgeCard";
 import StatusBadge from "@/components/StatusBadge";
 import RankPressureCard from "@/components/RankPressureCard";
 import CoachNudgeCard from "@/components/CoachNudgeCard";
+import TierRiskBanner from "@/components/TierRiskBanner";
+import DailyStatusPulse from "@/components/DailyStatusPulse";
+import LiveRivals from "@/components/LiveRivals";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import XpCounter from "@/components/XpCounter";
 import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
+import { useTierRisk } from "@/hooks/use-tier-risk";
 import RoadToElite from "@/components/RoadToElite";
 
 

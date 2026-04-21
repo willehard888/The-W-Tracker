@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import BrandLogo from "@/components/BrandLogo";
+import TopInvitersWidget from "@/components/TopInvitersWidget";
 
 const Referrals = () => {
   const { profile } = useAuth();
@@ -151,6 +152,11 @@ const Referrals = () => {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Top Inviters — social proof & competition */}
+      <div className="mt-6 animate-reveal animate-reveal-delay-4">
+        <TopInvitersWidget hideEmptyCta />
       </div>
 
       {/* Recent Referrals */}

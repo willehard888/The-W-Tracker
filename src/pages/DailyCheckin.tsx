@@ -18,6 +18,8 @@ import XpCounter from "@/components/XpCounter";
 import DailyQuests from "@/components/DailyQuests";
 import LevelUpCelebration from "@/components/LevelUpCelebration";
 import { syncStreakWarningNotification } from "@/lib/streak-notifications";
+import { useModeration } from "@/hooks/use-moderation";
+import ModerationGate from "@/components/ModerationGate";
 
 interface ToggleItemProps {
   icon: React.ElementType;
@@ -143,6 +145,7 @@ const DailyCheckin = () => {
   const [questBonusXp, setQuestBonusXp] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [newLevelReached, setNewLevelReached] = useState(0);
+  const moderation = useModeration();
 
   const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory)!;
   const workout = sportCategory !== "none";
@@ -218,9 +221,19 @@ const DailyCheckin = () => {
     try {
       const checkinTimestamp = new Date().toISOString();
 
-      // Upload proof photo if provided
+      // Upload proof photo if provided — moderate thumbnail FIRST, upload only on pass
       let proof_photo_url: string | null = null;
       if (proofFile && isElite) {
+        const outcome = await moderation.moderateImage({
+          file: proofFile,
+          kind: "proof",
+        });
+        if (outcome.blocked) {
+          toast.error(outcome.friendlyMessage ?? "Proof rejected");
+          setSubmitting(false);
+          return;
+        }
+
         const ext = proofFile.name.split(".").pop();
         const path = `${user.id}/${Date.now()}.${ext}`;
         const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, proofFile, {
@@ -230,21 +243,6 @@ const DailyCheckin = () => {
         if (uploadErr) throw new Error(`Photo upload failed: ${uploadErr.message}`);
         const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
         proof_photo_url = urlData.publicUrl;
-
-        // AI moderation gate
-        try {
-          const { data: modData } = await supabase.functions.invoke("moderate-content", {
-            body: { image_url: proof_photo_url, kind: "proof" },
-          });
-          if (modData?.action === "block") {
-            await supabase.storage.from("proof-photos").remove([path]);
-            toast.error(`Proof rejected: ${modData.reason || "violates content policy"}`);
-            setSubmitting(false);
-            return;
-          }
-        } catch (modErr) {
-          console.warn("moderation skipped:", modErr);
-        }
       }
 
       // Insert check-in

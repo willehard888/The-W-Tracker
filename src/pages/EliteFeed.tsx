@@ -61,6 +61,7 @@ const EliteFeed = () => {
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [showReported, setShowReported] = useState(false);
   const [showReportsPanel, setShowReportsPanel] = useState(false);
+  const [lightboxPost, setLightboxPost] = useState<any | null>(null);
 
   // Pull-to-refresh
   const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["elite-feed"]]);

@@ -463,6 +463,26 @@ const UserProfile = () => {
           />
         )}
 
+        {/* Head-to-head comparison (only when viewing another user) */}
+        {!isOwnProfile && myProfile && (
+          <HeadToHead
+            me={{
+              username: myProfile.username,
+              xp: myProfile.xp,
+              streak: myProfile.streak,
+              level: myProfile.level,
+              rank_score: Number(myProfile.rank_score) || 0,
+            }}
+            them={{
+              username: profile.username,
+              xp: profile.xp,
+              streak: profile.streak,
+              level: profile.level,
+              rank_score: Number(profile.rank_score) || 0,
+            }}
+          />
+        )}
+
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

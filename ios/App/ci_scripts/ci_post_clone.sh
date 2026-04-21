@@ -1,7 +1,7 @@
 #!/bin/bash
-# NOTE: intentionally NOT using `set -e` at the top — we want to log every
-# failure point explicitly so Xcode Cloud surfaces *which* step failed.
-set -uo pipefail
+# Fail fast on errors so Xcode Cloud surfaces the real failure point instead
+# of silently continuing past a broken pod install.
+set -euo pipefail
 
 echo "🔧 Running post-clone setup for iOS build..."
 echo "ℹ️  PWD=$(pwd)"
@@ -115,6 +115,8 @@ export COCOAPODS_DISABLE_STATS=1
 echo "🧹 Removing stale Pods/ and Podfile.lock to honor new linkage strategy..."
 rm -rf Pods Podfile.lock
 
+POD_LOG="/tmp/pod-install.log"
+
 pod_install_with_retry() {
   local attempt=1
   local max_attempts=4
@@ -122,15 +124,16 @@ pod_install_with_retry() {
 
   while [[ $attempt -le $max_attempts ]]; do
     echo "📦 pod install attempt $attempt/$max_attempts ${repo_update_flag:-(no repo-update)}..."
-    if pod install $repo_update_flag 2>&1; then
+    : > "$POD_LOG"
+    if pod install $repo_update_flag --verbose 2>&1 | tee "$POD_LOG"; then
       echo "✅ pod install succeeded on attempt $attempt"
       return 0
     fi
-    echo "⚠️ pod install attempt $attempt failed"
+    echo "⚠️ pod install attempt $attempt failed — last 80 lines of verbose log:"
+    tail -n 80 "$POD_LOG" || true
 
     repo_update_flag="--repo-update"
 
-    # On attempt 3, swap to GitHub Specs mirror — CDN is clearly down
     if [[ $attempt -eq 3 ]]; then
       echo "🔀 Swapping trunk repo to GitHub Specs mirror (CDN appears down)..."
       pod repo remove trunk 2>&1 || true
@@ -146,11 +149,13 @@ pod_install_with_retry() {
   echo "🆘 Final attempt — re-adding CDN trunk repo..."
   pod repo remove trunk 2>&1 || true
   pod repo add-cdn trunk https://cdn.cocoapods.org/ 2>&1 || true
-  pod install --repo-update 2>&1
+  : > "$POD_LOG"
+  pod install --repo-update --verbose 2>&1 | tee "$POD_LOG"
 }
 
 if ! pod_install_with_retry; then
-  echo "❌ pod install failed after all retries"
+  echo "❌ pod install failed after all retries — last 200 lines of verbose log:"
+  tail -n 200 "$POD_LOG" || true
   exit 1
 fi
 

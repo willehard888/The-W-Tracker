@@ -513,7 +513,7 @@ const DailyCheckin = () => {
   }
 
   return (
-    <div className="min-h-screen pb-4 px-4 pt-4 safe-top">
+    <div className="min-h-screen pb-4 px-4 pt-0 safe-top">
       <ModerationGate
         state={moderation.state}
         message={moderation.message}
@@ -521,20 +521,45 @@ const DailyCheckin = () => {
         onCancel={moderation.cancel}
         onDismiss={moderation.reset}
       />
-      <div className="flex items-center gap-3 mb-6 animate-reveal mx-0 my-[10px] py-[10px]">
-        <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
-          <ChevronLeft size={20} />
-        </button>
-        
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Daily Execution</h1>
-          <p className="text-sm text-muted-foreground">Log your day. Earn your status.</p>
+      {/* Sticky header with live progress checklist */}
+      <div className="sticky top-0 z-20 -mx-4 px-4 pt-3 pb-3 mb-4 bg-background/85 backdrop-blur-md border-b border-border/40">
+        <div className="flex items-center gap-3 animate-reveal">
+          <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
+            <ChevronLeft size={20} />
+          </button>
+          <div className="min-w-0 flex-1">
+            <h1 className="font-display text-lg font-bold tracking-tight leading-tight truncate">Daily Execution</h1>
+            <p className="text-[11px] text-muted-foreground leading-tight">Log your day. Earn your status.</p>
+          </div>
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-gold/10 border border-gold/20 shrink-0">
+            {isElite && <span className="text-[10px] font-bold text-gold">2×</span>}
+            <Zap size={13} className="text-gold" />
+            <span className="text-sm font-bold text-gold tabular-nums">{totalXp}</span>
+            <span className="text-[10px] text-gold/60">XP</span>
+          </div>
         </div>
-        <div className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gold/10 border border-gold/20">
-          {isElite && <span className="text-[10px] font-bold text-gold mr-1">2×</span>}
-          <Zap size={14} className="text-gold" />
-          <span className="text-sm font-bold text-gold tabular-nums">{totalXp}</span>
-          <span className="text-xs text-gold/60">XP</span>
+        {/* Live progress checklist */}
+        <div className="mt-3 flex items-center gap-2.5">
+          <div className="flex items-center justify-center h-6 w-6 shrink-0">
+            <CheckCircle2 size={14} className={cn(perfPercent >= 70 ? "text-gold" : "text-muted-foreground")} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Today's progress</span>
+              <span className={cn("text-[11px] font-display font-black tabular-nums", perf.color)}>
+                {completedCount}/{maxCount} · {perfPercent}%
+              </span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all duration-500",
+                  perfPercent === 100 ? "bg-gold" : perfPercent >= 70 ? "bg-gold/80" : perfPercent >= 50 ? "bg-teal" : perfPercent >= 30 ? "bg-amber" : "bg-destructive"
+                )}
+                style={{ width: `${Math.max(perfPercent, 2)}%` }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 

@@ -142,8 +142,14 @@ Deno.serve(async (req) => {
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (!profile?.is_elite) {
-      return new Response(JSON.stringify({ error: "Elite subscription required" }), {
+    // Membership gate (active subscription OR within 7-day trial).
+    // The Coach is part of the paid app, not an Elite-only perk.
+    const { data: hasAccess, error: accessErr } = await supabase.rpc(
+      "has_active_access",
+      { _user_id: userId },
+    );
+    if (accessErr || !hasAccess) {
+      return new Response(JSON.stringify({ error: "Active membership required" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

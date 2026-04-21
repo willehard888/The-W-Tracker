@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
-import FeatureGateScreen from "@/components/FeatureGateScreen";
+
 import { toast } from "sonner";
 
 type Msg = { role: "user" | "assistant"; content: string };

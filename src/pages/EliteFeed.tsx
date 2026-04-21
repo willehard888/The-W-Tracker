@@ -1,7 +1,5 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import EliteFeedTeaser from "@/components/EliteFeedTeaser";
-import FeatureGateScreen from "@/components/FeatureGateScreen";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -514,7 +512,7 @@ const EliteFeed = () => {
 
   const giveKudos = useMutation({
     mutationFn: async ({ postId, receiverId }: { postId: string; receiverId: string }) => {
-      if (!user || !isElite) return;
+      if (!user || !canPost) return;
       if (kudosRemaining <= 0) {
         throw new Error("Monthly kudos used up");
       }
@@ -1167,8 +1165,8 @@ const EliteFeed = () => {
                   <span className="tabular-nums">{post.comments_count > 0 ? post.comments_count : ""}</span>
                 </button>
 
-                {/* Kudos button - only for non-own posts, elite users */}
-                {!isOwn && isElite && (
+                {/* Kudos button — only for non-own posts, members with earned Elite status */}
+                {!isOwn && canPost && (
                   <button
                     onClick={() => {
                       if (!hasGivenKudos && kudosRemaining <= 0) {

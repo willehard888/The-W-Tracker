@@ -2,6 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { Crown, Lock, Flame, Trophy, Swords, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { getTierConfig } from "@/lib/status-tiers";
+import RoadToElite from "@/components/RoadToElite";
 
 const FAKE_POSTS = [
   { username: "••••••", content: "Just hit a 30-day streak 🔥 Cold showers every morning...", likes: 47, comments: 12 },
@@ -11,8 +14,15 @@ const FAKE_POSTS = [
   { username: "••••••", content: "Elite badge earned. Who else is in the top 1%?", likes: 211, comments: 55 },
 ];
 
+/**
+ * Shown when a member is viewing the Elite Feed but has NOT earned
+ * Elite status_tier yet. Posting requires earning Elite — not paying.
+ */
 const EliteFeedTeaser = () => {
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const tierRank = getTierConfig(profile?.status_tier ?? "recruit").rank;
+  const isEarnedElite = tierRank >= 4;
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 safe-top">
@@ -28,6 +38,9 @@ const EliteFeedTeaser = () => {
           </div>
         </div>
       </div>
+
+      {/* Live Road to Elite progress */}
+      {!isEarnedElite && <div className="mb-5"><RoadToElite /></div>}
 
       {/* Blurred fake posts */}
       <div className="relative">
@@ -70,19 +83,19 @@ const EliteFeedTeaser = () => {
                 <Lock size={28} className="text-primary-foreground" />
               </div>
               <h2 className="font-display text-xl font-black tracking-tight mb-2">
-                <span className="text-gold glow-gold-text">Elite Only</span>
+                <span className="text-gold glow-gold-text">Earn Your Elite</span>
               </h2>
               <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-                See what the top performers are posting. Join the inner circle.
+                Posting on the Elite Feed is reserved for the Top 5% — it's earned, not bought. Keep your streak alive and stay consistent.
               </p>
 
-              {/* Mini feature list */}
+              {/* What Elite unlocks */}
               <div className="space-y-2 mb-6 text-left">
                 {[
                   { icon: Flame, text: "Post your wins & proof" },
                   { icon: Trophy, text: "Give & receive Kudos" },
-                  { icon: Swords, text: "Challenge others to battles" },
-                  { icon: Zap, text: "2× XP on all check-ins" },
+                  { icon: Swords, text: "Earn the gold Elite tier badge" },
+                  { icon: Zap, text: "Visible status across the app" },
                 ].map(({ icon: Icon, text }) => (
                   <div key={text} className="flex items-center gap-2.5">
                     <div className="h-6 w-6 rounded-md bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
@@ -97,14 +110,14 @@ const EliteFeedTeaser = () => {
                 variant="gold"
                 size="xl"
                 className="w-full breathing-glow"
-                onClick={() => navigate("/paywall")}
+                onClick={() => navigate("/profile")}
               >
                 <Crown size={18} />
-                Unlock Elite — $4.99/mo
+                Track Your Progress
               </Button>
 
               <p className="text-[10px] text-muted-foreground mt-3 tracking-wider uppercase">
-                Cancel anytime • Instant access
+                Top 5% • 14 active days • 30-day streak
               </p>
             </div>
           </div>

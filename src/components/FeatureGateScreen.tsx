@@ -169,9 +169,9 @@ const FeatureGateScreen = ({
           className="space-y-3"
         >
           {requiresElite ? (
-            <Button variant="gold" size="lg" onClick={() => navigate("/paywall")} className="breathing-glow">
+            <Button variant="gold" size="lg" onClick={() => navigate("/profile")} className="breathing-glow">
               <Crown size={16} />
-              Unlock Elite
+              Earn Your Elite Status
             </Button>
           ) : (
             <Button variant="gold" size="lg" onClick={() => navigate("/checkin")} className="breathing-glow">
@@ -181,7 +181,7 @@ const FeatureGateScreen = ({
           )}
           <p className="text-[10px] text-muted-foreground">
             {requiresElite
-              ? "Elite members get full access to all features"
+              ? "Elite is earned, not bought — top 5% + 14 active days + 30-day streak"
               : `Reach ${requiredConfig.label} status to unlock this feature`}
           </p>
         </motion.div>

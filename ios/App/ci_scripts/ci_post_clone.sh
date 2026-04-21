@@ -110,6 +110,11 @@ cd "$IOS_APP_DIR"
 
 export COCOAPODS_DISABLE_STATS=1
 
+# Linkage strategy changed (static -> dynamic). Force a clean install so the
+# previous Pods cache cannot leak static-framework xcconfigs into this build.
+echo "🧹 Removing stale Pods/ and Podfile.lock to honor new linkage strategy..."
+rm -rf Pods Podfile.lock
+
 pod_install_with_retry() {
   local attempt=1
   local max_attempts=4
@@ -173,6 +178,27 @@ if [[ "$missing" -eq 1 ]]; then
 fi
 
 ls "Pods/Local Podspecs" | grep -E 'Capacitor|Cordova' || true
+
+# ---------------------------------------------------------------------------
+# Linkage diagnostics — confirm Capacitor pods are dynamic (mh_dylib)
+# ---------------------------------------------------------------------------
+echo "🔬 Linkage diagnostics:"
+for pod_name in Capacitor CapacitorCordova RevenuecatPurchasesCapacitor; do
+  cfg="Pods/Target Support Files/${pod_name}/${pod_name}.release.xcconfig"
+  if [[ -f "$cfg" ]]; then
+    mach=$(grep -E '^MACH_O_TYPE' "$cfg" | head -1 || echo "MACH_O_TYPE = (default)")
+    echo "  • ${pod_name}: ${mach}"
+  else
+    echo "  • ${pod_name}: xcconfig not found"
+  fi
+done
+
+# Print which pods are still declared as static_framework in their podspec.
+static_specs=$(grep -l 'static_framework' Pods/Local\ Podspecs/*.json 2>/dev/null || true)
+if [[ -n "$static_specs" ]]; then
+  echo "ℹ️  Pods still declared static_framework in podspec (linkage overridden by post_install):"
+  echo "$static_specs"
+fi
 
 # ---------------------------------------------------------------------------
 # Patch out broken MetalToolchain Swift search paths (Xcode 26 bug)

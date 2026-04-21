@@ -142,4 +142,29 @@ if grep -RIE 'SWIFT_ENABLE_EXPLICIT_MODULES\s*=\s*YES|CLANG_ENABLE_EXPLICIT_MODU
 fi
 echo "✅ explicit modules disabled across all Pods xcconfigs"
 
+# Sanity gate: ensure CapacitorCordova ended up dynamic (mh_dylib), not static.
+# A residual -force_load .../libCapacitorCordova.a in Pods-App.release.xcconfig
+# would mean the linkage swap silently failed.
+echo "🔒 Verifying CapacitorCordova linked as dynamic framework..."
+APP_RELEASE_CFG="$IOS_APP_DIR/Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"
+if [[ -f "$APP_RELEASE_CFG" ]]; then
+  if grep -qE '\-force_load[^\n]*libCapacitorCordova\.a' "$APP_RELEASE_CFG"; then
+    echo "❌ Pods-App.release.xcconfig still force-loads libCapacitorCordova.a — linkage did NOT switch to dynamic."
+    echo "   Expected: CapacitorCordova.framework linked dynamically."
+    exit 1
+  fi
+  echo "✅ Pods-App.release.xcconfig clean of static -force_load for CapacitorCordova"
+else
+  echo "⚠️  Pods-App.release.xcconfig not found at expected path (skipping linkage check)"
+fi
+
+CAPCORDOVA_CFG="$IOS_APP_DIR/Pods/Target Support Files/CapacitorCordova/CapacitorCordova.release.xcconfig"
+if [[ -f "$CAPCORDOVA_CFG" ]]; then
+  if grep -qE '^MACH_O_TYPE\s*=\s*staticlib' "$CAPCORDOVA_CFG"; then
+    echo "❌ CapacitorCordova.release.xcconfig sets MACH_O_TYPE=staticlib — should be mh_dylib."
+    exit 1
+  fi
+  echo "✅ CapacitorCordova MACH_O_TYPE clean (dynamic)"
+fi
+
 echo "✅ pre-xcodebuild setup complete"

@@ -46,6 +46,23 @@ const MAX_VIDEO_SIZE_MB = 50;
 const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
 const isVideoUrl = (url: string) => SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.toLowerCase().includes(ext));
 
+// Parse a comment that may begin with a quoted reply preview:
+//   > @username: quoted text\n\nreply body
+// Returns { quote, body } or { body } when no quote is present.
+const QUOTE_RE = /^>\s*@([a-zA-Z0-9_]+):\s*([\s\S]*?)\n\n([\s\S]*)$/;
+const parseCommentContent = (content: string): { quote?: { username: string; text: string }; body: string } => {
+  const match = content.match(QUOTE_RE);
+  if (match) {
+    return { quote: { username: match[1], text: match[2] }, body: match[3] };
+  }
+  return { body: content };
+};
+const buildReplyContent = (replyTo: { username: string; snippet: string } | null, body: string) => {
+  if (!replyTo) return body;
+  const cleanSnippet = replyTo.snippet.replace(/\s+/g, " ").trim().slice(0, 140);
+  return `> @${replyTo.username}: ${cleanSnippet}\n\n${body}`;
+};
+
 const EliteFeed = () => {
   const { user, profile, isElite } = useAuth();
   const navigate = useNavigate();

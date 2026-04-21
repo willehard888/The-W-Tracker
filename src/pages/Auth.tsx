@@ -221,12 +221,10 @@ const Auth = () => {
           <div className="flex-1 h-px bg-border" />
         </div>
 
-        {/* Social Sign In — Apple shows its own "Hide My Email" toggle in the native sheet */}
-        <div className="space-y-2">
+        {/* Social Sign In — Apple shows its native "Share My Email / Hide My Email"
+            toggle in the system sheet automatically because we request the email scope. */}
+        <div>
           <AppleSignInButton externalLoading={appleLoading} />
-          <p className="text-[10px] text-muted-foreground text-center leading-snug px-2">
-            Apple will let you choose to share or hide your email on the next screen.
-          </p>
         </div>
 
         <div className="mt-4 text-center space-y-3">

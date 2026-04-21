@@ -508,20 +508,16 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
         </div>
       )}
 
-      {/* Shimmer overlay for #1 */}
+      {/* Soft gold gradient halo for #1 */}
       {isFirst && (
         <div
-          className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden opacity-50"
+          className="absolute inset-0 rounded-2xl pointer-events-none opacity-60"
           aria-hidden
-        >
-          <div
-            className="absolute inset-y-0 -left-full w-1/2 animate-[shimmer_3.5s_ease-in-out_infinite]"
-            style={{
-              background:
-                "linear-gradient(105deg, transparent 40%, hsl(var(--gold) / 0.25) 50%, transparent 60%)",
-            }}
-          />
-        </div>
+          style={{
+            background:
+              "linear-gradient(135deg, hsl(var(--gold) / 0.15) 0%, transparent 45%, transparent 55%, hsl(var(--gold) / 0.1) 100%)",
+          }}
+        />
       )}
 
       <div className={cn("absolute top-2 right-2 font-display font-black text-[10px] tabular-nums uppercase tracking-wider",

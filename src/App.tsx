@@ -13,6 +13,8 @@ import BottomNav from "@/components/BottomNav";
 import StatusHeader from "@/components/StatusHeader";
 import AccessGate from "@/components/AccessGate";
 import TierPromotionCelebration from "@/components/TierPromotionCelebration";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import RouteFallback from "@/components/RouteFallback";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -44,17 +46,21 @@ const Coach = lazy(() => import("./pages/Coach"));
 const WeeklyBriefing = lazy(() => import("./pages/WeeklyBriefing"));
 const AdminModeration = lazy(() => import("./pages/AdminModeration"));
 
-const queryClient = new QueryClient();
-
-const LazyFallback = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" />
-  </div>
-);
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Sensible defaults — most reads are gameification data that can be
+      // cached briefly to keep the app feeling instant on tab switches.
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
-  if (loading) return <LazyFallback />;
+  if (loading) return <RouteFallback />;
   if (!user) return <Navigate to="/landing" replace />;
 
   const path = window.location.pathname;

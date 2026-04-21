@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import EliteUnlockCelebration from "@/components/EliteUnlockCelebration";
 import BrandLogo from "@/components/BrandLogo";
+import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
 // ─── Constants ──────────────────────────────────────────
 // Product IDs from RevenueCatContext
@@ -102,6 +103,7 @@ const Paywall = () => {
   /** Native: RevenueCat purchase (package → fallback to product ID) */
   const handleNativePurchase = async () => {
     if (!rcReady) { toast.info("Loading store… please wait."); return; }
+    hapticImpact("medium");
     setPurchasing(true);
     try {
       // Find any package that matches our known product IDs
@@ -124,12 +126,14 @@ const Paywall = () => {
       
       // Force a subscription check after purchase
       await checkSubscription();
+      hapticNotification("success");
     } catch (e: any) {
       // Check for cancellation to avoid showing error toast
       if (e?.userCancelled || e?.code === "1") {
         console.log("[Paywall] Purchase cancelled by user");
         return;
       }
+      hapticNotification("error");
       toast.error(e?.message || "Purchase failed.");
     } finally {
       setPurchasing(false);
@@ -137,12 +141,15 @@ const Paywall = () => {
   };
 
   const handleRestore = async () => {
+    hapticImpact("light");
     try {
       await restorePurchases();
       await checkSubscription();
       toast.success("Purchases restored.");
+      hapticNotification("success");
     } catch {
       toast.error("Could not restore purchases.");
+      hapticNotification("error");
     }
   };
 

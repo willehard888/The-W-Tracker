@@ -116,25 +116,31 @@ post_install do |installer|
       # Inject Cordova modulemap visibility for Swift targets that import
       # Capacitor (which transitively requires `module Cordova`). Without this
       # the swift-frontend cannot resolve `@import Cordova;` in Xcode 26.4.1.
+      #
+      # IMPORTANT: every value below contains literal whitespace ("Target
+      # Support Files"), so each entry MUST be wrapped in escaped double
+      # quotes. We also avoid splitting the existing setting on whitespace —
+      # that would shred any pre-existing quoted path with spaces. Instead we
+      # check for a stable substring (`cordova_marker`) to decide whether the
+      # injection has already happened.
       if cordova_dependent_targets.include?(target.name)
         # SWIFT_INCLUDE_PATHS — directory containing CapacitorCordova.modulemap
-        unless config.build_settings['SWIFT_INCLUDE_PATHS'].to_s.include?(cordova_modulemap_dir)
-          config.build_settings['SWIFT_INCLUDE_PATHS'] =
-            ((config.build_settings['SWIFT_INCLUDE_PATHS'] || '$(inherited)').to_s.split(' ') +
-             [cordova_modulemap_dir]).uniq.join(' ')
+        existing_inc = (config.build_settings['SWIFT_INCLUDE_PATHS'] || '$(inherited)').to_s
+        unless existing_inc.include?(cordova_marker.split('/').first) && existing_inc.include?('CapacitorCordova"')
+          config.build_settings['SWIFT_INCLUDE_PATHS'] = "#{existing_inc} #{cordova_modulemap_dir_quoted}".strip
         end
         # HEADER_SEARCH_PATHS — fallback so Clang sees Cordova umbrella header
-        unless config.build_settings['HEADER_SEARCH_PATHS'].to_s.include?(cordova_headers_dir)
-          config.build_settings['HEADER_SEARCH_PATHS'] =
-            ((config.build_settings['HEADER_SEARCH_PATHS'] || '$(inherited)').to_s.split(' ') +
-             [cordova_headers_dir]).uniq.join(' ')
+        existing_hdr = (config.build_settings['HEADER_SEARCH_PATHS'] || '$(inherited)').to_s
+        unless existing_hdr.include?('Cordova.framework/Headers"')
+          config.build_settings['HEADER_SEARCH_PATHS'] = "#{existing_hdr} #{cordova_headers_dir_quoted}".strip
         end
-        # OTHER_SWIFT_FLAGS — pass `-Xcc -fmodule-map-file=...` so Clang's
+        # OTHER_SWIFT_FLAGS — pass `-Xcc -fmodule-map-file="..."` so Clang's
         # module loader (invoked transitively by swift-frontend for ObjC
         # imports) can find module Cordova by absolute path even if the
-        # framework hasn't been registered as a Swift module yet.
-        cordova_modulemap_flag = "-Xcc -fmodule-map-file=#{cordova_modulemap_dir}/CapacitorCordova.modulemap"
-        unless config.build_settings['OTHER_SWIFT_FLAGS'].to_s.include?('CapacitorCordova.modulemap')
+        # framework hasn't been registered as a Swift module yet. The path is
+        # quoted so Xcode's flag tokenizer does not split on the space inside
+        # "Target Support Files".
+        unless config.build_settings['OTHER_SWIFT_FLAGS'].to_s.include?(cordova_marker)
           config.build_settings['OTHER_SWIFT_FLAGS'] =
             "#{config.build_settings['OTHER_SWIFT_FLAGS']} #{cordova_modulemap_flag}"
         end

@@ -347,14 +347,16 @@ const EliteFeed = () => {
   const addComment = useMutation({
     mutationFn: async () => {
       if (!user || !showComments || !commentText.trim()) return;
+      const content = buildReplyContent(replyTo, commentText.trim());
       await supabase.from("feed_comments").insert({
         post_id: showComments,
         user_id: user.id,
-        content: commentText.trim(),
+        content,
       });
     },
     onSuccess: () => {
       setCommentText("");
+      setReplyTo(null);
       queryClient.invalidateQueries({ queryKey: ["feed-comments"] });
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
     },

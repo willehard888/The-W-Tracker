@@ -1260,6 +1260,14 @@ const EliteFeed = () => {
                               setReplyTo({ id, username, snippet });
                               setTimeout(() => commentInputRef.current?.focus(), 50);
                             }}
+                            onEdit={async (id, content) => {
+                              await editComment.mutateAsync({ id, content });
+                            }}
+                            onDelete={async (id) => {
+                              await deleteComment.mutateAsync(id);
+                            }}
+                            editingId={editingCommentId}
+                            setEditingId={setEditingCommentId}
                           />
                         ))}
                       </div>

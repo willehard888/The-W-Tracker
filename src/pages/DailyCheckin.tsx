@@ -22,6 +22,7 @@ import { syncStreakWarningNotification } from "@/lib/streak-notifications";
 import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
 import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
+import { ELITE_XP_MULTIPLIER } from "@/lib/xp-constants";
 
 interface ToggleItemProps {
   icon: React.ElementType;

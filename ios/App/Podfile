@@ -2,9 +2,21 @@ require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '15.0'
 
-# Default to dynamic frameworks. Static linkage (:linkage => :static) under
-# Xcode 26 strips ObjC category symbols from CapacitorCordova's archive,
-# which then causes the Capacitor Swift target to fail SwiftCompile.
+# Use dynamic frameworks, as the official Capacitor 8 iOS template does.
+#
+# We deliberately DO NOT pass `:modular_headers => true` on the Capacitor pods
+# below. Under Xcode 26.4.1 that flag forces CocoaPods to emit its own Clang
+# modulemaps for Capacitor/CapacitorCordova, which then conflict with the
+# framework modulemaps shipped inside the pod (`Capacitor.modulemap`,
+# `CapacitorCordova.modulemap`). The result is a SwiftCompile failure on
+#   CAPInstanceDescriptor.h:5 — `error: module 'Cordova' not found`
+# because `@import Cordova;` resolves against the CocoaPods-generated map
+# while the framework header is searched via FRAMEWORK_SEARCH_PATHS.
+#
+# Leaving the default header mode (no `:modular_headers`) matches the template
+# that ships in `@capacitor/cli/assets/ios-pods-template.tar.gz` and lets the
+# pods' own `.modulemap` files (which *do* define module Cordova) drive the
+# import — which is how `@import Cordova;` is meant to resolve.
 use_frameworks!
 
 # workaround to avoid Xcode caching of Pods that requires
@@ -12,8 +24,8 @@ use_frameworks!
 install! 'cocoapods', :disable_input_output_paths => true
 
 def capacitor_pods
-  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios', :modular_headers => true
-  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios', :modular_headers => true
+  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorAppLauncher', :path => '../../node_modules/@capacitor/app-launcher'
   pod 'CapacitorBrowser', :path => '../../node_modules/@capacitor/browser'
@@ -53,10 +65,6 @@ post_install do |installer|
       config.build_settings['SWIFT_ENABLE_EXPLICIT_MODULES'] = 'NO'
       config.build_settings['CLANG_ENABLE_EXPLICIT_MODULES'] = 'NO'
       config.build_settings['SWIFT_VERIFY_EMITTED_MODULE_INTERFACE'] = 'NO'
-
-      # NOTE: We deliberately DO NOT override MACH_O_TYPE here. `use_frameworks!` already
-      # produces dynamic frameworks; forcing `mh_dylib` on a pod CocoaPods packaged as
-      # static creates symbol-resolution drift that masks the real SwiftCompile error.
 
       # Apply the Xcode 26 module-interface verification workaround to EVERY Swift pod
       # target (not just Capacitor + RevenueCat). Cheap, idempotent, prevents drift.

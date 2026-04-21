@@ -230,6 +230,21 @@ const DailyCheckin = () => {
         if (uploadErr) throw new Error(`Photo upload failed: ${uploadErr.message}`);
         const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
         proof_photo_url = urlData.publicUrl;
+
+        // AI moderation gate
+        try {
+          const { data: modData } = await supabase.functions.invoke("moderate-content", {
+            body: { image_url: proof_photo_url, kind: "proof" },
+          });
+          if (modData?.action === "block") {
+            await supabase.storage.from("proof-photos").remove([path]);
+            toast.error(`Proof rejected: ${modData.reason || "violates content policy"}`);
+            setSubmitting(false);
+            return;
+          }
+        } catch (modErr) {
+          console.warn("moderation skipped:", modErr);
+        }
       }
 
       // Insert check-in

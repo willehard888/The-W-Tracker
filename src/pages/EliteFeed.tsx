@@ -210,6 +210,36 @@ const EliteFeed = () => {
         video_url = urlData.publicUrl;
       }
 
+      // AI moderation pre-check (image + text). Videos are not moderated yet.
+      if (image_url || (newPost && newPost.trim().length > 0)) {
+        try {
+          const { data: modData } = await supabase.functions.invoke("moderate-content", {
+            body: {
+              image_url,
+              text: newPost || null,
+              kind: "feed_post",
+            },
+          });
+          if (modData?.action === "block") {
+            // Clean up uploaded files
+            if (imageFile && image_url) {
+              const path = image_url.split("/feed-images/")[1];
+              if (path) await supabase.storage.from("feed-images").remove([path]);
+            }
+            if (videoFile && video_url) {
+              const path = video_url.split("/feed-images/")[1];
+              if (path) await supabase.storage.from("feed-images").remove([path]);
+            }
+            throw new Error(modData.reason || "Post rejected by content policy");
+          }
+        } catch (modErr: any) {
+          if (modErr?.message?.includes("rejected") || modErr?.message?.includes("policy")) {
+            throw modErr;
+          }
+          console.warn("moderation skipped:", modErr);
+        }
+      }
+
       await supabase.from("feed_posts").insert({
         user_id: user.id,
         content: newPost || null,

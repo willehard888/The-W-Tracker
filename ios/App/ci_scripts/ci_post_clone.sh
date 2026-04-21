@@ -88,6 +88,23 @@ fi
 
 echo "ℹ️  CocoaPods $(pod --version)"
 
+# ---------------------------------------------------------------------------
+# Pre-warm CocoaPods CDN cache — fall back to GitHub Specs mirror if CDN flakes
+# ---------------------------------------------------------------------------
+echo "🌐 Verifying CocoaPods CDN reachability..."
+if ! curl -sf --max-time 15 https://cdn.cocoapods.org/CocoaPods-version.yml > /dev/null; then
+  echo "⚠️ CocoaPods CDN unreachable — installing GitHub-based Specs mirror as fallback"
+  pod repo remove trunk 2>&1 || true
+  # Use the legacy GitHub Specs repo as a non-CDN fallback. This is slower but
+  # bypasses cdn.cocoapods.org entirely when Xcode Cloud can't reach it.
+  if ! pod repo add trunk https://github.com/CocoaPods/Specs.git 2>&1; then
+    echo "⚠️ GitHub Specs mirror add failed — re-adding CDN as last resort"
+    pod repo add-cdn trunk https://cdn.cocoapods.org/ 2>&1 || true
+  fi
+else
+  echo "✅ CocoaPods CDN reachable"
+fi
+
 echo "🩹 Patching Capacitor podspec module maps for Xcode 26 compatibility..."
 python3 - <<'PY'
 from pathlib import Path

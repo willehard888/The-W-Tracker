@@ -18,15 +18,15 @@ use_frameworks! :linkage => :static
 install! 'cocoapods', :disable_input_output_paths => true
 
 def capacitor_pods
-  pod 'Capacitor', :path => '../../node_modules/.bun/@capacitor+ios@8.2.0+1a4bec108d739029/node_modules/@capacitor/ios'
-  pod 'CapacitorCordova', :path => '../../node_modules/.bun/@capacitor+ios@8.2.0+1a4bec108d739029/node_modules/@capacitor/ios'
-  pod 'CapacitorApp', :path => '../../node_modules/.bun/@capacitor+app@8.1.0+1a4bec108d739029/node_modules/@capacitor/app'
-  pod 'CapacitorAppLauncher', :path => '../../node_modules/.bun/@capacitor+app-launcher@8.0.1+1a4bec108d739029/node_modules/@capacitor/app-launcher'
-  pod 'CapacitorBrowser', :path => '../../node_modules/.bun/@capacitor+browser@8.0.3+1a4bec108d739029/node_modules/@capacitor/browser'
-  pod 'CapacitorHaptics', :path => '../../node_modules/.bun/@capacitor+haptics@8.0.2+1a4bec108d739029/node_modules/@capacitor/haptics'
-  pod 'CapacitorLocalNotifications', :path => '../../node_modules/.bun/@capacitor+local-notifications@8.0.2+1a4bec108d739029/node_modules/@capacitor/local-notifications'
-  pod 'CapacitorPushNotifications', :path => '../../node_modules/.bun/@capacitor+push-notifications@8.0.2+1a4bec108d739029/node_modules/@capacitor/push-notifications'
-  pod 'RevenuecatPurchasesCapacitor', :path => '../../node_modules/.bun/@revenuecat+purchases-capacitor@12.3.0+1a4bec108d739029/node_modules/@revenuecat/purchases-capacitor'
+  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
+  pod 'CapacitorAppLauncher', :path => '../../node_modules/@capacitor/app-launcher'
+  pod 'CapacitorBrowser', :path => '../../node_modules/@capacitor/browser'
+  pod 'CapacitorHaptics', :path => '../../node_modules/@capacitor/haptics'
+  pod 'CapacitorLocalNotifications', :path => '../../node_modules/@capacitor/local-notifications'
+  pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
+  pod 'RevenuecatPurchasesCapacitor', :path => '../../node_modules/@revenuecat/purchases-capacitor'
 end
 
 target 'App' do

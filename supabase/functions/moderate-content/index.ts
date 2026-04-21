@@ -1,5 +1,5 @@
 // AI moderator for proof photos and Elite Feed posts.
-// Uses Lovable AI Gateway with google/gemini-2.5-flash (vision + tool calling).
+// Optimized: client-thumbnail support, hash cache, severity, fail-closed for images.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -14,14 +14,39 @@ interface ModerationResult {
   confidence: number;
   reason: string;
   action: "allow" | "flag" | "block";
+  severity?: "low" | "medium" | "high" | "critical";
 }
 
 const MODEL = "google/gemini-2.5-flash";
+const AI_TIMEOUT_MS = 8_000;
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+
+// Per-instance ad-hoc rate limit. Backend doesn't have a dedicated rate-limit
+// primitive yet (see internal guidance) — this is a best-effort throttle.
+const rateBuckets = new Map<string, number[]>();
+
+function checkRate(userId: string): { allowed: boolean; retryAfter: number } {
+  const now = Date.now();
+  const arr = (rateBuckets.get(userId) ?? []).filter(
+    (t) => now - t < RATE_LIMIT_WINDOW_MS,
+  );
+  if (arr.length >= RATE_LIMIT_MAX) {
+    const oldest = arr[0];
+    return {
+      allowed: false,
+      retryAfter: Math.ceil((RATE_LIMIT_WINDOW_MS - (now - oldest)) / 1000),
+    };
+  }
+  arr.push(now);
+  rateBuckets.set(userId, arr);
+  return { allowed: true, retryAfter: 0 };
+}
 
 const SYSTEM_PROMPT = `You are the moderation AI for "W Tracker", a discipline & fitness gamification app.
 You review user-submitted proof photos (workouts, cold showers, healthy meals, journals, etc.) and Elite Feed posts.
 
-ALLOW:
+ALLOW (action=allow, severity=low):
 - Workout, gym, sport, run, hike, yoga, combat training, swimming photos
 - Cold shower / sauna / ice bath (clothed or modestly framed)
 - Healthy meals, water bottles, supplement labels
@@ -30,21 +55,26 @@ ALLOW:
 - Screenshots of fitness watches, run apps, calorie counters
 - Motivational text-only posts about discipline
 
-FLAG (action=flag, is_safe=true): low effort, off-topic but harmless (random pets, memes, food unrelated to fitness)
+FLAG (action=flag, is_safe=true, severity=low|medium): low effort, off-topic but harmless (random pets, memes, food unrelated to fitness)
 
-BLOCK (action=block, is_safe=false):
-- Nudity, sexual content, explicit body exposure
-- Violence, gore, weapons aimed at people
-- Hate speech, slurs, discriminatory imagery
-- Drugs, alcohol promotion, smoking
-- Obviously fake / AI-generated proof (detect generic stock-like or clearly synthesized)
-- Spam, advertising external products/services, unrelated promotional content
-- Watermarks of other apps used as fake proof
-- Self-harm content
+BLOCK (action=block, is_safe=false, severity=high|critical):
+- Nudity, sexual content, explicit body exposure (critical)
+- Violence, gore, weapons aimed at people (critical)
+- Hate speech, slurs, discriminatory imagery (critical)
+- Drugs, alcohol promotion, smoking (high)
+- Obviously fake / AI-generated proof (high)
+- Spam, advertising external products/services (high)
+- Watermarks of other apps used as fake proof (high)
+- Self-harm content (critical)
 
-Always return via the report_moderation tool. Be reasonably permissive — fitness content is the norm. Reject only when clearly violating.`;
+Always return via the report_moderation tool. Be reasonably permissive — fitness content is the norm. Reject only when clearly violating. Provide a confidence score reflecting how certain you are.`;
 
-async function callModerator(imageUrl: string | null, text: string | null, kind: string): Promise<ModerationResult> {
+async function callModerator(
+  imageRef: { url?: string | null; b64?: string | null },
+  text: string | null,
+  kind: string,
+  signal: AbortSignal,
+): Promise<ModerationResult> {
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -57,12 +87,14 @@ async function callModerator(imageUrl: string | null, text: string | null, kind:
   } else {
     userContent.push({ type: "text", text: `Content type: ${kind}. Review the image.` });
   }
+  const imageUrl = imageRef.b64 ?? imageRef.url;
   if (imageUrl) {
     userContent.push({ type: "image_url", image_url: { url: imageUrl } });
   }
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
+    signal,
     headers: {
       Authorization: `Bearer ${LOVABLE_API_KEY}`,
       "Content-Type": "application/json",
@@ -108,8 +140,9 @@ async function callModerator(imageUrl: string | null, text: string | null, kind:
                 confidence: { type: "number", minimum: 0, maximum: 1 },
                 reason: { type: "string" },
                 action: { type: "string", enum: ["allow", "flag", "block"] },
+                severity: { type: "string", enum: ["low", "medium", "high", "critical"] },
               },
-              required: ["is_safe", "categories", "confidence", "reason", "action"],
+              required: ["is_safe", "categories", "confidence", "reason", "action", "severity"],
               additionalProperties: false,
             },
           },
@@ -137,6 +170,7 @@ async function callModerator(imageUrl: string | null, text: string | null, kind:
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const startedAt = Date.now();
 
   try {
     const authHeader = req.headers.get("Authorization");
@@ -163,9 +197,35 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Ad-hoc per-instance throttle. Best-effort only.
+    const rate = checkRate(user.id);
+    if (!rate.allowed) {
+      return new Response(
+        JSON.stringify({
+          action: "block",
+          is_safe: false,
+          reason: "rate_limited",
+          retry_after: rate.retryAfter,
+        }),
+        {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
     const body = await req.json();
-    const { image_url, text, kind, content_id } = body as {
+    const {
+      image_url,
+      image_b64,
+      image_hash,
+      text,
+      kind,
+      content_id,
+    } = body as {
       image_url?: string | null;
+      image_b64?: string | null;
+      image_hash?: string | null;
       text?: string | null;
       kind: "proof" | "feed_post";
       content_id?: string | null;
@@ -177,51 +237,184 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (!image_url && !text) {
-      // Nothing to moderate, allow.
-      return new Response(JSON.stringify({ action: "allow", is_safe: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
-    let result: ModerationResult;
-    try {
-      result = await callModerator(image_url ?? null, text ?? null, kind);
-    } catch (e: any) {
-      console.error("moderation failed:", e?.message);
-      // Fail-open: don't block users when moderator itself fails.
+    const hasImage = !!(image_b64 || image_url);
+    if (!hasImage && !text) {
       return new Response(
-        JSON.stringify({ action: "allow", is_safe: true, error: e?.message ?? "moderation_failed" }),
+        JSON.stringify({ action: "allow", is_safe: true, severity: "low" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    // Persist result with service role
     const adminClient = createClient(supabaseUrl, supabaseService);
+
+    // 1. Cache lookup by image hash
+    if (image_hash) {
+      const { data: cached } = await adminClient
+        .from("moderation_cache")
+        .select("action, categories, confidence, severity, reason")
+        .eq("image_hash", image_hash)
+        .maybeSingle();
+
+      if (cached) {
+        const latency = Date.now() - startedAt;
+        await adminClient.from("content_moderations").insert({
+          content_type: kind,
+          content_id: content_id ?? null,
+          image_url: image_url ?? null,
+          text_content: text ?? null,
+          is_safe: cached.action !== "block",
+          categories: cached.categories,
+          confidence: cached.confidence,
+          reason: cached.reason,
+          action: cached.action,
+          severity: cached.severity,
+          model: MODEL,
+          cache_hit: true,
+          latency_ms: latency,
+        });
+
+        return new Response(
+          JSON.stringify({
+            action: cached.action,
+            is_safe: cached.action !== "block",
+            categories: cached.categories,
+            confidence: cached.confidence,
+            severity: cached.severity,
+            reason: cached.reason,
+            cache_hit: true,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
+    // 2. AI call with timeout
+    let result: ModerationResult;
+    const controller = new AbortController();
+    const timeoutHandle = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+
+    try {
+      result = await callModerator(
+        { url: image_url ?? null, b64: image_b64 ?? null },
+        text ?? null,
+        kind,
+        controller.signal,
+      );
+    } catch (e: any) {
+      clearTimeout(timeoutHandle);
+      console.error("moderation failed:", e?.message);
+      // Fail-CLOSED for images on proofs/feed posts.
+      if (hasImage) {
+        const latency = Date.now() - startedAt;
+        await adminClient.from("content_moderations").insert({
+          content_type: kind,
+          content_id: content_id ?? null,
+          image_url: image_url ?? null,
+          text_content: text ?? null,
+          is_safe: false,
+          categories: [],
+          confidence: 0,
+          reason: "moderation_unavailable_retry",
+          action: "block",
+          severity: "medium",
+          model: MODEL,
+          cache_hit: false,
+          latency_ms: latency,
+        });
+        return new Response(
+          JSON.stringify({
+            action: "block",
+            is_safe: false,
+            severity: "medium",
+            reason: "moderation_unavailable_retry",
+            categories: [],
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+      // Fail-OPEN for text only.
+      return new Response(
+        JSON.stringify({
+          action: "allow",
+          is_safe: true,
+          severity: "low",
+          error: e?.message ?? "moderation_failed",
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    clearTimeout(timeoutHandle);
+
+    // 3. Confidence-based routing — low-confidence blocks → admin queue, allow content through as flag
+    let finalAction = result.action;
+    if (result.action === "block" && result.confidence < 0.85) {
+      finalAction = "flag";
+      await adminClient.from("moderation_queue").insert({
+        content_type: kind,
+        content_id: content_id ?? null,
+        image_url: image_url ?? null,
+        text_content: text ?? null,
+        user_id: user.id,
+        ai_action: "block",
+        ai_confidence: result.confidence,
+        ai_categories: result.categories,
+        ai_reason: result.reason,
+        severity: result.severity,
+        status: "pending",
+      });
+    }
+
+    // 4. Persist cache
+    if (image_hash) {
+      await adminClient.from("moderation_cache").upsert({
+        image_hash,
+        action: finalAction,
+        categories: result.categories,
+        confidence: result.confidence,
+        severity: result.severity,
+        reason: result.reason,
+      });
+    }
+
+    // 5. Persist moderation log
+    const latency = Date.now() - startedAt;
     await adminClient.from("content_moderations").insert({
       content_type: kind,
       content_id: content_id ?? null,
       image_url: image_url ?? null,
       text_content: text ?? null,
-      is_safe: result.is_safe,
+      is_safe: finalAction !== "block",
       categories: result.categories,
       confidence: result.confidence,
       reason: result.reason,
-      action: result.action,
+      action: finalAction,
+      severity: result.severity,
       model: MODEL,
+      cache_hit: false,
+      latency_ms: latency,
     });
 
-    // Enforcement: if blocked and content_id given, delete/flag the content
-    if (result.action === "block" && content_id) {
-      if (kind === "feed_post") {
-        await adminClient.from("feed_posts").delete().eq("id", content_id).eq("user_id", user.id);
-      }
-      // For proofs we don't auto-delete the check-in; just return block so client doesn't submit.
+    // 6. Enforcement
+    if (finalAction === "block" && content_id && kind === "feed_post") {
+      await adminClient.from("feed_posts").delete().eq("id", content_id).eq("user_id", user.id);
     }
 
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        action: finalAction,
+        is_safe: finalAction !== "block",
+        categories: result.categories,
+        confidence: result.confidence,
+        severity: result.severity,
+        reason: result.reason,
+        cache_hit: false,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (e: any) {
     console.error("moderate-content error:", e);
     return new Response(JSON.stringify({ error: e?.message ?? "Unknown error" }), {

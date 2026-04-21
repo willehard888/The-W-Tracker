@@ -169,6 +169,7 @@ export type Database = {
       content_moderations: {
         Row: {
           action: string
+          cache_hit: boolean
           categories: string[]
           confidence: number
           content_id: string | null
@@ -177,12 +178,15 @@ export type Database = {
           id: string
           image_url: string | null
           is_safe: boolean
+          latency_ms: number | null
           model: string
           reason: string | null
+          severity: string | null
           text_content: string | null
         }
         Insert: {
           action: string
+          cache_hit?: boolean
           categories?: string[]
           confidence?: number
           content_id?: string | null
@@ -191,12 +195,15 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_safe: boolean
+          latency_ms?: number | null
           model?: string
           reason?: string | null
+          severity?: string | null
           text_content?: string | null
         }
         Update: {
           action?: string
+          cache_hit?: boolean
           categories?: string[]
           confidence?: number
           content_id?: string | null
@@ -205,8 +212,10 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_safe?: boolean
+          latency_ms?: number | null
           model?: string
           reason?: string | null
+          severity?: string | null
           text_content?: string | null
         }
         Relationships: []
@@ -563,6 +572,90 @@ export type Database = {
           name?: string
           starts_at?: string
           status?: Database["public"]["Enums"]["leaderboard_season_status"]
+        }
+        Relationships: []
+      }
+      moderation_cache: {
+        Row: {
+          action: string
+          categories: string[]
+          confidence: number
+          created_at: string
+          image_hash: string
+          reason: string | null
+          severity: string | null
+        }
+        Insert: {
+          action: string
+          categories?: string[]
+          confidence?: number
+          created_at?: string
+          image_hash: string
+          reason?: string | null
+          severity?: string | null
+        }
+        Update: {
+          action?: string
+          categories?: string[]
+          confidence?: number
+          created_at?: string
+          image_hash?: string
+          reason?: string | null
+          severity?: string | null
+        }
+        Relationships: []
+      }
+      moderation_queue: {
+        Row: {
+          ai_action: string
+          ai_categories: string[]
+          ai_confidence: number
+          ai_reason: string | null
+          content_id: string | null
+          content_type: string
+          created_at: string
+          id: string
+          image_url: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity: string | null
+          status: string
+          text_content: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_action: string
+          ai_categories?: string[]
+          ai_confidence?: number
+          ai_reason?: string | null
+          content_id?: string | null
+          content_type: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string | null
+          status?: string
+          text_content?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_action?: string
+          ai_categories?: string[]
+          ai_confidence?: number
+          ai_reason?: string | null
+          content_id?: string | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string | null
+          status?: string
+          text_content?: string | null
+          user_id?: string
         }
         Relationships: []
       }

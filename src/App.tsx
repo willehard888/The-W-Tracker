@@ -42,6 +42,7 @@ const AppleUsername = lazy(() => import("./pages/AppleUsername"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Coach = lazy(() => import("./pages/Coach"));
 const WeeklyBriefing = lazy(() => import("./pages/WeeklyBriefing"));
+const AdminModeration = lazy(() => import("./pages/AdminModeration"));
 
 const queryClient = new QueryClient();
 
@@ -103,6 +104,7 @@ const AppRoutes = () => {
           <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
           <Route path="/coach" element={<ProtectedRoute><Coach /></ProtectedRoute>} />
           <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
+          <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
           <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/reset-password" element={<ResetPassword />} />

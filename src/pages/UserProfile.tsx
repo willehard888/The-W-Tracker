@@ -9,6 +9,9 @@ import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
 import AmbientParticles from "@/components/AmbientParticles";
+import HeadToHead from "@/components/HeadToHead";
+import ProfileActivityPulse from "@/components/ProfileActivityPulse";
+import FeaturedBadgeHero from "@/components/FeaturedBadgeHero";
 import { getTierConfig } from "@/lib/status-tiers";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -105,7 +108,39 @@ const UserProfile = () => {
     enabled: !!userId,
   });
 
-  // Friendship status
+  // Featured badge for the hero crown
+  const { data: featuredBadge } = useQuery({
+    queryKey: ["user-featured-badge", profile?.featured_badge_id],
+    enabled: !!profile?.featured_badge_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("badges")
+        .select("name, icon, rarity")
+        .eq("id", profile!.featured_badge_id!)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  // Global rank — how many users are ahead on rank_score
+  const { data: globalRank } = useQuery({
+    queryKey: ["user-global-rank", userId, profile?.rank_score],
+    enabled: !!userId && !!profile,
+    queryFn: async () => {
+      const { count: aheadCount } = await supabase
+        .from("profiles")
+        .select("user_id", { count: "exact", head: true })
+        .gt("rank_score", profile!.rank_score);
+      const { count: totalCount } = await supabase
+        .from("profiles")
+        .select("user_id", { count: "exact", head: true });
+      return {
+        rank: (aheadCount || 0) + 1,
+        total: totalCount || 0,
+      };
+    },
+    staleTime: 60_000,
+  });
   const { data: friendship } = useQuery({
     queryKey: ["friendship", myProfile?.user_id, userId],
     queryFn: async () => {
@@ -278,10 +313,49 @@ const UserProfile = () => {
             <span className="text-[10px] text-muted-foreground">· {tier.percentile}</span>
           </motion.div>
 
+          {/* Activity pulse — live signal */}
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-3 flex justify-center"
+          >
+            <ProfileActivityPulse userId={userId!} />
+          </motion.div>
+
+          {/* Featured badge — title badge */}
+          {featuredBadge && (
+            <div className="mt-3 flex justify-center">
+              <FeaturedBadgeHero
+                name={featuredBadge.name}
+                icon={featuredBadge.icon}
+                rarity={featuredBadge.rarity as any}
+              />
+            </div>
+          )}
+
+          {/* Global rank position */}
+          {globalRank && globalRank.total > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-gold/25 bg-gold/5"
+            >
+              <Medal size={11} className="text-gold" />
+              <span className="text-[10px] font-black tracking-wider text-gold">
+                #{globalRank.rank.toLocaleString()}
+              </span>
+              <span className="text-[10px] text-muted-foreground font-semibold">
+                of {globalRank.total.toLocaleString()}
+              </span>
+            </motion.div>
+          )}
+
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
+            transition={{ delay: 0.45 }}
             className="mt-4 flex items-center justify-center gap-4 text-xs"
           >
             <div className="flex items-center gap-1.5">
@@ -385,6 +459,26 @@ const UserProfile = () => {
                 toast.error("Failed to send challenge");
               }
               setCreating(false);
+            }}
+          />
+        )}
+
+        {/* Head-to-head comparison (only when viewing another user) */}
+        {!isOwnProfile && myProfile && (
+          <HeadToHead
+            me={{
+              username: myProfile.username,
+              xp: myProfile.xp,
+              streak: myProfile.streak,
+              level: myProfile.level,
+              rank_score: Number(myProfile.rank_score) || 0,
+            }}
+            them={{
+              username: profile.username,
+              xp: profile.xp,
+              streak: profile.streak,
+              level: profile.level,
+              rank_score: Number(profile.rank_score) || 0,
             }}
           />
         )}

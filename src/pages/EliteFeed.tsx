@@ -874,35 +874,37 @@ const EliteFeed = () => {
                 </div>
               )}
 
-              {/* Actions */}
-              <div className="flex items-center gap-1 px-4 py-3 mt-1">
+              {/* Actions — themed for ranking system */}
+              <div className="flex items-center gap-1 px-3 py-2.5 mt-1 border-t border-border/40">
                 <button
                   onClick={() => toggleReaction.mutate(post.id)}
+                  aria-label={liked ? "Remove fire" : "Give fire"}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95",
+                    "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
                     liked
-                      ? "bg-gold/10 text-gold"
-                      : "text-muted-foreground hover:bg-secondary"
+                      ? "bg-streak-orange/15 text-streak-orange"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                   )}
                 >
-                  <Heart
-                    size={15}
-                    fill={liked ? "currentColor" : "none"}
-                    className={cn(liked && "animate-scale-in")}
-                  />
-                  {post.likes_count > 0 && post.likes_count}
+                  {liked ? (
+                    <Flame size={15} fill="currentColor" className="animate-scale-in" />
+                  ) : (
+                    <Heart size={15} />
+                  )}
+                  <span className="tabular-nums">{post.likes_count > 0 ? post.likes_count : ""}</span>
                 </button>
                 <button
-                  onClick={() => setShowComments(showComments === post.id ? null : post.id)}
+                  onClick={() => { hapticSelection(); setShowComments(showComments === post.id ? null : post.id); }}
+                  aria-label="Toggle comments"
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95",
+                    "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
                     showComments === post.id
-                      ? "bg-secondary text-foreground"
-                      : "text-muted-foreground hover:bg-secondary"
+                      ? "bg-gold/10 text-gold"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                   )}
                 >
-                  <MessageCircle size={15} />
-                  {post.comments_count > 0 && post.comments_count}
+                  <MessageCircle size={15} fill={showComments === post.id ? "currentColor" : "none"} />
+                  <span className="tabular-nums">{post.comments_count > 0 ? post.comments_count : ""}</span>
                 </button>
 
                 {/* Kudos button - only for non-own posts, elite users */}
@@ -910,38 +912,49 @@ const EliteFeed = () => {
                   <button
                     onClick={() => {
                       if (!hasGivenKudos && kudosRemaining <= 0) {
-                        toast.error("Olet käyttänyt molemmat kudosit tässä kuussa");
+                        toast.error("You've used both kudos this month");
                         return;
                       }
+                      hapticImpact("medium");
                       giveKudos.mutate({ postId: post.id, receiverId: post.user_id });
                     }}
                     disabled={giveKudos.isPending}
+                    aria-label={hasGivenKudos ? "Remove kudos" : "Give kudos"}
                     className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95",
+                      "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
                       hasGivenKudos
-                        ? "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))]"
+                        ? "bg-purple/15 text-purple ring-1 ring-purple/30"
                         : kudosRemaining > 0
-                          ? "text-muted-foreground hover:bg-[hsl(var(--purple))]/10 hover:text-[hsl(var(--purple))]"
+                          ? "text-muted-foreground hover:bg-purple/10 hover:text-purple"
                           : "text-muted-foreground/40 cursor-not-allowed"
                     )}
-                    title={`${kudosRemaining}/2 kudos jäljellä tässä kuussa`}
+                    title={`${kudosRemaining}/2 kudos remaining this month`}
                   >
                     <Award
                       size={15}
                       fill={hasGivenKudos ? "currentColor" : "none"}
                       className={cn(hasGivenKudos && "animate-scale-in")}
                     />
-                    {(post.kudos_count || 0) > 0 && (post.kudos_count || 0)}
+                    <span className="tabular-nums">{(post.kudos_count || 0) > 0 ? post.kudos_count : ""}</span>
                   </button>
                 )}
 
                 {/* Show kudos count for own posts */}
                 {isOwn && (post.kudos_count || 0) > 0 && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-[hsl(var(--purple))]">
+                  <div className="flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold text-purple bg-purple/10">
                     <Award size={15} fill="currentColor" />
-                    {post.kudos_count}
+                    <span className="tabular-nums">{post.kudos_count}</span>
                   </div>
                 )}
+
+                {/* Engagement summary on the right */}
+                <div className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider">
+                  {(post.likes_count || 0) + (post.comments_count || 0) + (post.kudos_count || 0) === 0 ? (
+                    <span>Be first</span>
+                  ) : (
+                    <span>{(post.likes_count || 0) + (post.comments_count || 0) + (post.kudos_count || 0)} signals</span>
+                  )}
+                </div>
               </div>
 
               {/* Comments Section */}

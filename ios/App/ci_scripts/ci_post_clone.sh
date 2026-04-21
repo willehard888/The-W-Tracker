@@ -130,7 +130,7 @@ export COCOAPODS_DISABLE_STATS=1
 
 pod_install_with_retry() {
   local attempt=1
-  local max_attempts=3
+  local max_attempts=4
   local repo_update_flag=""
 
   while [[ $attempt -le $max_attempts ]]; do
@@ -146,6 +146,13 @@ pod_install_with_retry() {
       repo_update_flag="--repo-update"
     fi
 
+    # On attempt 3, swap to GitHub Specs mirror — CDN is clearly down
+    if [[ $attempt -eq 3 ]]; then
+      echo "🔀 Swapping trunk repo to GitHub Specs mirror (CDN appears down)..."
+      pod repo remove trunk 2>&1 || true
+      pod repo add trunk https://github.com/CocoaPods/Specs.git 2>&1 || true
+    fi
+
     # Exponential backoff
     local sleep_seconds=$((attempt * 5))
     echo "⏳ Sleeping ${sleep_seconds}s before retry..."
@@ -154,10 +161,9 @@ pod_install_with_retry() {
   done
 
   # Last resort: re-add the trunk CDN explicitly and try once more
-  echo "🆘 Re-adding trunk CDN repo manually..."
+  echo "🆘 Final attempt — re-adding CDN trunk repo..."
   pod repo remove trunk 2>&1 || true
   pod repo add-cdn trunk https://cdn.cocoapods.org/ 2>&1 || true
-  echo "📦 Final pod install attempt with fresh CDN..."
   pod install --repo-update 2>&1
 }
 

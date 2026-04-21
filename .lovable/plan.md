@@ -1,86 +1,80 @@
 
-Buildin nykyinen vika näyttää olevan kahden iOS-puolen ongelman yhdistelmä, ei enää npm-lockfile.
 
-## Mitä korjataan
+## Fix Xcode Cloud Build — `SwiftCompile failed (exit 65)` in Capacitor
 
-### 1. Korjataan Podfile-strategia kokonaan
-Nykyinen Podfile tekee ristiriitaisen asian:
-- se pakottaa `:modular_headers => true`
-- mutta samalla poistaa Capacitorin `module_map`-määrittelyt
+### Root cause
 
-Tämä on todennäköinen syy virheeseen:
-`CapacitorCordova does not define modules`
+Xcode Cloud uses **Xcode 26**, which enables Swift **explicit modules** by default. The project uses `use_frameworks! :linkage => :static` and links the Objective-C `CapacitorCordova` pod into the Swift `Capacitor` pod. Under explicit modules + static frameworks, the `Capacitor` Swift module fails to compile against the `CapacitorCordova` ObjC headers — exactly matching the screenshot:
 
-Teen nämä muutokset:
-- poistan `patch_capacitor_module_maps`-logiikan Podfilesta
-- poistan myös saman podspec-muokkauksen CI-skripteistä
-- vaihdan Podfileen yhden selkeän, pysyvän modulaarisen asetuksen koko pod-resoluutiolle (`use_modular_headers!`)
-- pidän nykyiset Xcode 26 -yhteensopivuuskorjaukset (`SWIFT_ENABLE_EXPLICIT_MODULES = NO`, `CLANG_ENABLE_EXPLICIT_MODULES = NO`, MetalToolchain-polun siivous)
-- varmistan, että Capacitor-, CapacitorCordova- ja RevenueCat-podit integroituvat samalla tavalla sekä `cap sync`-vaiheessa että suorassa `pod install` -vaiheessa
+- ❌ `Command SwiftCompile failed` inside the **Capacitor** target
+- ⚠️ `'NSDictionary+CordovaPreferences.o' has no symbols` / `'CDVPlugin+Resources.o' has no symbols` (CapacitorCordova not emitting a usable module)
+- ⚠️ `[CP] Copy Pods Resources` script phase has no declared outputs (cosmetic, but Xcode 26 escalates it)
 
-Tavoite: `npx cap sync ios` ei enää kaadu analysointivaiheessa ennen varsinaista CI:n pod-installia.
+The current Podfile already sets `SWIFT_ENABLE_EXPLICIT_MODULES = NO` and `CLANG_ENABLE_EXPLICIT_MODULES = NO` on pod targets, but **does not** apply the same to the App target's xcconfig that `xcodebuild archive` actually uses on CI, and is missing the documented Xcode 26 workaround flag for the static-framework + Cordova combo.
 
-### 2. Yhtenäistetään CocoaPods fallback kunnolla
-Nykyinen retry-logiikka auttaa vain osittain. Korjaan sen niin, että kaikki iOS-skriptit käyttävät samaa vakaata polkua:
+### What I will change
 
-- ensin tarkistus, vastaako CocoaPods CDN
-- jos ei vastaa, lisätään GitHub Specs -fallback
-- `pod install` ajetaan retry-loopilla ilman `--repo-update` ensin
-- vasta epäonnistumisen jälkeen `--repo-update`
-- viimeisillä yrityksillä vaihto fallback-repoon
-- lopuksi selkeä fail only if all options are exhausted
+**1. `ios/App/Podfile` — patch the `post_install` block**
 
-Päivitettävät tiedostot:
-- `ios/App/ci_scripts/ci_post_clone.sh`
-- `ios/App/ci_scripts/ci_pre_xcodebuild.sh`
-- `scripts/ios-clean.sh`
+- Force-disable explicit modules **everywhere** (pod targets AND the user App target's xcconfig — both Debug and Release).
+- Add `OTHER_SWIFT_FLAGS = "$(inherited) -Xfrontend -no-verify-emitted-module-interface"` to the `Capacitor` and `RevenuecatPurchasesCapacitor` pods. This is the official workaround for Swift module-interface verification failures under Xcode 26 with static frameworks.
+- Set `SWIFT_INSTALL_OBJC_HEADER = NO` on the `CapacitorCordova` target so the ObjC-only pod stops trying to emit a (non-existent) Swift header that Xcode 26 then tries to re-import.
+- Declare an output path on the `[CP] Copy Pods Resources` script phase via `installer.pods_project` to silence the script-phase warning that Xcode Cloud sometimes treats as an error in strict mode.
+- Bump explicit `BUILD_LIBRARY_FOR_DISTRIBUTION = NO` on all pod targets (incompatible with our static-framework setup and silently flipped on by Xcode 26).
 
-### 3. Poistetaan kovat absoluuttiset polut
-Skripteissä on nyt kovakoodattuja polkuja kuten:
-- `/Volumes/workspace/repository/...`
-- `/dev-server/...`
+**2. `ios/App/App.xcodeproj/project.pbxproj` — App target build settings**
 
-Ne tekevät skripteistä hauraita ja voivat rikkoa CI:n tai paikallisen buildin eri ympäristöissä.
+Add to both Debug and Release configs (504EC3171FED…, 504EC3181FED…):
+- `SWIFT_ENABLE_EXPLICIT_MODULES = NO`
+- `CLANG_ENABLE_EXPLICIT_MODULES = NO`
+- `OTHER_SWIFT_FLAGS = "$(inherited) -Xfrontend -no-verify-emitted-module-interface"`
+- `SWIFT_VERIFY_EMITTED_MODULE_INTERFACE = NO`
 
-Teen niistä dynaamiset:
-- kaikki polut johdetaan `SCRIPT_DIR` / `ROOT_DIR` / `IOS_APP_DIR` muuttujista
-- sama skripti toimii Xcode Cloudissa, Lovablessa ja paikallisella Macilla ilman erillisiä polkuja
+These survive even when `pod install` regenerates xcconfigs, because they live on the App target itself.
 
-### 4. Korjataan `ios-clean.sh` oikeasti toimivaksi
-`ios-clean.sh` viittaa Swift package -manifestiin, jota projektipuussa ei tällä hetkellä näy (`ios/App/CapApp-SPM/Package.swift`).
+**3. `ios/App/ci_scripts/ci_post_clone.sh` — strengthen the patcher**
 
-Korjaan skriptin niin, että se:
-- ei kaadu puuttuvaan manifestiin
-- tarkistaa ensin löytyykö oikea SPM-manifesti / Package.resolved-polku
-- generoi tai validoi `Package.resolved` vain jos siihen on oikeasti tarvittavat tiedostot
-- avaa lopuksi Xcoden edelleen automaattisesti
+Extend the existing Python patcher to also:
+- Inject `SWIFT_VERIFY_EMITTED_MODULE_INTERFACE = NO` into every generated `*.xcconfig`.
+- Strip any stray `-verify-emitted-module-interface` flag the Capacitor pod injects.
+- Verify by grepping the resulting `Pods-App.release.xcconfig` and failing fast (with a clear message) if explicit modules are still enabled.
 
-Tämä estää paikallisen “all-in-one” komennon hajoamisen myöhemmin.
+**4. `ios/App/ci_scripts/ci_pre_xcodebuild.sh` — add a sanity gate**
 
-## Toteutusjärjestys
+Right before xcodebuild runs, fail with a clear message if any xcconfig still contains `SWIFT_ENABLE_EXPLICIT_MODULES = YES` — turns a 30-min compile failure into a 5-second early exit with actionable output.
 
-1. Siivotaan Podfile
-2. Poistetaan podspec-patchit CI-skripteistä
-3. Yhtenäistetään CocoaPods fallback + retry kaikkiin 3 skriptiin
-4. Korvataan absoluuttiset polut dynaamisilla
-5. Korjataan `ios-clean.sh` Package.resolved-logiikka
-6. Varmistetaan, että skriptit tarkistavat oikeat artefaktit:
-   - `Pods/Local Podspecs/Capacitor.podspec.json`
-   - `Pods/Local Podspecs/CapacitorCordova.podspec.json`
-   - `Pods/Target Support Files/CapacitorCordova`
-   - `Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig`
+### Verification path
 
-## Odotettu lopputulos
+After deploy:
+```text
+git pull
+bash scripts/ios-rebuild.sh        # local dry-run on macOS
+```
+If local archive passes, Xcode Cloud will too — the same patcher runs there.
 
-Tämän jälkeen buildin pitäisi edetä näin:
-- `npm ci` toimii lockfilen kanssa
-- `npm run build` onnistuu
-- `npx cap sync ios` ei enää kaadu `CapacitorCordova does not define modules` -virheeseen
-- `ci_post_clone.sh` kestää myös CDN-katkokset
-- sama logiikka toimii sekä Xcode Cloudissa että paikallisesti
+Expected Xcode Cloud log signature on success:
+```text
+✅ Pods installed successfully
+✅ explicit modules disabled in Pods-App.release.xcconfig
+** ARCHIVE SUCCEEDED **
+```
 
-## Tekniset tiedostot
-- `ios/App/Podfile`
-- `ios/App/ci_scripts/ci_post_clone.sh`
-- `ios/App/ci_scripts/ci_pre_xcodebuild.sh`
-- `scripts/ios-clean.sh`
+### Files touched
+
+```text
+ios/App/Podfile                              (post_install hardened)
+ios/App/App.xcodeproj/project.pbxproj        (4 build settings × 2 configs)
+ios/App/ci_scripts/ci_post_clone.sh          (patcher extended)
+ios/App/ci_scripts/ci_pre_xcodebuild.sh      (sanity gate added)
+```
+
+No app code, JS, or Capacitor plugin code changes. No `pod install` output changes locally — only build settings.
+
+### Risk & rollback
+
+Low risk: all changes are build-time settings scoped to iOS/CocoaPods. No runtime behavior change. Rollback = revert these four files.
+
+### Out of scope (deferred)
+
+- The daily check-in 24h lock screen — tracked separately, not bundled into this CI fix to keep the diff reviewable.
+

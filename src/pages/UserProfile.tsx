@@ -313,10 +313,49 @@ const UserProfile = () => {
             <span className="text-[10px] text-muted-foreground">· {tier.percentile}</span>
           </motion.div>
 
+          {/* Activity pulse — live signal */}
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-3 flex justify-center"
+          >
+            <ProfileActivityPulse userId={userId!} />
+          </motion.div>
+
+          {/* Featured badge — title badge */}
+          {featuredBadge && (
+            <div className="mt-3 flex justify-center">
+              <FeaturedBadgeHero
+                name={featuredBadge.name}
+                icon={featuredBadge.icon}
+                rarity={featuredBadge.rarity as any}
+              />
+            </div>
+          )}
+
+          {/* Global rank position */}
+          {globalRank && globalRank.total > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-gold/25 bg-gold/5"
+            >
+              <Medal size={11} className="text-gold" />
+              <span className="text-[10px] font-black tracking-wider text-gold">
+                #{globalRank.rank.toLocaleString()}
+              </span>
+              <span className="text-[10px] text-muted-foreground font-semibold">
+                of {globalRank.total.toLocaleString()}
+              </span>
+            </motion.div>
+          )}
+
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
+            transition={{ delay: 0.45 }}
             className="mt-4 flex items-center justify-center gap-4 text-xs"
           >
             <div className="flex items-center gap-1.5">

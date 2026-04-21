@@ -1,101 +1,114 @@
 
 
-## Plan: Hard entry paywall + earned Elite status
+# Suunnitelma: Tee statuksesta oikeasti koukuttava
 
-### New mental model
-
-| Old | New |
-|---|---|
-| App = free, **Elite = paid €4.99/mo** | App = **paid €4.99/mo**, **Elite = earned in-app status** |
-| 9-day trial → blocks features | 7-day trial → blocks **entire app** |
-| `is_elite` = subscription flag | `is_elite` = subscription flag (renamed mentally to "Subscriber"); **Elite tier** = `status_tier = 'elite'` (already exists, top 5%) |
-
-The `status_tier` enum already has an `elite` rank earned via `update_status_tier()` (Top 5% percentile + 14 days activity). We make this the **real** Elite — visible status, badges, profile glow. The paid tier becomes simply "**Member**" (required to use the app).
+Statussysteemi on jo olemassa (7 tieriä, RankPressureCard, TierPromotionCelebration, RoadToElite). Mutta se ei vielä **koukuta** — käyttäjä ei tiedä *milloin* hän putoaa, *kuka* on hengittämässä niskaan, eikä saa **mikrovoittoja** päivittäin. Korjataan nämä viidellä uudella mekanismilla + bugi.
 
 ---
 
-### 1. Trial: 9 → 7 days
-- `src/hooks/use-trial-access.ts`: change `TRIAL_DURATION_DAYS = 9` → `7`.
-- DB function `has_active_access`: change `interval '9 days'` → `'7 days'`.
+## 0. Bugikorjaus (pakollinen)
+`src/pages/Index.tsx` rivit 104–107 sisältävät irrallista JSX:ää funktion rungossa ennen `if (!profile) return null` -lausetta. Tämä rikkoo buildin. Poistetaan duplikaatti — `<RoadToElite compact />` renderöidään uudessa paikassa returnin sisällä alla kuvatun layoutin osana.
 
-### 2. Hard entry paywall (no skip)
-- `src/components/AccessGate.tsx`: keep current logic — already redirects to `/paywall` when trial expires. No code change needed beyond the 7-day update; the gate is already hard.
-- `src/pages/Paywall.tsx`: 
-  - Rewrite copy from "Go Elite / Unlock Elite features" → **"Membership required"** / "Continue your journey".
-  - Hero: replace `Go Elite` headline with **"Become a Member"** + subtitle "€4.99/mo to unlock the app and start your Road to Elite".
-  - Features list reframed as **what the app gives you** (daily check-ins, battles, leaderboard, AI Coach, Elite Feed access *if earned*), not as "Elite perks".
-  - Keep the €4.99/mo + 7-day trial CTA.
-  - Remove the "Already Elite ✓" celebration screen — replace with **"Membership active"** confirmation that links to profile.
+---
 
-### 3. "Road to Elite" — earned status UI
-New component `src/components/RoadToElite.tsx` shown on **Profile** and **Index** for any subscribed user whose `status_tier` is below `elite`. It shows the 3 concrete requirements with live progress bars:
+## 1. Tier Demotion Risk — "you're about to lose your status"
+**Mikä koukuttaa:** menettämisen pelko on vahvempi kuin saavuttamisen halu.
 
+Uusi hook `src/hooks/use-tier-risk.ts`:
+- Laskee `daysUntilDemotion` perustuen `streak`-deadlineen ja viimeiseen check-iniin.
+- Vertaa nykyistä `rank_score`a tier-kynnykseen → palauttaa `pointsAboveCutoff`.
+- Tila: `safe` / `pressure` (alle 20% marginaali) / `danger` (< 24h streak deadline TAI alle 5 pistettä cutoffista).
+
+Uusi komponentti `src/components/TierRiskBanner.tsx`:
+- Näytetään `Index`-sivun yläosassa kun status `pressure` tai `danger`.
+- `danger`-tilassa: pulssaava punainen reuna, countdown-timer, "Lose **Performer** in 4h 32m" + CTA "Save your status".
+- `pressure`-tilassa: kullanvärinen, "Only **3.2 pts** above demotion line".
+
+## 2. Live Rivals — "kuka on perässäsi ja edessäsi"
+**Mikä koukuttaa:** konkreettiset ihmiset, ei abstrakti %-luku.
+
+Uusi komponentti `src/components/LiveRivals.tsx` (Index + Profile):
+- Hakee `profiles`-taulusta 1 käyttäjä rank-asteikolla yläpuolella + 1 alapuolella.
+- Näyttää: `StatusAvatar` + username + delta ("3.4 pts ahead" / "1.2 pts behind").
+- Alapuolella oleva korostetaan punaisella varjostuksella + "🔥 catching up" jos delta < 5.
+- Tap → `/u/:username` (jo olemassa).
+- Päivittyy joka kerta kun Index ladataan + react-query 30s staleTime.
+
+## 3. Daily Status Pulse — mikrokoukku
+**Mikä koukuttaa:** päivittäinen "miten suoriuduin tänään?" -palkinto.
+
+Uusi komponentti `src/components/DailyStatusPulse.tsx`:
+- Yksi rivi Index:n yläosassa: "**+2 ranks today** · 12 users behind you now"
+- Lasketaan `rank_score_history`-pohjalta (jos olemassa) tai snapshotataan profiilissa `last_rank_snapshot` -kenttään.
+- Käyttää nuolikuvaketta + väripaletteja: vihreä nousu, punainen lasku, harmaa staattinen.
+- Tap → Leaderboard.
+
+**DB:** Lisätään `profiles.last_rank_snapshot` (jsonb: `{rank, score, timestamp}`) + päivittäinen päivitys kun Index ladataan ensimmäisen kerran päivässä.
+
+## 4. Tier Progress Vault — "näe missä olet kokonaiskartalla"
+**Mikä koukuttaa:** visuaalinen progressio kaikkien 7 tierin yli.
+
+Uusi komponentti `src/components/TierLadder.tsx` (Profile-sivulle):
+- Vertikaalinen "tikapuu" Recruit → Legend, oma tier korostettuna kullalla.
+- Jokainen ylempi tier näyttää **mitä se vaatii** (rank %, streak, active days) + **kuinka monta käyttäjää siellä on**.
+- Lukitut tierit harmaina lukko-ikonilla, saavutetut kullalla checkmarkilla.
+- Avaa modaalin jokaiselle tierille → "Unlocks: Elite Feed posting, 2× XP, Crown badge…"
+
+## 5. Status Streak Combo — kerro mitä menetät
+**Mikä koukuttaa:** kasaantuva sijoitus.
+
+Päivitetään `RankPressureCard`:
+- Lisätään pieni rivi: "🔱 **8 days at Performer** — longest at this tier"
+- Jos pudottaa: TierPromotionCelebration-vastine "Lost Performer after 8 days" -tummalla animaatiolla (ei juhlaa).
+
+## 6. Index-layout uudelleenjärjestys
+Uusi prioriteettijärjestys (kriittisin ensin):
 ```text
-ROAD TO ELITE                              Top 5% • Status Tier
-─────────────────────────────────────────────
-✓ Rank score (top 5%)        ████████░░  82 / 95 pts
-✓ 14 days active in 30 days  ██████░░░░   9 / 14 days
-✓ 30+ day streak             ████░░░░░░  12 / 30 days
-─────────────────────────────────────────────
-Keep showing up. Elite is earned, not bought.
+1. TierRiskBanner          (vain jos pressure/danger)
+2. DailyStatusPulse        (yksi rivi, päivittäinen kick)
+3. RankPressureCard        (jo olemassa, päivitetty §5)
+4. LiveRivals              (1 yllä + 1 alla)
+5. RoadToElite compact     (jo olemassa, korjattu paikalleen)
+6. CoachNudge / Briefing   (jo olemassa)
+7. Level / XP card
+8. Streak + Quests + CTA
+9. Recent Badges
 ```
 
-Stricter Elite criteria (server-side) — update `update_status_tier()`:
-- **Elite** now requires: percentile ≥ 95 **AND** activity_days ≥ 14 **AND** `streak ≥ 30` (currently only percentile + 14 days).
-- **High Performer**: percentile ≥ 90 + activity ≥ 14 + streak ≥ 14.
-- **Apex** / **Legend** unchanged but inherit the streak floor.
-
-This makes Elite a meaningful long-term grind (~30 days minimum, real consistency).
-
-### 4. Decouple paid features from `is_elite`
-Today, `is_elite` (= subscriber) gates the Elite Feed and AI Coach. New rules:
-- **AI Coach** (`/coach`): available to any subscriber (any user that passes `AccessGate`). Remove `isElite` checks in `Coach.tsx` + `ai-coach` edge function — change to `has_active_access(user_id)`.
-- **Elite Feed posting**: stays gated — but on the **earned `status_tier = 'elite'`**, not on `is_elite`. Update RLS on `feed_posts` "Elite users can post" policy to check `status_tier IN ('elite','apex','legend')` instead of `is_elite = true`.
-- **Elite Feed reading**: open to all members (any subscriber).
-- **2× XP multiplier & Elite badges**: tied to earned `status_tier ≥ elite`.
-- `EliteFeedTeaser` and `FeatureGateScreen`: shown when user is a subscriber but hasn't earned Elite tier yet — copy changes from "Unlock Elite €4.99" to **"Earn your Elite status"** with a link to Road to Elite.
-
-### 5. Copy & UI sweep
-- Crown/gold "Elite" badge in profile/avatar now reflects **earned tier**, not subscription.
-- Subscription state shown as a small "Member since …" line on Profile (no crown).
-- `BottomNav`, `EliteFeedTeaser`, `FeatureGateScreen`: replace "Unlock Elite" CTAs that point to `/paywall` with either the membership paywall (for non-members) or **Road to Elite** (for members who haven't earned it).
-
-### 6. Memory updates
-- Update `mem://monetization/elite-subscription` → rename to `mem://monetization/membership` reflecting new model.
-- Add `mem://features/road-to-elite` documenting the earned tier requirements.
-- Update `mem://index.md` Core: "App requires €4.99/mo membership. Elite is earned status (top 5% + 14 active days + 30-day streak)."
+## 7. Profile-sivun lisäykset
+- `TierLadder` ennen `BadgeVault`a.
+- `LiveRivals` Road to Elite -kortin alle.
 
 ---
 
-### Technical details
+## Tekniset yksityiskohdat
 
-**Files edited**
-- `src/hooks/use-trial-access.ts` — 7 days
-- `src/pages/Paywall.tsx` — membership copy, remove "isElite" celebration
-- `src/components/AccessGate.tsx` — comment update
-- `src/pages/Coach.tsx` — drop `isElite` gate
-- `src/pages/EliteFeed.tsx` — read open, post gated on earned tier
-- `src/components/EliteFeedTeaser.tsx` — re-route to Road to Elite for members
-- `src/components/FeatureGateScreen.tsx` — same
-- `src/pages/Profile.tsx` — show Road to Elite + Membership status
-- `src/pages/Index.tsx` — Road to Elite teaser for non-Elite-tier members
+**Uudet tiedostot:**
+- `src/hooks/use-tier-risk.ts` — lasketaan demotion-riski
+- `src/hooks/use-live-rivals.ts` — hakee rank-naapurit
+- `src/hooks/use-daily-pulse.ts` — vertailee snapshot vs nykyinen
+- `src/components/TierRiskBanner.tsx`
+- `src/components/LiveRivals.tsx`
+- `src/components/DailyStatusPulse.tsx`
+- `src/components/TierLadder.tsx`
 
-**Files created**
-- `src/components/RoadToElite.tsx` — progress card with the 3 requirements
-- `src/hooks/use-road-to-elite.ts` — fetches rank_score, 30-day activity, streak
+**Muokattavat:**
+- `src/pages/Index.tsx` — bugin korjaus + uusi layout
+- `src/pages/Profile.tsx` — TierLadder + LiveRivals
+- `src/components/RankPressureCard.tsx` — "X days at this tier" -rivi
+- `src/lib/status-tiers.ts` — lisätään `unlocks: string[]` jokaiseen tieriin (TierLadderia varten)
 
-**DB migrations**
-- Update `has_active_access` → 7-day interval
-- Update `update_status_tier` and `update_all_status_tiers` → add streak threshold to elite/high_performer
-- Update RLS on `feed_posts` "Elite users can post" → check `status_tier`
-- Edge function `ai-coach`: replace `is_elite` check with `has_active_access`
+**DB-migraatio:**
+- `profiles.last_rank_snapshot jsonb` (nullable)
+- Optional: SQL-funktio `get_rank_neighbors(p_user_id uuid, p_above int default 1, p_below int default 1)` — palauttaa user_idit + score-deltat. Suorituskykyparannus, mutta voidaan tehdä myös client-side kahdella kyselyllä (`gt`/`lt` rank_scoreen + limit 1, order asc/desc).
 
-**Backwards compatibility**
-- Existing Elite subscribers keep all access (they pass `has_active_access`).
-- Users currently sitting at `status_tier = 'elite'` because of old criteria will be re-evaluated next time `update_status_tier` runs — some may drop to High Performer until they hit the 30-day streak. Acceptable since this matches the new "earned" promise.
+**Muistipäivitykset:**
+- `mem://features/status-hierarchy` — lisätään 5 uutta koukku-mekanismia
+- Uusi `mem://features/status-addiction-loops` — dokumentoi demotion risk, live rivals, daily pulse, tier ladder
 
-**Conservative scope**
-- No payment provider changes (RevenueCat / Stripe stay as-is).
-- No onboarding flow changes (new users still see onboarding → land on `/` → AccessGate redirects to `/paywall` if no active trial/sub).
-- No badge schema changes; existing `elite_member` badge requirement stays usable.
+**Konservatiivinen scope:**
+- Ei muutoksia status_tier-laskentalogiikkaan, RLS:ään, paywalliin tai onboardingiin.
+- Ei uusia push-notifikaatioita (tehdään myöhemmässä iteraatiossa).
+- Kaikki uudet komponentit puhtaita, käyttävät olemassa olevia design-tokeneita (gold, glass-card, gradient-gold, animate-reveal).
+- Käyttävät jo olemassa olevia kuvioita: `StatusAvatar`, `getTierConfig`, `useAuth`, react-query.
 

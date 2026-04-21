@@ -177,30 +177,69 @@ ls "Pods/Local Podspecs" | grep -E 'Capacitor|Cordova' || true
 # ---------------------------------------------------------------------------
 # Patch out broken MetalToolchain Swift search paths (Xcode 26 bug)
 # ---------------------------------------------------------------------------
-echo "🧹 Removing broken MetalToolchain Swift search paths from generated Pods configs..."
+echo "🧹 Patching generated Pods configs (MetalToolchain paths + Xcode 26 explicit modules)..."
 IOS_APP_DIR_FOR_PATCH="$IOS_APP_DIR" python3 - <<'PY'
 import os
+import re
 from pathlib import Path
 
 root = Path(os.environ['IOS_APP_DIR_FOR_PATCH'])
 invalid = '$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)'
 
-candidates = list(root.glob('Pods/Target Support Files/**/*.xcconfig'))
+xcconfigs = list(root.glob('Pods/Target Support Files/**/*.xcconfig'))
 pbx = root / 'Pods/Pods.xcodeproj/project.pbxproj'
-if pbx.exists():
-    candidates.append(pbx)
 
-for path in candidates:
+# Strip invalid MetalToolchain search paths everywhere.
+for path in xcconfigs + ([pbx] if pbx.exists() else []):
     if not path.is_file():
         continue
     content = path.read_text()
-    if invalid not in content:
+    if invalid in content:
+        updated = content.replace(f' {invalid}', '').replace(f'"{invalid}"', '')
+        updated = updated.replace(invalid + ' ', '').replace(invalid, '')
+        if updated != content:
+            path.write_text(updated)
+            print(f'patched (toolchain) {path}')
+
+# Force-disable explicit modules + module-interface verification in every xcconfig,
+# and strip any stray -verify-emitted-module-interface flag.
+forced_settings = {
+    'SWIFT_ENABLE_EXPLICIT_MODULES': 'NO',
+    'CLANG_ENABLE_EXPLICIT_MODULES': 'NO',
+    'SWIFT_VERIFY_EMITTED_MODULE_INTERFACE': 'NO',
+}
+
+for path in xcconfigs:
+    if not path.is_file():
         continue
-    updated = content.replace(f' {invalid}', '').replace(f'"{invalid}"', '')
-    updated = updated.replace(invalid + ' ', '').replace(invalid, '')
-    if updated != content:
-        path.write_text(updated)
-        print(f'patched {path}')
+    content = path.read_text()
+    original = content
+
+    # Remove any positive -verify-emitted-module-interface (we want the negated form only).
+    content = re.sub(r'(?<!-no)-verify-emitted-module-interface', '', content)
+
+    for key, val in forced_settings.items():
+        pattern = re.compile(rf'^{re.escape(key)}\s*=.*$', re.MULTILINE)
+        if pattern.search(content):
+            content = pattern.sub(f'{key} = {val}', content)
+        else:
+            if not content.endswith('\n'):
+                content += '\n'
+            content += f'{key} = {val}\n'
+
+    if content != original:
+        path.write_text(content)
+        print(f'patched (xcode26) {path}')
+
+# Sanity check: fail loudly if explicit modules are somehow still enabled in Pods-App release.
+release_cfg = root / 'Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig'
+if release_cfg.is_file():
+    txt = release_cfg.read_text()
+    bad = re.search(r'SWIFT_ENABLE_EXPLICIT_MODULES\s*=\s*YES', txt) or \
+          re.search(r'CLANG_ENABLE_EXPLICIT_MODULES\s*=\s*YES', txt)
+    if bad:
+        raise SystemExit(f'❌ explicit modules still enabled in {release_cfg}')
+    print(f'✅ explicit modules disabled in {release_cfg.name}')
 PY
 
 echo "✅ Pods installed successfully"

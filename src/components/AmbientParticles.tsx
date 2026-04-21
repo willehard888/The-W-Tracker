@@ -44,9 +44,9 @@ const AmbientParticles = () => {
 
     const computeCount = () => {
       const area = window.innerWidth * window.innerHeight;
-      // Sparser field — looks ambient, costs almost nothing.
-      const base = Math.min(26, Math.max(10, Math.round(area / 38000)));
-      return mem <= 2 ? Math.round(base * 0.5) : base;
+      // Denser field for a more cinematic, visible ambient glow.
+      const base = Math.min(44, Math.max(18, Math.round(area / 22000)));
+      return mem <= 2 ? Math.round(base * 0.55) : base;
     };
 
     const resize = () => {
@@ -95,16 +95,22 @@ const AmbientParticles = () => {
         const p = list[i];
         p.y -= p.speedY;
         p.x += Math.sin(p.y * 0.006) * p.speedX;
-        p.opacity += 0.004 * p.fadeDir;
+        p.opacity += 0.005 * p.fadeDir;
 
-        if (p.opacity >= 0.6) p.fadeDir = -1;
+        if (p.opacity >= 0.85) p.fadeDir = -1;
         if (p.opacity <= 0 || p.y < -10) {
           Object.assign(p, createParticle(w, h, true));
         }
 
+        // Soft bloom halo for a more cinematic feel (single extra fill).
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * 3.2, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue},85%,${p.lightness}%,${p.opacity * 0.18})`;
+        ctx.fill();
+
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue},80%,${p.lightness}%,${p.opacity})`;
+        ctx.fillStyle = `hsla(${p.hue},90%,${Math.min(p.lightness + 6, 80)}%,${p.opacity})`;
         ctx.fill();
       }
     };
@@ -123,7 +129,7 @@ const AmbientParticles = () => {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.7, willChange: "transform" }}
+      style={{ opacity: 0.95, willChange: "transform", mixBlendMode: "screen" }}
       aria-hidden
     />
   );
@@ -149,10 +155,10 @@ function createParticle(w: number, h: number, fromBottom = false): Particle {
   return {
     x: Math.random() * w,
     y: fromBottom ? h + 10 : Math.random() * h,
-    size: 0.6 + Math.random() * 1.8,
-    speedY: 0.1 + Math.random() * 0.4,
-    speedX: 0.15 + Math.random() * 0.45,
-    opacity: Math.random() * 0.25,
+    size: 0.9 + Math.random() * 2.4,
+    speedY: 0.12 + Math.random() * 0.5,
+    speedX: 0.18 + Math.random() * 0.55,
+    opacity: Math.random() * 0.35,
     fadeDir: 1,
     hue,
     lightness,

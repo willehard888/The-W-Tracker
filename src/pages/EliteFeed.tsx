@@ -579,6 +579,41 @@ const EliteFeed = () => {
     },
   });
 
+  const editComment = useMutation({
+    mutationFn: async ({ id, content }: { id: string; content: string }) => {
+      if (!user) throw new Error("Not signed in");
+      const { error } = await supabase
+        .from("feed_comments")
+        .update({ content, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .eq("user_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Comment updated");
+      queryClient.invalidateQueries({ queryKey: ["feed-comments"] });
+    },
+    onError: (e: any) => toast.error(e?.message || "Failed to update"),
+  });
+
+  const deleteComment = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user) throw new Error("Not signed in");
+      const { error } = await supabase
+        .from("feed_comments")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Comment deleted");
+      queryClient.invalidateQueries({ queryKey: ["feed-comments"] });
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+    },
+    onError: (e: any) => toast.error(e?.message || "Failed to delete"),
+  });
+
   const reportPost = useMutation({
     mutationFn: async (postId: string) => {
       if (!user) return;

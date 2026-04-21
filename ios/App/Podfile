@@ -2,18 +2,18 @@ require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '15.0'
 
-# Build all pods as static frameworks.
-# Required because Capacitor + RevenueCat ship custom `module_map`s, and
-# CocoaPods refuses to combine static libraries with custom module maps.
-use_frameworks! :linkage => :static
+# Default to dynamic frameworks. Static linkage (:linkage => :static) under
+# Xcode 26 strips ObjC category symbols from CapacitorCordova's archive,
+# which then causes the Capacitor Swift target to fail SwiftCompile.
+use_frameworks!
 
 # workaround to avoid Xcode caching of Pods that requires
 # Product -> Clean Build Folder after new Cordova plugins installed
 install! 'cocoapods', :disable_input_output_paths => true
 
 def capacitor_pods
-  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
-  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios', :modular_headers => true
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios', :modular_headers => true
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorAppLauncher', :path => '../../node_modules/@capacitor/app-launcher'
   pod 'CapacitorBrowser', :path => '../../node_modules/@capacitor/browser'
@@ -32,6 +32,7 @@ post_install do |installer|
 
   invalid_toolchain_path = '$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)'
   no_verify_flag = '-Xfrontend -no-verify-emitted-module-interface'
+  capacitor_swift_pods = ['Capacitor', 'CapacitorCordova', 'RevenuecatPurchasesCapacitor']
 
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
@@ -43,13 +44,15 @@ post_install do |installer|
       config.build_settings['FRAMEWORK_SEARCH_PATHS'] = framework_search_paths.reject { |p| p == invalid_toolchain_path }
       config.build_settings['SWIFT_INCLUDE_PATHS'] = swift_include_paths.reject { |p| p == invalid_toolchain_path }
 
-      # Xcode 26: explicit modules + static frameworks + Cordova ObjC headers = SwiftCompile crash.
+      # Xcode 26: explicit modules + Cordova ObjC headers = SwiftCompile crash.
       config.build_settings['SWIFT_ENABLE_EXPLICIT_MODULES'] = 'NO'
       config.build_settings['CLANG_ENABLE_EXPLICIT_MODULES'] = 'NO'
       config.build_settings['SWIFT_VERIFY_EMITTED_MODULE_INTERFACE'] = 'NO'
-      config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'NO'
 
-      if ['Capacitor', 'CapacitorCordova', 'RevenuecatPurchasesCapacitor'].include?(target.name)
+      # Belt-and-suspenders: force dynamic framework output for the Capacitor pods
+      # so libtool never strip-archives the Cordova categories again.
+      if capacitor_swift_pods.include?(target.name) || target.name == 'CapacitorCordova'
+        config.build_settings['MACH_O_TYPE'] = 'mh_dylib'
         config.build_settings['DEFINES_MODULE'] = 'YES'
       end
 
@@ -60,11 +63,6 @@ post_install do |installer|
         unless existing_flags.include?('-no-verify-emitted-module-interface')
           config.build_settings['OTHER_SWIFT_FLAGS'] = "#{existing_flags} #{no_verify_flag}"
         end
-      end
-
-      # CapacitorCordova is ObjC-only; stop Xcode 26 from trying to emit/import a Swift header.
-      if target.name == 'CapacitorCordova'
-        config.build_settings['SWIFT_INSTALL_OBJC_HEADER'] = 'NO'
       end
 
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'

@@ -8,6 +8,47 @@ echo "ℹ️  PWD=$(pwd)"
 echo "ℹ️  USER=$(whoami)"
 echo "ℹ️  Shell=$BASH_VERSION"
 
+# ---------------------------------------------------------------------------
+# Toolchain version pins
+# ---------------------------------------------------------------------------
+# Exact toolchain versions known-good for this project. We intentionally pin
+# Xcode to a major.minor band (Apple bumps Xcode Cloud images frequently and
+# we cannot select a patch version from CI), and require Swift 6.x as the
+# host compiler (which is what Xcode 26.4.x ships). The Capacitor +
+# RevenueCat pod targets are then pinned in the Podfile post_install hook to
+# SWIFT_VERSION = 5.0 to dodge the Swift 6 constraint-solver crash on
+# Capacitor.swift. Drift in either direction MUST fail the build.
+REQUIRED_XCODE_MAJOR_MINOR="26.4"   # Xcode 26.4.x
+REQUIRED_SWIFT_MAJOR="6"            # swiftc reports Swift 6.x in Xcode 26.4
+PINNED_PODS_SWIFT_VERSION="5.0"     # Capacitor + RevenueCat pod targets
+export PINNED_PODS_SWIFT_VERSION    # consumed by ci_pre_xcodebuild.sh
+
+if command -v xcodebuild &>/dev/null; then
+  XCODE_VER_FULL=$(xcodebuild -version 2>/dev/null | head -1 | awk '{print $2}')
+  echo "ℹ️  Xcode ${XCODE_VER_FULL} (required: ${REQUIRED_XCODE_MAJOR_MINOR}.x)"
+  case "$XCODE_VER_FULL" in
+    ${REQUIRED_XCODE_MAJOR_MINOR}*) echo "✅ Xcode version pin satisfied" ;;
+    *)
+      echo "❌ Xcode ${XCODE_VER_FULL} does not match required ${REQUIRED_XCODE_MAJOR_MINOR}.x"
+      echo "   Update the Xcode Cloud workflow image OR bump REQUIRED_XCODE_MAJOR_MINOR after re-validating Capacitor + Swift pins."
+      exit 1
+      ;;
+  esac
+else
+  echo "⚠️  xcodebuild not on PATH yet at post-clone — skipping Xcode pin check"
+fi
+
+if command -v swift &>/dev/null; then
+  SWIFT_VER_FULL=$(swift --version 2>/dev/null | head -1 || echo "unknown")
+  echo "ℹ️  ${SWIFT_VER_FULL}"
+  if echo "$SWIFT_VER_FULL" | grep -qE "Swift version ${REQUIRED_SWIFT_MAJOR}\."; then
+    echo "✅ Swift toolchain pin satisfied (Swift ${REQUIRED_SWIFT_MAJOR}.x host compiler)"
+  else
+    echo "❌ Swift toolchain is not Swift ${REQUIRED_SWIFT_MAJOR}.x — Capacitor pods are pinned to Swift ${PINNED_PODS_SWIFT_VERSION} which assumes a Swift ${REQUIRED_SWIFT_MAJOR} host compiler."
+    exit 1
+  fi
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IOS_APP_DIR="$(dirname "$SCRIPT_DIR")"
 ROOT_DIR="$SCRIPT_DIR"

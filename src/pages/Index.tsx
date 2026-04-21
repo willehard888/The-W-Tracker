@@ -159,7 +159,26 @@ const Index = () => {
         }}
       />
 
-      {/* Rank Pressure Card */}
+      {/* 1. Tier Risk Banner — fear of demotion (top priority) */}
+      {tierRisk.level !== "safe" && (
+        <div className="animate-reveal mb-3 relative z-10">
+          <TierRiskBanner risk={tierRisk} />
+        </div>
+      )}
+
+      {/* 2. Daily Status Pulse — micro-win */}
+      {rankData && (
+        <div className="animate-reveal mb-3 relative z-10">
+          <DailyStatusPulse
+            userId={profile.user_id}
+            rank={rankData.rank}
+            score={Number((profile as any).rank_score) || 0}
+            totalUsers={rankData.totalUsers}
+          />
+        </div>
+      )}
+
+      {/* 3. Rank Pressure Card */}
       {rankData && (
         <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
           <RankPressureCard
@@ -172,7 +191,17 @@ const Index = () => {
         </div>
       )}
 
-      {/* Coach Nudge (Elite, unseen) */}
+      {/* 4. Live Rivals — who's ahead, who's catching up */}
+      <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
+        <LiveRivals userId={profile.user_id} myScore={Number((profile as any).rank_score) || 0} />
+      </div>
+
+      {/* 5. Road to Elite — earned status progress */}
+      <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
+        <RoadToElite compact />
+      </div>
+
+      {/* 6. Coach Nudge (Elite, unseen) */}
       {latestNudge && (
         <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
           <CoachNudgeCard

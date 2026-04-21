@@ -12,7 +12,7 @@ import AmbientParticles from "@/components/AmbientParticles";
 import HeadToHead from "@/components/HeadToHead";
 import ProfileActivityPulse from "@/components/ProfileActivityPulse";
 import FeaturedBadgeHero from "@/components/FeaturedBadgeHero";
-import { getTierConfig, TIER_ORDER } from "@/lib/status-tiers";
+import { getTierConfig } from "@/lib/status-tiers";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";

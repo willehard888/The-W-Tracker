@@ -108,8 +108,44 @@ PY
 
 echo "📦 Installing CocoaPods dependencies (required for Capacitor module resolution)..."
 cd "$ROOT_DIR/ios/App"
-if ! pod install --repo-update 2>&1; then
-  echo "❌ pod install failed"
+
+export COCOAPODS_DISABLE_STATS=1
+
+pod_install_with_retry() {
+  local attempt=1
+  local max_attempts=3
+  local repo_update_flag=""
+
+  while [[ $attempt -le $max_attempts ]]; do
+    echo "📦 pod install attempt $attempt/$max_attempts ${repo_update_flag:-(no repo-update)}..."
+    if pod install $repo_update_flag 2>&1; then
+      echo "✅ pod install succeeded on attempt $attempt"
+      return 0
+    fi
+    echo "⚠️ pod install attempt $attempt failed"
+
+    # From attempt 2 onwards, force --repo-update
+    if [[ $attempt -ge 1 ]]; then
+      repo_update_flag="--repo-update"
+    fi
+
+    # Exponential backoff
+    local sleep_seconds=$((attempt * 5))
+    echo "⏳ Sleeping ${sleep_seconds}s before retry..."
+    sleep $sleep_seconds
+    attempt=$((attempt + 1))
+  done
+
+  # Last resort: re-add the trunk CDN explicitly and try once more
+  echo "🆘 Re-adding trunk CDN repo manually..."
+  pod repo remove trunk 2>&1 || true
+  pod repo add-cdn trunk https://cdn.cocoapods.org/ 2>&1 || true
+  echo "📦 Final pod install attempt with fresh CDN..."
+  pod install --repo-update 2>&1
+}
+
+if ! pod_install_with_retry; then
+  echo "❌ pod install failed after all retries"
   exit 1
 fi
 

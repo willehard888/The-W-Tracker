@@ -101,6 +101,10 @@ const Index = () => {
     },
     enabled: !!profile,
   });
+      {/* Road to Elite — compact teaser (hidden once earned) */}
+      <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
+        <RoadToElite compact />
+      </div>
 
 
   if (!profile) return null;

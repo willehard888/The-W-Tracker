@@ -406,6 +406,28 @@ const Profile = () => {
         </div>
       )}
 
+      {/* Road to Elite — earned status progress (hidden once earned) */}
+      <div className="mb-3 animate-reveal animate-reveal-delay-1">
+        <RoadToElite />
+      </div>
+
+      {/* Membership status (subscriber line — earned-tier crown lives in hero) */}
+      {isElite && (
+        <div className="mb-3 animate-reveal animate-reveal-delay-1 rounded-xl border border-border/60 bg-card/40 p-3 flex items-center gap-3">
+          <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+            <CreditCard size={14} className="text-emerald-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-bold tracking-wider uppercase text-emerald-400/90">
+              Membership active
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Member since {profile.created_at ? format(new Date(profile.created_at), "MMM yyyy") : "—"}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Weekly Sleep Stats — prominent (moved under Position) */}
       {weeklySleep && (
         <div className="mb-3 animate-reveal animate-reveal-delay-1">

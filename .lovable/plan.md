@@ -1,87 +1,86 @@
 
+Buildin nykyinen vika näyttää olevan kahden iOS-puolen ongelman yhdistelmä, ei enää npm-lockfile.
 
-## Korjataan Xcode Cloud build — lockfile + CocoaPods CDN
+## Mitä korjataan
 
-Build epäonnistuu kahdesta syystä, jotka molemmat näkyvät lokissa. Korjataan ne kerralla.
+### 1. Korjataan Podfile-strategia kokonaan
+Nykyinen Podfile tekee ristiriitaisen asian:
+- se pakottaa `:modular_headers => true`
+- mutta samalla poistaa Capacitorin `module_map`-määrittelyt
 
-### Ongelma 1 — `package-lock.json` ei ole synkassa
+Tämä on todennäköinen syy virheeseen:
+`CapacitorCordova does not define modules`
 
-`package.json` sisältää `html2canvas@1.4.1` ja `react-markdown@9`, mutta `package-lock.json` ei ole päivitetty. `npm ci` epäonnistuu listaamalla ~80 puuttuvaa pakettia. Skripti kyllä putoaa `npm install` -varareittiin, mutta lockfile pysyy ajossa väärässä tilassa eikä `npm ci` toimi koskaan tulevissa buildeissa.
+Teen nämä muutokset:
+- poistan `patch_capacitor_module_maps`-logiikan Podfilesta
+- poistan myös saman podspec-muokkauksen CI-skripteistä
+- vaihdan Podfileen yhden selkeän, pysyvän modulaarisen asetuksen koko pod-resoluutiolle (`use_modular_headers!`)
+- pidän nykyiset Xcode 26 -yhteensopivuuskorjaukset (`SWIFT_ENABLE_EXPLICIT_MODULES = NO`, `CLANG_ENABLE_EXPLICIT_MODULES = NO`, MetalToolchain-polun siivous)
+- varmistan, että Capacitor-, CapacitorCordova- ja RevenueCat-podit integroituvat samalla tavalla sekä `cap sync`-vaiheessa että suorassa `pod install` -vaiheessa
 
-**Korjaus:** Päivitetään `package-lock.json` paikallisesti ajamalla `npm install` ja committoidaan tulos. (Tässä vaiheessa Lovable päivittää lockin defaultin moodissa.)
+Tavoite: `npx cap sync ios` ei enää kaadu analysointivaiheessa ennen varsinaista CI:n pod-installia.
 
-### Ongelma 2 — CocoaPods CDN ei vastaa Xcode Cloudissa (fatal)
+### 2. Yhtenäistetään CocoaPods fallback kunnolla
+Nykyinen retry-logiikka auttaa vain osittain. Korjaan sen niin, että kaikki iOS-skriptit käyttävät samaa vakaata polkua:
 
-```
-[!] CDN: trunk URL couldn't be downloaded: 
-    https://cdn.cocoapods.org/deprecated_podspecs.txt 
-    Response: Couldn't connect to server
-❌ pod install failed
-```
+- ensin tarkistus, vastaako CocoaPods CDN
+- jos ei vastaa, lisätään GitHub Specs -fallback
+- `pod install` ajetaan retry-loopilla ilman `--repo-update` ensin
+- vasta epäonnistumisen jälkeen `--repo-update`
+- viimeisillä yrityksillä vaihto fallback-repoon
+- lopuksi selkeä fail only if all options are exhausted
 
-Tämä on Xcode Cloudin tunnettu ajoittainen verkko-ongelma CDN:n kanssa. Korjataan kolmella keinolla:
+Päivitettävät tiedostot:
+- `ios/App/ci_scripts/ci_post_clone.sh`
+- `ios/App/ci_scripts/ci_pre_xcodebuild.sh`
+- `scripts/ios-clean.sh`
 
-1. **Retry-loop** `pod install`:lle (3 yritystä, exponential backoff)
-2. **Käytetään ensin `pod install` ilman `--repo-update`a** (paikalliset CDN-välimuistit voivat riittää) ja vasta jos epäonnistuu, kokeillaan `--repo-update`
-3. **Lisätään `COCOAPODS_DISABLE_STATS=1`** ja **`CP_HOME_DIR`** välimuisti pysyväksi
-4. **Lisätään master-spec-repo varareitiksi** jos CDN edelleen pettää
+### 3. Poistetaan kovat absoluuttiset polut
+Skripteissä on nyt kovakoodattuja polkuja kuten:
+- `/Volumes/workspace/repository/...`
+- `/dev-server/...`
 
-### Tiedostomuutokset
+Ne tekevät skripteistä hauraita ja voivat rikkoa CI:n tai paikallisen buildin eri ympäristöissä.
 
-**`ios/App/ci_scripts/ci_post_clone.sh`** — korvataan `pod install --repo-update` blokki (rivit 109-114) seuraavalla logiikalla:
+Teen niistä dynaamiset:
+- kaikki polut johdetaan `SCRIPT_DIR` / `ROOT_DIR` / `IOS_APP_DIR` muuttujista
+- sama skripti toimii Xcode Cloudissa, Lovablessa ja paikallisella Macilla ilman erillisiä polkuja
 
-```bash
-export COCOAPODS_DISABLE_STATS=1
+### 4. Korjataan `ios-clean.sh` oikeasti toimivaksi
+`ios-clean.sh` viittaa Swift package -manifestiin, jota projektipuussa ei tällä hetkellä näy (`ios/App/CapApp-SPM/Package.swift`).
 
-pod_install_with_retry() {
-  local attempt=1
-  local max_attempts=3
-  local use_repo_update=""
+Korjaan skriptin niin, että se:
+- ei kaadu puuttuvaan manifestiin
+- tarkistaa ensin löytyykö oikea SPM-manifesti / Package.resolved-polku
+- generoi tai validoi `Package.resolved` vain jos siihen on oikeasti tarvittavat tiedostot
+- avaa lopuksi Xcoden edelleen automaattisesti
 
-  while [[ $attempt -le $max_attempts ]]; do
-    echo "📦 pod install attempt $attempt/$max_attempts $use_repo_update..."
-    if pod install $use_repo_update 2>&1; then
-      return 0
-    fi
-    echo "⚠️ pod install attempt $attempt failed"
-    
-    # Toisesta yrityksestä: pakota repo-update
-    if [[ $attempt -ge 2 ]]; then
-      use_repo_update="--repo-update"
-    fi
-    
-    # Backoff
-    sleep $((attempt * 5))
-    attempt=$((attempt + 1))
-  done
-  
-  # Viimeinen oljenkorsi: lisää master-repo manuaalisesti
-  echo "🆘 Yritetään lisätä master spec repo manuaalisesti..."
-  pod repo add-cdn trunk https://cdn.cocoapods.org/ 2>&1 || true
-  pod install --repo-update 2>&1
-}
+Tämä estää paikallisen “all-in-one” komennon hajoamisen myöhemmin.
 
-if ! pod_install_with_retry; then
-  echo "❌ pod install epäonnistui kaikkien yritysten jälkeen"
-  exit 1
-fi
-```
+## Toteutusjärjestys
 
-**`ios/App/ci_scripts/ci_pre_xcodebuild.sh`** — sama retry-logiikka jos Pods-hakemisto puuttuu (rivi ~30-50).
+1. Siivotaan Podfile
+2. Poistetaan podspec-patchit CI-skripteistä
+3. Yhtenäistetään CocoaPods fallback + retry kaikkiin 3 skriptiin
+4. Korvataan absoluuttiset polut dynaamisilla
+5. Korjataan `ios-clean.sh` Package.resolved-logiikka
+6. Varmistetaan, että skriptit tarkistavat oikeat artefaktit:
+   - `Pods/Local Podspecs/Capacitor.podspec.json`
+   - `Pods/Local Podspecs/CapacitorCordova.podspec.json`
+   - `Pods/Target Support Files/CapacitorCordova`
+   - `Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig`
 
-**`scripts/ios-clean.sh`** — sama retry paikalliseen kehitykseen, jotta sama logiikka toimii kaikkialla.
+## Odotettu lopputulos
 
-### Mitä EI muuteta
+Tämän jälkeen buildin pitäisi edetä näin:
+- `npm ci` toimii lockfilen kanssa
+- `npm run build` onnistuu
+- `npx cap sync ios` ei enää kaadu `CapacitorCordova does not define modules` -virheeseen
+- `ci_post_clone.sh` kestää myös CDN-katkokset
+- sama logiikka toimii sekä Xcode Cloudissa että paikallisesti
 
-- Ei muuteta Podfileä — `use_modular_headers` on jo paikallaan kohdistetuilla podseilla
-- Ei lisätä uusia natiiviriippuvuuksia
-- Ei muuteta Capacitor-versioita
-- Ei muuteta `ENABLE_USER_SCRIPT_SANDBOXING` tms. Xcode-asetuksia
-
-### Lopputulos
-
-Buildi seuraavalla yrityksellä:
-1. Lockfile on synkassa → `npm ci` toimii (~10x nopeampi kuin install)
-2. CocoaPods CDN -virhe ei enää tapa buildiä — retry-loop hoitaa hetkelliset verkkokatkokset
-3. Edelleen samat 3 verifiointivaihetta (`Capacitor.podspec.json`, `CapacitorCordova`, `Pods-App.release.xcconfig`) varmistavat että `pod install` on oikeasti onnistunut
-
+## Tekniset tiedostot
+- `ios/App/Podfile`
+- `ios/App/ci_scripts/ci_post_clone.sh`
+- `ios/App/ci_scripts/ci_pre_xcodebuild.sh`
+- `scripts/ios-clean.sh`

@@ -192,6 +192,17 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, daysA
             {pressureText}
           </motion.div>
 
+          {/* Days at tier */}
+          {daysAtTier !== undefined && daysAtTier > 0 && tier !== "recruit" && tier !== "normal" && (
+            <div className="flex items-center justify-center gap-1.5 mb-2 text-[10px] text-muted-foreground">
+              <Trophy size={10} className={cn("shrink-0", config.textClass)} />
+              <span>
+                <span className={cn("font-black tabular-nums", config.textClass)}>{daysAtTier}d</span>{" "}
+                at <span className="font-black">{config.label}</span>
+              </span>
+            </div>
+          )}
+
           {/* Next tier */}
           {nextTier ? (
             <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/30">

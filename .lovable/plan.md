@@ -1,144 +1,152 @@
 
 
-## Apple Health "Verified Proof" — korjattu suunnitelma
+## Moderaattori optimaaliseksi — toteutussuunnitelma
 
-Olit oikeassa: kameraproof EI ole pakollinen — se on Elite-only ja vapaaehtoinen. Tämä muuttaa Apple Health -integraation positionin merkittävästi: HealthKit ei ole "kameran lisävahvistus" vaan **ensimmäinen oikea anti-cheat-mekanismi koko appiin**.
+Optimoidaan nykyinen `moderate-content` -edge function neljän osa-alueen yli: **nopeus**, **kustannus**, **luotettavuus** ja **käyttäjäkokemus**. Muutokset säilyttävät nykyisen API-pinnan taaksepäin yhteensopivana.
 
-### Mitä tämä muuttaa strategisesti
+### Pääperiaatteet
 
-Tällä hetkellä:
-- Kuka tahansa voi togglata "workout" päälle ilman mitään todistusta → +20-35 XP
-- Sleep-tunnit, hydraatio, kylmä suihku jne. ovat kaikki itse-ilmoitettuja
-- Kameraproof = vain Elite-bonus, ei enforce mitään
+1. **Pre-flight estää turhat AI-kutsut** — koko/MIME/hash-tarkistus selaimessa
+2. **Cache toistuvat kuvat** — sama hash → välitön vastaus
+3. **Thumbnail moderoidaan ennen täyttä uploadia** — säästää bandwidthia ja antaa nopean palautteen
+4. **Fail-CLOSED kuville** — jos AI-gateway alhaalla, ei päästetä spam läpi
+5. **Confidence-perusteinen reititys** — matala luottamus → admin-jono
+6. **Rate-limit per käyttäjä** — 5 moderaatiota/min
 
-Apple Health -integraatio tuo koko appiin **ensimmäisen tamper-resistant verifikaation**. Tämä on iso markkinointikulma: "First fitness app where workouts can't be faked."
+### 1. Tietokantamuutokset (migraatio)
 
-### 1. Kaksi tasoa: Standard vs Verified XP
+**`moderation_cache`** (uusi taulu)
+- `image_hash text PRIMARY KEY`, `action text`, `categories text[]`, `confidence numeric`, `severity text`, `reason text`, `created_at timestamptz`
+- Indeksi `created_at`-kentälle vanhojen poistamista varten
+- RLS: vain service-role kirjoittaa/lukee
+- TTL-cleanup: 30 päivää vanhempi data poistetaan (cron-funktiossa)
 
-**Standard check-in (kuten nyt, kaikille):**
-- Kaikki togglet itse-ilmoitettuja → base XP
-- Toimii Androidilla, webissä, iOS:llä ilman Apple Healthia
-- Säilyttää nykyisen kokemuksen muuttumattomana
+**`moderation_queue`** (uusi taulu)
+- `id uuid PK`, `content_type text`, `content_id uuid`, `image_url text`, `text_content text`, `user_id uuid`, `ai_action text`, `ai_confidence numeric`, `ai_categories text[]`, `ai_reason text`, `status text DEFAULT 'pending'` ('pending'|'approved'|'rejected'), `reviewed_by uuid`, `reviewed_at timestamptz`, `created_at timestamptz`
+- RLS: SELECT/UPDATE vain admineille, INSERT vain service-role
 
-**Verified check-in (opt-in, iOS + Apple Watch):**
-- Workout-toggle → vaatii HealthKit-workoutin viimeisen 24h sisällä → ✓ Verified -merkki + base XP + **+10 XP bonus**
-- Sleep-tunnit → prefillataan HealthKitistä → ✓ Verified-merkki sleep-rivillä
-- Käyttäjä voi yhä togglata standardisti jos ei halua verifioida
+**`content_moderations`** (laajennus)
+- Lisää `severity text` ('low'|'medium'|'high'|'critical')
+- Lisää `cache_hit boolean DEFAULT false`
+- Lisää `latency_ms integer` (mittaus)
 
-### 2. Miksi tämä toimii reiluuden kannalta
+**RPC `check_moderation_rate(_user uuid)`**
+- Palauttaa `{ allowed: boolean, retry_after_seconds: integer }`
+- Käyttää `content_moderations`-taulua: count viim. 60s → max 5
 
-- **Ei syrji ketään**: standard-XP toimii kuten ennenkin, kaikki tasot saavat saman base-XP:n
-- **+10 XP bonus on pieni**: ei muuta leaderboardia merkittävästi (yksi gym-treeni 30 XP → 40 XP verified)
-- **Verified Athlete -merkki** on prestige-elementti, ei XP-etu — markkinasignaali ei pelietu
-- **Android/web-käyttäjät** näkevät Verified-merkit muilla mutta saavat oman base-XP:nsä → toimii kuten "blue checkmark" Twitterissä
+### 2. Edge function `moderate-content` -refaktori
 
-### 3. Backend
+**Uudet pyyntökentät:**
+- `image_b64?: string` — base64-thumbnail (256px), ohittaa `image_url`-fetch
+- `image_hash?: string` — SHA-256 cache-avaimeen
 
-**Uusi taulu `verified_workouts`:**
-- `id`, `user_id`, `checkin_id` (nullable), `workout_type`, `started_at`, `ended_at`, `duration_seconds`, `calories`, `avg_heart_rate`, `source` ('apple_health'), `verified_at`
-- RLS: SELECT oma + julkinen pelkkä `verified_workouts.user_id` count (Verified Athlete -merkkiä varten)
-- INSERT vain RPC kautta, ei suora
-
-**RPC `record_verified_workout(checkin_id uuid, workout_data jsonb)`:**
-- Validointi:
-  - `started_at >= now() - interval '24 hours'`
-  - `duration_seconds >= 600` (≥10min)
-  - `ended_at > started_at AND ended_at <= now()`
-  - Tyyppi whitelistissä: running, walking, cycling, strength, yoga, hiit, swimming, hiking, rowing, mma, crossfit
-  - Ei duplikaattia: `unique(user_id, started_at)`
-  - Check-in olemassa ja kuuluu samalle käyttäjälle, sama päivämäärä
-- Bonus: `profiles.xp += 10` (max 1× / check-in / päivä)
-- Palauttaa: `{ verified: true, bonus_xp: 10 }` tai virheen
-
-**Verified Athlete -kriteeri (frontend-laskenta):** ≥5 verified workoutia viimeisen 30 päivän aikana
-
-### 4. iOS-natiiviasennus
-
-- Asennetaan `capacitor-health` (community-plugin, tukee Capacitor 8 + HealthKit)
-- Vaihtoehtoisesti oma natiiviplugin Swiftilla jos community-plugin ei toimi luotettavasti — testataan ensin
-- `ios/App/App/Info.plist`:
-  - `NSHealthShareUsageDescription`: "We read your workouts, sleep and active energy from Apple Health to verify your check-ins and award the Verified badge. This is optional and you can disable it anytime in Profile."
-- Uusi `ios/App/App/App.entitlements` HealthKit-capabilityllä, lisätään `project.pbxproj`-viittauksiin
-- `ios/App/ci_scripts/ci_post_clone.sh` varmistaa entitlements säilyy Xcode Cloud -buildeissa
-- Lockfile-integriteetti varmistettu (mem://technical/ios-development-build mukaan)
-
-### 5. UI-muutokset
-
-**A) `Profile.tsx`** — uusi "Apple Health" -osio (vain iOS-natiivilla, web-piilo):
-- Toggle "Connect Apple Health" → natiivilupa
-- Status: "Connected · 7 verified workouts this month"
-- Disconnect-nappi
-- Tila tallennetaan `localStorage.w_health_connected` (ei profiles-saraketta)
-
-**B) `DailyCheckin.tsx`** — workout-toggle laajenee:
-- Jos HealthKit yhdistetty + workout löytyy 24h sisällä → näytä "✓ Verified workout from Apple Health · 32 min" workout-toggle-rivin alle
-- Jos workout ON päällä mutta HealthKitistä ei löydy → "Verify with Apple Health (+10 XP)" -rivi nappiineen
-- Sleep-rivi: jos HealthKit yhdistetty → prefillaa sleep-tunnit, näytä "Auto-filled from Apple Health" subtekstinä, käyttäjä voi yhä yliajaa
-
-**C) Verified-merkki:**
-- Uusi `VerifiedBadge.tsx` -komponentti (pieni gold-ikoni heart + checkmark)
-- Näkyy check-in-confirmation-näytöllä XP-breakdownissa: "Workout +30 · Verified +10 = 40 XP"
-- Näkyy Profile.tsx -sivulla username:n vieressä jos Verified Athlete (≥5/30pv)
-- Näkyy `PublicProfile.tsx` -sivulla
-- Näkyy `Leaderboard.tsx` -riveillä username:n vieressä
-- Näkyy `Battles.tsx` -riveillä jos vastustaja Verified Athlete
-
-**D) `Onboarding.tsx`** — uusi 5. step (vain iOS-natiivilla):
-- "Verify your discipline with Apple Health" — näyttää Verified-merkin esimerkin
-- "Connect Apple Health" -nappi tai "Skip" -linkki
-- Jos skipataan, voi yhdistää myöhemmin Profile-sivulta
-
-### 6. Tiedostot
-
-**Uudet:**
-- `src/lib/health-kit.ts` (Capacitor-pluginin wrapper: requestPermissions, getRecentWorkouts, getLastNightSleep, isAvailable)
-- `src/components/HealthKitToggle.tsx` (Profile-osio)
-- `src/components/VerifiedWorkoutPicker.tsx` (DailyCheckinin workout-rivin laajennus)
-- `src/components/VerifiedBadge.tsx` (✓ -merkki)
-- `src/hooks/use-verified-athlete.ts` (laskee 30pv verified workout count)
-- `supabase/migrations/<ts>_verified_workouts.sql` (taulu + RLS + RPC)
-- `ios/App/App/App.entitlements` (HealthKit capability)
-
-**Muokattavat:**
-- `package.json` (capacitor-health dependency)
-- `ios/App/App/Info.plist` (NSHealthShareUsageDescription)
-- `ios/App/App.xcodeproj/project.pbxproj` (entitlements-viittaus)
-- `ios/App/ci_scripts/ci_post_clone.sh` (entitlements-säilytys)
-- `src/pages/Profile.tsx` (HealthKitToggle + Verified Athlete -merkki)
-- `src/pages/DailyCheckin.tsx` (Verified workout -picker + sleep prefill)
-- `src/pages/Onboarding.tsx` (5. step iOS:llä)
-- `src/pages/PublicProfile.tsx` (Verified-merkki)
-- `src/pages/Leaderboard.tsx` (Verified-merkki riveille)
-- `src/pages/Battles.tsx` (Verified-merkki vastustajille)
-- `src/pages/PrivacyPolicy.tsx` (HealthKit-osio)
-
-### 7. Tekninen yhteenveto
+**Flow:**
 
 ```text
-Käyttäjä iOS + Apple Watch:
-  Profile → Connect Apple Health → natiivilupa
-       │
-       ↓
-  DailyCheckin:
-    ├─ Workout-toggle päällä
-    │    ├─ HK-workout löytyy → auto ✓ Verified + base XP + 10 bonus
-    │    └─ Ei löydy        → standard base XP
-    │
-    └─ Sleep-rivi prefill HK:sta (yliajettavissa)
-
-Käyttäjä iOS ilman Apple Watchia / Android / Web:
-  Standard check-in normaalisti, base-XP, ei verified-mahdollisuutta
-
-Verified Athlete -merkki:
-  ≥5 verified workoutia 30 päivässä → ✓ näkyy kaikkialla
+1. Validate JWT (käyttäjä)
+2. RPC check_moderation_rate → 429 jos rate-limited
+3. Jos image_hash → moderation_cache lookup
+   - Hit: palauta välittömästi (latency_ms ~50ms)
+4. Jos miss: AI-kutsu AbortControllerilla 8s timeoutilla
+   - Käytä image_b64 jos annettu (data URL), muuten image_url
+   - Pyydä myös `severity`-kenttä tool-schemaan
+5. Confidence-routing:
+   - action=block && confidence ≥ 0.85 → block (kova)
+   - action=block && confidence < 0.85 → flag + INSERT moderation_queue
+   - action=flag → flag (salli mutta merkitse)
+   - action=allow → allow
+6. Tallenna moderation_cache (jos uusi)
+7. Tallenna content_moderations (latency_ms, cache_hit, severity)
+8. Fail-CLOSED: jos AI-gateway timeout/error JA kind='proof'|'feed_post' JA imagea →
+   palauta { action: 'block', reason: 'moderation_unavailable_retry' }
+   (nykyinen fail-open jää tekstipohjaisille posteille)
 ```
+
+**Tool-schema laajennus:** lisää `severity` (enum: low/medium/high/critical) — käytetään UI-värityksessä.
+
+**Uudet kategoriaviestit (käyttäjälle näytettävät):**
+- `nudity` → "Modesty required — keep clothes on in proofs"
+- `spam`/`advertising` → "No promotional content allowed"
+- `fake_screenshot`/`watermark` → "Use original photos, not screenshots"
+- `ai_generated` → "Real proofs only — AI-generated content not accepted"
+- `low_effort`/`off_topic` → "Try a clearer fitness/discipline-related photo"
+- default → "This proof couldn't be verified. Try again with clearer content"
+
+### 3. Client-side moduulit
+
+**Uusi `src/lib/moderation-preflight.ts`:**
+- `validateFile(file)`: koko 10KB–10MB, MIME image/*, palauttaa `{ ok, reason? }`
+- `generateThumbnail(file, maxSize=256)`: canvas → JPEG base64 (quality 0.85), palauttaa `{ b64, hash }`
+- `sha256Hex(blob)`: Web Crypto API
+- `getFriendlyMessage(category, reason)`: kategoriakohtaiset viestit
+
+**Uusi `src/components/ModerationGate.tsx`:**
+- Modal/overlay: "Reviewing your proof..." + spinner + thumbnail preview
+- 5s jälkeen: "Taking longer than usual..." + cancel-nappi (AbortController)
+- Tilat: `validating` | `uploading` | `reviewed_ok` | `reviewed_blocked` | `error`
+- Smooth fade-in/out (~200ms)
+
+**Uusi `src/hooks/use-moderation.ts`:**
+- `moderate({ file, kind, contentId, text })`: käyttää preflight + invoke
+- Palauttaa `{ action, severity, reason, friendlyMessage, blocked }`
+- Hoitaa AbortControllerin
+
+### 4. UI-integraatiot
+
+**`src/pages/DailyCheckin.tsx`:**
+- Käännä järjestys: thumbnail → moderate → täysi upload → check-in insert
+- Näytä `ModerationGate` heti kuvan valinnan jälkeen
+- Jos blocked → ei uploadia ollenkaan, näytä friendly viesti + "Try another photo"
+- Säästö: ~1–2s nopeampi palaute, ei turhaa storage-kirjoitusta
+
+**`src/pages/EliteFeed.tsx`:**
+- Sama pattern kuvien kanssa
+- Tekstipohjaisille posteille: moderate text rinnakkain (fail-open säilyy)
+
+**Uusi `src/pages/AdminModeration.tsx`** (route `/admin/moderation`):
+- Vain admineille (käytä `has_role`-tarkistusta)
+- Lista `moderation_queue` (status='pending'), uusin ensin
+- Kuvan thumbnail + AI:n syy + confidence + kategoriat
+- Approve / Reject -napit → UPDATE status + reviewed_by + reviewed_at
+- Reject + content_id → poista posti / piilota check-in
+- Real-time `supabase.channel('moderation_queue')` → uusi rivi nostaa badge-counterin
+
+**`src/App.tsx`:** lisää `/admin/moderation` route
+
+### 5. Tiedostot
+
+**Uudet:**
+- `src/lib/moderation-preflight.ts`
+- `src/components/ModerationGate.tsx`
+- `src/hooks/use-moderation.ts`
+- `src/pages/AdminModeration.tsx`
+- Migraatio: `moderation_cache` + `moderation_queue` + `check_moderation_rate` RPC + `content_moderations` -lisäkentät
+
+**Muokattavat:**
+- `supabase/functions/moderate-content/index.ts` (cache, rate-limit, fail-closed, severity, b64-tuki, AbortController)
+- `src/pages/DailyCheckin.tsx` (preflight + ModerationGate + käännetty järjestys)
+- `src/pages/EliteFeed.tsx` (sama pattern)
+- `src/App.tsx` (admin route)
+
+### 6. Mittaus & vertailu
+
+| Mittari | Nyt | Optimoitu |
+|---|---|---|
+| Latency (cache hit) | 2–4s | ~50ms |
+| Latency (cache miss) | 2–4s | 1–2s |
+| Bandwidth (block-tapauksessa) | Koko kuva (1–10MB) | Vain thumbnail (~30KB) |
+| Käyttäjäpalaute | Hiljainen | "Reviewing..." heti |
+| AI-kutsun timeout | Ei rajaa | 8s + AbortController |
+| AI-gateway alhaalla | Kaikki sallitaan | Block kuville, allow tekstille |
+| Spam-yritys | Rajoittamaton | 5/min throttle |
+| Matala confidence | Kova esto | Admin-jono |
+| Toistuvat kuvat | Joka kerta AI | Cached |
 
 ### Mitä EI tehdä
 
-- Ei tehdä HealthKitistä pakollista millekään featurelle
-- Ei korkeampaa kuin +10 XP bonusta (säilyttää reiluuden)
-- Ei battle-verifikaatiota tässä vaiheessa (vain check-in)
-- Ei Android Health Connect / Strava / Whoop -integraatioita
-- Ei sykekäyrän tai raakadatan tallennusta — vain workout-meta
-- Ei muuteta nykyistä Elite-kameraproof-flow'ta lainkaan
+- Ei vaihdeta mallia (`google/gemini-2.5-flash` on optimi)
+- Ei moderoida vanhoja kuvia takautuvasti
+- Ei poisteta nykyistä `image_url`-tukea (taaksepäin yhteensopiva)
+- Ei lisätä toista AI-vendoria backupiksi
+- Ei muuteta tekstipohjaisten postausten fail-open-logiikkaa
 

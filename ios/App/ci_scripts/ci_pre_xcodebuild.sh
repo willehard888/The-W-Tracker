@@ -160,11 +160,7 @@ if grep -RIE 'SWIFT_ENABLE_EXPLICIT_MODULES\s*=\s*YES|CLANG_ENABLE_EXPLICIT_MODU
 fi
 echo "✅ explicit modules disabled across all Pods xcconfigs"
 
-echo "✅ pre-xcodebuild setup complete"
-
 # Sanity gate: ensure CapacitorCordova ended up dynamic (mh_dylib), not static.
-# A residual -force_load .../libCapacitorCordova.a in Pods-App.release.xcconfig
-# would mean the linkage swap silently failed.
 echo "🔒 Verifying CapacitorCordova linked as dynamic framework..."
 APP_RELEASE_CFG="$IOS_APP_DIR/Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"
 if [[ -f "$APP_RELEASE_CFG" ]]; then
@@ -187,8 +183,55 @@ if [[ -f "$CAPCORDOVA_CFG" ]]; then
   echo "✅ CapacitorCordova MACH_O_TYPE clean (dynamic)"
 fi
 
-# Sanity gate: confirm Capacitor pod is pinned to Swift 5 to dodge the
-# Xcode 26.4.1 Swift 6 type-checker crash on Capacitor.swift.
+# ---------------------------------------------------------------------------
+# Self-healing: ensure Swift-target xcconfigs are pinned to SWIFT_VERSION = 5.
+# The Podfile post_install hook writes these settings into build_settings, but
+# CocoaPods occasionally omits default-matching values from the emitted
+# xcconfig — so we patch the files directly to guarantee the sanity gate and
+# the Xcode build agree on the pinned version.
+# ---------------------------------------------------------------------------
+echo "🛠  Self-healing: pinning SWIFT_VERSION + SWIFT_OPTIMIZATION_LEVEL on Capacitor Swift pods..."
+IOS_APP_DIR_FOR_PATCH="$IOS_APP_DIR" python3 - <<'PY'
+import os
+import re
+from pathlib import Path
+
+root = Path(os.environ['IOS_APP_DIR_FOR_PATCH'])
+# Pods whose Swift targets hit the Xcode 26.4.1 constraint-solver crash.
+swift_pinned_pods = ['Capacitor', 'RevenuecatPurchasesCapacitor']
+configs = ['release', 'debug']
+
+required_settings = {
+    'SWIFT_VERSION': '5.0',
+    'SWIFT_OPTIMIZATION_LEVEL': '-Onone',
+    'SWIFT_COMPILATION_MODE': 'singlefile',
+}
+
+for pod in swift_pinned_pods:
+    for cfg in configs:
+        path = root / f'Pods/Target Support Files/{pod}/{pod}.{cfg}.xcconfig'
+        if not path.is_file():
+            print(f'⚠️  {path} missing — skipping')
+            continue
+        content = path.read_text()
+        original = content
+        for key, val in required_settings.items():
+            pattern = re.compile(rf'^{re.escape(key)}\s*=.*$', re.MULTILINE)
+            if pattern.search(content):
+                content = pattern.sub(f'{key} = {val}', content)
+            else:
+                if not content.endswith('\n'):
+                    content += '\n'
+                content += f'{key} = {val}\n'
+        if content != original:
+            path.write_text(content)
+            print(f'patched {path.relative_to(root)}')
+        else:
+            print(f'ok {path.relative_to(root)}')
+PY
+
+# Sanity gate (after self-healing): confirm Capacitor pod is pinned to Swift 5
+# to dodge the Xcode 26.4.1 Swift 6 type-checker crash on Capacitor.swift.
 CAP_RELEASE_CFG="$IOS_APP_DIR/Pods/Target Support Files/Capacitor/Capacitor.release.xcconfig"
 if [[ -f "$CAP_RELEASE_CFG" ]]; then
   if grep -qE '^SWIFT_VERSION\s*=\s*5' "$CAP_RELEASE_CFG"; then
@@ -202,6 +245,16 @@ if [[ -f "$CAP_RELEASE_CFG" ]]; then
     echo "✅ Capacitor.release.xcconfig uses -Onone (constraint solver workaround)"
   else
     echo "⚠️  Capacitor.release.xcconfig missing SWIFT_OPTIMIZATION_LEVEL=-Onone — type-checker may still crash"
+  fi
+fi
+
+RC_RELEASE_CFG="$IOS_APP_DIR/Pods/Target Support Files/RevenuecatPurchasesCapacitor/RevenuecatPurchasesCapacitor.release.xcconfig"
+if [[ -f "$RC_RELEASE_CFG" ]]; then
+  if grep -qE '^SWIFT_VERSION\s*=\s*5' "$RC_RELEASE_CFG"; then
+    echo "✅ RevenuecatPurchasesCapacitor.release.xcconfig pinned to SWIFT_VERSION = 5"
+  else
+    echo "❌ RevenuecatPurchasesCapacitor.release.xcconfig is NOT pinned to SWIFT_VERSION = 5."
+    exit 1
   fi
 fi
 

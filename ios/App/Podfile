@@ -2,10 +2,15 @@ require_relative '../../node_modules/.bun/@capacitor+ios@8.2.0+1a4bec108d739029/
 
 platform :ios, '15.0'
 
-# Use modular headers globally so Capacitor + RevenueCat resolve as Swift modules.
-# This replaces the old `patch_capacitor_module_maps` hack which stripped
-# `s.module_map` entries and broke `CapacitorCordova does not define modules`.
-use_modular_headers!
+# Build all pods as static frameworks.
+# Required because Capacitor + RevenueCat ship custom `module_map`s, and
+# CocoaPods refuses to combine static libraries with custom module maps:
+#   "Using Swift static libraries with custom module maps is currently not
+#    supported. Please build `Capacitor` as a framework or remove the custom
+#    module map."
+# `use_frameworks! :linkage => :static` keeps the static-link behavior the
+# app expects while letting each pod expose itself as a proper Swift module.
+use_frameworks! :linkage => :static
 
 # workaround to avoid Xcode caching of Pods that requires
 # Product -> Clean Build Folder after new Cordova plugins installed

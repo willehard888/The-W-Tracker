@@ -210,7 +210,7 @@ const Leaderboard = () => {
         requiredTier="performer"
         currentTier={userTier}
         featureName="Leaderboard"
-        description="Reach Performer status or go Elite to see global rankings and compete for Season Champion."
+        description="Reach Performer status by checking in consistently to see global rankings and compete for Season Champion."
         icon={Trophy}
         requiresElite={false}
       />

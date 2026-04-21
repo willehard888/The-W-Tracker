@@ -928,15 +928,17 @@ const EliteFeed = () => {
       )}
 
       {!canPost && user && (
-        <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-border bg-card p-6 text-center mb-6">
-          <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center mx-auto mb-3">
-            <Lock size={20} className="text-muted-foreground" />
+        <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-gold/25 bg-gold/5 p-6 text-center mb-6">
+          <div className="h-12 w-12 rounded-full gradient-gold flex items-center justify-center mx-auto mb-3 glow-gold">
+            <Crown size={20} className="text-primary-foreground" />
           </div>
-          <p className="text-sm font-bold">Elite members can post</p>
-          <p className="text-xs text-muted-foreground mt-1 mb-4">Upgrade to share your discipline proof</p>
-          <Button variant="gold" size="sm" className="rounded-full" onClick={() => navigate("/paywall")}>
+          <p className="text-sm font-bold">Posting is for the Elite tier</p>
+          <p className="text-xs text-muted-foreground mt-1 mb-4 max-w-xs mx-auto">
+            Earn the Elite status — top 5% rank, 14 active days in 30, and a 30-day streak — to post here.
+          </p>
+          <Button variant="gold" size="sm" className="rounded-full" onClick={() => navigate("/profile")}>
             <Crown size={14} />
-            Unlock Elite
+            View Road to Elite
           </Button>
         </div>
       )}

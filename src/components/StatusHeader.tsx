@@ -139,8 +139,8 @@ const StatusHeader = () => {
           className="w-full flex items-center justify-center gap-2 pt-2 pb-1.5 active:opacity-80 transition-opacity"
           aria-label="The W-Tracker — Home"
         >
-          <BrandLogo size={20} alt="" className="rounded-md shadow-[0_2px_8px_hsl(42_78%_54%/0.5)]" />
-          <span className="font-display font-black tracking-[0.22em] uppercase text-gradient-gold leading-none text-[11px]">
+          <BrandLogo size={20} alt="" className="rounded-md shadow-[0_2px_8px_hsl(42_78%_54%/0.5)] text-sm" />
+          <span className="font-display font-black tracking-[0.22em] uppercase text-gradient-gold leading-none text-lg">
             The W-Tracker
           </span>
         </button>

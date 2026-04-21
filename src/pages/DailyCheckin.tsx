@@ -632,7 +632,7 @@ const DailyCheckin = () => {
           <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
             <div
               className={cn("h-full rounded-full transition-all duration-500",
-                perfPercent === 100 ? "bg-gold" : perfPercent >= 80 ? "bg-emerald-400" : perfPercent >= 50 ? "bg-amber-400" : "bg-destructive"
+                perfPercent === 100 ? "bg-gold" : perfPercent >= 80 ? "bg-teal" : perfPercent >= 50 ? "bg-amber" : "bg-destructive"
               )}
               style={{ width: `${perfPercent}%` }}
             />

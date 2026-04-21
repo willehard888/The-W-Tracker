@@ -1,114 +1,134 @@
 
 
-# Suunnitelma: Tee statuksesta oikeasti koukuttava
+# Suunnitelma: Tee referral-loopista rahakone
 
-Statussysteemi on jo olemassa (7 tieriä, RankPressureCard, TierPromotionCelebration, RoadToElite). Mutta se ei vielä **koukuta** — käyttäjä ei tiedä *milloin* hän putoaa, *kuka* on hengittämässä niskaan, eikä saa **mikrovoittoja** päivittäin. Korjataan nämä viidellä uudella mekanismilla + bugi.
-
----
-
-## 0. Bugikorjaus (pakollinen)
-`src/pages/Index.tsx` rivit 104–107 sisältävät irrallista JSX:ää funktion rungossa ennen `if (!profile) return null` -lausetta. Tämä rikkoo buildin. Poistetaan duplikaatti — `<RoadToElite compact />` renderöidään uudessa paikassa returnin sisällä alla kuvatun layoutin osana.
+Nykyisessä referral-systeemissä on 3 kriittistä vikaa: (1) `?ref=`-parametria ei tallenneta mihinkään signupin yhteydessä, (2) `referrals`-tauluun ei synny rivejä, (3) palkintoja ei jaeta automaattisesti. Eli koko loop on rikki. Korjataan + muutetaan malli aidoksi referral-rahakoneeksi.
 
 ---
 
-## 1. Tier Demotion Risk — "you're about to lose your status"
-**Mikä koukuttaa:** menettämisen pelko on vahvempi kuin saavuttamisen halu.
+## Ydinmalli: molemminpuolinen + konversiopohjainen
 
-Uusi hook `src/hooks/use-tier-risk.ts`:
-- Laskee `daysUntilDemotion` perustuen `streak`-deadlineen ja viimeiseen check-iniin.
-- Vertaa nykyistä `rank_score`a tier-kynnykseen → palauttaa `pointsAboveCutoff`.
-- Tila: `safe` / `pressure` (alle 20% marginaali) / `danger` (< 24h streak deadline TAI alle 5 pistettä cutoffista).
+**Kutsuttu saa:** 14 päivän trial (normaalin 7 sijaan) → matalampi kynnys liittyä.
+**Kutsuja saa:** porrastetut palkinnot, joista isoimmat laukeavat vasta **kun kutsuttu maksaa** ensimmäisen kuukauden.
 
-Uusi komponentti `src/components/TierRiskBanner.tsx`:
-- Näytetään `Index`-sivun yläosassa kun status `pressure` tai `danger`.
-- `danger`-tilassa: pulssaava punainen reuna, countdown-timer, "Lose **Performer** in 4h 32m" + CTA "Save your status".
-- `pressure`-tilassa: kullanvärinen, "Only **3.2 pts** above demotion line".
-
-## 2. Live Rivals — "kuka on perässäsi ja edessäsi"
-**Mikä koukuttaa:** konkreettiset ihmiset, ei abstrakti %-luku.
-
-Uusi komponentti `src/components/LiveRivals.tsx` (Index + Profile):
-- Hakee `profiles`-taulusta 1 käyttäjä rank-asteikolla yläpuolella + 1 alapuolella.
-- Näyttää: `StatusAvatar` + username + delta ("3.4 pts ahead" / "1.2 pts behind").
-- Alapuolella oleva korostetaan punaisella varjostuksella + "🔥 catching up" jos delta < 5.
-- Tap → `/u/:username` (jo olemassa).
-- Päivittyy joka kerta kun Index ladataan + react-query 30s staleTime.
-
-## 3. Daily Status Pulse — mikrokoukku
-**Mikä koukuttaa:** päivittäinen "miten suoriuduin tänään?" -palkinto.
-
-Uusi komponentti `src/components/DailyStatusPulse.tsx`:
-- Yksi rivi Index:n yläosassa: "**+2 ranks today** · 12 users behind you now"
-- Lasketaan `rank_score_history`-pohjalta (jos olemassa) tai snapshotataan profiilissa `last_rank_snapshot` -kenttään.
-- Käyttää nuolikuvaketta + väripaletteja: vihreä nousu, punainen lasku, harmaa staattinen.
-- Tap → Leaderboard.
-
-**DB:** Lisätään `profiles.last_rank_snapshot` (jsonb: `{rank, score, timestamp}`) + päivittäinen päivitys kun Index ladataan ensimmäisen kerran päivässä.
-
-## 4. Tier Progress Vault — "näe missä olet kokonaiskartalla"
-**Mikä koukuttaa:** visuaalinen progressio kaikkien 7 tierin yli.
-
-Uusi komponentti `src/components/TierLadder.tsx` (Profile-sivulle):
-- Vertikaalinen "tikapuu" Recruit → Legend, oma tier korostettuna kullalla.
-- Jokainen ylempi tier näyttää **mitä se vaatii** (rank %, streak, active days) + **kuinka monta käyttäjää siellä on**.
-- Lukitut tierit harmaina lukko-ikonilla, saavutetut kullalla checkmarkilla.
-- Avaa modaalin jokaiselle tierille → "Unlocks: Elite Feed posting, 2× XP, Crown badge…"
-
-## 5. Status Streak Combo — kerro mitä menetät
-**Mikä koukuttaa:** kasaantuva sijoitus.
-
-Päivitetään `RankPressureCard`:
-- Lisätään pieni rivi: "🔱 **8 days at Performer** — longest at this tier"
-- Jos pudottaa: TierPromotionCelebration-vastine "Lost Performer after 8 days" -tummalla animaatiolla (ei juhlaa).
-
-## 6. Index-layout uudelleenjärjestys
-Uusi prioriteettijärjestys (kriittisin ensin):
 ```text
-1. TierRiskBanner          (vain jos pressure/danger)
-2. DailyStatusPulse        (yksi rivi, päivittäinen kick)
-3. RankPressureCard        (jo olemassa, päivitetty §5)
-4. LiveRivals              (1 yllä + 1 alla)
-5. RoadToElite compact     (jo olemassa, korjattu paikalleen)
-6. CoachNudge / Briefing   (jo olemassa)
-7. Level / XP card
-8. Streak + Quests + CTA
-9. Recent Badges
+Kutsuttu signup (vahvistettu sähköposti)  →  kutsuja saa pienen XP-bumpin
+Kutsuttu maksaa 1. kuun (€4.99)           →  kutsuja saa iso palkinto + cash-credit
 ```
 
-## 7. Profile-sivun lisäykset
-- `TierLadder` ennen `BadgeVault`a.
-- `LiveRivals` Road to Elite -kortin alle.
+Cash-credit = ilmainen kuukausi (= €4.99 arvoa) per 3 maksavaa kutsuttua. Skaalautuu:
+
+| Maksavat kutsutut | Palkinto kutsujalle |
+|---|---|
+| 1 | +250 XP + "Recruiter"-badge |
+| 3 | **1 kk ilmainen membership** (credit) |
+| 5 | 2 kk ilmainen + "Ambassador"-badge |
+| 10 | 6 kk ilmainen + Founder-status + profiiliglow |
+| 25 | **Lifetime free membership** + Legend-badge |
+
+Signup-palkinto (ei maksua): +50 XP kutsujalle per vahvistettu uusi tili (spam-suoja: cap 20/kk).
 
 ---
 
-## Tekniset yksityiskohdat
+## 1. Korjataan tracking (pakollinen pohja)
+
+**Auth.tsx:** Kun `signUp` onnistuu ja URL:ssa on `?ref=<code>`, tallennetaan `ref`-koodi `localStorage`iin `pending_referral_code`-avaimella (ennen email-vahvistusta tiliä ei vielä ole).
+
+**Uusi edge function `claim-referral`:** Kutsutaan kerran onnistuneen sisäänkirjautumisen jälkeen jos `pending_referral_code` löytyy. Tekee:
+1. Etsii `referrer_id` = `profiles.user_id WHERE referral_code = :code`.
+2. Validoi: ei self-referral, user ei jo ole `referred_by`-kentässä.
+3. `UPDATE profiles SET referred_by = referrer_id WHERE user_id = :new_user`.
+4. `INSERT INTO referrals (referrer_id, referred_id)` (unique `referred_id`).
+5. Myöntää +50 XP kutsujalle + tarkistaa signup-milestonet.
+6. Palauttaa onnistumisen → client tyhjentää `localStorage`.
+
+**Trial-extensio:** Jos `referred_by IS NOT NULL`, `trial_started_at`-logiikka käyttää 14 päivää 7:n sijaan. Toteutetaan päivittämällä `has_active_access`: `trial_started_at > now() - interval (CASE WHEN referred_by IS NULL THEN '7 days' ELSE '14 days' END)`.
+
+## 2. Konversiopalkinnon laukaisu
+
+Webhookit (RevenueCat + Stripe) päivittävät jo `is_elite = true` kun maksu onnistuu. Lisätään niihin loppuun kutsu uudelle RPC:lle `reward_referral_conversion(user_id)`:
+
+```sql
+-- pseudo
+IF user.referred_by IS NOT NULL 
+   AND NOT EXISTS (converted=true in referrals WHERE referred_id=user)
+THEN
+  UPDATE referrals SET converted=true, converted_at=now() WHERE referred_id=user;
+  INCREMENT profiles.referral_count WHERE user_id=referrer;
+  GRANT +500 XP to referrer;
+  CHECK milestone thresholds → grant credits/badges atomically
+END IF;
+```
+
+Uusi sarake: `referrals.converted boolean default false`, `referrals.converted_at timestamptz`. Pidetään `rewarded` legacy-yhteensopivuuden vuoksi.
+
+## 3. Cash credits (ilmaiset kuukaudet)
+
+Uusi taulu `membership_credits`:
+- `user_id`, `months_credited int`, `source text ('referral')`, `consumed boolean default false`, `created_at`, `consumed_at`, `expires_at`.
+- RLS: user näkee omat.
+
+`has_active_access` laajennetaan tarkastamaan myös: onko ei-kulutettua, ei-vanhentunutta credit-riviä → palauttaa `true`. Kulutus: päivittäinen cron (tai "lazy" kulutus kun käyttäjä avaa appin ja ei ole muuta aktiivista oikeutta → consume one credit, set `consumed_at = now()`, anna 30 päivää lisää accessia merkitsemällä uusi `credit_active_until`-kenttä profiles-tauluun).
+
+Yksinkertaisempi ratkaisu (valitaan tämä): lisätään `profiles.membership_credits_until timestamptz nullable`. Kun myönnetään N kuukautta, asetetaan `GREATEST(now(), current_value) + N*30 days`. `has_active_access` tsekkaa: `OR membership_credits_until > now()`. Yksi kenttä, zero cron-tarvetta.
+
+## 4. UI: tee se näkyväksi ja palkitsevaksi
+
+**Paranneltu `Referrals.tsx`:**
+- Hero: "**€X earned this month**" — lasketaan `converted = true` × €4.99 (bruttoarvo kutsujalle, esitetään "Your friends' value to the community").
+- Kaksi erillistä statistiikkaa: **Signups** (kpl) + **Converted** (maksanut kpl) — korostaa että oikea kullannuppu on maksavat.
+- Milestone-kortit näyttävät paitsi kpl myös **kuinka monta puuttuu** ja progress-bar.
+- **Credits banner:** jos `membership_credits_until > now()`, näytetään kullanvärinen "🎁 **Free until 18 May** (next payment auto-skipped)".
+- **Shared-leaderboard-teaser:** "Top Inviters this month" — top 10 kutsujaa. Kilpailu + social proof.
+
+**Uusi komponentti `InviteCTA` (BottomNav-yläpuolella Index-sivulla viikoittain):**
+- Rotatoiva viesti: "Invite 1 friend → they get 14 days trial, you get +50 XP" / "3 paying friends = 1 month free for you".
+- Yksi tap → Referrals-sivu.
+- Näytetään vain kun `referral_count < 3` (ei spämmiä jo aktiivisille).
+
+**Share-sisältö upgrade:**
+- Uusi query param ladattuun jakolinkkiin sisältää käyttäjänimen: `/auth?ref=<code>&from=<username>`.
+- Signup-sivulla näytetään: "**@juha** invited you → **14-day free trial** (normally 7)" — dopamiini kutsutulle.
+- Edge function `og-invite`: generoi käyttäjäkohtainen OG-kuva ("Join @juha on The W Tracker") → parempi CTR sosiaalisessa mediassa.
+
+## 5. Spam- ja väärinkäyttösuojat
+
+- **Self-referral blokki**: RPC rejectoi jos `referrer_id = referred_id`.
+- **Email-domain cap**: Max 5 referralia / 30 pv per sama `@domain.com` (paitsi gmail/outlook/yahoo). SQL-funktio tarkistaa.
+- **Email-vahvistus pakollinen**: Signup-palkinto laukeaa vasta kun user on vahvistanut emailin (tarkistetaan `auth.users.email_confirmed_at`).
+- **Maksukonversio vaadittu isoille palkinnoille**: Credit-palkinnot vain `converted = true` kautta → RevenueCat/Stripe-webhook on ainoa laukaisin → ei voi väärentää.
+- **Milestone-idempotenssi**: `profiles.referral_milestones_hit jsonb default '[]'` — sama milestone ei laukea kahdesti.
+
+## 6. Tekniset yksityiskohdat
 
 **Uudet tiedostot:**
-- `src/hooks/use-tier-risk.ts` — lasketaan demotion-riski
-- `src/hooks/use-live-rivals.ts` — hakee rank-naapurit
-- `src/hooks/use-daily-pulse.ts` — vertailee snapshot vs nykyinen
-- `src/components/TierRiskBanner.tsx`
-- `src/components/LiveRivals.tsx`
-- `src/components/DailyStatusPulse.tsx`
-- `src/components/TierLadder.tsx`
+- `supabase/functions/claim-referral/index.ts` — tallentaa signup-referraalin + jakaa +50 XP.
+- `src/components/InviteCTA.tsx` — viikoittainen nudge Indexissä.
+- `src/hooks/use-referral-stats.ts` — laskee signup/converted/€-arvot.
 
 **Muokattavat:**
-- `src/pages/Index.tsx` — bugin korjaus + uusi layout
-- `src/pages/Profile.tsx` — TierLadder + LiveRivals
-- `src/components/RankPressureCard.tsx` — "X days at this tier" -rivi
-- `src/lib/status-tiers.ts` — lisätään `unlocks: string[]` jokaiseen tieriin (TierLadderia varten)
+- `src/pages/Auth.tsx` — tallenna `?ref`-koodi localStorageen ennen signupia.
+- `src/contexts/AuthContext.tsx` — signIn/sessionListener: jos `pending_referral_code` löytyy, kutsu `claim-referral` ja tyhjennä.
+- `src/pages/Referrals.tsx` — uusi UI (€ earned, signups vs converted, credits banner, top inviters).
+- `supabase/functions/revenuecat-webhook/index.ts` + `supabase/functions/stripe-webhook/index.ts` — kutsuu `reward_referral_conversion` kun `is_elite` muuttuu `true`:ksi.
+- `src/pages/Paywall.tsx` — näytä "Free until X" jos `membership_credits_until > now()`.
 
-**DB-migraatio:**
-- `profiles.last_rank_snapshot jsonb` (nullable)
-- Optional: SQL-funktio `get_rank_neighbors(p_user_id uuid, p_above int default 1, p_below int default 1)` — palauttaa user_idit + score-deltat. Suorituskykyparannus, mutta voidaan tehdä myös client-side kahdella kyselyllä (`gt`/`lt` rank_scoreen + limit 1, order asc/desc).
-
-**Muistipäivitykset:**
-- `mem://features/status-hierarchy` — lisätään 5 uutta koukku-mekanismia
-- Uusi `mem://features/status-addiction-loops` — dokumentoi demotion risk, live rivals, daily pulse, tier ladder
+**DB-migraatio (yksi tiedosto):**
+- `referrals.converted boolean default false`, `referrals.converted_at timestamptz` + index.
+- `profiles.membership_credits_until timestamptz nullable`.
+- `profiles.referral_milestones_hit jsonb default '[]'`.
+- RPC `reward_referral_conversion(p_user uuid)` — SECURITY DEFINER, atominen, idempotentti.
+- RPC `claim_referral(p_referrer_code text)` — SECURITY DEFINER, suojattu self-referralilta ja duplikoinneilta. (Edge function kutsuu tätä service-clientillä JWT:n kera.)
+- Päivitä `has_active_access`: trial 7→14 päivää jos `referred_by IS NOT NULL`, OR `membership_credits_until > now()`.
+- RPC `get_top_inviters(p_limit int)` — palauttaa kk:n top kutsujat (username + converted_count).
 
 **Konservatiivinen scope:**
-- Ei muutoksia status_tier-laskentalogiikkaan, RLS:ään, paywalliin tai onboardingiin.
-- Ei uusia push-notifikaatioita (tehdään myöhemmässä iteraatiossa).
-- Kaikki uudet komponentit puhtaita, käyttävät olemassa olevia design-tokeneita (gold, glass-card, gradient-gold, animate-reveal).
-- Käyttävät jo olemassa olevia kuvioita: `StatusAvatar`, `getTierConfig`, `useAuth`, react-query.
+- Ei muutosta itse maksuprovidereihin (RevenueCat & Stripe ennallaan, vain webhookiin lisäys).
+- Ei muutosta onboardingiin.
+- Nykyinen "rewards"-lista korvataan uudella, mutta kaikki aiemmat `referrals`-rivit säilyvät — `converted = false` oletuksena, joten kukaan ei saa takautuvia palkintoja (turvallinen pohja).
+- Cache-pohjainen spam-suoja tehdään SQL-funktiona — ei kolmannen osapuolen palveluita.
+
+**Muistipäivitykset:**
+- Uusi `mem://features/referral-money-machine` — dokumentoi loop, palkinnot, credits, spam-suojat.
+- `mem://monetization/membership` — lisätään maininta 14-päivän trial:ista referraalisignupeilla ja credit-systeemistä.
 

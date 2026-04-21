@@ -79,6 +79,10 @@ const Paywall = () => {
     );
   }
 
+  // ─── Credits banner (non-member with active referral credits) ─────
+  const creditsUntilRaw = (useAuth as any)?.profile?.membership_credits_until;
+  // (resolved below via inline check using profile prop — keep hook-safe above)
+
   // ─── Handlers ───────────────────────────────────────
   const handleStripeCheckout = async () => {
     setPurchasing(true);

@@ -50,14 +50,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const ensureProfile = async (authUser: User) => {
     const username = buildFallbackUsername(authUser);
 
-    await supabase.from("profiles").upsert(
-      {
-        user_id: authUser.id,
-        username,
-        referral_code: `${username}_${authUser.id.slice(0, 6)}`.slice(0, 20),
-      },
-      { onConflict: "user_id" },
-    );
+    // IMPORTANT: Use insert (not upsert) so we never overwrite an existing
+    // username/referral_code. If a profile row already exists, ignore the
+    // duplicate-key error — fetchProfile will re-read whatever is stored.
+    const { error } = await supabase.from("profiles").insert({
+      user_id: authUser.id,
+      username,
+      referral_code: `${username}_${authUser.id.slice(0, 6)}`.slice(0, 20),
+    });
+
+    if (error && error.code !== "23505") {
+      console.warn("ensureProfile insert error:", error);
+    }
   };
 
   const shouldForceAppleUsernameSetup = (authUser: User, nextProfile: any | null) => {

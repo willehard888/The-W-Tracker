@@ -144,21 +144,23 @@ const App = () => {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        {!splashDone && <SplashScreen onComplete={handleSplashComplete} />}
-        <BrowserRouter>
-          <AuthProvider>
-            <RevenueCatProvider>
-              {splashDone && <AmbientParticles />}
-              <AppRoutes />
-            </RevenueCatProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          {!splashDone && <SplashScreen onComplete={handleSplashComplete} />}
+          <BrowserRouter>
+            <AuthProvider>
+              <RevenueCatProvider>
+                {splashDone && <AmbientParticles />}
+                <AppRoutes />
+              </RevenueCatProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 

@@ -73,6 +73,92 @@ const buildCommentTree = (flat: any[] | undefined): CommentNode[] => {
   return roots;
 };
 
+interface CommentThreadProps {
+  node: CommentNode;
+  currentUserId?: string;
+  onReply: (id: string, username: string, snippet: string) => void;
+}
+
+const CommentThread = ({ node, currentUserId, onReply }: CommentThreadProps) => {
+  const username = node.profile?.username || "anon";
+  const isReply = node.depth > 0;
+
+  return (
+    <div className="animate-fade-in">
+      <div className="flex gap-2.5 relative">
+        {/* Vertical thread line for replies */}
+        {isReply && (
+          <span
+            aria-hidden="true"
+            className="absolute -left-3 top-0 bottom-0 w-px bg-gradient-to-b from-gold/30 via-gold/15 to-transparent"
+          />
+        )}
+        <div className="h-7 w-7 rounded-full gradient-gold flex items-center justify-center text-[10px] font-black text-primary-foreground shrink-0 mt-0.5">
+          {username.charAt(0)?.toUpperCase() || "?"}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div
+            className={cn(
+              "border rounded-2xl rounded-tl-sm px-3 py-2 inline-block max-w-full",
+              isReply
+                ? "bg-card border-gold/25 shadow-[0_0_0_1px_hsl(var(--gold)/0.05)]"
+                : "bg-card border-border/40",
+            )}
+          >
+            <span className="text-[11px] font-bold text-gold">@{username}</span>
+            <p className="text-xs text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
+              {node.content}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 mt-0.5 ml-3">
+            <p className="text-[9px] text-muted-foreground/50">
+              {formatDistanceToNow(new Date(node.created_at), { addSuffix: true })}
+            </p>
+            {currentUserId && (
+              <button
+                type="button"
+                onClick={() => {
+                  hapticSelection();
+                  onReply(node.id, username, node.content || "");
+                }}
+                className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
+              >
+                <Reply size={10} />
+                Reply
+              </button>
+            )}
+            {node.children.length > 0 && (
+              <span className="text-[9px] text-muted-foreground/40 tabular-nums">
+                · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Recursive children */}
+      {node.children.length > 0 && (
+        <div
+          className={cn(
+            "mt-2.5 space-y-2.5 relative",
+            // Indent up to MAX_VISUAL_DEPTH; cap to keep mobile readable
+            node.depth < MAX_VISUAL_DEPTH ? "ml-6 pl-3 border-l border-gold/15" : "ml-3 pl-3 border-l border-dashed border-gold/20",
+          )}
+        >
+          {node.children.map((child: CommentNode) => (
+            <CommentThread
+              key={child.id}
+              node={child}
+              currentUserId={currentUserId}
+              onReply={onReply}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 const EliteFeed = () => {
   const { user, profile, isElite } = useAuth();

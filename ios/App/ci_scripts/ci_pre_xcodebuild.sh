@@ -52,9 +52,17 @@ if [[ ! -d "$IOS_APP_DIR/Pods" ]]; then
 
   export COCOAPODS_DISABLE_STATS=1
 
+  echo "🌐 Verifying CocoaPods CDN reachability..."
+  if ! curl -sf --max-time 15 https://cdn.cocoapods.org/CocoaPods-version.yml > /dev/null; then
+    echo "⚠️ CocoaPods CDN unreachable — installing GitHub Specs mirror as fallback"
+    pod repo remove trunk 2>&1 || true
+    pod repo add trunk https://github.com/CocoaPods/Specs.git 2>&1 || \
+      pod repo add-cdn trunk https://cdn.cocoapods.org/ 2>&1 || true
+  fi
+
   pre_pod_install_with_retry() {
     local attempt=1
-    local max_attempts=3
+    local max_attempts=4
     local repo_update_flag=""
 
     while [[ $attempt -le $max_attempts ]]; do
@@ -65,6 +73,13 @@ if [[ ! -d "$IOS_APP_DIR/Pods" ]]; then
       fi
       echo "⚠️ pod install attempt $attempt failed"
       repo_update_flag="--repo-update"
+
+      if [[ $attempt -eq 3 ]]; then
+        echo "🔀 Swapping trunk repo to GitHub Specs mirror (CDN appears down)..."
+        pod repo remove trunk 2>&1 || true
+        pod repo add trunk https://github.com/CocoaPods/Specs.git 2>&1 || true
+      fi
+
       local sleep_seconds=$((attempt * 5))
       echo "⏳ Sleeping ${sleep_seconds}s before retry..."
       sleep $sleep_seconds

@@ -6,6 +6,8 @@ import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
+import { useModeration } from "@/hooks/use-moderation";
+import ModerationGate from "@/components/ModerationGate";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { Button } from "@/components/ui/button";
@@ -60,6 +62,7 @@ const EliteFeed = () => {
 
   // Pull-to-refresh
   const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["elite-feed"]]);
+  const moderation = useModeration();
 
   // Check if current user is admin
   const { data: isAdmin } = useQuery({
@@ -182,6 +185,28 @@ const EliteFeed = () => {
       let image_url = null;
       let video_url = null;
 
+      // Moderate image FIRST (thumbnail) — skip upload if blocked
+      if (imageFile) {
+        const outcome = await moderation.moderateImage({
+          file: imageFile,
+          kind: "feed_post",
+        });
+        if (outcome.blocked) {
+          throw new Error(outcome.friendlyMessage ?? "Post rejected by content policy");
+        }
+      }
+
+      // Moderate text in parallel-ish (fail-open inside hook)
+      if (newPost && newPost.trim().length > 0 && !imageFile) {
+        const outcome = await moderation.moderateText({
+          text: newPost.trim(),
+          kind: "feed_post",
+        });
+        if (outcome.blocked) {
+          throw new Error(outcome.friendlyMessage ?? "Post rejected by content policy");
+        }
+      }
+
       if (imageFile) {
         const fileExt = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
         const safeExt = ["jpeg", "jpg", "png", "webp", "heic", "heif"].includes(fileExt) ? fileExt : "jpg";
@@ -208,36 +233,6 @@ const EliteFeed = () => {
         if (uploadErr) throw new Error(`Video upload failed: ${uploadErr.message}`);
         const { data: urlData } = supabase.storage.from("feed-images").getPublicUrl(path);
         video_url = urlData.publicUrl;
-      }
-
-      // AI moderation pre-check (image + text). Videos are not moderated yet.
-      if (image_url || (newPost && newPost.trim().length > 0)) {
-        try {
-          const { data: modData } = await supabase.functions.invoke("moderate-content", {
-            body: {
-              image_url,
-              text: newPost || null,
-              kind: "feed_post",
-            },
-          });
-          if (modData?.action === "block") {
-            // Clean up uploaded files
-            if (imageFile && image_url) {
-              const path = image_url.split("/feed-images/")[1];
-              if (path) await supabase.storage.from("feed-images").remove([path]);
-            }
-            if (videoFile && video_url) {
-              const path = video_url.split("/feed-images/")[1];
-              if (path) await supabase.storage.from("feed-images").remove([path]);
-            }
-            throw new Error(modData.reason || "Post rejected by content policy");
-          }
-        } catch (modErr: any) {
-          if (modErr?.message?.includes("rejected") || modErr?.message?.includes("policy")) {
-            throw modErr;
-          }
-          console.warn("moderation skipped:", modErr);
-        }
       }
 
       await supabase.from("feed_posts").insert({

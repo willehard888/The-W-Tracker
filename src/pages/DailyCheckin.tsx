@@ -415,6 +415,13 @@ const DailyCheckin = () => {
 
   return (
     <div className="min-h-screen pb-4 px-4 pt-4 safe-top">
+      <ModerationGate
+        state={moderation.state}
+        message={moderation.message}
+        thumbnailUrl={proofPreview}
+        onCancel={moderation.cancel}
+        onDismiss={moderation.reset}
+      />
       <div className="flex items-center gap-3 mb-6 animate-reveal mx-0 my-[10px] py-[10px]">
         <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
           <ChevronLeft size={20} />

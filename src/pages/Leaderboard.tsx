@@ -230,18 +230,36 @@ const Leaderboard = () => {
       
 
       <div className="animate-reveal mb-4 relative">
-        <div className="absolute -inset-x-4 -top-2 -bottom-4 pointer-events-none opacity-60 -z-10"
+        <div className="absolute -inset-x-8 -top-6 -bottom-6 pointer-events-none -z-10"
              style={{
                background:
-                 "radial-gradient(ellipse 80% 60% at 50% 0%, hsl(var(--gold) / 0.18) 0%, transparent 70%)",
+                 "radial-gradient(ellipse 90% 70% at 50% 0%, hsl(var(--gold) / 0.22) 0%, transparent 65%)",
              }}
              aria-hidden
         />
-        <div className="flex items-center gap-2">
-          <Trophy size={22} className="text-gold" />
-          <h1 className="font-display text-3xl font-black tracking-tight">Leaderboard</h1>
+        <div className="absolute -inset-x-8 -top-6 h-32 pointer-events-none -z-10 opacity-50 mix-blend-screen"
+             style={{
+               background:
+                 "conic-gradient(from 210deg at 50% 120%, transparent 0deg, hsl(var(--gold) / 0.35) 90deg, transparent 180deg)",
+               filter: "blur(28px)",
+             }}
+             aria-hidden
+        />
+        <div className="flex items-center gap-2.5">
+          <div className="relative">
+            <Trophy size={26} className="text-gold drop-shadow-[0_0_12px_hsl(var(--gold)/0.6)]" />
+            <div className="absolute inset-0 animate-pulse opacity-60">
+              <Trophy size={26} className="text-gold blur-[6px]" />
+            </div>
+          </div>
+          <h1 className="font-display text-3xl font-black tracking-tight bg-gradient-to-br from-gold via-amber-200 to-gold bg-clip-text text-transparent">
+            Leaderboard
+          </h1>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">Season & all time rankings — climb or fall.</p>
+        <p className="text-sm text-muted-foreground mt-1.5 flex items-center gap-1.5">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold animate-pulse shadow-[0_0_8px_hsl(var(--gold))]" />
+          Season & all time rankings — climb or fall.
+        </p>
       </div>
 
       {/* Season banner */}
@@ -305,9 +323,19 @@ const Leaderboard = () => {
         </div>
       )}
 
-      {/* Podium — top 3 */}
+      {/* Podium — top 3, hero treatment */}
       {currentLeaders.length >= 1 && (
-        <div className="relative mb-4 animate-reveal animate-reveal-delay-2">
+        <div className="relative mb-5 animate-reveal animate-reveal-delay-2">
+          {/* Spotlight glow behind #1 */}
+          <div
+            className="absolute left-1/2 -translate-x-1/2 top-0 w-56 h-56 pointer-events-none -z-10 opacity-70"
+            style={{
+              background:
+                "radial-gradient(circle at 50% 30%, hsl(var(--gold) / 0.35) 0%, transparent 60%)",
+              filter: "blur(12px)",
+            }}
+            aria-hidden
+          />
           <div className="grid grid-cols-3 gap-2 items-end">
             {/* #2 */}
             {currentLeaders[1] && (
@@ -350,33 +378,64 @@ const Leaderboard = () => {
       )}
 
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
-        <div className="space-y-2">
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">The Chase</p>
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+        </div>
+        <div className="space-y-1.5">
           {currentLeaders.slice(3).map((user, i) => {
             const points = mode === "season" ? user.season_points || 0 : user.xp;
             const wins = championData?.counts?.[user.user_id] || 0;
+            const displayRank = i + 4;
+            const isMe = user.user_id === profile?.user_id;
+            const isTop10 = displayRank <= 10;
 
             return (
-              <div
+              <button
                 key={user.user_id}
+                onClick={() => navigate(`/user/${user.user_id}`)}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl border p-4",
-                  user.user_id === profile?.user_id ? "border-gold/30 bg-gold/5 ring-1 ring-gold/40" : "border-border bg-card"
+                  "w-full flex items-center gap-3 rounded-xl border p-3.5 text-left transition-all active:scale-[0.99]",
+                  isMe
+                    ? "border-gold/50 bg-gradient-to-r from-gold/10 via-gold/5 to-transparent ring-1 ring-gold/40 shadow-[0_0_20px_hsl(var(--gold)/0.15)]"
+                    : isTop10
+                    ? "border-border bg-card hover:border-gold/20"
+                    : "border-border/60 bg-card/60"
                 )}
               >
-                <div className="font-display font-black text-xl w-8 text-center text-muted-foreground tabular-nums">{i + 4}</div>
+                <div className={cn(
+                  "shrink-0 h-9 w-9 rounded-lg flex items-center justify-center font-display font-black text-sm tabular-nums",
+                  isTop10
+                    ? "bg-gold/10 text-gold border border-gold/20"
+                    : "bg-secondary text-muted-foreground"
+                )}>
+                  {displayRank}
+                </div>
                 <StatusAvatar src={user.avatar_url} name={user.username} tier={user.status_tier || 'recruit'} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <button
-                    onClick={() => navigate(`/user/${user.user_id}`)}
-                    className={cn("text-sm font-semibold hover:underline text-left truncate", user.user_id === profile?.user_id && "text-gold")}
-                  >
-                    @{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}
-                  </button>
-                  <p className="text-xs text-muted-foreground">Level {user.level}</p>
-                  {wins > 0 && <p className="text-[11px] text-gold/80">{wins}x Champion</p>}
+                  <p className={cn("text-sm font-semibold truncate flex items-center gap-1.5", isMe && "text-gold")}>
+                    @{user.username}
+                    {isMe && <span className="text-[9px] text-gold/70 font-medium">(you)</span>}
+                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-[11px] text-muted-foreground">Lvl {user.level}</p>
+                    {wins > 0 && (
+                      <p className="text-[10px] text-gold/80 flex items-center gap-0.5">
+                        <Medal size={9} /> {wins}×
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <p className="font-display font-bold text-sm tabular-nums">{points.toLocaleString()}</p>
-              </div>
+                <div className="text-right">
+                  <p className={cn("font-display font-black text-sm tabular-nums", isMe && "text-gold")}>
+                    {points.toLocaleString()}
+                  </p>
+                  <p className="text-[9px] text-muted-foreground/60 uppercase tracking-wider font-bold">
+                    {mode === "season" ? "S-XP" : "XP"}
+                  </p>
+                </div>
+              </button>
             );
           })}
         </div>
@@ -419,40 +478,72 @@ interface PodiumCardProps {
 const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCardProps) => {
   const isFirst = rank === 1;
   const isSecond = rank === 2;
-  const heightClass = isFirst ? "pt-6 pb-5" : isSecond ? "pt-4 pb-4 mt-4" : "pt-4 pb-3.5 mt-6";
+  const heightClass = isFirst ? "pt-8 pb-5" : isSecond ? "pt-5 pb-4 mt-6" : "pt-5 pb-3.5 mt-10";
   const rankLabel = isFirst ? "1st" : isSecond ? "2nd" : "3rd";
   const accent = isFirst
-    ? "border-gold/60 bg-gradient-to-b from-gold/[0.18] via-gold/[0.06] to-card glow-gold-sm"
+    ? "border-gold/70 bg-gradient-to-b from-gold/[0.22] via-gold/[0.08] to-card shadow-[0_8px_32px_-8px_hsl(var(--gold)/0.5)]"
     : isSecond
-    ? "border-foreground/25 bg-gradient-to-b from-foreground/[0.08] via-foreground/[0.02] to-card"
-    : "border-amber-700/40 bg-gradient-to-b from-amber-700/[0.12] via-amber-700/[0.04] to-card";
+    ? "border-foreground/30 bg-gradient-to-b from-foreground/[0.1] via-foreground/[0.03] to-card"
+    : "border-amber-700/50 bg-gradient-to-b from-amber-700/[0.14] via-amber-700/[0.05] to-card";
 
   return (
     <button
       onClick={onClick}
       className={cn(
-        "relative rounded-2xl border overflow-hidden flex flex-col items-center px-2 text-center transition-transform active:scale-[0.97]",
+        "relative rounded-2xl border overflow-visible flex flex-col items-center px-2 text-center transition-transform active:scale-[0.97]",
         heightClass,
         accent,
         isMe && "ring-2 ring-gold/60",
       )}
     >
+      {/* Floating crown for #1 */}
       {isFirst && (
-        <Crown size={20} className="text-gold mb-1 drop-shadow-[0_0_6px_hsl(var(--gold)/0.6)]" />
+        <div className="absolute -top-5 left-1/2 -translate-x-1/2 pointer-events-none">
+          <div className="relative">
+            <Crown size={28} className="text-gold drop-shadow-[0_0_12px_hsl(var(--gold)/0.9)] animate-[float_3s_ease-in-out_infinite]" />
+            <div className="absolute inset-0 blur-md opacity-70 animate-pulse">
+              <Crown size={28} className="text-gold" />
+            </div>
+          </div>
+        </div>
       )}
-      <div className={cn("absolute top-1.5 right-1.5 font-display font-black text-[10px] tabular-nums uppercase tracking-wider",
+
+      {/* Soft gold gradient halo for #1 */}
+      {isFirst && (
+        <div
+          className="absolute inset-0 rounded-2xl pointer-events-none opacity-60"
+          aria-hidden
+          style={{
+            background:
+              "linear-gradient(135deg, hsl(var(--gold) / 0.15) 0%, transparent 45%, transparent 55%, hsl(var(--gold) / 0.1) 100%)",
+          }}
+        />
+      )}
+
+      <div className={cn("absolute top-2 right-2 font-display font-black text-[10px] tabular-nums uppercase tracking-wider",
         isFirst ? "text-gold" : isSecond ? "text-foreground/60" : "text-amber-600"
       )}>
         {rankLabel}
       </div>
+
       <div className={cn("relative", isFirst && "scale-110")}>
-        <StatusAvatar
-          src={user.avatar_url}
-          name={user.username}
-          tier={user.status_tier || "recruit"}
-          size={isFirst ? "md" : "sm"}
-        />
+        {isFirst && (
+          <div
+            className="absolute inset-0 rounded-full blur-xl opacity-60 animate-pulse"
+            style={{ background: "hsl(var(--gold) / 0.6)" }}
+            aria-hidden
+          />
+        )}
+        <div className="relative">
+          <StatusAvatar
+            src={user.avatar_url}
+            name={user.username}
+            tier={user.status_tier || "recruit"}
+            size={isFirst ? "md" : "sm"}
+          />
+        </div>
       </div>
+
       <p className={cn(
         "font-display font-bold text-xs mt-2 truncate max-w-full px-1",
         isMe && "text-gold",
@@ -462,7 +553,7 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
       {isMe && <span className="text-[9px] text-gold/70 font-medium -mt-0.5">(you)</span>}
       <p className={cn(
         "font-display font-black tabular-nums mt-1",
-        isFirst ? "text-gold text-lg" : "text-foreground text-sm",
+        isFirst ? "text-gold text-xl" : "text-foreground text-sm",
       )}>
         {points.toLocaleString()}
       </p>
@@ -471,7 +562,7 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
       </p>
       {wins > 0 && (
         <p className="text-[9px] text-gold/80 mt-1 flex items-center gap-0.5">
-          <Medal size={9} /> {wins}x
+          <Medal size={9} /> {wins}×
         </p>
       )}
     </button>

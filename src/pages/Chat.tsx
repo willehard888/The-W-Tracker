@@ -16,13 +16,14 @@ const Chat = () => {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: partner } = useQuery({
     queryKey: ["chat-partner", partnerId],
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("user_id, username, avatar_url, status_tier, level")
+        .select("user_id, username, avatar_url, status_tier, level, is_elite")
         .eq("user_id", partnerId!)
         .single();
       return data;
@@ -87,7 +88,7 @@ const Chat = () => {
 
   // Scroll to bottom on new messages
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages?.length]);
 
   const handleSend = async () => {
@@ -107,7 +108,7 @@ const Chat = () => {
         .select("username")
         .eq("user_id", user.id)
         .single();
-      
+
       await supabase.functions.invoke("notify-message", {
         body: {
           receiver_id: partnerId,
@@ -125,46 +126,124 @@ const Chat = () => {
     queryClient.invalidateQueries({ queryKey: ["conversations"] });
   };
 
+  const partnerTier = (partner as any)?.status_tier || "recruit";
+  const partnerIsElite = (partner as any)?.is_elite;
+
   return (
-    <div className="fixed inset-0 flex flex-col safe-top bg-background z-30">
-      {/* Header */}
-      <div className="shrink-0 bg-card/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate("/messages")} className="text-muted-foreground hover:text-foreground transition-colors">
-          <ChevronLeft size={20} />
-        </button>
-        <button onClick={() => navigate(`/user/${partnerId}`)} className="flex items-center gap-2.5">
-          <StatusAvatar src={partner?.avatar_url} name={partner?.username} tier={(partner as any)?.status_tier || 'recruit'} size="xs" />
-          <div className="text-left">
-            <p className="text-sm font-semibold leading-none">@{partner?.username || "..."}</p>
-            <p className="text-[10px] text-muted-foreground">Level {partner?.level || "?"}</p>
-          </div>
-        </button>
+    <div className="flex flex-col h-full bg-background">
+      {/* Header — sticky, themed with subtle gold sheen */}
+      <div className="shrink-0 relative border-b border-border/60 bg-card/80 backdrop-blur-xl px-4 py-3 safe-top">
+        <div
+          className="absolute inset-0 pointer-events-none opacity-40"
+          style={{
+            background:
+              "linear-gradient(180deg, hsl(var(--gold) / 0.06) 0%, transparent 100%)",
+          }}
+          aria-hidden
+        />
+        <div className="relative flex items-center gap-3">
+          <button
+            onClick={() => navigate("/messages")}
+            className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors -ml-2"
+            aria-label="Back"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            onClick={() => navigate(`/user/${partnerId}`)}
+            className="flex items-center gap-2.5 flex-1 min-w-0 active:opacity-70 transition-opacity"
+          >
+            <StatusAvatar
+              src={partner?.avatar_url}
+              name={partner?.username}
+              tier={partnerTier}
+              size="xs"
+            />
+            <div className="text-left min-w-0">
+              <p className="text-sm font-semibold leading-tight truncate flex items-center gap-1.5">
+                @{partner?.username || "..."}
+                {partnerIsElite && (
+                  <span className="text-[9px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-[1px] leading-none">
+                    Elite
+                  </span>
+                )}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Level {partner?.level || "?"} · {partnerTier.replace("_", " ")}
+              </p>
+            </div>
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4 space-y-1.5"
+      >
         {(!messages || messages.length === 0) && (
-          <p className="text-xs text-muted-foreground/50 text-center py-8">Start the conversation</p>
+          <div className="flex flex-col items-center justify-center h-full text-center px-6 py-12">
+            <div className="h-14 w-14 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mb-3">
+              <Send size={20} className="text-gold/70" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">Start the conversation</p>
+            <p className="text-xs text-muted-foreground/70 mt-1 max-w-[220px]">
+              Say something to @{partner?.username || "them"} — messages are private.
+            </p>
+          </div>
         )}
-        {messages?.map((msg) => {
+        {messages?.map((msg, idx) => {
           const isOwn = msg.sender_id === user?.id;
+          const prev = messages[idx - 1];
+          const next = messages[idx + 1];
+          const sameAsPrev = prev && prev.sender_id === msg.sender_id;
+          const sameAsNext = next && next.sender_id === msg.sender_id;
+          const showTime = !next || next.sender_id !== msg.sender_id ||
+            new Date(next.created_at).getTime() - new Date(msg.created_at).getTime() > 5 * 60 * 1000;
+
           return (
-            <div key={msg.id} className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
-              <div
-                className={cn(
-                  "max-w-[75%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
-                  isOwn
-                    ? "bg-gold/15 text-foreground rounded-br-sm"
-                    : "bg-secondary text-foreground rounded-bl-sm"
+            <div
+              key={msg.id}
+              className={cn(
+                "flex",
+                isOwn ? "justify-end" : "justify-start",
+                sameAsPrev ? "mt-0.5" : "mt-2"
+              )}
+            >
+              <div className={cn("max-w-[78%] flex flex-col", isOwn ? "items-end" : "items-start")}>
+                <div
+                  className={cn(
+                    "px-3.5 py-2 text-sm leading-relaxed break-words",
+                    isOwn
+                      ? "bg-gradient-to-br from-gold/25 to-gold/10 text-foreground border border-gold/25 shadow-[0_1px_0_hsl(var(--gold)/0.25)_inset]"
+                      : "bg-secondary/80 text-foreground border border-border/50",
+                    // Smart bubble corners based on grouping
+                    isOwn
+                      ? cn(
+                          "rounded-2xl",
+                          sameAsPrev && "rounded-tr-md",
+                          sameAsNext && "rounded-br-md"
+                        )
+                      : cn(
+                          "rounded-2xl",
+                          sameAsPrev && "rounded-tl-md",
+                          sameAsNext && "rounded-bl-md"
+                        )
+                  )}
+                >
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                </div>
+                {showTime && (
+                  <p
+                    className={cn(
+                      "text-[9px] mt-1 px-1",
+                      isOwn ? "text-gold/50" : "text-muted-foreground/50"
+                    )}
+                  >
+                    {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                    {isOwn && msg.read && <span className="ml-1">· seen</span>}
+                  </p>
                 )}
-              >
-                <p className="overflow-wrap-break-word">{msg.content}</p>
-                <p className={cn(
-                  "text-[9px] mt-1",
-                  isOwn ? "text-gold/50 text-right" : "text-muted-foreground/40"
-                )}>
-                  {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
-                </p>
               </div>
             </div>
           );
@@ -172,26 +251,41 @@ const Chat = () => {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input - sticky at bottom, above BottomNav */}
-      <div className="shrink-0 bg-card/95 backdrop-blur-md border-t border-border px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <div className="max-w-md mx-auto flex gap-2">
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Type a message..."
-            maxLength={1000}
-            className="flex-1 h-10 px-4 rounded-full border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-purple-500/30 transition-shadow"
-            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-          />
+      {/* Input */}
+      <div className="shrink-0 border-t border-border/60 bg-card/90 backdrop-blur-xl px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        <div className="flex gap-2 items-end">
+          <div className="flex-1 relative">
+            <input
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Message..."
+              maxLength={1000}
+              className={cn(
+                "w-full h-11 px-4 rounded-full border bg-background text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition-all",
+                text.trim()
+                  ? "border-gold/40 focus:ring-2 focus:ring-gold/30 shadow-[0_0_0_1px_hsl(var(--gold)/0.15)]"
+                  : "border-border focus:ring-1 focus:ring-border"
+              )}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+            />
+          </div>
           <button
             onClick={handleSend}
             disabled={!text.trim() || sending}
             className={cn(
-              "h-10 w-10 rounded-full flex items-center justify-center transition-all active:scale-95 shrink-0",
-              text.trim() ? "bg-purple-500 text-white" : "bg-secondary text-muted-foreground"
+              "h-11 w-11 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0 shadow-lg",
+              text.trim() && !sending
+                ? "bg-gradient-to-br from-gold to-gold/80 text-primary-foreground shadow-gold/40"
+                : "bg-secondary text-muted-foreground/50 shadow-transparent"
             )}
+            aria-label="Send"
           >
-            <Send size={16} />
+            <Send size={16} className={cn(sending && "animate-pulse")} />
           </button>
         </div>
       </div>

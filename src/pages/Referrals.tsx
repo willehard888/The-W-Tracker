@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import BrandLogo from "@/components/BrandLogo";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
+import { cn } from "@/lib/utils";
 
 const Referrals = () => {
   const { profile } = useAuth();
@@ -154,8 +155,8 @@ const Referrals = () => {
                   )}>
                     <span>{r.count}</span>
                     {r.unlocked && (
-                      <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-emerald-500 border-2 border-background flex items-center justify-center">
-                        <Check size={10} className="text-background" strokeWidth={3.5} />
+                      <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gold border-2 border-background flex items-center justify-center shadow-lg">
+                        <Check size={10} className="text-primary-foreground" strokeWidth={3.5} />
                       </span>
                     )}
                   </div>

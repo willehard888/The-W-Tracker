@@ -10,6 +10,57 @@ ROOT_DIR="$(cd "$IOS_APP_DIR/../.." && pwd)"
 echo "ℹ️  ROOT_DIR=$ROOT_DIR"
 echo "ℹ️  IOS_APP_DIR=$IOS_APP_DIR"
 
+# ---------------------------------------------------------------------------
+# Toolchain version pin re-verification
+# ---------------------------------------------------------------------------
+# ci_post_clone.sh exports PINNED_PODS_SWIFT_VERSION + verifies Xcode/Swift
+# host versions. Re-check here so that even if Xcode Cloud restructures the
+# build pipeline (skipping post-clone, running pre-xcodebuild from a cached
+# image, etc.), we still fail fast on toolchain drift.
+REQUIRED_XCODE_MAJOR_MINOR="${REQUIRED_XCODE_MAJOR_MINOR:-26.4}"
+REQUIRED_SWIFT_MAJOR="${REQUIRED_SWIFT_MAJOR:-6}"
+PINNED_PODS_SWIFT_VERSION="${PINNED_PODS_SWIFT_VERSION:-5.0}"
+export PINNED_PODS_SWIFT_VERSION
+
+if command -v xcodebuild &>/dev/null; then
+  XCODE_VER_FULL=$(xcodebuild -version 2>/dev/null | head -1 | awk '{print $2}')
+  case "$XCODE_VER_FULL" in
+    ${REQUIRED_XCODE_MAJOR_MINOR}*) echo "✅ Xcode ${XCODE_VER_FULL} matches pin ${REQUIRED_XCODE_MAJOR_MINOR}.x" ;;
+    *)
+      echo "❌ Xcode ${XCODE_VER_FULL} does not match required ${REQUIRED_XCODE_MAJOR_MINOR}.x"
+      exit 1
+      ;;
+  esac
+fi
+if command -v swift &>/dev/null; then
+  SWIFT_VER_FULL=$(swift --version 2>/dev/null | head -1 || echo "unknown")
+  if echo "$SWIFT_VER_FULL" | grep -qE "Swift version ${REQUIRED_SWIFT_MAJOR}\."; then
+    echo "✅ Swift host compiler is Swift ${REQUIRED_SWIFT_MAJOR}.x as required"
+  else
+    echo "❌ Swift host compiler is not Swift ${REQUIRED_SWIFT_MAJOR}.x — Capacitor pods pinned to Swift ${PINNED_PODS_SWIFT_VERSION} cannot be built safely."
+    echo "   Reported: ${SWIFT_VER_FULL}"
+    exit 1
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# Stale modulemap detector — pre-pod-install gate
+# ---------------------------------------------------------------------------
+# If a stale Capacitor*.modulemap or Cordova*.modulemap from a previous build
+# survives into pre-xcodebuild, it can shadow the pod's own framework
+# modulemap and trigger `module 'Cordova' not found` during SwiftCompile.
+# When we control pod install (the missing-Pods branch below), we delete and
+# regenerate. Otherwise we just report — Pods/ here is a sibling of the
+# Podfile that ci_post_clone.sh already cleaned + re-installed.
+if [[ -d "$IOS_APP_DIR/Pods" ]]; then
+  STRAY_MAPS=$(find "$IOS_APP_DIR/Pods/Headers" -type f -name '*.modulemap' 2>/dev/null | wc -l | tr -d ' ' || echo 0)
+  if [[ "$STRAY_MAPS" != "0" ]]; then
+    echo "⚠️  ${STRAY_MAPS} stray modulemap(s) under Pods/Headers — listing for diagnosis:"
+    find "$IOS_APP_DIR/Pods/Headers" -type f -name '*.modulemap' 2>/dev/null | head -20
+  fi
+fi
+
+
 # Verify Pods directory exists; if not, run pod install again.
 if [[ ! -d "$IOS_APP_DIR/Pods" ]]; then
   echo "⚠️ Pods directory missing — running pod install now..."
@@ -33,6 +84,16 @@ if [[ ! -d "$IOS_APP_DIR/Pods" ]]; then
   fi
 
   export COCOAPODS_DISABLE_STATS=1
+
+  # Defensive cleanup before this fallback pod install runs. ci_post_clone.sh
+  # already does this on the primary path; we duplicate the logic here so a
+  # cached image / re-entry into pre_xcodebuild cannot inherit stale modulemaps.
+  echo "🧹 Pre-install cleanup (pre-xcodebuild fallback): removing stale Pods cache + modulemap artifacts..."
+  if [[ -d Pods ]]; then
+    find Pods -type f -name '*.modulemap' 2>/dev/null | sed 's/^/  • /' | head -40 || true
+  fi
+  rm -rf Pods Podfile.lock
+  echo "✅ Stale Pods cache cleared"
 
   echo "🌐 Verifying CocoaPods CDN reachability..."
   if ! curl -sf --max-time 15 https://cdn.cocoapods.org/CocoaPods-version.yml > /dev/null; then
@@ -202,19 +263,22 @@ fi
 # xcconfig — so we patch the files directly to guarantee the sanity gate and
 # the Xcode build agree on the pinned version.
 # ---------------------------------------------------------------------------
-echo "🛠  Self-healing: pinning SWIFT_VERSION + SWIFT_OPTIMIZATION_LEVEL on Capacitor Swift pods..."
-IOS_APP_DIR_FOR_PATCH="$IOS_APP_DIR" python3 - <<'PY'
+echo "🛠  Self-healing: pinning SWIFT_VERSION=${PINNED_PODS_SWIFT_VERSION} + SWIFT_OPTIMIZATION_LEVEL on Capacitor Swift pods..."
+IOS_APP_DIR_FOR_PATCH="$IOS_APP_DIR" \
+PINNED_PODS_SWIFT_VERSION="$PINNED_PODS_SWIFT_VERSION" \
+python3 - <<'PY'
 import os
 import re
 from pathlib import Path
 
 root = Path(os.environ['IOS_APP_DIR_FOR_PATCH'])
+pinned_swift = os.environ['PINNED_PODS_SWIFT_VERSION']
 # Pods whose Swift targets hit the Xcode 26.4.1 constraint-solver crash.
 swift_pinned_pods = ['Capacitor', 'RevenuecatPurchasesCapacitor']
 configs = ['release', 'debug']
 
 required_settings = {
-    'SWIFT_VERSION': '5.0',
+    'SWIFT_VERSION': pinned_swift,
     'SWIFT_OPTIMIZATION_LEVEL': '-Onone',
     'SWIFT_COMPILATION_MODE': 'singlefile',
 }

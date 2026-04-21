@@ -22,6 +22,8 @@ import { formatDistanceToNow, subDays } from "date-fns";
 import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
 import { getTierConfig } from "@/lib/status-tiers";
 import RoadToElite from "@/components/RoadToElite";
+import TierLadder from "@/components/TierLadder";
+import LiveRivals from "@/components/LiveRivals";
 import { format } from "date-fns";
 
 const Profile = () => {

@@ -105,6 +105,13 @@ const Index = () => {
     },
     enabled: !!profile,
   });
+  // Tier risk (must be called before early-return for hook order)
+  const tierRisk = useTierRisk({
+    tier: profile?.status_tier || "recruit",
+    rankScore: Number((profile as any)?.rank_score) || 0,
+    streak: profile?.streak || 0,
+    lastCheckinAt: lastCheckin?.checked_in_at,
+  });
 
   if (!profile) return null;
 
@@ -124,16 +131,6 @@ const Index = () => {
     const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${mins}m`;
   };
-
-  // Note: useTierRisk is a useMemo-based hook, safe to call after early-return
-  // because it only runs after we know profile exists. For strict hook order,
-  // we keep it here since profile is guaranteed defined at this point.
-  const tierRisk = useTierRisk({
-    tier,
-    rankScore: Number((profile as any).rank_score) || 0,
-    streak: profile.streak || 0,
-    lastCheckinAt: lastCheckin?.checked_in_at,
-  });
 
   return (
     <div className="h-full pb-4 px-4 pt-6 safe-top relative overflow-y-auto overflow-x-hidden">

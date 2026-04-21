@@ -10,24 +10,6 @@ ROOT_DIR="$(cd "$IOS_APP_DIR/../.." && pwd)"
 echo "ℹ️  ROOT_DIR=$ROOT_DIR"
 echo "ℹ️  IOS_APP_DIR=$IOS_APP_DIR"
 
-echo "🩹 Patching Capacitor podspec module maps for Xcode 26 compatibility..."
-python3 - <<'PY'
-from pathlib import Path
-
-for path in [
-    Path('/dev-server/node_modules/@capacitor/ios/Capacitor.podspec'),
-    Path('/dev-server/node_modules/@capacitor/ios/CapacitorCordova.podspec'),
-]:
-    if not path.exists():
-        continue
-    original = path.read_text()
-    patched_lines = [line for line in original.splitlines(True) if 's.module_map =' not in line]
-    patched = ''.join(patched_lines)
-    if patched != original:
-        path.write_text(patched)
-        print(f'patched {path.name}')
-PY
-
 # Verify Pods directory exists; if not, run pod install again.
 if [[ ! -d "$IOS_APP_DIR/Pods" ]]; then
   echo "⚠️ Pods directory missing — running pod install now..."
@@ -117,14 +99,20 @@ echo "✅ Pods directory present at $IOS_APP_DIR/Pods"
 ls -la "$IOS_APP_DIR/Pods" | head -20
 
 echo "🧹 Verifying generated Pods configs do not reference missing MetalToolchain paths..."
-python3 - <<'PY'
+IOS_APP_DIR_FOR_PATCH="$IOS_APP_DIR" python3 - <<'PY'
+import os
 from pathlib import Path
 
-root = Path('/dev-server/ios/App')
+root = Path(os.environ['IOS_APP_DIR_FOR_PATCH'])
 invalid = '$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)'
 
-for path in list(root.glob('Pods/Target Support Files/**/*.xcconfig')) + [root / 'Pods/Pods.xcodeproj/project.pbxproj']:
-    if not path.exists() or not path.is_file():
+candidates = list(root.glob('Pods/Target Support Files/**/*.xcconfig'))
+pbx = root / 'Pods/Pods.xcodeproj/project.pbxproj'
+if pbx.exists():
+    candidates.append(pbx)
+
+for path in candidates:
+    if not path.is_file():
         continue
     content = path.read_text()
     if invalid not in content:

@@ -9,6 +9,7 @@ echo "ℹ️  USER=$(whoami)"
 echo "ℹ️  Shell=$BASH_VERSION"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+IOS_APP_DIR="$(dirname "$SCRIPT_DIR")"
 ROOT_DIR="$SCRIPT_DIR"
 
 while [[ ! -f "$ROOT_DIR/package.json" && "$ROOT_DIR" != "/" ]]; do
@@ -21,6 +22,7 @@ if [[ ! -f "$ROOT_DIR/package.json" ]]; then
 fi
 
 echo "ℹ️  ROOT_DIR=$ROOT_DIR"
+echo "ℹ️  IOS_APP_DIR=$IOS_APP_DIR"
 cd "$ROOT_DIR"
 
 # ---------------------------------------------------------------------------
@@ -95,8 +97,6 @@ echo "🌐 Verifying CocoaPods CDN reachability..."
 if ! curl -sf --max-time 15 https://cdn.cocoapods.org/CocoaPods-version.yml > /dev/null; then
   echo "⚠️ CocoaPods CDN unreachable — installing GitHub-based Specs mirror as fallback"
   pod repo remove trunk 2>&1 || true
-  # Use the legacy GitHub Specs repo as a non-CDN fallback. This is slower but
-  # bypasses cdn.cocoapods.org entirely when Xcode Cloud can't reach it.
   if ! pod repo add trunk https://github.com/CocoaPods/Specs.git 2>&1; then
     echo "⚠️ GitHub Specs mirror add failed — re-adding CDN as last resort"
     pod repo add-cdn trunk https://cdn.cocoapods.org/ 2>&1 || true
@@ -105,26 +105,8 @@ else
   echo "✅ CocoaPods CDN reachable"
 fi
 
-echo "🩹 Patching Capacitor podspec module maps for Xcode 26 compatibility..."
-python3 - <<'PY'
-from pathlib import Path
-
-for path in [
-    Path('/Volumes/workspace/repository/node_modules/@capacitor/ios/Capacitor.podspec'),
-    Path('/Volumes/workspace/repository/node_modules/@capacitor/ios/CapacitorCordova.podspec'),
-]:
-    if not path.exists():
-        continue
-    original = path.read_text()
-    patched_lines = [line for line in original.splitlines(True) if 's.module_map =' not in line]
-    patched = ''.join(patched_lines)
-    if patched != original:
-        path.write_text(patched)
-        print(f'patched {path.name}')
-PY
-
 echo "📦 Installing CocoaPods dependencies (required for Capacitor module resolution)..."
-cd "$ROOT_DIR/ios/App"
+cd "$IOS_APP_DIR"
 
 export COCOAPODS_DISABLE_STATS=1
 
@@ -141,10 +123,7 @@ pod_install_with_retry() {
     fi
     echo "⚠️ pod install attempt $attempt failed"
 
-    # From attempt 2 onwards, force --repo-update
-    if [[ $attempt -ge 1 ]]; then
-      repo_update_flag="--repo-update"
-    fi
+    repo_update_flag="--repo-update"
 
     # On attempt 3, swap to GitHub Specs mirror — CDN is clearly down
     if [[ $attempt -eq 3 ]]; then
@@ -153,14 +132,12 @@ pod_install_with_retry() {
       pod repo add trunk https://github.com/CocoaPods/Specs.git 2>&1 || true
     fi
 
-    # Exponential backoff
     local sleep_seconds=$((attempt * 5))
     echo "⏳ Sleeping ${sleep_seconds}s before retry..."
     sleep $sleep_seconds
     attempt=$((attempt + 1))
   done
 
-  # Last resort: re-add the trunk CDN explicitly and try once more
   echo "🆘 Final attempt — re-adding CDN trunk repo..."
   pod repo remove trunk 2>&1 || true
   pod repo add-cdn trunk https://cdn.cocoapods.org/ 2>&1 || true
@@ -201,14 +178,20 @@ ls "Pods/Local Podspecs" | grep -E 'Capacitor|Cordova' || true
 # Patch out broken MetalToolchain Swift search paths (Xcode 26 bug)
 # ---------------------------------------------------------------------------
 echo "🧹 Removing broken MetalToolchain Swift search paths from generated Pods configs..."
-python3 - <<'PY'
+IOS_APP_DIR_FOR_PATCH="$IOS_APP_DIR" python3 - <<'PY'
+import os
 from pathlib import Path
 
-root = Path(".")
+root = Path(os.environ['IOS_APP_DIR_FOR_PATCH'])
 invalid = '$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)'
 
-for path in list(root.glob('Pods/Target Support Files/**/*.xcconfig')) + [root / 'Pods/Pods.xcodeproj/project.pbxproj']:
-    if not path.exists() or not path.is_file():
+candidates = list(root.glob('Pods/Target Support Files/**/*.xcconfig'))
+pbx = root / 'Pods/Pods.xcodeproj/project.pbxproj'
+if pbx.exists():
+    candidates.append(pbx)
+
+for path in candidates:
+    if not path.is_file():
         continue
     content = path.read_text()
     if invalid not in content:

@@ -59,6 +59,7 @@ post_install do |installer|
   #   CAPInstanceDescriptor.h:5:9: error: module 'Cordova' not found
   # We pin the include path explicitly here. The path uses ${PODS_ROOT} so it
   # stays valid whether the build runs locally or in Xcode Cloud.
+  cordova_dependent_targets = %w[Capacitor]
   # NOTE: These paths contain literal spaces ("Target Support Files"). Xcode's
   # build setting tokenizer splits unquoted whitespace inside SWIFT_INCLUDE_PATHS,
   # HEADER_SEARCH_PATHS, and OTHER_SWIFT_FLAGS, which produced the
@@ -66,10 +67,10 @@ post_install do |installer|
   #   error: Unexpected input file: .../Pods/Files/CapacitorCordova/CapacitorCordova.modulemap
   # failures in archive build 401. Wrap each value in escaped double quotes so
   # the tokenizer treats the path as a single argument.
-  cordova_modulemap_dir          = '${PODS_ROOT}/Target Support Files/CapacitorCordova'
-  cordova_modulemap_dir_quoted   = '"${PODS_ROOT}/Target Support Files/CapacitorCordova"'
-  cordova_headers_dir_quoted     = '"${PODS_CONFIGURATION_BUILD_DIR}/CapacitorCordova/Cordova.framework/Headers"'
-  cordova_modulemap_flag         = '-Xcc -fmodule-map-file="${PODS_ROOT}/Target Support Files/CapacitorCordova/CapacitorCordova.modulemap"'
+  cordova_modulemap_dir_quoted = '"${PODS_ROOT}/Target Support Files/CapacitorCordova"'
+  cordova_headers_dir_quoted   = '"${PODS_CONFIGURATION_BUILD_DIR}/CapacitorCordova/Cordova.framework/Headers"'
+  cordova_modulemap_flag       = '-Xcc -fmodule-map-file="${PODS_ROOT}/Target Support Files/CapacitorCordova/CapacitorCordova.modulemap"'
+  cordova_marker               = 'CapacitorCordova/CapacitorCordova.modulemap'
 
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|

@@ -22,7 +22,7 @@ const SUGGESTIONS = [
 ];
 
 const Coach = () => {
-  const { isElite, profile, session } = useAuth();
+  const { session } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Msg[]>(() => {
     try {
@@ -60,18 +60,7 @@ const Coach = () => {
     } catch {}
   }, []);
 
-  if (!isElite) {
-    return (
-      <FeatureGateScreen
-        requiredTier="elite"
-        currentTier={(profile?.status_tier as any) ?? "recruit"}
-        featureName="AI Coach"
-        description="Your personal high-performance coach. Available 24/7. Elite-only."
-        icon={Sparkles}
-        requiresElite
-      />
-    );
-  }
+  // No isElite gate — AI Coach is available to any active member (AccessGate handles membership).
 
   const send = async (textOverride?: string) => {
     const text = (textOverride ?? input).trim();
@@ -189,7 +178,7 @@ const Coach = () => {
           </div>
           <div className="text-center">
             <h1 className="font-display text-sm font-black tracking-tight leading-none">W Coach</h1>
-            <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">Elite · always on</p>
+            <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">Always on</p>
           </div>
         </div>
         <button

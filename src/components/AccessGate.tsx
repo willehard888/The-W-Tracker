@@ -16,8 +16,10 @@ const ALLOWED_PATHS = new Set([
 ]);
 
 /**
- * Hard paywall: once the 9-day trial expires (and user is not Elite),
- * everything except essential auth/legal/paywall routes is blocked.
+ * Hard entry paywall: the entire app requires an active membership
+ * (€4.99/mo or 7-day trial). Once the trial expires (and the user
+ * does not have an active subscription), every route except essential
+ * auth/legal/paywall routes is blocked. There is no skip.
  */
 const AccessGate = ({ children }: { children: ReactNode }) => {
   const { hasAccess, loading } = useTrialAccess();

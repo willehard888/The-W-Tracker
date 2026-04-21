@@ -50,7 +50,37 @@ if [[ ! -d "$IOS_APP_DIR/Pods" ]]; then
     cd "$IOS_APP_DIR"
   fi
 
-  pod install --repo-update
+  export COCOAPODS_DISABLE_STATS=1
+
+  pre_pod_install_with_retry() {
+    local attempt=1
+    local max_attempts=3
+    local repo_update_flag=""
+
+    while [[ $attempt -le $max_attempts ]]; do
+      echo "📦 pod install attempt $attempt/$max_attempts ${repo_update_flag:-(no repo-update)}..."
+      if pod install $repo_update_flag 2>&1; then
+        echo "✅ pod install succeeded on attempt $attempt"
+        return 0
+      fi
+      echo "⚠️ pod install attempt $attempt failed"
+      repo_update_flag="--repo-update"
+      local sleep_seconds=$((attempt * 5))
+      echo "⏳ Sleeping ${sleep_seconds}s before retry..."
+      sleep $sleep_seconds
+      attempt=$((attempt + 1))
+    done
+
+    echo "🆘 Re-adding trunk CDN repo manually..."
+    pod repo remove trunk 2>&1 || true
+    pod repo add-cdn trunk https://cdn.cocoapods.org/ 2>&1 || true
+    pod install --repo-update 2>&1
+  }
+
+  if ! pre_pod_install_with_retry; then
+    echo "❌ pod install failed after all retries"
+    exit 1
+  fi
 fi
 
 if [[ ! -f "$IOS_APP_DIR/Pods/Local Podspecs/Capacitor.podspec.json" ]]; then

@@ -683,10 +683,12 @@ export type Database = {
           last_rank_snapshot: Json | null
           level: number
           longest_streak: number
+          membership_credits_until: string | null
           rank_score: number
           rank_score_updated_at: string
           referral_code: string | null
           referral_count: number
+          referral_milestones_hit: Json
           referred_by: string | null
           status_tier: Database["public"]["Enums"]["status_tier"]
           streak: number
@@ -707,10 +709,12 @@ export type Database = {
           last_rank_snapshot?: Json | null
           level?: number
           longest_streak?: number
+          membership_credits_until?: string | null
           rank_score?: number
           rank_score_updated_at?: string
           referral_code?: string | null
           referral_count?: number
+          referral_milestones_hit?: Json
           referred_by?: string | null
           status_tier?: Database["public"]["Enums"]["status_tier"]
           streak?: number
@@ -731,10 +735,12 @@ export type Database = {
           last_rank_snapshot?: Json | null
           level?: number
           longest_streak?: number
+          membership_credits_until?: string | null
           rank_score?: number
           rank_score_updated_at?: string
           referral_code?: string | null
           referral_count?: number
+          referral_milestones_hit?: Json
           referred_by?: string | null
           status_tier?: Database["public"]["Enums"]["status_tier"]
           streak?: number
@@ -788,6 +794,8 @@ export type Database = {
       }
       referrals: {
         Row: {
+          converted: boolean
+          converted_at: string | null
           created_at: string
           id: string
           referred_id: string
@@ -795,6 +803,8 @@ export type Database = {
           rewarded: boolean
         }
         Insert: {
+          converted?: boolean
+          converted_at?: string | null
           created_at?: string
           id?: string
           referred_id: string
@@ -802,6 +812,8 @@ export type Database = {
           rewarded?: boolean
         }
         Update: {
+          converted?: boolean
+          converted_at?: string | null
           created_at?: string
           id?: string
           referred_id?: string
@@ -944,6 +956,7 @@ export type Database = {
         Returns: boolean
       }
       calculate_rank_score: { Args: { p_user_id: string }; Returns: number }
+      claim_referral: { Args: { p_referrer_code: string }; Returns: Json }
       ensure_active_leaderboard_season: {
         Args: never
         Returns: {
@@ -962,6 +975,17 @@ export type Database = {
         }
       }
       finalize_expired_leaderboard_seasons: { Args: never; Returns: undefined }
+      get_top_inviters: {
+        Args: { p_limit?: number }
+        Returns: {
+          avatar_url: string
+          converted_count: number
+          signup_count: number
+          status_tier: Database["public"]["Enums"]["status_tier"]
+          user_id: string
+          username: string
+        }[]
+      }
       has_active_access: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
@@ -974,6 +998,7 @@ export type Database = {
         Args: { accept: boolean; battle_id: string }
         Returns: undefined
       }
+      reward_referral_conversion: { Args: { p_user: string }; Returns: Json }
       set_elite_status: {
         Args: { elite: boolean; target_user_id: string }
         Returns: undefined

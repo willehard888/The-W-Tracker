@@ -103,6 +103,19 @@ Deno.serve(async (req) => {
       }
 
       console.log(`Updated user ${appUserId} is_elite=${isElite}`);
+
+      // On successful paid activation, fire referral conversion reward (idempotent)
+      if (isElite === true) {
+        const { data: rewardData, error: rewardError } = await supabase.rpc(
+          "reward_referral_conversion",
+          { p_user: appUserId },
+        );
+        if (rewardError) {
+          console.warn("reward_referral_conversion error:", rewardError);
+        } else {
+          console.log("Referral conversion result:", rewardData);
+        }
+      }
     }
 
     return new Response(

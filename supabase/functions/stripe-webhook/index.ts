@@ -109,6 +109,16 @@ Deno.serve(async (req) => {
             console.error("Failed to update profile:", error);
           } else {
             console.log(`Elite activated for ${customerEmail} (${user.id})`);
+            // Trigger referral conversion reward (idempotent)
+            const { data: rewardData, error: rewardError } = await supabase.rpc(
+              "reward_referral_conversion",
+              { p_user: user.id },
+            );
+            if (rewardError) {
+              console.warn("reward_referral_conversion error:", rewardError);
+            } else {
+              console.log("Referral conversion result:", rewardData);
+            }
           }
         } else {
           console.warn(`No user found for email: ${customerEmail}`);

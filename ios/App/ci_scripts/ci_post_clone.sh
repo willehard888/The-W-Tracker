@@ -151,10 +151,34 @@ cd "$IOS_APP_DIR"
 
 export COCOAPODS_DISABLE_STATS=1
 
-# Linkage strategy changed (static -> dynamic). Force a clean install so the
-# previous Pods cache cannot leak static-framework xcconfigs into this build.
-echo "🧹 Removing stale Pods/ and Podfile.lock to honor new linkage strategy..."
+# ---------------------------------------------------------------------------
+# Pre-pod-install cleanup: stale modulemaps + Pods cache
+# ---------------------------------------------------------------------------
+# Xcode 26 + Capacitor specific failure mode:
+#
+# CocoaPods can leave behind generated Clang modulemaps and umbrella header
+# folders (Pods/Headers/Public/Capacitor*, Pods/Headers/Private/Capacitor*,
+# Pods/Target Support Files/Capacitor*/*.modulemap) from a previous install
+# run. When `:modular_headers => true` was used historically OR when linkage
+# strategy flipped (static <-> dynamic), these stale modulemaps shadow the
+# pod's own framework modulemap (Capacitor.modulemap, CapacitorCordova.modulemap
+# which defines `module Cordova`) and SwiftCompile fails with
+#   CAPInstanceDescriptor.h:5:9: error: module 'Cordova' not found
+# at `@import Cordova;`.
+#
+# We delete the entire Pods/ tree AND Podfile.lock to guarantee pod install
+# regenerates header layouts from scratch — no stale modulemap can survive.
+echo "🧹 Pre-install cleanup: removing stale Pods cache + modulemap artifacts..."
+if [[ -d Pods ]]; then
+  echo "  • inventory of stale modulemaps about to be deleted:"
+  find Pods -type f -name '*.modulemap' 2>/dev/null | sed 's/^/    /' | head -40 || true
+  find Pods/Headers -maxdepth 3 -type d \( -name 'Capacitor*' -o -name 'Cordova*' \) 2>/dev/null | sed 's/^/    /' | head -20 || true
+fi
 rm -rf Pods Podfile.lock
+# Defensive: nuke any orphaned modulemap directories that some CocoaPods
+# versions leave outside Pods/ (rare, but cheap to guard against).
+rm -rf "$IOS_APP_DIR/build" "$IOS_APP_DIR/DerivedData" 2>/dev/null || true
+echo "✅ Pods cache cleared — pod install will regenerate header layouts from scratch"
 
 POD_LOG="/tmp/pod-install.log"
 

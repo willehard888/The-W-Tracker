@@ -27,6 +27,7 @@ Elite: EARNED status tier (top 5% rank + 14 active days + 30-day streak). Never 
 - [Leaderboard](mem://features/leaderboard-status) — Season/All-Time, monthly reset, Hall of Champions
 - [Streak System](mem://features/streak-system) — Progressive milestones, 48h deadline reset, effective streak
 - [Status Hierarchy](mem://features/status-hierarchy) — 7 tiers, degrades with inactivity, unlocks features
+- [Status Addiction Loops](mem://features/status-addiction-loops) — TierRiskBanner, DailyStatusPulse, LiveRivals, TierLadder, days-at-tier
 - [Rank Scoring Formula](mem://technical/rank-scoring-logic) — 25% 7d XP, 20% streak, 55% 30d consistency, Trust Multiplier
 - [Elite Feed](mem://features/elite-feed) — Exclusive media feed for Elite users, HEIC/video support
 - [Elite Feed Kudos](mem://features/kudos-system) — 2 kudos/month for Elite users, awards +10 XP to poster

@@ -378,33 +378,64 @@ const Leaderboard = () => {
       )}
 
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
-        <div className="space-y-2">
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">The Chase</p>
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+        </div>
+        <div className="space-y-1.5">
           {currentLeaders.slice(3).map((user, i) => {
             const points = mode === "season" ? user.season_points || 0 : user.xp;
             const wins = championData?.counts?.[user.user_id] || 0;
+            const displayRank = i + 4;
+            const isMe = user.user_id === profile?.user_id;
+            const isTop10 = displayRank <= 10;
 
             return (
-              <div
+              <button
                 key={user.user_id}
+                onClick={() => navigate(`/user/${user.user_id}`)}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl border p-4",
-                  user.user_id === profile?.user_id ? "border-gold/30 bg-gold/5 ring-1 ring-gold/40" : "border-border bg-card"
+                  "w-full flex items-center gap-3 rounded-xl border p-3.5 text-left transition-all active:scale-[0.99]",
+                  isMe
+                    ? "border-gold/50 bg-gradient-to-r from-gold/10 via-gold/5 to-transparent ring-1 ring-gold/40 shadow-[0_0_20px_hsl(var(--gold)/0.15)]"
+                    : isTop10
+                    ? "border-border bg-card hover:border-gold/20"
+                    : "border-border/60 bg-card/60"
                 )}
               >
-                <div className="font-display font-black text-xl w-8 text-center text-muted-foreground tabular-nums">{i + 4}</div>
+                <div className={cn(
+                  "shrink-0 h-9 w-9 rounded-lg flex items-center justify-center font-display font-black text-sm tabular-nums",
+                  isTop10
+                    ? "bg-gold/10 text-gold border border-gold/20"
+                    : "bg-secondary text-muted-foreground"
+                )}>
+                  {displayRank}
+                </div>
                 <StatusAvatar src={user.avatar_url} name={user.username} tier={user.status_tier || 'recruit'} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <button
-                    onClick={() => navigate(`/user/${user.user_id}`)}
-                    className={cn("text-sm font-semibold hover:underline text-left truncate", user.user_id === profile?.user_id && "text-gold")}
-                  >
-                    @{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}
-                  </button>
-                  <p className="text-xs text-muted-foreground">Level {user.level}</p>
-                  {wins > 0 && <p className="text-[11px] text-gold/80">{wins}x Champion</p>}
+                  <p className={cn("text-sm font-semibold truncate flex items-center gap-1.5", isMe && "text-gold")}>
+                    @{user.username}
+                    {isMe && <span className="text-[9px] text-gold/70 font-medium">(you)</span>}
+                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-[11px] text-muted-foreground">Lvl {user.level}</p>
+                    {wins > 0 && (
+                      <p className="text-[10px] text-gold/80 flex items-center gap-0.5">
+                        <Medal size={9} /> {wins}×
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <p className="font-display font-bold text-sm tabular-nums">{points.toLocaleString()}</p>
-              </div>
+                <div className="text-right">
+                  <p className={cn("font-display font-black text-sm tabular-nums", isMe && "text-gold")}>
+                    {points.toLocaleString()}
+                  </p>
+                  <p className="text-[9px] text-muted-foreground/60 uppercase tracking-wider font-bold">
+                    {mode === "season" ? "S-XP" : "XP"}
+                  </p>
+                </div>
+              </button>
             );
           })}
         </div>

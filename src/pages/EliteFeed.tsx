@@ -53,6 +53,8 @@ const EliteFeed = () => {
   const [newPost, setNewPost] = useState("");
   const [showComments, setShowComments] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
+  const [replyTo, setReplyTo] = useState<{ id: string; username: string; snippet: string } | null>(null);
+  const commentInputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);

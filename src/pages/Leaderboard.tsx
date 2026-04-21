@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import StatusBadge from "@/components/StatusBadge";
 import { getTierConfig } from "@/lib/status-tiers";
 import FeatureGateScreen from "@/components/FeatureGateScreen";
+import TopInvitersWidget from "@/components/TopInvitersWidget";
 
 type LeaderRow = {
   username: string;
@@ -355,6 +356,10 @@ const Leaderboard = () => {
             );
           })}
         </div>
+      </div>
+
+      <div className="mt-6 animate-reveal animate-reveal-delay-3">
+        <TopInvitersWidget />
       </div>
 
       {championData?.recent?.length ? (

@@ -11,7 +11,7 @@ const FEATURES = [
   { icon: Trophy, text: "Leaderboard" },
   { icon: Swords, text: "1v1 Battles" },
   { icon: Flame, text: "Elite Feed" },
-  { icon: Zap, text: "2× XP" },
+  { icon: Zap, text: "+25% XP Boost" },
   { icon: Shield, text: "Elite Badges" },
   { icon: Crown, text: "Elite Status" },
 ];

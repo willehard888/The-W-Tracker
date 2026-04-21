@@ -9,7 +9,8 @@ Auth: Apple Sign-In managed in Safari, forces valid username selection.
 DB: Supabase with strict RLS, SECURITY DEFINER RPCs for all critical writes.
 Access: 7-tier status system based on XP/consistency. Drops with inactivity.
 Constraints: Daily check-in/Battle proofs require real-time camera (no gallery).
-Elite: €4.99/mo subscription. Unlocks exclusive Feed + AI Coach + Weekly Briefing + Morning Nudges.
+Membership: €4.99/mo + 7-day trial unlocks the entire app (hard paywall, no skip).
+Elite: EARNED status tier (top 5% rank + 14 active days + 30-day streak). Never sold.
 
 ## Memories
 - [Brand Identity](mem://style/brand-identity) — Core visual identity, golden W logo, cinematic effects
@@ -31,7 +32,8 @@ Elite: €4.99/mo subscription. Unlocks exclusive Feed + AI Coach + Weekly Brief
 - [Elite Feed Kudos](mem://features/kudos-system) — 2 kudos/month for Elite users, awards +10 XP to poster
 - [Social Infrastructure](mem://features/social-infrastructure) — Real-time chat, friend requests, username search
 - [User Profiles](mem://features/user-profiles) — Stats, Season Champion history, Weekly Sleep XP multiplier
-- [Elite Subscription](mem://monetization/elite-subscription) — €4.99/mo, RLS protection, check-subscription Edge Function
+- [Membership](mem://monetization/membership) — €4.99/mo hard entry paywall, 7-day trial, Elite is earned not bought
+- [Road to Elite](mem://features/road-to-elite) — Earned Elite tier requires top 5% + 14 active days + 30-day streak
 - [RevenueCat Sub Sync](mem://technical/subscription-sync) — Webhook handles INITIAL_PURCHASE, RENEWAL, EXPIRATION
 - [Push Notifications](mem://technical/push-notifications) — Capacitor + Supabase Edge Functions for daily reminders/messages
 - [APNs Push](mem://technical/apns-push) — Direct iOS push via Apple .p8 token auth, ES256 JWT in Deno
@@ -49,5 +51,5 @@ Elite: €4.99/mo subscription. Unlocks exclusive Feed + AI Coach + Weekly Brief
 - [App Store Compliance](mem://constraints/app-store-compliance) — iPad orientations required, ITSAppUsesNonExemptEncryption=false
 - [iOS Debug View](mem://technical/ios-debug-system) — /ios-debug route logs OAuth and RevenueCat metadata
 - [Live Web UI Update](mem://technical/live-update-config) — Native app loads production URL, forces reload cache bypass
-- [AI Coach](mem://features/ai-coach) — Elite-only `/coach` chat, GPT-5 streaming, 7d memory + proactive morning nudges
+- [AI Coach](mem://features/ai-coach) — Member-only `/coach` chat (any active subscriber), GPT-5 streaming, 7d memory + morning nudges
 - [Sunday Briefing](mem://features/sunday-briefing) — Weekly AI briefing for Elite, Sundays 19:00 UTC, shareable image

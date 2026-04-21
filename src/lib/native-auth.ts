@@ -128,29 +128,35 @@ function errorMessage(err: unknown): string {
 }
 
 function getFriendlyAppleError(err: unknown): Error {
-  const message = errorMessage(err).toLowerCase();
+  const message = errorMessage(err);
+  const lower = message.toLowerCase();
 
   if (
-    message.includes("apple_cancelled") ||
-    message.includes("canceled") ||
-    message.includes("cancelled") ||
-    message.includes("authorizationerror error 1001") ||
-    message.includes("user canceled") ||
-    message.includes("user cancelled")
+    lower.includes("apple_cancelled") ||
+    lower.includes("canceled") ||
+    lower.includes("cancelled") ||
+    lower.includes("authorizationerror error 1001") ||
+    lower.includes("user canceled") ||
+    lower.includes("user cancelled")
   ) {
     return new Error("APPLE_CANCELLED");
   }
 
   if (
-    message.includes("network") ||
-    message.includes("internet") ||
-    message.includes("offline") ||
-    message.includes("timed out")
+    lower.includes("network") ||
+    lower.includes("internet") ||
+    lower.includes("offline") ||
+    lower.includes("timed out")
   ) {
     return new Error("Connection error. Try again.");
   }
 
-  return new Error("Apple sign-in failed. Please try again.");
+  // Pass through informative messages from the native side (already HIG-friendly).
+  if (message && message !== "Apple sign-in failed. Please try again.") {
+    return new Error(message);
+  }
+
+  return new Error("Sign in with Apple failed. Please try again.");
 }
 
 /**

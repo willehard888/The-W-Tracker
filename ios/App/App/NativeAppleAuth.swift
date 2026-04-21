@@ -106,29 +106,33 @@ public class NativeAppleAuth: CAPPlugin, ASAuthorizationControllerDelegate, ASAu
         if let asError = error as? ASAuthorizationError {
             switch asError.code {
             case .canceled:
+                // User tapped Cancel on the native sheet — silent UX.
                 call.reject("APPLE_CANCELLED")
                 return
             case .failed:
-                call.reject("Apple sign-in failed. Please try again.")
+                call.reject("Sign in with Apple failed. Please try again.")
                 return
             case .invalidResponse:
-                call.reject("Invalid response from Apple")
+                call.reject("Invalid response from Apple. Please try again.")
                 return
             case .notHandled:
-                call.reject("Apple sign-in not handled")
+                call.reject("Sign in with Apple couldn't complete. Try again.")
                 return
             case .notInteractive:
-                call.reject("Apple sign-in could not present UI")
+                call.reject("Sign in with Apple couldn't show. Try again.")
                 return
             case .unknown:
-                fallthrough
+                // Most common cause: missing 'Sign In with Apple' capability /
+                // entitlement, or device not signed in to iCloud.
+                call.reject("Sign in with Apple is not available. Make sure you're signed in to iCloud, then try again.")
+                return
             @unknown default:
-                call.reject("Apple sign-in failed: \(asError.localizedDescription)")
+                call.reject("Sign in with Apple failed: \(asError.localizedDescription)")
                 return
             }
         }
 
-        call.reject("Apple sign-in failed: \(error.localizedDescription)")
+        call.reject("Sign in with Apple failed: \(error.localizedDescription)")
     }
 
     // MARK: - Presentation context

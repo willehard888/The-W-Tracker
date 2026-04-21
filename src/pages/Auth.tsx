@@ -27,9 +27,16 @@ const Auth = () => {
   const refCode = searchParams.get("ref");
   const appleSignInRequested = searchParams.get("apple_sign_in") === "1";
 
-  // Auto-switch to signup if referral link
+  const invitedBy = searchParams.get("from");
+
+  // Auto-switch to signup if referral link + persist code for post-auth claim
   useEffect(() => {
-    if (refCode) setMode("signup");
+    if (refCode) {
+      setMode("signup");
+      try {
+        localStorage.setItem("pending_referral_code", refCode);
+      } catch {}
+    }
   }, [refCode]);
 
   useEffect(() => {
@@ -165,9 +172,14 @@ const Auth = () => {
                 <Flame size={10} className="text-gold" /> Locked permanently once set
               </p>
               {refCode && (
-                <p className="text-[10px] text-gold/70 mt-1">
-                  🎁 Referred by: <span className="font-bold">{refCode}</span>
-                </p>
+                <div className="mt-2 rounded-lg border border-gold/30 bg-gold/5 px-3 py-2">
+                  <p className="text-[11px] text-gold font-bold">
+                    {invitedBy ? `@${invitedBy} invited you` : "You were invited"} → 14-day free trial
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Normally 7 days. Your referrer earns +50 XP when you verify.
+                  </p>
+                </div>
               )}
             </div>
           )}

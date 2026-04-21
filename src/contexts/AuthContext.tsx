@@ -72,6 +72,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return isAppleUser && (!username || username === fallbackUsername);
   };
 
+  const tryClaimPendingReferral = async (authUser: User, currentProfile: any | null) => {
+    try {
+      const code = typeof localStorage !== "undefined" ? localStorage.getItem("pending_referral_code") : null;
+      if (!code) return false;
+      if (currentProfile?.referred_by) {
+        localStorage.removeItem("pending_referral_code");
+        return false;
+      }
+      const { data, error } = await supabase.functions.invoke("claim-referral", {
+        body: { code },
+      });
+      if (error) {
+        console.warn("claim-referral invoke error:", error);
+        return false;
+      }
+      const reason = (data as any)?.reason;
+      const definitive = (data as any)?.success
+        || reason === "self_referral"
+        || reason === "already_referred"
+        || reason === "duplicate"
+        || reason === "invalid_code"
+        || reason === "empty_code";
+      if (definitive) localStorage.removeItem("pending_referral_code");
+      return Boolean((data as any)?.success);
+    } catch (e) {
+      console.warn("claim-referral failed:", e);
+      return false;
+    }
+  };
+
   const fetchProfile = async (authUser: User) => {
     let { data } = await supabase
       .from("profiles")
@@ -89,6 +119,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .maybeSingle();
 
       data = retry.data ?? null;
+    }
+
+    const claimed = await tryClaimPendingReferral(authUser, data);
+    if (claimed) {
+      const refreshed = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+      data = refreshed.data ?? data;
     }
 
     setProfile(data);

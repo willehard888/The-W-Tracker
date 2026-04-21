@@ -95,6 +95,18 @@ if [[ ! -d "$IOS_APP_DIR/Pods/Target Support Files/CapacitorCordova" ]]; then
   exit 1
 fi
 
+# Sanity gate: Podfile MUST NOT re-enable :modular_headers on Capacitor pods.
+# Under Xcode 26.4.1 this causes SwiftCompile to fail with
+# "module 'Cordova' not found" because CocoaPods-generated modulemaps shadow
+# the framework modulemaps shipped inside the pod.
+if grep -nE "pod\s+'Capacitor(Cordova)?'[^\\n]*:modular_headers\s*=>\s*true" \
+     "$IOS_APP_DIR/Podfile" >/dev/null 2>&1; then
+  echo "❌ Podfile uses :modular_headers => true on Capacitor pods — this breaks '@import Cordova' under Xcode 26."
+  echo "   Remove the :modular_headers => true flag from the Capacitor and CapacitorCordova pod declarations."
+  exit 1
+fi
+echo "✅ Podfile does not force modular_headers on Capacitor pods"
+
 echo "✅ Pods directory present at $IOS_APP_DIR/Pods"
 ls -la "$IOS_APP_DIR/Pods" | head -20
 

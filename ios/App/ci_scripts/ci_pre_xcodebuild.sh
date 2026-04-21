@@ -85,6 +85,16 @@ if [[ ! -d "$IOS_APP_DIR/Pods" ]]; then
 
   export COCOAPODS_DISABLE_STATS=1
 
+  # Defensive cleanup before this fallback pod install runs. ci_post_clone.sh
+  # already does this on the primary path; we duplicate the logic here so a
+  # cached image / re-entry into pre_xcodebuild cannot inherit stale modulemaps.
+  echo "🧹 Pre-install cleanup (pre-xcodebuild fallback): removing stale Pods cache + modulemap artifacts..."
+  if [[ -d Pods ]]; then
+    find Pods -type f -name '*.modulemap' 2>/dev/null | sed 's/^/  • /' | head -40 || true
+  fi
+  rm -rf Pods Podfile.lock
+  echo "✅ Stale Pods cache cleared"
+
   echo "🌐 Verifying CocoaPods CDN reachability..."
   if ! curl -sf --max-time 15 https://cdn.cocoapods.org/CocoaPods-version.yml > /dev/null; then
     echo "⚠️ CocoaPods CDN unreachable — installing GitHub Specs mirror as fallback"

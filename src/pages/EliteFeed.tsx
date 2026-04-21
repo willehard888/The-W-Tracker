@@ -1,7 +1,5 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import EliteFeedTeaser from "@/components/EliteFeedTeaser";
-import FeatureGateScreen from "@/components/FeatureGateScreen";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -514,7 +512,7 @@ const EliteFeed = () => {
 
   const giveKudos = useMutation({
     mutationFn: async ({ postId, receiverId }: { postId: string; receiverId: string }) => {
-      if (!user || !isElite) return;
+      if (!user || !canPost) return;
       if (kudosRemaining <= 0) {
         throw new Error("Monthly kudos used up");
       }
@@ -730,26 +728,13 @@ const EliteFeed = () => {
     setVideoPreview(URL.createObjectURL(file));
   };
 
-  const canPost = isElite;
-  const unresolvedReportsCount = reports?.length || 0;
-
-  // Tier-based gating: High Performer+ can view, Elite can post
+  // Posting requires *earned* Elite status (status_tier elite/apex/legend),
+  // not just an active subscription. Reading is open to any member.
   const userTier = profile?.status_tier || 'recruit';
   const tierRank = getTierConfig(userTier).rank;
-  const canView = isElite || tierRank >= 3; // high_performer+
-
-  if (!canView) {
-    return (
-      <FeatureGateScreen
-        requiredTier="high_performer"
-        currentTier={userTier as any}
-        featureName="Elite Feed"
-        description="See what top performers are doing. Reach High Performer status to unlock viewing access."
-        icon={Flame}
-        requiresElite={false}
-      />
-    );
-  }
+  const canPost = tierRank >= 4; // elite, apex, legend
+  const unresolvedReportsCount = reports?.length || 0;
+  const canView = true; // any member that passes AccessGate can read the feed
 
   return (
     <div
@@ -1180,8 +1165,8 @@ const EliteFeed = () => {
                   <span className="tabular-nums">{post.comments_count > 0 ? post.comments_count : ""}</span>
                 </button>
 
-                {/* Kudos button - only for non-own posts, elite users */}
-                {!isOwn && isElite && (
+                {/* Kudos button — only for non-own posts, members with earned Elite status */}
+                {!isOwn && canPost && (
                   <button
                     onClick={() => {
                       if (!hasGivenKudos && kudosRemaining <= 0) {

@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow, subDays } from "date-fns";
 import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
 import { getTierConfig } from "@/lib/status-tiers";
+import RoadToElite from "@/components/RoadToElite";
+import { format } from "date-fns";
 
 const Profile = () => {
   const { profile, signOut, isElite } = useAuth();
@@ -404,6 +406,28 @@ const Profile = () => {
         </div>
       )}
 
+      {/* Road to Elite — earned status progress (hidden once earned) */}
+      <div className="mb-3 animate-reveal animate-reveal-delay-1">
+        <RoadToElite />
+      </div>
+
+      {/* Membership status (subscriber line — earned-tier crown lives in hero) */}
+      {isElite && (
+        <div className="mb-3 animate-reveal animate-reveal-delay-1 rounded-xl border border-border/60 bg-card/40 p-3 flex items-center gap-3">
+          <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+            <CreditCard size={14} className="text-emerald-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-bold tracking-wider uppercase text-emerald-400/90">
+              Membership active
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Member since {profile.created_at ? format(new Date(profile.created_at), "MMM yyyy") : "—"}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Weekly Sleep Stats — prominent (moved under Position) */}
       {weeklySleep && (
         <div className="mb-3 animate-reveal animate-reveal-delay-1">
@@ -608,13 +632,15 @@ const Profile = () => {
         </div>
       )}
 
-      {/* Elite CTA */}
+      {/* Membership CTA — for non-members only */}
       {!profile.is_elite && (
         <div className="mt-8 rounded-xl border border-gold/20 bg-card p-5 text-center animate-reveal animate-reveal-delay-4">
-          <h3 className="font-display font-bold text-base mb-1">Unlock Elite Status</h3>
-          <p className="text-sm text-muted-foreground mb-3">Full leaderboard, battles, elite feed, XP multiplier</p>
+          <h3 className="font-display font-bold text-base mb-1">Join the App</h3>
+          <p className="text-sm text-muted-foreground mb-3">
+            Membership unlocks every feature. Elite status is earned, not bought.
+          </p>
           <Button variant="gold" size="lg" className="w-full" onClick={() => navigate("/paywall")}>
-            Go Elite — $4.99/mo
+            Become a Member — €4.99/mo
           </Button>
         </div>
       )}

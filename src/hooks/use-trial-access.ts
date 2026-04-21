@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
-export const TRIAL_DURATION_DAYS = 9;
+export const TRIAL_DURATION_DAYS = 7;
 const TRIAL_DURATION_MS = TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000;
 
 interface TrialAccess {

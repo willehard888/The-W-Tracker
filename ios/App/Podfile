@@ -32,7 +32,6 @@ post_install do |installer|
 
   invalid_toolchain_path = '$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)'
   no_verify_flag = '-Xfrontend -no-verify-emitted-module-interface'
-  capacitor_swift_pods = ['Capacitor', 'CapacitorCordova', 'RevenuecatPurchasesCapacitor']
 
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
@@ -49,20 +48,16 @@ post_install do |installer|
       config.build_settings['CLANG_ENABLE_EXPLICIT_MODULES'] = 'NO'
       config.build_settings['SWIFT_VERIFY_EMITTED_MODULE_INTERFACE'] = 'NO'
 
-      # Belt-and-suspenders: force dynamic framework output for the Capacitor pods
-      # so libtool never strip-archives the Cordova categories again.
-      if capacitor_swift_pods.include?(target.name) || target.name == 'CapacitorCordova'
-        config.build_settings['MACH_O_TYPE'] = 'mh_dylib'
-        config.build_settings['DEFINES_MODULE'] = 'YES'
-      end
+      # NOTE: We deliberately DO NOT override MACH_O_TYPE here. `use_frameworks!` already
+      # produces dynamic frameworks; forcing `mh_dylib` on a pod CocoaPods packaged as
+      # static creates symbol-resolution drift that masks the real SwiftCompile error.
 
-      # Append the no-verify-emitted-module-interface workaround flag for Swift pods.
-      if ['Capacitor', 'RevenuecatPurchasesCapacitor'].include?(target.name)
-        existing_flags = config.build_settings['OTHER_SWIFT_FLAGS'] || '$(inherited)'
-        existing_flags = existing_flags.is_a?(Array) ? existing_flags.join(' ') : existing_flags
-        unless existing_flags.include?('-no-verify-emitted-module-interface')
-          config.build_settings['OTHER_SWIFT_FLAGS'] = "#{existing_flags} #{no_verify_flag}"
-        end
+      # Apply the Xcode 26 module-interface verification workaround to EVERY Swift pod
+      # target (not just Capacitor + RevenueCat). Cheap, idempotent, prevents drift.
+      existing_flags = config.build_settings['OTHER_SWIFT_FLAGS'] || '$(inherited)'
+      existing_flags = existing_flags.is_a?(Array) ? existing_flags.join(' ') : existing_flags
+      unless existing_flags.include?('-no-verify-emitted-module-interface')
+        config.build_settings['OTHER_SWIFT_FLAGS'] = "#{existing_flags} #{no_verify_flag}"
       end
 
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
@@ -70,18 +65,5 @@ post_install do |installer|
       config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
       config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
     end
-  end
-
-  # Force the same explicit-modules-off settings on the App user target so Xcode Cloud's
-  # xcodebuild archive picks them up regardless of which xcconfig wins.
-  installer.aggregate_targets.each do |target|
-    target.user_project.native_targets.each do |native_target|
-      native_target.build_configurations.each do |config|
-        config.build_settings['SWIFT_ENABLE_EXPLICIT_MODULES'] = 'NO'
-        config.build_settings['CLANG_ENABLE_EXPLICIT_MODULES'] = 'NO'
-        config.build_settings['SWIFT_VERIFY_EMITTED_MODULE_INTERFACE'] = 'NO'
-      end
-    end
-    target.user_project.save
   end
 end

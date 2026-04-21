@@ -9,10 +9,11 @@ interface RankPressureCardProps {
   totalUsers: number;
   percentile: number;
   rankScore?: number;
+  daysAtTier?: number;
   className?: string;
 }
 
-const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, className }: RankPressureCardProps) => {
+const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, daysAtTier, className }: RankPressureCardProps) => {
   const config = getTierConfig(tier);
   const nextTier = getNextTier(tier);
 
@@ -190,6 +191,17 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, class
             ) : null}
             {pressureText}
           </motion.div>
+
+          {/* Days at tier */}
+          {daysAtTier !== undefined && daysAtTier > 0 && tier !== "recruit" && tier !== "normal" && (
+            <div className="flex items-center justify-center gap-1.5 mb-2 text-[10px] text-muted-foreground">
+              <Trophy size={10} className={cn("shrink-0", config.textClass)} />
+              <span>
+                <span className={cn("font-black tabular-nums", config.textClass)}>{daysAtTier}d</span>{" "}
+                at <span className="font-black">{config.label}</span>
+              </span>
+            </div>
+          )}
 
           {/* Next tier */}
           {nextTier ? (

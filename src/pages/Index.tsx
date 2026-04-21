@@ -5,6 +5,9 @@ import BadgeCard from "@/components/BadgeCard";
 import StatusBadge from "@/components/StatusBadge";
 import RankPressureCard from "@/components/RankPressureCard";
 import CoachNudgeCard from "@/components/CoachNudgeCard";
+import TierRiskBanner from "@/components/TierRiskBanner";
+import DailyStatusPulse from "@/components/DailyStatusPulse";
+import LiveRivals from "@/components/LiveRivals";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import XpCounter from "@/components/XpCounter";
 import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
+import { useTierRisk } from "@/hooks/use-tier-risk";
 import RoadToElite from "@/components/RoadToElite";
 
 
@@ -101,11 +105,13 @@ const Index = () => {
     },
     enabled: !!profile,
   });
-      {/* Road to Elite — compact teaser (hidden once earned) */}
-      <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
-        <RoadToElite compact />
-      </div>
-
+  // Tier risk (must be called before early-return for hook order)
+  const tierRisk = useTierRisk({
+    tier: profile?.status_tier || "recruit",
+    rankScore: Number((profile as any)?.rank_score) || 0,
+    streak: profile?.streak || 0,
+    lastCheckinAt: lastCheckin?.checked_in_at,
+  });
 
   if (!profile) return null;
 
@@ -153,7 +159,26 @@ const Index = () => {
         }}
       />
 
-      {/* Rank Pressure Card */}
+      {/* 1. Tier Risk Banner — fear of demotion (top priority) */}
+      {tierRisk.level !== "safe" && (
+        <div className="animate-reveal mb-3 relative z-10">
+          <TierRiskBanner risk={tierRisk} />
+        </div>
+      )}
+
+      {/* 2. Daily Status Pulse — micro-win */}
+      {rankData && (
+        <div className="animate-reveal mb-3 relative z-10">
+          <DailyStatusPulse
+            userId={profile.user_id}
+            rank={rankData.rank}
+            score={Number((profile as any).rank_score) || 0}
+            totalUsers={rankData.totalUsers}
+          />
+        </div>
+      )}
+
+      {/* 3. Rank Pressure Card */}
       {rankData && (
         <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
           <RankPressureCard
@@ -162,11 +187,24 @@ const Index = () => {
             totalUsers={rankData.totalUsers}
             percentile={rankData.percentile}
             rankScore={(profile as any).rank_score}
+            daysAtTier={(profile as any).rank_score_updated_at
+              ? Math.max(1, Math.floor((Date.now() - new Date((profile as any).rank_score_updated_at).getTime()) / (1000 * 60 * 60 * 24)))
+              : undefined}
           />
         </div>
       )}
 
-      {/* Coach Nudge (Elite, unseen) */}
+      {/* 4. Live Rivals — who's ahead, who's catching up */}
+      <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
+        <LiveRivals userId={profile.user_id} myScore={Number((profile as any).rank_score) || 0} />
+      </div>
+
+      {/* 5. Road to Elite — earned status progress */}
+      <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
+        <RoadToElite compact />
+      </div>
+
+      {/* 6. Coach Nudge (Elite, unseen) */}
       {latestNudge && (
         <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
           <CoachNudgeCard

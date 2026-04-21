@@ -22,6 +22,8 @@ import { formatDistanceToNow, subDays } from "date-fns";
 import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
 import { getTierConfig } from "@/lib/status-tiers";
 import RoadToElite from "@/components/RoadToElite";
+import TierLadder from "@/components/TierLadder";
+import LiveRivals from "@/components/LiveRivals";
 import { format } from "date-fns";
 
 const Profile = () => {
@@ -411,6 +413,11 @@ const Profile = () => {
         <RoadToElite />
       </div>
 
+      {/* Live Rivals — who's ahead, who's behind */}
+      <div className="mb-3 animate-reveal animate-reveal-delay-1">
+        <LiveRivals userId={profile.user_id} myScore={Number((profile as any).rank_score) || 0} />
+      </div>
+
       {/* Membership status (subscriber line — earned-tier crown lives in hero) */}
       {isElite && (
         <div className="mb-3 animate-reveal animate-reveal-delay-1 rounded-xl border border-border/60 bg-card/40 p-3 flex items-center gap-3">
@@ -596,6 +603,11 @@ const Profile = () => {
       <div className="flex flex-col gap-3 mb-6 animate-reveal animate-reveal-delay-2">
         <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
         <StatCard icon={Trophy} label="Kudos Received" value={kudosReceived || 0} variant="gold" />
+      </div>
+
+      {/* Tier Ladder — full progression map */}
+      <div className="mb-6 animate-reveal animate-reveal-delay-3">
+        <TierLadder currentTier={profile.status_tier || "recruit"} />
       </div>
 
       <div className="animate-reveal animate-reveal-delay-3">

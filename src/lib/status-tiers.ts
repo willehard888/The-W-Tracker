@@ -6,6 +6,12 @@
 
 export type StatusTier = 'recruit' | 'normal' | 'operator' | 'performer' | 'high_performer' | 'elite' | 'apex' | 'legend';
 
+export interface TierRequirements {
+  percentile: number;
+  activeDays: number;
+  streak: number;
+}
+
 export interface TierConfig {
   label: string;
   shortLabel: string;
@@ -21,6 +27,8 @@ export interface TierConfig {
   auraSize: 'none' | 'small' | 'medium' | 'large' | 'huge';
   badgeVariant: string;
   rank: number; // 0=lowest
+  requirements: TierRequirements; // numeric thresholds for risk calc
+  unlocks: string[];
 }
 
 export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
@@ -39,6 +47,8 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     auraSize: 'none',
     badgeVariant: "default",
     rank: 0,
+    requirements: { percentile: 0, activeDays: 0, streak: 0 },
+    unlocks: ["Daily check-ins", "XP & levels", "Badge collection"],
   },
   normal: {
     label: "Recruit",
@@ -55,6 +65,8 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     auraSize: 'none',
     badgeVariant: "default",
     rank: 0,
+    requirements: { percentile: 0, activeDays: 0, streak: 0 },
+    unlocks: ["Daily check-ins", "XP & levels", "Badge collection"],
   },
   operator: {
     label: "Operator",
@@ -71,6 +83,8 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     auraSize: 'none',
     badgeVariant: "teal",
     rank: 1,
+    requirements: { percentile: 50, activeDays: 7, streak: 0 },
+    unlocks: ["Operator badge", "Public rank visible"],
   },
   performer: {
     label: "Performer",
@@ -87,6 +101,8 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     auraSize: 'none',
     badgeVariant: "blue",
     rank: 2,
+    requirements: { percentile: 75, activeDays: 7, streak: 0 },
+    unlocks: ["Performer aura", "Leaderboard highlight"],
   },
   high_performer: {
     label: "High Performer",
@@ -103,6 +119,8 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     auraSize: 'small',
     badgeVariant: "purple",
     rank: 3,
+    requirements: { percentile: 90, activeDays: 14, streak: 14 },
+    unlocks: ["Purple glow aura", "Profile spotlight"],
   },
   elite: {
     label: "Elite",
@@ -119,6 +137,8 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     auraSize: 'medium',
     badgeVariant: "gold",
     rank: 4,
+    requirements: { percentile: 95, activeDays: 14, streak: 30 },
+    unlocks: ["Elite Feed posting", "Crown aura", "Elite badge"],
   },
   apex: {
     label: "Apex",
@@ -135,6 +155,8 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     auraSize: 'large',
     badgeVariant: "apex",
     rank: 5,
+    requirements: { percentile: 99, activeDays: 30, streak: 30 },
+    unlocks: ["Apex flame aura", "Top 1% status", "Priority visibility"],
   },
   legend: {
     label: "Legend",
@@ -151,6 +173,8 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     auraSize: 'huge',
     badgeVariant: "legend",
     rank: 6,
+    requirements: { percentile: 99.9, activeDays: 30, streak: 30 },
+    unlocks: ["Legend rainbow aura", "Hall of Fame", "Mythic status"],
   },
 };
 
@@ -164,4 +188,10 @@ export const getNextTier = (current: string): TierConfig | null => {
   const idx = TIER_ORDER.indexOf(current as StatusTier);
   if (idx < 0 || idx >= TIER_ORDER.length - 1) return null;
   return TIER_CONFIG[TIER_ORDER[idx + 1]];
+};
+
+export const getPreviousTier = (current: string): TierConfig | null => {
+  const idx = TIER_ORDER.indexOf(current as StatusTier);
+  if (idx <= 0) return null;
+  return TIER_CONFIG[TIER_ORDER[idx - 1]];
 };

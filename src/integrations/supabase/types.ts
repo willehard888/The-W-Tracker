@@ -680,6 +680,7 @@ export type Database = {
           featured_badge_id: string | null
           id: string
           is_elite: boolean
+          last_rank_snapshot: Json | null
           level: number
           longest_streak: number
           rank_score: number
@@ -703,6 +704,7 @@ export type Database = {
           featured_badge_id?: string | null
           id?: string
           is_elite?: boolean
+          last_rank_snapshot?: Json | null
           level?: number
           longest_streak?: number
           rank_score?: number
@@ -726,6 +728,7 @@ export type Database = {
           featured_badge_id?: string | null
           id?: string
           is_elite?: boolean
+          last_rank_snapshot?: Json | null
           level?: number
           longest_streak?: number
           rank_score?: number

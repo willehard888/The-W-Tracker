@@ -915,7 +915,7 @@ const EliteFeed = () => {
                   <span className="tabular-nums">{post.likes_count > 0 ? post.likes_count : ""}</span>
                 </button>
                 <button
-                  onClick={() => { hapticSelection(); setShowComments(showComments === post.id ? null : post.id); }}
+                  onClick={() => { hapticSelection(); setReplyTo(null); setShowComments(showComments === post.id ? null : post.id); }}
                   aria-label="Toggle comments"
                   className={cn(
                     "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",

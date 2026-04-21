@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow, subDays } from "date-fns";
 import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
 import { getTierConfig } from "@/lib/status-tiers";
+import RoadToElite from "@/components/RoadToElite";
+import { format } from "date-fns";
 
 const Profile = () => {
   const { profile, signOut, isElite } = useAuth();
@@ -608,13 +610,15 @@ const Profile = () => {
         </div>
       )}
 
-      {/* Elite CTA */}
+      {/* Membership CTA — for non-members only */}
       {!profile.is_elite && (
         <div className="mt-8 rounded-xl border border-gold/20 bg-card p-5 text-center animate-reveal animate-reveal-delay-4">
-          <h3 className="font-display font-bold text-base mb-1">Unlock Elite Status</h3>
-          <p className="text-sm text-muted-foreground mb-3">Full leaderboard, battles, elite feed, XP multiplier</p>
+          <h3 className="font-display font-bold text-base mb-1">Join the App</h3>
+          <p className="text-sm text-muted-foreground mb-3">
+            Membership unlocks every feature. Elite status is earned, not bought.
+          </p>
           <Button variant="gold" size="lg" className="w-full" onClick={() => navigate("/paywall")}>
-            Go Elite — $4.99/mo
+            Become a Member — €4.99/mo
           </Button>
         </div>
       )}

@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import XpCounter from "@/components/XpCounter";
 import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
+import RoadToElite from "@/components/RoadToElite";
 
 
 const Index = () => {

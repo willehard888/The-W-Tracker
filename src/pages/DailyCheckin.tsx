@@ -212,7 +212,7 @@ const DailyCheckin = () => {
   ].filter(Boolean).reduce((a: number, b) => a + (b as number), 0);
 
   const baseXp = Math.round(rawXp * sleepMultiplier);
-  const totalXp = (isElite ? baseXp * 2 : baseXp) + questBonusXp;
+  const totalXp = Math.round(isElite ? baseXp * ELITE_XP_MULTIPLIER : baseXp) + questBonusXp;
 
   // Reactive performance score
   const completedCount = [workout, extraWorkout, coldShower, healthyFood, protein, meditationAm, meditationPm, noPhoneAm, noPhonePm, hydration >= 3, isOptimalSleep, reading, journaling].filter(Boolean).length;
@@ -532,7 +532,7 @@ const DailyCheckin = () => {
             <p className="text-[11px] text-muted-foreground leading-tight">Log your day. Earn your status.</p>
           </div>
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-gold/10 border border-gold/20 shrink-0">
-            {isElite && <span className="text-[10px] font-bold text-gold">2×</span>}
+            {isElite && <span className="text-[10px] font-bold text-gold">+25%</span>}
             <Zap size={13} className="text-gold" />
             <span className="text-sm font-bold text-gold tabular-nums">{totalXp}</span>
             <span className="text-[10px] text-gold/60">XP</span>

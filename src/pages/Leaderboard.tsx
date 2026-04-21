@@ -230,18 +230,36 @@ const Leaderboard = () => {
       
 
       <div className="animate-reveal mb-4 relative">
-        <div className="absolute -inset-x-4 -top-2 -bottom-4 pointer-events-none opacity-60 -z-10"
+        <div className="absolute -inset-x-8 -top-6 -bottom-6 pointer-events-none -z-10"
              style={{
                background:
-                 "radial-gradient(ellipse 80% 60% at 50% 0%, hsl(var(--gold) / 0.18) 0%, transparent 70%)",
+                 "radial-gradient(ellipse 90% 70% at 50% 0%, hsl(var(--gold) / 0.22) 0%, transparent 65%)",
              }}
              aria-hidden
         />
-        <div className="flex items-center gap-2">
-          <Trophy size={22} className="text-gold" />
-          <h1 className="font-display text-3xl font-black tracking-tight">Leaderboard</h1>
+        <div className="absolute -inset-x-8 -top-6 h-32 pointer-events-none -z-10 opacity-50 mix-blend-screen"
+             style={{
+               background:
+                 "conic-gradient(from 210deg at 50% 120%, transparent 0deg, hsl(var(--gold) / 0.35) 90deg, transparent 180deg)",
+               filter: "blur(28px)",
+             }}
+             aria-hidden
+        />
+        <div className="flex items-center gap-2.5">
+          <div className="relative">
+            <Trophy size={26} className="text-gold drop-shadow-[0_0_12px_hsl(var(--gold)/0.6)]" />
+            <div className="absolute inset-0 animate-pulse opacity-60">
+              <Trophy size={26} className="text-gold blur-[6px]" />
+            </div>
+          </div>
+          <h1 className="font-display text-3xl font-black tracking-tight bg-gradient-to-br from-gold via-amber-200 to-gold bg-clip-text text-transparent">
+            Leaderboard
+          </h1>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">Season & all time rankings — climb or fall.</p>
+        <p className="text-sm text-muted-foreground mt-1.5 flex items-center gap-1.5">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold animate-pulse shadow-[0_0_8px_hsl(var(--gold))]" />
+          Season & all time rankings — climb or fall.
+        </p>
       </div>
 
       {/* Season banner */}

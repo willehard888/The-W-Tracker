@@ -51,11 +51,24 @@ post_install do |installer|
   # target to Swift 5 + -Onone routes around the broken constraint solver.
   capacitor_swift_targets = %w[Capacitor RevenuecatPurchasesCapacitor]
 
+  # Pods that need to *see* Cordova at Swift-compile time. Capacitor.swift
+  # transitively imports Cordova via CAPInstanceDescriptor.h's `@import Cordova;`.
+  # On Xcode 26.4.1, CocoaPods does NOT emit a SWIFT_INCLUDE_PATHS entry that
+  # points at CapacitorCordova's modulemap directory, so swift-frontend cannot
+  # resolve `module Cordova` and the build dies with:
+  #   CAPInstanceDescriptor.h:5:9: error: module 'Cordova' not found
+  # We pin the include path explicitly here. The path uses ${PODS_ROOT} so it
+  # stays valid whether the build runs locally or in Xcode Cloud.
+  cordova_dependent_targets = %w[Capacitor]
+  cordova_modulemap_dir = '${PODS_ROOT}/Target Support Files/CapacitorCordova'
+  cordova_headers_dir   = '${PODS_CONFIGURATION_BUILD_DIR}/CapacitorCordova/Cordova.framework/Headers'
+
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       library_search_paths = Array(config.build_settings['LIBRARY_SEARCH_PATHS'])
       framework_search_paths = Array(config.build_settings['FRAMEWORK_SEARCH_PATHS'])
       swift_include_paths = Array(config.build_settings['SWIFT_INCLUDE_PATHS'])
+      header_search_paths = Array(config.build_settings['HEADER_SEARCH_PATHS'])
 
       config.build_settings['LIBRARY_SEARCH_PATHS'] = library_search_paths.reject { |p| p == invalid_toolchain_path }
       config.build_settings['FRAMEWORK_SEARCH_PATHS'] = framework_search_paths.reject { |p| p == invalid_toolchain_path }
@@ -88,6 +101,33 @@ post_install do |installer|
         extra = '-disable-availability-checking'
         unless config.build_settings['OTHER_SWIFT_FLAGS'].to_s.include?(extra)
           config.build_settings['OTHER_SWIFT_FLAGS'] = "#{config.build_settings['OTHER_SWIFT_FLAGS']} #{extra}"
+        end
+      end
+
+      # Inject Cordova modulemap visibility for Swift targets that import
+      # Capacitor (which transitively requires `module Cordova`). Without this
+      # the swift-frontend cannot resolve `@import Cordova;` in Xcode 26.4.1.
+      if cordova_dependent_targets.include?(target.name)
+        # SWIFT_INCLUDE_PATHS — directory containing CapacitorCordova.modulemap
+        unless config.build_settings['SWIFT_INCLUDE_PATHS'].to_s.include?(cordova_modulemap_dir)
+          config.build_settings['SWIFT_INCLUDE_PATHS'] =
+            ((config.build_settings['SWIFT_INCLUDE_PATHS'] || '$(inherited)').to_s.split(' ') +
+             [cordova_modulemap_dir]).uniq.join(' ')
+        end
+        # HEADER_SEARCH_PATHS — fallback so Clang sees Cordova umbrella header
+        unless config.build_settings['HEADER_SEARCH_PATHS'].to_s.include?(cordova_headers_dir)
+          config.build_settings['HEADER_SEARCH_PATHS'] =
+            ((config.build_settings['HEADER_SEARCH_PATHS'] || '$(inherited)').to_s.split(' ') +
+             [cordova_headers_dir]).uniq.join(' ')
+        end
+        # OTHER_SWIFT_FLAGS — pass `-Xcc -fmodule-map-file=...` so Clang's
+        # module loader (invoked transitively by swift-frontend for ObjC
+        # imports) can find module Cordova by absolute path even if the
+        # framework hasn't been registered as a Swift module yet.
+        cordova_modulemap_flag = "-Xcc -fmodule-map-file=#{cordova_modulemap_dir}/CapacitorCordova.modulemap"
+        unless config.build_settings['OTHER_SWIFT_FLAGS'].to_s.include?('CapacitorCordova.modulemap')
+          config.build_settings['OTHER_SWIFT_FLAGS'] =
+            "#{config.build_settings['OTHER_SWIFT_FLAGS']} #{cordova_modulemap_flag}"
         end
       end
     end

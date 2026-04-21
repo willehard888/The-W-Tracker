@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
 import { useTierRisk } from "@/hooks/use-tier-risk";
 import RoadToElite from "@/components/RoadToElite";
+import InviteCTA from "@/components/InviteCTA";
 
 
 const Index = () => {
@@ -335,6 +336,11 @@ const Index = () => {
             Next check-in in {getTimeUntilCheckin()}
           </p>
         )}
+      </div>
+
+      {/* Invite CTA — referral money machine nudge */}
+      <div className="animate-reveal animate-reveal-delay-4 mb-4">
+        <InviteCTA referralCount={profile.referral_count || 0} />
       </div>
 
       {/* Recent Badges */}

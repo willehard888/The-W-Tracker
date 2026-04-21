@@ -150,6 +150,16 @@ const Paywall = () => {
   // ─── Render ─────────────────────────────────────────
   return (
     <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
+      {creditsActive && (
+        <div className="animate-reveal mb-4 rounded-xl border border-gold/40 bg-gold/10 p-4 text-center">
+          <p className="text-xs font-bold text-gold tracking-wide">
+            🎁 Free membership until {creditsUntilLabel}
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Earned from referral milestones — next payment auto-skipped.
+          </p>
+        </div>
+      )}
       {/* Hero */}
       <div className="text-center mb-6 mt-4 animate-reveal">
         <BrandLogo size={80} priority className="mx-auto rounded-2xl glow-gold mb-4" />

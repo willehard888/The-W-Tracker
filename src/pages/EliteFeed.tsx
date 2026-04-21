@@ -11,7 +11,7 @@ import ModerationGate from "@/components/ModerationGate";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { Button } from "@/components/ui/button";
-import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle, Video, Award, Reply, X, CornerDownRight } from "lucide-react";
+import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle, Video, Award, Reply, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -46,22 +46,119 @@ const MAX_VIDEO_SIZE_MB = 50;
 const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
 const isVideoUrl = (url: string) => SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.toLowerCase().includes(ext));
 
-// Parse a comment that may begin with a quoted reply preview:
-//   > @username: quoted text\n\nreply body
-// Returns { quote, body } or { body } when no quote is present.
-const QUOTE_RE = /^>\s*@([a-zA-Z0-9_]+):\s*([\s\S]*?)\n\n([\s\S]*)$/;
-const parseCommentContent = (content: string): { quote?: { username: string; text: string }; body: string } => {
-  const match = content.match(QUOTE_RE);
-  if (match) {
-    return { quote: { username: match[1], text: match[2] }, body: match[3] };
-  }
-  return { body: content };
+// Build a nested comment tree from a flat list using parent_id.
+// Top-level comments have parent_id = null. Replies are nested under their parent.
+type CommentNode = any & { children: CommentNode[]; depth: number };
+const MAX_VISUAL_DEPTH = 4; // cap visual indentation to keep mobile readable
+const buildCommentTree = (flat: any[] | undefined): CommentNode[] => {
+  if (!flat || flat.length === 0) return [];
+  const map = new Map<string, CommentNode>();
+  flat.forEach((c) => map.set(c.id, { ...c, children: [], depth: 0 }));
+  const roots: CommentNode[] = [];
+  map.forEach((node) => {
+    if (node.parent_id && map.has(node.parent_id)) {
+      const parent = map.get(node.parent_id)!;
+      node.depth = Math.min(parent.depth + 1, MAX_VISUAL_DEPTH);
+      parent.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+  // Sort children by oldest-first within each branch
+  const sortRec = (nodes: CommentNode[]) => {
+    nodes.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    nodes.forEach((n) => sortRec(n.children));
+  };
+  sortRec(roots);
+  return roots;
 };
-const buildReplyContent = (replyTo: { username: string; snippet: string } | null, body: string) => {
-  if (!replyTo) return body;
-  const cleanSnippet = replyTo.snippet.replace(/\s+/g, " ").trim().slice(0, 140);
-  return `> @${replyTo.username}: ${cleanSnippet}\n\n${body}`;
+
+interface CommentThreadProps {
+  node: CommentNode;
+  currentUserId?: string;
+  onReply: (id: string, username: string, snippet: string) => void;
+}
+
+const CommentThread = ({ node, currentUserId, onReply }: CommentThreadProps) => {
+  const username = node.profile?.username || "anon";
+  const isReply = node.depth > 0;
+
+  return (
+    <div className="animate-fade-in">
+      <div className="flex gap-2.5 relative">
+        {/* Vertical thread line for replies */}
+        {isReply && (
+          <span
+            aria-hidden="true"
+            className="absolute -left-3 top-0 bottom-0 w-px bg-gradient-to-b from-gold/30 via-gold/15 to-transparent"
+          />
+        )}
+        <div className="h-7 w-7 rounded-full gradient-gold flex items-center justify-center text-[10px] font-black text-primary-foreground shrink-0 mt-0.5">
+          {username.charAt(0)?.toUpperCase() || "?"}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div
+            className={cn(
+              "border rounded-2xl rounded-tl-sm px-3 py-2 inline-block max-w-full",
+              isReply
+                ? "bg-card border-gold/25 shadow-[0_0_0_1px_hsl(var(--gold)/0.05)]"
+                : "bg-card border-border/40",
+            )}
+          >
+            <span className="text-[11px] font-bold text-gold">@{username}</span>
+            <p className="text-xs text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
+              {node.content}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 mt-0.5 ml-3">
+            <p className="text-[9px] text-muted-foreground/50">
+              {formatDistanceToNow(new Date(node.created_at), { addSuffix: true })}
+            </p>
+            {currentUserId && (
+              <button
+                type="button"
+                onClick={() => {
+                  hapticSelection();
+                  onReply(node.id, username, node.content || "");
+                }}
+                className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
+              >
+                <Reply size={10} />
+                Reply
+              </button>
+            )}
+            {node.children.length > 0 && (
+              <span className="text-[9px] text-muted-foreground/40 tabular-nums">
+                · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Recursive children */}
+      {node.children.length > 0 && (
+        <div
+          className={cn(
+            "mt-2.5 space-y-2.5 relative",
+            // Indent up to MAX_VISUAL_DEPTH; cap to keep mobile readable
+            node.depth < MAX_VISUAL_DEPTH ? "ml-6 pl-3 border-l border-gold/15" : "ml-3 pl-3 border-l border-dashed border-gold/20",
+          )}
+        >
+          {node.children.map((child: CommentNode) => (
+            <CommentThread
+              key={child.id}
+              node={child}
+              currentUserId={currentUserId}
+              onReply={onReply}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
+
 
 const EliteFeed = () => {
   const { user, profile, isElite } = useAuth();
@@ -347,11 +444,11 @@ const EliteFeed = () => {
   const addComment = useMutation({
     mutationFn: async () => {
       if (!user || !showComments || !commentText.trim()) return;
-      const content = buildReplyContent(replyTo, commentText.trim());
       await supabase.from("feed_comments").insert({
         post_id: showComments,
         user_id: user.id,
-        content,
+        content: commentText.trim(),
+        parent_id: replyTo?.id ?? null,
       });
     },
     onSuccess: () => {
@@ -990,80 +1087,29 @@ const EliteFeed = () => {
                     </p>
                   </div>
 
-                  <div className="space-y-2.5 mb-3 max-h-72 overflow-y-auto">
-                    {comments?.length === 0 && (
-                      <p className="text-xs text-muted-foreground/60 text-center py-3">
-                        No comments yet — start the conversation
-                      </p>
-                    )}
-                    {comments?.map((comment: any) => {
-                      const parsed = parseCommentContent(comment.content || "");
-                      const isReply = !!parsed.quote;
-                      const username = comment.profile?.username || "anon";
-                      return (
-                        <div key={comment.id} className={cn("flex gap-2.5 animate-fade-in", isReply && "pl-5 relative")}>
-                          {isReply && (
-                            <CornerDownRight
-                              size={12}
-                              className="absolute left-0 top-2 text-gold/40"
-                              aria-hidden="true"
-                            />
-                          )}
-                          <div className="h-7 w-7 rounded-full gradient-gold flex items-center justify-center text-[10px] font-black text-primary-foreground shrink-0 mt-0.5">
-                            {username.charAt(0)?.toUpperCase() || "?"}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div
-                              className={cn(
-                                "border rounded-2xl rounded-tl-sm px-3 py-2 inline-block max-w-full",
-                                isReply
-                                  ? "bg-card border-gold/25 shadow-[0_0_0_1px_hsl(var(--gold)/0.05)]"
-                                  : "bg-card border-border/40",
-                              )}
-                            >
-                              {parsed.quote && (
-                                <div className="mb-1.5 -mx-1 px-2 py-1 rounded-lg bg-gold/5 border-l-2 border-gold/60">
-                                  <p className="text-[10px] font-bold text-gold/90 leading-tight">
-                                    @{parsed.quote.username}
-                                  </p>
-                                  <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2 break-words">
-                                    {parsed.quote.text}
-                                  </p>
-                                </div>
-                              )}
-                              <span className="text-[11px] font-bold text-gold">@{username}</span>
-                              <p className="text-xs text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
-                                {parsed.body}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2 mt-0.5 ml-3">
-                              <p className="text-[9px] text-muted-foreground/50">
-                                {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                              </p>
-                              {user && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    hapticSelection();
-                                    setReplyTo({
-                                      id: comment.id,
-                                      username,
-                                      snippet: parsed.body || parsed.quote?.text || "",
-                                    });
-                                    setTimeout(() => commentInputRef.current?.focus(), 50);
-                                  }}
-                                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
-                                >
-                                  <Reply size={10} />
-                                  Reply
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  {(() => {
+                    const tree = buildCommentTree(comments);
+                    return (
+                      <div className="space-y-3 mb-3 max-h-80 overflow-y-auto pr-1">
+                        {tree.length === 0 && (
+                          <p className="text-xs text-muted-foreground/60 text-center py-3">
+                            No comments yet — start the conversation
+                          </p>
+                        )}
+                        {tree.map((node) => (
+                          <CommentThread
+                            key={node.id}
+                            node={node}
+                            currentUserId={user?.id}
+                            onReply={(id, username, snippet) => {
+                              setReplyTo({ id, username, snippet });
+                              setTimeout(() => commentInputRef.current?.focus(), 50);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    );
+                  })()}
 
                   {/* Composer */}
                   {user && (

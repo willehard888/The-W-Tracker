@@ -229,25 +229,44 @@ const Leaderboard = () => {
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
       
 
-      <div className="animate-reveal mb-4">
-        <h1 className="font-display text-3xl font-bold tracking-tight">Leaderboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">Season & all time rankings in one view.</p>
+      <div className="animate-reveal mb-4 relative">
+        <div className="absolute -inset-x-4 -top-2 -bottom-4 pointer-events-none opacity-60 -z-10"
+             style={{
+               background:
+                 "radial-gradient(ellipse 80% 60% at 50% 0%, hsl(var(--gold) / 0.18) 0%, transparent 70%)",
+             }}
+             aria-hidden
+        />
+        <div className="flex items-center gap-2">
+          <Trophy size={22} className="text-gold" />
+          <h1 className="font-display text-3xl font-black tracking-tight">Leaderboard</h1>
+        </div>
+        <p className="text-sm text-muted-foreground mt-1">Season & all time rankings — climb or fall.</p>
       </div>
 
-      <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-gold/30 bg-gold/5 p-4 mb-4">
-        <div className="flex items-center justify-between gap-2">
+      {/* Season banner */}
+      <div className="animate-reveal animate-reveal-delay-1 relative overflow-hidden rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/[0.12] via-card to-card p-4 mb-4 glow-gold-sm">
+        <div
+          className="absolute -top-12 -right-8 h-32 w-32 rounded-full opacity-30 blur-2xl pointer-events-none"
+          style={{ background: "hsl(var(--gold))" }}
+          aria-hidden
+        />
+        <div className="flex items-center justify-between gap-2 relative">
           <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Current season</p>
-            <p className="font-semibold text-base">{activeSeason?.name || "Season"}</p>
+            <p className="text-[10px] uppercase tracking-[0.15em] text-gold/80 font-bold">Current Season</p>
+            <p className="font-display font-bold text-lg tracking-tight mt-0.5">{activeSeason?.name || "Season"}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Ends in</p>
-            <p className="font-display font-bold text-sm text-gold flex items-center justify-end gap-1">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-bold">Ends in</p>
+            <p className="font-display font-black text-sm text-gold flex items-center justify-end gap-1 tabular-nums mt-0.5">
               <Clock3 size={14} /> {countdownText}
             </p>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">#1 earns Season Champion reward + permanent profile badge.</p>
+        <p className="text-[11px] text-muted-foreground mt-3 relative flex items-center gap-1.5">
+          <Crown size={12} className="text-gold shrink-0" />
+          #1 earns <span className="text-gold font-semibold">Season Champion</span> reward + permanent profile badge.
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-2 mb-4 animate-reveal animate-reveal-delay-1">
@@ -256,18 +275,20 @@ const Leaderboard = () => {
       </div>
 
       {profile && (
-        <div className="animate-reveal animate-reveal-delay-2 rounded-xl border border-gold/30 bg-gold/5 p-4 mb-4 glow-gold-sm">
+        <div className="animate-reveal animate-reveal-delay-2 relative overflow-hidden rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/[0.08] via-card to-card p-4 mb-5 glow-gold-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/15 text-gold font-display font-bold">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-gold text-primary-foreground font-display font-black text-base shadow-lg shadow-gold/30">
                 #{rank || "?"}
               </div>
               <div>
-                <p className="font-semibold text-base">Your Position ({mode === "season" ? "Season" : "All Time"})</p>
-                <p className="text-sm text-muted-foreground">
-                  You're ahead of <span className="text-gold font-semibold">{percentile}%</span> of users
+                <p className="font-display font-bold text-base tracking-tight">Your Position</p>
+                <p className="text-xs text-muted-foreground">
+                  Ahead of <span className="text-gold font-bold">{percentile}%</span> · {mode === "season" ? "Season" : "All Time"}
                 </p>
-                <p className="text-xs text-muted-foreground mt-0.5">Season wins: <span className="text-gold font-semibold">{mySeasonWins}</span></p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  Season wins: <span className="text-gold font-bold">{mySeasonWins}</span>
+                </p>
               </div>
             </div>
             <div className="flex flex-col items-end gap-1">
@@ -276,54 +297,57 @@ const Leaderboard = () => {
             </div>
           </div>
           {percentile < 50 && (
-            <p className="text-[10px] text-destructive font-semibold mt-2 text-center">⚠️ You're falling behind. Others are gaining.</p>
+            <p className="text-[10px] text-destructive font-bold mt-3 text-center uppercase tracking-wider">⚠️ Falling behind — others are gaining</p>
           )}
           {percentile >= 90 && (
-            <p className="text-[10px] text-emerald-400 font-semibold mt-2 text-center">🔥 You're in the top {100 - percentile}%. Don't lose it.</p>
+            <p className="text-[10px] text-gold font-bold mt-3 text-center uppercase tracking-wider">🔥 Top {100 - percentile}% — defend your spot</p>
           )}
         </div>
       )}
 
-      <div className="space-y-2 animate-reveal animate-reveal-delay-2">
-        {currentLeaders.slice(0, 3).map((user, i) => {
-          const points = mode === "season" ? user.season_points || 0 : user.xp;
-          const wins = championData?.counts?.[user.user_id] || 0;
-
-          return (
-            <div
-              key={user.user_id}
-              className={cn(
-                "flex items-center gap-3 rounded-xl border p-4",
-                i === 0 ? "border-gold/30 bg-card glow-gold-sm" : "border-border bg-card",
-                user.user_id === profile?.user_id && "ring-1 ring-gold/40 bg-gold/5"
-              )}
-            >
-              <div className={cn("font-display font-black text-xl w-8 text-center tabular-nums", rankColors[i] || "text-muted-foreground")}>
-                {i === 0 ? <Crown size={22} className="text-gold mx-auto" /> : i + 1}
-              </div>
-              <StatusAvatar src={user.avatar_url} name={user.username} tier={user.status_tier || 'recruit'} size="sm" />
-              <div className="flex-1 min-w-0">
-                <button
-                  onClick={() => navigate(`/user/${user.user_id}`)}
-                  className={cn("text-base font-semibold truncate hover:underline text-left", user.user_id === profile?.user_id && "text-gold")}
-                >
-                  @{user.username} {user.user_id === profile?.user_id && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}
-                </button>
-                <p className="text-sm text-muted-foreground">Level {user.level} • {user.streak}d streak</p>
-                {wins > 0 && (
-                  <p className="text-[11px] text-gold/80 mt-0.5 flex items-center gap-1">
-                    <Medal size={12} /> {wins}x Season Champion
-                  </p>
-                )}
-              </div>
-              <div className="text-right">
-                <p className={cn("font-display font-bold text-sm tabular-nums", i === 0 && "text-gold")}>{points.toLocaleString()}</p>
-                <p className="text-[10px] text-muted-foreground">{mode === "season" ? "Season XP" : "XP"}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* Podium — top 3 */}
+      {currentLeaders.length >= 1 && (
+        <div className="relative mb-4 animate-reveal animate-reveal-delay-2">
+          <div className="grid grid-cols-3 gap-2 items-end">
+            {/* #2 */}
+            {currentLeaders[1] && (
+              <PodiumCard
+                user={currentLeaders[1]}
+                rank={2}
+                points={mode === "season" ? currentLeaders[1].season_points || 0 : currentLeaders[1].xp}
+                mode={mode}
+                isMe={currentLeaders[1].user_id === profile?.user_id}
+                wins={championData?.counts?.[currentLeaders[1].user_id] || 0}
+                onClick={() => navigate(`/user/${currentLeaders[1].user_id}`)}
+              />
+            )}
+            {/* #1 */}
+            {currentLeaders[0] && (
+              <PodiumCard
+                user={currentLeaders[0]}
+                rank={1}
+                points={mode === "season" ? currentLeaders[0].season_points || 0 : currentLeaders[0].xp}
+                mode={mode}
+                isMe={currentLeaders[0].user_id === profile?.user_id}
+                wins={championData?.counts?.[currentLeaders[0].user_id] || 0}
+                onClick={() => navigate(`/user/${currentLeaders[0].user_id}`)}
+              />
+            )}
+            {/* #3 */}
+            {currentLeaders[2] && (
+              <PodiumCard
+                user={currentLeaders[2]}
+                rank={3}
+                points={mode === "season" ? currentLeaders[2].season_points || 0 : currentLeaders[2].xp}
+                mode={mode}
+                isMe={currentLeaders[2].user_id === profile?.user_id}
+                wins={championData?.counts?.[currentLeaders[2].user_id] || 0}
+                onClick={() => navigate(`/user/${currentLeaders[2].user_id}`)}
+              />
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
         <div className="space-y-2">
@@ -379,6 +403,78 @@ const Leaderboard = () => {
         </div>
       ) : null}
     </div>
+  );
+};
+
+interface PodiumCardProps {
+  user: LeaderRow;
+  rank: 1 | 2 | 3;
+  points: number;
+  mode: "season" | "all_time";
+  isMe: boolean;
+  wins: number;
+  onClick: () => void;
+}
+
+const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCardProps) => {
+  const isFirst = rank === 1;
+  const isSecond = rank === 2;
+  const heightClass = isFirst ? "pt-6 pb-5" : isSecond ? "pt-4 pb-4 mt-4" : "pt-4 pb-3.5 mt-6";
+  const rankLabel = isFirst ? "1st" : isSecond ? "2nd" : "3rd";
+  const accent = isFirst
+    ? "border-gold/60 bg-gradient-to-b from-gold/[0.18] via-gold/[0.06] to-card glow-gold-sm"
+    : isSecond
+    ? "border-foreground/25 bg-gradient-to-b from-foreground/[0.08] via-foreground/[0.02] to-card"
+    : "border-amber-700/40 bg-gradient-to-b from-amber-700/[0.12] via-amber-700/[0.04] to-card";
+
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "relative rounded-2xl border overflow-hidden flex flex-col items-center px-2 text-center transition-transform active:scale-[0.97]",
+        heightClass,
+        accent,
+        isMe && "ring-2 ring-gold/60",
+      )}
+    >
+      {isFirst && (
+        <Crown size={20} className="text-gold mb-1 drop-shadow-[0_0_6px_hsl(var(--gold)/0.6)]" />
+      )}
+      <div className={cn("absolute top-1.5 right-1.5 font-display font-black text-[10px] tabular-nums uppercase tracking-wider",
+        isFirst ? "text-gold" : isSecond ? "text-foreground/60" : "text-amber-600"
+      )}>
+        {rankLabel}
+      </div>
+      <div className={cn("relative", isFirst && "scale-110")}>
+        <StatusAvatar
+          src={user.avatar_url}
+          name={user.username}
+          tier={user.status_tier || "recruit"}
+          size={isFirst ? "md" : "sm"}
+        />
+      </div>
+      <p className={cn(
+        "font-display font-bold text-xs mt-2 truncate max-w-full px-1",
+        isMe && "text-gold",
+      )}>
+        @{user.username}
+      </p>
+      {isMe && <span className="text-[9px] text-gold/70 font-medium -mt-0.5">(you)</span>}
+      <p className={cn(
+        "font-display font-black tabular-nums mt-1",
+        isFirst ? "text-gold text-lg" : "text-foreground text-sm",
+      )}>
+        {points.toLocaleString()}
+      </p>
+      <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">
+        {mode === "season" ? "Season XP" : "XP"}
+      </p>
+      {wins > 0 && (
+        <p className="text-[9px] text-gold/80 mt-1 flex items-center gap-0.5">
+          <Medal size={9} /> {wins}x
+        </p>
+      )}
+    </button>
   );
 };
 

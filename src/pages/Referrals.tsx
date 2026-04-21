@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import BrandLogo from "@/components/BrandLogo";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
+import { cn } from "@/lib/utils";
 
 const Referrals = () => {
   const { profile } = useAuth();
@@ -60,10 +61,11 @@ const Referrals = () => {
   const referralCount = profile.referral_count || 0;
 
   const rewards = [
-    { count: 1, reward: "+100 Bonus XP", unlocked: referralCount >= 1 },
-    { count: 3, reward: "Exclusive Badge 🏅", unlocked: referralCount >= 3 },
-    { count: 5, reward: "1 Week Elite Free", unlocked: referralCount >= 5 },
-    { count: 10, reward: "Lifetime Founder Badge ⭐", unlocked: referralCount >= 10 },
+    { count: 1, title: "First Recruit", reward: "+250 XP · First Recruit badge", emoji: "🎯", unlocked: referralCount >= 1 },
+    { count: 3, title: "1 Month Free", reward: "30 days of membership credits", emoji: "🎟️", unlocked: referralCount >= 3 },
+    { count: 5, title: "2 Months Free", reward: "60 days credits · Recruiter badge", emoji: "🥈", unlocked: referralCount >= 5 },
+    { count: 10, title: "6 Months Free", reward: "180 days credits · Captain badge", emoji: "🏆", unlocked: referralCount >= 10 },
+    { count: 25, title: "Lifetime Free", reward: "Forever membership · Founder badge", emoji: "👑", unlocked: referralCount >= 25 },
   ];
 
   return (
@@ -126,31 +128,72 @@ const Referrals = () => {
 
       {/* Rewards Tiers */}
       <div className="animate-reveal animate-reveal-delay-3">
-        <h2 className="font-display font-bold text-sm mb-3 tracking-tight">Referral Rewards</h2>
-        <div className="space-y-2">
-          {rewards.map((r) => (
-            <div
-              key={r.count}
-              className={`flex items-center gap-3 rounded-xl border p-4 transition-all ${
-                r.unlocked
-                  ? "border-gold/30 bg-gold/[0.04]"
-                  : "border-border bg-card opacity-60"
-              }`}
-            >
-              <div className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-black ${
-                r.unlocked ? "gradient-gold text-primary-foreground" : "bg-secondary text-muted-foreground"
-              }`}>
-                {r.count}
+        <div className="flex items-end justify-between mb-3">
+          <h2 className="font-display font-bold text-sm tracking-tight">Referral Rewards</h2>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
+            Paid conversions only
+          </p>
+        </div>
+        <div className="space-y-2.5">
+          {rewards.map((r) => {
+            const isNext = !r.unlocked && rewards.slice(0, rewards.indexOf(r)).every((p) => p.unlocked);
+            const progress = Math.min(100, Math.round((referralCount / r.count) * 100));
+            return (
+              <div
+                key={r.count}
+                className={cn(
+                  "relative overflow-hidden rounded-xl border p-4 transition-all",
+                  r.unlocked && "border-gold/50 bg-gradient-to-br from-gold/[0.12] via-gold/[0.06] to-transparent glow-gold-sm",
+                  !r.unlocked && isNext && "border-gold/25 bg-card",
+                  !r.unlocked && !isNext && "border-border bg-card opacity-70"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "h-12 w-12 rounded-full flex items-center justify-center text-lg font-black shrink-0 relative",
+                    r.unlocked ? "gradient-gold text-primary-foreground shadow-lg shadow-gold/30" : "bg-secondary text-muted-foreground border border-border"
+                  )}>
+                    <span>{r.count}</span>
+                    {r.unlocked && (
+                      <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gold border-2 border-background flex items-center justify-center shadow-lg">
+                        <Check size={10} className="text-primary-foreground" strokeWidth={3.5} />
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-base">{r.emoji}</span>
+                      <p className={cn(
+                        "font-display font-bold text-sm tracking-tight truncate",
+                        r.unlocked ? "text-gold" : "text-foreground"
+                      )}>
+                        {r.title}
+                      </p>
+                      {isNext && !r.unlocked && (
+                        <span className="ml-auto text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
+                          Next
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{r.reward}</p>
+                    {isNext && !r.unlocked && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+                          <div
+                            className="h-full gradient-gold transition-all duration-500"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-bold tabular-nums text-gold shrink-0">
+                          {referralCount}/{r.count}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className={`font-semibold text-sm ${r.unlocked ? "text-gold" : ""}`}>
-                  Invite {r.count} friend{r.count > 1 ? "s" : ""}
-                </p>
-                <p className="text-xs text-muted-foreground">{r.reward}</p>
-              </div>
-              {r.unlocked && <Check size={18} className="text-gold" />}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

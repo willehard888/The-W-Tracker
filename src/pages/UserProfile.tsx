@@ -108,7 +108,39 @@ const UserProfile = () => {
     enabled: !!userId,
   });
 
-  // Friendship status
+  // Featured badge for the hero crown
+  const { data: featuredBadge } = useQuery({
+    queryKey: ["user-featured-badge", profile?.featured_badge_id],
+    enabled: !!profile?.featured_badge_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("badges")
+        .select("name, icon, rarity")
+        .eq("id", profile!.featured_badge_id!)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  // Global rank — how many users are ahead on rank_score
+  const { data: globalRank } = useQuery({
+    queryKey: ["user-global-rank", userId, profile?.rank_score],
+    enabled: !!userId && !!profile,
+    queryFn: async () => {
+      const { count: aheadCount } = await supabase
+        .from("profiles")
+        .select("user_id", { count: "exact", head: true })
+        .gt("rank_score", profile!.rank_score);
+      const { count: totalCount } = await supabase
+        .from("profiles")
+        .select("user_id", { count: "exact", head: true });
+      return {
+        rank: (aheadCount || 0) + 1,
+        total: totalCount || 0,
+      };
+    },
+    staleTime: 60_000,
+  });
   const { data: friendship } = useQuery({
     queryKey: ["friendship", myProfile?.user_id, userId],
     queryFn: async () => {

@@ -46,22 +46,33 @@ const MAX_VIDEO_SIZE_MB = 50;
 const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
 const isVideoUrl = (url: string) => SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.toLowerCase().includes(ext));
 
-// Parse a comment that may begin with a quoted reply preview:
-//   > @username: quoted text\n\nreply body
-// Returns { quote, body } or { body } when no quote is present.
-const QUOTE_RE = /^>\s*@([a-zA-Z0-9_]+):\s*([\s\S]*?)\n\n([\s\S]*)$/;
-const parseCommentContent = (content: string): { quote?: { username: string; text: string }; body: string } => {
-  const match = content.match(QUOTE_RE);
-  if (match) {
-    return { quote: { username: match[1], text: match[2] }, body: match[3] };
-  }
-  return { body: content };
+// Build a nested comment tree from a flat list using parent_id.
+// Top-level comments have parent_id = null. Replies are nested under their parent.
+type CommentNode = any & { children: CommentNode[]; depth: number };
+const MAX_VISUAL_DEPTH = 4; // cap visual indentation to keep mobile readable
+const buildCommentTree = (flat: any[] | undefined): CommentNode[] => {
+  if (!flat || flat.length === 0) return [];
+  const map = new Map<string, CommentNode>();
+  flat.forEach((c) => map.set(c.id, { ...c, children: [], depth: 0 }));
+  const roots: CommentNode[] = [];
+  map.forEach((node) => {
+    if (node.parent_id && map.has(node.parent_id)) {
+      const parent = map.get(node.parent_id)!;
+      node.depth = Math.min(parent.depth + 1, MAX_VISUAL_DEPTH);
+      parent.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+  // Sort children by oldest-first within each branch
+  const sortRec = (nodes: CommentNode[]) => {
+    nodes.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    nodes.forEach((n) => sortRec(n.children));
+  };
+  sortRec(roots);
+  return roots;
 };
-const buildReplyContent = (replyTo: { username: string; snippet: string } | null, body: string) => {
-  if (!replyTo) return body;
-  const cleanSnippet = replyTo.snippet.replace(/\s+/g, " ").trim().slice(0, 140);
-  return `> @${replyTo.username}: ${cleanSnippet}\n\n${body}`;
-};
+
 
 const EliteFeed = () => {
   const { user, profile, isElite } = useAuth();

@@ -323,9 +323,19 @@ const Leaderboard = () => {
         </div>
       )}
 
-      {/* Podium — top 3 */}
+      {/* Podium — top 3, hero treatment */}
       {currentLeaders.length >= 1 && (
-        <div className="relative mb-4 animate-reveal animate-reveal-delay-2">
+        <div className="relative mb-5 animate-reveal animate-reveal-delay-2">
+          {/* Spotlight glow behind #1 */}
+          <div
+            className="absolute left-1/2 -translate-x-1/2 top-0 w-56 h-56 pointer-events-none -z-10 opacity-70"
+            style={{
+              background:
+                "radial-gradient(circle at 50% 30%, hsl(var(--gold) / 0.35) 0%, transparent 60%)",
+              filter: "blur(12px)",
+            }}
+            aria-hidden
+          />
           <div className="grid grid-cols-3 gap-2 items-end">
             {/* #2 */}
             {currentLeaders[1] && (

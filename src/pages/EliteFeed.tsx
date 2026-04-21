@@ -1087,80 +1087,29 @@ const EliteFeed = () => {
                     </p>
                   </div>
 
-                  <div className="space-y-2.5 mb-3 max-h-72 overflow-y-auto">
-                    {comments?.length === 0 && (
-                      <p className="text-xs text-muted-foreground/60 text-center py-3">
-                        No comments yet — start the conversation
-                      </p>
-                    )}
-                    {comments?.map((comment: any) => {
-                      const parsed = parseCommentContent(comment.content || "");
-                      const isReply = !!parsed.quote;
-                      const username = comment.profile?.username || "anon";
-                      return (
-                        <div key={comment.id} className={cn("flex gap-2.5 animate-fade-in", isReply && "pl-5 relative")}>
-                          {isReply && (
-                            <CornerDownRight
-                              size={12}
-                              className="absolute left-0 top-2 text-gold/40"
-                              aria-hidden="true"
-                            />
-                          )}
-                          <div className="h-7 w-7 rounded-full gradient-gold flex items-center justify-center text-[10px] font-black text-primary-foreground shrink-0 mt-0.5">
-                            {username.charAt(0)?.toUpperCase() || "?"}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div
-                              className={cn(
-                                "border rounded-2xl rounded-tl-sm px-3 py-2 inline-block max-w-full",
-                                isReply
-                                  ? "bg-card border-gold/25 shadow-[0_0_0_1px_hsl(var(--gold)/0.05)]"
-                                  : "bg-card border-border/40",
-                              )}
-                            >
-                              {parsed.quote && (
-                                <div className="mb-1.5 -mx-1 px-2 py-1 rounded-lg bg-gold/5 border-l-2 border-gold/60">
-                                  <p className="text-[10px] font-bold text-gold/90 leading-tight">
-                                    @{parsed.quote.username}
-                                  </p>
-                                  <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2 break-words">
-                                    {parsed.quote.text}
-                                  </p>
-                                </div>
-                              )}
-                              <span className="text-[11px] font-bold text-gold">@{username}</span>
-                              <p className="text-xs text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
-                                {parsed.body}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2 mt-0.5 ml-3">
-                              <p className="text-[9px] text-muted-foreground/50">
-                                {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                              </p>
-                              {user && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    hapticSelection();
-                                    setReplyTo({
-                                      id: comment.id,
-                                      username,
-                                      snippet: parsed.body || parsed.quote?.text || "",
-                                    });
-                                    setTimeout(() => commentInputRef.current?.focus(), 50);
-                                  }}
-                                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
-                                >
-                                  <Reply size={10} />
-                                  Reply
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  {(() => {
+                    const tree = buildCommentTree(comments);
+                    return (
+                      <div className="space-y-3 mb-3 max-h-80 overflow-y-auto pr-1">
+                        {tree.length === 0 && (
+                          <p className="text-xs text-muted-foreground/60 text-center py-3">
+                            No comments yet — start the conversation
+                          </p>
+                        )}
+                        {tree.map((node) => (
+                          <CommentThread
+                            key={node.id}
+                            node={node}
+                            currentUserId={user?.id}
+                            onReply={(id, username, snippet) => {
+                              setReplyTo({ id, username, snippet });
+                              setTimeout(() => commentInputRef.current?.focus(), 50);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    );
+                  })()}
 
                   {/* Composer */}
                   {user && (

@@ -329,6 +329,21 @@ const DailyCheckin = () => {
         // Auto-update status tier based on percentile
         await supabase.rpc("update_status_tier", { target_user_id: user.id });
 
+        // Capture summary for the post-submit recap card
+        const xpIntoLevel = newXp - (newLevel - 1) * 500;
+        setSummary({
+          xpEarned: totalXp,
+          newTotalXp: newXp,
+          oldLevel: profile.level,
+          newLevel,
+          xpToNextLevel: 500 - xpIntoLevel,
+          levelProgressPct: Math.round((xpIntoLevel / 500) * 100),
+          newStreak,
+          streakBroken: streakBroken && profile.streak > 0,
+          completedCount,
+          maxCount,
+        });
+
         // Check and award ALL applicable badges (streak, XP, level, checkins, workouts, etc.)
         const newBadge = await checkAndAwardBadges(user.id);
         if (newBadge?.isNew) {

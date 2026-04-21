@@ -20,6 +20,7 @@ import LevelUpCelebration from "@/components/LevelUpCelebration";
 import { syncStreakWarningNotification } from "@/lib/streak-notifications";
 import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
+import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
 
 interface ToggleItemProps {
   icon: React.ElementType;
@@ -32,7 +33,7 @@ interface ToggleItemProps {
 
 const ToggleItem = ({ icon: Icon, label, sublabel, active, onToggle, bonus }: ToggleItemProps) => (
   <button
-    onClick={onToggle}
+    onClick={() => { hapticSelection(); onToggle(); }}
     className={cn(
       "flex items-center gap-3 w-full rounded-xl border p-4 transition-all duration-200 text-left active:scale-[0.97]",
       active ? "border-gold/40 bg-gold/5" : "border-border bg-card hover:bg-secondary/50"
@@ -216,6 +217,7 @@ const DailyCheckin = () => {
 
   const handleSubmit = async () => {
     if (!user || submitting || !canCheckin || honest !== true) return;
+    hapticImpact("medium");
     setSubmitting(true);
 
     try {
@@ -339,9 +341,11 @@ const DailyCheckin = () => {
       queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
       queryClient.invalidateQueries({ queryKey: ["user-badges"] });
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+      hapticNotification("success");
       setSubmitted(true);
     } catch (err) {
       console.error(err);
+      hapticNotification("error");
     }
     setSubmitting(false);
   };

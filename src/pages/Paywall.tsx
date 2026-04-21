@@ -32,7 +32,7 @@ const MEMBER_FEATURES = [
 
 // ─── Component ──────────────────────────────────────────
 const Paywall = () => {
-  const { isElite, checkSubscription } = useAuth();
+  const { isElite, checkSubscription, profile } = useAuth();
   const {
     packages, purchase, purchaseProduct, restorePurchases,
     rcLoading, rcReady, monthlyPriceLabel,
@@ -79,9 +79,12 @@ const Paywall = () => {
     );
   }
 
-  // ─── Credits banner (non-member with active referral credits) ─────
-  const creditsUntilRaw = (useAuth as any)?.profile?.membership_credits_until;
-  // (resolved below via inline check using profile prop — keep hook-safe above)
+  // ─── Credits info (non-member with active referral credits) ─────
+  const creditsUntilRaw: string | null = (profile as any)?.membership_credits_until ?? null;
+  const creditsActive = creditsUntilRaw && new Date(creditsUntilRaw).getTime() > Date.now();
+  const creditsUntilLabel = creditsActive
+    ? new Date(creditsUntilRaw as string).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })
+    : null;
 
   // ─── Handlers ───────────────────────────────────────
   const handleStripeCheckout = async () => {

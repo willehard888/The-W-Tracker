@@ -77,11 +77,52 @@ interface CommentThreadProps {
   node: CommentNode;
   currentUserId?: string;
   onReply: (id: string, username: string, snippet: string) => void;
+  onEdit: (id: string, content: string) => Promise<void> | void;
+  onDelete: (id: string) => Promise<void> | void;
+  editingId: string | null;
+  setEditingId: (id: string | null) => void;
 }
 
-const CommentThread = ({ node, currentUserId, onReply }: CommentThreadProps) => {
+const isEdited = (node: CommentNode) => {
+  if (!node.updated_at || !node.created_at) return false;
+  return new Date(node.updated_at).getTime() - new Date(node.created_at).getTime() > 1500;
+};
+
+const CommentThread = ({
+  node,
+  currentUserId,
+  onReply,
+  onEdit,
+  onDelete,
+  editingId,
+  setEditingId,
+}: CommentThreadProps) => {
   const username = node.profile?.username || "anon";
   const isReply = node.depth > 0;
+  const isOwn = currentUserId && node.user_id === currentUserId;
+  const isEditing = editingId === node.id;
+  const [draft, setDraft] = useState(node.content || "");
+  const [saving, setSaving] = useState(false);
+
+  const cancelEdit = () => {
+    setDraft(node.content || "");
+    setEditingId(null);
+  };
+
+  const saveEdit = async () => {
+    const trimmed = draft.trim();
+    if (!trimmed || trimmed === (node.content || "").trim()) {
+      cancelEdit();
+      return;
+    }
+    setSaving(true);
+    try {
+      await onEdit(node.id, trimmed);
+      setEditingId(null);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="animate-fade-in">
@@ -99,40 +140,114 @@ const CommentThread = ({ node, currentUserId, onReply }: CommentThreadProps) => 
         <div className="flex-1 min-w-0">
           <div
             className={cn(
-              "border rounded-2xl rounded-tl-sm px-3 py-2 inline-block max-w-full",
+              "border rounded-2xl rounded-tl-sm px-3 py-2 max-w-full",
+              isEditing ? "block" : "inline-block",
               isReply
                 ? "bg-card border-gold/25 shadow-[0_0_0_1px_hsl(var(--gold)/0.05)]"
                 : "bg-card border-border/40",
+              isEditing && "border-gold/60 shadow-[0_0_0_1px_hsl(var(--gold)/0.2)]",
             )}
           >
-            <span className="text-[11px] font-bold text-gold">@{username}</span>
-            <p className="text-xs text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
-              {node.content}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 mt-0.5 ml-3">
-            <p className="text-[9px] text-muted-foreground/50">
-              {formatDistanceToNow(new Date(node.created_at), { addSuffix: true })}
-            </p>
-            {currentUserId && (
-              <button
-                type="button"
-                onClick={() => {
-                  hapticSelection();
-                  onReply(node.id, username, node.content || "");
-                }}
-                className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
-              >
-                <Reply size={10} />
-                Reply
-              </button>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-gold">@{username}</span>
+              {isEdited(node) && !isEditing && (
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-gold/70 italic">
+                  · edited
+                </span>
+              )}
+            </div>
+            {isEditing ? (
+              <div className="mt-1.5 flex flex-col gap-2 min-w-[200px]">
+                <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value.slice(0, 300))}
+                  rows={2}
+                  autoFocus
+                  className="w-full bg-background/50 border border-gold/30 focus:border-gold rounded-lg px-2 py-1.5 text-xs text-foreground/90 outline-none resize-none focus:ring-2 focus:ring-gold/30"
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      e.preventDefault();
+                      cancelEdit();
+                    }
+                  }}
+                />
+                <div className="flex items-center justify-end gap-1.5">
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    disabled={saving}
+                    className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground px-2 py-1 rounded-md transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { hapticImpact("light"); saveEdit(); }}
+                    disabled={saving || !draft.trim()}
+                    className="text-[10px] font-black uppercase tracking-wider gradient-gold text-primary-foreground px-3 py-1 rounded-md disabled:opacity-50"
+                  >
+                    {saving ? "Saving…" : "Save"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
+                {node.content}
+              </p>
             )}
-            {node.children.length > 0 && (
-              <span className="text-[9px] text-muted-foreground/40 tabular-nums">
-                · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
-              </span>
-            )}
           </div>
+          {!isEditing && (
+            <div className="flex items-center gap-2 mt-0.5 ml-3 flex-wrap">
+              <p className="text-[9px] text-muted-foreground/50">
+                {formatDistanceToNow(new Date(node.created_at), { addSuffix: true })}
+              </p>
+              {currentUserId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    hapticSelection();
+                    onReply(node.id, username, node.content || "");
+                  }}
+                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
+                >
+                  <Reply size={10} />
+                  Reply
+                </button>
+              )}
+              {isOwn && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      hapticSelection();
+                      setDraft(node.content || "");
+                      setEditingId(node.id);
+                    }}
+                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm("Delete this comment? Replies will also be removed.")) {
+                        hapticImpact("medium");
+                        onDelete(node.id);
+                      }
+                    }}
+                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-destructive transition-colors"
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
+              {node.children.length > 0 && (
+                <span className="text-[9px] text-muted-foreground/40 tabular-nums">
+                  · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -151,6 +266,10 @@ const CommentThread = ({ node, currentUserId, onReply }: CommentThreadProps) => 
               node={child}
               currentUserId={currentUserId}
               onReply={onReply}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              editingId={editingId}
+              setEditingId={setEditingId}
             />
           ))}
         </div>
@@ -168,6 +287,7 @@ const EliteFeed = () => {
   const [showComments, setShowComments] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
   const [replyTo, setReplyTo] = useState<{ id: string; username: string; snippet: string } | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
@@ -457,6 +577,41 @@ const EliteFeed = () => {
       queryClient.invalidateQueries({ queryKey: ["feed-comments"] });
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
     },
+  });
+
+  const editComment = useMutation({
+    mutationFn: async ({ id, content }: { id: string; content: string }) => {
+      if (!user) throw new Error("Not signed in");
+      const { error } = await supabase
+        .from("feed_comments")
+        .update({ content, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .eq("user_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Comment updated");
+      queryClient.invalidateQueries({ queryKey: ["feed-comments"] });
+    },
+    onError: (e: any) => toast.error(e?.message || "Failed to update"),
+  });
+
+  const deleteComment = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user) throw new Error("Not signed in");
+      const { error } = await supabase
+        .from("feed_comments")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Comment deleted");
+      queryClient.invalidateQueries({ queryKey: ["feed-comments"] });
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+    },
+    onError: (e: any) => toast.error(e?.message || "Failed to delete"),
   });
 
   const reportPost = useMutation({
@@ -1105,6 +1260,14 @@ const EliteFeed = () => {
                               setReplyTo({ id, username, snippet });
                               setTimeout(() => commentInputRef.current?.focus(), 50);
                             }}
+                            onEdit={async (id, content) => {
+                              await editComment.mutateAsync({ id, content });
+                            }}
+                            onDelete={async (id) => {
+                              await deleteComment.mutateAsync(id);
+                            }}
+                            editingId={editingCommentId}
+                            setEditingId={setEditingCommentId}
                           />
                         ))}
                       </div>

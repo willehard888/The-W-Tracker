@@ -263,6 +263,7 @@ const EliteFeed = () => {
     mutationFn: async (postId: string) => {
       if (!user) return;
       const liked = reactions?.includes(postId);
+      hapticImpact(liked ? "light" : "medium");
       if (liked) {
         await supabase.from("feed_reactions").delete().eq("post_id", postId).eq("user_id", user.id);
       } else {

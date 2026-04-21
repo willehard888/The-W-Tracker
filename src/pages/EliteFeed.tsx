@@ -11,7 +11,7 @@ import ModerationGate from "@/components/ModerationGate";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { Button } from "@/components/ui/button";
-import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle, Video, Award } from "lucide-react";
+import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle, Video, Award, Reply, X, CornerDownRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -46,6 +46,23 @@ const MAX_VIDEO_SIZE_MB = 50;
 const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
 const isVideoUrl = (url: string) => SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.toLowerCase().includes(ext));
 
+// Parse a comment that may begin with a quoted reply preview:
+//   > @username: quoted text\n\nreply body
+// Returns { quote, body } or { body } when no quote is present.
+const QUOTE_RE = /^>\s*@([a-zA-Z0-9_]+):\s*([\s\S]*?)\n\n([\s\S]*)$/;
+const parseCommentContent = (content: string): { quote?: { username: string; text: string }; body: string } => {
+  const match = content.match(QUOTE_RE);
+  if (match) {
+    return { quote: { username: match[1], text: match[2] }, body: match[3] };
+  }
+  return { body: content };
+};
+const buildReplyContent = (replyTo: { username: string; snippet: string } | null, body: string) => {
+  if (!replyTo) return body;
+  const cleanSnippet = replyTo.snippet.replace(/\s+/g, " ").trim().slice(0, 140);
+  return `> @${replyTo.username}: ${cleanSnippet}\n\n${body}`;
+};
+
 const EliteFeed = () => {
   const { user, profile, isElite } = useAuth();
   const navigate = useNavigate();
@@ -53,6 +70,8 @@ const EliteFeed = () => {
   const [newPost, setNewPost] = useState("");
   const [showComments, setShowComments] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
+  const [replyTo, setReplyTo] = useState<{ id: string; username: string; snippet: string } | null>(null);
+  const commentInputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -328,14 +347,16 @@ const EliteFeed = () => {
   const addComment = useMutation({
     mutationFn: async () => {
       if (!user || !showComments || !commentText.trim()) return;
+      const content = buildReplyContent(replyTo, commentText.trim());
       await supabase.from("feed_comments").insert({
         post_id: showComments,
         user_id: user.id,
-        content: commentText.trim(),
+        content,
       });
     },
     onSuccess: () => {
       setCommentText("");
+      setReplyTo(null);
       queryClient.invalidateQueries({ queryKey: ["feed-comments"] });
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
     },
@@ -894,7 +915,7 @@ const EliteFeed = () => {
                   <span className="tabular-nums">{post.likes_count > 0 ? post.likes_count : ""}</span>
                 </button>
                 <button
-                  onClick={() => { hapticSelection(); setShowComments(showComments === post.id ? null : post.id); }}
+                  onClick={() => { hapticSelection(); setReplyTo(null); setShowComments(showComments === post.id ? null : post.id); }}
                   aria-label="Toggle comments"
                   className={cn(
                     "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
@@ -975,42 +996,125 @@ const EliteFeed = () => {
                         No comments yet — start the conversation
                       </p>
                     )}
-                    {comments?.map((comment: any) => (
-                      <div key={comment.id} className="flex gap-2.5 animate-fade-in">
-                        <div className="h-7 w-7 rounded-full gradient-gold flex items-center justify-center text-[10px] font-black text-primary-foreground shrink-0 mt-0.5">
-                          {comment.profile?.username?.charAt(0)?.toUpperCase() || "?"}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="bg-card border border-border/40 rounded-2xl rounded-tl-sm px-3 py-2 inline-block max-w-full">
-                            <span className="text-[11px] font-bold text-gold">@{comment.profile?.username || "anon"}</span>
-                            <p className="text-xs text-foreground/90 leading-relaxed break-words">{comment.content}</p>
+                    {comments?.map((comment: any) => {
+                      const parsed = parseCommentContent(comment.content || "");
+                      const isReply = !!parsed.quote;
+                      const username = comment.profile?.username || "anon";
+                      return (
+                        <div key={comment.id} className={cn("flex gap-2.5 animate-fade-in", isReply && "pl-5 relative")}>
+                          {isReply && (
+                            <CornerDownRight
+                              size={12}
+                              className="absolute left-0 top-2 text-gold/40"
+                              aria-hidden="true"
+                            />
+                          )}
+                          <div className="h-7 w-7 rounded-full gradient-gold flex items-center justify-center text-[10px] font-black text-primary-foreground shrink-0 mt-0.5">
+                            {username.charAt(0)?.toUpperCase() || "?"}
                           </div>
-                          <p className="text-[9px] text-muted-foreground/50 mt-0.5 ml-3">
-                            {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                          </p>
+                          <div className="flex-1 min-w-0">
+                            <div
+                              className={cn(
+                                "border rounded-2xl rounded-tl-sm px-3 py-2 inline-block max-w-full",
+                                isReply
+                                  ? "bg-card border-gold/25 shadow-[0_0_0_1px_hsl(var(--gold)/0.05)]"
+                                  : "bg-card border-border/40",
+                              )}
+                            >
+                              {parsed.quote && (
+                                <div className="mb-1.5 -mx-1 px-2 py-1 rounded-lg bg-gold/5 border-l-2 border-gold/60">
+                                  <p className="text-[10px] font-bold text-gold/90 leading-tight">
+                                    @{parsed.quote.username}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2 break-words">
+                                    {parsed.quote.text}
+                                  </p>
+                                </div>
+                              )}
+                              <span className="text-[11px] font-bold text-gold">@{username}</span>
+                              <p className="text-xs text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
+                                {parsed.body}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5 ml-3">
+                              <p className="text-[9px] text-muted-foreground/50">
+                                {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                              </p>
+                              {user && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    hapticSelection();
+                                    setReplyTo({
+                                      id: comment.id,
+                                      username,
+                                      snippet: parsed.body || parsed.quote?.text || "",
+                                    });
+                                    setTimeout(() => commentInputRef.current?.focus(), 50);
+                                  }}
+                                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
+                                >
+                                  <Reply size={10} />
+                                  Reply
+                                </button>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* Composer */}
                   {user && (
                     <div className="pt-2 border-t border-border/30">
+                      {/* Reply quote preview */}
+                      {replyTo && (
+                        <div className="mb-2 flex items-stretch gap-2 rounded-xl border border-gold/30 bg-gold/[0.06] p-2 animate-fade-in">
+                          <div className="w-0.5 rounded-full bg-gold shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1 text-[10px] font-bold text-gold uppercase tracking-wider">
+                              <Reply size={10} />
+                              Replying to @{replyTo.username}
+                            </div>
+                            <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 break-words">
+                              {replyTo.snippet || "(no text)"}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => { hapticSelection(); setReplyTo(null); }}
+                            aria-label="Cancel reply"
+                            className="self-start h-6 w-6 rounded-full bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors shrink-0"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      )}
+
                       <div className="flex items-end gap-2">
                         <div className="h-8 w-8 rounded-full gradient-gold flex items-center justify-center text-[10px] font-black text-primary-foreground shrink-0">
                           {profile?.username?.charAt(0)?.toUpperCase() || "?"}
                         </div>
                         <div className="flex-1 min-w-0 relative">
                           <input
+                            ref={commentInputRef}
                             value={commentText}
                             onChange={(e) => setCommentText(e.target.value)}
-                            placeholder="Add a comment..."
+                            placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Add a comment..."}
                             maxLength={300}
-                            className="w-full h-9 pl-3 pr-12 rounded-full border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold/40 transition-all"
+                            className={cn(
+                              "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 transition-all",
+                              replyTo
+                                ? "border-gold/40 focus:ring-gold/50 focus:border-gold/60"
+                                : "border-border focus:ring-gold/40 focus:border-gold/40",
+                            )}
                             onKeyDown={(e) => {
                               if (e.key === "Enter" && commentText.trim()) {
                                 hapticImpact("light");
                                 addComment.mutate();
+                              } else if (e.key === "Escape" && replyTo) {
+                                setReplyTo(null);
                               }
                             }}
                           />
@@ -1028,7 +1132,7 @@ const EliteFeed = () => {
                         <button
                           onClick={() => { hapticImpact("light"); addComment.mutate(); }}
                           disabled={!commentText.trim() || addComment.isPending}
-                          aria-label="Send comment"
+                          aria-label={replyTo ? "Send reply" : "Send comment"}
                           className={cn(
                             "h-9 w-9 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0",
                             commentText.trim()

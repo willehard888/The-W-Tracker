@@ -1,97 +1,101 @@
 
 
-## Fix Xcode Cloud Build — Real Root Cause
+## Plan: Hard entry paywall + earned Elite status
 
-### Diagnosis
+### New mental model
 
-The screenshot shows two layers:
-1. **Warnings (yellow)**: `'NSDictionary+CordovaPreferences.o' has no symbols` + `'CDVPlugin+Resources.o' has no symbols` — these are **`libtool` warnings** when archiving the static `CapacitorCordova` framework. Categories on `NSDictionary` and `CDVPlugin` compile to "empty" `.o` files (the symbols live in the metaclass section, not the symbol table). Harmless on their own.
-2. **The actual error (red)**: `Command SwiftCompile failed with a nonzero exit code` — this is in the **Capacitor** Swift target, which `import`s `CapacitorCordova`. Under Xcode 26 + `use_frameworks! :linkage => :static`, the Swift compiler can't resolve the ObjC categories from the empty-symbol-table static framework, and the previous workarounds (explicit modules off, no-verify flags) **don't address this specific failure mode**.
+| Old | New |
+|---|---|
+| App = free, **Elite = paid €4.99/mo** | App = **paid €4.99/mo**, **Elite = earned in-app status** |
+| 9-day trial → blocks features | 7-day trial → blocks **entire app** |
+| `is_elite` = subscription flag | `is_elite` = subscription flag (renamed mentally to "Subscriber"); **Elite tier** = `status_tier = 'elite'` (already exists, top 5%) |
 
-The real fix the Capacitor community has converged on is **switching from CocoaPods static frameworks to Swift Package Manager** for Capacitor itself. The project already has `ios/App/CapApp-SPM/Package.swift` scaffolded (visible in the user's git error log) but it's not wired into the Xcode project — the App target still links `Pods_App.framework`.
+The `status_tier` enum already has an `elite` rank earned via `update_status_tier()` (Top 5% percentile + 14 days activity). We make this the **real** Elite — visible status, badges, profile glow. The paid tier becomes simply "**Member**" (required to use the app).
 
-### The Plan
+---
 
-**Strategy A (PRIMARY — low risk, single-target change)**: Force `CapacitorCordova` to be a **dynamic** framework while keeping the rest static.
+### 1. Trial: 9 → 7 days
+- `src/hooks/use-trial-access.ts`: change `TRIAL_DURATION_DAYS = 9` → `7`.
+- DB function `has_active_access`: change `interval '9 days'` → `'7 days'`.
 
-In `ios/App/Podfile`, change the linkage rules so `CapacitorCordova` is the only dynamic pod. This is the documented mixed-linkage workaround for Capacitor + Xcode 26.
+### 2. Hard entry paywall (no skip)
+- `src/components/AccessGate.tsx`: keep current logic — already redirects to `/paywall` when trial expires. No code change needed beyond the 7-day update; the gate is already hard.
+- `src/pages/Paywall.tsx`: 
+  - Rewrite copy from "Go Elite / Unlock Elite features" → **"Membership required"** / "Continue your journey".
+  - Hero: replace `Go Elite` headline with **"Become a Member"** + subtitle "€4.99/mo to unlock the app and start your Road to Elite".
+  - Features list reframed as **what the app gives you** (daily check-ins, battles, leaderboard, AI Coach, Elite Feed access *if earned*), not as "Elite perks".
+  - Keep the €4.99/mo + 7-day trial CTA.
+  - Remove the "Already Elite ✓" celebration screen — replace with **"Membership active"** confirmation that links to profile.
 
-**Concrete changes**:
-
-1. **`ios/App/Podfile`** — replace top-level `use_frameworks! :linkage => :static` with per-pod overrides:
-   ```ruby
-   use_frameworks!  # default = dynamic
-   
-   def capacitor_pods
-     pod 'Capacitor', :path => '...', :modular_headers => true
-     pod 'CapacitorCordova', :path => '...', :modular_headers => true
-     # all other pods unchanged
-     pod 'RevenuecatPurchasesCapacitor', :path => '...'
-   end
-   ```
-   Keep RevenueCat dynamic too (it's the only one that genuinely needs special module handling). Drop the `:linkage => :static` line entirely — it's the source of the symbol-stripping issue.
-
-2. **`ios/App/Podfile` `post_install`** — simplify drastically:
-   - Remove the `BUILD_LIBRARY_FOR_DISTRIBUTION = NO` overrides (only needed for static).
-   - Remove `SWIFT_INSTALL_OBJC_HEADER = NO` on CapacitorCordova (only needed for static).
-   - **Keep** the explicit-modules-off settings (still required under Xcode 26).
-   - **Keep** the MetalToolchain path stripping.
-   - **Keep** the no-verify-emitted-module-interface flag.
-   - Add `MACH_O_TYPE = mh_dylib` enforcement on Capacitor pods (belt-and-suspenders).
-
-3. **`ios/App/App/Info.plist`** — verify (no edit needed; just check) that `LSApplicationQueriesSchemes` etc. are intact after the Podfile change forces a clean install.
-
-4. **`ios/App/ci_scripts/ci_post_clone.sh`** — add explicit logging:
-   - Before `pod install`: `rm -rf Pods Podfile.lock` to force a clean install (linkage change requires it).
-   - After `pod install`: print which pods are static vs dynamic (`grep -l 'static_framework' Pods/Local\ Podspecs/*.json || true`).
-   - Print the Capacitor pod's `MACH_O_TYPE` from the generated xcconfig.
-
-5. **`ios/App/ci_scripts/ci_pre_xcodebuild.sh`** — extend the sanity gate:
-   - Verify `Pods-App.release.xcconfig` does NOT contain `OTHER_LDFLAGS = ... -force_load .../libCapacitorCordova.a` (that would mean it's still static).
-   - Fail fast with a clear message if the linkage didn't switch.
-
-**Strategy B (FALLBACK — only if A fails)**: Wire up the existing `CapApp-SPM` Swift Package as the Capacitor source, drop the CocoaPods Capacitor pods entirely, and keep CocoaPods only for RevenueCat. This is more invasive (Xcode project surgery to add an SPM dependency, swap framework links, regenerate `Podfile`) — defer unless A doesn't work.
-
-### What to expect on next Xcode Cloud build
-
-Success log signature:
-```text
-✅ pod install succeeded
-ℹ️  CapacitorCordova: dynamic framework (mh_dylib)
-✅ explicit modules disabled across all Pods xcconfigs
-** ARCHIVE SUCCEEDED **
-```
-
-The `'has no symbols'` warnings will **disappear** because dynamic frameworks don't go through `libtool` archiving.
-
-### Files touched
+### 3. "Road to Elite" — earned status UI
+New component `src/components/RoadToElite.tsx` shown on **Profile** and **Index** for any subscribed user whose `status_tier` is below `elite`. It shows the 3 concrete requirements with live progress bars:
 
 ```text
-ios/App/Podfile                              (linkage strategy changed)
-ios/App/ci_scripts/ci_post_clone.sh          (clean install + diagnostics)
-ios/App/ci_scripts/ci_pre_xcodebuild.sh      (linkage sanity gate)
+ROAD TO ELITE                              Top 5% • Status Tier
+─────────────────────────────────────────────
+✓ Rank score (top 5%)        ████████░░  82 / 95 pts
+✓ 14 days active in 30 days  ██████░░░░   9 / 14 days
+✓ 30+ day streak             ████░░░░░░  12 / 30 days
+─────────────────────────────────────────────
+Keep showing up. Elite is earned, not bought.
 ```
 
-No app code, no Swift code, no JS changes. No `project.pbxproj` changes. Pod cache will rebuild from scratch on Xcode Cloud (~3 min added one time).
+Stricter Elite criteria (server-side) — update `update_status_tier()`:
+- **Elite** now requires: percentile ≥ 95 **AND** activity_days ≥ 14 **AND** `streak ≥ 30` (currently only percentile + 14 days).
+- **High Performer**: percentile ≥ 90 + activity ≥ 14 + streak ≥ 14.
+- **Apex** / **Legend** unchanged but inherit the streak floor.
 
-### Risk & rollback
+This makes Elite a meaningful long-term grind (~30 days minimum, real consistency).
 
-- **Risk: Medium-low**. Switching pod linkage is well-documented but invalidates the Pods cache; first build after this change will be slower.
-- **Rollback**: revert the Podfile to `use_frameworks! :linkage => :static` — single-line change.
+### 4. Decouple paid features from `is_elite`
+Today, `is_elite` (= subscriber) gates the Elite Feed and AI Coach. New rules:
+- **AI Coach** (`/coach`): available to any subscriber (any user that passes `AccessGate`). Remove `isElite` checks in `Coach.tsx` + `ai-coach` edge function — change to `has_active_access(user_id)`.
+- **Elite Feed posting**: stays gated — but on the **earned `status_tier = 'elite'`**, not on `is_elite`. Update RLS on `feed_posts` "Elite users can post" policy to check `status_tier IN ('elite','apex','legend')` instead of `is_elite = true`.
+- **Elite Feed reading**: open to all members (any subscriber).
+- **2× XP multiplier & Elite badges**: tied to earned `status_tier ≥ elite`.
+- `EliteFeedTeaser` and `FeatureGateScreen`: shown when user is a subscriber but hasn't earned Elite tier yet — copy changes from "Unlock Elite €4.99" to **"Earn your Elite status"** with a link to Road to Elite.
 
-### After the build is green
+### 5. Copy & UI sweep
+- Crown/gold "Elite" badge in profile/avatar now reflects **earned tier**, not subscription.
+- Subscription state shown as a small "Member since …" line on Profile (no crown).
+- `BottomNav`, `EliteFeedTeaser`, `FeatureGateScreen`: replace "Unlock Elite" CTAs that point to `/paywall` with either the membership paywall (for non-members) or **Road to Elite** (for members who haven't earned it).
 
-I will then proceed (next message, separate diff) to **Phase 2A** of the polish plan: Apple Sign-In + IAP audit & fixes, per the previously approved scope. Phases 2B → 2D will follow one at a time.
+### 6. Memory updates
+- Update `mem://monetization/elite-subscription` → rename to `mem://monetization/membership` reflecting new model.
+- Add `mem://features/road-to-elite` documenting the earned tier requirements.
+- Update `mem://index.md` Core: "App requires €4.99/mo membership. Elite is earned status (top 5% + 14 active days + 30-day streak)."
 
-### What I need from you after this lands
+---
 
-After deploying:
-1. Pull locally — but first resolve the local conflicts you hit:
-   ```bash
-   cd ~/The-W-Tracker
-   git stash -u
-   git pull
-   ```
-2. Re-run the Xcode Cloud build from App Store Connect.
-3. If it fails, send me the **expanded** "CapacitorCordova" or "Capacitor" group from the Xcode Cloud log — I need the actual `error:` line, not just the warnings. The summary screenshot hides it.
+### Technical details
+
+**Files edited**
+- `src/hooks/use-trial-access.ts` — 7 days
+- `src/pages/Paywall.tsx` — membership copy, remove "isElite" celebration
+- `src/components/AccessGate.tsx` — comment update
+- `src/pages/Coach.tsx` — drop `isElite` gate
+- `src/pages/EliteFeed.tsx` — read open, post gated on earned tier
+- `src/components/EliteFeedTeaser.tsx` — re-route to Road to Elite for members
+- `src/components/FeatureGateScreen.tsx` — same
+- `src/pages/Profile.tsx` — show Road to Elite + Membership status
+- `src/pages/Index.tsx` — Road to Elite teaser for non-Elite-tier members
+
+**Files created**
+- `src/components/RoadToElite.tsx` — progress card with the 3 requirements
+- `src/hooks/use-road-to-elite.ts` — fetches rank_score, 30-day activity, streak
+
+**DB migrations**
+- Update `has_active_access` → 7-day interval
+- Update `update_status_tier` and `update_all_status_tiers` → add streak threshold to elite/high_performer
+- Update RLS on `feed_posts` "Elite users can post" → check `status_tier`
+- Edge function `ai-coach`: replace `is_elite` check with `has_active_access`
+
+**Backwards compatibility**
+- Existing Elite subscribers keep all access (they pass `has_active_access`).
+- Users currently sitting at `status_tier = 'elite'` because of old criteria will be re-evaluated next time `update_status_tier` runs — some may drop to High Performer until they hit the 30-day streak. Acceptable since this matches the new "earned" promise.
+
+**Conservative scope**
+- No payment provider changes (RevenueCat / Stripe stay as-is).
+- No onboarding flow changes (new users still see onboarding → land on `/` → AccessGate redirects to `/paywall` if no active trial/sub).
+- No badge schema changes; existing `elite_member` badge requirement stays usable.
 

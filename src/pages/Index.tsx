@@ -187,6 +187,9 @@ const Index = () => {
             totalUsers={rankData.totalUsers}
             percentile={rankData.percentile}
             rankScore={(profile as any).rank_score}
+            daysAtTier={(profile as any).rank_score_updated_at
+              ? Math.max(1, Math.floor((Date.now() - new Date((profile as any).rank_score_updated_at).getTime()) / (1000 * 60 * 60 * 24)))
+              : undefined}
           />
         </div>
       )}

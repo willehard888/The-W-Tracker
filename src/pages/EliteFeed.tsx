@@ -358,11 +358,11 @@ const EliteFeed = () => {
   const addComment = useMutation({
     mutationFn: async () => {
       if (!user || !showComments || !commentText.trim()) return;
-      const content = buildReplyContent(replyTo, commentText.trim());
       await supabase.from("feed_comments").insert({
         post_id: showComments,
         user_id: user.id,
-        content,
+        content: commentText.trim(),
+        parent_id: replyTo?.id ?? null,
       });
     },
     onSuccess: () => {

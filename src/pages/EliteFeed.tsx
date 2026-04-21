@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import StatusAvatar from "@/components/StatusAvatar";
+import ImageLightbox from "@/components/ImageLightbox";
+import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";

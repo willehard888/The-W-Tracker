@@ -263,19 +263,22 @@ fi
 # xcconfig — so we patch the files directly to guarantee the sanity gate and
 # the Xcode build agree on the pinned version.
 # ---------------------------------------------------------------------------
-echo "🛠  Self-healing: pinning SWIFT_VERSION + SWIFT_OPTIMIZATION_LEVEL on Capacitor Swift pods..."
-IOS_APP_DIR_FOR_PATCH="$IOS_APP_DIR" python3 - <<'PY'
+echo "🛠  Self-healing: pinning SWIFT_VERSION=${PINNED_PODS_SWIFT_VERSION} + SWIFT_OPTIMIZATION_LEVEL on Capacitor Swift pods..."
+IOS_APP_DIR_FOR_PATCH="$IOS_APP_DIR" \
+PINNED_PODS_SWIFT_VERSION="$PINNED_PODS_SWIFT_VERSION" \
+python3 - <<'PY'
 import os
 import re
 from pathlib import Path
 
 root = Path(os.environ['IOS_APP_DIR_FOR_PATCH'])
+pinned_swift = os.environ['PINNED_PODS_SWIFT_VERSION']
 # Pods whose Swift targets hit the Xcode 26.4.1 constraint-solver crash.
 swift_pinned_pods = ['Capacitor', 'RevenuecatPurchasesCapacitor']
 configs = ['release', 'debug']
 
 required_settings = {
-    'SWIFT_VERSION': '5.0',
+    'SWIFT_VERSION': pinned_swift,
     'SWIFT_OPTIMIZATION_LEVEL': '-Onone',
     'SWIFT_COMPILATION_MODE': 'singlefile',
 }

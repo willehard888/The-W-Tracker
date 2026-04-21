@@ -146,6 +146,18 @@ const DailyCheckin = () => {
   const [questBonusXp, setQuestBonusXp] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [newLevelReached, setNewLevelReached] = useState(0);
+  const [summary, setSummary] = useState<{
+    xpEarned: number;
+    newTotalXp: number;
+    oldLevel: number;
+    newLevel: number;
+    xpToNextLevel: number;
+    levelProgressPct: number;
+    newStreak: number;
+    streakBroken: boolean;
+    completedCount: number;
+    maxCount: number;
+  } | null>(null);
   const moderation = useModeration();
 
   const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory)!;

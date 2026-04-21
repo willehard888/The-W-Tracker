@@ -166,6 +166,51 @@ export type Database = {
         }
         Relationships: []
       }
+      content_moderations: {
+        Row: {
+          action: string
+          categories: string[]
+          confidence: number
+          content_id: string | null
+          content_type: string
+          created_at: string
+          id: string
+          image_url: string | null
+          is_safe: boolean
+          model: string
+          reason: string | null
+          text_content: string | null
+        }
+        Insert: {
+          action: string
+          categories?: string[]
+          confidence?: number
+          content_id?: string | null
+          content_type: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_safe: boolean
+          model?: string
+          reason?: string | null
+          text_content?: string | null
+        }
+        Update: {
+          action?: string
+          categories?: string[]
+          confidence?: number
+          content_id?: string | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_safe?: boolean
+          model?: string
+          reason?: string | null
+          text_content?: string | null
+        }
+        Relationships: []
+      }
       daily_checkins: {
         Row: {
           checked_in_at: string

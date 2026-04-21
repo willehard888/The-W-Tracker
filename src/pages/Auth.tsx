@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { nativeAppleSignIn } from "@/lib/native-auth";
 import BrandLogo from "@/components/BrandLogo";
 import AppleSignInButton from "@/components/AppleSignInButton";
+import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
 const Auth = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -71,29 +72,36 @@ const Auth = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    hapticImpact("light");
 
     if (mode === "signup") {
       if (username.length < 3) {
         setError("Username must be at least 3 characters");
+        hapticNotification("error");
         setLoading(false);
         return;
       }
       if (!/^[a-zA-Z0-9_]+$/.test(username)) {
         setError("Username can only contain letters, numbers, and underscores");
+        hapticNotification("error");
         setLoading(false);
         return;
       }
       const { error: err } = await signUp(email, password, username);
       if (err) {
         setError(err.message);
+        hapticNotification("error");
       } else {
         setEmailSent(true);
+        hapticNotification("success");
       }
     } else {
       const { error: err } = await signIn(email, password);
       if (err) {
         setError(err.message);
+        hapticNotification("error");
       } else {
+        hapticNotification("success");
         navigate("/");
       }
     }

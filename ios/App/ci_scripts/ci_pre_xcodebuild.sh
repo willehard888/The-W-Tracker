@@ -187,4 +187,22 @@ if [[ -f "$CAPCORDOVA_CFG" ]]; then
   echo "✅ CapacitorCordova MACH_O_TYPE clean (dynamic)"
 fi
 
+# Sanity gate: confirm Capacitor pod is pinned to Swift 5 to dodge the
+# Xcode 26.4.1 Swift 6 type-checker crash on Capacitor.swift.
+CAP_RELEASE_CFG="$IOS_APP_DIR/Pods/Target Support Files/Capacitor/Capacitor.release.xcconfig"
+if [[ -f "$CAP_RELEASE_CFG" ]]; then
+  if grep -qE '^SWIFT_VERSION\s*=\s*5' "$CAP_RELEASE_CFG"; then
+    echo "✅ Capacitor.release.xcconfig pinned to SWIFT_VERSION = 5"
+  else
+    echo "❌ Capacitor.release.xcconfig is NOT pinned to SWIFT_VERSION = 5 — Swift 6 type-checker will crash."
+    grep -E '^SWIFT_VERSION' "$CAP_RELEASE_CFG" || echo "  (no SWIFT_VERSION line found)"
+    exit 1
+  fi
+  if grep -qE '^SWIFT_OPTIMIZATION_LEVEL\s*=\s*-Onone' "$CAP_RELEASE_CFG"; then
+    echo "✅ Capacitor.release.xcconfig uses -Onone (constraint solver workaround)"
+  else
+    echo "⚠️  Capacitor.release.xcconfig missing SWIFT_OPTIMIZATION_LEVEL=-Onone — type-checker may still crash"
+  fi
+fi
+
 echo "✅ pre-xcodebuild setup complete"

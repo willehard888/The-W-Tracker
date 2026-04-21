@@ -470,7 +470,7 @@ const DailyCheckin = () => {
       {/* Hydration */}
       <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border bg-card p-4 mb-3">
         <div className="flex items-center gap-3 mb-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400"><Droplets size={20} /></div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal/10 text-teal"><Droplets size={20} /></div>
           <div><p className="font-semibold text-sm">Hydration</p><p className="text-xs text-muted-foreground">Target: 3L+</p></div>
           <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
         </div>

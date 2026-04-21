@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils";
 import {
   Moon, Dumbbell, Snowflake, Apple, Droplets, BookOpen,
   Brain, Smartphone, Camera, ChevronLeft, Zap, Plus,
-  TrendingUp, AlertTriangle, Trophy, Crown, ChevronDown, NotebookPen
+  TrendingUp, AlertTriangle, Trophy, Crown, ChevronDown, NotebookPen,
+  Flame, ArrowUp, CheckCircle2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";

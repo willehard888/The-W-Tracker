@@ -9,10 +9,11 @@ interface RankPressureCardProps {
   totalUsers: number;
   percentile: number;
   rankScore?: number;
+  daysAtTier?: number;
   className?: string;
 }
 
-const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, className }: RankPressureCardProps) => {
+const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, daysAtTier, className }: RankPressureCardProps) => {
   const config = getTierConfig(tier);
   const nextTier = getNextTier(tier);
 

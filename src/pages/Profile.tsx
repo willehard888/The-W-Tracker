@@ -413,6 +413,11 @@ const Profile = () => {
         <RoadToElite />
       </div>
 
+      {/* Live Rivals — who's ahead, who's behind */}
+      <div className="mb-3 animate-reveal animate-reveal-delay-1">
+        <LiveRivals userId={profile.user_id} myScore={Number((profile as any).rank_score) || 0} />
+      </div>
+
       {/* Membership status (subscriber line — earned-tier crown lives in hero) */}
       {isElite && (
         <div className="mb-3 animate-reveal animate-reveal-delay-1 rounded-xl border border-border/60 bg-card/40 p-3 flex items-center gap-3">

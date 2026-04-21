@@ -2,24 +2,10 @@ require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '15.0'
 
-def patch_capacitor_module_maps
-  [
-    '../../node_modules/@capacitor/ios/Capacitor.podspec',
-    '../../node_modules/@capacitor/ios/CapacitorCordova.podspec',
-  ].each do |relative_path|
-    podspec_path = File.expand_path(relative_path, __dir__)
-    next unless File.exist?(podspec_path)
-
-    original = File.read(podspec_path)
-    patched = original.gsub(/^\s*s\.module_map\s*=.*\n/, '')
-    next if patched == original
-
-    File.write(podspec_path, patched)
-    Pod::UI.puts "Patched #{File.basename(podspec_path)} for modular headers"
-  end
-end
-
-patch_capacitor_module_maps
+# Use modular headers globally so Capacitor + RevenueCat resolve as Swift modules.
+# This replaces the old `patch_capacitor_module_maps` hack which stripped
+# `s.module_map` entries and broke `CapacitorCordova does not define modules`.
+use_modular_headers!
 
 # workaround to avoid Xcode caching of Pods that requires
 # Product -> Clean Build Folder after new Cordova plugins installed
@@ -27,8 +13,8 @@ patch_capacitor_module_maps
 install! 'cocoapods', :disable_input_output_paths => true
 
 def capacitor_pods
-  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios', :modular_headers => true
-  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios', :modular_headers => true
+  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorAppLauncher', :path => '../../node_modules/@capacitor/app-launcher'
   pod 'CapacitorBrowser', :path => '../../node_modules/@capacitor/browser'
@@ -39,8 +25,6 @@ def capacitor_pods
 end
 
 target 'App' do
-  # Xcode 26 + RevenueCat + Capacitor 8 archive reliably when Capacitor pods
-  # are integrated as modular static libraries instead of static frameworks.
   capacitor_pods
   # Add your Pods here
 end
@@ -48,7 +32,6 @@ end
 post_install do |installer|
   assertDeploymentTarget(installer)
 
-  # Silence "[CP] Embed Pods Frameworks will be run during every build" warning
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       library_search_paths = Array(config.build_settings['LIBRARY_SEARCH_PATHS'])

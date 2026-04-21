@@ -478,40 +478,76 @@ interface PodiumCardProps {
 const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCardProps) => {
   const isFirst = rank === 1;
   const isSecond = rank === 2;
-  const heightClass = isFirst ? "pt-6 pb-5" : isSecond ? "pt-4 pb-4 mt-4" : "pt-4 pb-3.5 mt-6";
+  const heightClass = isFirst ? "pt-8 pb-5" : isSecond ? "pt-5 pb-4 mt-6" : "pt-5 pb-3.5 mt-10";
   const rankLabel = isFirst ? "1st" : isSecond ? "2nd" : "3rd";
   const accent = isFirst
-    ? "border-gold/60 bg-gradient-to-b from-gold/[0.18] via-gold/[0.06] to-card glow-gold-sm"
+    ? "border-gold/70 bg-gradient-to-b from-gold/[0.22] via-gold/[0.08] to-card shadow-[0_8px_32px_-8px_hsl(var(--gold)/0.5)]"
     : isSecond
-    ? "border-foreground/25 bg-gradient-to-b from-foreground/[0.08] via-foreground/[0.02] to-card"
-    : "border-amber-700/40 bg-gradient-to-b from-amber-700/[0.12] via-amber-700/[0.04] to-card";
+    ? "border-foreground/30 bg-gradient-to-b from-foreground/[0.1] via-foreground/[0.03] to-card"
+    : "border-amber-700/50 bg-gradient-to-b from-amber-700/[0.14] via-amber-700/[0.05] to-card";
 
   return (
     <button
       onClick={onClick}
       className={cn(
-        "relative rounded-2xl border overflow-hidden flex flex-col items-center px-2 text-center transition-transform active:scale-[0.97]",
+        "relative rounded-2xl border overflow-visible flex flex-col items-center px-2 text-center transition-transform active:scale-[0.97]",
         heightClass,
         accent,
         isMe && "ring-2 ring-gold/60",
       )}
     >
+      {/* Floating crown for #1 */}
       {isFirst && (
-        <Crown size={20} className="text-gold mb-1 drop-shadow-[0_0_6px_hsl(var(--gold)/0.6)]" />
+        <div className="absolute -top-5 left-1/2 -translate-x-1/2 pointer-events-none">
+          <div className="relative">
+            <Crown size={28} className="text-gold drop-shadow-[0_0_12px_hsl(var(--gold)/0.9)] animate-[float_3s_ease-in-out_infinite]" />
+            <div className="absolute inset-0 blur-md opacity-70 animate-pulse">
+              <Crown size={28} className="text-gold" />
+            </div>
+          </div>
+        </div>
       )}
-      <div className={cn("absolute top-1.5 right-1.5 font-display font-black text-[10px] tabular-nums uppercase tracking-wider",
+
+      {/* Shimmer overlay for #1 */}
+      {isFirst && (
+        <div
+          className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden opacity-50"
+          aria-hidden
+        >
+          <div
+            className="absolute inset-y-0 -left-full w-1/2 animate-[shimmer_3.5s_ease-in-out_infinite]"
+            style={{
+              background:
+                "linear-gradient(105deg, transparent 40%, hsl(var(--gold) / 0.25) 50%, transparent 60%)",
+            }}
+          />
+        </div>
+      )}
+
+      <div className={cn("absolute top-2 right-2 font-display font-black text-[10px] tabular-nums uppercase tracking-wider",
         isFirst ? "text-gold" : isSecond ? "text-foreground/60" : "text-amber-600"
       )}>
         {rankLabel}
       </div>
+
       <div className={cn("relative", isFirst && "scale-110")}>
-        <StatusAvatar
-          src={user.avatar_url}
-          name={user.username}
-          tier={user.status_tier || "recruit"}
-          size={isFirst ? "md" : "sm"}
-        />
+        {isFirst && (
+          <div
+            className="absolute inset-0 rounded-full blur-xl opacity-60 animate-pulse"
+            style={{ background: "hsl(var(--gold) / 0.6)" }}
+            aria-hidden
+          />
+        )}
+        <div className="relative">
+          <StatusAvatar
+            src={user.avatar_url}
+            name={user.username}
+            tier={user.status_tier || "recruit"}
+            size={isFirst ? "md" : "sm"}
+          />
+        </div>
       </div>
+
       <p className={cn(
         "font-display font-bold text-xs mt-2 truncate max-w-full px-1",
         isMe && "text-gold",
@@ -521,7 +557,7 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
       {isMe && <span className="text-[9px] text-gold/70 font-medium -mt-0.5">(you)</span>}
       <p className={cn(
         "font-display font-black tabular-nums mt-1",
-        isFirst ? "text-gold text-lg" : "text-foreground text-sm",
+        isFirst ? "text-gold text-xl" : "text-foreground text-sm",
       )}>
         {points.toLocaleString()}
       </p>
@@ -530,7 +566,7 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
       </p>
       {wins > 0 && (
         <p className="text-[9px] text-gold/80 mt-1 flex items-center gap-0.5">
-          <Medal size={9} /> {wins}x
+          <Medal size={9} /> {wins}×
         </p>
       )}
     </button>

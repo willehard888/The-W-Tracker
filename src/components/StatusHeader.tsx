@@ -114,7 +114,7 @@ const StatusHeader = () => {
 
   return (
     <header className="sticky top-0 z-40 safe-top">
-      <div className="relative surface-glass border-x-0 border-t-0 rounded-none border-b border-gold/15">
+      <div className="relative surface-glass hairline-bottom border-x-0 border-t-0 border-b-0 rounded-none">
         {/* Soft tier accent — single layer, low intensity */}
         <div
           aria-hidden

@@ -19,10 +19,13 @@ export default {
       },
       colors: {
         border: "hsl(var(--border))",
+        "border-strong": "hsl(var(--border-strong))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        "foreground-muted": "hsl(var(--foreground-muted))",
+        "foreground-faint": "hsl(var(--foreground-faint))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -63,6 +66,7 @@ export default {
         },
         gold: {
           DEFAULT: "hsl(var(--gold))",
+          soft: "hsl(var(--gold-soft))",
           light: "hsl(var(--gold-light))",
           dark: "hsl(var(--gold-dark))",
         },

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Crown, Loader2, Send, Trash2, Users, LogOut } from "lucide-react";
+import { ArrowLeft, Crown, Loader2, Send, Trash2, Users, LogOut, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 

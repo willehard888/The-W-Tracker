@@ -395,8 +395,8 @@ const Leaderboard = () => {
                 </div>
                 <StatusAvatar src={user.avatar_url} name={user.username} tier={user.status_tier || 'recruit'} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <p className={cn("text-sm font-semibold truncate flex items-center gap-1.5", isMe && "text-gold")}>
-                    @{user.username}
+                  <p className="text-sm font-semibold truncate flex items-center gap-1.5">
+                    <TierUsername username={user.username} tier={user.status_tier || "recruit"} />
                     {isMe && <span className="text-[9px] text-gold/70 font-medium">(you)</span>}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
@@ -529,12 +529,12 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
         </div>
       </div>
 
-      <p className={cn(
-        "font-display font-bold text-xs mt-2 truncate max-w-full px-1",
-        isMe && "text-gold",
-      )}>
-        @{user.username}
-      </p>
+      <TierUsername
+        as="p"
+        username={user.username}
+        tier={user.status_tier || "recruit"}
+        className="font-display font-bold text-xs mt-2 truncate max-w-full px-1"
+      />
       {isMe && <span className="text-[9px] text-gold/70 font-medium -mt-0.5">(you)</span>}
       <p className={cn(
         "font-display font-black tabular-nums mt-1",

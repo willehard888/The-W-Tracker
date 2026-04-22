@@ -182,7 +182,9 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                     )}
                   </div>
                   <p className={cn("text-[10px] truncate mt-0.5", isLocked ? "text-muted-foreground/80" : "text-muted-foreground")}>
-                    {cfg.percentile}
+                    {cfg.requirements.percentile > 0
+                      ? `Top ${(100 - cfg.requirements.percentile).toFixed(cfg.requirements.percentile >= 99 ? 1 : 0)}%`
+                      : cfg.percentile}
                   </p>
                 </div>
 

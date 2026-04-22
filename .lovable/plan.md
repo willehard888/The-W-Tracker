@@ -1,78 +1,91 @@
 
 
-# Apex/Founder Badges + Legend Rebrand
+# Founding Apex kaupallisemmaksi + Status Tier näyttävämmäksi
 
-Tehd��än Apex-tilan jako näkyväksi (**Founding ⚡** vs **Earned 🔥**) ja brändätään Legend-tier "Founders Circle" -kopiolla menettämättä ansaintaperustaa.
-
----
-
-## 1. ApexBadge — käytetään olemassa olevaa komponenttia
-
-`ApexBadge.tsx` on jo valmiina mutta ei käytössä missään. Logiikka:
-- `isFounding={true}` → ⚡ Zap-ikoni + label "Founding" (käyttäjä on `is_apex_subscriber`)
-- `isFounding={false}` → 🔥 Flame-ikoni + label "Earned" (status_tier on apex/legend mutta ei tilaaja)
-
-Sama gold/flame-gradient molemmissa — vain ikoni ja tooltip eroavat. Korjaan tooltipin "Earned"-tilassa lukemaan **"Earned Apex — Top 1%"** ja Founding-tilassa **"Founding Apex — Day-One Member"**, jotta jako on selkeä.
-
-## 2. Legend-rebrand "Founders Circle"
-
-`src/lib/status-tiers.ts`:
-- **Säilyy**: `requirements: { percentile: 99.9, activeDays: 30, streak: 30 }` — täysin ansaittu, top 0.1%
-- **Muuttuu**:
-  - `label: "Founder"` (oli "Legend")
-  - `shortLabel: "FDR"` (oli "LGD")
-  - `message: "You shaped this"` (oli "Few ever reach this")
-  - `pressureMessage: "The Founders Circle is watching"`
-  - `unlocks`: lisätään "Founders Circle aura", "Eternal recognition" — säilytetään Hall of Fame ja Tribes
-- Visuaali pysyy samana (purple/gold/rose conic gradient — eli "founder" on yhä myyttinen huipputier)
-
-`StatusBadge.tsx`, `TierLadder.tsx` ja muut komponentit lukevat labelin `getTierConfig()`:n kautta → automaattinen rebrändi koko UI:ssa.
-
-## 3. ApexBadgen sijoittelu — vain profiilisivut
-
-Käyttäjän vahvistuksen mukaan badge näkyy **vain Profile + PublicProfile + UserProfile** sivuilla. Ei leaderboardilla, ei tribeissä, ei feedissä — pidetään harvinaisena ja arvokkaana.
-
-Jokaiseen sivuun lisätään ApexBadge tier-pillin viereen kun `status_tier === 'apex'`:
-
-**Profile.tsx (rivi ~342, status pills -rivi)**
-- Lisätään `isApex && <ApexBadge isFounding={isApexSubscriber} size="md" />` Elite-pillin perään
-
-**PublicProfile.tsx**
-- Lisätään `is_apex_subscriber` SELECT-kenttiin (rivi 23)
-- Lisätään tier-pillin viereen `isApex && <ApexBadge isFounding={profile.is_apex_subscriber} />`
-
-**UserProfile.tsx**
-- Profile-fetchiin lisätään `is_apex_subscriber` jos puuttuu
-- Tier-pill-rivin (rivi ~298) viereen `isApex && <ApexBadge isFounding={profile.is_apex_subscriber} />`
-
-## 4. Founder-merkki Legend-tierille (sama komponentti, eri label)
-
-Laajennetaan `ApexBadge`-komponenttia `tier`-propilla:
-- `tier="apex"` (default) → "Founding" / "Earned" Apex (nykyinen logiikka)
-- `tier="legend"` → "Founder" -label, Crown-ikoni, purple-gold-rose -gradient
-
-Legend-käyttäjä saa aina **🔱 Founder** -merkin (ansaittu top 0.1%) ilman Founding/Earned-jakoa, koska Legendiin ei voi ostaa pääsyä.
-
-## 5. Memory-päivitykset
-
-- `mem://features/status-hierarchy` — päivitetään Legend → "Founder/Founders Circle" -nimitys, Apex-jako Founding/Earned säilyy
-- Core-rivi index.md:ssä ei muutu (7-tier system pysyy)
+Tehdään kaksi asiaa: (1) Founding Apex -merkki rebrändätään selvästi premiumiksi/kaupalliseksi statussymboliksi, ja (2) TierLadder muutetaan staattisesta listasta progressiiviseksi, kinemaattiseksi matkaksi jossa jokainen tier-saavutus tuntuu isolta.
 
 ---
 
-## Tekniset yksityiskohdat
+## 1. Founding Apex — kaupallisempi premium-vibe
+
+Nykyinen: pieni oranssi pilleri "⚡ Founding Apex".
+
+Uusi premium-versio:
+- **Lisätään "FOUNDING MEMBER" -mikrokopio** päämerkin alle/sisään → korostaa exclusiveä Day-One-statusta
+- **Crown + Zap -yhdistelmäikoni** Apex-tilaajalle (ei pelkkä Zap) — kruunu = ostettu status, salama = nopeus/instant
+- **Vahvempi gradient + sisäinen shimmer**: gold→amber→flame conic-gradient + animoitu shimmer-stripe joka pyyhkii merkin yli ~3s välein (sama tekniikka kuin premium-luottokorteissa)
+- **Diamond/sparkle accent**: pieni ✦-ikoni perässä joka pulsoi
+- **Tooltipti**: "Founding Apex — €15.99/mo · Day-One Member · Tier locked at Apex"
+- **Koko hieman isompi** kuin Earned Apex → visuaalinen hierarkia: kaupallinen status erottuu
+
+Earned Apex (🔥) pidetään hillitympänä — tämä korostaa ostetun statuksen "wow"-tekijän, joka kannustaa konversioita.
+
+**Profile-sivulla**: Founding Apex -merkki saa myös oman pienen "PREMIUM" -lipun otsikon päälle (tag-tyyli), kuten kuvakaappauksessa näkyy mutta vahvempi.
+
+---
+
+## 2. Status Tier näyttävämmäksi — progressiivinen kokemus
+
+Nykyinen TierLadder on flat lista checkmarkeilla. Uusi versio tekee siitä kinemaattisen polun jossa jokainen taso visuaalisesti eskaloituu.
+
+### A. Progressiivinen visuaalinen eskalaatio (alhaalta ylös)
+
+Jokainen tier-rivi saa visuaalisesti vahvemman käsittelyn sitä mukaa kun ranki nousee:
+
+```text
+Recruit       → flat, harmaa, ei aurakehystä
+Operator      → ohut teal-borderi, hiljainen glow
+Performer     → blue-gradient + ikonin valokupla
+High Performer→ purple-aura, animoitu sisävalo
+Elite         → gold-borderi + pulse-glow + sparkle-partikkeli rivin reunassa
+Apex          → flame+gold conic-borderi pyörii hitaasti, isompi rivi (h-16 vs h-12)
+Legend        → täysi conic-rainbow border + reunoissa kelluvat partikkelit + isoin rivi
+```
+
+Kasvava korkeus + kasvava efekti = visuaalinen "ladder" tuntuu kiipeämiseltä, ei listalta.
+
+### B. "Achievement unlock" -animaatio nykyiselle tierille
+
+- Nykyinen tier (You-rivi) saa **shimmer-sweep** joka pyyhkii rivin yli ~4s välein
+- Konfettin/spark-partikkelit reunoissa
+- Suurempi kruunu/tier-ikoni jolla on oma 3D-pyöritys hover-tilassa
+- "YOU" -tagin sijasta isompi "● CURRENT TIER" -liveri kultaan
+
+### C. Locked tierit — "näytä mitä menetät" -tyyli
+
+- Lukitut tierit eivät enää harmaita läpinäkyvyydellä, vaan **silhuettina** gold-rajalla → "tämä on saavutettavissasi"
+- Lukko-ikoni vaihtuu **Trending-up + percent** -merkkiin (esim. "+5% to unlock")
+- Hover/tap → preview-animaatio joka näyttää mitä unlocks-listassa on
+
+### D. Progress-track tier-rivien välissä
+
+- Vertikaalinen kultainen viiva yhdistää tierit (kuin metro-kartta)
+- Saavutetut välit ovat täytetty gradientilla, lukitut himmenneet
+- Nykyisen tierin kohdalla pulssaava "olet täällä" -piste
+
+### E. Header-kohotus
+
+- "Status Ladder" → **"Your Ascension"** + alaotsikko "7 levels of dominance"
+- Sparkles-ikonin tilalle pieni live mini-Crown joka pyörii
+- Header saa gold-divider alle
+
+---
+
+## 3. Tekniset yksityiskohdat
 
 ### Edited / created files
-- `src/components/ApexBadge.tsx` — lisätään `tier?: "apex" | "legend"` -propi + Crown-render Legendille; tarkennetaan tooltip-tekstit
-- `src/lib/status-tiers.ts` — Legend → Founder labels (nimi, viesti, unlocks)
-- `src/pages/Profile.tsx` — import ApexBadge, render Apex/Legend-tilanteissa
-- `src/pages/PublicProfile.tsx` — lisää `is_apex_subscriber` SELECTiin, render badge
-- `src/pages/UserProfile.tsx` — varmistetaan että profile-fetch sisältää `is_apex_subscriber`, render badge
-- `.lovable/memory/features/status-hierarchy.md` — päivitys
+- `src/components/ApexBadge.tsx` — Founding Apex premium-rebrand (Crown+Zap, shimmer, sparkle accent, isompi koko)
+- `src/components/TierLadder.tsx` — koko refaktori: progressiiviset tier-rivit, conic-borderit ylätiereille, vertical progress-track, shimmer current-tierille, silhuetti locked-tiereille
+- `src/index.css` — uudet CSS-helperit:
+  - `.tier-shimmer-sweep` — animoitu valopyyhkäisy
+  - `.tier-progress-line` — vertikaalinen gradient-viiva
+  - `.founding-premium-shimmer` — premium-luottokortti-tyylinen shimmer
+  - `.tier-conic-border-{rank}` — eri intensiteetit per tier
+- `.lovable/memory/features/status-hierarchy.md` — päivitys progressiivisesta UI-käsittelystä ja Founding Apex premium-positioinnista
 
 ### Ei muuteta
-- DB-skeema, RPC:t, RLS — `update_status_tier` säilyttää Apex-tilauspinnauksen
-- Visuaalinen tier-järjestys (Legend pysyy korkeimpana rank=6)
-- Tribes/Elite Feed/Leaderboard — badge ei lisätä näihin (käyttäjän pyyntö)
-- Ansaintavaatimukset (top 0.1% / 99.9 percentile)
+- DB-skeema, RPC:t, tier-vaatimukset (99.9 percentile yms.)
+- StatusBadge.tsx (tämä on pieni inline-pilleri, säilyy ennallaan jotta ei riko muita sivuja)
+- Tier-järjestys, labelit, viestit (Legend pysyy "Legend" sisältäen Founders Circlen)
+- Apex-tilauksen hinnoittelu / RevenueCat-virrat
 

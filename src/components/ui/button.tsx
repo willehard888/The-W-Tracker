@@ -35,14 +35,12 @@ const buttonVariants = cva(
         //   6. Animated diagonal glint on hover (anisotropic specular sweep)
         //   7. Warm spill drop-shadow that tints the surface beneath
         default: [
-          "text-[hsl(30_85%_11%)] font-extrabold tracking-[-0.005em]",
-          "[text-shadow:0_1px_0_hsl(50_100%_94%/0.7),0_-0.5px_0_hsl(28_70%_16%/0.25)]",
+          "text-[hsl(26_90%_8%)] font-extrabold tracking-[-0.005em]",
+          "[text-shadow:0_1px_0_hsl(50_100%_94%/0.55)]",
           "overflow-hidden isolate",
-          // BASE: 3-layer recipe
-          //   1. Anisotropic horizontal gloss band (real-metal "rolled bar" sheen)
-          //   2. Bright 6-stop gold gradient — stays in saturated gold zone, ends at warm bronze (not black)
-          //   3. SVG noise grain blended subtly for tactile texture
-          "[background:linear-gradient(180deg,hsl(50_100%_70%/0)_0%,hsl(50_100%_98%/0.5)_38%,hsl(50_100%_99%/0.7)_46%,hsl(50_100%_98%/0.5)_54%,hsl(50_100%_70%/0)_66%),linear-gradient(178deg,hsl(50_100%_86%)_0%,hsl(48_100%_74%)_18%,hsl(46_100%_64%)_38%,hsl(42_98%_56%)_60%,hsl(38_92%_48%)_82%,hsl(32_84%_38%)_100%),url(\"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20120%2040'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.9%200.06'%20numOctaves%3D'2'%20stitchTiles%3D'stitch'%2F%3E%3CfeColorMatrix%20values%3D'0%200%200%200%200.95%20%200%200%200%200%200.78%20%200%200%200%200%200.36%20%200%200%200%200.4%200'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E\")]",
+          // BASE: gloss-band kept SOFT (max 0.28 opacity) so it never washes out the text.
+          // Gradient stays bright through the middle for legibility.
+          "[background:linear-gradient(180deg,hsl(50_100%_70%/0)_0%,hsl(50_100%_98%/0.18)_38%,hsl(50_100%_99%/0.28)_46%,hsl(50_100%_98%/0.18)_54%,hsl(50_100%_70%/0)_66%),linear-gradient(178deg,hsl(50_100%_84%)_0%,hsl(48_100%_72%)_22%,hsl(46_100%_62%)_50%,hsl(42_98%_54%)_78%,hsl(36_90%_44%)_100%),url(\"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20120%2040'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.9%200.06'%20numOctaves%3D'2'%20stitchTiles%3D'stitch'%2F%3E%3CfeColorMatrix%20values%3D'0%200%200%200%200.95%20%200%200%200%200%200.78%20%200%200%200%200%200.36%20%200%200%200%200.25%200'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E\")]",
           "[background-blend-mode:screen,normal,overlay]",
           "[background-size:100%_100%,100%_100%,180px_60px]",
           // Engraved bezel — dark hairline + bright top rim + warm bottom rim + soft halo (no heavy black inner cap)

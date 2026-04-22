@@ -137,6 +137,18 @@ const TribeDetail = () => {
         liked: likedSet.has(p.id),
       })),
     );
+    // Owner: count pending join requests
+    if (m?.role === "owner") {
+      const { count } = await supabase
+        .from("tribe_members" as any)
+        .select("user_id", { count: "exact", head: true })
+        .eq("tribe_id", id)
+        .eq("status", "pending");
+      setPendingCount(count ?? 0);
+    } else {
+      setPendingCount(0);
+    }
+
     setLoading(false);
   };
 
@@ -301,8 +313,27 @@ const TribeDetail = () => {
                   Challenge another tribe to a collective XP battle
                 </p>
               </div>
-              <ArrowLeft size={14} className="text-muted-foreground rotate-180" />
-            </button>
+
+            {/* Owner: pending requests pill */}
+            {isOwner && pendingCount > 0 && (
+              <button
+                onClick={() => setPendingOpen(true)}
+                className="mt-3 w-full rounded-xl border border-gold/45 bg-gradient-to-r from-gold/15 to-[hsl(18_95%_58%)]/10 hover:from-gold/20 transition-all p-2.5 flex items-center gap-2.5 text-left"
+              >
+                <div className="h-8 w-8 rounded-lg bg-gold/25 border border-gold/40 flex items-center justify-center shrink-0">
+                  <UserCheck size={14} className="text-gold" strokeWidth={2.6} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] uppercase tracking-widest font-black text-gold">
+                    Pending requests
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {pendingCount} {pendingCount === 1 ? "person wants" : "people want"} to join
+                  </p>
+                </div>
+                <span className="text-xs font-black tabular-nums text-gold">{pendingCount}</span>
+              </button>
+            )}
 
             <div className="flex gap-2 mt-3">
               {!isMember ? (
@@ -466,11 +497,19 @@ const TribeDetail = () => {
       </div>
 
       {id && (
-        <TribeInviteModal
-          tribeId={id}
-          open={inviteOpen}
-          onClose={() => setInviteOpen(false)}
-        />
+        <>
+          <TribeInviteModal
+            tribeId={id}
+            open={inviteOpen}
+            onClose={() => setInviteOpen(false)}
+          />
+          <TribePendingRequestsDialog
+            tribeId={id}
+            open={pendingOpen}
+            onOpenChange={setPendingOpen}
+            onChanged={load}
+          />
+        </>
       )}
     </div>
   );

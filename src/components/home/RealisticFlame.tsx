@@ -44,9 +44,23 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
   const isBlazing = tier >= 3;
   const isDiamond = tier >= 4;
   const isLegendary = tier >= 5;
+  const isInferno = tier >= 6; // plasma ceiling — only in hero-sized instances
 
   /* ── Tier-driven palette: hotter → whiter core, richer outer ─────── */
   const palette = useMemo(() => {
+    if (isInferno) {
+      // Plasma — magenta-to-cyan with a blinding white core
+      return {
+        backlight: "hsl(195 95% 60%)",
+        haze: "hsl(310 80% 55%)",
+        outer: "hsl(310 85% 60%)",
+        mid: "hsl(265 80% 60%)",
+        inner: "hsl(195 90% 70%)",
+        core: "hsl(180 100% 95%)",
+        coal: "hsl(310 80% 55%)",
+        wick: "hsl(195 100% 85%)",
+      };
+    }
     if (isLegendary) {
       return {
         backlight: "hsl(310 80% 55%)",
@@ -117,13 +131,13 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
       coal: "hsl(12 80% 42%)",
       wick: "hsl(42 100% 65%)",
     };
-  }, [tier, accent, isWarm, isOnFire, isBlazing, isDiamond, isLegendary]);
+  }, [tier, accent, isWarm, isOnFire, isBlazing, isDiamond, isLegendary, isInferno]);
 
   // Higher tier = faster flicker
-  const speedMul = isLegendary ? 0.5 : isDiamond ? 0.65 : isBlazing ? 0.8 : isOnFire ? 0.95 : isWarm ? 1.2 : 1.5;
+  const speedMul = isInferno ? 0.4 : isLegendary ? 0.5 : isDiamond ? 0.65 : isBlazing ? 0.8 : isOnFire ? 0.95 : isWarm ? 1.2 : 1.5;
 
   // Detached "tongues" that rise off flame top — more, taller, with curve
-  const tongueCount = isLegendary ? 10 : isDiamond ? 8 : isBlazing ? 6 : isOnFire ? 4 : isWarm ? 3 : 2;
+  const tongueCount = isInferno ? 14 : isLegendary ? 10 : isDiamond ? 8 : isBlazing ? 6 : isOnFire ? 4 : isWarm ? 3 : 2;
   const tongues = useMemo(
     () =>
       Array.from({ length: tongueCount }).map((_, i) => ({

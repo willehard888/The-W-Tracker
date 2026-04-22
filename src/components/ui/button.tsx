@@ -23,8 +23,22 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Primary dark — obsidian metal with convex vignette
+        // Primary — full premium GOLD by default. Every Button across the app
+        // now reads as a luxury CTA unless it explicitly opts into another
+        // variant (outline, ghost, destructive, glass, secondary, link).
         default: [
+          "text-primary-foreground font-bold tracking-[-0.005em]",
+          "[background:linear-gradient(180deg,hsl(42_95%_72%)_0%,hsl(42_85%_56%)_45%,hsl(42_65%_38%)_100%)]",
+          "shadow-[inset_0_0.5px_0_hsl(0_0%_100%/0.65),inset_0_1.5px_0_hsl(0_0%_100%/0.15),inset_0_-8px_18px_-8px_hsl(28_90%_35%/0.55),inset_0_-1px_0_hsl(42_50%_18%/0.55),0_1px_1px_hsl(42_60%_18%/0.4),0_8px_20px_-6px_hsl(42_78%_50%/0.45)]",
+          "hover:brightness-[1.04]",
+          "hover:shadow-[inset_0_0.5px_0_hsl(0_0%_100%/0.75),inset_0_1.5px_0_hsl(0_0%_100%/0.18),inset_0_-8px_20px_-8px_hsl(28_90%_35%/0.6),inset_0_-1px_0_hsl(42_50%_18%/0.55),0_2px_2px_hsl(42_60%_18%/0.45),0_12px_28px_-8px_hsl(42_78%_50%/0.55)]",
+          "active:[background:linear-gradient(180deg,hsl(42_88%_64%)_0%,hsl(42_78%_48%)_45%,hsl(42_60%_32%)_100%)]",
+          "active:shadow-[inset_0_0_0_0.5px_hsl(0_0%_100%/0.35),inset_0_2px_4px_hsl(42_50%_18%/0.6),inset_0_-6px_14px_-6px_hsl(28_90%_30%/0.5),0_1px_1px_hsl(0_0%_0%/0.25)]",
+          "disabled:grayscale-[0.3]",
+        ].join(" "),
+
+        // Obsidian — dark metal escape hatch when gold is too loud (rare).
+        obsidian: [
           "text-primary-foreground",
           "[background:linear-gradient(180deg,hsl(258_16%_14%)_0%,hsl(258_18%_8%)_100%)]",
           "shadow-[inset_0_0.5px_0_hsl(0_0%_100%/0.14),inset_0_1.5px_0_hsl(0_0%_100%/0.04),inset_0_0_18px_hsl(0_0%_0%/0.25),inset_0_-1px_0_hsl(0_0%_0%/0.45),0_1px_1px_hsl(0_0%_0%/0.35),0_6px_14px_-4px_hsl(0_0%_0%/0.45)]",

@@ -175,7 +175,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     badgeVariant: "legend",
     rank: 6,
     requirements: { percentile: 99.9, activeDays: 30, streak: 30 },
-    unlocks: ["Legend rainbow aura", "Founders Circle", "Hall of Fame", "Tribes — create communities", "Mythic status"],
+    unlocks: ["Legend rainbow aura", "Hall of Fame", "Tribes — create communities", "Mythic status"],
   },
 };
 

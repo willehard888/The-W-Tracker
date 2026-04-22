@@ -202,6 +202,13 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       {cfg.requirements.percentile === 0 && (
                         <p className="text-xs text-muted-foreground">Default starting tier</p>
                       )}
+                      {openTier === 'legend' && (
+                        <p className="text-xs flex items-center gap-1.5 mt-1.5 pt-1.5 border-t border-border/40">
+                          <Crown size={11} className="text-gold shrink-0" />
+                          <span className="font-black text-gold uppercase tracking-wider text-[10px]">Founders Circle</span>
+                          <span className="text-muted-foreground text-[10px]">— invite only</span>
+                        </p>
+                      )}
                     </div>
                   </div>
 

@@ -853,6 +853,120 @@
     border-left: 2px solid hsl(18 95% 58% / 0.6);
   }
 
+  /* Animated radial flame spotlight — used in hero sections */
+  .apex-spotlight {
+    position: relative;
+    overflow: hidden;
+  }
+  .apex-spotlight::before {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background:
+      radial-gradient(circle at 30% 20%, hsl(18 95% 58% / 0.35) 0%, transparent 45%),
+      radial-gradient(circle at 75% 70%, hsl(var(--gold) / 0.3) 0%, transparent 50%);
+    filter: blur(8px);
+    animation: apex-spotlight-drift 9s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes apex-spotlight-drift {
+    0%   { transform: translate(0, 0) scale(1); opacity: 0.85; }
+    100% { transform: translate(6%, -4%) scale(1.1); opacity: 1; }
+  }
+
+  /* Sweeping shimmer line across an element */
+  .apex-shimmer-sweep {
+    position: relative;
+    overflow: hidden;
+  }
+  .apex-shimmer-sweep::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      120deg,
+      transparent 0%,
+      hsl(18 95% 58% / 0.18) 45%,
+      hsl(var(--gold) / 0.28) 50%,
+      hsl(18 95% 58% / 0.18) 55%,
+      transparent 100%
+    );
+    transform: skewX(-20deg);
+    animation: apex-sweep 4.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes apex-sweep {
+    0%, 30%   { left: -60%; }
+    100% { left: 160%; }
+  }
+
+  /* Floating ember particles — pure CSS */
+  .apex-embers {
+    position: relative;
+  }
+  .apex-embers::before,
+  .apex-embers::after {
+    content: "";
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 9999px;
+    background: hsl(18 95% 58%);
+    box-shadow: 0 0 8px hsl(18 95% 58% / 0.9), 0 0 14px hsl(var(--gold) / 0.7);
+    pointer-events: none;
+    opacity: 0;
+  }
+  .apex-embers::before {
+    left: 18%;
+    bottom: 8%;
+    animation: ember-rise 5.5s ease-in 0s infinite;
+  }
+  .apex-embers::after {
+    left: 72%;
+    bottom: 12%;
+    animation: ember-rise 6s ease-in 1.8s infinite;
+  }
+  @keyframes ember-rise {
+    0%   { transform: translateY(0) scale(0.6); opacity: 0; }
+    15%  { opacity: 1; }
+    80%  { opacity: 0.6; }
+    100% { transform: translateY(-180px) scale(1.1); opacity: 0; }
+  }
+
+  /* Apex card border with animated conic gradient */
+  .apex-conic-border {
+    position: relative;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+  .apex-conic-border::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: conic-gradient(
+      from 0deg,
+      hsl(18 95% 58%),
+      hsl(var(--gold)),
+      hsl(18 95% 58% / 0.4),
+      hsl(var(--gold)),
+      hsl(18 95% 58%)
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    animation: apex-conic-spin 6s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes apex-conic-spin {
+    to { transform: rotate(360deg); }
+  }
+
 }
 
 /* Reduced motion — respect user prefs */
@@ -866,7 +980,12 @@
   .gentle-float,
   .soft-glow-pulse,
   .edge-sheen::after,
-  .apex-aura-large {
+  .apex-aura-large,
+  .apex-spotlight::before,
+  .apex-shimmer-sweep::after,
+  .apex-embers::before,
+  .apex-embers::after,
+  .apex-conic-border::before {
     animation: none !important;
   }
 }

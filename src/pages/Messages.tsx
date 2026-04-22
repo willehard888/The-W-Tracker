@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { MessageCircle, UserCheck, UserPlus, Search, X } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
+import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";

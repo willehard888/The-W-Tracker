@@ -119,37 +119,54 @@ const TribeDetail = () => {
         <ArrowLeft size={14} /> Tribes
       </button>
 
-      {/* Header */}
-      <div className="rounded-2xl p-5 mb-4 border-2 border-[hsl(18_95%_58%)]/40 bg-gradient-to-br from-[hsl(18_95%_58%)]/12 via-card/80 to-[hsl(var(--gold))]/10 apex-aura-large">
-        <div className="flex items-start gap-3">
-          <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-[hsl(18_95%_58%)]/30 to-gold/20 border border-[hsl(18_95%_58%)]/40 flex items-center justify-center shrink-0">
-            <Crown size={22} className="text-[hsl(18_95%_58%)]" />
+      {/* Cinematic Apex header */}
+      <div className="relative rounded-2xl mb-4 p-5 overflow-hidden border-2 border-[hsl(18_95%_58%)]/45 bg-gradient-to-br from-[hsl(18_95%_58%)]/15 via-card/85 to-[hsl(var(--gold))]/10 apex-aura-large apex-spotlight apex-embers apex-shimmer-sweep">
+        <div className="relative z-10">
+          <div className="flex items-start gap-3">
+            <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-[hsl(18_95%_58%)]/35 via-gold/20 to-[hsl(18_95%_58%)]/25 border border-[hsl(18_95%_58%)]/55 flex items-center justify-center shrink-0 shadow-[0_0_22px_hsl(18_95%_58%/0.5)]">
+              <Crown size={26} className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_8px_hsl(18_95%_58%/0.9)]" strokeWidth={2.4} />
+              <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border-2 border-background flex items-center justify-center shadow-[0_0_10px_hsl(18_95%_58%/0.9)] animate-pulse">
+                <Zap size={10} className="text-background" strokeWidth={3.2} fill="currentColor" />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/40 backdrop-blur-sm border border-[hsl(18_95%_58%)]/50 mb-1.5">
+                <span className="text-[9px] font-black tracking-widest uppercase bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
+                  Apex Tribe
+                </span>
+              </div>
+              <h1 className="font-display font-black text-xl truncate leading-tight">
+                {tribe.name}
+              </h1>
+              {tribe.description && (
+                <p className="text-xs text-foreground/75 mt-1 leading-snug">{tribe.description}</p>
+              )}
+              <div className="flex items-center gap-2 mt-2">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[hsl(18_95%_58%)]/12 border border-[hsl(18_95%_58%)]/30">
+                  <Users size={10} className="text-[hsl(18_95%_58%)]" />
+                  <span className="text-[10px] font-bold tabular-nums text-[hsl(18_95%_58%)]">
+                    {tribe.member_count} member{tribe.member_count === 1 ? "" : "s"}
+                  </span>
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="font-display font-black text-xl truncate">{tribe.name}</h1>
-            {tribe.description && (
-              <p className="text-xs text-muted-foreground mt-1">{tribe.description}</p>
-            )}
-            <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
-              <Users size={10} /> {tribe.member_count} member{tribe.member_count === 1 ? "" : "s"}
-            </p>
-          </div>
-        </div>
 
-        <div className="flex gap-2 mt-4">
-          {!isMember ? (
-            <Button onClick={handleJoin} size="sm" className="bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black flex-1">
-              Join Tribe
-            </Button>
-          ) : isOwner ? (
-            <Button onClick={handleDelete} variant="destructive" size="sm" className="flex-1">
-              <Trash2 size={14} /> Delete
-            </Button>
-          ) : (
-            <Button onClick={handleLeave} variant="outline" size="sm" className="flex-1">
-              <LogOut size={14} /> Leave
-            </Button>
-          )}
+          <div className="flex gap-2 mt-4">
+            {!isMember ? (
+              <Button onClick={handleJoin} size="sm" className="bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black flex-1 shadow-[0_0_16px_hsl(18_95%_58%/0.5)]">
+                Join Tribe
+              </Button>
+            ) : isOwner ? (
+              <Button onClick={handleDelete} variant="destructive" size="sm" className="flex-1">
+                <Trash2 size={14} /> Delete
+              </Button>
+            ) : (
+              <Button onClick={handleLeave} variant="outline" size="sm" className="flex-1 border-[hsl(18_95%_58%)]/30 hover:bg-[hsl(18_95%_58%)]/10">
+                <LogOut size={14} /> Leave
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

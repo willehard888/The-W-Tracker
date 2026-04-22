@@ -8,7 +8,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import TribeSearchBar from "@/components/TribeSearchBar";
 import StreakFlameInline from "@/components/StreakFlameInline";
-import { fetchTribeCollectiveStreaks } from "@/lib/tribe-streak";
+import RealisticFlame from "@/components/home/RealisticFlame";
+import { fetchTribeCollectiveStreaks, collectiveStreakTier, collectiveAccent } from "@/lib/tribe-streak";
 
 interface Tribe {
   id: string;
@@ -409,8 +410,16 @@ const Tribes = () => {
                   </span>
                 </div>
                 <div className="flex items-start gap-4 relative">
-                  <div className="relative h-20 w-20 rounded-2xl bg-gradient-to-br from-[hsl(18_95%_58%)]/35 via-gold/20 to-[hsl(18_95%_58%)]/25 border border-[hsl(18_95%_58%)]/55 flex items-center justify-center shrink-0 shadow-[0_0_28px_hsl(18_95%_58%/0.55)]">
-                    <Crown size={32} className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_10px_hsl(18_95%_58%/0.9)]" strokeWidth={2.4} />
+                  <div className="relative h-20 w-20 rounded-2xl bg-gradient-to-br from-[hsl(18_95%_58%)]/35 via-gold/20 to-[hsl(18_95%_58%)]/25 border border-[hsl(18_95%_58%)]/55 flex items-center justify-center shrink-0 shadow-[0_0_28px_hsl(18_95%_58%/0.55)] overflow-hidden">
+                    {(collectiveStreaks.get(featured.id) ?? 0) >= 30 ? (
+                      <RealisticFlame
+                        tier={collectiveStreakTier(collectiveStreaks.get(featured.id) ?? 0)}
+                        accent={collectiveAccent(collectiveStreaks.get(featured.id) ?? 0)}
+                        size={64}
+                      />
+                    ) : (
+                      <Crown size={32} className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_10px_hsl(18_95%_58%/0.9)]" strokeWidth={2.4} />
+                    )}
                     <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border-2 border-background flex items-center justify-center shadow-[0_0_8px_hsl(18_95%_58%/0.8)] animate-pulse">
                       <Zap size={10} className="text-background" strokeWidth={3} fill="currentColor" />
                     </div>
@@ -461,13 +470,31 @@ const Tribes = () => {
             </button>
           )}
 
-          {restList.map((t, idx) => (
+          {restList.map((t, idx) => {
+            const cStreak = collectiveStreaks.get(t.id) ?? 0;
+            const cTier = collectiveStreakTier(cStreak);
+            const cAccent = collectiveAccent(cStreak);
+            // Ember-bar height grows with collective tier (cold → 0%, legendary → 100%)
+            const heatPct = cTier < 0 ? 0 : Math.min(100, ((cTier + 1) / 6) * 100);
+            return (
             <button
               key={t.id}
               onClick={() => navigate(`/tribes/${t.id}`)}
               className="group w-full text-left rounded-2xl p-4 border border-[hsl(18_95%_58%)]/20 bg-gradient-to-br from-card/80 via-card/60 to-[hsl(18_95%_58%)]/5 apex-tribe-card-hover relative overflow-hidden"
               style={{ animationDelay: `${idx * 60}ms` }}
             >
+              {/* Left-edge ember bar — visible heat ladder when scanning the list */}
+              {cTier >= 0 && (
+                <div
+                  aria-hidden
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full"
+                  style={{
+                    height: `${heatPct}%`,
+                    background: `linear-gradient(180deg, ${cAccent.replace(")", " / 0.0)")} 0%, ${cAccent} 50%, ${cAccent.replace(")", " / 0.0)")} 100%)`,
+                    boxShadow: `0 0 8px ${cAccent.replace(")", " / 0.7)")}`,
+                  }}
+                />
+              )}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-gradient-to-r from-transparent via-[hsl(18_95%_58%)]/8 to-transparent" />
 
               {ownedIds.has(t.id) && (

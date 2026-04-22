@@ -38,6 +38,7 @@ const StreakFlameInline = ({
 }: StreakFlameInlineProps) => {
   // Tier (mirrors StreakDisplay)
   const tierIndex =
+    streak >= 200 ? 6 :
     streak >= 100 ? 5 :
     streak >= 60  ? 4 :
     streak >= 30  ? 3 :
@@ -51,9 +52,11 @@ const StreakFlameInline = ({
   const isBlazing   = tierIndex >= 3;
   const isDiamond   = tierIndex >= 4;
   const isLegendary = tierIndex >= 5;
+  const isInferno   = tierIndex >= 6;
 
-  // Auto-size based on streak length: 12px (cold) → 22px (legendary)
+  // Auto-size based on streak length: 12px (cold) → 24px (inferno)
   const autoSize =
+    isInferno   ? 24 :
     isLegendary ? 22 :
     isDiamond   ? 20 :
     isBlazing   ? 18 :
@@ -64,6 +67,15 @@ const StreakFlameInline = ({
 
   // Tier palette
   const palette = useMemo(() => {
+    if (isInferno) {
+      return {
+        outer: "hsl(310 85% 60%)",
+        mid:   "hsl(265 80% 60%)",
+        core:  "hsl(180 100% 92%)",
+        glow:  "hsl(195 90% 65%)",
+        text:  "hsl(195 95% 72%)",
+      };
+    }
     if (isLegendary) {
       return {
         outer: "hsl(300 75% 60%)",

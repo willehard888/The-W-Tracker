@@ -1,4 +1,4 @@
-import { useId, useMemo } from "react";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 interface StreakFlameInlineProps {
@@ -17,13 +17,14 @@ interface StreakFlameInlineProps {
 }
 
 /**
- * Compact, alive flame for inline placements (headers, post meta, lightbox).
- * Same cinematic idea as RealisticFlame — tier palette, layered SVG, turbulence
- * warp — but stripped to two layers and sized for 10–20px contexts so it
- * actually reads at small sizes.
+ * LIGHTWEIGHT inline flame — pure CSS gradients + a single transform-based
+ * flicker. NO SVG turbulence / displacement filter (those are GPU killers
+ * when rendered in long lists like the leaderboard or feed).
  *
- * Size grows with streak length so a 100d streak gets a noticeably bigger,
- * richer flame than a 3d one.
+ * Visual idea is identical to RealisticFlame (tier palette, growing size),
+ * but stripped down so a 50-row leaderboard renders smoothly.
+ *
+ * Use RealisticFlame instead for hero placements.
  */
 const StreakFlameInline = ({
   streak,
@@ -33,8 +34,6 @@ const StreakFlameInline = ({
   className,
   countClassName,
 }: StreakFlameInlineProps) => {
-  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
-
   // Tier (mirrors StreakDisplay)
   const tierIndex =
     streak >= 100 ? 5 :
@@ -126,19 +125,14 @@ const StreakFlameInline = ({
     };
   }, [tierIndex, isHot, isWarm, isOnFire, isBlazing, isDiamond, isLegendary]);
 
-  // Speed scales with intensity
-  const speedMul =
-    isLegendary ? 0.6 :
-    isDiamond   ? 0.75 :
-    isBlazing   ? 0.9 :
-    isOnFire    ? 1.05 :
-    isWarm      ? 1.3 : 1.6;
-
-  // True candle silhouette (matches RealisticFlame)
-  const FLAME_PATH =
-    "M20 3 C 21 9, 24 13, 26 18 C 29 24, 31 30, 30 36 C 29 43, 25 49, 20 52 C 15 49, 11 43, 10 36 C 9 30, 11 24, 14 18 C 16 13, 19 9, 20 3 Z";
-
-  const turb = `inline-turb-${uid}`;
+  // Slow flicker speed — deliberately gentle so 50 of these on screen
+  // doesn't thrash the compositor.
+  const speed =
+    isLegendary ? 1.4 :
+    isDiamond   ? 1.6 :
+    isBlazing   ? 1.8 :
+    isOnFire    ? 2.0 :
+    isWarm      ? 2.4 : 2.8;
 
   return (
     <span
@@ -146,166 +140,80 @@ const StreakFlameInline = ({
     >
       <span
         className="relative inline-block shrink-0"
-        style={{ width: flameSize, height: flameSize * 1.1 }}
+        style={{ width: flameSize, height: flameSize * 1.15 }}
         aria-hidden
       >
-        {isHot && (
-          <svg width="0" height="0" className="absolute" aria-hidden>
-            <defs>
-              <filter id={turb} x="-30%" y="-30%" width="160%" height="160%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.035 0.07" numOctaves="3" seed="5">
-                  <animate
-                    attributeName="baseFrequency"
-                    dur={`${2.4 * speedMul}s`}
-                    values="0.025 0.05;0.05 0.1;0.03 0.06;0.025 0.05"
-                    repeatCount="indefinite"
-                  />
-                  <animate
-                    attributeName="seed"
-                    dur={`${4 * speedMul}s`}
-                    values="5;17;9;5"
-                    repeatCount="indefinite"
-                  />
-                </feTurbulence>
-                <feDisplacementMap in="SourceGraphic" scale="2.6" />
-              </filter>
-            </defs>
-          </svg>
-        )}
-
-        {/* Updraft cone (Warm+) */}
-        {isWarm && (
-          <span
-            className="absolute left-1/2 bottom-0 rounded-full pointer-events-none"
-            style={{
-              width: flameSize * 0.7,
-              height: flameSize * 1.5,
-              background: `radial-gradient(ellipse at 50% 100%, ${palette.glow.replace(")", " / 0.22)")} 0%, transparent 70%)`,
-              filter: "blur(4px)",
-              transform: "translateX(-50%)",
-              transformOrigin: "center bottom",
-              animation: `flame-updraft ${2.2 * speedMul}s ease-out infinite`,
-            }}
-          />
-        )}
-
-        {/* Halo glow under flame (Warm+) */}
+        {/* Halo glow — only Warm+, single static blur */}
         {isWarm && (
           <span
             className="absolute left-1/2 bottom-0 rounded-full pointer-events-none"
             style={{
               width: flameSize * 1.1,
-              height: flameSize * 0.5,
+              height: flameSize * 0.55,
               background: `radial-gradient(ellipse at center, ${palette.glow} 0%, transparent 70%)`,
               transform: "translateX(-50%)",
-              filter: "blur(3px)",
-              opacity: 0.6,
-              animation: `flame-base-glow ${1.8 * speedMul}s ease-in-out infinite`,
-              mixBlendMode: "screen",
+              filter: "blur(2px)",
+              opacity: 0.55,
             }}
           />
         )}
 
-        {/* Outer flame body */}
-        <svg
-          className="absolute left-1/2 bottom-0"
-          width={flameSize}
-          height={flameSize * 1.1}
-          viewBox="0 0 40 56"
+        {/* Outer flame body — pure CSS shape (teardrop via border-radius) */}
+        <span
+          className={cn(
+            "absolute left-1/2 bottom-0",
+            isHot && "animate-[flame-inline-flicker_var(--flame-speed)_ease-in-out_infinite]",
+          )}
           style={{
+            width: flameSize,
+            height: flameSize * 1.1,
             transform: "translateX(-50%)",
             transformOrigin: "center bottom",
-            animation: isHot
-              ? `flame-mid-flicker ${1.05 * speedMul}s ease-in-out infinite`
-              : undefined,
-            filter: isHot ? `url(#${turb}) drop-shadow(0 0 ${flameSize * 0.4}px ${palette.glow})` : undefined,
-            mixBlendMode: isHot ? "screen" : undefined,
+            background: isHot
+              ? `radial-gradient(ellipse at 50% 80%, ${palette.core} 0%, ${palette.mid} 35%, ${palette.outer} 70%, transparent 95%)`
+              : "transparent",
+            border: isHot ? "none" : `1.5px solid ${palette.outer}`,
+            borderRadius: "50% 50% 50% 50% / 65% 65% 35% 35%",
+            // Pinch the top into a teardrop tip
+            clipPath: "polygon(50% 0%, 95% 35%, 100% 70%, 80% 100%, 20% 100%, 0% 70%, 5% 35%)",
+            boxShadow: isHot ? `0 0 ${flameSize * 0.4}px ${palette.glow}` : undefined,
+            ["--flame-speed" as string]: `${speed}s`,
           }}
-        >
-          <defs>
-            <linearGradient id={`outer-${uid}`} x1="50%" y1="100%" x2="50%" y2="0%">
-              <stop offset="0%"  stopColor={palette.outer} stopOpacity="0.95" />
-              <stop offset="55%" stopColor={palette.mid}   stopOpacity="0.95" />
-              <stop offset="100%" stopColor={palette.core} stopOpacity={isHot ? "0.6" : "0"} />
-            </linearGradient>
-          </defs>
-          <path
-            d={FLAME_PATH}
-            fill={isHot ? `url(#outer-${uid})` : "none"}
-            stroke={isHot ? "none" : "currentColor"}
-            strokeWidth={isHot ? 0 : 2}
-            strokeLinejoin="round"
-          />
-        </svg>
+        />
 
-        {/* White-hot core (On Fire+) */}
+        {/* White-hot inner core — On Fire+, single tiny element */}
         {isOnFire && (
-          <svg
-            className="absolute left-1/2 bottom-[1px]"
-            width={flameSize * 0.55}
-            height={flameSize * 0.75}
-            viewBox="0 0 40 56"
+          <span
+            className="absolute left-1/2 bottom-0 animate-[flame-inline-core_var(--core-speed)_ease-in-out_infinite]"
             style={{
+              width: flameSize * 0.45,
+              height: flameSize * 0.7,
               transform: "translateX(-50%)",
               transformOrigin: "center bottom",
-              animation: `flame-core-flicker ${0.65 * speedMul}s ease-in-out infinite`,
-              filter: `url(#${turb}) drop-shadow(0 0 ${flameSize * 0.3}px ${palette.core})`,
+              background: `radial-gradient(ellipse at 50% 75%, ${palette.core} 0%, ${palette.mid} 60%, transparent 100%)`,
+              borderRadius: "50% 50% 50% 50% / 65% 65% 35% 35%",
+              clipPath: "polygon(50% 0%, 95% 35%, 100% 70%, 80% 100%, 20% 100%, 0% 70%, 5% 35%)",
+              ["--core-speed" as string]: `${speed * 0.55}s`,
               mixBlendMode: "screen",
             }}
-          >
-            <defs>
-              <radialGradient id={`core-${uid}`} cx="50%" cy="78%" r="60%">
-                <stop offset="0%"   stopColor={palette.core} stopOpacity="1" />
-                <stop offset="65%"  stopColor={palette.mid}  stopOpacity="0.7" />
-                <stop offset="100%" stopColor={palette.mid}  stopOpacity="0" />
-              </radialGradient>
-            </defs>
-            <ellipse cx="20" cy="36" rx="8" ry="16" fill={`url(#core-${uid})`} />
-          </svg>
+          />
         )}
 
-        {/* Spark tongues (Blazing+) — multiple, randomized */}
-        {isBlazing && Array.from({ length: isLegendary ? 4 : isDiamond ? 3 : 2 }).map((_, i) => (
+        {/* Single static spark dot — Diamond+ only, no animation */}
+        {isDiamond && (
           <span
-            key={`tongue-${i}`}
             className="absolute rounded-full pointer-events-none"
             style={{
-              width: 1.5 + (i % 2) * 0.5,
-              height: 2.5,
-              left: `${42 + i * 8}%`,
-              top: 0,
-              background: `radial-gradient(circle, ${palette.core}, ${palette.mid} 50%, transparent 80%)`,
-              boxShadow: `0 0 4px ${palette.core}`,
-              opacity: 0,
-              ["--tongue-x" as string]: `${-50 + (i % 2 === 0 ? -1 : 1) * (3 + i * 4)}%`,
-              animation: `flame-tongue-rise ${(1.3 + i * 0.2) * speedMul}s ease-out infinite`,
-              animationDelay: `${i * 0.35}s`,
-              mixBlendMode: "screen",
-            }}
-          />
-        ))}
-
-        {/* Tiny sparks (Diamond+) */}
-        {isDiamond && Array.from({ length: isLegendary ? 4 : 3 }).map((_, i) => (
-          <span
-            key={`sp-${i}`}
-            className="absolute rounded-full pointer-events-none"
-            style={{
-              width: 1,
-              height: 1,
-              left: `${35 + i * 10}%`,
-              top: flameSize * 0.5,
+              width: 1.5,
+              height: 1.5,
+              left: "50%",
+              top: 1,
               background: palette.core,
-              boxShadow: `0 0 3px ${palette.mid}`,
-              opacity: 0,
-              ["--spark-x" as string]: `${-4 + i * 3}px`,
-              ["--spark-y" as string]: `${-14 - i * 3}px`,
-              animation: `flame-spark-shoot ${(1.6 + i * 0.3) * speedMul}s ease-out infinite`,
-              animationDelay: `${i * 0.4}s`,
-              mixBlendMode: "screen",
+              boxShadow: `0 0 3px ${palette.core}`,
+              transform: "translateX(-50%)",
             }}
           />
-        ))}
+        )}
       </span>
 
       {showCount && (

@@ -194,13 +194,14 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
                 {isLocked ? (
                   <div className="flex items-center gap-1.5 shrink-0 relative z-10">
                     {cfg.rank === 5 && !isApexSubscriber ? (
-                      <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded text-background bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold border border-gold/60 shadow-[0_0_8px_hsl(18_95%_58%/0.45)]">
-                        <Lock size={9} strokeWidth={3} />
-                        <Zap size={9} strokeWidth={3} /> Premium
+                      <span className="relative inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2.5 py-1 rounded-md text-background bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] border-2 border-gold shadow-[0_0_14px_hsl(18_95%_58%/0.6),inset_0_1px_0_hsl(var(--gold-light)/0.6)]">
+                        <Lock size={11} strokeWidth={3.2} fill="currentColor" />
+                        <Zap size={11} strokeWidth={3.2} fill="currentColor" />
+                        <span>Unlock</span>
                       </span>
                     ) : cfg.rank === 6 ? (
-                      <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded text-gold border border-gold/50 bg-gradient-to-r from-gold/10 to-gold/5 shadow-[0_0_6px_hsl(var(--gold)/0.35)]">
-                        <Lock size={9} strokeWidth={3} /> Locked
+                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded-md text-gold border-2 border-gold/70 bg-gradient-to-r from-gold/15 to-gold/5 shadow-[0_0_10px_hsl(var(--gold)/0.5),inset_0_1px_0_hsl(var(--gold)/0.3)]">
+                        <Lock size={10} strokeWidth={3.2} fill="currentColor" /> Locked
                       </span>
                     ) : (
                       <span className={cn(

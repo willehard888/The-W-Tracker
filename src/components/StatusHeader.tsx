@@ -131,6 +131,26 @@ const StatusHeader = () => {
           isApex ? "via-[hsl(18_95%_58%)]/70" : "via-gold/55",
         )} />
 
+        {/* Bottom rim — only when user is hot (streak ≥ 7). Pulses with tier accent. */}
+        {streak >= 7 && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-6 bottom-0 h-px"
+            style={{
+              background: `linear-gradient(90deg, transparent 0%, ${
+                isApex
+                  ? "hsl(18 95% 58% / 0.85)"
+                  : tier === "legend"
+                  ? "hsl(280 70% 60% / 0.8)"
+                  : tier === "elite"
+                  ? "hsl(42 78% 54% / 0.8)"
+                  : "hsl(18 92% 56% / 0.7)"
+              } 50%, transparent 100%)`,
+              animation: "flame-rim-pulse 4.5s ease-in-out infinite",
+            }}
+          />
+        )}
+
         {/* Brand strip — minimal */}
         <button
           onClick={() => navigate("/")}

@@ -34,7 +34,7 @@ import TribePostCard, { type TribePostCardPost } from "@/components/TribePostCar
 import { useModeration } from "@/hooks/use-moderation";
 import TierUsername from "@/components/TierUsername";
 import TribeCollectiveFlame from "@/components/TribeCollectiveFlame";
-import { fetchTribeCollectiveStreak } from "@/lib/tribe-streak";
+import { fetchTribeCollectiveStreak, collectiveAccent } from "@/lib/tribe-streak";
 
 interface Member {
   user_id: string;
@@ -372,11 +372,35 @@ const TribeDetail = () => {
     return <div className="text-center py-12 text-sm text-muted-foreground">Tribe not found.</div>;
   }
 
+  // Tier-reactive page tint based on tribe's collective heat
+  const pageTint = collectiveStreak >= 30
+    ? collectiveAccent(collectiveStreak)
+    : null;
+
   return (
-    <div ref={scrollRef} onScroll={handleScroll} className="min-h-full pb-8 px-4 pt-4 safe-top overflow-y-auto">
-      <button onClick={() => navigate("/tribes")} className="flex items-center gap-1 text-xs text-muted-foreground mb-4">
+    <div ref={scrollRef} onScroll={handleScroll} className="min-h-full pb-8 px-4 pt-4 safe-top overflow-y-auto relative">
+      {/* Subtle page tint toward the tribe's tier color */}
+      {pageTint && (
+        <div
+          aria-hidden
+          className="absolute top-0 left-0 right-0 h-[420px] pointer-events-none -z-10"
+          style={{
+            background: `radial-gradient(ellipse 80% 60% at 50% 0%, ${pageTint.replace(")", " / 0.12)")} 0%, transparent 75%)`,
+          }}
+        />
+      )}
+
+      <button onClick={() => navigate("/tribes")} className="flex items-center gap-1 text-xs text-muted-foreground mb-4 relative">
         <ArrowLeft size={14} /> Tribes
       </button>
+
+      {/* HERO: Collective flame promoted to the top — the tribe's signature */}
+      <div className="mb-4 relative">
+        <TribeCollectiveFlame
+          total={collectiveStreak}
+          memberCount={tribe?.member_count}
+        />
+      </div>
 
       {/* Cinematic Apex header */}
       <div className="relative rounded-2xl mb-4 p-[2px] apex-conic-border overflow-hidden">
@@ -526,13 +550,7 @@ const TribeDetail = () => {
 
 
 
-      {/* Tribe collective streak — the bigger the tribe burns, the bigger the flame */}
-      <div className="mb-4">
-        <TribeCollectiveFlame
-          total={collectiveStreak}
-          memberCount={tribe.member_count}
-        />
-      </div>
+      {/* (Hero flame moved to top of page) */}
 
       {/* Members row */}
       {members.length > 0 && (

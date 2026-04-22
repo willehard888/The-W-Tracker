@@ -138,6 +138,23 @@ const Index = () => {
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[760px] h-[460px] pointer-events-none z-0"
         style={{ background: pageAura }}
       />
+
+      {/* Ember band — soft fire-in-the-distance warmth tied to user's streak */}
+      {profile.streak >= 3 && (
+        <div
+          aria-hidden
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[520px] h-[180px] pointer-events-none z-0 opacity-70"
+          style={{
+            background:
+              isApex
+                ? "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(18 95% 58% / 0.22) 0%, hsl(42 78% 54% / 0.10) 40%, transparent 75%)"
+                : isLegend
+                ? "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(280 70% 60% / 0.20) 0%, hsl(42 78% 54% / 0.10) 40%, transparent 75%)"
+                : "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(18 92% 56% / 0.18) 0%, hsl(42 78% 54% / 0.08) 45%, transparent 80%)",
+          }}
+        />
+      )}
+
       <div
         className="absolute top-0 left-0 right-0 h-[1px] pointer-events-none z-10 opacity-25"
         style={{

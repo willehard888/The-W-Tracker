@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Lock, Check, ChevronRight, Crown, TrendingUp, Sparkles } from "lucide-react";
+import { Lock, Check, ChevronRight, Crown, TrendingUp, Sparkles, Zap } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { TIER_CONFIG, TIER_ORDER, getTierConfig, type StatusTier } from "@/lib/status-tiers";
+import TierUnlockPaywallCard from "@/components/TierUnlockPaywallCard";
 
 interface TierLadderProps {
   currentTier: string;

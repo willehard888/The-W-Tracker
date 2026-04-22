@@ -1948,6 +1948,63 @@
   50%      { opacity: 0.85; transform: translateX(-50%) scaleX(1.15); }
 }
 
+/* === New: Realistic flame-base "fuel pool" pulse — soft warm pulse from beneath the flame === */
+@keyframes streak-fuel-pulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: translateX(-50%) scale(0.92);
+    filter: blur(6px);
+  }
+  50% {
+    opacity: 0.65;
+    transform: translateX(-50%) scale(1.08);
+    filter: blur(8px);
+  }
+}
+
+/* === New: Milestone ember burst — radial sparks explode out on tier crossing === */
+@keyframes streak-ember-burst {
+  0%   { transform: translate(-50%, -50%) rotate(var(--burst-angle, 0deg)) translateX(0) scale(0); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--burst-angle, 0deg)) translateX(60px) scale(0.3); opacity: 0; }
+}
+
+/* === New: Double shockwave — two concentric rings that ripple out on milestone === */
+@keyframes streak-shockwave-secondary {
+  0%   { transform: scale(0.4); opacity: 0; border-width: 2px; }
+  20%  { opacity: 0.7; }
+  100% { transform: scale(3.2); opacity: 0; border-width: 0.5px; }
+}
+
+/* === New: Realistic depth utility — heavy 3D card lift with side rims and contact shadow === */
+.depth-realistic {
+  position: relative;
+  box-shadow:
+    /* Sharp 1px contact shadow — crucial for "lifted off page" perception */
+    0 1px 0 hsl(0 0% 0% / 0.55),
+    0 2px 2px hsl(0 0% 0% / 0.28),
+    /* Mid lift — short distance */
+    0 6px 12px -2px hsl(0 0% 0% / 0.32),
+    /* Long ambient — soft puddle */
+    0 18px 36px -10px hsl(0 0% 0% / 0.45),
+    0 36px 72px -28px hsl(0 0% 0% / 0.5),
+    /* Inner bevel */
+    inset 0 1px 0 hsl(0 0% 100% / 0.09),
+    inset 0 -1px 0 hsl(0 0% 0% / 0.32);
+}
+
+/* === New: Tier-tinted edge glow — for hero / CTA cards === */
+.depth-realistic-warm {
+  box-shadow:
+    0 1px 0 hsl(0 0% 0% / 0.55),
+    0 2px 2px hsl(0 0% 0% / 0.28),
+    0 6px 12px -2px hsl(42 60% 18% / 0.32),
+    0 18px 36px -10px hsl(42 78% 54% / 0.18),
+    0 36px 72px -28px hsl(42 78% 54% / 0.16),
+    inset 0 1px 0 hsl(42 95% 88% / 0.14),
+    inset 0 -1px 0 hsl(42 30% 8% / 0.4);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .streak-fx-ember,
   .streak-fx-pulse-ring,
@@ -1956,7 +2013,9 @@
   .streak-fx-shockwave,
   .streak-fx-aurora,
   .streak-fx-twinkle,
-  .streak-fx-ground {
+  .streak-fx-ground,
+  .streak-fx-burst,
+  .streak-fx-fuel {
     animation: none !important;
     display: none !important;
   }

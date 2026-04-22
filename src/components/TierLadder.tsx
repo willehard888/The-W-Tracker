@@ -27,7 +27,7 @@ const TIER_ROW_STYLE: Record<number, { base: string; accent: string; height: str
   6: { base: "border-[hsl(280_70%_60%)]/55 bg-gradient-to-br from-[hsl(280_70%_55%)]/[0.12] via-gold/[0.08] to-[hsl(350_80%_55%)]/[0.12] shadow-[0_0_26px_hsl(280_70%_60%/0.28)]", accent: "bg-gradient-to-br from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background", height: "min-h-[72px]" },
 };
 
-const TierLadder = ({ currentTier, className }: TierLadderProps) => {
+const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLadderProps) => {
   const [openTier, setOpenTier] = useState<StatusTier | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const currentRank = getTierConfig(currentTier).rank;

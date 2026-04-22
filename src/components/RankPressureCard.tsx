@@ -140,7 +140,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
                     <span className={cn("font-black tabular-nums", config.textClass)}>
                       {formatPercentile(percentile)}%
                     </span>{" "}
-                    of users
+                    of ranked users
                   </p>
                 ) : (
                   <p className="text-xs text-muted-foreground mt-0.5">

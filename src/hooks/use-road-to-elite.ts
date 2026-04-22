@@ -2,17 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getTierConfig } from "@/lib/status-tiers";
+import { useMyRank } from "@/hooks/use-my-rank";
 
 /**
  * Elite tier requirements (must match SQL `update_status_tier`):
- *  - rank percentile ≥ 95 (top 5%)
- *  - 14 distinct active days in the last 30 days
- *  - current streak ≥ 30 days
+ *  - rank percentile ≥ 80 (top 20%)
+ *  - OR 20 distinct active days in the last 30 days + current streak ≥ 21 days
  */
 export const ELITE_REQUIREMENTS = {
-  PERCENTILE: 95,
-  ACTIVITY_DAYS: 14,
-  STREAK: 30,
+  PERCENTILE: 80,
+  ACTIVITY_DAYS: 20,
+  STREAK: 21,
 } as const;
 
 export interface RoadToEliteData {
@@ -47,29 +47,12 @@ export interface RoadToEliteData {
 export const useRoadToElite = (): RoadToEliteData => {
   const { profile } = useAuth();
   const userId = profile?.user_id;
+  const { data: rankData, isLoading: rankLoading } = useMyRank(userId);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["road-to-elite", userId, profile?.streak, (profile as any)?.rank_score],
+  const { data: activityDays = 0, isLoading: activityLoading } = useQuery({
+    queryKey: ["road-to-elite-activity", userId],
     queryFn: async () => {
-      if (!userId) return null;
-
-      // Rank position via rank_score (matches SQL percentile calc)
-      const myRankScore = Number((profile as any)?.rank_score ?? 0);
-      const [{ count: ahead }, { count: total }] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("*", { count: "exact", head: true })
-          .gt("rank_score" as any, myRankScore),
-        supabase
-          .from("profiles")
-          .select("*", { count: "exact", head: true })
-          .gt("rank_score" as any, 0),
-      ]);
-
-      const rank = (ahead ?? 0) + 1;
-      const totalUsers = Math.max(1, total ?? 1);
-      const percentile =
-        totalUsers <= 1 ? 100 : ((totalUsers - rank) / totalUsers) * 100;
+      if (!userId) return 0;
 
       // Distinct active days in last 30
       const thirtyDaysAgo = new Date(
@@ -86,9 +69,7 @@ export const useRoadToElite = (): RoadToEliteData => {
           new Date(c.checked_in_at).toISOString().slice(0, 10),
         ),
       );
-      const activityDays = dayKeys.size;
-
-      return { percentile, rank, totalUsers, activityDays };
+      return dayKeys.size;
     },
     enabled: !!userId,
     staleTime: 60_000,
@@ -98,9 +79,9 @@ export const useRoadToElite = (): RoadToEliteData => {
   const tierRank = getTierConfig(tier).rank;
   const isElite = tierRank >= 4; // elite/apex/legend
 
-  if (!data || !profile) {
+  if (!rankData || !profile) {
     return {
-      loading: isLoading,
+      loading: rankLoading || activityLoading,
       isElite,
       hasData: false,
       percentile: 0,
@@ -117,27 +98,29 @@ export const useRoadToElite = (): RoadToEliteData => {
   }
 
   const streak = profile.streak ?? 0;
-  const percentileProgress = Math.min(1, data.percentile / ELITE_REQUIREMENTS.PERCENTILE);
-  const activityProgress = Math.min(1, data.activityDays / ELITE_REQUIREMENTS.ACTIVITY_DAYS);
+  const percentileProgress = Math.min(1, rankData.percentile / ELITE_REQUIREMENTS.PERCENTILE);
+  const activityProgress = Math.min(1, activityDays / ELITE_REQUIREMENTS.ACTIVITY_DAYS);
   const streakProgress = Math.min(1, streak / ELITE_REQUIREMENTS.STREAK);
+  const consistencyProgress = (activityProgress + streakProgress) / 2;
+  const rankPathMet = rankData.percentile >= ELITE_REQUIREMENTS.PERCENTILE;
+  const consistencyPathMet =
+    activityDays >= ELITE_REQUIREMENTS.ACTIVITY_DAYS &&
+    streak >= ELITE_REQUIREMENTS.STREAK;
 
   const overallPercent = Math.round(
-    ((percentileProgress + activityProgress + streakProgress) / 3) * 100,
+    Math.max(percentileProgress, consistencyProgress) * 100,
   );
 
-  const metCount =
-    (percentileProgress >= 1 ? 1 : 0) +
-    (activityProgress >= 1 ? 1 : 0) +
-    (streakProgress >= 1 ? 1 : 0);
+  const metCount = (rankPathMet ? 1 : 0) + (consistencyPathMet ? 1 : 0);
 
   return {
-    loading: false,
+    loading: rankLoading || activityLoading,
     isElite,
     hasData: true,
-    percentile: data.percentile,
-    rank: data.rank,
-    totalUsers: data.totalUsers,
-    activityDays: data.activityDays,
+    percentile: rankData.percentile,
+    rank: rankData.rank,
+    totalUsers: rankData.totalUsers,
+    activityDays,
     streak,
     percentileProgress,
     activityProgress,

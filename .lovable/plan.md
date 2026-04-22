@@ -1,89 +1,80 @@
 
 
-# Plan: Add new badges for Apex, Legend & Tribe Fire achievements
+# Plan: Wind-driven flames, tribe firestorm, and "Inferno" next-level streak
 
-Add a fresh wave of badges that reward the recent flame/tribe/tier work. New badges land in the existing `badges` table and are validated by the existing server-side `award_badge_if_earned` RPC. Client-side awarding logic in `src/lib/badge-awards.ts` is extended to recognise the new requirement types.
+Take the flame system to its next stage: real environmental wind, a tribe **firestorm** mode, and a brand-new **Inferno** streak tier (200d+) that breaks the visual ceiling of Legendary.
 
-## New badges (15 total)
+## 1. Wind dynamics — flames react to a virtual breeze
 
-### Tribe Fire (collective streak) — 5 badges
-Triggered by the user's tribe collective streak reaching milestones while user is an active member.
-- **Spark Brother** — Tribe collective streak 7 days (common)
-- **Tribe Ember** — Tribe collective streak 30 days (rare)
-- **Tribe Inferno** — Tribe collective streak 90 days (epic)
-- **Eternal Pyre** — Tribe collective streak 180 days (legendary)
-- **Tribe Founder** — Be a founding member (creator) of a tribe that reaches collective streak 30 (epic)
+Right now every flame sways the same. Upgrade it so the entire app shares a slow, evolving "wind state" that flames lean into.
 
-### Tribe Battle — 3 badges
-- **First Blood** — Win 1 tribe battle (common)
-- **War Chief** — Win 5 tribe battles (rare)
-- **Tribe Conqueror** — Win 15 tribe battles (epic)
+- **New module** `src/lib/wind.ts`: a tiny store that emits a wind vector `{x, gust, ts}` that drifts via a sine + noise function and occasionally produces a "gust" spike (every 8–14s). Pure JS, no dependency, single `requestAnimationFrame` driver shared across all flames via a context.
+- **New hook** `useWind()` returns the current wind value (throttled to ~12fps for cheap re-renders) — but most of the work is a CSS variable broadcast on `<html>` (`--wind-x`, `--wind-gust`) so flames can react via CSS only, no React re-renders.
+- **`RealisticFlame.tsx`**: replaces the fixed `flame-wind-sway` with a transform that reads `--wind-x` for lean and `--wind-gust` for momentary stretch. Outer haze layer also drifts with the wind direction (more drift = more drag on the silhouette).
+- **`StreakFlameInline.tsx`**: cheap version — only picks up `--wind-gust` to add a tiny flicker burst. Still CSS-only.
+- **Gust trigger**: optional API `triggerGust(strength)` callable on key moments — check-in success, badge unlock, tribe battle won — every flame on screen visibly bends and recovers. Hooked into `DailyCheckin` success and `BadgeUnlockModal` open.
 
-### Apex tier — 3 badges
-- **Apex Reached** — Reach Apex tier (epic)
-- **Apex Stronghold** — Hold Apex tier 14 days (epic)
-- **Founding Apex** — Apex via paid Apex Instant subscription (legendary)
+## 2. Inferno — the new top tier (200+ days)
 
-### Legend tier — 2 badges
-- **Legend Ascendant** — Reach Legend tier (legendary)
-- **Eternal Legend** — Hold Legend tier 30 days (legendary)
+Open daylight above Legendary. Right now Legendary (100d) is the ceiling and feels final. New tier:
 
-### Personal flame depth — 2 badges
-- **Inferno Personal** — Reach personal streak 100 (epic)
-- **Phoenix** — Recover from a streak break of ≥30 and rebuild to ≥30 again (rare)
+- **Inferno** (≥ 200 days) — a sixth flame index `tier = 6`.
+- Visual identity: deep magenta-to-cyan core ("plasma"), a second counter-rotating flame body (so the flame visibly *spirals*), continuous spark rain, and a slow lightning arc that crackles inside the flame every 6–9s.
+- Files updated:
+  - `src/lib/streak.ts` — add `Inferno` tier classification.
+  - `src/components/StreakDisplay.tsx` — new tier card style + "Inferno" title + plasma palette.
+  - `src/components/StreakFlameInline.tsx` — inline plasma palette + arcing animation.
+  - `src/components/home/RealisticFlame.tsx` — new tier-6 branch: plasma colors, second mirrored flame body with reverse turbulence, internal lightning SVG `<path>` animated via `pathLength` strokeDashoffset.
+  - `src/index.css` — new keyframes `flame-plasma-spiral`, `flame-lightning-crack`, `flame-plasma-hue`.
 
-## Database
+## 3. Tribe Firestorm — collective ceiling expansion
 
-Migration inserts 15 rows into `public.badges` with: `name`, `description`, `icon` (lucide name), `rarity`, `requirement_type`, `requirement_value`, `category`.
+Tribes have been waiting for the same expansion. The collective flame currently caps at "Legendary" (3000 combined days). Add a **Firestorm** tier above it.
 
-New `requirement_type` values introduced:
-- `tribe_collective_streak` (value = days)
-- `tribe_founder_streak` (value = days)
-- `tribe_battles_won` (value = wins)
-- `tier_reached` (value = tier rank index: apex=6, legend=7)
-- `tier_held_days` (value = days; uses companion `requirement_type` is split into `apex_held_days` / `legend_held_days` for clarity)
-- `apex_founding` (value = 1, paid Apex)
-- `personal_streak` (value = days; longer milestones than existing `streak`)
-- `phoenix_recovery` (value = 1)
+- `src/lib/tribe-streak.ts`: add `Firestorm` (≥ 6000 combined days), tier 6, accent `hsl(195 90% 60%)` → `hsl(310 80% 60%)` gradient.
+- `src/components/TribeCollectiveFlame.tsx`:
+  - Bump max size to **190px**.
+  - Firestorm wraps the flame in a **dual-flame composite**: a primary plasma flame plus a smaller satellite flame circling around the base via a slow orbital animation (visualises "many flames feeding one").
+  - Replaces the static aurora rim with an **animated lightning border** that arcs around the card every ~5s.
+  - "Firestorm" tier label gets its own pill style with hue-shifting plasma gradient.
+- `src/pages/TribeDetail.tsx`: when a tribe is in Firestorm, the page background tint dials up (heavier accent radial), and a thin top-of-screen lightning rim line appears (using the existing `flame-rim-pulse` keyframe at higher intensity).
 
-To keep the schema simple we use distinct types per metric instead of overloading `tier_held_days`:
-`apex_reached`, `apex_held_days`, `apex_founding`, `legend_reached`, `legend_held_days`, `tribe_collective_streak`, `tribe_founder_streak`, `tribe_battles_won`, `personal_streak`, `phoenix_recovery`.
+## 4. Tribe — "Live members" feeding the flame
 
-## Client awarding logic (`src/lib/badge-awards.ts`)
+Make the tribe flame react to *who is online right now* — concrete wind-and-feed mechanic.
 
-Extend `checkAndAwardBadges` and `getBadgeProgress` to compute these new stats and map them in `typeToStat`:
+- New realtime presence channel `tribe-presence:{tribeId}` (Supabase Realtime, no DB writes) — already part of the project's stack.
+- `TribeCollectiveFlame` listens and shows **per-active-member ember sprites** rising into the flame from below at a rate proportional to live member count. When a member checks in (`tribe_checkin_today` event broadcast from `DailyCheckin`), their ember briefly intensifies and the flame fires a gust.
+- Cap visible embers at 12 to keep performance safe.
 
-- `apex_reached` / `legend_reached` → derived from `profile.tier`.
-- `apex_held_days` / `legend_held_days` → from `profile.tier_started_at` (or fall back to a new `tier_history` lookup if available; otherwise from days since `tier_promoted_at`).
-- `apex_founding` → `profile.is_founding_apex` (existing flag from Apex Instant).
-- `tribe_collective_streak` → query `tribes.collective_streak` for the user's active tribe (via `tribe_members`).
-- `tribe_founder_streak` → same as above, gated on `tribes.created_by = user_id`.
-- `tribe_battles_won` → count from `tribe_battles` where `winner_tribe_id` belongs to user.
-- `personal_streak` → `profile.longest_streak` (already fetched).
-- `phoenix_recovery` → derived: `longest_streak ≥ 30` AND current `streak ≥ 30` AND a recorded streak break in between (uses existing `streak_history` if present; otherwise simplified to `longest_streak ≥ 30 && streak ≥ 30 && longest_streak > streak`).
+## 5. Performance & accessibility
 
-Trigger-driven types (none here) are not added to `TRIGGER_TYPES`; everything resolves client-side via the existing `award_badge_if_earned` RPC pattern.
-
-## Where badges become visible
-
-No UI rewrite required — they automatically appear in:
-- `BadgeVault.tsx` (full grid, with progress from `getBadgeProgress`)
-- `BadgeUnlockModal.tsx` (on first unlock after check-in)
-- `FeaturedBadgeHero.tsx` profile showcase
-- `BadgeShowcase.tsx` top-5 sorted by rarity (Legendary will surface)
-
-Icons reuse existing lucide imports already supported by `BadgeCard`: `Flame`, `Crown`, `Sparkles`, `Zap`, `Shield`, `Swords`, `Users`, `Bird` (for Phoenix, falls back to `Sparkle` if not in icon map).
+- All wind work is CSS-variable driven; one shared rAF loop, no per-flame timers.
+- Inferno + Firestorm extras (lightning, second body, orbital satellite) only render when `prefers-reduced-motion: no-preference` and only inside hero instances (RealisticFlame ≥ 64px).
+- StreakFlameInline stays CSS-only — Inferno just gets a static plasma gradient + slow hue shift, no SVG.
+- Single `tribe-presence` channel per route mount, cleaned up on unmount.
 
 ## Files touched
 
-- `supabase/migrations/<timestamp>_flame_tribe_apex_badges.sql` (insert 15 badges)
-- `src/lib/badge-awards.ts` (extend stats fetch + `typeToStat` for both `checkAndAwardBadges` and `getBadgeProgress`)
-- `src/components/BadgeCard.tsx` (only if a missing icon needs to be registered — verify during implementation)
-- `.lovable/memory/features/badge-system.md` (bump count to 117 and note new categories)
+- `src/lib/wind.ts` (new)
+- `src/contexts/WindProvider.tsx` (new — mounts the rAF loop, sets CSS vars on `<html>`)
+- `src/App.tsx` (wrap tree in `WindProvider`)
+- `src/lib/streak.ts` (Inferno tier classifier)
+- `src/lib/tribe-streak.ts` (Firestorm tier + accent)
+- `src/components/home/RealisticFlame.tsx` (wind reactivity, tier 6 branch, lightning, mirrored body)
+- `src/components/StreakFlameInline.tsx` (wind gust pickup, plasma tier 6)
+- `src/components/StreakDisplay.tsx` (Inferno tier styles)
+- `src/components/TribeCollectiveFlame.tsx` (Firestorm visuals, presence embers, gust on tribe check-in)
+- `src/pages/TribeDetail.tsx` (Firestorm page tint + lightning rim)
+- `src/pages/DailyCheckin.tsx` (call `triggerGust()` on success)
+- `src/components/BadgeUnlockModal.tsx` (call `triggerGust()` on open)
+- `src/index.css` (new keyframes: plasma spiral, lightning crack, plasma hue, orbital satellite)
+- `.lovable/memory/features/streak-system.md` (note Inferno tier)
+- `.lovable/memory/style/visual-effects.md` (note wind system + Firestorm)
 
 ## Notes
 
-- All requirement evaluations stay server-validated through `award_badge_if_earned` RPC — client just identifies candidates.
-- New tribe-related badges only count time while user is an active member of the tribe being measured.
-- `personal_streak` milestones (100) intentionally exceed existing streak badges to give long-term players new goals.
+- No DB migration needed: tier classification is pure client-side derived from `streak` and `collective_streak`.
+- Existing badges (`personal_streak ≥ 100`, `tribe_collective_streak ≥ 180`) are unaffected — Inferno/Firestorm are visual-only ceilings; we can later add `streak ≥ 200` and `collective ≥ 6000` badges in a follow-up.
+- Wind module exposes a simple `triggerGust(strength)` so future features (level-up, tribe battle win) can trigger the same effect.
 

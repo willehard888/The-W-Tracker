@@ -403,6 +403,30 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
         />
       ))}
 
+      {/* Sparks — pinpoint shots (Blazing+) */}
+      {sparks.map((sp, i) => (
+        <span
+          key={`sp-${i}`}
+          className="flame-spark absolute rounded-full pointer-events-none"
+          style={{
+            width: sp.size,
+            height: sp.size,
+            left: `${sp.leftPct}%`,
+            top: size * 0.45,
+            background: palette.core,
+            boxShadow: `0 0 ${sp.size * 4}px ${palette.inner}, 0 0 ${sp.size * 8}px ${palette.mid}`,
+            opacity: 0,
+            // @ts-expect-error custom prop
+            "--spark-x": `${sp.x}px`,
+            // @ts-expect-error custom prop
+            "--spark-y": `${sp.y}px`,
+            animation: `flame-spark-shoot ${sp.duration * speedMul}s ease-out infinite`,
+            animationDelay: `${sp.delay}s`,
+            mixBlendMode: "screen",
+          }}
+        />
+      ))}
+
       {/* Smoke wisps (Champion+) */}
       {smokes.map((s, i) => (
         <span

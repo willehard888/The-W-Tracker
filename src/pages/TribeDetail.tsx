@@ -76,6 +76,7 @@ const TribeDetail = () => {
   const [reportsOpen, setReportsOpen] = useState(false);
   const [reportedCount, setReportedCount] = useState(0);
   const [manageOpen, setManageOpen] = useState(false);
+  const [collectiveStreak, setCollectiveStreak] = useState(0);
 
   // Admin check
   const { data: isAdmin } = useQuery({

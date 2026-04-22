@@ -10,7 +10,7 @@ const corsHeaders = {
 // Tier → Stripe price ID map
 const PRICE_IDS = {
   elite: "price_1TFEFvBm4ZLIG9fvnzdsqL6m",        // 4.99€/mo Member
-  apex:  "price_1TOvbkBm4ZLIG9fvoppvTJ7D",        // 15.99€/mo Apex Instant
+  apex:  "price_1TOvvEBm4ZLIG9fvG3mE1Whe",        // 17.99€/mo Apex Instant
 } as const;
 
 type Tier = keyof typeof PRICE_IDS;

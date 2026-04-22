@@ -67,6 +67,8 @@ const TribeDetail = () => {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [pendingOpen, setPendingOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [reportsOpen, setReportsOpen] = useState(false);
+  const [reportedCount, setReportedCount] = useState(0);
 
   // Admin check
   const { data: isAdmin } = useQuery({

@@ -23,6 +23,8 @@ import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
 import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
 import { ELITE_XP_MULTIPLIER } from "@/lib/xp-constants";
+import CheckinTierHeader from "@/components/CheckinTierHeader";
+import CheckinTierSummary from "@/components/CheckinTierSummary";
 
 interface ToggleItemProps {
   icon: React.ElementType;

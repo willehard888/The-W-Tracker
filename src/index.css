@@ -10,37 +10,42 @@
     --ease-spring: cubic-bezier(0.16, 1.2, 0.32, 1);
     --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
 
-    --background: 260 18% 4%;
+    /* Obsidian & Gold — unified theme */
+    --background: 258 22% 3%;
     --foreground: 40 8% 94%;
+    --foreground-muted: 40 6% 72%;
+    --foreground-faint: 255 6% 38%;
 
-    --card: 255 14% 7%;
+    --card: 258 16% 6.5%;
     --card-foreground: 40 8% 94%;
 
-    --popover: 255 14% 7%;
+    --popover: 258 16% 6.5%;
     --popover-foreground: 40 8% 94%;
 
     --primary: 42 78% 54%;
-    --primary-foreground: 260 18% 4%;
+    --primary-foreground: 258 22% 3%;
 
-    --secondary: 260 12% 11%;
+    --secondary: 258 14% 11%;
     --secondary-foreground: 40 8% 80%;
 
-    --muted: 260 12% 11%;
-    --muted-foreground: 255 8% 44%;
+    --muted: 258 14% 11%;
+    --muted-foreground: 40 6% 72%;
 
     --accent: 42 78% 54%;
-    --accent-foreground: 260 18% 4%;
+    --accent-foreground: 258 22% 3%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 260 12% 14%;
-    --input: 260 12% 14%;
+    --border: 258 14% 16%;
+    --border-strong: 258 14% 22%;
+    --input: 258 14% 16%;
     --ring: 42 78% 54%;
 
     --radius: 0.75rem;
 
     --gold: 42 78% 54%;
+    --gold-soft: 42 60% 46%;
     --gold-light: 42 85% 70%;
     --gold-dark: 42 60% 36%;
     --surface-elevated: 258 14% 10%;

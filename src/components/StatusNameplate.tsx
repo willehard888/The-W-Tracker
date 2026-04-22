@@ -110,11 +110,19 @@ const StatusNameplate = ({
   const labelSize = size === "lg" ? "text-[40px] sm:text-[44px]" : "text-[34px]";
   const padding = size === "lg" ? "px-5 py-4" : "px-4 py-3.5";
 
-  // Show percentile from profile config (fallback) when no live one provided
-  const percentLabel =
-    percentile !== undefined
-      ? `Top ${percentile <= 1 ? "1" : Math.max(1, Math.round(100 - percentile))}%`
-      : cfg.percentile;
+  // Always trust the tier config label for top tiers (Legend/Apex/Elite) so it
+  // matches the rest of the UI. For mid/low tiers we can use the live percentile
+  // when available, but never round down to 0%.
+  const useConfigLabel = isLegend || isApex || isElite;
+  const percentLabel = useConfigLabel
+    ? cfg.percentile
+    : percentile !== undefined
+    ? (() => {
+        const top = 100 - percentile;
+        if (top < 1) return "Top 1%";
+        return `Top ${Math.round(top)}%`;
+      })()
+    : cfg.percentile;
 
   return (
     <motion.div

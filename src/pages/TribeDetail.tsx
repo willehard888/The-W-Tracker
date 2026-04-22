@@ -172,8 +172,16 @@ const TribeDetail = () => {
         .eq("tribe_id", id)
         .eq("status", "pending");
       setPendingCount(count ?? 0);
+
+      const { count: rCount } = await supabase
+        .from("tribe_posts" as any)
+        .select("id", { count: "exact", head: true })
+        .eq("tribe_id", id)
+        .eq("reported", true);
+      setReportedCount(rCount ?? 0);
     } else {
       setPendingCount(0);
+      setReportedCount(0);
     }
 
     setLoading(false);
@@ -183,6 +191,38 @@ const TribeDetail = () => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, profile?.user_id]);
+
+  // Realtime: refresh on new posts/comments/kudos/reactions in this tribe
+  useEffect(() => {
+    if (!id) return;
+    const channel = supabase
+      .channel(`tribe-feed-${id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tribe_posts", filter: `tribe_id=eq.${id}` },
+        () => load(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tribe_post_comments" },
+        () => load(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tribe_post_reactions" },
+        () => load(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tribe_post_kudos" },
+        () => load(),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleScroll = () => {
     if (scrollRef.current) setParallax(Math.min(scrollRef.current.scrollTop * 0.3, 80));

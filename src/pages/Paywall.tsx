@@ -89,12 +89,31 @@ const Paywall = () => {
         </p>
         {!isApexSubscriber && (
           <p className="text-[11px] text-muted-foreground/70 mb-6 tracking-wide">
-            Top 5% rank • 14 active days • 30-day streak
+            Top 20% rank or 20 active days + 21-day streak
           </p>
         )}
         <div className="flex gap-2 mt-4">
           <Button variant="gold-outline" onClick={() => navigate("/profile")}>
             <ArrowLeft size={14} /> Profile
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={async () => {
+              if (isNativePlatform()) {
+                window.open("https://apps.apple.com/account/subscriptions", "_blank");
+                return;
+              }
+
+              const { data, error } = await supabase.functions.invoke("customer-portal");
+              if (error || !data?.url) {
+                toast.error("Could not open subscription management.");
+                return;
+              }
+
+              window.open(data.url, "_blank");
+            }}
+          >
+            <ShieldCheck size={14} /> Manage my subscription
           </Button>
           {isApexSubscriber ? (
             <Button variant="gold" onClick={() => navigate("/tribes")}>

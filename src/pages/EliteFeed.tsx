@@ -1,5 +1,6 @@
 
 import { useAuth } from "@/contexts/AuthContext";
+import StreakFlameInline from "@/components/StreakFlameInline";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

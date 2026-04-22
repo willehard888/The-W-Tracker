@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import StreakFlameInline from "@/components/StreakFlameInline";
 import { X, Heart, MessageCircle, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import StatusAvatar from "@/components/StatusAvatar";

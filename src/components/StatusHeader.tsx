@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import StreakFlameInline from "@/components/StreakFlameInline";
 import { useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrialAccess } from "@/hooks/use-trial-access";

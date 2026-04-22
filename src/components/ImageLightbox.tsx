@@ -65,7 +65,7 @@ const ImageLightbox = ({
       role="dialog"
       aria-modal="true"
       aria-label="Image preview"
-      className="fixed inset-0 z-[100] flex flex-col bg-background/95 backdrop-blur-2xl animate-fade-in"
+      className="fixed inset-0 z-[100] flex flex-col bg-background/98 animate-fade-in"
       onClick={onClose}
     >
       {/* Top bar — author + close */}
@@ -89,7 +89,7 @@ const ImageLightbox = ({
         <button
           onClick={onClose}
           aria-label="Close image"
-          className="h-9 w-9 rounded-full bg-secondary/60 backdrop-blur-md border border-border/40 flex items-center justify-center text-foreground hover:bg-secondary transition-colors active:scale-95"
+          className="h-9 w-9 rounded-full bg-secondary border border-border/40 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-colors active:scale-95"
         >
           <X size={18} />
         </button>
@@ -121,7 +121,7 @@ const ImageLightbox = ({
         className="shrink-0 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="rounded-2xl border border-gold/15 bg-card/60 backdrop-blur-xl p-3 shadow-[0_4px_24px_hsl(0_0%_0%/0.4)]">
+        <div className="rounded-2xl border border-gold/15 bg-card/95 p-3 shadow-[0_4px_24px_hsl(0_0%_0%/0.4)]">
           {caption && (
             <p className="text-xs text-foreground/90 leading-relaxed line-clamp-3 mb-2">
               {caption}

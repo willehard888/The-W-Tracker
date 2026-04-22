@@ -22,7 +22,7 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
       phase === "enter" ? "opacity-0" : phase === "exit" ? "opacity-0 scale-110" : "opacity-100"
     )}>
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-background/95 backdrop-blur-md" />
+      <div className="absolute inset-0 bg-background/98" />
 
       {/* Radial glow bursts */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">

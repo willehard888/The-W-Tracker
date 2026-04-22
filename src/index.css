@@ -262,36 +262,32 @@
      ============================================================ */
   .surface-glass {
     position: relative;
-    backdrop-filter: blur(32px) saturate(1.5);
-    -webkit-backdrop-filter: blur(32px) saturate(1.5);
+    /* PERF: replaced backdrop-filter blur(32px) with a solid tinted background.
+       Live backdrop-blur on the sticky header + bottom nav was forcing the
+       compositor to re-sample & blur the whole page beneath them on every
+       frame — the #1 cause of uneven page-load animation. The visual is
+       preserved with a richer opaque gradient. */
     background:
       /* Specular hotspot — soft top-left "studio light" */
-      radial-gradient(140% 90% at 14% -10%, hsl(0 0% 100% / 0.11) 0%, transparent 42%),
+      radial-gradient(140% 90% at 14% -10%, hsl(0 0% 100% / 0.09) 0%, transparent 42%),
       /* Counter-rim light from bottom-right (warm bounce) */
-      radial-gradient(100% 70% at 90% 110%, hsl(42 78% 54% / 0.07) 0%, transparent 50%),
+      radial-gradient(100% 70% at 90% 110%, hsl(42 78% 54% / 0.06) 0%, transparent 50%),
       /* Vertical bevel — top lit, bottom shaded */
-      linear-gradient(180deg, hsl(0 0% 100% / 0.085) 0%, transparent 18%, hsl(0 0% 0% / 0.22) 100%),
-      /* Base tint */
-      linear-gradient(180deg, hsl(255 14% 9% / 0.78), hsl(255 14% 5% / 0.84));
+      linear-gradient(180deg, hsl(0 0% 100% / 0.07) 0%, transparent 18%, hsl(0 0% 0% / 0.22) 100%),
+      /* Solid base tint — was 0.78/0.84 alpha, now opaque so no live blur needed */
+      linear-gradient(180deg, hsl(255 14% 9%) 0%, hsl(255 14% 5%) 100%);
     border: 1px solid hsl(0 0% 100% / 0.08);
     border-top-color: hsl(0 0% 100% / 0.14);
     border-bottom-color: hsl(0 0% 0% / 0.45);
     box-shadow:
-      /* Inner top bevel — bright edge light */
       inset 0 1px 0 hsl(0 0% 100% / 0.12),
-      /* Inner side rims */
       inset 1px 0 0 hsl(0 0% 100% / 0.025),
       inset -1px 0 0 hsl(0 0% 0% / 0.20),
-      /* Inner bottom shade */
       inset 0 -1px 0 hsl(0 0% 0% / 0.35),
-      /* Crisp 1px contact shadow */
       0 1px 1px hsl(0 0% 0% / 0.4),
-      /* Mid-depth lift */
       0 3px 8px -1px hsl(0 0% 0% / 0.3),
       0 8px 16px -4px hsl(0 0% 0% / 0.35),
-      /* Soft ambient pool */
       0 20px 40px -14px hsl(0 0% 0% / 0.5),
-      /* Warm bounce light */
       0 28px 56px -22px hsl(42 78% 54% / 0.1);
     isolation: isolate;
   }

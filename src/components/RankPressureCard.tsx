@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { getTierConfig, getNextTier } from "@/lib/status-tiers";
-import { TrendingUp, TrendingDown, AlertTriangle, ChevronRight, Flame, Trophy } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, ChevronRight, Flame, Trophy, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface RankPressureCardProps {
@@ -8,12 +8,18 @@ interface RankPressureCardProps {
   rank: number | null;
   totalUsers: number;
   percentile: number;
+  hasRank?: boolean;
   rankScore?: number;
   daysAtTier?: number;
   className?: string;
 }
 
-const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, daysAtTier, className }: RankPressureCardProps) => {
+const formatPercentile = (p: number) => {
+  if (p >= 99) return p.toFixed(1);
+  return Math.round(p).toString();
+};
+
+const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, rankScore, daysAtTier, className }: RankPressureCardProps) => {
   const config = getTierConfig(tier);
   const nextTier = getNextTier(tier);
 
@@ -128,27 +134,37 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, daysA
                     Your Position
                   </p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Ahead of{" "}
-                  <span className={cn("font-black tabular-nums", config.textClass)}>
-                    {percentile}%
-                  </span>{" "}
-                  of users
-                </p>
+                {hasRank ? (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Ahead of{" "}
+                    <span className={cn("font-black tabular-nums", config.textClass)}>
+                      {formatPercentile(percentile)}%
+                    </span>{" "}
+                    of users
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Not ranked yet
+                  </p>
+                )}
               </div>
             </div>
 
             <div
               className={cn(
                 "flex h-9 w-9 items-center justify-center rounded-full",
-                isRising
+                !hasRank
+                  ? "bg-muted/30 text-muted-foreground"
+                  : isRising
                   ? "bg-emerald-500/15 text-emerald-400"
                   : isFalling
                   ? "bg-destructive/15 text-destructive"
                   : "bg-gold/10 text-gold/70",
               )}
             >
-              {isRising ? (
+              {!hasRank ? (
+                <Sparkles size={16} strokeWidth={2.5} />
+              ) : isRising ? (
                 <TrendingUp size={16} strokeWidth={2.5} />
               ) : isFalling ? (
                 <TrendingDown size={16} strokeWidth={2.5} />
@@ -164,7 +180,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, daysA
               <motion.div
                 className={cn("h-full rounded-full bg-gradient-to-r", accentGradient)}
                 initial={{ width: 0 }}
-                animate={{ width: `${Math.max(4, percentile)}%` }}
+                animate={{ width: hasRank ? `${Math.max(4, percentile)}%` : "0%" }}
                 transition={{ duration: 1, ease: "easeOut", delay: 0.15 }}
               />
             </div>
@@ -177,23 +193,37 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, daysA
             transition={{ delay: 0.3 }}
             className={cn(
               "rounded-xl px-3 py-2 text-xs font-bold text-center mb-3 flex items-center justify-center gap-1.5",
-              isFalling
+              !hasRank
+                ? "bg-gold/8 text-gold/85 border border-gold/20"
+                : isFalling
                 ? "bg-destructive/10 text-destructive border border-destructive/25"
                 : isRising
                 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/25"
                 : "bg-gold/8 text-gold/85 border border-gold/20",
             )}
           >
-            {isFalling ? (
-              <AlertTriangle size={12} />
+            {!hasRank ? (
+              <>
+                <Sparkles size={12} />
+                Make your first check-in to enter the ranks
+              </>
+            ) : isFalling ? (
+              <>
+                <AlertTriangle size={12} />
+                {pressureText}
+              </>
             ) : isRising ? (
-              <Flame size={12} />
-            ) : null}
-            {pressureText}
+              <>
+                <Flame size={12} />
+                {pressureText}
+              </>
+            ) : (
+              pressureText
+            )}
           </motion.div>
 
           {/* Days at tier */}
-          {daysAtTier !== undefined && daysAtTier > 0 && tier !== "recruit" && tier !== "normal" && (
+          {hasRank && daysAtTier !== undefined && daysAtTier > 0 && tier !== "recruit" && tier !== "normal" && (
             <div className="flex items-center justify-center gap-1.5 mb-2 text-[10px] text-muted-foreground">
               <Trophy size={10} className={cn("shrink-0", config.textClass)} />
               <span>

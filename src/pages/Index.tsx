@@ -17,6 +17,7 @@ import XpCounter from "@/components/XpCounter";
 import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
 import { useTierRisk } from "@/hooks/use-tier-risk";
+import { useMyRank } from "@/hooks/use-my-rank";
 import RoadToElite from "@/components/RoadToElite";
 import InviteCTA from "@/components/InviteCTA";
 
@@ -91,21 +92,7 @@ const Index = () => {
     enabled: !!profile,
   });
 
-  const { data: rankData } = useQuery({
-    queryKey: ["my-rank-home", profile?.user_id],
-    queryFn: async () => {
-      if (!profile) return null;
-      const [{ count: ahead }, { count: total }] = await Promise.all([
-        supabase.from("profiles").select("*", { count: "exact", head: true }).gt("rank_score" as any, (profile as any).rank_score || 0),
-        supabase.from("profiles").select("*", { count: "exact", head: true }).gt("xp", 0),
-      ]);
-      const rank = (ahead ?? 0) + 1;
-      const totalUsers = total ?? 1;
-      const percentile = Math.max(1, Math.round(((totalUsers - rank) / totalUsers) * 100));
-      return { rank, totalUsers, percentile };
-    },
-    enabled: !!profile,
-  });
+  const { data: rankData } = useMyRank(profile?.user_id);
   // Tier risk (must be called before early-return for hook order)
   const tierRisk = useTierRisk({
     tier: profile?.status_tier || "recruit",
@@ -187,6 +174,7 @@ const Index = () => {
             rank={rankData.rank}
             totalUsers={rankData.totalUsers}
             percentile={rankData.percentile}
+            hasRank={rankData.hasRank}
             rankScore={(profile as any).rank_score}
             daysAtTier={(profile as any).rank_score_updated_at
               ? Math.max(1, Math.floor((Date.now() - new Date((profile as any).rank_score_updated_at).getTime()) / (1000 * 60 * 60 * 24)))

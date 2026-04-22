@@ -1404,6 +1404,15 @@ export type Database = {
           visibility: string
         }[]
       }
+      get_user_rank: {
+        Args: { p_user_id: string }
+        Returns: {
+          has_rank: boolean
+          percentile: number
+          rank: number
+          total_users: number
+        }[]
+      }
       has_active_access: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {

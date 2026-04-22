@@ -25,6 +25,7 @@ import RoadToElite from "@/components/RoadToElite";
 import TierLadder from "@/components/TierLadder";
 import LiveRivals from "@/components/LiveRivals";
 import ApexBadge from "@/components/ApexBadge";
+import { useMyRank } from "@/hooks/use-my-rank";
 import { format } from "date-fns";
 
 const Profile = () => {
@@ -201,21 +202,7 @@ const Profile = () => {
     enabled: !!profile,
   });
 
-  const { data: rankData } = useQuery({
-    queryKey: ["my-rank-profile", profile?.user_id],
-    queryFn: async () => {
-      if (!profile) return null;
-      const [{ count: ahead }, { count: total }] = await Promise.all([
-        supabase.from("profiles").select("*", { count: "exact", head: true }).gt("rank_score" as any, (profile as any).rank_score || 0),
-        supabase.from("profiles").select("*", { count: "exact", head: true }).gt("xp", 0),
-      ]);
-      const rank = (ahead ?? 0) + 1;
-      const totalUsers = total ?? 1;
-      const percentile = Math.max(1, Math.round(((totalUsers - rank) / totalUsers) * 100));
-      return { rank, totalUsers, percentile };
-    },
-    enabled: !!profile,
-  });
+  const { data: rankData } = useMyRank(profile?.user_id);
 
   useEffect(() => {
     if (!profile?.user_id) return;
@@ -418,6 +405,7 @@ const Profile = () => {
             rank={rankData.rank}
             totalUsers={rankData.totalUsers}
             percentile={rankData.percentile}
+            hasRank={rankData.hasRank}
             rankScore={(profile as any).rank_score}
           />
         </div>

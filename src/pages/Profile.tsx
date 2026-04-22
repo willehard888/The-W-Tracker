@@ -24,10 +24,11 @@ import { getTierConfig } from "@/lib/status-tiers";
 import RoadToElite from "@/components/RoadToElite";
 import TierLadder from "@/components/TierLadder";
 import LiveRivals from "@/components/LiveRivals";
+import ApexBadge from "@/components/ApexBadge";
 import { format } from "date-fns";
 
 const Profile = () => {
-  const { profile, signOut, isElite } = useAuth();
+  const { profile, signOut, isElite, isApexSubscriber } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [previewBadge, setPreviewBadge] = useState<any>(null);
@@ -338,13 +339,19 @@ const Profile = () => {
             @{profile.username}
           </h1>
 
-          {/* Status pills — Elite · Level · Season Champion */}
+          {/* Status pills — Elite · Apex/Founder · Level · Season Champion */}
           <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
             {isElite && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
                 <Crown size={12} className="text-gold" />
                 <span className="text-[11px] font-black text-gold tracking-wider uppercase">Elite</span>
               </span>
+            )}
+            {profile.status_tier === 'apex' && (
+              <ApexBadge isFounding={isApexSubscriber} size="md" />
+            )}
+            {profile.status_tier === 'legend' && (
+              <ApexBadge tier="legend" size="md" />
             )}
             <span className="inline-flex items-center px-3 py-1.5 rounded-full">
               <span className="text-[11px] font-black tracking-wider text-muted-foreground/80 uppercase">

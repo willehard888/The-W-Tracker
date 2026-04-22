@@ -1662,6 +1662,27 @@
   }
 }
 
+/* Lightweight flicker for inline flames (no SVG filters, GPU-cheap) */
+@keyframes flame-inline-flicker {
+  0%, 100% { transform: translateX(-50%) scaleY(1) scaleX(1); opacity: 0.92; }
+  50%      { transform: translateX(-50%) scaleY(1.08) scaleX(0.95); opacity: 1; }
+}
+@keyframes flame-inline-core {
+  0%, 100% { transform: translateX(-50%) scaleY(1)    scaleX(1); opacity: 0.85; }
+  50%      { transform: translateX(-50%) scaleY(1.12) scaleX(0.9); opacity: 1; }
+}
+
+/* Splash screen flame growth — small ember → roaring flame */
+@keyframes splash-flame-grow {
+  0%   { transform: translateX(-50%) scale(0.3) translateY(8px); opacity: 0; }
+  35%  { transform: translateX(-50%) scale(0.7) translateY(2px); opacity: 0.8; }
+  100% { transform: translateX(-50%) scale(1)   translateY(0);   opacity: 1; }
+}
+@keyframes splash-flame-flicker {
+  0%, 100% { transform: translateX(-50%) scaleY(1)    scaleX(1); }
+  50%      { transform: translateX(-50%) scaleY(1.06) scaleX(0.96); }
+}
+
 /* Realistic flame flicker — non-uniform, alive (legacy single-icon)
    v2: micro-sway + hue shift on peaks, irregular cadence */
 @keyframes streak-fire {

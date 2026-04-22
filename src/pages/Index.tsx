@@ -4,7 +4,7 @@ import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
 import HeroHeader from "@/components/home/HeroHeader";
 import CommandDeck from "@/components/home/CommandDeck";
-import RankArena from "@/components/home/RankArena";
+import PressureRivals from "@/components/home/PressureRivals";
 import ProgressRail from "@/components/home/ProgressRail";
 import CoachStrip from "@/components/home/CoachStrip";
 import Reveal from "@/components/home/Reveal";
@@ -181,10 +181,10 @@ const Index = () => {
         </Reveal>
       )}
 
-      {/* RANK ARENA */}
+      {/* PRESSURE + RIVALS */}
       {rankData && (
         <Reveal className="mb-4 relative z-10">
-          <RankArena
+          <PressureRivals
             userId={profile.user_id}
             tier={tier}
             rank={rankData.rank}

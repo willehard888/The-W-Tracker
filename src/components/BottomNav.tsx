@@ -8,7 +8,6 @@ const baseTabs = [
   { icon: Home, label: "Home", path: "/", color: "gold" },
   { icon: Target, label: "Check-in", path: "/checkin", color: "teal" },
   { icon: Flame, label: "Feed", path: "/feed", color: "orange" },
-  { icon: Sparkles, label: "Coach", path: "/coach", color: "gold", eliteOnly: true as const },
   { icon: Users, label: "Tribes", path: "/tribes", color: "apex" },
   { icon: MessageCircle, label: "DMs", path: "/messages", color: "purple" },
   { icon: Trophy, label: "Ranks", path: "/leaderboard", color: "gold" },

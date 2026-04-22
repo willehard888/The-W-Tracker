@@ -313,8 +313,10 @@ const TribeDetail = () => {
                   Challenge another tribe to a collective XP battle
                 </p>
               </div>
+              <ArrowLeft size={14} className="text-muted-foreground rotate-180" />
+            </button>
 
-            {/* Owner: pending requests pill */}
+
             {isOwner && pendingCount > 0 && (
               <button
                 onClick={() => setPendingOpen(true)}

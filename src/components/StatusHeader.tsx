@@ -5,7 +5,7 @@ import { useTrialAccess } from "@/hooks/use-trial-access";
 import { getTierConfig, getNextTier, TIER_ORDER } from "@/lib/status-tiers";
 import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
-import { Crown, Clock, ChevronRight, Flame } from "lucide-react";
+import { Crown, Clock, ChevronRight, Flame, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import BrandLogo from "@/components/BrandLogo";
 

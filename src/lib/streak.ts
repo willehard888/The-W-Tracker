@@ -1,5 +1,20 @@
 export const STREAK_WINDOW_MS = 48 * 60 * 60 * 1000;
 
+/** 0–6 tier ladder. Tier 6 = Inferno (200d+) — the plasma ceiling above Legendary. */
+export const personalStreakTier = (streak: number): number => {
+  if (streak >= 200) return 6; // Inferno
+  if (streak >= 100) return 5; // Legendary
+  if (streak >= 60)  return 4; // Diamond
+  if (streak >= 30)  return 3; // Blazing / Champion
+  if (streak >= 14)  return 2; // On Fire
+  if (streak >= 7)   return 1; // Heating Up
+  if (streak >= 3)   return 0; // Ignited
+  return -1;
+};
+
+export const isInferno = (streak: number) => personalStreakTier(streak) >= 6;
+
+
 export type StreakDeadlineState = {
   expired: boolean;
   hours: number;

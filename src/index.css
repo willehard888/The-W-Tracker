@@ -1617,62 +1617,77 @@
   }
 }
 
-/* Realistic flame flicker — non-uniform, alive (legacy single-icon) */
+/* Realistic flame flicker — non-uniform, alive (legacy single-icon)
+   v2: micro-sway + hue shift on peaks, irregular cadence */
 @keyframes streak-fire {
-  0%   { transform: scaleY(1)    scaleX(1)    translateY(0)    rotate(-1deg); opacity: 0.92; filter: brightness(1) drop-shadow(0 0 6px currentColor); }
-  18%  { transform: scaleY(1.15) scaleX(0.94) translateY(-2px) rotate(1deg);  opacity: 1;    filter: brightness(1.15) drop-shadow(0 0 12px currentColor); }
-  37%  { transform: scaleY(1.05) scaleX(1.02) translateY(-1px) rotate(-0.5deg); opacity: 0.96; filter: brightness(1.05) drop-shadow(0 0 8px currentColor); }
-  55%  { transform: scaleY(1.22) scaleX(0.92) translateY(-4px) rotate(1.5deg); opacity: 1;    filter: brightness(1.2)  drop-shadow(0 0 14px currentColor); }
-  76%  { transform: scaleY(1.08) scaleX(0.98) translateY(-1px) rotate(-1deg); opacity: 0.94; filter: brightness(1.05) drop-shadow(0 0 9px currentColor); }
-  100% { transform: scaleY(1)    scaleX(1)    translateY(0)    rotate(-1deg); opacity: 0.92; filter: brightness(1) drop-shadow(0 0 6px currentColor); }
+  0%   { transform: scaleY(1)    scaleX(1)    translateY(0)    translateX(0)     rotate(-1deg); opacity: 0.92; filter: brightness(1)    hue-rotate(0deg)  drop-shadow(0 0 6px currentColor); }
+  14%  { transform: scaleY(1.16) scaleX(0.93) translateY(-2px) translateX(0.4px) rotate(1.2deg);  opacity: 1;    filter: brightness(1.2)  hue-rotate(-4deg) drop-shadow(0 0 13px currentColor); }
+  29%  { transform: scaleY(1.04) scaleX(1.03) translateY(-1px) translateX(-0.6px) rotate(-0.6deg); opacity: 0.95; filter: brightness(1.06) hue-rotate(2deg)  drop-shadow(0 0 8px currentColor); }
+  47%  { transform: scaleY(1.24) scaleX(0.91) translateY(-4px) translateX(0.8px) rotate(1.8deg);  opacity: 1;    filter: brightness(1.25) hue-rotate(-6deg) drop-shadow(0 0 16px currentColor); }
+  63%  { transform: scaleY(1.1)  scaleX(0.97) translateY(-2px) translateX(-0.4px) rotate(-1.4deg); opacity: 0.97; filter: brightness(1.1)  hue-rotate(0deg)  drop-shadow(0 0 10px currentColor); }
+  82%  { transform: scaleY(1.06) scaleX(0.99) translateY(-1px) translateX(0.2px) rotate(-0.8deg); opacity: 0.94; filter: brightness(1.04) hue-rotate(3deg)  drop-shadow(0 0 9px currentColor); }
+  100% { transform: scaleY(1)    scaleX(1)    translateY(0)    translateX(0)     rotate(-1deg); opacity: 0.92; filter: brightness(1)    hue-rotate(0deg)  drop-shadow(0 0 6px currentColor); }
 }
 
-/* Container glow pulses — progressively richer */
+/* Container glow pulses — progressively richer, asymmetric breath */
 @keyframes streak-pulse-glow {
   0%, 100% { box-shadow: 0 0 14px hsl(18 95% 58% / 0.18), 0 0 30px hsl(18 95% 58% / 0.08), inset 0 1px 0 hsl(18 95% 58% / 0.12); }
-  50%      { box-shadow: 0 0 28px hsl(18 95% 58% / 0.38), 0 0 56px hsl(18 95% 58% / 0.18), inset 0 1px 0 hsl(18 95% 58% / 0.22); }
+  42%      { box-shadow: 0 0 30px hsl(18 95% 58% / 0.42), 0 0 60px hsl(18 95% 58% / 0.2),  inset 0 1px 0 hsl(18 95% 58% / 0.24); }
+  64%      { box-shadow: 0 0 22px hsl(18 95% 58% / 0.3),  0 0 44px hsl(18 95% 58% / 0.14), inset 0 1px 0 hsl(18 95% 58% / 0.18); }
 }
 
 @keyframes streak-pulse-glow-gold {
   0%, 100% { box-shadow: 0 0 22px hsl(42 78% 54% / 0.28), 0 0 48px hsl(42 78% 54% / 0.12), inset 0 1px 0 hsl(42 85% 70% / 0.18); }
-  50%      { box-shadow: 0 0 40px hsl(42 78% 54% / 0.5),  0 0 80px hsl(42 78% 54% / 0.22), inset 0 1px 0 hsl(42 85% 70% / 0.3); }
+  42%      { box-shadow: 0 0 44px hsl(42 78% 54% / 0.55), 0 0 88px hsl(42 78% 54% / 0.26), inset 0 1px 0 hsl(42 85% 70% / 0.34); }
+  68%      { box-shadow: 0 0 32px hsl(42 78% 54% / 0.38), 0 0 66px hsl(42 78% 54% / 0.18), inset 0 1px 0 hsl(42 85% 70% / 0.24); }
 }
 
 @keyframes streak-pulse-glow-diamond {
   0%, 100% { box-shadow: 0 0 26px hsl(200 80% 65% / 0.3),  0 0 56px hsl(42 78% 54% / 0.14), inset 0 1px 0 hsl(200 80% 75% / 0.22); }
-  50%      { box-shadow: 0 0 46px hsl(200 80% 65% / 0.55), 0 0 90px hsl(42 78% 54% / 0.25), inset 0 1px 0 hsl(200 80% 75% / 0.34); }
+  44%      { box-shadow: 0 0 50px hsl(200 80% 65% / 0.6),  0 0 100px hsl(42 78% 54% / 0.28), inset 0 1px 0 hsl(200 80% 75% / 0.38); }
+  72%      { box-shadow: 0 0 36px hsl(200 80% 65% / 0.42), 0 0 76px hsl(42 78% 54% / 0.2),  inset 0 1px 0 hsl(200 80% 75% / 0.28); }
 }
 
 @keyframes streak-pulse-glow-legendary {
   0%, 100% { box-shadow: 0 0 30px hsl(280 70% 60% / 0.35), 0 0 60px hsl(42 78% 54% / 0.18), 0 0 90px hsl(350 80% 60% / 0.12), inset 0 1px 0 hsl(280 70% 75% / 0.25); }
-  50%      { box-shadow: 0 0 56px hsl(280 70% 60% / 0.6),  0 0 100px hsl(42 78% 54% / 0.32), 0 0 140px hsl(350 80% 60% / 0.2), inset 0 1px 0 hsl(280 70% 75% / 0.4); }
+  40%      { box-shadow: 0 0 60px hsl(280 70% 60% / 0.65), 0 0 110px hsl(42 78% 54% / 0.36), 0 0 150px hsl(350 80% 60% / 0.24), inset 0 1px 0 hsl(280 70% 75% / 0.45); }
+  70%      { box-shadow: 0 0 44px hsl(280 70% 60% / 0.45), 0 0 86px hsl(42 78% 54% / 0.24), 0 0 120px hsl(350 80% 60% / 0.16), inset 0 1px 0 hsl(280 70% 75% / 0.32); }
 }
 
-/* Number breathes — text shadow swells in sync with glow */
+/* Number breathes — text shadow swells, minute letter-spacing breath */
 @keyframes streak-number-pulse {
-  0%, 100% { text-shadow: 0 0 12px currentColor, 0 2px 6px hsl(0 0% 0% / 0.3); transform: scale(1); }
-  50%      { text-shadow: 0 0 28px currentColor, 0 0 56px currentColor, 0 2px 6px hsl(0 0% 0% / 0.3); transform: scale(1.015); }
+  0%, 100% { text-shadow: 0 0 12px currentColor, 0 2px 6px hsl(0 0% 0% / 0.3); transform: scale(1); letter-spacing: -0.04em; }
+  50%      { text-shadow: 0 0 30px currentColor, 0 0 60px currentColor, 0 2px 8px hsl(0 0% 0% / 0.35); transform: scale(1.02); letter-spacing: -0.035em; }
 }
 
-/* Floating embers — drift up with curve */
+/* Floating embers — drift up with organic curve (sin-like sway) */
 @keyframes streak-particle {
-  0%   { transform: translateY(0)    translateX(0)   scale(0);   opacity: 0; }
-  12%  { transform: translateY(-18px) translateX(2px)  scale(1);   opacity: 0.95; }
-  45%  { transform: translateY(-55px) translateX(-3px) scale(0.85); opacity: 0.7; }
-  80%  { transform: translateY(-95px) translateX(4px)  scale(0.5);  opacity: 0.35; }
-  100% { transform: translateY(-130px) translateX(-2px) scale(0.2);  opacity: 0; }
+  0%   { transform: translateY(0)     translateX(0)    scale(0);    opacity: 0; }
+  10%  { transform: translateY(-14px) translateX(3px)  scale(1);    opacity: 0.95; }
+  28%  { transform: translateY(-38px) translateX(-4px) scale(0.95); opacity: 0.85; }
+  48%  { transform: translateY(-62px) translateX(5px)  scale(0.78); opacity: 0.7; }
+  68%  { transform: translateY(-90px) translateX(-3px) scale(0.55); opacity: 0.45; }
+  85%  { transform: translateY(-116px) translateX(2px) scale(0.36); opacity: 0.22; }
+  100% { transform: translateY(-140px) translateX(-1px) scale(0.18); opacity: 0; }
 }
 
 /* Heat shimmer wave — distortion line that travels up */
 @keyframes streak-heat-wave {
-  0%   { transform: translateY(100%) scaleY(0.8); opacity: 0; }
-  20%  { opacity: 0.6; }
-  100% { transform: translateY(-30%) scaleY(1.2); opacity: 0; }
+  0%   { transform: translateY(100%) scaleY(0.7) scaleX(0.85); opacity: 0; }
+  18%  { opacity: 0.55; }
+  55%  { transform: translateY(20%)  scaleY(1.0) scaleX(1.05); opacity: 0.45; }
+  100% { transform: translateY(-40%) scaleY(1.3) scaleX(0.92); opacity: 0; }
 }
 
 /* Conic ring spin — for diamond+ */
 @keyframes streak-conic-spin {
   to { transform: rotate(360deg); }
+}
+
+/* Conic ring opacity breath — pairs with spin so ring "lives" */
+@keyframes streak-conic-breath {
+  0%, 100% { opacity: 0.55; filter: blur(0.4px); }
+  50%      { opacity: 0.95; filter: blur(0px); }
 }
 
 /* Rainbow text gradient slide */
@@ -1684,27 +1699,36 @@
 /* Tier badge shimmer */
 @keyframes streak-badge-shimmer {
   0%, 100% { opacity: 0.92; box-shadow: 0 0 10px hsl(280 70% 60% / 0.2); }
-  50%      { opacity: 1;    box-shadow: 0 0 22px hsl(280 70% 60% / 0.45), 0 0 40px hsl(42 78% 54% / 0.15); }
+  50%      { opacity: 1;    box-shadow: 0 0 26px hsl(280 70% 60% / 0.5), 0 0 46px hsl(42 78% 54% / 0.18); }
 }
 
-/* Spark burst at the top of the flame */
+/* Spark burst at the top of the flame — slight horizontal drift */
 @keyframes streak-spark {
-  0%   { transform: translate(-50%, 0) scale(0.6); opacity: 0; }
-  20%  { opacity: 1; }
-  100% { transform: translate(-50%, -28px) scale(1.4); opacity: 0; }
+  0%   { transform: translate(-50%, 0)    scale(0.55); opacity: 0; }
+  18%  { transform: translate(-50%, -8px) scale(1.1);  opacity: 1; }
+  60%  { transform: translate(-40%, -22px) scale(1.25); opacity: 0.6; }
+  100% { transform: translate(-55%, -34px) scale(1.5);  opacity: 0; }
 }
 
-/* Tier-up reveal sweep — subtle highlight that moves across the card */
+/* Tier-up reveal sweep — eased, subtle highlight that moves across the card */
 @keyframes streak-card-sheen {
-  0%   { transform: translateX(-120%) skewX(-20deg); opacity: 0; }
-  40%  { opacity: 0.5; }
-  100% { transform: translateX(220%)  skewX(-20deg); opacity: 0; }
+  0%   { transform: translateX(-120%) skewX(-22deg); opacity: 0; }
+  35%  { opacity: 0.55; }
+  70%  { opacity: 0.4; }
+  100% { transform: translateX(240%)  skewX(-22deg); opacity: 0; }
 }
 
-/* Milestone segment fill — animated entry */
+/* Milestone segment fill — eased entry */
 @keyframes streak-segment-fill {
   from { transform: scaleX(0); }
   to   { transform: scaleX(1); }
+}
+
+/* Ember puff — soft rising ring around flame badge (Champion+) */
+@keyframes streak-ember-puff {
+  0%   { transform: scale(0.7); opacity: 0; }
+  35%  { opacity: 0.45; }
+  100% { transform: scale(1.55); opacity: 0; }
 }
 
 /* Orange-only text gradient (hot/onfire tiers) */

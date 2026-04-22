@@ -1,5 +1,5 @@
 import { Zap, Sparkles } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getEffectiveStreak, getStreakDeadlineState } from "@/lib/streak";
 import RealisticFlame from "./RealisticFlame";
@@ -233,10 +233,22 @@ const CompactStreakPanel = ({
     ? "hsl(42 95% 70%)"
     : "hsl(28 95% 65%)";
 
+  // Ember burst rays for milestone crossing — 8 directional sparks
+  const burstRays = useMemo(
+    () =>
+      Array.from({ length: 8 }).map((_, i) => ({
+        angle: (i / 8) * 360,
+        delay: (i % 4) * 0.04,
+      })),
+    [],
+  );
+
   return (
     <div
       className={cn(
         "relative rounded-2xl overflow-hidden p-4 border flex flex-col justify-between gap-3 isolate min-h-[200px]",
+        isHot && "depth-realistic-warm",
+        !isHot && "depth-realistic",
         className,
       )}
       style={{
@@ -244,9 +256,6 @@ const CompactStreakPanel = ({
         background: isHot
           ? "radial-gradient(120% 90% at 0% 0%, hsl(255 14% 11%), hsl(255 14% 6%))"
           : "linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 6%))",
-        boxShadow: isHot
-          ? `0 12px 36px -16px ${accent.replace(")", " / 0.55)")}, inset 0 1px 0 hsl(0 0% 100% / 0.05)`
-          : "inset 0 1px 0 hsl(0 0% 100% / 0.03)",
       }}
     >
       {/* Background heat shimmer (Champion+) */}
@@ -309,7 +318,7 @@ const CompactStreakPanel = ({
             }}
           />
           <p
-            className="text-[10px] font-black uppercase tracking-[0.22em]"
+            className="text-[10px] font-bold uppercase tracking-[0.22em]"
             style={{ color: isHot ? accent : "hsl(var(--muted-foreground))" }}
           >
             Streak
@@ -345,10 +354,24 @@ const CompactStreakPanel = ({
             background: flameBg,
             color: isHot ? "white" : "hsl(var(--muted-foreground))",
             boxShadow: isHot
-              ? `0 0 26px ${accent.replace(")", " / 0.55)")}, inset 0 1px 0 hsl(0 0% 100% / 0.2), inset 0 -6px 12px hsl(0 0% 0% / 0.28)`
-              : undefined,
+              ? `0 0 26px ${accent.replace(")", " / 0.55)")}, inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -6px 14px hsl(0 0% 0% / 0.35), inset 0 1px 2px hsl(0 0% 0% / 0.15)`
+              : "inset 0 1px 0 hsl(0 0% 100% / 0.05), inset 0 -2px 6px hsl(0 0% 0% / 0.25)",
           }}
         >
+          {/* Realistic "fuel pool" pulse beneath flame — warm soft glow */}
+          {isHot && (
+            <span
+              aria-hidden
+              className="streak-fx-fuel absolute left-1/2 bottom-0 h-3 w-10 rounded-[50%] pointer-events-none"
+              style={{
+                background: `radial-gradient(ellipse at center, ${accent}, transparent 75%)`,
+                animation: "streak-fuel-pulse 2.4s ease-in-out infinite",
+                mixBlendMode: "screen",
+                zIndex: 1,
+              }}
+            />
+          )}
+
           {/* Inner overflow clip for embers */}
           <div className="absolute inset-0 rounded-xl overflow-hidden">
             {isHot && <Embers count={emberCount} color={emberColor} />}
@@ -387,16 +410,42 @@ const CompactStreakPanel = ({
             />
           )}
 
-          {/* Shockwave on milestone cross */}
+          {/* Double shockwave on milestone cross */}
           {shockwave && (
-            <span
-              aria-hidden
-              className="streak-fx-shockwave absolute inset-0 rounded-xl pointer-events-none"
-              style={{
-                border: `4px solid ${accent}`,
-                animation: "streak-shockwave 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-              }}
-            />
+            <>
+              <span
+                aria-hidden
+                className="streak-fx-shockwave absolute inset-0 rounded-xl pointer-events-none"
+                style={{
+                  border: `4px solid ${accent}`,
+                  animation: "streak-shockwave 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+                }}
+              />
+              <span
+                aria-hidden
+                className="streak-fx-shockwave absolute inset-0 rounded-xl pointer-events-none"
+                style={{
+                  border: `2px solid ${accent}`,
+                  animation: "streak-shockwave-secondary 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards",
+                }}
+              />
+              {/* Ember burst rays — 8 directional sparks */}
+              {burstRays.map((ray, i) => (
+                <span
+                  key={`burst-${i}`}
+                  aria-hidden
+                  className="streak-fx-burst absolute top-1/2 left-1/2 w-1 h-3 rounded-full pointer-events-none"
+                  style={{
+                    background: `linear-gradient(180deg, ${accent}, transparent)`,
+                    boxShadow: `0 0 8px ${accent}`,
+                    // @ts-expect-error custom prop
+                    "--burst-angle": `${ray.angle}deg`,
+                    animation: "streak-ember-burst 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+                    animationDelay: `${ray.delay}s`,
+                  }}
+                />
+              ))}
+            </>
           )}
 
           <RealisticFlame

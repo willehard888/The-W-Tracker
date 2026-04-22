@@ -1,3 +1,4 @@
+import { forwardRef, type ElementType } from "react";
 import { cn } from "@/lib/utils";
 import { getTierUsernameClass } from "@/lib/status-tiers";
 
@@ -16,25 +17,25 @@ interface TierUsernameProps {
 
 /**
  * Renders a username with tier-specific gradient/glow styling.
- * Centralizes the tier-color treatment so every list, card and feed
- * shows the same visual hierarchy.
+ * forwardRef so framer-motion / wrappers can attach refs.
  */
-const TierUsername = ({
-  username,
-  tier,
-  showAt = true,
-  className,
-  as: Tag = "span",
-  fallback = "unknown",
-}: TierUsernameProps) => {
-  const name = username || fallback;
-  const tierClass = getTierUsernameClass(tier || "recruit");
-  return (
-    <Tag className={cn(tierClass, className)}>
-      {showAt ? "@" : ""}
-      {name}
-    </Tag>
-  );
-};
+const TierUsername = forwardRef<HTMLElement, TierUsernameProps>(
+  (
+    { username, tier, showAt = true, className, as: Tag = "span", fallback = "unknown" },
+    ref,
+  ) => {
+    const name = username || fallback;
+    const tierClass = getTierUsernameClass(tier || "recruit");
+    const Component = Tag as ElementType;
+    return (
+      <Component ref={ref} className={cn(tierClass, className)}>
+        {showAt ? "@" : ""}
+        {name}
+      </Component>
+    );
+  },
+);
+
+TierUsername.displayName = "TierUsername";
 
 export default TierUsername;

@@ -214,8 +214,30 @@ const StatusHeader = () => {
             </div>
           </button>
 
-          {/* Status pill */}
-          {isElite ? (
+          {/* Status pill — Apex > Elite > Trial */}
+          {isApex ? (
+            <motion.div
+              className="shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-[hsl(18_95%_58%)]/25 via-gold/20 to-[hsl(18_95%_58%)]/25 border border-[hsl(18_95%_58%)]/70"
+              animate={{
+                boxShadow: [
+                  "0 0 8px hsl(18 95% 58% / 0.5)",
+                  "0 0 22px hsl(18 95% 58% / 0.85)",
+                  "0 0 8px hsl(18 95% 58% / 0.5)",
+                ],
+              }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Zap
+                size={11}
+                className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_4px_hsl(18_95%_58%/0.9)]"
+                strokeWidth={3}
+                fill="currentColor"
+              />
+              <span className="text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
+                {isApexSubscriber ? "Apex⚡" : "Apex"}
+              </span>
+            </motion.div>
+          ) : isElite ? (
             <motion.div
               className="shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-gold/20 via-gold/15 to-gold/20 border border-gold/60"
               animate={{

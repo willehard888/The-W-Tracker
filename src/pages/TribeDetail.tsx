@@ -524,6 +524,17 @@ const TribeDetail = () => {
         </div>
       </div>
 
+        </div>
+      </div>
+
+      {/* Tribe collective streak — the bigger the tribe burns, the bigger the flame */}
+      <div className="mb-4">
+        <TribeCollectiveFlame
+          total={collectiveStreak}
+          memberCount={tribe.member_count}
+        />
+      </div>
+
       {/* Members row */}
       {members.length > 0 && (
         <div className="mb-4">

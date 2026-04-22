@@ -21,6 +21,7 @@ import {
   Image as ImageIcon,
   Video as VideoIcon,
   X,
+  ShieldAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 import TribeInviteModal from "@/components/TribeInviteModal";

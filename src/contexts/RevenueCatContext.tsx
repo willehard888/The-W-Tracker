@@ -18,11 +18,11 @@ const ELITE_ENTITLEMENT = "The W Tracker Pro";
 const APEX_ENTITLEMENT = "apex_subscriber";
 
 const ELITE_PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"] as const;
-const APEX_PRODUCT_IDS = ["apexmonthly1599", "com.app.apexmonthly1599"] as const;
+const APEX_PRODUCT_IDS = ["Apex888", "com.app.Apex888", "apexmonthly1599", "com.app.apexmonthly1599"] as const;
 const ALL_PRODUCT_IDS = [...ELITE_PRODUCT_IDS, ...APEX_PRODUCT_IDS] as const;
 
 const PRIMARY_ELITE_PRODUCT_ID = "elitemonthly499";
-const PRIMARY_APEX_PRODUCT_ID = "apexmonthly1599";
+const PRIMARY_APEX_PRODUCT_ID = "Apex888";
 
 // ─── Types ──────────────────────────────────────────────
 interface RevenueCatContextType {

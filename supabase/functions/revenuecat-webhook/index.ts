@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 // Apex Instant product identifiers (RevenueCat product_id)
-const APEX_PRODUCT_IDS = ["apexmonthly1599", "com.app.apexmonthly1599"];
+const APEX_PRODUCT_IDS = ["Apex888", "com.app.Apex888", "apexmonthly1599", "com.app.apexmonthly1599"];
 const APEX_ENTITLEMENT = "apex_subscriber";
 
 Deno.serve(async (req) => {

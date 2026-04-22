@@ -80,23 +80,25 @@ const Tribes = () => {
   };
 
   return (
-    <div className="min-h-full pb-8 px-4 pt-6 safe-top">
-      {/* Hero */}
-      <div className="text-center mb-6 animate-reveal">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[hsl(18_95%_58%)]/15 border border-[hsl(18_95%_58%)]/40 mb-3">
-          <Zap size={11} className="text-[hsl(18_95%_58%)]" />
-          <span className="text-[10px] font-black tracking-widest uppercase text-[hsl(18_95%_58%)]">
-            Apex Tribes
-          </span>
+    <div className="min-h-full pb-8 px-4 pt-4 safe-top">
+      {/* Cinematic hero banner */}
+      <div className="relative rounded-3xl mb-6 p-6 overflow-hidden border-2 border-[hsl(18_95%_58%)]/40 bg-gradient-to-br from-[hsl(18_95%_58%)]/15 via-card/85 to-gold/10 apex-aura-large apex-spotlight apex-embers apex-shimmer-sweep">
+        <div className="relative z-10 text-center">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/40 backdrop-blur-sm border border-[hsl(18_95%_58%)]/60 mb-3 shadow-[0_0_18px_hsl(18_95%_58%/0.5)]">
+            <Zap size={11} className="text-[hsl(18_95%_58%)]" strokeWidth={3} fill="currentColor" />
+            <span className="text-[10px] font-black tracking-widest uppercase bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
+              Apex Tribes
+            </span>
+          </div>
+          <h1 className="font-display text-3xl font-black tracking-tight mb-1.5 leading-none">
+            <span className="bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] bg-clip-text text-transparent drop-shadow-[0_0_18px_hsl(18_95%_58%/0.4)]">
+              Communities
+            </span>
+          </h1>
+          <p className="text-xs text-foreground/70 max-w-xs mx-auto leading-relaxed">
+            Tribes are founded by Apex (top 1%). <span className="text-[hsl(18_95%_58%)] font-semibold">Join one, or lead your own.</span>
+          </p>
         </div>
-        <h1 className="font-display text-2xl font-black tracking-tight mb-1">
-          <span className="bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] bg-clip-text text-transparent">
-            Communities
-          </span>
-        </h1>
-        <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-          Tribes are founded by Apex (top 1%). Join one, or lead your own.
-        </p>
       </div>
 
       {/* Create CTA */}

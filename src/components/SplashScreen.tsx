@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import BrandLogo from "./BrandLogo";
+import RealisticFlame from "./home/RealisticFlame";
 
 const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
   const [phase, setPhase] = useState<"reveal" | "settle" | "exit">("reveal");

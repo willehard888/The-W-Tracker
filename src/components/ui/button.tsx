@@ -17,7 +17,9 @@ const buttonVariants = cva(
     "disabled:pointer-events-none disabled:opacity-50 disabled:saturate-[0.6] disabled:cursor-not-allowed",
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
     "active:scale-[0.985] will-change-transform",
-    // Inner content settles down 0.5px on press for tactile feel
+    // Inner content (text + icons) lifts ABOVE the gloss/glint overlays so it stays crisp,
+    // and settles down 0.5px on press for tactile feel
+    "[&>*]:relative [&>*]:z-[3]",
     "[&>span]:transition-transform [&>span]:duration-150 [&:active>span]:translate-y-[0.5px]",
   ].join(" "),
   {

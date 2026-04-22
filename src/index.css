@@ -1625,3 +1625,33 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+
+/* === Home: Hero parallax aura === */
+@keyframes hero-aura-drift {
+  0%, 100% { transform: translate(-50%, 0) scale(1); opacity: 0.95; }
+  50%      { transform: translate(-50%, -8px) scale(1.04); opacity: 1; }
+}
+
+/* === Home: horizontal coach strip === */
+.snap-x-strip { scroll-padding-inline: 1rem; }
+.snap-x-strip::-webkit-scrollbar { display: none; }
+.snap-x-strip { -ms-overflow-style: none; scrollbar-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .breathing-glow,
+  [style*="hero-aura-drift"] {
+    animation: none !important;
+  }
+}
+
+/* === Reveal-on-scroll utility === */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1), transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+  will-change: opacity, transform;
+}
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}

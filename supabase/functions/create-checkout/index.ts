@@ -7,7 +7,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const ELITE_PRICE_ID = "price_1TFEFvBm4ZLIG9fvnzdsqL6m";
+// Tier → Stripe price ID map
+const PRICE_IDS = {
+  elite: "price_1TFEFvBm4ZLIG9fvnzdsqL6m",        // 4.99€/mo Member
+  apex:  "price_1TOvbkBm4ZLIG9fvoppvTJ7D",        // 15.99€/mo Apex Instant
+} as const;
+
+type Tier = keyof typeof PRICE_IDS;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -26,6 +32,14 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
 
+    let tier: Tier = "elite";
+    try {
+      const body = await req.json().catch(() => ({}));
+      if (body?.tier === "apex" || body?.tier === "elite") tier = body.tier;
+    } catch (_) { /* no body */ }
+
+    const priceId = PRICE_IDS[tier];
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
@@ -39,13 +53,14 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [{ price: ELITE_PRICE_ID, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
+      metadata: { tier, user_id: user.id },
       success_url: `${req.headers.get("origin")}/profile?checkout=success`,
       cancel_url: `${req.headers.get("origin")}/paywall`,
     });
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    return new Response(JSON.stringify({ url: session.url, tier }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

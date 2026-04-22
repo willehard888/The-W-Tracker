@@ -148,15 +148,16 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     message: "Among the elite few",
     pressureMessage: "Every day matters at this level",
     color: "apex",
-    borderClass: "border-[hsl(18_95%_58%)]/50",
-    bgClass: "bg-gradient-to-br from-[hsl(18_95%_58%)]/8 to-gold/5",
+    borderClass: "border-[hsl(18_95%_58%)]/60",
+    bgClass: "bg-gradient-to-br from-[hsl(18_95%_58%)]/12 to-gold/8",
     textClass: "text-[hsl(18_95%_58%)]",
-    glowClass: "shadow-[0_0_24px_hsl(18_95%_58%/0.3)]",
+    // Stronger double-glow: inner gold + outer flame
+    glowClass: "shadow-[0_0_24px_hsl(var(--gold)/0.35),0_0_48px_hsl(18_95%_58%/0.35)]",
     auraSize: 'large',
     badgeVariant: "apex",
     rank: 5,
     requirements: { percentile: 99, activeDays: 30, streak: 30 },
-    unlocks: ["Apex flame aura", "Top 1% status", "Priority visibility"],
+    unlocks: ["Apex flame aura", "Top 1% status", "Tribes — create communities", "Priority visibility"],
   },
   legend: {
     label: "Legend",
@@ -174,7 +175,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     badgeVariant: "legend",
     rank: 6,
     requirements: { percentile: 99.9, activeDays: 30, streak: 30 },
-    unlocks: ["Legend rainbow aura", "Hall of Fame", "Mythic status"],
+    unlocks: ["Legend rainbow aura", "Hall of Fame", "Tribes — create communities", "Mythic status"],
   },
 };
 

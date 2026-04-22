@@ -48,7 +48,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
   const isHighTier = ["elite", "apex", "legend"].includes(tier);
 
   const ringStyle = isLegend
-    ? "bg-[conic-gradient(from_0deg,hsl(280_70%_58%),hsl(42_90%_55%),hsl(350_80%_55%),hsl(280_70%_58%))] animate-spin-slow"
+    ? "bg-[conic-gradient(from_0deg,hsl(280_70%_58%),hsl(42_90%_55%),hsl(350_80%_55%),hsl(280_70%_58%))]"
     : isApex
     ? "bg-gradient-to-tr from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)]"
     : tier === "elite"

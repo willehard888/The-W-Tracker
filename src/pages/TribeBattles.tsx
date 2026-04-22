@@ -8,6 +8,7 @@ import { ArrowLeft, Loader2, Plus, Swords } from "lucide-react";
 import { toast } from "sonner";
 import TribeBattleCard, { type TribeBattle } from "@/components/TribeBattleCard";
 import TribeChallengeModal from "@/components/TribeChallengeModal";
+import { fetchTribeCollectiveStreaks } from "@/lib/tribe-streak";
 
 const TribeBattles = () => {
   const { id } = useParams<{ id: string }>();
@@ -51,14 +52,19 @@ const TribeBattles = () => {
       new Set(rawBattles.flatMap((b) => [b.challenger_tribe_id, b.opponent_tribe_id])),
     );
     if (tribeIds.length > 0) {
-      const { data: tribesData } = await supabase
-        .from("tribes" as any)
-        .select("id, name, member_count")
-        .in("id", tribeIds);
+      const [{ data: tribesData }, streaksMap] = await Promise.all([
+        supabase
+          .from("tribes" as any)
+          .select("id, name, member_count")
+          .in("id", tribeIds),
+        fetchTribeCollectiveStreaks(tribeIds),
+      ]);
       const tMap = new Map(((tribesData as any) ?? []).map((t: any) => [t.id, t]));
       rawBattles.forEach((b) => {
-        b.challenger = tMap.get(b.challenger_tribe_id) as any;
-        b.opponent = tMap.get(b.opponent_tribe_id) as any;
+        const c = tMap.get(b.challenger_tribe_id) as any;
+        const o = tMap.get(b.opponent_tribe_id) as any;
+        b.challenger = c ? { ...c, collective_streak: streaksMap.get(b.challenger_tribe_id) ?? 0 } : undefined;
+        b.opponent = o ? { ...o, collective_streak: streaksMap.get(b.opponent_tribe_id) ?? 0 } : undefined;
       });
     }
 

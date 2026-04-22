@@ -237,12 +237,22 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
   const turbMid = `turbMid-${uid}`;
   const turbFast = `turbFast-${uid}`;
 
-  // Legendary gets a cinematic hue-rotation on the whole composite
-  const hueAnim = isLegendary
+  // Inferno spirals through plasma hues; Legendary/Diamond aurora wash.
+  const hueAnim = isInferno
+    ? "flame-plasma-hue 5s linear infinite"
+    : isLegendary
     ? "flame-aurora-hue 8s linear infinite"
     : isDiamond
     ? "flame-aurora-hue 16s linear infinite"
     : undefined;
+
+  // Wind reactivity — lean from --wind-x (-1..1) and stretch from --wind-gust (0..1).
+  // Combined with the existing slow sway keyframe so the flame still has organic motion
+  // even before the wind loop has had time to evolve.
+  const windTransform =
+    "rotate(calc(var(--wind-x, 0) * 3.5deg + var(--wind-gust, 0) * 4deg)) " +
+    "scaleY(calc(1 + var(--wind-gust, 0) * 0.12)) " +
+    "translateX(calc(var(--wind-x, 0) * 1px))";
 
   return (
     <div

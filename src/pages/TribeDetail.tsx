@@ -16,6 +16,7 @@ import {
   UserPlus,
   Heart,
   Flame,
+  Swords,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -280,7 +281,26 @@ const TribeDetail = () => {
               </div>
             </div>
 
-            <div className="flex gap-2 mt-4">
+            {/* Tribe Battles entry */}
+            <button
+              onClick={() => navigate(`/tribes/${id}/battles`)}
+              className="mt-4 w-full rounded-xl border border-[hsl(18_95%_58%)]/45 bg-gradient-to-r from-[hsl(18_95%_58%)]/[0.10] to-gold/[0.06] hover:from-[hsl(18_95%_58%)]/15 hover:to-gold/10 transition-all p-2.5 flex items-center gap-2.5 text-left"
+            >
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold flex items-center justify-center shrink-0 shadow-[0_0_10px_hsl(18_95%_58%/0.5)]">
+                <Swords size={14} className="text-background" strokeWidth={2.6} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] uppercase tracking-widest font-black bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
+                  Tribe Battles
+                </p>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  Challenge another tribe to a collective XP battle
+                </p>
+              </div>
+              <ArrowLeft size={14} className="text-muted-foreground rotate-180" />
+            </button>
+
+            <div className="flex gap-2 mt-3">
               {!isMember ? (
                 <Button onClick={handleJoin} size="sm" className="bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black flex-1 shadow-[0_0_16px_hsl(18_95%_58%/0.5)]">
                   Join Tribe

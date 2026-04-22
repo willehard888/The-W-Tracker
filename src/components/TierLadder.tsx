@@ -10,15 +10,19 @@ interface TierLadderProps {
   className?: string;
 }
 
-/** Per-tier visual escalation classes — intensity grows with rank. */
+/**
+ * Per-tier visual escalation classes — intensity grows with rank.
+ * Light cleanup: kept colors + heights; replaced animated borders/shimmer
+ * on the top tiers with strong static gradient borders + glow shadows.
+ */
 const TIER_ROW_STYLE: Record<number, { base: string; accent: string; height: string }> = {
   0: { base: "border-border/40 bg-secondary/30", accent: "bg-muted/40 text-muted-foreground", height: "min-h-[52px]" },
   1: { base: "border-[hsl(var(--teal))]/30 bg-[hsl(var(--teal))]/[0.04] shadow-[0_0_10px_hsl(var(--teal)/0.08)]", accent: "bg-[hsl(var(--teal))]/15 text-[hsl(var(--teal))]", height: "min-h-[54px]" },
   2: { base: "border-[hsl(210_90%_56%)]/35 bg-gradient-to-r from-[hsl(210_90%_56%)]/[0.06] to-transparent shadow-[0_0_14px_hsl(210_90%_56%/0.12)]", accent: "bg-[hsl(210_90%_56%)]/15 text-[hsl(210_90%_56%)]", height: "min-h-[56px]" },
   3: { base: "border-[hsl(var(--purple))]/40 bg-[hsl(var(--purple))]/[0.06] shadow-[0_0_18px_hsl(var(--purple)/0.18)]", accent: "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))]", height: "min-h-[58px]" },
   4: { base: "border-gold/50 bg-gold/[0.06] shadow-[0_0_22px_hsl(var(--gold)/0.22)]", accent: "gradient-gold text-primary-foreground", height: "min-h-[62px]" },
-  5: { base: "apex-conic-border bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.10] to-gold/[0.08] shadow-[0_0_26px_hsl(18_95%_58%/0.28)]", accent: "bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold text-background", height: "min-h-[68px]" },
-  6: { base: "apex-conic-border bg-gradient-to-br from-[hsl(280_70%_55%)]/[0.12] via-gold/[0.08] to-[hsl(350_80%_55%)]/[0.12] shadow-[0_0_32px_hsl(280_70%_60%/0.35)]", accent: "bg-gradient-to-br from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background", height: "min-h-[72px]" },
+  5: { base: "border-[hsl(18_95%_58%)]/60 bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.10] to-gold/[0.08] shadow-[0_0_22px_hsl(18_95%_58%/0.25)]", accent: "bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold text-background", height: "min-h-[68px]" },
+  6: { base: "border-[hsl(280_70%_60%)]/55 bg-gradient-to-br from-[hsl(280_70%_55%)]/[0.12] via-gold/[0.08] to-[hsl(350_80%_55%)]/[0.12] shadow-[0_0_26px_hsl(280_70%_60%/0.28)]", accent: "bg-gradient-to-br from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background", height: "min-h-[72px]" },
 };
 
 const TierLadder = ({ currentTier, className }: TierLadderProps) => {
@@ -27,21 +31,15 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
 
   return (
     <div className={cn("rounded-2xl glass-card p-4 relative overflow-hidden", className)}>
-      {/* Header */}
+      {/* Header — calm, no rotating crown, no gradient text */}
       <div className="relative flex items-center justify-between mb-1">
         <div>
-          <p className="font-display font-black text-sm uppercase tracking-widest bg-gradient-to-r from-foreground via-gold to-foreground bg-clip-text text-transparent">
+          <p className="font-display font-black text-sm uppercase tracking-widest text-foreground">
             Your Ascension
           </p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">7 levels of dominance</p>
+          <p className="text-[10px] text-gold/80 mt-0.5 font-semibold tracking-wider">7 levels of dominance</p>
         </div>
-        <motion.div
-          animate={{ rotate: [0, 360] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-          className="text-gold"
-        >
-          <Crown size={16} strokeWidth={2.4} />
-        </motion.div>
+        <Crown size={16} strokeWidth={2.4} className="text-gold" />
       </div>
 
       {/* Gold divider */}
@@ -49,7 +47,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
 
       {/* Ladder with vertical progress track */}
       <div className="relative">
-        {/* vertical progress line — left rail */}
+        {/* vertical progress line — left rail (static) */}
         <div className="absolute left-[27px] top-3 bottom-3 w-[2px] pointer-events-none">
           <div className="absolute inset-0 bg-border/40 rounded-full" />
           <div
@@ -79,23 +77,11 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                   "group relative w-full flex items-center gap-3 rounded-xl border p-3 text-left active:scale-[0.99] transition-all overflow-hidden",
                   style.height,
                   style.base,
-                  isCurrent && "tier-shimmer-sweep ring-1 ring-gold/60",
+                  // Calm "current" treatment — static gold ring + glow, no shimmer
+                  isCurrent && "ring-1 ring-gold/70 shadow-[0_0_18px_hsl(var(--gold)/0.35)]",
                   isLocked && "opacity-95",
                 )}
               >
-                {/* ── Current tier embers (only Apex/Legend rows when current) ── */}
-                {isCurrent && cfg.rank >= 5 && <span className="apex-embers absolute inset-0 pointer-events-none" />}
-
-                {/* Pulsing "you are here" dot on the rail */}
-                {isCurrent && (
-                  <motion.span
-                    aria-hidden
-                    className="absolute -left-[3px] top-1/2 -translate-y-1/2 h-3 w-3 rounded-full bg-gold shadow-[0_0_12px_hsl(var(--gold)/0.9)]"
-                    animate={{ scale: [1, 1.35, 1], opacity: [1, 0.6, 1] }}
-                    transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                )}
-
                 {/* Tier icon block */}
                 <div
                   className={cn(
@@ -131,8 +117,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       {cfg.label}
                     </p>
                     {isCurrent && (
-                      <span className="text-[8px] uppercase tracking-[0.18em] font-black text-background bg-gradient-to-r from-gold to-gold-light px-1.5 py-[2px] rounded-sm shadow-[0_0_8px_hsl(var(--gold)/0.5)] flex items-center gap-1">
-                        <span className="h-1 w-1 rounded-full bg-background animate-pulse" />
+                      <span className="text-[8px] uppercase tracking-[0.18em] font-black text-background bg-gradient-to-r from-gold to-gold-light px-1.5 py-[2px] rounded-sm shadow-[0_0_8px_hsl(var(--gold)/0.5)]">
                         Current Tier
                       </span>
                     )}

@@ -201,8 +201,6 @@ const Leaderboard = () => {
 
   // Access is gated globally by AccessGate (€4.99/mo membership or 7-day trial).
   // Leaderboard is open to every member with active access.
-  const userTier = (profile?.status_tier || 'recruit') as any;
-  const tierRank = getTierConfig(userTier).rank;
 
   return (
     <div

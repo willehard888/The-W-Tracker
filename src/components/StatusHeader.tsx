@@ -182,7 +182,7 @@ const StatusHeader = () => {
               )}
             </div>
 
-            {/* Row 2: tier label + next */}
+            {/* Row 2: tier label + next-tier CTA */}
             <div className="flex items-center justify-between gap-2 mt-1.5">
               <div className="flex items-center gap-1.5 min-w-0">
                 <span
@@ -197,10 +197,40 @@ const StatusHeader = () => {
                   · {config.percentile}
                 </span>
               </div>
-              <span className="flex items-center gap-0.5 text-[9px] uppercase tracking-wider text-muted-foreground/70 font-bold leading-none whitespace-nowrap">
-                {next ? `→ ${next.label}` : "Apex"}
-                <ChevronRight size={9} />
-              </span>
+              {(() => {
+                // Apex users → Legend requirements (invite-only Founders Circle)
+                // Everyone else with a next tier → Apex paywall (skip the grind)
+                const target = tier === "apex" ? "/profile?tier=legend" : "/paywall";
+                const label = next ? next.label : "Legend";
+                const isLegendTarget = tier === "apex";
+                return (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(target);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigate(target);
+                      }
+                    }}
+                    className={cn(
+                      "inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black leading-none whitespace-nowrap px-2 py-1 rounded-full border transition-all active:scale-95 cursor-pointer",
+                      isLegendTarget
+                        ? "text-gold border-gold/55 bg-gradient-to-r from-[hsl(280_70%_55%)]/15 via-gold/12 to-[hsl(350_80%_55%)]/15 hover:border-gold shadow-[0_0_8px_hsl(var(--gold)/0.30)]"
+                        : "text-[hsl(18_95%_62%)] border-[hsl(18_95%_58%)]/50 bg-[hsl(18_95%_58%)]/10 hover:border-[hsl(18_95%_58%)] shadow-[0_0_6px_hsl(18_95%_58%/0.20)]",
+                    )}
+                    aria-label={isLegendTarget ? `View ${label} requirements` : "Skip the grind — Become Apex"}
+                  >
+                    → {label}
+                    <ChevronRight size={9} />
+                  </span>
+                );
+              })()}
             </div>
 
             {/* Row 3: progress bar */}

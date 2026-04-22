@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Lock, Check, ChevronRight, Crown, TrendingUp, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -27,10 +28,27 @@ const TIER_ROW_STYLE: Record<number, { base: string; accent: string; height: str
 
 const TierLadder = ({ currentTier, className }: TierLadderProps) => {
   const [openTier, setOpenTier] = useState<StatusTier | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   const currentRank = getTierConfig(currentTier).rank;
 
+  // Open dialog automatically when ?tier=<key> is present in URL
+  useEffect(() => {
+    const t = searchParams.get("tier");
+    if (t && t in TIER_CONFIG) {
+      setOpenTier(t as StatusTier);
+      // strip the param so reopening requires a fresh navigation
+      const next = new URLSearchParams(searchParams);
+      next.delete("tier");
+      setSearchParams(next, { replace: true });
+      // smooth-scroll into view so the user sees the ladder behind the dialog
+      setTimeout(() => {
+        document.getElementById("tier-ladder-anchor")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 60);
+    }
+  }, [searchParams, setSearchParams]);
+
   return (
-    <div className={cn("rounded-2xl glass-card p-4 relative overflow-hidden", className)}>
+    <div id="tier-ladder-anchor" className={cn("rounded-2xl glass-card p-4 relative overflow-hidden scroll-mt-20", className)}>
       {/* Ambient gold corner glows */}
       <div className="pointer-events-none absolute -top-16 -right-12 w-48 h-48 rounded-full bg-gold/15 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 -left-12 w-48 h-48 rounded-full bg-[hsl(280_70%_55%)]/10 blur-3xl" />

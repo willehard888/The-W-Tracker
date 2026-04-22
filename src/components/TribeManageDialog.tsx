@@ -148,34 +148,13 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
             />
           </div>
           <div>
-            <Label className="text-xs mb-1 block">Visibility</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setVisibility("public")}
-                className={`rounded-lg border p-2.5 text-left transition-all ${
-                  visibility === "public"
-                    ? "border-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%)]/10"
-                    : "border-border hover:bg-secondary/40"
-                }`}
-              >
-                <Globe size={14} className="text-[hsl(18_95%_58%)]" />
-                <p className="text-xs font-bold mt-1">Public</p>
-                <p className="text-[10px] text-muted-foreground">Anyone can join</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => setVisibility("private")}
-                className={`rounded-lg border p-2.5 text-left transition-all ${
-                  visibility === "private"
-                    ? "border-gold bg-gold/10"
-                    : "border-border hover:bg-secondary/40"
-                }`}
-              >
-                <Lock size={14} className="text-gold" />
-                <p className="text-xs font-bold mt-1">Private</p>
-                <p className="text-[10px] text-muted-foreground">Approval needed</p>
-              </button>
+            <Label className="text-xs mb-1 block">Privacy</Label>
+            <div className="rounded-lg border border-gold/40 bg-gold/8 p-2.5 flex items-center gap-2.5">
+              <Lock size={14} className="text-gold shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-gold">Private — invite only</p>
+                <p className="text-[10px] text-muted-foreground">All tribes require approval to join.</p>
+              </div>
             </div>
           </div>
           <Button onClick={handleSaveMeta} disabled={savingMeta} className="w-full" variant="gold">

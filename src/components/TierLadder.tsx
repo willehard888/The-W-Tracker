@@ -28,7 +28,24 @@ const TIER_ROW_STYLE: Record<number, { base: string; accent: string; height: str
 
 const TierLadder = ({ currentTier, className }: TierLadderProps) => {
   const [openTier, setOpenTier] = useState<StatusTier | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   const currentRank = getTierConfig(currentTier).rank;
+
+  // Open dialog automatically when ?tier=<key> is present in URL
+  useEffect(() => {
+    const t = searchParams.get("tier");
+    if (t && t in TIER_CONFIG) {
+      setOpenTier(t as StatusTier);
+      // strip the param so reopening requires a fresh navigation
+      const next = new URLSearchParams(searchParams);
+      next.delete("tier");
+      setSearchParams(next, { replace: true });
+      // smooth-scroll into view so the user sees the ladder behind the dialog
+      setTimeout(() => {
+        document.getElementById("tier-ladder-anchor")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 60);
+    }
+  }, [searchParams, setSearchParams]);
 
   return (
     <div className={cn("rounded-2xl glass-card p-4 relative overflow-hidden", className)}>

@@ -192,41 +192,68 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
       <svg width="0" height="0" className="absolute" aria-hidden>
         <defs>
           {/* Subtle warp for outer/mid */}
-          <filter id={turb} x="-20%" y="-20%" width="140%" height="140%">
+          <filter id={turb} x="-30%" y="-30%" width="160%" height="160%">
             <feTurbulence
               type="fractalNoise"
-              baseFrequency="0.022 0.045"
-              numOctaves="2"
+              baseFrequency="0.022 0.05"
+              numOctaves="3"
               seed="3"
             >
               <animate
                 attributeName="baseFrequency"
-                dur={`${3.2 * speedMul}s`}
-                values="0.018 0.04;0.028 0.055;0.02 0.042;0.018 0.04"
+                dur={`${3 * speedMul}s`}
+                values="0.018 0.04;0.03 0.06;0.022 0.048;0.034 0.07;0.018 0.04"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="seed"
+                dur={`${5 * speedMul}s`}
+                values="3;14;7;21;3"
                 repeatCount="indefinite"
               />
             </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" scale="3.5" />
+            <feDisplacementMap in="SourceGraphic" scale="4.5" />
           </filter>
           {/* Stronger warp for inner/core silhouette licking */}
-          <filter id={turbStrong} x="-20%" y="-20%" width="140%" height="140%">
+          <filter id={turbStrong} x="-30%" y="-30%" width="160%" height="160%">
             <feTurbulence
               type="fractalNoise"
-              baseFrequency="0.04 0.08"
-              numOctaves="2"
+              baseFrequency="0.045 0.09"
+              numOctaves="3"
               seed="7"
             >
               <animate
                 attributeName="baseFrequency"
-                dur={`${2.4 * speedMul}s`}
-                values="0.035 0.07;0.055 0.1;0.04 0.08;0.035 0.07"
+                dur={`${2.2 * speedMul}s`}
+                values="0.035 0.07;0.06 0.12;0.04 0.085;0.07 0.14;0.035 0.07"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="seed"
+                dur={`${4 * speedMul}s`}
+                values="7;19;31;5;7"
                 repeatCount="indefinite"
               />
             </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" scale="2.2" />
+            <feDisplacementMap in="SourceGraphic" scale="3" />
           </filter>
         </defs>
       </svg>
+
+      {/* Updraft cone — vertical hot air rising from base */}
+      {isWarm && (
+        <span
+          className="flame-updraft absolute left-1/2 bottom-0 rounded-full pointer-events-none"
+          style={{
+            width: size * 0.7,
+            height: size * 1.6,
+            background: `radial-gradient(ellipse at 50% 100%, ${palette.outer.replace(")", " / 0.18)")} 0%, transparent 70%)`,
+            filter: "blur(6px)",
+            transformOrigin: "center bottom",
+            animation: `flame-updraft ${2.2 * speedMul}s ease-out infinite`,
+          }}
+        />
+      )}
 
       {/* Heat distortion */}
       <span
@@ -241,6 +268,22 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
         }}
       />
 
+      {/* Base fuel pool — pulsing puddle of light at the very bottom */}
+      {isHot && (
+        <span
+          className="flame-base-glow absolute left-1/2 rounded-full pointer-events-none"
+          style={{
+            width: size * 0.85,
+            height: size * 0.18,
+            bottom: -2,
+            background: `radial-gradient(ellipse at center, ${palette.coal} 0%, ${palette.outer.replace(")", " / 0.4)")} 50%, transparent 80%)`,
+            filter: "blur(3px)",
+            transform: "translateX(-50%)",
+            animation: `flame-base-glow ${2 * speedMul}s ease-in-out infinite`,
+            mixBlendMode: "screen",
+          }}
+        />
+      )}
       {/* Outer haze */}
       <svg
         className="flame-outer absolute left-1/2 bottom-[-2px]"

@@ -1,6 +1,7 @@
-import { Flame, ChevronRight, Sparkles, Zap } from "lucide-react";
+import { ChevronRight, Sparkles, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getEffectiveStreak, getStreakDeadlineState } from "@/lib/streak";
+import RealisticFlame from "@/components/home/RealisticFlame";
 
 interface StreakDisplayProps {
   streak: number;
@@ -258,26 +259,26 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
 
         {/* Hero row — flame + number */}
         <div className="flex items-center gap-4 mb-5">
-          {/* Flame badge */}
+          {/* Flame badge — deep furnace chamber */}
           <div
-            className="relative flex h-[72px] w-[72px] items-center justify-center rounded-2xl shrink-0 overflow-hidden"
+            className="relative flex h-[72px] w-[72px] items-center justify-center rounded-2xl shrink-0 overflow-visible"
             style={{
               background: isLegendary
-                ? "linear-gradient(135deg, hsl(280 70% 50%), hsl(42 78% 54%), hsl(350 80% 55%))"
+                ? "radial-gradient(ellipse at 50% 110%, hsl(350 85% 35%) 0%, hsl(280 60% 18%) 45%, hsl(255 30% 8%) 100%)"
                 : isDiamond
-                ? "linear-gradient(135deg, hsl(200 80% 50%), hsl(42 78% 54%))"
+                ? "radial-gradient(ellipse at 50% 110%, hsl(42 78% 38%) 0%, hsl(200 50% 18%) 45%, hsl(220 30% 8%) 100%)"
                 : isBlazing
-                ? "linear-gradient(135deg, hsl(42 60% 40%), hsl(42 90% 65%))"
+                ? "radial-gradient(ellipse at 50% 110%, hsl(18 95% 38%) 0%, hsl(28 60% 18%) 50%, hsl(20 30% 6%) 100%)"
                 : isOnFire
-                ? "linear-gradient(135deg, hsl(18 80% 45%), hsl(28 95% 65%))"
+                ? "radial-gradient(ellipse at 50% 110%, hsl(14 90% 32%) 0%, hsl(18 50% 14%) 55%, hsl(12 30% 5%) 100%)"
                 : isWarm
-                ? `linear-gradient(135deg, ${accent.replace(")", " / 0.7)")}, ${accent})`
+                ? "radial-gradient(ellipse at 50% 110%, hsl(14 85% 28%) 0%, hsl(16 45% 12%) 60%, hsl(10 30% 5%) 100%)"
                 : isHot
-                ? `${accent.replace(")", " / 0.2)")}`
+                ? "radial-gradient(ellipse at 50% 110%, hsl(14 70% 22%) 0%, hsl(16 40% 10%) 65%, hsl(10 25% 5%) 100%)"
                 : "hsl(var(--secondary))",
               color: isHot ? "white" : "hsl(var(--muted-foreground))",
               boxShadow: isHot
-                ? `0 0 32px ${accent.replace(")", " / 0.55)")}, inset 0 1px 0 hsl(0 0% 100% / 0.2), inset 0 -8px 16px hsl(0 0% 0% / 0.25)`
+                ? `0 0 32px ${accent.replace(")", " / 0.55)")}, 0 0 64px ${accent.replace(")", " / 0.25)")}, inset 0 2px 0 hsl(0 0% 100% / 0.18), inset 0 -10px 20px hsl(0 0% 0% / 0.55), inset 0 0 24px hsl(0 0% 0% / 0.4)`
                 : undefined,
             }}
           >

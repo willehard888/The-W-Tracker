@@ -414,23 +414,6 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="mb-4 animate-reveal animate-reveal-delay-2">
-        <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} lastCheckinAt={lastCheckin?.checked_in_at} />
-      </div>
-
-      {/* Streak Pressure Warning */}
-      {profile.streak > 0 && canCheckin && (
-        <div className="animate-reveal animate-reveal-delay-2 mb-4">
-          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-center">
-            <p className="text-xs font-bold text-destructive">
-              ⚠️ Don't break your {profile.streak}-day streak. Check in now.
-            </p>
-            <p className="text-[10px] text-destructive/60 mt-0.5">Most fail before day {Math.ceil((profile.streak + 1) / 7) * 7}</p>
-          </div>
-        </div>
-      )}
-
       {/* Daily Quests Preview */}
       {canCheckin && (
         <div className="animate-reveal animate-reveal-delay-3 mb-4">
@@ -446,25 +429,6 @@ const Index = () => {
           </div>
         </div>
       )}
-
-      {/* Check-in CTA */}
-      <div className="animate-reveal animate-reveal-delay-3 mb-4">
-        <Button
-          variant="gold"
-          size="xl"
-          className={cn("w-full", canCheckin && "breathing-glow")}
-          onClick={() => navigate("/checkin")}
-          disabled={!canCheckin}
-        >
-          <Flame size={20} />
-          {canCheckin ? "Log Today's Execution" : "Already Logged Today"}
-        </Button>
-        {!canCheckin && (
-          <p className="text-center text-xs text-muted-foreground mt-2">
-            Next check-in in {getTimeUntilCheckin()}
-          </p>
-        )}
-      </div>
 
       {/* Invite CTA — referral money machine nudge */}
       <div className="animate-reveal animate-reveal-delay-4 mb-4">

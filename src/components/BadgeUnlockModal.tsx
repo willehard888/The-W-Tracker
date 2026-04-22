@@ -49,6 +49,8 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
   useEffect(() => {
     if (!badge) return;
     setPhase("enter");
+    // Bend every flame on screen as the badge lands.
+    import("@/lib/wind").then(({ triggerGust }) => triggerGust(0.85));
     const t1 = setTimeout(() => setPhase("burst"), 300);
     const t2 = setTimeout(() => setPhase("reveal"), 800);
     const t3 = setTimeout(() => setPhase("details"), 1500);

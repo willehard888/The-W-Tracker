@@ -20,6 +20,7 @@ import { syncStreakWarningNotification } from "@/lib/streak-notifications";
 import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
 import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
+import { triggerGust } from "@/lib/wind";
 import { ELITE_XP_MULTIPLIER } from "@/lib/xp-constants";
 import CheckinTierHeader from "@/components/CheckinTierHeader";
 import CheckinTierSummary from "@/components/CheckinTierSummary";
@@ -371,6 +372,7 @@ const DailyCheckin = () => {
       queryClient.invalidateQueries({ queryKey: ["user-badges"] });
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
       hapticNotification("success");
+      triggerGust(0.95);
       setSubmitted(true);
     } catch (err) {
       console.error(err);

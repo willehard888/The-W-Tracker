@@ -432,6 +432,124 @@
     box-shadow: 0 0 32px hsl(var(--gold) / 0.35), 0 0 80px hsl(var(--gold) / 0.1), inset 0 0 20px hsl(var(--gold) / 0.05);
   }
 
+  /* === Next-gen badge surfaces === */
+  .badge-holo-surface {
+    background:
+      radial-gradient(120% 90% at 30% 20%, hsl(0 0% 100% / 0.08) 0%, transparent 55%),
+      linear-gradient(135deg, hsl(255 14% 9%) 0%, hsl(260 14% 6%) 100%);
+  }
+
+  .badge-holo-surface-rare {
+    background:
+      radial-gradient(120% 90% at 30% 20%, hsl(var(--badge-rare) / 0.18) 0%, transparent 55%),
+      linear-gradient(135deg, hsl(210 25% 9%) 0%, hsl(255 14% 6%) 100%);
+  }
+
+  .badge-holo-surface-epic {
+    background:
+      radial-gradient(120% 90% at 30% 20%, hsl(var(--badge-epic) / 0.22) 0%, transparent 55%),
+      linear-gradient(135deg, hsl(275 30% 10%) 0%, hsl(255 14% 6%) 100%);
+  }
+
+  .badge-holo-surface-legendary {
+    background:
+      radial-gradient(120% 90% at 30% 20%, hsl(var(--gold) / 0.25) 0%, transparent 55%),
+      linear-gradient(135deg, hsl(42 35% 10%) 0%, hsl(260 14% 6%) 100%);
+  }
+
+  /* Conic rim that signals tier on legendary cards */
+  .badge-conic-rim-legendary {
+    position: relative;
+    isolation: isolate;
+  }
+  .badge-conic-rim-legendary::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+      from 0deg,
+      hsl(280 95% 70%),
+      hsl(42 100% 65%),
+      hsl(350 95% 65%),
+      hsl(280 95% 70%)
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    animation: apex-conic-spin 6s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.85;
+  }
+
+  .badge-conic-rim-epic::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+      from 0deg,
+      hsl(var(--badge-epic) / 0.9),
+      hsl(280 80% 70% / 0.5),
+      hsl(var(--badge-epic) / 0.9)
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    animation: apex-conic-spin 10s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.7;
+  }
+  .badge-conic-rim-epic {
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* Holographic sweep for icon discs */
+  .badge-holo-sweep {
+    position: relative;
+    overflow: hidden;
+  }
+  .badge-holo-sweep::after {
+    content: "";
+    position: absolute;
+    inset: -50%;
+    background: linear-gradient(
+      115deg,
+      transparent 35%,
+      hsl(0 0% 100% / 0.18) 50%,
+      transparent 65%
+    );
+    transform: translateX(-100%);
+    animation: badge-sweep 3.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes badge-sweep {
+    0% { transform: translateX(-100%); }
+    55% { transform: translateX(100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  @keyframes badge-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+  }
+
+  .animate-badge-float {
+    animation: badge-float 3.5s ease-in-out infinite;
+  }
+
+  /* Locked state — soft, premium, not flat grayscale */
+  .badge-locked {
+    filter: brightness(0.55) saturate(0.35);
+    opacity: 0.85;
+  }
+
   .animate-reveal {
     animation: reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }

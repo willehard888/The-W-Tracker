@@ -613,6 +613,11 @@ const Profile = () => {
         <TierLadder currentTier={profile.status_tier || "recruit"} isApexSubscriber={isApexSubscriber} />
       </div>
 
+      {/* Status preview — see all tiers, toggle animations */}
+      <div className="mb-6 animate-reveal animate-reveal-delay-3">
+        <StatusPreview currentTier={profile.status_tier || "recruit"} />
+      </div>
+
       <div className="animate-reveal animate-reveal-delay-3">
         <BadgeVault
           allBadges={allBadges || []}

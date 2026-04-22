@@ -35,20 +35,11 @@ const BottomNav = () => {
 
   return (
     <nav
-      className="shrink-0 surface-glass relative border-x-0 border-b-0 rounded-none"
+      className="shrink-0 surface-glass hairline-top relative border-x-0 border-b-0 rounded-none"
       style={{
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
       }}
     >
-      {/* Hairline top divider */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-px pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent 0%, hsl(var(--border) / 0.55) 35%, hsl(var(--border) / 0.55) 65%, transparent 100%)",
-        }}
-      />
       <div className="max-w-md mx-auto flex items-center justify-around px-1 py-2 relative">
         {tabs.map(({ icon: Icon, label, path, color }) => {
           const active = location.pathname === path;

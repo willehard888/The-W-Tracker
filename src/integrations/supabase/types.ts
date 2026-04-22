@@ -1416,6 +1416,10 @@ export type Database = {
         Args: { p_invitee_id: string; p_tribe_id: string }
         Returns: string
       }
+      is_tribe_admin: {
+        Args: { _tribe_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_tribe_member: {
         Args: { _tribe_id: string; _user_id: string }
         Returns: boolean
@@ -1426,6 +1430,10 @@ export type Database = {
       }
       join_tribe: { Args: { p_tribe_id: string }; Returns: string }
       leave_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
+      remove_tribe_member: {
+        Args: { p_tribe_id: string; p_user_id: string }
+        Returns: undefined
+      }
       resolve_tribe_battle: {
         Args: { p_battle_id: string }
         Returns: undefined
@@ -1462,6 +1470,10 @@ export type Database = {
         Args: { elite: boolean; target_user_id: string }
         Returns: undefined
       }
+      set_tribe_member_role: {
+        Args: { p_role: string; p_tribe_id: string; p_user_id: string }
+        Returns: undefined
+      }
       submit_battle_proof: {
         Args: { battle_id: string; proof_url: string }
         Returns: undefined
@@ -1479,6 +1491,17 @@ export type Database = {
       }
       update_status_tier: {
         Args: { target_user_id: string }
+        Returns: undefined
+      }
+      update_tribe: {
+        Args: {
+          p_clear_cover?: boolean
+          p_cover_url?: string
+          p_description?: string
+          p_name?: string
+          p_tribe_id: string
+          p_visibility?: string
+        }
         Returns: undefined
       }
     }

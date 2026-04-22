@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import MyTribeBattles from "@/components/MyTribeBattles";
 
 const BATTLE_TYPES = [
   { id: "xp", label: "Total XP", emoji: "⚡", icon: Zap, description: "Most XP earned wins", color: "text-gold" },
@@ -462,6 +463,11 @@ const Battles = () => {
           </div>
         </div>
       )}
+
+      {/* Tribe Battles overview */}
+      <div className="animate-reveal animate-reveal-delay-1 mb-6">
+        <MyTribeBattles />
+      </div>
 
       {/* Incoming Challenges */}
       {pendingBattles.length > 0 && (

@@ -12,6 +12,7 @@ import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { useEffect, useMemo, useState } from "react";
 import StatusBadge from "@/components/StatusBadge";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
+import TopTribesWidget from "@/components/TopTribesWidget";
 import { useMyRank } from "@/hooks/use-my-rank";
 
 type LeaderRow = {
@@ -419,6 +420,10 @@ const Leaderboard = () => {
             );
           })}
         </div>
+      </div>
+
+      <div className="mt-6 animate-reveal animate-reveal-delay-3">
+        <TopTribesWidget />
       </div>
 
       <div className="mt-6 animate-reveal animate-reveal-delay-3">

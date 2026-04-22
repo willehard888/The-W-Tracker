@@ -45,7 +45,7 @@ const Paywall = () => {
   const isNative = isNativePlatform();
 
   const elitePrice = isNative ? (monthlyPriceLabel ?? "4,99 €") : "4,99 €";
-  const apexPrice = isNative ? (apexPriceLabel ?? "15,99 €") : "15,99 €";
+  const apexPrice = isNative ? (apexPriceLabel ?? "17,99 €") : "17,99 €";
 
   useEffect(() => {
     if (isElite && !wasMemberRef.current) {

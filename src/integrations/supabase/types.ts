@@ -674,11 +674,13 @@ export type Database = {
       }
       profiles: {
         Row: {
+          apex_subscription_started_at: string | null
           avatar_url: string | null
           created_at: string
           display_name: string | null
           featured_badge_id: string | null
           id: string
+          is_apex_subscriber: boolean
           is_elite: boolean
           last_rank_snapshot: Json | null
           level: number
@@ -700,11 +702,13 @@ export type Database = {
           xp: number
         }
         Insert: {
+          apex_subscription_started_at?: string | null
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
           featured_badge_id?: string | null
           id?: string
+          is_apex_subscriber?: boolean
           is_elite?: boolean
           last_rank_snapshot?: Json | null
           level?: number
@@ -726,11 +730,13 @@ export type Database = {
           xp?: number
         }
         Update: {
+          apex_subscription_started_at?: string | null
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
           featured_badge_id?: string | null
           id?: string
+          is_apex_subscriber?: boolean
           is_elite?: boolean
           last_rank_snapshot?: Json | null
           level?: number
@@ -857,6 +863,150 @@ export type Database = {
           },
         ]
       }
+      tribe_members: {
+        Row: {
+          id: string
+          joined_at: string
+          role: string
+          status: string
+          tribe_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          role?: string
+          status?: string
+          tribe_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          role?: string
+          status?: string
+          tribe_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tribe_members_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "tribes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tribe_post_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tribe_post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "tribe_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tribe_posts: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          likes_count: number
+          tribe_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes_count?: number
+          tribe_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes_count?: number
+          tribe_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tribe_posts_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "tribes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tribes: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          member_count: number
+          name: string
+          owner_id: string
+          slug: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          member_count?: number
+          name: string
+          owner_id: string
+          slug: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          member_count?: number
+          name?: string
+          owner_id?: string
+          slug?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
@@ -951,12 +1101,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_tribe_member: {
+        Args: { p_accept: boolean; p_tribe_id: string; p_user_id: string }
+        Returns: undefined
+      }
       award_badge_if_earned: {
         Args: { p_badge_id: string; p_user_id: string }
         Returns: boolean
       }
       calculate_rank_score: { Args: { p_user_id: string }; Returns: number }
+      can_create_tribe: { Args: { _user_id: string }; Returns: boolean }
       claim_referral: { Args: { p_referrer_code: string }; Returns: Json }
+      create_tribe: {
+        Args: {
+          p_cover_url?: string
+          p_description?: string
+          p_name: string
+          p_visibility?: string
+        }
+        Returns: string
+      }
+      delete_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
       ensure_active_leaderboard_season: {
         Args: never
         Returns: {
@@ -994,6 +1159,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_tribe_member: {
+        Args: { _tribe_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_tribe_owner: {
+        Args: { _tribe_id: string; _user_id: string }
+        Returns: boolean
+      }
+      join_tribe: { Args: { p_tribe_id: string }; Returns: string }
+      leave_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
       respond_to_battle: {
         Args: { accept: boolean; battle_id: string }
         Returns: undefined

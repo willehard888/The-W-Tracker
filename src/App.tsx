@@ -49,6 +49,7 @@ const Tribes = lazy(() => import("./pages/Tribes"));
 const TribeNew = lazy(() => import("./pages/TribeNew"));
 const TribeDetail = lazy(() => import("./pages/TribeDetail"));
 const TribeBattles = lazy(() => import("./pages/TribeBattles"));
+const TribeLeaderboard = lazy(() => import("./pages/TribeLeaderboard"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -116,6 +117,7 @@ const AppRoutes = () => {
           <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
           <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
           <Route path="/tribes" element={<ProtectedRoute><Tribes /></ProtectedRoute>} />
+          <Route path="/tribes/leaderboard" element={<ProtectedRoute><TribeLeaderboard /></ProtectedRoute>} />
           <Route path="/tribes/new" element={<ProtectedRoute><TribeNew /></ProtectedRoute>} />
           <Route path="/tribes/:id" element={<ProtectedRoute><TribeDetail /></ProtectedRoute>} />
           <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />

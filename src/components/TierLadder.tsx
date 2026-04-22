@@ -8,6 +8,7 @@ import { TIER_CONFIG, TIER_ORDER, getTierConfig, type StatusTier } from "@/lib/s
 
 interface TierLadderProps {
   currentTier: string;
+  isApexSubscriber?: boolean;
   className?: string;
 }
 

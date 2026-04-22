@@ -207,17 +207,18 @@ export const getPreviousTier = (current: string): TierConfig | null => {
 export const getTierUsernameClass = (tier: string): string => {
   switch (tier as StatusTier) {
     case "legend":
-      return "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(280_70%_75%)] via-gold to-[hsl(350_80%_70%)] drop-shadow-[0_2px_18px_hsl(280_70%_60%/0.45)]";
+      // Brighter, more saturated rainbow with stronger glow + animated shimmer — unmistakably Legend
+      return "text-transparent bg-clip-text bg-[linear-gradient(100deg,hsl(280_95%_78%)_0%,hsl(320_90%_72%)_25%,hsl(42_100%_65%)_50%,hsl(350_95%_70%)_75%,hsl(280_95%_78%)_100%)] [background-size:200%_100%] [animation:shimmer-slide_5s_linear_infinite] drop-shadow-[0_2px_24px_hsl(280_85%_65%/0.65)]";
     case "apex":
-      return "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(18_95%_62%)] via-gold to-[hsl(18_95%_62%)] drop-shadow-[0_2px_16px_hsl(18_95%_58%/0.45)]";
+      return "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(18_100%_65%)] via-[hsl(42_100%_65%)] to-[hsl(18_100%_65%)] drop-shadow-[0_2px_18px_hsl(18_95%_58%/0.55)]";
     case "elite":
-      return "text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark drop-shadow-[0_2px_14px_hsl(var(--gold)/0.4)]";
+      return "text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark drop-shadow-[0_2px_16px_hsl(var(--gold)/0.5)]";
     case "high_performer":
-      return "text-[hsl(var(--purple))] drop-shadow-[0_2px_12px_hsl(var(--purple)/0.4)]";
+      return "text-[hsl(280_85%_72%)] drop-shadow-[0_2px_14px_hsl(var(--purple)/0.5)]";
     case "performer":
-      return "text-[hsl(210_90%_62%)] drop-shadow-[0_2px_10px_hsl(210_90%_56%/0.35)]";
+      return "text-[hsl(210_95%_68%)] drop-shadow-[0_2px_12px_hsl(210_90%_56%/0.4)]";
     case "operator":
-      return "text-[hsl(var(--teal))] drop-shadow-[0_2px_10px_hsl(var(--teal)/0.35)]";
+      return "text-[hsl(170_75%_55%)] drop-shadow-[0_2px_12px_hsl(var(--teal)/0.4)]";
     default:
       return "text-foreground/95";
   }

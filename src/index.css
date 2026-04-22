@@ -967,6 +967,82 @@
     to { transform: rotate(360deg); }
   }
 
+  /* ──────────── TIER LADDER EFFECTS ──────────── */
+
+  /* Shimmer sweep across the current tier row */
+  .tier-shimmer-sweep {
+    position: relative;
+  }
+  .tier-shimmer-sweep::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      110deg,
+      transparent 0%,
+      transparent 35%,
+      hsl(var(--gold) / 0.18) 48%,
+      hsl(var(--gold-light) / 0.32) 50%,
+      hsl(var(--gold) / 0.18) 52%,
+      transparent 65%,
+      transparent 100%
+    );
+    background-size: 250% 100%;
+    background-repeat: no-repeat;
+    background-position: -50% 0;
+    animation: tier-sweep 4.2s ease-in-out infinite;
+    pointer-events: none;
+    border-radius: inherit;
+    mix-blend-mode: screen;
+  }
+  @keyframes tier-sweep {
+    0%, 25% { background-position: -60% 0; }
+    100%    { background-position: 160% 0; }
+  }
+
+  /* Premium credit-card style shimmer for Founding Apex badge */
+  .founding-premium-shimmer {
+    background:
+      linear-gradient(
+        110deg,
+        hsl(42 78% 54%) 0%,
+        hsl(42 90% 70%) 18%,
+        hsl(42 78% 54%) 36%,
+        hsl(18 95% 58%) 60%,
+        hsl(42 78% 54%) 100%
+      );
+    background-size: 220% 100%;
+    background-position: 0% 50%;
+    animation: founding-shine 3.4s ease-in-out infinite;
+    overflow: hidden;
+  }
+  .founding-premium-shimmer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 0%,
+      transparent 40%,
+      hsl(0 0% 100% / 0.55) 50%,
+      transparent 60%,
+      transparent 100%
+    );
+    background-size: 250% 100%;
+    background-position: -50% 0;
+    animation: founding-stripe 3.4s ease-in-out infinite;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  @keyframes founding-shine {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+  @keyframes founding-stripe {
+    0%, 30%  { background-position: -60% 0; }
+    100%     { background-position: 160% 0; }
+  }
+
 }
 
 /* Reduced motion — respect user prefs */
@@ -985,7 +1061,10 @@
   .apex-shimmer-sweep::after,
   .apex-embers::before,
   .apex-embers::after,
-  .apex-conic-border::before {
+  .apex-conic-border::before,
+  .tier-shimmer-sweep::before,
+  .founding-premium-shimmer,
+  .founding-premium-shimmer::before {
     animation: none !important;
   }
 }

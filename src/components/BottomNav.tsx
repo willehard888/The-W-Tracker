@@ -58,7 +58,7 @@ const BottomNav = () => {
               key={path}
               onClick={() => { hapticImpact("light"); navigate(path); }}
               className={cn(
-                "relative flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl transition-transform duration-[220ms] [transition-timing-function:var(--ease-spring)] active:scale-[0.96]",
+                "relative flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl transition-transform duration-200 [transition-timing-function:var(--ease-spring)] active:scale-[0.96]",
                 active
                   ? colors.active
                   : "text-muted-foreground/60 hover:text-muted-foreground"

@@ -31,7 +31,7 @@ const BottomNav = () => {
 
   if (["/landing", "/auth", "/onboarding"].includes(location.pathname) || location.pathname.startsWith("/chat/")) return null;
 
-  const tabs = baseTabs.filter((t) => !("eliteOnly" in t && t.eliteOnly) || isElite);
+  const tabs = baseTabs;
 
   return (
     <nav

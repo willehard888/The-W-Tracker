@@ -980,7 +980,12 @@
   .gentle-float,
   .soft-glow-pulse,
   .edge-sheen::after,
-  .apex-aura-large {
+  .apex-aura-large,
+  .apex-spotlight::before,
+  .apex-shimmer-sweep::after,
+  .apex-embers::before,
+  .apex-embers::after,
+  .apex-conic-border::before {
     animation: none !important;
   }
 }

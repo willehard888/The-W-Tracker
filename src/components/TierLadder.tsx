@@ -48,7 +48,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
   }, [searchParams, setSearchParams]);
 
   return (
-    <div className={cn("rounded-2xl glass-card p-4 relative overflow-hidden", className)}>
+    <div id="tier-ladder-anchor" className={cn("rounded-2xl glass-card p-4 relative overflow-hidden scroll-mt-20", className)}>
       {/* Ambient gold corner glows */}
       <div className="pointer-events-none absolute -top-16 -right-12 w-48 h-48 rounded-full bg-gold/15 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 -left-12 w-48 h-48 rounded-full bg-[hsl(280_70%_55%)]/10 blur-3xl" />

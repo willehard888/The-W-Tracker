@@ -1,4 +1,4 @@
-import { Home, Target, Trophy, User, Swords, Flame, MessageCircle, Sparkles, Users } from "lucide-react";
+import { Home, Target, Trophy, User, Swords, Flame, MessageCircle, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";

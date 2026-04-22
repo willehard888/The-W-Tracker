@@ -199,23 +199,10 @@ const Leaderboard = () => {
 
   const countdownText = useMemo(() => formatCountdown(activeSeason?.ends_at), [activeSeason]);
 
-  // Gate: require Performer tier (rank >= 2) OR Elite subscription
+  // Access is gated globally by AccessGate (€4.99/mo membership or 7-day trial).
+  // Leaderboard is open to every member with active access.
   const userTier = (profile?.status_tier || 'recruit') as any;
   const tierRank = getTierConfig(userTier).rank;
-  const hasAccess = isElite || tierRank >= 2; // performer+
-
-  if (!hasAccess) {
-    return (
-      <FeatureGateScreen
-        requiredTier="performer"
-        currentTier={userTier}
-        featureName="Leaderboard"
-        description="Reach Performer status by checking in consistently to see global rankings and compete for Season Champion."
-        icon={Trophy}
-        requiresElite={false}
-      />
-    );
-  }
 
   return (
     <div

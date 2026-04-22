@@ -1,6 +1,7 @@
 
 import { Trophy, Lock, Crown, TrendingUp, Clock3, Medal } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
+import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";

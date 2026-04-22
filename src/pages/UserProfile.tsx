@@ -205,6 +205,8 @@ const UserProfile = () => {
   const isApex = profile.status_tier === 'apex';
   const isElite = profile.status_tier === 'elite' || profile.is_elite;
   const isHigh = profile.status_tier === 'high_performer';
+  const isApexSubscriber = Boolean((profile as any).is_apex_subscriber);
+  const isLegendPinned = Boolean((profile as any).legend_pinned);
 
   // Cinematic tier-based hero gradient
   const heroBg = isLegend

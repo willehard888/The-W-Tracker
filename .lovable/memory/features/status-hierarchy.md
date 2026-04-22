@@ -38,6 +38,18 @@ Top 0.1% tier remains labeled **"Legend"** (shortLabel "LGD", emoji 🔱). Requi
 - Apex: flame-orange + gold gradient (Zap icon, double-ring aura, apex-aura-large CSS class, glow-pulse 1.8s)
 - Legend: conic gradient (purple/gold/rose), Sparkles icon, animate-spin-slow ring
 
+## TierLadder progressive UI (`src/components/TierLadder.tsx`)
+Header reads "Your Ascension · 7 levels of dominance" with rotating Crown icon and gold divider. Each tier row escalates visually with rank: Recruit flat → Operator/Performer/HP get progressively stronger borders+glows → Elite gold ring → Apex/Legend get conic-spinning border (`apex-conic-border`) and increasing row height (52px → 72px). Current tier row uses `tier-shimmer-sweep` (gold light pulse every ~4s), a "Current Tier" gold ribbon and a pulsing dot on the left rail. Locked tiers show silhouette icons with a `+N` "TrendingUp" hint instead of a flat lock. A vertical gold gradient rail on the left fills proportionally to current rank/6 (metro-map style).
+
+## Founding Apex commercial positioning (`src/components/ApexBadge.tsx`)
+Founding Apex (paid €15.99/mo subscriber) is intentionally larger and flashier than Earned Apex to drive conversions:
+- Crown+Zap stacked icon (purchased + instant)
+- `.founding-premium-shimmer` CSS — credit-card style gold→amber→flame conic with sweeping white stripe every ~3.4s
+- Sparkle accent that pulses
+- Tooltip: "Founding Apex — €15.99/mo · Day-One Member · Tier locked at Apex"
+- On Profile.tsx, subscriber additionally gets a "PREMIUM · DAY-ONE" ribbon above the username
+Earned Apex (🔥 Flame) stays restrained — the visual gap is the funnel.
+
 ## Feature unlocks
 - `elite`/`apex`/`legend` status tier → can post in Elite Feed (RLS check)
 - `apex`/`legend` status tier OR `is_apex_subscriber` → can create Tribes

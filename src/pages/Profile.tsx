@@ -334,6 +334,16 @@ const Profile = () => {
             )}
           </div>
 
+          {/* PREMIUM ribbon — only for Founding Apex subscribers */}
+          {isApexSubscriber && (
+            <div className="mt-4 mb-1 flex justify-center">
+              <span className="founding-premium-shimmer relative inline-flex items-center gap-1 px-2.5 py-[3px] rounded-sm text-[9px] font-black uppercase tracking-[0.22em] text-background border border-gold/70 shadow-[0_2px_10px_hsl(var(--gold)/0.45)]">
+                <Crown size={10} strokeWidth={3} className="relative z-10" />
+                <span className="relative z-10">Premium · Day-One</span>
+              </span>
+            </div>
+          )}
+
           {/* Username — bold, light weight pop */}
           <h1 className="font-display text-[34px] leading-none font-black tracking-tight text-foreground/95">
             @{profile.username}

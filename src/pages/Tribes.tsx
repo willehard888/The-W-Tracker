@@ -100,10 +100,11 @@ const Tribes = () => {
     let list: Tribe[] = [];
 
     if (tab === "browse") {
+      // All tribes are private. We list every tribe so people can discover
+      // and *request* to join — gating happens via approval, not visibility.
       const { data } = await supabase
         .from("tribes" as any)
         .select("*")
-        .eq("visibility", "public")
         .order("member_count", { ascending: false })
         .limit(50);
       list = (data as any) ?? [];

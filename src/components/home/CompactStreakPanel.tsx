@@ -1,7 +1,8 @@
-import { Flame, Zap, Sparkles } from "lucide-react";
+import { Zap, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getEffectiveStreak, getStreakDeadlineState } from "@/lib/streak";
+import RealisticFlame from "./RealisticFlame";
 
 interface CompactStreakPanelProps {
   streak: number;
@@ -398,17 +399,11 @@ const CompactStreakPanel = ({
             />
           )}
 
-          <Flame
-            size={26}
-            strokeWidth={2.5}
+          <RealisticFlame
+            tier={tier.index}
+            accent={accent}
+            size={42}
             className="relative z-10"
-            style={{
-              animation: isHot ? `streak-fire ${flameDuration} ease-in-out infinite` : undefined,
-              transformOrigin: "center bottom",
-              filter: isHot
-                ? `drop-shadow(0 0 6px ${accent.replace(")", " / 0.7)")})`
-                : undefined,
-            }}
           />
 
           {/* Ground glow */}

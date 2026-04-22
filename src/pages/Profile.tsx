@@ -337,11 +337,9 @@ const Profile = () => {
           {/* PREMIUM ribbon — only for Founding Apex subscribers */}
           {isApexSubscriber && (
             <div className="mt-4 mb-1 flex justify-center">
-              <span className="founding-premium-shimmer relative inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm text-[10px] font-black uppercase tracking-[0.22em] border border-gold/80 shadow-[0_2px_12px_hsl(var(--gold)/0.5)]">
-                <Crown size={11} strokeWidth={3} className="relative z-20 text-[hsl(260_18%_4%)]" />
-                <span className="relative z-20 text-[hsl(260_18%_4%)] drop-shadow-[0_1px_0_hsl(var(--gold-light)/0.6)]">
-                  Premium · Day-One
-                </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm text-[10px] font-black uppercase tracking-[0.22em] bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold shadow-[0_0_14px_hsl(var(--gold)/0.55)]">
+                <Crown size={11} strokeWidth={3} />
+                Premium · Day-One
               </span>
             </div>
           )}

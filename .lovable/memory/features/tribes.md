@@ -1,6 +1,6 @@
 ---
 name: Tribes (Communities)
-description: Apex-tier-gated communities. Owner needs is_apex_subscriber=true OR earned status_tier in (apex, legend). Max 3 tribes per owner. Names case-insensitive unique. Invites supported. Tribe Leaderboard + private search + join requests. Owner can edit tribe + promote up to 2 admins.
+description: Apex-tier-gated private communities, max 10 members per tribe (enforced in join_tribe / approve_tribe_member / respond_to_tribe_invite). Owner needs is_apex_subscriber=true OR earned status_tier in (apex, legend). Max 3 tribes per owner. Names case-insensitive unique. Collective streak flame on hero + battles ("Bigger flame" badge in TribeBattleCard).
 type: feature
 ---
 # Tribes — Apex-only Communities

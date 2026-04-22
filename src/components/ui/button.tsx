@@ -23,37 +23,43 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Primary — REAL cast 24k gold. Multi-layer: vertical metallic
-        // gradient + horizontal cross-grain hue shift + double specular
-        // (top crown + bottom kiss-light) + engraved bezel + continuous
-        // shimmer drift + amplified shimmer sweep on hover.
+        // Primary — PHYSICAL brushed gold bar. Multi-layer recipe inspired
+        // by how real polished gold reflects light:
+        //   1. Anisotropic horizontal gloss band (the "rolled bar" sheen)
+        //   2. Vertical 7-stop gradient: hot top rim → bright belly → bronze foot
+        //   3. SVG noise micro-texture blended in for tactile grain
+        //   4. Hot top rim hairline + dark bottom rim hairline (engraved bezel)
+        //   5. Cross-grain hue shimmer (faceted feel)
+        //   6. Animated diagonal glint on hover (anisotropic specular sweep)
+        //   7. Warm spill drop-shadow that tints the surface beneath
         default: [
-          "text-[hsl(34_70%_12%)] font-bold tracking-[-0.005em]",
-          "[text-shadow:0_1px_0_hsl(48_100%_92%/0.55),0_-1px_0_hsl(28_60%_18%/0.25)]",
+          "text-[hsl(34_75%_10%)] font-extrabold tracking-[-0.005em]",
+          "[text-shadow:0_1px_0_hsl(48_100%_94%/0.7),0_-0.5px_0_hsl(28_70%_16%/0.35)]",
           "overflow-hidden isolate",
-          // Base: vertical 6-stop polished gold (pale crown → bright belly → deep bronze foot)
-          "[background:linear-gradient(178deg,hsl(48_100%_90%)_0%,hsl(46_100%_78%)_12%,hsl(44_98%_64%)_30%,hsl(40_92%_52%)_50%,hsl(36_85%_40%)_72%,hsl(28_72%_24%)_100%)]",
-          // Engraved bezel + 4-layer depth: pale top hairline, deep bottom hairline,
-          // warm interior glaze, ambient halo, hard contact shadow, lifted drop.
-          "shadow-[inset_0_0_0_0.5px_hsl(28_70%_14%/0.55),inset_0_1px_0_hsl(48_100%_96%/0.95),inset_0_2.5px_0_hsl(48_100%_88%/0.45),inset_0_-1.5px_0_hsl(24_80%_14%/0.85),inset_0_-12px_22px_-10px_hsl(22_88%_22%/0.75),0_1px_0_hsl(28_60%_12%/0.55),0_2px_3px_hsl(28_60%_12%/0.4),0_8px_18px_-3px_hsl(38_85%_44%/0.5),0_18px_38px_-12px_hsl(38_85%_42%/0.55)]",
-          // ::before — TOP CROWN highlight: a tight kiss of light along the upper edge
-          // plus a horizontal cross-grain hue shift for the "many micro-facets" feel.
+          // BASE: combined anisotropic horizontal gloss + vertical metallic gradient + grain texture.
+          // The horizontal gloss is the key "real metal" cue — a tight bright band ~38-50% from top.
+          "[background:linear-gradient(180deg,hsl(48_100%_70%/0)_0%,hsl(48_100%_94%/0.55)_36%,hsl(48_100%_99%/0.85)_44%,hsl(48_100%_94%/0.55)_52%,hsl(48_100%_70%/0)_64%),linear-gradient(178deg,hsl(50_100%_88%)_0%,hsl(48_100%_76%)_10%,hsl(46_98%_64%)_28%,hsl(42_94%_54%)_46%,hsl(38_88%_44%)_64%,hsl(32_78%_32%)_84%,hsl(24_72%_22%)_100%),url(\"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20120%2040'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.9%200.06'%20numOctaves%3D'2'%20stitchTiles%3D'stitch'%2F%3E%3CfeColorMatrix%20values%3D'0%200%200%200%200.95%20%200%200%200%200%200.78%20%200%200%200%200%200.36%20%200%200%200%200.55%200'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E\")]",
+          "[background-blend-mode:screen,normal,overlay]",
+          "[background-size:100%_100%,100%_100%,180px_60px]",
+          // Engraved bezel + 4-layer depth
+          "shadow-[inset_0_0_0_0.5px_hsl(26_75%_12%/0.65),inset_0_1px_0_hsl(50_100%_98%/1),inset_0_2.5px_0_hsl(48_100%_88%/0.55),inset_0_-1.5px_0_hsl(22_85%_12%/0.9),inset_0_-12px_22px_-10px_hsl(20_90%_18%/0.8),0_1px_0_hsl(26_60%_10%/0.6),0_2px_3px_hsl(26_60%_10%/0.45),0_8px_18px_-3px_hsl(38_88%_44%/0.55),0_18px_38px_-12px_hsl(38_85%_42%/0.6)]",
+          // ::before — TOP CROWN highlight + cross-grain hue facets
           "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
-          "before:[background:radial-gradient(120%_85%_at_50%_-30%,hsl(48_100%_98%/0.85)_0%,hsl(48_100%_92%/0.4)_22%,transparent_55%),linear-gradient(90deg,hsl(40_85%_46%/0.0)_0%,hsl(48_100%_82%/0.18)_25%,hsl(36_82%_38%/0.0)_50%,hsl(48_100%_82%/0.18)_75%,hsl(40_85%_46%/0.0)_100%)]",
-          // ::after — bottom KISS LIGHT (reflective floor) + animated shimmer sweep on hover.
-          // Idle = a faint warm rim along the bottom; hover = the diagonal glint flies across.
+          "before:[background:radial-gradient(120%_85%_at_50%_-30%,hsl(50_100%_99%/0.95)_0%,hsl(48_100%_92%/0.4)_22%,transparent_55%),linear-gradient(90deg,hsl(40_85%_46%/0.0)_0%,hsl(48_100%_82%/0.22)_18%,hsl(36_82%_38%/0.0)_38%,hsl(48_100%_82%/0.18)_60%,hsl(36_82%_38%/0.0)_78%,hsl(48_100%_82%/0.22)_92%,hsl(40_85%_46%/0.0)_100%)]",
+          "before:[background-blend-mode:screen]",
+          // ::after — bottom rim glow + animated diagonal anisotropic glint
           "after:content-[''] after:absolute after:inset-0 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
-          "after:[background:linear-gradient(180deg,transparent_60%,hsl(48_100%_88%/0.22)_88%,hsl(48_100%_92%/0.32)_100%),linear-gradient(115deg,transparent_28%,hsl(48_100%_98%/0.0)_42%,hsl(48_100%_99%/0.85)_50%,hsl(48_100%_98%/0.0)_58%,transparent_72%)]",
+          "after:[background:linear-gradient(180deg,transparent_58%,hsl(48_100%_88%/0.28)_86%,hsl(50_100%_94%/0.4)_100%),linear-gradient(108deg,transparent_28%,hsl(48_100%_98%/0.0)_42%,hsl(50_100%_99%/0.95)_50%,hsl(48_100%_98%/0.0)_58%,transparent_72%)]",
           "after:[background-size:100%_100%,260%_100%] after:[background-position:0_0,140%_0]",
           "after:transition-[background-position,opacity] after:duration-[900ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
           "hover:after:[background-position:0_0,-40%_0]",
-          // Hover: brighter, slightly more saturated, deeper drop
-          "hover:brightness-[1.06] hover:saturate-[1.08]",
-          "hover:shadow-[inset_0_0_0_0.5px_hsl(28_70%_14%/0.6),inset_0_1px_0_hsl(48_100%_96%/1),inset_0_2.5px_0_hsl(48_100%_88%/0.5),inset_0_-1.5px_0_hsl(24_80%_14%/0.85),inset_0_-12px_24px_-10px_hsl(22_88%_22%/0.8),0_1px_0_hsl(28_60%_12%/0.55),0_3px_4px_hsl(28_60%_12%/0.45),0_12px_22px_-3px_hsl(38_85%_44%/0.6),0_26px_50px_-14px_hsl(38_85%_42%/0.65)]",
-          // Pressed: invert, sink into bezel, dim the highlights
-          "active:[background:linear-gradient(178deg,hsl(40_82%_56%)_0%,hsl(38_78%_46%)_45%,hsl(28_70%_24%)_100%)]",
+          // Hover: brighter, slightly more saturated, deeper drop with warm spill
+          "hover:brightness-[1.06] hover:saturate-[1.1]",
+          "hover:shadow-[inset_0_0_0_0.5px_hsl(26_75%_12%/0.7),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_2.5px_0_hsl(48_100%_88%/0.6),inset_0_-1.5px_0_hsl(22_85%_12%/0.9),inset_0_-12px_24px_-10px_hsl(20_90%_18%/0.85),0_1px_0_hsl(26_60%_10%/0.6),0_3px_4px_hsl(26_60%_10%/0.5),0_12px_22px_-3px_hsl(38_88%_44%/0.65),0_28px_56px_-14px_hsl(38_85%_42%/0.7)]",
+          // Pressed: invert sheen, sink into bezel
+          "active:[background:linear-gradient(178deg,hsl(40_82%_56%)_0%,hsl(38_78%_46%)_45%,hsl(26_72%_22%)_100%)]",
           "active:before:opacity-25 active:after:opacity-30",
-          "active:shadow-[inset_0_0_0_0.5px_hsl(28_80%_12%/0.7),inset_0_2.5px_5px_hsl(28_70%_14%/0.7),inset_0_-1px_0_hsl(48_100%_88%/0.18),inset_0_-6px_14px_-6px_hsl(22_88%_20%/0.55),0_1px_1px_hsl(0_0%_0%/0.3)]",
+          "active:shadow-[inset_0_0_0_0.5px_hsl(22_85%_10%/0.8),inset_0_2.5px_5px_hsl(22_75%_12%/0.75),inset_0_-1px_0_hsl(48_100%_88%/0.18),inset_0_-6px_14px_-6px_hsl(20_90%_16%/0.6),0_1px_1px_hsl(0_0%_0%/0.3)]",
           "disabled:grayscale-[0.4] disabled:after:hidden disabled:before:hidden",
         ].join(" "),
 
@@ -112,25 +118,28 @@ const buttonVariants = cva(
         // Link — gold-soft → gold
         link: "text-[hsl(var(--gold-soft))] underline-offset-4 hover:text-[hsl(var(--gold))] hover:underline",
 
-        // Gold — alias of default for backwards compatibility (cast 24k gold)
+        // Gold — alias of default (physical brushed gold bar)
         gold: [
-          "text-[hsl(34_70%_12%)] font-bold tracking-[-0.005em]",
-          "[text-shadow:0_1px_0_hsl(48_100%_92%/0.55),0_-1px_0_hsl(28_60%_18%/0.25)]",
+          "text-[hsl(34_75%_10%)] font-extrabold tracking-[-0.005em]",
+          "[text-shadow:0_1px_0_hsl(48_100%_94%/0.7),0_-0.5px_0_hsl(28_70%_16%/0.35)]",
           "overflow-hidden isolate",
-          "[background:linear-gradient(178deg,hsl(48_100%_90%)_0%,hsl(46_100%_78%)_12%,hsl(44_98%_64%)_30%,hsl(40_92%_52%)_50%,hsl(36_85%_40%)_72%,hsl(28_72%_24%)_100%)]",
-          "shadow-[inset_0_0_0_0.5px_hsl(28_70%_14%/0.55),inset_0_1px_0_hsl(48_100%_96%/0.95),inset_0_2.5px_0_hsl(48_100%_88%/0.45),inset_0_-1.5px_0_hsl(24_80%_14%/0.85),inset_0_-12px_22px_-10px_hsl(22_88%_22%/0.75),0_1px_0_hsl(28_60%_12%/0.55),0_2px_3px_hsl(28_60%_12%/0.4),0_8px_18px_-3px_hsl(38_85%_44%/0.5),0_18px_38px_-12px_hsl(38_85%_42%/0.55)]",
+          "[background:linear-gradient(180deg,hsl(48_100%_70%/0)_0%,hsl(48_100%_94%/0.55)_36%,hsl(48_100%_99%/0.85)_44%,hsl(48_100%_94%/0.55)_52%,hsl(48_100%_70%/0)_64%),linear-gradient(178deg,hsl(50_100%_88%)_0%,hsl(48_100%_76%)_10%,hsl(46_98%_64%)_28%,hsl(42_94%_54%)_46%,hsl(38_88%_44%)_64%,hsl(32_78%_32%)_84%,hsl(24_72%_22%)_100%),url(\"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20120%2040'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.9%200.06'%20numOctaves%3D'2'%20stitchTiles%3D'stitch'%2F%3E%3CfeColorMatrix%20values%3D'0%200%200%200%200.95%20%200%200%200%200%200.78%20%200%200%200%200%200.36%20%200%200%200%200.55%200'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E\")]",
+          "[background-blend-mode:screen,normal,overlay]",
+          "[background-size:100%_100%,100%_100%,180px_60px]",
+          "shadow-[inset_0_0_0_0.5px_hsl(26_75%_12%/0.65),inset_0_1px_0_hsl(50_100%_98%/1),inset_0_2.5px_0_hsl(48_100%_88%/0.55),inset_0_-1.5px_0_hsl(22_85%_12%/0.9),inset_0_-12px_22px_-10px_hsl(20_90%_18%/0.8),0_1px_0_hsl(26_60%_10%/0.6),0_2px_3px_hsl(26_60%_10%/0.45),0_8px_18px_-3px_hsl(38_88%_44%/0.55),0_18px_38px_-12px_hsl(38_85%_42%/0.6)]",
           "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
-          "before:[background:radial-gradient(120%_85%_at_50%_-30%,hsl(48_100%_98%/0.85)_0%,hsl(48_100%_92%/0.4)_22%,transparent_55%),linear-gradient(90deg,hsl(40_85%_46%/0.0)_0%,hsl(48_100%_82%/0.18)_25%,hsl(36_82%_38%/0.0)_50%,hsl(48_100%_82%/0.18)_75%,hsl(40_85%_46%/0.0)_100%)]",
+          "before:[background:radial-gradient(120%_85%_at_50%_-30%,hsl(50_100%_99%/0.95)_0%,hsl(48_100%_92%/0.4)_22%,transparent_55%),linear-gradient(90deg,hsl(40_85%_46%/0.0)_0%,hsl(48_100%_82%/0.22)_18%,hsl(36_82%_38%/0.0)_38%,hsl(48_100%_82%/0.18)_60%,hsl(36_82%_38%/0.0)_78%,hsl(48_100%_82%/0.22)_92%,hsl(40_85%_46%/0.0)_100%)]",
+          "before:[background-blend-mode:screen]",
           "after:content-[''] after:absolute after:inset-0 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
-          "after:[background:linear-gradient(180deg,transparent_60%,hsl(48_100%_88%/0.22)_88%,hsl(48_100%_92%/0.32)_100%),linear-gradient(115deg,transparent_28%,hsl(48_100%_98%/0.0)_42%,hsl(48_100%_99%/0.85)_50%,hsl(48_100%_98%/0.0)_58%,transparent_72%)]",
+          "after:[background:linear-gradient(180deg,transparent_58%,hsl(48_100%_88%/0.28)_86%,hsl(50_100%_94%/0.4)_100%),linear-gradient(108deg,transparent_28%,hsl(48_100%_98%/0.0)_42%,hsl(50_100%_99%/0.95)_50%,hsl(48_100%_98%/0.0)_58%,transparent_72%)]",
           "after:[background-size:100%_100%,260%_100%] after:[background-position:0_0,140%_0]",
           "after:transition-[background-position,opacity] after:duration-[900ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
           "hover:after:[background-position:0_0,-40%_0]",
-          "hover:brightness-[1.06] hover:saturate-[1.08]",
-          "hover:shadow-[inset_0_0_0_0.5px_hsl(28_70%_14%/0.6),inset_0_1px_0_hsl(48_100%_96%/1),inset_0_2.5px_0_hsl(48_100%_88%/0.5),inset_0_-1.5px_0_hsl(24_80%_14%/0.85),inset_0_-12px_24px_-10px_hsl(22_88%_22%/0.8),0_1px_0_hsl(28_60%_12%/0.55),0_3px_4px_hsl(28_60%_12%/0.45),0_12px_22px_-3px_hsl(38_85%_44%/0.6),0_26px_50px_-14px_hsl(38_85%_42%/0.65)]",
-          "active:[background:linear-gradient(178deg,hsl(40_82%_56%)_0%,hsl(38_78%_46%)_45%,hsl(28_70%_24%)_100%)]",
+          "hover:brightness-[1.06] hover:saturate-[1.1]",
+          "hover:shadow-[inset_0_0_0_0.5px_hsl(26_75%_12%/0.7),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_2.5px_0_hsl(48_100%_88%/0.6),inset_0_-1.5px_0_hsl(22_85%_12%/0.9),inset_0_-12px_24px_-10px_hsl(20_90%_18%/0.85),0_1px_0_hsl(26_60%_10%/0.6),0_3px_4px_hsl(26_60%_10%/0.5),0_12px_22px_-3px_hsl(38_88%_44%/0.65),0_28px_56px_-14px_hsl(38_85%_42%/0.7)]",
+          "active:[background:linear-gradient(178deg,hsl(40_82%_56%)_0%,hsl(38_78%_46%)_45%,hsl(26_72%_22%)_100%)]",
           "active:before:opacity-25 active:after:opacity-30",
-          "active:shadow-[inset_0_0_0_0.5px_hsl(28_80%_12%/0.7),inset_0_2.5px_5px_hsl(28_70%_14%/0.7),inset_0_-1px_0_hsl(48_100%_88%/0.18),inset_0_-6px_14px_-6px_hsl(22_88%_20%/0.55),0_1px_1px_hsl(0_0%_0%/0.3)]",
+          "active:shadow-[inset_0_0_0_0.5px_hsl(22_85%_10%/0.8),inset_0_2.5px_5px_hsl(22_75%_12%/0.75),inset_0_-1px_0_hsl(48_100%_88%/0.18),inset_0_-6px_14px_-6px_hsl(20_90%_16%/0.6),0_1px_1px_hsl(0_0%_0%/0.3)]",
           "disabled:grayscale-[0.4] disabled:after:hidden disabled:before:hidden",
         ].join(" "),
 

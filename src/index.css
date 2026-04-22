@@ -809,6 +809,50 @@
 @keyframes edge-sheen-slide {
   0% { left: -100%; }
   60%, 100% { left: 200%; }
+  /* ──────────── APEX TIER EFFECTS ──────────── */
+
+  /* Strong double-aura for Apex tier — gold inner, flame outer */
+  .apex-aura-large {
+    box-shadow:
+      0 0 24px hsl(var(--gold) / 0.45),
+      0 0 48px hsl(18 95% 58% / 0.4),
+      0 0 96px hsl(18 95% 58% / 0.18);
+    animation: aura-flicker 3s ease-in-out infinite;
+  }
+
+  /* Subtle flicker for the apex aura — alive, intense */
+  @keyframes aura-flicker {
+    0%, 100% {
+      box-shadow:
+        0 0 24px hsl(var(--gold) / 0.45),
+        0 0 48px hsl(18 95% 58% / 0.4),
+        0 0 96px hsl(18 95% 58% / 0.18);
+    }
+    50% {
+      box-shadow:
+        0 0 32px hsl(var(--gold) / 0.6),
+        0 0 64px hsl(18 95% 58% / 0.55),
+        0 0 120px hsl(18 95% 58% / 0.25);
+    }
+  }
+
+  /* Apex header gradient overlay */
+  .apex-header-glow {
+    background: linear-gradient(180deg,
+      hsl(18 95% 58% / 0.18) 0%,
+      hsl(var(--gold) / 0.10) 40%,
+      transparent 100%);
+  }
+
+  /* Apex row highlight on leaderboards / lists */
+  .apex-row-highlight {
+    background: linear-gradient(90deg,
+      hsl(18 95% 58% / 0.10) 0%,
+      transparent 50%,
+      hsl(var(--gold) / 0.10) 100%);
+    border-left: 2px solid hsl(18 95% 58% / 0.6);
+  }
+
 }
 
 /* Reduced motion — respect user prefs */
@@ -821,7 +865,8 @@
   .float-subtle,
   .gentle-float,
   .soft-glow-pulse,
-  .edge-sheen::after {
+  .edge-sheen::after,
+  .apex-aura-large {
     animation: none !important;
   }
 }

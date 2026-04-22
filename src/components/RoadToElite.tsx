@@ -1,5 +1,6 @@
-import { Crown, TrendingUp, CalendarCheck, Flame, Check } from "lucide-react";
+import { Crown, TrendingUp, CalendarCheck, Flame, Check, Zap, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useRoadToElite, ELITE_REQUIREMENTS } from "@/hooks/use-road-to-elite";
 

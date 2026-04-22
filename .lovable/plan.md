@@ -1,54 +1,59 @@
 
 
-# Korjaa status & prosentit (yksi optimoitu lähde)
+# Apex paywall + helpompi Elite
 
-## Ongelma
-- Kuvassa profiili näkyy: `#3 · Ahead of 67% · High Performer · Score 0.0`. Tämä on epäjohdonmukaista koska:
-  - `rank_score = 0` ei voisi olla High Performer (SQL pakottaa `recruit` jos rank_score on 0)
-  - Prosentti lasketaan asiakaspuolella eri pohjalla kuin SQL:n tier-logiikka → näytetty %ile ei vastaa todellista tieriä
-  - Sama kysely tehdään 2× (Index + Profile), eri queryKey → tuplakuorma
+## Tavoitteet
+1. **Apex & Legend lukkojen taakse** TierLadderissa — kun käyttäjä napauttaa Apex- tai Legend-riviä, näytetään **paywall-promo dialogissa** Earned-polun (vaatimukset) lisäksi. Apex saadaan **välittömästi** ostamalla €17,99/kk, Legend on aina ansaittu (Founders Circle).
+2. **Helpompi Elite ilman tiukkaa prosenttia** — alennetaan SQL-vaatimuksia niin, että aktiiviset käyttäjät pääsevät Eliteen vaikka kilpailussa ei vielä ole 95-percentile dataa.
 
-## Korjaus
+## 1. SQL — Elite-helpotus
+Päivitetään `update_status_tier` (uusi migraatio):
 
-### 1. Yksi jaettu hook: `useMyRank`
-Uusi `src/hooks/use-my-rank.ts` joka:
-- Käyttää **samaa universumia kuin SQL** (`rank_score > 0`) sekä `ahead`- että `total`-lukuihin → johdonmukainen %ile
-- Palauttaa `{ rank, totalUsers, percentile, hasRank }` jossa `hasRank = rank_score > 0`
-- Jos käyttäjällä `rank_score = 0` → palautetaan `rank = totalUsers + 1`, `percentile = 0`, `hasRank = false` (näytetään selkeästi "Tee ensimmäinen check-in" eikä väärää #-numeroa)
-- Yksi query‑avain `["my-rank", userId]`, `staleTime: 60s`, `gcTime: 5min` → cache jaettu Indexin ja Profilen kesken (poistaa kaksi rinnakkaista verkkokutsua)
-- Käytä **yhtä kyselyä yhden sijasta kahden** RPC:n kautta → uusi DB-funktio `get_user_rank(p_user_id)` palauttaa `(rank, total, percentile)` yhdessä round-tripissä
+| Tier | Vanha | Uusi |
+|------|-------|------|
+| Elite | percentile ≥ 95 **AND** activity_days ≥ 14 **AND** streak ≥ 30 | percentile ≥ 80 **OR** (activity_days ≥ 20 **AND** streak ≥ 21) |
+| High Performer | ≥ 90 / 14 / 14 | ≥ 70 **OR** (15 days **AND** 14 streak) |
+| Performer | ≥ 75 / 7 / — | ≥ 50 / 7 |
+| Operator | ≥ 50 / 7 | ≥ 25 / 5 |
+| Apex | ≥ 99 / 30 / 30 | **säilyy ennallaan** (top 1% = harvinainen) |
+| Legend | ≥ 99.9 / 30 / 30 | **säilyy ennallaan** |
 
-### 2. DB-funktio `get_user_rank`
-SECURITY DEFINER, STABLE. Palauttaa rivin:
-```text
-rank        int
-total_users int
-percentile  numeric(5,2)
-has_rank    boolean
-```
-Logiikka identtinen `update_all_status_tiers`:n kanssa (`rank_score > 0` universumi, `ROW_NUMBER() OVER (ORDER BY rank_score DESC)`). Käyttäjän jolla `rank_score = 0` → `has_rank = false`, `percentile = 0`.
+→ Elite muuttuu **saavutuksesta consistencystä** (3 viikon streak + 20 aktiivipäivää 30 päivän aikana riittää) eikä enää vaadi pakollista 95% percentile -leaderboard sijoitusta. Apex- ja Legend-eksklusiivisuus säilyy.
 
-### 3. Korjaa "haamu‑tier" -tilanne
-Aja kerran migraatiossa `update_all_status_tiers()` → kaikki käyttäjät joilla `rank_score = 0` putoavat `recruit`-tasolle. Tämä siivoaa kuvan kaltaiset “High Performer @ 0.0” tilanteet.
+Migraatio ajaa myös `update_all_status_tiers()` lopuksi, jotta nykyiset käyttäjät päivittyvät heti.
 
-### 4. UI-tarkennukset
-- `RankPressureCard`: jos `hasRank = false` → piilotettu "Ahead of X%" rivi, korvataan "Tee ensimmäinen check‑in nostaaksesi rank scorea". Bar 0 %.
-- `percentile` näytetään `Math.round` desimaalitarkkuudella ≥ 99 (esim. `99.2%` Apex‑tasoille) — muut tasot kokonaisluku.
-- `Index.tsx` ja `Profile.tsx` käyttävät uutta `useMyRank()`‑hookia → poistetaan duplikoidut inline‑queryt (vähemmän koodia, 1 verkkokutsu/sivu sijaan 2).
+## 2. TierLadder — Apex/Legend lukkoineen
+`src/components/TierLadder.tsx`:
+- Kun käyttäjä napauttaa Apex-riviä **JA** ei ole vielä Apex-tier/`is_apex_subscriber`:
+  - Dialog näyttää **kaksi polkua rinnakkain**:
+    - **"Earn it"** — nykyiset vaatimukset (Top 1%, 30 active days, 30 streak)
+    - **"Skip the grind"** — €17,99/kk, "Become Apex Now" -CTA → vie `/paywall`
+  - Lukon kuvake riveillä korvataan **Crown + 🔒 Premium** -merkillä Apexille
+- Legend-rivi näyttää aina vain **"Earned only — Founders Circle"** (ei paywall-CTA:ta, koska Legend on aina ansaittu).
+- Lukko-ikoni Apex-rivillä saa kultakehyksen ja "PREMIUM" -tagin steps-away `+N`-merkin tilalle, kun käyttäjä on alle Apexin.
 
-### 5. TierLadderin "Top X%" johdonmukaiseksi
-`TierLadder` näyttää tällä hetkellä `cfg.percentile` (string kuten "Top 5%"). Korjaa vaatimusrivi käyttämään `cfg.requirements.percentile` -kentästä laskettuna (Apex `Top 1%`, Legend `Top 0.1%`) niin että kaikki `Top X%` tekstit ovat synkassa SQL-kynnyksien kanssa.
+Komponentti tarvitsee uuden propin: `isApexSubscriber: boolean`. Index/Profile välittävät sen `useAuth().isApexSubscriber` -arvosta.
 
-## Tekniset tiedostot
-- **Uusi:** `supabase/migrations/<ts>_get_user_rank.sql` — luo `get_user_rank` RPC + ajaa `SELECT update_all_status_tiers()`
-- **Uusi:** `src/hooks/use-my-rank.ts`
-- **Muokattu:** `src/pages/Index.tsx` — käytä `useMyRank`, poista inline `useQuery`
-- **Muokattu:** `src/pages/Profile.tsx` — sama
-- **Muokattu:** `src/components/RankPressureCard.tsx` — `hasRank`-tila + tarkempi prosenttinäyttö
-- **Muokattu:** `src/components/TierLadder.tsx` — yhdenmukainen "Top X%" -teksti
+## 3. Paywall-mikrokomponentti dialogiin
+Uusi `src/components/TierUnlockPaywallCard.tsx` — pieni, dialogiin sopiva versio Apex-CTA:sta (käyttää samaa kultta-flame -gradienttia kuin `PaywallTierCard`). Sisältää:
+- "Apex Instant" -otsikko + €17,99/mo
+- 3 keskeistä etua (Tribes, Apex aura, tier-suoja)
+- "Become Apex Now" → `navigate("/paywall")` (CTA pysyy yhdessä paikassa, jossa RevenueCat/Stripe on jo)
 
-## Suorituskyky
-- Verkkokutsut/sivu: **2 → 1** (Index ja Profile)
-- Cache jaettu sivujen välillä → siirtyminen Index ↔ Profile ei laukaise uutta fetchia 60 s sisällä
-- Database round-trips per call: **2 → 1** (yksi RPC kahden COUNT‑kyselyn sijasta)
+## 4. Microcopy
+- TierLadder Apex-rivi (locked, ei tilaaja): "Earn top 1% — or unlock instantly"
+- TierLadder Legend-rivi (locked): "Earned only · Founders Circle"
+- Profilen Elite-vaatimukset päivitetään uuteen tekstiin: "Top 20% rank **OR** 20 active days + 21-day streak"
+
+## Tekniset muutokset
+- **Uusi migraatio:** `supabase/migrations/<ts>_easier_elite.sql` — `update_status_tier` uudet kynnykset + `update_all_status_tiers()`
+- **Uusi:** `src/components/TierUnlockPaywallCard.tsx`
+- **Muokattu:** `src/components/TierLadder.tsx` — `isApexSubscriber` prop, lukkokuvakkeet Apex/Legend riveille, paywall-osio dialogiin
+- **Muokattu:** `src/lib/status-tiers.ts` — `requirements`-kentät synkkaan SQL:n kanssa (Elite 80 / 20 / 21, HP 70 / 15 / 14, Performer 50 / 7 / 0, Operator 25 / 5 / 0)
+- **Muokattu:** `src/pages/Index.tsx`, `src/pages/Profile.tsx` — välittävät `isApexSubscriber` TierLadderille
+
+## Mitä EI muuteta
+- Apex/Legend SQL-kynnykset (top 1% / 0.1%) — säilyvät harvinaisuus
+- Paywall-sivu (`/paywall`) — toimii jo, Apex-CTA viedään sinne
+- RevenueCat/Stripe-integraatio — ei muutoksia
 

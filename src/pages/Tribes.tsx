@@ -238,7 +238,7 @@ const Tribes = () => {
         <div className="relative rounded-3xl p-6 overflow-hidden bg-gradient-to-br from-[hsl(18_95%_58%)]/15 via-card/85 to-gold/10 apex-aura-large apex-spotlight apex-embers apex-shimmer-sweep apex-portal-glow">
           <div className="relative z-10 text-center">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/40 backdrop-blur-sm border border-[hsl(18_95%_58%)]/60 mb-3 shadow-[0_0_18px_hsl(18_95%_58%/0.5)]">
-              <Zap size={11} className="text-[hsl(18_95%_58%)]" strokeWidth={3} fill="currentColor" />
+              <StreakFlameInline streak={120} showCount={false} size={14} className="leading-none" />
               <span className="text-[10px] font-black tracking-widest uppercase bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
                 Apex Tribes
               </span>
@@ -249,7 +249,7 @@ const Tribes = () => {
               </span>
             </h1>
             <p className="text-xs text-foreground/70 max-w-xs mx-auto leading-relaxed">
-              Tribes are founded by Apex (top 1%). <span className="text-[hsl(18_95%_58%)] font-semibold">Join one, or lead your own.</span>
+              Private circles led by Apex (top 1%). <span className="text-[hsl(18_95%_58%)] font-semibold">Every member's streak feeds the tribe's flame.</span>
             </p>
           </div>
         </div>

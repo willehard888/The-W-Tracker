@@ -48,7 +48,7 @@ const CommandDeck = ({
         animation: canCheckin ? "shimmer-slide 5s ease-in-out infinite" : undefined,
       }}
     >
-      <div className="rounded-3xl bg-gradient-to-br from-card via-card to-card/85 p-2.5 sm:p-3 grid gap-2.5 sm:gap-3 sm:grid-cols-2">
+      <div className="rounded-3xl bg-gradient-to-br from-card via-card to-card/85 p-2.5 sm:p-3 grid gap-2.5 sm:gap-3 sm:grid-cols-2 depth-realistic">
         {/* Streak compact */}
         <CompactStreakPanel
           streak={streak}
@@ -62,17 +62,14 @@ const CommandDeck = ({
           onClick={() => canCheckin && navigate("/checkin")}
           disabled={!canCheckin}
           className={cn(
-            "group relative w-full text-left rounded-2xl p-4 overflow-hidden transition-transform active:scale-[0.99]",
-            canCheckin ? "border" : "opacity-70 border",
+            "group relative w-full text-left rounded-2xl p-4 overflow-hidden transition-all duration-200 active:scale-[0.985]",
+            canCheckin ? "border depth-realistic-warm" : "opacity-70 border depth-realistic",
           )}
           style={{
             background: canCheckin
               ? "radial-gradient(120% 90% at 0% 0%, hsl(42 78% 54% / 0.18), transparent 60%), linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 5%))"
               : "linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 6%))",
             borderColor: canCheckin ? "hsl(42 78% 54% / 0.45)" : "hsl(var(--border))",
-            boxShadow: canCheckin
-              ? "0 10px 32px -16px hsl(42 78% 54% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.05)"
-              : undefined,
           }}
         >
           {/* Ambient glow */}

@@ -1804,13 +1804,41 @@
   50%      { opacity: 1;    filter: blur(1px); }
 }
 
+/* ─── INFERNO / FIRESTORM (tier 6) — plasma extras ─────────────────── */
+
+/* Plasma hue cycle — fast cinematic shift through magenta → cyan → blue */
+@keyframes flame-plasma-hue {
+  0%   { filter: hue-rotate(0deg)   saturate(1.2); }
+  50%  { filter: hue-rotate(80deg)  saturate(1.45); }
+  100% { filter: hue-rotate(0deg)   saturate(1.2); }
+}
+
+/* Mirrored body counter-rotation — gives the flame a visible spiral */
+@keyframes flame-plasma-spiral {
+  0%   { transform: translate(-50%, 0) scaleX(-1) rotate(0deg)  scaleY(1);    opacity: 0.55; }
+  35%  { transform: translate(-48%, -2px) scaleX(-1) rotate(4deg) scaleY(1.1); opacity: 0.85; }
+  70%  { transform: translate(-52%, -1px) scaleX(-1) rotate(-3deg) scaleY(1.05); opacity: 0.7; }
+  100% { transform: translate(-50%, 0) scaleX(-1) rotate(0deg)  scaleY(1);    opacity: 0.55; }
+}
+
+/* Lightning crack — internal arc that draws on briefly every 7s */
+@keyframes flame-lightning-crack {
+  0%, 88%, 100% { stroke-dashoffset: 100; opacity: 0; }
+  90%  { stroke-dashoffset: 0;   opacity: 1; }
+  93%  { stroke-dashoffset: 0;   opacity: 0.4; }
+  95%  { stroke-dashoffset: 0;   opacity: 1; }
+  97%  { stroke-dashoffset: 0;   opacity: 0; }
+}
+
 /* Reduced motion: kill all flame animations */
 @media (prefers-reduced-motion: reduce) {
   [class*="flame-"],
   [style*="flame-"],
   [style*="ember-drift"],
   [style*="aurora-shift"],
-  [style*="flame-rim-pulse"] {
+  [style*="flame-rim-pulse"],
+  [style*="flame-plasma"],
+  [style*="flame-lightning"] {
     animation: none !important;
   }
 }

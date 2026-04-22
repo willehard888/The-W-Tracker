@@ -167,38 +167,56 @@ const Tribes = () => {
         </div>
       ) : (
         <div className="space-y-3">
-          {tribes.map((t) => (
+          {tribes.map((t, idx) => (
             <button
               key={t.id}
               onClick={() => navigate(`/tribes/${t.id}`)}
-              className="w-full text-left rounded-xl p-4 border border-border bg-card/60 hover:border-[hsl(18_95%_58%)]/40 transition-colors"
+              className="group w-full text-left rounded-2xl p-4 border border-[hsl(18_95%_58%)]/20 bg-gradient-to-br from-card/80 via-card/60 to-[hsl(18_95%_58%)]/5 hover:border-[hsl(18_95%_58%)]/55 hover:shadow-[0_0_24px_hsl(18_95%_58%/0.25)] active:scale-[0.99] transition-all relative overflow-hidden"
+              style={{ animationDelay: `${idx * 60}ms` }}
             >
-              <div className="flex items-start gap-3">
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[hsl(18_95%_58%)]/20 to-gold/15 border border-[hsl(18_95%_58%)]/30 flex items-center justify-center shrink-0">
-                  <Crown size={18} className="text-[hsl(18_95%_58%)]" />
+              {/* Subtle hover sweep */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-gradient-to-r from-transparent via-[hsl(18_95%_58%)]/8 to-transparent" />
+
+              <div className="relative flex items-start gap-3">
+                <div className="relative h-14 w-14 rounded-xl bg-gradient-to-br from-[hsl(18_95%_58%)]/30 via-gold/15 to-[hsl(18_95%_58%)]/20 border border-[hsl(18_95%_58%)]/45 flex items-center justify-center shrink-0 shadow-[0_0_14px_hsl(18_95%_58%/0.3)]">
+                  <Crown size={20} className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_6px_hsl(18_95%_58%/0.7)]" strokeWidth={2.4} />
+                  {/* tiny zap accent */}
+                  <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border border-background flex items-center justify-center shadow-[0_0_6px_hsl(18_95%_58%/0.7)]">
+                    <Zap size={8} className="text-background" strokeWidth={3} fill="currentColor" />
+                  </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-black text-sm truncate">{t.name}</p>
+                  <p className="font-display font-black text-base truncate leading-tight">{t.name}</p>
                   {t.description && (
-                    <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                    <p className="text-[11px] text-muted-foreground/90 line-clamp-2 mt-0.5 leading-snug">
                       {t.description}
                     </p>
                   )}
-                  <p className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1">
-                    <Users size={10} /> {t.member_count}{" "}
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[hsl(18_95%_58%)]/10 border border-[hsl(18_95%_58%)]/25">
+                      <Users size={9} className="text-[hsl(18_95%_58%)]" />
+                      <span className="text-[10px] font-bold tabular-nums text-[hsl(18_95%_58%)]">
+                        {t.member_count}
+                      </span>
+                    </span>
                     {t.visibility === "private" && (
-                      <span className="ml-2 text-[hsl(18_95%_58%)]">• private</span>
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border">
+                        <Lock size={8} className="text-muted-foreground" />
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Private
+                        </span>
+                      </span>
                     )}
-                  </p>
+                  </div>
                 </div>
                 {tab === "browse" && (
                   <Button
                     size="sm"
-                    variant="outline"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleJoin(t.id);
                     }}
+                    className="bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black shrink-0 shadow-[0_0_12px_hsl(18_95%_58%/0.4)]"
                   >
                     Join
                   </Button>

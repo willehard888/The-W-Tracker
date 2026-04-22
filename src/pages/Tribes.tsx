@@ -100,10 +100,11 @@ const Tribes = () => {
     let list: Tribe[] = [];
 
     if (tab === "browse") {
+      // All tribes are private. We list every tribe so people can discover
+      // and *request* to join — gating happens via approval, not visibility.
       const { data } = await supabase
         .from("tribes" as any)
         .select("*")
-        .eq("visibility", "public")
         .order("member_count", { ascending: false })
         .limit(50);
       list = (data as any) ?? [];
@@ -238,7 +239,7 @@ const Tribes = () => {
         <div className="relative rounded-3xl p-6 overflow-hidden bg-gradient-to-br from-[hsl(18_95%_58%)]/15 via-card/85 to-gold/10 apex-aura-large apex-spotlight apex-embers apex-shimmer-sweep apex-portal-glow">
           <div className="relative z-10 text-center">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/40 backdrop-blur-sm border border-[hsl(18_95%_58%)]/60 mb-3 shadow-[0_0_18px_hsl(18_95%_58%/0.5)]">
-              <Zap size={11} className="text-[hsl(18_95%_58%)]" strokeWidth={3} fill="currentColor" />
+              <StreakFlameInline streak={120} showCount={false} size={14} className="leading-none" />
               <span className="text-[10px] font-black tracking-widest uppercase bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
                 Apex Tribes
               </span>
@@ -249,7 +250,7 @@ const Tribes = () => {
               </span>
             </h1>
             <p className="text-xs text-foreground/70 max-w-xs mx-auto leading-relaxed">
-              Tribes are founded by Apex (top 1%). <span className="text-[hsl(18_95%_58%)] font-semibold">Join one, or lead your own.</span>
+              Private circles led by Apex (top 1%). <span className="text-[hsl(18_95%_58%)] font-semibold">Every member's streak feeds the tribe's flame.</span>
             </p>
           </div>
         </div>
@@ -505,14 +506,6 @@ const Tribes = () => {
                         suffix="d"
                         className="text-[10px]"
                       />
-                    )}
-                    {t.visibility === "private" && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border">
-                        <Lock size={8} className="text-muted-foreground" />
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
-                          Private
-                        </span>
-                      </span>
                     )}
                     {memberPreviews[t.id] && memberPreviews[t.id].length > 0 && (
                       <div className="flex -space-x-2 ml-1">

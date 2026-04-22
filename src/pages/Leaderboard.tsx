@@ -265,9 +265,9 @@ const Leaderboard = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 mb-4 animate-reveal animate-reveal-delay-1">
-        <Button variant={mode === "season" ? "gold" : "outline"} onClick={() => setMode("season")}>Season</Button>
-        <Button variant={mode === "all_time" ? "gold" : "outline"} onClick={() => setMode("all_time")}>All Time</Button>
+      <div className="flex justify-center gap-2 mb-4 animate-reveal animate-reveal-delay-1">
+        <Button size="pill" variant={mode === "season" ? "gold" : "secondary"} onClick={() => setMode("season")}>Season</Button>
+        <Button size="pill" variant={mode === "all_time" ? "gold" : "secondary"} onClick={() => setMode("all_time")}>All Time</Button>
       </div>
 
       {profile && (

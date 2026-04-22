@@ -165,13 +165,9 @@ const Coach = () => {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="shrink-0 px-4 pt-3 pb-2 flex items-center justify-between border-b border-border/30 bg-background/60 backdrop-blur-xl">
-        <button
-          onClick={() => navigate(-1)}
-          className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-muted/40 active:scale-95 transition"
-          aria-label="Back"
-        >
+        <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)} aria-label="Back">
           <ArrowLeft size={18} />
-        </button>
+        </Button>
         <div className="flex items-center gap-2">
           <div className="h-7 w-7 rounded-full gradient-gold flex items-center justify-center shadow-[0_0_18px_hsl(var(--gold)/0.4)]">
             <Sparkles size={14} className="text-primary-foreground" />
@@ -181,12 +177,9 @@ const Coach = () => {
             <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">Always on</p>
           </div>
         </div>
-        <button
-          onClick={clearChat}
-          className="text-[11px] text-muted-foreground hover:text-foreground px-2 py-1 rounded-md"
-        >
+        <Button variant="ghost" size="sm" onClick={clearChat} className="text-[11px]">
           Clear
-        </button>
+        </Button>
       </div>
 
       {/* Messages */}
@@ -204,15 +197,17 @@ const Coach = () => {
             <p className="text-xs text-muted-foreground max-w-[260px] mx-auto mb-6">
               Ask anything. Training, sleep, discipline, mindset. Direct answers, no fluff.
             </p>
-            <div className="grid grid-cols-1 gap-2 max-w-sm mx-auto">
+            <div className="flex flex-col gap-2 max-w-sm mx-auto">
               {SUGGESTIONS.map((s) => (
-                <button
+                <Button
                   key={s}
+                  variant="outline"
+                  size="sm"
                   onClick={() => send(s)}
-                  className="text-left text-xs px-3 py-2.5 rounded-xl border border-border/50 bg-card/40 hover:bg-card/80 active:scale-[0.98] transition"
+                  className="justify-start text-left h-auto py-2.5 whitespace-normal"
                 >
                   {s}
-                </button>
+                </Button>
               ))}
             </div>
           </motion.div>
@@ -273,12 +268,14 @@ const Coach = () => {
           />
           <Button
             variant="gold"
-            size="icon"
-            disabled={!input.trim() || streaming}
+            size="icon-lg"
+            loading={streaming}
+            disabled={!input.trim()}
             onClick={() => send()}
-            className="h-[42px] w-[42px] shrink-0 rounded-2xl"
+            className="shrink-0 rounded-2xl"
+            aria-label="Send"
           >
-            {streaming ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+            <Send size={16} />
           </Button>
         </div>
         <p className="text-[9px] text-muted-foreground/70 text-center mt-1.5">

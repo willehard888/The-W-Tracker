@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, Send } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
@@ -142,13 +143,15 @@ const Chat = () => {
           aria-hidden
         />
         <div className="relative flex items-center gap-3">
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={() => navigate("/messages")}
-            className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors -ml-2"
+            className="-ml-2 rounded-full"
             aria-label="Back"
           >
             <ChevronLeft size={20} />
-          </button>
+          </Button>
           <button
             onClick={() => navigate(`/user/${partnerId}`)}
             className="flex items-center gap-2.5 flex-1 min-w-0 active:opacity-70 transition-opacity"
@@ -274,19 +277,17 @@ const Chat = () => {
               }}
             />
           </div>
-          <button
+          <Button
+            variant={text.trim() ? "gold" : "secondary"}
+            size="icon-lg"
             onClick={handleSend}
-            disabled={!text.trim() || sending}
-            className={cn(
-              "h-11 w-11 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0 shadow-lg",
-              text.trim() && !sending
-                ? "bg-gradient-to-br from-gold to-gold/80 text-primary-foreground shadow-gold/40"
-                : "bg-secondary text-muted-foreground/50 shadow-transparent"
-            )}
+            loading={sending}
+            disabled={!text.trim()}
+            className="rounded-full shrink-0 h-11 w-11"
             aria-label="Send"
           >
-            <Send size={16} className={cn(sending && "animate-pulse")} />
-          </button>
+            <Send size={16} />
+          </Button>
         </div>
       </div>
     </div>

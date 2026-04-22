@@ -257,31 +257,37 @@
      ============================================================ */
   .surface-glass {
     position: relative;
-    backdrop-filter: blur(28px) saturate(1.4);
-    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    backdrop-filter: blur(32px) saturate(1.5);
+    -webkit-backdrop-filter: blur(32px) saturate(1.5);
     background:
-      /* Specular highlight — soft hotspot top-left */
-      radial-gradient(120% 80% at 18% 0%, hsl(0 0% 100% / 0.08) 0%, transparent 45%),
-      /* Vertical bevel light */
-      linear-gradient(180deg, hsl(0 0% 100% / 0.07) 0%, transparent 22%, hsl(0 0% 0% / 0.20) 100%),
+      /* Specular hotspot — soft top-left "studio light" */
+      radial-gradient(140% 90% at 14% -10%, hsl(0 0% 100% / 0.11) 0%, transparent 42%),
+      /* Counter-rim light from bottom-right (warm bounce) */
+      radial-gradient(100% 70% at 90% 110%, hsl(42 78% 54% / 0.07) 0%, transparent 50%),
+      /* Vertical bevel — top lit, bottom shaded */
+      linear-gradient(180deg, hsl(0 0% 100% / 0.085) 0%, transparent 18%, hsl(0 0% 0% / 0.22) 100%),
       /* Base tint */
-      linear-gradient(180deg, hsl(255 14% 9% / 0.74), hsl(255 14% 6% / 0.80));
-    border: 1px solid hsl(0 0% 100% / 0.075);
-    border-top-color: hsl(0 0% 100% / 0.12);
-    border-bottom-color: hsl(0 0% 0% / 0.4);
+      linear-gradient(180deg, hsl(255 14% 9% / 0.78), hsl(255 14% 5% / 0.84));
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    border-top-color: hsl(0 0% 100% / 0.14);
+    border-bottom-color: hsl(0 0% 0% / 0.45);
     box-shadow:
-      /* Inner top bevel */
-      inset 0 1px 0 hsl(0 0% 100% / 0.10),
+      /* Inner top bevel — bright edge light */
+      inset 0 1px 0 hsl(0 0% 100% / 0.12),
+      /* Inner side rims */
+      inset 1px 0 0 hsl(0 0% 100% / 0.025),
+      inset -1px 0 0 hsl(0 0% 0% / 0.20),
       /* Inner bottom shade */
-      inset 0 -1px 0 hsl(0 0% 0% / 0.30),
+      inset 0 -1px 0 hsl(0 0% 0% / 0.35),
       /* Crisp 1px contact shadow */
-      0 1px 1px hsl(0 0% 0% / 0.35),
+      0 1px 1px hsl(0 0% 0% / 0.4),
       /* Mid-depth lift */
-      0 4px 10px -2px hsl(0 0% 0% / 0.32),
+      0 3px 8px -1px hsl(0 0% 0% / 0.3),
+      0 8px 16px -4px hsl(0 0% 0% / 0.35),
       /* Soft ambient pool */
-      0 16px 32px -12px hsl(0 0% 0% / 0.45),
-      /* Subtle warm bounce light */
-      0 24px 48px -20px hsl(42 78% 54% / 0.08);
+      0 20px 40px -14px hsl(0 0% 0% / 0.5),
+      /* Warm bounce light */
+      0 28px 56px -22px hsl(42 78% 54% / 0.1);
     isolation: isolate;
   }
 

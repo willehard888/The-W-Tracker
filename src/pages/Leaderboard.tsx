@@ -403,6 +403,12 @@ const Leaderboard = () => {
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <p className="text-[11px] text-muted-foreground">Lvl {user.level}</p>
+                    {user.streak > 0 && (
+                      <>
+                        <span className="text-muted-foreground/40">•</span>
+                        <StreakFlameInline streak={user.streak} suffix="d" className="text-[10px]" />
+                      </>
+                    )}
                     {wins > 0 && (
                       <p className="text-[10px] text-gold/80 flex items-center gap-0.5">
                         <Medal size={9} /> {wins}×

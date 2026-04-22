@@ -863,6 +863,69 @@ export type Database = {
           },
         ]
       }
+      tribe_battles: {
+        Row: {
+          challenger_owner_id: string
+          challenger_score: number
+          challenger_tribe_id: string
+          created_at: string
+          duration_days: number
+          ended_at: string | null
+          id: string
+          opponent_owner_id: string
+          opponent_score: number
+          opponent_tribe_id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["tribe_battle_status"]
+          winner_tribe_id: string | null
+        }
+        Insert: {
+          challenger_owner_id: string
+          challenger_score?: number
+          challenger_tribe_id: string
+          created_at?: string
+          duration_days?: number
+          ended_at?: string | null
+          id?: string
+          opponent_owner_id: string
+          opponent_score?: number
+          opponent_tribe_id: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["tribe_battle_status"]
+          winner_tribe_id?: string | null
+        }
+        Update: {
+          challenger_owner_id?: string
+          challenger_score?: number
+          challenger_tribe_id?: string
+          created_at?: string
+          duration_days?: number
+          ended_at?: string | null
+          id?: string
+          opponent_owner_id?: string
+          opponent_score?: number
+          opponent_tribe_id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["tribe_battle_status"]
+          winner_tribe_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tribe_battles_challenger_tribe_id_fkey"
+            columns: ["challenger_tribe_id"]
+            isOneToOne: false
+            referencedRelation: "tribes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tribe_battles_opponent_tribe_id_fkey"
+            columns: ["opponent_tribe_id"]
+            isOneToOne: false
+            referencedRelation: "tribes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tribe_invites: {
         Row: {
           created_at: string
@@ -1143,6 +1206,7 @@ export type Database = {
         Args: { p_accept: boolean; p_tribe_id: string; p_user_id: string }
         Returns: undefined
       }
+      auto_resolve_expired_tribe_battles: { Args: never; Returns: undefined }
       award_badge_if_earned: {
         Args: { p_badge_id: string; p_user_id: string }
         Returns: boolean
@@ -1156,6 +1220,14 @@ export type Database = {
           p_description?: string
           p_name: string
           p_visibility?: string
+        }
+        Returns: string
+      }
+      create_tribe_battle: {
+        Args: {
+          p_challenger_tribe_id: string
+          p_duration_days?: number
+          p_opponent_tribe_id: string
         }
         Returns: string
       }
@@ -1211,8 +1283,16 @@ export type Database = {
       }
       join_tribe: { Args: { p_tribe_id: string }; Returns: string }
       leave_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
+      resolve_tribe_battle: {
+        Args: { p_battle_id: string }
+        Returns: undefined
+      }
       respond_to_battle: {
         Args: { accept: boolean; battle_id: string }
+        Returns: undefined
+      }
+      respond_to_tribe_battle: {
+        Args: { p_accept: boolean; p_battle_id: string }
         Returns: undefined
       }
       respond_to_tribe_invite: {
@@ -1261,6 +1341,12 @@ export type Database = {
         | "performer"
         | "apex"
         | "legend"
+      tribe_battle_status:
+        | "pending"
+        | "active"
+        | "completed"
+        | "declined"
+        | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1403,6 +1489,13 @@ export const Constants = {
         "performer",
         "apex",
         "legend",
+      ],
+      tribe_battle_status: [
+        "pending",
+        "active",
+        "completed",
+        "declined",
+        "expired",
       ],
     },
   },

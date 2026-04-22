@@ -52,48 +52,21 @@ const ApexBadge = ({
     );
   }
 
-  // ── Founding Apex — premium, commercial, day-one member ──────────
+  // ── Founding Apex — simple, premium, readable ────────────────────
   if (isFounding) {
-    // bump up one size visually for commercial tier
-    const upWrap =
-      size === "xs"
-        ? "h-5 pl-1.5 pr-2 text-[9px] gap-1"
-        : size === "sm"
-        ? "h-6 pl-2 pr-2.5 text-[10px] gap-1"
-        : "h-7 pl-2.5 pr-3 text-[11px] gap-1.5";
-    const upIcon = size === "xs" ? 9 : size === "sm" ? 11 : 13;
-
     return (
       <span
-        title="Founding Apex — €15.99/mo · Day-One Member · Tier locked at Apex"
+        title="Founding Apex — Day-One Member"
         className={cn(
-          "founding-premium-shimmer relative inline-flex items-center rounded-full font-black uppercase tracking-wider",
-          "border border-[hsl(var(--gold))]/90",
-          "shadow-[0_2px_10px_hsl(18_95%_58%/0.45),0_0_22px_hsl(var(--gold)/0.45)]",
-          upWrap,
+          "inline-flex items-center rounded-full font-black uppercase tracking-wider",
+          "bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)]",
+          "border border-gold shadow-[0_0_14px_hsl(var(--gold)/0.55)]",
+          s.wrap,
           className,
         )}
       >
-        <span className="relative z-20 inline-flex items-center justify-center">
-          <Crown
-            size={upIcon}
-            strokeWidth={3}
-            className="text-[hsl(260_18%_4%)] drop-shadow-[0_1px_0_hsl(var(--gold-light))]"
-          />
-          <Zap
-            size={Math.round(upIcon * 0.5)}
-            strokeWidth={3.2}
-            className="absolute -bottom-0.5 -right-1 text-[hsl(var(--gold-light))] fill-[hsl(var(--gold-light))]"
-          />
-        </span>
-        <span className="relative z-20 leading-none text-[hsl(260_18%_4%)] drop-shadow-[0_1px_0_hsl(var(--gold-light)/0.5)]">
-          Founding
-        </span>
-        <Sparkle
-          size={Math.round(upIcon * 0.7)}
-          strokeWidth={3}
-          className="relative z-20 text-[hsl(260_18%_4%)] animate-pulse"
-        />
+        <Crown size={s.icon} strokeWidth={3} />
+        Founding Apex
       </span>
     );
   }

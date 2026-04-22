@@ -1588,6 +1588,11 @@
   }
 }
 
+/* Premium typography refinement */
+.font-display {
+  letter-spacing: -0.015em;
+}
+
 /* Premium text gradient */
 .text-gradient-gold {
   background: linear-gradient(135deg, hsl(42 85% 70%), hsl(42 78% 54%), hsl(42 60% 40%));

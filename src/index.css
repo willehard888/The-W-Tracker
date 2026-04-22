@@ -1013,6 +1013,9 @@
 @keyframes edge-sheen-slide {
   0% { left: -100%; }
   60%, 100% { left: 200%; }
+}
+
+@layer utilities {
   /* ──────────── APEX TIER EFFECTS ──────────── */
 
   /* Strong double-aura for Apex tier — gold inner, flame outer */

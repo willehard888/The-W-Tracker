@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import TribeInviteModal from "@/components/TribeInviteModal";
 import TribePendingRequestsDialog from "@/components/TribePendingRequestsDialog";
+import TribeReportsDialog from "@/components/TribeReportsDialog";
 import TribePostCard, { type TribePostCardPost } from "@/components/TribePostCard";
 import { useModeration } from "@/hooks/use-moderation";
 

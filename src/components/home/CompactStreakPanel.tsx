@@ -1,4 +1,5 @@
 import { Flame, Zap, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getEffectiveStreak, getStreakDeadlineState } from "@/lib/streak";
 
@@ -28,11 +29,79 @@ const getStreakTier = (streak: number) => {
   return { name: "Start", index: -1 };
 };
 
-/**
- * Compact streak — designed for the Command Deck side-by-side layout.
- * Fits next to Lock-Your-Day CTA without overflow, keeps the cinematic
- * flame + tier accent + single next-milestone bar.
- */
+/* ─── Embers rising from the flame ────────────────────────────────────── */
+const Embers = ({ count, color }: { count: number; color: string }) => (
+  <>
+    {Array.from({ length: count }).map((_, i) => {
+      const delay = (i / count) * 2.4;
+      const duration = 1.8 + (i % 4) * 0.45;
+      const xDrift = (i % 2 === 0 ? -1 : 1) * (4 + (i * 3) % 14);
+      const left = 18 + ((i * 17) % 64);
+      const size = 2 + (i % 3);
+      return (
+        <span
+          key={i}
+          className="streak-fx-ember absolute rounded-full pointer-events-none"
+          style={{
+            width: size,
+            height: size,
+            left: `${left}%`,
+            bottom: 6,
+            background: color,
+            boxShadow: `0 0 ${size * 3}px ${color}`,
+            opacity: 0,
+            // @ts-expect-error CSS custom prop
+            "--ember-x": `${xDrift}px`,
+            animation: `streak-ember-rise ${duration}s ease-out infinite`,
+            animationDelay: `${delay}s`,
+          }}
+        />
+      );
+    })}
+  </>
+);
+
+/* ─── Pulse rings expanding from the flame box ────────────────────────── */
+const PulseRings = ({ color, intensity }: { color: string; intensity: number }) => (
+  <>
+    {Array.from({ length: intensity }).map((_, i) => (
+      <span
+        key={i}
+        className="streak-fx-pulse-ring absolute inset-0 rounded-xl pointer-events-none"
+        style={{
+          border: `2px solid ${color.replace(")", " / 0.55)")}`,
+          animation: `streak-pulse-ring ${2.4 + i * 0.6}s cubic-bezier(0,0,0.2,1) infinite`,
+          animationDelay: `${i * 0.8}s`,
+        }}
+      />
+    ))}
+  </>
+);
+
+/* ─── Sparkle twinkles around tier badge ──────────────────────────────── */
+const Twinkles = ({ color }: { color: string }) => (
+  <>
+    {[
+      { top: -2, left: -2, delay: 0 },
+      { top: -3, right: -3, delay: 0.6 },
+      { bottom: -2, left: -3, delay: 1.2 },
+      { bottom: -3, right: -2, delay: 1.8 },
+    ].map((pos, i) => (
+      <span
+        key={i}
+        className="streak-fx-twinkle absolute w-1 h-1 rounded-full pointer-events-none"
+        style={{
+          ...pos,
+          background: color,
+          boxShadow: `0 0 6px ${color}`,
+          animation: `streak-twinkle 2.4s ease-in-out infinite`,
+          animationDelay: `${pos.delay}s`,
+        }}
+      />
+    ))}
+  </>
+);
+
 const CompactStreakPanel = ({
   streak,
   longestStreak,
@@ -57,7 +126,48 @@ const CompactStreakPanel = ({
   const segmentProgress = nextMilestone
     ? Math.min(100, ((displayStreak - prevDays) / (nextDays - prevDays)) * 100)
     : 100;
+  const closeToMilestone = nextMilestone && segmentProgress >= 75;
 
+  /* ── Animated count-up + milestone shockwave detection ─────────────── */
+  const [countDisplay, setCountDisplay] = useState(displayStreak);
+  const [shockwave, setShockwave] = useState(false);
+  const prevStreakRef = useRef(displayStreak);
+  const numberKey = useRef(0);
+
+  useEffect(() => {
+    const prev = prevStreakRef.current;
+    if (prev === displayStreak) return;
+
+    // Detect milestone crossing
+    const crossedMilestone = MILESTONES.some(
+      (m) => prev < m.days && displayStreak >= m.days,
+    );
+    if (crossedMilestone) {
+      setShockwave(true);
+      const t = setTimeout(() => setShockwave(false), 900);
+      // Stop propagation
+    }
+
+    // Count-up animation (300ms)
+    const start = performance.now();
+    const from = prev;
+    const to = displayStreak;
+    const duration = 600;
+    let raf = 0;
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      setCountDisplay(Math.round(from + (to - from) * eased));
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    numberKey.current += 1;
+    prevStreakRef.current = displayStreak;
+
+    return () => cancelAnimationFrame(raf);
+  }, [displayStreak]);
+
+  /* ── Tier-driven styling ───────────────────────────────────────────── */
   const accent = isLegendary
     ? "hsl(280 80% 65%)"
     : isDiamond
@@ -85,17 +195,17 @@ const CompactStreakPanel = ({
     : "text-foreground";
 
   const flameDuration = isLegendary
-    ? "0.85s"
+    ? "0.7s"
     : isDiamond
-    ? "1.05s"
+    ? "0.9s"
     : isBlazing
-    ? "1.3s"
+    ? "1.15s"
     : isOnFire
-    ? "1.6s"
+    ? "1.4s"
     : isWarm
-    ? "2.0s"
+    ? "1.8s"
     : isHot
-    ? "2.4s"
+    ? "2.2s"
     : "0s";
 
   const flameBg = isLegendary
@@ -112,34 +222,82 @@ const CompactStreakPanel = ({
     ? `${accent.replace(")", " / 0.2)")}`
     : "hsl(var(--secondary))";
 
+  const emberCount = isLegendary ? 14 : isDiamond ? 11 : isBlazing ? 8 : isOnFire ? 6 : isWarm ? 4 : isHot ? 3 : 0;
+  const ringCount = isLegendary ? 3 : isDiamond ? 2 : isBlazing ? 2 : isHot ? 1 : 0;
+  const emberColor = isLegendary
+    ? "hsl(280 90% 75%)"
+    : isDiamond
+    ? "hsl(200 90% 75%)"
+    : isBlazing
+    ? "hsl(42 95% 70%)"
+    : "hsl(28 95% 65%)";
+
   return (
     <div
       className={cn(
-        "relative rounded-2xl overflow-hidden p-4 border flex flex-col justify-between gap-3 isolate",
+        "relative rounded-2xl overflow-hidden p-4 border flex flex-col justify-between gap-3 isolate min-h-[200px]",
         className,
       )}
       style={{
-        borderColor: isHot ? `${accent.replace(")", " / 0.45)")}` : "hsl(var(--border))",
+        borderColor: isHot ? `${accent.replace(")", " / 0.5)")}` : "hsl(var(--border))",
         background: isHot
           ? "radial-gradient(120% 90% at 0% 0%, hsl(255 14% 11%), hsl(255 14% 6%))"
           : "linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 6%))",
         boxShadow: isHot
-          ? `0 10px 32px -16px ${accent.replace(")", " / 0.45)")}, inset 0 1px 0 hsl(0 0% 100% / 0.04)`
+          ? `0 12px 36px -16px ${accent.replace(")", " / 0.55)")}, inset 0 1px 0 hsl(0 0% 100% / 0.05)`
           : "inset 0 1px 0 hsl(0 0% 100% / 0.03)",
       }}
     >
-      {/* Tier accent radial */}
-      {isHot && (
+      {/* Background heat shimmer (Champion+) */}
+      {isBlazing && (
         <div
-          className="absolute -top-12 -right-10 w-40 h-40 rounded-full pointer-events-none"
+          className="streak-fx-bg-shimmer absolute inset-x-0 bottom-0 h-2/3 pointer-events-none"
           style={{
-            background: `radial-gradient(circle, ${accent.replace(")", " / 0.22)")} 0%, transparent 65%)`,
+            background: `radial-gradient(ellipse at center bottom, ${accent.replace(")", " / 0.18)")} 0%, transparent 70%)`,
+            animation: "streak-bg-shimmer 3.5s ease-in-out infinite",
           }}
         />
       )}
 
+      {/* Aurora sweep (Legendary) */}
+      {isLegendary && (
+        <div
+          className="streak-fx-aurora absolute inset-y-0 w-1/2 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, hsl(280 80% 70% / 0.18) 30%, hsl(42 95% 70% / 0.22) 50%, hsl(350 85% 65% / 0.18) 70%, transparent)",
+            animation: "streak-aurora-sweep 6s ease-in-out infinite",
+          }}
+        />
+      )}
+
+      {/* Lightning flickers (Legendary) */}
+      {isLegendary && (
+        <>
+          <div
+            className="streak-fx-lightning absolute top-2 right-3 w-px h-12 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(180deg, transparent, hsl(280 90% 80%), hsl(42 95% 75%), transparent)",
+              boxShadow: "0 0 8px hsl(280 90% 80%)",
+              animation: "streak-lightning 4.5s ease-in-out infinite",
+            }}
+          />
+          <div
+            className="streak-fx-lightning absolute top-6 left-4 w-px h-10 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(180deg, transparent, hsl(200 90% 80%), transparent)",
+              boxShadow: "0 0 8px hsl(200 90% 80%)",
+              animation: "streak-lightning 6s ease-in-out infinite",
+              animationDelay: "1.2s",
+            }}
+          />
+        </>
+      )}
+
       {/* Top: label + tier badge */}
-      <div className="relative flex items-center justify-between">
+      <div className="relative flex items-center justify-between z-10">
         <div className="flex items-center gap-2">
           <span
             className="inline-block h-1.5 w-1.5 rounded-full"
@@ -157,48 +315,89 @@ const CompactStreakPanel = ({
           </p>
         </div>
         {tier.index >= 1 && (
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md border",
-              isLegendary && "animate-[streak-badge-shimmer_2.8s_ease-in-out_infinite]",
-            )}
-            style={{
-              background: `${accent.replace(")", " / 0.18)")}`,
-              color: accent,
-              borderColor: `${accent.replace(")", " / 0.5)")}`,
-            }}
-          >
-            {isLegendary && <Sparkles size={9} />}
-            {tier.name}
-          </span>
+          <div className="relative">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md border relative",
+                isLegendary && "animate-[streak-badge-shimmer_2.8s_ease-in-out_infinite]",
+              )}
+              style={{
+                background: `${accent.replace(")", " / 0.18)")}`,
+                color: accent,
+                borderColor: `${accent.replace(")", " / 0.55)")}`,
+                boxShadow: isHot ? `0 0 10px ${accent.replace(")", " / 0.35)")}` : undefined,
+              }}
+            >
+              {isLegendary && <Sparkles size={9} />}
+              {tier.name}
+            </span>
+            {isDiamond && <Twinkles color={accent} />}
+          </div>
         )}
       </div>
 
       {/* Hero: flame + number */}
-      <div className="relative flex items-center gap-3">
+      <div className="relative flex items-center gap-3 z-10">
         <div
-          className="relative flex h-14 w-14 items-center justify-center rounded-xl shrink-0 overflow-hidden"
+          className="relative flex h-14 w-14 items-center justify-center rounded-xl shrink-0 overflow-visible"
           style={{
             background: flameBg,
             color: isHot ? "white" : "hsl(var(--muted-foreground))",
             boxShadow: isHot
-              ? `0 0 22px ${accent.replace(")", " / 0.5)")}, inset 0 1px 0 hsl(0 0% 100% / 0.18), inset 0 -6px 12px hsl(0 0% 0% / 0.25)`
+              ? `0 0 26px ${accent.replace(")", " / 0.55)")}, inset 0 1px 0 hsl(0 0% 100% / 0.2), inset 0 -6px 12px hsl(0 0% 0% / 0.28)`
               : undefined,
           }}
         >
-          {isHot && (
+          {/* Inner overflow clip for embers */}
+          <div className="absolute inset-0 rounded-xl overflow-hidden">
+            {isHot && <Embers count={emberCount} color={emberColor} />}
+            {/* Inner glow ring */}
+            {isHot && (
+              <span
+                aria-hidden
+                className="absolute inset-1 rounded-lg pointer-events-none"
+                style={{
+                  background: `radial-gradient(circle at 50% 80%, ${accent.replace(")", " / 0.5)")}, transparent 65%)`,
+                }}
+              />
+            )}
+          </div>
+
+          {/* Pulse rings (outside clip) */}
+          {isHot && <PulseRings color={accent} intensity={ringCount} />}
+
+          {/* Conic ring (Diamond+) */}
+          {isDiamond && (
             <span
               aria-hidden
-              className="absolute inset-0 rounded-xl pointer-events-none"
+              className="absolute -inset-[3px] rounded-xl pointer-events-none"
               style={{
-                border: `2px solid ${accent.replace(")", " / 0.45)")}`,
-                animation: `ping ${
-                  isLegendary ? "1.2s" : isDiamond ? "1.5s" : isBlazing ? "1.8s" : "2.4s"
-                } cubic-bezier(0,0,0.2,1) infinite`,
+                background: isLegendary
+                  ? "conic-gradient(from 0deg, hsl(280 80% 65%), hsl(42 95% 70%), hsl(350 85% 65%), hsl(200 85% 70%), hsl(280 80% 65%))"
+                  : "conic-gradient(from 0deg, hsl(200 85% 65%), hsl(42 90% 65%), hsl(200 85% 65%))",
+                animation: "streak-conic-spin 6s linear infinite",
                 opacity: 0.55,
+                WebkitMask:
+                  "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+                WebkitMaskComposite: "xor",
+                maskComposite: "exclude",
+                padding: 2,
               }}
             />
           )}
+
+          {/* Shockwave on milestone cross */}
+          {shockwave && (
+            <span
+              aria-hidden
+              className="streak-fx-shockwave absolute inset-0 rounded-xl pointer-events-none"
+              style={{
+                border: `4px solid ${accent}`,
+                animation: "streak-shockwave 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+              }}
+            />
+          )}
+
           <Flame
             size={26}
             strokeWidth={2.5}
@@ -206,26 +405,46 @@ const CompactStreakPanel = ({
             style={{
               animation: isHot ? `streak-fire ${flameDuration} ease-in-out infinite` : undefined,
               transformOrigin: "center bottom",
+              filter: isHot
+                ? `drop-shadow(0 0 6px ${accent.replace(")", " / 0.7)")})`
+                : undefined,
             }}
           />
+
+          {/* Ground glow */}
+          {isHot && (
+            <span
+              aria-hidden
+              className="streak-fx-ground absolute -bottom-1 left-1/2 h-2 w-12 rounded-[50%] pointer-events-none"
+              style={{
+                background: `radial-gradient(ellipse at center, ${accent.replace(")", " / 0.7)")}, transparent 70%)`,
+                filter: "blur(3px)",
+                animation: "streak-ground-pulse 2s ease-in-out infinite",
+              }}
+            />
+          )}
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-1.5 leading-none">
             <span
+              key={numberKey.current}
               className={cn(
-                "font-black font-display tabular-nums tracking-tighter leading-[0.85]",
+                "font-black font-display tabular-nums tracking-tighter leading-[0.85] inline-block",
                 displayStreak >= 100 ? "text-[40px]" : "text-[48px]",
                 numberClass,
-                isHot && "animate-[streak-number-pulse_3s_ease-in-out_infinite]",
               )}
               style={{
                 filter: isHot
-                  ? `drop-shadow(0 3px 10px ${accent.replace(")", " / 0.45)")})`
+                  ? `drop-shadow(0 3px 12px ${accent.replace(")", " / 0.55)")})`
                   : undefined,
+                animation: isHot
+                  ? "streak-number-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), streak-number-breathe 3.6s ease-in-out infinite 0.7s"
+                  : "streak-number-in 0.5s ease-out",
+                transformOrigin: "center bottom",
               }}
             >
-              {displayStreak}
+              {countDisplay}
             </span>
             <span className="font-black text-muted-foreground/70 font-display text-[10px] uppercase tracking-[0.2em]">
               day{displayStreak === 1 ? "" : "s"}
@@ -241,7 +460,7 @@ const CompactStreakPanel = ({
                 className="text-[8.5px] font-black uppercase tracking-wider flex items-center gap-0.5"
                 style={{ color: accent }}
               >
-                <Zap size={8} /> PB
+                <Zap size={8} className="animate-pulse" /> PB
               </span>
             )}
           </div>
@@ -249,7 +468,7 @@ const CompactStreakPanel = ({
       </div>
 
       {/* Footer: next milestone progress OR deadline warning */}
-      <div className="relative">
+      <div className="relative z-10">
         {deadline?.expired && displayStreak > 0 ? (
           <p className="text-[10px] font-black text-destructive animate-pulse uppercase tracking-wider">
             💀 At risk — check in NOW
@@ -305,6 +524,11 @@ const CompactStreakPanel = ({
                     : isDiamond
                     ? "linear-gradient(90deg, hsl(200 85% 60%), hsl(42 90% 65%))"
                     : `linear-gradient(90deg, ${accent}, ${accent.replace("60%", "75%")})`,
+                  // @ts-expect-error CSS custom prop
+                  "--bar-glow": `${accent.replace(")", " / 0.7)")}`,
+                  animation: closeToMilestone
+                    ? "streak-bar-pump 1.6s ease-in-out infinite"
+                    : undefined,
                   boxShadow: `0 0 8px ${accent.replace(")", " / 0.55)")}`,
                 }}
               >
@@ -312,8 +536,8 @@ const CompactStreakPanel = ({
                   className="absolute inset-0 -translate-x-full"
                   style={{
                     background:
-                      "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.5), transparent)",
-                    animation: "shine 2.4s ease-in-out infinite",
+                      "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.55), transparent)",
+                    animation: "shine 2.2s ease-in-out infinite",
                   }}
                 />
               </div>

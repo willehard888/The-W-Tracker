@@ -195,6 +195,14 @@ const TribeDetail = () => {
       setReportedCount(0);
     }
 
+    // Tribe collective streak — sum of every active member's streak
+    try {
+      const total = await fetchTribeCollectiveStreak(id);
+      setCollectiveStreak(total);
+    } catch {
+      setCollectiveStreak(0);
+    }
+
     setLoading(false);
   };
 

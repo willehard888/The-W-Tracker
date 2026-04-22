@@ -2,6 +2,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import StatusAvatar from "@/components/StatusAvatar";
+import ApexBadge from "@/components/ApexBadge";
 import { getTierConfig } from "@/lib/status-tiers";
 import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,7 @@ const PublicProfile = () => {
       if (!username) return null;
       const { data } = await supabase
         .from("profiles")
-        .select("user_id, username, display_name, avatar_url, status_tier, level, xp, streak, longest_streak, is_elite")
+        .select("user_id, username, display_name, avatar_url, status_tier, level, xp, streak, longest_streak, is_elite, is_apex_subscriber")
         .ilike("username", username)
         .maybeSingle();
       return data;
@@ -166,6 +167,12 @@ const PublicProfile = () => {
                   {tier.label}
                 </span>
               </span>
+              {profile.status_tier === 'apex' && (
+                <ApexBadge isFounding={Boolean((profile as any).is_apex_subscriber)} size="md" />
+              )}
+              {profile.status_tier === 'legend' && (
+                <ApexBadge tier="legend" size="md" />
+              )}
               <span className="inline-flex items-center px-3 py-1.5 rounded-full">
                 <span className="text-[11px] font-black tracking-wider text-muted-foreground/80 uppercase">
                   Level {profile.level}

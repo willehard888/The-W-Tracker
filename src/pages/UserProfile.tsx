@@ -12,6 +12,7 @@ import AmbientParticles from "@/components/AmbientParticles";
 import HeadToHead from "@/components/HeadToHead";
 import ProfileActivityPulse from "@/components/ProfileActivityPulse";
 import FeaturedBadgeHero from "@/components/FeaturedBadgeHero";
+import ApexBadge from "@/components/ApexBadge";
 import { getTierConfig } from "@/lib/status-tiers";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -299,18 +300,28 @@ const UserProfile = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.25 }}
-            className={cn(
-              "inline-flex items-center gap-1.5 mt-3 px-3.5 py-1.5 rounded-full border backdrop-blur-sm",
-              tier.borderClass,
-              tier.bgClass,
-              tier.glowClass,
-            )}
+            className="flex flex-wrap items-center justify-center gap-2 mt-3"
           >
-            <span className="text-base leading-none">{tier.emoji}</span>
-            <span className={cn("text-xs font-black uppercase tracking-wider", tier.textClass)}>
-              {tier.label}
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border backdrop-blur-sm",
+                tier.borderClass,
+                tier.bgClass,
+                tier.glowClass,
+              )}
+            >
+              <span className="text-base leading-none">{tier.emoji}</span>
+              <span className={cn("text-xs font-black uppercase tracking-wider", tier.textClass)}>
+                {tier.label}
+              </span>
+              <span className="text-[10px] text-muted-foreground">· {tier.percentile}</span>
             </span>
-            <span className="text-[10px] text-muted-foreground">· {tier.percentile}</span>
+            {profile.status_tier === 'apex' && (
+              <ApexBadge isFounding={Boolean((profile as any).is_apex_subscriber)} size="md" />
+            )}
+            {profile.status_tier === 'legend' && (
+              <ApexBadge tier="legend" size="md" />
+            )}
           </motion.div>
 
           {/* Activity pulse — live signal */}

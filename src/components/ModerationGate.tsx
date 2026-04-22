@@ -44,7 +44,7 @@ export default function ModerationGate({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-background/80 backdrop-blur-md p-6"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-background/95 p-6"
         >
           <motion.div
             initial={{ scale: 0.96, y: 8 }}

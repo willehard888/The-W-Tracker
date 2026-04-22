@@ -507,14 +507,6 @@ const Tribes = () => {
                         className="text-[10px]"
                       />
                     )}
-                    {t.visibility === "private" && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border">
-                        <Lock size={8} className="text-muted-foreground" />
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
-                          Private
-                        </span>
-                      </span>
-                    )}
                     {memberPreviews[t.id] && memberPreviews[t.id].length > 0 && (
                       <div className="flex -space-x-2 ml-1">
                         {memberPreviews[t.id].slice(0, 3).map((p) => (

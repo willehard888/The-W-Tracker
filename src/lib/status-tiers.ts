@@ -160,11 +160,11 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     unlocks: ["Apex flame aura", "Top 1% status", "Tribes — create communities", "Priority visibility"],
   },
   legend: {
-    label: "Founder",
-    shortLabel: "FDR",
+    label: "Legend",
+    shortLabel: "LGD",
     emoji: "🔱",
     percentile: "Top 0.1%",
-    message: "You shaped this",
+    message: "Legends & Founders only",
     pressureMessage: "The Founders Circle is watching",
     color: "legend",
     borderClass: "border-[hsl(280_70%_60%)]/50",
@@ -175,7 +175,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     badgeVariant: "legend",
     rank: 6,
     requirements: { percentile: 99.9, activeDays: 30, streak: 30 },
-    unlocks: ["Founders Circle aura", "Hall of Fame", "Tribes — create communities", "Eternal recognition"],
+    unlocks: ["Legend rainbow aura", "Founders Circle", "Hall of Fame", "Tribes — create communities", "Mythic status"],
   },
 };
 

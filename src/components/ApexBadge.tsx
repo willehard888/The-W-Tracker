@@ -35,7 +35,7 @@ const ApexBadge = ({
   if (tier === "legend") {
     return (
       <span
-        title="Founder — Top 0.1%, Founders Circle"
+        title="Legend — Top 0.1%, Founders Circle"
         className={cn(
           "inline-flex items-center rounded-full font-black uppercase tracking-wider",
           "bg-gradient-to-r from-[hsl(280_70%_55%)] via-[hsl(var(--gold))] to-[hsl(350_80%_55%)]",

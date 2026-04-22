@@ -126,8 +126,37 @@
     );
   }
 
-  html {
+  html,
+  body {
     scroll-behavior: smooth;
+  }
+
+  /* Smooth scrolling for all internal scroll containers */
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: smooth;
+  }
+
+  /* Smoother momentum scrolling on iOS / touch devices */
+  html,
+  body,
+  [class*="overflow-y-auto"],
+  [class*="overflow-auto"],
+  [class*="overflow-y-scroll"],
+  [class*="overflow-scroll"] {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html,
+    body,
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto;
+    }
   }
 }
 

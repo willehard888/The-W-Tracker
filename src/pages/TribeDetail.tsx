@@ -524,8 +524,7 @@ const TribeDetail = () => {
         </div>
       </div>
 
-        </div>
-      </div>
+
 
       {/* Tribe collective streak — the bigger the tribe burns, the bigger the flame */}
       <div className="mb-4">

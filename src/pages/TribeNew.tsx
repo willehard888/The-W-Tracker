@@ -101,7 +101,7 @@ const TribeNew = () => {
 
       <h1 className="font-display text-2xl font-black mb-1">Create a Tribe</h1>
       <p className="text-xs text-muted-foreground mb-6">
-        Up to 3 tribes per Apex founder. Names must be unique.
+        Up to 3 tribes per Apex founder. Names must be unique. Every tribe is private — members fuel the shared flame with their streaks.
       </p>
 
       <div className="space-y-4">

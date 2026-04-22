@@ -93,6 +93,8 @@ const PublicProfile = () => {
   }
 
   const tier = getTierConfig(profile.status_tier || 'recruit');
+  const isApexSubscriber = Boolean((profile as any).is_apex_subscriber);
+  const isLegendPinned = Boolean((profile as any).legend_pinned);
 
   return (
     <div className="min-h-[100dvh] relative">
@@ -107,7 +109,7 @@ const PublicProfile = () => {
       </button>
 
       <div className="px-4 pt-12">
-        {/* Cinematic hero card — matches /profile */}
+        {/* Cinematic hero card — mirrors /profile */}
         <div className="animate-reveal relative mb-6 overflow-hidden rounded-3xl border border-gold/25 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(42_70%_18%/0.55),hsl(255_14%_6%)_60%)] p-6 pt-10 pb-7">
           {/* Top vignette glow */}
           <div
@@ -125,7 +127,7 @@ const PublicProfile = () => {
               The W Tracker
             </p>
 
-            {/* Avatar — large, gold ring with offset */}
+            {/* Avatar — large, gold ring */}
             <motion.div
               initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -143,6 +145,16 @@ const PublicProfile = () => {
               </div>
             </motion.div>
 
+            {/* PREMIUM ribbon — only for Founding Apex subscribers */}
+            {isApexSubscriber && (
+              <div className="mb-2 flex justify-center">
+                <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm text-[10px] font-black uppercase tracking-[0.22em] bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold shadow-[0_0_14px_hsl(var(--gold)/0.55)]">
+                  <Crown size={11} strokeWidth={3} />
+                  Premium · Day-One
+                </span>
+              </div>
+            )}
+
             {/* Username */}
             <motion.h1
               initial={{ opacity: 0, y: 8 }}
@@ -156,40 +168,44 @@ const PublicProfile = () => {
               <p className="text-sm text-muted-foreground mt-1.5">{profile.display_name}</p>
             )}
 
-            {/* Status pills — Elite · Tier · Level */}
+            {/* Status pills — Apex/Legend supersede Elite (no duplicate badges) */}
             <motion.div
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
               className="flex flex-wrap items-center justify-center gap-2 mt-4"
             >
-              {profile.is_elite && (
+              {profile.status_tier === 'apex' ? (
+                <ApexBadge isFounding={isApexSubscriber} size="md" />
+              ) : profile.status_tier === 'legend' ? (
+                <ApexBadge tier="legend" size="md" />
+              ) : profile.is_elite ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
                   <Crown size={12} className="text-gold" />
                   <span className="text-[11px] font-black text-gold tracking-wider uppercase">Elite</span>
                 </span>
-              )}
-              <span className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border",
-                tier.borderClass,
-                tier.bgClass,
-              )}>
-                <span className="text-sm leading-none">{tier.emoji}</span>
-                <span className={cn("text-[11px] font-black tracking-wider uppercase", tier.textClass)}>
-                  {tier.label}
-                </span>
-              </span>
-              {profile.status_tier === 'apex' && (
-                <ApexBadge isFounding={Boolean((profile as any).is_apex_subscriber)} size="md" />
-              )}
-              {profile.status_tier === 'legend' && (
-                <ApexBadge tier="legend" size="md" />
-              )}
+              ) : null}
               <span className="inline-flex items-center px-3 py-1.5 rounded-full">
                 <span className="text-[11px] font-black tracking-wider text-muted-foreground/80 uppercase">
                   Level {profile.level}
                 </span>
               </span>
+              {championHistory && championHistory.wins > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
+                  <Trophy size={12} className="text-gold" />
+                  <span className="text-[11px] font-black text-gold tracking-wider uppercase">
+                    Season Champion{championHistory.wins > 1 ? ` ×${championHistory.wins}` : ''}
+                  </span>
+                </span>
+              )}
+              {isLegendPinned && profile.status_tier !== 'legend' && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[hsl(280_70%_60%)]/45 bg-[hsl(280_70%_55%)]/10">
+                  <Crown size={12} className="text-[hsl(280_70%_70%)]" />
+                  <span className="text-[11px] font-black tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-[hsl(280_70%_70%)] via-gold to-[hsl(350_80%_60%)]">
+                    Founders Circle
+                  </span>
+                </span>
+              )}
             </motion.div>
 
             {/* Hero XP — massive */}
@@ -205,9 +221,9 @@ const PublicProfile = () => {
               <p className="text-[10px] font-black tracking-[0.32em] text-gold/70 mt-2">TOTAL XP</p>
             </motion.div>
 
-            {/* Percentile / pressure line */}
+            {/* Tier message — italic, evocative (matches /profile) */}
             <p className="text-sm text-muted-foreground/70 font-medium italic mt-5 max-w-[280px]">
-              {tier.percentile}
+              {tier.message}
             </p>
           </div>
 

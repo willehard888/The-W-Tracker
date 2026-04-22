@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Crown, TrendingUp, Share2 } from "lucide-react";
+import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Crown, TrendingUp, Share2, Trophy } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
@@ -205,6 +205,8 @@ const UserProfile = () => {
   const isApex = profile.status_tier === 'apex';
   const isElite = profile.status_tier === 'elite' || profile.is_elite;
   const isHigh = profile.status_tier === 'high_performer';
+  const isApexSubscriber = Boolean((profile as any).is_apex_subscriber);
+  const isLegendPinned = Boolean((profile as any).legend_pinned);
 
   // Cinematic tier-based hero gradient
   const heroBg = isLegend
@@ -269,58 +271,90 @@ const UserProfile = () => {
         </div>
 
         <div className="relative z-10 text-center">
+          {/* Brand kicker */}
+          <p className="text-[10px] font-black uppercase tracking-[0.32em] text-gold/70 mb-3">
+            The W Tracker
+          </p>
+
+          {/* Avatar — large, gold ring with offset */}
           <motion.div
             initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="flex justify-center mb-4"
+            className="relative inline-block mb-5"
           >
-            <StatusAvatar
-              src={profile.avatar_url}
-              name={profile.username}
-              tier={profile.status_tier || 'recruit'}
-              size="xl"
-            />
+            <div className="absolute inset-0 -m-3 rounded-full bg-gold/35 blur-2xl" aria-hidden />
+            <div className="relative">
+              <StatusAvatar
+                src={profile.avatar_url}
+                name={profile.username}
+                tier={profile.status_tier || 'recruit'}
+                size="xl"
+              />
+            </div>
           </motion.div>
 
+          {/* PREMIUM ribbon — Founding Apex subscribers */}
+          {isApexSubscriber && (
+            <div className="mb-2 flex justify-center">
+              <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm text-[10px] font-black uppercase tracking-[0.22em] bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold shadow-[0_0_14px_hsl(var(--gold)/0.55)]">
+                <Crown size={11} strokeWidth={3} />
+                Premium · Day-One
+              </span>
+            </div>
+          )}
+
+          {/* Username — bold display */}
           <motion.h1
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="font-display text-2xl font-black tracking-tight"
+            className="font-display text-[34px] leading-none font-black tracking-tight text-foreground/95"
           >
             @{profile.username}
-            {isOwnProfile && <span className="text-xs text-gold/70 ml-1.5 font-semibold">(you)</span>}
+            {isOwnProfile && <span className="text-xs text-gold/70 ml-1.5 font-semibold align-middle">(you)</span>}
           </motion.h1>
           {profile.display_name && (
-            <p className="text-sm text-muted-foreground mt-0.5">{profile.display_name}</p>
+            <p className="text-sm text-muted-foreground mt-1.5">{profile.display_name}</p>
           )}
 
+          {/* Status pills — Apex/Legend supersede Elite (no duplicates) */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.25 }}
-            className="flex flex-wrap items-center justify-center gap-2 mt-3"
+            className="flex flex-wrap items-center justify-center gap-2 mt-4"
           >
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border backdrop-blur-sm",
-                tier.borderClass,
-                tier.bgClass,
-                tier.glowClass,
-              )}
-            >
-              <span className="text-base leading-none">{tier.emoji}</span>
-              <span className={cn("text-xs font-black uppercase tracking-wider", tier.textClass)}>
-                {tier.label}
-              </span>
-              <span className="text-[10px] text-muted-foreground">· {tier.percentile}</span>
-            </span>
-            {profile.status_tier === 'apex' && (
-              <ApexBadge isFounding={Boolean((profile as any).is_apex_subscriber)} size="md" />
-            )}
-            {profile.status_tier === 'legend' && (
+            {isApex ? (
+              <ApexBadge isFounding={isApexSubscriber} size="md" />
+            ) : isLegend ? (
               <ApexBadge tier="legend" size="md" />
+            ) : profile.is_elite ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
+                <Crown size={12} className="text-gold" />
+                <span className="text-[11px] font-black text-gold tracking-wider uppercase">Elite</span>
+              </span>
+            ) : null}
+            <span className="inline-flex items-center px-3 py-1.5 rounded-full">
+              <span className="text-[11px] font-black tracking-wider text-muted-foreground/80 uppercase">
+                Level {profile.level}
+              </span>
+            </span>
+            {championHistory && championHistory.wins > 0 && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
+                <Trophy size={12} className="text-gold" />
+                <span className="text-[11px] font-black text-gold tracking-wider uppercase">
+                  Season Champion{championHistory.wins > 1 ? ` ×${championHistory.wins}` : ''}
+                </span>
+              </span>
+            )}
+            {isLegendPinned && !isLegend && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[hsl(280_70%_60%)]/45 bg-[hsl(280_70%_55%)]/10">
+                <Crown size={12} className="text-[hsl(280_70%_70%)]" />
+                <span className="text-[11px] font-black tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-[hsl(280_70%_70%)] via-gold to-[hsl(350_80%_60%)]">
+                  Founders Circle
+                </span>
+              </span>
             )}
           </motion.div>
 
@@ -334,9 +368,27 @@ const UserProfile = () => {
             <ProfileActivityPulse userId={userId!} />
           </motion.div>
 
-          {/* Featured badge — title badge */}
+          {/* Hero XP — massive */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.35 }}
+            className="mt-6 flex flex-col items-center"
+          >
+            <p className="font-display font-black text-[64px] leading-none text-gold drop-shadow-[0_0_24px_hsl(42_78%_54%/0.55)] tabular-nums">
+              {profile.xp.toLocaleString().replace(/,/g, " ")}
+            </p>
+            <p className="text-[10px] font-black tracking-[0.32em] text-gold/70 mt-2">TOTAL XP</p>
+          </motion.div>
+
+          {/* Tier message — italic, evocative */}
+          <p className="text-sm text-muted-foreground/70 font-medium italic mt-5 max-w-[280px] mx-auto">
+            {tier.message}
+          </p>
+
+          {/* Featured badge title */}
           {featuredBadge && (
-            <div className="mt-3 flex justify-center">
+            <div className="mt-4 flex justify-center">
               <FeaturedBadgeHero
                 name={featuredBadge.name}
                 icon={featuredBadge.icon}
@@ -350,8 +402,8 @@ const UserProfile = () => {
             <motion.div
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-gold/25 bg-gold/5"
+              transition={{ delay: 0.45 }}
+              className="mt-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-gold/25 bg-gold/5"
             >
               <Medal size={11} className="text-gold" />
               <span className="text-[10px] font-black tracking-wider text-gold">
@@ -363,33 +415,8 @@ const UserProfile = () => {
             </motion.div>
           )}
 
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
-            className="mt-4 flex items-center justify-center gap-4 text-xs"
-          >
-            <div className="flex items-center gap-1.5">
-              <TrendingUp size={12} className="text-gold" />
-              <span className="text-muted-foreground">Level</span>
-              <span className="font-display font-black text-gold">{profile.level}</span>
-            </div>
-            <div className="h-3 w-px bg-border" />
-            <div className="flex items-center gap-1.5">
-              <Zap size={12} className="text-gold" />
-              <span className="font-display font-black text-gold tabular-nums">{profile.xp.toLocaleString()}</span>
-              <span className="text-muted-foreground">XP</span>
-            </div>
-            {isElite && (
-              <>
-                <div className="h-3 w-px bg-border" />
-                <div className="flex items-center gap-1 text-gold">
-                  <Crown size={11} />
-                  <span className="font-black text-[10px] tracking-wider">ELITE</span>
-                </div>
-              </>
-            )}
-          </motion.div>
+          {/* Bottom hairline divider */}
+          <div className="pointer-events-none mx-auto mt-6 h-px w-3/4 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
         </div>
       </div>
 

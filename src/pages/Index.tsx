@@ -2,10 +2,8 @@ import { ChevronRight } from "lucide-react";
 import BadgeCard from "@/components/BadgeCard";
 import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
-import HeroHeader from "@/components/home/HeroHeader";
 import CommandDeck from "@/components/home/CommandDeck";
-import PressureRivals from "@/components/home/PressureRivals";
-import ProgressRail from "@/components/home/ProgressRail";
+import RankProgressHub from "@/components/home/RankProgressHub";
 import CoachStrip from "@/components/home/CoachStrip";
 import Reveal from "@/components/home/Reveal";
 import { useNavigate } from "react-router-dom";
@@ -149,21 +147,8 @@ const Index = () => {
         }}
       />
 
-      {/* HERO HEADER */}
-      <div className="animate-reveal mb-4 relative z-10">
-        <HeroHeader
-          username={profile.username}
-          tier={tier}
-          rank={rankData?.rank ?? null}
-          totalUsers={rankData?.totalUsers}
-          percentile={rankData?.percentile}
-          hasRank={rankData?.hasRank}
-          rankDelta={pulse.loading ? 0 : pulse.rankDelta}
-        />
-      </div>
-
       {/* COMMAND DECK — Streak + Lock Your Day */}
-      <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
+      <div className="animate-reveal mb-4 relative z-10">
         <CommandDeck
           streak={profile.streak}
           longestStreak={profile.longest_streak}
@@ -181,36 +166,30 @@ const Index = () => {
         </Reveal>
       )}
 
-      {/* PRESSURE + RIVALS */}
-      {rankData && (
-        <Reveal className="mb-4 relative z-10">
-          <PressureRivals
-            userId={profile.user_id}
-            tier={tier}
-            rank={rankData.rank}
-            totalUsers={rankData.totalUsers}
-            percentile={rankData.percentile}
-            hasRank={rankData.hasRank}
-            rankScore={Number((profile as any).rank_score) || 0}
-            daysAtTier={
-              (profile as any).rank_score_updated_at
-                ? Math.max(
-                    1,
-                    Math.floor(
-                      (Date.now() -
-                        new Date((profile as any).rank_score_updated_at).getTime()) /
-                        (1000 * 60 * 60 * 24),
-                    ),
-                  )
-                : undefined
-            }
-          />
-        </Reveal>
-      )}
-
-      {/* PROGRESS RAIL */}
+      {/* RANK + PROGRESS HUB — identity strip + Pressure/Rivals/Level/Elite/Quests */}
       <Reveal className="mb-4 relative z-10">
-        <ProgressRail
+        <RankProgressHub
+          username={profile.username}
+          tier={tier}
+          userId={profile.user_id}
+          rank={rankData?.rank ?? null}
+          totalUsers={rankData?.totalUsers ?? 0}
+          percentile={rankData?.percentile ?? 0}
+          hasRank={rankData?.hasRank ?? false}
+          rankScore={Number((profile as any).rank_score) || 0}
+          daysAtTier={
+            (profile as any).rank_score_updated_at
+              ? Math.max(
+                  1,
+                  Math.floor(
+                    (Date.now() -
+                      new Date((profile as any).rank_score_updated_at).getTime()) /
+                      (1000 * 60 * 60 * 24),
+                  ),
+                )
+              : undefined
+          }
+          rankDelta={pulse.loading ? 0 : pulse.rankDelta}
           level={profile.level}
           xp={profile.xp}
           xpToNext={xpToNext}

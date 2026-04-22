@@ -863,6 +863,44 @@ export type Database = {
           },
         ]
       }
+      tribe_invites: {
+        Row: {
+          created_at: string
+          id: string
+          invitee_id: string
+          inviter_id: string
+          responded_at: string | null
+          status: string
+          tribe_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invitee_id: string
+          inviter_id: string
+          responded_at?: string | null
+          status?: string
+          tribe_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invitee_id?: string
+          inviter_id?: string
+          responded_at?: string | null
+          status?: string
+          tribe_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tribe_invites_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "tribes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tribe_members: {
         Row: {
           id: string
@@ -1159,6 +1197,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      invite_to_tribe: {
+        Args: { p_invitee_id: string; p_tribe_id: string }
+        Returns: string
+      }
       is_tribe_member: {
         Args: { _tribe_id: string; _user_id: string }
         Returns: boolean
@@ -1173,6 +1215,11 @@ export type Database = {
         Args: { accept: boolean; battle_id: string }
         Returns: undefined
       }
+      respond_to_tribe_invite: {
+        Args: { p_accept: boolean; p_invite_id: string }
+        Returns: undefined
+      }
+      revoke_tribe_invite: { Args: { p_invite_id: string }; Returns: undefined }
       reward_referral_conversion: { Args: { p_user: string }; Returns: Json }
       set_elite_status: {
         Args: { elite: boolean; target_user_id: string }

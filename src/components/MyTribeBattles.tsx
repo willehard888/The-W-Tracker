@@ -87,7 +87,9 @@ const MyTribeBattles = () => {
         .from("tribes" as any)
         .select("id, name")
         .in("id", allTribeIds);
-      const nameMap = new Map(((nameRows as any) ?? []).map((t: any) => [t.id, t.name]));
+      const nameMap = new Map<string, string>(
+        ((nameRows as any) ?? []).map((t: any) => [t.id as string, t.name as string]),
+      );
       raw.forEach((b) => {
         b.challenger_name = nameMap.get(b.challenger_tribe_id);
         b.opponent_name = nameMap.get(b.opponent_tribe_id);

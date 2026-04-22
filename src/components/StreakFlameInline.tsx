@@ -152,19 +152,41 @@ const StreakFlameInline = ({
         {isHot && (
           <svg width="0" height="0" className="absolute" aria-hidden>
             <defs>
-              <filter id={turb} x="-20%" y="-20%" width="140%" height="140%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.03 0.06" numOctaves="2" seed="5">
+              <filter id={turb} x="-30%" y="-30%" width="160%" height="160%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.035 0.07" numOctaves="3" seed="5">
                   <animate
                     attributeName="baseFrequency"
-                    dur={`${2.6 * speedMul}s`}
-                    values="0.025 0.05;0.04 0.08;0.028 0.055;0.025 0.05"
+                    dur={`${2.4 * speedMul}s`}
+                    values="0.025 0.05;0.05 0.1;0.03 0.06;0.025 0.05"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="seed"
+                    dur={`${4 * speedMul}s`}
+                    values="5;17;9;5"
                     repeatCount="indefinite"
                   />
                 </feTurbulence>
-                <feDisplacementMap in="SourceGraphic" scale="2" />
+                <feDisplacementMap in="SourceGraphic" scale="2.6" />
               </filter>
             </defs>
           </svg>
+        )}
+
+        {/* Updraft cone (Warm+) */}
+        {isWarm && (
+          <span
+            className="absolute left-1/2 bottom-0 rounded-full pointer-events-none"
+            style={{
+              width: flameSize * 0.7,
+              height: flameSize * 1.5,
+              background: `radial-gradient(ellipse at 50% 100%, ${palette.glow.replace(")", " / 0.22)")} 0%, transparent 70%)`,
+              filter: "blur(4px)",
+              transform: "translateX(-50%)",
+              transformOrigin: "center bottom",
+              animation: `flame-updraft ${2.2 * speedMul}s ease-out infinite`,
+            }}
+          />
         )}
 
         {/* Halo glow under flame (Warm+) */}
@@ -177,8 +199,9 @@ const StreakFlameInline = ({
               background: `radial-gradient(ellipse at center, ${palette.glow} 0%, transparent 70%)`,
               transform: "translateX(-50%)",
               filter: "blur(3px)",
-              opacity: 0.55,
-              animation: `streak-fuel-pulse ${1.8 * speedMul}s ease-in-out infinite`,
+              opacity: 0.6,
+              animation: `flame-base-glow ${1.8 * speedMul}s ease-in-out infinite`,
+              mixBlendMode: "screen",
             }}
           />
         )}
@@ -193,9 +216,9 @@ const StreakFlameInline = ({
             transform: "translateX(-50%)",
             transformOrigin: "center bottom",
             animation: isHot
-              ? `flame-mid-flicker ${1.1 * speedMul}s ease-in-out infinite`
+              ? `flame-mid-flicker ${1.05 * speedMul}s ease-in-out infinite`
               : undefined,
-            filter: isHot ? `url(#${turb}) drop-shadow(0 0 ${flameSize * 0.35}px ${palette.glow})` : undefined,
+            filter: isHot ? `url(#${turb}) drop-shadow(0 0 ${flameSize * 0.4}px ${palette.glow})` : undefined,
             mixBlendMode: isHot ? "screen" : undefined,
           }}
         >
@@ -225,8 +248,8 @@ const StreakFlameInline = ({
             style={{
               transform: "translateX(-50%)",
               transformOrigin: "center bottom",
-              animation: `flame-core-flicker ${0.7 * speedMul}s ease-in-out infinite`,
-              filter: `drop-shadow(0 0 ${flameSize * 0.25}px ${palette.core})`,
+              animation: `flame-core-flicker ${0.65 * speedMul}s ease-in-out infinite`,
+              filter: `url(#${turb}) drop-shadow(0 0 ${flameSize * 0.3}px ${palette.core})`,
               mixBlendMode: "screen",
             }}
           >
@@ -241,26 +264,48 @@ const StreakFlameInline = ({
           </svg>
         )}
 
-        {/* Spark tongue (Blazing+) */}
-        {isBlazing && (
+        {/* Spark tongues (Blazing+) — multiple, randomized */}
+        {isBlazing && Array.from({ length: isLegendary ? 4 : isDiamond ? 3 : 2 }).map((_, i) => (
           <span
+            key={`tongue-${i}`}
             className="absolute rounded-full pointer-events-none"
             style={{
-              width: 2,
-              height: 3,
-              left: "50%",
+              width: 1.5 + (i % 2) * 0.5,
+              height: 2.5,
+              left: `${42 + i * 8}%`,
               top: 0,
               background: `radial-gradient(circle, ${palette.core}, ${palette.mid} 50%, transparent 80%)`,
               boxShadow: `0 0 4px ${palette.core}`,
               opacity: 0,
-              // @ts-expect-error CSS custom prop
-              "--tongue-x": "-50%",
-              animation: `flame-tongue-rise ${1.4 * speedMul}s ease-out infinite`,
-              animationDelay: "0.2s",
+              ["--tongue-x" as string]: `${-50 + (i % 2 === 0 ? -1 : 1) * (3 + i * 4)}%`,
+              animation: `flame-tongue-rise ${(1.3 + i * 0.2) * speedMul}s ease-out infinite`,
+              animationDelay: `${i * 0.35}s`,
               mixBlendMode: "screen",
             }}
           />
-        )}
+        ))}
+
+        {/* Tiny sparks (Diamond+) */}
+        {isDiamond && Array.from({ length: isLegendary ? 4 : 3 }).map((_, i) => (
+          <span
+            key={`sp-${i}`}
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              width: 1,
+              height: 1,
+              left: `${35 + i * 10}%`,
+              top: flameSize * 0.5,
+              background: palette.core,
+              boxShadow: `0 0 3px ${palette.mid}`,
+              opacity: 0,
+              ["--spark-x" as string]: `${-4 + i * 3}px`,
+              ["--spark-y" as string]: `${-14 - i * 3}px`,
+              animation: `flame-spark-shoot ${(1.6 + i * 0.3) * speedMul}s ease-out infinite`,
+              animationDelay: `${i * 0.4}s`,
+              mixBlendMode: "screen",
+            }}
+          />
+        ))}
       </span>
 
       {showCount && (

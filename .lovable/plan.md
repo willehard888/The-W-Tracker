@@ -1,77 +1,112 @@
 
 
-# Premium Button System
+# Premium Buttons — Polish Pass v2 + Page-by-Page Audit
 
-Tee koko apin napeista oikeasti hienot — fysikaaliset, painavat, ja yhtenäiset Obsidian & Gold -teemaan. Ei animaatiomuutoksia olemassa oleviin, vain itse napin materiaali ja uudet variantit.
+Vie napit huippuunsa ja varmista että jokainen sivu hyödyntää uutta järjestelmää. Ei animaatiomuutoksia, ei layout-muutoksia.
 
-## 1. `src/components/ui/button.tsx` — variantit uusiksi
+## 1. `button.tsx` — viimeistely seuraavalle tasolle
 
-Pidetään API identtisenä (`variant`, `size`, `asChild`, haptics) — vain tyylit vaihtuvat.
+**Materiaaliparannukset:**
 
-**Muokattavat variantit:**
+- **`default`** (obsidian): lisätään hienovarainen sisäinen vinjetti `inset 0 0 18px hsl(0 0% 0% / 0.25)` jotta keskikohta tummenee reunoja vasten — antaa "kuperan" napin tunteen. Yläspekkulaarinen highlight muutetaan kahteen viivaan: `0px white/14%` + `1px white/4%` jolloin nappi näyttää pyöristetyltä reunoilta.
 
-- **`default`** (ensisijainen tumma): musta-obsidian gradientti `hsl(258 16% 14%) → hsl(258 18% 8%)`, 1px ylä-highlight `white/12%`, 1px ala-shadow `black/40%`, ulkoinen `0 1px 1px black/35%, 0 6px 14px -4px black/45%`. Painettuna: gradientti kääntyy + highlight pois → aito "painautuva" tunne.
+- **`gold`**: lisätään ohut sisäinen lämmin sävy alaosaan `inset 0 -8px 18px -8px hsl(28 90% 35% / 0.55)` joka antaa kullalle aitoa metallin syvyyttä — kuten valettu kulta heijastaa lämpimämpää alapuolelta. Yläspekkulaarinen viiva tulee kahdesta kerroksesta: `inset 0 0.5px 0 white/65%` + `inset 0 1px 0 white/15%`. Disabled state lisää `grayscale-[0.3]` jotta nuhraantunut kulta näyttää oikeasti kuluneelta.
 
-- **`gold`** (hero CTA): kolmen stopin metallinen gradientti `hsl(42 95% 72%) → hsl(42 85% 56%) → hsl(42 65% 38%)` + 0.5px ylä-spec-viiva `white/55%` + ala-bevel `black/50%`. Ulkoinen lämmin glow `0 8px 20px -6px hsl(42 78% 50% / 0.45)`. Painettuna spec-viiva siirtyy 1px alas, gradientti tummenee 8%.
+- **`destructive`**: sama vinjetti-resepti kuin defaultilla mutta punaisena.
 
-- **`destructive`**: sama rakenne kuin `default` mutta punainen ramppi (`0 70% 32% → 0 75% 22%`), spec `red/30%`.
+- **`outline`**: korvataan static border gradient-hairline-bordilla: `border-image: linear-gradient(180deg, hsl(border-strong/0.9), hsl(border/0.5)) 1`. Tämä tekee reunasta valmiiksi 3D:n ilman extra shadowia.
 
-- **`outline`** (sekundääri): `surface-panel` pohja, hairline border (`border/70%`), hover nostaa hairline `border-strong`-väriin + lisää 1px sisäinen ylähighlight.
+- **`ghost`**: hover-tilaan lisätään `1px sisäinen ylähighlight white/6%` jotta hover-nosto tuntuu materiaaliselta eikä pelkältä värilaikulta.
 
-- **`secondary`**: matalampi `surface-panel` ilman bordereita, hover lift +1px shadow-kasvulla.
+- **`glass`**: lisätään saturate-fallback `backdrop-saturate-150` jotta lasi todella suodattaa taustan värejä, ei vain himmennä.
 
-- **`ghost`**: läpinäkyvä lepotilassa, hoverissa `white/4%` + 1px hairline alle (oikea "underline-on-hover" optisesti tasapainoitettu).
-
-- **`link`**: gold-soft → gold transition tekstillä, ei layout-muutosta.
-
-- **`gold-outline`**: hairline gold-soft, sisäpuolella `gold/4%` lasi, hoverissa täyttyy `gold/12%`.
+- **`tier`**: tarjoaa vaihtoehtoiset CSS-muuttujat `--tier-color` ja `--tier-color-deep` joista jälkimmäinen tummempaan alapintaan. Komponentti voi asettaa nämä parentista `style={{ "--tier-color": "...", "--tier-color-deep": "..." }}`-propilla.
 
 **Uudet variantit:**
 
-- **`glass`**: `surface-glass` lasipohja + light-rake — käytetään esim. modaaleissa ja ylätason action-baareissa.
-- **`tier`**: ottaa nykyisen rank-värin CSS-muuttujasta (`--tier-color`) ja rakentaa siitä saman metallisen reseptin kuin gold — käytetään mm. tier-crest CTA:issa.
+- **`success`**: vihreä metalli-resepti (`140 55% 38% → 140 60% 26%`) — käytetään confirm-painikkeissa (Battles accept, Tribe approve, Quest claim).
+- **`warning`**: amber-metalli (`38 90% 52% → 38 80% 38%`) — käytetään riskinotto-CTA:issa (decline, leave tribe, demote-warningit).
+- **`danger-outline`**: hairline destructive-väriltä, läpinäkyvä pohja — käytetään delete-account, leave-tribe, withdraw-battle -toiminnoissa joissa destructive on liian vahva.
 
-## 2. Koko-skaalaus (jättäämme aktiiviset animaatiot)
+**Koot:**
 
-- `default` 40px, `sm` 36px, `lg` 48px, `xl` 56px, `icon` 40×40 — nykyinen.
-- Lisätään `icon-sm` 32×32 ja `icon-lg` 48×48 pienille toolbar-napeille (Messages compose, Coach send) ja isoille FAB-tyyppisille napeille.
-- Border-radius standardoitu: `default → rounded-md (8px)`, `lg/xl → rounded-lg (12px)`, `icon* → rounded-full` jos käyttötapaus on action-piste, muuten `rounded-md`.
-- Sisäinen padding pysyy ennallaan; muutokset vain visuaalisia.
+- Lisätään `pill` -kokovariantti (h-9, px-5, rounded-full) chipeille ja toolbar-actioneille (Leaderboard period switch, Tabs, filter chips). Tällä hetkellä ne ovat custom buttoneita — saadaan yhdenmukaiset.
+- `xl` saa `font-display`-ladun automaattisesti jotta hero-CTA:t (Paywall, Onboarding) hyödyntävät Space Groteskia.
 
-## 3. Tyypografia napissa
+**Mikrointeraktion viimeistely (ei uusia animaatioita):**
 
-- Kaikki napit `font-semibold` (600) — nykyinen `font-semibold` säilyy. `gold` ja `tier`: `font-bold` (700) `tracking-[-0.005em]`.
-- Iso `xl` koko: kasvatetaan letter-spacing `-0.01em` jotta isot CTA:t lukeutuvat kiinteinä lohkoina, eivät hajoa.
-- Ikoni-teksti gap nostetaan `gap-2 → gap-2.5` jotta gold-CTA:t hengittävät.
+- Lisätään `[&:active>span]:translate-y-[0.5px]` napin sisältöön — sisältö "painuu" 0.5px alas samalla scale-transformilla. Hyödyntää olemassa olevaa `transition-[transform]`-listausta.
+- Disabled-tilaan `cursor-not-allowed` jotta kursori antaa palautteen.
 
-## 4. Painautumisen ja fokuksen viimeistely
+## 2. Sivukohtainen audit — varmistetaan että jokainen sivu hyötyy
 
-- Active-state (jo `scale-[0.985]`): lisätään samanaikainen `shadow`-vaihto kevyempään `0 1px 1px black/30%, inset 0 1px 2px black/35%` jotta nappi näyttää aidosti painuvan pintaan. Ei uusia animaatioita — pelkkä saman duraation transition lisätään `box-shadow` -listaan (jo mukana).
-- Focus-ring: nykyinen `ring-2 ring-ring ring-offset-2` säilyy, mutta `ring-offset-color` siirtyy `--background`iin niin että ringi ei "kellu" outoon väriin lasimuuttuvalla taustalla. Lisätään `focus-visible:shadow-[0_0_0_4px_hsl(var(--ring)/0.18)]` pehmentäen ringin reunaa.
-- Disabled: `opacity-50` lisäksi `saturate-[0.6]` — disabled gold ei enää huuda kullalta.
+Käydään jokainen sivu läpi ja vaihdetaan ad-hoc napit oikeisiin variantteihin. Vain `<button>`/`<Button>` -kutsujen variantti/koko-vaihtoja, ei layoutia tai logiikkaa.
 
-## 5. Hold-state (uusi, valinnainen prop)
+**Auth & Onboarding:**
+- `Auth.tsx` — primary login → `gold` xl, secondary "back" → `ghost`.
+- `Onboarding.tsx` — "Continue" → `gold` xl, "Skip" → `ghost`.
+- `Paywall.tsx` — varmistetaan että jokainen tier-CTA käyttää joko `gold` (Elite) tai `tier` (Apex) varianttia. `Restore purchases` → `link`. Close → `icon-sm` + `ghost`.
 
-Lisätään `loading?: boolean` -prop. Kun `true`:
-- nappi disabloituu, sisältö korvautuu `Loader2` + nykyinen `children` `opacity-0`-kerroksena säilyttäen napin leveyden (ei layoutin hyppimistä)
-- ei spinner-pop-in-animaatiota — loader rendataan nykyisellä `animate-spin`-keyframellä, joka on jo globaali
+**Hero & koti:**
+- `Index.tsx` (CommandDeck, RankProgressHub) — kaikki "Open" / "View" → `outline` size sm. Pääsy paywalliin → `gold`. Loading-tilat käyttävät `loading`-propia.
+- `CoachStrip.tsx`, `CoachNudgeCard.tsx` — "Open coach" → `glass` size sm.
 
-Sama kuvio kuin `PaywallTierCard` jo käyttää — vakioidaan napille itselleen jotta ei tarvitse tehdä erikseen joka sivulla.
+**Profile-perhe:**
+- `Profile.tsx` — Edit → `outline`, Logout → `danger-outline`, Delete account → `destructive`. Settings rows → `secondary` size sm.
+- `PublicProfile.tsx`, `UserProfile.tsx` — Add friend → `gold-outline`, Message → `outline`, Block → `danger-outline`, Share → `glass` icon.
 
-## 6. Kosketusalue ja iOS-tunne
+**Leaderboard & Tribes:**
+- `Leaderboard.tsx`, `TribeLeaderboard.tsx` — period switcher chipit → `pill` koko + `secondary`/`gold` aktiiville. "Join" → `gold`, "View" → `outline`.
+- `Tribes.tsx` — Create tribe → `gold`, Search → `outline`. Filter chipit → `pill`.
+- `TribeDetail.tsx` — Join → `gold`, Leave → `danger-outline`, Invite → `gold-outline`, Manage → `outline`. Approve/decline pending → `success`/`warning`.
+- `TribeNew.tsx` — Submit → `gold` xl, Cancel → `ghost`.
 
-- Minimum tap target: lisätään `[&>*]:pointer-events-none` ja `min-h` napin koon mukaan jotta active-tila ei katoa ikonin/tekstin sisällä klikatessa (nykyinen ongelma `gap-2 [&_svg]`-kohdissa).
-- Säilytetään olemassa oleva `hapticImpact("light")`-kutsu — ei muutoksia.
+**Battles:**
+- `Battles.tsx`, `TribeBattles.tsx` — Challenge → `gold`, Accept → `success`, Decline → `warning`, Submit proof → `gold-outline`. View → `outline`.
+- `TribeBattleCard.tsx`, `HeadToHead.tsx`, `LiveRivals.tsx` — kaikki action-napit samaan järjestelmään.
 
-## 7. Mitä EI muuteta
+**Coach, Briefing, Feed:**
+- `Coach.tsx` — Send → `gold` `icon-lg` + `Send` ikoni, Clear → `ghost` `icon-sm`. Quick prompts → `pill` + `secondary`.
+- `WeeklyBriefing.tsx` — Generate → `gold` xl, Share → `glass`.
+- `EliteFeed.tsx` — Post → `gold-outline`, Kudos → `pill` + `gold-outline`, Comment send → `gold` `icon-sm`.
 
-- Ei uusia framer-motion-animaatioita, ei uusia keyframeja, ei uutta CSS-shimmeria.
-- Ei muutoksia `BottomNav`-, `StatusHeader`- tai paywall-erikoisnappeihin (niillä on omat tarkoitukselliset efektit).
-- Ei muutoksia `Button`in propseihin tai callsiteihin — kaikki nykyiset käyttöpaikat saavat uudet tyylit automaattisesti.
+**Messages & Chat:**
+- `Messages.tsx` — Compose → `gold` `icon-lg`, search clear → `ghost` `icon-sm`.
+- `Chat.tsx` — Send → `gold` `icon-lg`, attach → `glass` `icon-sm`. Back → `ghost` `icon-sm`.
+
+**Daily check-in & quests:**
+- `DailyCheckin.tsx` — Submit → `gold` xl + `loading`, Cancel → `ghost`. Toggle-chipit (toiminnot kuten "Workout", "Meditation") → `pill` + `outline`/`success` (active).
+- `DailyQuests.tsx`, `home/CommandDeck.tsx` — Claim → `gold` size sm + `loading`.
+
+**Modaalit ja dialogit:**
+- `BadgeUnlockModal.tsx`, `LevelUpCelebration.tsx`, `EliteUnlockCelebration.tsx`, `TierPromotionCelebration.tsx`, `StoryShareModal.tsx`, `BriefingShareCard.tsx` — primary close/share → `gold`, secondary → `glass`. Ei animaatioiden koskemista.
+- `TribeChallengeModal.tsx`, `TribeInviteModal.tsx`, `TribeManageDialog.tsx`, `TribePendingRequestsDialog.tsx`, `TribeReportsDialog.tsx` — Confirm → `gold`, Cancel → `ghost`, Destructive → `destructive`/`danger-outline`.
+- `TierLadder.tsx` — paywall CTA jo käyttää `TierUnlockPaywallCard`-komponenttia; vaihdetaan se `gold` xl-nappiin samalla resepti­logiikalla.
+- `TierUnlockPaywallCard.tsx`, `PaywallTierCard.tsx` — vaihdetaan custom-luokat `gold`/`tier`-variantteihin niin että ne perivät kaikki materiaalipäivitykset.
+
+**Pikkukomponentit jotka hyötyvät automaattisesti:**
+- `InviteCTA`, `XpCounter` claim-CTA, `RankPressureCard` action, `TopInvitersWidget`, `TopTribesWidget`, `EliteFeedTeaser`, `TierRiskBanner`, `BadgeShowcase` "View all" — kaikissa `<Button>`-kutsut variant-passi.
+
+**iOS-specifit (`AppleSignInButton.tsx`, `AccessGate.tsx`):**
+- AppleSignInButton säilyttää oman natiivityylinsä (Applen guideline). Vaihtoehtoiset CTA:t alle → `glass` xl.
+- AccessGate "Become Elite" → `gold` xl, "Restore" → `link`.
+
+## 3. Mitä EI muuteta
+
+- Ei muutoksia `button.tsx`-propsien APIin (kaikki nykyiset call-sitet jatkavat toimintaansa).
+- Ei animaatioita, ei keyframeja, ei framer-motion-säätöä.
+- Ei layoutin tai sivurakenteen muutoksia.
+- `BottomNav`, `StatusHeader`, `BrandLogo`, `AppLogoHeader`, `SplashScreen` — omat erikoistyylit säilyvät.
+- AppleSignInButton — natiivin näköinen.
+- Backend, RLS, edge functionit — ei kosketa.
 
 ## Tiedostot
 
-- `src/components/ui/button.tsx` — variantit, koot, `loading`, focus-shadow
+- `src/components/ui/button.tsx` — uudet variantit (`success`, `warning`, `danger-outline`), uusi `pill` koko, materiaaliviimeistely, mikrointeraktion painautuminen, disabled grayscale.
+- Sivut & komponentit (variant-vaihto):
+  - `src/pages/{Auth,Onboarding,Paywall,Profile,PublicProfile,UserProfile,Leaderboard,TribeLeaderboard,Tribes,TribeDetail,TribeNew,Battles,TribeBattles,Coach,WeeklyBriefing,EliteFeed,Messages,Chat,DailyCheckin}.tsx`
+  - `src/components/{TierLadder,TierUnlockPaywallCard,PaywallTierCard,TribeBattleCard,HeadToHead,LiveRivals,DailyQuests,InviteCTA,XpCounter,RankPressureCard,TopInvitersWidget,TopTribesWidget,EliteFeedTeaser,TierRiskBanner,BadgeShowcase,BadgeUnlockModal,LevelUpCelebration,EliteUnlockCelebration,TierPromotionCelebration,StoryShareModal,BriefingShareCard,TribeChallengeModal,TribeInviteModal,TribeManageDialog,TribePendingRequestsDialog,TribeReportsDialog,AccessGate,CoachNudgeCard}.tsx`
+  - `src/components/home/{CommandDeck,RankProgressHub,CoachStrip}.tsx`
 
-Koska kaikki napit appin läpi käyttävät tätä yhtä komponenttia (Profile, Auth, Coach, Tribes, Messages, Battles, Paywall, dialogit), koko apin napit nousevat samalla tasolle ilman page-tason editointia.
+Käydään realistinen subset — keskitytään korkean näkyvyyden CTA:ihin (Paywall, Auth, Coach, Tribes, Battles, Leaderboard, modaalit). Pikkukomponentit perivät tyylin automaattisesti `<Button>`-kutsujen kautta heti kun variant on oikea.
 

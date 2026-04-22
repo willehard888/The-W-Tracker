@@ -349,20 +349,18 @@ const Profile = () => {
             @{profile.username}
           </h1>
 
-          {/* Status pills — Elite · Apex/Founder · Level · Season Champion */}
+          {/* Status pills — Apex/Legend supersede Elite (no duplicate badges) */}
           <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
-            {isElite && (
+            {profile.status_tier === 'apex' ? (
+              <ApexBadge isFounding={isApexSubscriber} size="md" />
+            ) : profile.status_tier === 'legend' ? (
+              <ApexBadge tier="legend" size="md" />
+            ) : isElite ? (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
                 <Crown size={12} className="text-gold" />
                 <span className="text-[11px] font-black text-gold tracking-wider uppercase">Elite</span>
               </span>
-            )}
-            {profile.status_tier === 'apex' && (
-              <ApexBadge isFounding={isApexSubscriber} size="md" />
-            )}
-            {profile.status_tier === 'legend' && (
-              <ApexBadge tier="legend" size="md" />
-            )}
+            ) : null}
             <span className="inline-flex items-center px-3 py-1.5 rounded-full">
               <span className="text-[11px] font-black tracking-wider text-muted-foreground/80 uppercase">
                 Level {profile.level}

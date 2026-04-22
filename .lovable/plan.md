@@ -1,120 +1,132 @@
 
 
-# Apex Communities + Apex Instant -tilaus (15.99€/kk)
+# Apex Tribes — Next Level + Invites + Unique Names
 
-Päivitetty suunnitelma: lisätään Apex-tilaustaso, joka antaa **välittömän Apex-statuksen** maksua vastaan, ja vahvistetaan Apex-tieren visuaalisia efektejä koko sovelluksessa. Tribes-toiminnallisuus pysyy samana kuin edellisessä suunnitelmassa.
+Nostetaan Apex Tribes seuraavalle tasolle: estetään duplikaattinimet tietokannassa, lisätään kutsujärjestelmä jolla tribejä voi kasvattaa kohdennetusti, ja kiillotetaan UI vielä järeämmäksi/eksklusiivisemmaksi.
 
 ---
 
-## 1. Apex Instant -tilaus (15.99€/kk)
+## 1. Triben nimi lukitaan uniikiksi (DB)
 
-Toinen tilaustaso Eliten (4.99€/kk) rinnalle. **Murtaa nykyisen "earned, not bought" -periaatteen** Apexin osalta — tämä on tietoinen monetisaatiopäätös.
+Tällä hetkellä `tribes.name` ei ole unique → kaksi käyttäjää voi luoda saman nimisen triben. Korjataan migraatiolla:
 
-### Mitä Apex Instant antaa
-- **Välitön `status_tier = 'apex'`** — ei vaadi rank/streak/aktiivisuusvaatimuksia.
-- **Apex-tier ei putoa inaktiivisuudesta** niin kauan kuin tilaus on aktiivinen (server-side suoja `update_status_tier`-funktiossa: jos `is_apex_subscriber = true`, älä laske tieriä alle apexin).
-- Kaikki Elite-edut (1.25× XP-boost, AI Coach, Elite Feed -postaus, kruunu-aura).
-- **Tribes-luonti-oikeus** (max 3 community / käyttäjä).
-- **Apex-merkki profiilissa**: erottuva "Founding Apex" -tagi (erotetaan ansainneista Apexeistä pienellä ⚡-ikonilla, ansainneilla 🔥).
-- Eksklusiiviset Apex-badget (esim. "Apex Founder").
+- Lisätään **case-insensitive unique index** nimeen: `CREATE UNIQUE INDEX tribes_name_unique ON tribes (lower(name));`
+- Päivitetään `create_tribe`-RPC:
+  - Tarkistaa ennen insertointia onko nimi (case-insensitive) jo varattu → palauttaa selkeän virheen `Tribe name already taken — try another`
+  - Ehkäisee race condition -tilanteet (unique index hoitaa lopullisen takeen)
+- Slug pysyy uniikkina nykyisellä `+random suffix`-logiikalla (ei muutosta)
 
-### DB-muutokset
+**TribeNew.tsx** — lisätään realtime nimitarkistus:
+- Käyttäjä kirjoittaa nimeä → 400ms debounce → kysely `tribes`-tauluun
+- UI näyttää joko ✓ "Available" tai ✗ "Already taken" -indikaattorin
+- Create-nappi disabloituu jos nimi varattu
+
+---
+
+## 2. Kutsujärjestelmä (Invites)
+
+Mahdollistetaan jäsenten kasvattaminen kohdennetusti — etenkin private-tribejen kohdalla välttämätön.
+
+### Tietokanta — uusi taulu `tribe_invites`
 ```text
-profiles
-  + is_apex_subscriber boolean default false
-  + apex_subscription_started_at timestamptz
-
-ALTER FUNCTION has_active_access — pysyy samana (Elite OR trial)
-ALTER FUNCTION update_status_tier — jos is_apex_subscriber=true,
-  pakota tier vähintään 'apex' (ei laske alle siitä)
+- id uuid pk
+- tribe_id uuid (FK tribes)
+- inviter_id uuid (FK profiles)
+- invitee_id uuid (FK profiles)
+- status text ('pending' | 'accepted' | 'declined' | 'revoked')
+- created_at, responded_at
+- UNIQUE(tribe_id, invitee_id) WHERE status='pending'
 ```
 
-### Stripe & RevenueCat
-- **RevenueCat** (iOS/native): uusi tuote `apexmonthly1599`, entitlement `apex_subscriber`.
-- **Stripe** (web): uusi `price_id` 15.99€/kk recurring. Lisätään `create-checkout`-funktioon `tier`-parametri (`elite` | `apex`).
-- **`revenuecat-webhook`**: päivitetty käsittelemään `apex_subscriber`-entitlement → `is_apex_subscriber = true` + `is_elite = true` (Apex sisältää Eliten).
-- **`check-subscription`**: tunnistaa Apex-product_id:n ja päivittää `is_apex_subscriber`.
+### Uudet SECURITY DEFINER RPC:t
+- `invite_to_tribe(p_tribe_id, p_invitee_id)` — vain jäsen voi kutsua, max 50 pendingiä per tribe, ei voi kutsua omaa itseään tai jo jäsentä
+- `respond_to_tribe_invite(p_invite_id, p_accept boolean)` — vain invitee voi vastata; accept → lisää `tribe_members` (active) ja kasvattaa `member_count`
+- `revoke_tribe_invite(p_invite_id)` — vain inviter tai owner voi peruuttaa
+
+### RLS
+- `SELECT` näkyy invitee:lle (omat saadut) ja inviter/owner:lle (omat lähetetyt)
+- `INSERT/UPDATE/DELETE` blokattu suoraan → kaikki kulkee RPC:n läpi
 
 ### UI
-- **`/paywall`** saa kaksi korttia rinnakkain:
-  - "Member" (4.99€/kk) — kaikki perusedut, "earned Apex possible".
-  - "Apex Instant" (15.99€/kk) — gold + flame -korostus, "Skip the grind. Become Apex now." -CTA, lista eduista. Selkeä disclaimer pienellä: "Earned Apex (top 1%) is still possible at €4.99/mo".
-- **`/road-to-elite`**-sivulle pieni alaosa: "Tai hanki Apex heti — 15.99€/kk" → linkki paywalliin.
-- **Profile-sivulla** Apex-tilaajalla pieni info-kortti: "Apex Subscriber active — €15.99/mo".
+**TribeDetail.tsx** — jäsenille uusi "Invite" -nappi headerin alle
+- Avaa `<TribeInviteModal>`-dialogin
+- Modaalissa hakukenttä → username-haku `profiles`-taulusta (kuten messages-haku)
+- Listaa tulokset, klikkaus lähettää kutsun → toast "Invite sent to @username"
+- Estää nykyiset jäsenet ja jo kutsutut (näyttää "Already invited" / "Member")
+
+**Profile / Notifications** — saapuneet kutsut
+- Lisätään uusi widget profiilin yläosaan: "🔥 Tribe Invites (n)" jos pending-kutsuja
+- Klikkaus → `/tribe-invites` -sivu jossa lista: tribe-kortti + Accept/Decline -napit
+- Vaihtoehtoisesti yksinkertaisempi: lisätään suoraan `Tribes`-sivulle uusi sektio "Invites" tabin "My Tribes" yläpuolelle
 
 ---
 
-## 2. Apex UI-efektien vahvistus
+## 3. Apex Tribes — visuaalinen seuraava taso
 
-Apex on nyt sekä ansaittu että ostettava huipputaso → visuaalisen erottuvuuden täytyy olla **selvästi voimakkaampi kuin Eliten**.
+### Tribes-listasivu (Tribes.tsx)
+- **Animoitu conic-border hero**: lisätään `apex-conic-border`-luokka heron ulkokehälle → hidas pyörivä gold/flame-gradient
+- **Featured Tribe -kortti**: jos käyttäjä ei ole minkään triben jäsen, top-1 popular tribe nostetaan isona "Featured" -korttina (3D-tilt-hover, bigger crown, member-avatar -stack)
+- **Member avatar stack**: jokaiseen tribe-korttiin näytetään 3-5 jäsenen avatarit overlapping (haetaan `tribe_members` join `profiles`)
+- **Owner-merkki**: jos olet itse owner → kortissa pieni "👑 You own this" -lippu kulmassa
+- **Skeleton loading** spinnerin sijaan — paremmat shimmer-cardit
 
-### `StatusAvatar` (Apex-tier)
-- Nykyinen: `aura-large`, oranssi flame-glow.
-- **Uusi**: 
-  - Pulssaava kaksoisrengas (sisempi gold, ulompi flame-orange `hsl(18 95% 58%)`), animoitu `framer-motion` 2.5s loop.
-  - Pieni `⚡` Lucide-Zap-ikoni avatarin yläkulmassa, jatkuva soft-pulse.
-  - Hover/active-tilassa: säteittäinen "ember"-particle-efekti (3-4 hiukkasta, käytetään olemassa olevaa `AmbientParticles`-komponenttia kevyellä variantilla).
+### Tribe-detailsivu (TribeDetail.tsx)
+- **Parallax hero**: scroll-effect joka liikuttaa hero-gradienttia (`useScroll` framer-motion)
+- **Members-rivi headerin alle**: horisontaalinen scrollable lista jäsenten avatareista (klikattava → user profile)
+- **Invite-nappi**: gold-border ghost button "Invite Members" headerin alapuolella (vain jäsenille)
+- **Post-kortit**: lisätään poster-avatar + username + tier-badge (apex/legend) ja "Like"-nappi (käyttäen jo olevaa `tribe_post_reactions`)
+- **Empty state**: kun ei posteja, näytetään cinematic "Be the first to ignite this tribe" -kortti gold-glowilla
 
-### `StatusHeader` (Apex-käyttäjälle)
-- Headerin gradient-overlay vaihtuu intensiivisempään: `from-[hsl(18_95%_58%)]/35 via-gold/20 to-[hsl(18_95%_58%)]/15`.
-- Yläreunan shimmer-viiva muuttuu `from-flame via-gold to-flame`.
-- Status-pillin tilalle "APEX"-pilli flame-glowilla, animoitu `box-shadow` pulssi 1.8s (nopeampi kuin Eliten 2.4s).
-
-### `StatusBadge`-komponentti
-- Apex-variantti saa: gradient-tausta `from-[hsl(18_95%_58%)] to-gold`, valkoinen teksti, sisäinen ⚡-ikoni, hienoinen `text-shadow` flame-tinttauksella.
-
-### Tier-aurat (`tier-aura-*` luokat `index.css`:ssä)
-- `tier-aura-large` (Apex) → vahvempi `box-shadow` (2 kerrosta: lähikerros 24px gold, ulkokerros 48px flame), keyframe-animaatio `aura-flicker` (subtle 3s opacity-pulssi).
-
-### Sivutason efektit
-- **`Profile.tsx`** Apex-käyttäjälle: yläosan hero-sektioon kevyt animoitu flame-overlay (CSS gradient, ei video).
-- **`Leaderboard.tsx`**: Apex-rivit saavat erottuvan rivitaustan `bg-gradient-to-r from-[hsl(18_95%_58%)]/8 via-transparent to-gold/8`, hover-tilassa flame-glow vasen reuna.
-- **`EliteFeed.tsx`**: Apex-postaukset saavat ohuen 2px flame-bordin ja "APEX"-merkin postaajan nimen vieressä.
-
-### Erottelu: Founder Apex vs Earned Apex
-- Apex Instant -tilaaja: ⚡-merkki nimen vieressä + "Founding Apex" -tooltip.
-- Ansainnut Apex (top 1% rank): 🔥-merkki + "Earned Apex" -tooltip.
-- Molemmat saavat samat UI-efektit, vain pieni erottelumerkki kunnioittaa ansainneita.
+### Uusia CSS-efektejä (`index.css`)
+- `.apex-portal-glow` — pulssaava radial inner-shadow heron sisään
+- `.apex-tribe-card-hover` — hover lift + glow combo standardisoituna
+- `.apex-divider` — ohut horizontal gradient-viiva sektioiden välillä
 
 ---
 
-## 3. Tribes (sama kuin aiemmassa suunnitelmassa)
+## 4. Memory & dokumentaatio
 
-Tribes-luonti-oikeus = `is_apex_subscriber = true` **TAI** `status_tier IN ('apex','legend')`. Server-RPC `create_tribe` tarkistaa molemmat. Muu logiikka (taulurakenne, jäsenyys, RLS, UI-reitit) pysyy identtisenä.
+- Päivitetään `mem://features/tribes`:
+  - Mainitaan unique name -constraint
+  - Lisätään invites-flow ja `tribe_invites`-taulu + 3 uutta RPC:tä
+  - Päivitetään UI-osio Featured Tribe + invite-modaalilla
 
 ---
 
-## 4. Tekninen yhteenveto
+## Tekniset yksityiskohdat
 
-**Uudet tiedostot:**
-- Migraatio: `is_apex_subscriber`, `apex_subscription_started_at`, päivitetty `update_status_tier`, Tribes-taulut + RPC:t.
-- `src/components/ApexBadge.tsx` — Founding/Earned-erottelu.
-- `src/components/PaywallTierCard.tsx` — refaktoroitu paywallin kortti.
-- `src/pages/Tribes.tsx`, `TribeNew.tsx`, `TribeDetail.tsx`.
-- `src/components/TribeCard.tsx`, `TribePostComposer.tsx`, `TribePostItem.tsx`.
-- `src/hooks/use-my-tribes.ts`, `use-tribe.ts`.
+### Migraatio
+```sql
+CREATE UNIQUE INDEX tribes_name_unique ON public.tribes (lower(name));
 
-**Muokattavat:**
-- `src/pages/Paywall.tsx` — kaksi tier-korttia.
-- `src/contexts/RevenueCatContext.tsx` — `apex_subscriber`-entitlement, `purchaseApex()`-metodi.
-- `src/contexts/AuthContext.tsx` — lukee `is_apex_subscriber`-kentän.
-- `supabase/functions/revenuecat-webhook/index.ts` — Apex-entitlement.
-- `supabase/functions/check-subscription/index.ts` — Apex price/product tunnistus.
-- `supabase/functions/create-checkout/index.ts` — `tier`-parametri.
-- `src/components/StatusAvatar.tsx`, `StatusHeader.tsx`, `StatusBadge.tsx` — Apex-efektit.
-- `src/index.css` — `tier-aura-large` vahvistus + `aura-flicker` keyframe.
-- `src/components/BottomNav.tsx` — "Tribes"-tabi.
-- `src/lib/status-tiers.ts` — Apex-config päivitys (vahvempi `glowClass`, mahdolliset apuolemassaolevat kentät).
+CREATE TABLE public.tribe_invites (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tribe_id uuid NOT NULL,
+  inviter_id uuid NOT NULL,
+  invitee_id uuid NOT NULL,
+  status text NOT NULL DEFAULT 'pending',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  responded_at timestamptz
+);
+CREATE UNIQUE INDEX tribe_invites_pending_unique
+  ON public.tribe_invites (tribe_id, invitee_id)
+  WHERE status = 'pending';
+ALTER TABLE public.tribe_invites ENABLE ROW LEVEL SECURITY;
+-- RLS: SELECT visible to inviter, invitee, owner; mutations blocked → RPC only
+```
 
-**Salaisuudet & secretit:** Stripe-secret on jo olemassa. RevenueCat-tuote `apexmonthly1599` täytyy luoda RevenueCat-konsoliin (manuaalinen step käyttäjälle deploy-vaiheessa).
+### Edited / created files
+- `src/pages/TribeNew.tsx` — debounced name availability check, visible feedback
+- `src/pages/Tribes.tsx` — Featured Tribe card, member-avatar stacks, invites section
+- `src/pages/TribeDetail.tsx` — parallax hero, members row, invite button, like-button on posts
+- **NEW** `src/components/TribeInviteModal.tsx` — username search + invite send
+- **NEW** `src/pages/TribeInvites.tsx` (tai inline Tribes.tsx:ään) — accept/decline saapuneet
+- `src/pages/Profile.tsx` — pending invites -widget (jos kutsuja)
+- `src/index.css` — uudet apex-portal/divider/tribe-card-hover -luokat
+- `.lovable/memory/features/tribes.md` — päivitys
 
-**Muistipäivitykset:**
-- `mem://monetization/membership` — lisää Apex-tier 15.99€/kk.
-- `mem://features/status-hierarchy` — Apex voi nyt olla joko ansaittu tai ostettu, tilaus suojaa pudotukselta.
-- Uusi `mem://features/tribes` — Communities-järjestelmän kuvaus.
-
-**Mitä EI tehdä:**
-- Ei Apex Instantille omaa erillistä trialia (vain Eliten 7-pv trial pysyy).
-- Ei automaattista konversiota olemassaoleville Apex-tilaajille — toimii vain uusille ostoksille.
-- Ei vaikutusta `calculate_rank_score`:een — Apex-tilaaja näkyy leaderboardilla omilla pisteillään, ei keinotekoisesti nostettuna.
+### Ei muuteta
+- Status-tier -logiikka, RevenueCat / Stripe -hinnoittelu, Auth-virtaukset
+- `create_tribe` 3-tribe-limit tai 3-40 char nimirajoitus pysyy
+- Olemassaolevia tribejä joiden nimi sattuu olemaan duplikaatti EI poisteta — migraatio yrittää indexin luontia, jos törmää duplikaatteihin: lisätään `_<6char>` -suffix vanhempaan duplikaattiin automaattisesti ennen index-luontia
 

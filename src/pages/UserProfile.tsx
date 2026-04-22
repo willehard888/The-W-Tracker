@@ -13,6 +13,7 @@ import HeadToHead from "@/components/HeadToHead";
 import ProfileActivityPulse from "@/components/ProfileActivityPulse";
 import FeaturedBadgeHero from "@/components/FeaturedBadgeHero";
 import ApexBadge from "@/components/ApexBadge";
+import StatusNameplate from "@/components/StatusNameplate";
 import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -320,6 +321,16 @@ const UserProfile = () => {
           {profile.display_name && (
             <p className="text-sm text-muted-foreground mt-1.5">{profile.display_name}</p>
           )}
+
+          {/* MASSIVE status nameplate — the loudest element on the page */}
+          <div className="mt-5">
+            <StatusNameplate
+              tier={profile.status_tier || 'recruit'}
+              rank={globalRank?.rank}
+              totalUsers={globalRank?.total}
+              size="md"
+            />
+          </div>
 
           {/* Status pills — Apex/Legend supersede Elite (no duplicates) */}
           <motion.div

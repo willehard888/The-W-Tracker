@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import StatusAvatar from "@/components/StatusAvatar";
 import ApexBadge from "@/components/ApexBadge";
+import StatusNameplate from "@/components/StatusNameplate";
 import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
 import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -170,6 +171,14 @@ const PublicProfile = () => {
             {profile.display_name && (
               <p className="text-sm text-muted-foreground mt-1.5">{profile.display_name}</p>
             )}
+
+            {/* MASSIVE status nameplate — the loudest element on the page */}
+            <div className="mt-5 w-full">
+              <StatusNameplate
+                tier={profile.status_tier || 'recruit'}
+                size="md"
+              />
+            </div>
 
             {/* Status pills — Apex/Legend supersede Elite (no duplicate badges) */}
             <motion.div

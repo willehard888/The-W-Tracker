@@ -24,6 +24,7 @@ import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
 import RoadToElite from "@/components/RoadToElite";
 import TierLadder from "@/components/TierLadder";
 import StatusPreview from "@/components/StatusPreview";
+import StatusNameplate from "@/components/StatusNameplate";
 import LiveRivals from "@/components/LiveRivals";
 import ApexBadge from "@/components/ApexBadge";
 import { useMyRank } from "@/hooks/use-my-rank";

@@ -140,7 +140,10 @@ const TribeDetail = () => {
       rawMembers.map((r: any) => {
         const p = profMap.get(r.user_id);
         return p ? { ...(p as any), role: r.role } : null;
-      }).filter(Boolean) as Member[],
+      }).filter(Boolean).sort((a: any, b: any) => {
+        const order: Record<string, number> = { owner: 0, admin: 1, member: 2 };
+        return (order[a.role] ?? 3) - (order[b.role] ?? 3);
+      }) as Member[],
     );
 
     const rawPosts = ((pRes as any).data) ?? [];

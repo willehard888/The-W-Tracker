@@ -4,9 +4,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Moon, Dumbbell, Snowflake, Apple, Droplets, BookOpen,
-  Brain, Smartphone, Camera, ChevronLeft, Zap, Plus,
+  Brain, Smartphone, Camera, Zap, Plus,
   TrendingUp, AlertTriangle, Trophy, Crown, ChevronDown, NotebookPen,
-  Flame, ArrowUp, CheckCircle2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,7 +14,6 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import { checkAndAwardBadges } from "@/lib/badge-awards";
 import ConfettiBurst from "@/components/ConfettiBurst";
-import XpCounter from "@/components/XpCounter";
 import DailyQuests from "@/components/DailyQuests";
 import LevelUpCelebration from "@/components/LevelUpCelebration";
 import { syncStreakWarningNotification } from "@/lib/streak-notifications";
@@ -23,6 +21,8 @@ import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
 import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
 import { ELITE_XP_MULTIPLIER } from "@/lib/xp-constants";
+import CheckinTierHeader from "@/components/CheckinTierHeader";
+import CheckinTierSummary from "@/components/CheckinTierSummary";
 
 interface ToggleItemProps {
   icon: React.ElementType;
@@ -79,7 +79,7 @@ const SPORT_CATEGORIES = [
 
 const DailyCheckin = () => {
   const navigate = useNavigate();
-  const { user, refreshProfile, isElite } = useAuth();
+  const { user, profile, refreshProfile, isElite } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: lastCheckin } = useQuery({
@@ -401,114 +401,19 @@ const DailyCheckin = () => {
   }
 
   if (submitted) {
-    const leveledUp = summary && summary.newLevel > summary.oldLevel;
     return (
       <>
         {showLevelUp && <LevelUpCelebration newLevel={newLevelReached} onComplete={() => setShowLevelUp(false)} />}
         <BadgeUnlockModal badge={unlockedBadge} onClose={() => setUnlockedBadge(null)} />
-        <div className="min-h-[100dvh] flex flex-col items-center justify-center px-5 py-8 text-center relative overflow-hidden safe-top">
-          <ConfettiBurst active={submitted} />
-
-          {/* Radial glow bg */}
-          <div className="absolute inset-0 pointer-events-none" style={{
-            background: "radial-gradient(circle at 50% 30%, hsl(42 78% 54% / 0.10) 0%, transparent 60%)",
-          }} />
-
-          <div className="animate-reveal relative w-full max-w-sm">
-            <div className="h-20 w-20 rounded-full gradient-gold flex items-center justify-center glow-gold mx-auto mb-4 relative">
-              <Zap size={36} className="text-primary-foreground" />
-            </div>
-
-            <h1 className="font-display text-2xl font-black tracking-tight mb-1">Day Logged 🔥</h1>
-            <p className="text-xs text-muted-foreground mb-5">Your discipline is building.</p>
-
-            {/* XP earned hero */}
-            <div className="rounded-2xl border border-gold/30 bg-gold/5 p-5 mb-3 inner-light">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gold/70 font-bold mb-1">Experience earned</p>
-              <div className="flex items-baseline justify-center gap-1">
-                <span className="text-gold font-display text-4xl font-black glow-gold-text">+</span>
-                <XpCounter value={summary?.xpEarned ?? totalXp} className="text-gold font-display text-4xl font-black glow-gold-text" />
-              </div>
-              {summary && (
-                <p className="text-[11px] text-muted-foreground mt-2">
-                  {summary.completedCount}/{summary.maxCount} tasks completed today
-                </p>
-              )}
-            </div>
-
-            {/* Level + Streak summary row */}
-            {summary && (
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                {/* Level card */}
-                <div className={cn(
-                  "rounded-xl border p-3 text-left transition-all",
-                  leveledUp ? "border-gold/40 bg-gold/10" : "border-border bg-card"
-                )}>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Trophy size={12} className={leveledUp ? "text-gold" : "text-muted-foreground"} />
-                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">Level</p>
-                    {leveledUp && (
-                      <span className="ml-auto flex items-center gap-0.5 text-[9px] font-black text-gold">
-                        <ArrowUp size={10} />UP
-                      </span>
-                    )}
-                  </div>
-                  <p className={cn("font-display text-2xl font-black tabular-nums", leveledUp ? "text-gold" : "text-foreground")}>
-                    {summary.newLevel}
-                  </p>
-                  <div className="mt-1.5 h-1 w-full rounded-full bg-secondary overflow-hidden">
-                    <div
-                      className={cn("h-full rounded-full transition-all duration-700", leveledUp ? "bg-gold" : "bg-foreground/40")}
-                      style={{ width: `${summary.levelProgressPct}%` }}
-                    />
-                  </div>
-                  <p className="text-[9px] text-muted-foreground mt-1 tabular-nums">
-                    {summary.xpToNextLevel} XP to next
-                  </p>
-                </div>
-
-                {/* Streak card */}
-                <div className={cn(
-                  "rounded-xl border p-3 text-left transition-all",
-                  summary.streakBroken
-                    ? "border-destructive/40 bg-destructive/10"
-                    : "border-streak-orange/30 bg-streak-orange/5"
-                )}>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Flame size={12} className={summary.streakBroken ? "text-destructive" : "text-streak-orange"} />
-                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">Streak</p>
-                  </div>
-                  <p className={cn(
-                    "font-display text-2xl font-black tabular-nums",
-                    summary.streakBroken ? "text-destructive" : "text-streak-orange"
-                  )}>
-                    {summary.newStreak}<span className="text-sm font-bold opacity-60">d</span>
-                  </p>
-                  <p className="text-[9px] text-muted-foreground mt-1">
-                    {summary.streakBroken ? "Reset — start over" : "Keep the chain alive"}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Total XP */}
-            {summary && (
-              <div className="rounded-xl border border-border bg-card/50 p-3 mb-5 flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Total XP</span>
-                <span className="font-display text-lg font-black tabular-nums">{summary.newTotalXp.toLocaleString()}</span>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="gold-outline" size="lg" onClick={() => navigate("/profile")}>
-                View Profile
-              </Button>
-              <Button variant="gold" size="lg" onClick={() => navigate("/")}>
-                Dashboard
-              </Button>
-            </div>
-          </div>
-        </div>
+        <ConfettiBurst active={submitted} />
+        {summary && (
+          <CheckinTierSummary
+            tier={profile?.status_tier ?? "recruit"}
+            summary={summary}
+            onProfile={() => navigate("/profile")}
+            onDashboard={() => navigate("/")}
+          />
+        )}
       </>
     );
   }
@@ -522,47 +427,17 @@ const DailyCheckin = () => {
         onCancel={moderation.cancel}
         onDismiss={moderation.reset}
       />
-      {/* Sticky header with live progress checklist */}
-      <div className="sticky top-0 z-20 -mx-4 px-4 pt-3 pb-3 mb-4 bg-background/85 backdrop-blur-md border-b border-border/40">
-        <div className="flex items-center gap-3 animate-reveal">
-          <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
-            <ChevronLeft size={20} />
-          </button>
-          <div className="min-w-0 flex-1">
-            <h1 className="font-display text-lg font-bold tracking-tight leading-tight truncate">Daily Execution</h1>
-            <p className="text-[11px] text-muted-foreground leading-tight">Log your day. Earn your status.</p>
-          </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-gold/10 border border-gold/20 shrink-0">
-            {isElite && <span className="text-[10px] font-bold text-gold">+25%</span>}
-            <Zap size={13} className="text-gold" />
-            <span className="text-sm font-bold text-gold tabular-nums">{totalXp}</span>
-            <span className="text-[10px] text-gold/60">XP</span>
-          </div>
-        </div>
-        {/* Live progress checklist */}
-        <div className="mt-3 flex items-center gap-2.5">
-          <div className="flex items-center justify-center h-6 w-6 shrink-0">
-            <CheckCircle2 size={14} className={cn(perfPercent >= 70 ? "text-gold" : "text-muted-foreground")} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Today's progress</span>
-              <span className={cn("text-[11px] font-display font-black tabular-nums", perf.color)}>
-                {completedCount}/{maxCount} · {perfPercent}%
-              </span>
-            </div>
-            <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all duration-500",
-                  perfPercent === 100 ? "bg-gold" : perfPercent >= 70 ? "bg-gold/80" : perfPercent >= 50 ? "bg-teal" : perfPercent >= 30 ? "bg-amber" : "bg-destructive"
-                )}
-                style={{ width: `${Math.max(perfPercent, 2)}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Bold tier-specific sticky header */}
+      <CheckinTierHeader
+        tier={profile?.status_tier ?? "recruit"}
+        username={profile?.username}
+        streak={profile?.streak ?? 0}
+        totalXp={totalXp}
+        isElite={isElite}
+        completedCount={completedCount}
+        maxCount={maxCount}
+        onBack={() => navigate("/")}
+      />
 
       {/* Sleep */}
       <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border bg-card p-4 mb-3">

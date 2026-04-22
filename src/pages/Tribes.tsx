@@ -331,6 +331,30 @@ const Tribes = () => {
         ))}
       </div>
 
+      {/* Browse-only: search + leaderboard CTA */}
+      {tab === "browse" && (
+        <>
+          <TribeSearchBar onChanged={load} />
+          <button
+            onClick={() => navigate("/tribes/leaderboard")}
+            className="w-full mb-4 rounded-xl p-3 border border-gold/40 bg-gradient-to-r from-gold/10 via-card/70 to-[hsl(18_95%_58%)]/10 flex items-center gap-3 text-left transition-transform active:scale-[0.99] shadow-[0_0_14px_hsl(42_78%_54%/0.25)]"
+          >
+            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-gold to-[hsl(18_95%_58%)] flex items-center justify-center shrink-0">
+              <Trophy size={16} className="text-background" strokeWidth={2.6} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] uppercase tracking-widest font-black bg-gradient-to-r from-gold to-[hsl(18_95%_58%)] bg-clip-text text-transparent">
+                Tribe Leaderboard
+              </p>
+              <p className="text-[11px] text-muted-foreground truncate">
+                See which tribes earn the most XP this week
+              </p>
+            </div>
+            <ArrowChevron />
+          </button>
+        </>
+      )}
+
       {/* List */}
       {loading ? (
         <div className="space-y-3">

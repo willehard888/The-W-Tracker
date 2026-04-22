@@ -1,0 +1,701 @@
+import { useState, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { hapticImpact, hapticSelection } from "@/lib/haptics";
+import StatusAvatar from "@/components/StatusAvatar";
+import LazyVideoPlayer from "@/components/LazyVideoPlayer";
+import ImageLightbox from "@/components/ImageLightbox";
+import {
+  Flame, Heart, MessageCircle, Award, MoreHorizontal,
+  AlertTriangle, Trash2, ShieldCheck, Crown, Reply, X, Send, Zap,
+} from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
+
+type CommentNode = any & { children: CommentNode[]; depth: number };
+const MAX_VISUAL_DEPTH = 4;
+const buildCommentTree = (flat: any[] | undefined): CommentNode[] => {
+  if (!flat || flat.length === 0) return [];
+  const map = new Map<string, CommentNode>();
+  flat.forEach((c) => map.set(c.id, { ...c, children: [], depth: 0 }));
+  const roots: CommentNode[] = [];
+  map.forEach((node) => {
+    if (node.parent_id && map.has(node.parent_id)) {
+      const parent = map.get(node.parent_id)!;
+      node.depth = Math.min(parent.depth + 1, MAX_VISUAL_DEPTH);
+      parent.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+  const sortRec = (nodes: CommentNode[]) => {
+    nodes.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    nodes.forEach((n) => sortRec(n.children));
+  };
+  sortRec(roots);
+  return roots;
+};
+
+const isEdited = (node: CommentNode) => {
+  if (!node.updated_at || !node.created_at) return false;
+  return new Date(node.updated_at).getTime() - new Date(node.created_at).getTime() > 1500;
+};
+
+interface CommentThreadProps {
+  node: CommentNode;
+  currentUserId?: string;
+  canDeleteAny: boolean;
+  onReply: (id: string, username: string, snippet: string) => void;
+  onEdit: (id: string, content: string) => Promise<void> | void;
+  onDelete: (id: string) => Promise<void> | void;
+  editingId: string | null;
+  setEditingId: (id: string | null) => void;
+}
+
+const CommentThread = ({
+  node, currentUserId, canDeleteAny, onReply, onEdit, onDelete, editingId, setEditingId,
+}: CommentThreadProps) => {
+  const username = node.profile?.username || "anon";
+  const isReply = node.depth > 0;
+  const isOwn = currentUserId && node.user_id === currentUserId;
+  const isEditing = editingId === node.id;
+  const [draft, setDraft] = useState(node.content || "");
+  const [saving, setSaving] = useState(false);
+
+  const cancelEdit = () => {
+    setDraft(node.content || "");
+    setEditingId(null);
+  };
+
+  const saveEdit = async () => {
+    const trimmed = draft.trim();
+    if (!trimmed || trimmed === (node.content || "").trim()) {
+      cancelEdit();
+      return;
+    }
+    setSaving(true);
+    try {
+      await onEdit(node.id, trimmed);
+      setEditingId(null);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="animate-fade-in">
+      <div className="flex gap-2.5 relative">
+        {isReply && (
+          <span aria-hidden="true" className="absolute -left-3 top-0 bottom-0 w-px bg-gradient-to-b from-[hsl(18_95%_58%)]/30 via-[hsl(18_95%_58%)]/15 to-transparent" />
+        )}
+        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold flex items-center justify-center text-[10px] font-black text-background shrink-0 mt-0.5">
+          {username.charAt(0)?.toUpperCase() || "?"}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className={cn(
+            "border rounded-2xl rounded-tl-sm px-3 py-2 max-w-full",
+            isEditing ? "block" : "inline-block",
+            isReply ? "bg-card border-[hsl(18_95%_58%)]/25" : "bg-card border-border/40",
+            isEditing && "border-[hsl(18_95%_58%)]/60",
+          )}>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-[hsl(18_95%_58%)]">@{username}</span>
+              {isEdited(node) && !isEditing && (
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-[hsl(18_95%_58%)]/70 italic">· edited</span>
+              )}
+            </div>
+            {isEditing ? (
+              <div className="mt-1.5 flex flex-col gap-2 min-w-[200px]">
+                <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value.slice(0, 300))}
+                  rows={2}
+                  autoFocus
+                  className="w-full bg-background/50 border border-[hsl(18_95%_58%)]/30 focus:border-[hsl(18_95%_58%)] rounded-lg px-2 py-1.5 text-xs text-foreground/90 outline-none resize-none focus:ring-2 focus:ring-[hsl(18_95%_58%)]/30"
+                  onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); cancelEdit(); } }}
+                />
+                <div className="flex items-center justify-end gap-1.5">
+                  <button type="button" onClick={cancelEdit} disabled={saving}
+                    className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground px-2 py-1 rounded-md transition-colors">
+                    Cancel
+                  </button>
+                  <button type="button" onClick={() => { hapticImpact("light"); saveEdit(); }}
+                    disabled={saving || !draft.trim()}
+                    className="text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background px-3 py-1 rounded-md disabled:opacity-50">
+                    {saving ? "Saving…" : "Save"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
+                {node.content}
+              </p>
+            )}
+          </div>
+          {!isEditing && (
+            <div className="flex items-center gap-2 mt-0.5 ml-3 flex-wrap">
+              <p className="text-[9px] text-muted-foreground/50">
+                {formatDistanceToNow(new Date(node.created_at), { addSuffix: true })}
+              </p>
+              {currentUserId && (
+                <button type="button" onClick={() => { hapticSelection(); onReply(node.id, username, node.content || ""); }}
+                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-[hsl(18_95%_58%)] transition-colors">
+                  <Reply size={10} /> Reply
+                </button>
+              )}
+              {isOwn && (
+                <>
+                  <button type="button" onClick={() => { hapticSelection(); setDraft(node.content || ""); setEditingId(node.id); }}
+                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-[hsl(18_95%_58%)] transition-colors">
+                    Edit
+                  </button>
+                </>
+              )}
+              {(isOwn || canDeleteAny) && (
+                <button type="button" onClick={() => {
+                  if (confirm("Delete this comment? Replies will also be removed.")) {
+                    hapticImpact("medium");
+                    onDelete(node.id);
+                  }
+                }}
+                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-destructive transition-colors">
+                  Delete
+                </button>
+              )}
+              {node.children.length > 0 && (
+                <span className="text-[9px] text-muted-foreground/40 tabular-nums">
+                  · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {node.children.length > 0 && (
+        <div className={cn(
+          "mt-2.5 space-y-2.5 relative",
+          node.depth < MAX_VISUAL_DEPTH ? "ml-6 pl-3 border-l border-[hsl(18_95%_58%)]/15" : "ml-3 pl-3 border-l border-dashed border-[hsl(18_95%_58%)]/20",
+        )}>
+          {node.children.map((child: CommentNode) => (
+            <CommentThread key={child.id} node={child} currentUserId={currentUserId} canDeleteAny={canDeleteAny}
+              onReply={onReply} onEdit={onEdit} onDelete={onDelete} editingId={editingId} setEditingId={setEditingId} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export interface TribePostCardPost {
+  id: string;
+  user_id: string;
+  tribe_id: string;
+  content: string | null;
+  image_url: string | null;
+  video_url: string | null;
+  likes_count: number;
+  comments_count: number;
+  kudos_count: number;
+  reported: boolean;
+  created_at: string;
+  liked?: boolean;
+  kudosed?: boolean;
+  author?: {
+    username: string;
+    avatar_url: string | null;
+    status_tier: string | null;
+    level?: number;
+    streak?: number;
+  };
+}
+
+interface Props {
+  post: TribePostCardPost;
+  isMember: boolean;
+  isOwner: boolean;
+  isAdmin: boolean;
+  canKudos: boolean; // Apex/Legend or apex subscriber
+  kudosRemaining: number;
+  onChanged: () => void;
+}
+
+const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemaining, onChanged }: Props) => {
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [replyTo, setReplyTo] = useState<{ id: string; username: string; snippet: string } | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const commentInputRef = useRef<HTMLInputElement>(null);
+
+  const isOwn = user?.id === post.user_id;
+  const isApexAuthor = post.author?.status_tier === "apex" || post.author?.status_tier === "legend";
+
+  // Comments
+  const { data: comments } = useQuery({
+    queryKey: ["tribe-post-comments", post.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tribe_post_comments" as any)
+        .select("*")
+        .eq("post_id", post.id)
+        .order("created_at", { ascending: true });
+      if (!data) return [];
+      const userIds = [...new Set((data as any[]).map((c) => c.user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, username")
+        .in("user_id", userIds);
+      const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.user_id, p]));
+      return (data as any[]).map((c) => ({ ...c, profile: profileMap[c.user_id] }));
+    },
+    enabled: showComments,
+  });
+
+  const addComment = useMutation({
+    mutationFn: async () => {
+      if (!user || !commentText.trim()) return;
+      const { error } = await supabase.from("tribe_post_comments" as any).insert({
+        post_id: post.id,
+        user_id: user.id,
+        content: commentText.trim(),
+        parent_id: replyTo?.id ?? null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setCommentText("");
+      setReplyTo(null);
+      queryClient.invalidateQueries({ queryKey: ["tribe-post-comments", post.id] });
+      onChanged();
+    },
+    onError: (e: any) => toast.error(e?.message || "Failed to comment"),
+  });
+
+  const editComment = useMutation({
+    mutationFn: async ({ id, content }: { id: string; content: string }) => {
+      if (!user) throw new Error("Not signed in");
+      const { error } = await supabase
+        .from("tribe_post_comments" as any)
+        .update({ content, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .eq("user_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Comment updated");
+      queryClient.invalidateQueries({ queryKey: ["tribe-post-comments", post.id] });
+    },
+    onError: (e: any) => toast.error(e?.message || "Failed to update"),
+  });
+
+  const deleteComment = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user) throw new Error("Not signed in");
+      const { error } = await supabase.from("tribe_post_comments" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Comment deleted");
+      queryClient.invalidateQueries({ queryKey: ["tribe-post-comments", post.id] });
+      onChanged();
+    },
+    onError: (e: any) => toast.error(e?.message || "Failed to delete"),
+  });
+
+  const toggleLike = useMutation({
+    mutationFn: async () => {
+      if (!user) return;
+      hapticImpact(post.liked ? "light" : "medium");
+      if (post.liked) {
+        await supabase.from("tribe_post_reactions" as any).delete()
+          .eq("post_id", post.id).eq("user_id", user.id);
+      } else {
+        await supabase.from("tribe_post_reactions" as any).insert({
+          post_id: post.id, user_id: user.id,
+        });
+      }
+    },
+    onSuccess: () => onChanged(),
+  });
+
+  const toggleKudos = useMutation({
+    mutationFn: async () => {
+      if (!user) return;
+      if (post.kudosed) {
+        const { error } = await supabase.from("tribe_post_kudos" as any).delete()
+          .eq("post_id", post.id).eq("giver_id", user.id);
+        if (error) throw error;
+      } else {
+        if (kudosRemaining <= 0) throw new Error("Monthly kudos used up");
+        const { error } = await supabase.from("tribe_post_kudos" as any).insert({
+          post_id: post.id, giver_id: user.id, receiver_id: post.user_id,
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success(post.kudosed ? "Kudos removed" : "Kudos! 🏆");
+      onChanged();
+    },
+    onError: (e: any) => toast.error(e?.message || "Kudos failed"),
+  });
+
+  const reportPost = useMutation({
+    mutationFn: async () => {
+      if (!user) return;
+      await supabase.from("tribe_post_reports" as any).insert({
+        post_id: post.id, reporter_id: user.id, reason: "Reported by user",
+      });
+      await supabase.from("tribe_posts" as any).update({ reported: true }).eq("id", post.id);
+    },
+    onSuccess: () => {
+      toast.success("Post reported", { description: "Tribe owner will review it." });
+      onChanged();
+    },
+    onError: () => toast.error("Failed to report"),
+  });
+
+  const deletePost = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("tribe_posts" as any).delete().eq("id", post.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Post deleted");
+      onChanged();
+    },
+    onError: (e: any) => toast.error(e?.message || "Failed to delete"),
+  });
+
+  const tree = buildCommentTree(comments);
+  const canDeleteAnyComment = isAdmin || isOwner;
+  const totalSignals = (post.likes_count || 0) + (post.comments_count || 0) + (post.kudos_count || 0);
+
+  return (
+    <>
+      <div className={cn(
+        "rounded-2xl border bg-card overflow-hidden",
+        isApexAuthor
+          ? "border-[hsl(18_95%_58%)]/40 shadow-[0_0_18px_hsl(18_95%_58%/0.18)]"
+          : "border-border",
+        post.reported && "ring-1 ring-destructive/40",
+      )}>
+        {/* Reported banner (admin/owner) */}
+        {post.reported && (isAdmin || isOwner) && (
+          <div className="px-4 py-2 bg-destructive/10 border-b border-destructive/30 flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1">
+              <AlertTriangle size={11} /> Reported
+            </span>
+            <button onClick={() => deletePost.mutate()}
+              className="px-2 py-1 rounded text-[10px] font-bold bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors">
+              Remove
+            </button>
+          </div>
+        )}
+
+        {/* Header */}
+        <div className="flex items-center gap-3 p-4 pb-0">
+          <StatusAvatar
+            src={post.author?.avatar_url}
+            name={post.author?.username}
+            tier={(post.author?.status_tier as any) || "recruit"}
+            size="sm"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <button onClick={() => navigate(`/user/${post.user_id}`)}
+                className={cn("text-sm font-bold truncate hover:underline", isOwn && "text-[hsl(18_95%_58%)]")}>
+                @{post.author?.username || "user"} {isOwn && <span className="text-[10px] text-[hsl(18_95%_58%)]/70 font-medium">(you)</span>}
+              </button>
+              {isApexAuthor && (
+                <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-[hsl(18_95%_58%)]/15 border border-[hsl(18_95%_58%)]/40">
+                  <Zap size={7} className="text-[hsl(18_95%_58%)]" fill="currentColor" />
+                  <span className="text-[8px] font-black tracking-wider uppercase text-[hsl(18_95%_58%)]">Apex</span>
+                </span>
+              )}
+              {post.author?.status_tier === "elite" && (
+                <Crown size={11} className="text-gold shrink-0" />
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+              <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+              {post.author?.level && post.author.level > 0 && (<><span>•</span><span className="font-semibold">Lv.{post.author.level}</span></>)}
+              {post.author?.streak && post.author.streak > 0 && (
+                <><span>•</span><span className="text-[hsl(var(--streak-orange))]">🔥 {post.author.streak}d</span></>
+              )}
+            </div>
+          </div>
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/60 hover:text-muted-foreground">
+                  <MoreHorizontal size={16} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[160px]">
+                {isOwn && (
+                  <DropdownMenuItem onClick={() => { if (confirm("Delete this post?")) deletePost.mutate(); }}
+                    className="text-destructive focus:text-destructive">
+                    <Trash2 size={14} className="mr-2" /> Delete post
+                  </DropdownMenuItem>
+                )}
+                {!isOwn && (
+                  <DropdownMenuItem onClick={() => reportPost.mutate()} className="text-destructive focus:text-destructive">
+                    <AlertTriangle size={14} className="mr-2" /> Report post
+                  </DropdownMenuItem>
+                )}
+                {(isAdmin || isOwner) && !isOwn && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => deletePost.mutate()} className="text-destructive focus:text-destructive">
+                      <ShieldCheck size={14} className="mr-2" /> {isOwner ? "Owner: Remove" : "Admin: Remove"}
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+
+        {/* Content */}
+        {post.content && (
+          <p className="px-4 pt-3 text-sm leading-relaxed whitespace-pre-wrap break-words">{post.content}</p>
+        )}
+
+        {/* Image */}
+        {post.image_url && (
+          <div className="mt-3 mx-4 rounded-xl overflow-hidden relative group">
+            {isUnsupportedHeic(post.image_url) ? (
+              <div className="rounded-xl border border-border bg-muted/40 p-4 text-xs text-muted-foreground">
+                This image format is not supported. Upload JPG, PNG or WEBP.
+              </div>
+            ) : (
+              <button type="button"
+                onClick={() => { hapticSelection(); setLightboxOpen(true); }}
+                className="block w-full text-left active:opacity-90 transition-opacity"
+                aria-label="Open image preview">
+                <img src={post.image_url} alt={post.content || "Tribe post"}
+                  className="w-full max-h-96 object-cover transition-transform duration-500 group-hover:scale-[1.01]"
+                  loading="lazy" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
+                {isApexAuthor && (
+                  <div className="pointer-events-none absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/55 backdrop-blur-sm border border-[hsl(18_95%_58%)]/50">
+                    <Zap size={10} className="text-[hsl(18_95%_58%)]" fill="currentColor" />
+                    <span className="text-[9px] font-black tracking-wider text-[hsl(18_95%_58%)] uppercase">Apex</span>
+                  </div>
+                )}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Video */}
+        {post.video_url && (
+          <div className="mt-3 mx-4 rounded-xl overflow-hidden">
+            <LazyVideoPlayer src={post.video_url} />
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex items-center gap-1 px-3 py-2.5 mt-1 border-t border-border/40">
+          {isMember && (
+            <button onClick={() => toggleLike.mutate()}
+              aria-label={post.liked ? "Remove fire" : "Give fire"}
+              className={cn(
+                "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
+                post.liked
+                  ? "bg-streak-orange/15 text-streak-orange"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              )}>
+              {post.liked ? <Flame size={15} fill="currentColor" className="animate-scale-in" /> : <Heart size={15} />}
+              <span className="tabular-nums">{post.likes_count > 0 ? post.likes_count : ""}</span>
+            </button>
+          )}
+          <button onClick={() => { hapticSelection(); setReplyTo(null); setShowComments(!showComments); }}
+            aria-label="Toggle comments"
+            className={cn(
+              "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
+              showComments ? "bg-[hsl(18_95%_58%)]/12 text-[hsl(18_95%_58%)]" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            )}>
+            <MessageCircle size={15} fill={showComments ? "currentColor" : "none"} />
+            <span className="tabular-nums">{post.comments_count > 0 ? post.comments_count : ""}</span>
+          </button>
+
+          {/* Kudos — only Apex/Legend can give, not on own post */}
+          {!isOwn && isMember && canKudos && (
+            <button onClick={() => {
+              if (!post.kudosed && kudosRemaining <= 0) {
+                toast.error("You've used both kudos this month");
+                return;
+              }
+              hapticImpact("medium");
+              toggleKudos.mutate();
+            }}
+              disabled={toggleKudos.isPending}
+              aria-label={post.kudosed ? "Remove kudos" : "Give kudos"}
+              title={`${kudosRemaining}/2 kudos remaining this month`}
+              className={cn(
+                "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
+                post.kudosed
+                  ? "bg-purple/15 text-purple ring-1 ring-purple/30"
+                  : kudosRemaining > 0
+                    ? "text-muted-foreground hover:bg-purple/10 hover:text-purple"
+                    : "text-muted-foreground/40 cursor-not-allowed"
+              )}>
+              <Award size={15} fill={post.kudosed ? "currentColor" : "none"} className={cn(post.kudosed && "animate-scale-in")} />
+              <span className="tabular-nums">{post.kudos_count > 0 ? post.kudos_count : ""}</span>
+            </button>
+          )}
+
+          {/* Show kudos count for own post */}
+          {isOwn && post.kudos_count > 0 && (
+            <div className="flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold text-purple bg-purple/10">
+              <Award size={15} fill="currentColor" />
+              <span className="tabular-nums">{post.kudos_count}</span>
+            </div>
+          )}
+
+          <div className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider">
+            {totalSignals === 0 ? <span>Be first</span> : <span>{totalSignals} signals</span>}
+          </div>
+        </div>
+
+        {/* Comments */}
+        {showComments && (
+          <div className="border-t border-border/50 px-4 py-3 bg-secondary/20">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Discussion</p>
+              <p className="text-[10px] text-muted-foreground/60 tabular-nums">
+                {post.comments_count} {post.comments_count === 1 ? "reply" : "replies"}
+              </p>
+            </div>
+
+            <div className="space-y-3 mb-3 max-h-80 overflow-y-auto pr-1">
+              {tree.length === 0 && (
+                <p className="text-xs text-muted-foreground/60 text-center py-3">
+                  No comments yet — start the conversation
+                </p>
+              )}
+              {tree.map((node) => (
+                <CommentThread
+                  key={node.id}
+                  node={node}
+                  currentUserId={user?.id}
+                  canDeleteAny={canDeleteAnyComment}
+                  onReply={(id, username, snippet) => {
+                    setReplyTo({ id, username, snippet });
+                    setTimeout(() => commentInputRef.current?.focus(), 50);
+                  }}
+                  onEdit={async (id, content) => { await editComment.mutateAsync({ id, content }); }}
+                  onDelete={async (id) => { await deleteComment.mutateAsync(id); }}
+                  editingId={editingCommentId}
+                  setEditingId={setEditingCommentId}
+                />
+              ))}
+            </div>
+
+            {isMember ? (
+              <div className="pt-2 border-t border-border/30">
+                {replyTo && (
+                  <div className="mb-2 flex items-stretch gap-2 rounded-xl border border-[hsl(18_95%_58%)]/30 bg-[hsl(18_95%_58%)]/[0.06] p-2 animate-fade-in">
+                    <div className="w-0.5 rounded-full bg-[hsl(18_95%_58%)] shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-[hsl(18_95%_58%)] uppercase tracking-wider">
+                        <Reply size={10} /> Replying to @{replyTo.username}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 break-words">
+                        {replyTo.snippet || "(no text)"}
+                      </p>
+                    </div>
+                    <button type="button" onClick={() => { hapticSelection(); setReplyTo(null); }} aria-label="Cancel reply"
+                      className="self-start h-6 w-6 rounded-full bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors shrink-0">
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-end gap-2">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold flex items-center justify-center text-[10px] font-black text-background shrink-0">
+                    {profile?.username?.charAt(0)?.toUpperCase() || "?"}
+                  </div>
+                  <div className="flex-1 min-w-0 relative">
+                    <input
+                      ref={commentInputRef}
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Add a comment..."}
+                      maxLength={300}
+                      className={cn(
+                        "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 transition-all",
+                        replyTo
+                          ? "border-[hsl(18_95%_58%)]/40 focus:ring-[hsl(18_95%_58%)]/50 focus:border-[hsl(18_95%_58%)]/60"
+                          : "border-border focus:ring-[hsl(18_95%_58%)]/40 focus:border-[hsl(18_95%_58%)]/40",
+                      )}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && commentText.trim()) { hapticImpact("light"); addComment.mutate(); }
+                        else if (e.key === "Escape" && replyTo) setReplyTo(null);
+                      }}
+                    />
+                    {commentText.length > 0 && (
+                      <span className={cn(
+                        "absolute right-12 top-1/2 -translate-y-1/2 text-[9px] font-semibold tabular-nums",
+                        commentText.length > 270 ? "text-destructive" : "text-muted-foreground/50"
+                      )}>
+                        {300 - commentText.length}
+                      </span>
+                    )}
+                  </div>
+                  <button onClick={() => { hapticImpact("light"); addComment.mutate(); }}
+                    disabled={!commentText.trim() || addComment.isPending}
+                    aria-label={replyTo ? "Send reply" : "Send comment"}
+                    className={cn(
+                      "h-9 w-9 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0",
+                      commentText.trim()
+                        ? "bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background"
+                        : "bg-secondary text-muted-foreground"
+                    )}>
+                    <Send size={14} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-[11px] text-muted-foreground text-center py-2">
+                Join this tribe to comment.
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      <ImageLightbox
+        open={lightboxOpen}
+        imageUrl={post.image_url}
+        username={post.author?.username}
+        avatarUrl={post.author?.avatar_url}
+        tier={(post.author?.status_tier as any) || "recruit"}
+        level={post.author?.level}
+        streak={post.author?.streak}
+        likes={post.likes_count}
+        comments={post.comments_count}
+        kudos={post.kudos_count}
+        caption={post.content}
+        onClose={() => setLightboxOpen(false)}
+      />
+    </>
+  );
+};
+
+export default TribePostCard;

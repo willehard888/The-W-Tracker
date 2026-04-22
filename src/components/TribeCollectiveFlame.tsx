@@ -182,10 +182,19 @@ const TribeCollectiveFlame = ({
             <span
               className={cn(
                 "inline-flex items-center px-1.5 py-0.5 rounded-md border text-[9px] font-black tracking-widest uppercase",
-                isCold
-                  ? "border-border/60 text-muted-foreground"
-                  : "border-[hsl(18_95%_58%)]/40 text-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%)]/10",
+                isCold && "border-border/60 text-muted-foreground",
+                !isCold && !isFirestorm && "border-[hsl(18_95%_58%)]/40 text-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%)]/10",
+                isFirestorm && "border-transparent text-transparent bg-clip-text",
               )}
+              style={isFirestorm ? {
+                backgroundImage: "linear-gradient(90deg, hsl(195 90% 65%), hsl(265 80% 65%), hsl(310 85% 65%), hsl(195 90% 65%))",
+                backgroundSize: "200% 100%",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "flame-plasma-hue 4s linear infinite, shimmer-slide 5s linear infinite",
+                borderColor: "hsl(195 90% 65% / 0.5)",
+              } : undefined}
             >
               {tierName}
             </span>

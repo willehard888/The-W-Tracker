@@ -463,12 +463,16 @@ const TribeDetail = () => {
                 </Button>
               ) : isOwner ? (
                 <>
+                  <Button onClick={() => setManageOpen(true)} size="sm" variant="outline"
+                    className="flex-1 border-gold/40 hover:bg-gold/10 text-gold">
+                    <Settings size={14} /> Manage
+                  </Button>
                   <Button onClick={() => setInviteOpen(true)} size="sm" variant="outline"
                     className="flex-1 border-[hsl(18_95%_58%)]/40 hover:bg-[hsl(18_95%_58%)]/10 text-[hsl(18_95%_58%)]">
                     <UserPlus size={14} /> Invite
                   </Button>
-                  <Button onClick={handleDelete} variant="destructive" size="sm" className="flex-1">
-                    <Trash2 size={14} /> Delete
+                  <Button onClick={handleDelete} variant="destructive" size="sm" className="px-3">
+                    <Trash2 size={14} />
                   </Button>
                 </>
               ) : (

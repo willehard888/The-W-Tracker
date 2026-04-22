@@ -88,7 +88,8 @@ const TierUnlockPaywallCard = ({ className }: TierUnlockPaywallCardProps) => {
 
         <Button
           size="sm"
-          className="w-full font-black h-9 text-xs bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background hover:opacity-90 shadow-[0_0_14px_hsl(18_95%_58%/0.4)] breathing-glow"
+          variant="gold"
+          className="w-full text-xs"
           onClick={() => navigate("/paywall")}
         >
           <Zap size={13} strokeWidth={3} />

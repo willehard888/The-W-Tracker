@@ -257,17 +257,31 @@
      ============================================================ */
   .surface-glass {
     position: relative;
-    backdrop-filter: blur(28px) saturate(1.35);
-    -webkit-backdrop-filter: blur(28px) saturate(1.35);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
     background:
-      linear-gradient(180deg, hsl(0 0% 100% / 0.06) 0%, transparent 25%, hsl(0 0% 0% / 0.18) 100%),
-      linear-gradient(180deg, hsl(255 14% 9% / 0.72), hsl(255 14% 6% / 0.78));
-    border: 1px solid hsl(0 0% 100% / 0.07);
+      /* Specular highlight — soft hotspot top-left */
+      radial-gradient(120% 80% at 18% 0%, hsl(0 0% 100% / 0.08) 0%, transparent 45%),
+      /* Vertical bevel light */
+      linear-gradient(180deg, hsl(0 0% 100% / 0.07) 0%, transparent 22%, hsl(0 0% 0% / 0.20) 100%),
+      /* Base tint */
+      linear-gradient(180deg, hsl(255 14% 9% / 0.74), hsl(255 14% 6% / 0.80));
+    border: 1px solid hsl(0 0% 100% / 0.075);
+    border-top-color: hsl(0 0% 100% / 0.12);
+    border-bottom-color: hsl(0 0% 0% / 0.4);
     box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.08),
-      inset 0 -1px 0 hsl(0 0% 0% / 0.25),
-      0 1px 2px hsl(0 0% 0% / 0.25),
-      0 8px 24px -8px hsl(0 0% 0% / 0.35);
+      /* Inner top bevel */
+      inset 0 1px 0 hsl(0 0% 100% / 0.10),
+      /* Inner bottom shade */
+      inset 0 -1px 0 hsl(0 0% 0% / 0.30),
+      /* Crisp 1px contact shadow */
+      0 1px 1px hsl(0 0% 0% / 0.35),
+      /* Mid-depth lift */
+      0 4px 10px -2px hsl(0 0% 0% / 0.32),
+      /* Soft ambient pool */
+      0 16px 32px -12px hsl(0 0% 0% / 0.45),
+      /* Subtle warm bounce light */
+      0 24px 48px -20px hsl(42 78% 54% / 0.08);
     isolation: isolate;
   }
 
@@ -278,7 +292,7 @@
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
-    background: linear-gradient(135deg, hsl(0 0% 100% / 0.05) 0%, transparent 45%);
+    background: linear-gradient(135deg, hsl(0 0% 100% / 0.06) 0%, transparent 38%);
     z-index: 0;
   }
 
@@ -302,14 +316,24 @@
     transition: opacity 400ms var(--ease-soft, ease);
   }
 
+  /* Brushed metallic surface — realistic gold with anisotropic streaks */
   .surface-metal {
     position: relative;
     background:
-      linear-gradient(135deg, hsl(42 60% 36%) 0%, hsl(42 78% 54%) 45%, hsl(42 85% 70%) 70%, hsl(42 60% 40%) 100%);
+      /* Anisotropic horizontal brush streaks */
+      repeating-linear-gradient(
+        90deg,
+        transparent 0px,
+        hsl(0 0% 100% / 0.04) 1px,
+        transparent 2px,
+        transparent 4px
+      ),
+      linear-gradient(135deg, hsl(42 60% 36%) 0%, hsl(42 78% 54%) 38%, hsl(42 92% 75%) 55%, hsl(42 78% 54%) 70%, hsl(42 55% 32%) 100%);
     box-shadow:
-      inset 0 1px 0 hsl(42 95% 80% / 0.45),
-      inset 0 -1px 0 hsl(42 50% 22% / 0.55),
-      0 2px 6px hsl(42 78% 30% / 0.3);
+      inset 0 1px 0 hsl(42 95% 88% / 0.55),
+      inset 0 -1px 0 hsl(42 45% 18% / 0.6),
+      0 1px 1px hsl(42 60% 18% / 0.4),
+      0 4px 10px -2px hsl(42 78% 30% / 0.35);
   }
   .surface-metal::before {
     content: "";
@@ -317,19 +341,41 @@
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
-    opacity: 0.08;
+    opacity: 0.06;
     mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 120px 120px;
   }
 
+  /* Matte recessed paper surface */
   .surface-paper {
-    background: linear-gradient(180deg, hsl(255 14% 9%) 0%, hsl(255 14% 6.5%) 100%);
-    border: 1px solid hsl(0 0% 100% / 0.04);
+    background: linear-gradient(180deg, hsl(255 14% 9.5%) 0%, hsl(255 14% 6.5%) 100%);
+    border: 1px solid hsl(0 0% 100% / 0.045);
     box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.04),
-      inset 0 -8px 24px -8px hsl(0 0% 0% / 0.3),
-      0 1px 1px hsl(0 0% 0% / 0.2);
+      inset 0 1px 0 hsl(0 0% 100% / 0.05),
+      inset 0 -8px 24px -8px hsl(0 0% 0% / 0.32),
+      0 1px 1px hsl(0 0% 0% / 0.22),
+      0 8px 20px -8px hsl(0 0% 0% / 0.35);
+  }
+
+  /* Realistic depth — physical card lifted off the page */
+  .depth-3d {
+    box-shadow:
+      0 1px 1px hsl(0 0% 0% / 0.32),
+      0 2px 4px hsl(0 0% 0% / 0.18),
+      0 8px 16px -4px hsl(0 0% 0% / 0.28),
+      0 16px 32px -12px hsl(0 0% 0% / 0.35),
+      inset 0 1px 0 hsl(0 0% 100% / 0.06);
+  }
+
+  /* Stronger lift for hero/featured cards */
+  .depth-3d-lg {
+    box-shadow:
+      0 1px 1px hsl(0 0% 0% / 0.4),
+      0 4px 8px hsl(0 0% 0% / 0.22),
+      0 12px 24px -6px hsl(0 0% 0% / 0.32),
+      0 28px 56px -14px hsl(0 0% 0% / 0.45),
+      inset 0 1px 0 hsl(0 0% 100% / 0.08);
   }
 
   .gradient-rose {
@@ -1013,6 +1059,9 @@
 @keyframes edge-sheen-slide {
   0% { left: -100%; }
   60%, 100% { left: 200%; }
+}
+
+@layer utilities {
   /* ──────────── APEX TIER EFFECTS ──────────── */
 
   /* Strong double-aura for Apex tier — gold inner, flame outer */

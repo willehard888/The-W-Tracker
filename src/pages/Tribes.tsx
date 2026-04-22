@@ -28,8 +28,13 @@ interface Invite {
   inviter: { username: string } | null;
 }
 
-const TribeSkeleton = () => (
-  <div className="rounded-2xl p-4 border border-border bg-card/40 overflow-hidden relative">
+import { forwardRef } from "react";
+
+const TribeSkeleton = forwardRef<HTMLDivElement>((_, ref) => (
+  <div
+    ref={ref}
+    className="rounded-2xl p-4 border border-border bg-card/40 overflow-hidden relative"
+  >
     <div className="flex items-start gap-3">
       <div className="h-14 w-14 rounded-xl bg-secondary/60 shrink-0 shimmer-bg" />
       <div className="flex-1 space-y-2 py-1">
@@ -38,7 +43,8 @@ const TribeSkeleton = () => (
       </div>
     </div>
   </div>
-);
+));
+TribeSkeleton.displayName = "TribeSkeleton";
 
 const Tribes = () => {
   const { profile, isApexSubscriber } = useAuth();

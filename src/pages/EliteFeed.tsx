@@ -1021,9 +1021,13 @@ const EliteFeed = () => {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => navigate(`/user/${post.user_id}`)}
-                      className={cn("text-sm font-bold truncate hover:underline", isOwn && "text-gold")}
+                      className="text-sm font-bold truncate hover:underline"
                     >
-                      @{post.profile?.username || "unknown"} {isOwn && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}
+                      <TierUsername
+                        username={post.profile?.username}
+                        tier={post.profile?.status_tier || "recruit"}
+                      />
+                      {isOwn && <span className="ml-1 text-[10px] text-gold/70 font-medium">(you)</span>}
                     </button>
                     {post.profile?.status_tier === "elite" && (
                       <Crown size={12} className="text-gold shrink-0" />

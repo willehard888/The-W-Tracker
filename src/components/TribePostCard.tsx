@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import StatusAvatar from "@/components/StatusAvatar";
+import TierUsername from "@/components/TierUsername";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import ImageLightbox from "@/components/ImageLightbox";
 import {
@@ -417,8 +418,13 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
               <button onClick={() => navigate(`/user/${post.user_id}`)}
-                className={cn("text-sm font-bold truncate hover:underline", isOwn && "text-[hsl(18_95%_58%)]")}>
-                @{post.author?.username || "user"} {isOwn && <span className="text-[10px] text-[hsl(18_95%_58%)]/70 font-medium">(you)</span>}
+                className="text-sm font-bold truncate hover:underline">
+                <TierUsername
+                  username={post.author?.username}
+                  tier={(post.author?.status_tier as any) || "recruit"}
+                  fallback="user"
+                />
+                {isOwn && <span className="ml-1 text-[10px] text-[hsl(18_95%_58%)]/70 font-medium">(you)</span>}
               </button>
               {isApexAuthor && (
                 <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-[hsl(18_95%_58%)]/15 border border-[hsl(18_95%_58%)]/40">

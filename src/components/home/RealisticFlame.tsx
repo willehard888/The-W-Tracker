@@ -540,6 +540,63 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
             <ellipse cx="20" cy="40" rx="6" ry="14" fill={palette.core} fillOpacity="0.95" />
           </svg>
         )}
+
+        {/* INFERNO ONLY — counter-rotating mirrored body that makes the flame visibly spiral */}
+        {isInferno && size >= 64 && (
+          <svg
+            className="absolute left-1/2 bottom-0"
+            width={size * 0.78}
+            height={size * 1.0}
+            viewBox="0 0 40 56"
+            style={{
+              transform: "translate(-50%, 0) scaleX(-1)",
+              transformOrigin: "center bottom",
+              animation: `flame-plasma-spiral ${1.4 * speedMul}s ease-in-out infinite`,
+              filter: `url(#${turbMid}) drop-shadow(0 0 8px ${palette.outer})`,
+              mixBlendMode: "screen",
+              opacity: 0.7,
+            }}
+          >
+            <defs>
+              <linearGradient id={`spiralG-${uid}`} x1="50%" y1="100%" x2="50%" y2="0%">
+                <stop offset="0%"   stopColor={palette.outer} stopOpacity="0.9" />
+                <stop offset="50%"  stopColor={palette.mid}   stopOpacity="0.95" />
+                <stop offset="100%" stopColor={palette.core}  stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d={FLAME_PATH} fill={`url(#spiralG-${uid})`} />
+          </svg>
+        )}
+
+        {/* INFERNO ONLY — internal lightning arc that crackles every ~7s */}
+        {isInferno && size >= 64 && (
+          <svg
+            className="absolute left-1/2 bottom-0 pointer-events-none"
+            width={size * 0.5}
+            height={size * 0.95}
+            viewBox="0 0 40 56"
+            style={{
+              transform: "translate(-50%, 0)",
+              transformOrigin: "center bottom",
+              mixBlendMode: "screen",
+              filter: `drop-shadow(0 0 4px ${palette.core}) drop-shadow(0 0 8px ${palette.inner})`,
+            }}
+          >
+            <path
+              d="M20 4 L 17 18 L 22 22 L 16 36 L 23 40 L 18 52"
+              stroke={palette.core}
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+              style={{
+                strokeDasharray: 100,
+                strokeDashoffset: 100,
+                animation: `flame-lightning-crack 7s ease-in-out infinite`,
+              }}
+            />
+          </svg>
+        )}
       </div>
 
       {/* Detached tongues rising off the tip */}

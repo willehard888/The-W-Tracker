@@ -216,7 +216,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
                 Skip the grind — go Apex now
               </p>
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                Apex Instant • €15.99/mo
+                Apex Instant • €17.99/mo
               </p>
             </div>
             <ChevronRight size={16} className="text-[hsl(18_95%_58%)] shrink-0 group-active:translate-x-0.5 transition-transform" />

@@ -1005,6 +1005,83 @@ export type Database = {
           },
         ]
       }
+      tribe_post_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          parent_id: string | null
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tribe_post_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "tribe_post_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tribe_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "tribe_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tribe_post_kudos: {
+        Row: {
+          created_at: string
+          giver_id: string
+          id: string
+          post_id: string
+          receiver_id: string
+        }
+        Insert: {
+          created_at?: string
+          giver_id: string
+          id?: string
+          post_id: string
+          receiver_id: string
+        }
+        Update: {
+          created_at?: string
+          giver_id?: string
+          id?: string
+          post_id?: string
+          receiver_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tribe_post_kudos_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "tribe_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tribe_post_reactions: {
         Row: {
           created_at: string
@@ -1034,36 +1111,83 @@ export type Database = {
           },
         ]
       }
+      tribe_post_reports: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          reason: string
+          reporter_id: string
+          resolved: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          reason: string
+          reporter_id: string
+          resolved?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          reason?: string
+          reporter_id?: string
+          resolved?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tribe_post_reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "tribe_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tribe_posts: {
         Row: {
+          comments_count: number
           content: string | null
           created_at: string
           id: string
           image_url: string | null
+          kudos_count: number
           likes_count: number
+          reported: boolean
           tribe_id: string
           updated_at: string
           user_id: string
+          video_url: string | null
         }
         Insert: {
+          comments_count?: number
           content?: string | null
           created_at?: string
           id?: string
           image_url?: string | null
+          kudos_count?: number
           likes_count?: number
+          reported?: boolean
           tribe_id: string
           updated_at?: string
           user_id: string
+          video_url?: string | null
         }
         Update: {
+          comments_count?: number
           content?: string | null
           created_at?: string
           id?: string
           image_url?: string | null
+          kudos_count?: number
           likes_count?: number
+          reported?: boolean
           tribe_id?: string
           updated_at?: string
           user_id?: string
+          video_url?: string | null
         }
         Relationships: [
           {

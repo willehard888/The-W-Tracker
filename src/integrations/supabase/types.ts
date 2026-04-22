@@ -1261,6 +1261,19 @@ export type Database = {
           username: string
         }[]
       }
+      get_tribe_leaderboard: {
+        Args: { p_limit?: number; p_period?: string }
+        Returns: {
+          cover_url: string
+          member_count: number
+          name: string
+          rank: number
+          score: number
+          slug: string
+          tribe_id: string
+          visibility: string
+        }[]
+      }
       has_active_access: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
@@ -1301,6 +1314,20 @@ export type Database = {
       }
       revoke_tribe_invite: { Args: { p_invite_id: string }; Returns: undefined }
       reward_referral_conversion: { Args: { p_user: string }; Returns: Json }
+      search_tribes: {
+        Args: { p_limit?: number; p_query: string }
+        Returns: {
+          cover_url: string
+          description: string
+          id: string
+          member_count: number
+          name: string
+          owner_id: string
+          slug: string
+          viewer_status: string
+          visibility: string
+        }[]
+      }
       set_elite_status: {
         Args: { elite: boolean; target_user_id: string }
         Returns: undefined

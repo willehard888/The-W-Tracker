@@ -6,6 +6,10 @@
 
 @layer base {
   :root {
+    /* Premium easing tokens */
+    --ease-spring: cubic-bezier(0.16, 1.2, 0.32, 1);
+    --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+
     --background: 260 18% 4%;
     --foreground: 40 8% 94%;
 
@@ -401,17 +405,16 @@
   }
 
   .card-3d:hover {
-    transform: perspective(600px) translateZ(8px) rotateX(1.5deg);
+    transform: translateY(-1px);
     box-shadow:
-      0 20px 50px hsl(0 0% 0% / 0.45),
-      0 8px 20px hsl(var(--gold) / 0.06),
-      0 30px 60px -12px hsl(0 0% 0% / 0.2),
-      inset 0 1px 0 hsl(0 0% 100% / 0.1);
+      0 12px 32px hsl(0 0% 0% / 0.38),
+      0 4px 12px hsl(0 0% 0% / 0.18),
+      inset 0 1px 0 hsl(0 0% 100% / 0.08);
   }
 
   .card-3d:active {
-    transform: perspective(600px) translateZ(-2px) scale(0.98);
-    transition-duration: 100ms;
+    transform: translateY(0) scale(0.985);
+    transition-duration: 140ms;
   }
 
   /* 3D gold card variant */
@@ -687,7 +690,7 @@
       radial-gradient(ellipse 30% 20% at 30% 30%, hsl(42 78% 54% / 0.04) 0%, transparent 50%),
       radial-gradient(ellipse 25% 15% at 70% 60%, hsl(270 60% 58% / 0.03) 0%, transparent 50%),
       radial-gradient(ellipse 20% 20% at 50% 80%, hsl(172 66% 50% / 0.02) 0%, transparent 50%);
-    animation: caustic-drift 12s ease-in-out infinite alternate;
+    animation: caustic-drift 18s ease-in-out infinite alternate;
     pointer-events: none;
     z-index: 1;
   }
@@ -807,7 +810,7 @@
     opacity: 0;
     z-index: -1;
     pointer-events: none;
-    animation: aura-breathe 5s ease-in-out infinite;
+    animation: aura-breathe 7s ease-in-out infinite;
   }
 
   .aura-halo-purple::before {

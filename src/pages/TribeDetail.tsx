@@ -391,6 +391,22 @@ const TribeDetail = () => {
                   </span>
                 </div>
                 <h1 className="font-display font-black text-xl truncate leading-tight">{tribe.name}</h1>
+                {(() => {
+                  const founder = members.find((m) => m.role === "owner");
+                  if (!founder) return null;
+                  return (
+                    <button
+                      onClick={() => navigate(`/user/${founder.user_id}`)}
+                      className="mt-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-gold/20 to-[hsl(18_95%_58%)]/15 border border-gold/45 hover:from-gold/25 transition-colors"
+                    >
+                      <Crown size={9} className="text-gold" strokeWidth={2.8} fill="currentColor" />
+                      <span className="text-[9px] font-black tracking-widest uppercase text-gold">Founder</span>
+                      <span className="text-[10px] font-bold text-foreground/85 truncate max-w-[120px]">
+                        @{founder.username}
+                      </span>
+                    </button>
+                  );
+                })()}
                 {tribe.description && (
                   <p className="text-xs text-foreground/75 mt-1 leading-snug">{tribe.description}</p>
                 )}

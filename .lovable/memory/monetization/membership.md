@@ -1,39 +1,44 @@
 ---
 name: Membership
-description: €4.99/mo hard entry paywall for the entire app with 7-day trial. Elite is an EARNED status tier, not bought.
+description: Two paid tiers — €4.99/mo Member (with 7-day trial) and €15.99/mo Apex Instant (immediate Apex tier + Tribe creation)
 type: feature
 ---
 # Membership Model
 
-The app requires a paid membership to use AT ALL. There is no "free tier" beyond the 7-day trial.
+The app has TWO paid tiers. There is no permanent free tier beyond the 7-day trial that begins on signup.
 
-## Pricing & Trial
-- **€4.99/mo** subscription (RevenueCat product `elitemonthly499`, Stripe fallback for web)
+## Tier 1 — Member (€4.99/mo)
+- RevenueCat product `elitemonthly499`, Stripe fallback for web
 - **7-day free trial** auto-starts on signup (`profiles.trial_started_at = now()`)
 - DB function `has_active_access(user_id)` returns true if `is_elite = true` OR `trial_started_at > now() - interval '7 days'`
-- After trial: `AccessGate` hard-redirects every route except `/paywall`, `/auth`, `/landing`, `/privacy`, `/terms`, `/reset-password`, `/onboarding`, `/apple-username`, `/ios-debug`, `/apple-auth-launch`, `/u/*` (public profile), and `/oauth*` callbacks
+- Unlocks ALL core features: daily check-ins, XP, streaks, leaderboard, battles, AI Coach, reading the Elite Feed
+- Allows COMPETING for the earned `elite`/`apex`/`legend` status tiers
 
-## What Membership Unlocks (all paid features)
-- Daily check-ins, XP, levels, streaks
-- Global leaderboard + monthly seasons
-- 1v1 battles
-- AI Coach (formerly Elite-only, now member-only)
-- Reading the Elite Feed
-- Ability to *compete for* the earned Elite tier
+## Tier 2 — Apex Instant (€15.99/mo) — bought, not earned
+- RevenueCat product `apexmonthly1599`, Stripe Price `price_1TOvbkBm4ZLIG9fvoppvTJ7D`
+- **No trial** — only the €4.99 tier has a trial
+- Sets `profiles.is_apex_subscriber = true` AND `is_elite = true` (Apex includes Member benefits)
+- `update_status_tier` function pins tier to at least `apex` while subscription is active (cannot decay below it from inactivity)
+- Additional unlocks beyond Member:
+  - **Tribes (communities)** — can create up to 3 tribes (also available to earned `apex`/`legend`)
+  - "Founding Apex" `⚡` badge next to name (vs `🔥` for earned Apex)
+  - Eligible for exclusive Apex Founder badges
 
-## What Elite Tier Means (NOT tied to subscription)
-- `status_tier = 'elite'` is awarded by `update_status_tier()` based on:
-  - Top 5% rank percentile AND
-  - 14 active days in last 30 days AND
-  - 30+ day current streak
-- Elite tier unlocks: posting in Elite Feed (RLS on `feed_posts` checks `status_tier IN ('elite','apex','legend')`), Elite badges, profile glow
-- `is_elite` boolean = subscription flag only (member status). Reading Elite Feed and using AI Coach require `is_elite OR active trial`, not the earned tier.
+## What earned Elite/Apex/Legend means
+- `status_tier` is awarded by `update_status_tier()` based on rank percentile + activity + streak
+- Elite tier (top 5%, 14/30 active, 30+ day streak) unlocks posting in Elite Feed
+- The earned tier is preserved as a status symbol; subscribers get the same UI but with the `⚡` distinction
+
+## Access gating
+After trial expires for non-subscribers: `AccessGate` hard-redirects every route except `/paywall`, `/auth`, `/landing`, `/privacy`, `/terms`, `/reset-password`, `/onboarding`, `/apple-username`, `/ios-debug`, `/apple-auth-launch`, `/u/*` (public profile), and `/oauth*` callbacks.
 
 ## Paywall page (`src/pages/Paywall.tsx`)
-- Hero: "Become a Member" / "€4.99/mo + 7-day trial"
-- Lists member features (not "Elite perks")
-- If already member: shows "Membership Active" with link to Profile / Road to Elite (no "Elite unlocked" celebration)
+- Two `PaywallTierCard` components side-by-side
+- Member card: "Become a Member" / €4.99/mo + 7-day trial / "Earn Elite the right way"
+- Apex card: "Skip the grind" / €15.99/mo / flame+gold accent / "Founding Apex" status
+- Active subscriber sees "Membership Active" with relevant tier badge
 
-## Sync
-- RevenueCat webhook handles INITIAL_PURCHASE, RENEWAL, EXPIRATION → toggles `is_elite`
-- `set_elite_status()` RPC + `check-subscription` Edge Function for Stripe path
+## Sync infrastructure
+- `revenuecat-webhook` handles INITIAL_PURCHASE, RENEWAL, EXPIRATION for both `pro` and `apex_subscriber` entitlements
+- `check-subscription` Edge Function reads Stripe price IDs and updates `is_elite` + `is_apex_subscriber`
+- `set_elite_status()` RPC for direct elite toggle (legacy/admin)

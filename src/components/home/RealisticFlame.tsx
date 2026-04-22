@@ -260,8 +260,10 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
       style={{
         width: size,
         height: size,
-        // Wind-sway on the entire flame (transform-only, GPU-friendly)
-        animation: `flame-wind-sway ${4.5 * speedMul}s ease-in-out infinite`,
+        // Wind-driven lean + gust stretch (CSS-var, no React rerenders).
+        // The flame still has its own organic flicker from the per-layer keyframes.
+        transform: windTransform,
+        transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)",
         transformOrigin: "center bottom",
       }}
       aria-hidden

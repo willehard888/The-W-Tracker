@@ -39,7 +39,12 @@ export const useMyRank = (userId: string | undefined) => {
       };
     },
     enabled: !!userId,
-    staleTime: 60_000,
+    // Always refetch when a screen using rank mounts so % stays in sync
+    // with leaderboard / tier changes (cache showing stale "89%" after
+    // user climbed to #1 was reported).
+    staleTime: 0,
     gcTime: 5 * 60_000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 };

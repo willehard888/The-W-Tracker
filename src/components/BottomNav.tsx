@@ -1,4 +1,4 @@
-import { Home, Target, Trophy, User, Swords, Flame, MessageCircle, Sparkles } from "lucide-react";
+import { Home, Target, Trophy, User, Swords, Flame, MessageCircle, Sparkles, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
@@ -9,6 +9,7 @@ const baseTabs = [
   { icon: Target, label: "Check-in", path: "/checkin", color: "teal" },
   { icon: Flame, label: "Feed", path: "/feed", color: "orange" },
   { icon: Sparkles, label: "Coach", path: "/coach", color: "gold", eliteOnly: true as const },
+  { icon: Users, label: "Tribes", path: "/tribes", color: "apex" },
   { icon: MessageCircle, label: "DMs", path: "/messages", color: "purple" },
   { icon: Trophy, label: "Ranks", path: "/leaderboard", color: "gold" },
   { icon: Swords, label: "Battles", path: "/battles", color: "rose" },
@@ -21,6 +22,7 @@ const colorMap: Record<string, { active: string; dot: string; glow: string }> = 
   orange: { active: "text-[hsl(var(--streak-orange))]", dot: "bg-[hsl(var(--streak-orange))]", glow: "shadow-[0_0_8px_hsl(var(--streak-orange)/0.5)]" },
   purple: { active: "text-[hsl(var(--purple))]", dot: "bg-[hsl(var(--purple))]", glow: "shadow-[0_0_8px_hsl(var(--purple)/0.5)]" },
   rose: { active: "text-[hsl(var(--rose))]", dot: "bg-[hsl(var(--rose))]", glow: "shadow-[0_0_8px_hsl(var(--rose)/0.5)]" },
+  apex: { active: "text-[hsl(18_95%_58%)]", dot: "bg-[hsl(18_95%_58%)]", glow: "shadow-[0_0_8px_hsl(18_95%_58%/0.6)]" },
 };
 
 const BottomNav = () => {

@@ -1,51 +1,52 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { cn } from "@/lib/utils";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  Crown, Flame, Trophy, Swords, Sparkles, Zap, Check, ArrowLeft, Loader2, ShieldCheck,
+  Crown, Flame, Trophy, Swords, Sparkles, Zap, Users, ArrowLeft, Loader2, ShieldCheck, Star,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import BrandLogo from "@/components/BrandLogo";
+import PaywallTierCard from "@/components/PaywallTierCard";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
-// ─── Constants ──────────────────────────────────────────
-const PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"];
-const PRIMARY_PRODUCT_ID = PRODUCT_IDS[0];
+const ELITE_PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"];
+const PRIMARY_ELITE_PRODUCT_ID = ELITE_PRODUCT_IDS[0];
 
-/**
- * What a membership gets you. Reframed as "the app experience" — Elite-tier
- * perks (badges, profile glow) are EARNED, not purchased.
- */
 const MEMBER_FEATURES = [
-  { icon: Flame, text: "Daily check-ins, XP, levels & streaks" },
-  { icon: Trophy, text: "Global leaderboard & monthly seasons" },
-  { icon: Swords, text: "1v1 battles vs other members" },
-  { icon: Sparkles, text: "AI Coach — personal performance assistant" },
-  { icon: Zap, text: "Read the Elite Feed — top performers' wins" },
-  { icon: Crown, text: "Compete for the earned Elite status tier" },
+  { icon: Flame, text: "Daily check-ins, XP, streaks" },
+  { icon: Trophy, text: "Global leaderboard & seasons" },
+  { icon: Swords, text: "1v1 battles" },
+  { icon: Sparkles, text: "AI Coach" },
+  { icon: Crown, text: "Compete for earned Elite tier" },
 ] as const;
 
-// ─── Component ──────────────────────────────────────────
+const APEX_FEATURES = [
+  { icon: Zap, text: "Instant Apex status — top 1% tier" },
+  { icon: Users, text: "Create Tribes (Communities) — up to 3" },
+  { icon: Star, text: "Apex visual effects — flame aura everywhere" },
+  { icon: Crown, text: "Tier protected — never drops while subscribed" },
+  { icon: Sparkles, text: "All Member features included" },
+] as const;
+
 const Paywall = () => {
-  const { isElite, checkSubscription, profile } = useAuth();
+  const { isElite, isApexSubscriber, checkSubscription, profile } = useAuth();
   const {
-    packages, purchase, purchaseProduct, restorePurchases,
-    rcLoading, rcReady, monthlyPriceLabel,
+    packages, purchase, purchaseProduct, purchaseApex, restorePurchases,
+    rcLoading, rcReady, monthlyPriceLabel, apexPriceLabel,
   } = useRevenueCat();
   const navigate = useNavigate();
 
-  const [purchasing, setPurchasing] = useState(false);
+  const [purchasingTier, setPurchasingTier] = useState<"elite" | "apex" | null>(null);
   const wasMemberRef = useRef(isElite);
   const isNative = isNativePlatform();
 
-  const displayPrice = isNative ? (monthlyPriceLabel ?? "4,99 €") : "4,99 €";
+  const elitePrice = isNative ? (monthlyPriceLabel ?? "4,99 €") : "4,99 €";
+  const apexPrice = isNative ? (apexPriceLabel ?? "15,99 €") : "15,99 €";
 
-  // Toast on upgrade
   useEffect(() => {
     if (isElite && !wasMemberRef.current) {
       toast.success("Welcome aboard. Membership active.");
@@ -53,33 +54,62 @@ const Paywall = () => {
     wasMemberRef.current = isElite;
   }, [isElite]);
 
-  // ─── Already a member ───────────────────────────────
+  // Already a member
   if (isElite) {
     return (
       <div className="min-h-screen pb-4 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
-        <div className="h-20 w-20 rounded-full gradient-gold flex items-center justify-center glow-gold mb-4">
-          <ShieldCheck size={36} className="text-primary-foreground" />
+        <div
+          className={`h-20 w-20 rounded-full flex items-center justify-center mb-4 ${
+            isApexSubscriber ? "" : "gradient-gold glow-gold"
+          }`}
+          style={
+            isApexSubscriber
+              ? {
+                  background:
+                    "linear-gradient(135deg, hsl(18 95% 58%), hsl(var(--gold)))",
+                  boxShadow:
+                    "0 0 32px hsl(18 95% 58% / 0.5), 0 0 64px hsl(var(--gold) / 0.3)",
+                }
+              : undefined
+          }
+        >
+          {isApexSubscriber ? (
+            <Zap size={36} className="text-background" strokeWidth={2.6} />
+          ) : (
+            <ShieldCheck size={36} className="text-primary-foreground" />
+          )}
         </div>
-        <h1 className="font-display text-2xl font-bold mb-2">Membership Active</h1>
+        <h1 className="font-display text-2xl font-bold mb-2">
+          {isApexSubscriber ? "Apex Instant Active" : "Membership Active"}
+        </h1>
         <p className="text-sm text-muted-foreground mb-2 max-w-xs">
-          You have full access to the app. Now earn your Elite status — it's not bought, it's built.
+          {isApexSubscriber
+            ? "You have Apex tier instantly. Build a Tribe, lead the community."
+            : "You have full access to the app. Now earn your Elite status — it's not bought, it's built."}
         </p>
-        <p className="text-[11px] text-muted-foreground/70 mb-6 tracking-wide">
-          Top 5% rank • 14 active days • 30-day streak
-        </p>
-        <div className="flex gap-2">
+        {!isApexSubscriber && (
+          <p className="text-[11px] text-muted-foreground/70 mb-6 tracking-wide">
+            Top 5% rank • 14 active days • 30-day streak
+          </p>
+        )}
+        <div className="flex gap-2 mt-4">
           <Button variant="gold-outline" onClick={() => navigate("/profile")}>
-            <ArrowLeft size={14} /> Back to Profile
+            <ArrowLeft size={14} /> Profile
           </Button>
-          <Button variant="gold" onClick={() => navigate("/")}>
-            <Crown size={14} /> Road to Elite
-          </Button>
+          {isApexSubscriber ? (
+            <Button variant="gold" onClick={() => navigate("/tribes")}>
+              <Users size={14} /> Tribes
+            </Button>
+          ) : (
+            <Button variant="gold" onClick={() => navigate("/")}>
+              <Crown size={14} /> Road to Elite
+            </Button>
+          )}
         </div>
       </div>
     );
   }
 
-  // ─── Credits info (non-member with active referral credits) ─────
   const creditsUntilRaw: string | null = (profile as any)?.membership_credits_until ?? null;
   const creditsActive = creditsUntilRaw && new Date(creditsUntilRaw).getTime() > Date.now();
   const creditsUntilLabel = creditsActive
@@ -87,41 +117,39 @@ const Paywall = () => {
     : null;
 
   // ─── Handlers ───────────────────────────────────────
-  const handleStripeCheckout = async () => {
-    setPurchasing(true);
+  const handleStripeCheckout = async (tier: "elite" | "apex") => {
+    setPurchasingTier(tier);
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout");
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { tier },
+      });
       if (error) throw error;
       if (!data?.url) throw new Error("No checkout URL received");
-
       window.open(data.url, "_blank");
       const poll = setInterval(() => checkSubscription(), 4000);
       setTimeout(() => clearInterval(poll), 180_000);
     } catch (e: any) {
       toast.error(e?.message || "Could not start checkout.");
     } finally {
-      setPurchasing(false);
+      setPurchasingTier(null);
     }
   };
 
-  const handleNativePurchase = async () => {
+  const handleNativeElite = async () => {
     if (!rcReady) { toast.info("Loading store… please wait."); return; }
     hapticImpact("medium");
-    setPurchasing(true);
+    setPurchasingTier("elite");
     try {
       const monthlyPkg = packages.find((pkg: any) => {
         const id = pkg?.product?.identifier ?? pkg?.storeProduct?.identifier;
-        return id === PRIMARY_PRODUCT_ID;
+        return id === PRIMARY_ELITE_PRODUCT_ID;
       }) ?? packages.find((pkg: any) => {
         const id = pkg?.product?.identifier ?? pkg?.storeProduct?.identifier;
-        return PRODUCT_IDS.includes(id);
+        return ELITE_PRODUCT_IDS.includes(id);
       });
 
-      if (monthlyPkg) {
-        await purchase(monthlyPkg);
-      } else {
-        await purchaseProduct(PRIMARY_PRODUCT_ID);
-      }
+      if (monthlyPkg) await purchase(monthlyPkg);
+      else await purchaseProduct(PRIMARY_ELITE_PRODUCT_ID);
 
       await checkSubscription();
       hapticNotification("success");
@@ -130,7 +158,24 @@ const Paywall = () => {
       hapticNotification("error");
       toast.error(e?.message || "Purchase failed.");
     } finally {
-      setPurchasing(false);
+      setPurchasingTier(null);
+    }
+  };
+
+  const handleNativeApex = async () => {
+    if (!rcReady) { toast.info("Loading store… please wait."); return; }
+    hapticImpact("heavy");
+    setPurchasingTier("apex");
+    try {
+      await purchaseApex();
+      await checkSubscription();
+      hapticNotification("success");
+    } catch (e: any) {
+      if (e?.userCancelled || e?.code === "1") return;
+      hapticNotification("error");
+      toast.error(e?.message || "Apex purchase failed.");
+    } finally {
+      setPurchasingTier(null);
     }
   };
 
@@ -149,7 +194,7 @@ const Paywall = () => {
 
   // ─── Render ─────────────────────────────────────────
   return (
-    <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
+    <div className="min-h-screen pb-8 px-4 pt-6 safe-top">
       {creditsActive && (
         <div className="animate-reveal mb-4 rounded-xl border border-gold/40 bg-gold/10 p-4 text-center">
           <p className="text-xs font-bold text-gold tracking-wide">
@@ -160,94 +205,69 @@ const Paywall = () => {
           </p>
         </div>
       )}
+
       {/* Hero */}
       <div className="text-center mb-6 mt-4 animate-reveal">
-        <BrandLogo size={80} priority className="mx-auto rounded-2xl glow-gold mb-4" />
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 border border-gold/25 mb-3">
-          <ShieldCheck size={12} className="text-gold" />
-          <span className="text-[10px] font-bold text-gold tracking-widest uppercase">
-            Membership required
-          </span>
-        </div>
-        <h1 className="font-display text-3xl font-black tracking-tight mb-2">
-          Become a <span className="text-gold glow-gold-text">Member</span>
+        <BrandLogo size={72} priority className="mx-auto rounded-2xl glow-gold mb-3" />
+        <h1 className="font-display text-2xl font-black tracking-tight mb-1">
+          Choose your <span className="text-gold glow-gold-text">level</span>
         </h1>
         <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-          {displayPrice}/month unlocks the full app. Then start your Road to Elite — the in-app status earned by the top 5%.
+          Start with Member or skip the grind with Apex Instant. Cancel anytime.
         </p>
       </div>
 
-      {/* Pricing */}
-      <div className="animate-reveal animate-reveal-delay-1 mb-6">
-        {isNative && rcLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 size={24} className="animate-spin text-gold" />
-          </div>
-        ) : (
-          <div className="rounded-xl glass-card-gold p-6 text-center gradient-border-animated relative overflow-hidden">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/15 border border-gold/30 mb-3">
-              <Zap size={12} className="text-gold" />
-              <span className="text-[10px] font-bold text-gold tracking-widest uppercase">
-                7-day free trial
-              </span>
-            </div>
-
-            <p className="text-3xl font-display font-black text-gold mb-1 leading-none">
-              {displayPrice}
-              <span className="text-base font-semibold text-muted-foreground">/mo</span>
-            </p>
-            <p className="text-xs text-muted-foreground mb-1">App Membership</p>
-            <p className="text-[11px] text-muted-foreground/80 mb-4">
-              Free for 7 days, then {displayPrice}/mo. Cancel anytime.
-            </p>
-
-            <Button
-              variant="gold"
-              size="xl"
-              className={cn("w-full", !purchasing && "breathing-glow")}
-              disabled={purchasing}
-              onClick={isNative ? handleNativePurchase : handleStripeCheckout}
-            >
-              {purchasing ? <Loader2 size={18} className="animate-spin" /> : <ShieldCheck size={18} />}
-              Start 7-Day Free Trial
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* What you get */}
-      <div className="rounded-xl glass-card-gold p-5 mb-4 animate-reveal animate-reveal-delay-2 gradient-border-animated shimmer-overlay">
-        <h2 className="font-display font-bold text-sm mb-4 text-gold">What your membership gives you</h2>
-        <div className="space-y-3">
-          {MEMBER_FEATURES.map(({ icon: Icon, text }) => (
-            <div key={text} className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
-                <Icon size={16} className="text-gold" />
-              </div>
-              <span className="text-sm font-medium">{text}</span>
-              <Check size={14} className="text-gold ml-auto shrink-0" />
-            </div>
-          ))}
+      {isNative && rcLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 size={24} className="animate-spin text-gold" />
         </div>
-      </div>
+      ) : (
+        <div className="space-y-4 animate-reveal animate-reveal-delay-1">
+          {/* Member tier */}
+          <PaywallTierCard
+            variant="elite"
+            title="Member"
+            badgeLabel="7-day free trial"
+            tagline="Full access, then earn your status."
+            priceLabel={elitePrice}
+            ctaLabel="Start 7-Day Trial"
+            ctaIcon={<ShieldCheck size={18} />}
+            features={MEMBER_FEATURES}
+            loading={purchasingTier === "elite"}
+            onCta={isNative ? handleNativeElite : () => handleStripeCheckout("elite")}
+            footnote={`Free for 7 days, then ${elitePrice}/mo.`}
+          />
 
-      {/* Earned-status disclaimer */}
-      <div className="rounded-xl border border-gold/20 bg-gold/5 p-4 mb-6 animate-reveal animate-reveal-delay-2">
-        <div className="flex items-start gap-3">
-          <Crown size={16} className="text-gold shrink-0 mt-0.5" />
-          <div>
-            <p className="text-xs font-bold text-gold mb-1 tracking-wide">
-              Elite status is EARNED, not bought
-            </p>
+          {/* Apex Instant tier */}
+          <PaywallTierCard
+            variant="apex"
+            title="Apex Instant"
+            badgeLabel="Skip the grind"
+            tagline="Instant top 1% status. Lead a Tribe."
+            priceLabel={apexPrice}
+            ctaLabel="Become Apex Now"
+            ctaIcon={<Zap size={18} strokeWidth={2.6} />}
+            features={APEX_FEATURES}
+            highlighted
+            loading={purchasingTier === "apex"}
+            onCta={isNative ? handleNativeApex : () => handleStripeCheckout("apex")}
+            footnote="No trial. Charged immediately. Cancel anytime."
+          />
+
+          {/* Earned-vs-bought disclaimer */}
+          <div className="rounded-xl border border-gold/15 bg-gold/[0.03] p-3.5 text-center">
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Membership unlocks the app. Elite — the gold tier with profile glow, posting rights on the Elite Feed, and top-5% recognition — is earned through real consistency: top 5% rank score, 14 active days in 30, and a 30-day streak.
+              <span className="text-gold font-semibold">Earned Apex</span> (top
+              1% by rank, activity & streak) is still possible at{" "}
+              <span className="text-gold font-semibold">{elitePrice}/mo</span>{" "}
+              — the grind respects those who do it.
             </p>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Restore */}
-      <div className="text-center animate-reveal animate-reveal-delay-3">
+      <div className="text-center mt-6 animate-reveal animate-reveal-delay-3">
         <button
           onClick={() => navigate("/ios-debug")}
           className="mr-3 text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2"
@@ -259,15 +279,13 @@ const Paywall = () => {
         </button>
       </div>
 
-      {/* Trust */}
-      <div className="text-center mt-4 animate-reveal animate-reveal-delay-3">
+      <div className="text-center mt-4">
         <p className="text-[10px] text-muted-foreground tracking-wider uppercase">
           {isNative ? "Secure in-app purchase • Cancel anytime" : "Secure payment via Stripe • Cancel anytime"}
         </p>
       </div>
 
-      {/* Legal */}
-      <div className="flex items-center justify-center gap-4 mt-4 mb-8 animate-reveal animate-reveal-delay-3">
+      <div className="flex items-center justify-center gap-4 mt-4 mb-6">
         <button onClick={() => navigate("/privacy")} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2">
           Privacy Policy
         </button>

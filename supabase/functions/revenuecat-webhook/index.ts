@@ -6,13 +6,16 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Apex Instant product identifiers (RevenueCat product_id)
+const APEX_PRODUCT_IDS = ["apexmonthly1599", "com.app.apexmonthly1599"];
+const APEX_ENTITLEMENT = "apex_subscriber";
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Verify webhook authorization
     const authHeader = req.headers.get("Authorization");
     const webhookSecret = Deno.env.get("REVENUECAT_WEBHOOK_SECRET");
 
@@ -34,10 +37,19 @@ Deno.serve(async (req) => {
       });
     }
 
+    const productId: string | undefined = event.product_id;
+    const entitlementIds: string[] = Array.isArray(event.entitlement_ids)
+      ? event.entitlement_ids
+      : [];
+    const isApexProduct =
+      (productId && APEX_PRODUCT_IDS.includes(productId)) ||
+      entitlementIds.includes(APEX_ENTITLEMENT);
+
     console.log(`RevenueCat webhook: ${event.type}`, JSON.stringify({
       app_user_id: event.app_user_id,
       type: event.type,
-      product_id: event.product_id,
+      product_id: productId,
+      isApexProduct,
     }));
 
     const supabase = createClient(
@@ -53,7 +65,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Determine if user should have elite access based on event type
     const grantEvents = [
       "INITIAL_PURCHASE",
       "RENEWAL",
@@ -74,10 +85,8 @@ Deno.serve(async (req) => {
     if (grantEvents.includes(event.type)) {
       isElite = true;
     } else if (revokeEvents.includes(event.type)) {
-      // For expiration/billing issues, check if entitlement is truly gone
       isElite = false;
     } else if (event.type === "CANCELLATION") {
-      // Cancellation doesn't revoke immediately - user keeps access until period ends
       console.log("Cancellation received - user keeps access until expiration");
       return new Response(JSON.stringify({ success: true, action: "none" }), {
         status: 200,
@@ -86,9 +95,21 @@ Deno.serve(async (req) => {
     }
 
     if (isElite !== null) {
+      const update: Record<string, any> = { is_elite: isElite };
+
+      if (isApexProduct) {
+        update.is_apex_subscriber = isElite;
+        if (isElite) {
+          update.apex_subscription_started_at = new Date().toISOString();
+        }
+      } else if (!isElite) {
+        // Generic revoke — also clear apex subscriber flag if this was the only plan
+        update.is_apex_subscriber = false;
+      }
+
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({ is_elite: isElite })
+        .update(update)
         .eq("user_id", appUserId);
 
       if (updateError) {
@@ -102,7 +123,12 @@ Deno.serve(async (req) => {
         );
       }
 
-      console.log(`Updated user ${appUserId} is_elite=${isElite}`);
+      console.log(`Updated user ${appUserId}`, update);
+
+      // If apex was granted, immediately promote tier
+      if (isApexProduct && isElite) {
+        await supabase.rpc("update_status_tier", { target_user_id: appUserId });
+      }
 
       // On successful paid activation, fire referral conversion reward (idempotent)
       if (isElite === true) {
@@ -119,7 +145,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, is_elite: isElite }),
+      JSON.stringify({ success: true, is_elite: isElite, apex: isApexProduct }),
       {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

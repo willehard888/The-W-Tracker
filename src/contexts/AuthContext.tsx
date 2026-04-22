@@ -10,6 +10,7 @@ interface AuthContextType {
   profile: any | null;
   loading: boolean;
   isElite: boolean;
+  isApexSubscriber: boolean;
   subscriptionEnd: string | null;
   checkSubscription: () => Promise<void>;
   signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
@@ -32,6 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [isElite, setIsElite] = useState(false);
+  const [isApexSubscriber, setIsApexSubscriber] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
 
   const buildFallbackUsername = (authUser: User) => {
@@ -137,6 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     setProfile(data);
     setIsElite(Boolean(data?.is_elite));
+    setIsApexSubscriber(Boolean((data as any)?.is_apex_subscriber));
 
     if (shouldForceAppleUsernameSetup(authUser, data)) {
       if (!data?.username || data.username === buildFallbackUsername(authUser)) {
@@ -190,6 +193,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setProfile(null);
           setIsElite(false);
+          setIsApexSubscriber(false);
           setSubscriptionEnd(null);
         }
         setLoading(false);
@@ -239,11 +243,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     clearAppleUsernameSelectionPending();
     setProfile(null);
     setIsElite(false);
+    setIsApexSubscriber(false);
     setSubscriptionEnd(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, isElite, subscriptionEnd, checkSubscription, signUp, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, isElite, isApexSubscriber, subscriptionEnd, checkSubscription, signUp, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

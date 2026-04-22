@@ -517,7 +517,8 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
         {/* Pressure microcopy */}
         {displayStreak >= 3 && (
           <p className="text-[11px] text-muted-foreground/70 font-semibold text-center italic mt-2">
-            {displayStreak >= 100 ? "🔱 Legendary. The 0.1%." :
+            {displayStreak >= 200 ? "⚡️ Inferno. You broke the ceiling." :
+             displayStreak >= 100 ? "🔱 Legendary. The 0.1%." :
              displayStreak >= 60  ? "💎 Diamond status. Don't blink." :
              displayStreak >= 30  ? "👑 Most never reach this point." :
              displayStreak >= 14  ? "💪 Don't break now. Keep pushing." :

@@ -22,11 +22,14 @@ import {
   Video as VideoIcon,
   X,
   ShieldAlert,
+  Settings,
+  Shield,
 } from "lucide-react";
 import { toast } from "sonner";
 import TribeInviteModal from "@/components/TribeInviteModal";
 import TribePendingRequestsDialog from "@/components/TribePendingRequestsDialog";
 import TribeReportsDialog from "@/components/TribeReportsDialog";
+import TribeManageDialog from "@/components/TribeManageDialog";
 import TribePostCard, { type TribePostCardPost } from "@/components/TribePostCard";
 import { useModeration } from "@/hooks/use-moderation";
 
@@ -69,6 +72,7 @@ const TribeDetail = () => {
   const [pendingCount, setPendingCount] = useState(0);
   const [reportsOpen, setReportsOpen] = useState(false);
   const [reportedCount, setReportedCount] = useState(0);
+  const [manageOpen, setManageOpen] = useState(false);
 
   // Admin check
   const { data: isAdmin } = useQuery({
@@ -459,12 +463,16 @@ const TribeDetail = () => {
                 </Button>
               ) : isOwner ? (
                 <>
+                  <Button onClick={() => setManageOpen(true)} size="sm" variant="outline"
+                    className="flex-1 border-gold/40 hover:bg-gold/10 text-gold">
+                    <Settings size={14} /> Manage
+                  </Button>
                   <Button onClick={() => setInviteOpen(true)} size="sm" variant="outline"
                     className="flex-1 border-[hsl(18_95%_58%)]/40 hover:bg-[hsl(18_95%_58%)]/10 text-[hsl(18_95%_58%)]">
                     <UserPlus size={14} /> Invite
                   </Button>
-                  <Button onClick={handleDelete} variant="destructive" size="sm" className="flex-1">
-                    <Trash2 size={14} /> Delete
+                  <Button onClick={handleDelete} variant="destructive" size="sm" className="px-3">
+                    <Trash2 size={14} />
                   </Button>
                 </>
               ) : (
@@ -504,6 +512,11 @@ const TribeDetail = () => {
                   {m.role === "owner" && (
                     <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1 py-px rounded-sm bg-gold/90">
                       <Crown size={6} className="text-background" />
+                    </div>
+                  )}
+                  {m.role === "admin" && (
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1 py-px rounded-sm bg-[hsl(18_95%_58%)]/90">
+                      <Shield size={6} className="text-background" />
                     </div>
                   )}
                 </div>
@@ -631,6 +644,22 @@ const TribeDetail = () => {
           <TribeInviteModal tribeId={id} open={inviteOpen} onClose={() => setInviteOpen(false)} />
           <TribePendingRequestsDialog tribeId={id} open={pendingOpen} onOpenChange={setPendingOpen} onChanged={load} />
           <TribeReportsDialog tribeId={id} open={reportsOpen} onOpenChange={setReportsOpen} onChanged={load} />
+          {isOwner && tribe && profile?.user_id && (
+            <TribeManageDialog
+              tribeId={id}
+              open={manageOpen}
+              onOpenChange={setManageOpen}
+              tribe={{
+                name: tribe.name,
+                description: tribe.description,
+                visibility: tribe.visibility,
+                cover_url: tribe.cover_url,
+              }}
+              members={members}
+              currentUserId={profile.user_id}
+              onChanged={load}
+            />
+          )}
         </>
       )}
     </div>

@@ -1,7 +1,7 @@
 import { Flame, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import StreakDisplay from "@/components/StreakDisplay";
+import CompactStreakPanel from "@/components/home/CompactStreakPanel";
 
 interface CommandDeckProps {
   streak: number;
@@ -48,9 +48,9 @@ const CommandDeck = ({
         animation: canCheckin ? "shimmer-slide 5s ease-in-out infinite" : undefined,
       }}
     >
-      <div className="rounded-3xl bg-gradient-to-br from-card via-card to-card/85 p-3 sm:p-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+      <div className="rounded-3xl bg-gradient-to-br from-card via-card to-card/85 p-2.5 sm:p-3 grid gap-2.5 sm:gap-3 sm:grid-cols-2">
         {/* Streak compact */}
-        <StreakDisplay
+        <CompactStreakPanel
           streak={streak}
           longestStreak={longestStreak}
           lastCheckinAt={lastCheckinAt}

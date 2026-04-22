@@ -224,11 +224,13 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
 
           {/* Days at tier */}
           {hasRank && daysAtTier !== undefined && daysAtTier > 0 && tier !== "recruit" && tier !== "normal" && (
-            <div className="flex items-center justify-center gap-1.5 mb-2 text-[10px] text-muted-foreground">
+            <div className="flex items-center justify-center gap-1.5 mb-2 text-[10px]">
               <Trophy size={10} className={cn("shrink-0", config.textClass)} />
-              <span>
-                <span className={cn("font-black tabular-nums", config.textClass)}>{daysAtTier}d</span>{" "}
-                at <span className="font-black">{config.label}</span>
+              <span className="text-muted-foreground">
+                <span className={cn("font-black tabular-nums", config.textClass)}>
+                  {daysAtTier}{daysAtTier === 1 ? " day" : " days"}
+                </span>{" "}
+                as <span className={cn("font-black", config.textClass)}>{config.label}</span>
               </span>
             </div>
           )}

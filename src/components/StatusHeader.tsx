@@ -132,8 +132,11 @@ const StatusHeader = () => {
       />
 
       <div className="relative backdrop-blur-xl bg-background/90 border-b border-gold/20">
-        {/* Top shimmer accent */}
-        <div className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
+        {/* Top shimmer accent — flame-tinted for Apex */}
+        <div className={cn(
+          "pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent to-transparent",
+          isApex ? "via-[hsl(18_95%_58%)]" : "via-gold/70",
+        )} />
 
         {/* Brand strip — minimal */}
         <button

@@ -8,6 +8,9 @@ export interface ReferralStats {
   monthlyEarnedEuros: number;
   lifetimeEarnedEuros: number;
   milestonesHit: string[];
+  apexCreditsUntil: string | null;
+  legendPinned: boolean;
+  daysAsApex: number;
 }
 
 const PRICE_PER_CONVERSION = 4.99;

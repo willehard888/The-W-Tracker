@@ -440,7 +440,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
               {post.author?.level && post.author.level > 0 && (<><span>•</span><span className="font-semibold">Lv.{post.author.level}</span></>)}
               {post.author?.streak && post.author.streak > 0 && (
-                <><span>•</span><span className="text-[hsl(var(--streak-orange))]">🔥 {post.author.streak}d</span></>
+                <><span>•</span><StreakFlameInline streak={post.author.streak} suffix="d" className="text-[10px]" /></>
               )}
             </div>
           </div>

@@ -80,7 +80,7 @@ const ImageLightbox = ({
             {showMetric(streak) && (
               <>
                 <span>•</span>
-                <span className="text-streak-orange">🔥 {streak}d</span>
+                <StreakFlameInline streak={streak} suffix="d" className="text-[10px]" />
               </>
             )}
           </div>

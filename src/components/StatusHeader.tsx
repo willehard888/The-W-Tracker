@@ -167,10 +167,7 @@ const StatusHeader = () => {
                 @{profile.username}
               </p>
               {streak > 0 && (
-                <span className="flex items-center gap-0.5 text-xs font-black text-[hsl(18_95%_58%)] leading-none">
-                  <Flame size={12} />
-                  {streak}
-                </span>
+                <StreakFlameInline streak={streak} suffix="" className="leading-none text-xs" />
               )}
             </div>
 

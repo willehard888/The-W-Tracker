@@ -1045,7 +1045,7 @@ const EliteFeed = () => {
                     {post.profile?.streak > 0 && (
                       <>
                         <span>•</span>
-                        <span className="text-[hsl(var(--streak-orange))]">🔥 {post.profile.streak}d</span>
+                        <StreakFlameInline streak={post.profile.streak} suffix="d" className="text-[10px]" />
                       </>
                     )}
                   </div>

@@ -27,7 +27,11 @@ const TribeBattles = () => {
     setLoading(true);
 
     // Auto-resolve any expired battles first (best-effort)
-    await supabase.rpc("auto_resolve_expired_tribe_battles" as any).catch(() => {});
+    try {
+      await supabase.rpc("auto_resolve_expired_tribe_battles" as any);
+    } catch {
+      // ignore — best-effort auto-resolve
+    }
 
     const [tRes, bRes] = await Promise.all([
       supabase.from("tribes" as any).select("id, name, owner_id").eq("id", id).maybeSingle(),

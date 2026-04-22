@@ -284,8 +284,13 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
                   </div>
 
                   <div className={cn("rounded-lg p-2.5 text-center text-[11px] font-bold", unlocked ? "bg-emerald-500/10 text-emerald-400" : "bg-muted/20 text-muted-foreground")}>
-                    {unlocked ? "✓ Achieved" : "🔒 Not yet earned"}
+                    {unlocked ? "✓ Achieved" : openTier === 'legend' ? "🔱 Earned only · Founders Circle" : "🔒 Not yet earned"}
                   </div>
+
+                  {/* Apex paywall — only when not yet Apex AND not subscriber */}
+                  {openTier === 'apex' && !unlocked && !isApexSubscriber && (
+                    <TierUnlockPaywallCard className="mt-1" />
+                  )}
                 </div>
               </>
             );

@@ -127,14 +127,13 @@ const StreakFlameInline = ({
     };
   }, [tierIndex, isHot, isWarm, isOnFire, isBlazing, isDiamond, isLegendary]);
 
-  // Slow flicker speed — deliberately gentle so 50 of these on screen
-  // doesn't thrash the compositor.
+  // Faster, livelier flicker (was deliberately slow). Still GPU-cheap.
   const speed =
-    isLegendary ? 1.4 :
-    isDiamond   ? 1.6 :
-    isBlazing   ? 1.8 :
-    isOnFire    ? 2.0 :
-    isWarm      ? 2.4 : 2.8;
+    isLegendary ? 0.85 :
+    isDiamond   ? 1.0  :
+    isBlazing   ? 1.15 :
+    isOnFire    ? 1.3  :
+    isWarm      ? 1.55 : 1.85;
 
   // Diamond+ get a slow hue shimmer
   const hueAnim = isLegendary
@@ -152,17 +151,34 @@ const StreakFlameInline = ({
         style={{ width: flameSize, height: flameSize * 1.15, animation: hueAnim }}
         aria-hidden
       >
-        {/* Halo glow — Warm+ */}
+        {/* Halo glow — Warm+ — bigger & punchier */}
         {isWarm && (
           <span
-            className="absolute left-1/2 bottom-0 rounded-full pointer-events-none"
+            className="absolute left-1/2 bottom-0 rounded-full pointer-events-none animate-[flame-inline-flicker_var(--flame-speed)_ease-in-out_infinite]"
             style={{
-              width: flameSize * 1.15,
-              height: flameSize * 0.6,
-              background: `radial-gradient(ellipse at center, ${palette.glow} 0%, transparent 70%)`,
+              width: flameSize * 1.6,
+              height: flameSize * 0.85,
+              background: `radial-gradient(ellipse at center, ${palette.glow.replace(")", " / 0.85)")} 0%, ${palette.glow.replace(")", " / 0.35)")} 45%, transparent 75%)`,
               transform: "translateX(-50%)",
-              filter: "blur(2px)",
-              opacity: 0.6,
+              filter: "blur(3px)",
+              opacity: 0.85,
+              ["--flame-speed" as string]: `${speed * 1.3}s`,
+            }}
+          />
+        )}
+
+        {/* Rising ember — small particle floating up from the flame (Warm+) */}
+        {isWarm && (
+          <span
+            className="absolute left-1/2 rounded-full pointer-events-none"
+            style={{
+              width: Math.max(1.4, flameSize * 0.09),
+              height: Math.max(1.4, flameSize * 0.09),
+              top: -2,
+              background: palette.core,
+              boxShadow: `0 0 ${flameSize * 0.35}px ${palette.glow}`,
+              animation: `flame-inline-ember-rise ${speed * 1.6}s ease-out infinite`,
+              ["--ember-rise" as string]: `${flameSize * 0.9}px`,
             }}
           />
         )}
@@ -184,7 +200,7 @@ const StreakFlameInline = ({
             border: isHot ? "none" : `1.5px solid ${palette.outer}`,
             borderRadius: "50% 50% 50% 50% / 65% 65% 35% 35%",
             clipPath: "polygon(50% 0%, 95% 35%, 100% 70%, 80% 100%, 20% 100%, 0% 70%, 5% 35%)",
-            boxShadow: isHot ? `0 0 ${flameSize * 0.45}px ${palette.glow}` : undefined,
+            boxShadow: isHot ? `0 0 ${flameSize * 0.7}px ${palette.glow}, 0 0 ${flameSize * 0.3}px ${palette.glow}` : undefined,
             ["--flame-speed" as string]: `${speed}s`,
           }}
         />

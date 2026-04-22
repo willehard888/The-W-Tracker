@@ -12,6 +12,7 @@ import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { useEffect, useMemo, useState } from "react";
 import StatusBadge from "@/components/StatusBadge";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
+import { useMyRank } from "@/hooks/use-my-rank";
 
 type LeaderRow = {
   username: string;
@@ -83,18 +84,7 @@ const Leaderboard = () => {
     },
   });
 
-  const { data: myRealRank } = useQuery({
-    queryKey: ["my-rank", profile?.user_id],
-    queryFn: async () => {
-      if (!profile) return null;
-      const { count } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true })
-        .gt("xp", profile.xp);
-      return (count ?? 0) + 1;
-    },
-    enabled: !!profile,
-  });
+  const { data: myRankData } = useMyRank(profile?.user_id);
 
   const { data: activeSeason } = useQuery({
     queryKey: ["active-season"],
@@ -192,8 +182,11 @@ const Leaderboard = () => {
 
   const currentLeaders = mode === "season" ? seasonData?.top || [] : allTimeLeaders || [];
   const totalUsersForMode = mode === "season" ? seasonData?.full.length || 1 : totalCount || 1;
-  const rank = mode === "season" ? seasonData?.myRank || null : myRealRank || null;
-  const percentile = rank ? Math.max(1, Math.round(((totalUsersForMode - rank) / totalUsersForMode) * 100)) : 0;
+  const rank = mode === "season" ? seasonData?.myRank || null : myRankData?.rank || null;
+  const percentile = mode === "season"
+    ? (rank ? Math.max(1, Math.round(((totalUsersForMode - rank) / totalUsersForMode) * 100)) : 0)
+    : (myRankData?.percentile ?? 0);
+  const hasRank = mode === "season" ? Boolean(rank) : Boolean(myRankData?.hasRank);
   const mySeasonWins = profile?.user_id ? championData?.counts?.[profile.user_id] || 0 : 0;
 
   const countdownText = useMemo(() => formatCountdown(activeSeason?.ends_at), [activeSeason]);
@@ -279,13 +272,17 @@ const Leaderboard = () => {
         <div className="animate-reveal animate-reveal-delay-2 relative overflow-hidden rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/[0.08] via-card to-card p-4 mb-5 glow-gold-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-gold text-primary-foreground font-display font-black text-base shadow-lg shadow-gold/30">
-                #{rank || "?"}
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-gold text-primary-foreground font-display font-black text-base shadow-lg shadow-gold/30">
+                  {hasRank ? `#${rank}` : "—"}
               </div>
               <div>
                 <p className="font-display font-bold text-base tracking-tight">Your Position</p>
                 <p className="text-xs text-muted-foreground">
-                  Ahead of <span className="text-gold font-bold">{percentile}%</span> · {mode === "season" ? "Season" : "All Time"}
+                  {hasRank ? (
+                    <>Ahead of <span className="text-gold font-bold">{percentile >= 99 ? percentile.toFixed(1) : Math.round(percentile)}%</span> · {mode === "season" ? "Season" : "All Time"}</>
+                  ) : (
+                    <>Make your first check-in · {mode === "season" ? "Season" : "All Time"}</>
+                  )}
                 </p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">
                   Season wins: <span className="text-gold font-bold">{mySeasonWins}</span>
@@ -297,10 +294,10 @@ const Leaderboard = () => {
               <TrendingUp size={16} className="text-gold" />
             </div>
           </div>
-          {percentile < 50 && (
+          {hasRank && percentile < 50 && (
             <p className="text-[10px] text-destructive font-bold mt-3 text-center uppercase tracking-wider">⚠️ Falling behind — others are gaining</p>
           )}
-          {percentile >= 90 && (
+          {hasRank && percentile >= 90 && (
             <p className="text-[10px] text-gold font-bold mt-3 text-center uppercase tracking-wider">🔥 Top {100 - percentile}% — defend your spot</p>
           )}
         </div>

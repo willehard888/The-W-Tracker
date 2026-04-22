@@ -193,15 +193,25 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
                 {/* Right side: locked hint OR chevron */}
                 {isLocked ? (
                   <div className="flex items-center gap-1.5 shrink-0 relative z-10">
-                    <span className={cn(
-                      "inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded",
-                      cfg.rank >= 5
-                        ? "text-gold border border-gold/50 bg-gradient-to-r from-gold/10 to-gold/5 shadow-[0_0_6px_hsl(var(--gold)/0.3)]"
-                        : "text-muted-foreground border border-border/50 bg-background/20",
-                    )}>
-                      <TrendingUp size={9} strokeWidth={3} />
-                      {stepsAway === 1 ? "Next" : `+${stepsAway}`}
-                    </span>
+                    {cfg.rank === 5 && !isApexSubscriber ? (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded text-background bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold border border-gold/60 shadow-[0_0_8px_hsl(18_95%_58%/0.45)]">
+                        <Zap size={9} strokeWidth={3} /> Premium
+                      </span>
+                    ) : cfg.rank === 6 ? (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded text-gold border border-gold/50 bg-gradient-to-r from-gold/10 to-gold/5 shadow-[0_0_6px_hsl(var(--gold)/0.35)]">
+                        <Lock size={9} strokeWidth={3} /> Earned
+                      </span>
+                    ) : (
+                      <span className={cn(
+                        "inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded",
+                        cfg.rank >= 5
+                          ? "text-gold border border-gold/50 bg-gradient-to-r from-gold/10 to-gold/5 shadow-[0_0_6px_hsl(var(--gold)/0.3)]"
+                          : "text-muted-foreground border border-border/50 bg-background/20",
+                      )}>
+                        <TrendingUp size={9} strokeWidth={3} />
+                        {stepsAway === 1 ? "Next" : `+${stepsAway}`}
+                      </span>
+                    )}
                   </div>
                 ) : (
                   <ChevronRight size={14} className="text-muted-foreground/50 shrink-0 relative z-10 group-hover:translate-x-0.5 transition-transform" />

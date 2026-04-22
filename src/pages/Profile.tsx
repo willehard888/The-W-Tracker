@@ -425,6 +425,7 @@ const Profile = () => {
             <div className="mt-7 w-full">
               <BadgeShowcase
                 badges={earnedBadges}
+                totalEarned={earnedBadges.length}
                 onBadgeClick={(b) => setPreviewBadge(b)}
               />
             </div>

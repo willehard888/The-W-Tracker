@@ -31,19 +31,31 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
 
   return (
     <div className={cn("rounded-2xl glass-card p-4 relative overflow-hidden", className)}>
-      {/* Header — calm, no rotating crown, no gradient text */}
-      <div className="relative flex items-center justify-between mb-1">
-        <div>
-          <p className="font-display font-black text-sm uppercase tracking-widest text-foreground">
+      {/* Ambient gold corner glows */}
+      <div className="pointer-events-none absolute -top-16 -right-12 w-48 h-48 rounded-full bg-gold/15 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-20 -left-12 w-48 h-48 rounded-full bg-[hsl(280_70%_55%)]/10 blur-3xl" />
+
+      {/* Header — premium gold treatment */}
+      <div className="relative flex items-center justify-between mb-2">
+        <div className="relative">
+          <p className="font-display font-black text-base uppercase tracking-widest bg-gradient-to-r from-gold-light via-gold to-gold-light bg-clip-text text-transparent drop-shadow-[0_0_12px_hsl(var(--gold)/0.35)]">
             Your Ascension
           </p>
-          <p className="text-[10px] text-gold/80 mt-0.5 font-semibold tracking-wider">7 levels of dominance</p>
+          <p className="text-[10px] text-gold/85 mt-0.5 font-bold tracking-[0.18em] uppercase flex items-center gap-1">
+            <Sparkles size={9} className="text-gold" strokeWidth={3} />
+            7 levels of dominance
+          </p>
         </div>
-        <Crown size={16} strokeWidth={2.4} className="text-gold" />
+        <div className="relative">
+          <div className="absolute inset-0 rounded-full bg-gold/30 blur-md" />
+          <div className="relative h-9 w-9 rounded-full bg-gradient-to-br from-gold-light via-gold to-[hsl(35_85%_45%)] flex items-center justify-center shadow-[0_0_14px_hsl(var(--gold)/0.55)] border border-gold-light/60">
+            <Crown size={16} strokeWidth={2.6} className="text-background" />
+          </div>
+        </div>
       </div>
 
       {/* Gold divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent mb-4" />
+      <div className="h-px bg-gradient-to-r from-transparent via-gold to-transparent mb-4 shadow-[0_0_8px_hsl(var(--gold)/0.5)]" />
 
       {/* Ladder with vertical progress track */}
       <div className="relative">

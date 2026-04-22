@@ -9,10 +9,7 @@ const Progress = React.forwardRef<
 >(({ className, value, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
-    className={cn(
-      "surface-inset relative h-3 w-full overflow-hidden rounded-full",
-      className,
-    )}
+    className={cn("surface-inset relative h-3 w-full overflow-hidden rounded-full", className)}
     {...props}
   >
     <ProgressPrimitive.Indicator
@@ -20,9 +17,9 @@ const Progress = React.forwardRef<
       style={{
         transform: `translateX(-${100 - (value || 0)}%)`,
         background:
-          "linear-gradient(180deg, hsl(42 88% 62%) 0%, hsl(42 78% 54%) 55%, hsl(42 64% 42%) 100%)",
+          "linear-gradient(180deg, hsl(var(--tier-color, var(--gold)) / 0.95) 0%, hsl(var(--tier-color, var(--gold)) / 0.78) 55%, hsl(var(--tier-color-deep, var(--gold-dark)) / 0.92) 100%)",
         boxShadow:
-          "inset 0 0.5px 0 hsl(42 95% 82% / 0.6), inset 0 -1px 0 hsl(42 50% 22% / 0.4), 0 0 12px hsl(var(--gold) / 0.25)",
+          "inset 0 0.5px 0 hsl(0 0% 100% / 0.55), inset 0 -1px 0 hsl(var(--tier-color-deep, var(--gold-dark)) / 0.5), 0 0 14px hsl(var(--tier-color, var(--gold)) / 0.3)",
       }}
     />
   </ProgressPrimitive.Root>

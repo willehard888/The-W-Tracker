@@ -12,7 +12,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-10 items-center justify-center rounded-md surface-inset p-1 text-fg-muted",
+      "surface-inset inline-flex h-10 items-center justify-center rounded-full p-1 text-fg-muted gap-1",
       className,
     )}
     {...props}
@@ -27,10 +27,16 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-[13px] font-semibold tracking-[-0.003em] ring-offset-background transition-all duration-200 [transition-timing-function:var(--ease-soft)]",
-      "data-[state=active]:bg-[hsl(var(--card))] data-[state=active]:text-foreground",
-      "data-[state=active]:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.06),0_1px_2px_hsl(0_0%_0%/0.35)]",
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+      "inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-1.5 text-[12px] font-semibold tracking-[-0.003em]",
+      "transition-[background,box-shadow,color] duration-200 [transition-timing-function:var(--ease-soft)]",
+      // Active — gold metal pill (matches Button gold recipe)
+      "data-[state=active]:text-[hsl(var(--primary-foreground))]",
+      "data-[state=active]:[background:linear-gradient(180deg,hsl(42_95%_72%)_0%,hsl(42_85%_56%)_45%,hsl(42_65%_38%)_100%)]",
+      "data-[state=active]:shadow-[inset_0_0.5px_0_hsl(0_0%_100%/0.6),inset_0_-6px_14px_-6px_hsl(28_90%_35%/0.5),inset_0_-1px_0_hsl(42_50%_18%/0.5),0_1px_1px_hsl(42_60%_18%/0.4),0_4px_12px_-4px_hsl(42_78%_50%/0.4)]",
+      // Inactive hover
+      "hover:text-foreground",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--gold)/0.55)] focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+      "disabled:pointer-events-none disabled:opacity-50",
       className,
     )}
     {...props}
@@ -45,7 +51,7 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      "mt-3 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--gold)/0.55)] focus-visible:ring-offset-2",
       className,
     )}
     {...props}

@@ -205,6 +205,38 @@ const Index = () => {
         <RoadToElite compact />
       </div>
 
+      {/* AI Coach entry — visible to all members */}
+      <button
+        onClick={() => navigate("/coach")}
+        className="w-full animate-reveal animate-reveal-delay-1 mb-4 relative z-10 rounded-2xl p-[1.5px] text-left active:scale-[0.99] transition-transform overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, hsl(42 78% 54%), hsl(280 70% 60%), hsl(42 78% 54%))",
+          backgroundSize: "200% 200%",
+          animation: "shimmer-slide 4s ease-in-out infinite",
+        }}
+      >
+        <div className="rounded-2xl glass-card-gold p-4 relative overflow-hidden">
+          <div
+            className="absolute -top-12 -right-12 w-40 h-40 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, hsl(42 78% 54% / 0.25) 0%, transparent 70%)" }}
+          />
+          <div className="flex items-center gap-3 relative">
+            <div className="h-11 w-11 rounded-xl gradient-gold flex items-center justify-center shrink-0 shadow-[0_0_20px_hsl(42_78%_54%/0.5)]">
+              <Sparkles size={20} className="text-primary-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <p className="text-[10px] uppercase tracking-widest text-gold font-black">AI Coach</p>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold font-bold border border-gold/30">GPT-5</span>
+              </div>
+              <p className="font-bold text-sm leading-tight">Ask your personal performance coach</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">Training, sleep, discipline — direct answers.</p>
+            </div>
+            <ChevronRight size={18} className="text-gold/70 shrink-0" />
+          </div>
+        </div>
+      </button>
+
       {/* 6. Coach Nudge (Elite, unseen) */}
       {latestNudge && (
         <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">

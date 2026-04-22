@@ -42,3 +42,11 @@ After trial expires for non-subscribers: `AccessGate` hard-redirects every route
 - `revenuecat-webhook` handles INITIAL_PURCHASE, RENEWAL, EXPIRATION for both `pro` and `apex_subscriber` entitlements
 - `check-subscription` Edge Function reads Stripe price IDs and updates `is_elite` + `is_apex_subscriber`
 - `set_elite_status()` RPC for direct elite toggle (legacy/admin)
+
+## Referral path to Apex / Legend (parallel, free)
+Users can earn premium tiers without paying via the referral ladder (`reward_referral_conversion` RPC):
+- **10 paid referrals** → `apex_credits_until` extended by 30 days, `is_apex_subscriber=true`, "Inner Circle Founder" badge. `update_status_tier` floors tier at `apex` while credits are active.
+- **25 paid referrals** → lifetime `membership_credits_until` (Member tier forever).
+- **50 paid referrals** → `legend_pinned=true` (permanent Legend, immune to decay), `is_apex_subscriber=true` permanently, "Founders Circle" badge. `update_status_tier` always returns `legend` when pinned.
+
+`has_active_access` honors `apex_credits_until > now()`. `update_status_tier` priority: `legend_pinned` > `is_apex_subscriber`/credits > earned tier.

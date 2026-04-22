@@ -296,7 +296,7 @@ const StreakFlameInline = ({
               left: `${35 + i * 10}%`,
               top: flameSize * 0.5,
               background: palette.core,
-              boxShadow: `0 0 3px ${palette.inner}`,
+              boxShadow: `0 0 3px ${palette.mid}`,
               opacity: 0,
               ["--spark-x" as string]: `${-4 + i * 3}px`,
               ["--spark-y" as string]: `${-14 - i * 3}px`,

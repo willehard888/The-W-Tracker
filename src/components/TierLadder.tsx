@@ -195,6 +195,7 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
                   <div className="flex items-center gap-1.5 shrink-0 relative z-10">
                     {cfg.rank === 5 && !isApexSubscriber ? (
                       <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded text-background bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold border border-gold/60 shadow-[0_0_8px_hsl(18_95%_58%/0.45)]">
+                        <Lock size={9} strokeWidth={3} />
                         <Zap size={9} strokeWidth={3} /> Premium
                       </span>
                     ) : cfg.rank === 6 ? (

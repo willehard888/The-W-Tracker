@@ -151,8 +151,8 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
               <h3 className="font-display font-black text-base tracking-tight leading-none">
                 Road to Elite
               </h3>
-              <p className="text-[10px] text-muted-foreground mt-1 tracking-wider uppercase font-semibold">
-                Top 5% • Earned Status
+                <p className="text-[10px] text-muted-foreground mt-1 tracking-wider uppercase font-semibold">
+                  Top 20% or 20 days + 21 streak
               </p>
             </div>
           </div>
@@ -162,7 +162,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
               <span className="text-sm text-muted-foreground">%</span>
             </p>
             <p className="text-[9px] text-muted-foreground mt-1 tracking-wider uppercase">
-              {r.metCount}/3 met
+              {r.metCount}/2 paths met
             </p>
           </div>
         </div>
@@ -171,7 +171,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
         <div className="space-y-3">
           <RequirementRow
             icon={TrendingUp}
-            label="Top 5% rank"
+            label="Top 20% rank"
             current={Math.round(r.percentile)}
             target={ELITE_REQUIREMENTS.PERCENTILE}
             unit="%ile"
@@ -179,7 +179,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
           />
           <RequirementRow
             icon={CalendarCheck}
-            label="Active 14 of last 30 days"
+            label="Active 20 of last 30 days"
             current={r.activityDays}
             target={ELITE_REQUIREMENTS.ACTIVITY_DAYS}
             unit="days"
@@ -187,7 +187,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
           />
           <RequirementRow
             icon={Flame}
-            label="30-day streak"
+            label="21-day streak"
             current={r.streak}
             target={ELITE_REQUIREMENTS.STREAK}
             unit="days"
@@ -198,7 +198,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
         {/* Footer message */}
         <div className="mt-4 pt-3 border-t border-gold/15">
           <p className="text-[11px] text-center text-muted-foreground italic font-medium">
-            Keep showing up. <span className="text-gold/90 font-semibold">Elite is earned, not bought.</span>
+            Reach <span className="text-gold/90 font-semibold">top 20%</span> or prove consistency with <span className="text-gold/90 font-semibold">20 active days + 21 streak</span>.
           </p>
         </div>
 

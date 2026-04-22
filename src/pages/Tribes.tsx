@@ -55,6 +55,7 @@ const Tribes = () => {
   const [memberPreviews, setMemberPreviews] = useState<Record<string, { user_id: string; avatar_url: string | null; username: string }[]>>({});
   const [ownedIds, setOwnedIds] = useState<Set<string>>(new Set());
   const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
+  const [collectiveStreaks, setCollectiveStreaks] = useState<Map<string, number>>(new Map());
   const [invites, setInvites] = useState<Invite[]>([]);
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

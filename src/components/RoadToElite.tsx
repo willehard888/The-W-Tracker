@@ -83,6 +83,7 @@ const RequirementRow = ({
  */
 const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
   const r = useRoadToElite();
+  const navigate = useNavigate();
 
   if (r.loading || !r.hasData) return null;
   if (r.isElite) return null; // already Elite — no need to show

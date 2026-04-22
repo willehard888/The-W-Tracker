@@ -62,71 +62,33 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
           aria-hidden
         />
 
-        {/* Logo with growing flame underneath */}
+        {/* Logo with growing RealisticFlame underneath */}
         <div className="relative">
-          {/* Growing flame — ember → blazing under the logo (cinematic ignite) */}
+          {/* Real cinematic flame igniting behind/under the logo */}
           <div
-            className="absolute left-1/2 -bottom-2 pointer-events-none"
+            className="absolute left-1/2 -bottom-4 pointer-events-none"
             style={{
-              width: 80,
-              height: 92,
+              width: 96,
+              height: 110,
               transform: "translateX(-50%)",
               opacity: phase === "reveal" ? 0 : 1,
-              transition: "opacity 350ms ease-out 200ms",
+              transition: "opacity 500ms ease-out 200ms",
             }}
             aria-hidden
           >
-            {/* Halo / fuel pool */}
             <div
-              className="absolute left-1/2 bottom-0 rounded-full"
               style={{
-                width: 90,
-                height: 38,
-                transform: "translateX(-50%)",
-                background:
-                  "radial-gradient(ellipse at center, hsl(28 95% 58% / 0.55) 0%, hsl(42 95% 60% / 0.25) 45%, transparent 80%)",
-                filter: "blur(6px)",
-              }}
-            />
-            {/* Outer flame body — grows in */}
-            <div
-              className="absolute left-1/2 bottom-0"
-              style={{
-                width: 60,
-                height: 78,
-                transform: "translateX(-50%)",
-                transformOrigin: "center bottom",
-                background:
-                  "radial-gradient(ellipse at 50% 80%, hsl(60 100% 92%) 0%, hsl(42 95% 60%) 35%, hsl(28 95% 52%) 70%, transparent 95%)",
-                clipPath:
-                  "polygon(50% 0%, 95% 35%, 100% 70%, 80% 100%, 20% 100%, 0% 70%, 5% 35%)",
-                boxShadow: "0 0 28px hsl(42 95% 60% / 0.55)",
+                width: "100%",
+                height: "100%",
                 animation:
                   phase === "reveal"
                     ? undefined
-                    : "splash-flame-grow 900ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both, splash-flame-flicker 1.6s ease-in-out 1100ms infinite",
-                mixBlendMode: "screen",
-              }}
-            />
-            {/* White-hot inner core */}
-            <div
-              className="absolute left-1/2 bottom-0"
-              style={{
-                width: 26,
-                height: 50,
-                transform: "translateX(-50%)",
+                    : "splash-flame-grow 900ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both",
                 transformOrigin: "center bottom",
-                background:
-                  "radial-gradient(ellipse at 50% 75%, hsl(60 100% 95%) 0%, hsl(48 100% 78%) 60%, transparent 100%)",
-                clipPath:
-                  "polygon(50% 0%, 95% 35%, 100% 70%, 80% 100%, 20% 100%, 0% 70%, 5% 35%)",
-                animation:
-                  phase === "reveal"
-                    ? undefined
-                    : "splash-flame-grow 900ms cubic-bezier(0.16, 1, 0.3, 1) 350ms both, splash-flame-flicker 1.05s ease-in-out 1250ms infinite",
-                mixBlendMode: "screen",
               }}
-            />
+            >
+              <RealisticFlame tier={5} accent="hsl(42 95% 60%)" size={96} />
+            </div>
           </div>
 
           <BrandLogo size={112} priority className="relative rounded-3xl" />

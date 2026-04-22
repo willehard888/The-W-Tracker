@@ -212,10 +212,10 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
       {/* === CONTENT === */}
       <div className="relative z-10 p-5">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+          <div className="flex items-center gap-2 min-w-0">
             <span
-              className="inline-block h-1.5 w-1.5 rounded-full"
+              className="inline-block h-1.5 w-1.5 rounded-full shrink-0"
               style={{
                 background: accent,
                 boxShadow: isHot ? `0 0 8px ${accent}` : undefined,
@@ -224,7 +224,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
             />
             <p
               className={cn(
-                "text-[10px] font-black uppercase tracking-[0.24em]",
+                "text-[10px] font-black uppercase tracking-[0.24em] whitespace-nowrap",
                 !isHot && "text-muted-foreground"
               )}
               style={{ color: isHot ? accent : undefined }}
@@ -236,7 +236,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
           {tier.index >= 0 && (
             <span
               className={cn(
-                "inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border backdrop-blur-sm",
+                "inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border backdrop-blur-sm whitespace-nowrap shrink-0",
                 isLegendary && "animate-[streak-badge-shimmer_2.8s_ease-in-out_infinite]"
               )}
               style={{
@@ -353,13 +353,13 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
               </span>
             </div>
 
-            <div className="flex items-center gap-3 mt-2">
-              <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-[0.18em]">
+            <div className="flex items-center gap-3 mt-2 flex-wrap">
+              <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-[0.18em] whitespace-nowrap">
                 Best <span className="text-foreground font-black tabular-nums">{longestStreak}d</span>
               </span>
               {displayStreak === longestStreak && displayStreak > 0 && (
-                <span className="text-[9px] font-black uppercase tracking-wider text-gold flex items-center gap-1">
-                  <Zap size={9} /> Personal Best
+                <span className="text-[9px] font-black uppercase tracking-wider text-gold flex items-center gap-1 whitespace-nowrap">
+                  <Zap size={9} /> PB
                 </span>
               )}
             </div>

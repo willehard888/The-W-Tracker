@@ -644,6 +644,22 @@ const TribeDetail = () => {
           <TribeInviteModal tribeId={id} open={inviteOpen} onClose={() => setInviteOpen(false)} />
           <TribePendingRequestsDialog tribeId={id} open={pendingOpen} onOpenChange={setPendingOpen} onChanged={load} />
           <TribeReportsDialog tribeId={id} open={reportsOpen} onOpenChange={setReportsOpen} onChanged={load} />
+          {isOwner && tribe && profile?.user_id && (
+            <TribeManageDialog
+              tribeId={id}
+              open={manageOpen}
+              onOpenChange={setManageOpen}
+              tribe={{
+                name: tribe.name,
+                description: tribe.description,
+                visibility: tribe.visibility,
+                cover_url: tribe.cover_url,
+              }}
+              members={members}
+              currentUserId={profile.user_id}
+              onChanged={load}
+            />
+          )}
         </>
       )}
     </div>

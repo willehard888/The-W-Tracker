@@ -529,8 +529,9 @@ const TribeDetail = () => {
                     </div>
                   )}
                   {m.role === "owner" && (
-                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1 py-px rounded-sm bg-gold/90">
-                      <Crown size={6} className="text-background" />
+                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-1 py-px rounded-sm bg-gradient-to-r from-gold to-[hsl(18_95%_58%)] shadow-[0_0_6px_hsl(42_78%_54%/0.7)] flex items-center gap-0.5">
+                      <Crown size={6} className="text-background" strokeWidth={3} fill="currentColor" />
+                      <span className="text-[6px] font-black tracking-wider uppercase text-background leading-none">Founder</span>
                     </div>
                   )}
                   {m.role === "admin" && (
@@ -539,7 +540,7 @@ const TribeDetail = () => {
                     </div>
                   )}
                 </div>
-                <p className="text-[9px] text-muted-foreground truncate w-full text-center">{m.username}</p>
+                <p className={`text-[9px] truncate w-full text-center ${m.role === "owner" ? "text-gold font-black" : "text-muted-foreground"}`}>{m.username}</p>
               </button>
             ))}
           </div>

@@ -83,7 +83,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     auraSize: 'none',
     badgeVariant: "teal",
     rank: 1,
-    requirements: { percentile: 50, activeDays: 7, streak: 0 },
+    requirements: { percentile: 25, activeDays: 5, streak: 0 },
     unlocks: ["Operator badge", "Public rank visible"],
   },
   performer: {

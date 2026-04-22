@@ -23,6 +23,7 @@ import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
 import { getTierConfig } from "@/lib/status-tiers";
 import RoadToElite from "@/components/RoadToElite";
 import TierLadder from "@/components/TierLadder";
+import StatusPreview from "@/components/StatusPreview";
 import LiveRivals from "@/components/LiveRivals";
 import ApexBadge from "@/components/ApexBadge";
 import { useMyRank } from "@/hooks/use-my-rank";
@@ -611,6 +612,11 @@ const Profile = () => {
       {/* Tier Ladder — full progression map */}
       <div className="mb-6 animate-reveal animate-reveal-delay-3">
         <TierLadder currentTier={profile.status_tier || "recruit"} isApexSubscriber={isApexSubscriber} />
+      </div>
+
+      {/* Status preview — see all tiers, toggle animations */}
+      <div className="mb-6 animate-reveal animate-reveal-delay-3">
+        <StatusPreview currentTier={profile.status_tier || "recruit"} />
       </div>
 
       <div className="animate-reveal animate-reveal-delay-3">

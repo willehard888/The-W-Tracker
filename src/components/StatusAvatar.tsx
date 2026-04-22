@@ -64,7 +64,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
   const initials = (name || "?").slice(0, 2).toUpperCase();
 
   return (
-    <div ref={ref} className={cn("relative inline-block", className)}>
+    <div ref={ref} className={cn("relative inline-flex items-center justify-center align-middle", className)}>
       {/* Apex outer pulsing flame ring */}
       {isApex && (
         <div
@@ -78,7 +78,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
       )}
       <div
         className={cn(
-          "rounded-full",
+          "relative rounded-full flex items-center justify-center",
           sizes.ring,
           ringStyle,
           isHighTier && "shadow-[0_0_12px_-2px_currentColor]",
@@ -92,11 +92,15 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
                   : isApex
                   ? "hsl(18 95% 58% / 0.5)"
                   : "hsl(var(--gold) / 0.4)",
+                // Promote to own layer — prevents first-paint flash / reflow
+                willChange: "transform",
+                transform: "translateZ(0)",
+                backfaceVisibility: "hidden",
               }
             : undefined
         }
       >
-        <Avatar className={cn(sizes.avatar, "ring-2 ring-background")}>
+        <Avatar className={cn(sizes.avatar, "ring-2 ring-background block")}>
           {src && <AvatarImage src={src} alt={name || ""} />}
           <AvatarFallback className="text-xs font-bold bg-secondary">
             {initials}

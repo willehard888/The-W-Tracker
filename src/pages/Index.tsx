@@ -147,16 +147,124 @@ const Index = () => {
         }}
       />
 
-      {/* 1. Tier Risk Banner — fear of demotion (top priority) */}
+      {/* 1. Tier Risk Banner — fear of demotion (top priority, only when at risk) */}
       {tierRisk.level !== "safe" && (
         <div className="animate-reveal mb-3 relative z-10">
           <TierRiskBanner risk={tierRisk} />
         </div>
       )}
 
-      {/* 2. Daily Status Pulse — micro-win */}
+      {/* 2. STREAK — hero of the home page */}
+      <div className="mb-4 animate-reveal relative z-10">
+        <StreakDisplay
+          streak={profile.streak}
+          longestStreak={profile.longest_streak}
+          lastCheckinAt={lastCheckin?.checked_in_at}
+        />
+      </div>
+
+      {/* 3. LOCK YOUR DAY — primary daily action, premium gold CTA */}
+      <div className="animate-reveal animate-reveal-delay-1 mb-5 relative z-10">
+        <button
+          onClick={() => canCheckin && navigate("/checkin")}
+          disabled={!canCheckin}
+          className={cn(
+            "w-full text-left rounded-2xl p-[2px] overflow-hidden transition-transform active:scale-[0.99]",
+            canCheckin ? "breathing-glow" : "opacity-70"
+          )}
+          style={{
+            background: canCheckin
+              ? "linear-gradient(135deg, hsl(42 78% 54%), hsl(18 95% 58%), hsl(42 85% 70%), hsl(42 78% 54%))"
+              : "linear-gradient(135deg, hsl(var(--border)), hsl(var(--border)))",
+            backgroundSize: "200% 200%",
+            animation: canCheckin ? "shimmer-slide 4s ease-in-out infinite" : undefined,
+          }}
+        >
+          <div className="rounded-2xl bg-gradient-to-br from-card via-card to-card/80 p-5 relative overflow-hidden">
+            {/* Ambient glow */}
+            <div
+              className="absolute -top-20 -right-16 w-56 h-56 rounded-full pointer-events-none"
+              style={{
+                background: canCheckin
+                  ? "radial-gradient(circle, hsl(42 78% 54% / 0.32) 0%, transparent 65%)"
+                  : "radial-gradient(circle, hsl(var(--muted) / 0.15) 0%, transparent 65%)",
+              }}
+            />
+            <div
+              className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full pointer-events-none"
+              style={{
+                background: canCheckin
+                  ? "radial-gradient(circle, hsl(18 95% 58% / 0.18) 0%, transparent 70%)"
+                  : "transparent",
+              }}
+            />
+
+            <div className="relative flex items-center gap-4">
+              <div
+                className={cn(
+                  "h-16 w-16 rounded-2xl flex items-center justify-center shrink-0 relative",
+                  canCheckin
+                    ? "gradient-gold text-primary-foreground shadow-[0_0_28px_hsl(42_78%_54%/0.55)]"
+                    : "bg-secondary text-muted-foreground"
+                )}
+              >
+                {canCheckin && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 rounded-2xl bg-gold/40 animate-ping opacity-50"
+                    style={{ animationDuration: "2s" }}
+                  />
+                )}
+                <Flame size={30} strokeWidth={2.4} className="relative drop-shadow-[0_2px_8px_currentColor]" />
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <p
+                  className={cn(
+                    "text-[10px] font-black uppercase tracking-[0.22em] mb-0.5",
+                    canCheckin ? "text-gold" : "text-muted-foreground"
+                  )}
+                >
+                  {canCheckin ? "🔒 Lock Your Day" : "✓ Day Locked"}
+                </p>
+                <p className="font-display font-black text-2xl leading-tight tracking-tight">
+                  {canCheckin ? "Daily Check-In" : "Come Back Tomorrow"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                  {canCheckin
+                    ? profile.streak > 0
+                      ? `Defend your ${profile.streak}-day streak. +XP, +rank.`
+                      : "Start your streak. Earn XP. Climb the ladder."
+                    : `Next check-in in ${getTimeUntilCheckin()}`}
+                </p>
+              </div>
+
+              <ChevronRight
+                size={22}
+                className={cn(
+                  "shrink-0",
+                  canCheckin ? "text-gold animate-pulse" : "text-muted-foreground/40"
+                )}
+              />
+            </div>
+
+            {canCheckin && (
+              <div className="relative mt-3 pt-3 border-t border-gold/15 flex items-center justify-between">
+                <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+                  Today's reward
+                </p>
+                <p className="text-xs font-black text-gold tabular-nums">
+                  +50 XP <span className="text-muted-foreground font-bold">base</span>
+                </p>
+              </div>
+            )}
+          </div>
+        </button>
+      </div>
+
+      {/* 4. Daily Status Pulse — micro-win */}
       {rankData && (
-        <div className="animate-reveal mb-3 relative z-10">
+        <div className="animate-reveal animate-reveal-delay-2 mb-3 relative z-10">
           <DailyStatusPulse
             userId={profile.user_id}
             rank={rankData.rank}
@@ -166,9 +274,9 @@ const Index = () => {
         </div>
       )}
 
-      {/* 3. Rank Pressure Card */}
+      {/* 5. Rank Pressure Card */}
       {rankData && (
-        <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
+        <div className="animate-reveal animate-reveal-delay-2 mb-4 relative z-10">
           <RankPressureCard
             tier={tier}
             rank={rankData.rank}
@@ -183,8 +291,8 @@ const Index = () => {
         </div>
       )}
 
-      {/* 4. Live Rivals — who's ahead, who's catching up */}
-      <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
+      {/* 6. Live Rivals */}
+      <div className="animate-reveal animate-reveal-delay-2 mb-4 relative z-10">
         <LiveRivals userId={profile.user_id} myScore={Number((profile as any).rank_score) || 0} />
       </div>
 
@@ -306,23 +414,6 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="mb-4 animate-reveal animate-reveal-delay-2">
-        <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} lastCheckinAt={lastCheckin?.checked_in_at} />
-      </div>
-
-      {/* Streak Pressure Warning */}
-      {profile.streak > 0 && canCheckin && (
-        <div className="animate-reveal animate-reveal-delay-2 mb-4">
-          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-center">
-            <p className="text-xs font-bold text-destructive">
-              ⚠️ Don't break your {profile.streak}-day streak. Check in now.
-            </p>
-            <p className="text-[10px] text-destructive/60 mt-0.5">Most fail before day {Math.ceil((profile.streak + 1) / 7) * 7}</p>
-          </div>
-        </div>
-      )}
-
       {/* Daily Quests Preview */}
       {canCheckin && (
         <div className="animate-reveal animate-reveal-delay-3 mb-4">
@@ -338,25 +429,6 @@ const Index = () => {
           </div>
         </div>
       )}
-
-      {/* Check-in CTA */}
-      <div className="animate-reveal animate-reveal-delay-3 mb-4">
-        <Button
-          variant="gold"
-          size="xl"
-          className={cn("w-full", canCheckin && "breathing-glow")}
-          onClick={() => navigate("/checkin")}
-          disabled={!canCheckin}
-        >
-          <Flame size={20} />
-          {canCheckin ? "Log Today's Execution" : "Already Logged Today"}
-        </Button>
-        {!canCheckin && (
-          <p className="text-center text-xs text-muted-foreground mt-2">
-            Next check-in in {getTimeUntilCheckin()}
-          </p>
-        )}
-      </div>
 
       {/* Invite CTA — referral money machine nudge */}
       <div className="animate-reveal animate-reveal-delay-4 mb-4">

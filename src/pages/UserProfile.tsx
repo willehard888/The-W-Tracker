@@ -418,6 +418,7 @@ const UserProfile = () => {
           {/* Bottom hairline divider */}
           <div className="pointer-events-none mx-auto mt-6 h-px w-3/4 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
         </div>
+      </div>
 
       <div className="px-4 -mt-2">
         {!isOwnProfile && (

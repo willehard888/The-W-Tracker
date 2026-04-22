@@ -7,6 +7,8 @@ import { Users, Plus, Lock, Crown, Zap, Check, X, Sparkles, Mail, Trophy, Chevro
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import TribeSearchBar from "@/components/TribeSearchBar";
+import StreakFlameInline from "@/components/StreakFlameInline";
+import { fetchTribeCollectiveStreaks } from "@/lib/tribe-streak";
 
 interface Tribe {
   id: string;

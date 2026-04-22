@@ -33,6 +33,8 @@ import TribeManageDialog from "@/components/TribeManageDialog";
 import TribePostCard, { type TribePostCardPost } from "@/components/TribePostCard";
 import { useModeration } from "@/hooks/use-moderation";
 import TierUsername from "@/components/TierUsername";
+import TribeCollectiveFlame from "@/components/TribeCollectiveFlame";
+import { fetchTribeCollectiveStreak } from "@/lib/tribe-streak";
 
 interface Member {
   user_id: string;

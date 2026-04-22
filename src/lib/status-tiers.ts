@@ -196,3 +196,29 @@ export const getPreviousTier = (current: string): TierConfig | null => {
   if (idx <= 0) return null;
   return TIER_CONFIG[TIER_ORDER[idx - 1]];
 };
+
+/**
+ * Tailwind class string that colors the @username text according to the
+ * user's status tier. Higher tiers use richer gradients; lower tiers use
+ * a flat tier color or fall back to neutral foreground.
+ *
+ * Use on a heading/text element: `<h1 className={getTierUsernameClass(tier)}>...`
+ */
+export const getTierUsernameClass = (tier: string): string => {
+  switch (tier as StatusTier) {
+    case "legend":
+      return "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(280_70%_75%)] via-gold to-[hsl(350_80%_70%)] drop-shadow-[0_2px_18px_hsl(280_70%_60%/0.45)]";
+    case "apex":
+      return "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(18_95%_62%)] via-gold to-[hsl(18_95%_62%)] drop-shadow-[0_2px_16px_hsl(18_95%_58%/0.45)]";
+    case "elite":
+      return "text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark drop-shadow-[0_2px_14px_hsl(var(--gold)/0.4)]";
+    case "high_performer":
+      return "text-[hsl(var(--purple))] drop-shadow-[0_2px_12px_hsl(var(--purple)/0.4)]";
+    case "performer":
+      return "text-[hsl(210_90%_62%)] drop-shadow-[0_2px_10px_hsl(210_90%_56%/0.35)]";
+    case "operator":
+      return "text-[hsl(var(--teal))] drop-shadow-[0_2px_10px_hsl(var(--teal)/0.35)]";
+    default:
+      return "text-foreground/95";
+  }
+};

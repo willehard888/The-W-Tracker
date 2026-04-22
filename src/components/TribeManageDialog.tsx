@@ -33,7 +33,8 @@ interface Props {
 const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, currentUserId, onChanged }: Props) => {
   const [name, setName] = useState(tribe.name);
   const [description, setDescription] = useState(tribe.description ?? "");
-  const [visibility, setVisibility] = useState<"public" | "private">((tribe.visibility as any) ?? "public");
+  // All tribes are private — visibility is locked, no setter needed.
+  const visibility = "private" as const;
   const [coverUrl, setCoverUrl] = useState(tribe.cover_url ?? "");
   const [savingMeta, setSavingMeta] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);

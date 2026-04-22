@@ -1002,30 +1002,33 @@
 
   /* Premium credit-card style shimmer for Founding Apex badge */
   .founding-premium-shimmer {
+    position: relative;
     background:
       linear-gradient(
         110deg,
         hsl(42 78% 54%) 0%,
         hsl(42 90% 70%) 18%,
-        hsl(42 78% 54%) 36%,
-        hsl(18 95% 58%) 60%,
+        hsl(42 85% 60%) 36%,
+        hsl(32 95% 56%) 60%,
         hsl(42 78% 54%) 100%
       );
     background-size: 220% 100%;
     background-position: 0% 50%;
     animation: founding-shine 3.4s ease-in-out infinite;
     overflow: hidden;
+    isolation: isolate;
   }
   .founding-premium-shimmer::before {
     content: "";
     position: absolute;
     inset: 0;
+    z-index: 1;
     background: linear-gradient(
       120deg,
       transparent 0%,
-      transparent 40%,
-      hsl(0 0% 100% / 0.55) 50%,
-      transparent 60%,
+      transparent 42%,
+      hsl(0 0% 100% / 0.32) 50%,
+      transparent 58%,
       transparent 100%
     );
     background-size: 250% 100%;

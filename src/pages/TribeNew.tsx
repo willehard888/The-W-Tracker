@@ -165,35 +165,18 @@ const TribeNew = () => {
 
         <div>
           <label className="text-[11px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
-            Visibility
+            Privacy
           </label>
-          <div className="grid grid-cols-2 gap-2">
-            {(
-              [
-                { v: "public", icon: Globe, label: "Public", desc: "Anyone can join" },
-                { v: "private", icon: Lock, label: "Private", desc: "Approve members" },
-              ] as const
-            ).map(({ v, icon: Icon, label, desc }) => (
-              <button
-                key={v}
-                onClick={() => setVisibility(v)}
-                className={cn(
-                  "p-3 rounded-xl border text-left transition-all",
-                  visibility === v
-                    ? "border-[hsl(18_95%_58%)]/60 bg-[hsl(18_95%_58%)]/8"
-                    : "border-border bg-secondary/30",
-                )}
-              >
-                <Icon
-                  size={14}
-                  className={
-                    visibility === v ? "text-[hsl(18_95%_58%)]" : "text-muted-foreground"
-                  }
-                />
-                <p className="font-black text-xs mt-1">{label}</p>
-                <p className="text-[10px] text-muted-foreground">{desc}</p>
-              </button>
-            ))}
+          <div className="rounded-xl border border-gold/40 bg-gold/8 p-3 flex items-start gap-3">
+            <div className="h-8 w-8 rounded-lg bg-gold/15 border border-gold/35 flex items-center justify-center shrink-0">
+              <Lock size={14} className="text-gold" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-black text-gold">Private by design</p>
+              <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                Every tribe is invite-only. New members must be approved by the founder. Your tribe's collective streak grows the flame everyone sees.
+              </p>
+            </div>
           </div>
         </div>
 

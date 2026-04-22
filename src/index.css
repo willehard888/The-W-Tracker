@@ -1247,39 +1247,39 @@
    Combined, they read as a living fire rather than a pulsing icon. */
 
 @keyframes flame-outer-flicker {
-  0%   { transform: translate(-50%, 0) scale(1, 1)       skewX(0deg);   opacity: 0.55; filter: blur(4px) brightness(1); }
-  12%  { transform: translate(-50%, -2px) scale(1.06, 1.12) skewX(-2deg); opacity: 0.75; filter: blur(5px) brightness(1.15); }
-  27%  { transform: translate(-50%, -1px) scale(0.96, 1.04) skewX(1.5deg); opacity: 0.6;  filter: blur(4px) brightness(1.05); }
-  44%  { transform: translate(-50%, -3px) scale(1.1, 1.18)  skewX(-3deg); opacity: 0.85; filter: blur(6px) brightness(1.25); }
-  61%  { transform: translate(-50%, -1px) scale(0.98, 1.06) skewX(2deg);  opacity: 0.65; filter: blur(4px) brightness(1.08); }
-  78%  { transform: translate(-50%, -2px) scale(1.04, 1.14) skewX(-1deg); opacity: 0.78; filter: blur(5px) brightness(1.18); }
-  100% { transform: translate(-50%, 0) scale(1, 1)       skewX(0deg);   opacity: 0.55; filter: blur(4px) brightness(1); }
+  0%   { transform: translate(-50%, 0)    scale(1, 1)       skewX(0deg);   opacity: 0.55; filter: blur(3px) brightness(1); }
+  12%  { transform: translate(-51%, -3px) scale(1.08, 1.18) skewX(-3deg);  opacity: 0.78; filter: blur(4px) brightness(1.18); }
+  27%  { transform: translate(-49%, -1px) scale(0.94, 1.06) skewX(2deg);   opacity: 0.6;  filter: blur(3px) brightness(1.06); }
+  44%  { transform: translate(-52%, -5px) scale(1.14, 1.26) skewX(-4deg);  opacity: 0.9;  filter: blur(5px) brightness(1.3); }
+  61%  { transform: translate(-48%, -2px) scale(0.96, 1.08) skewX(3deg);   opacity: 0.65; filter: blur(3px) brightness(1.1); }
+  78%  { transform: translate(-51%, -3px) scale(1.05, 1.18) skewX(-2deg);  opacity: 0.82; filter: blur(4px) brightness(1.22); }
+  100% { transform: translate(-50%, 0)    scale(1, 1)       skewX(0deg);   opacity: 0.55; filter: blur(3px) brightness(1); }
 }
 
 @keyframes flame-mid-flicker {
-  0%   { transform: translate(-50%, 0) scale(1, 1)       skewX(1deg);  opacity: 0.85; }
-  16%  { transform: translate(-48%, -3px) scale(0.94, 1.16) skewX(-3deg); opacity: 1; }
-  33%  { transform: translate(-52%, -1px) scale(1.04, 1.04) skewX(2deg);  opacity: 0.9; }
-  52%  { transform: translate(-48%, -4px) scale(0.9, 1.22)  skewX(-4deg); opacity: 1; }
-  71%  { transform: translate(-51%, -2px) scale(1.02, 1.08) skewX(1deg);  opacity: 0.92; }
-  88%  { transform: translate(-49%, -3px) scale(0.96, 1.14) skewX(-2deg); opacity: 1; }
-  100% { transform: translate(-50%, 0) scale(1, 1)       skewX(1deg);  opacity: 0.85; }
+  0%   { transform: translate(-50%, 0)    scale(1, 1)       skewX(1deg);   opacity: 0.85; }
+  14%  { transform: translate(-47%, -4px) scale(0.92, 1.22) skewX(-4deg);  opacity: 1; }
+  31%  { transform: translate(-53%, -1px) scale(1.06, 1.04) skewX(3deg);   opacity: 0.9; }
+  48%  { transform: translate(-46%, -6px) scale(0.86, 1.32) skewX(-5deg);  opacity: 1; }
+  66%  { transform: translate(-52%, -2px) scale(1.04, 1.1)  skewX(2deg);   opacity: 0.92; }
+  83%  { transform: translate(-48%, -4px) scale(0.94, 1.2)  skewX(-3deg);  opacity: 1; }
+  100% { transform: translate(-50%, 0)    scale(1, 1)       skewX(1deg);   opacity: 0.85; }
 }
 
 @keyframes flame-inner-flicker {
-  0%   { transform: translate(-50%, 0) scale(1, 1)       skewX(0deg);   opacity: 0.95; }
-  20%  { transform: translate(-50%, -2px) scale(0.92, 1.18) skewX(-2deg); opacity: 1; }
-  40%  { transform: translate(-50%, -1px) scale(1.05, 1.06) skewX(1.5deg); opacity: 0.97; }
-  60%  { transform: translate(-50%, -3px) scale(0.88, 1.24) skewX(-3deg); opacity: 1; }
-  80%  { transform: translate(-50%, -1px) scale(1.02, 1.1)  skewX(1deg);  opacity: 0.96; }
-  100% { transform: translate(-50%, 0) scale(1, 1)       skewX(0deg);   opacity: 0.95; }
+  0%   { transform: translate(-50%, 0)    scale(1, 1)       skewX(0deg);   opacity: 0.95; }
+  18%  { transform: translate(-50%, -3px) scale(0.88, 1.26) skewX(-3deg);  opacity: 1; }
+  37%  { transform: translate(-50%, -1px) scale(1.06, 1.08) skewX(2deg);   opacity: 0.97; }
+  56%  { transform: translate(-50%, -5px) scale(0.84, 1.34) skewX(-4deg);  opacity: 1; }
+  75%  { transform: translate(-50%, -2px) scale(1.02, 1.14) skewX(1deg);   opacity: 0.96; }
+  100% { transform: translate(-50%, 0)    scale(1, 1)       skewX(0deg);   opacity: 0.95; }
 }
 
 @keyframes flame-core-flicker {
-  0%, 100% { transform: translate(-50%, 0) scaleY(1);    opacity: 0.95; }
-  25%      { transform: translate(-50%, -1px) scaleY(1.18); opacity: 1; }
-  55%      { transform: translate(-50%, -2px) scaleY(1.28); opacity: 1; }
-  78%      { transform: translate(-50%, -1px) scaleY(1.12); opacity: 0.97; }
+  0%, 100% { transform: translate(-50%, 0)    scaleY(1);    opacity: 0.95; }
+  22%      { transform: translate(-50%, -2px) scaleY(1.22); opacity: 1; }
+  48%      { transform: translate(-50%, -4px) scaleY(1.36); opacity: 1; }
+  72%      { transform: translate(-50%, -2px) scaleY(1.16); opacity: 0.97; }
 }
 
 /* Tongue: tiny detached flamelet that rises off the top */

@@ -11,8 +11,6 @@ import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { useEffect, useMemo, useState } from "react";
 import StatusBadge from "@/components/StatusBadge";
-import { getTierConfig } from "@/lib/status-tiers";
-import FeatureGateScreen from "@/components/FeatureGateScreen";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
 
 type LeaderRow = {
@@ -200,23 +198,8 @@ const Leaderboard = () => {
 
   const countdownText = useMemo(() => formatCountdown(activeSeason?.ends_at), [activeSeason]);
 
-  // Gate: require Performer tier (rank >= 2) OR Elite subscription
-  const userTier = (profile?.status_tier || 'recruit') as any;
-  const tierRank = getTierConfig(userTier).rank;
-  const hasAccess = isElite || tierRank >= 2; // performer+
-
-  if (!hasAccess) {
-    return (
-      <FeatureGateScreen
-        requiredTier="performer"
-        currentTier={userTier}
-        featureName="Leaderboard"
-        description="Reach Performer status by checking in consistently to see global rankings and compete for Season Champion."
-        icon={Trophy}
-        requiresElite={false}
-      />
-    );
-  }
+  // Access is gated globally by AccessGate (€4.99/mo membership or 7-day trial).
+  // Leaderboard is open to every member with active access.
 
   return (
     <div

@@ -1,87 +1,89 @@
 
 
-# Plan: Flame as the Soul of the App — Cinematic Upgrade + Theme Cohesion
+# Plan: Add new badges for Apex, Legend & Tribe Fire achievements
 
-Make the flame the unifying visual signature of the app. Deepen realism dramatically, and let the flame's energy bleed into surfaces, headers, navigation, and tribe identity.
+Add a fresh wave of badges that reward the recent flame/tribe/tier work. New badges land in the existing `badges` table and are validated by the existing server-side `award_badge_if_earned` RPC. Client-side awarding logic in `src/lib/badge-awards.ts` is extended to recognise the new requirement types.
 
-## 1. RealisticFlame v2 — true depth & life
+## New badges (15 total)
 
-Rewrite `src/components/home/RealisticFlame.tsx` and the supporting keyframes in `src/index.css` to add real volumetric depth instead of flat stacked silhouettes:
+### Tribe Fire (collective streak) — 5 badges
+Triggered by the user's tribe collective streak reaching milestones while user is an active member.
+- **Spark Brother** — Tribe collective streak 7 days (common)
+- **Tribe Ember** — Tribe collective streak 30 days (rare)
+- **Tribe Inferno** — Tribe collective streak 90 days (epic)
+- **Eternal Pyre** — Tribe collective streak 180 days (legendary)
+- **Tribe Founder** — Be a founding member (creator) of a tribe that reaches collective streak 30 (epic)
 
-- **8 layers instead of 5**: deep haze → outer aura → outer flame → mid body → inner body → core → white-hot tip → spark crown. Each with its own rhythm, hue rotation, and skew so the silhouette never looks symmetric.
-- **Per-layer turbulence**: 3 different `feTurbulence` filters (slow drift / mid licking / fast tip whip) so layers warp independently — the flame visibly *breathes* and *snaps*.
-- **Dynamic side lick**: a horizontal sway driven by a slow sine animation on the wrapper, so the whole flame leans like wind is on it.
-- **Hot wick base**: a bright wick line + glowing ember plate at the bottom — gives the flame a believable origin point.
-- **Volumetric backlight**: a tier-tinted radial bloom *behind* the flame (mix-blend screen) so it actually lights its surroundings.
-- **Improved sparks**: arc trajectories (curved, not linear) using two-stage `--spark-x`/`--spark-y` keyframes; sparks fade with a tail (box-shadow trail).
-- **Smoke**: from Blazing+ — slow ribboning wisps, drifting sideways with `rotate` + `blur` ramp, dissolving high above the flame.
-- **Tier-driven cinematic palette**: deeper blue base for Diamond, magenta-violet aura for Legendary, with subtle hue-rotate animation across the spectrum so Legendary flames shimmer like an aurora.
-- Keeps the lightweight `StreakFlameInline` for lists (no SVG turbulence in long lists — performance preserved).
+### Tribe Battle — 3 badges
+- **First Blood** — Win 1 tribe battle (common)
+- **War Chief** — Win 5 tribe battles (rare)
+- **Tribe Conqueror** — Win 15 tribe battles (epic)
 
-## 2. StreakFlameInline polish (lists, kept fast)
+### Apex tier — 3 badges
+- **Apex Reached** — Reach Apex tier (epic)
+- **Apex Stronghold** — Hold Apex tier 14 days (epic)
+- **Founding Apex** — Apex via paid Apex Instant subscription (legendary)
 
-In `src/components/StreakFlameInline.tsx` add (CSS only, still 60fps):
-- Subtle rim-light gradient on the outer body.
-- A second tiny inner-tip element for "fork" feel.
-- Per-tier hue-shift keyframe (very slow) so Diamond/Legendary inline flames glimmer.
-- Shadow trail under the count number for hot tiers.
+### Legend tier — 2 badges
+- **Legend Ascendant** — Reach Legend tier (legendary)
+- **Eternal Legend** — Hold Legend tier 30 days (legendary)
 
-## 3. Flame-themed app surfaces (the "theme" upgrade)
+### Personal flame depth — 2 badges
+- **Inferno Personal** — Reach personal streak 100 (epic)
+- **Phoenix** — Recover from a streak break of ≥30 and rebuild to ≥30 again (rare)
 
-In `src/index.css`:
-- Add `.surface-ember` and `.surface-aurora` utility classes — opaque (no backdrop blur) but with multi-layered ember-glow gradients suitable for hero/empty states.
-- Add ambient `body::after` ember radial that very slowly drifts — gives every page a subtle "fire in the distance" warmth without animation cost.
-- New keyframes: `ember-drift`, `aurora-shift`, `flame-rim-pulse`.
+## Database
 
-Apply to:
-- `src/pages/Index.tsx` home hero strip (top of feed) — ember glow band behind the W logo.
-- `src/components/StatusHeader.tsx` — adds a thin `flame-rim-pulse` line under the header when user has streak ≥ 7.
-- `src/components/BottomNav.tsx` — active tab gets a small ember underline that pulses with user's tier color.
+Migration inserts 15 rows into `public.badges` with: `name`, `description`, `icon` (lucide name), `rarity`, `requirement_type`, `requirement_value`, `category`.
 
-## 4. Tribe flame: dramatically stronger
+New `requirement_type` values introduced:
+- `tribe_collective_streak` (value = days)
+- `tribe_founder_streak` (value = days)
+- `tribe_battles_won` (value = wins)
+- `tier_reached` (value = tier rank index: apex=6, legend=7)
+- `tier_held_days` (value = days; uses companion `requirement_type` is split into `apex_held_days` / `legend_held_days` for clarity)
+- `apex_founding` (value = 1, paid Apex)
+- `personal_streak` (value = days; longer milestones than existing `streak`)
+- `phoenix_recovery` (value = 1)
 
-`src/components/TribeCollectiveFlame.tsx`:
-- Bump max size from 120 → **160px**, scale curve more aggressive (Legendary tribes feel monumental).
-- Wrap in a true "fireplace" frame: stacked radial bloom behind, ember-drift particles on the sides, and a thin aurora rim border that pulses at the tribe's tier accent.
-- Add a small live "+X today" delta chip (members who checked in today) sitting beside the flame.
-- Add a stat row underneath with mini segmented bars showing the collective streak's progress to the next tier.
+To keep the schema simple we use distinct types per metric instead of overloading `tier_held_days`:
+`apex_reached`, `apex_held_days`, `apex_founding`, `legend_reached`, `legend_held_days`, `tribe_collective_streak`, `tribe_founder_streak`, `tribe_battles_won`, `personal_streak`, `phoenix_recovery`.
 
-`src/pages/TribeDetail.tsx`:
-- Promote the collective flame to a full hero card at the very top, replacing the small header strip.
-- Background of the page subtly tints toward the tribe tier color (uses `collectiveAccent`).
+## Client awarding logic (`src/lib/badge-awards.ts`)
 
-`src/pages/Tribes.tsx` browse list:
-- Each tribe row gets a subtle left edge "ember bar" sized to its collective streak (visible heat ladder when scanning the list).
-- Featured tribe card gets a real hero `RealisticFlame` (size 64) instead of the inline version.
+Extend `checkAndAwardBadges` and `getBadgeProgress` to compute these new stats and map them in `typeToStat`:
 
-`src/components/TribeBattleCard.tsx`:
-- Replace inline flames with proper `RealisticFlame` (size ~40) per side, on opaque ember mini-cards. The "Bigger flame" badge becomes an animated aurora pill.
+- `apex_reached` / `legend_reached` → derived from `profile.tier`.
+- `apex_held_days` / `legend_held_days` → from `profile.tier_started_at` (or fall back to a new `tier_history` lookup if available; otherwise from days since `tier_promoted_at`).
+- `apex_founding` → `profile.is_founding_apex` (existing flag from Apex Instant).
+- `tribe_collective_streak` → query `tribes.collective_streak` for the user's active tribe (via `tribe_members`).
+- `tribe_founder_streak` → same as above, gated on `tribes.created_by = user_id`.
+- `tribe_battles_won` → count from `tribe_battles` where `winner_tribe_id` belongs to user.
+- `personal_streak` → `profile.longest_streak` (already fetched).
+- `phoenix_recovery` → derived: `longest_streak ≥ 30` AND current `streak ≥ 30` AND a recorded streak break in between (uses existing `streak_history` if present; otherwise simplified to `longest_streak ≥ 30 && streak ≥ 30 && longest_streak > streak`).
 
-## 5. Splash screen — extend the ignite story
+Trigger-driven types (none here) are not added to `TRIGGER_TYPES`; everything resolves client-side via the existing `award_badge_if_earned` RPC pattern.
 
-`src/components/SplashScreen.tsx`:
-- Replace the hand-rolled clip-path flame with a real `RealisticFlame` (tier 5, size 96) that fades + scales in *behind* the logo from ember → blazing.
-- Logo wordmark gets a one-time gold→ember sweep gradient on settle.
+## Where badges become visible
 
-## 6. Performance guardrails
+No UI rewrite required — they automatically appear in:
+- `BadgeVault.tsx` (full grid, with progress from `getBadgeProgress`)
+- `BadgeUnlockModal.tsx` (on first unlock after check-in)
+- `FeaturedBadgeHero.tsx` profile showcase
+- `BadgeShowcase.tsx` top-5 sorted by rarity (Legendary will surface)
 
-- Hero `RealisticFlame` continues to use SVG turbulence — but only one instance is ever mounted at a time per route (home hero, tribe hero, splash, battle card).
-- Lists keep `StreakFlameInline` (CSS only).
-- Add `prefers-reduced-motion` overrides so all new keyframes resolve to a static state.
-- All new gradients are opaque — no `backdrop-filter`.
+Icons reuse existing lucide imports already supported by `BadgeCard`: `Flame`, `Crown`, `Sparkles`, `Zap`, `Shield`, `Swords`, `Users`, `Bird` (for Phoenix, falls back to `Sparkle` if not in icon map).
 
-## Technical files touched
+## Files touched
 
-- `src/components/home/RealisticFlame.tsx` (rewrite)
-- `src/components/StreakFlameInline.tsx` (polish)
-- `src/components/TribeCollectiveFlame.tsx` (rewrite hero)
-- `src/components/TribeBattleCard.tsx` (use RealisticFlame)
-- `src/components/SplashScreen.tsx` (use RealisticFlame)
-- `src/components/StatusHeader.tsx` (rim pulse)
-- `src/components/BottomNav.tsx` (ember underline)
-- `src/pages/Index.tsx` (hero ember band)
-- `src/pages/Tribes.tsx` (left edge ember bars + featured hero flame)
-- `src/pages/TribeDetail.tsx` (promote hero flame, page accent tint)
-- `src/index.css` (8-layer keyframes, ember/aurora utilities, new ambient)
-- `.lovable/memory/style/visual-effects.md` (note flame as theme signature)
+- `supabase/migrations/<timestamp>_flame_tribe_apex_badges.sql` (insert 15 badges)
+- `src/lib/badge-awards.ts` (extend stats fetch + `typeToStat` for both `checkAndAwardBadges` and `getBadgeProgress`)
+- `src/components/BadgeCard.tsx` (only if a missing icon needs to be registered — verify during implementation)
+- `.lovable/memory/features/badge-system.md` (bump count to 117 and note new categories)
+
+## Notes
+
+- All requirement evaluations stay server-validated through `award_badge_if_earned` RPC — client just identifies candidates.
+- New tribe-related badges only count time while user is an active member of the tribe being measured.
+- `personal_streak` milestones (100) intentionally exceed existing streak badges to give long-term players new goals.
 

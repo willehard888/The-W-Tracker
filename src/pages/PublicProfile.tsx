@@ -155,12 +155,15 @@ const PublicProfile = () => {
               </div>
             )}
 
-            {/* Username */}
+            {/* Username — colored by status tier */}
             <motion.h1
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="font-display text-[34px] leading-none font-black tracking-tight text-foreground/95"
+              className={cn(
+                "font-display text-[34px] leading-none font-black tracking-tight",
+                getTierUsernameClass(profile.status_tier || 'recruit'),
+              )}
             >
               @{profile.username}
             </motion.h1>

@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow, subDays } from "date-fns";
 import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
-import { getTierConfig } from "@/lib/status-tiers";
+import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
 import RoadToElite from "@/components/RoadToElite";
 import TierLadder from "@/components/TierLadder";
 import StatusPreview from "@/components/StatusPreview";
@@ -332,8 +332,11 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Username — bold, light weight pop */}
-          <h1 className="font-display text-[34px] leading-none font-black tracking-tight text-foreground/95">
+          {/* Username — colored by status tier */}
+          <h1 className={cn(
+            "font-display text-[34px] leading-none font-black tracking-tight",
+            getTierUsernameClass(profile.status_tier || 'recruit'),
+          )}>
             @{profile.username}
           </h1>
 

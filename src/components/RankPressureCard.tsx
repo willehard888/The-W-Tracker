@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { getTierConfig, getNextTier } from "@/lib/status-tiers";
-import { TrendingUp, TrendingDown, AlertTriangle, ChevronRight, Flame, Trophy } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, ChevronRight, Flame, Trophy, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface RankPressureCardProps {
@@ -8,12 +8,18 @@ interface RankPressureCardProps {
   rank: number | null;
   totalUsers: number;
   percentile: number;
+  hasRank?: boolean;
   rankScore?: number;
   daysAtTier?: number;
   className?: string;
 }
 
-const RankPressureCard = ({ tier, rank, totalUsers, percentile, rankScore, daysAtTier, className }: RankPressureCardProps) => {
+const formatPercentile = (p: number) => {
+  if (p >= 99) return p.toFixed(1);
+  return Math.round(p).toString();
+};
+
+const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, rankScore, daysAtTier, className }: RankPressureCardProps) => {
   const config = getTierConfig(tier);
   const nextTier = getNextTier(tier);
 

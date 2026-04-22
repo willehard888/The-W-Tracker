@@ -568,7 +568,8 @@ const Tribes = () => {
                 )}
               </div>
             </button>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

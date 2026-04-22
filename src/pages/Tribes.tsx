@@ -351,7 +351,7 @@ const Tribes = () => {
                 See which tribes earn the most XP this week
               </p>
             </div>
-            <ArrowChevron />
+            <ChevronRight size={14} className="text-muted-foreground shrink-0" />
           </button>
         </>
       )}

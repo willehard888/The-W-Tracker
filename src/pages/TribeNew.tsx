@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, Users, Lock, Globe, Check, X } from "lucide-react";
+import { ArrowLeft, Loader2, Users, Lock, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,8 @@ const TribeNew = () => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [visibility, setVisibility] = useState<"public" | "private">("public");
+  // All tribes are private — approval-based join only.
+  const visibility = "private" as const;
   const [submitting, setSubmitting] = useState(false);
   const [nameStatus, setNameStatus] = useState<
     "idle" | "checking" | "available" | "taken" | "invalid"

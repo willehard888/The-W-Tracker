@@ -514,6 +514,11 @@ const TribeDetail = () => {
                       <Crown size={6} className="text-background" />
                     </div>
                   )}
+                  {m.role === "admin" && (
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1 py-px rounded-sm bg-[hsl(18_95%_58%)]/90">
+                      <Shield size={6} className="text-background" />
+                    </div>
+                  )}
                 </div>
                 <p className="text-[9px] text-muted-foreground truncate w-full text-center">{m.username}</p>
               </button>

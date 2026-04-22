@@ -1,26 +1,21 @@
-import { Flame, ChevronRight, Crown, Sparkles, FileText } from "lucide-react";
-import LevelCard from "@/components/LevelCard";
-import StreakDisplay from "@/components/StreakDisplay";
+import { ChevronRight } from "lucide-react";
 import BadgeCard from "@/components/BadgeCard";
-import StatusBadge from "@/components/StatusBadge";
-import RankPressureCard from "@/components/RankPressureCard";
-import CoachNudgeCard from "@/components/CoachNudgeCard";
 import TierRiskBanner from "@/components/TierRiskBanner";
-import DailyStatusPulse from "@/components/DailyStatusPulse";
-import LiveRivals from "@/components/LiveRivals";
-import { Button } from "@/components/ui/button";
+import InviteCTA from "@/components/InviteCTA";
+import HeroHeader from "@/components/home/HeroHeader";
+import CommandDeck from "@/components/home/CommandDeck";
+import RankArena from "@/components/home/RankArena";
+import ProgressRail from "@/components/home/ProgressRail";
+import CoachStrip from "@/components/home/CoachStrip";
+import Reveal from "@/components/home/Reveal";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import XpCounter from "@/components/XpCounter";
-import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
 import { useTierRisk } from "@/hooks/use-tier-risk";
 import { useMyRank } from "@/hooks/use-my-rank";
-import RoadToElite from "@/components/RoadToElite";
-import InviteCTA from "@/components/InviteCTA";
-
+import { useDailyPulse } from "@/hooks/use-daily-pulse";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -93,7 +88,6 @@ const Index = () => {
   });
 
   const { data: rankData } = useMyRank(profile?.user_id);
-  // Tier risk (must be called before early-return for hook order)
   const tierRisk = useTierRisk({
     tier: profile?.status_tier || "recruit",
     rankScore: Number((profile as any)?.rank_score) || 0,
@@ -101,15 +95,25 @@ const Index = () => {
     lastCheckinAt: lastCheckin?.checked_in_at,
   });
 
+  // Live rank delta for HeroHeader pulse line
+  const pulse = useDailyPulse(
+    profile?.user_id || "",
+    rankData?.rank ?? 0,
+    Number((profile as any)?.rank_score) || 0,
+    rankData?.totalUsers ?? 0,
+  );
+
   if (!profile) return null;
 
   const xpToNext = profile.level * 500;
-  const xpPercent = Math.min(100, Math.round((profile.xp / xpToNext) * 100));
-  const tier = profile.status_tier || 'recruit';
+  const tier = profile.status_tier || "recruit";
   const tierConfig = getTierConfig(tier);
+  const isLegend = tier === "legend";
+  const isApex = tier === "apex";
 
   const canCheckin =
-    !lastCheckin || Date.now() - new Date(lastCheckin.checked_in_at).getTime() > 24 * 60 * 60 * 1000;
+    !lastCheckin ||
+    Date.now() - new Date(lastCheckin.checked_in_at).getTime() > 24 * 60 * 60 * 1000;
 
   const getTimeUntilCheckin = () => {
     if (!lastCheckin || canCheckin) return null;
@@ -120,333 +124,129 @@ const Index = () => {
     return `${hours}h ${mins}m`;
   };
 
+  // Tier-reactive page-level aura
+  const pageAura = isLegend
+    ? "radial-gradient(ellipse at center top, hsl(280 70% 60% / 0.18) 0%, hsl(42 78% 54% / 0.08) 40%, transparent 75%)"
+    : isApex
+    ? "radial-gradient(ellipse at center top, hsl(18 95% 58% / 0.16) 0%, hsl(42 78% 54% / 0.06) 40%, transparent 75%)"
+    : tier === "elite"
+    ? "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.16) 0%, hsl(180 70% 50% / 0.06) 40%, transparent 75%)"
+    : "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.12) 0%, hsl(42 78% 54% / 0.04) 40%, transparent 75%)";
+
   return (
-    <div className="h-full pb-4 px-4 pt-6 safe-top relative overflow-y-auto overflow-x-hidden">
-      {/* Dramatic ambient top glow */}
+    <div className="h-full pb-6 px-4 pt-5 safe-top relative overflow-y-auto overflow-x-hidden">
+      {/* Tier-reactive top aura */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] pointer-events-none z-0"
-        style={{
-          background: tier === 'legend'
-            ? "radial-gradient(ellipse at center top, hsl(280 70% 60% / 0.18) 0%, hsl(42 78% 54% / 0.08) 40%, transparent 75%)"
-            : tier === 'apex'
-            ? "radial-gradient(ellipse at center top, hsl(18 95% 58% / 0.16) 0%, hsl(42 78% 54% / 0.06) 40%, transparent 75%)"
-            : "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.16) 0%, hsl(42 78% 54% / 0.05) 40%, transparent 75%)",
-        }}
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[760px] h-[460px] pointer-events-none z-0"
+        style={{ background: pageAura }}
       />
       <div
-        className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] pointer-events-none z-0"
+        className="absolute top-0 left-0 right-0 h-[1px] pointer-events-none z-10 opacity-25"
         style={{
-          background: "radial-gradient(ellipse at center, hsl(270 60% 58% / 0.07) 0%, transparent 65%)",
-        }}
-      />
-      <div
-        className="absolute top-0 left-0 right-0 h-[1px] pointer-events-none z-10 opacity-20"
-        style={{
-          background: "linear-gradient(90deg, transparent 10%, hsl(42 78% 54% / 0.6) 50%, transparent 90%)",
+          background:
+            "linear-gradient(90deg, transparent 10%, hsl(42 78% 54% / 0.6) 50%, transparent 90%)",
           animation: "shimmer-slide 6s ease-in-out infinite",
         }}
       />
 
-      {/* 1. Tier Risk Banner — fear of demotion (top priority, only when at risk) */}
-      {tierRisk.level !== "safe" && (
-        <div className="animate-reveal mb-3 relative z-10">
-          <TierRiskBanner risk={tierRisk} />
-        </div>
-      )}
-
-      {/* 2. STREAK — hero of the home page */}
-      <div className="mb-4 animate-reveal relative z-10">
-        <StreakDisplay
-          streak={profile.streak}
-          longestStreak={profile.longest_streak}
-          lastCheckinAt={lastCheckin?.checked_in_at}
+      {/* HERO HEADER */}
+      <div className="animate-reveal mb-4 relative z-10">
+        <HeroHeader
+          username={profile.username}
+          tier={tier}
+          rank={rankData?.rank ?? null}
+          totalUsers={rankData?.totalUsers}
+          percentile={rankData?.percentile}
+          hasRank={rankData?.hasRank}
+          rankDelta={pulse.loading ? 0 : pulse.rankDelta}
         />
       </div>
 
-      {/* 3. LOCK YOUR DAY — primary daily action, premium gold CTA */}
-      <div className="animate-reveal animate-reveal-delay-1 mb-5 relative z-10">
-        <button
-          onClick={() => canCheckin && navigate("/checkin")}
-          disabled={!canCheckin}
-          className={cn(
-            "w-full text-left rounded-2xl p-[2px] overflow-hidden transition-transform active:scale-[0.99]",
-            canCheckin ? "breathing-glow" : "opacity-70"
-          )}
-          style={{
-            background: canCheckin
-              ? "linear-gradient(135deg, hsl(42 78% 54%), hsl(18 95% 58%), hsl(42 85% 70%), hsl(42 78% 54%))"
-              : "linear-gradient(135deg, hsl(var(--border)), hsl(var(--border)))",
-            backgroundSize: "200% 200%",
-            animation: canCheckin ? "shimmer-slide 4s ease-in-out infinite" : undefined,
-          }}
-        >
-          <div className="rounded-2xl bg-gradient-to-br from-card via-card to-card/80 p-5 relative overflow-hidden">
-            {/* Ambient glow */}
-            <div
-              className="absolute -top-20 -right-16 w-56 h-56 rounded-full pointer-events-none"
-              style={{
-                background: canCheckin
-                  ? "radial-gradient(circle, hsl(42 78% 54% / 0.32) 0%, transparent 65%)"
-                  : "radial-gradient(circle, hsl(var(--muted) / 0.15) 0%, transparent 65%)",
-              }}
-            />
-            <div
-              className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full pointer-events-none"
-              style={{
-                background: canCheckin
-                  ? "radial-gradient(circle, hsl(18 95% 58% / 0.18) 0%, transparent 70%)"
-                  : "transparent",
-              }}
-            />
-
-            <div className="relative flex items-center gap-4">
-              <div
-                className={cn(
-                  "h-16 w-16 rounded-2xl flex items-center justify-center shrink-0 relative",
-                  canCheckin
-                    ? "gradient-gold text-primary-foreground shadow-[0_0_28px_hsl(42_78%_54%/0.55)]"
-                    : "bg-secondary text-muted-foreground"
-                )}
-              >
-                {canCheckin && (
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 rounded-2xl bg-gold/40 animate-ping opacity-50"
-                    style={{ animationDuration: "2s" }}
-                  />
-                )}
-                <Flame size={30} strokeWidth={2.4} className="relative drop-shadow-[0_2px_8px_currentColor]" />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <p
-                  className={cn(
-                    "text-[10px] font-black uppercase tracking-[0.22em] mb-0.5",
-                    canCheckin ? "text-gold" : "text-muted-foreground"
-                  )}
-                >
-                  {canCheckin ? "🔒 Lock Your Day" : "✓ Day Locked"}
-                </p>
-                <p className="font-display font-black text-2xl leading-tight tracking-tight">
-                  {canCheckin ? "Daily Check-In" : "Come Back Tomorrow"}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                  {canCheckin
-                    ? profile.streak > 0
-                      ? `Defend your ${profile.streak}-day streak. +XP, +rank.`
-                      : "Start your streak. Earn XP. Climb the ladder."
-                    : `Next check-in in ${getTimeUntilCheckin()}`}
-                </p>
-              </div>
-
-              <ChevronRight
-                size={22}
-                className={cn(
-                  "shrink-0",
-                  canCheckin ? "text-gold animate-pulse" : "text-muted-foreground/40"
-                )}
-              />
-            </div>
-
-            {canCheckin && (
-              <div className="relative mt-3 pt-3 border-t border-gold/15 flex items-center justify-between">
-                <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
-                  Today's reward
-                </p>
-                <p className="text-xs font-black text-gold tabular-nums">
-                  +50 XP <span className="text-muted-foreground font-bold">base</span>
-                </p>
-              </div>
-            )}
-          </div>
-        </button>
+      {/* COMMAND DECK — Streak + Lock Your Day */}
+      <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
+        <CommandDeck
+          streak={profile.streak}
+          longestStreak={profile.longest_streak}
+          lastCheckinAt={lastCheckin?.checked_in_at}
+          canCheckin={canCheckin}
+          timeUntilCheckin={getTimeUntilCheckin()}
+          tier={tier}
+        />
       </div>
 
-      {/* 4. Daily Status Pulse — micro-win */}
-      {rankData && (
-        <div className="animate-reveal animate-reveal-delay-2 mb-3 relative z-10">
-          <DailyStatusPulse
-            userId={profile.user_id}
-            rank={rankData.rank}
-            score={Number((profile as any).rank_score) || 0}
-            totalUsers={rankData.totalUsers}
-          />
-        </div>
+      {/* TIER RISK */}
+      {tierRisk.level !== "safe" && (
+        <Reveal className="mb-4 relative z-10">
+          <TierRiskBanner risk={tierRisk} />
+        </Reveal>
       )}
 
-      {/* 5. Rank Pressure Card */}
+      {/* RANK ARENA */}
       {rankData && (
-        <div className="animate-reveal animate-reveal-delay-2 mb-4 relative z-10">
-          <RankPressureCard
+        <Reveal className="mb-4 relative z-10">
+          <RankArena
+            userId={profile.user_id}
             tier={tier}
             rank={rankData.rank}
             totalUsers={rankData.totalUsers}
             percentile={rankData.percentile}
             hasRank={rankData.hasRank}
-            rankScore={(profile as any).rank_score}
-            daysAtTier={(profile as any).rank_score_updated_at
-              ? Math.max(1, Math.floor((Date.now() - new Date((profile as any).rank_score_updated_at).getTime()) / (1000 * 60 * 60 * 24)))
-              : undefined}
+            rankScore={Number((profile as any).rank_score) || 0}
+            daysAtTier={
+              (profile as any).rank_score_updated_at
+                ? Math.max(
+                    1,
+                    Math.floor(
+                      (Date.now() -
+                        new Date((profile as any).rank_score_updated_at).getTime()) /
+                        (1000 * 60 * 60 * 24),
+                    ),
+                  )
+                : undefined
+            }
           />
-        </div>
+        </Reveal>
       )}
 
-      {/* 6. Live Rivals */}
-      <div className="animate-reveal animate-reveal-delay-2 mb-4 relative z-10">
-        <LiveRivals userId={profile.user_id} myScore={Number((profile as any).rank_score) || 0} />
-      </div>
-
-      {/* 5. Road to Elite — earned status progress */}
-      <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
-        <RoadToElite compact />
-      </div>
-
-      {/* AI Coach entry — visible to all members */}
-      <button
-        onClick={() => navigate("/coach")}
-        className="w-full animate-reveal animate-reveal-delay-1 mb-4 relative z-10 rounded-2xl p-[1.5px] text-left active:scale-[0.99] transition-transform overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, hsl(42 78% 54%), hsl(280 70% 60%), hsl(42 78% 54%))",
-          backgroundSize: "200% 200%",
-          animation: "shimmer-slide 4s ease-in-out infinite",
-        }}
-      >
-        <div className="rounded-2xl glass-card-gold p-4 relative overflow-hidden">
-          <div
-            className="absolute -top-12 -right-12 w-40 h-40 rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, hsl(42 78% 54% / 0.25) 0%, transparent 70%)" }}
-          />
-          <div className="flex items-center gap-3 relative">
-            <div className="h-11 w-11 rounded-xl gradient-gold flex items-center justify-center shrink-0 shadow-[0_0_20px_hsl(42_78%_54%/0.5)]">
-              <Sparkles size={20} className="text-primary-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <p className="text-[10px] uppercase tracking-widest text-gold font-black">AI Coach</p>
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold font-bold border border-gold/30">GPT-5</span>
-              </div>
-              <p className="font-bold text-sm leading-tight">Ask your personal performance coach</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">Training, sleep, discipline — direct answers.</p>
-            </div>
-            <ChevronRight size={18} className="text-gold/70 shrink-0" />
-          </div>
-        </div>
-      </button>
-
-      {/* 6. Coach Nudge (Elite, unseen) */}
-      {latestNudge && (
-        <div className="animate-reveal animate-reveal-delay-1 mb-4 relative z-10">
-          <CoachNudgeCard
-            nudgeId={latestNudge.id}
-            headline={latestNudge.headline}
-            content={latestNudge.content}
-          />
-        </div>
-      )}
-
-      {/* Latest Weekly Briefing (Elite, < 7 days old) */}
-      {latestBriefing && (
-        <button
-          onClick={() => navigate(`/briefing/${latestBriefing.id}`)}
-          className="w-full animate-reveal animate-reveal-delay-1 mb-4 relative z-10 rounded-2xl glass-card-gold p-4 text-left active:scale-[0.99] transition-transform border border-gold/25"
-        >
-          <div className="flex items-start gap-3">
-            <div className="h-9 w-9 rounded-lg gradient-gold flex items-center justify-center shrink-0">
-              <FileText size={16} className="text-primary-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-widest text-gold/80 font-bold mb-0.5">
-                {latestBriefing.viewed_at ? "Weekly Briefing" : "New Weekly Briefing"}
-              </p>
-              <p className="font-bold text-sm leading-tight line-clamp-2">
-                {latestBriefing.headline}
-              </p>
-            </div>
-            <ChevronRight size={18} className="text-gold/60 shrink-0 mt-1" />
-          </div>
-        </button>
-      )}
-
-      <div className="animate-reveal animate-reveal-delay-1 rounded-2xl glass-card-gold p-5 mb-4 relative overflow-hidden gradient-border-animated shimmer-overlay">
-        <div
-          className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none"
-          style={{
-            background: "radial-gradient(circle, hsl(42 78% 54% / 0.2) 0%, hsl(42 78% 54% / 0.06) 50%, transparent 75%)",
-          }}
+      {/* PROGRESS RAIL */}
+      <Reveal className="mb-4 relative z-10">
+        <ProgressRail
+          level={profile.level}
+          xp={profile.xp}
+          xpToNext={xpToNext}
+          canCheckin={canCheckin}
         />
-        <div className="relative">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg gradient-gold flex items-center justify-center float-subtle">
-                <span className="font-black text-primary-foreground text-xl">{profile.level}</span>
-              </div>
-              <div>
-                <p className="font-display font-black tracking-tight text-lg">Level {profile.level}</p>
-                <p className="text-muted-foreground uppercase tracking-widest text-sm">Rank Progress</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <XpCounter value={profile.xp} className="font-display font-black text-gold text-xl tabular-nums glow-gold-text" />
-              <p className="text-muted-foreground text-sm">/ {xpToNext.toLocaleString()} XP</p>
-            </div>
-          </div>
+      </Reveal>
 
-          <div className="mt-3 h-4 rounded-full bg-secondary/80 overflow-hidden border border-border/50 surface-inset">
-            <div
-              className="h-full rounded-full gradient-gold transition-all duration-1000 ease-out relative"
-              style={{ width: `${Math.max(4, xpPercent)}%` }}
-            >
-              <div className="absolute inset-0 overflow-hidden rounded-full">
-                <div
-                  className="absolute inset-0 -translate-x-full animate-[shine_3s_ease-in-out_infinite]"
-                  style={{ background: "linear-gradient(90deg, transparent, hsl(42 85% 70% / 0.5), transparent)" }}
-                />
-              </div>
-            </div>
-          </div>
+      {/* COACH STRIP */}
+      <Reveal className="mb-5 relative z-10">
+        <CoachStrip latestNudge={latestNudge ?? null} latestBriefing={latestBriefing ?? null} />
+      </Reveal>
 
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-muted-foreground text-sm">
-              <span className="text-gold font-bold">{Math.max(0, xpToNext - profile.xp).toLocaleString()}</span> XP to next level
-            </p>
-            <p className="font-bold text-gold/60 tabular-nums text-sm">{xpPercent}%</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Daily Quests Preview */}
-      {canCheckin && (
-        <div className="animate-reveal animate-reveal-delay-3 mb-4">
-          <div className="rounded-xl glass-card border-purple-500/25 p-4 text-center relative overflow-hidden pulse-dot">
-            <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(135deg, hsl(270 60% 58% / 0.08), transparent 60%)" }} />
-            <div className="relative">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Sparkles size={16} className="text-[hsl(var(--purple))] float-subtle" />
-                <p className="text-base font-bold text-purple-300">Daily Quests Available</p>
-              </div>
-              <p className="text-sm text-muted-foreground">Complete bonus objectives for extra XP</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Invite CTA — referral money machine nudge */}
-      <div className="animate-reveal animate-reveal-delay-4 mb-4">
+      {/* GROWTH ROW — Invite + Recent Badges */}
+      <Reveal className="mb-4">
         <InviteCTA referralCount={profile.referral_count || 0} />
-      </div>
+      </Reveal>
 
-      {/* Recent Badges */}
-      <div className="animate-reveal animate-reveal-delay-4">
+      <Reveal className="mb-2">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-display font-bold text-base tracking-tight">Recent Badges</h2>
-          <button onClick={() => navigate("/profile")} className="flex items-center gap-1 text-xs text-gold font-medium hover:underline">
+          <button
+            onClick={() => navigate("/profile")}
+            className="flex items-center gap-1 text-xs text-gold font-medium hover:underline"
+          >
             View All <ChevronRight size={14} />
           </button>
         </div>
         {userBadges && userBadges.length > 0 ? (
           <div className="grid grid-cols-3 gap-3">
             {userBadges.map((ub: any) => (
-              <BadgeCard key={ub.id} name={ub.badges.name} icon={ub.badges.icon} rarity={ub.badges.rarity} />
+              <BadgeCard
+                key={ub.id}
+                name={ub.badges.name}
+                icon={ub.badges.icon}
+                rarity={ub.badges.rarity}
+              />
             ))}
           </div>
         ) : (
@@ -454,10 +254,10 @@ const Index = () => {
             <p className="text-sm text-muted-foreground">Complete check-ins to earn badges</p>
           </div>
         )}
-      </div>
+      </Reveal>
 
-      {/* Tier status message */}
-      <div className="animate-reveal animate-reveal-delay-4 mt-4 mb-2 text-center">
+      {/* Tier message footer */}
+      <div className="mt-4 mb-2 text-center">
         <p className="text-[10px] text-muted-foreground/40 font-semibold tracking-widest uppercase">
           {tierConfig.message}
         </p>

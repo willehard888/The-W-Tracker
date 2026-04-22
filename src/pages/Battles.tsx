@@ -1,7 +1,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Swords, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image, Vote, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
-import FeatureGateScreen from "@/components/FeatureGateScreen";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,7 +26,7 @@ const BATTLE_TYPES = [
 ] as const;
 
 const Battles = () => {
-  const { profile, isElite } = useAuth();
+  const { profile } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
@@ -346,19 +345,6 @@ const Battles = () => {
   };
 
   if (!profile) return null;
-
-  if (!isElite) {
-    return (
-      <FeatureGateScreen
-        requiredTier="elite"
-        currentTier={(profile?.status_tier || 'recruit') as any}
-        featureName="1v1 Battles"
-        description="Challenge other users in discipline battles. Available exclusively for Elite members."
-        icon={Swords}
-        requiresElite={true}
-      />
-    );
-  }
 
   return (
     <div className="min-h-screen pb-4 px-4 pt-6 safe-top">

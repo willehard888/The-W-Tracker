@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, Users, Lock, Globe } from "lucide-react";
+import { ArrowLeft, Loader2, Users, Lock, Globe, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -16,10 +16,37 @@ const TribeNew = () => {
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [submitting, setSubmitting] = useState(false);
+  const [nameStatus, setNameStatus] = useState<
+    "idle" | "checking" | "available" | "taken" | "invalid"
+  >("idle");
 
   const tier = profile?.status_tier;
   const canCreate =
     isApexSubscriber || tier === "apex" || tier === "legend";
+
+  // Debounced name availability check
+  useEffect(() => {
+    const trimmed = name.trim();
+    if (trimmed.length === 0) {
+      setNameStatus("idle");
+      return;
+    }
+    if (trimmed.length < 3 || trimmed.length > 40) {
+      setNameStatus("invalid");
+      return;
+    }
+    setNameStatus("checking");
+    const t = setTimeout(async () => {
+      const { data } = await supabase
+        .from("tribes" as any)
+        .select("id")
+        .ilike("name", trimmed)
+        .limit(1);
+      const taken = ((data as any) ?? []).length > 0;
+      setNameStatus(taken ? "taken" : "available");
+    }, 400);
+    return () => clearTimeout(t);
+  }, [name]);
 
   if (!canCreate) {
     return (
@@ -40,6 +67,10 @@ const TribeNew = () => {
     const trimmed = name.trim();
     if (trimmed.length < 3 || trimmed.length > 40) {
       toast.error("Name must be 3–40 characters");
+      return;
+    }
+    if (nameStatus === "taken") {
+      toast.error("Tribe name already taken — try another");
       return;
     }
     setSubmitting(true);
@@ -69,7 +100,7 @@ const TribeNew = () => {
 
       <h1 className="font-display text-2xl font-black mb-1">Create a Tribe</h1>
       <p className="text-xs text-muted-foreground mb-6">
-        Up to 3 tribes per Apex founder.
+        Up to 3 tribes per Apex founder. Names must be unique.
       </p>
 
       <div className="space-y-4">
@@ -77,15 +108,42 @@ const TribeNew = () => {
           <label className="text-[11px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
             Name
           </label>
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={40}
-            placeholder="The Iron Brotherhood"
-          />
-          <p className="text-[10px] text-muted-foreground mt-1">
-            {name.length}/40
-          </p>
+          <div className="relative">
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={40}
+              placeholder="The Iron Brotherhood"
+              className={cn(
+                "pr-10",
+                nameStatus === "taken" && "border-destructive/60",
+                nameStatus === "available" && "border-[hsl(152_68%_46%)]/60",
+              )}
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              {nameStatus === "checking" && (
+                <Loader2 size={14} className="animate-spin text-muted-foreground" />
+              )}
+              {nameStatus === "available" && (
+                <Check size={14} className="text-[hsl(152_68%_46%)]" />
+              )}
+              {nameStatus === "taken" && (
+                <X size={14} className="text-destructive" />
+              )}
+            </div>
+          </div>
+          <div className="flex items-center justify-between mt-1">
+            <p className="text-[10px] text-muted-foreground">{name.length}/40</p>
+            {nameStatus === "available" && (
+              <p className="text-[10px] font-bold text-[hsl(152_68%_46%)]">Available</p>
+            )}
+            {nameStatus === "taken" && (
+              <p className="text-[10px] font-bold text-destructive">Already taken</p>
+            )}
+            {nameStatus === "invalid" && name.trim().length > 0 && (
+              <p className="text-[10px] font-bold text-muted-foreground">3–40 chars</p>
+            )}
+          </div>
         </div>
 
         <div>
@@ -140,7 +198,12 @@ const TribeNew = () => {
 
         <Button
           onClick={handleCreate}
-          disabled={submitting || name.trim().length < 3}
+          disabled={
+            submitting ||
+            name.trim().length < 3 ||
+            nameStatus === "taken" ||
+            nameStatus === "checking"
+          }
           className="w-full bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black"
           size="lg"
         >

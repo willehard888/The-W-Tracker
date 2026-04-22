@@ -1220,3 +1220,99 @@
   66% { transform: translate(-3%, 5%) rotate(-1deg); }
   100% { transform: translate(2%, -2%) rotate(1deg); }
 }
+
+/* === Apex Tribes — next-level effects === */
+@keyframes apex-conic-spin {
+  to { transform: rotate(360deg); }
+}
+
+.apex-conic-border {
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
+    conic-gradient(
+      from 0deg,
+      hsl(18 95% 58% / 0.85),
+      hsl(42 78% 54% / 0.85),
+      hsl(18 95% 58% / 0.45),
+      hsl(42 78% 54% / 0.85),
+      hsl(18 95% 58% / 0.85)
+    ) border-box;
+  border: 2px solid transparent;
+}
+
+.apex-conic-border::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from 0deg,
+    hsl(18 95% 58% / 0.6),
+    hsl(42 78% 54% / 0.9),
+    transparent 50%,
+    hsl(18 95% 58% / 0.6),
+    hsl(42 78% 54% / 0.9)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: apex-conic-spin 8s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.7;
+}
+
+.apex-portal-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 60px hsl(18 95% 58% / 0.18);
+  animation: breathing-glow-anim 4s ease-in-out infinite;
+}
+
+.apex-tribe-card-hover {
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+.apex-tribe-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px hsl(18 95% 58% / 0.18), 0 0 28px hsl(42 78% 54% / 0.18);
+  border-color: hsl(18 95% 58% / 0.55);
+}
+.apex-tribe-card-hover:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.apex-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    hsl(18 95% 58% / 0.45),
+    hsl(42 78% 54% / 0.55),
+    hsl(18 95% 58% / 0.45),
+    transparent
+  );
+  width: 100%;
+}
+
+.shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--secondary) / 0.6) 0%,
+    hsl(var(--secondary) / 0.9) 40%,
+    hsl(var(--secondary) / 0.6) 80%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-slide 1.5s linear infinite;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+

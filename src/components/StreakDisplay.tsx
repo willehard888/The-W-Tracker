@@ -305,17 +305,37 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
               />
             )}
 
-            {/* Sparks above flame (Diamond+) */}
+            {/* Ember puff — soft expanding aura (Champion+) */}
+            {isBlazing && [0, 1].map((i) => (
+              <span
+                key={`puff-${i}`}
+                aria-hidden
+                className="absolute inset-0 rounded-2xl pointer-events-none"
+                style={{
+                  border: `1px solid ${accent.replace(")", " / 0.45)")}`,
+                  animation: `streak-ember-puff ${isLegendary ? 2.4 : isDiamond ? 2.8 : 3.2}s ease-out infinite`,
+                  animationDelay: `${i * (isLegendary ? 1.2 : 1.6)}s`,
+                  opacity: 0,
+                }}
+              />
+            ))}
+
+            {/* Sparks above flame (Diamond+) — varied cadence */}
             {isDiamond &&
-              [0, 1, 2].map((i) => (
+              [
+                { delay: 0,    dur: 1.4, left: 50 },
+                { delay: 0.45, dur: 1.7, left: 46 },
+                { delay: 0.9,  dur: 1.55, left: 54 },
+              ].map((s, i) => (
                 <span
                   key={i}
-                  className="absolute left-1/2 top-2 w-1 h-1 rounded-full pointer-events-none"
+                  className="absolute top-2 w-1 h-1 rounded-full pointer-events-none"
                   style={{
+                    left: `${s.left}%`,
                     background: isLegendary ? "hsl(280 80% 75%)" : "hsl(42 95% 75%)",
                     boxShadow: `0 0 6px currentColor`,
-                    animation: `streak-spark 1.6s ease-out infinite`,
-                    animationDelay: `${i * 0.5}s`,
+                    animation: `streak-spark ${s.dur}s ease-out infinite`,
+                    animationDelay: `${s.delay}s`,
                     transform: "translate(-50%, 0)",
                   }}
                 />

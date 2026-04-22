@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import StatusBadge from "@/components/StatusBadge";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
 import TopTribesWidget from "@/components/TopTribesWidget";
+import StreakFlameInline from "@/components/StreakFlameInline";
 import { useMyRank } from "@/hooks/use-my-rank";
 
 type LeaderRow = {
@@ -402,6 +403,12 @@ const Leaderboard = () => {
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <p className="text-[11px] text-muted-foreground">Lvl {user.level}</p>
+                    {user.streak > 0 && (
+                      <>
+                        <span className="text-muted-foreground/40">•</span>
+                        <StreakFlameInline streak={user.streak} suffix="d" className="text-[10px]" />
+                      </>
+                    )}
                     {wins > 0 && (
                       <p className="text-[10px] text-gold/80 flex items-center gap-0.5">
                         <Medal size={9} /> {wins}×
@@ -546,11 +553,16 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
       <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">
         {mode === "season" ? "Season XP" : "XP"}
       </p>
-      {wins > 0 && (
-        <p className="text-[9px] text-gold/80 mt-1 flex items-center gap-0.5">
-          <Medal size={9} /> {wins}×
-        </p>
-      )}
+      <div className="flex items-center gap-2 mt-1.5 flex-wrap justify-center">
+        {user.streak > 0 && (
+          <StreakFlameInline streak={user.streak} suffix="d" className={cn(isFirst ? "text-[11px]" : "text-[10px]")} />
+        )}
+        {wins > 0 && (
+          <p className="text-[9px] text-gold/80 flex items-center gap-0.5">
+            <Medal size={9} /> {wins}×
+          </p>
+        )}
+      </div>
     </button>
   );
 };

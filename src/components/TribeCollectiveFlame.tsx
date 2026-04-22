@@ -16,11 +16,10 @@ interface TribeCollectiveFlameProps {
   className?: string;
 }
 
-/** Thresholds aligned with collectiveStreakTier(): 0,30,100,300,700,1500,3000 */
-const TIER_FLOORS = [0, 30, 100, 300, 700, 1500, 3000];
+/** Thresholds aligned with collectiveStreakTier(): 0,30,100,300,700,1500,3000,6000 */
+const TIER_FLOORS = [0, 30, 100, 300, 700, 1500, 3000, 6000];
 
 const nextTierProgress = (total: number) => {
-  // Find the floor we cleared and the next floor we're climbing toward.
   let cleared = 0;
   let next = TIER_FLOORS[1];
   for (let i = 0; i < TIER_FLOORS.length - 1; i++) {
@@ -37,16 +36,6 @@ const nextTierProgress = (total: number) => {
   return { pct, cleared, next, atMax: false };
 };
 
-/**
- * Hero-sized cinematic flame for a tribe's collective streak — v2.
- *
- * The fireplace: a layered ember-glow backdrop, ember-drift particles,
- * an aurora rim border that pulses at the tier accent, segmented progress
- * bar to the next tier, and a "+X today" delta chip.
- *
- * Legendary tribes get a genuinely monumental flame (160px). Quiet tribes
- * stay an ember.
- */
 const TribeCollectiveFlame = ({
   total,
   memberCount,
@@ -55,9 +44,11 @@ const TribeCollectiveFlame = ({
 }: TribeCollectiveFlameProps) => {
   const tier = collectiveStreakTier(total);
   const isCold = tier < 0;
+  const isFirestorm = tier >= 6;
 
-  // More aggressive scaling: 56px → 160px
+  // More aggressive scaling: 56px → 190px (Firestorm)
   const size =
+    tier >= 6 ? 190 :
     tier === 5 ? 160 :
     tier === 4 ? 138 :
     tier === 3 ? 116 :
@@ -191,10 +182,19 @@ const TribeCollectiveFlame = ({
             <span
               className={cn(
                 "inline-flex items-center px-1.5 py-0.5 rounded-md border text-[9px] font-black tracking-widest uppercase",
-                isCold
-                  ? "border-border/60 text-muted-foreground"
-                  : "border-[hsl(18_95%_58%)]/40 text-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%)]/10",
+                isCold && "border-border/60 text-muted-foreground",
+                !isCold && !isFirestorm && "border-[hsl(18_95%_58%)]/40 text-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%)]/10",
+                isFirestorm && "border-transparent text-transparent bg-clip-text",
               )}
+              style={isFirestorm ? {
+                backgroundImage: "linear-gradient(90deg, hsl(195 90% 65%), hsl(265 80% 65%), hsl(310 85% 65%), hsl(195 90% 65%))",
+                backgroundSize: "200% 100%",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "flame-plasma-hue 4s linear infinite, shimmer-slide 5s linear infinite",
+                borderColor: "hsl(195 90% 65% / 0.5)",
+              } : undefined}
             >
               {tierName}
             </span>

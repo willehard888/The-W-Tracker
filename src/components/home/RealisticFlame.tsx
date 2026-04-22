@@ -44,9 +44,23 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
   const isBlazing = tier >= 3;
   const isDiamond = tier >= 4;
   const isLegendary = tier >= 5;
+  const isInferno = tier >= 6; // plasma ceiling — only in hero-sized instances
 
   /* ── Tier-driven palette: hotter → whiter core, richer outer ─────── */
   const palette = useMemo(() => {
+    if (isInferno) {
+      // Plasma — magenta-to-cyan with a blinding white core
+      return {
+        backlight: "hsl(195 95% 60%)",
+        haze: "hsl(310 80% 55%)",
+        outer: "hsl(310 85% 60%)",
+        mid: "hsl(265 80% 60%)",
+        inner: "hsl(195 90% 70%)",
+        core: "hsl(180 100% 95%)",
+        coal: "hsl(310 80% 55%)",
+        wick: "hsl(195 100% 85%)",
+      };
+    }
     if (isLegendary) {
       return {
         backlight: "hsl(310 80% 55%)",
@@ -117,13 +131,13 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
       coal: "hsl(12 80% 42%)",
       wick: "hsl(42 100% 65%)",
     };
-  }, [tier, accent, isWarm, isOnFire, isBlazing, isDiamond, isLegendary]);
+  }, [tier, accent, isWarm, isOnFire, isBlazing, isDiamond, isLegendary, isInferno]);
 
   // Higher tier = faster flicker
-  const speedMul = isLegendary ? 0.5 : isDiamond ? 0.65 : isBlazing ? 0.8 : isOnFire ? 0.95 : isWarm ? 1.2 : 1.5;
+  const speedMul = isInferno ? 0.4 : isLegendary ? 0.5 : isDiamond ? 0.65 : isBlazing ? 0.8 : isOnFire ? 0.95 : isWarm ? 1.2 : 1.5;
 
   // Detached "tongues" that rise off flame top — more, taller, with curve
-  const tongueCount = isLegendary ? 10 : isDiamond ? 8 : isBlazing ? 6 : isOnFire ? 4 : isWarm ? 3 : 2;
+  const tongueCount = isInferno ? 14 : isLegendary ? 10 : isDiamond ? 8 : isBlazing ? 6 : isOnFire ? 4 : isWarm ? 3 : 2;
   const tongues = useMemo(
     () =>
       Array.from({ length: tongueCount }).map((_, i) => ({
@@ -223,12 +237,22 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
   const turbMid = `turbMid-${uid}`;
   const turbFast = `turbFast-${uid}`;
 
-  // Legendary gets a cinematic hue-rotation on the whole composite
-  const hueAnim = isLegendary
+  // Inferno spirals through plasma hues; Legendary/Diamond aurora wash.
+  const hueAnim = isInferno
+    ? "flame-plasma-hue 5s linear infinite"
+    : isLegendary
     ? "flame-aurora-hue 8s linear infinite"
     : isDiamond
     ? "flame-aurora-hue 16s linear infinite"
     : undefined;
+
+  // Wind reactivity — lean from --wind-x (-1..1) and stretch from --wind-gust (0..1).
+  // Combined with the existing slow sway keyframe so the flame still has organic motion
+  // even before the wind loop has had time to evolve.
+  const windTransform =
+    "rotate(calc(var(--wind-x, 0) * 3.5deg + var(--wind-gust, 0) * 4deg)) " +
+    "scaleY(calc(1 + var(--wind-gust, 0) * 0.12)) " +
+    "translateX(calc(var(--wind-x, 0) * 1px))";
 
   return (
     <div
@@ -236,8 +260,10 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
       style={{
         width: size,
         height: size,
-        // Wind-sway on the entire flame (transform-only, GPU-friendly)
-        animation: `flame-wind-sway ${4.5 * speedMul}s ease-in-out infinite`,
+        // Wind-driven lean + gust stretch (CSS-var, no React rerenders).
+        // The flame still has its own organic flicker from the per-layer keyframes.
+        transform: windTransform,
+        transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)",
         transformOrigin: "center bottom",
       }}
       aria-hidden
@@ -512,6 +538,63 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
             }}
           >
             <ellipse cx="20" cy="40" rx="6" ry="14" fill={palette.core} fillOpacity="0.95" />
+          </svg>
+        )}
+
+        {/* INFERNO ONLY — counter-rotating mirrored body that makes the flame visibly spiral */}
+        {isInferno && size >= 64 && (
+          <svg
+            className="absolute left-1/2 bottom-0"
+            width={size * 0.78}
+            height={size * 1.0}
+            viewBox="0 0 40 56"
+            style={{
+              transform: "translate(-50%, 0) scaleX(-1)",
+              transformOrigin: "center bottom",
+              animation: `flame-plasma-spiral ${1.4 * speedMul}s ease-in-out infinite`,
+              filter: `url(#${turbMid}) drop-shadow(0 0 8px ${palette.outer})`,
+              mixBlendMode: "screen",
+              opacity: 0.7,
+            }}
+          >
+            <defs>
+              <linearGradient id={`spiralG-${uid}`} x1="50%" y1="100%" x2="50%" y2="0%">
+                <stop offset="0%"   stopColor={palette.outer} stopOpacity="0.9" />
+                <stop offset="50%"  stopColor={palette.mid}   stopOpacity="0.95" />
+                <stop offset="100%" stopColor={palette.core}  stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d={FLAME_PATH} fill={`url(#spiralG-${uid})`} />
+          </svg>
+        )}
+
+        {/* INFERNO ONLY — internal lightning arc that crackles every ~7s */}
+        {isInferno && size >= 64 && (
+          <svg
+            className="absolute left-1/2 bottom-0 pointer-events-none"
+            width={size * 0.5}
+            height={size * 0.95}
+            viewBox="0 0 40 56"
+            style={{
+              transform: "translate(-50%, 0)",
+              transformOrigin: "center bottom",
+              mixBlendMode: "screen",
+              filter: `drop-shadow(0 0 4px ${palette.core}) drop-shadow(0 0 8px ${palette.inner})`,
+            }}
+          >
+            <path
+              d="M20 4 L 17 18 L 22 22 L 16 36 L 23 40 L 18 52"
+              stroke={palette.core}
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+              style={{
+                strokeDasharray: 100,
+                strokeDashoffset: 100,
+                animation: `flame-lightning-crack 7s ease-in-out infinite`,
+              }}
+            />
           </svg>
         )}
       </div>

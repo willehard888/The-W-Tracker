@@ -6,8 +6,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-/** Map a collective streak total to the same 0–5 tier ladder used by RealisticFlame. */
+/** Map a collective streak total to the 0–6 tier ladder. Tier 6 = Firestorm (plasma ceiling). */
 export const collectiveStreakTier = (total: number): number => {
+  if (total >= 6000) return 6; // Firestorm
   if (total >= 3000) return 5; // Legendary
   if (total >= 1500) return 4; // Diamond
   if (total >= 700)  return 3; // Blazing
@@ -19,7 +20,8 @@ export const collectiveStreakTier = (total: number): number => {
 
 export const collectiveTierName = (total: number): string => {
   const t = collectiveStreakTier(total);
-  return t === 5 ? "Legendary" :
+  return t === 6 ? "Firestorm" :
+         t === 5 ? "Legendary" :
          t === 4 ? "Diamond"   :
          t === 3 ? "Blazing"   :
          t === 2 ? "On Fire"   :
@@ -30,6 +32,7 @@ export const collectiveTierName = (total: number): string => {
 /** Accent color for the collective flame at each tier. */
 export const collectiveAccent = (total: number): string => {
   const t = collectiveStreakTier(total);
+  if (t === 6) return "hsl(195 90% 60%)"; // Firestorm — cyan plasma core
   if (t === 5) return "hsl(300 75% 60%)";
   if (t === 4) return "hsl(190 90% 60%)";
   if (t === 3) return "hsl(28 95% 55%)";
@@ -38,6 +41,9 @@ export const collectiveAccent = (total: number): string => {
   if (t === 0) return "hsl(14 90% 56%)";
   return "hsl(var(--muted-foreground))";
 };
+
+/** Whether this collective flame is at the Firestorm (plasma) tier. */
+export const isFirestorm = (total: number) => collectiveStreakTier(total) >= 6;
 
 /**
  * Sum of every active member's `streak` for a single tribe.

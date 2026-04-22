@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
+import WindProvider from "@/contexts/WindProvider";
 import AmbientParticles from "@/components/AmbientParticles";
 import BottomNav from "@/components/BottomNav";
 import StatusHeader from "@/components/StatusHeader";
@@ -176,8 +177,10 @@ const App = () => {
           <BrowserRouter>
             <AuthProvider>
               <RevenueCatProvider>
-                {splashDone && <AmbientParticles />}
-                <AppRoutes />
+                <WindProvider>
+                  {splashDone && <AmbientParticles />}
+                  <AppRoutes />
+                </WindProvider>
               </RevenueCatProvider>
             </AuthProvider>
           </BrowserRouter>

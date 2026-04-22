@@ -17,9 +17,11 @@ const MILESTONES = [
   { days: 30,  label: "30d",  emoji: "👑" },
   { days: 60,  label: "60d",  emoji: "💎" },
   { days: 100, label: "100d", emoji: "🏆" },
+  { days: 200, label: "200d", emoji: "⚡️" },
 ];
 
 const getStreakTier = (streak: number) => {
+  if (streak >= 200) return { name: "Inferno",   index: 6 };
   if (streak >= 100) return { name: "Legendary", index: 5 };
   if (streak >= 60)  return { name: "Diamond",   index: 4 };
   if (streak >= 30)  return { name: "Champion",  index: 3 };
@@ -95,6 +97,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
   const isBlazing   = tier.index >= 3; // 30d+
   const isDiamond   = tier.index >= 4; // 60d+
   const isLegendary = tier.index >= 5; // 100d+
+  const isInferno   = tier.index >= 6; // 200d+
 
   const currentMilestone = [...MILESTONES].reverse().find((m) => displayStreak >= m.days);
   const nextMilestone    = MILESTONES.find((m) => displayStreak < m.days);
@@ -104,6 +107,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
 
   /* Tier-driven dynamic styles */
   const accent =
+    isInferno   ? "hsl(195 90% 65%)" :
     isLegendary ? "hsl(280 80% 65%)" :
     isDiamond   ? "hsl(200 85% 65%)" :
     isBlazing   ? "hsl(42 85% 60%)"  :
@@ -513,7 +517,8 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
         {/* Pressure microcopy */}
         {displayStreak >= 3 && (
           <p className="text-[11px] text-muted-foreground/70 font-semibold text-center italic mt-2">
-            {displayStreak >= 100 ? "🔱 Legendary. The 0.1%." :
+            {displayStreak >= 200 ? "⚡️ Inferno. You broke the ceiling." :
+             displayStreak >= 100 ? "🔱 Legendary. The 0.1%." :
              displayStreak >= 60  ? "💎 Diamond status. Don't blink." :
              displayStreak >= 30  ? "👑 Most never reach this point." :
              displayStreak >= 14  ? "💪 Don't break now. Keep pushing." :

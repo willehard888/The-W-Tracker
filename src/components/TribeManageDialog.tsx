@@ -43,7 +43,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
     if (open) {
       setName(tribe.name);
       setDescription(tribe.description ?? "");
-      setVisibility((tribe.visibility as any) ?? "public");
+      // visibility is locked to "private" — no reset needed
       setCoverUrl(tribe.cover_url ?? "");
     }
   }, [open, tribe]);

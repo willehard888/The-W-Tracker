@@ -2,6 +2,8 @@ import { Swords, Crown, Clock, Trophy, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import StreakFlameInline from "@/components/StreakFlameInline";
+import { collectiveTierName } from "@/lib/tribe-streak";
 
 export interface TribeBattle {
   id: string;
@@ -17,8 +19,8 @@ export interface TribeBattle {
   opponent_score: number;
   winner_tribe_id: string | null;
   created_at: string;
-  challenger?: { id: string; name: string; member_count: number };
-  opponent?: { id: string; name: string; member_count: number };
+  challenger?: { id: string; name: string; member_count: number; collective_streak?: number };
+  opponent?: { id: string; name: string; member_count: number; collective_streak?: number };
 }
 
 interface Props {

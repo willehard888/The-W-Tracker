@@ -282,26 +282,43 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
                 : undefined,
             }}
           >
-            {/* Inner glow ring */}
+            {/* Inner well shadow — adds depth so the flame sits inside the chamber */}
             {isHot && (
               <span
                 aria-hidden
                 className="absolute inset-1 rounded-xl pointer-events-none"
                 style={{
-                  background: `radial-gradient(circle at 50% 80%, ${accent.replace(")", " / 0.5)")}, transparent 65%)`,
+                  background: `radial-gradient(circle at 50% 85%, ${accent.replace(")", " / 0.55)")} 0%, transparent 60%)`,
+                  mixBlendMode: "screen",
                 }}
               />
             )}
 
-            {/* Pulsing ring */}
+            {/* Fuel pool — soft warm puddle right under the flame base */}
+            {isHot && (
+              <span
+                aria-hidden
+                className="absolute left-1/2 bottom-1 h-3 w-12 rounded-[50%] pointer-events-none"
+                style={{
+                  background: `radial-gradient(ellipse at center, ${accent} 0%, ${accent.replace(")", " / 0.4)")} 50%, transparent 80%)`,
+                  transform: "translateX(-50%)",
+                  filter: "blur(4px)",
+                  animation: `streak-fuel-pulse ${isLegendary ? 1.6 : isDiamond ? 1.9 : isBlazing ? 2.2 : 2.6}s ease-in-out infinite`,
+                  mixBlendMode: "screen",
+                  zIndex: 1,
+                }}
+              />
+            )}
+
+            {/* Pulsing ring — outer halo */}
             {isHot && (
               <span
                 aria-hidden
                 className="absolute inset-0 rounded-2xl pointer-events-none"
                 style={{
-                  border: `2px solid ${accent.replace(")", " / 0.5)")}`,
+                  border: `1.5px solid ${accent.replace(")", " / 0.45)")}`,
                   animation: `ping ${isLegendary ? "1.2s" : isDiamond ? "1.5s" : isBlazing ? "1.8s" : "2.4s"} cubic-bezier(0,0,0.2,1) infinite`,
-                  opacity: 0.6,
+                  opacity: 0.55,
                 }}
               />
             )}
@@ -321,37 +338,43 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
               />
             ))}
 
-            {/* Sparks above flame (Diamond+) — varied cadence */}
-            {isDiamond &&
-              [
-                { delay: 0,    dur: 1.4, left: 50 },
-                { delay: 0.45, dur: 1.7, left: 46 },
-                { delay: 0.9,  dur: 1.55, left: 54 },
-              ].map((s, i) => (
-                <span
-                  key={i}
-                  className="absolute top-2 w-1 h-1 rounded-full pointer-events-none"
-                  style={{
-                    left: `${s.left}%`,
-                    background: isLegendary ? "hsl(280 80% 75%)" : "hsl(42 95% 75%)",
-                    boxShadow: `0 0 6px currentColor`,
-                    animation: `streak-spark ${s.dur}s ease-out infinite`,
-                    animationDelay: `${s.delay}s`,
-                    transform: "translate(-50%, 0)",
-                  }}
-                />
-              ))}
+            {/* Conic spin ring (Diamond+) */}
+            {isDiamond && (
+              <span
+                aria-hidden
+                className="absolute -inset-[3px] rounded-2xl pointer-events-none"
+                style={{
+                  background: isLegendary
+                    ? "conic-gradient(from 0deg, hsl(280 80% 65%), hsl(42 95% 70%), hsl(350 85% 65%), hsl(200 85% 70%), hsl(280 80% 65%))"
+                    : "conic-gradient(from 0deg, hsl(200 85% 65%), hsl(42 90% 65%), hsl(200 85% 65%))",
+                  animation: "streak-conic-spin 6s linear infinite",
+                  opacity: 0.5,
+                  WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+                  WebkitMaskComposite: "xor",
+                  maskComposite: "exclude",
+                  padding: 2,
+                }}
+              />
+            )}
 
-            <Flame
-              size={36}
-              strokeWidth={2.5}
-              className="relative z-10"
-              style={{
-                animation: isHot ? `streak-fire ${flameDuration} ease-in-out infinite` : undefined,
-                transformOrigin: "center bottom",
-              }}
-            />
+            {/* === The flame itself — multi-layer cinematic === */}
+            <div className="relative z-10 flex items-end justify-center h-full w-full pb-1">
+              <RealisticFlame tier={tier.index} accent={accent} size={56} />
+            </div>
+
+            {/* Top-edge highlight — chrome rim */}
+            {isHot && (
+              <span
+                aria-hidden
+                className="absolute inset-x-2 top-[2px] h-px rounded-full pointer-events-none"
+                style={{
+                  background: `linear-gradient(90deg, transparent, ${accent.replace(")", " / 0.7)")}, transparent)`,
+                  opacity: 0.65,
+                }}
+              />
+            )}
           </div>
+
 
           {/* Number */}
           <div className="flex-1 min-w-0">

@@ -7,6 +7,8 @@ import { Users, Plus, Lock, Crown, Zap, Check, X, Sparkles, Mail, Trophy, Chevro
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import TribeSearchBar from "@/components/TribeSearchBar";
+import StreakFlameInline from "@/components/StreakFlameInline";
+import { fetchTribeCollectiveStreaks } from "@/lib/tribe-streak";
 
 interface Tribe {
   id: string;
@@ -53,6 +55,7 @@ const Tribes = () => {
   const [memberPreviews, setMemberPreviews] = useState<Record<string, { user_id: string; avatar_url: string | null; username: string }[]>>({});
   const [ownedIds, setOwnedIds] = useState<Set<string>>(new Set());
   const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
+  const [collectiveStreaks, setCollectiveStreaks] = useState<Map<string, number>>(new Map());
   const [invites, setInvites] = useState<Invite[]>([]);
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -169,6 +172,18 @@ const Tribes = () => {
       setOwnedIds(new Set());
       setJoinedIds(new Set());
       setMemberPreviews({});
+    }
+
+    // Collective streak per tribe — drives the inline flame on each row
+    if (list.length > 0) {
+      try {
+        const totals = await fetchTribeCollectiveStreaks(list.map((t) => t.id));
+        setCollectiveStreaks(totals);
+      } catch {
+        setCollectiveStreaks(new Map());
+      }
+    } else {
+      setCollectiveStreaks(new Map());
     }
 
     setLoading(false);
@@ -413,6 +428,13 @@ const Tribes = () => {
                           {featured.member_count}
                         </span>
                       </span>
+                      {(collectiveStreaks.get(featured.id) ?? 0) >= 30 && (
+                        <StreakFlameInline
+                          streak={collectiveStreaks.get(featured.id) ?? 0}
+                          suffix="d"
+                          className="text-[11px]"
+                        />
+                      )}
                       {memberPreviews[featured.id] && memberPreviews[featured.id].length > 0 && (
                         <div className="flex -space-x-2">
                           {memberPreviews[featured.id].slice(0, 4).map((p) => (
@@ -477,6 +499,13 @@ const Tribes = () => {
                         {t.member_count}
                       </span>
                     </span>
+                    {(collectiveStreaks.get(t.id) ?? 0) >= 30 && (
+                      <StreakFlameInline
+                        streak={collectiveStreaks.get(t.id) ?? 0}
+                        suffix="d"
+                        className="text-[10px]"
+                      />
+                    )}
                     {t.visibility === "private" && (
                       <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border">
                         <Lock size={8} className="text-muted-foreground" />

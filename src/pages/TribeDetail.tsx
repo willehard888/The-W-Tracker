@@ -33,6 +33,8 @@ import TribeManageDialog from "@/components/TribeManageDialog";
 import TribePostCard, { type TribePostCardPost } from "@/components/TribePostCard";
 import { useModeration } from "@/hooks/use-moderation";
 import TierUsername from "@/components/TierUsername";
+import TribeCollectiveFlame from "@/components/TribeCollectiveFlame";
+import { fetchTribeCollectiveStreak } from "@/lib/tribe-streak";
 
 interface Member {
   user_id: string;
@@ -74,6 +76,7 @@ const TribeDetail = () => {
   const [reportsOpen, setReportsOpen] = useState(false);
   const [reportedCount, setReportedCount] = useState(0);
   const [manageOpen, setManageOpen] = useState(false);
+  const [collectiveStreak, setCollectiveStreak] = useState(0);
 
   // Admin check
   const { data: isAdmin } = useQuery({
@@ -190,6 +193,14 @@ const TribeDetail = () => {
     } else {
       setPendingCount(0);
       setReportedCount(0);
+    }
+
+    // Tribe collective streak — sum of every active member's streak
+    try {
+      const total = await fetchTribeCollectiveStreak(id);
+      setCollectiveStreak(total);
+    } catch {
+      setCollectiveStreak(0);
     }
 
     setLoading(false);
@@ -511,6 +522,16 @@ const TribeDetail = () => {
             </div>
           </div>
         </div>
+      </div>
+
+
+
+      {/* Tribe collective streak — the bigger the tribe burns, the bigger the flame */}
+      <div className="mb-4">
+        <TribeCollectiveFlame
+          total={collectiveStreak}
+          memberCount={tribe.member_count}
+        />
       </div>
 
       {/* Members row */}

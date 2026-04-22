@@ -1667,6 +1667,136 @@
   0%, 100% { transform: translateX(-50%) scaleY(1)    scaleX(1); opacity: 0.85; }
   50%      { transform: translateX(-50%) scaleY(1.12) scaleX(0.9); opacity: 1; }
 }
+@keyframes flame-inline-fork {
+  0%, 100% { transform: translateX(-50%) translateX(-15%) scaleY(1)    scaleX(1)    skewX(2deg);  opacity: 0.7; }
+  50%      { transform: translateX(-50%) translateX(-10%) scaleY(1.18) scaleX(0.85) skewX(-3deg); opacity: 1;   }
+}
+
+/* ============================================================
+   FLAME v2 — additions for hero RealisticFlame
+   ============================================================ */
+
+/* Whole-flame slow wind sway — leans the silhouette like there's a draft */
+@keyframes flame-wind-sway {
+  0%, 100% { transform: rotate(0deg)   translateX(0); }
+  25%      { transform: rotate(-1.2deg) translateX(-1px); }
+  50%      { transform: rotate(0.5deg) translateX(0.5px); }
+  75%      { transform: rotate(1.4deg) translateX(1px); }
+}
+
+/* Volumetric backlight — the bloom that lights up everything around the flame */
+@keyframes flame-backlight-breathe {
+  0%, 100% { opacity: 0.7; transform: translateX(-50%) translateY(8%) scale(1); }
+  50%      { opacity: 1;   transform: translateX(-50%) translateY(6%) scale(1.08); }
+}
+
+/* Hot wick line — pulses with the flame */
+@keyframes flame-wick-pulse {
+  0%, 100% { opacity: 0.8; transform: translateX(-50%) scaleX(1); }
+  50%      { opacity: 1;   transform: translateX(-50%) scaleX(1.2); }
+}
+
+/* Tip whip — the very tip of the flame snapping faster than the body */
+@keyframes flame-tip-whip {
+  0%, 100% { transform: translate(-50%, 0)    scaleY(1)    skewX(0deg);   opacity: 0.85; }
+  25%      { transform: translate(-46%, -2px) scaleY(1.25) skewX(-5deg);  opacity: 1; }
+  55%      { transform: translate(-54%, -1px) scaleY(1.15) skewX(4deg);   opacity: 0.95; }
+  80%      { transform: translate(-50%, -1px) scaleY(1.05) skewX(-2deg);  opacity: 0.9; }
+}
+
+/* Sparks arc — sideways drift mid-flight, gravity-fall feel */
+@keyframes flame-spark-arc {
+  0%   { transform: translate(0, 0) scale(1);   opacity: 0; }
+  12%  { opacity: 1;   filter: brightness(1.6); }
+  55%  { transform: translate(var(--spark-xm, 0), var(--spark-ym, -16px)) scale(0.9); opacity: 0.85; }
+  100% { transform: translate(var(--spark-xe, 0), var(--spark-ye, -34px)) scale(0.4); opacity: 0; }
+}
+
+/* Smoke ribbon — drifts sideways with rotation, dissolves up high */
+@keyframes flame-smoke-ribbon {
+  0%   { transform: translate(-50%, -8px)  scale(0.4) rotate(0deg);              opacity: 0;    filter: blur(3px); }
+  18%  { opacity: 0.28; }
+  60%  { transform: translate(calc(-50% + var(--smoke-x, 0px) * 0.5), calc(-100% - 12px)) scale(1)   rotate(calc(var(--smoke-r, 0deg) * 0.5)); opacity: 0.18; filter: blur(7px); }
+  100% { transform: translate(calc(-50% + var(--smoke-x, 0px)),       calc(-220% - 16px)) scale(1.6) rotate(var(--smoke-r, 0deg));              opacity: 0;    filter: blur(12px); }
+}
+
+/* Spark crown firefly — Diamond+ tiny lights above the tip */
+@keyframes flame-crown-firefly {
+  0%, 100% { transform: translateY(0)   scale(0.6); opacity: 0; }
+  20%      { transform: translateY(-3px) scale(1);   opacity: 1; }
+  60%      { transform: translateY(-8px) scale(0.85); opacity: 0.7; }
+  100%     { transform: translateY(-16px) scale(0.4); opacity: 0; }
+}
+
+/* Aurora hue shift — Legendary/Diamond cinematic palette wash */
+@keyframes flame-aurora-hue {
+  0%   { filter: hue-rotate(0deg); }
+  50%  { filter: hue-rotate(20deg); }
+  100% { filter: hue-rotate(0deg); }
+}
+
+/* ============================================================
+   THEME COHESION — ember + aurora utility surfaces
+   Used by tribe hero, home hero band, empty states.
+   No backdrop-filter. Opaque, performant.
+   ============================================================ */
+.surface-ember {
+  position: relative;
+  background:
+    /* Hot pool at the bottom — feels like coals beneath */
+    radial-gradient(ellipse 140% 80% at 50% 110%, hsl(18 95% 58% / 0.18) 0%, transparent 55%),
+    /* Warm rim from top-left */
+    radial-gradient(ellipse 80% 50% at 12% 0%, hsl(42 78% 54% / 0.12) 0%, transparent 50%),
+    /* Subtle gold counter-light */
+    radial-gradient(ellipse 70% 40% at 90% 100%, hsl(42 78% 54% / 0.08) 0%, transparent 55%),
+    linear-gradient(180deg, hsl(258 16% 7%) 0%, hsl(258 18% 4%) 100%);
+  box-shadow:
+    inset 0 1px 0 hsl(42 78% 54% / 0.12),
+    inset 0 -1px 0 hsl(0 0% 0% / 0.5),
+    0 4px 20px -6px hsl(0 0% 0% / 0.5);
+}
+.surface-aurora {
+  position: relative;
+  background:
+    radial-gradient(ellipse 90% 60% at 20% 0%, hsl(280 70% 55% / 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 100% 70% at 50% 100%, hsl(18 95% 58% / 0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 90% 30%, hsl(200 85% 60% / 0.10) 0%, transparent 55%),
+    linear-gradient(180deg, hsl(258 18% 7%) 0%, hsl(258 22% 4%) 100%);
+  box-shadow:
+    inset 0 1px 0 hsl(280 70% 70% / 0.12),
+    inset 0 -1px 0 hsl(0 0% 0% / 0.5),
+    0 4px 24px -8px hsl(280 60% 30% / 0.4);
+}
+
+/* Ember drift — small particles slowly rising. Cheap to render. */
+@keyframes ember-drift {
+  0%   { transform: translateY(0) scale(0.6);    opacity: 0; }
+  15%  { opacity: 0.85; }
+  100% { transform: translateY(-120px) scale(1.1); opacity: 0; }
+}
+
+/* Aurora shift — subtle background gradient drift for hero strips */
+@keyframes aurora-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* Flame rim pulse — thin glowing line under headers/tabs */
+@keyframes flame-rim-pulse {
+  0%, 100% { opacity: 0.45; filter: blur(0.5px); }
+  50%      { opacity: 1;    filter: blur(1px); }
+}
+
+/* Reduced motion: kill all flame animations */
+@media (prefers-reduced-motion: reduce) {
+  [class*="flame-"],
+  [style*="flame-"],
+  [style*="ember-drift"],
+  [style*="aurora-shift"],
+  [style*="flame-rim-pulse"] {
+    animation: none !important;
+  }
+}
 
 /* Splash screen flame growth — small ember → roaring flame */
 @keyframes splash-flame-grow {

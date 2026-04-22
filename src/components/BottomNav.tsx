@@ -73,10 +73,12 @@ const BottomNav = () => {
               </span>
               {active && (
                 <div className={cn(
-                  "absolute -bottom-1.5 w-5 h-[3px] rounded-full transition-all duration-300",
+                  "absolute -bottom-1.5 w-5 h-[3px] rounded-full",
                   colors.dot,
-                  colors.glow
-                )} />
+                  colors.glow,
+                )}
+                style={{ animation: "flame-rim-pulse 2.4s ease-in-out infinite" }}
+                />
               )}
             </button>
           );

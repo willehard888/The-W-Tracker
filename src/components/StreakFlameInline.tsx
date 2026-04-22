@@ -17,14 +17,16 @@ interface StreakFlameInlineProps {
 }
 
 /**
- * LIGHTWEIGHT inline flame — pure CSS gradients + a single transform-based
- * flicker. NO SVG turbulence / displacement filter (those are GPU killers
- * when rendered in long lists like the leaderboard or feed).
+ * LIGHTWEIGHT inline flame — pure CSS gradients + transform-based
+ * flicker. NO SVG turbulence (those kill perf in long lists like the
+ * leaderboard or feed).
  *
- * Visual idea is identical to RealisticFlame (tier palette, growing size),
- * but stripped down so a 50-row leaderboard renders smoothly.
- *
- * Use RealisticFlame instead for hero placements.
+ * v2 polish:
+ *  • Subtle rim-light gradient on the outer body for shape definition.
+ *  • Second small "fork" inside the core — gives the flame a believable
+ *    inner tongue.
+ *  • Diamond/Legendary tiers get a slow hue-shift so they shimmer.
+ *  • Hot tier numbers get a colored shadow trail.
  */
 const StreakFlameInline = ({
   streak,
@@ -134,31 +136,38 @@ const StreakFlameInline = ({
     isOnFire    ? 2.0 :
     isWarm      ? 2.4 : 2.8;
 
+  // Diamond+ get a slow hue shimmer
+  const hueAnim = isLegendary
+    ? "flame-aurora-hue 6s linear infinite"
+    : isDiamond
+    ? "flame-aurora-hue 10s linear infinite"
+    : undefined;
+
   return (
     <span
       className={cn("inline-flex items-center gap-0.5 leading-none align-middle", className)}
     >
       <span
         className="relative inline-block shrink-0"
-        style={{ width: flameSize, height: flameSize * 1.15 }}
+        style={{ width: flameSize, height: flameSize * 1.15, animation: hueAnim }}
         aria-hidden
       >
-        {/* Halo glow — only Warm+, single static blur */}
+        {/* Halo glow — Warm+ */}
         {isWarm && (
           <span
             className="absolute left-1/2 bottom-0 rounded-full pointer-events-none"
             style={{
-              width: flameSize * 1.1,
-              height: flameSize * 0.55,
+              width: flameSize * 1.15,
+              height: flameSize * 0.6,
               background: `radial-gradient(ellipse at center, ${palette.glow} 0%, transparent 70%)`,
               transform: "translateX(-50%)",
               filter: "blur(2px)",
-              opacity: 0.55,
+              opacity: 0.6,
             }}
           />
         )}
 
-        {/* Outer flame body — pure CSS shape (teardrop via border-radius) */}
+        {/* Outer flame body — teardrop with rim-light gradient */}
         <span
           className={cn(
             "absolute left-1/2 bottom-0",
@@ -170,18 +179,33 @@ const StreakFlameInline = ({
             transform: "translateX(-50%)",
             transformOrigin: "center bottom",
             background: isHot
-              ? `radial-gradient(ellipse at 50% 80%, ${palette.core} 0%, ${palette.mid} 35%, ${palette.outer} 70%, transparent 95%)`
+              ? `radial-gradient(ellipse at 50% 80%, ${palette.core} 0%, ${palette.mid} 32%, ${palette.outer} 68%, transparent 95%)`
               : "transparent",
             border: isHot ? "none" : `1.5px solid ${palette.outer}`,
             borderRadius: "50% 50% 50% 50% / 65% 65% 35% 35%",
-            // Pinch the top into a teardrop tip
             clipPath: "polygon(50% 0%, 95% 35%, 100% 70%, 80% 100%, 20% 100%, 0% 70%, 5% 35%)",
-            boxShadow: isHot ? `0 0 ${flameSize * 0.4}px ${palette.glow}` : undefined,
+            boxShadow: isHot ? `0 0 ${flameSize * 0.45}px ${palette.glow}` : undefined,
             ["--flame-speed" as string]: `${speed}s`,
           }}
         />
 
-        {/* White-hot inner core — On Fire+, single tiny element */}
+        {/* Subtle rim-light highlight on the left edge — gives volumetric feel */}
+        {isHot && (
+          <span
+            className="absolute left-1/2 bottom-0 pointer-events-none"
+            style={{
+              width: flameSize,
+              height: flameSize * 1.1,
+              transform: "translateX(-50%)",
+              background: `linear-gradient(115deg, ${palette.core.replace(")", " / 0.35)")} 0%, transparent 35%, transparent 65%, ${palette.outer.replace(")", " / 0.25)")} 100%)`,
+              clipPath: "polygon(50% 0%, 95% 35%, 100% 70%, 80% 100%, 20% 100%, 0% 70%, 5% 35%)",
+              mixBlendMode: "overlay",
+              opacity: 0.7,
+            }}
+          />
+        )}
+
+        {/* White-hot inner core — On Fire+ */}
         {isOnFire && (
           <span
             className="absolute left-1/2 bottom-0 animate-[flame-inline-core_var(--core-speed)_ease-in-out_infinite]"
@@ -199,18 +223,38 @@ const StreakFlameInline = ({
           />
         )}
 
-        {/* Single static spark dot — Diamond+ only, no animation */}
+        {/* Inner fork — tiny secondary tongue inside the core (Blazing+) */}
+        {isBlazing && (
+          <span
+            className="absolute left-1/2 bottom-0 animate-[flame-inline-fork_var(--fork-speed)_ease-in-out_infinite]"
+            style={{
+              width: flameSize * 0.18,
+              height: flameSize * 0.42,
+              transform: "translateX(-50%) translateX(-15%)",
+              transformOrigin: "center bottom",
+              background: palette.core,
+              borderRadius: "50% 50% 50% 50% / 65% 65% 35% 35%",
+              clipPath: "polygon(50% 0%, 95% 35%, 100% 70%, 80% 100%, 20% 100%, 0% 70%, 5% 35%)",
+              opacity: 0.85,
+              ["--fork-speed" as string]: `${speed * 0.45}s`,
+              mixBlendMode: "screen",
+            }}
+          />
+        )}
+
+        {/* Spark dot — Diamond+ */}
         {isDiamond && (
           <span
             className="absolute rounded-full pointer-events-none"
             style={{
-              width: 1.5,
-              height: 1.5,
+              width: 1.8,
+              height: 1.8,
               left: "50%",
               top: 1,
               background: palette.core,
-              boxShadow: `0 0 3px ${palette.core}`,
+              boxShadow: `0 0 4px ${palette.core}`,
               transform: "translateX(-50%)",
+              animation: `flame-crown-firefly 1.6s ease-in-out infinite`,
             }}
           />
         )}
@@ -225,6 +269,11 @@ const StreakFlameInline = ({
           )}
           style={{
             color: countClassName ? undefined : palette.text,
+            // Hot tier numbers get a colored text-shadow trail
+            textShadow:
+              !countClassName && isOnFire
+                ? `0 0 8px ${palette.glow.replace(")", " / 0.55)")}`
+                : undefined,
             ...(isLegendary && !countClassName ? {
               backgroundImage: "linear-gradient(135deg, hsl(280 80% 65%), hsl(42 95% 70%), hsl(350 85% 65%), hsl(200 85% 70%), hsl(280 80% 65%))",
               backgroundSize: "200% 100%",

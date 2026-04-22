@@ -127,14 +127,13 @@ const StreakFlameInline = ({
     };
   }, [tierIndex, isHot, isWarm, isOnFire, isBlazing, isDiamond, isLegendary]);
 
-  // Slow flicker speed — deliberately gentle so 50 of these on screen
-  // doesn't thrash the compositor.
+  // Faster, livelier flicker (was deliberately slow). Still GPU-cheap.
   const speed =
-    isLegendary ? 1.4 :
-    isDiamond   ? 1.6 :
-    isBlazing   ? 1.8 :
-    isOnFire    ? 2.0 :
-    isWarm      ? 2.4 : 2.8;
+    isLegendary ? 0.85 :
+    isDiamond   ? 1.0  :
+    isBlazing   ? 1.15 :
+    isOnFire    ? 1.3  :
+    isWarm      ? 1.55 : 1.85;
 
   // Diamond+ get a slow hue shimmer
   const hueAnim = isLegendary
@@ -201,7 +200,7 @@ const StreakFlameInline = ({
             border: isHot ? "none" : `1.5px solid ${palette.outer}`,
             borderRadius: "50% 50% 50% 50% / 65% 65% 35% 35%",
             clipPath: "polygon(50% 0%, 95% 35%, 100% 70%, 80% 100%, 20% 100%, 0% 70%, 5% 35%)",
-            boxShadow: isHot ? `0 0 ${flameSize * 0.45}px ${palette.glow}` : undefined,
+            boxShadow: isHot ? `0 0 ${flameSize * 0.7}px ${palette.glow}, 0 0 ${flameSize * 0.3}px ${palette.glow}` : undefined,
             ["--flame-speed" as string]: `${speed}s`,
           }}
         />

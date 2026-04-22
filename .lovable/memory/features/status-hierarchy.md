@@ -1,6 +1,6 @@
 ---
 name: Status Hierarchy
-description: 7-tier status system. Tiers 1-4 are EARNED through XP/consistency/rank. Apex can also be BOUGHT via €15.99/mo subscription which protects against decay. Legend (top 0.1%) houses the Founders Circle.
+description: 7-tier status system. Easier Elite (top 20% OR 20 days + 21 streak). Apex/Legend stay rare. Apex paywall €17.99/mo locks tier; Legend never purchasable.
 type: feature
 ---
 # Status Hierarchy
@@ -8,14 +8,24 @@ type: feature
 7 tiers in `status_tier` enum, ordered weakest to strongest:
 `recruit` → `normal`/`operator` → `performer` → `high_performer` → `elite` → `apex` → `legend`
 
+## Server-side thresholds (`update_status_tier` / `update_all_status_tiers`)
+| Tier | Requirement |
+|---|---|
+| **Legend** | percentile ≥ 99.9 AND 30 active days AND 30-day streak |
+| **Apex** | percentile ≥ 99 AND 30 active days AND 30-day streak |
+| **Elite** | percentile ≥ 80 **OR** (20 active days AND 21-day streak) |
+| **High Performer** | percentile ≥ 70 **OR** (15 active days AND 14-day streak) |
+| **Performer** | percentile ≥ 50 AND 7 active days |
+| **Operator** | percentile ≥ 25 AND 5 active days |
+| **Recruit** | default / `rank_score = 0` |
+
+Elite is consistency-driven (3 weeks of streak + 20 active days is enough) — does NOT require top 5% leaderboard rank. Apex / Legend stay rare (top 1% / 0.1%).
+
 ## Earning vs buying
-- **Earned tier**: `update_status_tier(user_id)` recalculates based on rank_score percentile, 30-day activity, current streak
-  - Tier degrades automatically with inactivity (e.g. broken streak drops Elite back to high_performer)
-  - Earned Apex is rare (top 1% by rank_score)
-- **Apex Instant subscription** (€15.99/mo, `is_apex_subscriber = true`): pins tier to at least `apex`
-  - `update_status_tier` checks `is_apex_subscriber` and refuses to lower the tier below `apex`
-  - These users wear a `⚡` "Founding Apex" mark; earned Apex wear `🔥`
-  - Both get identical visual effects (apex aura, flame+gold gradients)
+- **Earned tier**: `update_status_tier(user_id)` recalculates after every check-in / battle / referral milestone. Tier degrades automatically with inactivity.
+- **Apex Instant subscription** (€17.99/mo, `is_apex_subscriber = true`): pins tier to at least `apex`. CTA in `TierLadder` Apex dialog routes to `/paywall`.
+- **Legend is never purchasable** — Founders Circle / 50-referral milestone only. TierLadder shows "Earned only · Founders Circle".
+
 
 ## Apex/Founder badge UI (ApexBadge.tsx)
 Tiny inline pill rendered ONLY on profile pages (Profile, PublicProfile, UserProfile) — kept rare/exclusive.

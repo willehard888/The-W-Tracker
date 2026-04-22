@@ -21,12 +21,24 @@ const PublicProfile = () => {
       if (!username) return null;
       const { data } = await supabase
         .from("profiles")
-        .select("user_id, username, display_name, avatar_url, status_tier, level, xp, streak, longest_streak, is_elite, is_apex_subscriber")
+        .select("user_id, username, display_name, avatar_url, status_tier, level, xp, streak, longest_streak, is_elite, is_apex_subscriber, legend_pinned")
         .ilike("username", username)
         .maybeSingle();
       return data;
     },
     enabled: !!username,
+  });
+
+  const { data: championHistory } = useQuery({
+    queryKey: ["public-champion-history", profile?.user_id],
+    enabled: !!profile?.user_id,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("leaderboard_champions")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", profile!.user_id);
+      return { wins: count || 0 };
+    },
   });
 
   const { data: badges } = useQuery({

@@ -1,91 +1,117 @@
 
 
-# Founding Apex kaupallisemmaksi + Status Tier näyttävämmäksi
+# Lighter TierLadder + Tribe Battles (tribe vs tribe)
 
-Tehdään kaksi asiaa: (1) Founding Apex -merkki rebrändätään selvästi premiumiksi/kaupalliseksi statussymboliksi, ja (2) TierLadder muutetaan staattisesta listasta progressiiviseksi, kinemaattiseksi matkaksi jossa jokainen tier-saavutus tuntuu isolta.
-
----
-
-## 1. Founding Apex — kaupallisempi premium-vibe
-
-Nykyinen: pieni oranssi pilleri "⚡ Founding Apex".
-
-Uusi premium-versio:
-- **Lisätään "FOUNDING MEMBER" -mikrokopio** päämerkin alle/sisään → korostaa exclusiveä Day-One-statusta
-- **Crown + Zap -yhdistelmäikoni** Apex-tilaajalle (ei pelkkä Zap) — kruunu = ostettu status, salama = nopeus/instant
-- **Vahvempi gradient + sisäinen shimmer**: gold→amber→flame conic-gradient + animoitu shimmer-stripe joka pyyhkii merkin yli ~3s välein (sama tekniikka kuin premium-luottokorteissa)
-- **Diamond/sparkle accent**: pieni ✦-ikoni perässä joka pulsoi
-- **Tooltipti**: "Founding Apex — €15.99/mo · Day-One Member · Tier locked at Apex"
-- **Koko hieman isompi** kuin Earned Apex → visuaalinen hierarkia: kaupallinen status erottuu
-
-Earned Apex (🔥) pidetään hillitympänä — tämä korostaa ostetun statuksen "wow"-tekijän, joka kannustaa konversioita.
-
-**Profile-sivulla**: Founding Apex -merkki saa myös oman pienen "PREMIUM" -lipun otsikon päälle (tag-tyyli), kuten kuvakaappauksessa näkyy mutta vahvempi.
+Two erillistä työtä: (1) TierLadder kevyt siivous — vähemmän liikettä, sama rakenne. (2) Uusi "Tribe Battles" -ominaisuus jossa Apex-omistajat haastavat toisia tribejä viikon kestoisiin XP-kollektiivibattleihin.
 
 ---
 
-## 2. Status Tier näyttävämmäksi — progressiivinen kokemus
+## 1. TierLadder — kevyt siivous
 
-Nykyinen TierLadder on flat lista checkmarkeilla. Uusi versio tekee siitä kinemaattisen polun jossa jokainen taso visuaalisesti eskaloituu.
+Tavoite: nykyinen näkymä on liian raskas (pyörivä kruunu, shimmer-pyyhkäisy, conic-borderit vetävät huomion). Jätetään väri+rakenne, poistetaan jatkuvasti liikkuvat efektit.
 
-### A. Progressiivinen visuaalinen eskalaatio (alhaalta ylös)
+**Poistetaan:**
+- Pyörivä kruunu headerissa → staattinen Crown-ikoni gold-värillä
+- `tier-shimmer-sweep` current-tier rivillä → korvataan pelkällä gold ring + staattisella gold-glow shadowilla
+- `apex-conic-border` Apex/Legend-riveiltä → korvataan vahvalla staattisella gold/conic gradient-borderilla
+- `apex-embers` partikkelit current-tier rivillä → pois
+- Pulssaava "you are here" -piste vasemmalla → pois
+- Headerin gradient-text "Your Ascension" → tavallinen foreground-väri, gold pelkästään alaotsikossa
 
-Jokainen tier-rivi saa visuaalisesti vahvemman käsittelyn sitä mukaa kun ranki nousee:
+**Säilytetään:**
+- 7 rivin rakenne, värit, percentile, ikonit
+- Vertikaalinen gold progress-rail (staattinen, ei animaatioita)
+- Rivien progressiiviset korkeudet (52→72px) — antaa hierarkian ilman liikettä
+- "Current Tier" -ribbon current-rivillä (staattinen, ei animaatiota)
+- Locked-tier silhuetit + "+N" / "Next" -hint
+- Detail-dialog ennallaan
 
-```text
-Recruit       → flat, harmaa, ei aurakehystä
-Operator      → ohut teal-borderi, hiljainen glow
-Performer     → blue-gradient + ikonin valokupla
-High Performer→ purple-aura, animoitu sisävalo
-Elite         → gold-borderi + pulse-glow + sparkle-partikkeli rivin reunassa
-Apex          → flame+gold conic-borderi pyörii hitaasti, isompi rivi (h-16 vs h-12)
-Legend        → täysi conic-rainbow border + reunoissa kelluvat partikkelit + isoin rivi
+Lopputulos: rauhallinen, edelleen näyttävä, mutta ei "blink-blink" vaikutelmaa.
+
+---
+
+## 2. Tribe Battles — uusi feature
+
+Konsepti: yhden tribe-omistajan haaste toiselle tribe-omistajalle. Battlen ajan molempien tribejen jäsenten yhteenlaskettu **XP-tienesti** (uudet `daily_checkins.xp_earned`-rivit battlen aikana) ratkaisee voittajan. Voittaja saa "Tribe Battle Won" -merkinnän ja koko voittaja-tribe +50 XP per jäsen.
+
+### 2.1 Skeema (uusi migraatio)
+
+Uusi enum + taulu:
+
+```sql
+create type tribe_battle_status as enum ('pending','active','completed','declined','expired');
+
+create table tribe_battles (
+  id uuid primary key default gen_random_uuid(),
+  challenger_tribe_id uuid not null references tribes(id) on delete cascade,
+  opponent_tribe_id   uuid not null references tribes(id) on delete cascade,
+  challenger_owner_id uuid not null,
+  opponent_owner_id   uuid not null,
+  status tribe_battle_status not null default 'pending',
+  duration_days int not null default 7,
+  started_at timestamptz,
+  ended_at   timestamptz,
+  challenger_score int not null default 0,
+  opponent_score   int not null default 0,
+  winner_tribe_id  uuid,
+  created_at timestamptz not null default now(),
+  check (challenger_tribe_id <> opponent_tribe_id)
+);
+
+create index on tribe_battles (challenger_tribe_id, status);
+create index on tribe_battles (opponent_tribe_id, status);
 ```
 
-Kasvava korkeus + kasvava efekti = visuaalinen "ladder" tuntuu kiipeämiseltä, ei listalta.
+RLS:
+- SELECT: jäsen kummassakin tribessä TAI kumman tahansa tribe-owner
+- INSERT/UPDATE/DELETE estetty — kaikki RPC:n kautta
 
-### B. "Achievement unlock" -animaatio nykyiselle tierille
+### 2.2 SECURITY DEFINER -RPC:t
 
-- Nykyinen tier (You-rivi) saa **shimmer-sweep** joka pyyhkii rivin yli ~4s välein
-- Konfettin/spark-partikkelit reunoissa
-- Suurempi kruunu/tier-ikoni jolla on oma 3D-pyöritys hover-tilassa
-- "YOU" -tagin sijasta isompi "● CURRENT TIER" -liveri kultaan
+- `create_tribe_battle(p_challenger_tribe_id, p_opponent_tribe_id, p_duration_days)` — vaatii että auth.uid() on challenger-triben omistaja, ei toinen tribe sama, max 1 aktiivinen battle per tribe-pari, palauttaa id
+- `respond_to_tribe_battle(p_battle_id, p_accept)` — vain opponent-tribe-owner, asettaa active+started_at tai declined
+- `resolve_tribe_battle(p_battle_id)` — laskee `sum(xp_earned)` `daily_checkins`-taulusta jokaisen triben aktiivisille jäsenille `started_at` ja `started_at + duration_days` välillä, asettaa `winner_tribe_id`, jakaa +50 XP jokaiselle voittaja-tribe jäsenelle
+- `auto_resolve_expired_tribe_battles()` — kutsutaan triggerinä kun joku katsoo battlea ja se on päättynyt
 
-### C. Locked tierit — "näytä mitä menetät" -tyyli
+### 2.3 UI — uusi sivu `/tribes/:id/battles`
 
-- Lukitut tierit eivät enää harmaita läpinäkyvyydellä, vaan **silhuettina** gold-rajalla → "tämä on saavutettavissasi"
-- Lukko-ikoni vaihtuu **Trending-up + percent** -merkkiin (esim. "+5% to unlock")
-- Hover/tap → preview-animaatio joka näyttää mitä unlocks-listassa on
+- Otsikko: "Tribe Battles" + tribe-nimi
+- Tabs: "Active" / "Pending" / "History"
+- Aktiiviset battle-kortit: vastapuoli, kesto, current scoreboard (challenger XP vs opponent XP, progress bar), aikaa jäljellä
+- Pending: jos olet opponent-owner → "Accept / Decline" -napit
+- History: voittaja, lopullinen score
+- "Challenge another tribe" -nappi (vain owner) → modal jossa hae tribe nimellä, valitse 3/7/14 päivän kesto
 
-### D. Progress-track tier-rivien välissä
+### 2.4 Pääsy / linkit
 
-- Vertikaalinen kultainen viiva yhdistää tierit (kuin metro-kartta)
-- Saavutetut välit ovat täytetty gradientilla, lukitut himmenneet
-- Nykyisen tierin kohdalla pulssaava "olet täällä" -piste
+- `TribeDetail.tsx`: lisätään hero-osioon "⚔️ Tribe Battles" -nappi joka navigoi `/tribes/:id/battles`
+- `Tribes.tsx`: lisätään pieni "Active Battles" -indicator omien tribejen korteille jos aktiivinen battle on käynnissä
+- BottomNav: ei lisätä erillistä tabia (kuuluu Tribes-osion alle)
 
-### E. Header-kohotus
+### 2.5 Eligibility
 
-- "Status Ladder" → **"Your Ascension"** + alaotsikko "7 levels of dominance"
-- Sparkles-ikonin tilalle pieni live mini-Crown joka pyörii
-- Header saa gold-divider alle
+Vain triben **owner** voi luoda haasteen tai hyväksyä sen. Min. 2 aktiivista jäsentä molemmissa tribesseissä (estetään tyhjä-vs-tyhjä). Max 1 aktiivinen battle per tribe-pari kerrallaan.
 
 ---
 
-## 3. Tekniset yksityiskohdat
+## 3. Muutettavat tiedostot
 
-### Edited / created files
-- `src/components/ApexBadge.tsx` — Founding Apex premium-rebrand (Crown+Zap, shimmer, sparkle accent, isompi koko)
-- `src/components/TierLadder.tsx` — koko refaktori: progressiiviset tier-rivit, conic-borderit ylätiereille, vertical progress-track, shimmer current-tierille, silhuetti locked-tiereille
-- `src/index.css` — uudet CSS-helperit:
-  - `.tier-shimmer-sweep` — animoitu valopyyhkäisy
-  - `.tier-progress-line` — vertikaalinen gradient-viiva
-  - `.founding-premium-shimmer` — premium-luottokortti-tyylinen shimmer
-  - `.tier-conic-border-{rank}` — eri intensiteetit per tier
-- `.lovable/memory/features/status-hierarchy.md` — päivitys progressiivisesta UI-käsittelystä ja Founding Apex premium-positioinnista
+**TierLadder cleanup:**
+- `src/components/TierLadder.tsx` — poistetaan animaatiot listan mukaan
+- `src/index.css` — voidaan jättää utility-luokat sisään (eivät käytössä = harmittomia)
+
+**Tribe Battles (uusi):**
+- Uusi DB-migraatio: enum + `tribe_battles` taulu + 4 RPC + RLS
+- `src/pages/TribeBattles.tsx` — uusi sivu (Active/Pending/History tabit, challenge-modal)
+- `src/components/TribeBattleCard.tsx` — yksittäisen battlen kortti (scoreboard, progress)
+- `src/components/TribeChallengeModal.tsx` — haastemodal (hae tribe, valitse kesto)
+- `src/App.tsx` — uusi reitti `/tribes/:id/battles`
+- `src/pages/TribeDetail.tsx` — "Tribe Battles" -nappi hero-osioon
+- `src/pages/Tribes.tsx` — pieni "active battle" -indikaattori My Tribes -korteille
+- `.lovable/memory/features/tribes.md` — päivitys uudella feature-osiolla
 
 ### Ei muuteta
-- DB-skeema, RPC:t, tier-vaatimukset (99.9 percentile yms.)
-- StatusBadge.tsx (tämä on pieni inline-pilleri, säilyy ennallaan jotta ei riko muita sivuja)
-- Tier-järjestys, labelit, viestit (Legend pysyy "Legend" sisältäen Founders Circlen)
-- Apex-tilauksen hinnoittelu / RevenueCat-virrat
+- `battles`-taulu (1v1) — pysyy ennallaan
+- ApexBadge, profiilin tier-järjestelmä, status-tier-laskenta
+- Tribe-create / invite / membership -RPC:t
 

@@ -67,6 +67,8 @@ const StatusHeader = () => {
   const config = getTierConfig(tier);
   const next = getNextTier(tier);
   const streak = profile.streak || 0;
+  const isApex = tier === "apex";
+  const isApexSubscriber = (profile as any).is_apex_subscriber === true;
 
   // Tier progress: position within full hierarchy (0..1)
   const tierProgress = (TIER_ORDER.indexOf(tier as any) + 1) / TIER_ORDER.length;
@@ -84,7 +86,7 @@ const StatusHeader = () => {
     tier === "legend"
       ? "from-[hsl(280_70%_55%)]/25 via-gold/15 to-[hsl(350_80%_55%)]/20"
       : tier === "apex"
-      ? "from-[hsl(18_95%_58%)]/25 via-gold/15 to-transparent"
+      ? "from-[hsl(18_95%_58%)]/35 via-gold/20 to-[hsl(18_95%_58%)]/15"
       : tier === "elite"
       ? "from-gold/25 via-gold/10 to-transparent"
       : tier === "high_performer"

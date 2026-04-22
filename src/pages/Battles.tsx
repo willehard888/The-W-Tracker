@@ -464,6 +464,11 @@ const Battles = () => {
         </div>
       )}
 
+      {/* Tribe Battles overview */}
+      <div className="animate-reveal animate-reveal-delay-1 mb-6">
+        <MyTribeBattles />
+      </div>
+
       {/* Incoming Challenges */}
       {pendingBattles.length > 0 && (
         <div className="animate-reveal animate-reveal-delay-1 mb-6">

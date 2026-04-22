@@ -91,9 +91,22 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                   style.base,
                   // Calm "current" treatment — static gold ring + glow, no shimmer
                   isCurrent && "ring-1 ring-gold/70 shadow-[0_0_18px_hsl(var(--gold)/0.35)]",
+                  // Apex — gold sheen + extra glow
+                  cfg.rank === 5 && "shadow-[0_0_28px_hsl(18_95%_58%/0.30),inset_0_1px_0_hsl(var(--gold)/0.30)]",
+                  // Legend — jewel gradient + heavy glow
+                  cfg.rank === 6 && "shadow-[0_0_34px_hsl(280_70%_60%/0.40),inset_0_1px_0_hsl(var(--gold)/0.45)]",
                   isLocked && "opacity-95",
                 )}
               >
+                {/* Apex / Legend — diagonal gold sheen overlay */}
+                {(cfg.rank === 5 || cfg.rank === 6) && (
+                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_30%,hsl(var(--gold)/0.18)_50%,transparent_70%)] opacity-60" />
+                )}
+                {/* Legend — extra corner sparkle */}
+                {cfg.rank === 6 && (
+                  <Sparkles size={10} className="absolute top-1.5 right-1.5 text-gold-light drop-shadow-[0_0_4px_hsl(var(--gold)/0.8)]" strokeWidth={2.6} />
+                )}
+
                 {/* Tier icon block */}
                 <div
                   className={cn(
@@ -103,6 +116,9 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       : isUnlocked
                       ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
                       : cn("bg-background/40 border border-gold/25", cfg.textClass),
+                    // Apex / Legend icon block — premium border + glow even when locked
+                    cfg.rank === 5 && !isCurrent && !isUnlocked && "border-[hsl(18_95%_58%)]/55 shadow-[0_0_10px_hsl(18_95%_58%/0.35)]",
+                    cfg.rank === 6 && !isCurrent && !isUnlocked && "border-[hsl(280_70%_60%)]/55 shadow-[0_0_12px_hsl(280_70%_60%/0.45)]",
                   )}
                 >
                   {isCurrent ? (
@@ -111,7 +127,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                     <Check size={15} strokeWidth={3} />
                   ) : isLocked && cfg.rank >= 5 ? (
                     // Silhouette: keep tier label visible on premium locked rows
-                    <span className="opacity-70">{cfg.shortLabel}</span>
+                    <span className="opacity-80 drop-shadow-[0_0_6px_hsl(var(--gold)/0.5)]">{cfg.shortLabel}</span>
                   ) : (
                     <Lock size={13} className="opacity-70" />
                   )}
@@ -124,6 +140,10 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       className={cn(
                         "font-display font-black text-sm leading-tight",
                         isCurrent ? cfg.textClass : isUnlocked ? "text-foreground" : "text-foreground/85",
+                        // Apex — orange→gold gradient text
+                        cfg.rank === 5 && !isCurrent && "bg-gradient-to-r from-[hsl(18_95%_62%)] via-gold to-[hsl(18_95%_62%)] bg-clip-text text-transparent",
+                        // Legend — jewel gradient text
+                        cfg.rank === 6 && !isCurrent && "bg-gradient-to-r from-[hsl(280_70%_70%)] via-gold to-[hsl(350_80%_65%)] bg-clip-text text-transparent",
                       )}
                     >
                       {cfg.label}
@@ -131,6 +151,15 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                     {isCurrent && (
                       <span className="text-[8px] uppercase tracking-[0.18em] font-black text-background bg-gradient-to-r from-gold to-gold-light px-1.5 py-[2px] rounded-sm shadow-[0_0_8px_hsl(var(--gold)/0.5)]">
                         Current Tier
+                      </span>
+                    )}
+                    {/* Crown marker on Apex/Legend when locked */}
+                    {!isCurrent && isLocked && cfg.rank === 5 && (
+                      <Crown size={10} className="text-gold drop-shadow-[0_0_4px_hsl(var(--gold)/0.7)]" strokeWidth={2.8} />
+                    )}
+                    {!isCurrent && isLocked && cfg.rank === 6 && (
+                      <span className="inline-flex items-center gap-0.5 text-[8px] uppercase tracking-[0.18em] font-black px-1.5 py-[2px] rounded-sm bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background shadow-[0_0_8px_hsl(280_70%_60%/0.55)]">
+                        <Crown size={9} strokeWidth={3} /> Founder
                       </span>
                     )}
                   </div>
@@ -145,7 +174,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                     <span className={cn(
                       "inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded",
                       cfg.rank >= 5
-                        ? "text-gold border border-gold/40 bg-gold/5"
+                        ? "text-gold border border-gold/50 bg-gradient-to-r from-gold/10 to-gold/5 shadow-[0_0_6px_hsl(var(--gold)/0.3)]"
                         : "text-muted-foreground border border-border/50 bg-background/20",
                     )}>
                       <TrendingUp size={9} strokeWidth={3} />

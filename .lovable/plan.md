@@ -1,117 +1,91 @@
 
 
-# Lighter TierLadder + Tribe Battles (tribe vs tribe)
+# Tribe Leaderboard + private tribe -haku & liittymispyynnöt
 
-Two erillistä työtä: (1) TierLadder kevyt siivous — vähemmän liikettä, sama rakenne. (2) Uusi "Tribe Battles" -ominaisuus jossa Apex-omistajat haastavat toisia tribejä viikon kestoisiin XP-kollektiivibattleihin.
-
----
-
-## 1. TierLadder — kevyt siivous
-
-Tavoite: nykyinen näkymä on liian raskas (pyörivä kruunu, shimmer-pyyhkäisy, conic-borderit vetävät huomion). Jätetään väri+rakenne, poistetaan jatkuvasti liikkuvat efektit.
-
-**Poistetaan:**
-- Pyörivä kruunu headerissa → staattinen Crown-ikoni gold-värillä
-- `tier-shimmer-sweep` current-tier rivillä → korvataan pelkällä gold ring + staattisella gold-glow shadowilla
-- `apex-conic-border` Apex/Legend-riveiltä → korvataan vahvalla staattisella gold/conic gradient-borderilla
-- `apex-embers` partikkelit current-tier rivillä → pois
-- Pulssaava "you are here" -piste vasemmalla → pois
-- Headerin gradient-text "Your Ascension" → tavallinen foreground-väri, gold pelkästään alaotsikossa
-
-**Säilytetään:**
-- 7 rivin rakenne, värit, percentile, ikonit
-- Vertikaalinen gold progress-rail (staattinen, ei animaatioita)
-- Rivien progressiiviset korkeudet (52→72px) — antaa hierarkian ilman liikettä
-- "Current Tier" -ribbon current-rivillä (staattinen, ei animaatiota)
-- Locked-tier silhuetit + "+N" / "Next" -hint
-- Detail-dialog ennallaan
-
-Lopputulos: rauhallinen, edelleen näyttävä, mutta ei "blink-blink" vaikutelmaa.
+Kaksi uutta ominaisuutta: (1) globaali Tribe Leaderboard joka ranking tribejä viikoittaisen kollektiivisen XP-tienestin perusteella, (2) haku joka löytää myös private-tribet ja antaa lähettää liittymispyynnön.
 
 ---
 
-## 2. Tribe Battles — uusi feature
+## 1. Tribe Leaderboard
 
-Konsepti: yhden tribe-omistajan haaste toiselle tribe-omistajalle. Battlen ajan molempien tribejen jäsenten yhteenlaskettu **XP-tienesti** (uudet `daily_checkins.xp_earned`-rivit battlen aikana) ratkaisee voittajan. Voittaja saa "Tribe Battle Won" -merkinnän ja koko voittaja-tribe +50 XP per jäsen.
+**Sijainti:** Uusi reitti `/tribes/leaderboard` + "Tribe Leaderboard" -kortti `Tribes.tsx`-sivulla (Browse-tabin yläosassa, ennen Featured-tribea).
 
-### 2.1 Skeema (uusi migraatio)
+**Ranking-logiikka:**
+- Tribejen sijoitus määräytyy **viikon (7 viime päivän) yhteenlasketun XP:n** perusteella, joka lasketaan `daily_checkins.xp_earned`-summana kaikkien aktiivisten tribe-jäsenten kesken.
+- All-time-tabi laskee tribe-jäsenten profiles.xp summan (perinteisempi mittari).
+- Vain `visibility = 'public'` tribet listataan oletuksena, mutta käyttäjän omat tribet näkyvät aina (myös private).
 
-Uusi enum + taulu:
+**UI:**
+- Kaksi tabia: **Weekly XP** (oletus) / **All-Time XP**
+- Top 3: erityinen kortti gold/silver/bronze-väreillä (Crown/Medal/Award-ikonit)
+- Sija 4–50: kompakti rivi (sija, tribe-nimi, member_count, XP-summa)
+- Käyttäjän oman triben sijoitus aina näkyvissä alareunan "Sticky My Tribe" -kortissa
+- Klikkaus → navigoi `/tribes/:id`
 
-```sql
-create type tribe_battle_status as enum ('pending','active','completed','declined','expired');
+**Backend:**
+- Uusi SECURITY DEFINER -RPC `get_tribe_leaderboard(p_period text, p_limit int)` jossa `p_period IN ('weekly','all_time')` — palauttaa `tribe_id, name, member_count, score, rank` järjestyksessä. RLS-bypass toimii koska RPC suodattaa itse public-tribet + viewerin omat.
 
-create table tribe_battles (
-  id uuid primary key default gen_random_uuid(),
-  challenger_tribe_id uuid not null references tribes(id) on delete cascade,
-  opponent_tribe_id   uuid not null references tribes(id) on delete cascade,
-  challenger_owner_id uuid not null,
-  opponent_owner_id   uuid not null,
-  status tribe_battle_status not null default 'pending',
-  duration_days int not null default 7,
-  started_at timestamptz,
-  ended_at   timestamptz,
-  challenger_score int not null default 0,
-  opponent_score   int not null default 0,
-  winner_tribe_id  uuid,
-  created_at timestamptz not null default now(),
-  check (challenger_tribe_id <> opponent_tribe_id)
-);
+---
 
-create index on tribe_battles (challenger_tribe_id, status);
-create index on tribe_battles (opponent_tribe_id, status);
+## 2. Private tribe -haku & liittymispyynnöt
+
+Ongelma nyt: `tribes` RLS-policy `Public tribes viewable by all authed` näyttää vain `visibility = 'public'`, omat jäsenyydet TAI omistuksen → private-tribet eivät löydy haulla.
+
+**Ratkaisu:**
+
+### 2.1 Uusi SECURITY DEFINER -RPC `search_tribes(p_query text, p_limit int)`
+
+Palauttaa sekä public että private tribet hakusanaa vastaten, mukaan lukien turvalliset kentät:
 ```
+id, name, slug, description, member_count, visibility, owner_id,
+viewer_status text  -- 'member' | 'pending_join' | 'pending_invite' | 'none'
+```
+Suodattaa pois hakutuloksista vain bannatut/poistetut. Private tribejen `description` näkyy myös, jotta ihminen voi päättää haluaako liittyä.
 
-RLS:
-- SELECT: jäsen kummassakin tribessä TAI kumman tahansa tribe-owner
-- INSERT/UPDATE/DELETE estetty — kaikki RPC:n kautta
+### 2.2 `join_tribe` jo tukee pending-statusta — UI:n päivitys
 
-### 2.2 SECURITY DEFINER -RPC:t
+Nykyinen `join_tribe` RPC palauttaa jo `'pending'` private-tribeille (rivi 178–187 in `Tribes.tsx`). Tarvitsee vain UI-tuen:
+- Hakutuloksissa private-tribet saavat `Lock`-ikonin ja "Request to join" -napin
+- Painike vaihtaa "Request sent" -tilaan kun status palautuu `pending`
 
-- `create_tribe_battle(p_challenger_tribe_id, p_opponent_tribe_id, p_duration_days)` — vaatii että auth.uid() on challenger-triben omistaja, ei toinen tribe sama, max 1 aktiivinen battle per tribe-pari, palauttaa id
-- `respond_to_tribe_battle(p_battle_id, p_accept)` — vain opponent-tribe-owner, asettaa active+started_at tai declined
-- `resolve_tribe_battle(p_battle_id)` — laskee `sum(xp_earned)` `daily_checkins`-taulusta jokaisen triben aktiivisille jäsenille `started_at` ja `started_at + duration_days` välillä, asettaa `winner_tribe_id`, jakaa +50 XP jokaiselle voittaja-tribe jäsenelle
-- `auto_resolve_expired_tribe_battles()` — kutsutaan triggerinä kun joku katsoo battlea ja se on päättynyt
+### 2.3 Owner-puoli: hyväksy/hylkää liittymispyynnöt
 
-### 2.3 UI — uusi sivu `/tribes/:id/battles`
+`approve_tribe_member` RPC on jo olemassa. Lisätään UI:
+- `TribeDetail.tsx`-hero-osioon: jos olet owner ja on `pending` jäseniä → näytä pieni badge "X pending requests" + linkki uuteen "Pending Requests" -dialogiin.
+- Dialogi listaa pending-jäsenet (username + avatar) ja **Accept / Decline** -napit per rivi.
 
-- Otsikko: "Tribe Battles" + tribe-nimi
-- Tabs: "Active" / "Pending" / "History"
-- Aktiiviset battle-kortit: vastapuoli, kesto, current scoreboard (challenger XP vs opponent XP, progress bar), aikaa jäljellä
-- Pending: jos olet opponent-owner → "Accept / Decline" -napit
-- History: voittaja, lopullinen score
-- "Challenge another tribe" -nappi (vain owner) → modal jossa hae tribe nimellä, valitse 3/7/14 päivän kesto
+### 2.4 Hakukenttä Tribes-sivulle
 
-### 2.4 Pääsy / linkit
-
-- `TribeDetail.tsx`: lisätään hero-osioon "⚔️ Tribe Battles" -nappi joka navigoi `/tribes/:id/battles`
-- `Tribes.tsx`: lisätään pieni "Active Battles" -indicator omien tribejen korteille jos aktiivinen battle on käynnissä
-- BottomNav: ei lisätä erillistä tabia (kuuluu Tribes-osion alle)
-
-### 2.5 Eligibility
-
-Vain triben **owner** voi luoda haasteen tai hyväksyä sen. Min. 2 aktiivista jäsentä molemmissa tribesseissä (estetään tyhjä-vs-tyhjä). Max 1 aktiivinen battle per tribe-pari kerrallaan.
+- Browse-tabin yläosaan tulee `Search`-input "Search all tribes (public & private)"
+- Debounced 300ms, kutsuu `search_tribes`-RPC:tä
+- Hakutuloksilla on oma renderöinti (nykyiset Featured + lista pysyvät kun haku on tyhjä)
+- Action-nappi tulosta klikatessa:
+  - `viewer_status = 'member'` → "Open" (navigoi `/tribes/:id`)
+  - `viewer_status = 'pending_join'` → "Request sent" (disabloitu)
+  - `viewer_status = 'pending_invite'` → "Accept invite" (avaa Invites-osio)
+  - `viewer_status = 'none'` + public → "Join"
+  - `viewer_status = 'none'` + private → "Request to join" + `Lock`-ikoni
+- Public tribelle klikkaus avaa `/tribes/:id` suoraan; private tribelle vain perustiedot näkyvät hakutuloksessa (ei pääsyä detail-sivulle ennen hyväksyntää — `Public tribes viewable by all authed` policy estää sen ilman jäsenyyttä).
 
 ---
 
-## 3. Muutettavat tiedostot
+## 3. Muutettavat / luotavat tiedostot
 
-**TierLadder cleanup:**
-- `src/components/TierLadder.tsx` — poistetaan animaatiot listan mukaan
-- `src/index.css` — voidaan jättää utility-luokat sisään (eivät käytössä = harmittomia)
+**Backend (uusi migraatio):**
+- `get_tribe_leaderboard(p_period, p_limit)` SECURITY DEFINER
+- `search_tribes(p_query, p_limit)` SECURITY DEFINER (palauttaa myös private tribet + viewer_status)
 
-**Tribe Battles (uusi):**
-- Uusi DB-migraatio: enum + `tribe_battles` taulu + 4 RPC + RLS
-- `src/pages/TribeBattles.tsx` — uusi sivu (Active/Pending/History tabit, challenge-modal)
-- `src/components/TribeBattleCard.tsx` — yksittäisen battlen kortti (scoreboard, progress)
-- `src/components/TribeChallengeModal.tsx` — haastemodal (hae tribe, valitse kesto)
-- `src/App.tsx` — uusi reitti `/tribes/:id/battles`
-- `src/pages/TribeDetail.tsx` — "Tribe Battles" -nappi hero-osioon
-- `src/pages/Tribes.tsx` — pieni "active battle" -indikaattori My Tribes -korteille
-- `.lovable/memory/features/tribes.md` — päivitys uudella feature-osiolla
+**Frontend:**
+- `src/pages/TribeLeaderboard.tsx` (uusi) — Weekly/All-Time tabit, top 3 -kortit, lista, sticky my-tribe
+- `src/components/TribeSearchBar.tsx` (uusi) — debounced haku + tulokset, käyttää `search_tribes`
+- `src/components/TribePendingRequestsDialog.tsx` (uusi) — owner näkee pending-jäsenet ja hyväksyy/hylkää
+- `src/pages/Tribes.tsx` — lisää TribeSearchBar ja "View Tribe Leaderboard" -kortti Browse-tabin yläosaan
+- `src/pages/TribeDetail.tsx` — lisää "Pending Requests" -painike owner-näkymään (badge + dialog-trigger)
+- `src/App.tsx` — uusi reitti `/tribes/leaderboard`
+- `.lovable/memory/features/tribes.md` — päivitys (leaderboard + private-haku + pending-flow)
 
 ### Ei muuteta
-- `battles`-taulu (1v1) — pysyy ennallaan
-- ApexBadge, profiilin tier-järjestelmä, status-tier-laskenta
-- Tribe-create / invite / membership -RPC:t
+- `tribes` RLS-policy (search hoituu RPC:llä joka ohittaa RLS:n turvallisesti)
+- `join_tribe` / `approve_tribe_member` RPC:t (toiminnallisuus jo olemassa, vain UI muuttuu)
+- Tribe Battles, member-rakenne, posts
 

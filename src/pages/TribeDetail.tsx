@@ -32,6 +32,7 @@ import TribeReportsDialog from "@/components/TribeReportsDialog";
 import TribeManageDialog from "@/components/TribeManageDialog";
 import TribePostCard, { type TribePostCardPost } from "@/components/TribePostCard";
 import { useModeration } from "@/hooks/use-moderation";
+import TierUsername from "@/components/TierUsername";
 
 interface Member {
   user_id: string;
@@ -401,9 +402,11 @@ const TribeDetail = () => {
                     >
                       <Crown size={9} className="text-gold" strokeWidth={2.8} fill="currentColor" />
                       <span className="text-[9px] font-black tracking-widest uppercase text-gold">Founder</span>
-                      <span className="text-[10px] font-bold text-foreground/85 truncate max-w-[120px]">
-                        @{founder.username}
-                      </span>
+                      <TierUsername
+                        username={founder.username}
+                        tier={founder.status_tier || "recruit"}
+                        className="text-[10px] font-bold truncate max-w-[120px]"
+                      />
                     </button>
                   );
                 })()}
@@ -540,7 +543,12 @@ const TribeDetail = () => {
                     </div>
                   )}
                 </div>
-                <p className={`text-[9px] truncate w-full text-center ${m.role === "owner" ? "text-gold font-black" : "text-muted-foreground"}`}>{m.username}</p>
+                <TierUsername
+                  username={m.username}
+                  tier={m.status_tier || "recruit"}
+                  showAt={false}
+                  className={`text-[9px] truncate w-full text-center ${m.role === "owner" ? "font-black" : ""}`}
+                />
               </button>
             ))}
           </div>

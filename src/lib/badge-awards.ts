@@ -6,6 +6,105 @@ interface BadgeCheckResult {
 }
 
 /**
+ * Compute extended stats for tribe / tier / phoenix badges.
+ * Server-side `award_badge_if_earned` re-validates these against the DB,
+ * so the client only needs to identify *candidates*.
+ */
+const fetchExtendedStats = async (
+  userId: string,
+  profile: any,
+): Promise<Record<string, number>> => {
+  const [tribeBattlesWonRes, userTribesRes, ownedTribesRes] = await Promise.all([
+    // Tribe battles won — count battles where user is active member of winning tribe
+    supabase
+      .from("tribe_battles")
+      .select("id, winner_tribe_id, status")
+      .eq("status", "completed")
+      .not("winner_tribe_id", "is", null),
+    // User's active tribe memberships (for collective streak)
+    supabase
+      .from("tribe_members")
+      .select("tribe_id")
+      .eq("user_id", userId)
+      .eq("status", "active"),
+    // Tribes the user owns (for founder streak)
+    supabase.from("tribes").select("id").eq("owner_id", userId),
+  ]);
+
+  // Compute tribe_battles_won — only battles user's tribes won where they're an active member
+  let tribeBattlesWon = 0;
+  if (tribeBattlesWonRes.data && userTribesRes.data) {
+    const userTribeIds = new Set(userTribesRes.data.map((t) => t.tribe_id));
+    tribeBattlesWon = tribeBattlesWonRes.data.filter(
+      (b) => b.winner_tribe_id && userTribeIds.has(b.winner_tribe_id),
+    ).length;
+  }
+
+  // Compute collective streaks: for each user-tribe, get min streak of active members
+  const computeCollective = async (tribeIds: string[]): Promise<number> => {
+    if (tribeIds.length === 0) return 0;
+    let best = 0;
+    for (const tribeId of tribeIds) {
+      const { data: members } = await supabase
+        .from("tribe_members")
+        .select("user_id")
+        .eq("tribe_id", tribeId)
+        .eq("status", "active");
+      if (!members || members.length === 0) continue;
+      const ids = members.map((m) => m.user_id);
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("streak")
+        .in("user_id", ids);
+      if (!profs || profs.length === 0) continue;
+      const minStreak = Math.min(...profs.map((p) => p.streak ?? 0));
+      if (minStreak > best) best = minStreak;
+    }
+    return best;
+  };
+
+  const tribeCollectiveStreak = await computeCollective(
+    (userTribesRes.data || []).map((t) => t.tribe_id),
+  );
+  const tribeFounderStreak = await computeCollective(
+    (ownedTribesRes.data || []).map((t) => t.id),
+  );
+
+  // Apex / Legend held days — based on apex_subscription_started_at
+  const apexStart = profile.apex_subscription_started_at
+    ? new Date(profile.apex_subscription_started_at).getTime()
+    : null;
+  const heldDays = apexStart
+    ? Math.floor((Date.now() - apexStart) / (1000 * 60 * 60 * 24))
+    : 0;
+  const isApexOrAbove =
+    profile.status_tier === "apex" || profile.status_tier === "legend";
+  const isLegend = profile.status_tier === "legend" || profile.legend_pinned;
+
+  // Phoenix recovery: longest_streak ≥30, current ≥30, longest > current (proves a break)
+  const phoenix =
+    profile.longest_streak >= 30 &&
+    profile.streak >= 30 &&
+    profile.longest_streak > profile.streak
+      ? 1
+      : 0;
+
+  return {
+    personal_streak: profile.longest_streak ?? 0,
+    phoenix_recovery: phoenix,
+    apex_reached: isApexOrAbove ? 1 : 0,
+    legend_reached: isLegend ? 1 : 0,
+    apex_founding:
+      profile.is_apex_subscriber && profile.apex_subscription_started_at ? 1 : 0,
+    apex_held_days: isApexOrAbove ? heldDays : 0,
+    legend_held_days: isLegend ? heldDays : 0,
+    tribe_battles_won: tribeBattlesWon,
+    tribe_collective_streak: tribeCollectiveStreak,
+    tribe_founder_streak: tribeFounderStreak,
+  };
+};
+
+/**
  * Check and award all applicable badges after a check-in.
  * Returns the first newly unlocked badge (for modal display).
  */
@@ -13,7 +112,13 @@ export const checkAndAwardBadges = async (userId: string): Promise<BadgeCheckRes
   const [{ data: allBadges }, { data: earnedBadges }, { data: profile }] = await Promise.all([
     supabase.from("badges").select("*"),
     supabase.from("user_badges").select("badge_id").eq("user_id", userId),
-    supabase.from("profiles").select("xp, level, streak, longest_streak, is_elite").eq("user_id", userId).single(),
+    supabase
+      .from("profiles")
+      .select(
+        "xp, level, streak, longest_streak, is_elite, status_tier, is_apex_subscriber, apex_subscription_started_at, legend_pinned",
+      )
+      .eq("user_id", userId)
+      .single(),
   ]);
 
   if (!allBadges || !profile) return null;
@@ -60,6 +165,9 @@ export const checkAndAwardBadges = async (userId: string): Promise<BadgeCheckRes
 
   const meditationTotal = (meditationMorningStats.count || 0) + (meditationEveningStats.count || 0);
 
+  // Extended stats for the new badge families
+  const extended = await fetchExtendedStats(userId, profile);
+
   const stats: Record<string, number> = {
     checkins: checkinStats.count || 0,
     workouts: workoutStats.count || 0,
@@ -81,6 +189,7 @@ export const checkAndAwardBadges = async (userId: string): Promise<BadgeCheckRes
     streak: profile.streak,
     longest_streak: profile.longest_streak,
     is_elite: profile.is_elite ? 1 : 0,
+    ...extended,
   };
 
   // Map ALL requirement_types to stat keys (including aliases)
@@ -88,7 +197,7 @@ export const checkAndAwardBadges = async (userId: string): Promise<BadgeCheckRes
     checkins: "checkins",
     workouts: "workouts",
     cold_shower: "cold_shower",
-    cold_showers: "cold_shower", // alias
+    cold_showers: "cold_shower",
     healthy_food: "healthy_food",
     protein: "protein",
     hydration: "hydration",
@@ -99,16 +208,27 @@ export const checkAndAwardBadges = async (userId: string): Promise<BadgeCheckRes
     referrals: "referrals",
     double_workout: "double_workout",
     meditation: "meditation",
-    meditation_streak: "meditation", // approximate with total
+    meditation_streak: "meditation",
     proofs: "proofs",
     perfect_day: "perfect_day",
     elite_member: "is_elite",
-    combat_workouts: "workouts", // map to workouts
-    run_workouts: "workouts", // map to workouts
+    combat_workouts: "workouts",
+    run_workouts: "workouts",
     xp: "xp",
-    total_xp: "xp", // alias
+    total_xp: "xp",
     level: "level",
     streak: "longest_streak",
+    // New types
+    personal_streak: "personal_streak",
+    phoenix_recovery: "phoenix_recovery",
+    apex_reached: "apex_reached",
+    legend_reached: "legend_reached",
+    apex_founding: "apex_founding",
+    apex_held_days: "apex_held_days",
+    legend_held_days: "legend_held_days",
+    tribe_battles_won: "tribe_battles_won",
+    tribe_collective_streak: "tribe_collective_streak",
+    tribe_founder_streak: "tribe_founder_streak",
   };
 
   // Social + special badges handled by triggers — skip
@@ -153,7 +273,13 @@ export const getBadgeProgress = async (userId: string): Promise<Record<string, {
     protein, hydration, noPhoneMorning, noPhoneEvening, reading,
     battlesWon, referrals, doubleWorkouts, medMorning, medEvening, proofs,
   ] = await Promise.all([
-    supabase.from("profiles").select("xp, level, streak, longest_streak, is_elite").eq("user_id", userId).single(),
+    supabase
+      .from("profiles")
+      .select(
+        "xp, level, streak, longest_streak, is_elite, status_tier, is_apex_subscriber, apex_subscription_started_at, legend_pinned",
+      )
+      .eq("user_id", userId)
+      .single(),
     supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId),
     supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("workout", true),
     supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("cold_shower", true),
@@ -186,6 +312,21 @@ export const getBadgeProgress = async (userId: string): Promise<Record<string, {
 
   const meditationTotal = (medMorning.count || 0) + (medEvening.count || 0);
 
+  const extended = profile
+    ? await fetchExtendedStats(userId, profile)
+    : {
+        personal_streak: 0,
+        phoenix_recovery: 0,
+        apex_reached: 0,
+        legend_reached: 0,
+        apex_founding: 0,
+        apex_held_days: 0,
+        legend_held_days: 0,
+        tribe_battles_won: 0,
+        tribe_collective_streak: 0,
+        tribe_founder_streak: 0,
+      };
+
   const stats: Record<string, number> = {
     checkins: checkins.count || 0,
     workouts: workouts.count || 0,
@@ -206,6 +347,7 @@ export const getBadgeProgress = async (userId: string): Promise<Record<string, {
     level: profile?.level || 1,
     streak: profile?.longest_streak || 0,
     is_elite: profile?.is_elite ? 1 : 0,
+    ...extended,
   };
 
   const typeToStat: Record<string, string> = {
@@ -233,6 +375,17 @@ export const getBadgeProgress = async (userId: string): Promise<Record<string, {
     total_xp: "xp",
     level: "level",
     streak: "streak",
+    // New types
+    personal_streak: "personal_streak",
+    phoenix_recovery: "phoenix_recovery",
+    apex_reached: "apex_reached",
+    legend_reached: "legend_reached",
+    apex_founding: "apex_founding",
+    apex_held_days: "apex_held_days",
+    legend_held_days: "legend_held_days",
+    tribe_battles_won: "tribe_battles_won",
+    tribe_collective_streak: "tribe_collective_streak",
+    tribe_founder_streak: "tribe_founder_streak",
   };
 
   const progress: Record<string, { current: number; target: number; percent: number }> = {};

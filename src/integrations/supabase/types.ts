@@ -674,6 +674,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          apex_credits_until: string | null
           apex_subscription_started_at: string | null
           avatar_url: string | null
           created_at: string
@@ -683,6 +684,7 @@ export type Database = {
           is_apex_subscriber: boolean
           is_elite: boolean
           last_rank_snapshot: Json | null
+          legend_pinned: boolean
           level: number
           longest_streak: number
           membership_credits_until: string | null
@@ -702,6 +704,7 @@ export type Database = {
           xp: number
         }
         Insert: {
+          apex_credits_until?: string | null
           apex_subscription_started_at?: string | null
           avatar_url?: string | null
           created_at?: string
@@ -711,6 +714,7 @@ export type Database = {
           is_apex_subscriber?: boolean
           is_elite?: boolean
           last_rank_snapshot?: Json | null
+          legend_pinned?: boolean
           level?: number
           longest_streak?: number
           membership_credits_until?: string | null
@@ -730,6 +734,7 @@ export type Database = {
           xp?: number
         }
         Update: {
+          apex_credits_until?: string | null
           apex_subscription_started_at?: string | null
           avatar_url?: string | null
           created_at?: string
@@ -739,6 +744,7 @@ export type Database = {
           is_apex_subscriber?: boolean
           is_elite?: boolean
           last_rank_snapshot?: Json | null
+          legend_pinned?: boolean
           level?: number
           longest_streak?: number
           membership_credits_until?: string | null

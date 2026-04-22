@@ -8,6 +8,9 @@ export interface ReferralStats {
   monthlyEarnedEuros: number;
   lifetimeEarnedEuros: number;
   milestonesHit: string[];
+  apexCreditsUntil: string | null;
+  legendPinned: boolean;
+  daysAsApex: number;
 }
 
 const PRICE_PER_CONVERSION = 4.99;
@@ -24,6 +27,9 @@ export function useReferralStats(userId?: string) {
           monthlyEarnedEuros: 0,
           lifetimeEarnedEuros: 0,
           milestonesHit: [],
+          apexCreditsUntil: null,
+          legendPinned: false,
+          daysAsApex: 0,
         };
       }
 
@@ -38,7 +44,7 @@ export function useReferralStats(userId?: string) {
           .eq("referrer_id", userId),
         supabase
           .from("profiles")
-          .select("referral_milestones_hit")
+          .select("referral_milestones_hit, apex_credits_until, legend_pinned")
           .eq("user_id", userId)
           .maybeSingle(),
       ]);
@@ -57,6 +63,12 @@ export function useReferralStats(userId?: string) {
         ? ((profile as any).referral_milestones_hit as any[]).map(String)
         : [];
 
+      const apexCreditsUntil = (profile as any)?.apex_credits_until ?? null;
+      const legendPinned = !!(profile as any)?.legend_pinned;
+      const daysAsApex = apexCreditsUntil
+        ? Math.max(0, Math.ceil((new Date(apexCreditsUntil).getTime() - Date.now()) / 86_400_000))
+        : 0;
+
       return {
         signupCount,
         convertedCount,
@@ -64,6 +76,9 @@ export function useReferralStats(userId?: string) {
         monthlyEarnedEuros: Math.round(convertedThisMonth * PRICE_PER_CONVERSION * 100) / 100,
         lifetimeEarnedEuros: Math.round(convertedCount * PRICE_PER_CONVERSION * 100) / 100,
         milestonesHit,
+        apexCreditsUntil,
+        legendPinned,
+        daysAsApex,
       };
     },
     enabled: !!userId,

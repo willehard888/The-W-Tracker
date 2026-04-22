@@ -87,32 +87,35 @@
     font-feature-settings: "ss01", "ss02";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.005em;
     background-image:
-      radial-gradient(ellipse 100% 60% at 50% -20%, hsl(42 78% 54% / 0.1) 0%, transparent 50%),
-      radial-gradient(ellipse 80% 50% at 50% -10%, hsl(270 60% 58% / 0.1) 0%, transparent 55%),
-      radial-gradient(ellipse 50% 40% at 10% 60%, hsl(172 66% 50% / 0.05) 0%, transparent 50%),
-      radial-gradient(ellipse 60% 40% at 80% 100%, hsl(42 78% 54% / 0.08) 0%, transparent 50%),
-      radial-gradient(ellipse 40% 30% at 90% 20%, hsl(346 77% 60% / 0.04) 0%, transparent 50%),
-      radial-gradient(ellipse 70% 50% at 50% 100%, hsl(270 60% 58% / 0.05) 0%, transparent 60%);
+      /* Warm directional key light from top-left */
+      radial-gradient(ellipse 90% 70% at 12% 0%, hsl(42 78% 54% / 0.075) 0%, transparent 55%),
+      radial-gradient(ellipse 100% 60% at 50% -20%, hsl(42 78% 54% / 0.07) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 50% at 50% -10%, hsl(270 60% 58% / 0.06) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 10% 60%, hsl(172 66% 50% / 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, hsl(42 78% 54% / 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse 40% 30% at 90% 20%, hsl(346 77% 60% / 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse 70% 50% at 50% 100%, hsl(270 60% 58% / 0.04) 0%, transparent 60%);
     background-attachment: fixed;
   }
 
-  /* Film grain overlay for cinematic realism */
+  /* Film grain overlay for cinematic realism — subdued */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 9999;
-    opacity: 0.028;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.014;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-repeat: repeat;
     background-size: 256px 256px;
-    animation: grain-shift 0.5s steps(4) infinite;
+    animation: grain-shift 0.9s steps(6) infinite;
     mix-blend-mode: overlay;
   }
 
-  /* Cinematic vignette */
+  /* Cinematic vignette — softer */
   body::after {
     content: '';
     position: fixed;
@@ -120,9 +123,9 @@
     pointer-events: none;
     z-index: 9998;
     background: radial-gradient(
-      ellipse 70% 65% at 50% 50%,
-      transparent 40%,
-      hsl(260 18% 2% / 0.5) 100%
+      ellipse 75% 70% at 50% 50%,
+      transparent 45%,
+      hsl(260 18% 2% / 0.32) 115%
     );
   }
 

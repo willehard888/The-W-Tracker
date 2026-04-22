@@ -174,6 +174,18 @@ const Tribes = () => {
       setMemberPreviews({});
     }
 
+    // Collective streak per tribe — drives the inline flame on each row
+    if (list.length > 0) {
+      try {
+        const totals = await fetchTribeCollectiveStreaks(list.map((t) => t.id));
+        setCollectiveStreaks(totals);
+      } catch {
+        setCollectiveStreaks(new Map());
+      }
+    } else {
+      setCollectiveStreaks(new Map());
+    }
+
     setLoading(false);
   };
 

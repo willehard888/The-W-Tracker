@@ -97,44 +97,59 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
   }, [tier, accent, isWarm, isOnFire, isBlazing, isDiamond, isLegendary]);
 
   // Higher tier = faster flicker
-  const speedMul = isLegendary ? 0.55 : isDiamond ? 0.7 : isBlazing ? 0.85 : isOnFire ? 1 : isWarm ? 1.25 : 1.55;
+  const speedMul = isLegendary ? 0.5 : isDiamond ? 0.65 : isBlazing ? 0.8 : isOnFire ? 0.95 : isWarm ? 1.2 : 1.5;
 
-  // Detached "tongues" that rise off flame top
-  const tongueCount = isLegendary ? 6 : isDiamond ? 5 : isBlazing ? 4 : isOnFire ? 3 : isWarm ? 2 : 1;
+  // Detached "tongues" that rise off flame top — more, taller, with curve
+  const tongueCount = isLegendary ? 9 : isDiamond ? 7 : isBlazing ? 5 : isOnFire ? 4 : isWarm ? 3 : 2;
   const tongues = useMemo(
     () =>
       Array.from({ length: tongueCount }).map((_, i) => ({
-        delay: (i / Math.max(1, tongueCount)) * 1.4 + ((i * 0.17) % 0.5),
-        duration: 1.1 + (i % 4) * 0.3,
-        leftPct: 32 + ((i * 19) % 36),
-        xDrift: -50 + (i % 2 === 0 ? -1 : 1) * (4 + (i * 5) % 14),
-        size: 3 + (i % 3),
+        delay: (i / Math.max(1, tongueCount)) * 1.4 + ((i * 0.13) % 0.7),
+        duration: 1.3 + (i % 5) * 0.32,
+        leftPct: 28 + ((i * 17) % 44),
+        xDrift: -50 + (i % 2 === 0 ? -1 : 1) * (3 + (i * 7) % 16),
+        size: 2.5 + (i % 4) * 0.8,
       })),
     [tongueCount],
   );
 
+  // Sparks — pinpoint shots that fly out (Blazing+)
+  const sparkCount = isLegendary ? 8 : isDiamond ? 6 : isBlazing ? 4 : 0;
+  const sparks = useMemo(
+    () =>
+      Array.from({ length: sparkCount }).map((_, i) => ({
+        leftPct: 30 + ((i * 23) % 40),
+        delay: (i * 0.41) % 2.4,
+        duration: 1.6 + (i % 3) * 0.4,
+        x: -10 + (i % 5) * 5,
+        y: -22 - (i % 4) * 6,
+        size: 1 + (i % 2),
+      })),
+    [sparkCount],
+  );
+
   // Smoke wisps (Champion+)
-  const smokeCount = isLegendary ? 3 : isDiamond ? 2 : isBlazing ? 1 : 0;
+  const smokeCount = isLegendary ? 4 : isDiamond ? 3 : isBlazing ? 2 : 0;
   const smokes = useMemo(
     () =>
       Array.from({ length: smokeCount }).map((_, i) => ({
-        delay: i * 1.6,
+        delay: i * 1.3,
         duration: 3.2 + (i % 2) * 0.7,
-        x: (i % 2 === 0 ? 1 : -1) * (5 + i * 3),
-        leftPct: 42 + (i % 3) * 8,
+        x: (i % 2 === 0 ? 1 : -1) * (4 + i * 3),
+        leftPct: 40 + (i % 3) * 7,
       })),
     [smokeCount],
   );
 
   // Glowing coals at base
-  const coalCount = isLegendary ? 7 : isDiamond ? 6 : isBlazing ? 5 : isOnFire ? 4 : isWarm ? 3 : isHot ? 2 : 0;
+  const coalCount = isLegendary ? 9 : isDiamond ? 7 : isBlazing ? 6 : isOnFire ? 5 : isWarm ? 4 : isHot ? 3 : 0;
   const coals = useMemo(
     () =>
       Array.from({ length: coalCount }).map((_, i) => ({
-        leftPct: 18 + (i * 64) / Math.max(1, coalCount - 1),
-        delay: (i * 0.35) % 1.4,
-        duration: 1.4 + (i % 3) * 0.4,
-        size: 2 + (i % 3),
+        leftPct: 16 + (i * 68) / Math.max(1, coalCount - 1),
+        delay: (i * 0.31) % 1.6,
+        duration: 1.3 + (i % 4) * 0.35,
+        size: 1.8 + (i % 3) * 0.7,
       })),
     [coalCount],
   );

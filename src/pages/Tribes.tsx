@@ -492,6 +492,13 @@ const Tribes = () => {
                         {t.member_count}
                       </span>
                     </span>
+                    {(collectiveStreaks.get(t.id) ?? 0) >= 30 && (
+                      <StreakFlameInline
+                        streak={collectiveStreaks.get(t.id) ?? 0}
+                        suffix="d"
+                        className="text-[10px]"
+                      />
+                    )}
                     {t.visibility === "private" && (
                       <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-secondary/60 border border-border">
                         <Lock size={8} className="text-muted-foreground" />

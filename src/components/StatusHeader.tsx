@@ -114,28 +114,20 @@ const StatusHeader = () => {
 
   return (
     <header className="sticky top-0 z-40 safe-top">
-      {/* Tier-tinted backdrop glow */}
-      <div
-        className={cn(
-          "absolute inset-0 pointer-events-none bg-gradient-to-b opacity-90",
-          tierGlow,
-        )}
-      />
-      {/* Subtle radial spotlight */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 0%, hsl(42 78% 54% / 0.16), transparent 65%)",
-        }}
-      />
+      <div className="relative surface-glass border-x-0 border-t-0 rounded-none border-b border-gold/15">
+        {/* Soft tier accent — single layer, low intensity */}
+        <div
+          aria-hidden
+          className={cn(
+            "absolute inset-0 pointer-events-none bg-gradient-to-b opacity-50",
+            tierGlow,
+          )}
+        />
 
-      <div className="relative backdrop-blur-xl bg-background/90 border-b border-gold/20">
-        {/* Top shimmer accent — flame-tinted for Apex */}
+        {/* Top hairline shimmer — flame-tinted for Apex */}
         <div className={cn(
           "pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent to-transparent",
-          isApex ? "via-[hsl(18_95%_58%)]" : "via-gold/70",
+          isApex ? "via-[hsl(18_95%_58%)]/70" : "via-gold/55",
         )} />
 
         {/* Brand strip — minimal */}

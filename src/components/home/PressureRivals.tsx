@@ -1,9 +1,8 @@
 import SegmentedTabs from "@/components/home/SegmentedTabs";
-import DailyStatusPulse from "@/components/DailyStatusPulse";
 import RankPressureCard from "@/components/RankPressureCard";
 import LiveRivals from "@/components/LiveRivals";
 
-interface RankArenaProps {
+interface PressureRivalsProps {
   userId: string;
   tier: string;
   rank: number | null;
@@ -15,7 +14,7 @@ interface RankArenaProps {
   className?: string;
 }
 
-const RankArena = ({
+const PressureRivals = ({
   userId,
   tier,
   rank,
@@ -25,25 +24,13 @@ const RankArena = ({
   rankScore,
   daysAtTier,
   className,
-}: RankArenaProps) => {
+}: PressureRivalsProps) => {
   return (
     <SegmentedTabs
-      title="Rank Arena"
+      title="Rank Pressure"
       titleAccent="hsl(var(--gold))"
       className={className}
       tabs={[
-        {
-          id: "today",
-          label: "Today",
-          content: (
-            <DailyStatusPulse
-              userId={userId}
-              rank={rank ?? 0}
-              score={rankScore ?? 0}
-              totalUsers={totalUsers}
-            />
-          ),
-        },
         {
           id: "pressure",
           label: "Pressure",
@@ -69,4 +56,4 @@ const RankArena = ({
   );
 };
 
-export default RankArena;
+export default PressureRivals;

@@ -1274,6 +1274,11 @@
   100% { background-position: 200% 0; }
 }
 
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
 @keyframes breathing-glow-anim {
   0%, 100% {
     box-shadow: 0 0 20px hsl(42 78% 54% / 0.2), 0 0 60px hsl(42 78% 54% / 0.08);

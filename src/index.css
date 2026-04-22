@@ -1238,67 +1238,171 @@
   100% { transform: scale(1.8); opacity: 0; }
 }
 
+/* ───────────────────────────────────────────────────────
+   STREAK SYSTEM — Cinematic, progressive, multi-tier
+   ─────────────────────────────────────────────────────── */
+
+/* Realistic flame flicker — non-uniform, alive */
 @keyframes streak-fire {
-  0%, 100% { transform: scaleY(1) translateY(0); opacity: 0.8; }
-  50% { transform: scaleY(1.2) translateY(-3px); opacity: 1; }
+  0%   { transform: scaleY(1)    scaleX(1)    translateY(0)    rotate(-1deg); opacity: 0.92; filter: brightness(1) drop-shadow(0 0 6px currentColor); }
+  18%  { transform: scaleY(1.15) scaleX(0.94) translateY(-2px) rotate(1deg);  opacity: 1;    filter: brightness(1.15) drop-shadow(0 0 12px currentColor); }
+  37%  { transform: scaleY(1.05) scaleX(1.02) translateY(-1px) rotate(-0.5deg); opacity: 0.96; filter: brightness(1.05) drop-shadow(0 0 8px currentColor); }
+  55%  { transform: scaleY(1.22) scaleX(0.92) translateY(-4px) rotate(1.5deg); opacity: 1;    filter: brightness(1.2)  drop-shadow(0 0 14px currentColor); }
+  76%  { transform: scaleY(1.08) scaleX(0.98) translateY(-1px) rotate(-1deg); opacity: 0.94; filter: brightness(1.05) drop-shadow(0 0 9px currentColor); }
+  100% { transform: scaleY(1)    scaleX(1)    translateY(0)    rotate(-1deg); opacity: 0.92; filter: brightness(1) drop-shadow(0 0 6px currentColor); }
 }
 
+/* Container glow pulses — progressively richer */
 @keyframes streak-pulse-glow {
-  0%, 100% { box-shadow: 0 0 12px hsl(18 95% 58% / 0.15), 0 0 24px hsl(18 95% 58% / 0.08); }
-  50% { box-shadow: 0 0 20px hsl(18 95% 58% / 0.3), 0 0 40px hsl(18 95% 58% / 0.12); }
+  0%, 100% { box-shadow: 0 0 14px hsl(18 95% 58% / 0.18), 0 0 30px hsl(18 95% 58% / 0.08), inset 0 1px 0 hsl(18 95% 58% / 0.12); }
+  50%      { box-shadow: 0 0 28px hsl(18 95% 58% / 0.38), 0 0 56px hsl(18 95% 58% / 0.18), inset 0 1px 0 hsl(18 95% 58% / 0.22); }
 }
 
 @keyframes streak-pulse-glow-gold {
-  0%, 100% { box-shadow: 0 0 16px hsl(42 78% 54% / 0.2), 0 0 32px hsl(42 78% 54% / 0.1); }
-  50% { box-shadow: 0 0 28px hsl(42 78% 54% / 0.4), 0 0 56px hsl(42 78% 54% / 0.15); }
-}
-
-@keyframes streak-number-pulse {
-  0%, 100% { text-shadow: 0 0 8px currentColor; opacity: 0.9; }
-  50% { text-shadow: 0 0 20px currentColor, 0 0 40px currentColor; opacity: 1; }
+  0%, 100% { box-shadow: 0 0 22px hsl(42 78% 54% / 0.28), 0 0 48px hsl(42 78% 54% / 0.12), inset 0 1px 0 hsl(42 85% 70% / 0.18); }
+  50%      { box-shadow: 0 0 40px hsl(42 78% 54% / 0.5),  0 0 80px hsl(42 78% 54% / 0.22), inset 0 1px 0 hsl(42 85% 70% / 0.3); }
 }
 
 @keyframes streak-pulse-glow-diamond {
-  0%, 100% { box-shadow: 0 0 20px hsl(200 80% 65% / 0.2), 0 0 40px hsl(42 78% 54% / 0.1); }
-  50% { box-shadow: 0 0 32px hsl(200 80% 65% / 0.4), 0 0 60px hsl(42 78% 54% / 0.2); }
+  0%, 100% { box-shadow: 0 0 26px hsl(200 80% 65% / 0.3),  0 0 56px hsl(42 78% 54% / 0.14), inset 0 1px 0 hsl(200 80% 75% / 0.22); }
+  50%      { box-shadow: 0 0 46px hsl(200 80% 65% / 0.55), 0 0 90px hsl(42 78% 54% / 0.25), inset 0 1px 0 hsl(200 80% 75% / 0.34); }
 }
 
 @keyframes streak-pulse-glow-legendary {
-  0%, 100% { box-shadow: 0 0 24px hsl(280 70% 60% / 0.25), 0 0 48px hsl(42 78% 54% / 0.12), 0 0 64px hsl(350 80% 60% / 0.08); }
-  50% { box-shadow: 0 0 40px hsl(280 70% 60% / 0.45), 0 0 72px hsl(42 78% 54% / 0.2), 0 0 96px hsl(350 80% 60% / 0.12); }
+  0%, 100% { box-shadow: 0 0 30px hsl(280 70% 60% / 0.35), 0 0 60px hsl(42 78% 54% / 0.18), 0 0 90px hsl(350 80% 60% / 0.12), inset 0 1px 0 hsl(280 70% 75% / 0.25); }
+  50%      { box-shadow: 0 0 56px hsl(280 70% 60% / 0.6),  0 0 100px hsl(42 78% 54% / 0.32), 0 0 140px hsl(350 80% 60% / 0.2), inset 0 1px 0 hsl(280 70% 75% / 0.4); }
 }
 
+/* Number breathes — text shadow swells in sync with glow */
+@keyframes streak-number-pulse {
+  0%, 100% { text-shadow: 0 0 12px currentColor, 0 2px 6px hsl(0 0% 0% / 0.3); transform: scale(1); }
+  50%      { text-shadow: 0 0 28px currentColor, 0 0 56px currentColor, 0 2px 6px hsl(0 0% 0% / 0.3); transform: scale(1.015); }
+}
+
+/* Floating embers — drift up with curve */
 @keyframes streak-particle {
-  0% { transform: translateY(0) scale(0); opacity: 0; }
-  15% { opacity: 0.8; transform: translateY(-20px) scale(1); }
-  80% { opacity: 0.4; }
-  100% { transform: translateY(-100px) scale(0.3); opacity: 0; }
+  0%   { transform: translateY(0)    translateX(0)   scale(0);   opacity: 0; }
+  12%  { transform: translateY(-18px) translateX(2px)  scale(1);   opacity: 0.95; }
+  45%  { transform: translateY(-55px) translateX(-3px) scale(0.85); opacity: 0.7; }
+  80%  { transform: translateY(-95px) translateX(4px)  scale(0.5);  opacity: 0.35; }
+  100% { transform: translateY(-130px) translateX(-2px) scale(0.2);  opacity: 0; }
 }
 
+/* Heat shimmer wave — distortion line that travels up */
+@keyframes streak-heat-wave {
+  0%   { transform: translateY(100%) scaleY(0.8); opacity: 0; }
+  20%  { opacity: 0.6; }
+  100% { transform: translateY(-30%) scaleY(1.2); opacity: 0; }
+}
+
+/* Conic ring spin — for diamond+ */
+@keyframes streak-conic-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Rainbow text gradient slide */
 @keyframes streak-rainbow {
-  0% { background-position: 0% 50%; }
+  0%   { background-position: 0% 50%; }
   100% { background-position: 200% 50%; }
 }
 
+/* Tier badge shimmer */
 @keyframes streak-badge-shimmer {
-  0%, 100% { opacity: 0.9; }
-  50% { opacity: 1; box-shadow: 0 0 16px hsl(280 70% 60% / 0.3); }
+  0%, 100% { opacity: 0.92; box-shadow: 0 0 10px hsl(280 70% 60% / 0.2); }
+  50%      { opacity: 1;    box-shadow: 0 0 22px hsl(280 70% 60% / 0.45), 0 0 40px hsl(42 78% 54% / 0.15); }
+}
+
+/* Spark burst at the top of the flame */
+@keyframes streak-spark {
+  0%   { transform: translate(-50%, 0) scale(0.6); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translate(-50%, -28px) scale(1.4); opacity: 0; }
+}
+
+/* Tier-up reveal sweep — subtle highlight that moves across the card */
+@keyframes streak-card-sheen {
+  0%   { transform: translateX(-120%) skewX(-20deg); opacity: 0; }
+  40%  { opacity: 0.5; }
+  100% { transform: translateX(220%)  skewX(-20deg); opacity: 0; }
+}
+
+/* Milestone segment fill — animated entry */
+@keyframes streak-segment-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* Orange-only text gradient (hot/onfire tiers) */
+.streak-orange-text {
+  background: linear-gradient(135deg, hsl(18 95% 62%), hsl(28 95% 65%), hsl(42 85% 65%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.streak-gold-text {
+  background: linear-gradient(135deg, hsl(42 60% 50%), hsl(42 95% 70%), hsl(42 78% 54%));
+  background-size: 200% 100%;
+  animation: streak-rainbow 5s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .streak-diamond-text {
-  background: linear-gradient(135deg, hsl(200 80% 60%), hsl(42 78% 54%));
+  background: linear-gradient(135deg, hsl(200 80% 60%), hsl(190 90% 75%), hsl(42 90% 65%), hsl(200 80% 60%));
+  background-size: 200% 100%;
+  animation: streak-rainbow 4s linear infinite;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .streak-legendary-text {
-  background: linear-gradient(135deg, hsl(280 70% 60%), hsl(42 78% 54%), hsl(350 80% 60%), hsl(200 80% 65%));
+  background: linear-gradient(135deg, hsl(280 80% 65%), hsl(42 95% 70%), hsl(350 85% 65%), hsl(200 85% 70%), hsl(280 80% 65%));
   background-size: 300% 100%;
-  animation: streak-rainbow 4s linear infinite;
+  animation: streak-rainbow 3.5s linear infinite;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  filter: drop-shadow(0 0 12px hsl(280 70% 60% / 0.4));
+}
+
+/* Conic spinning ring overlay (diamond+) */
+.streak-conic-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    hsl(200 80% 65% / 0.8) 60deg,
+    transparent 120deg,
+    hsl(42 78% 54% / 0.8) 180deg,
+    transparent 240deg,
+    hsl(280 70% 60% / 0.8) 300deg,
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: streak-conic-spin 8s linear infinite;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.streak-conic-ring-legendary {
+  background: conic-gradient(
+    from 0deg,
+    hsl(280 80% 65%),
+    hsl(42 95% 70%),
+    hsl(350 85% 65%),
+    hsl(200 85% 70%),
+    hsl(280 80% 65%)
+  );
+  animation-duration: 6s;
+  opacity: 0.85;
 }
 
 /* ── Safe area utilities for native iOS ── */

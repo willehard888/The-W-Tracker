@@ -630,6 +630,7 @@ const TribeDetail = () => {
         <>
           <TribeInviteModal tribeId={id} open={inviteOpen} onClose={() => setInviteOpen(false)} />
           <TribePendingRequestsDialog tribeId={id} open={pendingOpen} onOpenChange={setPendingOpen} onChanged={load} />
+          <TribeReportsDialog tribeId={id} open={reportsOpen} onOpenChange={setReportsOpen} onChanged={load} />
         </>
       )}
     </div>

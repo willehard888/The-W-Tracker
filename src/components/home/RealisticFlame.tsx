@@ -418,8 +418,7 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
             opacity: 0,
             // @ts-expect-error custom prop
             "--spark-x": `${sp.x}px`,
-            // @ts-expect-error custom prop
-            "--spark-y": `${sp.y}px`,
+            ["--spark-y" as string]: `${sp.y}px`,
             animation: `flame-spark-shoot ${sp.duration * speedMul}s ease-out infinite`,
             animationDelay: `${sp.delay}s`,
             mixBlendMode: "screen",

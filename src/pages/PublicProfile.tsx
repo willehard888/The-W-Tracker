@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import StatusAvatar from "@/components/StatusAvatar";
 import ApexBadge from "@/components/ApexBadge";
-import { getTierConfig } from "@/lib/status-tiers";
+import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
 import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

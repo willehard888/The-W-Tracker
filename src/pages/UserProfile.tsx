@@ -13,7 +13,7 @@ import HeadToHead from "@/components/HeadToHead";
 import ProfileActivityPulse from "@/components/ProfileActivityPulse";
 import FeaturedBadgeHero from "@/components/FeaturedBadgeHero";
 import ApexBadge from "@/components/ApexBadge";
-import { getTierConfig } from "@/lib/status-tiers";
+import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";

@@ -1,74 +1,86 @@
 
 
-# Premium & Realistic UI Polish
+# Next-Level Unified Theme
 
-Goal: make the whole app feel like a crafted, physical product — real materials, real lighting, weighted motion. Calmer where it's noisy, richer where it matters.
+Goal: push the whole app one tier higher in craft and cohesion. Single visual language across every screen. **No animation changes** — only static visual properties (color, material, depth, type, spacing, borders).
 
-## 1. Atmosphere & lighting (`src/index.css`)
+## Theme: "Obsidian & Gold"
 
-- **Film grain**: opacity `0.028 → 0.014`, slow shift `0.5s/4 steps → 0.9s/6 steps` so it stops buzzing.
-- **Vignette**: soften `0.5 → 0.32`, push edge stop to 115% — corners feel naturally lit, not crushed.
-- **Body background**: cut gold ambient ellipse `0.10 → 0.07`, purple `0.10 → 0.06`. Add one warm directional **key light** from top-left (15% intensity) so the whole app reads as lit from a single source.
-- **Glow tokens**: `glow-gold` from `0 0 24px / 0.25` + `0 0 80px / 0.08` → `0 0 18px / 0.15` + `0 0 60px / 0.05`. Same proportional cut for purple/teal/rose. Drop the second shadow layer on `glow-gold-text` so numbers stop smearing.
+One theme, applied everywhere. Dark obsidian glass as the base, warm gold as the single accent, controlled tier tints (purple/teal/rose/amber) only as semantic signal — never as decoration.
 
-## 2. Material system (new utilities in `index.css`)
+## 1. Tighten the palette (`index.css` tokens)
 
-Three reusable surfaces — every card on every page can opt in:
+- **Background**: deepen base from `260 18% 4%` → `258 22% 3%` for more "ink black" depth. Card `255 14% 7%` → `258 16% 6.5%` so cards lift more cleanly.
+- **Border**: split into `--border` (hairlines, `258 14% 16%`) and new `--border-strong` (`258 14% 22%`) for headers/dividers.
+- **Foreground tiers**: add `--foreground-muted` (`40 6% 72%`) and `--foreground-faint` (`255 6% 38%`) so text hierarchy stops relying on opacity hacks.
+- **Gold**: keep core, but introduce `--gold-soft` (`42 60% 46%`) for non-primary gold accents (icons, hairlines) so primary gold stays special.
+- **Tier accents** become reserved: only used on tier crests, badges, and the rank/risk system — never on generic cards.
 
-- **`.surface-glass`** — frosted: `backdrop-filter: blur(28px) saturate(1.35)`, white 6% top edge, black 18% bottom edge, faint inner highlight 25% from top (simulated bevel).
-- **`.surface-metal`** — brushed gold for tier crests/CTAs: layered linear gradient + 0.6px SVG `feTurbulence` noise overlay at 8%.
-- **`.surface-paper`** — matte body cards (Coach, Briefing, Tribes feed): subtle vertical gradient + soft inner shadow, no glow.
-- **`.light-rake`** — diagonal specular sweep top-left → mid at `white / 0.05`, auto-applied inside `.surface-glass`.
+## 2. One unified surface system
 
-Replace heavy `.card-3d` hover (`translateZ(8px) rotateX(1.5deg)` — feels like a flipping card) with `translateY(-1px)` + softer shadow swap.
+Three official surfaces, every component picks exactly one:
 
-## 3. Motion realism
+- **Primary surface** — `surface-glass` (already strong). Used for hero/feature cards: Command Deck, RankProgressHub, Coach card, Briefing, Battles, Tribe headers.
+- **Secondary surface** — new `surface-panel`: matte obsidian, single hairline border, soft inner top highlight, no glow. Used for list items, leaderboard rows, message bubbles, settings rows. Removes the current mix of `bg-card`, `glass-card`, `surface-paper`, custom inline styles.
+- **Inset surface** — new `surface-inset`: recessed look (inner top shadow + faint bottom highlight). Used for input fields, progress tracks, chat input, tab content backgrounds.
 
-- **Easing tokens**: `--ease-spring: cubic-bezier(0.16, 1.2, 0.32, 1)` and `--ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1)`. Reuse on cards, buttons, dialogs, sheets.
-- **Press feel**: button active scale `0.97 → 0.985` (Apple-spec), duration `200ms → 220ms` with `--ease-spring`. Same for nav items.
-- **Slow ambient motion**: `caustic-drift` 12s → 18s, `aura-breathe` 5s → 7s — slower motion reads as more expensive.
-- **Conic spins**: keep `badge-conic-rim-legendary` only on actual Legendary surfaces. Strip the conic aura from Epic+ cards where it currently leaks.
-- **Page transitions**: add a 220ms fade+lift (8px) on route changes via a wrapper around `<Outlet>` using framer-motion AnimatePresence.
+Deprecate (alias to new ones, don't delete to avoid breakage): `card-3d`, `card-3d-gold`, `card-depth`, `card-depth-lg`, `card-hover`, `glass-card`, `surface-paper`. They get mapped internally to `surface-panel` or `surface-glass` so existing markup auto-upgrades.
 
-## 4. Typography pass
+## 3. Hairline & divider system
 
-- Body letter-spacing `-0.005em`, `font-display` `-0.015em` — large headers stop looking loose.
-- Small labels (≤11px) currently `font-black` (900) → `font-bold` (700) so they stay crisp at retina.
-- Reduce text-shadow on `.glow-gold-text` to one layer.
+- Replace all 1px solid borders with **gradient hairlines**: `linear-gradient(90deg, transparent, hsl(border-strong), transparent)` for horizontal, mirrored for vertical. Used in section breaks, list separators, BottomNav top edge, header bottom edge.
+- Single `--hairline` utility class so every divider in the app looks identical.
 
-## 5. Core components inherit it for free
+## 4. Typography scale (one ladder)
 
-- **`ui/card.tsx`** — default `Card` switches `card-3d inner-light` → `surface-glass light-rake`. Every page using `<Card>` upgrades instantly.
-- **`ui/button.tsx`** — new press timing. `gold` variant drops `btn-3d` (cartoon hard offset) for flat metallic gradient + 1px inset highlight + 8px soft shadow; on press, highlight shifts 1px down for real "depressed" feedback.
-- **`ui/dialog.tsx` / `sheet.tsx` / `drawer.tsx`** — content gets `surface-glass`, overlay opacity `0.8 → 0.62` with a 4px backdrop-blur so background stays alive.
-- **`ui/input.tsx` / `textarea.tsx`** — 1px inset top shadow + soft outer shadow on focus instead of the current ring; feels recessed like real glass.
-- **`ui/progress.tsx`** — 3-stop metallic fill + 0.5px highlight line on top.
+Define a strict 6-step scale used app-wide:
+- `display-xl` — 32/38, Space Grotesk 800, `-0.025em`
+- `display-lg` — 24/30, Space Grotesk 700, `-0.02em`
+- `display-md` — 18/24, Space Grotesk 700, `-0.015em`
+- `body-lg` — 15/22, Inter 500, `-0.005em`
+- `body` — 13/19, Inter 500, `-0.003em`
+- `caption` — 11/14, Inter 600, `0.06em` uppercase, `--foreground-faint`
 
-## 6. Chrome
+Applied to: page titles, card titles, section headings, tier labels, all "uppercase tracking-widest" labels currently scattered across components. Replaces inline `text-[10px]/[11px]/[12px] tracking-[0.18em/0.22em]` chaos with one consistent caption.
 
-- **`StatusHeader.tsx`** — collapse double background (gradient + radial spotlight) into one `surface-glass` strip. Progress bar `h-1 → h-[3px]` with metallic fill. Tier pills (Apex/Elite/Trial): drop infinite box-shadow keyframe → static `surface-metal` + 6s breathing opacity (less GPU, looks luxurious not alarming).
-- **`BottomNav.tsx`** — `surface-glass` + hairline top divider (1px transparent → border/40 → transparent gradient). Active dot `2px → 3px`, drop-shadow `0 0 6px → 0 0 4px`. Press scale `0.92 → 0.96` paired with existing haptic.
+## 5. Iconography normalization
 
-## 7. Home page concrete touches
+- Lucide stroke width pinned to `1.75` everywhere (currently varies 1.5–2.6).
+- Icon sizes standardized to 14 / 16 / 18 / 22 / 28 — no off-grid sizes.
+- Icon color = `--foreground-muted` by default; gold only when icon represents a primary action or status signal (Flame, Crown, Trophy, Lock).
 
-- **`Index.tsx`** — `pageAura` intensity −40%, widen falloff so top isn't a hot spot.
-- **`RankProgressHub.tsx`** — identity strip → `surface-glass`; replace strong tier-tinted radial with a soft 12% tint on top-right corner only. Tier crest: remove `0 0 24px` outer glow, add real specular (1px white inner top, 1px black inner bottom) — looks like enameled metal.
-- **`CommandDeck.tsx`** — align surfaces with new tokens, drop competing glows.
-- **`RealisticFlame.tsx`** — keep as-is (already shipped realistic).
+## 6. Spacing rhythm
 
-## Out of scope
+- Card inner padding: `p-4` (16px) for compact, `p-5` for standard, `p-6` for hero. Currently mixes p-2.5/3/4/6 randomly.
+- Vertical gap between sections on every page: `mb-4` (16px). Hero block gets `mb-5`.
+- Page horizontal padding pinned to `px-4` (already mostly true) — audit `Profile`, `Leaderboard`, `Tribes`, `Coach`, `Battles`, `EliteFeed` to match.
 
-- No DB / RLS / edge function changes
-- No layout restructuring — only material, motion, light, typography
-- Onboarding, Paywall, Splash kept at current cinematic intensity (one-time moments allowed to be loud)
+## 7. Pages that get the unified pass
+
+Visual-only sweep — no logic changes:
+
+- `Profile.tsx`, `PublicProfile.tsx`, `UserProfile.tsx` — stat tiles to `surface-panel`, headers to `surface-glass`.
+- `Leaderboard.tsx`, `TribeLeaderboard.tsx` — row surface unified, hairline dividers, position badges use single accent ramp.
+- `Tribes.tsx`, `TribeDetail.tsx`, `Battles.tsx`, `TribeBattles.tsx` — card system unified; remove ad-hoc gradients.
+- `Coach.tsx`, `WeeklyBriefing.tsx`, `EliteFeed.tsx` — `surface-glass` heroes, `surface-panel` content, `surface-inset` inputs.
+- `Messages.tsx`, `Chat.tsx` — message bubbles use `surface-panel` (received) / soft gold tint (sent), `surface-inset` for the composer.
+- `Auth.tsx`, `Onboarding.tsx`, `Paywall.tsx` — keep their cinematic intensity but adopt the type scale and gold ramp so they feel like the same product.
+- `StatusHeader.tsx`, `BottomNav.tsx` — already glass; switch to new hairline system for top/bottom edges.
+
+## 8. What we explicitly do NOT touch
+
+- **No animation/keyframe changes.** All `@keyframes`, `animate-*`, framer-motion timings, page transitions, streak flames, ember bursts, conic spins, shimmer sweeps stay byte-identical.
+- No layout restructuring of any page.
+- No DB / RLS / edge function changes.
+- No new dependencies.
 
 ## Files touched
 
-- `src/index.css` — atmosphere, surface utilities, easing tokens, glow & type tuning
-- `src/components/ui/{card,button,dialog,sheet,drawer,input,textarea,progress}.tsx`
-- `src/components/StatusHeader.tsx`, `src/components/BottomNav.tsx`
-- `src/App.tsx` — page transition wrapper
-- `src/pages/Index.tsx`, `src/components/home/RankProgressHub.tsx`, `src/components/home/CommandDeck.tsx`
+- `src/index.css` — token tightening, new `surface-panel` / `surface-inset` / `--hairline` utilities, type scale classes, deprecated-alias mappings
+- `src/components/ui/{card,input,textarea,progress,tabs,separator,badge}.tsx` — adopt new surfaces & hairline
+- `src/components/StatusHeader.tsx`, `src/components/BottomNav.tsx` — hairline edges
+- `src/components/{StatCard,LevelCard,TierLadder,RankPressureCard,BadgeCard,TribePostCard,TribeBattleCard,LiveRivals,HeadToHead,ProfileActivityPulse,StreakDisplay,XpCounter,InviteCTA,CoachNudgeCard}.tsx` — surface + type unification
+- `src/pages/{Profile,PublicProfile,UserProfile,Leaderboard,TribeLeaderboard,Tribes,TribeDetail,Battles,TribeBattles,Coach,WeeklyBriefing,EliteFeed,Messages,Chat}.tsx` — surface/spacing/type pass
 
-Because `Card`, `Button`, dialogs, inputs, and global tokens are reused everywhere, every other page (Profile, Leaderboard, Tribes, Coach, Feed, Battles, Messages, Paywall) inherits the polish without direct edits.
+Because the changes flow through `Card`, the new surface utilities, and the type scale, screens not directly edited still inherit the unified theme automatically.
 

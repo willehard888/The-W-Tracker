@@ -269,9 +269,10 @@ const Tribes = () => {
                 <div className="flex gap-2 mt-3">
                   <Button
                     size="sm"
+                    variant="success"
                     onClick={() => handleInviteResponse(inv, true)}
                     disabled={respondingId === inv.id}
-                    className="flex-1 bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black h-8"
+                    className="flex-1 h-8"
                   >
                     <Check size={12} /> Accept
                   </Button>
@@ -296,8 +297,9 @@ const Tribes = () => {
       {canCreate ? (
         <Button
           onClick={() => navigate("/tribes/new")}
-          className="w-full mb-4 bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black shadow-[0_0_20px_hsl(18_95%_58%/0.4)]"
+          variant="gold"
           size="lg"
+          className="w-full mb-4"
         >
           <Plus size={16} /> Create a Tribe
         </Button>
@@ -321,7 +323,7 @@ const Tribes = () => {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-4 p-1 rounded-xl bg-secondary/40">
+      <div className="flex gap-1.5 mb-4 p-1 rounded-xl surface-inset border border-border/40">
         {(["browse", "mine"] as const).map((t) => (
           <button
             key={t}
@@ -329,8 +331,8 @@ const Tribes = () => {
             className={cn(
               "flex-1 text-xs font-black py-2 rounded-lg uppercase tracking-wider transition-all",
               tab === t
-                ? "bg-background text-foreground shadow"
-                : "text-muted-foreground"
+                ? "bg-gradient-to-b from-gold/90 to-gold-dark text-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.4),0_2px_8px_hsl(42_78%_50%/0.35)]"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             {t === "browse" ? "Browse" : "My Tribes"}

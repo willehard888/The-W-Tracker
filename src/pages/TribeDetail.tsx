@@ -434,6 +434,24 @@ const TribeDetail = () => {
               </button>
             )}
 
+            {isOwner && reportedCount > 0 && (
+              <button
+                onClick={() => setReportsOpen(true)}
+                className="mt-3 w-full rounded-xl border border-destructive/45 bg-gradient-to-r from-destructive/15 to-destructive/5 hover:from-destructive/20 transition-all p-2.5 flex items-center gap-2.5 text-left"
+              >
+                <div className="h-8 w-8 rounded-lg bg-destructive/25 border border-destructive/40 flex items-center justify-center shrink-0">
+                  <ShieldAlert size={14} className="text-destructive" strokeWidth={2.6} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] uppercase tracking-widest font-black text-destructive">Reported posts</p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {reportedCount} {reportedCount === 1 ? "post needs" : "posts need"} your review
+                  </p>
+                </div>
+                <span className="text-xs font-black tabular-nums text-destructive">{reportedCount}</span>
+              </button>
+            )}
+
             <div className="flex gap-2 mt-3">
               {!isMember ? (
                 <Button onClick={handleJoin} size="sm" className="bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black flex-1 shadow-[0_0_16px_hsl(18_95%_58%/0.5)]">

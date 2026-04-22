@@ -65,12 +65,24 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
 
   return (
     <div ref={ref} className={cn("relative inline-block", className)}>
+      {/* Apex outer pulsing flame ring */}
+      {isApex && (
+        <div
+          aria-hidden
+          className="absolute inset-0 rounded-full pointer-events-none animate-pulse"
+          style={{
+            boxShadow:
+              "0 0 0 2px hsl(18 95% 58% / 0.55), 0 0 16px 2px hsl(18 95% 58% / 0.5), 0 0 32px 4px hsl(var(--gold) / 0.35)",
+          }}
+        />
+      )}
       <div
         className={cn(
           "rounded-full",
           sizes.ring,
           ringStyle,
           isHighTier && "shadow-[0_0_12px_-2px_currentColor]",
+          isApex && "apex-aura-large",
         )}
         style={
           isHighTier
@@ -98,7 +110,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
             "absolute -bottom-0.5 -right-0.5 rounded-full border-2 border-background flex items-center justify-center",
             sizes.badge,
             isLegend && "bg-[hsl(280_70%_55%)]",
-            isApex && "bg-[hsl(18_95%_58%)]",
+            isApex && "bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold shadow-[0_0_8px_hsl(18_95%_58%/0.7)]",
             tier === "elite" && "bg-gold",
             tier === "high_performer" && "bg-[hsl(var(--purple))]",
             tier === "performer" && "bg-[hsl(210_90%_56%)]",
@@ -115,6 +127,16 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
             )}
             strokeWidth={2.5}
           />
+        </div>
+      )}
+
+      {/* Apex top-right Zap accent — small, animated */}
+      {isApex && (
+        <div
+          aria-hidden
+          className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border border-background flex items-center justify-center shadow-[0_0_6px_hsl(18_95%_58%/0.8)] animate-pulse"
+        >
+          <Zap size={9} className="text-background" strokeWidth={3} fill="currentColor" />
         </div>
       )}
     </div>

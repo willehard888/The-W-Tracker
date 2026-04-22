@@ -9,8 +9,8 @@ Auth: Apple Sign-In managed in Safari, forces valid username selection.
 DB: Supabase with strict RLS, SECURITY DEFINER RPCs for all critical writes.
 Access: 7-tier status system based on XP/consistency. Drops with inactivity.
 Constraints: Daily check-in/Battle proofs require real-time camera (no gallery).
-Membership: €4.99/mo + 7-day trial unlocks the entire app (hard paywall, no skip).
-Elite: EARNED status tier (top 5% rank + 14 active days + 30-day streak). Never sold.
+Membership: €4.99/mo + 7-day trial unlocks the entire app. €15.99/mo Apex Instant adds bought Apex tier + Tribes (max 3).
+Elite: EARNED status tier (top 5% rank + 14 active days + 30-day streak). Apex tier can be earned (top 1%) OR bought via subscription (no decay while active).
 
 ## Memories
 - [Brand Identity](mem://style/brand-identity) — Core visual identity, golden W logo, cinematic effects
@@ -33,7 +33,8 @@ Elite: EARNED status tier (top 5% rank + 14 active days + 30-day streak). Never 
 - [Elite Feed Kudos](mem://features/kudos-system) — 2 kudos/month for Elite users, awards +10 XP to poster
 - [Social Infrastructure](mem://features/social-infrastructure) — Real-time chat, friend requests, username search
 - [User Profiles](mem://features/user-profiles) — Stats, Season Champion history, Weekly Sleep XP multiplier
-- [Membership](mem://monetization/membership) — €4.99/mo hard entry paywall, 7-day trial, Elite is earned not bought
+- [Membership](mem://monetization/membership) — Two tiers: €4.99/mo Member (with trial) + €15.99/mo Apex Instant (no trial)
+- [Tribes](mem://features/tribes) — Apex-only communities (sub OR earned apex/legend), max 3 owned, RPC-gated
 - [Road to Elite](mem://features/road-to-elite) — Earned Elite tier requires top 5% + 14 active days + 30-day streak
 - [RevenueCat Sub Sync](mem://technical/subscription-sync) — Webhook handles INITIAL_PURCHASE, RENEWAL, EXPIRATION
 - [Push Notifications](mem://technical/push-notifications) — Capacitor + Supabase Edge Functions for daily reminders/messages

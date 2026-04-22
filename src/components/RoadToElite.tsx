@@ -1,5 +1,6 @@
-import { Crown, TrendingUp, CalendarCheck, Flame, Check } from "lucide-react";
+import { Crown, TrendingUp, CalendarCheck, Flame, Check, Zap, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useRoadToElite, ELITE_REQUIREMENTS } from "@/hooks/use-road-to-elite";
 
@@ -82,6 +83,7 @@ const RequirementRow = ({
  */
 const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
   const r = useRoadToElite();
+  const navigate = useNavigate();
 
   if (r.loading || !r.hasData) return null;
   if (r.isElite) return null; // already Elite — no need to show
@@ -199,6 +201,27 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
             Keep showing up. <span className="text-gold/90 font-semibold">Elite is earned, not bought.</span>
           </p>
         </div>
+
+        {/* Apex Instant shortcut — controversial but explicit */}
+        <button
+          onClick={() => navigate("/paywall")}
+          className="mt-3 w-full group relative overflow-hidden rounded-xl border-2 border-[hsl(18_95%_58%)]/40 bg-gradient-to-r from-[hsl(18_95%_58%)]/12 via-gold/8 to-[hsl(18_95%_58%)]/12 p-3 active:scale-[0.98] transition-transform"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold flex items-center justify-center shrink-0 shadow-[0_0_12px_hsl(18_95%_58%/0.5)]">
+              <Zap size={16} className="text-background" strokeWidth={2.8} />
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent leading-tight">
+                Skip the grind — go Apex now
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Apex Instant • €15.99/mo
+              </p>
+            </div>
+            <ChevronRight size={16} className="text-[hsl(18_95%_58%)] shrink-0 group-active:translate-x-0.5 transition-transform" />
+          </div>
+        </button>
       </div>
     </div>
   );

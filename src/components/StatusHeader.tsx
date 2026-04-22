@@ -5,7 +5,7 @@ import { useTrialAccess } from "@/hooks/use-trial-access";
 import { getTierConfig, getNextTier, TIER_ORDER } from "@/lib/status-tiers";
 import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
-import { Crown, Clock, ChevronRight, Flame } from "lucide-react";
+import { Crown, Clock, ChevronRight, Flame, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import BrandLogo from "@/components/BrandLogo";
 
@@ -67,6 +67,8 @@ const StatusHeader = () => {
   const config = getTierConfig(tier);
   const next = getNextTier(tier);
   const streak = profile.streak || 0;
+  const isApex = tier === "apex";
+  const isApexSubscriber = (profile as any).is_apex_subscriber === true;
 
   // Tier progress: position within full hierarchy (0..1)
   const tierProgress = (TIER_ORDER.indexOf(tier as any) + 1) / TIER_ORDER.length;
@@ -84,7 +86,7 @@ const StatusHeader = () => {
     tier === "legend"
       ? "from-[hsl(280_70%_55%)]/25 via-gold/15 to-[hsl(350_80%_55%)]/20"
       : tier === "apex"
-      ? "from-[hsl(18_95%_58%)]/25 via-gold/15 to-transparent"
+      ? "from-[hsl(18_95%_58%)]/35 via-gold/20 to-[hsl(18_95%_58%)]/15"
       : tier === "elite"
       ? "from-gold/25 via-gold/10 to-transparent"
       : tier === "high_performer"
@@ -130,8 +132,11 @@ const StatusHeader = () => {
       />
 
       <div className="relative backdrop-blur-xl bg-background/90 border-b border-gold/20">
-        {/* Top shimmer accent */}
-        <div className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
+        {/* Top shimmer accent — flame-tinted for Apex */}
+        <div className={cn(
+          "pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent to-transparent",
+          isApex ? "via-[hsl(18_95%_58%)]" : "via-gold/70",
+        )} />
 
         {/* Brand strip — minimal */}
         <button
@@ -209,8 +214,30 @@ const StatusHeader = () => {
             </div>
           </button>
 
-          {/* Status pill */}
-          {isElite ? (
+          {/* Status pill — Apex > Elite > Trial */}
+          {isApex ? (
+            <motion.div
+              className="shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-[hsl(18_95%_58%)]/25 via-gold/20 to-[hsl(18_95%_58%)]/25 border border-[hsl(18_95%_58%)]/70"
+              animate={{
+                boxShadow: [
+                  "0 0 8px hsl(18 95% 58% / 0.5)",
+                  "0 0 22px hsl(18 95% 58% / 0.85)",
+                  "0 0 8px hsl(18 95% 58% / 0.5)",
+                ],
+              }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Zap
+                size={11}
+                className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_4px_hsl(18_95%_58%/0.9)]"
+                strokeWidth={3}
+                fill="currentColor"
+              />
+              <span className="text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
+                {isApexSubscriber ? "Apex⚡" : "Apex"}
+              </span>
+            </motion.div>
+          ) : isElite ? (
             <motion.div
               className="shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-gold/20 via-gold/15 to-gold/20 border border-gold/60"
               animate={{

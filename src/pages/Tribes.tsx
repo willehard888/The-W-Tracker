@@ -428,6 +428,13 @@ const Tribes = () => {
                           {featured.member_count}
                         </span>
                       </span>
+                      {(collectiveStreaks.get(featured.id) ?? 0) >= 30 && (
+                        <StreakFlameInline
+                          streak={collectiveStreaks.get(featured.id) ?? 0}
+                          suffix="d"
+                          className="text-[11px]"
+                        />
+                      )}
                       {memberPreviews[featured.id] && memberPreviews[featured.id].length > 0 && (
                         <div className="flex -space-x-2">
                           {memberPreviews[featured.id].slice(0, 4).map((p) => (

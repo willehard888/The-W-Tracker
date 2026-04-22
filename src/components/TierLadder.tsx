@@ -199,7 +199,7 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
                       </span>
                     ) : cfg.rank === 6 ? (
                       <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded text-gold border border-gold/50 bg-gradient-to-r from-gold/10 to-gold/5 shadow-[0_0_6px_hsl(var(--gold)/0.35)]">
-                        <Lock size={9} strokeWidth={3} /> Earned
+                        <Lock size={9} strokeWidth={3} /> Locked
                       </span>
                     ) : (
                       <span className={cn(

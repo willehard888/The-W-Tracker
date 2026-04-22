@@ -207,8 +207,8 @@ export const getPreviousTier = (current: string): TierConfig | null => {
 export const getTierUsernameClass = (tier: string): string => {
   switch (tier as StatusTier) {
     case "legend":
-      // Brighter, more saturated rainbow with stronger glow — unmistakably Legend
-      return "text-transparent bg-clip-text bg-[linear-gradient(100deg,hsl(280_95%_78%)_0%,hsl(320_90%_72%)_30%,hsl(42_100%_65%)_55%,hsl(350_95%_70%)_80%,hsl(280_95%_78%)_100%)] [background-size:200%_100%] animate-[shimmer_4s_linear_infinite] drop-shadow-[0_2px_24px_hsl(280_85%_65%/0.65)]";
+      // Brighter, more saturated rainbow with stronger glow + animated shimmer — unmistakably Legend
+      return "text-transparent bg-clip-text bg-[linear-gradient(100deg,hsl(280_95%_78%)_0%,hsl(320_90%_72%)_25%,hsl(42_100%_65%)_50%,hsl(350_95%_70%)_75%,hsl(280_95%_78%)_100%)] [background-size:200%_100%] [animation:shimmer-slide_5s_linear_infinite] drop-shadow-[0_2px_24px_hsl(280_85%_65%/0.65)]";
     case "apex":
       return "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(18_100%_65%)] via-[hsl(42_100%_65%)] to-[hsl(18_100%_65%)] drop-shadow-[0_2px_18px_hsl(18_95%_58%/0.55)]";
     case "elite":

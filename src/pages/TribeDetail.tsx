@@ -17,10 +17,12 @@ import {
   Heart,
   Flame,
   Swords,
+  UserCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import TribeInviteModal from "@/components/TribeInviteModal";
+import TribePendingRequestsDialog from "@/components/TribePendingRequestsDialog";
 
 interface Member {
   user_id: string;
@@ -55,6 +57,8 @@ const TribeDetail = () => {
   const [isMember, setIsMember] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [pendingOpen, setPendingOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
   const [likingId, setLikingId] = useState<string | null>(null);
 
   const load = async () => {

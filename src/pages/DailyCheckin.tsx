@@ -4,9 +4,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Moon, Dumbbell, Snowflake, Apple, Droplets, BookOpen,
-  Brain, Smartphone, Camera, ChevronLeft, Zap, Plus,
-  TrendingUp, AlertTriangle, Trophy, Crown, ChevronDown, NotebookPen,
-  Flame, ArrowUp, CheckCircle2
+  Brain, Smartphone, Camera, Zap, Plus,
+  TrendingUp, AlertTriangle, Crown, ChevronDown, NotebookPen,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,7 +14,6 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import { checkAndAwardBadges } from "@/lib/badge-awards";
 import ConfettiBurst from "@/components/ConfettiBurst";
-import XpCounter from "@/components/XpCounter";
 import DailyQuests from "@/components/DailyQuests";
 import LevelUpCelebration from "@/components/LevelUpCelebration";
 import { syncStreakWarningNotification } from "@/lib/streak-notifications";

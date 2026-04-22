@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import StreakFlameInline from "@/components/StreakFlameInline";
 import { X, Heart, MessageCircle, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import StatusAvatar from "@/components/StatusAvatar";
@@ -80,7 +81,7 @@ const ImageLightbox = ({
             {showMetric(streak) && (
               <>
                 <span>•</span>
-                <span className="text-streak-orange">🔥 {streak}d</span>
+                <StreakFlameInline streak={streak} suffix="d" className="text-[10px]" />
               </>
             )}
           </div>

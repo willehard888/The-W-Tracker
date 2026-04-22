@@ -1,5 +1,6 @@
 
 import { useAuth } from "@/contexts/AuthContext";
+import StreakFlameInline from "@/components/StreakFlameInline";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -1045,7 +1046,7 @@ const EliteFeed = () => {
                     {post.profile?.streak > 0 && (
                       <>
                         <span>•</span>
-                        <span className="text-[hsl(var(--streak-orange))]">🔥 {post.profile.streak}d</span>
+                        <StreakFlameInline streak={post.profile.streak} suffix="d" className="text-[10px]" />
                       </>
                     )}
                   </div>

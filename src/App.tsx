@@ -2,7 +2,8 @@ import { lazy, Suspense, useState, useCallback } from "react";
 import SplashScreen from "@/components/SplashScreen";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -88,6 +89,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppRoutes = () => {
   const { user } = useAuth();
+  const location = useLocation();
   usePushNotifications();
 
   return (
@@ -96,46 +98,57 @@ const AppRoutes = () => {
       <div className="flex-1 overflow-y-auto">
         <Suspense fallback={<RouteFallback />}>
           <AccessGate>
-          <Routes>
-          <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
-          <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
-          <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-          <Route path="/apple-username" element={<ProtectedRoute><AppleUsername /></ProtectedRoute>} />
-          <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-          <Route path="/checkin" element={<ProtectedRoute><DailyCheckin /></ProtectedRoute>} />
-          <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-          <Route path="/battles" element={<ProtectedRoute><Battles /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
-          <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
-          <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />
-          <Route path="/badges/compare" element={<ProtectedRoute><BadgeCompare /></ProtectedRoute>} />
-          <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-          <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-          <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
-          <Route path="/coach" element={<ProtectedRoute><Coach /></ProtectedRoute>} />
-          <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
-          <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
-          <Route path="/tribes" element={<ProtectedRoute><Tribes /></ProtectedRoute>} />
-          <Route path="/tribes/leaderboard" element={<ProtectedRoute><TribeLeaderboard /></ProtectedRoute>} />
-          <Route path="/tribes/new" element={<ProtectedRoute><TribeNew /></ProtectedRoute>} />
-          <Route path="/tribes/:id" element={<ProtectedRoute><TribeDetail /></ProtectedRoute>} />
-          <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />
-          <Route path="/u/:username" element={<PublicProfile />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/terms" element={<TermsOfUse />} />
-          <Route path="/ios-debug" element={<IosDebug />} />
-          <Route path="/apple-auth-launch" element={<AppleAuthLaunch />} />
-          <Route path="/~oauth" element={<OAuthCallback />} />
-          <Route path="/~oauth/callback" element={<OAuthCallback />} />
-          <Route path="/oauth" element={<OAuthCallback />} />
-          <Route path="/callback" element={<OAuthCallback />} />
-          <Route path="/oauth/:segment" element={<OAuthCallback />} />
-          <Route path="/oauth/callback" element={<OAuthCallback />} />
-          <Route path="/auth/callback" element={<OAuthCallback />} />
-          <Route path="*" element={<NotFound />} />
-          </Routes>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.22, ease: [0.22, 0.61, 0.36, 1] }}
+                className="h-full"
+              >
+                <Routes location={location}>
+                  <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
+                  <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
+                  <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                  <Route path="/apple-username" element={<ProtectedRoute><AppleUsername /></ProtectedRoute>} />
+                  <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/checkin" element={<ProtectedRoute><DailyCheckin /></ProtectedRoute>} />
+                  <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+                  <Route path="/battles" element={<ProtectedRoute><Battles /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
+                  <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
+                  <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />
+                  <Route path="/badges/compare" element={<ProtectedRoute><BadgeCompare /></ProtectedRoute>} />
+                  <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+                  <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+                  <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+                  <Route path="/coach" element={<ProtectedRoute><Coach /></ProtectedRoute>} />
+                  <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
+                  <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
+                  <Route path="/tribes" element={<ProtectedRoute><Tribes /></ProtectedRoute>} />
+                  <Route path="/tribes/leaderboard" element={<ProtectedRoute><TribeLeaderboard /></ProtectedRoute>} />
+                  <Route path="/tribes/new" element={<ProtectedRoute><TribeNew /></ProtectedRoute>} />
+                  <Route path="/tribes/:id" element={<ProtectedRoute><TribeDetail /></ProtectedRoute>} />
+                  <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />
+                  <Route path="/u/:username" element={<PublicProfile />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/terms" element={<TermsOfUse />} />
+                  <Route path="/ios-debug" element={<IosDebug />} />
+                  <Route path="/apple-auth-launch" element={<AppleAuthLaunch />} />
+                  <Route path="/~oauth" element={<OAuthCallback />} />
+                  <Route path="/~oauth/callback" element={<OAuthCallback />} />
+                  <Route path="/oauth" element={<OAuthCallback />} />
+                  <Route path="/callback" element={<OAuthCallback />} />
+                  <Route path="/oauth/:segment" element={<OAuthCallback />} />
+                  <Route path="/oauth/callback" element={<OAuthCallback />} />
+                  <Route path="/auth/callback" element={<OAuthCallback />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </motion.div>
+            </AnimatePresence>
           </AccessGate>
         </Suspense>
       </div>

@@ -122,14 +122,14 @@ const Index = () => {
     return `${hours}h ${mins}m`;
   };
 
-  // Tier-reactive page-level aura
+  // Tier-reactive page-level aura — softer, wider falloff
   const pageAura = isLegend
-    ? "radial-gradient(ellipse at center top, hsl(280 70% 60% / 0.18) 0%, hsl(42 78% 54% / 0.08) 40%, transparent 75%)"
+    ? "radial-gradient(ellipse 90% 70% at center top, hsl(280 70% 60% / 0.11) 0%, hsl(42 78% 54% / 0.05) 45%, transparent 80%)"
     : isApex
-    ? "radial-gradient(ellipse at center top, hsl(18 95% 58% / 0.16) 0%, hsl(42 78% 54% / 0.06) 40%, transparent 75%)"
+    ? "radial-gradient(ellipse 90% 70% at center top, hsl(18 95% 58% / 0.10) 0%, hsl(42 78% 54% / 0.04) 45%, transparent 80%)"
     : tier === "elite"
-    ? "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.16) 0%, hsl(180 70% 50% / 0.06) 40%, transparent 75%)"
-    : "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.12) 0%, hsl(42 78% 54% / 0.04) 40%, transparent 75%)";
+    ? "radial-gradient(ellipse 90% 70% at center top, hsl(42 78% 54% / 0.10) 0%, hsl(180 70% 50% / 0.04) 45%, transparent 80%)"
+    : "radial-gradient(ellipse 90% 70% at center top, hsl(42 78% 54% / 0.075) 0%, hsl(42 78% 54% / 0.025) 45%, transparent 80%)";
 
   return (
     <div className="h-full pb-6 px-4 pt-5 safe-top relative overflow-y-auto overflow-x-hidden">

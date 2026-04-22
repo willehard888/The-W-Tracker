@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-[transform,box-shadow,background,opacity] duration-[220ms] [transition-timing-function:var(--ease-spring)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.985]",
   {
     variants: {
       variant: {
@@ -16,7 +16,12 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        gold: "gradient-gold text-primary-foreground font-bold tracking-wide hover:opacity-90 btn-3d",
+        gold:
+          "text-primary-foreground font-bold tracking-wide " +
+          "[background:linear-gradient(180deg,hsl(42_88%_62%)_0%,hsl(42_78%_54%)_50%,hsl(42_64%_42%)_100%)] " +
+          "shadow-[inset_0_1px_0_hsl(42_95%_82%/0.55),inset_0_-1px_0_hsl(42_50%_22%/0.5),0_2px_2px_hsl(42_70%_30%/0.25),0_8px_18px_-6px_hsl(42_78%_54%/0.45)] " +
+          "hover:brightness-[1.04] " +
+          "active:shadow-[inset_0_2px_3px_hsl(42_50%_22%/0.45),inset_0_-1px_0_hsl(42_95%_82%/0.25),0_1px_1px_hsl(0_0%_0%/0.2)]",
         "gold-outline": "border border-gold/40 text-gold hover:bg-gold/10 hover:border-gold/60",
       },
       size: {

@@ -168,18 +168,17 @@ const RankProgressHub = ({
 
   return (
     <div className={cn("relative", className)}>
-      {/* Identity strip — greeting + username + crest + live pulse */}
-      <div className="relative mb-3 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
-        {/* Tier-themed aura */}
+      {/* Identity strip — glass surface with subtle corner tint */}
+      <div className="relative mb-3 rounded-2xl surface-glass overflow-hidden">
+        {/* Soft tier-tinted corner glow */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background: isLegend
-              ? "radial-gradient(ellipse at top right, hsl(280 70% 60% / 0.22) 0%, transparent 70%)"
+              ? "radial-gradient(ellipse 60% 50% at 100% 0%, hsl(280 70% 60% / 0.12) 0%, transparent 65%)"
               : isApex
-              ? "radial-gradient(ellipse at top right, hsl(18 95% 58% / 0.22) 0%, transparent 70%)"
-              : `radial-gradient(ellipse at top right, ${accent.replace(")", " / 0.18)")} 0%, transparent 70%)`,
-            animation: "hero-aura-drift 9s ease-in-out infinite",
+              ? "radial-gradient(ellipse 60% 50% at 100% 0%, hsl(18 95% 58% / 0.12) 0%, transparent 65%)"
+              : `radial-gradient(ellipse 60% 50% at 100% 0%, ${accent.replace(")", " / 0.10)")} 0%, transparent 65%)`,
           }}
         />
 
@@ -228,20 +227,21 @@ const RankProgressHub = ({
             </div>
           </div>
 
-          {/* Tier crest */}
+          {/* Tier crest — enameled metal */}
           <div className="shrink-0 relative">
             <div
-              className="h-12 w-12 rounded-2xl flex items-center justify-center relative overflow-hidden float-subtle"
+              className="h-12 w-12 rounded-2xl flex items-center justify-center relative overflow-hidden"
               style={{
                 background: isLegend
                   ? "linear-gradient(135deg, hsl(280 70% 50%), hsl(42 78% 54%), hsl(350 80% 55%))"
                   : isApex
                   ? "linear-gradient(135deg, hsl(18 95% 58%), hsl(42 90% 65%))"
                   : "linear-gradient(135deg, hsl(42 60% 40%), hsl(42 90% 65%))",
-                boxShadow: `0 0 24px ${accent.replace(")", " / 0.5)")}, inset 0 1px 0 hsl(0 0% 100% / 0.2)`,
+                boxShadow:
+                  "inset 0 1px 0 hsl(0 0% 100% / 0.45), inset 0 -1px 0 hsl(0 0% 0% / 0.35), 0 2px 6px hsl(0 0% 0% / 0.35)",
               }}
             >
-              <Crown size={22} strokeWidth={2.4} className="text-primary-foreground drop-shadow" />
+              <Crown size={22} strokeWidth={2.4} className="text-primary-foreground" />
             </div>
             <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2">
               {(isLegend || isApex) ? (

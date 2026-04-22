@@ -114,28 +114,20 @@ const StatusHeader = () => {
 
   return (
     <header className="sticky top-0 z-40 safe-top">
-      {/* Tier-tinted backdrop glow */}
-      <div
-        className={cn(
-          "absolute inset-0 pointer-events-none bg-gradient-to-b opacity-90",
-          tierGlow,
-        )}
-      />
-      {/* Subtle radial spotlight */}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 0%, hsl(42 78% 54% / 0.16), transparent 65%)",
-        }}
-      />
+      <div className="relative surface-glass border-x-0 border-t-0 rounded-none border-b border-gold/15">
+        {/* Soft tier accent — single layer, low intensity */}
+        <div
+          aria-hidden
+          className={cn(
+            "absolute inset-0 pointer-events-none bg-gradient-to-b opacity-50",
+            tierGlow,
+          )}
+        />
 
-      <div className="relative backdrop-blur-xl bg-background/90 border-b border-gold/20">
-        {/* Top shimmer accent — flame-tinted for Apex */}
+        {/* Top hairline shimmer — flame-tinted for Apex */}
         <div className={cn(
           "pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent to-transparent",
-          isApex ? "via-[hsl(18_95%_58%)]" : "via-gold/70",
+          isApex ? "via-[hsl(18_95%_58%)]/70" : "via-gold/55",
         )} />
 
         {/* Brand strip — minimal */}
@@ -233,54 +225,43 @@ const StatusHeader = () => {
               })()}
             </div>
 
-            {/* Row 3: progress bar */}
-            <div className="h-1 rounded-full bg-secondary/60 overflow-hidden mt-1.5">
+            {/* Row 3: progress bar — metallic */}
+            <div className="h-[3px] rounded-full bg-secondary/70 overflow-hidden mt-1.5 shadow-[inset_0_1px_1px_hsl(0_0%_0%/0.3)]">
               <motion.div
-                className={cn("h-full rounded-full", progressBarColor)}
+                className={cn("h-full rounded-full relative", progressBarColor)}
+                style={{ boxShadow: "inset 0 0.5px 0 hsl(0 0% 100% / 0.45)" }}
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.max(6, tierProgress * 100)}%` }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                transition={{ duration: 0.9, ease: [0.22, 0.61, 0.36, 1] }}
               />
             </div>
           </button>
 
-          {/* Status pill — Apex > Elite > Trial */}
+          {/* Status pill — Apex > Elite > Trial — calmer, luxurious */}
           {isApex ? (
             <motion.div
-              className="shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-[hsl(18_95%_58%)]/25 via-gold/20 to-[hsl(18_95%_58%)]/25 border border-[hsl(18_95%_58%)]/70"
-              animate={{
-                boxShadow: [
-                  "0 0 8px hsl(18 95% 58% / 0.5)",
-                  "0 0 22px hsl(18 95% 58% / 0.85)",
-                  "0 0 8px hsl(18 95% 58% / 0.5)",
-                ],
-              }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-[hsl(18_95%_58%)]/55"
+              animate={{ opacity: [0.92, 1, 0.92] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             >
               <Zap
                 size={11}
-                className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_4px_hsl(18_95%_58%/0.9)]"
+                className="relative z-10 text-primary-foreground"
                 strokeWidth={3}
                 fill="currentColor"
               />
-              <span className="text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
+              <span className="relative z-10 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
                 {isApexSubscriber ? "Apex⚡" : "Apex"}
               </span>
             </motion.div>
           ) : isElite ? (
             <motion.div
-              className="shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-gold/20 via-gold/15 to-gold/20 border border-gold/60"
-              animate={{
-                boxShadow: [
-                  "0 0 8px hsl(42 78% 54% / 0.4)",
-                  "0 0 18px hsl(42 78% 54% / 0.7)",
-                  "0 0 8px hsl(42 78% 54% / 0.4)",
-                ],
-              }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+              className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/55"
+              animate={{ opacity: [0.92, 1, 0.92] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             >
-              <Crown size={11} className="text-gold drop-shadow-[0_0_4px_hsl(42_78%_54%/0.8)]" />
-              <span className="text-[10px] font-black text-gold uppercase tracking-wider">
+              <Crown size={11} className="relative z-10 text-primary-foreground" />
+              <span className="relative z-10 text-[10px] font-bold text-primary-foreground uppercase tracking-wider">
                 Elite
               </span>
             </motion.div>
@@ -288,17 +269,17 @@ const StatusHeader = () => {
             <motion.button
               onClick={() => navigate("/paywall")}
               className={cn(
-                "shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border",
+                "shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors",
                 trialUrgent
                   ? "bg-destructive/15 border-destructive/50 text-destructive"
                   : "bg-secondary/70 border-border text-foreground",
               )}
-              whileTap={{ scale: 0.95 }}
-              animate={trialUrgent ? { scale: [1, 1.05, 1] } : {}}
-              transition={{ duration: 1.8, repeat: Infinity }}
+              whileTap={{ scale: 0.96 }}
+              animate={trialUrgent ? { scale: [1, 1.04, 1] } : {}}
+              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
             >
               <Clock size={11} />
-              <span className="text-[10px] font-black uppercase tracking-wider">
+              <span className="text-[10px] font-bold uppercase tracking-wider">
                 {trialLabel}
               </span>
             </motion.button>

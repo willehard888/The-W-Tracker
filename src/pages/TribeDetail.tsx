@@ -21,10 +21,12 @@ import {
   Image as ImageIcon,
   Video as VideoIcon,
   X,
+  ShieldAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 import TribeInviteModal from "@/components/TribeInviteModal";
 import TribePendingRequestsDialog from "@/components/TribePendingRequestsDialog";
+import TribeReportsDialog from "@/components/TribeReportsDialog";
 import TribePostCard, { type TribePostCardPost } from "@/components/TribePostCard";
 import { useModeration } from "@/hooks/use-moderation";
 
@@ -65,6 +67,8 @@ const TribeDetail = () => {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [pendingOpen, setPendingOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [reportsOpen, setReportsOpen] = useState(false);
+  const [reportedCount, setReportedCount] = useState(0);
 
   // Admin check
   const { data: isAdmin } = useQuery({
@@ -168,8 +172,16 @@ const TribeDetail = () => {
         .eq("tribe_id", id)
         .eq("status", "pending");
       setPendingCount(count ?? 0);
+
+      const { count: rCount } = await supabase
+        .from("tribe_posts" as any)
+        .select("id", { count: "exact", head: true })
+        .eq("tribe_id", id)
+        .eq("reported", true);
+      setReportedCount(rCount ?? 0);
     } else {
       setPendingCount(0);
+      setReportedCount(0);
     }
 
     setLoading(false);
@@ -179,6 +191,38 @@ const TribeDetail = () => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, profile?.user_id]);
+
+  // Realtime: refresh on new posts/comments/kudos/reactions in this tribe
+  useEffect(() => {
+    if (!id) return;
+    const channel = supabase
+      .channel(`tribe-feed-${id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tribe_posts", filter: `tribe_id=eq.${id}` },
+        () => load(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tribe_post_comments" },
+        () => load(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tribe_post_reactions" },
+        () => load(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tribe_post_kudos" },
+        () => load(),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleScroll = () => {
     if (scrollRef.current) setParallax(Math.min(scrollRef.current.scrollTop * 0.3, 80));
@@ -390,6 +434,24 @@ const TribeDetail = () => {
               </button>
             )}
 
+            {isOwner && reportedCount > 0 && (
+              <button
+                onClick={() => setReportsOpen(true)}
+                className="mt-3 w-full rounded-xl border border-destructive/45 bg-gradient-to-r from-destructive/15 to-destructive/5 hover:from-destructive/20 transition-all p-2.5 flex items-center gap-2.5 text-left"
+              >
+                <div className="h-8 w-8 rounded-lg bg-destructive/25 border border-destructive/40 flex items-center justify-center shrink-0">
+                  <ShieldAlert size={14} className="text-destructive" strokeWidth={2.6} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] uppercase tracking-widest font-black text-destructive">Reported posts</p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {reportedCount} {reportedCount === 1 ? "post needs" : "posts need"} your review
+                  </p>
+                </div>
+                <span className="text-xs font-black tabular-nums text-destructive">{reportedCount}</span>
+              </button>
+            )}
+
             <div className="flex gap-2 mt-3">
               {!isMember ? (
                 <Button onClick={handleJoin} size="sm" className="bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black flex-1 shadow-[0_0_16px_hsl(18_95%_58%/0.5)]">
@@ -568,6 +630,7 @@ const TribeDetail = () => {
         <>
           <TribeInviteModal tribeId={id} open={inviteOpen} onClose={() => setInviteOpen(false)} />
           <TribePendingRequestsDialog tribeId={id} open={pendingOpen} onOpenChange={setPendingOpen} onChanged={load} />
+          <TribeReportsDialog tribeId={id} open={reportsOpen} onOpenChange={setReportsOpen} onChanged={load} />
         </>
       )}
     </div>

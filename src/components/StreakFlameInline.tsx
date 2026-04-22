@@ -137,18 +137,21 @@ const StreakFlameInline = ({
       glow:  "transparent",
       text:  "hsl(var(--muted-foreground))",
     };
-  }, [tierIndex, isHot, isWarm, isOnFire, isBlazing, isDiamond, isLegendary]);
+  }, [tierIndex, isHot, isWarm, isOnFire, isBlazing, isDiamond, isLegendary, isInferno]);
 
   // Faster, livelier flicker (was deliberately slow). Still GPU-cheap.
   const speed =
+    isInferno   ? 0.7  :
     isLegendary ? 0.85 :
     isDiamond   ? 1.0  :
     isBlazing   ? 1.15 :
     isOnFire    ? 1.3  :
     isWarm      ? 1.55 : 1.85;
 
-  // Diamond+ get a slow hue shimmer
-  const hueAnim = isLegendary
+  // Inferno gets a fast plasma hue cycle; Legendary/Diamond aurora wash.
+  const hueAnim = isInferno
+    ? "flame-plasma-hue 4s linear infinite"
+    : isLegendary
     ? "flame-aurora-hue 6s linear infinite"
     : isDiamond
     ? "flame-aurora-hue 10s linear infinite"

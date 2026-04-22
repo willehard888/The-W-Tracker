@@ -10,7 +10,7 @@ interface PaywallTierCardProps {
   cadence?: string;
   tagline: string;
   badgeLabel: string;
-  features: { icon: any; text: string }[];
+  features: ReadonlyArray<{ icon: any; text: string }>;
   ctaLabel: string;
   ctaIcon?: ReactNode;
   onCta: () => void;

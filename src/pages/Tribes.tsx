@@ -1,0 +1,213 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Users, Plus, Lock, Crown, Loader2, Zap } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+interface Tribe {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  cover_url: string | null;
+  visibility: string;
+  member_count: number;
+  owner_id: string;
+}
+
+const Tribes = () => {
+  const { profile, isApexSubscriber } = useAuth();
+  const navigate = useNavigate();
+  const [tribes, setTribes] = useState<Tribe[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<"browse" | "mine">("browse");
+
+  const tier = profile?.status_tier;
+  const canCreate =
+    isApexSubscriber || tier === "apex" || tier === "legend";
+
+  const load = async () => {
+    setLoading(true);
+    if (tab === "browse") {
+      const { data } = await supabase
+        .from("tribes" as any)
+        .select("*")
+        .eq("visibility", "public")
+        .order("member_count", { ascending: false })
+        .limit(50);
+      setTribes((data as any) ?? []);
+    } else {
+      // My tribes — owned + joined
+      const { data: memberships } = await supabase
+        .from("tribe_members" as any)
+        .select("tribe_id")
+        .eq("user_id", profile?.user_id ?? "")
+        .eq("status", "active");
+      const ids = ((memberships as any) ?? []).map((m: any) => m.tribe_id);
+      if (ids.length === 0) {
+        setTribes([]);
+      } else {
+        const { data } = await supabase
+          .from("tribes" as any)
+          .select("*")
+          .in("id", ids);
+        setTribes((data as any) ?? []);
+      }
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (profile?.user_id) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, profile?.user_id]);
+
+  const handleJoin = async (id: string) => {
+    const { data, error } = await supabase.rpc("join_tribe" as any, {
+      p_tribe_id: id,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    if (data === "pending") toast.success("Request sent — awaiting approval");
+    else if (data === "already_member") toast.info("Already a member");
+    else toast.success("Joined the tribe!");
+    load();
+  };
+
+  return (
+    <div className="min-h-full pb-8 px-4 pt-6 safe-top">
+      {/* Hero */}
+      <div className="text-center mb-6 animate-reveal">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[hsl(18_95%_58%)]/15 border border-[hsl(18_95%_58%)]/40 mb-3">
+          <Zap size={11} className="text-[hsl(18_95%_58%)]" />
+          <span className="text-[10px] font-black tracking-widest uppercase text-[hsl(18_95%_58%)]">
+            Apex Tribes
+          </span>
+        </div>
+        <h1 className="font-display text-2xl font-black tracking-tight mb-1">
+          <span className="bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] bg-clip-text text-transparent">
+            Communities
+          </span>
+        </h1>
+        <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+          Tribes are founded by Apex (top 1%). Join one, or lead your own.
+        </p>
+      </div>
+
+      {/* Create CTA */}
+      {canCreate ? (
+        <Button
+          onClick={() => navigate("/tribes/new")}
+          className="w-full mb-4 bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black shadow-[0_0_20px_hsl(18_95%_58%/0.4)]"
+          size="lg"
+        >
+          <Plus size={16} /> Create a Tribe
+        </Button>
+      ) : (
+        <div
+          className="mb-4 rounded-xl p-4 border border-[hsl(18_95%_58%)]/25 bg-[hsl(18_95%_58%)]/5 flex items-center gap-3"
+        >
+          <div className="h-9 w-9 rounded-lg bg-[hsl(18_95%_58%)]/15 border border-[hsl(18_95%_58%)]/30 flex items-center justify-center shrink-0">
+            <Lock size={14} className="text-[hsl(18_95%_58%)]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-black text-[hsl(18_95%_58%)] tracking-wide">
+              Reach Apex to lead your own tribe
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Earn it via top 1% rank, or unlock instantly with Apex.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => navigate("/paywall")}
+            className="shrink-0"
+          >
+            Unlock
+          </Button>
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div className="flex gap-2 mb-4 p-1 rounded-xl bg-secondary/40">
+        {(["browse", "mine"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={cn(
+              "flex-1 text-xs font-black py-2 rounded-lg uppercase tracking-wider transition-all",
+              tab === t
+                ? "bg-background text-foreground shadow"
+                : "text-muted-foreground"
+            )}
+          >
+            {t === "browse" ? "Browse" : "My Tribes"}
+          </button>
+        ))}
+      </div>
+
+      {/* List */}
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 size={20} className="animate-spin text-gold" />
+        </div>
+      ) : tribes.length === 0 ? (
+        <div className="text-center py-12 text-sm text-muted-foreground">
+          {tab === "browse"
+            ? "No public tribes yet. Be the first founder."
+            : "You haven't joined any tribes yet."}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {tribes.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => navigate(`/tribes/${t.id}`)}
+              className="w-full text-left rounded-xl p-4 border border-border bg-card/60 hover:border-[hsl(18_95%_58%)]/40 transition-colors"
+            >
+              <div className="flex items-start gap-3">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[hsl(18_95%_58%)]/20 to-gold/15 border border-[hsl(18_95%_58%)]/30 flex items-center justify-center shrink-0">
+                  <Crown size={18} className="text-[hsl(18_95%_58%)]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-black text-sm truncate">{t.name}</p>
+                  {t.description && (
+                    <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                      {t.description}
+                    </p>
+                  )}
+                  <p className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                    <Users size={10} /> {t.member_count}{" "}
+                    {t.visibility === "private" && (
+                      <span className="ml-2 text-[hsl(18_95%_58%)]">• private</span>
+                    )}
+                  </p>
+                </div>
+                {tab === "browse" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleJoin(t.id);
+                    }}
+                  >
+                    Join
+                  </Button>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Tribes;

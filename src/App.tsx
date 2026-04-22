@@ -45,6 +45,9 @@ const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Coach = lazy(() => import("./pages/Coach"));
 const WeeklyBriefing = lazy(() => import("./pages/WeeklyBriefing"));
 const AdminModeration = lazy(() => import("./pages/AdminModeration"));
+const Tribes = lazy(() => import("./pages/Tribes"));
+const TribeNew = lazy(() => import("./pages/TribeNew"));
+const TribeDetail = lazy(() => import("./pages/TribeDetail"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -111,6 +114,9 @@ const AppRoutes = () => {
           <Route path="/coach" element={<ProtectedRoute><Coach /></ProtectedRoute>} />
           <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
           <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
+          <Route path="/tribes" element={<ProtectedRoute><Tribes /></ProtectedRoute>} />
+          <Route path="/tribes/new" element={<ProtectedRoute><TribeNew /></ProtectedRoute>} />
+          <Route path="/tribes/:id" element={<ProtectedRoute><TribeDetail /></ProtectedRoute>} />
           <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/reset-password" element={<ResetPassword />} />

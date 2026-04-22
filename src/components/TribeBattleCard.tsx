@@ -86,19 +86,63 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
       </div>
 
       {/* Vs row */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex-1 min-w-0">
-          <p className="text-[9px] uppercase tracking-widest text-muted-foreground">Your tribe</p>
-          <p className="font-display font-black text-sm truncate text-gold">{me?.name ?? "—"}</p>
-          <p className="text-[10px] text-muted-foreground tabular-nums">{me?.member_count ?? 0} members</p>
-        </div>
-        <div className="font-display font-black text-[10px] text-muted-foreground px-2">VS</div>
-        <div className="flex-1 min-w-0 text-right">
-          <p className="text-[9px] uppercase tracking-widest text-muted-foreground">Challenger</p>
-          <p className="font-display font-black text-sm truncate text-foreground">{them?.name ?? "—"}</p>
-          <p className="text-[10px] text-muted-foreground tabular-nums">{them?.member_count ?? 0} members</p>
-        </div>
-      </div>
+      {(() => {
+        const myStreak = me?.collective_streak ?? 0;
+        const theirStreak = them?.collective_streak ?? 0;
+        const myHasBigger = myStreak > theirStreak && myStreak > 0;
+        const theirHasBigger = theirStreak > myStreak && theirStreak > 0;
+        return (
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] uppercase tracking-widest text-muted-foreground">Your tribe</p>
+              <p className="font-display font-black text-sm truncate text-gold">{me?.name ?? "—"}</p>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <p className="text-[10px] text-muted-foreground tabular-nums">{me?.member_count ?? 0} members</p>
+                {myStreak > 0 && (
+                  <>
+                    <span className="text-muted-foreground/40 text-[10px]">•</span>
+                    <StreakFlameInline streak={myStreak} suffix="d" className="text-[10px]" />
+                    {myHasBigger && (
+                      <span className="text-[8px] uppercase tracking-widest font-black text-[hsl(18_95%_58%)] animate-pulse">
+                        Bigger flame
+                      </span>
+                    )}
+                  </>
+                )}
+                {myStreak > 0 && (
+                  <span className="text-[8px] uppercase tracking-wider text-muted-foreground/70">
+                    · {collectiveTierName(myStreak)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="font-display font-black text-[10px] text-muted-foreground px-2">VS</div>
+            <div className="flex-1 min-w-0 text-right">
+              <p className="text-[9px] uppercase tracking-widest text-muted-foreground">Challenger</p>
+              <p className="font-display font-black text-sm truncate text-foreground">{them?.name ?? "—"}</p>
+              <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                {theirStreak > 0 && (
+                  <span className="text-[8px] uppercase tracking-wider text-muted-foreground/70">
+                    {collectiveTierName(theirStreak)} ·
+                  </span>
+                )}
+                {theirStreak > 0 && (
+                  <>
+                    {theirHasBigger && (
+                      <span className="text-[8px] uppercase tracking-widest font-black text-[hsl(18_95%_58%)] animate-pulse">
+                        Bigger flame
+                      </span>
+                    )}
+                    <StreakFlameInline streak={theirStreak} suffix="d" className="text-[10px]" />
+                    <span className="text-muted-foreground/40 text-[10px]">•</span>
+                  </>
+                )}
+                <p className="text-[10px] text-muted-foreground tabular-nums">{them?.member_count ?? 0} members</p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Scoreboard / progress */}
       {(battle.status === "active" || battle.status === "completed") && (

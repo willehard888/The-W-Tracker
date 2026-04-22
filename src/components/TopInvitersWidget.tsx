@@ -3,6 +3,7 @@ import { Trophy, Rocket } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTopInviters, useReferralStats } from "@/hooks/use-referral-stats";
 import StatusAvatar from "@/components/StatusAvatar";
+import TierUsername from "@/components/TierUsername";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -107,13 +108,11 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
                     showBadge={false}
                   />
                   <div className="flex-1 min-w-0">
-                    <p
-                      className={cn(
-                        "text-sm font-semibold truncate",
-                        isMe && "text-gold",
-                      )}
-                    >
-                      @{inv.username}
+                    <p className="text-sm font-semibold truncate">
+                      <TierUsername
+                        username={inv.username}
+                        tier={inv.status_tier || "recruit"}
+                      />
                       {isMe && (
                         <span className="ml-1 text-[10px] text-gold/70 font-medium">
                           (you)

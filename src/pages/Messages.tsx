@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { MessageCircle, UserCheck, UserPlus, Search, X } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
+import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
@@ -169,7 +170,12 @@ const Messages = () => {
               >
                 <StatusAvatar src={u.avatar_url} name={u.username} tier={(u as any).status_tier || 'recruit'} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">@{u.username}</p>
+                  <TierUsername
+                    as="p"
+                    username={u.username}
+                    tier={(u as any).status_tier || "recruit"}
+                    className="text-sm font-semibold truncate"
+                  />
                   <p className="text-xs text-muted-foreground/50">Level {u.level || 1}</p>
                 </div>
                 <MessageCircle size={14} className="text-muted-foreground/30" />
@@ -196,7 +202,12 @@ const Messages = () => {
               <div key={req.id} className="flex items-center gap-3 rounded-xl border border-[hsl(var(--teal))]/20 bg-[hsl(var(--teal))]/5 p-3 card-depth">
                 <StatusAvatar src={req.profile?.avatar_url} name={req.profile?.username} tier={req.profile?.status_tier || 'recruit'} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">@{req.profile?.username || "unknown"}</p>
+                  <TierUsername
+                    as="p"
+                    username={req.profile?.username}
+                    tier={req.profile?.status_tier || "recruit"}
+                    className="text-sm font-semibold truncate"
+                  />
                   <p className="text-[10px] text-muted-foreground">Wants to be friends</p>
                 </div>
                 <button
@@ -244,7 +255,12 @@ const Messages = () => {
               >
                 <StatusAvatar src={friend.avatar_url} name={friend.username} tier={(friend as any).status_tier || 'recruit'} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">@{friend.username}</p>
+                  <TierUsername
+                    as="p"
+                    username={friend.username}
+                    tier={(friend as any).status_tier || "recruit"}
+                    className="text-sm font-semibold truncate"
+                  />
                   <p className="text-xs text-muted-foreground/50">Start a conversation</p>
                 </div>
                 <MessageCircle size={14} className="text-muted-foreground/30" />
@@ -310,9 +326,12 @@ const ConversationRow = ({ conv, userId, navigate, isFriend }: { conv: any; user
     <StatusAvatar src={conv.profile?.avatar_url} name={conv.profile?.username} tier={conv.profile?.status_tier || 'recruit'} size="sm" />
     <div className="flex-1 min-w-0">
       <div className="flex items-center justify-between">
-        <p className={cn("text-sm font-semibold truncate", conv.unread > 0 && "text-foreground")}>
-          @{conv.profile?.username || "unknown"}
-        </p>
+        <TierUsername
+          as="p"
+          username={conv.profile?.username}
+          tier={conv.profile?.status_tier || "recruit"}
+          className={cn("text-sm font-semibold truncate", conv.unread > 0 && "text-foreground")}
+        />
         <span className="text-[10px] text-muted-foreground shrink-0">
           {formatDistanceToNow(new Date(conv.lastMessage.created_at), { addSuffix: true })}
         </span>

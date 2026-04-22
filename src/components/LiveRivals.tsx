@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowUp, ArrowDown, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import StatusAvatar from "@/components/StatusAvatar";
+import TierUsername from "@/components/TierUsername";
 import { useLiveRivals } from "@/hooks/use-live-rivals";
 
 interface LiveRivalsProps {
@@ -54,7 +55,12 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
               size="sm"
             />
             <div className="flex-1 min-w-0 text-left">
-              <p className="font-bold text-sm truncate">@{data.above.username}</p>
+              <TierUsername
+                as="p"
+                username={data.above.username}
+                tier={data.above.status_tier}
+                className="font-bold text-sm truncate"
+              />
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Ahead of you</p>
             </div>
             <div className="flex items-center gap-1 text-xs font-black tabular-nums text-muted-foreground">
@@ -83,7 +89,12 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
               size="sm"
             />
             <div className="flex-1 min-w-0 text-left">
-              <p className="font-bold text-sm truncate">@{data.below.username}</p>
+              <TierUsername
+                as="p"
+                username={data.below.username}
+                tier={data.below.status_tier}
+                className="font-bold text-sm truncate"
+              />
               <p
                 className={cn(
                   "text-[10px] uppercase tracking-wider flex items-center gap-1",

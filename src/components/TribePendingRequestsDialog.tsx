@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Check, X, Loader2, UserCheck } from "lucide-react";
 import { toast } from "sonner";
+import TierUsername from "@/components/TierUsername";
 
 interface PendingMember {
   user_id: string;
@@ -112,7 +113,12 @@ const TribePendingRequestsDialog = ({ tribeId, open, onOpenChange, onChanged }: 
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-black truncate">@{p.username}</p>
+                  <TierUsername
+                    as="p"
+                    username={p.username}
+                    tier={p.status_tier || "recruit"}
+                    className="text-sm font-black truncate"
+                  />
                   {p.status_tier && (
                     <p className="text-[10px] text-muted-foreground capitalize">
                       {p.status_tier.replace("_", " ")}

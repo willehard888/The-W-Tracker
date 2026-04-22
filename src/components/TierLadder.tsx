@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Lock, Check, ChevronRight, Crown, TrendingUp, Sparkles } from "lucide-react";
+import { Lock, Check, ChevronRight, Crown, TrendingUp, Sparkles, Zap } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { TIER_CONFIG, TIER_ORDER, getTierConfig, type StatusTier } from "@/lib/status-tiers";
+import TierUnlockPaywallCard from "@/components/TierUnlockPaywallCard";
 
 interface TierLadderProps {
   currentTier: string;
+  isApexSubscriber?: boolean;
   className?: string;
 }
 
@@ -26,7 +28,7 @@ const TIER_ROW_STYLE: Record<number, { base: string; accent: string; height: str
   6: { base: "border-[hsl(280_70%_60%)]/55 bg-gradient-to-br from-[hsl(280_70%_55%)]/[0.12] via-gold/[0.08] to-[hsl(350_80%_55%)]/[0.12] shadow-[0_0_26px_hsl(280_70%_60%/0.28)]", accent: "bg-gradient-to-br from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background", height: "min-h-[72px]" },
 };
 
-const TierLadder = ({ currentTier, className }: TierLadderProps) => {
+const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLadderProps) => {
   const [openTier, setOpenTier] = useState<StatusTier | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const currentRank = getTierConfig(currentTier).rank;
@@ -191,15 +193,25 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                 {/* Right side: locked hint OR chevron */}
                 {isLocked ? (
                   <div className="flex items-center gap-1.5 shrink-0 relative z-10">
-                    <span className={cn(
-                      "inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded",
-                      cfg.rank >= 5
-                        ? "text-gold border border-gold/50 bg-gradient-to-r from-gold/10 to-gold/5 shadow-[0_0_6px_hsl(var(--gold)/0.3)]"
-                        : "text-muted-foreground border border-border/50 bg-background/20",
-                    )}>
-                      <TrendingUp size={9} strokeWidth={3} />
-                      {stepsAway === 1 ? "Next" : `+${stepsAway}`}
-                    </span>
+                    {cfg.rank === 5 && !isApexSubscriber ? (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded text-background bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold border border-gold/60 shadow-[0_0_8px_hsl(18_95%_58%/0.45)]">
+                        <Zap size={9} strokeWidth={3} /> Premium
+                      </span>
+                    ) : cfg.rank === 6 ? (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded text-gold border border-gold/50 bg-gradient-to-r from-gold/10 to-gold/5 shadow-[0_0_6px_hsl(var(--gold)/0.35)]">
+                        <Lock size={9} strokeWidth={3} /> Earned
+                      </span>
+                    ) : (
+                      <span className={cn(
+                        "inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded",
+                        cfg.rank >= 5
+                          ? "text-gold border border-gold/50 bg-gradient-to-r from-gold/10 to-gold/5 shadow-[0_0_6px_hsl(var(--gold)/0.3)]"
+                          : "text-muted-foreground border border-border/50 bg-background/20",
+                      )}>
+                        <TrendingUp size={9} strokeWidth={3} />
+                        {stepsAway === 1 ? "Next" : `+${stepsAway}`}
+                      </span>
+                    )}
                   </div>
                 ) : (
                   <ChevronRight size={14} className="text-muted-foreground/50 shrink-0 relative z-10 group-hover:translate-x-0.5 transition-transform" />
@@ -272,8 +284,13 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                   </div>
 
                   <div className={cn("rounded-lg p-2.5 text-center text-[11px] font-bold", unlocked ? "bg-emerald-500/10 text-emerald-400" : "bg-muted/20 text-muted-foreground")}>
-                    {unlocked ? "✓ Achieved" : "🔒 Not yet earned"}
+                    {unlocked ? "✓ Achieved" : openTier === 'legend' ? "🔱 Earned only · Founders Circle" : "🔒 Not yet earned"}
                   </div>
+
+                  {/* Apex paywall — only when not yet Apex AND not subscriber */}
+                  {openTier === 'apex' && !unlocked && !isApexSubscriber && (
+                    <TierUnlockPaywallCard className="mt-1" />
+                  )}
                 </div>
               </>
             );

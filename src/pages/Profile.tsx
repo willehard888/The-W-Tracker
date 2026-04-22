@@ -610,7 +610,7 @@ const Profile = () => {
 
       {/* Tier Ladder — full progression map */}
       <div className="mb-6 animate-reveal animate-reveal-delay-3">
-        <TierLadder currentTier={profile.status_tier || "recruit"} />
+        <TierLadder currentTier={profile.status_tier || "recruit"} isApexSubscriber={isApexSubscriber} />
       </div>
 
       <div className="animate-reveal animate-reveal-delay-3">

@@ -141,7 +141,7 @@ const Tribes = () => {
         .in("tribe_id", ids)
         .eq("status", "active")
         .limit(ids.length * 6);
-      const userIds = Array.from(new Set(((previews as any) ?? []).map((p: any) => p.user_id)));
+      const userIds = Array.from(new Set(((previews as any) ?? []).map((p: any) => p.user_id as string)));
       const { data: profs } = userIds.length
         ? await supabase
             .from("profiles")

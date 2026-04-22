@@ -107,7 +107,7 @@ const TribeDetail = () => {
 
     const rawPosts = ((pRes as any).data) ?? [];
     const postIds = rawPosts.map((p: any) => p.id);
-    const authorIds = Array.from(new Set(rawPosts.map((p: any) => p.user_id)));
+    const authorIds = Array.from(new Set(rawPosts.map((p: any) => p.user_id as string)));
     const [authorRes, reactionsRes] = await Promise.all([
       authorIds.length
         ? supabase

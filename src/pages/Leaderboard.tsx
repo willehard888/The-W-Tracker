@@ -423,6 +423,10 @@ const Leaderboard = () => {
       </div>
 
       <div className="mt-6 animate-reveal animate-reveal-delay-3">
+        <TopTribesWidget />
+      </div>
+
+      <div className="mt-6 animate-reveal animate-reveal-delay-3">
         <TopInvitersWidget />
       </div>
 

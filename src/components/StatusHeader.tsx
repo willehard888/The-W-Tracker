@@ -197,7 +197,7 @@ const StatusHeader = () => {
                   · {config.percentile}
                 </span>
               </div>
-              {(() => {
+              {tier !== "legend" && (() => {
                 // Apex users → Legend requirements (invite-only Founders Circle)
                 // Everyone else with a next tier → Apex paywall (skip the grind)
                 const target = tier === "apex" ? "/profile?tier=legend" : "/paywall";

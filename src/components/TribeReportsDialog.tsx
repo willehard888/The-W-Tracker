@@ -97,8 +97,8 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
     setReports(
       list.map((r) => ({
         ...r,
-        post: postMap.get(r.post_id) ?? null,
-        reporter: reporterMap.get(r.reporter_id) ?? null,
+        post: (postMap.get(r.post_id) as any) ?? null,
+        reporter: (reporterMap.get(r.reporter_id) as any) ?? null,
       })),
     );
     setLoading(false);

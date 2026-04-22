@@ -84,30 +84,45 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
   return (
     <div
       className={cn(
-        "relative rounded-xl border bg-card p-4 overflow-hidden transition-all",
-        !isHot && "border-border",
-        isHot && !isOnFire && "border-[hsl(var(--streak-orange))]/40 shadow-[0_0_16px_hsl(var(--streak-orange)/0.12)]",
-        isOnFire && !isBlazing && "border-[hsl(var(--streak-orange))]/50 animate-[streak-pulse-glow_3s_ease-in-out_infinite]",
-        isBlazing && !isDiamond && "border-gold/50 animate-[streak-pulse-glow-gold_3s_ease-in-out_infinite]",
-        isDiamond && !isLegendary && "border-[hsl(200_80%_65%)]/50 animate-[streak-pulse-glow-diamond_2.5s_ease-in-out_infinite]",
-        isLegendary && "border-[hsl(280_70%_60%)]/50 animate-[streak-pulse-glow-legendary_2s_ease-in-out_infinite]",
+        "relative rounded-2xl border-2 bg-gradient-to-br from-card via-card to-card/80 p-5 overflow-hidden transition-all",
+        // Stronger base shadow always
+        "shadow-[0_8px_32px_-8px_hsl(0_0%_0%/0.4)]",
+        !isHot && "border-border/80",
+        isHot && !isOnFire && "border-[hsl(var(--streak-orange))]/60 shadow-[0_0_28px_hsl(var(--streak-orange)/0.22),inset_0_1px_0_hsl(var(--streak-orange)/0.15)]",
+        isOnFire && !isBlazing && "border-[hsl(var(--streak-orange))]/70 shadow-[0_0_36px_hsl(var(--streak-orange)/0.32),inset_0_1px_0_hsl(var(--streak-orange)/0.2)] animate-[streak-pulse-glow_3s_ease-in-out_infinite]",
+        isBlazing && !isDiamond && "border-gold/70 shadow-[0_0_44px_hsl(var(--gold)/0.4),inset_0_1px_0_hsl(var(--gold)/0.25)] animate-[streak-pulse-glow-gold_3s_ease-in-out_infinite]",
+        isDiamond && !isLegendary && "border-[hsl(200_80%_65%)]/70 shadow-[0_0_48px_hsl(200_80%_65%/0.4),inset_0_1px_0_hsl(200_80%_65%/0.25)] animate-[streak-pulse-glow-diamond_2.5s_ease-in-out_infinite]",
+        isLegendary && "border-[hsl(280_70%_60%)]/70 shadow-[0_0_56px_hsl(280_70%_60%/0.45),inset_0_1px_0_hsl(280_70%_60%/0.3)] animate-[streak-pulse-glow-legendary_2s_ease-in-out_infinite]",
         className
       )}
     >
-      {/* Ambient glow overlay */}
+      {/* Top accent ribbon */}
+      <div
+        className={cn(
+          "absolute top-0 inset-x-0 h-[3px] pointer-events-none",
+          !isHot && "bg-gradient-to-r from-transparent via-border to-transparent",
+          isHot && !isOnFire && "bg-gradient-to-r from-transparent via-[hsl(var(--streak-orange))] to-transparent opacity-70",
+          isOnFire && !isBlazing && "bg-gradient-to-r from-transparent via-[hsl(var(--streak-orange))] to-transparent",
+          isBlazing && !isDiamond && "bg-gradient-to-r from-transparent via-gold to-transparent",
+          isDiamond && !isLegendary && "bg-gradient-to-r from-[hsl(200_80%_65%)] via-gold to-[hsl(200_80%_65%)]",
+          isLegendary && "bg-[linear-gradient(90deg,hsl(280_70%_60%),hsl(42_78%_54%),hsl(350_80%_55%),hsl(280_70%_60%))] [background-size:200%_100%] animate-[shimmer-slide_4s_linear_infinite]"
+        )}
+      />
+
+      {/* Ambient glow overlay (stronger) */}
       {isHot && (
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background: isLegendary
-              ? "linear-gradient(135deg, hsl(280 70% 60% / 0.1), hsl(42 78% 54% / 0.08), hsl(200 80% 65% / 0.06), transparent 70%)"
+              ? "radial-gradient(circle at 20% 0%, hsl(280 70% 60% / 0.22), transparent 55%), radial-gradient(circle at 80% 100%, hsl(42 78% 54% / 0.18), transparent 55%)"
               : isDiamond
-              ? "linear-gradient(135deg, hsl(200 80% 65% / 0.1), hsl(42 78% 54% / 0.06), transparent 65%)"
+              ? "radial-gradient(circle at 25% 0%, hsl(200 80% 65% / 0.22), transparent 55%), radial-gradient(circle at 75% 100%, hsl(42 78% 54% / 0.14), transparent 55%)"
               : isBlazing
-              ? "linear-gradient(135deg, hsl(42 78% 54% / 0.08), transparent 60%)"
+              ? "radial-gradient(circle at 30% 0%, hsl(42 78% 54% / 0.22), transparent 60%)"
               : isOnFire
-              ? "linear-gradient(135deg, hsl(18 95% 58% / 0.1), hsl(42 78% 54% / 0.04), transparent 70%)"
-              : "linear-gradient(135deg, hsl(18 95% 58% / 0.06), transparent 60%)",
+              ? "radial-gradient(circle at 30% 0%, hsl(18 95% 58% / 0.22), transparent 60%)"
+              : "radial-gradient(circle at 30% 0%, hsl(18 95% 58% / 0.16), transparent 60%)",
           }}
         />
       )}
@@ -118,7 +133,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
           className="absolute inset-0 pointer-events-none animate-[streak-rainbow_4s_linear_infinite]"
           style={{
             background:
-              "linear-gradient(90deg, transparent, hsl(280 70% 60% / 0.06), hsl(42 78% 54% / 0.06), hsl(200 80% 65% / 0.06), transparent)",
+              "linear-gradient(90deg, transparent, hsl(280 70% 60% / 0.1), hsl(42 78% 54% / 0.1), hsl(200 80% 65% / 0.1), transparent)",
             backgroundSize: "200% 100%",
           }}
         />
@@ -128,22 +143,68 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
       {isDiamond && <StreakParticles isDiamond={isDiamond} isLegendary={isLegendary} />}
 
       <div className="relative">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-3">
+        {/* Section label */}
+        <div className="flex items-center justify-between mb-3">
+          <p className={cn(
+            "text-[10px] font-black uppercase tracking-[0.22em]",
+            !isHot && "text-muted-foreground",
+            isHot && !isBlazing && "text-[hsl(var(--streak-orange))]",
+            isBlazing && !isDiamond && "text-gold",
+            isDiamond && !isLegendary && "text-[hsl(200_80%_65%)]",
+            isLegendary && "text-[hsl(280_70%_70%)]",
+          )}>
+            🔥 Active Streak
+          </p>
+          {tier.index >= 0 && (
+            <span
+              className={cn(
+                "text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border",
+                isHot && !isOnFire && "bg-[hsl(var(--streak-orange))]/15 text-[hsl(var(--streak-orange))] border-[hsl(var(--streak-orange))]/40",
+                isOnFire && !isBlazing && "bg-[hsl(var(--streak-orange))]/20 text-[hsl(var(--streak-orange))] border-[hsl(var(--streak-orange))]/50 shadow-[0_0_10px_hsl(var(--streak-orange)/0.25)]",
+                isBlazing && !isDiamond && "bg-gold/20 text-gold border-gold/50 shadow-[0_0_12px_hsl(var(--gold)/0.3)]",
+                isDiamond && !isLegendary && "bg-[hsl(200_80%_65%)]/20 text-[hsl(200_80%_65%)] border-[hsl(200_80%_65%)]/50 shadow-[0_0_12px_hsl(200_80%_65%/0.3)]",
+                isLegendary && "bg-[hsl(280_70%_60%)]/20 text-[hsl(280_70%_70%)] border-[hsl(280_70%_60%)]/50 shadow-[0_0_14px_hsl(280_70%_60%/0.35)] animate-[streak-badge-shimmer_3s_ease-in-out_infinite]"
+              )}
+            >
+              {isDiamond && !isLegendary && "💎 "}
+              {isLegendary && "🏆 "}
+              {tier.name}
+            </span>
+          )}
+        </div>
+
+        {/* Hero row */}
+        <div className="flex items-center gap-4 mb-4">
           <div
             className={cn(
-              "flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-all",
+              "relative flex h-16 w-16 items-center justify-center rounded-2xl shrink-0 transition-all",
               !isHot && "bg-secondary text-muted-foreground",
-              isHot && !isOnFire && "bg-[hsl(var(--streak-orange))]/15 text-[hsl(var(--streak-orange))]",
-              isOnFire && !isBlazing && "bg-[hsl(var(--streak-orange))]/20 text-[hsl(var(--streak-orange))] shadow-[0_0_16px_hsl(var(--streak-orange)/0.25)]",
-              isBlazing && !isDiamond && "gradient-gold text-primary-foreground shadow-[0_0_20px_hsl(var(--gold)/0.4)]",
-              isDiamond && !isLegendary && "bg-gradient-to-br from-[hsl(200_80%_55%)] to-[hsl(42_78%_54%)] text-white shadow-[0_0_24px_hsl(200_80%_65%/0.4)]",
-              isLegendary && "bg-gradient-to-br from-[hsl(280_70%_55%)] via-[hsl(42_78%_54%)] to-[hsl(350_80%_55%)] text-white shadow-[0_0_28px_hsl(280_70%_60%/0.5)]"
+              isHot && !isOnFire && "bg-[hsl(var(--streak-orange))]/15 text-[hsl(var(--streak-orange))] shadow-[0_0_20px_hsl(var(--streak-orange)/0.3)]",
+              isOnFire && !isBlazing && "bg-[hsl(var(--streak-orange))]/25 text-[hsl(var(--streak-orange))] shadow-[0_0_28px_hsl(var(--streak-orange)/0.45)]",
+              isBlazing && !isDiamond && "gradient-gold text-primary-foreground shadow-[0_0_32px_hsl(var(--gold)/0.55)]",
+              isDiamond && !isLegendary && "bg-gradient-to-br from-[hsl(200_80%_55%)] to-[hsl(42_78%_54%)] text-white shadow-[0_0_36px_hsl(200_80%_65%/0.55)]",
+              isLegendary && "bg-gradient-to-br from-[hsl(280_70%_55%)] via-[hsl(42_78%_54%)] to-[hsl(350_80%_55%)] text-white shadow-[0_0_40px_hsl(280_70%_60%/0.6)]"
             )}
           >
+            {/* Pulsing ring for hot+ */}
+            {isHot && (
+              <span
+                aria-hidden
+                className={cn(
+                  "absolute inset-0 rounded-2xl pointer-events-none animate-ping opacity-40",
+                  !isBlazing && "bg-[hsl(var(--streak-orange))]/30",
+                  isBlazing && !isDiamond && "bg-gold/30",
+                  isDiamond && !isLegendary && "bg-[hsl(200_80%_65%)]/30",
+                  isLegendary && "bg-[hsl(280_70%_60%)]/30",
+                )}
+                style={{ animationDuration: isLegendary ? "1.4s" : isDiamond ? "1.6s" : isBlazing ? "1.8s" : "2.2s" }}
+              />
+            )}
             <Flame
-              size={20}
+              size={32}
+              strokeWidth={2.4}
               className={cn(
+                "relative drop-shadow-[0_2px_8px_currentColor]",
                 isHot && !isOnFire && "animate-[streak-fire_2.2s_ease-in-out_infinite]",
                 isOnFire && !isBlazing && "animate-[streak-fire_1.6s_ease-in-out_infinite]",
                 isBlazing && !isDiamond && "animate-[streak-fire_1.2s_ease-in-out_infinite]",
@@ -155,17 +216,17 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
           {/* Sparkle icon for legendary */}
           {isLegendary && (
             <Sparkles
-              size={16}
-              className="absolute top-3 right-3 text-[hsl(280_70%_65%)] animate-[streak-fire_2s_ease-in-out_infinite]"
+              size={20}
+              className="absolute top-4 right-4 text-[hsl(280_70%_70%)] drop-shadow-[0_0_12px_hsl(280_70%_60%)] animate-[streak-fire_2s_ease-in-out_infinite]"
             />
           )}
 
           <div className="flex-1 min-w-0 overflow-hidden">
-            <div className="flex items-baseline gap-1">
+            <div className="flex items-baseline gap-2">
               <span
                 className={cn(
-                  "font-black font-display tabular-nums leading-none tracking-tighter",
-                  displayStreak >= 100 ? "text-4xl" : displayStreak >= 10 ? "text-5xl" : "text-6xl",
+                  "font-black font-display tabular-nums leading-none tracking-tighter drop-shadow-[0_2px_8px_currentColor]",
+                  displayStreak >= 100 ? "text-[56px]" : displayStreak >= 10 ? "text-[64px]" : "text-[72px]",
                   !isHot && "text-foreground",
                   isHot && !isOnFire && "text-[hsl(var(--streak-orange))]",
                   isOnFire && !isBlazing && "text-[hsl(var(--streak-orange))] animate-[streak-number-pulse_3s_ease-in-out_infinite]",
@@ -176,27 +237,14 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
               >
                 {displayStreak}
               </span>
-              <span className="font-bold text-muted-foreground mx-0 my-0 px-0 py-0 font-sans text-xs">days</span>
+              <span className="font-black text-muted-foreground font-display text-sm uppercase tracking-widest">
+                day{displayStreak === 1 ? "" : "s"}
+              </span>
             </div>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              {tier.index >= 0 && (
-                <span
-                  className={cn(
-                    "text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md",
-                    !isHot && "bg-[hsl(var(--streak-orange))]/10 text-[hsl(var(--streak-orange))]/80",
-                    isHot && !isOnFire && "bg-[hsl(var(--streak-orange))]/15 text-[hsl(var(--streak-orange))]",
-                    isOnFire && !isBlazing && "bg-[hsl(var(--streak-orange))]/20 text-[hsl(var(--streak-orange))] shadow-[0_0_8px_hsl(var(--streak-orange)/0.15)]",
-                    isBlazing && !isDiamond && "bg-gold/15 text-gold shadow-[0_0_8px_hsl(var(--gold)/0.2)]",
-                    isDiamond && !isLegendary && "bg-[hsl(200_80%_65%)]/15 text-[hsl(200_80%_65%)] shadow-[0_0_10px_hsl(200_80%_65%/0.2)]",
-                    isLegendary && "bg-[hsl(280_70%_60%)]/15 text-[hsl(280_70%_65%)] shadow-[0_0_12px_hsl(280_70%_60%/0.25)] animate-[streak-badge-shimmer_3s_ease-in-out_infinite]"
-                  )}
-                >
-                  {isDiamond && !isLegendary && "💎 "}
-                  {isLegendary && "🏆 "}
-                  {tier.name}
-                </span>
-              )}
-              <span className="text-[10px] text-muted-foreground/60">Best: {longestStreak}d</span>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-wider">
+                Best <span className="text-foreground font-black tabular-nums">{longestStreak}d</span>
+              </span>
             </div>
           </div>
         </div>

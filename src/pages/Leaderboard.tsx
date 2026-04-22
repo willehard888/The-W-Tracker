@@ -11,7 +11,6 @@ import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { useEffect, useMemo, useState } from "react";
 import StatusBadge from "@/components/StatusBadge";
-import { getTierConfig } from "@/lib/status-tiers";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
 
 type LeaderRow = {

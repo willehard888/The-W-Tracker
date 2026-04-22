@@ -68,31 +68,31 @@ const ApexBadge = ({
         title="Founding Apex — €15.99/mo · Day-One Member · Tier locked at Apex"
         className={cn(
           "founding-premium-shimmer relative inline-flex items-center rounded-full font-black uppercase tracking-wider",
-          // Conic premium-credit-card feel
-          "border border-[hsl(var(--gold))]/80 text-background",
+          "border border-[hsl(var(--gold))]/90",
           "shadow-[0_2px_10px_hsl(18_95%_58%/0.45),0_0_22px_hsl(var(--gold)/0.45)]",
           upWrap,
           className,
         )}
       >
-        {/* Crown over Zap stack — denotes "purchased + instant" */}
-        <span className="relative inline-flex items-center justify-center">
+        <span className="relative z-20 inline-flex items-center justify-center">
           <Crown
             size={upIcon}
-            strokeWidth={2.8}
-            className="drop-shadow-[0_0_3px_hsl(var(--gold)/0.9)]"
+            strokeWidth={3}
+            className="text-[hsl(260_18%_4%)] drop-shadow-[0_1px_0_hsl(var(--gold-light))]"
           />
           <Zap
-            size={Math.round(upIcon * 0.55)}
-            strokeWidth={3}
-            className="absolute -bottom-0.5 -right-1 text-background fill-background"
+            size={Math.round(upIcon * 0.5)}
+            strokeWidth={3.2}
+            className="absolute -bottom-0.5 -right-1 text-[hsl(var(--gold-light))] fill-[hsl(var(--gold-light))]"
           />
         </span>
-        <span className="relative z-10 leading-none">Founding</span>
+        <span className="relative z-20 leading-none text-[hsl(260_18%_4%)] drop-shadow-[0_1px_0_hsl(var(--gold-light)/0.5)]">
+          Founding
+        </span>
         <Sparkle
           size={Math.round(upIcon * 0.7)}
-          strokeWidth={2.6}
-          className="relative z-10 animate-pulse drop-shadow-[0_0_3px_hsl(var(--gold))]"
+          strokeWidth={3}
+          className="relative z-20 text-[hsl(260_18%_4%)] animate-pulse"
         />
       </span>
     );

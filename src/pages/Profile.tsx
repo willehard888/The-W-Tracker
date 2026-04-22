@@ -254,6 +254,28 @@ const Profile = () => {
 
   const tier = profile.status_tier || 'recruit';
   const tierConfig = getTierConfig(tier);
+  const isLegendTier = tier === 'legend';
+  const isApexTier = tier === 'apex';
+  const isHighTier = tier === 'high_performer';
+
+  // Hero card gradient — themed by tier so the whole card screams status
+  const heroBgClass = isLegendTier
+    ? "border-[hsl(280_70%_60%)]/35 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(280_60%_18%/0.7),hsl(255_14%_6%)_55%,hsl(350_50%_12%/0.5)_100%)]"
+    : isApexTier
+    ? "border-[hsl(18_95%_58%)]/35 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(18_75%_18%/0.65),hsl(255_14%_6%)_60%)]"
+    : tier === 'elite'
+    ? "border-gold/25 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(42_70%_18%/0.55),hsl(255_14%_6%)_60%)]"
+    : isHighTier
+    ? "border-[hsl(var(--purple))]/30 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(270_50%_18%/0.55),hsl(255_14%_6%)_60%)]"
+    : "border-border/40 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(255_14%_11%),hsl(255_14%_5%)_60%)]";
+
+  const heroTopGlowStyle = isLegendTier
+    ? "radial-gradient(ellipse at center, hsl(280 70% 60% / 0.4), transparent 70%)"
+    : isApexTier
+    ? "radial-gradient(ellipse at center, hsl(18 95% 58% / 0.4), transparent 70%)"
+    : isHighTier
+    ? "radial-gradient(ellipse at center, hsl(var(--purple) / 0.35), transparent 70%)"
+    : "radial-gradient(ellipse at center, hsl(42 78% 54% / 0.35), transparent 70%)";
 
   return (
     <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
@@ -267,16 +289,16 @@ const Profile = () => {
 
       
 
-      {/* Profile Header — cinematic hero card */}
-      <div className="animate-reveal relative mb-6 overflow-hidden rounded-3xl border border-gold/25 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(42_70%_18%/0.55),hsl(255_14%_6%)_60%)] p-6 pt-10 pb-7">
+      {/* Profile Header — cinematic hero card, themed by tier */}
+      <div className={cn(
+        "animate-reveal relative mb-6 overflow-hidden rounded-3xl border p-6 pt-10 pb-7",
+        heroBgClass,
+      )}>
         {/* Top vignette glow */}
         <div
           aria-hidden
           className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[160%] h-64 blur-3xl opacity-70"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, hsl(42 78% 54% / 0.35), transparent 70%)",
-          }}
+          style={{ background: heroTopGlowStyle }}
         />
         {/* Top accent line */}
         <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
@@ -339,6 +361,17 @@ const Profile = () => {
           )}>
             @{profile.username}
           </h1>
+
+          {/* MASSIVE status nameplate — the loudest element on the page */}
+          <div className="mt-5 w-full">
+            <StatusNameplate
+              tier={tier}
+              rank={rankData?.rank}
+              totalUsers={rankData?.totalUsers}
+              percentile={rankData?.percentile}
+              size="lg"
+            />
+          </div>
 
           {/* Status pills — Apex/Legend supersede Elite (no duplicate badges) */}
           <div className="flex flex-wrap items-center justify-center gap-2 mt-4">

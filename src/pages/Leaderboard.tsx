@@ -51,12 +51,27 @@ const Leaderboard = () => {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"season" | "all_time">("season");
   const [, setTick] = useState(0);
-  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([
+  const { scrollRef, pullDistance, isRefreshing, onTouchStart: pullStart, onTouchMove, onTouchEnd: pullEnd, PULL_THRESHOLD } = usePullRefresh([
     ["leaderboard-all-time"],
     ["leaderboard-season"],
     ["active-season"],
     ["leaderboard-champions"],
   ]);
+
+  const { onTouchStart: swipeStart, onTouchEnd: swipeEnd } = useHorizontalSwipe({
+    onSwipeLeft: () => setMode((m) => (m === "season" ? "all_time" : m)),
+    onSwipeRight: () => setMode((m) => (m === "all_time" ? "season" : m)),
+  });
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    pullStart(e);
+    swipeStart(e);
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    pullEnd();
+    swipeEnd(e);
+  };
+
 
   useEffect(() => {
     const id = setInterval(() => setTick((v) => v + 1), 1000);

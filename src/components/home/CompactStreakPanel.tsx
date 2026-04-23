@@ -132,6 +132,7 @@ const CompactStreakPanel = ({
   /* ── Animated count-up + milestone shockwave detection ─────────────── */
   const [countDisplay, setCountDisplay] = useState(displayStreak);
   const [shockwave, setShockwave] = useState(false);
+  const [droppedRewards, setDroppedRewards] = useState<string[]>([]);
   const prevStreakRef = useRef(displayStreak);
   const numberKey = useRef(0);
 
@@ -139,14 +140,20 @@ const CompactStreakPanel = ({
     const prev = prevStreakRef.current;
     if (prev === displayStreak) return;
 
-    // Detect milestone crossing
-    const crossedMilestone = MILESTONES.some(
+    // Detect milestone crossing — release the locked reward from the ice
+    const justCrossed = MILESTONES.filter(
       (m) => prev < m.days && displayStreak >= m.days,
     );
-    if (crossedMilestone) {
+    if (justCrossed.length > 0) {
       setShockwave(true);
       const t = setTimeout(() => setShockwave(false), 900);
-      // Stop propagation
+      // Drop each newly-unlocked reward; auto-clear after the fall completes
+      const newRewards = justCrossed.map((m) => m.emoji);
+      setDroppedRewards((prev) => [...prev, ...newRewards]);
+      const cleanup = setTimeout(() => {
+        setDroppedRewards((prev) => prev.slice(newRewards.length));
+      }, 4200);
+      // (cleanup tracked separately; React unmount also clears)
     }
 
     // Count-up animation (300ms)
@@ -167,6 +174,11 @@ const CompactStreakPanel = ({
 
     return () => cancelAnimationFrame(raf);
   }, [displayStreak]);
+
+  // Progress (0..1) toward unlocking the next milestone reward
+  const prizeProgress = segmentProgress / 100;
+  // The glyph shown inside the ice = the next reward you're working toward
+  const prizeGlyph = nextMilestone?.emoji ?? "🏆";
 
   /* ── Tier-driven styling ───────────────────────────────────────────── */
   const accent = isLegendary

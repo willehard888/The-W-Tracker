@@ -2707,50 +2707,76 @@
     inset 0 -1px 0 hsl(0 0% 0% / 0.38);
 }
 
-/* === Flame "lava bowl" — concave 3D base that the flame appears to rise FROM.
-       Use as a wrapper around any flame: <span class="flame-bowl">{flame}</span>.
-       Pure presentation — no animation. === */
+/* === Flame "lava bowl" — premium glass source plate the flame rises FROM.
+       Pure presentation — no animation, no layout impact.
+       Two pseudo-elements stack to fake a polished glass cup:
+        ::before  → deep concave shadow well (the recess)
+        ::after   → bright specular rim line + side highlights (the polished glass)
+       A glass disc sits beneath via box-shadow stacking on the wrapper itself. === */
 .flame-bowl {
   position: relative;
   display: inline-block;
+  /* The wrapper itself "is" the glass disc edge: stacked shadows give a
+     polished obsidian/glass puck sitting under the flame. Doesn't change
+     layout — these shadows fall outside the box. */
+  filter:
+    drop-shadow(0 1px 0 hsl(0 0% 100% / 0.06))
+    drop-shadow(0 0 0.5px hsl(42 100% 80% / 0.12));
 }
 .flame-bowl::before {
-  /* Concave bowl rim — radial gradient creates the illusion of depth */
+  /* Concave bowl rim — deep radial well + subtle warm caustic at the bottom.
+     Layered gradients = lit-from-within glass disc. */
   content: "";
   position: absolute;
   left: 50%;
-  bottom: -2%;
-  width: 92%;
-  height: 18%;
+  bottom: -4%;
+  width: 104%;
+  height: 22%;
   transform: translateX(-50%);
   background:
-    radial-gradient(ellipse at 50% 30%,
-      hsl(0 0% 0% / 0.7) 0%,
-      hsl(0 0% 0% / 0.45) 35%,
-      hsl(0 0% 0% / 0.15) 65%,
-      transparent 85%);
+    /* Warm caustic puddle right under the wick — sells "fuel pool" */
+    radial-gradient(ellipse at 50% 38%,
+      hsl(28 95% 60% / 0.32) 0%,
+      hsl(18 90% 50% / 0.16) 22%,
+      transparent 48%),
+    /* Deep concave shadow well */
+    radial-gradient(ellipse at 50% 28%,
+      hsl(0 0% 0% / 0.78) 0%,
+      hsl(0 0% 0% / 0.5) 32%,
+      hsl(0 0% 0% / 0.22) 58%,
+      transparent 82%);
   border-radius: 50%;
-  filter: blur(1.5px);
+  filter: blur(1.6px);
   pointer-events: none;
   z-index: 0;
 }
 .flame-bowl::after {
-  /* Bowl rim specular — thin bright line on the inner top edge of the "bowl" */
+  /* Polished glass disc — top specular rim + side facets that catch the light.
+     Three gradients composited give a believable refractive edge. */
   content: "";
   position: absolute;
   left: 50%;
-  bottom: 4%;
-  width: 70%;
-  height: 4%;
+  bottom: 3%;
+  width: 86%;
+  height: 6%;
   transform: translateX(-50%);
-  background: linear-gradient(90deg,
-    transparent 0%,
-    hsl(42 95% 80% / 0.45) 35%,
-    hsl(42 100% 92% / 0.6) 50%,
-    hsl(42 95% 80% / 0.45) 65%,
-    transparent 100%);
+  background:
+    /* Center-hot specular highlight (the brightest pinpoint) */
+    radial-gradient(ellipse at 50% 40%,
+      hsl(42 100% 95% / 0.85) 0%,
+      hsl(42 100% 88% / 0.55) 22%,
+      transparent 55%),
+    /* Side-rim specular sweep — left and right glass facets */
+    linear-gradient(90deg,
+      transparent 0%,
+      hsl(200 90% 88% / 0.22) 12%,
+      hsl(42 95% 82% / 0.55) 30%,
+      hsl(42 100% 94% / 0.7) 50%,
+      hsl(42 95% 82% / 0.55) 70%,
+      hsl(200 90% 88% / 0.22) 88%,
+      transparent 100%);
   border-radius: 50%;
-  filter: blur(0.8px);
+  filter: blur(0.6px);
   pointer-events: none;
   z-index: 0;
   mix-blend-mode: screen;

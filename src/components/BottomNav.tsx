@@ -32,10 +32,6 @@ const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  if (HIDDEN_PATHS.has(location.pathname) || location.pathname.startsWith("/chat/")) {
-    return null;
-  }
-
   const handleNav = useCallback(
     (path: string) => {
       if (location.pathname === path) return;
@@ -44,6 +40,10 @@ const BottomNav = () => {
     },
     [location.pathname, navigate],
   );
+
+  if (HIDDEN_PATHS.has(location.pathname) || location.pathname.startsWith("/chat/")) {
+    return null;
+  }
 
   return (
     <nav

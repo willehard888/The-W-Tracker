@@ -61,7 +61,7 @@ interface RealisticFlameProps {
  *  like wind is on it.
  */
 const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
-  ({ tier, accent, size = 44, className, interactive }, ref) => {
+  ({ tier, accent, size = 44, className, interactive, prizeProgress, prizeGlyph, droppedRewards }, ref) => {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const containerRef = useRef<HTMLDivElement | null>(null);
 

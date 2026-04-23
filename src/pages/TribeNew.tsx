@@ -188,7 +188,8 @@ const TribeNew = () => {
             nameStatus === "taken" ||
             nameStatus === "checking"
           }
-          className="w-full bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black"
+          variant="ember"
+          className="w-full"
           size="lg"
         >
           {submitting ? <Loader2 size={16} className="animate-spin" /> : <Users size={16} />}

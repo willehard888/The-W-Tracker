@@ -90,11 +90,11 @@ serve(async (req) => {
     }
 
     const customerId = customers.data[0].id;
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 5,
-    });
+    const subscriptions = await withDeadline(
+      stripe.subscriptions.list({ customer: customerId, status: "active", limit: 5 }),
+      9000,
+      "stripe.subscriptions.list",
+    );
 
     const hasActiveSub = subscriptions.data.length > 0;
     let subscriptionEnd = null;

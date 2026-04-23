@@ -1993,6 +1993,36 @@
   50%      { opacity: 0.78; transform: translateX(-50%) scaleY(1.08) scaleX(1.15); }
 }
 
+/* ============================================================
+   Frozen mystery prize — suspended ice crystal above the flame
+   ============================================================ */
+
+/* Soft cool aura behind the prism — breathes opposite to flame */
+@keyframes ice-prize-aura {
+  0%, 100% { opacity: 0.55; transform: translateX(-50%) scale(1); }
+  50%      { opacity: 0.9;  transform: translateX(-50%) scale(1.08); }
+}
+
+/* The prism gently bobs as if suspended on a thin chain */
+@keyframes ice-prize-bob {
+  0%, 100% { transform: translateX(-50%) translateY(0)    rotate(-1.2deg); }
+  50%      { transform: translateX(-50%) translateY(2.5px) rotate(1.2deg); }
+}
+
+/* Melt drips falling from the bottom of the ice */
+@keyframes ice-prize-drip {
+  0%   { opacity: 0; transform: translateY(0) scaleY(0.6); }
+  10%  { opacity: 1; transform: translateY(2px) scaleY(1); }
+  85%  { opacity: 1; transform: translateY(18px) scaleY(1.2); }
+  100% { opacity: 0; transform: translateY(24px) scaleY(0.4); }
+}
+
+/* Tiny frost dust shimmer — twinkles around the prism */
+@keyframes ice-prize-frost {
+  0%, 100% { opacity: 0.2; transform: translateY(0)    scale(0.7); }
+  50%      { opacity: 1;   transform: translateY(-3px) scale(1.15); }
+}
+
 
 /* Plasma hue cycle — fast cinematic shift through magenta → cyan → blue */
 @keyframes flame-plasma-hue {

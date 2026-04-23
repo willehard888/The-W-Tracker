@@ -8,13 +8,20 @@ import { ArrowLeft, Loader2, Plus, Swords } from "lucide-react";
 import { toast } from "sonner";
 import TribeBattleCard, { type TribeBattle } from "@/components/TribeBattleCard";
 import TribeChallengeModal from "@/components/TribeChallengeModal";
-import { fetchTribeCollectiveStreaks } from "@/lib/tribe-streak";
+import {
+  collectiveAccent,
+  collectiveStreakTier,
+  fetchTribeCollectiveStreak,
+  fetchTribeCollectiveStreaks,
+} from "@/lib/tribe-streak";
+import RealisticFlame from "@/components/home/RealisticFlame";
 
 const TribeBattles = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { profile } = useAuth();
   const [tribe, setTribe] = useState<{ id: string; name: string; owner_id: string } | null>(null);
+  const [collectiveStreak, setCollectiveStreak] = useState(0);
   const [battles, setBattles] = useState<TribeBattle[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"active" | "pending" | "history">("active");
@@ -51,6 +58,7 @@ const TribeBattles = () => {
     const tribeIds = Array.from(
       new Set(rawBattles.flatMap((b) => [b.challenger_tribe_id, b.opponent_tribe_id])),
     );
+    let myStreak = 0;
     if (tribeIds.length > 0) {
       const [{ data: tribesData }, streaksMap] = await Promise.all([
         supabase
@@ -66,7 +74,13 @@ const TribeBattles = () => {
         b.challenger = c ? { ...c, collective_streak: streaksMap.get(b.challenger_tribe_id) ?? 0 } : undefined;
         b.opponent = o ? { ...o, collective_streak: streaksMap.get(b.opponent_tribe_id) ?? 0 } : undefined;
       });
+      myStreak = streaksMap.get(id) ?? 0;
     }
+    // No battles yet → still need our own collective streak for the hero flame
+    if (myStreak === 0 && tribeIds.length === 0) {
+      myStreak = await fetchTribeCollectiveStreak(id);
+    }
+    setCollectiveStreak(myStreak);
 
     setBattles(rawBattles);
     setLoading(false);
@@ -116,30 +130,53 @@ const TribeBattles = () => {
         <ArrowLeft size={14} /> {tribe.name}
       </button>
 
-      {/* Hero */}
-      <div className="rounded-2xl border border-[hsl(18_95%_58%)]/40 bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.10] via-card/70 to-gold/[0.06] p-4 mb-4 shadow-[0_0_22px_hsl(18_95%_58%/0.15)]">
-        <div className="flex items-center gap-2 mb-1">
-          <Swords size={18} className="text-[hsl(18_95%_58%)]" />
-          <p className="text-[10px] uppercase tracking-widest font-black bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
-            Tribe Battles
-          </p>
-        </div>
-        <h1 className="font-display font-black text-xl truncate">{tribe.name}</h1>
-        <p className="text-xs text-muted-foreground mt-1">
-          Pit your tribe against another. Combined member XP wins. Winning tribe earns +50 XP each.
-        </p>
-
-        {isOwner && (
-          <Button
-            onClick={() => setChallengeOpen(true)}
-            size="sm"
-            variant="ember"
-            className="mt-3 w-full"
+      {/* Hero — anchored by the tribe's collective war-flame.
+          The bigger the combined member streak, the hotter & taller the
+          flame burns. This is the largest single flame on the page. */}
+      {(() => {
+        const heroTier = Math.max(0, Math.min(5, collectiveStreakTier(collectiveStreak)));
+        const heroAccent = collectiveAccent(collectiveStreak);
+        return (
+          <div
+            className="relative rounded-2xl border border-[hsl(18_95%_58%)]/40 bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.10] via-card/70 to-gold/[0.06] p-4 pl-32 mb-4 overflow-hidden"
+            style={{
+              boxShadow: `0 0 26px ${heroAccent.replace(")", " / 0.22)")}, inset 0 -32px 60px ${heroAccent.replace(")", " / 0.14)")}`,
+            }}
           >
-            <Plus size={14} /> Challenge another tribe
-          </Button>
-        )}
-      </div>
+            {/* Giant ambient flame anchored bottom-left */}
+            <div className="absolute -left-2 bottom-0 pointer-events-none flex items-end justify-center w-32 h-full">
+              <RealisticFlame
+                tier={Math.max(heroTier, 3)}
+                accent={heroAccent}
+                size={120}
+              />
+            </div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-1">
+                <Swords size={18} className="text-[hsl(18_95%_58%)]" />
+                <p className="text-[10px] uppercase tracking-widest font-black bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
+                  Tribe Battles
+                </p>
+              </div>
+              <h1 className="font-display font-black text-xl truncate">{tribe.name}</h1>
+              <p className="text-xs text-muted-foreground mt-1">
+                Pit your tribe against another. Combined member XP wins. Winning tribe earns +50 XP each.
+              </p>
+
+              {isOwner && (
+                <Button
+                  onClick={() => setChallengeOpen(true)}
+                  size="sm"
+                  variant="ember"
+                  className="mt-3 w-full"
+                >
+                  <Plus size={14} /> Challenge another tribe
+                </Button>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
         <TabsList className="grid w-full grid-cols-3">

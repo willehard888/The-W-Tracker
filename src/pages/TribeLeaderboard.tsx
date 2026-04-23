@@ -3,7 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Crown, Medal, Award, Trophy, Loader2, Users, Lock, Zap } from "lucide-react";
-import Flame from "@/components/Flame";
+import RealisticFlame from "@/components/home/RealisticFlame";
+import {
+  collectiveAccent,
+  collectiveStreakTier,
+  fetchTribeCollectiveStreaks,
+} from "@/lib/tribe-streak";
 import { cn } from "@/lib/utils";
 
 interface Row {
@@ -23,6 +28,7 @@ const TribeLeaderboard = () => {
   const [period, setPeriod] = useState<"weekly" | "all_time">("weekly");
   const [rows, setRows] = useState<Row[]>([]);
   const [myTribeIds, setMyTribeIds] = useState<Set<string>>(new Set());
+  const [streaksMap, setStreaksMap] = useState<Map<string, number>>(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,6 +46,12 @@ const TribeLeaderboard = () => {
           member_count: Number(r.member_count) || 0,
         }));
         setRows(normalized);
+        // Hydrate collective streaks for top tribes — drives the flame size/tier.
+        const ids = normalized.slice(0, 10).map((r) => r.tribe_id);
+        if (ids.length > 0) {
+          const m = await fetchTribeCollectiveStreaks(ids);
+          setStreaksMap(m);
+        }
       }
       if (profile?.user_id) {
         const { data: mems } = await supabase
@@ -144,27 +156,50 @@ const TribeLeaderboard = () => {
                   }}
                 >
                   <div className="rounded-2xl p-4 bg-gradient-to-br from-card/90 via-card/80 to-card/70 flex items-center gap-3">
-                    <div
-                      className="relative h-14 w-14 rounded-xl flex items-center justify-center shrink-0 border overflow-hidden"
-                      style={{
-                        background: `linear-gradient(135deg, ${podium.color}30, ${podium.color}10)`,
-                        borderColor: `${podium.color}60`,
-                      }}
-                    >
-                      {/* Live flame animation — intensity scales with rank */}
-                      <div className="absolute inset-0 flex items-end justify-center pb-0.5 opacity-90 pointer-events-none">
-                        <Flame
-                          status={r.rank === 1 ? "apex" : r.rank === 2 ? "elite" : "high_performer"}
-                          size={r.rank === 1 ? 44 : 36}
-                        />
-                      </div>
-                      <Icon
-                        size={r.rank === 1 ? 22 : 24}
-                        style={{ color: podium.color }}
-                        strokeWidth={2.4}
-                        className="relative z-10 drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]"
-                      />
-                    </div>
+                    {(() => {
+                      // #1 = the biggest, hottest tribe flame in the app.
+                      // Size & tier scale visibly with rank, and the flame's
+                      // tier is driven by collective member streak so the
+                      // top tribe literally burns hotter than the rest.
+                      const isFirst = r.rank === 1;
+                      const collective = streaksMap.get(r.tribe_id) ?? 0;
+                      const flameTier = Math.max(
+                        0,
+                        Math.min(5, collectiveStreakTier(collective)),
+                      );
+                      const flameAccent = collectiveAccent(collective);
+                      const containerSize = isFirst ? "h-20 w-20" : r.rank === 2 ? "h-16 w-16" : "h-14 w-14";
+                      const flameSize = isFirst ? 72 : r.rank === 2 ? 54 : 46;
+                      return (
+                        <div
+                          className={cn(
+                            "relative rounded-xl flex items-center justify-center shrink-0 border overflow-hidden",
+                            containerSize,
+                          )}
+                          style={{
+                            background: `linear-gradient(135deg, ${podium.color}30, ${podium.color}10)`,
+                            borderColor: `${podium.color}60`,
+                            boxShadow: isFirst
+                              ? `inset 0 -10px 22px ${flameAccent.replace(")", " / 0.35)")}, 0 0 18px ${flameAccent.replace(")", " / 0.45)")}`
+                              : undefined,
+                          }}
+                        >
+                          <div className="absolute inset-0 flex items-end justify-center pointer-events-none">
+                            <RealisticFlame
+                              tier={isFirst ? Math.max(flameTier, 4) : flameTier}
+                              accent={flameAccent}
+                              size={flameSize}
+                            />
+                          </div>
+                          <Icon
+                            size={isFirst ? 26 : 22}
+                            style={{ color: podium.color }}
+                            strokeWidth={2.4}
+                            className="relative z-10 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]"
+                          />
+                        </div>
+                      );
+                    })()}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span

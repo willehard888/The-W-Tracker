@@ -46,8 +46,84 @@ interface RealisticFlameProps {
  *  A slow sine sway on the outer wrapper makes the entire flame lean
  *  like wind is on it.
  */
-const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlameProps) => {
+const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
+  ({ tier, accent, size = 44, className, interactive }, ref) => {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Pointer wind: enable on big interactive flames by default.
+  const pointerEnabled = interactive ?? size >= 64;
+
+  // Per-instance breath offset (0–6s) so multiple flames don't sync inhale.
+  const breathOffset = useMemo(() => {
+    let h = 0;
+    for (let i = 0; i < uid.length; i++) h = (h * 31 + uid.charCodeAt(i)) >>> 0;
+    return ((h % 600) / 100).toFixed(2); // 0.00..6.00
+  }, [uid]);
+
+  // Imperative shockwave handle for tier-up celebrations.
+  useImperativeHandle(
+    ref,
+    () => ({
+      shockwave: (color?: string) => triggerFlameShockwave(containerRef.current, color),
+    }),
+    [],
+  );
+
+  // Local pointer-wind: when the cursor is within ~80px of this flame, write
+  // a *local* CSS var that adds an extra lean. Throttled via rAF.
+  useEffect(() => {
+    if (!pointerEnabled) return;
+    const el = containerRef.current;
+    if (!el) return;
+    if (typeof window === "undefined") return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    let raf = 0;
+    let pendingX = 0;
+    let lastWritten = "";
+
+    const apply = () => {
+      raf = 0;
+      const s = pendingX.toFixed(2);
+      if (s !== lastWritten) {
+        lastWritten = s;
+        el.style.setProperty("--pointer-wind-x", s);
+      }
+    };
+
+    const onMove = (e: PointerEvent) => {
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      const dist = Math.hypot(dx, dy);
+      const radius = Math.max(80, size * 1.6);
+      if (dist > radius) {
+        pendingX = 0;
+      } else {
+        const strength = 1 - dist / radius;
+        pendingX = Math.max(-1, Math.min(1, (dx / radius) * strength * 1.4));
+      }
+      if (!raf) raf = requestAnimationFrame(apply);
+    };
+
+    const onLeave = () => {
+      pendingX = 0;
+      if (!raf) raf = requestAnimationFrame(apply);
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerleave", onLeave, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerleave", onLeave);
+      if (raf) cancelAnimationFrame(raf);
+      el.style.removeProperty("--pointer-wind-x");
+    };
+  }, [pointerEnabled, size]);
+
 
   const isHot = tier >= 0;
   const isWarm = tier >= 1;

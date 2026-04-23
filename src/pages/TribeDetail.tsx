@@ -639,17 +639,17 @@ const TribeDetail = () => {
 
             <div className="flex gap-2 mt-3">
               {!isMember ? (
-                <Button onClick={handleJoin} size="sm" className="bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black flex-1 shadow-[0_0_16px_hsl(18_95%_58%/0.5)]">
+                <Button onClick={handleJoin} size="sm" variant="ember" className="flex-1">
                   Join Tribe
                 </Button>
               ) : isOwner ? (
                 <>
-                  <Button onClick={() => setManageOpen(true)} size="sm" variant="outline"
-                    className="flex-1 border-gold/40 hover:bg-gold/10 text-gold">
+                  <Button onClick={() => setManageOpen(true)} size="sm" variant="gold-outline"
+                    className="flex-1">
                     <Settings size={14} /> Manage
                   </Button>
-                  <Button onClick={() => setInviteOpen(true)} size="sm" variant="outline"
-                    className="flex-1 border-[hsl(18_95%_58%)]/40 hover:bg-[hsl(18_95%_58%)]/10 text-[hsl(18_95%_58%)]">
+                  <Button onClick={() => setInviteOpen(true)} size="sm" variant="ember-outline"
+                    className="flex-1">
                     <UserPlus size={14} /> Invite
                   </Button>
                   <Button onClick={handleDelete} variant="destructive" size="sm" className="px-3">
@@ -658,11 +658,11 @@ const TribeDetail = () => {
                 </>
               ) : (
                 <>
-                  <Button onClick={() => setInviteOpen(true)} size="sm" variant="outline"
-                    className="flex-1 border-[hsl(18_95%_58%)]/40 hover:bg-[hsl(18_95%_58%)]/10 text-[hsl(18_95%_58%)]">
+                  <Button onClick={() => setInviteOpen(true)} size="sm" variant="ember-outline"
+                    className="flex-1">
                     <UserPlus size={14} /> Invite
                   </Button>
-                  <Button onClick={handleLeave} variant="outline" size="sm" className="flex-1 border-[hsl(18_95%_58%)]/30 hover:bg-[hsl(18_95%_58%)]/10">
+                  <Button onClick={handleLeave} variant="ember-outline" size="sm" className="flex-1 opacity-80 hover:opacity-100">
                     <LogOut size={14} /> Leave
                   </Button>
                 </>

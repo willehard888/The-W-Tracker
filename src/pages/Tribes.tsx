@@ -348,7 +348,7 @@ const Tribes = () => {
       {canCreate ? (
         <Button
           onClick={() => navigate("/tribes/new")}
-          variant="gold"
+          variant="ember"
           size="lg"
           className="w-full mb-4"
         >
@@ -367,7 +367,7 @@ const Tribes = () => {
               Earn it via top 1% rank, or unlock instantly with Apex.
             </p>
           </div>
-          <Button size="sm" variant="outline" onClick={() => navigate("/paywall")} className="shrink-0">
+          <Button size="sm" variant="ember-outline" onClick={() => navigate("/paywall")} className="shrink-0">
             Unlock
           </Button>
         </div>
@@ -606,11 +606,12 @@ const Tribes = () => {
                 {tab === "browse" && !joinedIds.has(t.id) && (
                   <Button
                     size="sm"
+                    variant="ember"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleJoin(t.id);
                     }}
-                    className="bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black shrink-0 shadow-[0_0_12px_hsl(18_95%_58%/0.4)]"
+                    className="shrink-0"
                   >
                     Join
                   </Button>

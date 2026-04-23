@@ -5,6 +5,8 @@ import { Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
+import magmaTexture from "@/assets/btn-magma-texture.jpg";
+import goldTexture from "@/assets/btn-gold-texture.jpg";
 
 const buttonVariants = cva(
   [

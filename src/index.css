@@ -3142,23 +3142,91 @@
   [class*="aurum-halo-pulse"] { animation: none !important; }
 }
 
-/* Aurum lava overlay — child <span> inside <Button variant="aurum">.
-   Idle: invisible. Parent :hover → fade + scale to 100%. Parent :active → settle. */
+/* ═════════════════════════════════════════════════════════════════
+   AURUM lava drip — gold MELTS into lava continuously.
+   Two stacked layers on the same <span>:
+   1. Background = the real lava texture, slowly drifting (breathing).
+   2. Mask = a soft vertical gradient that constantly travels DOWNWARD,
+      making the lava look like it pours from the top edge, fills the
+      bar, and melts off the bottom — endless loop.
+   On hover the whole layer brightens + the drip speeds up.
+   ═════════════════════════════════════════════════════════════════ */
+@keyframes aurum-lava-drip {
+  /* Mask travels top → bottom, revealing lava as molten flow */
+  0%   { -webkit-mask-position: 50% -120%; mask-position: 50% -120%; }
+  100% { -webkit-mask-position: 50% 220%;  mask-position: 50% 220%;  }
+}
+@keyframes aurum-lava-shimmer {
+  /* Slow background drift = molten surface breathing under the drip */
+  0%, 100% { background-position: 0% 30%; filter: saturate(1.1) brightness(1); }
+  50%      { background-position: 100% 70%; filter: saturate(1.25) brightness(1.08); }
+}
+@keyframes aurum-edge-melt {
+  /* Bottom-edge ember bleed — pulses warmly under the bar */
+  0%, 100% {
+    box-shadow:
+      inset 0 -10px 18px -10px hsl(18 95% 50% / 0.55),
+      0 10px 22px -6px hsl(20 95% 46% / 0.40);
+  }
+  50% {
+    box-shadow:
+      inset 0 -16px 28px -10px hsl(14 100% 52% / 0.85),
+      0 18px 36px -8px hsl(14 95% 42% / 0.65);
+  }
+}
+
 .aurum-lava-layer {
-  transform: scale(1.06);
-  transition: opacity 700ms cubic-bezier(0.22, 0.61, 0.36, 1),
-              transform 700ms cubic-bezier(0.22, 0.61, 0.36, 1);
-  will-change: opacity, transform;
+  /* Always-on lava surface: real texture + soft warm tint blend */
+  background-blend-mode: screen;
+  background-color: hsl(18 95% 42% / 0.35);
+  background-size: 220% 220%;
+  /* Mask: opaque band of lava, soft fade at the edges → looks like a flow */
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    hsl(0 0% 0% / 0.55) 28%,
+    hsl(0 0% 0% / 0.95) 50%,
+    hsl(0 0% 0% / 0.55) 72%,
+    transparent 100%
+  );
+          mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    hsl(0 0% 0% / 0.55) 28%,
+    hsl(0 0% 0% / 0.95) 50%,
+    hsl(0 0% 0% / 0.55) 72%,
+    transparent 100%
+  );
+  -webkit-mask-size: 100% 220%;
+          mask-size: 100% 220%;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  /* Two infinite animations: the drip (mask drift) + the surface shimmer */
+  animation:
+    aurum-lava-drip 5.4s linear infinite,
+    aurum-lava-shimmer 6s ease-in-out infinite;
+  opacity: 0.78;
+  mix-blend-mode: hard-light;
+  transition: opacity 500ms ease, filter 500ms ease;
+  will-change: mask-position, background-position, opacity;
 }
 button:hover > .aurum-lava-layer {
-  opacity: 0.95;
-  transform: scale(1);
+  opacity: 1;
+  filter: brightness(1.15) saturate(1.2);
+  animation:
+    aurum-lava-drip 3.2s linear infinite,
+    aurum-lava-shimmer 4s ease-in-out infinite;
 }
 button:active > .aurum-lava-layer {
   opacity: 0.6;
-  transform: scale(0.99);
+  filter: brightness(0.85) saturate(0.9);
 }
 @media (prefers-reduced-motion: reduce) {
-  .aurum-lava-layer { transition: opacity 200ms linear !important; transform: none !important; }
+  .aurum-lava-layer {
+    animation: none !important;
+    -webkit-mask-position: 50% 50% !important;
+            mask-position: 50% 50% !important;
+    opacity: 0.55 !important;
+  }
 }
 

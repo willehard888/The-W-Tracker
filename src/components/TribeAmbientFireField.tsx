@@ -14,13 +14,14 @@ interface TribeAmbientFireFieldProps {
  *   • <30: nothing (fire is cold)
  *   • 30-100: faint ambient embers
  *   • 100-300: more embers + faint heat haze at bottom
- *   • 300+: roaring ambient field with cinder rain
+ *   • 300+: roaring ambient field with cinder rain + side wall sparks
+ *   • 1500+: corner ember nests glow continuously
  *
  * GPU-only, fixed inset. Position absolute inside a relative container.
  */
 const TribeAmbientFireField = ({ total, accent, className }: TribeAmbientFireFieldProps) => {
   // Particle count scales with heat
-  const count = total >= 1500 ? 26 : total >= 700 ? 22 : total >= 300 ? 18 : total >= 100 ? 12 : total >= 30 ? 6 : 0;
+  const count = total >= 1500 ? 28 : total >= 700 ? 22 : total >= 300 ? 18 : total >= 100 ? 12 : total >= 30 ? 6 : 0;
   const intensity = Math.min(1, total / 1500);
 
   const particles = useMemo(() => {
@@ -39,6 +40,22 @@ const TribeAmbientFireField = ({ total, accent, className }: TribeAmbientFireFie
   }, [count]);
 
   if (count === 0) return null;
+
+  // Side wall sparks — only at 300+ collective. Anchor to left/right walls
+  // so the page feels enclosed by fire on big-tier tribes.
+  const sideSparks = total >= 300
+    ? Array.from({ length: total >= 1500 ? 10 : 6 }).map((_, i) => {
+        const r = (n: number) => ((Math.sin((i + 11) * (n + 3) * 7919) + 1) / 2) % 1;
+        return {
+          side: i % 2 === 0 ? "left" : ("right" as "left" | "right"),
+          topPct: 18 + r(1) * 64,
+          size: 1.6 + r(2) * 2.4,
+          duration: 4.5 + r(3) * 4,
+          delay: r(4) * 6,
+          drift: 12 + r(5) * 26,
+        };
+      })
+    : [];
 
   return (
     <div
@@ -60,7 +77,29 @@ const TribeAmbientFireField = ({ total, accent, className }: TribeAmbientFireFie
         />
       )}
 
-      {/* Cinder rain for 300+ — embers drifting upward across the whole page */}
+      {/* Corner ember nests — Diamond+ tribes get a glowing seal in each bottom corner */}
+      {total >= 1500 && (
+        <>
+          <div
+            className="absolute bottom-0 left-0 h-40 w-40"
+            style={{
+              background: `radial-gradient(circle at 0% 100%, ${accent.replace(")", " / 0.42)")} 0%, transparent 70%)`,
+              mixBlendMode: "screen",
+              animation: "ambient-haze-breath 5.4s ease-in-out infinite",
+            }}
+          />
+          <div
+            className="absolute bottom-0 right-0 h-40 w-40"
+            style={{
+              background: `radial-gradient(circle at 100% 100%, ${accent.replace(")", " / 0.42)")} 0%, transparent 70%)`,
+              mixBlendMode: "screen",
+              animation: "ambient-haze-breath 5.4s ease-in-out 1.2s infinite",
+            }}
+          />
+        </>
+      )}
+
+      {/* Cinder rain for 30+ — embers drifting upward across the whole page */}
       {particles.map((p, i) => (
         <span
           key={i}
@@ -75,6 +114,26 @@ const TribeAmbientFireField = ({ total, accent, className }: TribeAmbientFireFie
             opacity: 0,
             ["--ambient-x" as string]: `${p.drift}px`,
             animation: `ambient-cinder-rise ${p.duration}s linear ${p.delay}s infinite`,
+            mixBlendMode: "screen",
+          }}
+        />
+      ))}
+
+      {/* Side wall sparks — page feels enclosed by fire at high tiers */}
+      {sideSparks.map((s, i) => (
+        <span
+          key={`s-${i}`}
+          className="absolute rounded-full"
+          style={{
+            [s.side]: -6,
+            top: `${s.topPct}%`,
+            width: s.size,
+            height: s.size,
+            background: accent,
+            boxShadow: `0 0 ${3 + s.size}px ${accent}, 0 0 ${8 + s.size * 2}px ${accent.replace(")", " / 0.5)")}`,
+            opacity: 0,
+            ["--ambient-x" as string]: `${s.side === "left" ? s.drift : -s.drift}px`,
+            animation: `ambient-cinder-rise ${s.duration}s ease-out ${s.delay}s infinite`,
             mixBlendMode: "screen",
           }}
         />

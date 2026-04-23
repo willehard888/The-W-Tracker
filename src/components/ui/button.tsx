@@ -198,6 +198,53 @@ const buttonVariants = cva(
           "hover:shadow-[inset_0_1px_0_hsl(var(--destructive)/0.18),0_4px_12px_-4px_hsl(var(--destructive)/0.25)]",
           "active:bg-[hsl(var(--destructive)/0.08)]",
         ].join(" "),
+
+        // Ember — THE tribes/fire signature CTA. Molten ember-orange metal with
+        //   1. Deep multi-stop ember gradient (gold crown → ember → deep coal)
+        //   2. Hot inner glow at the bottom that "burns" (mimics a coal bed)
+        //   3. Crisp gold top hairline + dark coal bottom bezel
+        //   4. ::before — radial heat-bloom from below + golden top crown
+        //   5. ::after — diagonal heat shimmer sweeping on hover
+        //   6. Soft outer flame halo that pulses subtly even at rest
+        ember: [
+          "text-[hsl(28_92%_8%)] font-extrabold tracking-[-0.005em]",
+          "[text-shadow:0_1px_0_hsl(40_100%_88%/0.55)]",
+          "overflow-hidden isolate",
+          // BASE: gold crown sliver → bright ember body → deep coal foot
+          "[background:linear-gradient(180deg,hsl(48_100%_92%/0)_0%,hsl(48_100%_94%/0.18)_46%,hsl(48_100%_94%/0.24)_50%,hsl(48_100%_94%/0.18)_54%,hsl(48_100%_92%/0)_70%),linear-gradient(180deg,hsl(46_100%_72%)_0%,hsl(34_100%_60%)_18%,hsl(22_98%_56%)_42%,hsl(16_94%_50%)_70%,hsl(12_88%_40%)_92%,hsl(10_82%_30%)_100%)]",
+          // Crisp coal bezel + inner heat-bed glow + outer flame halo
+          "shadow-[inset_0_0_0_0.5px_hsl(14_85%_14%/0.65),inset_0_1px_0_hsl(48_100%_94%/0.85),inset_0_-1px_0_hsl(10_82%_18%/0.7),inset_0_-10px_22px_-10px_hsl(18_95%_58%/0.7),0_1px_2px_hsl(14_70%_10%/0.5),0_8px_20px_-3px_hsl(18_95%_55%/0.55),0_18px_38px_-12px_hsl(16_94%_50%/0.55)]",
+          // ::before — top gold crown + bottom hot heat-bloom
+          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
+          "before:[background:radial-gradient(120%_70%_at_50%_-20%,hsl(48_100%_96%/0.6)_0%,hsl(46_100%_88%/0.18)_34%,transparent_64%),radial-gradient(120%_80%_at_50%_120%,hsl(18_98%_60%/0.55)_0%,hsl(14_92%_48%/0.25)_40%,transparent_72%)]",
+          // ::after — diagonal heat shimmer
+          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
+          "after:[background:linear-gradient(110deg,transparent_30%,hsl(48_100%_96%/0.5)_50%,transparent_70%)]",
+          "after:opacity-70 after:transition-transform after:duration-[850ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "hover:after:[transform:translate3d(260%,0,0)]",
+          // Hover: brighter heat, bigger flame halo
+          "hover:brightness-[1.07] hover:saturate-[1.08]",
+          "hover:shadow-[inset_0_0_0_0.5px_hsl(14_85%_14%/0.7),inset_0_1px_0_hsl(48_100%_96%/0.95),inset_0_-1px_0_hsl(10_82%_18%/0.75),inset_0_-12px_24px_-10px_hsl(18_95%_60%/0.8),0_2px_3px_hsl(14_70%_10%/0.55),0_12px_26px_-3px_hsl(18_95%_58%/0.65),0_28px_52px_-12px_hsl(16_94%_50%/0.7)]",
+          // Pressed: damped coals
+          "active:brightness-[0.96]",
+          "active:before:opacity-50 active:after:opacity-30",
+          "active:shadow-[inset_0_0_0_0.5px_hsl(10_85%_10%/0.75),inset_0_2px_5px_hsl(10_82%_12%/0.55),inset_0_-1px_0_hsl(46_100%_82%/0.18),inset_0_-6px_14px_-8px_hsl(18_95%_50%/0.5),0_1px_1px_hsl(0_0%_0%/0.35)]",
+          "disabled:grayscale-[0.4] disabled:after:hidden disabled:before:hidden",
+        ].join(" "),
+
+        // Ember outline — hairline ember tone for secondary tribe actions (Invite, Manage, Leave)
+        "ember-outline": [
+          "text-[hsl(18_95%_62%)] font-semibold",
+          "border border-[hsl(18_95%_58%/0.45)]",
+          "[background:linear-gradient(180deg,hsl(18_95%_58%/0.06)_0%,hsl(14_92%_45%/0.04)_100%)]",
+          "shadow-[inset_0_1px_0_hsl(48_100%_88%/0.10),inset_0_-6px_14px_-10px_hsl(18_95%_58%/0.35),0_1px_2px_hsl(14_70%_10%/0.25)]",
+          "hover:text-[hsl(22_98%_70%)]",
+          "hover:border-[hsl(18_95%_58%/0.75)]",
+          "hover:[background:linear-gradient(180deg,hsl(18_95%_58%/0.16)_0%,hsl(14_92%_45%/0.08)_100%)]",
+          "hover:shadow-[inset_0_1px_0_hsl(48_100%_88%/0.16),inset_0_-8px_16px_-10px_hsl(18_95%_58%/0.5),0_4px_14px_-4px_hsl(18_95%_58%/0.35)]",
+          "active:[background:linear-gradient(180deg,hsl(18_95%_58%/0.10)_0%,hsl(14_92%_45%/0.04)_100%)]",
+          "active:shadow-[inset_0_2px_4px_hsl(10_82%_12%/0.4)]",
+        ].join(" "),
       },
       size: {
         default: "h-10 min-h-10 px-4 py-2 rounded-md",

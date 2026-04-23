@@ -137,7 +137,9 @@ const PaywallTierCard = ({
         <p
           className={cn(
             "font-display font-black leading-none mb-3 text-3xl",
-            isApex ? "text-[hsl(18_95%_58%)]" : "text-gold",
+            isApex
+              ? "text-[hsl(18_95%_58%)]"
+              : "text-gold drop-shadow-[0_2px_8px_hsl(var(--gold)/0.45)]",
           )}
         >
           {priceLabel}
@@ -155,7 +157,7 @@ const PaywallTierCard = ({
                   "h-5 w-5 rounded-md flex items-center justify-center shrink-0 border",
                   isApex
                     ? "bg-[hsl(18_95%_58%)]/12 border-[hsl(18_95%_58%)]/30"
-                    : "bg-gold/10 border-gold/25",
+                    : "bg-gradient-to-br from-gold/30 to-gold/10 border-gold/50 shadow-[0_0_8px_hsl(var(--gold)/0.3)]",
                 )}
               >
                 <Icon

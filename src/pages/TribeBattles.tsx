@@ -8,7 +8,13 @@ import { ArrowLeft, Loader2, Plus, Swords } from "lucide-react";
 import { toast } from "sonner";
 import TribeBattleCard, { type TribeBattle } from "@/components/TribeBattleCard";
 import TribeChallengeModal from "@/components/TribeChallengeModal";
-import { fetchTribeCollectiveStreaks } from "@/lib/tribe-streak";
+import {
+  collectiveAccent,
+  collectiveStreakTier,
+  fetchTribeCollectiveStreak,
+  fetchTribeCollectiveStreaks,
+} from "@/lib/tribe-streak";
+import RealisticFlame from "@/components/home/RealisticFlame";
 
 const TribeBattles = () => {
   const { id } = useParams<{ id: string }>();

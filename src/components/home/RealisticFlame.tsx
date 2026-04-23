@@ -821,7 +821,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
           style={{
             transform: "translate(-50%, 0)",
             transformOrigin: "center bottom",
-            animation: `flame-outer-flicker ${1.7 * speedMul}s ease-in-out infinite`,
+            animation: `flame-outer-flicker ${1.95 * speedMul}s cubic-bezier(0.34, 0.02, 0.32, 1) infinite`,
             mixBlendMode: "screen",
             filter: `url(#${turbSlow}) blur(2.5px)`,
           }}

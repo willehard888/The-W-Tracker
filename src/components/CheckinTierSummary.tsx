@@ -310,7 +310,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
           <Button variant="gold-outline" size="lg" onClick={onProfile}>
             View Profile
           </Button>
-          <Button variant="gold" size="lg" onClick={onDashboard}>
+          <Button variant="coal" size="lg" onClick={onDashboard}>
             Dashboard
           </Button>
         </motion.div>

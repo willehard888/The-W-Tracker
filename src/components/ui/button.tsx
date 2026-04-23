@@ -256,6 +256,66 @@ const buttonVariants = cva(
           "active:[background:linear-gradient(180deg,hsl(18_95%_58%/0.10)_0%,hsl(14_92%_42%/0.05)_100%)]",
           "active:shadow-[inset_0_2px_4px_hsl(10_82%_10%/0.5)]",
         ].join(" "),
+
+        // Coal / Hiillos — THE next-level evolution of the gold/amber CTA.
+        // A glowing coal: deep anthracite body that the heat burns through from beneath.
+        //   • Deep coal body (so the inner heat has darkness to glow against)
+        //   • Inner radial heat-bed (red-orange) burning through from below
+        //   • Golden top crown — keeps the regal/identity association of gold
+        //   • Cracking surface texture: faint horizontal ember fissures
+        //   • Living halo: slow gold→ember pulse, premium and alive
+        //   • Press: coal "settles", heat dampens, fissures dim
+        // Use this where you previously used `gold` for high-value identity actions
+        // (Login / Continue / Accept / Save Changes / Save Image / Earn Status).
+        coal: [
+          "text-[hsl(46_100%_88%)] font-extrabold tracking-[-0.005em]",
+          "[text-shadow:0_1px_0_hsl(20_60%_8%/0.85),0_0_10px_hsl(28_100%_56%/0.4)]",
+          "overflow-hidden isolate",
+          // BASE: horizontal ember fissures + warm satin band + deep coal body
+          "[background:repeating-linear-gradient(180deg,transparent_0,transparent_22%,hsl(20_95%_50%/0.10)_23%,transparent_24%,transparent_46%,hsl(28_95%_55%/0.07)_47%,transparent_48%),linear-gradient(180deg,hsl(46_100%_92%/0)_0%,hsl(40_100%_88%/0.12)_46%,hsl(40_100%_88%/0.16)_50%,hsl(40_100%_88%/0.12)_54%,hsl(46_100%_92%/0)_70%),radial-gradient(140%_100%_at_50%_120%,hsl(18_98%_42%)_0%,hsl(14_88%_24%)_38%,hsl(18_55%_12%)_72%,hsl(20_45%_8%)_100%)]",
+          // Coal bezel: deep dark rim + warm inner heat + soft golden crown highlight
+          "shadow-[inset_0_0_0_0.5px_hsl(20_70%_6%/0.9),inset_0_1px_0_hsl(46_100%_92%/0.55),inset_0_-1px_0_hsl(20_85%_6%/0.85),inset_0_8px_18px_-10px_hsl(40_100%_70%/0.25),inset_0_-12px_28px_-8px_hsl(18_95%_42%/0.55),0_1px_2px_hsl(0_0%_0%/0.5),0_8px_20px_-3px_hsl(18_95%_38%/0.4),0_18px_36px_-14px_hsl(28_85%_36%/0.5)]",
+          // ::before — golden top crown + intense bottom heat-bed (the burning core)
+          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
+          "before:[background:radial-gradient(120%_60%_at_50%_-25%,hsl(48_100%_92%/0.55)_0%,hsl(42_100%_70%/0.18)_30%,transparent_60%),radial-gradient(160%_110%_at_50%_135%,hsl(20_100%_56%/0.7)_0%,hsl(14_92%_38%/0.32)_35%,transparent_70%)]",
+          // ::after — diagonal gold→ember heat shimmer on hover
+          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
+          "after:[background:linear-gradient(110deg,transparent_28%,hsl(48_100%_92%/0.45)_50%,transparent_72%)]",
+          "after:opacity-80 after:transition-transform after:duration-[900ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "hover:after:[transform:translate3d(280%,0,0)]",
+          // Living halo — slow premium pulse via keyframe (defined in index.css)
+          "coal-halo",
+          "[animation:coal-halo-pulse_4s_ease-in-out_infinite]",
+          // Hover: hotter core + faster halo
+          "hover:brightness-[1.08] hover:saturate-[1.10]",
+          "hover:[animation-duration:2.6s]",
+          // Pressed: coal settles, heat dampens
+          "active:brightness-[0.94] active:saturate-[0.95]",
+          "active:before:opacity-50 active:after:opacity-25",
+          "active:[animation:none]",
+          "active:shadow-[inset_0_0_0_0.5px_hsl(20_70%_4%/0.95),inset_0_2px_5px_hsl(20_75%_6%/0.7),inset_0_-1px_0_hsl(40_100%_80%/0.18),inset_0_-8px_18px_-10px_hsl(18_95%_42%/0.5),0_1px_1px_hsl(0_0%_0%/0.5)]",
+          "disabled:grayscale-[0.5] disabled:after:hidden disabled:before:hidden disabled:[animation:none]",
+        ].join(" "),
+
+        // Coal outline — hairline coal for secondary actions matching `coal`
+        "coal-outline": [
+          "relative text-[hsl(40_100%_78%)] font-semibold",
+          "border border-[hsl(28_85%_42%/0.55)]",
+          "overflow-hidden isolate",
+          "[background:linear-gradient(180deg,hsl(20_45%_10%/0.55)_0%,hsl(20_55%_6%/0.65)_100%)]",
+          "shadow-[inset_0_1px_0_hsl(46_100%_88%/0.12),inset_0_-1px_0_hsl(20_85%_6%/0.6),inset_0_-8px_16px_-12px_hsl(20_95%_45%/0.32),0_1px_2px_hsl(0_0%_0%/0.4),0_4px_12px_-6px_hsl(28_85%_36%/0.22)]",
+          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none",
+          "before:[background:radial-gradient(120%_80%_at_50%_120%,hsl(20_98%_50%/0.18)_0%,transparent_60%)]",
+          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none",
+          "after:[background:linear-gradient(110deg,transparent_30%,hsl(40_100%_82%/0.18)_50%,transparent_70%)]",
+          "after:opacity-0 after:transition-[transform,opacity] after:duration-[700ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
+          "hover:text-[hsl(46_100%_84%)]",
+          "hover:border-[hsl(28_92%_52%/0.85)]",
+          "hover:[background:linear-gradient(180deg,hsl(20_55%_14%/0.65)_0%,hsl(20_60%_8%/0.75)_100%)]",
+          "hover:shadow-[inset_0_1px_0_hsl(46_100%_88%/0.18),inset_0_-1px_0_hsl(20_85%_6%/0.7),inset_0_-10px_18px_-12px_hsl(20_95%_45%/0.45),0_2px_3px_hsl(0_0%_0%/0.45),0_8px_20px_-4px_hsl(28_85%_36%/0.35)]",
+          "active:shadow-[inset_0_2px_4px_hsl(20_85%_6%/0.7)]",
+        ].join(" "),
       },
       size: {
         default: "h-10 min-h-10 px-4 py-2 rounded-md",

@@ -206,7 +206,7 @@ const EliteUnlockCelebration = ({ onComplete }: EliteUnlockCelebrationProps) => 
           phase >= 4 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         )}>
           <Button
-            variant="gold"
+            variant="coal"
             size="xl"
             className="w-full"
             onClick={onComplete}

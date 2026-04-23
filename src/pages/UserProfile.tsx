@@ -453,7 +453,7 @@ const UserProfile = () => {
                 </Button>
               ) : friendship.status === "pending" && friendship.addressee_id === myProfile?.user_id ? (
                 <div className="flex gap-1.5">
-                  <Button variant="gold" size="sm" className="rounded-full" onClick={() => handleFriendAction("accept")}>
+                  <Button variant="coal" size="sm" className="rounded-full" onClick={() => handleFriendAction("accept")}>
                     <UserCheck size={14} /> Accept
                   </Button>
                   <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("decline")}>
@@ -469,7 +469,7 @@ const UserProfile = () => {
                   <UserPlus size={14} /> Add Friend
                 </Button>
               )}
-              <Button variant="gold" size="sm" className="flex-1 rounded-full" onClick={() => setShowBattleModal(true)}>
+              <Button variant="coal" size="sm" className="flex-1 rounded-full" onClick={() => setShowBattleModal(true)}>
                 <Swords size={14} /> Challenge
               </Button>
             </div>
@@ -686,7 +686,7 @@ const BattleChallengeModal = ({
         ))}
       </div>
 
-      <Button variant="gold" className="w-full rounded-full" onClick={onChallenge} disabled={creating}>
+      <Button variant="coal" className="w-full rounded-full" onClick={onChallenge} disabled={creating}>
         <Swords size={14} />
         {creating ? "Sending..." : "Send Challenge"}
       </Button>

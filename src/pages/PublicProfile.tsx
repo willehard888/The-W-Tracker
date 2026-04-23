@@ -58,6 +58,22 @@ const PublicProfile = () => {
     },
   });
 
+  // Elite Feed posts with media — the loudest social proof on a public profile.
+  const { data: mediaPosts } = useQuery({
+    queryKey: ["public-media-posts", profile?.user_id],
+    enabled: !!profile?.user_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("feed_posts")
+        .select("id, content, image_url, video_url, likes_count, comments_count, kudos_count, created_at")
+        .eq("user_id", profile!.user_id)
+        .or("image_url.not.is.null,video_url.not.is.null")
+        .order("created_at", { ascending: false })
+        .limit(12);
+      return data || [];
+    },
+  });
+
   // SEO
   useEffect(() => {
     if (profile) {

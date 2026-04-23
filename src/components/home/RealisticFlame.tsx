@@ -539,80 +539,48 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
         </>
       )}
 
-      {/* SVG defs (3 turbulence filters shared by layered flame bodies) */}
-      <svg width="0" height="0" className="absolute" aria-hidden>
-        <defs>
-          {/* Slow drift — outer haze */}
-          <filter id={turbSlow} x="-30%" y="-30%" width="160%" height="160%">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.014 0.035"
-              numOctaves="3"
-              seed="2"
-            >
-              <animate
-                attributeName="baseFrequency"
-                dur={`${4.2 * speedMul}s`}
-                values="0.012 0.03;0.022 0.05;0.014 0.038;0.024 0.06;0.012 0.03"
-                repeatCount="indefinite"
+      {/* SVG defs (3 turbulence filters shared by layered flame bodies).
+          IMPORTANT: the inner <animate> tags were removed — animating
+          feTurbulence baseFrequency/seed forces the filter to be re-rasterized
+          on every frame on the CPU, which was the dominant lag source on this
+          page. The flame still looks alive thanks to per-layer keyframe
+          flicker + warp from the static displacement map. */}
+      {filtersEnabled && (
+        <svg width="0" height="0" className="absolute" aria-hidden>
+          <defs>
+            {/* Slow drift — outer haze */}
+            <filter id={turbSlow} x="-30%" y="-30%" width="160%" height="160%">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.018 0.04"
+                numOctaves="2"
+                seed="2"
               />
-              <animate
-                attributeName="seed"
-                dur={`${7 * speedMul}s`}
-                values="2;13;5;19;2"
-                repeatCount="indefinite"
+              <feDisplacementMap in="SourceGraphic" scale="6" />
+            </filter>
+            {/* Mid licking — main body */}
+            <filter id={turbMid} x="-30%" y="-30%" width="160%" height="160%">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.03 0.07"
+                numOctaves="2"
+                seed="9"
               />
-            </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" scale="6" />
-          </filter>
-          {/* Mid licking — main body */}
-          <filter id={turbMid} x="-30%" y="-30%" width="160%" height="160%">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.025 0.06"
-              numOctaves="3"
-              seed="9"
-            >
-              <animate
-                attributeName="baseFrequency"
-                dur={`${2.4 * speedMul}s`}
-                values="0.02 0.05;0.038 0.085;0.026 0.06;0.04 0.09;0.02 0.05"
-                repeatCount="indefinite"
+              <feDisplacementMap in="SourceGraphic" scale="4.5" />
+            </filter>
+            {/* Fast tip whip — inner + core */}
+            <filter id={turbFast} x="-30%" y="-30%" width="160%" height="160%">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.06 0.12"
+                numOctaves="2"
+                seed="14"
               />
-              <animate
-                attributeName="seed"
-                dur={`${4 * speedMul}s`}
-                values="9;22;4;17;9"
-                repeatCount="indefinite"
-              />
-            </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" scale="4.5" />
-          </filter>
-          {/* Fast tip whip — inner + core */}
-          <filter id={turbFast} x="-30%" y="-30%" width="160%" height="160%">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.05 0.11"
-              numOctaves="2"
-              seed="14"
-            >
-              <animate
-                attributeName="baseFrequency"
-                dur={`${1.6 * speedMul}s`}
-                values="0.04 0.09;0.07 0.14;0.045 0.10;0.08 0.16;0.04 0.09"
-                repeatCount="indefinite"
-              />
-              <animate
-                attributeName="seed"
-                dur={`${3 * speedMul}s`}
-                values="14;27;6;31;14"
-                repeatCount="indefinite"
-              />
-            </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" scale="3.2" />
-          </filter>
-        </defs>
-      </svg>
+              <feDisplacementMap in="SourceGraphic" scale="3.2" />
+            </filter>
+          </defs>
+        </svg>
+      )}
 
       {/* 1. Volumetric backlight — lights up surroundings (mix-blend screen) */}
       {isWarm && (

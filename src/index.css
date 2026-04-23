@@ -1981,83 +1981,25 @@
 
 /* Heart bloom — pulsing white-hot center inside the flame core. Beats like
    a slow-mo heartbeat: tight contraction, slow expansion. */
+/* Heart bloom — buttery sine-style swell with a long, satisfying linger
+   at the peak before easing back. Uses three keyframes for a smoother
+   asymmetric curve (slow rise, hold, gentle release). */
 @keyframes flame-heart-bloom {
-  0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(0.85); }
-  45%      { opacity: 1;   transform: translateX(-50%) scale(1.12); }
-  60%      { opacity: 0.85; transform: translateX(-50%) scale(1.04); }
+  0%, 100% { opacity: 0.55; transform: translateX(-50%) scale(0.82); filter: blur(1.5px); }
+  35%      { opacity: 0.92; transform: translateX(-50%) scale(1.06); filter: blur(0.8px); }
+  52%      { opacity: 1;    transform: translateX(-50%) scale(1.14); filter: blur(0.4px); }
+  68%      { opacity: 0.88; transform: translateX(-50%) scale(1.02); filter: blur(0.9px); }
 }
 
-/* God-ray pulse — vertical light beam shooting up from the core. */
+/* God-ray pulse — slow vertical breath with a held bloom at peak. */
 @keyframes flame-godray-pulse {
-  0%, 100% { opacity: 0.45; transform: translateX(-50%) scaleY(0.92) scaleX(0.9); }
-  50%      { opacity: 0.78; transform: translateX(-50%) scaleY(1.08) scaleX(1.15); }
+  0%, 100% { opacity: 0.42; transform: translateX(-50%) scaleY(0.88) scaleX(0.88); }
+  45%      { opacity: 0.7;  transform: translateX(-50%) scaleY(1.04) scaleX(1.08); }
+  55%      { opacity: 0.82; transform: translateX(-50%) scaleY(1.12) scaleX(1.18); }
+  70%      { opacity: 0.65; transform: translateX(-50%) scaleY(1.0)  scaleX(1.05); }
 }
 
-/* ============================================================
-   Frozen mystery prize — suspended ice crystal above the flame
-   ============================================================ */
 
-/* Soft cool aura behind the prism — breathes opposite to flame */
-@keyframes ice-prize-aura {
-  0%, 100% { opacity: 0.55; transform: translateX(-50%) scale(1); }
-  50%      { opacity: 0.9;  transform: translateX(-50%) scale(1.08); }
-}
-
-/* The prism gently bobs as if suspended on a thin chain */
-@keyframes ice-prize-bob {
-  0%, 100% { transform: translateX(-50%) translateY(0)    rotate(-1.2deg); }
-  50%      { transform: translateX(-50%) translateY(2.5px) rotate(1.2deg); }
-}
-
-/* Melt drips falling from the bottom of the ice */
-@keyframes ice-prize-drip {
-  0%   { opacity: 0; transform: translateY(0) scaleY(0.6); }
-  10%  { opacity: 1; transform: translateY(2px) scaleY(1); }
-  85%  { opacity: 1; transform: translateY(18px) scaleY(1.2); }
-  100% { opacity: 0; transform: translateY(24px) scaleY(0.4); }
-}
-
-/* Tiny frost dust shimmer — twinkles around the prism */
-@keyframes ice-prize-frost {
-  0%, 100% { opacity: 0.2; transform: translateY(0)    scale(0.7); }
-  50%      { opacity: 1;   transform: translateY(-3px) scale(1.15); }
-}
-
-/* Melt-progress meter shimmer — runs a light streak across the fill so
-   the bar feels actively "molten" rather than static. */
-@keyframes ice-prize-meter-shimmer {
-  0%   { background-position: -60% 0; opacity: 0; }
-  20%  { opacity: 0.85; }
-  80%  { opacity: 0.85; }
-  100% { background-position: 160% 0; opacity: 0; }
-}
-
-/* Released reward — falls from the bottom of the prize, drifts sideways
-   slightly (lane-based via --reward-x), spins, then fades out as it
-   passes through the flame. Fully driven by CSS custom properties so
-   each reward gets its own trajectory without rerunning React. */
-@keyframes ice-prize-reward-fall {
-  0% {
-    opacity: 0;
-    transform: translateX(-50%) translate3d(0, 0, 0) rotate(0deg) scale(0.6);
-  }
-  12% {
-    opacity: 1;
-    transform: translateX(-50%) translate3d(0, 4px, 0) rotate(20deg) scale(1.05);
-  }
-  60% {
-    opacity: 1;
-    transform: translateX(-50%) translate3d(var(--reward-x, 0px), calc(var(--reward-y, 80px) * 0.55), 0) rotate(220deg) scale(1);
-  }
-  90% {
-    opacity: 0.7;
-    transform: translateX(-50%) translate3d(var(--reward-x, 0px), var(--reward-y, 80px), 0) rotate(380deg) scale(0.85);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(-50%) translate3d(var(--reward-x, 0px), calc(var(--reward-y, 80px) * 1.1), 0) rotate(420deg) scale(0.75);
-  }
-}
 
 
 /* Plasma hue cycle — fast cinematic shift through magenta → cyan → blue */
@@ -2086,10 +2028,13 @@
 
 /* === Next-level flame physics === */
 
-/* Slow inhale/exhale that gives the flame body its breathing rhythm. */
+/* Slow inhale/exhale that gives the flame body its breathing rhythm.
+   Asymmetric curve: graceful rise, brief held peak, soft fall — feels alive. */
 @keyframes flame-breathe {
-  0%, 100% { transform: scaleY(0.96) scaleX(1.02); }
-  50%      { transform: scaleY(1.05) scaleX(0.97); }
+  0%, 100% { transform: scaleY(0.95) scaleX(1.025); }
+  42%      { transform: scaleY(1.03) scaleX(0.985); }
+  55%      { transform: scaleY(1.07) scaleX(0.965); }
+  70%      { transform: scaleY(1.01) scaleX(0.995); }
 }
 
 /* Volumetric ground light that the flame casts on the surface below. */

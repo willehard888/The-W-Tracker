@@ -20,20 +20,6 @@ interface RealisticFlameProps {
    * heat-haze layer. Auto-enabled at size >= 64; explicitly opt-out with `false`.
    */
   interactive?: boolean;
-  /**
-   * 0..1 — fills the frozen mystery prize from the bottom up, like a progress
-   * bar of melt-water rising inside the prism. At 1.0 the prize is fully
-   * thawed and ready to drop. Animations themselves are unchanged.
-   */
-  prizeProgress?: number;
-  /** Glyph shown inside the ice (default "?"). When revealed, can be a 🏆/🎖️/etc. */
-  prizeGlyph?: string;
-  /**
-   * Rewards (emoji or short text) that the ice has released. Each entry will
-   * fall from the prize down past the flame on a unique trajectory. Pass a
-   * stable array — mounting a new index triggers a new drop.
-   */
-  droppedRewards?: string[];
 }
 
 /**
@@ -61,7 +47,7 @@ interface RealisticFlameProps {
  *  like wind is on it.
  */
 const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
-  ({ tier, accent, size = 44, className, interactive, prizeProgress, prizeGlyph, droppedRewards }, ref) => {
+  ({ tier, accent, size = 44, className, interactive }, ref) => {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -808,402 +794,6 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
         </>
       )}
 
-      {/* ── Frozen mystery prize — suspended in an icy crystal above the flame.
-          Doubles as a PROGRESS METER: a "melt-water" level rises inside the
-          prism from 0 → 1 (prizeProgress). When unlocked rewards are passed
-          via `droppedRewards`, each falls out of the prize past the flame.
-          Only renders when the parent opts in by passing `prizeProgress`.   */}
-      {isHot && size >= 36 && prizeProgress !== undefined && (
-        <div
-          aria-hidden
-          className="absolute left-1/2 pointer-events-none"
-          style={{
-            transform: "translateX(-50%)",
-            // Sit clearly above the flame tip so the flame visibly licks at it
-            bottom: size * 1.25,
-            width: size * 1.1,
-            height: size * 1.55,
-            zIndex: 2,
-          }}
-        >
-          {(() => {
-            // Clamp + derive melt visuals from progress
-            const p = Math.max(0, Math.min(1, prizeProgress ?? 0));
-            // The icy interior spans roughly y=12..92 in the 100-unit viewBox.
-            const ICE_TOP = 12;
-            const ICE_BOTTOM = 92;
-            const meltY = ICE_BOTTOM - (ICE_BOTTOM - ICE_TOP) * p; // top of the rising water
-            // As progress climbs, the heat-melt rim glows brighter and the
-            // glyph becomes legible (revealing what's inside).
-            const meltGlow = 0.55 + p * 0.45;
-            const glyphOpacity = 0.55 + p * 0.45;
-            const glyph = prizeGlyph ?? "?";
-            return (
-              <>
-          {/* Frosted suspension chain — runs up out of frame */}
-          <div
-            className="absolute left-1/2 top-0 -translate-x-1/2"
-            style={{
-              width: 1.5,
-              height: size * 0.45,
-              background: "linear-gradient(180deg, hsl(200 40% 70% / 0) 0%, hsl(200 60% 80% / 0.7) 100%)",
-              boxShadow: "0 0 4px hsl(200 90% 80% / 0.55)",
-            }}
-          />
-
-          {/* Ambient frost halo behind the prism — cool counter-glow */}
-          <div
-            className="absolute left-1/2 -translate-x-1/2 rounded-full"
-            style={{
-              width: size * 1.4,
-              height: size * 1.4,
-              top: size * 0.25,
-              background:
-                "radial-gradient(ellipse at 50% 45%, hsl(200 90% 75% / 0.45) 0%, hsl(210 80% 60% / 0.18) 40%, transparent 72%)",
-              mixBlendMode: "screen",
-              filter: "blur(4px)",
-              animation: "ice-prize-aura 6s ease-in-out infinite",
-            }}
-          />
-
-          {/* The ice prism — main faceted crystal */}
-          <svg
-            className="absolute left-1/2 -translate-x-1/2"
-            width={size * 0.95}
-            height={size * 1.1}
-            viewBox="0 0 80 100"
-            style={{
-              top: size * 0.32,
-              filter: "drop-shadow(0 4px 10px hsl(200 80% 30% / 0.55)) drop-shadow(0 0 14px hsl(200 90% 75% / 0.45))",
-              animation: "ice-prize-bob 7s ease-in-out infinite",
-              transformOrigin: "50% 0%",
-            }}
-          >
-            <defs>
-              {/* Glassy ice fill */}
-              <linearGradient id={`ice-body-${uid}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"  stopColor="hsl(195 95% 92%)" stopOpacity="0.95" />
-                <stop offset="35%" stopColor="hsl(200 85% 78%)" stopOpacity="0.85" />
-                <stop offset="70%" stopColor="hsl(210 75% 55%)" stopOpacity="0.7" />
-                <stop offset="100%" stopColor="hsl(220 60% 30%)" stopOpacity="0.85" />
-              </linearGradient>
-              {/* Sharp white facet highlight */}
-              <linearGradient id={`ice-facet-${uid}`} x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%"  stopColor="hsl(0 0% 100%)" stopOpacity="0.85" />
-                <stop offset="50%" stopColor="hsl(195 100% 92%)" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="hsl(200 80% 70%)" stopOpacity="0" />
-              </linearGradient>
-              {/* Mystery core — pulses gold suggesting "what's inside?" */}
-              <radialGradient id={`ice-core-${uid}`} cx="50%" cy="55%" r="50%">
-                <stop offset="0%"  stopColor="hsl(48 100% 85%)" stopOpacity="0.95" />
-                <stop offset="50%" stopColor="hsl(42 95% 60%)" stopOpacity="0.55" />
-                <stop offset="100%" stopColor="hsl(30 90% 40%)" stopOpacity="0" />
-              </radialGradient>
-              {/* Heat-melt rim at the bottom — orange glow where flame licks */}
-              <linearGradient id={`ice-melt-${uid}`} x1="0" y1="1" x2="0" y2="0">
-                <stop offset="0%"  stopColor={palette.wick} stopOpacity="0.95" />
-                <stop offset="40%" stopColor={palette.outer} stopOpacity="0.5" />
-                <stop offset="100%" stopColor="hsl(0 0% 0% / 0)" />
-              </linearGradient>
-              {/* Melt-water progress fill — warm gold rising from the bottom,
-                  shows progress toward unlocking the prize */}
-              <linearGradient id={`ice-progress-${uid}`} x1="0" y1="1" x2="0" y2="0">
-                <stop offset="0%"   stopColor="hsl(42 100% 65%)" stopOpacity="0.85" />
-                <stop offset="55%"  stopColor="hsl(38 100% 60%)" stopOpacity="0.65" />
-                <stop offset="100%" stopColor="hsl(32 95% 55%)"  stopOpacity="0.35" />
-              </linearGradient>
-              {/* Clip the progress fill to the prism silhouette */}
-              <clipPath id={`ice-clip-${uid}`}>
-                <path d="M40 4 L66 28 L72 60 L58 88 L40 96 L22 88 L8 60 L14 28 Z" />
-              </clipPath>
-            </defs>
-
-            {/* Outer ice prism — diamond/teardrop hybrid */}
-            <path
-              d="M40 4 L66 28 L72 60 L58 88 L40 96 L22 88 L8 60 L14 28 Z"
-              fill={`url(#ice-body-${uid})`}
-              stroke="hsl(200 90% 88% / 0.7)"
-              strokeWidth="0.8"
-            />
-
-            {/* Progress fill — golden melt-water rising inside the prism */}
-            <g clipPath={`url(#ice-clip-${uid})`}>
-              <rect
-                x="0"
-                y={meltY}
-                width="80"
-                height={100 - meltY}
-                fill={`url(#ice-progress-${uid})`}
-                style={{
-                  transition: "y 600ms cubic-bezier(0.22, 1, 0.36, 1), height 600ms cubic-bezier(0.22, 1, 0.36, 1)",
-                }}
-              />
-              {/* Subtle wave line at the top of the rising water */}
-              <path
-                d={`M0 ${meltY} Q20 ${meltY - 1.2} 40 ${meltY} T80 ${meltY}`}
-                stroke="hsl(48 100% 85%)"
-                strokeWidth="0.6"
-                fill="none"
-                opacity="0.85"
-                style={{
-                  transition: "d 600ms cubic-bezier(0.22, 1, 0.36, 1)",
-                  filter: "drop-shadow(0 0 1.5px hsl(42 100% 70% / 0.9))",
-                }}
-              />
-            </g>
-
-            {/* Inner facet edges — give the crystal cut-glass faceting */}
-            <path
-              d="M40 4 L40 96 M14 28 L66 28 M22 88 L58 88 M8 60 L72 60"
-              stroke="hsl(195 100% 92% / 0.35)"
-              strokeWidth="0.5"
-              fill="none"
-            />
-
-            {/* Sharp specular highlight on the upper-left facet */}
-            <path
-              d="M40 4 L66 28 L40 60 L14 28 Z"
-              fill={`url(#ice-facet-${uid})`}
-              opacity="0.85"
-            />
-
-            {/* Tiny bright glint on the top edge */}
-            <ellipse cx="40" cy="8" rx="6" ry="1.4" fill="hsl(0 0% 100%)" opacity="0.9" />
-            <ellipse cx="22" cy="32" rx="2.5" ry="0.7" fill="hsl(0 0% 100%)" opacity="0.7" />
-            <ellipse cx="58" cy="42" rx="1.8" ry="0.5" fill="hsl(0 0% 100%)" opacity="0.6" />
-
-            {/* Suspended mystery core — glowing question mark inside */}
-            <ellipse cx="40" cy="56" rx="14" ry="18"
-              fill={`url(#ice-core-${uid})`}
-              style={{ mixBlendMode: "screen" }} />
-            <text
-              x="40" y="66"
-              textAnchor="middle"
-              fontFamily="ui-serif, Georgia, serif"
-              fontSize="26"
-              fontWeight="900"
-              fill="hsl(48 100% 92%)"
-              opacity={glyphOpacity}
-              style={{
-                filter: "drop-shadow(0 0 4px hsl(42 100% 70% / 0.9))",
-                transition: "opacity 500ms ease-out",
-              }}
-            >
-              {glyph}
-            </text>
-
-            {/* Heat melt-rim at the bottom — where the flame is eating it */}
-            <path
-              d="M22 88 L58 88 L52 96 L40 99 L28 96 Z"
-              fill={`url(#ice-melt-${uid})`}
-              opacity={meltGlow}
-              style={{
-                mixBlendMode: "screen",
-                transition: "opacity 500ms ease-out",
-              }}
-            />
-            {/* Soft melt blur outline */}
-            <path
-              d="M20 90 Q30 95 40 96 Q50 95 60 90"
-              stroke={palette.wick}
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              fill="none"
-              opacity="0.7"
-              style={{ mixBlendMode: "screen", filter: "blur(0.6px)" }}
-            />
-
-            {/* Tiny progress label on the prism — only when it's earning */}
-            {p > 0.02 && (
-              <text
-                x="40"
-                y="84"
-                textAnchor="middle"
-                fontFamily="ui-sans-serif, system-ui, sans-serif"
-                fontSize="9"
-                fontWeight="900"
-                fill="hsl(48 100% 92%)"
-                opacity="0.85"
-                style={{
-                  filter: "drop-shadow(0 0 2px hsl(42 100% 60% / 0.9))",
-                  letterSpacing: "0.5",
-                }}
-              >
-                {Math.round(p * 100)}%
-              </text>
-            )}
-          </svg>
-
-          {/* ── Melt-progress meter — sits directly UNDER the reward.
-              Frozen-to-molten gauge: cool blue when low, transitions
-              through gold to red-hot as the streak deepens. Tick marks
-              represent the streak milestones; each tick lights up as
-              its threshold is crossed. The whole bar's halo intensifies
-              with progress so the indicator visibly "heats up" over time. */}
-          <div
-            className="absolute left-1/2 -translate-x-1/2"
-            style={{
-              top: size * 1.46,
-              width: size * 0.92,
-              height: 6,
-              borderRadius: 999,
-              background:
-                "linear-gradient(180deg, hsl(220 40% 12% / 0.85) 0%, hsl(220 50% 6% / 0.95) 100%)",
-              border: "1px solid hsl(200 60% 70% / 0.35)",
-              boxShadow: `inset 0 1px 2px hsl(0 0% 0% / 0.6), 0 0 ${4 + p * 14}px ${
-                p < 0.5
-                  ? `hsl(200 90% 70% / ${(0.25 + p * 0.4).toFixed(2)})`
-                  : `hsl(${42 - (p - 0.5) * 40} 100% 60% / ${(0.45 + (p - 0.5) * 0.7).toFixed(2)})`
-              }`,
-              transition: "box-shadow 500ms ease-out",
-              overflow: "hidden",
-            }}
-          >
-            {/* The fill — interpolates icy → gold → ember as progress climbs */}
-            <div
-              className="absolute inset-y-0 left-0 rounded-full"
-              style={{
-                width: `${Math.max(2, p * 100)}%`,
-                background:
-                  p < 0.34
-                    ? "linear-gradient(90deg, hsl(200 90% 70%) 0%, hsl(195 100% 85%) 100%)"
-                    : p < 0.67
-                    ? "linear-gradient(90deg, hsl(200 90% 70%) 0%, hsl(48 100% 70%) 60%, hsl(42 100% 65%) 100%)"
-                    : "linear-gradient(90deg, hsl(48 100% 70%) 0%, hsl(28 95% 60%) 50%, hsl(14 95% 55%) 100%)",
-                boxShadow: `0 0 ${4 + p * 8}px ${
-                  p < 0.5 ? "hsl(200 90% 70% / 0.7)" : "hsl(28 95% 60% / 0.85)"
-                }`,
-                transition: "width 700ms cubic-bezier(0.22, 1, 0.36, 1), background 600ms ease-out, box-shadow 500ms ease-out",
-              }}
-            />
-            {/* Animated shimmer running across the fill — only when actively progressing */}
-            {p > 0.05 && (
-              <div
-                className="absolute inset-y-0 left-0 pointer-events-none"
-                style={{
-                  width: `${Math.max(2, p * 100)}%`,
-                  background:
-                    "linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.5) 50%, transparent 100%)",
-                  backgroundSize: "60% 100%",
-                  backgroundRepeat: "no-repeat",
-                  animation: "ice-prize-meter-shimmer 2.4s ease-in-out infinite",
-                  borderRadius: 999,
-                  mixBlendMode: "screen",
-                }}
-              />
-            )}
-            {/* Milestone ticks — light up once their threshold is crossed.
-                Positions match the structural beats of a streak journey:
-                ~20% (early ignite), 50% (halfway), 80% (final push). */}
-            {[0.2, 0.5, 0.8].map((tick) => {
-              const reached = p >= tick;
-              return (
-                <span
-                  key={`tick-${tick}`}
-                  className="absolute top-1/2 -translate-y-1/2 rounded-full"
-                  style={{
-                    left: `${tick * 100}%`,
-                    width: 3,
-                    height: 3,
-                    marginLeft: -1.5,
-                    background: reached ? "hsl(48 100% 90%)" : "hsl(220 30% 50%)",
-                    boxShadow: reached
-                      ? "0 0 6px hsl(42 100% 60% / 0.95)"
-                      : "0 0 2px hsl(0 0% 0% / 0.6) inset",
-                    transition: "background 400ms ease-out, box-shadow 400ms ease-out",
-                  }}
-                />
-              );
-            })}
-          </div>
-
-          {/* Melt drips — water droplets falling from the bottom of the ice */}
-          {[0, 1, 2].map((i) => (
-            <span
-              key={`drip-${i}`}
-              className="absolute rounded-full"
-              style={{
-                left: `${42 + i * 7}%`,
-                top: size * 1.32,
-                width: 2.5,
-                height: 4,
-                background: "linear-gradient(180deg, hsl(200 95% 92%) 0%, hsl(210 85% 70%) 100%)",
-                boxShadow: "0 0 4px hsl(200 90% 80% / 0.7)",
-                animation: `ice-prize-drip ${2.4 + i * 0.5}s ease-in ${i * 0.7}s infinite`,
-                opacity: 0,
-              }}
-            />
-          ))}
-
-          {/* Frost dust — tiny shimmering ice particles around the prism */}
-          {[
-            { x: 12, y: 38, d: 0.0, s: 1.4 },
-            { x: 88, y: 46, d: 1.2, s: 1.8 },
-            { x: 18, y: 70, d: 2.0, s: 1.2 },
-            { x: 84, y: 78, d: 0.6, s: 1.5 },
-            { x: 50, y: 32, d: 1.6, s: 1.6 },
-          ].map((f, i) => (
-            <span
-              key={`frost-${i}`}
-              className="absolute rounded-full"
-              style={{
-                left: `${f.x}%`,
-                top: size * (f.y / 100) + size * 0.2,
-                width: f.s,
-                height: f.s,
-                background: "hsl(195 100% 95%)",
-                boxShadow: "0 0 5px hsl(200 95% 85% / 0.95)",
-                animation: `ice-prize-frost ${4 + (i % 3)}s ease-in-out ${f.d}s infinite`,
-                mixBlendMode: "screen",
-              }}
-            />
-          ))}
-
-          {/* Released rewards — drop out of the bottom of the prize, fall past
-              the flame on staggered curves. Each unique array index gets its
-              own keyed span so React re-mounts (and re-runs the animation)
-              when the parent appends a new reward. */}
-          {droppedRewards && droppedRewards.length > 0 && (
-            <div
-              className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
-              style={{
-                top: size * 1.25,
-                width: size * 1.6,
-                height: size * 2.4,
-              }}
-            >
-              {droppedRewards.map((reward, i) => {
-                const lane = (i % 3) - 1; // -1, 0, 1
-                const delay = (i * 0.18) % 1.2;
-                const duration = 2.6 + (i % 4) * 0.35;
-                return (
-                  <span
-                    key={`reward-${i}-${reward}`}
-                    className="absolute left-1/2 font-black"
-                    style={{
-                      top: 0,
-                      // @ts-expect-error custom prop
-                      "--reward-x": `${lane * (size * 0.55)}px`,
-                      "--reward-y": `${size * 2.2}px`,
-                      transform: "translateX(-50%)",
-                      fontSize: Math.max(14, Math.min(28, size * 0.42)),
-                      lineHeight: 1,
-                      filter: "drop-shadow(0 2px 6px hsl(42 100% 50% / 0.8)) drop-shadow(0 0 12px hsl(48 100% 70% / 0.6))",
-                      animation: `ice-prize-reward-fall ${duration}s cubic-bezier(0.4, 0, 0.6, 1) ${delay}s 1 forwards`,
-                      opacity: 0,
-                    }}
-                  >
-                    {reward}
-                  </span>
-                );
-              })}
-            </div>
-          )}
-              </>
-            );
-          })()}
-        </div>
-      )}
 
 
       {/* Composite of all SVG flame bodies — wrapped so we can hue-shift Legendary
@@ -1212,9 +802,11 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
       <div
         className="absolute inset-0"
         style={{
+          // Slower, more meditative breath cycle — gives the whole flame a
+          // graceful inhale/exhale rhythm instead of a busy pulse.
           animation: hueAnim
-            ? `${hueAnim}, flame-breathe ${(6 * speedMul).toFixed(2)}s ease-in-out infinite`
-            : `flame-breathe ${(6 * speedMul).toFixed(2)}s ease-in-out infinite`,
+            ? `${hueAnim}, flame-breathe ${(7.4 * speedMul).toFixed(2)}s cubic-bezier(0.45, 0, 0.25, 1) infinite`
+            : `flame-breathe ${(7.4 * speedMul).toFixed(2)}s cubic-bezier(0.45, 0, 0.25, 1) infinite`,
           animationDelay: hueAnim ? `0s, -${breathOffset}s` : `-${breathOffset}s`,
           transformOrigin: "center bottom",
           willChange: "transform, filter",
@@ -1229,7 +821,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
           style={{
             transform: "translate(-50%, 0)",
             transformOrigin: "center bottom",
-            animation: `flame-outer-flicker ${1.7 * speedMul}s ease-in-out infinite`,
+            animation: `flame-outer-flicker ${1.95 * speedMul}s cubic-bezier(0.34, 0.02, 0.32, 1) infinite`,
             mixBlendMode: "screen",
             filter: `url(#${turbSlow}) blur(2.5px)`,
           }}
@@ -1253,7 +845,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
           style={{
             transform: "translate(-50%, 0)",
             transformOrigin: "center bottom",
-            animation: `flame-mid-flicker ${1.05 * speedMul}s ease-in-out infinite`,
+            animation: `flame-mid-flicker ${1.25 * speedMul}s cubic-bezier(0.32, 0.04, 0.36, 1) infinite`,
             filter: `url(#${turbMid}) drop-shadow(0 0 7px ${palette.mid})`,
             mixBlendMode: "screen",
           }}
@@ -1278,7 +870,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
           style={{
             transform: "translate(-50%, 0)",
             transformOrigin: "center bottom",
-            animation: `flame-inner-flicker ${0.8 * speedMul}s ease-in-out infinite`,
+            animation: `flame-inner-flicker ${0.95 * speedMul}s cubic-bezier(0.3, 0.06, 0.4, 1) infinite`,
             filter: `url(#${turbFast}) drop-shadow(0 0 5px ${palette.inner})`,
             mixBlendMode: "screen",
           }}
@@ -1302,7 +894,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
           style={{
             transform: "translate(-50%, 0)",
             transformOrigin: "center bottom",
-            animation: `flame-core-flicker ${0.6 * speedMul}s ease-in-out infinite`,
+            animation: `flame-core-flicker ${0.72 * speedMul}s cubic-bezier(0.28, 0.08, 0.42, 1) infinite`,
             filter: `url(#${turbFast}) drop-shadow(0 0 4px ${palette.core})`,
             mixBlendMode: "screen",
           }}
@@ -1331,7 +923,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
               filter: `blur(${Math.max(2, size * 0.04)}px)`,
               transform: "translateX(-50%)",
               mixBlendMode: "screen",
-              animation: `flame-heart-bloom ${(1.2 * speedMul).toFixed(2)}s ease-in-out infinite`,
+              animation: `flame-heart-bloom ${(1.6 * speedMul).toFixed(2)}s cubic-bezier(0.4, 0, 0.3, 1) infinite`,
               animationDelay: `-${breathOffset}s`,
             }}
           />
@@ -1405,7 +997,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
               transform: "translateX(-50%)",
               transformOrigin: "center bottom",
               mixBlendMode: "screen",
-              animation: `flame-godray-pulse ${(2.4 * speedMul).toFixed(2)}s ease-in-out infinite`,
+              animation: `flame-godray-pulse ${(3.2 * speedMul).toFixed(2)}s cubic-bezier(0.4, 0, 0.3, 1) infinite`,
               animationDelay: `-${breathOffset}s`,
               opacity: 0.7,
             }}

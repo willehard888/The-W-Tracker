@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
@@ -35,6 +35,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isElite, setIsElite] = useState(false);
   const [isApexSubscriber, setIsApexSubscriber] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
+  const lastFetchedProfileUserId = useRef<string | null>(null);
+  const inFlightProfileFetch = useRef<Promise<void> | null>(null);
 
   const buildFallbackUsername = (authUser: User) => {
     const rawUsername = String(
@@ -108,7 +110,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const fetchProfile = async (authUser: User) => {
+  const fetchProfile = async (authUser: User, force = false) => {
+    if (!force && lastFetchedProfileUserId.current === authUser.id && inFlightProfileFetch.current) {
+      await inFlightProfileFetch.current;
+      return;
+    }
+
+    const run = (async () => {
     let { data } = await supabase
       .from("profiles")
       .select("*")
@@ -151,6 +159,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     clearAppleAuthStarted();
     clearAppleUsernameSelectionPending();
+    lastFetchedProfileUserId.current = authUser.id;
+    })();
+
+    inFlightProfileFetch.current = run;
+    try {
+      await run;
+    } finally {
+      inFlightProfileFetch.current = null;
+    }
   };
 
   const refreshProfile = async () => {
@@ -176,12 +193,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsElite(false);
         setSubscriptionEnd(null);
       }
-      // Refresh profile to get synced is_elite
-      if (user) await fetchProfile(user);
+      const nextElite = Boolean(data?.subscribed);
+      const nextApex = data?.tier === "apex";
+      if (user && (nextElite !== isElite || nextApex !== isApexSubscriber)) {
+        await fetchProfile(user, true);
+      }
     } catch (e) {
       console.error("Failed to check subscription:", e);
     }
-  }, [user]);
+  }, [user, isElite, isApexSubscriber]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -189,8 +209,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchProfile(session.user), 0);
+          if (_event !== "TOKEN_REFRESHED") {
+            setTimeout(() => fetchProfile(session.user), 0);
+          }
         } else {
+          lastFetchedProfileUserId.current = null;
           setProfile(null);
           setIsElite(false);
           setIsApexSubscriber(false);
@@ -216,7 +239,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!user) return;
     checkSubscription();
-    const interval = setInterval(checkSubscription, 60000);
+    const interval = setInterval(checkSubscription, 300000);
     return () => clearInterval(interval);
   }, [user, checkSubscription]);
 

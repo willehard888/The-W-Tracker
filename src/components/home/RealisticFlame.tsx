@@ -575,10 +575,19 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
         </>
       )}
 
-      {/* Composite of all SVG flame bodies — wrapped so we can hue-shift Legendary */}
+      {/* Composite of all SVG flame bodies — wrapped so we can hue-shift Legendary
+          AND apply the slow inhale/exhale "breath" cycle. The wrapper transforms-only
+          so it stays GPU-cheap; the existing per-layer flickers ride on top of it. */}
       <div
         className="absolute inset-0"
-        style={{ animation: hueAnim, willChange: "filter" }}
+        style={{
+          animation: hueAnim
+            ? `${hueAnim}, flame-breathe ${(6 * speedMul).toFixed(2)}s ease-in-out infinite`
+            : `flame-breathe ${(6 * speedMul).toFixed(2)}s ease-in-out infinite`,
+          animationDelay: hueAnim ? `0s, -${breathOffset}s` : `-${breathOffset}s`,
+          transformOrigin: "center bottom",
+          willChange: "transform, filter",
+        }}
       >
         {/* 4. Outer haze */}
         <svg

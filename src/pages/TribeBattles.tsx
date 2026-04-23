@@ -58,6 +58,7 @@ const TribeBattles = () => {
     const tribeIds = Array.from(
       new Set(rawBattles.flatMap((b) => [b.challenger_tribe_id, b.opponent_tribe_id])),
     );
+    let myStreak = 0;
     if (tribeIds.length > 0) {
       const [{ data: tribesData }, streaksMap] = await Promise.all([
         supabase
@@ -73,7 +74,13 @@ const TribeBattles = () => {
         b.challenger = c ? { ...c, collective_streak: streaksMap.get(b.challenger_tribe_id) ?? 0 } : undefined;
         b.opponent = o ? { ...o, collective_streak: streaksMap.get(b.opponent_tribe_id) ?? 0 } : undefined;
       });
+      myStreak = streaksMap.get(id) ?? 0;
     }
+    // No battles yet → still need our own collective streak for the hero flame
+    if (myStreak === 0 && tribeIds.length === 0) {
+      myStreak = await fetchTribeCollectiveStreak(id);
+    }
+    setCollectiveStreak(myStreak);
 
     setBattles(rawBattles);
     setLoading(false);

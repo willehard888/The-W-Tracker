@@ -511,6 +511,21 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       [onClick, loading],
     );
 
+    // Inject texture URLs as CSS vars for variants that consume them.
+    const textureStyle = React.useMemo<React.CSSProperties | undefined>(() => {
+      if (variant === "magma") {
+        return { ["--magma-bg" as string]: `url(${magmaTexture})` };
+      }
+      if (variant === "bullion") {
+        return { ["--bullion-bg" as string]: `url(${goldTexture})` };
+      }
+      return undefined;
+    }, [variant]);
+
+    const mergedStyle = textureStyle
+      ? { ...textureStyle, ...((props as React.HTMLAttributes<HTMLElement>).style ?? {}) }
+      : (props as React.HTMLAttributes<HTMLElement>).style;
+
     // When asChild, Slot requires a single child — preserve children as-is.
     if (asChild) {
       return (
@@ -519,6 +534,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ref={ref}
           onClick={handleClick}
           {...props}
+          style={mergedStyle}
         >
           {children}
         </Comp>
@@ -533,6 +549,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         aria-busy={loading || undefined}
         {...props}
+        style={mergedStyle}
       >
         {loading && (
           <span className="absolute inset-0 flex items-center justify-center">

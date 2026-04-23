@@ -60,6 +60,10 @@ const Tribes = () => {
   const [ownedIds, setOwnedIds] = useState<Set<string>>(new Set());
   const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
   const [collectiveStreaks, setCollectiveStreaks] = useState<Map<string, number>>(new Map());
+  // Map of userId → set of tribeIds they belong to (used to forward fire events
+  // to the right per-row mini-flame).
+  const [userToTribes, setUserToTribes] = useState<Map<string, string[]>>(new Map());
+  const [rowPulse, setRowPulse] = useState<Map<string, number>>(new Map());
   const [invites, setInvites] = useState<Invite[]>([]);
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

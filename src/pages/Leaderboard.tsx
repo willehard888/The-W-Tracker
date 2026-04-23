@@ -268,10 +268,9 @@ const Leaderboard = () => {
         </p>
       </div>
 
-      <div className="flex justify-center gap-2 mb-4 animate-reveal animate-reveal-delay-1">
-        <Button size="pill" variant={mode === "season" ? "gold" : "secondary"} onClick={() => setMode("season")}>Season</Button>
-        <Button size="pill" variant={mode === "all_time" ? "gold" : "secondary"} onClick={() => setMode("all_time")}>All Time</Button>
-      </div>
+      {/* Mode switcher — paged tabs with swipe hint */}
+      <ModeTabs mode={mode} onChange={setMode} />
+
 
       {profile && (
         <div className="animate-reveal animate-reveal-delay-2 relative overflow-hidden rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/[0.08] via-card to-card p-4 mb-5 glow-gold-sm">

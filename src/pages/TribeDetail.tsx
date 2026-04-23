@@ -215,6 +215,23 @@ const TribeDetail = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, profile?.user_id]);
 
+  // Realtime fire reactor — flame jumps every time a member's streak ticks up
+  const memberIds = members.map((m) => m.user_id);
+  const fireReactor = useTribeFireReactor(memberIds);
+
+  // Optimistically grow the collective streak the instant a member checks in,
+  // and fire a soft haptic when it's the current user's own check-in.
+  const lastEventIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const latest = fireReactor.events[fireReactor.events.length - 1];
+    if (!latest || latest.id === lastEventIdRef.current) return;
+    lastEventIdRef.current = latest.id;
+    setCollectiveStreak((prev) => prev + latest.delta);
+    if (latest.userId === profile?.user_id) {
+      hapticImpact("light");
+    }
+  }, [fireReactor.events, profile?.user_id]);
+
   // Realtime: refresh on new posts/comments/kudos/reactions in this tribe
   useEffect(() => {
     if (!id) return;

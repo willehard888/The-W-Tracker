@@ -283,6 +283,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
   );
 
   // Spark crown — small fireflies above the tip (Diamond+)
+  // (Kept for backward-compat behavior; ember field below replaces visually on Diamond+)
   const crownCount = isLegendary ? 6 : isDiamond ? 4 : 0;
   const crown = useMemo(
     () =>
@@ -294,6 +295,25 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
       })),
     [crownCount],
   );
+
+  // Living ember field (Diamond+) — drifts on global wind + local pointer wind.
+  // Replaces static crown with reactive particles. Particle count scales with size.
+  const emberCount = isDiamond ? Math.min(12, Math.max(6, Math.round(size / 8))) : 0;
+  const embers = useMemo(
+    () =>
+      Array.from({ length: emberCount }).map((_, i) => {
+        const seed = (i * 2654435761) >>> 0;
+        return {
+          leftPct: 22 + (seed % 56),
+          delay: ((seed >> 4) % 280) / 100, // 0..2.8s
+          duration: 3.2 + ((seed >> 8) % 220) / 100, // 3.2..5.4s
+          rise: -(size * 1.2 + ((seed >> 12) % Math.max(20, size))), // -size*1.2 .. -size*2.2
+          dotSize: 1.4 + ((seed >> 16) % 18) / 10, // 1.4..3.2px
+        };
+      }),
+    [emberCount, size],
+  );
+
 
   if (!isHot) {
     // Cold / unlit state — soft outline

@@ -592,17 +592,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
         style={mergedStyle}
       >
-        {/* Aurum lava overlay — hidden at idle, fades + scales in on hover */}
+        {/* Aurum lava overlay — hidden at idle, fades + scales in on parent button :hover */}
         {isAurum && (
           <span
             aria-hidden
-            className={cn(
-              "absolute inset-0 rounded-[inherit] pointer-events-none z-[1]",
-              "bg-cover bg-center opacity-0 scale-[1.06]",
-              "transition-[opacity,transform] duration-[700ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]",
-              "group-hover/aurum:opacity-95 group-hover/aurum:scale-100",
-              "group-active/aurum:opacity-60 group-active/aurum:scale-[0.99]",
-            )}
+            className="aurum-lava-layer absolute inset-0 rounded-[inherit] pointer-events-none z-[1] bg-cover bg-center opacity-0"
             style={{ backgroundImage: `url(${lavaTexture})` }}
           />
         )}

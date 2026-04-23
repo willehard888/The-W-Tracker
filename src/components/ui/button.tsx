@@ -5,6 +5,8 @@ import { Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
+import magmaTexture from "@/assets/btn-magma-texture.jpg";
+import goldTexture from "@/assets/btn-gold-texture.jpg";
 
 const buttonVariants = cva(
   [
@@ -380,6 +382,86 @@ const buttonVariants = cva(
           "hover:shadow-[inset_0_1px_0_hsl(46_100%_88%/0.18),inset_0_-1px_0_hsl(20_85%_6%/0.7),inset_0_-10px_18px_-12px_hsl(20_95%_45%/0.45),0_2px_3px_hsl(0_0%_0%/0.45),0_8px_20px_-4px_hsl(28_85%_36%/0.35)]",
           "active:shadow-[inset_0_2px_4px_hsl(20_85%_6%/0.7)]",
         ].join(" "),
+
+        // ─────────────────────────────────────────────────────────────────────
+        // MAGMA — real lava-cracked rock CTA. Photographic texture + animated
+        // heat shift through the cracks. The pinnacle "fire" CTA in the app.
+        //   • Real molten-rock texture base (animated background-position drift)
+        //   • Glowing crack overlay via mix-blend so cracks pulse with light
+        //   • Top dark vignette keeps text legible against bright lava
+        //   • Hover: heat intensifies (saturation + brightness + faster drift)
+        //   • Press: lava cools (settles), animations pause
+        // Use sparingly — this is the "ignite" / "go nuclear" button.
+        // ─────────────────────────────────────────────────────────────────────
+        magma: [
+          "text-[hsl(48_100%_94%)] font-extrabold tracking-[-0.005em] uppercase text-xs",
+          "[text-shadow:0_1px_0_hsl(20_90%_6%/0.95),0_0_10px_hsl(28_100%_56%/0.6),0_2px_8px_hsl(14_92%_30%/0.85)]",
+          "overflow-hidden isolate",
+          // BASE: real lava texture (drifts slowly), warmed via overlay
+          "[background-image:url(var(--magma-bg)),linear-gradient(180deg,hsl(14_92%_46%/0.25)_0%,hsl(20_85%_18%/0.45)_100%)]",
+          "[background-size:200%_200%,100%_100%] [background-position:0%_50%,0_0]",
+          "[background-blend-mode:overlay,normal]",
+          // Coal bezel — keeps the molten contained and tactile
+          "shadow-[inset_0_0_0_0.5px_hsl(20_70%_4%/0.95),inset_0_1px_0_hsl(48_100%_92%/0.45),inset_0_-1px_0_hsl(20_85%_6%/0.9),inset_0_-12px_28px_-10px_hsl(18_98%_48%/0.55),0_1px_2px_hsl(0_0%_0%/0.55),0_8px_22px_-3px_hsl(18_95%_42%/0.55),0_18px_42px_-12px_hsl(14_92%_38%/0.65)]",
+          // ::before — top dark vignette for text legibility + bottom heat bloom
+          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
+          "before:[background:radial-gradient(120%_55%_at_50%_-15%,hsl(20_80%_4%/0.55)_0%,transparent_55%),radial-gradient(140%_100%_at_50%_125%,hsl(20_100%_56%/0.45)_0%,transparent_70%)]",
+          // ::after — diagonal heat sweep on hover
+          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
+          "after:[background:linear-gradient(110deg,transparent_28%,hsl(48_100%_96%/0.45)_50%,transparent_72%)]",
+          "after:opacity-70 after:transition-transform after:duration-[900ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "hover:after:[transform:translate3d(280%,0,0)]",
+          // Living: slow background drift + halo pulse
+          "[animation:magma-drift_18s_linear_infinite,ember-halo-pulse_3.6s_ease-in-out_infinite]",
+          // Hover: hotter
+          "hover:brightness-[1.10] hover:saturate-[1.18]",
+          "hover:[animation-duration:10s,2.2s]",
+          // Press: lava cools, animations stop
+          "active:brightness-[0.92] active:saturate-[0.92]",
+          "active:before:opacity-50 active:after:opacity-25",
+          "active:[animation:none]",
+          "active:shadow-[inset_0_0_0_0.5px_hsl(20_70%_3%/0.95),inset_0_2px_6px_hsl(20_75%_5%/0.75),inset_0_-1px_0_hsl(40_100%_82%/0.18),inset_0_-8px_18px_-10px_hsl(18_95%_42%/0.5),0_1px_1px_hsl(0_0%_0%/0.5)]",
+          "disabled:grayscale-[0.6] disabled:after:hidden disabled:before:hidden disabled:[animation:none]",
+        ].join(" "),
+
+        // ─────────────────────────────────────────────────────────────────────
+        // BULLION — real polished gold-bar CTA. Photographic 999.9 fine gold.
+        //   • Real polished gold texture base (subtle vertical drift = light moves)
+        //   • Top mirror-shine highlight band
+        //   • Engraved bezel keeps the bar feeling tactile
+        //   • Hover: brighter shine + faster sheen sweep
+        // Use for premium identity actions (Upgrade, Claim, Save Status, Receipt).
+        // ─────────────────────────────────────────────────────────────────────
+        bullion: [
+          "text-[hsl(28_92%_8%)] font-extrabold tracking-[-0.005em] uppercase text-xs",
+          "[text-shadow:0_1px_0_hsl(50_100%_98%/0.85),0_0_4px_hsl(50_100%_94%/0.4)]",
+          "overflow-hidden isolate",
+          // BASE: real polished gold texture + warm gradient overlay
+          "[background-image:url(var(--bullion-bg)),linear-gradient(180deg,hsl(50_100%_88%/0.4)_0%,hsl(38_96%_52%/0.5)_100%)]",
+          "[background-size:170%_170%,100%_100%] [background-position:50%_30%,0_0]",
+          "[background-blend-mode:overlay,normal]",
+          // Engraved bullion bezel
+          "shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.65),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_-1px_0_hsl(30_82%_22%/0.65),inset_0_-8px_16px_-10px_hsl(30_82%_28%/0.5),0_1px_2px_hsl(30_60%_14%/0.4),0_8px_20px_-3px_hsl(40_92%_52%/0.5),0_20px_38px_-14px_hsl(38_88%_48%/0.55)]",
+          // ::before — soft mirror-shine band on top + warm bottom glow
+          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
+          "before:[background:linear-gradient(180deg,hsl(50_100%_99%/0.55)_0%,hsl(50_100%_99%/0.18)_18%,transparent_42%),radial-gradient(140%_70%_at_50%_125%,hsl(38_100%_60%/0.32)_0%,transparent_65%)]",
+          // ::after — diagonal mirror-sheen sweep
+          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
+          "after:[background:linear-gradient(110deg,transparent_30%,hsl(50_100%_99%/0.55)_50%,transparent_70%)]",
+          "after:opacity-70 after:transition-transform after:duration-[850ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "hover:after:[transform:translate3d(260%,0,0)]",
+          // Living: slow vertical light drift on the polished surface
+          "[animation:bullion-shine-drift_14s_ease-in-out_infinite]",
+          // Hover: brighter + slightly more saturated
+          "hover:brightness-[1.06] hover:saturate-[1.08]",
+          "hover:[animation-duration:8s]",
+          // Press: muted, settles
+          "active:brightness-[0.95]",
+          "active:before:opacity-55 active:after:opacity-30",
+          "active:[animation:none]",
+          "active:shadow-[inset_0_0_0_0.5px_hsl(24_85%_14%/0.7),inset_0_2px_4px_hsl(24_75%_16%/0.5),inset_0_-1px_0_hsl(50_100%_90%/0.2),0_1px_1px_hsl(0_0%_0%/0.3)]",
+          "disabled:grayscale-[0.4] disabled:after:hidden disabled:before:hidden disabled:[animation:none]",
+        ].join(" "),
       },
       size: {
         default: "h-10 min-h-10 px-4 py-2 rounded-md",
@@ -431,6 +513,21 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       [onClick, loading],
     );
 
+    // Inject texture URLs as CSS vars for variants that consume them.
+    const textureStyle = React.useMemo<React.CSSProperties | undefined>(() => {
+      if (variant === "magma") {
+        return { ["--magma-bg" as string]: `url(${magmaTexture})` };
+      }
+      if (variant === "bullion") {
+        return { ["--bullion-bg" as string]: `url(${goldTexture})` };
+      }
+      return undefined;
+    }, [variant]);
+
+    const mergedStyle = textureStyle
+      ? { ...textureStyle, ...((props as React.HTMLAttributes<HTMLElement>).style ?? {}) }
+      : (props as React.HTMLAttributes<HTMLElement>).style;
+
     // When asChild, Slot requires a single child — preserve children as-is.
     if (asChild) {
       return (
@@ -439,6 +536,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ref={ref}
           onClick={handleClick}
           {...props}
+          style={mergedStyle}
         >
           {children}
         </Comp>
@@ -453,6 +551,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         aria-busy={loading || undefined}
         {...props}
+        style={mergedStyle}
       >
         {loading && (
           <span className="absolute inset-0 flex items-center justify-center">

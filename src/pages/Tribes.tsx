@@ -348,7 +348,7 @@ const Tribes = () => {
       {canCreate ? (
         <Button
           onClick={() => navigate("/tribes/new")}
-          variant="ember"
+          variant="magma"
           size="lg"
           className="w-full mb-4"
         >

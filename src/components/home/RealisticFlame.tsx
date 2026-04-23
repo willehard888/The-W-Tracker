@@ -1034,6 +1034,89 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
             )}
           </svg>
 
+          {/* ── Melt-progress meter — sits directly UNDER the reward.
+              Frozen-to-molten gauge: cool blue when low, transitions
+              through gold to red-hot as the streak deepens. Tick marks
+              represent the streak milestones; each tick lights up as
+              its threshold is crossed. The whole bar's halo intensifies
+              with progress so the indicator visibly "heats up" over time. */}
+          <div
+            className="absolute left-1/2 -translate-x-1/2"
+            style={{
+              top: size * 1.46,
+              width: size * 0.92,
+              height: 6,
+              borderRadius: 999,
+              background:
+                "linear-gradient(180deg, hsl(220 40% 12% / 0.85) 0%, hsl(220 50% 6% / 0.95) 100%)",
+              border: "1px solid hsl(200 60% 70% / 0.35)",
+              boxShadow: `inset 0 1px 2px hsl(0 0% 0% / 0.6), 0 0 ${4 + p * 14}px ${
+                p < 0.5
+                  ? `hsl(200 90% 70% / ${(0.25 + p * 0.4).toFixed(2)})`
+                  : `hsl(${42 - (p - 0.5) * 40} 100% 60% / ${(0.45 + (p - 0.5) * 0.7).toFixed(2)})`
+              }`,
+              transition: "box-shadow 500ms ease-out",
+              overflow: "hidden",
+            }}
+          >
+            {/* The fill — interpolates icy → gold → ember as progress climbs */}
+            <div
+              className="absolute inset-y-0 left-0 rounded-full"
+              style={{
+                width: `${Math.max(2, p * 100)}%`,
+                background:
+                  p < 0.34
+                    ? "linear-gradient(90deg, hsl(200 90% 70%) 0%, hsl(195 100% 85%) 100%)"
+                    : p < 0.67
+                    ? "linear-gradient(90deg, hsl(200 90% 70%) 0%, hsl(48 100% 70%) 60%, hsl(42 100% 65%) 100%)"
+                    : "linear-gradient(90deg, hsl(48 100% 70%) 0%, hsl(28 95% 60%) 50%, hsl(14 95% 55%) 100%)",
+                boxShadow: `0 0 ${4 + p * 8}px ${
+                  p < 0.5 ? "hsl(200 90% 70% / 0.7)" : "hsl(28 95% 60% / 0.85)"
+                }`,
+                transition: "width 700ms cubic-bezier(0.22, 1, 0.36, 1), background 600ms ease-out, box-shadow 500ms ease-out",
+              }}
+            />
+            {/* Animated shimmer running across the fill — only when actively progressing */}
+            {p > 0.05 && (
+              <div
+                className="absolute inset-y-0 left-0 pointer-events-none"
+                style={{
+                  width: `${Math.max(2, p * 100)}%`,
+                  background:
+                    "linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.5) 50%, transparent 100%)",
+                  backgroundSize: "60% 100%",
+                  backgroundRepeat: "no-repeat",
+                  animation: "ice-prize-meter-shimmer 2.4s ease-in-out infinite",
+                  borderRadius: 999,
+                  mixBlendMode: "screen",
+                }}
+              />
+            )}
+            {/* Milestone ticks — light up once their threshold is crossed.
+                Positions match the structural beats of a streak journey:
+                ~20% (early ignite), 50% (halfway), 80% (final push). */}
+            {[0.2, 0.5, 0.8].map((tick) => {
+              const reached = p >= tick;
+              return (
+                <span
+                  key={`tick-${tick}`}
+                  className="absolute top-1/2 -translate-y-1/2 rounded-full"
+                  style={{
+                    left: `${tick * 100}%`,
+                    width: 3,
+                    height: 3,
+                    marginLeft: -1.5,
+                    background: reached ? "hsl(48 100% 90%)" : "hsl(220 30% 50%)",
+                    boxShadow: reached
+                      ? "0 0 6px hsl(42 100% 60% / 0.95)"
+                      : "0 0 2px hsl(0 0% 0% / 0.6) inset",
+                    transition: "background 400ms ease-out, box-shadow 400ms ease-out",
+                  }}
+                />
+              );
+            })}
+          </div>
+
           {/* Melt drips — water droplets falling from the bottom of the ice */}
           {[0, 1, 2].map((i) => (
             <span

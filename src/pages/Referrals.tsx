@@ -78,9 +78,9 @@ const Referrals = () => {
     { count: 1, title: "First Recruit", reward: "+250 XP · First Recruit badge", emoji: "🎯", unlocked: referralCount >= 1 },
     { count: 3, title: "1 Month Free", reward: "30 days of membership credits", emoji: "🎟️", unlocked: referralCount >= 3 },
     { count: 5, title: "2 Months Free", reward: "60 days credits · Brand Ambassador badge", emoji: "🥈", unlocked: referralCount >= 5 },
-    { count: 10, title: "1 Month Apex Instant", reward: "30 days ⚡ Apex tier · Inner Circle badge · Tribe creation", emoji: "⚡", unlocked: referralCount >= 10, premium: "apex" },
+    { count: 10, title: "Apex Instant", reward: "30 days Apex tier · Inner Circle badge · Tribe creation", emoji: "⚡", unlocked: referralCount >= 10, premium: "apex" },
     { count: 25, title: "Lifetime Membership", reward: "Forever member credits · Kingmaker badge", emoji: "👑", unlocked: referralCount >= 25 },
-    { count: 50, title: "Founders Circle", reward: "🔱 Permanent Legend pin · Lifetime Apex · Founders badge", emoji: "🔱", unlocked: referralCount >= 50 || legendPinned, premium: "legend" },
+    { count: 50, title: "Founders Circle", reward: "Permanent Legend pin · Lifetime Apex · Founders badge", emoji: "🔱", unlocked: referralCount >= 50 || legendPinned, premium: "legend" },
   ];
 
   const nextReward = rewards.find((r) => !r.unlocked);
@@ -317,64 +317,52 @@ const Referrals = () => {
           {rewards.map((r, idx) => {
             const isNext = !r.unlocked && rewards.slice(0, idx).every((p) => p.unlocked);
             const progress = Math.min(100, Math.round((referralCount / r.count) * 100));
-            const tileSize = [48, 52, 56, 60, 64, 72][idx];
             const isApex = r.premium === "apex";
             const isLegend = r.premium === "legend";
             return (
               <div
                 key={r.count}
                 className={cn(
-                  "relative overflow-hidden rounded-xl border p-4 transition-all",
-                  // Premium skins
-                  isApex && !r.unlocked && "border-transparent bg-[linear-gradient(135deg,hsl(18_60%_10%/0.55),hsl(45_70%_8%/0.4))] shadow-[0_0_28px_-12px_hsl(18_95%_62%/0.5)]",
-                  isApex && r.unlocked && "border-transparent bg-[linear-gradient(135deg,hsl(18_60%_14%/0.7),hsl(45_70%_10%/0.55))] shadow-[0_0_38px_-8px_hsl(18_95%_62%/0.6)]",
-                  isLegend && !r.unlocked && "border-transparent bg-[linear-gradient(135deg,hsl(280_50%_12%/0.55),hsl(45_60%_10%/0.4),hsl(350_50%_12%/0.45))] shadow-[0_0_30px_-12px_hsl(280_70%_60%/0.5)]",
-                  isLegend && r.unlocked && "border-transparent bg-[linear-gradient(135deg,hsl(280_50%_15%/0.75),hsl(45_60%_12%/0.55),hsl(350_50%_15%/0.6))] shadow-[0_0_42px_-6px_hsl(280_70%_60%/0.6)]",
+                  "relative overflow-hidden rounded-xl border p-3.5 transition-all",
+                  // Premium skins — darker base so text stays readable
+                  isApex && "border-transparent bg-[linear-gradient(135deg,hsl(18_50%_8%/0.85),hsl(20_40%_6%/0.9))] shadow-[0_0_28px_-12px_hsl(18_95%_62%/0.5)]",
+                  isLegend && "border-transparent bg-[linear-gradient(135deg,hsl(280_40%_8%/0.85),hsl(20_30%_6%/0.9),hsl(350_40%_8%/0.85))] shadow-[0_0_30px_-12px_hsl(280_70%_60%/0.5)]",
                   // Default skins
                   !r.premium && r.unlocked && "border-gold/50 bg-gradient-to-br from-gold/[0.12] via-gold/[0.06] to-transparent glow-gold-sm",
                   !r.premium && !r.unlocked && isNext && "border-gold/25 bg-card",
                   !r.premium && !r.unlocked && !isNext && "border-border bg-card opacity-70"
                 )}
               >
-                {/* Premium overlays */}
+                {/* Premium gradient border ring */}
                 {(isApex || isLegend) && (
-                  <>
-                    <div className="pointer-events-none absolute inset-0 opacity-50 bg-[linear-gradient(115deg,transparent_30%,hsl(45_85%_70%/0.16)_50%,transparent_70%)]" />
-                    <div
-                      className="pointer-events-none absolute inset-[-1px] rounded-xl"
-                      style={{
-                        background: isLegend
-                          ? "conic-gradient(from 140deg, hsl(280 70% 60%), hsl(45 90% 60%), hsl(350 80% 60%), hsl(280 70% 60%))"
-                          : "conic-gradient(from 140deg, hsl(18 95% 62%), hsl(45 90% 60%), hsl(18 95% 62%))",
-                        WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-                        WebkitMaskComposite: "xor",
-                        padding: "1.5px",
-                      }}
-                    />
-                  </>
-                )}
-                {isLegend && (
-                  <>
-                    <Sparkles className="absolute top-2 right-2 text-gold/70" size={12} />
-                    <Sparkles className="absolute bottom-2 left-2 text-[hsl(280_70%_70%)]/70" size={10} />
-                  </>
+                  <div
+                    className="pointer-events-none absolute inset-[-1px] rounded-xl"
+                    style={{
+                      background: isLegend
+                        ? "conic-gradient(from 140deg, hsl(280 70% 60%), hsl(45 90% 60%), hsl(350 80% 60%), hsl(280 70% 60%))"
+                        : "conic-gradient(from 140deg, hsl(18 95% 62%), hsl(45 90% 60%), hsl(18 95% 62%))",
+                      WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+                      WebkitMaskComposite: "xor",
+                      padding: "1.5px",
+                    }}
+                  />
                 )}
 
                 <div className="relative flex items-center gap-3">
+                  {/* Compact uniform tile — number for normal, icon for premium */}
                   <div
                     className={cn(
-                      "rounded-full flex items-center justify-center font-black shrink-0 relative",
+                      "h-12 w-12 rounded-full flex items-center justify-center font-black shrink-0 relative text-sm",
                       r.unlocked && !r.premium && "gradient-gold text-primary-foreground shadow-lg shadow-gold/30",
-                      isApex && "bg-[linear-gradient(135deg,hsl(18_95%_55%),hsl(45_95%_55%))] text-background border border-gold-light/60 shadow-[0_0_18px_hsl(18_95%_62%/0.55)]",
-                      isLegend && "bg-[linear-gradient(135deg,hsl(280_70%_50%),hsl(45_90%_55%),hsl(350_80%_55%))] text-background border border-gold-light/60 shadow-[0_0_22px_hsl(280_70%_60%/0.55)]",
+                      isApex && "bg-[linear-gradient(135deg,hsl(18_95%_55%),hsl(45_95%_55%))] text-background shadow-[0_0_18px_hsl(18_95%_62%/0.55)]",
+                      isLegend && "bg-[linear-gradient(135deg,hsl(280_70%_50%),hsl(45_90%_55%),hsl(350_80%_55%))] text-background shadow-[0_0_22px_hsl(280_70%_60%/0.55)]",
                       !r.unlocked && !r.premium && "bg-secondary text-muted-foreground border border-border"
                     )}
-                    style={{ width: tileSize, height: tileSize, fontSize: tileSize / 3 }}
                   >
                     {isApex ? (
-                      <Zap size={tileSize / 2.2} strokeWidth={2.5} />
+                      <Zap size={22} strokeWidth={2.6} />
                     ) : isLegend ? (
-                      <Crown size={tileSize / 2.2} strokeWidth={2.5} />
+                      <Crown size={22} strokeWidth={2.6} />
                     ) : (
                       <span>{r.count}</span>
                     )}
@@ -384,25 +372,31 @@ const Referrals = () => {
                       </span>
                     )}
                   </div>
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-base">{r.emoji}</span>
+                      {/* Recruit count chip — only for premium so user knows the threshold */}
+                      {(isApex || isLegend) && (
+                        <span className="text-[9px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded bg-background/70 text-foreground/90 border border-foreground/15">
+                          {r.count} recruits
+                        </span>
+                      )}
                       <p
                         className={cn(
                           "font-display font-black text-sm tracking-tight",
-                          isApex && "bg-gradient-to-r from-[hsl(18_95%_62%)] via-gold to-[hsl(18_95%_62%)] bg-clip-text text-transparent",
-                          isLegend && "bg-gradient-to-r from-[hsl(280_70%_70%)] via-gold to-[hsl(350_80%_65%)] bg-clip-text text-transparent",
+                          isApex && "text-[hsl(28_100%_72%)]",
+                          isLegend && "text-[hsl(45_95%_72%)]",
                           !r.premium && r.unlocked && "text-gold",
                           !r.premium && !r.unlocked && "text-foreground"
                         )}
                       >
-                        {isApex ? "APEX INSTANT" : isLegend ? "FOUNDERS CIRCLE" : r.title}
+                        {r.title}
                       </p>
                       {!r.unlocked && (isApex || isLegend) && (
                         <span
                           className={cn(
                             "text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border",
-                            isLegend ? "border-[hsl(280_70%_60%/0.5)] bg-[hsl(280_70%_30%/0.25)] text-[hsl(280_75%_80%)]" : "border-[hsl(18_95%_62%/0.5)] bg-[hsl(18_95%_30%/0.25)] text-[hsl(18_95%_75%)]"
+                            isLegend ? "border-[hsl(280_70%_60%/0.5)] bg-[hsl(280_70%_30%/0.4)] text-[hsl(280_75%_85%)]" : "border-[hsl(18_95%_62%/0.5)] bg-[hsl(18_95%_30%/0.4)] text-[hsl(18_95%_80%)]"
                           )}
                         >
                           Prize
@@ -413,13 +407,13 @@ const Referrals = () => {
                           Next
                         </span>
                       )}
-                      {isNext && !r.unlocked && r.premium && (
-                        <span className="ml-auto text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-background/60 text-foreground border border-gold/40">
-                          Next
-                        </span>
-                      )}
                     </div>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{r.reward}</p>
+                    <p className={cn(
+                      "text-[11px] mt-0.5 line-clamp-2 leading-snug",
+                      (isApex || isLegend) ? "text-foreground/75" : "text-muted-foreground"
+                    )}>
+                      {r.reward}
+                    </p>
                     {isNext && !r.unlocked && (
                       <div className="mt-2 flex items-center gap-2">
                         <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden relative">
@@ -439,7 +433,7 @@ const Referrals = () => {
                             )}
                           </div>
                         </div>
-                        <span className={cn("text-[10px] font-bold tabular-nums shrink-0", isLegend ? "text-[hsl(280_75%_80%)]" : isApex ? "text-[hsl(18_95%_70%)]" : "text-gold")}>
+                        <span className={cn("text-[10px] font-bold tabular-nums shrink-0", isLegend ? "text-[hsl(280_75%_85%)]" : isApex ? "text-[hsl(18_95%_75%)]" : "text-gold")}>
                           {referralCount}/{r.count}
                         </span>
                       </div>

@@ -472,6 +472,24 @@ const PublicProfile = () => {
           DISCIPLINE IS THE NEW FLEX
         </p>
       </div>
+
+      <ImageLightbox
+        open={!!lightboxUrl}
+        imageUrl={lightboxUrl}
+        username={profile.username}
+        avatarUrl={profile.avatar_url}
+        tier={profile.status_tier || "recruit"}
+        level={profile.level}
+        streak={profile.streak}
+        likes={lightboxPost?.likes_count}
+        comments={lightboxPost?.comments_count}
+        kudos={lightboxPost?.kudos_count}
+        caption={lightboxPost?.content}
+        onClose={() => {
+          setLightboxUrl(null);
+          setLightboxPost(null);
+        }}
+      />
     </div>
   );
 };

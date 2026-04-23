@@ -50,6 +50,7 @@ const TribeCollectiveFlame = ({
   todayCount,
   tribeName,
   variant = "compact",
+  reactor,
   className,
 }: TribeCollectiveFlameProps) => {
   const tier = collectiveStreakTier(total);

@@ -489,12 +489,21 @@ const Tribes = () => {
                 </div>
               )}
 
-              <div className="relative flex items-start gap-3">
-                <div className="relative h-14 w-14 rounded-xl bg-gradient-to-br from-[hsl(18_95%_58%)]/30 via-gold/15 to-[hsl(18_95%_58%)]/20 border border-[hsl(18_95%_58%)]/45 flex items-center justify-center shrink-0 shadow-[0_0_14px_hsl(18_95%_58%/0.3)]">
-                  <Crown size={20} className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_6px_hsl(18_95%_58%/0.7)]" strokeWidth={2.4} />
-                  <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border border-background flex items-center justify-center shadow-[0_0_6px_hsl(18_95%_58%/0.7)]">
-                    <Zap size={8} className="text-background" strokeWidth={3} fill="currentColor" />
-                  </div>
+                <div
+                  className="relative h-14 w-14 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
+                  style={{
+                    background: cTier >= 0
+                      ? `radial-gradient(ellipse at 50% 90%, ${cAccent.replace(")", " / 0.30)")} 0%, transparent 70%)`
+                      : "hsl(var(--secondary) / 0.5)",
+                    border: `1px solid ${cTier >= 0 ? cAccent.replace(")", " / 0.5)") : "hsl(var(--border))"}`,
+                    boxShadow: cTier >= 0 ? `0 0 14px ${cAccent.replace(")", " / 0.4)")}` : undefined,
+                  }}
+                >
+                  {cTier >= 0 ? (
+                    <RealisticFlame tier={cTier} accent={cAccent} size={Math.min(56, 36 + cTier * 6)} />
+                  ) : (
+                    <span className="text-2xl opacity-50 leading-none">🕯️</span>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-display font-black text-base truncate leading-tight">{t.name}</p>
@@ -504,37 +513,28 @@ const Tribes = () => {
                     </p>
                   )}
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[hsl(18_95%_58%)]/10 border border-[hsl(18_95%_58%)]/25">
-                      <Users size={9} className="text-[hsl(18_95%_58%)]" />
-                      <span className="text-[10px] font-bold tabular-nums text-[hsl(18_95%_58%)]">
+                    {cTier >= 0 ? (
+                      <span
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[10px] font-black tabular-nums"
+                        style={{
+                          color: cAccent,
+                          borderColor: cAccent.replace(")", " / 0.4)"),
+                          background: cAccent.replace(")", " / 0.10)"),
+                        }}
+                      >
+                        🔥 {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-md border border-border text-[10px] font-black text-muted-foreground">
+                        Cold fire
+                      </span>
+                    )}
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-secondary/40 border border-border/60">
+                      <Users size={9} className="text-muted-foreground" />
+                      <span className="text-[10px] font-bold tabular-nums text-muted-foreground">
                         {t.member_count}
                       </span>
                     </span>
-                    {(collectiveStreaks.get(t.id) ?? 0) >= 30 && (
-                      <StreakFlameInline
-                        streak={collectiveStreaks.get(t.id) ?? 0}
-                        suffix="d"
-                        className="text-[10px]"
-                      />
-                    )}
-                    {memberPreviews[t.id] && memberPreviews[t.id].length > 0 && (
-                      <div className="flex -space-x-2 ml-1">
-                        {memberPreviews[t.id].slice(0, 3).map((p) => (
-                          <div
-                            key={p.user_id}
-                            className="h-5 w-5 rounded-full bg-secondary border-2 border-background overflow-hidden"
-                          >
-                            {p.avatar_url ? (
-                              <img src={p.avatar_url} alt={p.username} className="h-full w-full object-cover" />
-                            ) : (
-                              <div className="h-full w-full flex items-center justify-center text-[7px] font-black text-muted-foreground">
-                                {p.username.slice(0, 2).toUpperCase()}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
                 {tab === "browse" && !joinedIds.has(t.id) && (

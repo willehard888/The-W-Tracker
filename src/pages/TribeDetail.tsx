@@ -34,6 +34,8 @@ import TribePostCard, { type TribePostCardPost } from "@/components/TribePostCar
 import { useModeration } from "@/hooks/use-moderation";
 import TierUsername from "@/components/TierUsername";
 import TribeCollectiveFlame from "@/components/TribeCollectiveFlame";
+import MemberContributionStrip from "@/components/MemberContributionStrip";
+import FeedTheFireCTA from "@/components/FeedTheFireCTA";
 import { fetchTribeCollectiveStreak, collectiveAccent } from "@/lib/tribe-streak";
 
 interface Member {
@@ -394,13 +396,35 @@ const TribeDetail = () => {
         <ArrowLeft size={14} /> Tribes
       </button>
 
-      {/* HERO: Collective flame promoted to the top — the tribe's signature */}
+      {/* HERO: the flame IS the tribe — name renders under the flame */}
       <div className="mb-4 relative">
         <TribeCollectiveFlame
+          variant="hero"
           total={collectiveStreak}
           memberCount={tribe?.member_count}
+          tribeName={tribe?.name}
         />
       </div>
+
+      {/* Feed-the-Fire CTA — only shows if user hasn't checked in today */}
+      {isMember && (
+        <FeedTheFireCTA
+          accent={collectiveStreak >= 30 ? collectiveAccent(collectiveStreak) : undefined}
+        />
+      )}
+
+      {/* Who's feeding the fire — sorted by personal streak */}
+      {members.length > 0 && (
+        <MemberContributionStrip
+          members={members.map((m) => ({
+            user_id: m.user_id,
+            username: m.username,
+            avatar_url: m.avatar_url,
+            streak: (m as any).streak ?? 0,
+            role: m.role,
+          }))}
+        />
+      )}
 
       {/* Cinematic Apex header */}
       <div className="relative rounded-2xl mb-4 p-[2px] apex-conic-border overflow-hidden">

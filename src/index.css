@@ -2028,10 +2028,13 @@
 
 /* === Next-level flame physics === */
 
-/* Slow inhale/exhale that gives the flame body its breathing rhythm. */
+/* Slow inhale/exhale that gives the flame body its breathing rhythm.
+   Asymmetric curve: graceful rise, brief held peak, soft fall — feels alive. */
 @keyframes flame-breathe {
-  0%, 100% { transform: scaleY(0.96) scaleX(1.02); }
-  50%      { transform: scaleY(1.05) scaleX(0.97); }
+  0%, 100% { transform: scaleY(0.95) scaleX(1.025); }
+  42%      { transform: scaleY(1.03) scaleX(0.985); }
+  55%      { transform: scaleY(1.07) scaleX(0.965); }
+  70%      { transform: scaleY(1.01) scaleX(0.995); }
 }
 
 /* Volumetric ground light that the flame casts on the surface below. */

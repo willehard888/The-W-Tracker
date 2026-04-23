@@ -148,11 +148,9 @@ const PaywallTierCard = ({
         {/* CTA */}
         <Button
           size="xl"
-          variant={isApex ? "default" : "gold"}
+          variant={isApex ? "ember" : "gold"}
           className={cn(
             "w-full font-black",
-            isApex &&
-              "bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background hover:opacity-90 shadow-[0_0_20px_hsl(18_95%_58%/0.4)]",
             !loading && "breathing-glow",
           )}
           disabled={loading}

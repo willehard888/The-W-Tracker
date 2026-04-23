@@ -116,11 +116,11 @@ const Paywall = () => {
             <ShieldCheck size={14} /> Manage my subscription
           </Button>
           {isApexSubscriber ? (
-            <Button variant="gold" onClick={() => navigate("/tribes")}>
+            <Button variant="ember" onClick={() => navigate("/tribes")}>
               <Users size={14} /> Tribes
             </Button>
           ) : (
-            <Button variant="gold" onClick={() => navigate("/")}>
+            <Button variant="ember" onClick={() => navigate("/")}>
               <Crown size={14} /> Road to Elite
             </Button>
           )}

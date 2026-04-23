@@ -380,7 +380,7 @@ const Battles = () => {
           <p className="text-sm text-muted-foreground mb-4">
             Challenge anyone to XP, cold showers, workouts & more.
           </p>
-          <Button variant="gold" size="lg" className="w-full max-w-xs" onClick={() => setShowCreate(true)}>
+          <Button variant="ember" size="lg" className="w-full max-w-xs" onClick={() => setShowCreate(true)}>
             <Swords size={18} />
             Create Battle
           </Button>
@@ -454,7 +454,7 @@ const Battles = () => {
             </div>
 
             <div className="flex gap-2 pt-1">
-              <Button variant="gold" className="flex-1" onClick={handleCreate} disabled={creating || !opponentUsername.trim()}>
+              <Button variant="ember" className="flex-1" onClick={handleCreate} disabled={creating || !opponentUsername.trim()}>
                 <Swords size={16} />
                 {creating ? "Sending..." : "Send Challenge"}
               </Button>
@@ -499,7 +499,7 @@ const Battles = () => {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="gold" size="sm" className="flex-1" onClick={() => handleRespond(battle.id, true)}>
+                    <Button variant="ember" size="sm" className="flex-1" onClick={() => handleRespond(battle.id, true)}>
                       <CheckCircle size={14} /> Accept
                     </Button>
                     <Button variant="secondary" size="sm" className="flex-1" onClick={() => handleRespond(battle.id, false)}>

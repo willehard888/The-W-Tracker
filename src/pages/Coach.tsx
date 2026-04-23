@@ -267,7 +267,7 @@ const Coach = () => {
             style={{ minHeight: 42 }}
           />
           <Button
-            variant="gold"
+            variant="ember"
             size="icon-lg"
             loading={streaming}
             disabled={!input.trim()}

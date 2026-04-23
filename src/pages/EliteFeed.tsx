@@ -916,7 +916,7 @@ const EliteFeed = () => {
               </button>
             </div>
             <Button
-              variant="gold"
+              variant="ember"
               size="sm"
               onClick={() => createPost.mutate()}
               disabled={createPost.isPending || (!newPost.trim() && !imageFile && !videoFile)}
@@ -938,7 +938,7 @@ const EliteFeed = () => {
           <p className="text-xs text-muted-foreground mt-1 mb-4 max-w-xs mx-auto">
             Earn the Elite status — top 5% rank, 14 active days in 30, and a 30-day streak — to post here.
           </p>
-          <Button variant="gold" size="sm" className="rounded-full" onClick={() => navigate("/profile")}>
+          <Button variant="ember" size="sm" className="rounded-full" onClick={() => navigate("/profile")}>
             <Crown size={14} />
             View Road to Elite
           </Button>

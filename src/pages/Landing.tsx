@@ -59,7 +59,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
 
           <div className="flex flex-col gap-3 w-full max-w-xs mx-auto animate-reveal animate-reveal-delay-2">
             <Button
-              variant="gold"
+              variant="ember"
               size="xl"
               onClick={() => navigate("/auth")}
               className="w-full group text-base"

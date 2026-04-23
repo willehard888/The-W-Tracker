@@ -693,7 +693,7 @@ const Profile = () => {
           <p className="text-sm text-muted-foreground mb-3">
             Membership unlocks every feature. Elite status is earned, not bought.
           </p>
-          <Button variant="gold" size="lg" className="w-full" onClick={() => navigate("/paywall")}>
+          <Button variant="ember" size="lg" className="w-full" onClick={() => navigate("/paywall")}>
             Become a Member — €4.99/mo
           </Button>
         </div>

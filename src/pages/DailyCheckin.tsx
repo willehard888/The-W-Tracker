@@ -698,7 +698,7 @@ const DailyCheckin = () => {
 
       {/* Submit */}
       <div className="mt-6 animate-reveal animate-reveal-delay-4">
-        <Button variant="gold" size="xl" className="w-full" onClick={handleSubmit} disabled={submitting || honest !== true}>
+        <Button variant="ember" size="xl" className="w-full" onClick={handleSubmit} disabled={submitting || honest !== true}>
           <Zap size={20} />
           {submitting ? "Submitting..." : `Submit Day — Earn ${totalXp} XP`}
         </Button>

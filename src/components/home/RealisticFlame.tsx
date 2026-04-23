@@ -1,5 +1,11 @@
-import { useId, useMemo } from "react";
+import { forwardRef, useEffect, useId, useImperativeHandle, useMemo, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { triggerFlameShockwave } from "@/lib/wind";
+
+export interface RealisticFlameHandle {
+  /** Trigger a tier-up shockwave ring centered on the flame. */
+  shockwave: (color?: string) => void;
+}
 
 interface RealisticFlameProps {
   /** 0-5 — controls intensity, color richness, particle counts */
@@ -9,6 +15,11 @@ interface RealisticFlameProps {
   /** Pixel size of the flame container */
   size?: number;
   className?: string;
+  /**
+   * Enables pointer-wind reactivity (flame leans toward cursor) and a heavier
+   * heat-haze layer. Auto-enabled at size >= 64; explicitly opt-out with `false`.
+   */
+  interactive?: boolean;
 }
 
 /**
@@ -35,8 +46,84 @@ interface RealisticFlameProps {
  *  A slow sine sway on the outer wrapper makes the entire flame lean
  *  like wind is on it.
  */
-const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlameProps) => {
+const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
+  ({ tier, accent, size = 44, className, interactive }, ref) => {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Pointer wind: enable on big interactive flames by default.
+  const pointerEnabled = interactive ?? size >= 64;
+
+  // Per-instance breath offset (0–6s) so multiple flames don't sync inhale.
+  const breathOffset = useMemo(() => {
+    let h = 0;
+    for (let i = 0; i < uid.length; i++) h = (h * 31 + uid.charCodeAt(i)) >>> 0;
+    return ((h % 600) / 100).toFixed(2); // 0.00..6.00
+  }, [uid]);
+
+  // Imperative shockwave handle for tier-up celebrations.
+  useImperativeHandle(
+    ref,
+    () => ({
+      shockwave: (color?: string) => triggerFlameShockwave(containerRef.current, color),
+    }),
+    [],
+  );
+
+  // Local pointer-wind: when the cursor is within ~80px of this flame, write
+  // a *local* CSS var that adds an extra lean. Throttled via rAF.
+  useEffect(() => {
+    if (!pointerEnabled) return;
+    const el = containerRef.current;
+    if (!el) return;
+    if (typeof window === "undefined") return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    let raf = 0;
+    let pendingX = 0;
+    let lastWritten = "";
+
+    const apply = () => {
+      raf = 0;
+      const s = pendingX.toFixed(2);
+      if (s !== lastWritten) {
+        lastWritten = s;
+        el.style.setProperty("--pointer-wind-x", s);
+      }
+    };
+
+    const onMove = (e: PointerEvent) => {
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      const dist = Math.hypot(dx, dy);
+      const radius = Math.max(80, size * 1.6);
+      if (dist > radius) {
+        pendingX = 0;
+      } else {
+        const strength = 1 - dist / radius;
+        pendingX = Math.max(-1, Math.min(1, (dx / radius) * strength * 1.4));
+      }
+      if (!raf) raf = requestAnimationFrame(apply);
+    };
+
+    const onLeave = () => {
+      pendingX = 0;
+      if (!raf) raf = requestAnimationFrame(apply);
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerleave", onLeave, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerleave", onLeave);
+      if (raf) cancelAnimationFrame(raf);
+      el.style.removeProperty("--pointer-wind-x");
+    };
+  }, [pointerEnabled, size]);
+
 
   const isHot = tier >= 0;
   const isWarm = tier >= 1;
@@ -196,6 +283,7 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
   );
 
   // Spark crown — small fireflies above the tip (Diamond+)
+  // (Kept for backward-compat behavior; ember field below replaces visually on Diamond+)
   const crownCount = isLegendary ? 6 : isDiamond ? 4 : 0;
   const crown = useMemo(
     () =>
@@ -207,6 +295,25 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
       })),
     [crownCount],
   );
+
+  // Living ember field (Diamond+) — drifts on global wind + local pointer wind.
+  // Replaces static crown with reactive particles. Particle count scales with size.
+  const emberCount = isDiamond ? Math.min(12, Math.max(6, Math.round(size / 8))) : 0;
+  const embers = useMemo(
+    () =>
+      Array.from({ length: emberCount }).map((_, i) => {
+        const seed = (i * 2654435761) >>> 0;
+        return {
+          leftPct: 22 + (seed % 56),
+          delay: ((seed >> 4) % 280) / 100, // 0..2.8s
+          duration: 3.2 + ((seed >> 8) % 220) / 100, // 3.2..5.4s
+          rise: -(size * 1.2 + ((seed >> 12) % Math.max(20, size))), // -size*1.2 .. -size*2.2
+          dotSize: 1.4 + ((seed >> 16) % 18) / 10, // 1.4..3.2px
+        };
+      }),
+    [emberCount, size],
+  );
+
 
   if (!isHot) {
     // Cold / unlit state — soft outline
@@ -248,14 +355,23 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
 
   // Wind reactivity — lean from --wind-x (-1..1) and stretch from --wind-gust (0..1).
   // Combined with the existing slow sway keyframe so the flame still has organic motion
-  // even before the wind loop has had time to evolve.
-  const windTransform =
-    "rotate(calc(var(--wind-x, 0) * 3.5deg + var(--wind-gust, 0) * 4deg)) " +
-    "scaleY(calc(1 + var(--wind-gust, 0) * 0.12)) " +
-    "translateX(calc(var(--wind-x, 0) * 1px))";
+  // even before the wind loop has had time to evolve. On interactive flames the local
+  // --pointer-wind-x adds a subtle "you're watching me" lean toward the cursor.
+  const windTransform = pointerEnabled
+    ? "rotate(calc(var(--wind-x, 0) * 3.5deg + var(--wind-gust, 0) * 4deg + var(--pointer-wind-x, 0) * 6deg)) " +
+      "scaleY(calc(1 + var(--wind-gust, 0) * 0.12)) " +
+      "translateX(calc(var(--wind-x, 0) * 1px + var(--pointer-wind-x, 0) * 2px))"
+    : "rotate(calc(var(--wind-x, 0) * 3.5deg + var(--wind-gust, 0) * 4deg)) " +
+      "scaleY(calc(1 + var(--wind-gust, 0) * 0.12)) " +
+      "translateX(calc(var(--wind-x, 0) * 1px))";
+
+  // Ground-cast color uses the warm haze so it visually "matches" the flame's heat.
+  const groundCastColor = palette.haze;
 
   return (
     <div
+      ref={containerRef}
+      data-flame-interactive={pointerEnabled ? "true" : undefined}
       className={cn("relative pointer-events-none", className)}
       style={{
         width: size,
@@ -268,6 +384,46 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
       }}
       aria-hidden
     >
+      {/* 0. Volumetric ground light — projects onto the surface BELOW the flame.
+          Sits outside the breathing wrapper so it pulses on its own rhythm. */}
+      {isWarm && (
+        <span
+          className="flame-ground-cast absolute left-1/2 pointer-events-none rounded-[50%]"
+          style={{
+            width: size * 2.4,
+            height: size * 0.55,
+            bottom: -size * 0.18,
+            background: `radial-gradient(ellipse at 50% 50%, ${groundCastColor.replace(")", " / 0.55)")} 0%, ${groundCastColor.replace(")", " / 0.18)")} 45%, transparent 78%)`,
+            filter: "blur(10px)",
+            mixBlendMode: "screen",
+            transformOrigin: "50% 50%",
+            animation: `flame-ground-cast ${(5 * speedMul).toFixed(2)}s ease-in-out infinite`,
+            animationDelay: `-${breathOffset}s`,
+            zIndex: 0,
+          }}
+        />
+      )}
+
+      {/* True heat haze — actually warps what's BEHIND the flame (Blazing+ & big). */}
+      {isBlazing && size >= 56 && (
+        <svg
+          aria-hidden
+          className="absolute left-1/2 bottom-0 pointer-events-none"
+          width={size * 1.6}
+          height={size * 1.5}
+          viewBox="0 0 40 56"
+          style={{
+            transform: "translateX(-50%)",
+            zIndex: -1,
+            mixBlendMode: "screen",
+            filter: `url(#${turbSlow})`,
+            opacity: 0.35,
+          }}
+        >
+          <ellipse cx="20" cy="36" rx="18" ry="22" fill={palette.haze} fillOpacity="0.25" />
+        </svg>
+      )}
+
       {/* SVG defs (3 turbulence filters shared by layered flame bodies) */}
       <svg width="0" height="0" className="absolute" aria-hidden>
         <defs>
@@ -419,10 +575,19 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
         </>
       )}
 
-      {/* Composite of all SVG flame bodies — wrapped so we can hue-shift Legendary */}
+      {/* Composite of all SVG flame bodies — wrapped so we can hue-shift Legendary
+          AND apply the slow inhale/exhale "breath" cycle. The wrapper transforms-only
+          so it stays GPU-cheap; the existing per-layer flickers ride on top of it. */}
       <div
         className="absolute inset-0"
-        style={{ animation: hueAnim, willChange: "filter" }}
+        style={{
+          animation: hueAnim
+            ? `${hueAnim}, flame-breathe ${(6 * speedMul).toFixed(2)}s ease-in-out infinite`
+            : `flame-breathe ${(6 * speedMul).toFixed(2)}s ease-in-out infinite`,
+          animationDelay: hueAnim ? `0s, -${breathOffset}s` : `-${breathOffset}s`,
+          transformOrigin: "center bottom",
+          willChange: "transform, filter",
+        }}
       >
         {/* 4. Outer haze */}
         <svg
@@ -705,8 +870,35 @@ const RealisticFlame = ({ tier, accent, size = 44, className }: RealisticFlamePr
           }}
         />
       ))}
+
+      {/* Living ember field — drifts on global wind + local pointer wind (Diamond+).
+          Replaces the static crown visually but coexists for layered density. */}
+      {embers.map((em, i) => (
+        <span
+          key={`em-${i}`}
+          className="flame-ember absolute rounded-full pointer-events-none"
+          style={{
+            width: em.dotSize,
+            height: em.dotSize,
+            left: `${em.leftPct}%`,
+            bottom: size * 0.18,
+            background: palette.core,
+            boxShadow: `0 0 ${em.dotSize * 3}px ${palette.inner}, 0 0 ${em.dotSize * 6}px ${palette.mid.replace(")", " / 0.6)")}`,
+            opacity: 0,
+            ["--ember-rise" as string]: `${em.rise}px`,
+            animation: `flame-ember-float ${em.duration.toFixed(2)}s ease-out infinite`,
+            animationDelay: `${em.delay.toFixed(2)}s`,
+            mixBlendMode: "screen",
+            willChange: "transform, opacity",
+          }}
+        />
+      ))}
     </div>
   );
-};
+  },
+);
+
+RealisticFlame.displayName = "RealisticFlame";
+
 
 export default RealisticFlame;

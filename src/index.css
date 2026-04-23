@@ -1967,6 +1967,41 @@
   97%  { stroke-dashoffset: 0;   opacity: 0; }
 }
 
+/* === Next-level flame physics === */
+
+/* Slow inhale/exhale that gives the flame body its breathing rhythm. */
+@keyframes flame-breathe {
+  0%, 100% { transform: scaleY(0.96) scaleX(1.02); }
+  50%      { transform: scaleY(1.05) scaleX(0.97); }
+}
+
+/* Volumetric ground light that the flame casts on the surface below. */
+@keyframes flame-ground-cast {
+  0%, 100% { opacity: 0.55; transform: translateX(-50%) scaleX(1); }
+  50%      { opacity: 0.82; transform: translateX(-50%) scaleX(1.14); }
+}
+
+/* Living embers — drift on global wind + local pointer wind, rise and fade. */
+@keyframes flame-ember-float {
+  0%   { transform: translate(0, 0) scale(0.55); opacity: 0; }
+  18%  { opacity: 1; }
+  100% {
+    transform:
+      translate(
+        calc(var(--wind-x, 0) * 18px + var(--pointer-wind-x, 0) * 10px),
+        var(--ember-rise, -60px)
+      )
+      scale(0.18);
+    opacity: 0;
+  }
+}
+
+/* One-shot shockwave ring for tier-up celebrations. */
+@keyframes flame-shockwave {
+  0%   { transform: translate(-50%, -50%) scale(0.2); opacity: 0.7; }
+  100% { transform: translate(-50%, -50%) scale(4);   opacity: 0; }
+}
+
 /* Reduced motion: kill all flame animations */
 @media (prefers-reduced-motion: reduce) {
   [class*="flame-"],

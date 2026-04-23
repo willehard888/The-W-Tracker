@@ -482,13 +482,14 @@ const buttonVariants = cva(
           // Engraved gold bezel — gives the bar weight and tactility
           "shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.55),inset_0_1px_0_hsl(50_100%_99%/0.95),inset_0_-1px_0_hsl(30_82%_22%/0.55),inset_0_-6px_14px_-8px_hsl(30_82%_28%/0.45),0_1px_2px_hsl(30_60%_14%/0.35),0_8px_18px_-3px_hsl(40_92%_52%/0.45),0_18px_34px_-14px_hsl(38_88%_48%/0.5)]",
           // ::before — REAL LAVA TEXTURE LAYER (transparent at idle, ignites on hover)
+          // No blend mode — direct opacity reveal so the lava reads as itself
+          // (hard-light/overlay against bright gold neutralized the cracks).
           "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
           "before:[background-image:url(var(--lava-bg))]",
-          "before:[background-size:180%_180%] before:[background-position:50%_50%]",
-          "before:[background-blend-mode:overlay]",
-          "before:opacity-0 before:scale-[1.04] before:[mix-blend-mode:hard-light]",
+          "before:[background-size:200%_auto] before:[background-position:50%_50%]",
+          "before:opacity-0 before:scale-[1.06]",
           // Smooth morph: opacity + scale settle on a soft cubic curve
-          "before:transition-[opacity,transform,filter] before:duration-[700ms] before:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "before:transition-[opacity,transform] before:duration-[700ms] before:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
           // ::after — diagonal mirror sheen sweep (works in both gold and lava states)
           "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
           "after:[background:linear-gradient(110deg,transparent_30%,hsl(48_100%_98%/0.55)_50%,transparent_70%)]",
@@ -497,11 +498,9 @@ const buttonVariants = cva(
           // Living gold halo — slow, premium pulse at idle
           "[animation:fire-breathe-glow_4.8s_ease-in-out_infinite]",
           // ── HOVER — the morph: gold bar ignites into lava ──────────────────
-          "hover:brightness-[1.06] hover:saturate-[1.10]",
-          "hover:before:opacity-100 hover:before:scale-100",
-          // While ignited: lava breathes (background drift) + cracks glow brighter
-          "hover:before:[animation:aurum-lava-breathe_8s_ease-in-out_infinite]",
-          // Halo intensifies into ember pulse on hover
+          "hover:brightness-[1.08] hover:saturate-[1.12]",
+          "hover:before:opacity-95 hover:before:scale-100",
+          // Halo intensifies into ember pulse on hover (lava breathes via subtle scale on ::before only)
           "hover:[animation:aurum-halo-pulse_2.4s_ease-in-out_infinite]",
           "hover:shadow-[inset_0_0_0_0.5px_hsl(20_85%_10%/0.7),inset_0_1px_0_hsl(50_100%_99%/0.95),inset_0_-1px_0_hsl(20_85%_8%/0.6),inset_0_-8px_18px_-8px_hsl(18_95%_42%/0.55),0_2px_3px_hsl(20_70%_8%/0.45),0_14px_28px_-3px_hsl(20_98%_46%/0.55),0_28px_52px_-14px_hsl(14_92%_38%/0.6)]",
           // ── PRESS — lava cools, settles back into the bar ─────────────────

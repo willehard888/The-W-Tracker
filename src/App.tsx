@@ -134,7 +134,7 @@ const AppRoutes = () => {
                   <Route path="/tribes/new" element={<ProtectedRoute><TribeNew /></ProtectedRoute>} />
                   <Route path="/tribes/:id" element={<ProtectedRoute><TribeDetail /></ProtectedRoute>} />
                   <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />
-                  <Route path="/button-gallery" element={<ProtectedRoute><ButtonGallery /></ProtectedRoute>} />
+                  <Route path="/button-gallery" element={<ButtonGallery />} />
                   <Route path="/u/:username" element={<PublicProfile />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/reset-password" element={<ResetPassword />} />

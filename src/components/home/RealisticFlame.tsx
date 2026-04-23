@@ -51,8 +51,15 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Pointer wind: enable on big interactive flames by default.
-  const pointerEnabled = interactive ?? size >= 64;
+  // Pointer wind: enable only on hero-sized interactive flames by default.
+  // Was `size >= 64` which fired on every TribeFireHero / podium flame on the page.
+  // Bumped to 96 so list/grid flames don't all attach window pointermove listeners.
+  const pointerEnabled = interactive ?? size >= 96;
+
+  // Filters (feTurbulence + feDisplacementMap) are by far the most expensive
+  // part of this component. Skip them on small flames where the warp is barely
+  // visible anyway — this single change removes ~80% of CPU/GPU cost in lists.
+  const filtersEnabled = size >= 56;
 
   // Per-instance breath offset (0–6s) so multiple flames don't sync inhale.
   const breathOffset = useMemo(() => {

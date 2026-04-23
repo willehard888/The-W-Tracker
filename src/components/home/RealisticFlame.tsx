@@ -894,7 +894,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
           style={{
             transform: "translate(-50%, 0)",
             transformOrigin: "center bottom",
-            animation: `flame-core-flicker ${0.6 * speedMul}s ease-in-out infinite`,
+            animation: `flame-core-flicker ${0.72 * speedMul}s cubic-bezier(0.28, 0.08, 0.42, 1) infinite`,
             filter: `url(#${turbFast}) drop-shadow(0 0 4px ${palette.core})`,
             mixBlendMode: "screen",
           }}

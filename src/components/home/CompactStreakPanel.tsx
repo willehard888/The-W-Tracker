@@ -362,7 +362,7 @@ const CompactStreakPanel = ({
           {isHot && (
             <span
               aria-hidden
-              className="streak-fx-fuel absolute left-1/2 bottom-0 h-3 w-10 rounded-[50%] pointer-events-none"
+              className="streak-fx-fuel absolute left-1/2 bottom-0 h-4 w-14 rounded-[50%] pointer-events-none"
               style={{
                 background: `radial-gradient(ellipse at center, ${accent}, transparent 75%)`,
                 animation: "streak-fuel-pulse 2.4s ease-in-out infinite",

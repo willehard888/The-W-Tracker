@@ -85,7 +85,8 @@ const TribeCollectiveFlame = ({
   return (
     <div
       className={cn(
-        "relative rounded-3xl overflow-hidden p-5 border",
+        "relative rounded-3xl overflow-hidden border",
+        isHero ? "p-6" : "p-5",
         isCold
           ? "border-border/60 bg-card/50"
           : "border-[hsl(18_95%_58%)]/40 surface-ember shadow-[0_0_40px_hsl(18_95%_58%/0.20)]",

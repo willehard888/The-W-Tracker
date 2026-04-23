@@ -229,7 +229,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
           <Button
             onClick={onDecline}
             disabled={responding}
-            variant="outline"
+            variant="ember-glass"
             size="sm"
             className="flex-1"
           >

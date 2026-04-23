@@ -201,7 +201,7 @@ const Coach = () => {
               {SUGGESTIONS.map((s) => (
                 <Button
                   key={s}
-                  variant="outline"
+                  variant="ember-glass"
                   size="sm"
                   onClick={() => send(s)}
                   className="justify-start text-left h-auto py-2.5 whitespace-normal"

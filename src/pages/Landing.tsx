@@ -1,13 +1,14 @@
+import { forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Flame, Trophy, Swords, Shield, Sparkles, Star } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 
-const Landing = () => {
+const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen gradient-dark flex flex-col overflow-hidden relative">
+    <div ref={ref} className="min-h-screen gradient-dark flex flex-col overflow-hidden relative">
       {/* Single composited atmosphere layer — replaces three stacked gradients */}
       <div
         aria-hidden
@@ -107,6 +108,7 @@ const Landing = () => {
       </footer>
     </div>
   );
-};
+});
+Landing.displayName = "Landing";
 
 export default Landing;

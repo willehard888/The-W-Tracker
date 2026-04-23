@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 // Inline base64 WebP — 0 network requests, displays instantly with no layout shift.
@@ -10,18 +11,22 @@ interface BrandLogoProps {
   alt?: string;
 }
 
-export const BrandLogo = ({ size = 56, className, priority = false, alt = "The W Tracker" }: BrandLogoProps) => (
-  <img
-    src={LOGO_DATA_URI}
-    alt={alt}
-    width={size}
-    height={size}
-    decoding={priority ? "sync" : "async"}
-    fetchPriority={priority ? "high" : "auto"}
-    draggable={false}
-    className={cn("select-none", className)}
-    style={{ width: size, height: size }}
-  />
+export const BrandLogo = forwardRef<HTMLImageElement, BrandLogoProps>(
+  ({ size = 56, className, priority = false, alt = "The W Tracker" }, ref) => (
+    <img
+      ref={ref}
+      src={LOGO_DATA_URI}
+      alt={alt}
+      width={size}
+      height={size}
+      decoding={priority ? "sync" : "async"}
+      fetchPriority={priority ? "high" : "auto"}
+      draggable={false}
+      className={cn("select-none", className)}
+      style={{ width: size, height: size }}
+    />
+  ),
 );
+BrandLogo.displayName = "BrandLogo";
 
 export default BrandLogo;

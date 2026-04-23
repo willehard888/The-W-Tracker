@@ -107,7 +107,7 @@ const EliteFeedTeaser = () => {
               </div>
 
               <Button
-                variant="gold"
+                variant="ember"
                 size="xl"
                 className="w-full breathing-glow"
                 onClick={() => navigate("/profile")}

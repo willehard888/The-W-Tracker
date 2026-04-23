@@ -132,7 +132,7 @@ const Referrals = () => {
         </div>
 
         <div className="flex gap-2">
-          <Button variant="gold" size="lg" className="flex-1" onClick={handleNativeShare}>
+          <Button variant="ember" size="lg" className="flex-1" onClick={handleNativeShare}>
             <Share2 size={16} />
             Share Link
           </Button>

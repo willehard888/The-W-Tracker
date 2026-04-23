@@ -88,7 +88,7 @@ const TierUnlockPaywallCard = ({ className }: TierUnlockPaywallCardProps) => {
 
         <Button
           size="sm"
-          variant="gold"
+          variant="ember"
           className="w-full text-xs"
           onClick={() => navigate("/paywall")}
         >

@@ -281,7 +281,7 @@ const WeeklyBriefing = () => {
 
         {/* Share button */}
         <Button
-          variant="gold"
+          variant="ember"
           size="xl"
           className="w-full"
           onClick={handleShare}

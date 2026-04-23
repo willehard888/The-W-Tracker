@@ -174,7 +174,7 @@ const FeatureGateScreen = ({
               Earn Your Elite Status
             </Button>
           ) : (
-            <Button variant="gold" size="lg" onClick={() => navigate("/checkin")} className="breathing-glow">
+            <Button variant="ember" size="lg" onClick={() => navigate("/checkin")} className="breathing-glow">
               <Flame size={16} />
               Check In to Level Up
             </Button>

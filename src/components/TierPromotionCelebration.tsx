@@ -153,7 +153,7 @@ const TierPromotionCelebration = () => {
                 className="space-y-2"
               >
                 <Button
-                  variant="gold"
+                  variant="ember"
                   size="lg"
                   className="w-full"
                   onClick={() => {

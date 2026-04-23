@@ -358,7 +358,7 @@ const Onboarding = () => {
 
         {/* Button */}
         <Button
-          variant="gold"
+          variant="ember"
           size="xl"
           onClick={next}
           className="w-full max-w-xs group"

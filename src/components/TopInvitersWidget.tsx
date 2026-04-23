@@ -69,7 +69,7 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
             Climb this board — every paid invite earns XP, credits & badges.
           </p>
           {!hideEmptyCta && (
-            <Button variant="gold" size="sm" onClick={() => navigate("/referrals")}>
+            <Button variant="ember" size="sm" onClick={() => navigate("/referrals")}>
               Get your link
             </Button>
           )}

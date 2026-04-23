@@ -20,20 +20,6 @@ interface RealisticFlameProps {
    * heat-haze layer. Auto-enabled at size >= 64; explicitly opt-out with `false`.
    */
   interactive?: boolean;
-  /**
-   * 0..1 — fills the frozen mystery prize from the bottom up, like a progress
-   * bar of melt-water rising inside the prism. At 1.0 the prize is fully
-   * thawed and ready to drop. Animations themselves are unchanged.
-   */
-  prizeProgress?: number;
-  /** Glyph shown inside the ice (default "?"). When revealed, can be a 🏆/🎖️/etc. */
-  prizeGlyph?: string;
-  /**
-   * Rewards (emoji or short text) that the ice has released. Each entry will
-   * fall from the prize down past the flame on a unique trajectory. Pass a
-   * stable array — mounting a new index triggers a new drop.
-   */
-  droppedRewards?: string[];
 }
 
 /**

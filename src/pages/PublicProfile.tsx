@@ -4,12 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import StatusAvatar from "@/components/StatusAvatar";
 import ApexBadge from "@/components/ApexBadge";
 import StatusNameplate from "@/components/StatusNameplate";
+import ImageLightbox from "@/components/ImageLightbox";
 import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
-import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock } from "lucide-react";
+import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock, Heart, MessageCircle, Award, Play, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const PublicProfile = () => {
   const { username } = useParams<{ username: string }>();

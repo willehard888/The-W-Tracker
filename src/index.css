@@ -1707,6 +1707,35 @@
 }
 
 /* ============================================================
+   FLAME v3 — beauty pass: radiant halo + chiaroscuro depth
+   ============================================================ */
+
+/* Halo bloom — pulsing glow ring around the entire flame.
+   Sits BEHIND the body, screen-blended, so the flame feels like
+   it's actually radiating light into the surrounding air. */
+@keyframes flame-halo-bloom {
+  0%, 100% { opacity: 0.45; transform: translate(-50%, 8%) scale(0.92); filter: blur(18px); }
+  35%      { opacity: 0.85; transform: translate(-50%, 6%) scale(1.06); filter: blur(22px); }
+  62%      { opacity: 0.6;  transform: translate(-50%, 7%) scale(0.98); filter: blur(20px); }
+}
+
+/* Chiaroscuro shadow — the cast shadow deepens & contracts when
+   the flame inhales (peak brightness), creating contrast that
+   makes the bloom feel earned. */
+@keyframes flame-chiaroscuro {
+  0%, 100% { opacity: 0.42; transform: translateX(-50%) scale(1)    skewX(0deg); }
+  35%      { opacity: 0.62; transform: translateX(-50%) scale(0.86) skewX(-1deg); }
+  62%      { opacity: 0.5;  transform: translateX(-50%) scale(0.95) skewX(0.5deg); }
+}
+
+/* Radiant rim — the flame's outline catches a hint of complementary
+   light (Warm+). Hue shifts very slowly so it never reads as a glitch. */
+@keyframes flame-radiant-rim {
+  0%, 100% { opacity: 0.55; filter: hue-rotate(0deg)   blur(0.5px); }
+  50%      { opacity: 0.85; filter: hue-rotate(-8deg)  blur(0.8px); }
+}
+
+/* ============================================================
    FLAME v2 — additions for hero RealisticFlame
    ============================================================ */
 

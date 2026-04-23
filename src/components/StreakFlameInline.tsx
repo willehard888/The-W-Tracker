@@ -184,8 +184,25 @@ const StreakFlameInline = ({
         }}
         aria-hidden
       >
-        {/* Cast shadow — small dark elliptical shadow under the flame.
-            Renders for Warm+ (cold flames don't cast a meaningful shadow). */}
+        {/* Radiant halo bloom — pulsing glow ring (Hot+).
+            New beauty layer: makes the flame feel like a real light source
+            even at tiny inline sizes. Screen-blended, very soft. */}
+        {isHot && (
+          <span
+            aria-hidden
+            className="absolute left-1/2 bottom-0 pointer-events-none rounded-full"
+            style={{
+              width: flameSize * 2.4,
+              height: flameSize * 1.9,
+              background: `radial-gradient(ellipse at 50% 70%, ${palette.glow.replace(")", " / 0.5)")} 0%, ${palette.glow.replace(")", " / 0.18)")} 40%, transparent 72%)`,
+              mixBlendMode: "screen",
+              animation: `flame-halo-bloom ${(speed * 3.8).toFixed(2)}s ease-in-out infinite`,
+              zIndex: -2,
+            }}
+          />
+        )}
+
+        {/* Cast shadow — chiaroscuro: deepens with the bloom for contrast (Warm+). */}
         {isWarm && (
           <span
             aria-hidden
@@ -194,11 +211,11 @@ const StreakFlameInline = ({
               width: flameSize * 1.8,
               height: flameSize * 0.32,
               bottom: -flameSize * 0.08,
-              background: `radial-gradient(ellipse at 50% 50%, hsl(0 0% 0% / 0.32) 0%, hsl(0 0% 0% / 0.16) 45%, transparent 78%)`,
+              background: `radial-gradient(ellipse at 50% 50%, hsl(0 0% 0% / 0.4) 0%, hsl(0 0% 0% / 0.18) 45%, transparent 78%)`,
               filter: `blur(${Math.max(3, flameSize * 0.1)}px)`,
               transform: "translateX(-50%)",
               transformOrigin: "50% 50%",
-              animation: `flame-shadow-pulse ${(speed * 4.2).toFixed(2)}s ease-in-out infinite`,
+              animation: `flame-chiaroscuro ${(speed * 4.2).toFixed(2)}s ease-in-out infinite`,
               zIndex: -1,
             }}
           />
@@ -212,7 +229,7 @@ const StreakFlameInline = ({
               width: flameSize * 2.2,
               height: flameSize * 0.4,
               bottom: -flameSize * 0.12,
-              background: `radial-gradient(ellipse at 50% 50%, ${palette.glow.replace(")", " / 0.55)")} 0%, transparent 75%)`,
+              background: `radial-gradient(ellipse at 50% 50%, ${palette.glow.replace(")", " / 0.6)")} 0%, transparent 75%)`,
               filter: "blur(5px)",
               mixBlendMode: "screen",
               transformOrigin: "50% 50%",
@@ -229,10 +246,10 @@ const StreakFlameInline = ({
             style={{
               width: flameSize * 1.6,
               height: flameSize * 0.85,
-              background: `radial-gradient(ellipse at center, ${palette.glow.replace(")", " / 0.85)")} 0%, ${palette.glow.replace(")", " / 0.35)")} 45%, transparent 75%)`,
+              background: `radial-gradient(ellipse at center, ${palette.glow.replace(")", " / 0.9)")} 0%, ${palette.glow.replace(")", " / 0.4)")} 45%, transparent 75%)`,
               transform: "translateX(-50%)",
               filter: "blur(3px)",
-              opacity: 0.85,
+              opacity: 0.9,
               ["--flame-speed" as string]: `${speed * 1.3}s`,
             }}
           />

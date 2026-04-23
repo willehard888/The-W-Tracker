@@ -432,6 +432,54 @@ const TribeDetail = () => {
         />
       )}
 
+      {/* Ambient fire field — drifting embers across the whole tribe page,
+          intensifies with collective heat. Fixed behind content. */}
+      {pageTint && (
+        <div className="fixed inset-0 pointer-events-none -z-10">
+          <TribeAmbientFireField total={collectiveStreak} accent={pageTint} />
+        </div>
+      )}
+
+      {/* Tier-up celebration — full-screen flash when crossing a threshold */}
+      {tierUp && (
+        <div
+          key={tierUp.key}
+          aria-hidden
+          className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center"
+          style={{ animation: "fade-in 240ms ease-out forwards" }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `radial-gradient(ellipse at center, ${tierUp.accent.replace(")", " / 0.30)")} 0%, transparent 60%)`,
+              animation: "fire-flash-bloom 1200ms cubic-bezier(.2,.8,.2,1) forwards",
+            }}
+          />
+          <div
+            className="relative px-8 py-5 rounded-2xl border-2 backdrop-blur-md"
+            style={{
+              borderColor: tierUp.accent,
+              background: `linear-gradient(135deg, ${tierUp.accent.replace(")", " / 0.18)")}, hsl(var(--background) / 0.6))`,
+              boxShadow: `0 0 60px ${tierUp.accent.replace(")", " / 0.7)")}, inset 0 1px 0 hsl(0 0% 100% / 0.15)`,
+              animation: "ember-rise-chip 4000ms cubic-bezier(.2,.8,.2,1) forwards",
+            }}
+          >
+            <p
+              className="text-[10px] uppercase tracking-[0.3em] font-black text-center mb-1"
+              style={{ color: tierUp.accent }}
+            >
+              Tribe Fire promoted
+            </p>
+            <p
+              className="font-display font-black text-3xl text-center uppercase"
+              style={{ color: tierUp.accent, textShadow: `0 0 28px ${tierUp.accent.replace(")", " / 0.7)")}` }}
+            >
+              {tierUp.name}
+            </p>
+          </div>
+        </div>
+      )}
+
       <button onClick={() => navigate("/tribes")} className="flex items-center gap-1 text-xs text-muted-foreground mb-4 relative">
         <ArrowLeft size={14} /> Tribes
       </button>

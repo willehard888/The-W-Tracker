@@ -3,7 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Crown, Medal, Award, Trophy, Loader2, Users, Lock, Zap } from "lucide-react";
-import Flame from "@/components/Flame";
+import RealisticFlame from "@/components/home/RealisticFlame";
+import {
+  collectiveAccent,
+  collectiveStreakTier,
+  fetchTribeCollectiveStreaks,
+} from "@/lib/tribe-streak";
 import { cn } from "@/lib/utils";
 
 interface Row {

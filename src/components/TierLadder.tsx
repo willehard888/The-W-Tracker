@@ -263,7 +263,10 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
 
       {/* ─────── Detail dialog — premium tier-themed ─────── */}
       <Dialog open={!!openTier} onOpenChange={(o) => !o && setOpenTier(null)}>
-        <DialogContent className="max-w-sm w-[calc(100vw-2rem)] p-0 overflow-hidden bg-transparent border-0 shadow-none max-h-[85vh] !top-[5vh] !translate-y-0">
+        <DialogContent
+          className="max-w-sm w-[calc(100vw-2rem)] p-0 overflow-hidden bg-transparent border-0 shadow-none max-h-[85vh]"
+          style={{ top: "1rem", transform: "translateX(-50%)" }}
+        >
           {openTier && (() => {
             const cfg = TIER_CONFIG[openTier];
             const unlocked = cfg.rank <= currentRank;

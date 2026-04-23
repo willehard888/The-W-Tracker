@@ -355,14 +355,23 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
 
   // Wind reactivity — lean from --wind-x (-1..1) and stretch from --wind-gust (0..1).
   // Combined with the existing slow sway keyframe so the flame still has organic motion
-  // even before the wind loop has had time to evolve.
-  const windTransform =
-    "rotate(calc(var(--wind-x, 0) * 3.5deg + var(--wind-gust, 0) * 4deg)) " +
-    "scaleY(calc(1 + var(--wind-gust, 0) * 0.12)) " +
-    "translateX(calc(var(--wind-x, 0) * 1px))";
+  // even before the wind loop has had time to evolve. On interactive flames the local
+  // --pointer-wind-x adds a subtle "you're watching me" lean toward the cursor.
+  const windTransform = pointerEnabled
+    ? "rotate(calc(var(--wind-x, 0) * 3.5deg + var(--wind-gust, 0) * 4deg + var(--pointer-wind-x, 0) * 6deg)) " +
+      "scaleY(calc(1 + var(--wind-gust, 0) * 0.12)) " +
+      "translateX(calc(var(--wind-x, 0) * 1px + var(--pointer-wind-x, 0) * 2px))"
+    : "rotate(calc(var(--wind-x, 0) * 3.5deg + var(--wind-gust, 0) * 4deg)) " +
+      "scaleY(calc(1 + var(--wind-gust, 0) * 0.12)) " +
+      "translateX(calc(var(--wind-x, 0) * 1px))";
+
+  // Ground-cast color uses the warm haze so it visually "matches" the flame's heat.
+  const groundCastColor = palette.haze;
 
   return (
     <div
+      ref={containerRef}
+      data-flame-interactive={pointerEnabled ? "true" : undefined}
       className={cn("relative pointer-events-none", className)}
       style={{
         width: size,
@@ -375,6 +384,46 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
       }}
       aria-hidden
     >
+      {/* 0. Volumetric ground light — projects onto the surface BELOW the flame.
+          Sits outside the breathing wrapper so it pulses on its own rhythm. */}
+      {isWarm && (
+        <span
+          className="flame-ground-cast absolute left-1/2 pointer-events-none rounded-[50%]"
+          style={{
+            width: size * 2.4,
+            height: size * 0.55,
+            bottom: -size * 0.18,
+            background: `radial-gradient(ellipse at 50% 50%, ${groundCastColor.replace(")", " / 0.55)")} 0%, ${groundCastColor.replace(")", " / 0.18)")} 45%, transparent 78%)`,
+            filter: "blur(10px)",
+            mixBlendMode: "screen",
+            transformOrigin: "50% 50%",
+            animation: `flame-ground-cast ${(5 * speedMul).toFixed(2)}s ease-in-out infinite`,
+            animationDelay: `-${breathOffset}s`,
+            zIndex: 0,
+          }}
+        />
+      )}
+
+      {/* True heat haze — actually warps what's BEHIND the flame (Blazing+ & big). */}
+      {isBlazing && size >= 56 && (
+        <svg
+          aria-hidden
+          className="absolute left-1/2 bottom-0 pointer-events-none"
+          width={size * 1.6}
+          height={size * 1.5}
+          viewBox="0 0 40 56"
+          style={{
+            transform: "translateX(-50%)",
+            zIndex: -1,
+            mixBlendMode: "screen",
+            filter: `url(#${turbSlow})`,
+            opacity: 0.35,
+          }}
+        >
+          <ellipse cx="20" cy="36" rx="18" ry="22" fill={palette.haze} fillOpacity="0.25" />
+        </svg>
+      )}
+
       {/* SVG defs (3 turbulence filters shared by layered flame bodies) */}
       <svg width="0" height="0" className="absolute" aria-hidden>
         <defs>

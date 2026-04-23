@@ -147,9 +147,11 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("check-subscription error:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
+    // Return 200 with a safe default so the client doesn't surface a 5xx
+    // every minute when Stripe is slow/unreachable.
+    return new Response(JSON.stringify({ subscribed: false, error: String((error as Error)?.message ?? error) }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: 200,
     });
   }
 });

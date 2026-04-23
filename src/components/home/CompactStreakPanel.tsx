@@ -451,19 +451,20 @@ const CompactStreakPanel = ({
           <RealisticFlame
             tier={tier.index}
             accent={accent}
-            size={42}
+            size={62}
             className="relative z-10"
           />
 
-          {/* Ground glow */}
+          {/* Ground glow — bigger, hotter, sells the heat */}
           {isHot && (
             <span
               aria-hidden
-              className="streak-fx-ground absolute -bottom-1 left-1/2 h-2 w-12 rounded-[50%] pointer-events-none"
+              className="streak-fx-ground absolute -bottom-1.5 left-1/2 h-2.5 w-16 rounded-[50%] pointer-events-none"
               style={{
-                background: `radial-gradient(ellipse at center, ${accent.replace(")", " / 0.7)")}, transparent 70%)`,
-                filter: "blur(3px)",
+                background: `radial-gradient(ellipse at center, ${accent.replace(")", " / 0.8)")}, transparent 70%)`,
+                filter: "blur(4px)",
                 animation: "streak-ground-pulse 2s ease-in-out infinite",
+                transform: "translateX(-50%)",
               }}
             />
           )}

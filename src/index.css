@@ -2023,6 +2023,15 @@
   50%      { opacity: 1;   transform: translateY(-3px) scale(1.15); }
 }
 
+/* Melt-progress meter shimmer — runs a light streak across the fill so
+   the bar feels actively "molten" rather than static. */
+@keyframes ice-prize-meter-shimmer {
+  0%   { background-position: -60% 0; opacity: 0; }
+  20%  { opacity: 0.85; }
+  80%  { opacity: 0.85; }
+  100% { background-position: 160% 0; opacity: 0; }
+}
+
 /* Released reward — falls from the bottom of the prize, drifts sideways
    slightly (lane-based via --reward-x), spins, then fades out as it
    passes through the flame. Fully driven by CSS custom properties so

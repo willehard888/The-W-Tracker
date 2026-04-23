@@ -352,6 +352,28 @@ const DailyCheckin = () => {
         if (newBadge?.isNew) {
           setUnlockedBadge(newBadge.badge);
         }
+
+        // "Your tribes felt it 🔥" — fire a celebratory toast if user belongs
+        // to ≥1 tribe. The realtime reactor on every tribe page picks up this
+        // streak bump and pulses the collective flame for every other member.
+        try {
+          const { count: tribeCount } = await supabase
+            .from("tribe_members" as any)
+            .select("tribe_id", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("status", "active");
+          if ((tribeCount ?? 0) > 0) {
+            const flameMsg = (tribeCount ?? 0) === 1
+              ? "Your tribe felt it 🔥"
+              : `Your ${tribeCount} tribes felt it 🔥`;
+            toast.success(flameMsg, {
+              description: `+1 day → collective fire just grew`,
+              duration: 4500,
+            });
+          }
+        } catch {
+          // non-critical — silent
+        }
       }
 
       // Elite: auto-post proof photo to feed

@@ -278,7 +278,15 @@ const Tribes = () => {
   const restList = featured ? tribes.filter((t) => t.id !== featured.id) : tribes;
 
   return (
-    <div className="min-h-full pb-8 px-4 pt-4 safe-top">
+    <div className="min-h-full pb-8 px-4 pt-4 safe-top relative">
+      {/* Ambient fire field — drifts behind the whole page, intensifies with
+          the user's combined tribe heat. Cold (<30) = invisible. */}
+      {ambientHeat >= 30 && (
+        <div className="fixed inset-0 pointer-events-none -z-10">
+          <TribeAmbientFireField total={ambientHeat} accent={ambientAccent} />
+        </div>
+      )}
+
       {/* THE HERO — collective fire is the centerpiece */}
       <TribeFireHero tribeCount={joinedIds.size} />
       <div id="tribes-browse-anchor" />
@@ -544,7 +552,21 @@ const Tribes = () => {
                   }}
                 >
                   {cTier >= 0 ? (
-                    <RealisticFlame tier={cTier} accent={cAccent} size={Math.min(56, 36 + cTier * 6)} />
+                    <div
+                      key={rowPulse.get(t.id) ?? 0}
+                      className="w-full h-full flex items-center justify-center"
+                      style={
+                        (rowPulse.get(t.id) ?? 0) > 0
+                          ? {
+                              animation: "flame-intake 1100ms cubic-bezier(.2,.8,.2,1)",
+                              willChange: "transform, filter",
+                              transformOrigin: "50% 92%",
+                            }
+                          : undefined
+                      }
+                    >
+                      <RealisticFlame tier={cTier} accent={cAccent} size={Math.min(56, 36 + cTier * 6)} />
+                    </div>
                   ) : (
                     <span className="text-2xl opacity-50 leading-none">🕯️</span>
                   )}

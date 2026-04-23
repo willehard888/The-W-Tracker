@@ -48,21 +48,31 @@ const TribeCollectiveFlame = ({
   total,
   memberCount,
   todayCount,
+  tribeName,
+  variant = "compact",
   className,
 }: TribeCollectiveFlameProps) => {
   const tier = collectiveStreakTier(total);
   const isCold = tier < 0;
   const isFirestorm = tier >= 6;
+  const isHero = variant === "hero";
 
-  // More aggressive scaling: 56px → 190px (Firestorm)
-  const size =
-    tier >= 6 ? 190 :
-    tier === 5 ? 160 :
-    tier === 4 ? 138 :
-    tier === 3 ? 116 :
-    tier === 2 ? 96  :
-    tier === 1 ? 80  :
-    tier === 0 ? 68  : 56;
+  // Hero scales bigger; compact keeps the inline 56–190px ladder
+  const size = isHero
+    ? (tier >= 6 ? 260 :
+       tier >= 5 ? 230 :
+       tier >= 4 ? 210 :
+       tier >= 3 ? 190 :
+       tier >= 2 ? 170 :
+       tier >= 1 ? 150 :
+       tier >= 0 ? 132 : 110)
+    : (tier >= 6 ? 190 :
+       tier === 5 ? 160 :
+       tier === 4 ? 138 :
+       tier === 3 ? 116 :
+       tier === 2 ? 96  :
+       tier === 1 ? 80  :
+       tier === 0 ? 68  : 56);
 
   const accent = collectiveAccent(total);
   const tierName = collectiveTierName(total);

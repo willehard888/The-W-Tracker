@@ -1,80 +1,111 @@
 
 
-# Plan: Wind-driven flames, tribe firestorm, and "Inferno" next-level streak
+# Make the Collective Flame the Heart of Tribes
 
-Take the flame system to its next stage: real environmental wind, a tribe **firestorm** mode, and a brand-new **Inferno** streak tier (200d+) that breaks the visual ceiling of Legendary.
+The collective flame (every member's streak combined) becomes the **main idea** of the Tribes experience — not a stat among many, but the centerpiece users come back to grow.
 
-## 1. Wind dynamics — flames react to a virtual breeze
+## The core idea (one sentence)
 
-Right now every flame sways the same. Upgrade it so the entire app shares a slow, evolving "wind state" that flames lean into.
+> **A tribe is a fire. Every member's streak feeds it. Stop showing up — it dies.**
 
-- **New module** `src/lib/wind.ts`: a tiny store that emits a wind vector `{x, gust, ts}` that drifts via a sine + noise function and occasionally produces a "gust" spike (every 8–14s). Pure JS, no dependency, single `requestAnimationFrame` driver shared across all flames via a context.
-- **New hook** `useWind()` returns the current wind value (throttled to ~12fps for cheap re-renders) — but most of the work is a CSS variable broadcast on `<html>` (`--wind-x`, `--wind-gust`) so flames can react via CSS only, no React re-renders.
-- **`RealisticFlame.tsx`**: replaces the fixed `flame-wind-sway` with a transform that reads `--wind-x` for lean and `--wind-gust` for momentary stretch. Outer haze layer also drifts with the wind direction (more drift = more drag on the silhouette).
-- **`StreakFlameInline.tsx`**: cheap version — only picks up `--wind-gust` to add a tiny flicker burst. Still CSS-only.
-- **Gust trigger**: optional API `triggerGust(strength)` callable on key moments — check-in success, badge unlock, tribe battle won — every flame on screen visibly bends and recovers. Hooked into `DailyCheckin` success and `BadgeUnlockModal` open.
+Today's flame is a small panel buried inside the tribe page. We promote it to a hero on every Tribes surface and reframe all copy around "growing the fire together."
 
-## 2. Inferno — the new top tier (200+ days)
+---
 
-Open daylight above Legendary. Right now Legendary (100d) is the ceiling and feels final. New tier:
+## What changes
 
-- **Inferno** (≥ 200 days) — a sixth flame index `tier = 6`.
-- Visual identity: deep magenta-to-cyan core ("plasma"), a second counter-rotating flame body (so the flame visibly *spirals*), continuous spark rain, and a slow lightning arc that crackles inside the flame every 6–9s.
-- Files updated:
-  - `src/lib/streak.ts` — add `Inferno` tier classification.
-  - `src/components/StreakDisplay.tsx` — new tier card style + "Inferno" title + plasma palette.
-  - `src/components/StreakFlameInline.tsx` — inline plasma palette + arcing animation.
-  - `src/components/home/RealisticFlame.tsx` — new tier-6 branch: plasma colors, second mirrored flame body with reverse turbulence, internal lightning SVG `<path>` animated via `pathLength` strokeDashoffset.
-  - `src/index.css` — new keyframes `flame-plasma-spiral`, `flame-lightning-crack`, `flame-plasma-hue`.
+### 1. `/tribes` — new cinematic hero (replaces current "Communities" banner)
 
-## 3. Tribe Firestorm — collective ceiling expansion
+A full-width **Hero Flame** — a single, massive `RealisticFlame` (220–260 px) representing **the user's combined tribe heat** (sum of streaks across every tribe they belong to). If they have no tribe, it shows a cold candle with the line *"Find a fire to feed."*
 
-Tribes have been waiting for the same expansion. The collective flame currently caps at "Legendary" (3000 combined days). Add a **Firestorm** tier above it.
+```text
+   ╭─────────────────────────────────────╮
+   │   🔥 BIG LIVE FLAME (animated)      │
+   │                                     │
+   │   1,247 days                        │
+   │   YOUR COMBINED TRIBE HEAT          │
+   │                                     │
+   │   [████████░░] 253 to Diamond       │
+   │   3 tribes · +4 members today       │
+   ╰─────────────────────────────────────╯
+```
 
-- `src/lib/tribe-streak.ts`: add `Firestorm` (≥ 6000 combined days), tier 6, accent `hsl(195 90% 60%)` → `hsl(310 80% 60%)` gradient.
-- `src/components/TribeCollectiveFlame.tsx`:
-  - Bump max size to **190px**.
-  - Firestorm wraps the flame in a **dual-flame composite**: a primary plasma flame plus a smaller satellite flame circling around the base via a slow orbital animation (visualises "many flames feeding one").
-  - Replaces the static aurora rim with an **animated lightning border** that arcs around the card every ~5s.
-  - "Firestorm" tier label gets its own pill style with hue-shifting plasma gradient.
-- `src/pages/TribeDetail.tsx`: when a tribe is in Firestorm, the page background tint dials up (heavier accent radial), and a thin top-of-screen lightning rim line appears (using the existing `flame-rim-pulse` keyframe at higher intensity).
+- Tier label ("Hot → Warm → On Fire → Blazing → Diamond → Legendary → Firestorm") is the dominant headline.
+- Segmented progress bar to next tier (already exists in `TribeCollectiveFlame`) is shown large.
+- Ember particles + aurora rim already implemented stay; just scaled up.
+- Below the hero: a single line "**Every check-in feeds the fire.**"
 
-## 4. Tribe — "Live members" feeding the flame
+### 2. Each tribe row in the list — flame **is** the avatar
 
-Make the tribe flame react to *who is online right now* — concrete wind-and-feed mechanic.
+Replace the current 56-px Crown/avatar tile with a **live mini-flame sized by that tribe's tier**:
+- Cold tribes → small candle icon (gray)
+- Hot tribes → real animated flame at 48–80 px scaling with tier
+- The number next to the name becomes "🔥 1,247 days · Diamond" — not member count first.
 
-- New realtime presence channel `tribe-presence:{tribeId}` (Supabase Realtime, no DB writes) — already part of the project's stack.
-- `TribeCollectiveFlame` listens and shows **per-active-member ember sprites** rising into the flame from below at a rate proportional to live member count. When a member checks in (`tribe_checkin_today` event broadcast from `DailyCheckin`), their ember briefly intensifies and the flame fires a gust.
-- Cap visible embers at 12 to keep performance safe.
+This makes scanning the list feel like walking past campfires of different sizes. Bigger flame = stronger tribe.
 
-## 5. Performance & accessibility
+### 3. `/tribes/:id` — hero rebuilt around the flame
 
-- All wind work is CSS-variable driven; one shared rAF loop, no per-flame timers.
-- Inferno + Firestorm extras (lightning, second body, orbital satellite) only render when `prefers-reduced-motion: no-preference` and only inside hero instances (RealisticFlame ≥ 64px).
-- StreakFlameInline stays CSS-only — Inferno just gets a static plasma gradient + slow hue shift, no SVG.
-- Single `tribe-presence` channel per route mount, cleaned up on unmount.
+Current order: Apex header (Crown + name) → CollectiveFlame panel → battles → posts.
+New order:
 
-## Files touched
+1. **The Flame** (full-bleed, ~280 px tall) — `TribeCollectiveFlame` enlarged, with the tribe name *under* the flame (not above).
+2. **"Feed the fire" CTA** — if user hasn't checked in today, a pulsing button: *"Add today's day → +1 to the fire"* → links to `/checkin`.
+3. **Member contribution strip** — small horizontal row showing each member's avatar + their current streak as a tiny flame, sorted by streak. Visualises "who is feeding the fire most." Tap → user profile.
+4. Then: existing battles button, posts feed, etc.
 
-- `src/lib/wind.ts` (new)
-- `src/contexts/WindProvider.tsx` (new — mounts the rAF loop, sets CSS vars on `<html>`)
-- `src/App.tsx` (wrap tree in `WindProvider`)
-- `src/lib/streak.ts` (Inferno tier classifier)
-- `src/lib/tribe-streak.ts` (Firestorm tier + accent)
-- `src/components/home/RealisticFlame.tsx` (wind reactivity, tier 6 branch, lightning, mirrored body)
-- `src/components/StreakFlameInline.tsx` (wind gust pickup, plasma tier 6)
-- `src/components/StreakDisplay.tsx` (Inferno tier styles)
-- `src/components/TribeCollectiveFlame.tsx` (Firestorm visuals, presence embers, gust on tribe check-in)
-- `src/pages/TribeDetail.tsx` (Firestorm page tint + lightning rim)
-- `src/pages/DailyCheckin.tsx` (call `triggerGust()` on success)
-- `src/components/BadgeUnlockModal.tsx` (call `triggerGust()` on open)
-- `src/index.css` (new keyframes: plasma spiral, lightning crack, plasma hue, orbital satellite)
-- `.lovable/memory/features/streak-system.md` (note Inferno tier)
-- `.lovable/memory/style/visual-effects.md` (note wind system + Firestorm)
+### 4. Real-time growth feedback
 
-## Notes
+- Subscribe to `profiles` updates for tribe members (Realtime) so when anyone checks in, the flame grows live and a small ember burst animation triggers (`+1` floating text rises from the base).
+- A subtle "X members at risk" banner appears if anyone in the tribe has < 6 h left on their streak — turns the flame orange-red and adds the line *"Your fire is in danger."*
 
-- No DB migration needed: tier classification is pure client-side derived from `streak` and `collective_streak`.
-- Existing badges (`personal_streak ≥ 100`, `tribe_collective_streak ≥ 180`) are unaffected — Inferno/Firestorm are visual-only ceilings; we can later add `streak ≥ 200` and `collective ≥ 6000` badges in a follow-up.
-- Wind module exposes a simple `triggerGust(strength)` so future features (level-up, tribe battle win) can trigger the same effect.
+### 5. Copy & terminology shift
+
+Everywhere "Tribe Streak" appears, rename to **"Tribe Fire"**. Examples:
+- Hero label: `Tribe Fire` (was `Tribe Streak`)
+- Tier names stay (Hot, Warm, On Fire, Blazing, Diamond, Legendary, Firestorm)
+- Empty state: *"This fire is cold. Be the first to feed it."*
+- Check-in success toast inside a tribe: *"+1 day → fire grew to 248"*
+
+### 6. Notifications (optional, behind a flag)
+
+When a tribe crosses a tier threshold (e.g. Warm → On Fire), trigger a push: *"🔥 Your tribe just hit On Fire — 100 days strong."* Uses existing `apns` push infra.
+
+---
+
+## Technical implementation
+
+### Files to modify
+
+| File | Change |
+|---|---|
+| `src/components/TribeCollectiveFlame.tsx` | Add `variant: "hero" \| "compact"` prop. Hero variant: 240–280 px flame, name below, no border (transparent over page tint). |
+| `src/pages/Tribes.tsx` | Replace "Communities" banner with new `<TribeFireHero />`. Replace each tribe row's icon tile with `<RealisticFlame size={tierSize} />`. |
+| `src/pages/TribeDetail.tsx` | Reorder: flame hero first, Apex header collapsed into a slim strip below. Add `MemberContributionStrip`. Subscribe to realtime updates. |
+| `src/components/TribeFireHero.tsx` *(new)* | The big personal-heat hero on `/tribes`. Sums collective streaks across all user's tribes. |
+| `src/components/MemberContributionStrip.tsx` *(new)* | Horizontal scroll of members with mini-flames sized by personal streak. |
+| `src/components/FeedTheFireCTA.tsx` *(new)* | Pulsing button shown if user hasn't checked in today. |
+| `src/lib/tribe-streak.ts` | Add `fetchUserTotalTribeHeat(userId)` helper. |
+| `src/index.css` | Add `@keyframes ember-rise` for the floating "+1" feedback. |
+
+### Data
+
+No new tables. Uses existing `profiles.streak` + `tribe_members` (status='active'). Realtime subscription on `profiles` filtered by member user_ids per tribe page.
+
+### Performance
+
+- Cap realistic flame instances per screen (≤ 1 hero + ≤ 8 row mini-flames). Beyond that, fall back to a static flame SVG.
+- Reuse existing `RealisticFlame` and `TribeCollectiveFlame` — no new SVG turbulence filters needed.
+
+### Memory update
+
+Update `mem://features/tribes` to record: *"Collective flame is the central metaphor. Every Tribes surface leads with the fire."*
+
+---
+
+## Out of scope (now)
+
+- Changing the underlying tier thresholds (`30/100/300/700/1500/3000/6000`) — they stay.
+- Battles UI — battles already reference the flame ("Bigger flame badge"); no changes needed.
+- Backend changes — no new RPCs, no migrations.
 

@@ -1,94 +1,81 @@
 
 
-# Realtime "Feed the Fire" — flame reacts to every check-in
+# Premium Fire+Gold -teema kaikissa napeissa
 
-Two things in one pass: **(A) fix the build error in `Tribes.tsx`** and **(B) make the collective flame react in realtime to every member check-in**, with cinematic, non-cartoon ember-rise feedback.
+Levitetään tribe-fire-identiteetti (ember + coal + gold) sovelluksen yleiskäytön nappeihin niin, että jokainen `<Button>` näyttää teemalta — ilman että yliräjäytetään (ei joka nappi loimua). Hierarkia on selkeä, premium ja yhtenäinen.
 
----
+## Visuaalinen hierarkia (uusi standardi)
 
-## 1. Fix build error (blocker)
+| Tarkoitus | Variantti | Tuntuma |
+|---|---|---|
+| Korkein intensiteetti — Tribe / Fire / "ignite" actions | `ember` | Sulava molten metalli + halo-pulse |
+| Identiteetti / status / "earn" actions (Login, Save, Accept) | `coal` | Hehkuva hiili kultakruunulla |
+| Saavutus / status display CTA (Pro, Champion) | `gold` | Klassinen kiillotettu kulta |
+| **UUSI: Yleinen sekundääri (Cancel, Compare, Message)** | `gold-soft` | Lasinen tumma paneeli + lämmin kultareuna + sisäinen kultainen hiussäteily |
+| **UUSI: Yleinen outline (Decline, View, Filter)** | `ember-glass` | Lasi + ember-hairline + hover-kuumuus |
+| Vaaralliset (Reject, Delete) | `destructive` / `danger-outline` | Punametalli (ei muutosta) |
+| Linkit / minimalistinen | `ghost` | Päivitetään saamaan **lämmin kulta-tint** hoverissa |
 
-In `src/pages/Tribes.tsx` (lines 462–553) the tribe card's `<button>` opens, then renders the flame tile + text + Join button as siblings — but they're **not** wrapped in the flex row container, leaving an unmatched `</div>` at line 552.
+`secondary` ja `outline` säilyvät taaksepäin yhteensopivina, mutta niiden visuaali päivitetään: ne saavat **lämpimän alasävyn** (kulta-soft tint + hot highlight), niin että jopa vanhat `variant="secondary"`-napit (joita on 175 paikassa) muuttuvat automaattisesti teemaan sopiviksi ilman koodimuutoksia call-site-kohtaisesti.
 
-**Fix**: insert an opening `<div className="flex items-start gap-3 relative">` just after the absolute decorations (after line 490) and let the existing `</div>` at line 552 close it. Also re-indent the three children (flame tile, text block, Join button) to sit inside that wrapper.
+## Toteutus
 
----
+### `src/components/ui/button.tsx`
 
-## 2. Realtime check-in reactor (the new feel)
+**1. Päivitä `secondary` → premium kultalasi**
+- Tumma obsidian-pohja säilyy luettavuuden vuoksi
+- Lisää: hiussäteily ylhäältä (kulta), pohjavarjostuksen sisäinen kultainen hehku, hover-tilassa lämmin kultareuna ja `box-shadow` jolla kultainen halo nousee
+- Teksti muuttuu hoverissa `hsl(var(--gold-light))`
 
-Today, when a member checks in, nothing visible happens until you reload. We make the flame **literally jump** the moment any member's `profiles.streak` ticks up.
+**2. Päivitä `outline` → premium ember-lasi**
+- Korvaa harmaa `border-image` lämpimällä gradient-bordilla (kulta-soft → ember-soft)
+- Pohja: `linear-gradient` jossa hyvin kevyt kulta-tint (4–6% alpha)
+- Hover: ember-hairline + diagonaalinen heat shimmer (`::after` translate3d, sama kuin `ember`)
 
-### A. New hook: `useTribeFireReactor(tribeId, memberIds)`
+**3. Päivitä `ghost` → lämmin lift**
+- Hover-bg → `hsl(var(--gold) / 0.06)` harmaan sijaan
+- Hover-text → `hsl(var(--gold-light))`
+- Sisäinen alareuna saa kultainen hairline
 
-Subscribes to `postgres_changes` on `public.profiles` filtered to `user_id IN memberIds`. When a row's `streak` increases (`new.streak > old.streak`):
+**4. Lisää uudet eksplisiittiset variantit**
+- `gold-soft`: identinen päivitetyn `secondary`:n kanssa, mutta voimakkaampi kultainen kruunu — call-sitet voivat valita tämän kun haluavat selkeämmän kullan
+- `ember-glass`: identinen päivitetyn `outline`:n kanssa mutta vahvemmilla ember-vivahteilla — Tribe-kontekstin sekundäärit voivat valita tämän
+- `gold-icon`: ikoninapeille (`size="icon-sm"`/`icon-lg`) jotta back/close/clear-napit nykyisessä `ghost`-tilassa saavat kullatun loimun hoverissa
 
-1. Push an event into a small in-memory queue: `{ id, delta, username, ts }`.
-2. Bumps a `pulseToken` counter so the flame can react.
-3. Auto-prunes events older than 2.5s.
+### `src/index.css`
 
-Returns `{ events, pulseToken, totalDelta }` for consumers.
+- Lisää `@keyframes button-warm-rim-breathe` (4s, hyvin kevyt kultainen reunan opasiteetin sykintä) — käytetään `secondary`/`gold-soft` napeissa harvinaisena luksuselementtinä (vain kun nappi on `:focus-visible`-tilassa, ei jatkuva suorituskykyä rasittava efekti)
+- Lisää `prefers-reduced-motion` -guard kaikille uusille animaatioille
 
-Why `profiles` realtime works: the daily-checkin RPC updates `profiles.streak` server-side, so a single subscription catches *all* member check-ins without us touching the backend.
+### Globaali vaikutus (zero-touch)
 
-### B. New component: `<EmberRiseLayer events accent />`
+Koska 175 nykyistä `variant="secondary"`-käyttöä ja kymmenet `variant="outline"`-napit perivät uudet visuaalit automaattisesti, koko sovellus muuttuu teemaan sopivaksi yhdellä commitilla:
+- `Battles.tsx`: Cancel/Decline-napit
+- `UserProfile.tsx`: Add Friend / Pending / Message / Compare
+- `Coach.tsx`: Suggested-promptit + back-nappi
+- `AdminModeration.tsx`: Approve-nappi
+- `TribePendingRequestsDialog.tsx`: hyväksy/hylkää-napit
+- Kaikki dialog-footerit (Cancel-napit) sovelluksessa
+- `BottomNav` `ghost`-napit saavat kultaisen hoverin
 
-Absolutely-positioned overlay rendered **inside** the `TribeCollectiveFlame` (hero variant). For each event:
+### Kohdennetut päivitykset
 
-- A floating `+1` chip rises from the flame base (uses existing `@keyframes ember-rise` at index.css:1836 — already shipped).
-- A **burst of 6–8 real glowing embers** spawns at the candle root and rises with randomized x-drift, scale, and blur — reusing the existing `ember-drift` keyframe with per-particle delays.
-- Subtle username caption ("@alex +1") fades in under the chip, fades out after 1.6s.
-- Cap: max 4 concurrent events on screen; older ones drop.
-- All embers render in a single `<div>` with CSS-only animations (no JS rAF) → zero layout cost, GPU-only.
-
-Performance: when `prefers-reduced-motion` is on, only the `+1` chip appears (no particles, no scale pulse).
-
-### C. Flame "intake breath" reaction
-
-When `pulseToken` changes, the flame momentarily:
-
-- Scales 1.0 → **1.06 → 1.0** over 380ms with a custom `cubic-bezier(.2,.8,.2,1)` (a quick inhale, like a real fire being fed oxygen).
-- Brightness/contrast filter swells `1.0 → 1.18 → 1.0`.
-- The aurora rim opacity pops to 1 then settles.
-
-Implemented as a new keyframe `flame-intake` in `index.css`, applied via a key-changing `<div>` wrapper around `<RealisticFlame>` so each event re-triggers the animation cleanly.
-
-### D. Wiring
-
-- `TribeCollectiveFlame` accepts a new optional prop `reactor?: { events, pulseToken }`. When present, it renders `<EmberRiseLayer>` + applies `flame-intake` to the flame container.
-- `TribeDetail.tsx`:
-  - Calls `useTribeFireReactor(id, members.map(m => m.user_id))`.
-  - On each new event: optimistically increments local `collectiveStreak` by `delta` (so the big number ticks up instantly without waiting for the next `load()` call).
-  - Triggers a brief haptic `Haptics.impact({ style: "Light" })` (only on native) for the *user's own* check-in, not for others.
-  - Adds a tiny realtime-status dot under the hero: "🔴 LIVE" green pulse meaning the channel is connected.
-- `Tribes.tsx` (list view): subscribes to the union of all member IDs across the user's joined tribes. When an event fires for a tribe in the list, that row's mini-flame plays a one-shot `flame-intake` and bumps its `cStreak` locally.
-
-### E. Self check-in toast (extra polish)
-
-In the existing `DailyCheckin` success flow, after the streak update succeeds, if the user belongs to ≥1 tribe, show a custom toast: *"+1 day → your tribes felt it 🔥"* with the new tier name if it just crossed a threshold. Pure cosmetic — uses already-loaded data.
-
----
-
-## 3. Memory / cleanup
-
-- Remove the duplicate `@keyframes ember-rise` definition (one at index.css:1350, another at 1836). Keep the newer one (1836) and delete the older.
-- Update `mem://features/tribes` to record: *"Tribe flame reacts in realtime to member check-ins via `profiles` postgres_changes; ember-rise '+1' overlay + flame-intake pulse on each event."*
-
----
-
-## Files
-
-| File | Change |
+| Tiedosto | Muutos |
 |---|---|
-| `src/pages/Tribes.tsx` | Fix unmatched `<div>` (insert flex wrapper at L491, re-indent). Subscribe to all-tribe member updates; bump per-row `cStreak` and trigger one-shot intake pulse. |
-| `src/pages/TribeDetail.tsx` | Use `useTribeFireReactor`, pass to `TribeCollectiveFlame`, optimistic streak bump, haptic on self event. |
-| `src/components/TribeCollectiveFlame.tsx` | Accept optional `reactor`; mount `<EmberRiseLayer>`; wrap `<RealisticFlame>` in animated container that retriggers `flame-intake` per `pulseToken`. |
-| `src/components/EmberRiseLayer.tsx` *(new)* | Renders `+1` chips + ember bursts for each event. |
-| `src/hooks/use-tribe-fire-reactor.ts` *(new)* | Realtime subscription + event queue. |
-| `src/index.css` | Add `@keyframes flame-intake` + `@keyframes flame-intake-glow`. Remove duplicate `ember-rise` keyframe. Add `prefers-reduced-motion` guard. |
-| `src/pages/DailyCheckin.tsx` | Add post-success "tribes felt it" toast if user has tribes. |
+| `src/components/ui/sidebar.tsx` | `ghost` perii uuden lämpimän hoverin — ei koodimuutosta |
+| `src/pages/UserProfile.tsx` r. 477–480 | Vaihda `Message`/`Compare` → `variant="gold-soft"` |
+| `src/pages/Coach.tsx` r. 202–206 | Suggested-promptit `outline` → `ember-glass` (Coach on Elite/AI-fire-konteksti) |
+| `src/components/TribeBattleCard.tsx` r. 230–234 | Decline `outline` → `ember-glass` |
+| `src/pages/Battles.tsx` r. 461, 505 | Cancel/Decline säilyvät `secondary`:nä — perivät uuden lookin |
 
-## Out of scope
+## Mitä EI muuteta
 
-- No DB schema changes. No new RPCs. No new tables. Realtime works against existing `profiles` row updates that the check-in flow already triggers.
-- Tier-up push notifications stay deferred (mentioned in earlier plan, not requested here).
+- `ember`, `coal`, `gold`, `tier`, `success`, `warning`, `destructive`, `link`, `glass`, `obsidian` — säilyvät täsmälleen samoina
+- Mitään olemassa olevaa nappia ei poisteta tai uudelleennimetä — kaikki nykyinen koodi toimii
+- `BottomNav`-kuvakkeet säilyvät selkeästi luettavina (vain hover saa kultaisen lämmön)
+- DB / RPC / auth — ei muutoksia
+
+## Lopputulos
+
+Koko sovellus näyttää **kulta- ja tulipaletilta** — jopa Cancel-napit ja sivupalkit hehkuvat hienovaraisesti lämpöä. Ember- ja coal-napit pysyvät korkeimpana intensiteettitasona, ja muu UI tukee niitä premium-tavalla harmaan paneelin sijaan. Hierarkia on edelleen selvä: silmäsi tietää aina mihin painaa.
 

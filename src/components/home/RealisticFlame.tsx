@@ -463,6 +463,75 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
         </svg>
       )}
 
+      {/* ── Premium volumetric glass-refraction halo (STATIC, no animation).
+          Three stacked layers fake the way warm light passes through a polished
+          glass dome around the flame:
+            (1) Inner refractive halo — soft warm core glow that looks "lensed"
+            (2) Iridescent edge ring — cool→warm hue shift band along the rim
+            (3) Outer caustic ring — faint cool edge that mimics dispersion */}
+      {isHot && (
+        <>
+          <span
+            aria-hidden
+            className="absolute left-1/2 pointer-events-none rounded-full"
+            style={{
+              width: size * 1.55,
+              height: size * 1.45,
+              bottom: size * 0.05,
+              transform: "translateX(-50%)",
+              background: `radial-gradient(ellipse at 50% 60%, ${palette.inner.replace(")", " / 0.32)")} 0%, ${palette.haze.replace(")", " / 0.14)")} 38%, transparent 70%)`,
+              filter: `blur(${Math.max(8, size * 0.18)}px)`,
+              mixBlendMode: "screen",
+              zIndex: -1,
+            }}
+          />
+
+          {isWarm && (
+            <span
+              aria-hidden
+              className="absolute left-1/2 pointer-events-none rounded-full"
+              style={{
+                width: size * 1.85,
+                height: size * 1.7,
+                bottom: 0,
+                transform: "translateX(-50%)",
+                background:
+                  `conic-gradient(from 200deg at 50% 65%, ` +
+                  `transparent 0deg, ` +
+                  `hsl(210 80% 60% / 0.08) 60deg, ` +
+                  `hsl(42 90% 65% / 0.14) 130deg, ` +
+                  `hsl(28 95% 60% / 0.18) 180deg, ` +
+                  `hsl(310 70% 60% / 0.10) 240deg, ` +
+                  `hsl(210 80% 60% / 0.08) 300deg, ` +
+                  `transparent 360deg)`,
+                filter: `blur(${Math.max(10, size * 0.22)}px)`,
+                mixBlendMode: "screen",
+                opacity: isLegendary ? 0.85 : isDiamond ? 0.7 : isBlazing ? 0.55 : 0.4,
+                zIndex: -2,
+              }}
+            />
+          )}
+
+          {isOnFire && (
+            <span
+              aria-hidden
+              className="absolute left-1/2 pointer-events-none rounded-full"
+              style={{
+                width: size * 2.2,
+                height: size * 1.95,
+                bottom: -size * 0.05,
+                transform: "translateX(-50%)",
+                border: `1px solid ${palette.haze.replace(")", " / 0.14)")}`,
+                background: `radial-gradient(ellipse at 50% 55%, transparent 55%, ${palette.haze.replace(")", " / 0.06)")} 70%, transparent 88%)`,
+                filter: `blur(${Math.max(6, size * 0.14)}px)`,
+                mixBlendMode: "screen",
+                zIndex: -2,
+              }}
+            />
+          )}
+        </>
+      )}
+
       {/* SVG defs (3 turbulence filters shared by layered flame bodies) */}
       <svg width="0" height="0" className="absolute" aria-hidden>
         <defs>

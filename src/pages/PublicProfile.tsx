@@ -15,6 +15,8 @@ import { useEffect, useState } from "react";
 const PublicProfile = () => {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [lightboxPost, setLightboxPost] = useState<any>(null);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["public-profile", username],

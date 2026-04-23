@@ -1993,71 +1993,7 @@
   50%      { opacity: 0.78; transform: translateX(-50%) scaleY(1.08) scaleX(1.15); }
 }
 
-/* ============================================================
-   Frozen mystery prize — suspended ice crystal above the flame
-   ============================================================ */
 
-/* Soft cool aura behind the prism — breathes opposite to flame */
-@keyframes ice-prize-aura {
-  0%, 100% { opacity: 0.55; transform: translateX(-50%) scale(1); }
-  50%      { opacity: 0.9;  transform: translateX(-50%) scale(1.08); }
-}
-
-/* The prism gently bobs as if suspended on a thin chain */
-@keyframes ice-prize-bob {
-  0%, 100% { transform: translateX(-50%) translateY(0)    rotate(-1.2deg); }
-  50%      { transform: translateX(-50%) translateY(2.5px) rotate(1.2deg); }
-}
-
-/* Melt drips falling from the bottom of the ice */
-@keyframes ice-prize-drip {
-  0%   { opacity: 0; transform: translateY(0) scaleY(0.6); }
-  10%  { opacity: 1; transform: translateY(2px) scaleY(1); }
-  85%  { opacity: 1; transform: translateY(18px) scaleY(1.2); }
-  100% { opacity: 0; transform: translateY(24px) scaleY(0.4); }
-}
-
-/* Tiny frost dust shimmer — twinkles around the prism */
-@keyframes ice-prize-frost {
-  0%, 100% { opacity: 0.2; transform: translateY(0)    scale(0.7); }
-  50%      { opacity: 1;   transform: translateY(-3px) scale(1.15); }
-}
-
-/* Melt-progress meter shimmer — runs a light streak across the fill so
-   the bar feels actively "molten" rather than static. */
-@keyframes ice-prize-meter-shimmer {
-  0%   { background-position: -60% 0; opacity: 0; }
-  20%  { opacity: 0.85; }
-  80%  { opacity: 0.85; }
-  100% { background-position: 160% 0; opacity: 0; }
-}
-
-/* Released reward — falls from the bottom of the prize, drifts sideways
-   slightly (lane-based via --reward-x), spins, then fades out as it
-   passes through the flame. Fully driven by CSS custom properties so
-   each reward gets its own trajectory without rerunning React. */
-@keyframes ice-prize-reward-fall {
-  0% {
-    opacity: 0;
-    transform: translateX(-50%) translate3d(0, 0, 0) rotate(0deg) scale(0.6);
-  }
-  12% {
-    opacity: 1;
-    transform: translateX(-50%) translate3d(0, 4px, 0) rotate(20deg) scale(1.05);
-  }
-  60% {
-    opacity: 1;
-    transform: translateX(-50%) translate3d(var(--reward-x, 0px), calc(var(--reward-y, 80px) * 0.55), 0) rotate(220deg) scale(1);
-  }
-  90% {
-    opacity: 0.7;
-    transform: translateX(-50%) translate3d(var(--reward-x, 0px), var(--reward-y, 80px), 0) rotate(380deg) scale(0.85);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(-50%) translate3d(var(--reward-x, 0px), calc(var(--reward-y, 80px) * 1.1), 0) rotate(420deg) scale(0.75);
-  }
-}
 
 
 /* Plasma hue cycle — fast cinematic shift through magenta → cyan → blue */

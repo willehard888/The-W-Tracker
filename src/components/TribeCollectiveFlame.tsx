@@ -1,4 +1,6 @@
 import RealisticFlame from "@/components/home/RealisticFlame";
+import EmberRiseLayer from "@/components/EmberRiseLayer";
+import type { FireEvent } from "@/hooks/use-tribe-fire-reactor";
 import { cn } from "@/lib/utils";
 import {
   collectiveStreakTier,
@@ -21,6 +23,11 @@ interface TribeCollectiveFlameProps {
    *  - `hero`: full-bleed centerpiece — massive flame, name underneath.
    */
   variant?: "compact" | "hero";
+  /**
+   * Realtime reactor — when provided, the flame plays an "intake" pulse
+   * on each new check-in and renders an ember-rise overlay.
+   */
+  reactor?: { events: FireEvent[]; pulseToken: number };
   className?: string;
 }
 

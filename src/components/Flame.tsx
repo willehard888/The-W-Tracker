@@ -301,6 +301,46 @@ const Flame = ({ status, size = 28, label, className }: FlameProps) => {
             <path d={FLAME_PATH} fill={`url(#${coreGradId})`} />
           </svg>
         )}
+
+        {/* Heart bloom — pulsing white-hot center (Strong+) */}
+        {isStrong && (
+          <span
+            aria-hidden
+            className="absolute left-1/2 pointer-events-none rounded-full"
+            style={{
+              width: w * 0.32,
+              height: h * 0.4,
+              bottom: h * 0.15,
+              background: `radial-gradient(ellipse at 50% 60%, ${palette.core.replace(")", " / 0.95)")} 0%, ${palette.tip.replace(")", " / 0.5)")} 45%, transparent 78%)`,
+              filter: `blur(${Math.max(2, size * 0.05)}px)`,
+              transform: "translateX(-50%)",
+              mixBlendMode: "screen",
+              animation: `flame-heart-bloom ${(flickerSpeed * 1.4).toFixed(2)}s ease-in-out infinite`,
+              animationDelay: `${seed.coreDelay}s`,
+            }}
+          />
+        )}
+
+        {/* God-ray — vertical light beam shooting up (Peak only) */}
+        {isPeak && (
+          <span
+            aria-hidden
+            className="absolute left-1/2 pointer-events-none"
+            style={{
+              width: w * 0.18,
+              height: h * 1.4,
+              bottom: h * 0.25,
+              background: `linear-gradient(180deg, ${palette.core.replace(")", " / 0.5)")} 0%, ${palette.tip.replace(")", " / 0.22)")} 35%, transparent 80%)`,
+              filter: `blur(${Math.max(3, size * 0.09)}px)`,
+              transform: "translateX(-50%)",
+              transformOrigin: "center bottom",
+              mixBlendMode: "screen",
+              animation: `flame-godray-pulse ${(flickerSpeed * 2.6).toFixed(2)}s ease-in-out infinite`,
+              animationDelay: `${seed.bodyDelay}s`,
+              opacity: 0.7,
+            }}
+          />
+        )}
       </span>
 
       {/* Wind-reactive embers — small particles that drift with the wind (peak only). */}

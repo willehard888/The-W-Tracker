@@ -330,6 +330,24 @@ const StreakFlameInline = ({
           />
         )}
 
+        {/* Heart bloom — pulsing white-hot center (Blazing+, very subtle on small flames) */}
+        {isBlazing && (
+          <span
+            aria-hidden
+            className="absolute left-1/2 pointer-events-none rounded-full"
+            style={{
+              width: flameSize * 0.32,
+              height: flameSize * 0.42,
+              bottom: flameSize * 0.18,
+              background: `radial-gradient(ellipse at 50% 60%, ${palette.core.replace(")", " / 0.95)")} 0%, ${palette.glow.replace(")", " / 0.5)")} 45%, transparent 78%)`,
+              filter: `blur(${Math.max(1.5, flameSize * 0.05)}px)`,
+              transform: "translateX(-50%)",
+              mixBlendMode: "screen",
+              animation: `flame-heart-bloom ${(speed * 1.4).toFixed(2)}s ease-in-out infinite`,
+            }}
+          />
+        )}
+
         {/* Spark dot — Diamond+ — now a wind-reactive ember instead of a static dot. */}
         {isDiamond && (
           <span

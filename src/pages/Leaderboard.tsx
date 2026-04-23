@@ -583,4 +583,67 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
   );
 };
 
+interface ModeTabsProps {
+  mode: "season" | "all_time";
+  onChange: (m: "season" | "all_time") => void;
+}
+
+const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
+  const isSeason = mode === "season";
+  return (
+    <div className="animate-reveal animate-reveal-delay-1 mb-4">
+      <div
+        className="relative grid grid-cols-2 rounded-full border border-gold/30 bg-card/70 backdrop-blur-md p-1 shadow-[0_8px_24px_-12px_hsl(var(--gold)/0.35)]"
+        role="tablist"
+        aria-label="Leaderboard mode"
+      >
+        {/* Sliding indicator */}
+        <div
+          aria-hidden
+          className={cn(
+            "absolute top-1 bottom-1 left-1 w-[calc(50%-0.25rem)] rounded-full transition-transform duration-500 ease-[cubic-bezier(0.16,1.2,0.32,1)]",
+            "bg-gradient-to-br from-gold/95 via-gold to-gold/85",
+            "shadow-[0_4px_16px_-4px_hsl(var(--gold)/0.65),inset_0_1px_0_hsl(var(--gold-light)/0.7)]",
+          )}
+          style={{ transform: isSeason ? "translateX(0%)" : "translateX(100%)" }}
+        />
+        <button
+          role="tab"
+          aria-selected={isSeason}
+          onClick={() => onChange("season")}
+          className={cn(
+            "relative z-10 py-2 text-xs font-display font-black uppercase tracking-[0.18em] transition-colors",
+            isSeason ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <span className="inline-flex items-center gap-1.5">
+            <Clock3 size={12} className={cn(isSeason ? "text-primary-foreground" : "text-gold/80")} />
+            Season
+          </span>
+        </button>
+        <button
+          role="tab"
+          aria-selected={!isSeason}
+          onClick={() => onChange("all_time")}
+          className={cn(
+            "relative z-10 py-2 text-xs font-display font-black uppercase tracking-[0.18em] transition-colors",
+            !isSeason ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <span className="inline-flex items-center gap-1.5">
+            <Trophy size={12} className={cn(!isSeason ? "text-primary-foreground" : "text-gold/80")} />
+            All Time
+          </span>
+        </button>
+      </div>
+      {/* Swipe hint */}
+      <div className="mt-2 flex items-center justify-center gap-1.5 text-[9px] uppercase tracking-[0.25em] text-muted-foreground/70 font-bold">
+        <ChevronLeft size={10} className={cn("transition-opacity", isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
+        <span>Swipe to switch</span>
+        <ChevronRight size={10} className={cn("transition-opacity", !isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
+      </div>
+    </div>
+  );
+};
+
 export default Leaderboard;

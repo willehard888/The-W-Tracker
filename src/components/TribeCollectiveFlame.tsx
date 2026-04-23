@@ -13,6 +13,14 @@ interface TribeCollectiveFlameProps {
   memberCount?: number;
   /** Optional: how many members checked in today (for the "+X today" chip). */
   todayCount?: number;
+  /** Optional tribe name shown UNDER the flame in hero variant. */
+  tribeName?: string;
+  /**
+   * Visual variant.
+   *  - `compact` (default): inline panel, flame + stats side-by-side.
+   *  - `hero`: full-bleed centerpiece — massive flame, name underneath.
+   */
+  variant?: "compact" | "hero";
   className?: string;
 }
 

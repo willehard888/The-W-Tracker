@@ -1,101 +1,111 @@
 
 
-# Fire & amber STATUS-pinnoille — premium tasolla
+# Liekki → Next Level
 
-Tuodaan tribe-fire-DNA (ember + amber + coal) **status-identiteetin** ytimeen niin, että jokainen status-elementti — header, nameplate, avatar, badge, check-in header, ladder — tuntuu elävältä tulelta sen sijaan, että olisi staattinen merkki. Hierarkia säilyy: ylemmät tierit polttavat kuumemmin.
+Nostetaan `RealisticFlame` cinematic-tasolta **simuloidun fysiikan tasolle**: liekki reagoi ympäristöönsä, valaisee oikeasti ympäristöä, hengittää, ja sen ydin elää kuin oikea palokaasu. Lisätään myös aitoja interaktioita (kosketus → liekki taipuu) ja parallax-syvyys.
 
 ## Periaate
 
-| Tier | Lämpö | Visuaalinen identiteetti |
-|---|---|---|
-| Recruit/Operator/Performer | kylmä → lämmin | nykyinen rauhallinen — ei muutoksia |
-| **High Performer** | amber-kipinä | uusi: pienet amber-kipinät reunoilla, lämmin alasävy |
-| **Elite** | gold + amber loiste | amber-rim sykkii hennon kullan ympärillä |
-| **Apex** | täysi tuli | **embers nousevat ylös**, gold-flame-conic-aura, heat-shimmer reunoissa |
-| **Legend** | jalokivituli | nykyiset rainbow-elementit + amber-cinder-rain |
+| Taso | Mitä lisätään |
+|---|---|
+| **Visuaalinen syvyys** | Volumetric light cone projisoituu ALAS liekistä → valaisee taustan ympärillä, ei vain liekkiä itseään |
+| **Fysiikka** | Liekki taipuu osoittimen/kosketuksen suuntaan (lähellä) — paikallinen wind-kenttä |
+| **Hiukkaset** | Aidot rising embers + falling ashes (Diamond+) jotka noudattavat wind-vektoria |
+| **Hengitys** | Slow inhale/exhale -sykli muuttaa liekin korkeutta + intensiteettiä (5–7s) |
+| **Ympäristön reaktio** | Apex/Legend/Inferno saa hetkellisen "shockwave"-ympyrän kun käyttäjä saavuttaa virstanpylvään |
+| **Sisäinen rakenne** | Heat-haze SVG-displacement liekin TAUSTALLE → tausta vääristyy oikeasti liekin ympärillä |
 
 ## Toteutus
 
-### 1. `src/index.css` — uudet status-tulitokeyframet
+### 1. `src/lib/wind.ts` — laajennus paikalliselle pointer-windille
 
-Lisätään (kaikki `prefers-reduced-motion`-guardilla, GPU-vain):
-- `@keyframes status-ember-rise` — pieni piste nousee 60–80px ylös, fade-in/out, drift-x ±12px
-- `@keyframes status-amber-ring-breathe` — reunan opasiteetti 0.55→1→0.55 (5s)
-- `@keyframes status-heat-shimmer` — diagonaalinen valokaista pyyhkii nameplaten yli (8s, vain top-tierit)
-- `@keyframes status-flame-flicker` — flame-ikoni (Apex/Elite) "lepattaa" subtle-skaalalla 0.96–1.04 + opasiteetti
-- `@keyframes status-coal-pulse` — alaosan amber-hehku sykkii sisäänpäin (6s)
+Lisätään uusi globaali CSS-var `--pointer-wind-x` jonka updateaa lightweight pointermove-listener (throttled 30fps). Liekit jotka ovat lähellä osoitinta (`hover` tai `data-flame-interactive` sisällä) lisäävät tämän omaan windTransformiinsa. Default 0 → ei vaikutusta.
 
-### 2. `src/components/StatusNameplate.tsx` — täysi tulilavan päivitys top-tiereille
+- `attachPointerWind()` — käynnistetään `WindProvider`issa
+- Vaikutus on radius-rajoitettu CSS:llä (vain :hover-puussa)
 
-**Apex:**
-- Lisätään 6 kpl ember-pisteitä (`<span>`) jotka käyttävät `status-ember-rise`-animaatiota — pohjasta nousevia kipinöitä, eri viiveillä (0s, 0.7s, 1.4s, 2.1s, 2.8s, 3.5s)
-- Reunaviiva: nykyinen `border-[hsl(18_95%_58%)]/55` saa amber-ring-breathe-sykinnän
-- Ikonit (`Flame`) saavat `status-flame-flicker` -animaation
-- Alalaita: matala `radial-gradient` amber-hehku joka sykkii (`status-coal-pulse`)
-- Diagonaalinen heat-shimmer pyyhkii satunnaisesti (8s) kortin yli
+### 2. `src/components/home/RealisticFlame.tsx` — uudet kerrokset
 
-**Elite:**
-- 3 amber-kipinää (vähemmän kuin Apex, ei samaa intensiteettiä)
-- Crown-ikoni saa hennon `status-flame-flicker` -lepattaa
-- Gold-borderiin lisätään `status-amber-ring-breathe` (hyvin kevyt)
+Lisätään `EIGHT layers` → **TWELVE layers**:
 
-**High Performer:**
-- 2 amber-cinder-pistettä reunalla — uusi yhteys ylempiin tiereihin (sama tulilinja, eri väri ei enää, amber näyttää että "lämpö rakentuu")
+**9. Volumetric ground light** (Warm+)
+Iso `radial-gradient` joka projisoituu liekin **alle ja sivuille** (ei pelkkä halo). Mix-blend `screen`. Sykkii hitaasti `flame-ground-cast`-keyframessa (4–6s). Antaa illuusion että liekki valaisee pintaa jolla se palaa.
 
-**Legend:**
-- Säilytetään nykyiset sparkle-aksentit + lisätään 4 amber/gold-cinder-pistettä jotka nousevat hitaammin (status-ember-rise mutta 7s) — antaa "mythic flame"-tunnun
-- Conic-gradient sweep nopeutetaan hieman (animoitu `background-position` 12s)
+**10. Inhale/exhale breath** (uusi wrapper-animaatio)
+Liekkikomposiitti saa pitkän `flame-breathe`-skaalan: `scaleY(0.96) → scaleY(1.05) → scaleY(0.96)` 6s syklillä. Yhdistettynä nopeaan flickeriin → liekki näyttää HENGITTÄVÄLTÄ, ei vain värisevältä. Eri vaihe per instanssi (`animation-delay: calc(var(--flame-breath-offset) * 1s)`) ettei kaikki sykähdä yhdessä.
 
-### 3. `src/components/StatusHeader.tsx` — header tulee elävämmäksi
+**11. True heat haze** (Blazing+, vain size ≥ 56)
+Ohut SVG-overlay liekin **TAUSTALLE** (`z-index: -1`, `mix-blend-mode: screen`) joka käyttää `feDisplacementMap`-filtteriä → tausta vääristyy oikeasti. Käytetään olemassa olevaa `turbSlow`-filtteriä, mutta levitetään 1.6× liekin koon yli.
 
-- Apex/Elite-käyttäjien header saa **alaosaan ohuen amber-ember-rivin** (nykyinen `flame-rim-pulse` säilyy + uusi 2 kpl pieniä kipinöitä jotka nousevat 20–30px korkeuteen ja fadetuvat)
-- Apex-pillin `Zap`-ikoni → `status-flame-flicker`
-- Elite-pillin `Crown` → kevyt `status-flame-flicker`
-- Tier-progress-palkki (high tier+) saa hennon amber-glow:n liukuessaan
+**12. Living ember field** (Diamond+)
+Korvataan nykyinen statinen `crown` reaktiivisella ember-kentällä:
+- 6–12 hiukkasta (size-mukaan)
+- Jokaisella oma noise-pohjainen polku (`flame-ember-float` keyframe joka käyttää `--wind-x` ja `--pointer-wind-x` CSS-vareja translateX:ssä)
+- Fade-in pohjasta, fade-out korkeuteen `size * 1.8`
+- Sammuvat embers-asteittaiseen punaisesta mustaan (Inferno: → cyan)
 
-### 4. `src/components/StatusAvatar.tsx` — avatar polttaa
+### 3. Pointer-reaktio
 
-- Apex: nykyiseen `apex-aura-large` -box-shadowiin lisätään **2 kpl ember-pistettä** rinkulan ympärille (kiertävät hitaasti — käytetään yksinkertaista CSS-rotationia containerin sisällä, ei JS:ää)
-- Apex `Flame`-badge-ikoni → `status-flame-flicker`
-- Elite: tier-ringin sisäreuna saa hennon `status-amber-ring-breathe` (nykyinen statinen `bg-gradient-to-tr from-gold...` jää, vain ring-glow sykkii)
-- High Performer: avatar saa pienen **amber-undertone-glow:n** (`box-shadow: 0 4px 12px hsl(42 78% 54% / 0.18)`) — ensimmäinen vihje tulesta
+`RealisticFlame` saa uuden propin `interactive?: boolean` (default `true` size ≥ 64). Kun pointer on 80px sisällä:
+- `windTransform` lisää `calc(var(--pointer-wind-x, 0) * 6deg)` rotateen
+- Liekki taipuu osoittimen suuntaan, **kuin tuulisuoja olisi siirretty**
 
-### 5. `src/components/StatusBadge.tsx` — pillit hehkuvat
+Toteutus: pieni `useEffect` joka kuuntelee `mousemove` containerin BoundingRectiin nähden ja kirjoittaa lokaalin CSS-varin elementtiin (ei root). Throttle 60fps. Cleanup unmountissa.
 
-- Apex/Legend `aura blur-md animate-pulse` → vaihdetaan smoother sykintään `status-amber-ring-breathe`
-- Apex `Flame`-ikoni → `status-flame-flicker`
-- Elite `Crown` → henno `status-flame-flicker` (vain `lg`-koossa, sm/md säilyy staattisena suorituskyvyn vuoksi listoissa)
+### 4. Milestone shockwave (Apex/Legend/Inferno)
 
-### 6. `src/components/CheckinTierHeader.tsx` — check-in tulee polttavaksi top-tiereillä
+Lisätään `triggerFlameShockwave(element)` apufunktio joka injektoi yhden kerran toistuvan `<span>` shockwave-ringin:
+- `scale: 0 → 4`, `opacity: 0.7 → 0` 800ms
+- Käytetään tier-värissä (gold / amber / plasma)
+- API: `RealisticFlame` exposetaa `ref`-imperative handlen `shockwave()` jota kutsutaan esim. tier-up-juhlinnassa
 
-- Tier rank ≥ 5 (Apex/Legend): pohjagradient saa **amber-cinder-rain**-overlayn (3 kpl ember-pisteitä jotka nousevat oikeasta laidasta vasemmalle)
-- XP-chipin gold → flame: rank ≥ 5 chipin sisälle pieni `status-flame-flicker`-animoitu kipinä
-- Streak-flame (kun `streakIntensity === "critical" || "legendary"`) → `status-flame-flicker`
-- Progress bar shimmer: nopeutetaan rank ≥ 5 -tasoilla (`shimmer-slide` 1.4s entisen 2.2s sijaan)
+Tämä on vain valmius — ei kytketä mihinkään tässä iteraatiossa, jätetään hookki tuleville celebrationeille.
 
-### 7. `src/components/TierLadder.tsx` — ladderin Apex/Legend-rivit elävät
+### 5. `src/index.css` — uudet keyframet
 
-- Apex-rivi (rank 5): lisätään 2 kpl pieniä amber-kipinöitä rivin oikeaan reunaan (`status-ember-rise`)
-- Legend-rivi (rank 6): nykyinen sparkle + 1 kpl amber-cinder
-- "Current Tier"-badge (joka on aina gold) → `status-amber-ring-breathe` reuna
-- Apex-locked "Unlock"-pilli säilyttää nykyisen — se on jo riittävän aggressiivinen
+```css
+@keyframes flame-breathe {
+  0%, 100% { transform: scaleY(0.96) scaleX(1.02); }
+  50%      { transform: scaleY(1.05) scaleX(0.97); }
+}
 
-## Suorituskyky & saavutettavuus
+@keyframes flame-ground-cast {
+  0%, 100% { opacity: 0.55; transform: translateX(-50%) scaleX(1); }
+  50%      { opacity: 0.78; transform: translateX(-50%) scaleX(1.12); }
+}
 
-- **Kaikki uudet animaatiot**: vain `transform`/`opacity`, ei `box-shadow` tai `filter` rAF-tiheydellä
-- **`prefers-reduced-motion`**: kaikki kipinät ja sykinnät poistetaan staattisiksi (säilyy gradientit + statiset glowt)
-- **Kipinöiden DOM-kustannus**: max 6 elementtiä per nameplate (Apex), 4 per Legend, 3 per check-in-header, 2 per status-header. Yhteensä < 20 spania per sivu.
-- **`pointer-events: none`** kaikissa dekoratiivisissa elementeissä
-- **`will-change: transform, opacity`** vain aktiivisesti animoituvissa
+@keyframes flame-ember-float {
+  0%   { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translate(calc(var(--wind-x, 0) * 18px + var(--pointer-wind-x, 0) * 8px), calc(var(--ember-rise, -60px))) scale(0.2); opacity: 0; }
+}
+
+@keyframes flame-shockwave {
+  0%   { transform: translate(-50%, -50%) scale(0.2); opacity: 0.7; }
+  100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+}
+```
+
+Kaikki uudet animaatiot `prefers-reduced-motion`-guardeilla → poistuvat → liekki säilyy mutta ei animoidu uusilla kerroksilla.
+
+## Suorituskykyrajat
+
+- **Pointer wind** vain `interactive && size ≥ 64` → ei kuormita feed-listoja jossa flame size 16–28
+- **Heat haze SVG** vain `size ≥ 56` (sama logiikka kuin nykyiset Inferno-kerrokset)
+- **Ember field** korvaa crown'in → ei lisää DOM-noodien määrää (max 12 vs nykyiset 6)
+- **Breath-animaatio** GPU-only `transform` → ilmainen
+- **Ground cast** yksi `<span>` lisää per liekki, opacity+transform
+- Kokonaislisäys: ~6 DOM-noodia per iso liekki, ei FPS-vaikutusta (testataan TribeFireHero + StreakDisplay + SplashScreen)
 
 ## Mitä EI muuteta
 
-- Tier-värit, percentile-tekstit, tier-logiikka — säilyy samana
-- Recruit/Operator/Performer säilyvät rauhallisina (kontrasti top-tiereihin = status feel)
-- DB / RPC / auth — ei muutoksia
-- Nykyiset apex-aura-large, flame-rim-pulse, breathing-glow, shimmer-slide — säilyvät, uudet täydentävät niitä
+- `RealisticFlame` API säilyy taaksepäin yhteensopivana — `tier`, `accent`, `size`, `className` toimii kuten ennen
+- Pienet liekit (`size < 56`) saavat **vain** breathing-paranuksen ja ground cast'in — eivät pointer-windiä, heat-hazea tai ember-fieldia
+- Olemassa olevat `flame-mid-flicker`, `flame-tongue-rise`, `flame-spark-arc`, `flame-aurora-hue`, `flame-plasma-hue` säilyvät täysin
+- `WindProvider` säilyy — pointer-wind on additio, ei korvaaja
+- Tribe collective flame, splash screen, streak display, leaderboard inline — saavat kaikki upgraden automaattisesti ilman call-site-muutoksia
 
 ## Lopputulos
 
-Kun Apex- tai Legend-käyttäjä avaa profiilin, **statuspaneeli polttaa**: kipinöitä nousee, reunat sykkivät amberiä, flame-ikoni lepattaa. Kun Elite katsoo headeria, kruunu hengittää lämpöä. Kun High Performer näkee avatarin, ensimmäinen vihje tulesta lämmittää alapuolelta — "olet matkalla". Status muuttuu staattisesta merkistä **elävän tulen ilmentymäksi** — premium tavalla, ei räjähdyksenä.
+Kun käyttäjä avaa profiilin, liekki **hengittää näkyvästi**. Kun hän liikuttaa sormea sen lähellä iPhonella, liekki **taipuu sormen perään** kuin oikea tuli. Maan päällä näkyy **valaistu rinki** liekin alla. Diamond+-tiereillä **kipinät leijuvat** osoittimen ja tuulen mukana, ei satunnaisesti. Inferno saa **vääristyneen taustan** liekin ympärille. Liekki ei ole enää animaatio — se on **ilmiö**.
 

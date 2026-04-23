@@ -90,8 +90,10 @@ export const fetchUserTotalTribeHeat = async (userId: string): Promise<number> =
     .select("user_id")
     .in("tribe_id", tribeIds)
     .eq("status", "active");
-  const memberUserIds = Array.from(
-    new Set(((allMembers as any) ?? []).map((r: any) => r.user_id as string)),
+  const memberUserIds: string[] = Array.from(
+    new Set(
+      (((allMembers as any) ?? []) as { user_id: string }[]).map((r) => r.user_id),
+    ),
   );
   if (memberUserIds.length === 0) return 0;
 

@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils";
 import TribeSearchBar from "@/components/TribeSearchBar";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import RealisticFlame from "@/components/home/RealisticFlame";
-import { fetchTribeCollectiveStreaks, collectiveStreakTier, collectiveAccent } from "@/lib/tribe-streak";
+import TribeFireHero from "@/components/TribeFireHero";
+import { fetchTribeCollectiveStreaks, collectiveStreakTier, collectiveTierName, collectiveAccent } from "@/lib/tribe-streak";
 
 interface Tribe {
   id: string;
@@ -235,27 +236,9 @@ const Tribes = () => {
 
   return (
     <div className="min-h-full pb-8 px-4 pt-4 safe-top">
-      {/* Cinematic hero banner */}
-      <div className="relative rounded-3xl mb-6 p-[2px] apex-conic-border overflow-hidden">
-        <div className="relative rounded-3xl p-6 overflow-hidden bg-gradient-to-br from-[hsl(18_95%_58%)]/15 via-card/85 to-gold/10 apex-aura-large apex-spotlight apex-embers apex-shimmer-sweep apex-portal-glow">
-          <div className="relative z-10 text-center">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/40 backdrop-blur-sm border border-[hsl(18_95%_58%)]/60 mb-3 shadow-[0_0_18px_hsl(18_95%_58%/0.5)]">
-              <StreakFlameInline streak={120} showCount={false} size={14} className="leading-none" />
-              <span className="text-[10px] font-black tracking-widest uppercase bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
-                Apex Tribes
-              </span>
-            </div>
-            <h1 className="font-display text-3xl font-black tracking-tight mb-1.5 leading-none">
-              <span className="bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] bg-clip-text text-transparent drop-shadow-[0_0_18px_hsl(18_95%_58%/0.4)]">
-                Communities
-              </span>
-            </h1>
-            <p className="text-xs text-foreground/70 max-w-xs mx-auto leading-relaxed">
-              Private circles led by Apex (top 1%). <span className="text-[hsl(18_95%_58%)] font-semibold">Every member's streak feeds the tribe's flame.</span>
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* THE HERO — collective fire is the centerpiece */}
+      <TribeFireHero tribeCount={joinedIds.size} />
+      <div id="tribes-browse-anchor" />
 
       {/* Pending invites */}
       {invites.length > 0 && (

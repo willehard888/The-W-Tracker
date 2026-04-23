@@ -384,7 +384,7 @@ const Referrals = () => {
                       <p
                         className={cn(
                           "font-display font-black text-sm tracking-tight",
-                          isApex && "text-[hsl(28_100%_72%)]",
+                          isApex && "text-[hsl(28_100%_72%)] text-amber-950",
                           isLegend && "text-[hsl(45_95%_72%)]",
                           !r.premium && r.unlocked && "text-gold",
                           !r.premium && !r.unlocked && "text-foreground"

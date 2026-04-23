@@ -384,6 +384,26 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
       }}
       aria-hidden
     >
+      {/* -1. Cast shadow — dark elliptical shadow projected BEHIND the flame.
+          Sits below the ground-cast light, doesn't use screen blend so it
+          actually darkens what's behind it. Subtly pulses with breathing. */}
+      <span
+        aria-hidden
+        className="absolute left-1/2 pointer-events-none rounded-[50%]"
+        style={{
+          width: size * 2.0,
+          height: size * 0.42,
+          bottom: -size * 0.14,
+          background: `radial-gradient(ellipse at 50% 50%, hsl(0 0% 0% / 0.42) 0%, hsl(0 0% 0% / 0.22) 45%, transparent 78%)`,
+          filter: `blur(${Math.max(6, size * 0.12)}px)`,
+          transform: "translateX(-50%)",
+          transformOrigin: "50% 50%",
+          animation: `flame-shadow-pulse ${(5.5 * speedMul).toFixed(2)}s ease-in-out infinite`,
+          animationDelay: `-${breathOffset}s`,
+          zIndex: -1,
+        }}
+      />
+
       {/* 0. Volumetric ground light — projects onto the surface BELOW the flame.
           Sits outside the breathing wrapper so it pulses on its own rhythm. */}
       {isWarm && (

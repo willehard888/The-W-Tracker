@@ -184,6 +184,26 @@ const StreakFlameInline = ({
         }}
         aria-hidden
       >
+        {/* Cast shadow — small dark elliptical shadow under the flame.
+            Renders for Warm+ (cold flames don't cast a meaningful shadow). */}
+        {isWarm && (
+          <span
+            aria-hidden
+            className="absolute left-1/2 rounded-[50%] pointer-events-none"
+            style={{
+              width: flameSize * 1.8,
+              height: flameSize * 0.32,
+              bottom: -flameSize * 0.08,
+              background: `radial-gradient(ellipse at 50% 50%, hsl(0 0% 0% / 0.32) 0%, hsl(0 0% 0% / 0.16) 45%, transparent 78%)`,
+              filter: `blur(${Math.max(3, flameSize * 0.1)}px)`,
+              transform: "translateX(-50%)",
+              transformOrigin: "50% 50%",
+              animation: `flame-shadow-pulse ${(speed * 4.2).toFixed(2)}s ease-in-out infinite`,
+              zIndex: -1,
+            }}
+          />
+        )}
+
         {/* Volumetric ground-cast — projects warm light below the flame (Blazing+). */}
         {isBlazing && (
           <span

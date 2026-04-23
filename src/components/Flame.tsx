@@ -193,6 +193,26 @@ const Flame = ({ status, size = 28, label, className }: FlameProps) => {
         </defs>
       </svg>
 
+      {/* Cast shadow — dark elliptical shadow projected BEHIND the flame.
+          Doesn't use screen blend → actually darkens what's behind it.
+          Always rendered (even dying flames cast a small shadow). */}
+      <span
+        aria-hidden
+        className="absolute left-1/2 rounded-[50%] pointer-events-none"
+        style={{
+          width: w * 2.0,
+          height: w * 0.4,
+          bottom: -size * 0.04,
+          background: `radial-gradient(ellipse at 50% 50%, hsl(0 0% 0% / ${(0.28 + s * 0.18).toFixed(2)}) 0%, hsl(0 0% 0% / 0.18) 45%, transparent 78%)`,
+          filter: `blur(${Math.max(5, size * 0.13)}px)`,
+          transform: "translateX(-50%)",
+          transformOrigin: "50% 50%",
+          animation: `flame-shadow-pulse ${(flickerSpeed * 4.4).toFixed(2)}s ease-in-out infinite`,
+          animationDelay: `${seed.bodyDelay}s`,
+          zIndex: -1,
+        }}
+      />
+
       {/* Volumetric ground-cast — projects warm light onto the surface BELOW
           the flame. Only when alive enough to actually radiate. */}
       {!isDying && !isWeak && (

@@ -1941,6 +1941,12 @@
   }
 }
 
+/* Cast shadow under the flame — subtly breathes with the body so the
+   shadow feels physically tied to the flame's mass, not painted-on. */
+@keyframes flame-shadow-pulse {
+  0%, 100% { opacity: 0.95; transform: translateX(-50%) scaleX(1) scaleY(1); }
+  50%      { opacity: 0.78; transform: translateX(-50%) scaleX(1.08) scaleY(0.92); }
+}
 
 
 /* Plasma hue cycle — fast cinematic shift through magenta → cyan → blue */

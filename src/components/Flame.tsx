@@ -233,6 +233,23 @@ const Flame = ({ status, size = 28, label, className }: FlameProps) => {
         />
       )}
 
+      {/* Radiant halo bloom — beauty layer that makes the flame radiant (not dying). */}
+      {!isDying && (
+        <span
+          aria-hidden
+          className="absolute left-1/2 bottom-0 pointer-events-none rounded-full"
+          style={{
+            width: w * 2.2,
+            height: h * 1.7,
+            background: `radial-gradient(ellipse at 50% 70%, ${palette.halo.replace(")", ` / ${(0.32 + s * 0.28).toFixed(2)})`)} 0%, ${palette.halo.replace(")", " / 0.12)")} 38%, transparent 72%)`,
+            mixBlendMode: "screen",
+            animation: `flame-halo-bloom ${(flickerSpeed * 3.6).toFixed(2)}s ease-in-out infinite`,
+            animationDelay: `${seed.bodyDelay}s`,
+            zIndex: -2,
+          }}
+        />
+      )}
+
       {/* Halo — soft heat glow (only when not dying) */}
       {!isDying && (
         <span

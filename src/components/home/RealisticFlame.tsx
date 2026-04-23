@@ -384,9 +384,28 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
       }}
       aria-hidden
     >
-      {/* -1. Cast shadow — dark elliptical shadow projected BEHIND the flame.
-          Sits below the ground-cast light, doesn't use screen blend so it
-          actually darkens what's behind it. Subtly pulses with breathing. */}
+      {/* -2. Radiant halo bloom — large pulsing glow that lives BEHIND the flame.
+          Screen-blended so it lights the surroundings without dimming them.
+          This is the new "beauty" layer: makes the flame feel actually radiant. */}
+      {isHot && (
+        <span
+          aria-hidden
+          className="absolute left-1/2 bottom-0 pointer-events-none rounded-full"
+          style={{
+            width: size * 2.6,
+            height: size * 2.2,
+            background: `radial-gradient(ellipse at 50% 70%, ${palette.backlight.replace(")", " / 0.55)")} 0%, ${palette.haze.replace(")", " / 0.22)")} 38%, transparent 72%)`,
+            mixBlendMode: "screen",
+            animation: `flame-halo-bloom ${(4.2 * speedMul).toFixed(2)}s ease-in-out infinite`,
+            animationDelay: `-${breathOffset}s`,
+            zIndex: -2,
+            willChange: "opacity, transform, filter",
+          }}
+        />
+      )}
+
+      {/* -1. Cast shadow — chiaroscuro: deepens when the flame is brightest,
+          giving the bloom contrast and dimensional anchoring. */}
       <span
         aria-hidden
         className="absolute left-1/2 pointer-events-none rounded-[50%]"
@@ -394,11 +413,11 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
           width: size * 2.0,
           height: size * 0.42,
           bottom: -size * 0.14,
-          background: `radial-gradient(ellipse at 50% 50%, hsl(0 0% 0% / 0.42) 0%, hsl(0 0% 0% / 0.22) 45%, transparent 78%)`,
+          background: `radial-gradient(ellipse at 50% 50%, hsl(0 0% 0% / 0.5) 0%, hsl(0 0% 0% / 0.26) 45%, transparent 78%)`,
           filter: `blur(${Math.max(6, size * 0.12)}px)`,
           transform: "translateX(-50%)",
           transformOrigin: "50% 50%",
-          animation: `flame-shadow-pulse ${(5.5 * speedMul).toFixed(2)}s ease-in-out infinite`,
+          animation: `flame-chiaroscuro ${(5.5 * speedMul).toFixed(2)}s ease-in-out infinite`,
           animationDelay: `-${breathOffset}s`,
           zIndex: -1,
         }}
@@ -413,7 +432,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
             width: size * 2.4,
             height: size * 0.55,
             bottom: -size * 0.18,
-            background: `radial-gradient(ellipse at 50% 50%, ${groundCastColor.replace(")", " / 0.55)")} 0%, ${groundCastColor.replace(")", " / 0.18)")} 45%, transparent 78%)`,
+            background: `radial-gradient(ellipse at 50% 50%, ${groundCastColor.replace(")", " / 0.65)")} 0%, ${groundCastColor.replace(")", " / 0.22)")} 45%, transparent 78%)`,
             filter: "blur(10px)",
             mixBlendMode: "screen",
             transformOrigin: "50% 50%",

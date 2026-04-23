@@ -802,9 +802,11 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
       <div
         className="absolute inset-0"
         style={{
+          // Slower, more meditative breath cycle — gives the whole flame a
+          // graceful inhale/exhale rhythm instead of a busy pulse.
           animation: hueAnim
-            ? `${hueAnim}, flame-breathe ${(6 * speedMul).toFixed(2)}s ease-in-out infinite`
-            : `flame-breathe ${(6 * speedMul).toFixed(2)}s ease-in-out infinite`,
+            ? `${hueAnim}, flame-breathe ${(7.4 * speedMul).toFixed(2)}s cubic-bezier(0.45, 0, 0.25, 1) infinite`
+            : `flame-breathe ${(7.4 * speedMul).toFixed(2)}s cubic-bezier(0.45, 0, 0.25, 1) infinite`,
           animationDelay: hueAnim ? `0s, -${breathOffset}s` : `-${breathOffset}s`,
           transformOrigin: "center bottom",
           willChange: "transform, filter",

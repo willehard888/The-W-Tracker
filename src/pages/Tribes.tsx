@@ -212,6 +212,37 @@ const Tribes = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, profile?.user_id]);
 
+  // Realtime fire reactor — every check-in by any member of any visible tribe
+  // bumps that tribe's row mini-flame and increments its collective streak.
+  const allMemberIds = useMemo(() => Array.from(userToTribes.keys()), [userToTribes]);
+  const listReactor = useTribeFireReactor(allMemberIds);
+  const lastListEventRef = useRef<string | null>(null);
+  useEffect(() => {
+    const latest = listReactor.events[listReactor.events.length - 1];
+    if (!latest || latest.id === lastListEventRef.current) return;
+    lastListEventRef.current = latest.id;
+    const tribeIds = userToTribes.get(latest.userId) ?? [];
+    if (tribeIds.length === 0) return;
+    setCollectiveStreaks((prev) => {
+      const next = new Map(prev);
+      tribeIds.forEach((tid) => next.set(tid, (next.get(tid) ?? 0) + latest.delta));
+      return next;
+    });
+    setRowPulse((prev) => {
+      const next = new Map(prev);
+      tribeIds.forEach((tid) => next.set(tid, (next.get(tid) ?? 0) + 1));
+      return next;
+    });
+  }, [listReactor.events, userToTribes]);
+
+  // Total ambient heat across all the user's joined tribes — drives the page's ember field
+  const ambientHeat = useMemo(() => {
+    let sum = 0;
+    joinedIds.forEach((id) => { sum += collectiveStreaks.get(id) ?? 0; });
+    return sum;
+  }, [joinedIds, collectiveStreaks]);
+  const ambientAccent = collectiveAccent(ambientHeat);
+
   const handleJoin = async (id: string) => {
     const { data, error } = await supabase.rpc("join_tribe" as any, {
       p_tribe_id: id,

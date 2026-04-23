@@ -552,7 +552,21 @@ const Tribes = () => {
                   }}
                 >
                   {cTier >= 0 ? (
-                    <RealisticFlame tier={cTier} accent={cAccent} size={Math.min(56, 36 + cTier * 6)} />
+                    <div
+                      key={rowPulse.get(t.id) ?? 0}
+                      className="w-full h-full flex items-center justify-center"
+                      style={
+                        (rowPulse.get(t.id) ?? 0) > 0
+                          ? {
+                              animation: "flame-intake 1100ms cubic-bezier(.2,.8,.2,1)",
+                              willChange: "transform, filter",
+                              transformOrigin: "50% 92%",
+                            }
+                          : undefined
+                      }
+                    >
+                      <RealisticFlame tier={cTier} accent={cAccent} size={Math.min(56, 36 + cTier * 6)} />
+                    </div>
                   ) : (
                     <span className="text-2xl opacity-50 leading-none">🕯️</span>
                   )}

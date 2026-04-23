@@ -2691,20 +2691,90 @@
   z-index: 0;
 }
 
-/* === Premium glass-3d — frosted, refractive surface with depth === */
+/* === Premium glass-3d — frosted, refractive surface with depth.
+       Pure presentation utility for premium cards/panels. No animation.
+       Layered backgrounds + pseudo-elements fake a polished glass slab:
+        - background       → refractive multi-stop tint (top sheen, body, base shadow)
+        - box-shadow       → outer ambient + contact + inner bevels
+        - ::before         → top sheen highlight (the "polished" glint)
+        - ::after          → bottom edge-light + side rim hue shift
+       Use as: <div class="rounded-2xl glass-3d">...</div>                === */
 .glass-3d {
   position: relative;
+  isolation: isolate;
   background:
-    linear-gradient(180deg, hsl(0 0% 100% / 0.04), hsl(0 0% 100% / 0.01) 40%, transparent),
-    linear-gradient(135deg, hsl(258 16% 9% / 0.85), hsl(258 16% 5% / 0.92));
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+    /* Top sheen — bright polished glass highlight */
+    linear-gradient(180deg,
+      hsl(0 0% 100% / 0.07) 0%,
+      hsl(0 0% 100% / 0.02) 18%,
+      transparent 38%),
+    /* Side refraction tints — cool blue left, warm gold right (subtle iridescence) */
+    linear-gradient(90deg,
+      hsl(210 60% 40% / 0.06) 0%,
+      transparent 22%,
+      transparent 78%,
+      hsl(42 80% 55% / 0.06) 100%),
+    /* Body — deep cinematic glass */
+    linear-gradient(135deg,
+      hsl(258 16% 10% / 0.88) 0%,
+      hsl(258 16% 6% / 0.94) 100%);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
   box-shadow:
-    0 1px 0 hsl(0 0% 0% / 0.6),
-    0 12px 28px -6px hsl(0 0% 0% / 0.55),
-    0 32px 64px -20px hsl(0 0% 0% / 0.5),
-    inset 0 1px 0 hsl(0 0% 100% / 0.14),
-    inset 0 -1px 0 hsl(0 0% 0% / 0.38);
+    /* Hairline contact shadow */
+    0 1px 0 hsl(0 0% 0% / 0.65),
+    /* Soft mid lift */
+    0 8px 18px -4px hsl(0 0% 0% / 0.5),
+    /* Deep ambient puddle */
+    0 32px 64px -20px hsl(0 0% 0% / 0.55),
+    /* Inner top bevel — polished edge */
+    inset 0 1px 0 hsl(0 0% 100% / 0.16),
+    /* Inner side bevels — refractive facets */
+    inset 1px 0 0 hsl(0 0% 100% / 0.04),
+    inset -1px 0 0 hsl(0 0% 100% / 0.04),
+    /* Inner bottom — disc thickness shadow */
+    inset 0 -1px 0 hsl(0 0% 0% / 0.42);
+}
+.glass-3d::before {
+  /* Top sheen — the bright polished glint that sells "glass" */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    hsl(0 0% 100% / 0.08) 0%,
+    hsl(0 0% 100% / 0.025) 8%,
+    transparent 22%);
+  mix-blend-mode: screen;
+  z-index: 0;
+}
+.glass-3d::after {
+  /* Bottom edge light + subtle hue shift along the rim — refractive iridescence */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    /* Bottom warm rim light */
+    linear-gradient(0deg,
+      hsl(42 90% 55% / 0.08) 0%,
+      hsl(42 90% 55% / 0.02) 6%,
+      transparent 14%),
+    /* Diagonal cool→warm hue shift across the lower-right corner */
+    radial-gradient(ellipse at 100% 100%,
+      hsl(42 80% 55% / 0.05) 0%,
+      transparent 50%),
+    radial-gradient(ellipse at 0% 100%,
+      hsl(210 70% 50% / 0.04) 0%,
+      transparent 50%);
+  mix-blend-mode: screen;
+  z-index: 0;
+}
+.glass-3d > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* === Flame "lava bowl" — premium glass source plate the flame rises FROM.

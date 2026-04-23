@@ -46,6 +46,7 @@ interface VariantSpec {
 
 const VARIANTS: VariantSpec[] = [
   // Hero / next-level
+  { id: "aurum", label: "Aurum", group: "Hero", description: "Gold bar that ignites into lava on hover. The crown jewel.", icon: <Crown /> },
   { id: "magma", label: "Magma", group: "Hero", description: "Lava-cracked rock. The 'go nuclear' CTA.", icon: <Flame /> },
   { id: "bullion", label: "Bullion", group: "Hero", description: "999.9 polished gold bar. Premium identity.", icon: <Crown /> },
   { id: "coal", label: "Coal", group: "Hero", description: "Glowing coal — heat burns through anthracite.", icon: <Zap /> },

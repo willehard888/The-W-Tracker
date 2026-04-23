@@ -1981,16 +1981,22 @@
 
 /* Heart bloom — pulsing white-hot center inside the flame core. Beats like
    a slow-mo heartbeat: tight contraction, slow expansion. */
+/* Heart bloom — buttery sine-style swell with a long, satisfying linger
+   at the peak before easing back. Uses three keyframes for a smoother
+   asymmetric curve (slow rise, hold, gentle release). */
 @keyframes flame-heart-bloom {
-  0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(0.85); }
-  45%      { opacity: 1;   transform: translateX(-50%) scale(1.12); }
-  60%      { opacity: 0.85; transform: translateX(-50%) scale(1.04); }
+  0%, 100% { opacity: 0.55; transform: translateX(-50%) scale(0.82); filter: blur(1.5px); }
+  35%      { opacity: 0.92; transform: translateX(-50%) scale(1.06); filter: blur(0.8px); }
+  52%      { opacity: 1;    transform: translateX(-50%) scale(1.14); filter: blur(0.4px); }
+  68%      { opacity: 0.88; transform: translateX(-50%) scale(1.02); filter: blur(0.9px); }
 }
 
-/* God-ray pulse — vertical light beam shooting up from the core. */
+/* God-ray pulse — slow vertical breath with a held bloom at peak. */
 @keyframes flame-godray-pulse {
-  0%, 100% { opacity: 0.45; transform: translateX(-50%) scaleY(0.92) scaleX(0.9); }
-  50%      { opacity: 0.78; transform: translateX(-50%) scaleY(1.08) scaleX(1.15); }
+  0%, 100% { opacity: 0.42; transform: translateX(-50%) scaleY(0.88) scaleX(0.88); }
+  45%      { opacity: 0.7;  transform: translateX(-50%) scaleY(1.04) scaleX(1.08); }
+  55%      { opacity: 0.82; transform: translateX(-50%) scaleY(1.12) scaleX(1.18); }
+  70%      { opacity: 0.65; transform: translateX(-50%) scaleY(1.0)  scaleX(1.05); }
 }
 
 

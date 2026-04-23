@@ -126,7 +126,7 @@ const PaywallTierCard = ({
             "font-display text-xl font-black tracking-tight mb-1",
             isApex
               ? "bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] bg-clip-text text-transparent"
-              : "text-gold",
+              : "bg-gradient-to-r from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold-light))] bg-clip-text text-transparent drop-shadow-[0_0_12px_hsl(var(--gold)/0.5)]",
           )}
         >
           {title}

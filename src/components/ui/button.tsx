@@ -559,11 +559,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       if (variant === "bullion") {
         return { ["--bullion-bg" as string]: `url(${goldTexture})` };
       }
-      if (variant === "aurum") {
-        return { ["--lava-bg" as string]: `url(${lavaTexture})` };
-      }
       return undefined;
     }, [variant]);
+
+    const isAurum = variant === "aurum";
 
     const mergedStyle = textureStyle
       ? { ...textureStyle, ...((props as React.HTMLAttributes<HTMLElement>).style ?? {}) }

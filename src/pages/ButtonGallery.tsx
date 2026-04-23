@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 type VariantId =
   | "default"
   | "gold"
+  | "aurum"
   | "ember"
   | "coal"
   | "magma"

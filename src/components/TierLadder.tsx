@@ -261,77 +261,171 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
         </div>
       </div>
 
-      {/* ─────── Detail dialog ─────── */}
+      {/* ─────── Detail dialog — premium tier-themed ─────── */}
       <Dialog open={!!openTier} onOpenChange={(o) => !o && setOpenTier(null)}>
-        <DialogContent className="max-w-sm bg-background border-border/60">
+        <DialogContent className="max-w-sm p-0 overflow-hidden bg-transparent border-0 shadow-none">
           {openTier && (() => {
             const cfg = TIER_CONFIG[openTier];
             const unlocked = cfg.rank <= currentRank;
+            const isLegend = openTier === "legend";
+            const isApex = openTier === "apex";
+            const rowStyle = TIER_ROW_STYLE[cfg.rank];
+
+            // Tier-specific hero glow (matches the row accent)
+            const heroGlow = isLegend
+              ? "radial-gradient(ellipse at top, hsl(280 70% 55% / 0.45), transparent 65%)"
+              : isApex
+              ? "radial-gradient(ellipse at top, hsl(18 95% 58% / 0.45), hsl(42 78% 54% / 0.25) 40%, transparent 70%)"
+              : cfg.rank === 4
+              ? "radial-gradient(ellipse at top, hsl(42 78% 54% / 0.40), transparent 70%)"
+              : cfg.rank === 3
+              ? "radial-gradient(ellipse at top, hsl(270 60% 58% / 0.35), transparent 70%)"
+              : cfg.rank === 2
+              ? "radial-gradient(ellipse at top, hsl(210 90% 56% / 0.32), transparent 70%)"
+              : cfg.rank === 1
+              ? "radial-gradient(ellipse at top, hsl(var(--teal) / 0.30), transparent 70%)"
+              : "radial-gradient(ellipse at top, hsl(var(--muted) / 0.25), transparent 70%)";
+
             return (
-              <>
-                <DialogHeader>
-                  <div className="flex items-center gap-3 mb-1">
-                    <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center font-black", cfg.bgClass, cfg.textClass)}>
+              <div
+                className={cn(
+                  "relative rounded-2xl overflow-hidden border bg-card",
+                  rowStyle.base,
+                )}
+              >
+                {/* Hero glow */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 -top-12 h-48 opacity-90"
+                  style={{ background: heroGlow }}
+                />
+                {/* Top hairline */}
+                <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-foreground/25 to-transparent" />
+
+                <DialogHeader className="relative px-5 pt-6 pb-4 space-y-0">
+                  <div className="flex items-center gap-3.5">
+                    <div className={cn(
+                      "h-14 w-14 rounded-2xl flex items-center justify-center font-display font-black text-base shadow-lg",
+                      rowStyle.accent,
+                    )}>
                       {cfg.shortLabel}
                     </div>
-                    <div>
-                      <DialogTitle className="font-display font-black text-xl">{cfg.label}</DialogTitle>
-                      <DialogDescription className="text-xs">{cfg.percentile}</DialogDescription>
+                    <div className="flex-1 min-w-0">
+                      <DialogTitle className={cn("font-display font-black text-2xl leading-none", cfg.textClass)}>
+                        {cfg.label}
+                      </DialogTitle>
+                      <DialogDescription className="text-[11px] uppercase tracking-[0.18em] font-bold mt-1.5 text-muted-foreground">
+                        {cfg.percentile} · Rank {cfg.rank}
+                      </DialogDescription>
                     </div>
+                    {unlocked ? (
+                      <span className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-[9px] font-black uppercase tracking-wider">
+                        <Check size={10} strokeWidth={3.5} /> Held
+                      </span>
+                    ) : (
+                      <span className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-background/40 border border-border text-muted-foreground text-[9px] font-black uppercase tracking-wider">
+                        <Lock size={9} strokeWidth={3} /> Locked
+                      </span>
+                    )}
                   </div>
+
+                  {/* Tier message — italic motivational line */}
+                  <p className="relative text-[12px] text-foreground/75 italic font-medium mt-3 leading-snug">
+                    "{cfg.message}"
+                  </p>
                 </DialogHeader>
 
-                <div className="space-y-3">
+                <div className="relative px-5 pb-5 space-y-4">
+                  {/* Requirements — bullet cards */}
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest font-black text-muted-foreground mb-1.5">
-                      Requirements
+                    <p className="text-[10px] uppercase tracking-[0.22em] font-black text-muted-foreground mb-2 flex items-center gap-1.5">
+                      <TrendingUp size={11} /> Requirements
                     </p>
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       {cfg.requirements.percentile > 0 && (
-                        <p className="text-xs">• Top {(100 - cfg.requirements.percentile).toFixed(cfg.requirements.percentile >= 99 ? 1 : 0)}% in rank score</p>
+                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-background/40 border border-border/50">
+                          <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", unlocked ? "bg-emerald-400" : "bg-foreground/40")} />
+                          <span className="text-[12px] font-semibold flex-1">
+                            Top <span className={cn("font-black tabular-nums", cfg.textClass)}>{(100 - cfg.requirements.percentile).toFixed(cfg.requirements.percentile >= 99 ? 1 : 0)}%</span> in rank score
+                          </span>
+                        </div>
                       )}
                       {cfg.requirements.activeDays > 0 && (
-                        <p className="text-xs">• {cfg.requirements.activeDays} active days in last 30</p>
+                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-background/40 border border-border/50">
+                          <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", unlocked ? "bg-emerald-400" : "bg-foreground/40")} />
+                          <span className="text-[12px] font-semibold flex-1">
+                            <span className={cn("font-black tabular-nums", cfg.textClass)}>{cfg.requirements.activeDays}</span> active days in last 30
+                          </span>
+                        </div>
                       )}
                       {cfg.requirements.streak > 0 && (
-                        <p className="text-xs">• {cfg.requirements.streak}-day current streak</p>
+                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-background/40 border border-border/50">
+                          <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", unlocked ? "bg-emerald-400" : "bg-foreground/40")} />
+                          <span className="text-[12px] font-semibold flex-1">
+                            <span className={cn("font-black tabular-nums", cfg.textClass)}>{cfg.requirements.streak}-day</span> current streak
+                          </span>
+                        </div>
                       )}
                       {cfg.requirements.percentile === 0 && (
-                        <p className="text-xs text-muted-foreground">Default starting tier</p>
-                      )}
-                      {openTier === 'legend' && (
-                        <p className="text-xs flex items-center gap-1.5 mt-1.5 pt-1.5 border-t border-border/40">
-                          <Crown size={11} className="text-gold shrink-0" />
-                          <span className="font-black text-gold uppercase tracking-wider text-[10px]">Founders Circle</span>
-                          <span className="text-muted-foreground text-[10px]">— invite only</span>
-                        </p>
+                        <div className="px-3 py-2 rounded-lg bg-background/40 border border-border/50 text-[12px] text-muted-foreground font-medium">
+                          Default starting tier
+                        </div>
                       )}
                     </div>
+
+                    {isLegend && (
+                      <div className="mt-2.5 flex items-center gap-2 px-3 py-2 rounded-lg border border-gold/45 bg-gradient-to-r from-[hsl(280_70%_55%)]/15 via-gold/10 to-[hsl(350_80%_55%)]/15 shadow-[0_0_18px_hsl(var(--gold)/0.20)]">
+                        <Crown size={13} className="text-gold shrink-0" strokeWidth={2.6} />
+                        <span className="font-black text-gold uppercase tracking-[0.16em] text-[10px]">Founders Circle</span>
+                        <span className="text-foreground/60 text-[10px] font-semibold ml-auto">— invite only</span>
+                      </div>
+                    )}
                   </div>
 
+                  {/* Unlocks — grid of perk chips */}
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest font-black text-gold mb-1.5">
-                      Unlocks
+                    <p className="text-[10px] uppercase tracking-[0.22em] font-black text-gold mb-2 flex items-center gap-1.5">
+                      <Sparkles size={11} className="text-gold" /> Unlocks
                     </p>
-                    <div className="space-y-1">
+                    <div className="grid grid-cols-1 gap-1.5">
                       {cfg.unlocks.map((u) => (
-                        <p key={u} className="text-xs flex items-center gap-1.5">
-                          <Sparkles size={10} className="text-gold shrink-0" /> {u}
-                        </p>
+                        <div
+                          key={u}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-gold/30 bg-gradient-to-r from-gold/8 to-transparent"
+                        >
+                          <div className="h-6 w-6 rounded-md bg-gold/15 border border-gold/40 flex items-center justify-center shrink-0">
+                            <Sparkles size={11} className="text-gold" strokeWidth={2.6} />
+                          </div>
+                          <span className="text-[12px] font-semibold text-foreground/90">{u}</span>
+                        </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className={cn("rounded-lg p-2.5 text-center text-[11px] font-bold", unlocked ? "bg-emerald-500/10 text-emerald-400" : "bg-muted/20 text-muted-foreground")}>
-                    {unlocked ? "✓ Achieved" : openTier === 'legend' ? "🔱 Earned only · Founders Circle" : "🔒 Not yet earned"}
-                  </div>
+                  {/* Status footer */}
+                  {unlocked ? (
+                    <div className="rounded-lg p-3 text-center text-[12px] font-black bg-emerald-500/12 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider flex items-center justify-center gap-2">
+                      <Check size={13} strokeWidth={3.5} /> Achieved
+                    </div>
+                  ) : isLegend ? (
+                    <div className="rounded-lg p-3 text-center text-[12px] font-black bg-gradient-to-r from-[hsl(280_70%_55%)]/12 via-gold/12 to-[hsl(350_80%_55%)]/12 border border-gold/40 text-gold uppercase tracking-[0.18em]">
+                      🔱 Earned only
+                    </div>
+                  ) : (
+                    <div className="rounded-lg p-3 text-center text-[11px] font-bold bg-muted/20 text-muted-foreground border border-border/50 uppercase tracking-wider flex items-center justify-center gap-2">
+                      <Lock size={11} strokeWidth={3} /> Not yet earned
+                    </div>
+                  )}
 
                   {/* Apex paywall — only when not yet Apex AND not subscriber */}
-                  {openTier === 'apex' && !unlocked && !isApexSubscriber && (
+                  {isApex && !unlocked && !isApexSubscriber && (
                     <TierUnlockPaywallCard className="mt-1" />
                   )}
                 </div>
-              </>
+
+                {/* Bottom hairline */}
+                <div className="pointer-events-none absolute inset-x-8 bottom-0 h-px bg-gradient-to-r from-transparent via-foreground/15 to-transparent" />
+              </div>
             );
           })()}
         </DialogContent>

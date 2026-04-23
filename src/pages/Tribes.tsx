@@ -186,6 +186,7 @@ const Tribes = () => {
       setOwnedIds(new Set());
       setJoinedIds(new Set());
       setMemberPreviews({});
+      setUserToTribes(new Map());
     }
 
     // Collective streak per tribe — drives the inline flame on each row

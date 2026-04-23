@@ -997,7 +997,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
               transform: "translateX(-50%)",
               transformOrigin: "center bottom",
               mixBlendMode: "screen",
-              animation: `flame-godray-pulse ${(2.4 * speedMul).toFixed(2)}s ease-in-out infinite`,
+              animation: `flame-godray-pulse ${(3.2 * speedMul).toFixed(2)}s cubic-bezier(0.4, 0, 0.3, 1) infinite`,
               animationDelay: `-${breathOffset}s`,
               opacity: 0.7,
             }}

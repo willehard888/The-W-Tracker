@@ -9,7 +9,6 @@ import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock } from "luci
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import AmbientParticles from "@/components/AmbientParticles";
 import { useEffect } from "react";
 
 const PublicProfile = () => {
@@ -99,8 +98,6 @@ const PublicProfile = () => {
 
   return (
     <div className="min-h-[100dvh] relative">
-      <AmbientParticles />
-
       {/* Back button */}
       <button
         onClick={() => navigate(-1)}

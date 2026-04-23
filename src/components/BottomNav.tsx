@@ -60,9 +60,9 @@ const BottomNav = () => {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "linear-gradient(180deg, hsl(var(--background) / 0.55) 0%, hsl(var(--background) / 0.92) 60%, hsl(var(--background)) 100%)",
-          backdropFilter: "blur(18px) saturate(1.2)",
-          WebkitBackdropFilter: "blur(18px) saturate(1.2)",
+            "linear-gradient(180deg, hsl(var(--background) / 0.88) 0%, hsl(var(--card) / 0.96) 56%, hsl(var(--background)) 100%)",
+          boxShadow:
+            "0 -10px 28px hsl(0 0% 0% / 0.22), inset 0 1px 0 hsl(0 0% 100% / 0.05)",
         }}
       />
       <div
@@ -120,11 +120,7 @@ const BottomNav = () => {
                   size={20}
                   strokeWidth={active ? 2.5 : 1.75}
                   className="relative z-10"
-                  style={
-                    active
-                      ? { filter: `drop-shadow(0 0 3px ${colorVar.replace(")", " / 0.7)")})` }
-                      : undefined
-                  }
+                  style={active ? { opacity: 1 } : undefined}
                 />
               </span>
 
@@ -144,7 +140,7 @@ const BottomNav = () => {
                   className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-[2.5px] w-7 rounded-full overflow-hidden"
                   style={{
                     background: `linear-gradient(90deg, transparent, ${colorVar}, transparent)`,
-                    boxShadow: `0 0 6px ${colorVar.replace(")", " / 0.6)")}`,
+                    boxShadow: `0 0 4px ${colorVar.replace(")", " / 0.35)")}`,
                   }}
                 />
               )}

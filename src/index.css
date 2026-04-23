@@ -1905,6 +1905,20 @@
   50%      { opacity: 1;   transform: scaleY(1.08); }
 }
 
+/* Feed-the-Fire CTA — small spark embers rising from inside the button */
+@keyframes feed-cta-spark {
+  0%   { transform: translateY(0)    scale(0.6); opacity: 0; }
+  18%  { opacity: 1; }
+  60%  { transform: translateY(-28px) scale(1);   opacity: 0.7; }
+  100% { transform: translateY(-58px) scale(0.4); opacity: 0; }
+}
+
+/* Feed-the-Fire CTA — slow oxygen ring breathing around the icon block */
+@keyframes feed-cta-oxygen {
+  0%, 100% { transform: scale(1);    opacity: 0.5; }
+  50%      { transform: scale(1.18); opacity: 0; }
+}
+
 /* Tribe theme: subtle background warm-up tied to collective heat */
 @keyframes tribe-heat-pulse {
   0%, 100% { opacity: 0.55; }
@@ -1920,7 +1934,9 @@
   [style*="fire-ember-arc"],
   [style*="ember-rise-chip"],
   [style*="ambient-cinder-rise"],
-  [style*="ambient-haze-breath"] {
+  [style*="ambient-haze-breath"],
+  [style*="feed-cta-spark"],
+  [style*="feed-cta-oxygen"] {
     animation: none !important;
   }
 }

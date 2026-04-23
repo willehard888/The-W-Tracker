@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useCallback } from "react";
+import { lazy, Suspense, useState, useCallback, useEffect, useRef } from "react";
 import SplashScreen from "@/components/SplashScreen";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
@@ -92,12 +92,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const scrollRef = useRef<HTMLDivElement>(null);
   usePushNotifications();
+
+  // Premium social-media behavior: every route lands at the top, instantly.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.pathname]);
 
   return (
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
-      <div className="flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto scroll-smooth">
         <Suspense fallback={<RouteFallback />}>
           <AccessGate>
             <AnimatePresence mode="wait" initial={false}>

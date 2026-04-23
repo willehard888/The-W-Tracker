@@ -1827,29 +1827,100 @@
   50%      { transform: scale(1.012); box-shadow: 0 0 38px hsl(18 95% 58% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.10); }
 }
 
-/* Ember rise — used for floating "+1" feedback when a tribe member checks in */
+/* Ember rise — used for username caption beneath +N chip */
 @keyframes ember-rise {
   0%   { transform: translateY(0)    scale(0.85); opacity: 0; }
-  20%  { opacity: 1; }
-  100% { transform: translateY(-90px) scale(1.05); opacity: 0; }
+  18%  { opacity: 1; }
+  100% { transform: translateY(-72px) scale(1.05); opacity: 0; }
 }
 
-/* Flame intake — the flame "inhales" oxygen when fed (scale + brightness) */
+/* Ember-rise chip — the floating "+N" badge arcs up with a slight overshoot */
+@keyframes ember-rise-chip {
+  0%   { transform: translate(-50%, 0)     scale(0.4)  rotate(-2deg); opacity: 0; }
+  12%  { transform: translate(-50%, -8px)  scale(1.2)  rotate(1deg);  opacity: 1; }
+  28%  { transform: translate(-50%, -22px) scale(1.0)  rotate(0deg);  opacity: 1; }
+  78%  { transform: translate(-50%, -76px) scale(0.92) rotate(-1deg); opacity: 0.85; }
+  100% { transform: translate(-50%, -110px) scale(0.78) rotate(0deg); opacity: 0; }
+}
+
+/* Flame intake — the flame "inhales" oxygen when fed.
+   v2: bigger scale, multi-stage brightness, with a saturation kick. */
 @keyframes flame-intake {
-  0%   { transform: scale(1);    filter: brightness(1)   contrast(1); }
-  35%  { transform: scale(1.06); filter: brightness(1.18) contrast(1.08); }
-  100% { transform: scale(1);    filter: brightness(1)   contrast(1); }
+  0%   { transform: scale(1)    translateY(0);   filter: brightness(1)    contrast(1)    saturate(1); }
+  18%  { transform: scale(1.14) translateY(-3px); filter: brightness(1.45) contrast(1.18) saturate(1.32); }
+  42%  { transform: scale(1.08) translateY(-1px); filter: brightness(1.22) contrast(1.10) saturate(1.18); }
+  72%  { transform: scale(1.04) translateY(0);    filter: brightness(1.08) contrast(1.04) saturate(1.08); }
+  100% { transform: scale(1)    translateY(0);    filter: brightness(1)    contrast(1)    saturate(1); }
 }
 
 /* Aurora rim flash — the border briefly lights up alongside intake */
 @keyframes flame-intake-glow {
-  0%, 100% { opacity: 0.85; }
-  35%      { opacity: 1; }
+  0%, 100% { opacity: 0.85; filter: blur(0px); }
+  20%      { opacity: 1;    filter: blur(1px); }
+  45%      { opacity: 1;    filter: blur(0.5px); }
+}
+
+/* Fire shockwave — expanding ring blasted out at candle root on each check-in */
+@keyframes fire-shockwave {
+  0%   { transform: translateX(-50%) scale(0.2); opacity: 0; }
+  18%  { opacity: 1; }
+  100% { transform: translateX(-50%) scale(7);   opacity: 0; }
+}
+
+/* Fire flash bloom — radial brightness burst at candle root */
+@keyframes fire-flash-bloom {
+  0%   { transform: translateX(-50%) scale(0.4); opacity: 0; }
+  22%  { transform: translateX(-50%) scale(1.05); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1.6);  opacity: 0; }
+}
+
+/* Fire trail whip — thin streak that whips up like a spark trail */
+@keyframes fire-trail-whip {
+  0%   { transform: translateY(0)     scaleY(0.3) skewX(0deg); opacity: 0; }
+  18%  { transform: translateY(-12px) scaleY(1)   skewX(8deg); opacity: 1; }
+  60%  { transform: translateY(-50px) scaleY(1.2) skewX(-4deg); opacity: 0.7; }
+  100% { transform: translateY(-92px) scaleY(0.8) skewX(2deg); opacity: 0; }
+}
+
+/* Fire ember arc — single ember that flies up in a curved arc with rotation */
+@keyframes fire-ember-arc {
+  0%   { transform: translate(0, 0) rotate(0deg)        scale(0.4); opacity: 0; }
+  10%  { transform: translate(calc(var(--ember-x) * 0.15), -8px)  rotate(calc(var(--ember-r) * 0.2)) scale(1);    opacity: 1; }
+  45%  { transform: translate(calc(var(--ember-x) * 0.55), -52px) rotate(calc(var(--ember-r) * 0.6)) scale(0.92); opacity: 0.85; }
+  78%  { transform: translate(calc(var(--ember-x) * 0.85), -100px) rotate(calc(var(--ember-r) * 0.85)) scale(0.7); opacity: 0.5; }
+  100% { transform: translate(var(--ember-x), -148px)              rotate(var(--ember-r))               scale(0.4); opacity: 0; }
+}
+
+/* Ambient cinder rise — slow drift across the whole tribe page background */
+@keyframes ambient-cinder-rise {
+  0%   { transform: translate(0, 0)                               scale(0.5); opacity: 0; }
+  8%   { opacity: 0.85; }
+  50%  { transform: translate(calc(var(--ambient-x) * 0.5), -50vh) scale(1);   opacity: 0.6; }
+  100% { transform: translate(var(--ambient-x), -110vh)            scale(0.3); opacity: 0; }
+}
+
+/* Ambient haze breath — the heat haze at the bottom of the page pulses gently */
+@keyframes ambient-haze-breath {
+  0%, 100% { opacity: 0.7; transform: scaleY(1); }
+  50%      { opacity: 1;   transform: scaleY(1.08); }
+}
+
+/* Tribe theme: subtle background warm-up tied to collective heat */
+@keyframes tribe-heat-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.95; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .flame-intake-anim,
-  [style*="flame-intake"] {
+  [style*="flame-intake"],
+  [style*="fire-shockwave"],
+  [style*="fire-flash-bloom"],
+  [style*="fire-trail-whip"],
+  [style*="fire-ember-arc"],
+  [style*="ember-rise-chip"],
+  [style*="ambient-cinder-rise"],
+  [style*="ambient-haze-breath"] {
     animation: none !important;
   }
 }

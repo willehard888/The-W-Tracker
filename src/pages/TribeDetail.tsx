@@ -36,9 +36,10 @@ import TierUsername from "@/components/TierUsername";
 import TribeCollectiveFlame from "@/components/TribeCollectiveFlame";
 import MemberContributionStrip from "@/components/MemberContributionStrip";
 import FeedTheFireCTA from "@/components/FeedTheFireCTA";
+import TribeAmbientFireField from "@/components/TribeAmbientFireField";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { hapticImpact } from "@/lib/haptics";
-import { fetchTribeCollectiveStreak, collectiveAccent } from "@/lib/tribe-streak";
+import { fetchTribeCollectiveStreak, collectiveAccent, collectiveStreakTier, collectiveTierName } from "@/lib/tribe-streak";
 
 interface Member {
   user_id: string;
@@ -221,12 +222,32 @@ const TribeDetail = () => {
 
   // Optimistically grow the collective streak the instant a member checks in,
   // and fire a soft haptic when it's the current user's own check-in.
+  // Also detect tier-up crossings to play a celebration burst.
   const lastEventIdRef = useRef<string | null>(null);
+  const lastTierRef = useRef<number>(collectiveStreakTier(collectiveStreak));
+  const [tierUp, setTierUp] = useState<{ name: string; accent: string; key: number } | null>(null);
   useEffect(() => {
     const latest = fireReactor.events[fireReactor.events.length - 1];
     if (!latest || latest.id === lastEventIdRef.current) return;
     lastEventIdRef.current = latest.id;
-    setCollectiveStreak((prev) => prev + latest.delta);
+    setCollectiveStreak((prev) => {
+      const next = prev + latest.delta;
+      const prevTier = collectiveStreakTier(prev);
+      const nextTier = collectiveStreakTier(next);
+      if (nextTier > prevTier && nextTier >= 0) {
+        setTierUp({
+          name: collectiveTierName(next),
+          accent: collectiveAccent(next),
+          key: Date.now(),
+        });
+        // Auto-dismiss tier-up celebration after 4s
+        setTimeout(() => setTierUp(null), 4200);
+        // Stronger haptic for tier-ups
+        hapticImpact("medium");
+      }
+      lastTierRef.current = nextTier;
+      return next;
+    });
     if (latest.userId === profile?.user_id) {
       hapticImpact("light");
     }
@@ -409,6 +430,54 @@ const TribeDetail = () => {
             background: `radial-gradient(ellipse 80% 60% at 50% 0%, ${pageTint.replace(")", " / 0.12)")} 0%, transparent 75%)`,
           }}
         />
+      )}
+
+      {/* Ambient fire field — drifting embers across the whole tribe page,
+          intensifies with collective heat. Fixed behind content. */}
+      {pageTint && (
+        <div className="fixed inset-0 pointer-events-none -z-10">
+          <TribeAmbientFireField total={collectiveStreak} accent={pageTint} />
+        </div>
+      )}
+
+      {/* Tier-up celebration — full-screen flash when crossing a threshold */}
+      {tierUp && (
+        <div
+          key={tierUp.key}
+          aria-hidden
+          className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center"
+          style={{ animation: "fade-in 240ms ease-out forwards" }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `radial-gradient(ellipse at center, ${tierUp.accent.replace(")", " / 0.30)")} 0%, transparent 60%)`,
+              animation: "fire-flash-bloom 1200ms cubic-bezier(.2,.8,.2,1) forwards",
+            }}
+          />
+          <div
+            className="relative px-8 py-5 rounded-2xl border-2 backdrop-blur-md"
+            style={{
+              borderColor: tierUp.accent,
+              background: `linear-gradient(135deg, ${tierUp.accent.replace(")", " / 0.18)")}, hsl(var(--background) / 0.6))`,
+              boxShadow: `0 0 60px ${tierUp.accent.replace(")", " / 0.7)")}, inset 0 1px 0 hsl(0 0% 100% / 0.15)`,
+              animation: "ember-rise-chip 4000ms cubic-bezier(.2,.8,.2,1) forwards",
+            }}
+          >
+            <p
+              className="text-[10px] uppercase tracking-[0.3em] font-black text-center mb-1"
+              style={{ color: tierUp.accent }}
+            >
+              Tribe Fire promoted
+            </p>
+            <p
+              className="font-display font-black text-3xl text-center uppercase"
+              style={{ color: tierUp.accent, textShadow: `0 0 28px ${tierUp.accent.replace(")", " / 0.7)")}` }}
+            >
+              {tierUp.name}
+            </p>
+          </div>
+        </div>
       )}
 
       <button onClick={() => navigate("/tribes")} className="flex items-center gap-1 text-xs text-muted-foreground mb-4 relative">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +10,8 @@ import TribeSearchBar from "@/components/TribeSearchBar";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import RealisticFlame from "@/components/home/RealisticFlame";
 import TribeFireHero from "@/components/TribeFireHero";
+import TribeAmbientFireField from "@/components/TribeAmbientFireField";
+import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { fetchTribeCollectiveStreaks, collectiveStreakTier, collectiveTierName, collectiveAccent } from "@/lib/tribe-streak";
 
 interface Tribe {
@@ -58,6 +60,10 @@ const Tribes = () => {
   const [ownedIds, setOwnedIds] = useState<Set<string>>(new Set());
   const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
   const [collectiveStreaks, setCollectiveStreaks] = useState<Map<string, number>>(new Map());
+  // Map of userId → set of tribeIds they belong to (used to forward fire events
+  // to the right per-row mini-flame).
+  const [userToTribes, setUserToTribes] = useState<Map<string, string[]>>(new Map());
+  const [rowPulse, setRowPulse] = useState<Map<string, number>>(new Map());
   const [invites, setInvites] = useState<Invite[]>([]);
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -147,13 +153,13 @@ const Tribes = () => {
       setOwnedIds(owned);
       setJoinedIds(joined);
 
-      // Member avatar previews — top 4 per tribe
+      // Member avatar previews — top 4 per tribe, plus all-member map for reactor
       const { data: previews } = await supabase
         .from("tribe_members" as any)
         .select("tribe_id, user_id")
         .in("tribe_id", ids)
         .eq("status", "active")
-        .limit(ids.length * 6);
+        .limit(ids.length * 40);
       const userIds: string[] = Array.from(new Set(((previews as any) ?? []).map((p: any) => p.user_id as string)));
       const { data: profs } = userIds.length
         ? await supabase
@@ -163,18 +169,24 @@ const Tribes = () => {
         : { data: [] as any[] };
       const profMap = new Map(((profs as any) ?? []).map((p: any) => [p.user_id, p]));
       const map: Record<string, { user_id: string; avatar_url: string | null; username: string }[]> = {};
+      const u2t = new Map<string, string[]>();
       ((previews as any) ?? []).forEach((row: any) => {
         const arr = map[row.tribe_id] ?? (map[row.tribe_id] = []);
         if (arr.length < 4) {
           const p = profMap.get(row.user_id);
           if (p) arr.push(p as any);
         }
+        const tArr = u2t.get(row.user_id) ?? [];
+        tArr.push(row.tribe_id);
+        u2t.set(row.user_id, tArr);
       });
       setMemberPreviews(map);
+      setUserToTribes(u2t);
     } else {
       setOwnedIds(new Set());
       setJoinedIds(new Set());
       setMemberPreviews({});
+      setUserToTribes(new Map());
     }
 
     // Collective streak per tribe — drives the inline flame on each row
@@ -199,6 +211,37 @@ const Tribes = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, profile?.user_id]);
+
+  // Realtime fire reactor — every check-in by any member of any visible tribe
+  // bumps that tribe's row mini-flame and increments its collective streak.
+  const allMemberIds = useMemo(() => Array.from(userToTribes.keys()), [userToTribes]);
+  const listReactor = useTribeFireReactor(allMemberIds);
+  const lastListEventRef = useRef<string | null>(null);
+  useEffect(() => {
+    const latest = listReactor.events[listReactor.events.length - 1];
+    if (!latest || latest.id === lastListEventRef.current) return;
+    lastListEventRef.current = latest.id;
+    const tribeIds = userToTribes.get(latest.userId) ?? [];
+    if (tribeIds.length === 0) return;
+    setCollectiveStreaks((prev) => {
+      const next = new Map(prev);
+      tribeIds.forEach((tid) => next.set(tid, (next.get(tid) ?? 0) + latest.delta));
+      return next;
+    });
+    setRowPulse((prev) => {
+      const next = new Map(prev);
+      tribeIds.forEach((tid) => next.set(tid, (next.get(tid) ?? 0) + 1));
+      return next;
+    });
+  }, [listReactor.events, userToTribes]);
+
+  // Total ambient heat across all the user's joined tribes — drives the page's ember field
+  const ambientHeat = useMemo(() => {
+    let sum = 0;
+    joinedIds.forEach((id) => { sum += collectiveStreaks.get(id) ?? 0; });
+    return sum;
+  }, [joinedIds, collectiveStreaks]);
+  const ambientAccent = collectiveAccent(ambientHeat);
 
   const handleJoin = async (id: string) => {
     const { data, error } = await supabase.rpc("join_tribe" as any, {

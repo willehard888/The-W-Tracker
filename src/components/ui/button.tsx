@@ -561,7 +561,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       return undefined;
     }, [variant]);
 
-    const isAurum = variant === "aurum";
+    // Variants that get the molten lava-drip overlay (default/gold/aurum all share it now)
+    const isLavaDrip = variant === "aurum" || variant === "default" || variant === "gold" || variant == null;
 
     const mergedStyle = textureStyle
       ? { ...textureStyle, ...((props as React.HTMLAttributes<HTMLElement>).style ?? {}) }
@@ -592,13 +593,25 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
         style={mergedStyle}
       >
-        {/* Aurum lava overlay — molten lava continuously dripping over the gold base */}
-        {isAurum && (
-          <span
-            aria-hidden
-            className="aurum-lava-layer absolute inset-0 rounded-[inherit] pointer-events-none z-[1] bg-cover bg-center"
-            style={{ backgroundImage: `url(${lavaTexture})` }}
-          />
+        {/* Lava-drip stack — three layers compose realistic molten flow.
+            Applied to default/gold/aurum so the entire app inherits it. */}
+        {isLavaDrip && (
+          <>
+            <span
+              aria-hidden
+              className="aurum-lava-layer absolute inset-0 rounded-[inherit] pointer-events-none z-[1] bg-cover bg-center"
+              style={{ backgroundImage: `url(${lavaTexture})` }}
+            />
+            <span
+              aria-hidden
+              className="aurum-lava-layer--fast absolute inset-0 rounded-[inherit] pointer-events-none z-[1] bg-cover bg-center"
+              style={{ backgroundImage: `url(${lavaTexture})` }}
+            />
+            <span
+              aria-hidden
+              className="aurum-lava-glow absolute inset-0 rounded-[inherit] pointer-events-none z-[2]"
+            />
+          </>
         )}
         {loading && (
           <span className="absolute inset-0 flex items-center justify-center z-[4]">

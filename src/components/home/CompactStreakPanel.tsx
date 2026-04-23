@@ -346,15 +346,15 @@ const CompactStreakPanel = ({
         )}
       </div>
 
-      {/* Hero: flame + number */}
-      <div className="relative flex items-center gap-3 z-10">
+      {/* Hero: flame + number — flame is the FOCAL POINT, oversized intentionally */}
+      <div className="relative flex items-center gap-3.5 z-10">
         <div
-          className="relative flex h-14 w-14 items-center justify-center rounded-xl shrink-0 overflow-visible"
+          className="relative flex h-20 w-20 items-center justify-center rounded-2xl shrink-0 overflow-visible"
           style={{
             background: flameBg,
             color: isHot ? "white" : "hsl(var(--muted-foreground))",
             boxShadow: isHot
-              ? `0 0 26px ${accent.replace(")", " / 0.55)")}, inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -6px 14px hsl(0 0% 0% / 0.35), inset 0 1px 2px hsl(0 0% 0% / 0.15)`
+              ? `0 0 38px ${accent.replace(")", " / 0.7)")}, 0 0 80px ${accent.replace(")", " / 0.32)")}, inset 0 1px 0 hsl(0 0% 100% / 0.28), inset 0 -8px 18px hsl(0 0% 0% / 0.4), inset 0 1px 2px hsl(0 0% 0% / 0.15)`
               : "inset 0 1px 0 hsl(0 0% 100% / 0.05), inset 0 -2px 6px hsl(0 0% 0% / 0.25)",
           }}
         >

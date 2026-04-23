@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
-import AmbientParticles from "@/components/AmbientParticles";
 import HeadToHead from "@/components/HeadToHead";
 import ProfileActivityPulse from "@/components/ProfileActivityPulse";
 import FeaturedBadgeHero from "@/components/FeaturedBadgeHero";
@@ -238,8 +237,6 @@ const UserProfile = () => {
 
   return (
     <div className="min-h-screen pb-6 relative">
-      <AmbientParticles />
-
       {/* Hero */}
       <div
         className="relative px-4 pt-12 pb-6 overflow-hidden"

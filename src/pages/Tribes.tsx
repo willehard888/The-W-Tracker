@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +10,8 @@ import TribeSearchBar from "@/components/TribeSearchBar";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import RealisticFlame from "@/components/home/RealisticFlame";
 import TribeFireHero from "@/components/TribeFireHero";
+import TribeAmbientFireField from "@/components/TribeAmbientFireField";
+import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { fetchTribeCollectiveStreaks, collectiveStreakTier, collectiveTierName, collectiveAccent } from "@/lib/tribe-streak";
 
 interface Tribe {

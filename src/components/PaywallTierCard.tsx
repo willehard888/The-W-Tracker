@@ -42,7 +42,7 @@ const PaywallTierCard = ({
         "relative rounded-2xl p-5 overflow-hidden",
         isApex
           ? "border-2 border-[hsl(18_95%_58%)]/50 bg-gradient-to-br from-[hsl(18_95%_58%)]/10 via-card/80 to-[hsl(var(--gold))]/8"
-          : "border border-gold/30 glass-card-gold",
+          : "border-2 border-gold/60 bg-gradient-to-br from-gold/20 via-gold/[0.08] to-gold/15 shadow-[0_0_36px_hsl(var(--gold)/0.28),inset_0_1px_0_hsl(var(--gold)/0.4)]",
         highlighted && "shadow-[0_0_40px_hsl(18_95%_58%/0.25)]",
       )}
     >
@@ -64,6 +64,33 @@ const PaywallTierCard = ({
               background:
                 "radial-gradient(circle, hsl(var(--gold) / 0.35) 0%, transparent 70%)",
             }}
+          />
+        </>
+      )}
+
+      {!isApex && (
+        <>
+          {/* Golden ambient glow */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-14 -right-14 w-48 h-48 rounded-full blur-3xl opacity-70"
+            style={{
+              background:
+                "radial-gradient(circle, hsl(var(--gold) / 0.55) 0%, transparent 70%)",
+            }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-20 -left-16 w-44 h-44 rounded-full blur-3xl opacity-55"
+            style={{
+              background:
+                "radial-gradient(circle, hsl(var(--gold-soft) / 0.45) 0%, transparent 70%)",
+            }}
+          />
+          {/* Top inner highlight */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/80 to-transparent"
           />
         </>
       )}
@@ -99,7 +126,7 @@ const PaywallTierCard = ({
             "font-display text-xl font-black tracking-tight mb-1",
             isApex
               ? "bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] bg-clip-text text-transparent"
-              : "text-gold",
+              : "bg-gradient-to-r from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold-light))] bg-clip-text text-transparent drop-shadow-[0_0_12px_hsl(var(--gold)/0.5)]",
           )}
         >
           {title}
@@ -110,7 +137,9 @@ const PaywallTierCard = ({
         <p
           className={cn(
             "font-display font-black leading-none mb-3 text-3xl",
-            isApex ? "text-[hsl(18_95%_58%)]" : "text-gold",
+            isApex
+              ? "text-[hsl(18_95%_58%)]"
+              : "text-gold drop-shadow-[0_2px_8px_hsl(var(--gold)/0.45)]",
           )}
         >
           {priceLabel}
@@ -128,7 +157,7 @@ const PaywallTierCard = ({
                   "h-5 w-5 rounded-md flex items-center justify-center shrink-0 border",
                   isApex
                     ? "bg-[hsl(18_95%_58%)]/12 border-[hsl(18_95%_58%)]/30"
-                    : "bg-gold/10 border-gold/25",
+                    : "bg-gradient-to-br from-gold/30 to-gold/10 border-gold/50 shadow-[0_0_8px_hsl(var(--gold)/0.3)]",
                 )}
               >
                 <Icon

@@ -69,6 +69,47 @@ export const fetchTribeCollectiveStreak = async (tribeId: string): Promise<numbe
 };
 
 /**
+ * Sum of every active member's streak across **every tribe a user belongs to**.
+ * Drives the personal "Tribe Fire" hero on /tribes. Members shared across
+ * tribes are counted once per tribe (intentional — represents their feed
+ * into each fire). For a stricter "unique members" version, dedupe userIds.
+ */
+export const fetchUserTotalTribeHeat = async (userId: string): Promise<number> => {
+  // 1. tribes the user is an active member of
+  const { data: myMemberships } = await supabase
+    .from("tribe_members" as any)
+    .select("tribe_id")
+    .eq("user_id", userId)
+    .eq("status", "active");
+  const tribeIds = ((myMemberships as any) ?? []).map((m: any) => m.tribe_id as string);
+  if (tribeIds.length === 0) return 0;
+
+  // 2. all active members across those tribes
+  const { data: allMembers } = await supabase
+    .from("tribe_members" as any)
+    .select("user_id")
+    .in("tribe_id", tribeIds)
+    .eq("status", "active");
+  const memberUserIds: string[] = Array.from(
+    new Set(
+      (((allMembers as any) ?? []) as { user_id: string }[]).map((r) => r.user_id),
+    ),
+  );
+  if (memberUserIds.length === 0) return 0;
+
+  // 3. sum unique members' streaks (a single user only counted once even
+  //    if they're in two of the viewer's tribes — feels truer to "your fire")
+  const { data: profs } = await supabase
+    .from("profiles")
+    .select("user_id, streak")
+    .in("user_id", memberUserIds);
+  return ((profs as any) ?? []).reduce(
+    (sum: number, p: any) => sum + (p?.streak ?? 0),
+    0,
+  );
+};
+
+/**
  * Batch version for the tribe list — returns a Map<tribeId, totalStreak>.
  */
 export const fetchTribeCollectiveStreaks = async (

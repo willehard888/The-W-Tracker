@@ -1826,7 +1826,20 @@
   50%      { opacity: 1;    filter: blur(1px); }
 }
 
-/* ─── INFERNO / FIRESTORM (tier 6) — plasma extras ─────────────────── */
+/* Feed-the-Fire CTA — slow heartbeat scale + glow swell */
+@keyframes feed-fire-pulse {
+  0%, 100% { transform: scale(1);     box-shadow: 0 0 24px hsl(18 95% 58% / 0.32), inset 0 1px 0 hsl(0 0% 100% / 0.08); }
+  50%      { transform: scale(1.012); box-shadow: 0 0 38px hsl(18 95% 58% / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.10); }
+}
+
+/* Ember rise — used for floating "+1" feedback when a tribe member checks in */
+@keyframes ember-rise {
+  0%   { transform: translateY(0)    scale(0.85); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateY(-90px) scale(1.05); opacity: 0; }
+}
+
+
 
 /* Plasma hue cycle — fast cinematic shift through magenta → cyan → blue */
 @keyframes flame-plasma-hue {

@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils";
 import TribeSearchBar from "@/components/TribeSearchBar";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import RealisticFlame from "@/components/home/RealisticFlame";
-import { fetchTribeCollectiveStreaks, collectiveStreakTier, collectiveAccent } from "@/lib/tribe-streak";
+import TribeFireHero from "@/components/TribeFireHero";
+import { fetchTribeCollectiveStreaks, collectiveStreakTier, collectiveTierName, collectiveAccent } from "@/lib/tribe-streak";
 
 interface Tribe {
   id: string;
@@ -235,27 +236,9 @@ const Tribes = () => {
 
   return (
     <div className="min-h-full pb-8 px-4 pt-4 safe-top">
-      {/* Cinematic hero banner */}
-      <div className="relative rounded-3xl mb-6 p-[2px] apex-conic-border overflow-hidden">
-        <div className="relative rounded-3xl p-6 overflow-hidden bg-gradient-to-br from-[hsl(18_95%_58%)]/15 via-card/85 to-gold/10 apex-aura-large apex-spotlight apex-embers apex-shimmer-sweep apex-portal-glow">
-          <div className="relative z-10 text-center">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/40 backdrop-blur-sm border border-[hsl(18_95%_58%)]/60 mb-3 shadow-[0_0_18px_hsl(18_95%_58%/0.5)]">
-              <StreakFlameInline streak={120} showCount={false} size={14} className="leading-none" />
-              <span className="text-[10px] font-black tracking-widest uppercase bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
-                Apex Tribes
-              </span>
-            </div>
-            <h1 className="font-display text-3xl font-black tracking-tight mb-1.5 leading-none">
-              <span className="bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] bg-clip-text text-transparent drop-shadow-[0_0_18px_hsl(18_95%_58%/0.4)]">
-                Communities
-              </span>
-            </h1>
-            <p className="text-xs text-foreground/70 max-w-xs mx-auto leading-relaxed">
-              Private circles led by Apex (top 1%). <span className="text-[hsl(18_95%_58%)] font-semibold">Every member's streak feeds the tribe's flame.</span>
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* THE HERO — collective fire is the centerpiece */}
+      <TribeFireHero tribeCount={joinedIds.size} />
+      <div id="tribes-browse-anchor" />
 
       {/* Pending invites */}
       {invites.length > 0 && (
@@ -506,12 +489,21 @@ const Tribes = () => {
                 </div>
               )}
 
-              <div className="relative flex items-start gap-3">
-                <div className="relative h-14 w-14 rounded-xl bg-gradient-to-br from-[hsl(18_95%_58%)]/30 via-gold/15 to-[hsl(18_95%_58%)]/20 border border-[hsl(18_95%_58%)]/45 flex items-center justify-center shrink-0 shadow-[0_0_14px_hsl(18_95%_58%/0.3)]">
-                  <Crown size={20} className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_6px_hsl(18_95%_58%/0.7)]" strokeWidth={2.4} />
-                  <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border border-background flex items-center justify-center shadow-[0_0_6px_hsl(18_95%_58%/0.7)]">
-                    <Zap size={8} className="text-background" strokeWidth={3} fill="currentColor" />
-                  </div>
+                <div
+                  className="relative h-14 w-14 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
+                  style={{
+                    background: cTier >= 0
+                      ? `radial-gradient(ellipse at 50% 90%, ${cAccent.replace(")", " / 0.30)")} 0%, transparent 70%)`
+                      : "hsl(var(--secondary) / 0.5)",
+                    border: `1px solid ${cTier >= 0 ? cAccent.replace(")", " / 0.5)") : "hsl(var(--border))"}`,
+                    boxShadow: cTier >= 0 ? `0 0 14px ${cAccent.replace(")", " / 0.4)")}` : undefined,
+                  }}
+                >
+                  {cTier >= 0 ? (
+                    <RealisticFlame tier={cTier} accent={cAccent} size={Math.min(56, 36 + cTier * 6)} />
+                  ) : (
+                    <span className="text-2xl opacity-50 leading-none">🕯️</span>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-display font-black text-base truncate leading-tight">{t.name}</p>
@@ -521,37 +513,28 @@ const Tribes = () => {
                     </p>
                   )}
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[hsl(18_95%_58%)]/10 border border-[hsl(18_95%_58%)]/25">
-                      <Users size={9} className="text-[hsl(18_95%_58%)]" />
-                      <span className="text-[10px] font-bold tabular-nums text-[hsl(18_95%_58%)]">
+                    {cTier >= 0 ? (
+                      <span
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[10px] font-black tabular-nums"
+                        style={{
+                          color: cAccent,
+                          borderColor: cAccent.replace(")", " / 0.4)"),
+                          background: cAccent.replace(")", " / 0.10)"),
+                        }}
+                      >
+                        🔥 {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-md border border-border text-[10px] font-black text-muted-foreground">
+                        Cold fire
+                      </span>
+                    )}
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-secondary/40 border border-border/60">
+                      <Users size={9} className="text-muted-foreground" />
+                      <span className="text-[10px] font-bold tabular-nums text-muted-foreground">
                         {t.member_count}
                       </span>
                     </span>
-                    {(collectiveStreaks.get(t.id) ?? 0) >= 30 && (
-                      <StreakFlameInline
-                        streak={collectiveStreaks.get(t.id) ?? 0}
-                        suffix="d"
-                        className="text-[10px]"
-                      />
-                    )}
-                    {memberPreviews[t.id] && memberPreviews[t.id].length > 0 && (
-                      <div className="flex -space-x-2 ml-1">
-                        {memberPreviews[t.id].slice(0, 3).map((p) => (
-                          <div
-                            key={p.user_id}
-                            className="h-5 w-5 rounded-full bg-secondary border-2 border-background overflow-hidden"
-                          >
-                            {p.avatar_url ? (
-                              <img src={p.avatar_url} alt={p.username} className="h-full w-full object-cover" />
-                            ) : (
-                              <div className="h-full w-full flex items-center justify-center text-[7px] font-black text-muted-foreground">
-                                {p.username.slice(0, 2).toUpperCase()}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
                 {tab === "browse" && !joinedIds.has(t.id) && (

@@ -861,8 +861,35 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
           }}
         />
       ))}
+
+      {/* Living ember field — drifts on global wind + local pointer wind (Diamond+).
+          Replaces the static crown visually but coexists for layered density. */}
+      {embers.map((em, i) => (
+        <span
+          key={`em-${i}`}
+          className="flame-ember absolute rounded-full pointer-events-none"
+          style={{
+            width: em.dotSize,
+            height: em.dotSize,
+            left: `${em.leftPct}%`,
+            bottom: size * 0.18,
+            background: palette.core,
+            boxShadow: `0 0 ${em.dotSize * 3}px ${palette.inner}, 0 0 ${em.dotSize * 6}px ${palette.mid.replace(")", " / 0.6)")}`,
+            opacity: 0,
+            ["--ember-rise" as string]: `${em.rise}px`,
+            animation: `flame-ember-float ${em.duration.toFixed(2)}s ease-out infinite`,
+            animationDelay: `${em.delay.toFixed(2)}s`,
+            mixBlendMode: "screen",
+            willChange: "transform, opacity",
+          }}
+        />
+      ))}
     </div>
   );
-};
+  },
+);
+
+RealisticFlame.displayName = "RealisticFlame";
+
 
 export default RealisticFlame;

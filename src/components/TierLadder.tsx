@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Lock, Check, ChevronRight, Crown, TrendingUp, Sparkles, Zap } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Lock, Check, ChevronRight, Crown, TrendingUp, Sparkles, Zap, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TIER_CONFIG, TIER_ORDER, getTierConfig, type StatusTier } from "@/lib/status-tiers";
 import TierUnlockPaywallCard from "@/components/TierUnlockPaywallCard";
@@ -262,64 +261,75 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
       </div>
 
       {/* ─────── Detail dialog — premium tier-themed ─────── */}
-      <Dialog open={!!openTier} onOpenChange={(o) => !o && setOpenTier(null)}>
-        <DialogContent
-          className="max-w-sm w-[calc(100vw-2rem)] p-0 overflow-hidden bg-transparent border-0 shadow-none max-h-[85vh]"
-          style={{ top: "1rem", transform: "translateX(-50%)" }}
-        >
-          {openTier && (() => {
-            const cfg = TIER_CONFIG[openTier];
-            const unlocked = cfg.rank <= currentRank;
-            const isLegend = openTier === "legend";
-            const isApex = openTier === "apex";
-            const rowStyle = TIER_ROW_STYLE[cfg.rank];
+      {openTier && (() => {
+        const cfg = TIER_CONFIG[openTier];
+        const unlocked = cfg.rank <= currentRank;
+        const isLegend = openTier === "legend";
+        const isApex = openTier === "apex";
+        const rowStyle = TIER_ROW_STYLE[cfg.rank];
 
-            // Tier-specific hero glow (matches the row accent)
-            const heroGlow = isLegend
-              ? "radial-gradient(ellipse at top, hsl(280 70% 55% / 0.45), transparent 65%)"
-              : isApex
-              ? "radial-gradient(ellipse at top, hsl(18 95% 58% / 0.45), hsl(42 78% 54% / 0.25) 40%, transparent 70%)"
-              : cfg.rank === 4
-              ? "radial-gradient(ellipse at top, hsl(42 78% 54% / 0.40), transparent 70%)"
-              : cfg.rank === 3
-              ? "radial-gradient(ellipse at top, hsl(270 60% 58% / 0.35), transparent 70%)"
-              : cfg.rank === 2
-              ? "radial-gradient(ellipse at top, hsl(210 90% 56% / 0.32), transparent 70%)"
-              : cfg.rank === 1
-              ? "radial-gradient(ellipse at top, hsl(var(--teal) / 0.30), transparent 70%)"
-              : "radial-gradient(ellipse at top, hsl(var(--muted) / 0.25), transparent 70%)";
+        const heroGlow = isLegend
+          ? "radial-gradient(ellipse at top, hsl(280 70% 55% / 0.45), transparent 65%)"
+          : isApex
+          ? "radial-gradient(ellipse at top, hsl(18 95% 58% / 0.45), hsl(42 78% 54% / 0.25) 40%, transparent 70%)"
+          : cfg.rank === 4
+          ? "radial-gradient(ellipse at top, hsl(42 78% 54% / 0.40), transparent 70%)"
+          : cfg.rank === 3
+          ? "radial-gradient(ellipse at top, hsl(270 60% 58% / 0.35), transparent 70%)"
+          : cfg.rank === 2
+          ? "radial-gradient(ellipse at top, hsl(210 90% 56% / 0.32), transparent 70%)"
+          : cfg.rank === 1
+          ? "radial-gradient(ellipse at top, hsl(var(--teal) / 0.30), transparent 70%)"
+          : "radial-gradient(ellipse at top, hsl(var(--muted) / 0.25), transparent 70%)";
 
-            return (
+        return (
+          <>
+            <div
+              className="fixed inset-0 z-40 bg-black/[0.78] backdrop-blur-md"
+              onClick={() => setOpenTier(null)}
+              aria-hidden="true"
+            />
+
+            <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 pb-4 sm:top-6">
               <div
                 className={cn(
-                  "relative rounded-2xl overflow-hidden border bg-card flex flex-col max-h-[85vh]",
+                  "relative w-full max-w-sm rounded-2xl overflow-hidden border bg-card flex flex-col max-h-[calc(100dvh-2rem)] shadow-2xl",
                   rowStyle.base,
                 )}
               >
-                {/* Hero glow */}
+                <button
+                  type="button"
+                  onClick={() => setOpenTier(null)}
+                  aria-label="Close tier details"
+                  className="absolute right-3 top-3 z-20 inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-[background,color,box-shadow] duration-200 hover:bg-[hsl(0_0%_100%/0.06)] hover:text-foreground hover:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.06),inset_0_-1px_0_hsl(var(--border-strong)/0.7)] focus:outline-none"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+
                 <div
                   aria-hidden
                   className="pointer-events-none absolute inset-x-0 -top-12 h-48 opacity-90"
                   style={{ background: heroGlow }}
                 />
-                {/* Top hairline */}
                 <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-foreground/25 to-transparent" />
 
-                <DialogHeader className="relative px-5 pt-6 pb-4 space-y-0 shrink-0">
+                <div className="relative px-5 pt-6 pb-4 space-y-0 shrink-0">
                   <div className="flex items-center gap-3.5">
-                    <div className={cn(
-                      "h-14 w-14 rounded-2xl flex items-center justify-center font-display font-black text-base shadow-lg",
-                      rowStyle.accent,
-                    )}>
+                    <div
+                      className={cn(
+                        "h-14 w-14 rounded-2xl flex items-center justify-center font-display font-black text-base shadow-lg",
+                        rowStyle.accent,
+                      )}
+                    >
                       {cfg.shortLabel}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <DialogTitle className={cn("font-display font-black text-2xl leading-none", cfg.textClass)}>
+                      <h2 className={cn("font-display font-black text-2xl leading-none", cfg.textClass)}>
                         {cfg.label}
-                      </DialogTitle>
-                      <DialogDescription className="text-[11px] uppercase tracking-[0.18em] font-bold mt-1.5 text-muted-foreground">
+                      </h2>
+                      <p className="text-[11px] uppercase tracking-[0.18em] font-bold mt-1.5 text-muted-foreground">
                         {cfg.percentile} · Rank {cfg.rank}
-                      </DialogDescription>
+                      </p>
                     </div>
                     {unlocked ? (
                       <span className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-[9px] font-black uppercase tracking-wider">
@@ -332,14 +342,12 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
                     )}
                   </div>
 
-                  {/* Tier message — italic motivational line */}
                   <p className="relative text-[12px] text-foreground/75 italic font-medium mt-3 leading-snug">
                     "{cfg.message}"
                   </p>
-                </DialogHeader>
+                </div>
 
                 <div className="relative px-5 pb-5 space-y-4 overflow-y-auto flex-1 min-h-0">
-                  {/* Requirements — bullet cards */}
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.22em] font-black text-muted-foreground mb-2 flex items-center gap-1.5">
                       <TrendingUp size={11} /> Requirements
@@ -385,7 +393,6 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
                     )}
                   </div>
 
-                  {/* Unlocks — grid of perk chips */}
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.22em] font-black text-gold mb-2 flex items-center gap-1.5">
                       <Sparkles size={11} className="text-gold" /> Unlocks
@@ -405,7 +412,6 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
                     </div>
                   </div>
 
-                  {/* Status footer */}
                   {unlocked ? (
                     <div className="rounded-lg p-3 text-center text-[12px] font-black bg-emerald-500/12 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider flex items-center justify-center gap-2">
                       <Check size={13} strokeWidth={3.5} /> Achieved
@@ -420,19 +426,17 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
                     </div>
                   )}
 
-                  {/* Apex paywall — only when not yet Apex AND not subscriber */}
                   {isApex && !unlocked && !isApexSubscriber && (
                     <TierUnlockPaywallCard className="mt-1" />
                   )}
                 </div>
 
-                {/* Bottom hairline */}
                 <div className="pointer-events-none absolute inset-x-8 bottom-0 h-px bg-gradient-to-r from-transparent via-foreground/15 to-transparent" />
               </div>
-            );
-          })()}
-        </DialogContent>
-      </Dialog>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 };

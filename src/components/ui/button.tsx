@@ -33,24 +33,24 @@ const buttonVariants = cva(
         //   5. Warm gold drop-shadow for premium lift
         default: [
           "text-[hsl(28_92%_10%)] font-extrabold tracking-[-0.005em]",
-          "[text-shadow:0_1px_0_hsl(50_100%_96%/0.65)]",
+          "[text-shadow:0_1px_0_hsl(50_100%_96%/0.7)]",
           "overflow-hidden isolate [transform:translateZ(0)]",
-          // BASE: clean 5-stop gold + soft satin band (no SVG noise = much cheaper to paint)
-          "[background:linear-gradient(180deg,hsl(50_100%_98%/0)_0%,hsl(50_100%_99%/0.12)_44%,hsl(50_100%_99%/0.16)_50%,hsl(50_100%_99%/0.12)_56%,hsl(50_100%_98%/0)_70%),linear-gradient(180deg,hsl(50_100%_88%)_0%,hsl(48_100%_78%)_24%,hsl(46_100%_66%)_52%,hsl(42_98%_56%)_80%,hsl(38_94%_46%)_100%)]",
-          // Engraved bezel — crisp & defined
-          "shadow-[inset_0_0_0_0.5px_hsl(30_75%_18%/0.55),inset_0_1px_0_hsl(50_100%_99%/0.95),inset_0_2px_0_hsl(50_100%_94%/0.4),inset_0_-1px_0_hsl(30_78%_24%/0.55),inset_0_-6px_14px_-8px_hsl(30_80%_30%/0.4),0_1px_2px_hsl(30_60%_14%/0.35),0_6px_14px_-3px_hsl(40_88%_50%/0.4),0_16px_30px_-12px_hsl(40_85%_48%/0.45)]",
-          // ::before — subtle top crown highlight (lightweight)
+          // BASE: richer 6-stop gold + dual satin band (top hot belly + soft lower glow)
+          "[background:linear-gradient(180deg,hsl(50_100%_98%/0)_0%,hsl(50_100%_99%/0.16)_42%,hsl(50_100%_99%/0.24)_50%,hsl(50_100%_99%/0.16)_58%,hsl(50_100%_98%/0)_70%),linear-gradient(180deg,hsl(52_100%_90%)_0%,hsl(48_100%_80%)_18%,hsl(46_100%_68%)_44%,hsl(42_100%_58%)_72%,hsl(38_96%_48%)_92%,hsl(34_92%_40%)_100%)]",
+          // Engraved bezel — deeper warm halo, brighter top rim
+          "shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.6),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_2px_0_hsl(50_100%_94%/0.5),inset_0_-1px_0_hsl(30_82%_22%/0.6),inset_0_-8px_16px_-8px_hsl(30_82%_28%/0.5),0_1px_2px_hsl(30_60%_14%/0.4),0_8px_18px_-3px_hsl(40_92%_52%/0.55),0_22px_42px_-14px_hsl(38_88%_48%/0.6)]",
+          // ::before — top crown highlight + warm bottom inner glow (richer feel)
           "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
-          "before:[background:radial-gradient(120%_70%_at_50%_-20%,hsl(50_100%_99%/0.5)_0%,hsl(50_100%_96%/0.16)_32%,transparent_62%)]",
-          // ::after — narrow diagonal shimmer that slides on hover (GPU transform, not background-position)
+          "before:[background:radial-gradient(120%_70%_at_50%_-20%,hsl(50_100%_99%/0.65)_0%,hsl(50_100%_96%/0.22)_32%,transparent_62%),radial-gradient(120%_60%_at_50%_120%,hsl(38_100%_60%/0.35)_0%,transparent_60%)]",
+          // ::after — narrow diagonal shimmer (GPU transform sweep)
           "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
-          "after:[background:linear-gradient(110deg,transparent_30%,hsl(50_100%_99%/0.4)_50%,transparent_70%)]",
-          "after:opacity-70 after:[transform:translate3d(0,0,0)] after:will-change-transform",
+          "after:[background:linear-gradient(110deg,transparent_28%,hsl(50_100%_99%/0.55)_50%,transparent_72%)]",
+          "after:opacity-80 after:[transform:translate3d(0,0,0)] after:will-change-transform",
           "after:transition-transform after:duration-[800ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
           "hover:after:[transform:translate3d(260%,0,0)]",
-          // Hover: a touch brighter + warm spill
-          "hover:brightness-[1.04] hover:saturate-[1.05]",
-          "hover:shadow-[inset_0_0_0_0.5px_hsl(30_75%_18%/0.6),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_2px_0_hsl(50_100%_94%/0.45),inset_0_-1px_0_hsl(30_78%_24%/0.6),inset_0_-6px_16px_-8px_hsl(30_80%_30%/0.45),0_2px_3px_hsl(30_60%_14%/0.4),0_10px_20px_-3px_hsl(40_88%_50%/0.5),0_22px_44px_-14px_hsl(40_85%_48%/0.55)]",
+          // Hover: brighter + warmer spill
+          "hover:brightness-[1.05] hover:saturate-[1.08]",
+          "hover:shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.65),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_2px_0_hsl(50_100%_94%/0.55),inset_0_-1px_0_hsl(30_82%_22%/0.65),inset_0_-8px_18px_-8px_hsl(30_82%_28%/0.55),0_2px_3px_hsl(30_60%_14%/0.45),0_12px_24px_-3px_hsl(40_92%_52%/0.65),0_28px_54px_-14px_hsl(38_88%_48%/0.7)]",
           // Pressed: muted + sunken
           "active:brightness-[0.96]",
           "active:before:opacity-50 active:after:opacity-30",
@@ -116,19 +116,19 @@ const buttonVariants = cva(
         // Gold — alias of default (legible bright metallic gold)
         gold: [
           "text-[hsl(28_92%_10%)] font-extrabold tracking-[-0.005em]",
-          "[text-shadow:0_1px_0_hsl(50_100%_96%/0.65)]",
+          "[text-shadow:0_1px_0_hsl(50_100%_96%/0.7)]",
           "overflow-hidden isolate [transform:translateZ(0)]",
-          "[background:linear-gradient(180deg,hsl(50_100%_98%/0)_0%,hsl(50_100%_99%/0.12)_44%,hsl(50_100%_99%/0.16)_50%,hsl(50_100%_99%/0.12)_56%,hsl(50_100%_98%/0)_70%),linear-gradient(180deg,hsl(50_100%_88%)_0%,hsl(48_100%_78%)_24%,hsl(46_100%_66%)_52%,hsl(42_98%_56%)_80%,hsl(38_94%_46%)_100%)]",
-          "shadow-[inset_0_0_0_0.5px_hsl(30_75%_18%/0.55),inset_0_1px_0_hsl(50_100%_99%/0.95),inset_0_2px_0_hsl(50_100%_94%/0.4),inset_0_-1px_0_hsl(30_78%_24%/0.55),inset_0_-6px_14px_-8px_hsl(30_80%_30%/0.4),0_1px_2px_hsl(30_60%_14%/0.35),0_6px_14px_-3px_hsl(40_88%_50%/0.4),0_16px_30px_-12px_hsl(40_85%_48%/0.45)]",
+          "[background:linear-gradient(180deg,hsl(50_100%_98%/0)_0%,hsl(50_100%_99%/0.16)_42%,hsl(50_100%_99%/0.24)_50%,hsl(50_100%_99%/0.16)_58%,hsl(50_100%_98%/0)_70%),linear-gradient(180deg,hsl(52_100%_90%)_0%,hsl(48_100%_80%)_18%,hsl(46_100%_68%)_44%,hsl(42_100%_58%)_72%,hsl(38_96%_48%)_92%,hsl(34_92%_40%)_100%)]",
+          "shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.6),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_2px_0_hsl(50_100%_94%/0.5),inset_0_-1px_0_hsl(30_82%_22%/0.6),inset_0_-8px_16px_-8px_hsl(30_82%_28%/0.5),0_1px_2px_hsl(30_60%_14%/0.4),0_8px_18px_-3px_hsl(40_92%_52%/0.55),0_22px_42px_-14px_hsl(38_88%_48%/0.6)]",
           "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
-          "before:[background:radial-gradient(120%_70%_at_50%_-20%,hsl(50_100%_99%/0.5)_0%,hsl(50_100%_96%/0.16)_32%,transparent_62%)]",
+          "before:[background:radial-gradient(120%_70%_at_50%_-20%,hsl(50_100%_99%/0.65)_0%,hsl(50_100%_96%/0.22)_32%,transparent_62%),radial-gradient(120%_60%_at_50%_120%,hsl(38_100%_60%/0.35)_0%,transparent_60%)]",
           "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
-          "after:[background:linear-gradient(110deg,transparent_30%,hsl(50_100%_99%/0.4)_50%,transparent_70%)]",
-          "after:opacity-70 after:[transform:translate3d(0,0,0)] after:will-change-transform",
+          "after:[background:linear-gradient(110deg,transparent_28%,hsl(50_100%_99%/0.55)_50%,transparent_72%)]",
+          "after:opacity-80 after:[transform:translate3d(0,0,0)] after:will-change-transform",
           "after:transition-transform after:duration-[800ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
           "hover:after:[transform:translate3d(260%,0,0)]",
-          "hover:brightness-[1.04] hover:saturate-[1.05]",
-          "hover:shadow-[inset_0_0_0_0.5px_hsl(30_75%_18%/0.6),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_2px_0_hsl(50_100%_94%/0.45),inset_0_-1px_0_hsl(30_78%_24%/0.6),inset_0_-6px_16px_-8px_hsl(30_80%_30%/0.45),0_2px_3px_hsl(30_60%_14%/0.4),0_10px_20px_-3px_hsl(40_88%_50%/0.5),0_22px_44px_-14px_hsl(40_85%_48%/0.55)]",
+          "hover:brightness-[1.05] hover:saturate-[1.08]",
+          "hover:shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.65),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_2px_0_hsl(50_100%_94%/0.55),inset_0_-1px_0_hsl(30_82%_22%/0.65),inset_0_-8px_18px_-8px_hsl(30_82%_28%/0.55),0_2px_3px_hsl(30_60%_14%/0.45),0_12px_24px_-3px_hsl(40_92%_52%/0.65),0_28px_54px_-14px_hsl(38_88%_48%/0.7)]",
           "active:brightness-[0.96]",
           "active:before:opacity-50 active:after:opacity-30",
           "active:shadow-[inset_0_0_0_0.5px_hsl(24_85%_14%/0.7),inset_0_2px_4px_hsl(24_75%_16%/0.55),inset_0_-1px_0_hsl(50_100%_90%/0.2),inset_0_-6px_12px_-6px_hsl(30_80%_22%/0.4),0_1px_1px_hsl(0_0%_0%/0.3)]",

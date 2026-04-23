@@ -302,7 +302,7 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
                 {/* Top hairline */}
                 <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-foreground/25 to-transparent" />
 
-                <DialogHeader className="relative px-5 pt-6 pb-4 space-y-0">
+                <DialogHeader className="relative px-5 pt-6 pb-4 space-y-0 shrink-0">
                   <div className="flex items-center gap-3.5">
                     <div className={cn(
                       "h-14 w-14 rounded-2xl flex items-center justify-center font-display font-black text-base shadow-lg",
@@ -335,7 +335,7 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
                   </p>
                 </DialogHeader>
 
-                <div className="relative px-5 pb-5 space-y-4">
+                <div className="relative px-5 pb-5 space-y-4 overflow-y-auto flex-1 min-h-0">
                   {/* Requirements — bullet cards */}
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.22em] font-black text-muted-foreground mb-2 flex items-center gap-1.5">

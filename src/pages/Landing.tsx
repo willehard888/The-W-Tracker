@@ -108,6 +108,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
       </footer>
     </div>
   );
-};
+});
+Landing.displayName = "Landing";
 
 export default Landing;

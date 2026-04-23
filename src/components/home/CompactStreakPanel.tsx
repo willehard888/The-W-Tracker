@@ -448,13 +448,13 @@ const CompactStreakPanel = ({
             </>
           )}
 
-          <RealisticFlame
-            tier={tier.index}
-            accent={accent}
-            size={62}
-            className="relative z-10"
-          />
-
+          <span className={cn("relative z-10 flame-bowl", isHot && "")}>
+            <RealisticFlame
+              tier={tier.index}
+              accent={accent}
+              size={62}
+            />
+          </span>
           {/* Ground glow — bigger, hotter, sells the heat */}
           {isHot && (
             <span

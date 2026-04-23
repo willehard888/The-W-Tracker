@@ -99,14 +99,16 @@
     letter-spacing: -0.005em;
     background-image:
       /* Premium gold key light — luxury obsidian + warm gold ambient */
-      radial-gradient(ellipse 95% 75% at 12% 0%, hsl(42 90% 58% / 0.11) 0%, transparent 55%),
-      radial-gradient(ellipse 110% 65% at 50% -20%, hsl(42 85% 56% / 0.10) 0%, transparent 50%),
-      radial-gradient(ellipse 80% 50% at 50% -10%, hsl(42 90% 60% / 0.07) 0%, transparent 55%),
-      radial-gradient(ellipse 50% 40% at 10% 60%, hsl(42 70% 48% / 0.05) 0%, transparent 50%),
-      radial-gradient(ellipse 70% 50% at 85% 100%, hsl(42 90% 58% / 0.09) 0%, transparent 55%),
-      radial-gradient(ellipse 40% 30% at 90% 20%, hsl(42 80% 60% / 0.05) 0%, transparent 50%),
-      /* Edge vignette for cinematic depth */
-      radial-gradient(ellipse 120% 100% at 50% 50%, transparent 55%, hsl(258 22% 2% / 0.55) 100%);
+      radial-gradient(ellipse 95% 75% at 12% 0%, hsl(42 90% 58% / 0.13) 0%, transparent 55%),
+      radial-gradient(ellipse 110% 65% at 50% -20%, hsl(42 85% 56% / 0.12) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 50% at 50% -10%, hsl(42 90% 60% / 0.08) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 10% 60%, hsl(42 70% 48% / 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse 70% 50% at 85% 100%, hsl(42 90% 58% / 0.10) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 30% at 90% 20%, hsl(42 80% 60% / 0.06) 0%, transparent 50%),
+      /* Side rim lights — sells edge-of-frame depth */
+      linear-gradient(90deg, hsl(42 90% 50% / 0.05) 0%, transparent 8%, transparent 92%, hsl(42 90% 50% / 0.05) 100%),
+      /* Edge vignette for cinematic depth — deeper now */
+      radial-gradient(ellipse 110% 95% at 50% 50%, transparent 50%, hsl(258 25% 1% / 0.7) 100%);
     background-attachment: fixed;
   }
 
@@ -2623,33 +2625,135 @@
   100% { transform: scale(3.2); opacity: 0; border-width: 0.5px; }
 }
 
-/* === New: Realistic depth utility — heavy 3D card lift with side rims and contact shadow === */
+/* === Realistic depth utility v2 — premium 3D card lift with side rims, contact shadow,
+       AND a top specular highlight that reads as light hitting glass. === */
 .depth-realistic {
   position: relative;
   box-shadow:
     /* Sharp 1px contact shadow — crucial for "lifted off page" perception */
-    0 1px 0 hsl(0 0% 0% / 0.55),
-    0 2px 2px hsl(0 0% 0% / 0.28),
+    0 1px 0 hsl(0 0% 0% / 0.65),
+    0 2px 3px hsl(0 0% 0% / 0.36),
     /* Mid lift — short distance */
-    0 6px 12px -2px hsl(0 0% 0% / 0.32),
-    /* Long ambient — soft puddle */
-    0 18px 36px -10px hsl(0 0% 0% / 0.45),
-    0 36px 72px -28px hsl(0 0% 0% / 0.5),
-    /* Inner bevel */
-    inset 0 1px 0 hsl(0 0% 100% / 0.09),
-    inset 0 -1px 0 hsl(0 0% 0% / 0.32);
+    0 8px 16px -2px hsl(0 0% 0% / 0.42),
+    /* Long ambient — soft puddle (dramatically deeper) */
+    0 24px 48px -12px hsl(0 0% 0% / 0.55),
+    0 48px 96px -32px hsl(0 0% 0% / 0.6),
+    /* Inner bevel — top highlight + bottom shadow create the "lifted slab" illusion */
+    inset 0 1px 0 hsl(0 0% 100% / 0.12),
+    inset 0 -1px 0 hsl(0 0% 0% / 0.45),
+    /* Side rims — subtle vertical edge light, sells the 3D edge */
+    inset 1px 0 0 hsl(0 0% 100% / 0.04),
+    inset -1px 0 0 hsl(0 0% 0% / 0.18);
 }
 
-/* === New: Tier-tinted edge glow — for hero / CTA cards === */
+/* Top-edge specular highlight — overlaid via ::before so it doesn't fight content */
+.depth-realistic::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    hsl(0 0% 100% / 0.08) 0%,
+    hsl(0 0% 100% / 0.02) 8%,
+    transparent 22%
+  );
+  z-index: 0;
+}
+
+/* === Tier-tinted edge glow v2 — for hero / CTA cards === */
 .depth-realistic-warm {
   box-shadow:
-    0 1px 0 hsl(0 0% 0% / 0.55),
-    0 2px 2px hsl(0 0% 0% / 0.28),
-    0 6px 12px -2px hsl(42 60% 18% / 0.32),
-    0 18px 36px -10px hsl(42 78% 54% / 0.18),
-    0 36px 72px -28px hsl(42 78% 54% / 0.16),
-    inset 0 1px 0 hsl(42 95% 88% / 0.14),
-    inset 0 -1px 0 hsl(42 30% 8% / 0.4);
+    0 1px 0 hsl(0 0% 0% / 0.65),
+    0 2px 3px hsl(0 0% 0% / 0.36),
+    0 8px 16px -2px hsl(42 60% 14% / 0.42),
+    0 24px 48px -12px hsl(42 78% 54% / 0.26),
+    0 48px 96px -32px hsl(42 78% 54% / 0.22),
+    inset 0 1px 0 hsl(42 95% 88% / 0.18),
+    inset 0 -1px 0 hsl(42 30% 6% / 0.5),
+    inset 1px 0 0 hsl(42 95% 75% / 0.06),
+    inset -1px 0 0 hsl(42 30% 6% / 0.22);
+}
+
+.depth-realistic-warm::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    hsl(42 95% 80% / 0.12) 0%,
+    hsl(42 95% 70% / 0.03) 10%,
+    transparent 24%
+  );
+  z-index: 0;
+}
+
+/* === Premium glass-3d — frosted, refractive surface with depth === */
+.glass-3d {
+  position: relative;
+  background:
+    linear-gradient(180deg, hsl(0 0% 100% / 0.04), hsl(0 0% 100% / 0.01) 40%, transparent),
+    linear-gradient(135deg, hsl(258 16% 9% / 0.85), hsl(258 16% 5% / 0.92));
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    0 1px 0 hsl(0 0% 0% / 0.6),
+    0 12px 28px -6px hsl(0 0% 0% / 0.55),
+    0 32px 64px -20px hsl(0 0% 0% / 0.5),
+    inset 0 1px 0 hsl(0 0% 100% / 0.14),
+    inset 0 -1px 0 hsl(0 0% 0% / 0.38);
+}
+
+/* === Flame "lava bowl" — concave 3D base that the flame appears to rise FROM.
+       Use as a wrapper around any flame: <span class="flame-bowl">{flame}</span>.
+       Pure presentation — no animation. === */
+.flame-bowl {
+  position: relative;
+  display: inline-block;
+}
+.flame-bowl::before {
+  /* Concave bowl rim — radial gradient creates the illusion of depth */
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -2%;
+  width: 92%;
+  height: 18%;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(ellipse at 50% 30%,
+      hsl(0 0% 0% / 0.7) 0%,
+      hsl(0 0% 0% / 0.45) 35%,
+      hsl(0 0% 0% / 0.15) 65%,
+      transparent 85%);
+  border-radius: 50%;
+  filter: blur(1.5px);
+  pointer-events: none;
+  z-index: 0;
+}
+.flame-bowl::after {
+  /* Bowl rim specular — thin bright line on the inner top edge of the "bowl" */
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: 70%;
+  height: 4%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg,
+    transparent 0%,
+    hsl(42 95% 80% / 0.45) 35%,
+    hsl(42 100% 92% / 0.6) 50%,
+    hsl(42 95% 80% / 0.45) 65%,
+    transparent 100%);
+  border-radius: 50%;
+  filter: blur(0.8px);
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -52,6 +52,7 @@ const TribeNew = lazy(() => import("./pages/TribeNew"));
 const TribeDetail = lazy(() => import("./pages/TribeDetail"));
 const TribeBattles = lazy(() => import("./pages/TribeBattles"));
 const TribeLeaderboard = lazy(() => import("./pages/TribeLeaderboard"));
+const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 
 const queryClient = new QueryClient({
   defaultOptions: {

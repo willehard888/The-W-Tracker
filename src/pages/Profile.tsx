@@ -481,10 +481,10 @@ const Profile = () => {
       {weeklySleep && (
         <div className="mb-3 animate-reveal animate-reveal-delay-1">
           <div className={cn(
-            "rounded-2xl border-2 p-5 shadow-lg",
-            weeklySleep.multiplier >= 1 ? "border-emerald-500/50 bg-emerald-500/10 shadow-emerald-500/20" :
-            weeklySleep.multiplier >= 0.85 ? "border-yellow-500/50 bg-yellow-500/10 shadow-yellow-500/20" :
-            "border-red-500/50 bg-red-500/10 shadow-red-500/20"
+            "rounded-2xl border-2 p-5 glass-3d depth-realistic",
+            weeklySleep.multiplier >= 1 ? "border-emerald-500/50 shadow-emerald-500/20" :
+            weeklySleep.multiplier >= 0.85 ? "border-yellow-500/50 shadow-yellow-500/20" :
+            "border-red-500/50 shadow-red-500/20"
           )}>
             <div className="flex items-center gap-2 mb-3">
               <Moon size={22} className={cn(

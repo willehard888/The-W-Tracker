@@ -204,9 +204,9 @@ const TribeCollectiveFlame = ({
                 style={
                   reactor && reactor.pulseToken > 0
                     ? {
-                        animation: "flame-intake 420ms cubic-bezier(.2,.8,.2,1)",
+                        animation: "flame-intake 1100ms cubic-bezier(.2,.8,.2,1)",
                         willChange: "transform, filter",
-                        transformOrigin: "50% 90%",
+                        transformOrigin: "50% 92%",
                       }
                     : undefined
                 }
@@ -214,9 +214,11 @@ const TribeCollectiveFlame = ({
                 <RealisticFlame tier={tier} accent={accent} size={size} />
               </div>
             )}
-            {/* Realtime ember-rise + "+1" overlay */}
+            {/* Realtime ember-rise + "+N" overlay — extends well beyond flame container */}
             {reactor && !isCold && reactor.events.length > 0 && (
-              <EmberRiseLayer events={reactor.events} accent={accent} />
+              <div className="absolute inset-x-[-20%] -top-16 -bottom-4 pointer-events-none">
+                <EmberRiseLayer events={reactor.events} accent={accent} />
+              </div>
             )}
           </div>
 

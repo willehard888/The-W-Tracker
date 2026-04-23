@@ -462,7 +462,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
             transform: "translateX(-50%)",
             zIndex: -1,
             mixBlendMode: "screen",
-            filter: `url(#${turbSlow})`,
+            filter: filtersEnabled ? `url(#${turbSlow})` : undefined,
             opacity: 0.35,
           }}
         >
@@ -798,7 +798,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
             transformOrigin: "center bottom",
             animation: `flame-outer-flicker ${1.95 * speedMul}s cubic-bezier(0.34, 0.02, 0.32, 1) infinite`,
             mixBlendMode: "screen",
-            filter: `url(#${turbSlow}) blur(2.5px)`,
+            filter: filtersEnabled ? `url(#${turbSlow}) blur(2.5px)` : "blur(2.5px)",
           }}
         >
           <defs>
@@ -821,7 +821,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
             transform: "translate(-50%, 0)",
             transformOrigin: "center bottom",
             animation: `flame-mid-flicker ${1.25 * speedMul}s cubic-bezier(0.32, 0.04, 0.36, 1) infinite`,
-            filter: `url(#${turbMid}) drop-shadow(0 0 7px ${palette.mid})`,
+            filter: filtersEnabled ? `url(#${turbMid}) drop-shadow(0 0 7px ${palette.mid})` : `drop-shadow(0 0 7px ${palette.mid})`,
             mixBlendMode: "screen",
           }}
         >
@@ -846,7 +846,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
             transform: "translate(-50%, 0)",
             transformOrigin: "center bottom",
             animation: `flame-inner-flicker ${0.95 * speedMul}s cubic-bezier(0.3, 0.06, 0.4, 1) infinite`,
-            filter: `url(#${turbFast}) drop-shadow(0 0 5px ${palette.inner})`,
+            filter: filtersEnabled ? `url(#${turbFast}) drop-shadow(0 0 5px ${palette.inner})` : `drop-shadow(0 0 5px ${palette.inner})`,
             mixBlendMode: "screen",
           }}
         >
@@ -870,7 +870,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
             transform: "translate(-50%, 0)",
             transformOrigin: "center bottom",
             animation: `flame-core-flicker ${0.72 * speedMul}s cubic-bezier(0.28, 0.08, 0.42, 1) infinite`,
-            filter: `url(#${turbFast}) drop-shadow(0 0 4px ${palette.core})`,
+            filter: filtersEnabled ? `url(#${turbFast}) drop-shadow(0 0 4px ${palette.core})` : `drop-shadow(0 0 4px ${palette.core})`,
             mixBlendMode: "screen",
           }}
         >
@@ -991,7 +991,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
               transform: "translate(-50%, 0)",
               transformOrigin: "center bottom",
               animation: `flame-tip-whip ${0.45 * speedMul}s ease-in-out infinite`,
-              filter: `url(#${turbFast}) drop-shadow(0 0 3px ${palette.core})`,
+              filter: filtersEnabled ? `url(#${turbFast}) drop-shadow(0 0 3px ${palette.core})` : `drop-shadow(0 0 3px ${palette.core})`,
               mixBlendMode: "screen",
             }}
           >
@@ -1010,7 +1010,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
               transform: "translate(-50%, 0) scaleX(-1)",
               transformOrigin: "center bottom",
               animation: `flame-plasma-spiral ${1.4 * speedMul}s ease-in-out infinite`,
-              filter: `url(#${turbMid}) drop-shadow(0 0 8px ${palette.outer})`,
+              filter: filtersEnabled ? `url(#${turbMid}) drop-shadow(0 0 8px ${palette.outer})` : `drop-shadow(0 0 8px ${palette.outer})`,
               mixBlendMode: "screen",
               opacity: 0.7,
             }}

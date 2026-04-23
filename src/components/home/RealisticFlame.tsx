@@ -794,225 +794,199 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
         </>
       )}
 
-      {/* ── Premium industrial factory base — flame rises from a brick chimney.
-          Pure SVG, static (no animations). Layered for real depth: ground
-          puddle of warm light → silhouette skyline behind → main building
-          with metal cladding, brick courses, lit windows, satellite dish,
-          ventilation pipes → twin chimneys with riveted bands and wash
-          stains. The taller central chimney's mouth glows hot under the
-          flame so the fire reads as escaping smelter heat. ───────────────── */}
+      {/* ── Frozen mystery prize — suspended in an icy crystal above the flame.
+          The flame is slowly melting it from below. Pure SVG, hangs from a
+          frosted chain, with: a faceted ice prism, a glowing "?" core inside,
+          a heat-meltline at the bottom that drips, refraction shimmer, and
+          frost dust around it. Only renders at meaningful sizes. ────────── */}
       {isHot && size >= 36 && (
-        <svg
+        <div
           aria-hidden
           className="absolute left-1/2 pointer-events-none"
-          width={size * 2.2}
-          height={size * 1.05}
-          viewBox="0 0 100 50"
           style={{
             transform: "translateX(-50%)",
-            // Anchor the chimney top right at the flame base
-            bottom: -size * 0.78,
-            zIndex: -1,
-            filter: `drop-shadow(0 ${size * 0.05}px ${size * 0.16}px hsl(0 0% 0% / 0.6))`,
+            // Sit clearly above the flame tip so the flame visibly licks at it
+            bottom: size * 1.25,
+            width: size * 1.1,
+            height: size * 1.55,
+            zIndex: 2,
           }}
         >
-          <defs>
-            {/* Main building cladding — vertical metal panel shading */}
-            <linearGradient id={`fac-body-${uid}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"  stopColor="hsl(220 16% 26%)" />
-              <stop offset="35%" stopColor="hsl(220 16% 16%)" />
-              <stop offset="100%" stopColor="hsl(220 18% 6%)" />
-            </linearGradient>
-            {/* Brick chimney — warm desaturated red-brown with cylindrical shading */}
-            <linearGradient id={`fac-chim-${uid}`} x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%"   stopColor="hsl(15 22% 8%)" />
-              <stop offset="22%"  stopColor="hsl(15 28% 22%)" />
-              <stop offset="50%"  stopColor="hsl(18 32% 30%)" />
-              <stop offset="78%"  stopColor="hsl(15 26% 18%)" />
-              <stop offset="100%" stopColor="hsl(15 22% 6%)" />
-            </linearGradient>
-            {/* Smaller secondary chimney — cooler steel pipe */}
-            <linearGradient id={`fac-pipe-${uid}`} x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%"   stopColor="hsl(220 14% 8%)" />
-              <stop offset="50%"  stopColor="hsl(220 12% 24%)" />
-              <stop offset="100%" stopColor="hsl(220 14% 6%)" />
-            </linearGradient>
-            {/* Heat wash on chimney top — soot stained with warm halo */}
-            <linearGradient id={`fac-rim-${uid}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"  stopColor={palette.wick} stopOpacity="1" />
-              <stop offset="50%" stopColor={palette.outer} stopOpacity="0.5" />
-              <stop offset="100%" stopColor="hsl(0 0% 0% / 0)" />
-            </linearGradient>
-            {/* Soot streak running down the chimney from the mouth */}
-            <linearGradient id={`fac-soot-${uid}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"  stopColor="hsl(0 0% 0%)" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="hsl(0 0% 0%)" stopOpacity="0" />
-            </linearGradient>
-            {/* Pavement / ground reflection */}
-            <linearGradient id={`fac-ground-${uid}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"  stopColor="hsl(220 14% 14%)" />
-              <stop offset="100%" stopColor="hsl(220 16% 4%)" />
-            </linearGradient>
-            <radialGradient id={`fac-spill-${uid}`} cx="50%" cy="50%" r="50%">
-              <stop offset="0%"  stopColor={palette.haze} stopOpacity="0.9" />
-              <stop offset="60%" stopColor={palette.outer} stopOpacity="0.25" />
-              <stop offset="100%" stopColor="hsl(0 0% 0% / 0)" />
-            </radialGradient>
-          </defs>
+          {/* Frosted suspension chain — runs up out of frame */}
+          <div
+            className="absolute left-1/2 top-0 -translate-x-1/2"
+            style={{
+              width: 1.5,
+              height: size * 0.45,
+              background: "linear-gradient(180deg, hsl(200 40% 70% / 0) 0%, hsl(200 60% 80% / 0.7) 100%)",
+              boxShadow: "0 0 4px hsl(200 90% 80% / 0.55)",
+            }}
+          />
 
-          {/* (1) Distant skyline silhouette — gives parallax depth behind the
-                  factory. Tiny, low contrast, blurred so it reads as "city
-                  far away". */}
-          <g opacity="0.55" style={{ filter: "blur(0.4px)" }}>
-            <rect x="0"  y="34" width="6"  height="14" fill="hsl(220 16% 8%)" />
-            <rect x="6"  y="30" width="3"  height="18" fill="hsl(220 14% 6%)" />
-            <rect x="9"  y="36" width="5"  height="12" fill="hsl(220 16% 9%)" />
-            <rect x="86" y="33" width="4"  height="15" fill="hsl(220 14% 8%)" />
-            <rect x="90" y="29" width="3"  height="19" fill="hsl(220 14% 6%)" />
-            <rect x="93" y="35" width="6"  height="13" fill="hsl(220 16% 9%)" />
-          </g>
+          {/* Ambient frost halo behind the prism — cool counter-glow */}
+          <div
+            className="absolute left-1/2 -translate-x-1/2 rounded-full"
+            style={{
+              width: size * 1.4,
+              height: size * 1.4,
+              top: size * 0.25,
+              background:
+                "radial-gradient(ellipse at 50% 45%, hsl(200 90% 75% / 0.45) 0%, hsl(210 80% 60% / 0.18) 40%, transparent 72%)",
+              mixBlendMode: "screen",
+              filter: "blur(4px)",
+              animation: "ice-prize-aura 6s ease-in-out infinite",
+            }}
+          />
 
-          {/* (2) Warm volumetric light spill from chimney mouth — lights the
-                  building roof and tints the air around it. */}
-          <ellipse cx="50" cy="14" rx="30" ry="6" fill={`url(#fac-spill-${uid})`}
-            style={{ mixBlendMode: "screen" }} />
+          {/* The ice prism — main faceted crystal */}
+          <svg
+            className="absolute left-1/2 -translate-x-1/2"
+            width={size * 0.95}
+            height={size * 1.1}
+            viewBox="0 0 80 100"
+            style={{
+              top: size * 0.32,
+              filter: "drop-shadow(0 4px 10px hsl(200 80% 30% / 0.55)) drop-shadow(0 0 14px hsl(200 90% 75% / 0.45))",
+              animation: "ice-prize-bob 7s ease-in-out infinite",
+              transformOrigin: "50% 0%",
+            }}
+          >
+            <defs>
+              {/* Glassy ice fill */}
+              <linearGradient id={`ice-body-${uid}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"  stopColor="hsl(195 95% 92%)" stopOpacity="0.95" />
+                <stop offset="35%" stopColor="hsl(200 85% 78%)" stopOpacity="0.85" />
+                <stop offset="70%" stopColor="hsl(210 75% 55%)" stopOpacity="0.7" />
+                <stop offset="100%" stopColor="hsl(220 60% 30%)" stopOpacity="0.85" />
+              </linearGradient>
+              {/* Sharp white facet highlight */}
+              <linearGradient id={`ice-facet-${uid}`} x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%"  stopColor="hsl(0 0% 100%)" stopOpacity="0.85" />
+                <stop offset="50%" stopColor="hsl(195 100% 92%)" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="hsl(200 80% 70%)" stopOpacity="0" />
+              </linearGradient>
+              {/* Mystery core — pulses gold suggesting "what's inside?" */}
+              <radialGradient id={`ice-core-${uid}`} cx="50%" cy="55%" r="50%">
+                <stop offset="0%"  stopColor="hsl(48 100% 85%)" stopOpacity="0.95" />
+                <stop offset="50%" stopColor="hsl(42 95% 60%)" stopOpacity="0.55" />
+                <stop offset="100%" stopColor="hsl(30 90% 40%)" stopOpacity="0" />
+              </radialGradient>
+              {/* Heat-melt rim at the bottom — orange glow where flame licks */}
+              <linearGradient id={`ice-melt-${uid}`} x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%"  stopColor={palette.wick} stopOpacity="0.95" />
+                <stop offset="40%" stopColor={palette.outer} stopOpacity="0.5" />
+                <stop offset="100%" stopColor="hsl(0 0% 0% / 0)" />
+              </linearGradient>
+            </defs>
 
-          {/* (3) Main factory building — wide low industrial block */}
-          <rect x="6" y="22" width="88" height="26" rx="0.6" fill={`url(#fac-body-${uid})`} />
+            {/* Outer ice prism — diamond/teardrop hybrid */}
+            <path
+              d="M40 4 L66 28 L72 60 L58 88 L40 96 L22 88 L8 60 L14 28 Z"
+              fill={`url(#ice-body-${uid})`}
+              stroke="hsl(200 90% 88% / 0.7)"
+              strokeWidth="0.8"
+            />
 
-          {/* (3b) Vertical metal panel seams on the cladding */}
-          {[14, 22, 30, 38, 62, 70, 78, 86].map((x, i) => (
-            <rect key={`seam-${i}`} x={x} y={22} width="0.3" height="26"
-              fill="hsl(0 0% 0%)" opacity="0.45" />
-          ))}
+            {/* Inner facet edges — give the crystal cut-glass faceting */}
+            <path
+              d="M40 4 L40 96 M14 28 L66 28 M22 88 L58 88 M8 60 L72 60"
+              stroke="hsl(195 100% 92% / 0.35)"
+              strokeWidth="0.5"
+              fill="none"
+            />
 
-          {/* (3c) Roof parapet line — bright top edge */}
-          <rect x="6" y="22" width="88" height="0.8" fill="hsl(220 16% 38%)" />
-          <rect x="6" y="22.8" width="88" height="0.4" fill="hsl(0 0% 0%)" opacity="0.5" />
+            {/* Sharp specular highlight on the upper-left facet */}
+            <path
+              d="M40 4 L66 28 L40 60 L14 28 Z"
+              fill={`url(#ice-facet-${uid})`}
+              opacity="0.85"
+            />
 
-          {/* (3d) Sub-roof horizontal trim band */}
-          <rect x="6" y="34" width="88" height="0.6" fill="hsl(220 16% 22%)" opacity="0.7" />
+            {/* Tiny bright glint on the top edge */}
+            <ellipse cx="40" cy="8" rx="6" ry="1.4" fill="hsl(0 0% 100%)" opacity="0.9" />
+            <ellipse cx="22" cy="32" rx="2.5" ry="0.7" fill="hsl(0 0% 100%)" opacity="0.7" />
+            <ellipse cx="58" cy="42" rx="1.8" ry="0.5" fill="hsl(0 0% 100%)" opacity="0.6" />
 
-          {/* (4) Side annexes — give the silhouette industrial complexity */}
-          <rect x="0"  y="30" width="8"  height="18" rx="0.4" fill="hsl(220 16% 11%)" />
-          <rect x="0"  y="30" width="8"  height="0.8" fill="hsl(220 16% 26%)" opacity="0.85" />
-          <rect x="92" y="32" width="8"  height="16" rx="0.4" fill="hsl(220 16% 10%)" />
-          <rect x="92" y="32" width="8"  height="0.8" fill="hsl(220 16% 24%)" opacity="0.85" />
-
-          {/* (5) Loading dock + ramp on the right annex */}
-          <rect x="93.5" y="42" width="5" height="6" fill="hsl(0 0% 0%)" opacity="0.85" />
-          <rect x="93.5" y="42" width="5" height="0.5" fill={palette.wick} opacity="0.45"
-            style={{ mixBlendMode: "screen" }} />
-
-          {/* (6) Lit windows — three rows, randomly varied "occupancy" */}
-          {/* Row 1 */}
-          {[12, 18, 24, 30, 36, 60, 66, 72, 78, 84].map((x, i) => (
-            <rect key={`w1-${i}`} x={x} y={26} width="3.4" height="2.4"
-              fill={i % 3 === 0 ? palette.inner : palette.wick}
-              opacity={i % 4 === 0 ? 0.35 : 0.85}
+            {/* Suspended mystery core — glowing question mark inside */}
+            <ellipse cx="40" cy="56" rx="14" ry="18"
+              fill={`url(#ice-core-${uid})`}
               style={{ mixBlendMode: "screen" }} />
-          ))}
-          {/* Row 2 */}
-          {[12, 18, 24, 30, 36, 60, 66, 72, 78, 84].map((x, i) => (
-            <rect key={`w2-${i}`} x={x} y={36} width="3.4" height="2.4"
-              fill={i % 2 === 0 ? palette.wick : palette.inner}
-              opacity={i % 5 === 0 ? 0.3 : 0.78}
-              style={{ mixBlendMode: "screen" }} />
-          ))}
-          {/* Row 3 — small floor-level slits */}
-          {[12, 18, 24, 30, 36, 60, 66, 72, 78, 84].map((x, i) => (
-            <rect key={`w3-${i}`} x={x} y={43} width="3.4" height="1.4"
-              fill={palette.wick}
-              opacity={i % 3 === 0 ? 0.85 : 0.5}
-              style={{ mixBlendMode: "screen" }} />
+            <text
+              x="40" y="66"
+              textAnchor="middle"
+              fontFamily="ui-serif, Georgia, serif"
+              fontSize="26"
+              fontWeight="900"
+              fill="hsl(48 100% 92%)"
+              opacity="0.9"
+              style={{
+                filter: "drop-shadow(0 0 4px hsl(42 100% 70% / 0.9))",
+              }}
+            >
+              ?
+            </text>
+
+            {/* Heat melt-rim at the bottom — where the flame is eating it */}
+            <path
+              d="M22 88 L58 88 L52 96 L40 99 L28 96 Z"
+              fill={`url(#ice-melt-${uid})`}
+              opacity="0.95"
+              style={{ mixBlendMode: "screen" }}
+            />
+            {/* Soft melt blur outline */}
+            <path
+              d="M20 90 Q30 95 40 96 Q50 95 60 90"
+              stroke={palette.wick}
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.7"
+              style={{ mixBlendMode: "screen", filter: "blur(0.6px)" }}
+            />
+          </svg>
+
+          {/* Melt drips — water droplets falling from the bottom of the ice */}
+          {[0, 1, 2].map((i) => (
+            <span
+              key={`drip-${i}`}
+              className="absolute rounded-full"
+              style={{
+                left: `${42 + i * 7}%`,
+                top: size * 1.32,
+                width: 2.5,
+                height: 4,
+                background: "linear-gradient(180deg, hsl(200 95% 92%) 0%, hsl(210 85% 70%) 100%)",
+                boxShadow: "0 0 4px hsl(200 90% 80% / 0.7)",
+                animation: `ice-prize-drip ${2.4 + i * 0.5}s ease-in ${i * 0.7}s infinite`,
+                opacity: 0,
+              }}
+            />
           ))}
 
-          {/* (7) Big arched factory door — main entrance */}
-          <rect x="46" y="40" width="8" height="8" fill="hsl(220 18% 4%)" />
-          <path d="M46 40 Q50 37.5 54 40 L54 41 L46 41 Z" fill="hsl(220 18% 4%)" />
-          <rect x="46" y="40" width="8" height="0.6" fill={palette.wick} opacity="0.7"
-            style={{ mixBlendMode: "screen" }} />
-          {/* Warm light pooling out of the door onto the ground */}
-          <ellipse cx="50" cy="48" rx="6" ry="1.2"
-            fill={palette.haze} opacity="0.6"
-            style={{ mixBlendMode: "screen" }} />
-
-          {/* (8) Roof equipment — HVAC unit + satellite dish + venting pipe */}
-          {/* HVAC box */}
-          <rect x="14" y="18.5" width="8" height="3.5" fill="hsl(220 14% 16%)" />
-          <rect x="14" y="18.5" width="8" height="0.4" fill="hsl(220 14% 28%)" />
-          <rect x="15" y="20" width="1" height="2" fill="hsl(220 14% 8%)" />
-          <rect x="17" y="20" width="1" height="2" fill="hsl(220 14% 8%)" />
-          <rect x="19" y="20" width="1" height="2" fill="hsl(220 14% 8%)" />
-          {/* Satellite dish */}
-          <circle cx="78" cy="20" r="2.2" fill="hsl(220 14% 18%)" />
-          <circle cx="78" cy="20" r="2.2" fill="hsl(0 0% 0%)" opacity="0.4" />
-          <line x1="78" y1="20" x2="78" y2="22" stroke="hsl(220 14% 10%)" strokeWidth="0.4" />
-          {/* Antenna mast */}
-          <line x1="84" y1="22" x2="84" y2="13" stroke="hsl(220 14% 18%)" strokeWidth="0.4" />
-          <circle cx="84" cy="13" r="0.5" fill={palette.wick} opacity="0.8"
-            style={{ mixBlendMode: "screen" }} />
-          {/* Secondary thin steel pipe — venting steam */}
-          <rect x="68" y="13" width="2.4" height="9" fill={`url(#fac-pipe-${uid})`} />
-          <rect x="67.4" y="12.2" width="3.6" height="1.2" rx="0.2" fill="hsl(220 12% 22%)" />
-          <ellipse cx="69.2" cy="11.2" rx="2.5" ry="0.9"
-            fill="hsl(220 10% 70%)" opacity="0.18"
-            style={{ mixBlendMode: "screen" }} />
-
-          {/* (9) Main brick chimney — taller, wider, riveted, sooted.
-                  The flame above sits exactly on top of this. */}
-          {/* Soot wash on the building under the chimney */}
-          <rect x="40" y="22" width="20" height="12" fill={`url(#fac-soot-${uid})`} opacity="0.55" />
-          {/* Chimney shaft */}
-          <rect x="43" y="3" width="14" height="23" fill={`url(#fac-chim-${uid})`} />
-          {/* Brick course rings — alternating dark/highlight pairs */}
-          {[7, 12, 17, 22].map((y, i) => (
-            <g key={`brick-${i}`}>
-              <rect x="43" y={y} width="14" height="0.7" fill="hsl(15 22% 4%)" opacity="0.95" />
-              <rect x="43" y={y + 0.7} width="14" height="0.3" fill="hsl(20 30% 38%)" opacity="0.55" />
-            </g>
+          {/* Frost dust — tiny shimmering ice particles around the prism */}
+          {[
+            { x: 12, y: 38, d: 0.0, s: 1.4 },
+            { x: 88, y: 46, d: 1.2, s: 1.8 },
+            { x: 18, y: 70, d: 2.0, s: 1.2 },
+            { x: 84, y: 78, d: 0.6, s: 1.5 },
+            { x: 50, y: 32, d: 1.6, s: 1.6 },
+          ].map((f, i) => (
+            <span
+              key={`frost-${i}`}
+              className="absolute rounded-full"
+              style={{
+                left: `${f.x}%`,
+                top: size * (f.y / 100) + size * 0.2,
+                width: f.s,
+                height: f.s,
+                background: "hsl(195 100% 95%)",
+                boxShadow: "0 0 5px hsl(200 95% 85% / 0.95)",
+                animation: `ice-prize-frost ${4 + (i % 3)}s ease-in-out ${f.d}s infinite`,
+                mixBlendMode: "screen",
+              }}
+            />
           ))}
-          {/* Vertical mortar columns — subtle */}
-          <rect x="46.5" y="3" width="0.3" height="23" fill="hsl(0 0% 0%)" opacity="0.35" />
-          <rect x="50"   y="3" width="0.3" height="23" fill="hsl(0 0% 0%)" opacity="0.45" />
-          <rect x="53.5" y="3" width="0.3" height="23" fill="hsl(0 0% 0%)" opacity="0.35" />
-          {/* Iron support bands with rivets */}
-          {[5.5, 24].map((y, i) => (
-            <g key={`band-${i}`}>
-              <rect x="42.4" y={y} width="15.2" height="1.2" fill="hsl(220 14% 12%)" />
-              <rect x="42.4" y={y} width="15.2" height="0.3" fill="hsl(220 14% 28%)" />
-              {[44, 47, 50, 53, 56].map((rx, ri) => (
-                <circle key={`rv-${i}-${ri}`} cx={rx} cy={y + 0.6} r="0.35"
-                  fill="hsl(220 14% 6%)" />
-              ))}
-            </g>
-          ))}
-          {/* Chimney crown — wider corbeled lip */}
-          <rect x="40.8" y="1.2" width="18.4" height="2.4" rx="0.3" fill="hsl(15 22% 18%)" />
-          <rect x="40.8" y="1.2" width="18.4" height="0.5" fill="hsl(20 30% 36%)" />
-          <rect x="40.8" y="3.4" width="18.4" height="0.5" fill="hsl(0 0% 0%)" opacity="0.7" />
-          {/* Heat-discolored top of the brick (sooted with warm halo) */}
-          <rect x="43" y="3" width="14" height="2.4" fill="hsl(0 0% 0%)" opacity="0.6" />
-          <rect x="43.4" y="2" width="13.2" height="3.2" fill={`url(#fac-rim-${uid})`}
-            style={{ mixBlendMode: "screen" }} />
-          {/* Glowing ember bed inside the chimney mouth — sells "fire below" */}
-          <ellipse cx="50" cy="3.2" rx="6.2" ry="1.4" fill={palette.core} opacity="0.95"
-            style={{ mixBlendMode: "screen" }} />
-          <ellipse cx="50" cy="3.2" rx="3.4" ry="0.8" fill="hsl(0 0% 100%)" opacity="0.55"
-            style={{ mixBlendMode: "screen" }} />
-
-          {/* (10) Pavement / asphalt strip beneath the factory */}
-          <rect x="0" y="48" width="100" height="2" fill={`url(#fac-ground-${uid})`} />
-          {/* Wet asphalt reflection of the chimney glow */}
-          <ellipse cx="50" cy="48.4" rx="22" ry="1.1"
-            fill={palette.haze} opacity="0.4"
-            style={{ mixBlendMode: "screen" }} />
-          {/* Dashed road lane marking */}
-          {[2, 14, 26, 38, 62, 74, 86, 98].map((x, i) => (
-            <rect key={`ln-${i}`} x={x} y={49} width="6" height="0.4"
-              fill="hsl(42 60% 55%)" opacity="0.18" />
-          ))}
-        </svg>
+        </div>
       )}
 
       {/* Composite of all SVG flame bodies — wrapped so we can hue-shift Legendary

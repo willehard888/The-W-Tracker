@@ -3143,29 +3143,45 @@
 }
 
 /* ═════════════════════════════════════════════════════════════════
-   AURUM lava system — REALISTIC molten gold flow.
-   Three stacked layers (rendered as nested spans) on the same button:
-     .aurum-lava-layer       → main lava sheet, slow downward flow
-     .aurum-lava-layer--fast → secondary thinner stream, faster + offset
-     .aurum-lava-glow        → bottom ember bleed + top heat haze
-   Uses BOTH mask drift and transform drift so the flow is visible even on
-   browsers where animated mask-position is flaky.
+   AURUM lava system — visibly flowing molten gold.
+   Uses real moving lava sheets with clip-path drips instead of relying on
+   animated mask-position, which was too subtle/flaky in the browser.
    ═════════════════════════════════════════════════════════════════ */
-@keyframes aurum-lava-drip {
-  0%   { -webkit-mask-position: 50% -130%; mask-position: 50% -130%; transform: translateY(-18%) scaleY(1.04); }
-  100% { -webkit-mask-position: 50% 230%;  mask-position: 50% 230%;  transform: translateY(18%) scaleY(1.12); }
+@keyframes aurum-lava-fall-main {
+  0% {
+    transform: translateY(-62%) scaleY(1.02);
+    background-position: 50% 0%;
+    opacity: 0.84;
+  }
+  100% {
+    transform: translateY(18%) scaleY(1.16);
+    background-position: 50% 100%;
+    opacity: 0.98;
+  }
 }
-@keyframes aurum-lava-drip-offset {
-  0%   { -webkit-mask-position: 50% 200%;  mask-position: 50% 200%;  transform: translateY(14%) scaleY(1.08); }
-  100% { -webkit-mask-position: 50% -160%; mask-position: 50% -160%; transform: translateY(-14%) scaleY(1.02); }
+
+@keyframes aurum-lava-fall-fast {
+  0% {
+    transform: translateY(-88%) scaleY(1.05);
+    background-position: 40% 0%;
+    opacity: 0.46;
+  }
+  100% {
+    transform: translateY(24%) scaleY(1.2);
+    background-position: 60% 100%;
+    opacity: 0.82;
+  }
 }
-@keyframes aurum-lava-shimmer {
-  0%, 100% { background-position: 0% 30%;   filter: saturate(1.15) brightness(1); }
-  50%      { background-position: 100% 70%; filter: saturate(1.32) brightness(1.1); }
-}
+
 @keyframes aurum-ember-bleed {
-  0%, 100% { opacity: 0.55; transform: translateY(0); }
-  50%      { opacity: 0.95; transform: translateY(1px); }
+  0%, 100% {
+    opacity: 0.5;
+    transform: scaleY(1) translateY(0);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scaleY(1.08) translateY(1px);
+  }
 }
 
 .aurum-lava-layer,
@@ -3177,121 +3193,91 @@
   pointer-events: none;
 }
 
+.aurum-lava-layer,
+.aurum-lava-layer--fast {
+  inset: -6% 0 -12% 0;
+  background-repeat: no-repeat;
+  background-size: 150% 180%;
+  will-change: transform, background-position, opacity;
+}
+
 .aurum-lava-layer {
-  background-blend-mode: screen;
-  background-color: hsl(18 95% 42% / 0.35);
-  background-size: 220% 220%;
-  -webkit-mask-image: linear-gradient(
-    180deg,
-    transparent 0%,
-    hsl(0 0% 0% / 0.55) 26%,
-    hsl(0 0% 0% / 0.95) 50%,
-    hsl(0 0% 0% / 0.55) 74%,
-    transparent 100%
+  filter: saturate(1.15) brightness(1.05) contrast(1.08);
+  clip-path: polygon(
+    0% 0%, 100% 0%,
+    100% 28%, 92% 42%, 82% 36%, 73% 52%,
+    64% 44%, 55% 62%, 44% 48%, 34% 68%,
+    23% 55%, 12% 74%, 0% 60%
   );
-          mask-image: linear-gradient(
-    180deg,
-    transparent 0%,
-    hsl(0 0% 0% / 0.55) 26%,
-    hsl(0 0% 0% / 0.95) 50%,
-    hsl(0 0% 0% / 0.55) 74%,
-    transparent 100%
-  );
-  -webkit-mask-size: 100% 240%;
-          mask-size: 100% 240%;
-  -webkit-mask-repeat: no-repeat;
-          mask-repeat: no-repeat;
-  animation:
-    aurum-lava-drip 6.2s linear infinite,
-    aurum-lava-shimmer 7s ease-in-out infinite;
-  opacity: 0.78;
-  mix-blend-mode: hard-light;
-  transition: opacity 500ms ease, filter 500ms ease;
-  will-change: mask-position, background-position, opacity, transform;
+  opacity: 0.9;
+  mix-blend-mode: screen;
+  animation: aurum-lava-fall-main 4.6s linear infinite;
 }
 
 .aurum-lava-layer--fast {
-  background-blend-mode: screen;
-  background-color: hsl(14 100% 50% / 0.45);
-  background-size: 280% 280%;
-  -webkit-mask-image: linear-gradient(
-    180deg,
-    transparent 0%,
-    transparent 38%,
-    hsl(0 0% 0% / 0.85) 50%,
-    transparent 62%,
-    transparent 100%
+  background-size: 170% 210%;
+  filter: saturate(1.32) brightness(1.12) contrast(1.14);
+  clip-path: polygon(
+    18% 0%, 86% 0%,
+    82% 26%, 74% 38%, 67% 30%, 58% 48%,
+    47% 36%, 39% 58%, 29% 45%, 22% 66%,
+    14% 54%, 10% 76%, 6% 64%, 8% 18%
   );
-          mask-image: linear-gradient(
-    180deg,
-    transparent 0%,
-    transparent 38%,
-    hsl(0 0% 0% / 0.85) 50%,
-    transparent 62%,
-    transparent 100%
-  );
-  -webkit-mask-size: 100% 280%;
-          mask-size: 100% 280%;
-  -webkit-mask-repeat: no-repeat;
-          mask-repeat: no-repeat;
-  animation:
-    aurum-lava-drip-offset 4.4s linear infinite,
-    aurum-lava-shimmer 5s ease-in-out infinite reverse;
-  opacity: 0.6;
-  mix-blend-mode: color-dodge;
-  transition: opacity 500ms ease, filter 500ms ease;
-  will-change: mask-position, background-position, opacity, transform;
+  opacity: 0.62;
+  mix-blend-mode: plus-lighter;
+  animation: aurum-lava-fall-fast 3.1s linear infinite;
 }
 
 .aurum-lava-glow {
   background:
-    radial-gradient(120% 50% at 50% 110%,
-      hsl(14 100% 52% / 0.85) 0%,
-      hsl(20 95% 50% / 0.45) 25%,
-      transparent 60%),
-    radial-gradient(140% 40% at 50% -10%,
-      hsl(45 100% 75% / 0.45) 0%,
-      transparent 55%);
-  animation: aurum-ember-bleed 3.4s ease-in-out infinite;
+    radial-gradient(120% 58% at 50% 110%,
+      hsl(14 100% 52% / 0.92) 0%,
+      hsl(20 95% 48% / 0.46) 28%,
+      transparent 62%),
+    radial-gradient(120% 36% at 50% -6%,
+      hsl(46 100% 78% / 0.34) 0%,
+      transparent 62%);
   mix-blend-mode: screen;
+  animation: aurum-ember-bleed 2.8s ease-in-out infinite;
 }
 
 button:hover > .aurum-lava-layer {
+  animation-duration: 3.2s;
   opacity: 1;
-  filter: brightness(1.18) saturate(1.25);
-  animation:
-    aurum-lava-drip 3.4s linear infinite,
-    aurum-lava-shimmer 4s ease-in-out infinite;
+  filter: saturate(1.24) brightness(1.12) contrast(1.12);
 }
+
 button:hover > .aurum-lava-layer--fast {
-  opacity: 0.85;
-  filter: brightness(1.2) saturate(1.3);
-  animation:
-    aurum-lava-drip-offset 2.4s linear infinite,
-    aurum-lava-shimmer 3.2s ease-in-out infinite reverse;
+  animation-duration: 2s;
+  opacity: 0.9;
+  filter: saturate(1.4) brightness(1.18) contrast(1.16);
 }
+
 button:hover > .aurum-lava-glow {
-  animation: aurum-ember-bleed 1.8s ease-in-out infinite;
+  animation-duration: 1.6s;
+  opacity: 1;
 }
 
 button:active > .aurum-lava-layer,
 button:active > .aurum-lava-layer--fast {
-  opacity: 0.5;
-  filter: brightness(0.85) saturate(0.85);
+  opacity: 0.48;
+  filter: saturate(0.92) brightness(0.9);
 }
-button:active > .aurum-lava-glow { opacity: 0.4; }
+
+button:active > .aurum-lava-glow {
+  opacity: 0.36;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .aurum-lava-layer,
   .aurum-lava-layer--fast,
   .aurum-lava-glow {
     animation: none !important;
-    -webkit-mask-position: 50% 50% !important;
-            mask-position: 50% 50% !important;
     transform: none !important;
   }
-  .aurum-lava-layer { opacity: 0.55 !important; }
-  .aurum-lava-layer--fast { opacity: 0.4 !important; }
-  .aurum-lava-glow { opacity: 0.6 !important; }
+
+  .aurum-lava-layer { opacity: 0.45 !important; }
+  .aurum-lava-layer--fast { opacity: 0.3 !important; }
+  .aurum-lava-glow { opacity: 0.55 !important; }
 }
 

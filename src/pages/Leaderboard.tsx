@@ -16,6 +16,8 @@ import TopInvitersWidget from "@/components/TopInvitersWidget";
 import TopTribesWidget from "@/components/TopTribesWidget";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { useMyRank } from "@/hooks/use-my-rank";
+import { useHorizontalSwipe } from "@/hooks/use-horizontal-swipe";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type LeaderRow = {
   username: string;

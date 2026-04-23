@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import magmaTexture from "@/assets/btn-magma-texture.jpg";
 import goldTexture from "@/assets/btn-gold-texture.jpg";
+import lavaTexture from "@/assets/btn-lava-texture.jpg";
 
 const buttonVariants = cva(
   [

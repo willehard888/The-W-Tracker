@@ -190,15 +190,33 @@ const TribeCollectiveFlame = ({
             )}
           </div>
 
-          {/* The flame — massive */}
+          {/* The flame — massive (intake-pulses on each reactor event) */}
           <div
-            className="flex items-end justify-center mb-2"
+            className="relative flex items-end justify-center mb-2"
             style={{ width: size, height: size * 1.2 }}
           >
             {isCold ? (
               <div className="text-7xl opacity-40 leading-none animate-pulse">🕯️</div>
             ) : (
-              <RealisticFlame tier={tier} accent={accent} size={size} />
+              <div
+                key={reactor?.pulseToken ?? 0}
+                className="flame-intake-anim w-full h-full flex items-end justify-center"
+                style={
+                  reactor && reactor.pulseToken > 0
+                    ? {
+                        animation: "flame-intake 420ms cubic-bezier(.2,.8,.2,1)",
+                        willChange: "transform, filter",
+                        transformOrigin: "50% 90%",
+                      }
+                    : undefined
+                }
+              >
+                <RealisticFlame tier={tier} accent={accent} size={size} />
+              </div>
+            )}
+            {/* Realtime ember-rise + "+1" overlay */}
+            {reactor && !isCold && reactor.events.length > 0 && (
+              <EmberRiseLayer events={reactor.events} accent={accent} />
             )}
           </div>
 

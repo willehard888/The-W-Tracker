@@ -259,7 +259,7 @@ const Leaderboard = () => {
       </div>
 
       {/* Season banner */}
-      <div className="animate-reveal animate-reveal-delay-1 relative overflow-hidden rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/[0.12] via-card to-card p-4 mb-4 glow-gold-sm">
+      <div className="animate-reveal animate-reveal-delay-1 relative overflow-hidden rounded-2xl border border-gold/40 glass-3d p-4 mb-4 glow-gold-sm">
         <div
           className="absolute -top-12 -right-8 h-32 w-32 rounded-full opacity-30 blur-2xl pointer-events-none"
           style={{ background: "hsl(var(--gold))" }}
@@ -288,7 +288,7 @@ const Leaderboard = () => {
 
 
       {profile && (
-        <div className="animate-reveal animate-reveal-delay-2 relative overflow-hidden rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/[0.08] via-card to-card p-4 mb-5 glow-gold-sm">
+        <div className="animate-reveal animate-reveal-delay-2 relative overflow-hidden rounded-2xl border border-gold/40 glass-3d p-4 mb-5 glow-gold-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-gold text-primary-foreground font-display font-black text-base shadow-lg shadow-gold/30">
@@ -455,7 +455,7 @@ const Leaderboard = () => {
       </div>
 
       {championData?.recent?.length ? (
-        <div className="mt-6 rounded-xl border border-border bg-card p-4 animate-reveal animate-reveal-delay-3">
+        <div className="mt-6 rounded-xl border border-border glass-3d p-4 animate-reveal animate-reveal-delay-3">
           <div className="flex items-center gap-2 mb-3">
             <Trophy size={16} className="text-gold" />
             <h2 className="font-display font-bold text-base">Hall of Champions</h2>

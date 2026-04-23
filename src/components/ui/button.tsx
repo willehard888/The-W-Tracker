@@ -79,35 +79,49 @@ const buttonVariants = cva(
           "active:shadow-[inset_0_1px_2px_hsl(0_60%_10%/0.65),inset_0_0_18px_hsl(0_60%_8%/0.35),0_1px_1px_hsl(0_0%_0%/0.3)]",
         ].join(" "),
 
-        // Outline — gradient hairline border for built-in 3D
+        // Outline — premium ember-tinted glass with warm hairline border.
+        // Inherited by every existing `variant="outline"` callsite — entire app warms up automatically.
         outline: [
-          "text-foreground",
-          "[background:linear-gradient(180deg,hsl(258_16%_8%)_0%,hsl(258_16%_6%)_100%)]",
+          "relative text-foreground overflow-hidden isolate",
+          "[background:linear-gradient(180deg,hsl(42_60%_46%/0.05)_0%,hsl(258_16%_6%)_100%)]",
           "border border-transparent",
-          "[border-image:linear-gradient(180deg,hsl(var(--border-strong)/0.9),hsl(var(--border)/0.5))_1]",
-          "shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05),0_1px_2px_hsl(0_0%_0%/0.25)]",
-          "hover:text-foreground",
-          "hover:[border-image:linear-gradient(180deg,hsl(var(--border-strong)),hsl(var(--border-strong)/0.7))_1]",
-          "hover:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.08),0_2px_4px_hsl(0_0%_0%/0.3)]",
-          "active:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.4)]",
-        ].join(" "),
-
-        // Secondary — quiet panel
-        secondary: [
-          "text-secondary-foreground",
-          "[background:linear-gradient(180deg,hsl(258_16%_10%)_0%,hsl(258_16%_7%)_100%)]",
-          "shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05),0_1px_2px_hsl(0_0%_0%/0.28)]",
-          "hover:[background:linear-gradient(180deg,hsl(258_16%_12%)_0%,hsl(258_16%_9%)_100%)]",
-          "hover:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.07),0_3px_8px_-2px_hsl(0_0%_0%/0.35)]",
+          "[border-image:linear-gradient(180deg,hsl(var(--gold-soft)/0.55),hsl(18_95%_42%/0.32))_1]",
+          "shadow-[inset_0_1px_0_hsl(var(--gold)/0.10),inset_0_-1px_0_hsl(20_85%_8%/0.45),0_1px_2px_hsl(0_0%_0%/0.3)]",
+          // Hover: ember hairline + diagonal heat shimmer (GPU translate sweep)
+          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
+          "after:[background:linear-gradient(110deg,transparent_30%,hsl(var(--gold-light)/0.18)_50%,transparent_70%)]",
+          "after:opacity-0 after:transition-[transform,opacity] after:duration-[700ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
+          "hover:text-[hsl(var(--gold-light))]",
+          "hover:[border-image:linear-gradient(180deg,hsl(var(--gold)/0.85),hsl(18_95%_50%/0.55))_1]",
+          "hover:[background:linear-gradient(180deg,hsl(42_60%_46%/0.10)_0%,hsl(258_16%_8%)_100%)]",
+          "hover:shadow-[inset_0_1px_0_hsl(var(--gold)/0.18),inset_0_-1px_0_hsl(20_85%_8%/0.5),0_2px_4px_hsl(0_0%_0%/0.3),0_6px_18px_-6px_hsl(var(--gold)/0.25)]",
           "active:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.45)]",
         ].join(" "),
 
-        // Ghost — transparent + hairline lift on hover
+        // Secondary — premium gold-glass panel.
+        // Inherited by ~175 existing `variant="secondary"` callsites — entire app auto-warms.
+        secondary: [
+          "relative text-secondary-foreground overflow-hidden isolate",
+          "[background:linear-gradient(180deg,hsl(258_16%_11%)_0%,hsl(258_16%_7%)_100%)]",
+          // Top gold hairline + bottom warm coal hairline + faint inner gold radiance
+          "shadow-[inset_0_1px_0_hsl(var(--gold)/0.16),inset_0_-1px_0_hsl(20_85%_6%/0.55),inset_0_-14px_30px_-18px_hsl(var(--gold-soft)/0.22),0_1px_2px_hsl(0_0%_0%/0.3)]",
+          "border border-[hsl(var(--gold)/0.12)]",
+          "hover:[background:linear-gradient(180deg,hsl(258_16%_13%)_0%,hsl(258_16%_8%)_100%)]",
+          "hover:border-[hsl(var(--gold)/0.32)]",
+          "hover:text-[hsl(var(--gold-light))]",
+          "hover:shadow-[inset_0_1px_0_hsl(var(--gold)/0.24),inset_0_-1px_0_hsl(20_85%_6%/0.6),inset_0_-14px_32px_-18px_hsl(var(--gold-soft)/0.32),0_3px_10px_-2px_hsl(0_0%_0%/0.4),0_8px_22px_-8px_hsl(var(--gold)/0.22)]",
+          "active:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.5)]",
+          "focus-visible:[animation:button-warm-rim-breathe_4s_ease-in-out_infinite]",
+        ].join(" "),
+
+        // Ghost — transparent with gold lift on hover
         ghost: [
           "text-foreground",
-          "hover:bg-[hsl(0_0%_100%/0.04)]",
-          "hover:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.06),inset_0_-1px_0_hsl(var(--border-strong)/0.7)]",
-          "active:bg-[hsl(0_0%_100%/0.06)]",
+          "hover:bg-[hsl(var(--gold)/0.06)]",
+          "hover:text-[hsl(var(--gold-light))]",
+          "hover:shadow-[inset_0_1px_0_hsl(var(--gold)/0.12),inset_0_-1px_0_hsl(var(--gold-soft)/0.35)]",
+          "active:bg-[hsl(var(--gold)/0.10)]",
         ].join(" "),
 
         // Link — gold-soft → gold
@@ -295,6 +309,55 @@ const buttonVariants = cva(
           "active:[animation:none]",
           "active:shadow-[inset_0_0_0_0.5px_hsl(20_70%_4%/0.95),inset_0_2px_5px_hsl(20_75%_6%/0.7),inset_0_-1px_0_hsl(40_100%_80%/0.18),inset_0_-8px_18px_-10px_hsl(18_95%_42%/0.5),0_1px_1px_hsl(0_0%_0%/0.5)]",
           "disabled:grayscale-[0.5] disabled:after:hidden disabled:before:hidden disabled:[animation:none]",
+        ].join(" "),
+
+        // Gold-soft — explicit premium gold-glass for cancel/compare/message style actions.
+        // Stronger gold crown than `secondary` — pick this when you want clearer "luxury cancel".
+        "gold-soft": [
+          "relative text-[hsl(var(--gold-light))] font-semibold overflow-hidden isolate",
+          "[background:linear-gradient(180deg,hsl(258_16%_12%)_0%,hsl(258_16%_7%)_100%)]",
+          "border border-[hsl(var(--gold)/0.28)]",
+          "shadow-[inset_0_1px_0_hsl(var(--gold)/0.30),inset_0_-1px_0_hsl(20_85%_6%/0.55),inset_0_-14px_30px_-16px_hsl(var(--gold-soft)/0.30),0_1px_2px_hsl(0_0%_0%/0.32)]",
+          "before:content-[''] before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:rounded-t-[inherit] before:pointer-events-none",
+          "before:[background:radial-gradient(120%_100%_at_50%_-30%,hsl(var(--gold-light)/0.22)_0%,transparent_70%)]",
+          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
+          "after:[background:linear-gradient(110deg,transparent_30%,hsl(var(--gold-light)/0.30)_50%,transparent_70%)]",
+          "after:opacity-0 after:transition-[transform,opacity] after:duration-[750ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
+          "hover:text-[hsl(46_100%_84%)]",
+          "hover:border-[hsl(var(--gold)/0.55)]",
+          "hover:[background:linear-gradient(180deg,hsl(258_16%_14%)_0%,hsl(258_16%_8%)_100%)]",
+          "hover:shadow-[inset_0_1px_0_hsl(var(--gold)/0.4),inset_0_-1px_0_hsl(20_85%_6%/0.6),inset_0_-14px_32px_-16px_hsl(var(--gold-soft)/0.42),0_3px_10px_-2px_hsl(0_0%_0%/0.4),0_10px_24px_-8px_hsl(var(--gold)/0.32)]",
+          "active:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.5)]",
+        ].join(" "),
+
+        // Ember-glass — explicit ember-tinted glass for tribe/fire-context secondary actions.
+        // Stronger ember vibe than the inherited `outline` look.
+        "ember-glass": [
+          "relative text-[hsl(22_98%_72%)] font-semibold overflow-hidden isolate",
+          "border border-[hsl(18_95%_58%/0.45)]",
+          "[background:linear-gradient(180deg,hsl(18_95%_58%/0.10)_0%,hsl(14_92%_42%/0.06)_100%)]",
+          "shadow-[inset_0_1px_0_hsl(48_100%_88%/0.16),inset_0_-1px_0_hsl(10_82%_14%/0.45),inset_0_-10px_20px_-12px_hsl(18_95%_58%/0.42),0_1px_2px_hsl(14_70%_10%/0.32),0_4px_14px_-6px_hsl(18_95%_58%/0.28)]",
+          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none",
+          "before:[background:radial-gradient(120%_80%_at_50%_120%,hsl(18_98%_58%/0.22)_0%,transparent_60%)]",
+          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
+          "after:[background:linear-gradient(110deg,transparent_30%,hsl(22_98%_72%/0.24)_50%,transparent_70%)]",
+          "after:opacity-0 after:transition-[transform,opacity] after:duration-[700ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
+          "hover:text-[hsl(28_100%_78%)]",
+          "hover:border-[hsl(18_95%_58%/0.85)]",
+          "hover:[background:linear-gradient(180deg,hsl(18_95%_58%/0.20)_0%,hsl(14_92%_42%/0.12)_100%)]",
+          "hover:shadow-[inset_0_1px_0_hsl(48_100%_88%/0.22),inset_0_-1px_0_hsl(10_82%_14%/0.5),inset_0_-12px_22px_-12px_hsl(18_95%_60%/0.55),0_2px_3px_hsl(14_70%_10%/0.35),0_8px_22px_-4px_hsl(18_95%_58%/0.42)]",
+          "active:shadow-[inset_0_2px_4px_hsl(10_82%_10%/0.5)]",
+        ].join(" "),
+
+        // Gold-icon — for icon-only buttons (back/close/clear) that need a warm hover.
+        "gold-icon": [
+          "text-[hsl(var(--foreground-muted))]",
+          "hover:bg-[hsl(var(--gold)/0.08)]",
+          "hover:text-[hsl(var(--gold-light))]",
+          "hover:shadow-[inset_0_1px_0_hsl(var(--gold)/0.20),inset_0_-1px_0_hsl(var(--gold-soft)/0.35),0_4px_14px_-4px_hsl(var(--gold)/0.30)]",
+          "active:bg-[hsl(var(--gold)/0.14)]",
         ].join(" "),
 
         // Coal outline — hairline coal for secondary actions matching `coal`

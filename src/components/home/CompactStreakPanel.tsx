@@ -465,6 +465,9 @@ const CompactStreakPanel = ({
               tier={tier.index}
               accent={accent}
               size={62}
+              prizeProgress={prizeProgress}
+              prizeGlyph={prizeGlyph}
+              droppedRewards={droppedRewards}
             />
           </span>
           {/* Ground glow — bigger, hotter, sells the heat */}

@@ -706,6 +706,101 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
           <ellipse cx="20" cy="36" rx="8" ry="16" fill={`url(#coreG-${uid})`} />
         </svg>
 
+        {/* 7b. Heart bloom — pulsing white-hot bloom inside the core (Hot+).
+            Sells the idea that the flame has a *living center*, not just paint. */}
+        {isHot && (
+          <span
+            aria-hidden
+            className="absolute left-1/2 pointer-events-none rounded-full"
+            style={{
+              width: size * 0.28,
+              height: size * 0.36,
+              bottom: size * 0.18,
+              background: `radial-gradient(ellipse at 50% 60%, ${palette.core.replace(")", " / 0.95)")} 0%, ${palette.inner.replace(")", " / 0.55)")} 45%, transparent 78%)`,
+              filter: `blur(${Math.max(2, size * 0.04)}px)`,
+              transform: "translateX(-50%)",
+              mixBlendMode: "screen",
+              animation: `flame-heart-bloom ${(1.2 * speedMul).toFixed(2)}s ease-in-out infinite`,
+              animationDelay: `-${breathOffset}s`,
+            }}
+          />
+        )}
+
+        {/* 7c. Aurora rim — thin colored ring tracing the flame outline (Blazing+).
+            Two stacked, counter-rotating hue shifts → flame edge feels iridescent. */}
+        {isBlazing && (
+          <>
+            <svg
+              aria-hidden
+              className="absolute left-1/2 bottom-0 pointer-events-none"
+              width={size * 0.84}
+              height={size * 1.1}
+              viewBox="0 0 40 56"
+              style={{
+                transform: "translateX(-50%)",
+                transformOrigin: "center bottom",
+                filter: `drop-shadow(0 0 ${size * 0.06}px ${palette.haze})`,
+                mixBlendMode: "screen",
+                opacity: 0.75,
+                animation: `flame-aurora-hue ${(6 * speedMul).toFixed(2)}s linear infinite`,
+              }}
+            >
+              <path
+                d={FLAME_PATH}
+                fill="none"
+                stroke={palette.haze}
+                strokeWidth={isInferno ? 0.8 : 0.55}
+                strokeOpacity="0.8"
+              />
+            </svg>
+            <svg
+              aria-hidden
+              className="absolute left-1/2 bottom-0 pointer-events-none"
+              width={size * 0.78}
+              height={size * 1.04}
+              viewBox="0 0 40 56"
+              style={{
+                transform: "translateX(-50%)",
+                transformOrigin: "center bottom",
+                filter: `drop-shadow(0 0 ${size * 0.05}px ${palette.inner})`,
+                mixBlendMode: "screen",
+                opacity: 0.5,
+                animation: `flame-aurora-hue ${(8 * speedMul).toFixed(2)}s linear infinite reverse`,
+              }}
+            >
+              <path
+                d={FLAME_PATH}
+                fill="none"
+                stroke={palette.inner}
+                strokeWidth={0.45}
+                strokeOpacity="0.7"
+              />
+            </svg>
+          </>
+        )}
+
+        {/* 7d. Volumetric god-ray — single soft beam of light shooting up from
+            the core (Diamond+). Sells the verticality and "burning upward" energy. */}
+        {isDiamond && (
+          <span
+            aria-hidden
+            className="absolute left-1/2 pointer-events-none"
+            style={{
+              width: size * 0.18,
+              height: size * 1.6,
+              bottom: size * 0.28,
+              background: `linear-gradient(180deg, ${palette.core.replace(")", " / 0.55)")} 0%, ${palette.inner.replace(")", " / 0.28)")} 35%, transparent 80%)`,
+              filter: `blur(${Math.max(3, size * 0.08)}px)`,
+              transform: "translateX(-50%)",
+              transformOrigin: "center bottom",
+              mixBlendMode: "screen",
+              animation: `flame-godray-pulse ${(2.4 * speedMul).toFixed(2)}s ease-in-out infinite`,
+              animationDelay: `-${breathOffset}s`,
+              opacity: 0.7,
+            }}
+          />
+        )}
+
         {/* 8. White-hot tip whip — tiny extra-fast whip on top of the core */}
         {isOnFire && (
           <svg

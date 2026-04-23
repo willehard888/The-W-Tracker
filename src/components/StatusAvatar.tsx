@@ -69,13 +69,42 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
       {isApex && (
         <div
           aria-hidden
-          className="absolute inset-0 rounded-full pointer-events-none animate-pulse"
+          className="absolute inset-0 rounded-full pointer-events-none status-amber-ring-breathe"
           style={{
             boxShadow:
               "0 0 0 2px hsl(18 95% 58% / 0.55), 0 0 16px 2px hsl(18 95% 58% / 0.5), 0 0 32px 4px hsl(var(--gold) / 0.35)",
           }}
         />
       )}
+
+      {/* Apex — 2 orbiting embers (CSS-only rotation around the avatar) */}
+      {isApex && (size === "lg" || size === "xl" || size === "md") && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 status-legend-conic-spin"
+        >
+          <span
+            className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-1 h-1 rounded-full bg-[hsl(18_95%_58%)]"
+            style={{ boxShadow: "0 0 6px hsl(18 95% 58%), 0 0 12px hsl(var(--gold))" }}
+          />
+          <span
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-[3px] h-[3px] rounded-full bg-gold"
+            style={{ boxShadow: "0 0 5px hsl(var(--gold)), 0 0 10px hsl(18 95% 58%)" }}
+          />
+        </div>
+      )}
+
+      {/* Elite — sykkivä kultareuna (sisäreuna) */}
+      {tier === "elite" && (
+        <div
+          aria-hidden
+          className="absolute inset-0 rounded-full pointer-events-none status-amber-ring-breathe"
+          style={{
+            boxShadow: "0 0 0 1px hsl(var(--gold) / 0.55), 0 0 14px 1px hsl(var(--gold) / 0.4)",
+          }}
+        />
+      )}
+
       <div
         className={cn(
           "relative rounded-full flex items-center justify-center",
@@ -83,6 +112,8 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
           ringStyle,
           isHighTier && "shadow-[0_0_12px_-2px_currentColor]",
           isApex && "apex-aura-large",
+          // High Performer — first hint of warmth
+          tier === "high_performer" && "shadow-[0_4px_12px_hsl(42_78%_54%/0.18)]",
         )}
         style={
           isHighTier
@@ -92,7 +123,6 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
                   : isApex
                   ? "hsl(18 95% 58% / 0.5)"
                   : "hsl(var(--gold) / 0.4)",
-                // Promote to own layer — prevents first-paint flash / reflow
                 willChange: "transform",
                 transform: "translateZ(0)",
                 backfaceVisibility: "hidden",
@@ -128,6 +158,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
               ["recruit", "normal"].includes(tier)
                 ? "text-muted-foreground"
                 : "text-background",
+              isApex && "status-flame-flicker",
             )}
             strokeWidth={2.5}
           />
@@ -138,9 +169,9 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
       {isApex && (
         <div
           aria-hidden
-          className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border border-background flex items-center justify-center shadow-[0_0_6px_hsl(18_95%_58%/0.8)] animate-pulse"
+          className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border border-background flex items-center justify-center shadow-[0_0_6px_hsl(18_95%_58%/0.8)] status-amber-ring-breathe"
         >
-          <Zap size={9} className="text-background" strokeWidth={3} fill="currentColor" />
+          <Zap size={9} className="text-background status-flame-flicker" strokeWidth={3} fill="currentColor" />
         </div>
       )}
     </div>

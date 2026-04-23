@@ -2838,3 +2838,106 @@
     [class*="button-warm-rim-breathe"] { animation: none !important; }
   }
 }
+
+/* ═════════════════════════════════════════════════════════════════
+   STATUS FIRE SYSTEM — embers, amber rings, heat shimmers
+   GPU-only (transform/opacity), ≤20 spans/page, reduced-motion safe.
+   ═════════════════════════════════════════════════════════════════ */
+
+/* Rising ember — small dot floats up 60–80px, drifts ±12px, fades */
+@keyframes status-ember-rise {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.6);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+    transform: translate3d(0, -8px, 0) scale(1);
+  }
+  60% {
+    opacity: 0.85;
+    transform: translate3d(8px, -42px, 0) scale(0.9);
+  }
+  100% {
+    transform: translate3d(-6px, -78px, 0) scale(0.4);
+    opacity: 0;
+  }
+}
+
+/* Amber ring — opacity breathes 0.55 → 1 → 0.55 over 5s */
+@keyframes status-amber-ring-breathe {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+
+/* Diagonal heat shimmer — light bar sweeps top-tier nameplates */
+@keyframes status-heat-shimmer {
+  0%   { transform: translate3d(-120%, 0, 0) skewX(-18deg); opacity: 0; }
+  10%  { opacity: 0.55; }
+  60%  { opacity: 0.55; }
+  100% { transform: translate3d(220%, 0, 0) skewX(-18deg); opacity: 0; }
+}
+
+/* Flame flicker — Apex/Elite icon lepattaa */
+@keyframes status-flame-flicker {
+  0%, 100% { transform: scale(1)    translateY(0); opacity: 1; }
+  18%      { transform: scale(1.04) translateY(-0.4px); opacity: 0.92; }
+  36%      { transform: scale(0.97) translateY(0.2px);  opacity: 1; }
+  55%      { transform: scale(1.03) translateY(-0.3px); opacity: 0.95; }
+  74%      { transform: scale(0.98) translateY(0.1px);  opacity: 1; }
+}
+
+/* Coal pulse — bottom amber radial-gradient hehkuu sisään */
+@keyframes status-coal-pulse {
+  0%, 100% { opacity: 0.45; transform: scaleY(1); }
+  50%      { opacity: 0.95; transform: scaleY(1.08); }
+}
+
+/* Slow conic spin for Legend ring */
+@keyframes status-legend-conic-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Utility classes — apply to status surfaces */
+.status-ember-rise {
+  animation: status-ember-rise 4s ease-out infinite;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+.status-amber-ring-breathe {
+  animation: status-amber-ring-breathe 5s ease-in-out infinite;
+  will-change: opacity;
+}
+.status-heat-shimmer {
+  animation: status-heat-shimmer 8s ease-in-out infinite;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+.status-flame-flicker {
+  animation: status-flame-flicker 2.4s ease-in-out infinite;
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+}
+.status-coal-pulse {
+  animation: status-coal-pulse 6s ease-in-out infinite;
+  will-change: opacity, transform;
+  pointer-events: none;
+}
+.status-legend-conic-spin {
+  animation: status-legend-conic-spin 18s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-ember-rise,
+  .status-amber-ring-breathe,
+  .status-heat-shimmer,
+  .status-flame-flicker,
+  .status-coal-pulse,
+  .status-legend-conic-spin {
+    animation: none !important;
+  }
+  .status-ember-rise { opacity: 0; }
+}
+

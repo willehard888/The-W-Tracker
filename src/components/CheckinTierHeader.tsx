@@ -81,10 +81,32 @@ const CheckinTierHeader = ({
       : "text-muted-foreground";
 
   return (
-    <div className="sticky top-0 z-20 -mx-4 px-4 pt-3 pb-3 mb-4 bg-background/90 backdrop-blur-xl border-b border-border/40">
+    <div className="sticky top-0 z-20 -mx-4 px-4 pt-3 pb-3 mb-4 bg-background/90 backdrop-blur-xl border-b border-border/40 overflow-hidden">
       {/* Tier-specific glow background */}
       <div className={cn("absolute inset-0 -z-10 bg-gradient-to-br pointer-events-none opacity-90", bg)} />
 
+      {/* Apex/Legend — amber cinder rain (3 embers from right) */}
+      {cfg.rank >= 5 && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          {[
+            { right: "8%",  delay: "0s",   color: "hsl(18 95% 58%)" },
+            { right: "32%", delay: "1.4s", color: "hsl(var(--gold))" },
+            { right: "60%", delay: "2.8s", color: cfg.rank === 6 ? "hsl(280 70% 70%)" : "hsl(18 95% 62%)" },
+          ].map((e, i) => (
+            <span
+              key={i}
+              className="absolute bottom-0 status-ember-rise rounded-full w-[2.5px] h-[2.5px]"
+              style={{
+                right: e.right,
+                background: e.color,
+                boxShadow: `0 0 5px ${e.color}, 0 0 10px ${e.color}`,
+                animationDelay: e.delay,
+                animationDuration: "5s",
+              }}
+            />
+          ))}
+        </div>
+      )}
       {/* Top row */}
       <div className="flex items-center gap-3">
         <button
@@ -140,7 +162,11 @@ const CheckinTierHeader = ({
               {cfg.rank >= 5 ? "+25%" : "+25%"}
             </span>
           )}
-          <Zap size={13} className="text-gold" fill="currentColor" />
+          <Zap
+            size={13}
+            className={cn("text-gold", cfg.rank >= 5 && "status-flame-flicker")}
+            fill="currentColor"
+          />
           <span className="text-base font-display font-black text-gold tabular-nums leading-none">
             {totalXp}
           </span>
@@ -152,7 +178,15 @@ const CheckinTierHeader = ({
       <div className="mt-3 grid grid-cols-[auto_1fr] items-center gap-3">
         {/* Streak block */}
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-background/60 border border-border/40">
-          <Flame size={14} className={streakFlameColor} fill="currentColor" strokeWidth={2.4} />
+          <Flame
+            size={14}
+            className={cn(
+              streakFlameColor,
+              (streakIntensity === "critical" || streakIntensity === "legendary") && "status-flame-flicker",
+            )}
+            fill="currentColor"
+            strokeWidth={2.4}
+          />
           <span
             className={cn(
               "font-display text-sm font-black tabular-nums leading-none",
@@ -203,9 +237,16 @@ const CheckinTierHeader = ({
               transition={{ duration: 0.6, ease: "easeOut" }}
               className={cn("h-full rounded-full relative overflow-hidden", accent.bar)}
             >
-              {/* Animated shimmer for high tiers when filling up */}
+              {/* Animated shimmer for high tiers when filling up — faster on Apex/Legend */}
               {cfg.rank >= 4 && perfPercent > 30 && (
-                <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_30%,hsl(0_0%_100%/0.35)_50%,transparent_70%)] [background-size:200%_100%] [animation:shimmer-slide_2.2s_linear_infinite]" />
+                <div
+                  className={cn(
+                    "absolute inset-0 bg-[linear-gradient(110deg,transparent_30%,hsl(0_0%_100%/0.35)_50%,transparent_70%)] [background-size:200%_100%]",
+                    cfg.rank >= 5
+                      ? "[animation:shimmer-slide_1.4s_linear_infinite]"
+                      : "[animation:shimmer-slide_2.2s_linear_infinite]",
+                  )}
+                />
               )}
             </motion.div>
           </div>

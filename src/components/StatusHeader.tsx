@@ -151,6 +151,28 @@ const StatusHeader = () => {
           />
         )}
 
+        {/* Apex / Elite header — 2 rising amber embers along the bottom edge */}
+        {(isApex || tier === "elite") && (
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-8 overflow-hidden">
+            {[
+              { left: "30%", delay: "0s",   color: isApex ? "hsl(18 95% 58%)" : "hsl(var(--gold-light))" },
+              { left: "72%", delay: "1.8s", color: isApex ? "hsl(var(--gold))" : "hsl(var(--gold))" },
+            ].map((e, i) => (
+              <span
+                key={i}
+                className="absolute bottom-0 status-ember-rise rounded-full w-[2px] h-[2px]"
+                style={{
+                  left: e.left,
+                  background: e.color,
+                  boxShadow: `0 0 4px ${e.color}, 0 0 8px ${e.color}`,
+                  animationDelay: e.delay,
+                  animationDuration: "4.5s",
+                }}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Brand strip — minimal */}
         <button
           onClick={() => navigate("/")}
@@ -264,7 +286,7 @@ const StatusHeader = () => {
             >
               <Zap
                 size={11}
-                className="relative z-10 text-primary-foreground"
+                className="relative z-10 text-primary-foreground status-flame-flicker"
                 strokeWidth={3}
                 fill="currentColor"
               />
@@ -278,7 +300,7 @@ const StatusHeader = () => {
               animate={{ opacity: [0.92, 1, 0.92] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             >
-              <Crown size={11} className="relative z-10 text-primary-foreground" />
+              <Crown size={11} className="relative z-10 text-primary-foreground status-flame-flicker" />
               <span className="relative z-10 text-[10px] font-bold text-primary-foreground uppercase tracking-wider">
                 Elite
               </span>

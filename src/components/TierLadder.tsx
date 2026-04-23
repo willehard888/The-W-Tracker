@@ -122,9 +122,42 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
                 {(cfg.rank === 5 || cfg.rank === 6) && (
                   <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_30%,hsl(var(--gold)/0.18)_50%,transparent_70%)] opacity-60" />
                 )}
-                {/* Legend — extra corner sparkle */}
+                {/* Apex — 2 rising amber embers on the right edge */}
+                {cfg.rank === 5 && (
+                  <div aria-hidden className="pointer-events-none absolute inset-y-0 right-2 w-6 overflow-hidden">
+                    <span
+                      className="absolute bottom-0 right-1 w-[2px] h-[2px] rounded-full status-ember-rise"
+                      style={{
+                        background: "hsl(18 95% 58%)",
+                        boxShadow: "0 0 4px hsl(18 95% 58%), 0 0 8px hsl(var(--gold))",
+                        animationDuration: "4.2s",
+                      }}
+                    />
+                    <span
+                      className="absolute bottom-0 right-3 w-[2px] h-[2px] rounded-full status-ember-rise"
+                      style={{
+                        background: "hsl(var(--gold))",
+                        boxShadow: "0 0 4px hsl(var(--gold)), 0 0 8px hsl(18 95% 58%)",
+                        animationDelay: "2.1s",
+                        animationDuration: "4.2s",
+                      }}
+                    />
+                  </div>
+                )}
+                {/* Legend — extra corner sparkle + 1 amber cinder */}
                 {cfg.rank === 6 && (
-                  <Sparkles size={10} className="absolute top-1.5 right-1.5 text-gold-light drop-shadow-[0_0_4px_hsl(var(--gold)/0.8)]" strokeWidth={2.6} />
+                  <>
+                    <Sparkles size={10} className="absolute top-1.5 right-1.5 text-gold-light drop-shadow-[0_0_4px_hsl(var(--gold)/0.8)]" strokeWidth={2.6} />
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute bottom-0 right-6 w-[2.5px] h-[2.5px] rounded-full status-ember-rise"
+                      style={{
+                        background: "hsl(280 70% 70%)",
+                        boxShadow: "0 0 5px hsl(280 70% 70%), 0 0 10px hsl(var(--gold))",
+                        animationDuration: "6.5s",
+                      }}
+                    />
+                  </>
                 )}
 
                 {/* Tier icon block */}
@@ -169,8 +202,12 @@ const TierLadder = ({ currentTier, isApexSubscriber = false, className }: TierLa
                       {cfg.label}
                     </p>
                     {isCurrent && (
-                      <span className="text-[8px] uppercase tracking-[0.18em] font-black text-background bg-gradient-to-r from-gold to-gold-light px-1.5 py-[2px] rounded-sm shadow-[0_0_8px_hsl(var(--gold)/0.5)]">
+                      <span className="relative text-[8px] uppercase tracking-[0.18em] font-black text-background bg-gradient-to-r from-gold to-gold-light px-1.5 py-[2px] rounded-sm shadow-[0_0_8px_hsl(var(--gold)/0.5)]">
                         Current Tier
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute -inset-[2px] rounded-sm border border-gold/60 status-amber-ring-breathe"
+                        />
                       </span>
                     )}
                     {/* Crown marker on Apex/Legend when locked */}

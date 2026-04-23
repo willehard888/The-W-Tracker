@@ -509,6 +509,19 @@ const CompactStreakPanel = ({
               </span>
             )}
           </div>
+          {/* Loss-aversion microcopy — shown only when there's something to lose. */}
+          {displayStreak >= 3 && !deadline?.expired && (
+            <p
+              className="mt-1.5 text-[9px] font-black uppercase tracking-[0.18em] flex items-center gap-1 leading-none"
+              style={{
+                color: isHot ? accent : "hsl(var(--muted-foreground))",
+                textShadow: isHot ? `0 0 10px ${accent.replace(")", " / 0.45)")}` : undefined,
+              }}
+            >
+              <span aria-hidden className="inline-block h-1 w-1 rounded-full" style={{ background: accent, boxShadow: `0 0 6px ${accent}` }} />
+              {isLegendary ? "Don't let it die" : isDiamond ? "Protect the fire" : "Keep it alive"}
+            </p>
+          )}
         </div>
       </div>
 

@@ -52,6 +52,7 @@ const TribeNew = lazy(() => import("./pages/TribeNew"));
 const TribeDetail = lazy(() => import("./pages/TribeDetail"));
 const TribeBattles = lazy(() => import("./pages/TribeBattles"));
 const TribeLeaderboard = lazy(() => import("./pages/TribeLeaderboard"));
+const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -133,6 +134,7 @@ const AppRoutes = () => {
                   <Route path="/tribes/new" element={<ProtectedRoute><TribeNew /></ProtectedRoute>} />
                   <Route path="/tribes/:id" element={<ProtectedRoute><TribeDetail /></ProtectedRoute>} />
                   <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />
+                  <Route path="/button-gallery" element={<ProtectedRoute><ButtonGallery /></ProtectedRoute>} />
                   <Route path="/u/:username" element={<PublicProfile />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/reset-password" element={<ResetPassword />} />

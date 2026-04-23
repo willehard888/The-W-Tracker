@@ -56,8 +56,27 @@ serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
+    const stripe = new Stripe(stripeKey, {
+      apiVersion: "2025-08-27.basil",
+      timeout: 8000, // ms — never let a single Stripe call hang
+      maxNetworkRetries: 1,
+    });
+
+    // Wrap any promise with an overall deadline so the edge function
+    // can't sit at the 150s idle timeout when Stripe is slow / unreachable.
+    const withDeadline = <T,>(p: Promise<T>, ms: number, label: string): Promise<T> =>
+      Promise.race([
+        p,
+        new Promise<T>((_, reject) =>
+          setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms),
+        ),
+      ]);
+
+    const customers = await withDeadline(
+      stripe.customers.list({ email: userEmail, limit: 1 }),
+      9000,
+      "stripe.customers.list",
+    );
 
     if (customers.data.length === 0) {
       await serviceClient.from("profiles").update({

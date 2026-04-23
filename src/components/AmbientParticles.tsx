@@ -102,12 +102,7 @@ const AmbientParticles = () => {
           Object.assign(p, createParticle(w, h, true));
         }
 
-        // Soft bloom halo for a more cinematic feel (single extra fill).
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * 3.2, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue},85%,${p.lightness}%,${p.opacity * 0.18})`;
-        ctx.fill();
-
+        // Single fill — bloom dropped (was costing ~2x fill rate per particle).
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = `hsla(${p.hue},90%,${Math.min(p.lightness + 6, 80)}%,${p.opacity})`;

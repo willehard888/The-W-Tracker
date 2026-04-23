@@ -478,7 +478,7 @@ const PublicProfile = () => {
         imageUrl={lightboxUrl}
         username={profile.username}
         avatarUrl={profile.avatar_url}
-        tier={profile.status_tier || "recruit"}
+        tier={(profile.status_tier || "recruit") as any}
         level={profile.level}
         streak={profile.streak}
         likes={lightboxPost?.likes_count}

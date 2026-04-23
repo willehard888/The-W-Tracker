@@ -20,6 +20,20 @@ interface RealisticFlameProps {
    * heat-haze layer. Auto-enabled at size >= 64; explicitly opt-out with `false`.
    */
   interactive?: boolean;
+  /**
+   * 0..1 — fills the frozen mystery prize from the bottom up, like a progress
+   * bar of melt-water rising inside the prism. At 1.0 the prize is fully
+   * thawed and ready to drop. Animations themselves are unchanged.
+   */
+  prizeProgress?: number;
+  /** Glyph shown inside the ice (default "?"). When revealed, can be a 🏆/🎖️/etc. */
+  prizeGlyph?: string;
+  /**
+   * Rewards (emoji or short text) that the ice has released. Each entry will
+   * fall from the prize down past the flame on a unique trajectory. Pass a
+   * stable array — mounting a new index triggers a new drop.
+   */
+  droppedRewards?: string[];
 }
 
 /**
@@ -47,7 +61,7 @@ interface RealisticFlameProps {
  *  like wind is on it.
  */
 const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
-  ({ tier, accent, size = 44, className, interactive }, ref) => {
+  ({ tier, accent, size = 44, className, interactive, prizeProgress, prizeGlyph, droppedRewards }, ref) => {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -795,11 +809,11 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
       )}
 
       {/* ── Frozen mystery prize — suspended in an icy crystal above the flame.
-          The flame is slowly melting it from below. Pure SVG, hangs from a
-          frosted chain, with: a faceted ice prism, a glowing "?" core inside,
-          a heat-meltline at the bottom that drips, refraction shimmer, and
-          frost dust around it. Only renders at meaningful sizes. ────────── */}
-      {isHot && size >= 36 && (
+          Doubles as a PROGRESS METER: a "melt-water" level rises inside the
+          prism from 0 → 1 (prizeProgress). When unlocked rewards are passed
+          via `droppedRewards`, each falls out of the prize past the flame.
+          Only renders when the parent opts in by passing `prizeProgress`.   */}
+      {isHot && size >= 36 && prizeProgress !== undefined && (
         <div
           aria-hidden
           className="absolute left-1/2 pointer-events-none"
@@ -812,6 +826,20 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
             zIndex: 2,
           }}
         >
+          {(() => {
+            // Clamp + derive melt visuals from progress
+            const p = Math.max(0, Math.min(1, prizeProgress ?? 0));
+            // The icy interior spans roughly y=12..92 in the 100-unit viewBox.
+            const ICE_TOP = 12;
+            const ICE_BOTTOM = 92;
+            const meltY = ICE_BOTTOM - (ICE_BOTTOM - ICE_TOP) * p; // top of the rising water
+            // As progress climbs, the heat-melt rim glows brighter and the
+            // glyph becomes legible (revealing what's inside).
+            const meltGlow = 0.55 + p * 0.45;
+            const glyphOpacity = 0.55 + p * 0.45;
+            const glyph = prizeGlyph ?? "?";
+            return (
+              <>
           {/* Frosted suspension chain — runs up out of frame */}
           <div
             className="absolute left-1/2 top-0 -translate-x-1/2"
@@ -877,6 +905,17 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
                 <stop offset="40%" stopColor={palette.outer} stopOpacity="0.5" />
                 <stop offset="100%" stopColor="hsl(0 0% 0% / 0)" />
               </linearGradient>
+              {/* Melt-water progress fill — warm gold rising from the bottom,
+                  shows progress toward unlocking the prize */}
+              <linearGradient id={`ice-progress-${uid}`} x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%"   stopColor="hsl(42 100% 65%)" stopOpacity="0.85" />
+                <stop offset="55%"  stopColor="hsl(38 100% 60%)" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="hsl(32 95% 55%)"  stopOpacity="0.35" />
+              </linearGradient>
+              {/* Clip the progress fill to the prism silhouette */}
+              <clipPath id={`ice-clip-${uid}`}>
+                <path d="M40 4 L66 28 L72 60 L58 88 L40 96 L22 88 L8 60 L14 28 Z" />
+              </clipPath>
             </defs>
 
             {/* Outer ice prism — diamond/teardrop hybrid */}
@@ -886,6 +925,32 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
               stroke="hsl(200 90% 88% / 0.7)"
               strokeWidth="0.8"
             />
+
+            {/* Progress fill — golden melt-water rising inside the prism */}
+            <g clipPath={`url(#ice-clip-${uid})`}>
+              <rect
+                x="0"
+                y={meltY}
+                width="80"
+                height={100 - meltY}
+                fill={`url(#ice-progress-${uid})`}
+                style={{
+                  transition: "y 600ms cubic-bezier(0.22, 1, 0.36, 1), height 600ms cubic-bezier(0.22, 1, 0.36, 1)",
+                }}
+              />
+              {/* Subtle wave line at the top of the rising water */}
+              <path
+                d={`M0 ${meltY} Q20 ${meltY - 1.2} 40 ${meltY} T80 ${meltY}`}
+                stroke="hsl(48 100% 85%)"
+                strokeWidth="0.6"
+                fill="none"
+                opacity="0.85"
+                style={{
+                  transition: "d 600ms cubic-bezier(0.22, 1, 0.36, 1)",
+                  filter: "drop-shadow(0 0 1.5px hsl(42 100% 70% / 0.9))",
+                }}
+              />
+            </g>
 
             {/* Inner facet edges — give the crystal cut-glass faceting */}
             <path
@@ -918,20 +983,24 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
               fontSize="26"
               fontWeight="900"
               fill="hsl(48 100% 92%)"
-              opacity="0.9"
+              opacity={glyphOpacity}
               style={{
                 filter: "drop-shadow(0 0 4px hsl(42 100% 70% / 0.9))",
+                transition: "opacity 500ms ease-out",
               }}
             >
-              ?
+              {glyph}
             </text>
 
             {/* Heat melt-rim at the bottom — where the flame is eating it */}
             <path
               d="M22 88 L58 88 L52 96 L40 99 L28 96 Z"
               fill={`url(#ice-melt-${uid})`}
-              opacity="0.95"
-              style={{ mixBlendMode: "screen" }}
+              opacity={meltGlow}
+              style={{
+                mixBlendMode: "screen",
+                transition: "opacity 500ms ease-out",
+              }}
             />
             {/* Soft melt blur outline */}
             <path
@@ -943,6 +1012,26 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
               opacity="0.7"
               style={{ mixBlendMode: "screen", filter: "blur(0.6px)" }}
             />
+
+            {/* Tiny progress label on the prism — only when it's earning */}
+            {p > 0.02 && (
+              <text
+                x="40"
+                y="84"
+                textAnchor="middle"
+                fontFamily="ui-sans-serif, system-ui, sans-serif"
+                fontSize="9"
+                fontWeight="900"
+                fill="hsl(48 100% 92%)"
+                opacity="0.85"
+                style={{
+                  filter: "drop-shadow(0 0 2px hsl(42 100% 60% / 0.9))",
+                  letterSpacing: "0.5",
+                }}
+              >
+                {Math.round(p * 100)}%
+              </text>
+            )}
           </svg>
 
           {/* Melt drips — water droplets falling from the bottom of the ice */}
@@ -986,8 +1075,53 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
               }}
             />
           ))}
+
+          {/* Released rewards — drop out of the bottom of the prize, fall past
+              the flame on staggered curves. Each unique array index gets its
+              own keyed span so React re-mounts (and re-runs the animation)
+              when the parent appends a new reward. */}
+          {droppedRewards && droppedRewards.length > 0 && (
+            <div
+              className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+              style={{
+                top: size * 1.25,
+                width: size * 1.6,
+                height: size * 2.4,
+              }}
+            >
+              {droppedRewards.map((reward, i) => {
+                const lane = (i % 3) - 1; // -1, 0, 1
+                const delay = (i * 0.18) % 1.2;
+                const duration = 2.6 + (i % 4) * 0.35;
+                return (
+                  <span
+                    key={`reward-${i}-${reward}`}
+                    className="absolute left-1/2 font-black"
+                    style={{
+                      top: 0,
+                      // @ts-expect-error custom prop
+                      "--reward-x": `${lane * (size * 0.55)}px`,
+                      "--reward-y": `${size * 2.2}px`,
+                      transform: "translateX(-50%)",
+                      fontSize: Math.max(14, Math.min(28, size * 0.42)),
+                      lineHeight: 1,
+                      filter: "drop-shadow(0 2px 6px hsl(42 100% 50% / 0.8)) drop-shadow(0 0 12px hsl(48 100% 70% / 0.6))",
+                      animation: `ice-prize-reward-fall ${duration}s cubic-bezier(0.4, 0, 0.6, 1) ${delay}s 1 forwards`,
+                      opacity: 0,
+                    }}
+                  >
+                    {reward}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+              </>
+            );
+          })()}
         </div>
       )}
+
 
       {/* Composite of all SVG flame bodies — wrapped so we can hue-shift Legendary
           AND apply the slow inhale/exhale "breath" cycle. The wrapper transforms-only

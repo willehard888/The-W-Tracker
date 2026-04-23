@@ -351,11 +351,11 @@ const CompactStreakPanel = ({
         <div
           className="relative flex h-20 w-20 items-center justify-center rounded-2xl shrink-0 overflow-visible"
           style={{
-            background: flameBg,
+            background: "transparent",
             color: isHot ? "white" : "hsl(var(--muted-foreground))",
             boxShadow: isHot
-              ? `0 0 38px ${accent.replace(")", " / 0.7)")}, 0 0 80px ${accent.replace(")", " / 0.32)")}, inset 0 1px 0 hsl(0 0% 100% / 0.28), inset 0 -8px 18px hsl(0 0% 0% / 0.4), inset 0 1px 2px hsl(0 0% 0% / 0.15)`
-              : "inset 0 1px 0 hsl(0 0% 100% / 0.05), inset 0 -2px 6px hsl(0 0% 0% / 0.25)",
+              ? `0 0 38px ${accent.replace(")", " / 0.45)")}, 0 0 80px ${accent.replace(")", " / 0.18)")}`
+              : undefined,
           }}
         >
           {/* Realistic "fuel pool" pulse beneath flame — warm soft glow */}

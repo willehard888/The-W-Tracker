@@ -310,19 +310,41 @@ const StreakFlameInline = ({
           />
         )}
 
-        {/* Spark dot — Diamond+ */}
+        {/* Spark dot — Diamond+ — now a wind-reactive ember instead of a static dot. */}
         {isDiamond && (
           <span
-            className="absolute rounded-full pointer-events-none"
+            className="flame-ember absolute rounded-full pointer-events-none"
             style={{
-              width: 1.8,
-              height: 1.8,
+              width: Math.max(1.4, flameSize * 0.1),
+              height: Math.max(1.4, flameSize * 0.1),
               left: "50%",
-              top: 1,
+              bottom: flameSize * 0.6,
               background: palette.core,
-              boxShadow: `0 0 4px ${palette.core}`,
+              boxShadow: `0 0 ${flameSize * 0.35}px ${palette.glow}`,
               transform: "translateX(-50%)",
-              animation: `flame-crown-firefly 1.6s ease-in-out infinite`,
+              opacity: 0,
+              ["--ember-rise" as string]: `${-flameSize * 1.3}px`,
+              animation: `flame-ember-float ${(speed * 2.4).toFixed(2)}s ease-out infinite`,
+            }}
+          />
+        )}
+
+        {/* Second ember (Legendary+) — staggered for density. */}
+        {isLegendary && (
+          <span
+            className="flame-ember absolute rounded-full pointer-events-none"
+            style={{
+              width: Math.max(1.2, flameSize * 0.08),
+              height: Math.max(1.2, flameSize * 0.08),
+              left: "55%",
+              bottom: flameSize * 0.55,
+              background: palette.core,
+              boxShadow: `0 0 ${flameSize * 0.3}px ${palette.glow}`,
+              transform: "translateX(-50%)",
+              opacity: 0,
+              ["--ember-rise" as string]: `${-flameSize * 1.6}px`,
+              animation: `flame-ember-float ${(speed * 2.8).toFixed(2)}s ease-out infinite`,
+              animationDelay: `${(speed * 1.1).toFixed(2)}s`,
             }}
           />
         )}

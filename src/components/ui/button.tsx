@@ -11,12 +11,13 @@ const buttonVariants = cva(
     "relative inline-flex items-center justify-center gap-2.5 whitespace-nowrap",
     "rounded-md text-sm font-semibold select-none",
     "ring-offset-background",
-    "transition-[transform,box-shadow,background,opacity,filter,color,border-color] duration-200 [transition-timing-function:var(--ease-spring)]",
+    // Lighter transition: only transform + box-shadow + filter — avoids triggering repaints on color/background.
+    "transition-[transform,box-shadow,filter] duration-200 [transition-timing-function:var(--ease-spring)]",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
     "focus-visible:shadow-[0_0_0_4px_hsl(var(--ring)/0.18)]",
     "disabled:pointer-events-none disabled:opacity-50 disabled:saturate-[0.6] disabled:cursor-not-allowed",
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-    "active:scale-[0.985] will-change-transform",
+    "active:scale-[0.985]",
     // Inner content (text + icons) lifts ABOVE the gloss/glint overlays so it stays crisp,
     // and settles down 0.5px on press for tactile feel
     "[&>*]:relative [&>*]:z-[3]",
@@ -25,36 +26,35 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Primary — CLEAN gold bar. Optimized for clarity + GPU performance:
-        //   1. Single bright vertical gradient (no SVG noise = no paint cost)
-        //   2. Subtle satin band (low opacity so text never washes out)
+        // Primary — CLEAN gold bar. Polished + GPU-friendly:
+        //   1. Single rich vertical gradient (champagne top → warm amber foot)
+        //   2. Subtle horizontal satin band (kept gentle so text stays crisp)
         //   3. Crisp engraved bezel (top highlight + dark hairline + warm bottom)
-        //   4. Hover-only diagonal shimmer (transform-based, GPU friendly)
-        //   5. Warm gold drop-shadow for premium lift
+        //   4. Lightweight ::before crown highlight + warm bottom inner glow
+        //   5. Hover-only diagonal shimmer (transform sweep — no repaint cost)
         default: [
           "text-[hsl(28_92%_10%)] font-extrabold tracking-[-0.005em]",
           "[text-shadow:0_1px_0_hsl(50_100%_96%/0.7)]",
-          "overflow-hidden isolate [transform:translateZ(0)]",
-          // BASE: richer 6-stop gold + dual satin band (top hot belly + soft lower glow)
-          "[background:linear-gradient(180deg,hsl(50_100%_98%/0)_0%,hsl(50_100%_99%/0.16)_42%,hsl(50_100%_99%/0.24)_50%,hsl(50_100%_99%/0.16)_58%,hsl(50_100%_98%/0)_70%),linear-gradient(180deg,hsl(52_100%_90%)_0%,hsl(48_100%_80%)_18%,hsl(46_100%_68%)_44%,hsl(42_100%_58%)_72%,hsl(38_96%_48%)_92%,hsl(34_92%_40%)_100%)]",
-          // Engraved bezel — deeper warm halo, brighter top rim
-          "shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.6),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_2px_0_hsl(50_100%_94%/0.5),inset_0_-1px_0_hsl(30_82%_22%/0.6),inset_0_-8px_16px_-8px_hsl(30_82%_28%/0.5),0_1px_2px_hsl(30_60%_14%/0.4),0_8px_18px_-3px_hsl(40_92%_52%/0.55),0_22px_42px_-14px_hsl(38_88%_48%/0.6)]",
-          // ::before — top crown highlight + warm bottom inner glow (richer feel)
+          "overflow-hidden isolate",
+          // BASE: rich 6-stop gold + soft satin band (low opacity = legible text)
+          "[background:linear-gradient(180deg,hsl(50_100%_98%/0)_0%,hsl(50_100%_99%/0.14)_44%,hsl(50_100%_99%/0.2)_50%,hsl(50_100%_99%/0.14)_56%,hsl(50_100%_98%/0)_70%),linear-gradient(180deg,hsl(52_100%_90%)_0%,hsl(48_100%_80%)_18%,hsl(46_100%_68%)_44%,hsl(42_100%_58%)_72%,hsl(38_96%_48%)_92%,hsl(34_92%_40%)_100%)]",
+          // Engraved bezel — clean and warm
+          "shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.55),inset_0_1px_0_hsl(50_100%_99%/0.95),inset_0_-1px_0_hsl(30_82%_22%/0.55),inset_0_-6px_14px_-8px_hsl(30_82%_28%/0.45),0_1px_2px_hsl(30_60%_14%/0.35),0_8px_18px_-3px_hsl(40_92%_52%/0.45),0_18px_34px_-14px_hsl(38_88%_48%/0.5)]",
+          // ::before — top crown highlight + soft warm bottom glow
           "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
-          "before:[background:radial-gradient(120%_70%_at_50%_-20%,hsl(50_100%_99%/0.65)_0%,hsl(50_100%_96%/0.22)_32%,transparent_62%),radial-gradient(120%_60%_at_50%_120%,hsl(38_100%_60%/0.35)_0%,transparent_60%)]",
-          // ::after — narrow diagonal shimmer (GPU transform sweep)
+          "before:[background:radial-gradient(120%_70%_at_50%_-20%,hsl(50_100%_99%/0.55)_0%,hsl(50_100%_96%/0.18)_32%,transparent_62%),radial-gradient(120%_60%_at_50%_120%,hsl(38_100%_60%/0.28)_0%,transparent_60%)]",
+          // ::after — narrow diagonal shimmer (translate3d sweep stays on GPU)
           "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
-          "after:[background:linear-gradient(110deg,transparent_28%,hsl(50_100%_99%/0.55)_50%,transparent_72%)]",
-          "after:opacity-80 after:[transform:translate3d(0,0,0)] after:will-change-transform",
-          "after:transition-transform after:duration-[800ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "after:[background:linear-gradient(110deg,transparent_30%,hsl(50_100%_99%/0.45)_50%,transparent_70%)]",
+          "after:opacity-70 after:transition-transform after:duration-[750ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
           "hover:after:[transform:translate3d(260%,0,0)]",
-          // Hover: brighter + warmer spill
-          "hover:brightness-[1.05] hover:saturate-[1.08]",
-          "hover:shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.65),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_2px_0_hsl(50_100%_94%/0.55),inset_0_-1px_0_hsl(30_82%_22%/0.65),inset_0_-8px_18px_-8px_hsl(30_82%_28%/0.55),0_2px_3px_hsl(30_60%_14%/0.45),0_12px_24px_-3px_hsl(40_92%_52%/0.65),0_28px_54px_-14px_hsl(38_88%_48%/0.7)]",
+          // Hover: a touch brighter + warmer
+          "hover:brightness-[1.05] hover:saturate-[1.06]",
+          "hover:shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.6),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_-1px_0_hsl(30_82%_22%/0.6),inset_0_-6px_16px_-8px_hsl(30_82%_28%/0.5),0_2px_3px_hsl(30_60%_14%/0.4),0_12px_22px_-3px_hsl(40_92%_52%/0.55),0_24px_46px_-14px_hsl(38_88%_48%/0.6)]",
           // Pressed: muted + sunken
           "active:brightness-[0.96]",
           "active:before:opacity-50 active:after:opacity-30",
-          "active:shadow-[inset_0_0_0_0.5px_hsl(24_85%_14%/0.7),inset_0_2px_4px_hsl(24_75%_16%/0.55),inset_0_-1px_0_hsl(50_100%_90%/0.2),inset_0_-6px_12px_-6px_hsl(30_80%_22%/0.4),0_1px_1px_hsl(0_0%_0%/0.3)]",
+          "active:shadow-[inset_0_0_0_0.5px_hsl(24_85%_14%/0.7),inset_0_2px_4px_hsl(24_75%_16%/0.5),inset_0_-1px_0_hsl(50_100%_90%/0.2),0_1px_1px_hsl(0_0%_0%/0.3)]",
           "disabled:grayscale-[0.4] disabled:after:hidden disabled:before:hidden",
         ].join(" "),
 

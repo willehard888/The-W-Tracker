@@ -150,7 +150,129 @@ const StatusNameplate = ({
         />
       )}
 
-      {/* Animated ember dots — apex */}
+      {/* Diagonal heat shimmer — top tiers only */}
+      {(isApex || isLegend) && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 -inset-x-1/2 status-heat-shimmer overflow-hidden"
+          style={{
+            background: isApex
+              ? "linear-gradient(90deg, transparent 0%, hsl(18 95% 62% / 0.18) 45%, hsl(var(--gold) / 0.22) 50%, hsl(18 95% 62% / 0.18) 55%, transparent 100%)"
+              : "linear-gradient(90deg, transparent 0%, hsl(280 70% 65% / 0.15) 45%, hsl(var(--gold) / 0.22) 50%, hsl(350 80% 60% / 0.15) 55%, transparent 100%)",
+          }}
+        />
+      )}
+
+      {/* Apex — coal pulse at the bottom */}
+      {isApex && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 status-coal-pulse"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 100%, hsl(18 95% 58% / 0.45) 0%, hsl(var(--gold) / 0.18) 35%, transparent 70%)",
+            transformOrigin: "center bottom",
+          }}
+        />
+      )}
+
+      {/* Apex — 6 rising embers */}
+      {isApex && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          {[
+            { left: "12%", delay: "0s",   color: "hsl(18 95% 58%)", size: 3 },
+            { left: "28%", delay: "0.7s", color: "hsl(var(--gold))", size: 2 },
+            { left: "45%", delay: "1.4s", color: "hsl(18 95% 62%)", size: 3 },
+            { left: "62%", delay: "2.1s", color: "hsl(var(--gold-light))", size: 2 },
+            { left: "78%", delay: "2.8s", color: "hsl(18 95% 58%)", size: 2.5 },
+            { left: "90%", delay: "3.5s", color: "hsl(var(--gold))", size: 2 },
+          ].map((e, i) => (
+            <span
+              key={i}
+              className="absolute bottom-1 status-ember-rise rounded-full"
+              style={{
+                left: e.left,
+                width: e.size,
+                height: e.size,
+                background: e.color,
+                boxShadow: `0 0 6px ${e.color}, 0 0 12px ${e.color}`,
+                animationDelay: e.delay,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Elite — 3 amber sparks */}
+      {isElite && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          {[
+            { left: "20%", delay: "0s",   size: 2 },
+            { left: "55%", delay: "1.3s", size: 2.5 },
+            { left: "82%", delay: "2.6s", size: 2 },
+          ].map((e, i) => (
+            <span
+              key={i}
+              className="absolute bottom-1 status-ember-rise rounded-full"
+              style={{
+                left: e.left,
+                width: e.size,
+                height: e.size,
+                background: "hsl(var(--gold-light))",
+                boxShadow: "0 0 5px hsl(var(--gold)), 0 0 10px hsl(42 78% 54% / 0.6)",
+                animationDelay: e.delay,
+                animationDuration: "5s",
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* High Performer — 2 amber cinders (first hint of fire) */}
+      {isHigh && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          {[
+            { left: "30%", delay: "0s" },
+            { left: "70%", delay: "2.2s" },
+          ].map((e, i) => (
+            <span
+              key={i}
+              className="absolute bottom-1 status-ember-rise rounded-full w-[2px] h-[2px]"
+              style={{
+                background: "hsl(42 78% 54%)",
+                boxShadow: "0 0 4px hsl(42 78% 54%), 0 0 8px hsl(42 78% 54% / 0.5)",
+                animationDelay: e.delay,
+                animationDuration: "5.5s",
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Legend — 4 amber/gold cinders (slower, mythic) */}
+      {isLegend && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          {[
+            { left: "15%", delay: "0s",   color: "hsl(var(--gold))" },
+            { left: "40%", delay: "1.7s", color: "hsl(280 70% 70%)" },
+            { left: "65%", delay: "3.4s", color: "hsl(var(--gold-light))" },
+            { left: "88%", delay: "5.1s", color: "hsl(350 80% 60%)" },
+          ].map((e, i) => (
+            <span
+              key={i}
+              className="absolute bottom-1 status-ember-rise rounded-full w-[2.5px] h-[2.5px]"
+              style={{
+                background: e.color,
+                boxShadow: `0 0 5px ${e.color}, 0 0 10px ${e.color}`,
+                animationDelay: e.delay,
+                animationDuration: "7s",
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Animated ember dots — apex (legacy decorative) */}
       {isApex && (
         <>
           <span
@@ -180,6 +302,21 @@ const StatusNameplate = ({
         </>
       )}
 
+      {/* Amber-rim breathe overlay — Apex/Elite/Legend */}
+      {(isApex || isElite || isLegend) && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-2xl border-2 status-amber-ring-breathe"
+          style={{
+            borderColor: isLegend
+              ? "hsl(280 70% 60% / 0.45)"
+              : isApex
+              ? "hsl(18 95% 58% / 0.55)"
+              : "hsl(var(--gold) / 0.45)",
+          }}
+        />
+      )}
+
       <div className="relative flex flex-col items-center text-center gap-1.5">
         {/* Tiny eyebrow */}
         <p className="text-[9px] font-black uppercase tracking-[0.32em] text-muted-foreground/70">
@@ -191,7 +328,11 @@ const StatusNameplate = ({
           <Icon
             size={size === "lg" ? 26 : 22}
             strokeWidth={2.6}
-            className={cn(iconColor, "drop-shadow-[0_0_8px_currentColor]")}
+            className={cn(
+              iconColor,
+              "drop-shadow-[0_0_8px_currentColor]",
+              (isApex || isElite || isLegend) && "status-flame-flicker",
+            )}
           />
           <h2
             className={cn(
@@ -205,7 +346,12 @@ const StatusNameplate = ({
           <Icon
             size={size === "lg" ? 26 : 22}
             strokeWidth={2.6}
-            className={cn(iconColor, "drop-shadow-[0_0_8px_currentColor] scale-x-[-1]")}
+            className={cn(
+              iconColor,
+              "drop-shadow-[0_0_8px_currentColor] scale-x-[-1]",
+              (isApex || isElite || isLegend) && "status-flame-flicker",
+            )}
+            style={(isApex || isElite || isLegend) ? { animationDelay: "0.4s" } : undefined}
           />
         </div>
 

@@ -42,7 +42,8 @@ const StatusBadge = ({ tier, size = "md", showAura = true, className }: StatusBa
       {showAura && isHighTier && (
         <div
           className={cn(
-            "absolute -inset-1 rounded-full blur-md animate-pulse pointer-events-none",
+            "absolute -inset-1 rounded-full blur-md pointer-events-none",
+            (isLegend || isApex) ? "status-amber-ring-breathe" : "animate-pulse",
             isLegend && "opacity-50",
             isApex && "opacity-40",
             !isLegend && !isApex && "opacity-30"
@@ -75,8 +76,9 @@ const StatusBadge = ({ tier, size = "md", showAura = true, className }: StatusBa
           size={iconSizes[size]}
           className={cn(
             isLegend && "text-[hsl(280_70%_65%)] drop-shadow-[0_0_4px_hsl(280_70%_60%/0.5)]",
-            isApex && "text-[hsl(18_95%_58%)] drop-shadow-[0_0_4px_hsl(18_95%_58%/0.4)]",
+            isApex && "text-[hsl(18_95%_58%)] drop-shadow-[0_0_4px_hsl(18_95%_58%/0.4)] status-flame-flicker",
             tier === 'elite' && "text-gold drop-shadow-[0_0_4px_hsl(var(--gold)/0.4)]",
+            tier === 'elite' && size === 'lg' && "status-flame-flicker",
             tier === 'high_performer' && "text-[hsl(var(--purple))]",
             tier === 'performer' && "text-[hsl(210_90%_56%)]",
             tier === 'operator' && "text-[hsl(var(--teal))]",

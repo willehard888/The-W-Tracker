@@ -2023,6 +2023,33 @@
   50%      { opacity: 1;   transform: translateY(-3px) scale(1.15); }
 }
 
+/* Released reward — falls from the bottom of the prize, drifts sideways
+   slightly (lane-based via --reward-x), spins, then fades out as it
+   passes through the flame. Fully driven by CSS custom properties so
+   each reward gets its own trajectory without rerunning React. */
+@keyframes ice-prize-reward-fall {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translate3d(0, 0, 0) rotate(0deg) scale(0.6);
+  }
+  12% {
+    opacity: 1;
+    transform: translateX(-50%) translate3d(0, 4px, 0) rotate(20deg) scale(1.05);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(-50%) translate3d(var(--reward-x, 0px), calc(var(--reward-y, 80px) * 0.55), 0) rotate(220deg) scale(1);
+  }
+  90% {
+    opacity: 0.7;
+    transform: translateX(-50%) translate3d(var(--reward-x, 0px), var(--reward-y, 80px), 0) rotate(380deg) scale(0.85);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translate3d(var(--reward-x, 0px), calc(var(--reward-y, 80px) * 1.1), 0) rotate(420deg) scale(0.75);
+  }
+}
+
 
 /* Plasma hue cycle — fast cinematic shift through magenta → cyan → blue */
 @keyframes flame-plasma-hue {

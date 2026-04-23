@@ -1,81 +1,101 @@
 
 
-# Premium Fire+Gold -teema kaikissa napeissa
+# Fire & amber STATUS-pinnoille — premium tasolla
 
-Levitetään tribe-fire-identiteetti (ember + coal + gold) sovelluksen yleiskäytön nappeihin niin, että jokainen `<Button>` näyttää teemalta — ilman että yliräjäytetään (ei joka nappi loimua). Hierarkia on selkeä, premium ja yhtenäinen.
+Tuodaan tribe-fire-DNA (ember + amber + coal) **status-identiteetin** ytimeen niin, että jokainen status-elementti — header, nameplate, avatar, badge, check-in header, ladder — tuntuu elävältä tulelta sen sijaan, että olisi staattinen merkki. Hierarkia säilyy: ylemmät tierit polttavat kuumemmin.
 
-## Visuaalinen hierarkia (uusi standardi)
+## Periaate
 
-| Tarkoitus | Variantti | Tuntuma |
+| Tier | Lämpö | Visuaalinen identiteetti |
 |---|---|---|
-| Korkein intensiteetti — Tribe / Fire / "ignite" actions | `ember` | Sulava molten metalli + halo-pulse |
-| Identiteetti / status / "earn" actions (Login, Save, Accept) | `coal` | Hehkuva hiili kultakruunulla |
-| Saavutus / status display CTA (Pro, Champion) | `gold` | Klassinen kiillotettu kulta |
-| **UUSI: Yleinen sekundääri (Cancel, Compare, Message)** | `gold-soft` | Lasinen tumma paneeli + lämmin kultareuna + sisäinen kultainen hiussäteily |
-| **UUSI: Yleinen outline (Decline, View, Filter)** | `ember-glass` | Lasi + ember-hairline + hover-kuumuus |
-| Vaaralliset (Reject, Delete) | `destructive` / `danger-outline` | Punametalli (ei muutosta) |
-| Linkit / minimalistinen | `ghost` | Päivitetään saamaan **lämmin kulta-tint** hoverissa |
-
-`secondary` ja `outline` säilyvät taaksepäin yhteensopivina, mutta niiden visuaali päivitetään: ne saavat **lämpimän alasävyn** (kulta-soft tint + hot highlight), niin että jopa vanhat `variant="secondary"`-napit (joita on 175 paikassa) muuttuvat automaattisesti teemaan sopiviksi ilman koodimuutoksia call-site-kohtaisesti.
+| Recruit/Operator/Performer | kylmä → lämmin | nykyinen rauhallinen — ei muutoksia |
+| **High Performer** | amber-kipinä | uusi: pienet amber-kipinät reunoilla, lämmin alasävy |
+| **Elite** | gold + amber loiste | amber-rim sykkii hennon kullan ympärillä |
+| **Apex** | täysi tuli | **embers nousevat ylös**, gold-flame-conic-aura, heat-shimmer reunoissa |
+| **Legend** | jalokivituli | nykyiset rainbow-elementit + amber-cinder-rain |
 
 ## Toteutus
 
-### `src/components/ui/button.tsx`
+### 1. `src/index.css` — uudet status-tulitokeyframet
 
-**1. Päivitä `secondary` → premium kultalasi**
-- Tumma obsidian-pohja säilyy luettavuuden vuoksi
-- Lisää: hiussäteily ylhäältä (kulta), pohjavarjostuksen sisäinen kultainen hehku, hover-tilassa lämmin kultareuna ja `box-shadow` jolla kultainen halo nousee
-- Teksti muuttuu hoverissa `hsl(var(--gold-light))`
+Lisätään (kaikki `prefers-reduced-motion`-guardilla, GPU-vain):
+- `@keyframes status-ember-rise` — pieni piste nousee 60–80px ylös, fade-in/out, drift-x ±12px
+- `@keyframes status-amber-ring-breathe` — reunan opasiteetti 0.55→1→0.55 (5s)
+- `@keyframes status-heat-shimmer` — diagonaalinen valokaista pyyhkii nameplaten yli (8s, vain top-tierit)
+- `@keyframes status-flame-flicker` — flame-ikoni (Apex/Elite) "lepattaa" subtle-skaalalla 0.96–1.04 + opasiteetti
+- `@keyframes status-coal-pulse` — alaosan amber-hehku sykkii sisäänpäin (6s)
 
-**2. Päivitä `outline` → premium ember-lasi**
-- Korvaa harmaa `border-image` lämpimällä gradient-bordilla (kulta-soft → ember-soft)
-- Pohja: `linear-gradient` jossa hyvin kevyt kulta-tint (4–6% alpha)
-- Hover: ember-hairline + diagonaalinen heat shimmer (`::after` translate3d, sama kuin `ember`)
+### 2. `src/components/StatusNameplate.tsx` — täysi tulilavan päivitys top-tiereille
 
-**3. Päivitä `ghost` → lämmin lift**
-- Hover-bg → `hsl(var(--gold) / 0.06)` harmaan sijaan
-- Hover-text → `hsl(var(--gold-light))`
-- Sisäinen alareuna saa kultainen hairline
+**Apex:**
+- Lisätään 6 kpl ember-pisteitä (`<span>`) jotka käyttävät `status-ember-rise`-animaatiota — pohjasta nousevia kipinöitä, eri viiveillä (0s, 0.7s, 1.4s, 2.1s, 2.8s, 3.5s)
+- Reunaviiva: nykyinen `border-[hsl(18_95%_58%)]/55` saa amber-ring-breathe-sykinnän
+- Ikonit (`Flame`) saavat `status-flame-flicker` -animaation
+- Alalaita: matala `radial-gradient` amber-hehku joka sykkii (`status-coal-pulse`)
+- Diagonaalinen heat-shimmer pyyhkii satunnaisesti (8s) kortin yli
 
-**4. Lisää uudet eksplisiittiset variantit**
-- `gold-soft`: identinen päivitetyn `secondary`:n kanssa, mutta voimakkaampi kultainen kruunu — call-sitet voivat valita tämän kun haluavat selkeämmän kullan
-- `ember-glass`: identinen päivitetyn `outline`:n kanssa mutta vahvemmilla ember-vivahteilla — Tribe-kontekstin sekundäärit voivat valita tämän
-- `gold-icon`: ikoninapeille (`size="icon-sm"`/`icon-lg`) jotta back/close/clear-napit nykyisessä `ghost`-tilassa saavat kullatun loimun hoverissa
+**Elite:**
+- 3 amber-kipinää (vähemmän kuin Apex, ei samaa intensiteettiä)
+- Crown-ikoni saa hennon `status-flame-flicker` -lepattaa
+- Gold-borderiin lisätään `status-amber-ring-breathe` (hyvin kevyt)
 
-### `src/index.css`
+**High Performer:**
+- 2 amber-cinder-pistettä reunalla — uusi yhteys ylempiin tiereihin (sama tulilinja, eri väri ei enää, amber näyttää että "lämpö rakentuu")
 
-- Lisää `@keyframes button-warm-rim-breathe` (4s, hyvin kevyt kultainen reunan opasiteetin sykintä) — käytetään `secondary`/`gold-soft` napeissa harvinaisena luksuselementtinä (vain kun nappi on `:focus-visible`-tilassa, ei jatkuva suorituskykyä rasittava efekti)
-- Lisää `prefers-reduced-motion` -guard kaikille uusille animaatioille
+**Legend:**
+- Säilytetään nykyiset sparkle-aksentit + lisätään 4 amber/gold-cinder-pistettä jotka nousevat hitaammin (status-ember-rise mutta 7s) — antaa "mythic flame"-tunnun
+- Conic-gradient sweep nopeutetaan hieman (animoitu `background-position` 12s)
 
-### Globaali vaikutus (zero-touch)
+### 3. `src/components/StatusHeader.tsx` — header tulee elävämmäksi
 
-Koska 175 nykyistä `variant="secondary"`-käyttöä ja kymmenet `variant="outline"`-napit perivät uudet visuaalit automaattisesti, koko sovellus muuttuu teemaan sopivaksi yhdellä commitilla:
-- `Battles.tsx`: Cancel/Decline-napit
-- `UserProfile.tsx`: Add Friend / Pending / Message / Compare
-- `Coach.tsx`: Suggested-promptit + back-nappi
-- `AdminModeration.tsx`: Approve-nappi
-- `TribePendingRequestsDialog.tsx`: hyväksy/hylkää-napit
-- Kaikki dialog-footerit (Cancel-napit) sovelluksessa
-- `BottomNav` `ghost`-napit saavat kultaisen hoverin
+- Apex/Elite-käyttäjien header saa **alaosaan ohuen amber-ember-rivin** (nykyinen `flame-rim-pulse` säilyy + uusi 2 kpl pieniä kipinöitä jotka nousevat 20–30px korkeuteen ja fadetuvat)
+- Apex-pillin `Zap`-ikoni → `status-flame-flicker`
+- Elite-pillin `Crown` → kevyt `status-flame-flicker`
+- Tier-progress-palkki (high tier+) saa hennon amber-glow:n liukuessaan
 
-### Kohdennetut päivitykset
+### 4. `src/components/StatusAvatar.tsx` — avatar polttaa
 
-| Tiedosto | Muutos |
-|---|---|
-| `src/components/ui/sidebar.tsx` | `ghost` perii uuden lämpimän hoverin — ei koodimuutosta |
-| `src/pages/UserProfile.tsx` r. 477–480 | Vaihda `Message`/`Compare` → `variant="gold-soft"` |
-| `src/pages/Coach.tsx` r. 202–206 | Suggested-promptit `outline` → `ember-glass` (Coach on Elite/AI-fire-konteksti) |
-| `src/components/TribeBattleCard.tsx` r. 230–234 | Decline `outline` → `ember-glass` |
-| `src/pages/Battles.tsx` r. 461, 505 | Cancel/Decline säilyvät `secondary`:nä — perivät uuden lookin |
+- Apex: nykyiseen `apex-aura-large` -box-shadowiin lisätään **2 kpl ember-pistettä** rinkulan ympärille (kiertävät hitaasti — käytetään yksinkertaista CSS-rotationia containerin sisällä, ei JS:ää)
+- Apex `Flame`-badge-ikoni → `status-flame-flicker`
+- Elite: tier-ringin sisäreuna saa hennon `status-amber-ring-breathe` (nykyinen statinen `bg-gradient-to-tr from-gold...` jää, vain ring-glow sykkii)
+- High Performer: avatar saa pienen **amber-undertone-glow:n** (`box-shadow: 0 4px 12px hsl(42 78% 54% / 0.18)`) — ensimmäinen vihje tulesta
+
+### 5. `src/components/StatusBadge.tsx` — pillit hehkuvat
+
+- Apex/Legend `aura blur-md animate-pulse` → vaihdetaan smoother sykintään `status-amber-ring-breathe`
+- Apex `Flame`-ikoni → `status-flame-flicker`
+- Elite `Crown` → henno `status-flame-flicker` (vain `lg`-koossa, sm/md säilyy staattisena suorituskyvyn vuoksi listoissa)
+
+### 6. `src/components/CheckinTierHeader.tsx` — check-in tulee polttavaksi top-tiereillä
+
+- Tier rank ≥ 5 (Apex/Legend): pohjagradient saa **amber-cinder-rain**-overlayn (3 kpl ember-pisteitä jotka nousevat oikeasta laidasta vasemmalle)
+- XP-chipin gold → flame: rank ≥ 5 chipin sisälle pieni `status-flame-flicker`-animoitu kipinä
+- Streak-flame (kun `streakIntensity === "critical" || "legendary"`) → `status-flame-flicker`
+- Progress bar shimmer: nopeutetaan rank ≥ 5 -tasoilla (`shimmer-slide` 1.4s entisen 2.2s sijaan)
+
+### 7. `src/components/TierLadder.tsx` — ladderin Apex/Legend-rivit elävät
+
+- Apex-rivi (rank 5): lisätään 2 kpl pieniä amber-kipinöitä rivin oikeaan reunaan (`status-ember-rise`)
+- Legend-rivi (rank 6): nykyinen sparkle + 1 kpl amber-cinder
+- "Current Tier"-badge (joka on aina gold) → `status-amber-ring-breathe` reuna
+- Apex-locked "Unlock"-pilli säilyttää nykyisen — se on jo riittävän aggressiivinen
+
+## Suorituskyky & saavutettavuus
+
+- **Kaikki uudet animaatiot**: vain `transform`/`opacity`, ei `box-shadow` tai `filter` rAF-tiheydellä
+- **`prefers-reduced-motion`**: kaikki kipinät ja sykinnät poistetaan staattisiksi (säilyy gradientit + statiset glowt)
+- **Kipinöiden DOM-kustannus**: max 6 elementtiä per nameplate (Apex), 4 per Legend, 3 per check-in-header, 2 per status-header. Yhteensä < 20 spania per sivu.
+- **`pointer-events: none`** kaikissa dekoratiivisissa elementeissä
+- **`will-change: transform, opacity`** vain aktiivisesti animoituvissa
 
 ## Mitä EI muuteta
 
-- `ember`, `coal`, `gold`, `tier`, `success`, `warning`, `destructive`, `link`, `glass`, `obsidian` — säilyvät täsmälleen samoina
-- Mitään olemassa olevaa nappia ei poisteta tai uudelleennimetä — kaikki nykyinen koodi toimii
-- `BottomNav`-kuvakkeet säilyvät selkeästi luettavina (vain hover saa kultaisen lämmön)
+- Tier-värit, percentile-tekstit, tier-logiikka — säilyy samana
+- Recruit/Operator/Performer säilyvät rauhallisina (kontrasti top-tiereihin = status feel)
 - DB / RPC / auth — ei muutoksia
+- Nykyiset apex-aura-large, flame-rim-pulse, breathing-glow, shimmer-slide — säilyvät, uudet täydentävät niitä
 
 ## Lopputulos
 
-Koko sovellus näyttää **kulta- ja tulipaletilta** — jopa Cancel-napit ja sivupalkit hehkuvat hienovaraisesti lämpöä. Ember- ja coal-napit pysyvät korkeimpana intensiteettitasona, ja muu UI tukee niitä premium-tavalla harmaan paneelin sijaan. Hierarkia on edelleen selvä: silmäsi tietää aina mihin painaa.
+Kun Apex- tai Legend-käyttäjä avaa profiilin, **statuspaneeli polttaa**: kipinöitä nousee, reunat sykkivät amberiä, flame-ikoni lepattaa. Kun Elite katsoo headeria, kruunu hengittää lämpöä. Kun High Performer näkee avatarin, ensimmäinen vihje tulesta lämmittää alapuolelta — "olet matkalla". Status muuttuu staattisesta merkistä **elävän tulen ilmentymäksi** — premium tavalla, ei räjähdyksenä.
 

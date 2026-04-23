@@ -202,24 +202,35 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
           </p>
         </div>
 
-        {/* Apex Instant shortcut — controversial but explicit */}
+        {/* Apex Instant shortcut — uses unified ember CTA for fire-theme cohesion */}
         <button
           onClick={() => navigate("/paywall")}
-          className="mt-3 w-full group relative overflow-hidden rounded-xl border-2 border-[hsl(18_95%_58%)]/40 bg-gradient-to-r from-[hsl(18_95%_58%)]/12 via-gold/8 to-[hsl(18_95%_58%)]/12 p-3 active:scale-[0.98] transition-transform"
+          className="mt-3 w-full group relative overflow-hidden rounded-xl p-[1.5px] active:scale-[0.985] transition-transform [animation:ember-halo-pulse_3.6s_ease-in-out_infinite]"
+          style={{
+            background: "linear-gradient(180deg, hsl(48 100%75% / 0.85) 0%, hsl(26 100% 58%) 35%, hsl(14 92% 44%) 80%, hsl(10 85% 30%) 100%)",
+          }}
         >
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold flex items-center justify-center shrink-0 shadow-[0_0_12px_hsl(18_95%_58%/0.5)]">
-              <Zap size={16} className="text-background" strokeWidth={2.8} />
+          <div className="rounded-[10px] bg-background/0 backdrop-blur-0 p-3 flex items-center gap-3 relative isolate overflow-hidden"
+            style={{
+              background: "linear-gradient(180deg, hsl(28 92% 8% / 0.55) 0%, hsl(14 70% 10% / 0.65) 100%)",
+            }}
+          >
+            {/* Heat bloom from below */}
+            <div aria-hidden className="absolute inset-0 pointer-events-none"
+              style={{ background: "radial-gradient(140% 90% at 50% 130%, hsl(20 100% 62% / 0.45) 0%, transparent 65%)" }}
+            />
+            <div className="relative h-9 w-9 rounded-lg bg-gradient-to-br from-[hsl(48_100%_75%)] via-[hsl(26_100%_58%)] to-[hsl(14_92%_44%)] flex items-center justify-center shrink-0 shadow-[0_0_14px_hsl(18_95%_58%/0.7),inset_0_1px_0_hsl(48_100%_94%/0.6),inset_0_-1px_0_hsl(10_82%_18%/0.8)]">
+              <Zap size={16} className="text-[hsl(28_92%_8%)]" strokeWidth={2.8} />
             </div>
-            <div className="flex-1 min-w-0 text-left">
-              <p className="text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent leading-tight">
+            <div className="flex-1 min-w-0 text-left relative">
+              <p className="text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(48_100%_88%)] via-[hsl(26_100%_70%)] to-[hsl(48_100%_88%)] bg-clip-text text-transparent leading-tight">
                 Skip the grind — go Apex now
               </p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
+              <p className="text-[10px] text-[hsl(48_60%_75%)]/85 mt-0.5">
                 Apex Instant • €17.99/mo
               </p>
             </div>
-            <ChevronRight size={16} className="text-[hsl(18_95%_58%)] shrink-0 group-active:translate-x-0.5 transition-transform" />
+            <ChevronRight size={16} className="text-[hsl(48_100%_82%)] shrink-0 group-active:translate-x-0.5 transition-transform relative" />
           </div>
         </button>
       </div>

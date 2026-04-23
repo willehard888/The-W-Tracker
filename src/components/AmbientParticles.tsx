@@ -44,8 +44,8 @@ const AmbientParticles = () => {
 
     const computeCount = () => {
       const area = window.innerWidth * window.innerHeight;
-      // Denser field for a more cinematic, visible ambient glow.
-      const base = Math.min(44, Math.max(18, Math.round(area / 22000)));
+      // Lighter field — keeps the cinematic glow while halving fill cost.
+      const base = Math.min(28, Math.max(12, Math.round(area / 36000)));
       return mem <= 2 ? Math.round(base * 0.55) : base;
     };
 

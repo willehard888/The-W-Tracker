@@ -21,6 +21,7 @@ const TribeBattles = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const [tribe, setTribe] = useState<{ id: string; name: string; owner_id: string } | null>(null);
+  const [collectiveStreak, setCollectiveStreak] = useState(0);
   const [battles, setBattles] = useState<TribeBattle[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"active" | "pending" | "history">("active");

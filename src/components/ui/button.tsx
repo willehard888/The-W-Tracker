@@ -463,6 +463,55 @@ const buttonVariants = cva(
           "active:shadow-[inset_0_0_0_0.5px_hsl(24_85%_14%/0.7),inset_0_2px_4px_hsl(24_75%_16%/0.5),inset_0_-1px_0_hsl(50_100%_90%/0.2),0_1px_1px_hsl(0_0%_0%/0.3)]",
           "disabled:grayscale-[0.4] disabled:after:hidden disabled:before:hidden disabled:[animation:none]",
         ].join(" "),
+
+        // ─────────────────────────────────────────────────────────────────────
+        // AURUM — gold → lava morph. The crown-jewel CTA.
+        // Idle: a polished molten-gold bar (warm, calm, premium).
+        // Hover: real lava texture ignites underneath, cracks bloom hot,
+        //        the surface breathes, halo pulses, mirror-sheen sweeps.
+        // Press: lava cools, settles into the bar.
+        // Use for the single most important action on a screen
+        // (Upgrade to Elite, Claim Reward, Forge Battle, Save Status).
+        // ─────────────────────────────────────────────────────────────────────
+        aurum: [
+          "text-[hsl(28_92%_8%)] font-extrabold tracking-[-0.005em]",
+          "[text-shadow:0_1px_0_hsl(50_100%_96%/0.7)]",
+          "overflow-hidden isolate",
+          // BASE: same polished gold bar as `gold` (so idle reads as luxury, not aggression)
+          "[background:linear-gradient(180deg,hsl(50_100%_98%/0)_0%,hsl(50_100%_99%/0.14)_44%,hsl(50_100%_99%/0.2)_50%,hsl(50_100%_99%/0.14)_56%,hsl(50_100%_98%/0)_70%),linear-gradient(180deg,hsl(52_100%_90%)_0%,hsl(48_100%_80%)_18%,hsl(46_100%_68%)_44%,hsl(42_100%_58%)_72%,hsl(38_96%_48%)_92%,hsl(34_92%_40%)_100%)]",
+          // Engraved gold bezel — gives the bar weight and tactility
+          "shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.55),inset_0_1px_0_hsl(50_100%_99%/0.95),inset_0_-1px_0_hsl(30_82%_22%/0.55),inset_0_-6px_14px_-8px_hsl(30_82%_28%/0.45),0_1px_2px_hsl(30_60%_14%/0.35),0_8px_18px_-3px_hsl(40_92%_52%/0.45),0_18px_34px_-14px_hsl(38_88%_48%/0.5)]",
+          // ::before — REAL LAVA TEXTURE LAYER (transparent at idle, ignites on hover)
+          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
+          "before:[background-image:url(var(--lava-bg))]",
+          "before:[background-size:180%_180%] before:[background-position:50%_50%]",
+          "before:[background-blend-mode:overlay]",
+          "before:opacity-0 before:scale-[1.04] before:[mix-blend-mode:hard-light]",
+          // Smooth morph: opacity + scale settle on a soft cubic curve
+          "before:transition-[opacity,transform,filter] before:duration-[700ms] before:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          // ::after — diagonal mirror sheen sweep (works in both gold and lava states)
+          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
+          "after:[background:linear-gradient(110deg,transparent_30%,hsl(48_100%_98%/0.55)_50%,transparent_70%)]",
+          "after:opacity-70 after:transition-transform after:duration-[850ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "hover:after:[transform:translate3d(280%,0,0)]",
+          // Living gold halo — slow, premium pulse at idle
+          "[animation:fire-breathe-glow_4.8s_ease-in-out_infinite]",
+          // ── HOVER — the morph: gold bar ignites into lava ──────────────────
+          "hover:brightness-[1.06] hover:saturate-[1.10]",
+          "hover:before:opacity-100 hover:before:scale-100",
+          // While ignited: lava breathes (background drift) + cracks glow brighter
+          "hover:before:[animation:aurum-lava-breathe_8s_ease-in-out_infinite]",
+          // Halo intensifies into ember pulse on hover
+          "hover:[animation:aurum-halo-pulse_2.4s_ease-in-out_infinite]",
+          "hover:shadow-[inset_0_0_0_0.5px_hsl(20_85%_10%/0.7),inset_0_1px_0_hsl(50_100%_99%/0.95),inset_0_-1px_0_hsl(20_85%_8%/0.6),inset_0_-8px_18px_-8px_hsl(18_95%_42%/0.55),0_2px_3px_hsl(20_70%_8%/0.45),0_14px_28px_-3px_hsl(20_98%_46%/0.55),0_28px_52px_-14px_hsl(14_92%_38%/0.6)]",
+          // ── PRESS — lava cools, settles back into the bar ─────────────────
+          "active:brightness-[0.95]",
+          "active:before:opacity-60 active:before:scale-[0.99] active:before:[animation:none]",
+          "active:after:opacity-25",
+          "active:[animation:none]",
+          "active:shadow-[inset_0_0_0_0.5px_hsl(24_85%_14%/0.7),inset_0_2px_4px_hsl(24_75%_16%/0.5),inset_0_-1px_0_hsl(50_100%_90%/0.2),0_1px_1px_hsl(0_0%_0%/0.3)]",
+          "disabled:grayscale-[0.45] disabled:after:hidden disabled:before:hidden disabled:[animation:none]",
+        ].join(" "),
       },
       size: {
         default: "h-10 min-h-10 px-4 py-2 rounded-md",

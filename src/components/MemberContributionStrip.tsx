@@ -1,0 +1,116 @@
+import { useNavigate } from "react-router-dom";
+import RealisticFlame from "@/components/home/RealisticFlame";
+import { collectiveAccent, collectiveStreakTier } from "@/lib/tribe-streak";
+import { cn } from "@/lib/utils";
+
+interface Contributor {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  streak: number;
+  role?: string;
+}
+
+interface MemberContributionStripProps {
+  members: Contributor[];
+  /** Cap visible flames for performance (default 8). Rest fall back to text. */
+  maxFlames?: number;
+  className?: string;
+}
+
+/**
+ * Horizontal strip showing every member sorted by current streak.
+ * The biggest flame = the member feeding the fire most.
+ *
+ * Performance: Only the top `maxFlames` (default 8) get a real `RealisticFlame`.
+ * The rest get a static numeric chip so we never render 20+ turbulence filters.
+ */
+const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberContributionStripProps) => {
+  const navigate = useNavigate();
+  if (members.length === 0) return null;
+
+  // Sort: biggest streak first
+  const sorted = [...members].sort((a, b) => (b.streak ?? 0) - (a.streak ?? 0));
+
+  return (
+    <div className={cn("mb-4", className)}>
+      <div className="flex items-center justify-between mb-2 px-1">
+        <h2 className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">
+          Who's feeding the fire
+        </h2>
+        <span className="text-[10px] font-bold tabular-nums text-muted-foreground/70">
+          {members.length} member{members.length === 1 ? "" : "s"}
+        </span>
+      </div>
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar">
+        {sorted.map((m, idx) => {
+          const streak = m.streak ?? 0;
+          const tier = collectiveStreakTier(Math.max(streak * 10, 0)); // single-member tier ladder is steeper; multiply ×10 to share thresholds
+          const accent = collectiveAccent(Math.max(streak * 10, 0));
+          const showRealFlame = idx < maxFlames && streak >= 3;
+          // Per-member flame size scales with their streak rank
+          const flameSize = idx === 0 ? 36 : idx === 1 ? 32 : idx === 2 ? 30 : 26;
+
+          return (
+            <button
+              key={m.user_id}
+              onClick={() => navigate(`/user/${m.user_id}`)}
+              className="flex flex-col items-center gap-1 shrink-0 w-16"
+              aria-label={`${m.username} — ${streak} day streak`}
+            >
+              {/* Avatar with mini-flame floating above */}
+              <div className="relative">
+                <div
+                  className={cn(
+                    "h-12 w-12 rounded-full border-2 bg-secondary overflow-hidden",
+                    streak >= 30
+                      ? "border-[hsl(18_95%_58%)] shadow-[0_0_10px_hsl(18_95%_58%/0.5)]"
+                      : "border-border/60",
+                  )}
+                  style={
+                    streak >= 30
+                      ? { borderColor: accent, boxShadow: `0 0 10px ${accent.replace(")", " / 0.5)")}` }
+                      : undefined
+                  }
+                >
+                  {m.avatar_url ? (
+                    <img src={m.avatar_url} alt={m.username} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
+                      {m.username.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                {/* Mini-flame above the avatar */}
+                {showRealFlame ? (
+                  <div
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 pointer-events-none"
+                    style={{ width: flameSize, height: flameSize }}
+                  >
+                    <RealisticFlame tier={Math.max(0, tier)} accent={accent} size={flameSize} />
+                  </div>
+                ) : streak > 0 ? (
+                  <div className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-background/90 border border-border/60 flex items-center justify-center">
+                    <span className="text-[8px] font-black tabular-nums text-muted-foreground">{streak}</span>
+                  </div>
+                ) : null}
+              </div>
+              {/* Streak number — the contribution */}
+              <span
+                className="text-[10px] font-black tabular-nums leading-none"
+                style={streak >= 30 ? { color: accent } : { color: "hsl(var(--muted-foreground))" }}
+              >
+                {streak}d
+              </span>
+              <span className="text-[9px] truncate w-full text-center text-muted-foreground/80">
+                {m.username}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default MemberContributionStrip;

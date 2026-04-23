@@ -923,7 +923,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
               filter: `blur(${Math.max(2, size * 0.04)}px)`,
               transform: "translateX(-50%)",
               mixBlendMode: "screen",
-              animation: `flame-heart-bloom ${(1.2 * speedMul).toFixed(2)}s ease-in-out infinite`,
+              animation: `flame-heart-bloom ${(1.6 * speedMul).toFixed(2)}s cubic-bezier(0.4, 0, 0.3, 1) infinite`,
               animationDelay: `-${breathOffset}s`,
             }}
           />

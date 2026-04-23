@@ -474,10 +474,10 @@ const UserProfile = () => {
               </Button>
             </div>
             <div className="flex gap-2">
-              <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/chat/${userId}`)}>
+              <Button variant="gold-soft" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/chat/${userId}`)}>
                 <MessageCircle size={14} /> Message
               </Button>
-              <Button variant="secondary" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/badges/compare?user=${profile.username}`)}>
+              <Button variant="gold-soft" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/badges/compare?user=${profile.username}`)}>
                 <GitCompare size={14} /> Compare
               </Button>
             </div>

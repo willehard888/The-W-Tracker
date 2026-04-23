@@ -474,7 +474,6 @@ const buttonVariants = cva(
         // the text — see Button render branch.
         // ─────────────────────────────────────────────────────────────────────
         aurum: [
-          "group/aurum",
           "text-[hsl(28_92%_8%)] font-extrabold tracking-[-0.005em]",
           "[text-shadow:0_1px_0_hsl(50_100%_96%/0.7)]",
           "overflow-hidden isolate",

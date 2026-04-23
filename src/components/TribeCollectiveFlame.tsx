@@ -150,28 +150,26 @@ const TribeCollectiveFlame = ({
         </>
       )}
 
-      <div className="relative flex items-center gap-5">
-        {/* The flame itself */}
-        <div
-          className="shrink-0 flex items-end justify-center"
-          style={{ width: size, height: size * 1.15 }}
-        >
-          {isCold ? (
-            <div className="text-4xl opacity-40 leading-none">🕯️</div>
-          ) : (
-            <RealisticFlame tier={tier} accent={accent} size={size} />
-          )}
-        </div>
-
-        {/* Stats */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground/85">
-              Tribe Streak
-            </p>
-            {!!todayCount && todayCount > 0 && (
+      {isHero ? (
+        /* HERO LAYOUT — flame as the centerpiece, name beneath */
+        <div className="relative flex flex-col items-center text-center pt-2 pb-1">
+          {/* Top label */}
+          <div
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/40 backdrop-blur-sm border mb-3"
+            style={{
+              borderColor: isCold ? "hsl(var(--border))" : accent.replace(")", " / 0.5)"),
+              boxShadow: isCold ? undefined : `0 0 18px ${accent.replace(")", " / 0.4)")}`,
+            }}
+          >
+            <span
+              className="text-[10px] font-black tracking-widest uppercase"
+              style={{ color: isCold ? "hsl(var(--muted-foreground))" : accent }}
+            >
+              Tribe Fire
+            </span>
+            {!!todayCount && todayCount > 0 && !isCold && (
               <span
-                className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase border"
+                className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase border"
                 style={{
                   color: accent,
                   borderColor: accent.replace(")", " / 0.5)"),
@@ -183,53 +181,157 @@ const TribeCollectiveFlame = ({
             )}
           </div>
 
-          <div className="flex items-baseline gap-1.5 mt-0.5">
+          {/* The flame — massive */}
+          <div
+            className="flex items-end justify-center mb-2"
+            style={{ width: size, height: size * 1.2 }}
+          >
+            {isCold ? (
+              <div className="text-7xl opacity-40 leading-none animate-pulse">🕯️</div>
+            ) : (
+              <RealisticFlame tier={tier} accent={accent} size={size} />
+            )}
+          </div>
+
+          {/* Big number */}
+          <div className="flex items-baseline gap-2">
             <span
-              className="font-display font-black text-4xl tabular-nums leading-none"
+              className="font-display font-black text-6xl tabular-nums leading-none"
               style={{
-                color: isCold ? undefined : accent,
-                textShadow: isCold ? undefined : `0 0 22px ${accent.replace(")", " / 0.5)")}`,
+                color: isCold ? "hsl(var(--muted-foreground))" : accent,
+                textShadow: isCold ? undefined : `0 0 32px ${accent.replace(")", " / 0.6)")}`,
               }}
             >
               {total.toLocaleString()}
             </span>
-            <span className="text-xs font-bold text-muted-foreground">days</span>
+            <span className="text-sm font-bold text-muted-foreground">days</span>
           </div>
 
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <span
-              className={cn(
-                "inline-flex items-center px-1.5 py-0.5 rounded-md border text-[9px] font-black tracking-widest uppercase",
-                isCold && "border-border/60 text-muted-foreground",
-                !isCold && !isFirestorm && "border-[hsl(18_95%_58%)]/40 text-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%)]/10",
-                isFirestorm && "border-transparent text-transparent bg-clip-text",
-              )}
-              style={isFirestorm ? {
-                backgroundImage: "linear-gradient(90deg, hsl(195 90% 65%), hsl(265 80% 65%), hsl(310 85% 65%), hsl(195 90% 65%))",
-                backgroundSize: "200% 100%",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                animation: "flame-plasma-hue 4s linear infinite, shimmer-slide 5s linear infinite",
-                borderColor: "hsl(195 90% 65% / 0.5)",
-              } : undefined}
-            >
-              {tierName}
-            </span>
-            {avg !== null && (
-              <span className="text-[10px] text-muted-foreground/85 tabular-nums">
-                avg <span className="font-black text-foreground/85">{avg}</span> · {memberCount} member{memberCount === 1 ? "" : "s"}
-              </span>
+          {/* Tier headline */}
+          <p
+            className={cn(
+              "font-display font-black text-2xl mt-2 uppercase tracking-wider",
+              isFirestorm && "bg-clip-text text-transparent",
             )}
-          </div>
+            style={
+              isFirestorm
+                ? {
+                    backgroundImage:
+                      "linear-gradient(90deg, hsl(195 90% 65%), hsl(265 80% 65%), hsl(310 85% 65%), hsl(195 90% 65%))",
+                    backgroundSize: "200% 100%",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    animation: "flame-plasma-hue 4s linear infinite, shimmer-slide 5s linear infinite",
+                  }
+                : isCold
+                ? { color: "hsl(var(--muted-foreground))" }
+                : { color: accent, textShadow: `0 0 18px ${accent.replace(")", " / 0.4)")}` }
+            }
+          >
+            {tierName}
+          </p>
+
+          {/* Tribe name UNDER the flame */}
+          {tribeName && (
+            <h1 className="font-display font-black text-xl mt-3 leading-tight">
+              {tribeName}
+            </h1>
+          )}
+
+          {avg !== null && !isCold && (
+            <p className="text-[11px] text-muted-foreground/85 mt-1 tabular-nums">
+              avg <span className="font-black text-foreground/85">{avg}</span> · {memberCount} member{memberCount === 1 ? "" : "s"}
+            </p>
+          )}
 
           {isCold && (
-            <p className="text-[10px] text-muted-foreground/70 mt-1.5 leading-snug">
-              The tribe needs <span className="font-black text-foreground/80">30+ combined days</span> to ignite.
+            <p className="text-[11px] text-muted-foreground/80 mt-2 leading-snug max-w-[260px]">
+              This fire is cold. Be the first to feed it — <span className="font-black text-foreground/85">30+ combined days</span> to ignite.
             </p>
           )}
         </div>
-      </div>
+      ) : (
+        <div className="relative flex items-center gap-5">
+          {/* The flame itself */}
+          <div
+            className="shrink-0 flex items-end justify-center"
+            style={{ width: size, height: size * 1.15 }}
+          >
+            {isCold ? (
+              <div className="text-4xl opacity-40 leading-none">🕯️</div>
+            ) : (
+              <RealisticFlame tier={tier} accent={accent} size={size} />
+            )}
+          </div>
+
+          {/* Stats */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground/85">
+                Tribe Fire
+              </p>
+              {!!todayCount && todayCount > 0 && (
+                <span
+                  className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase border"
+                  style={{
+                    color: accent,
+                    borderColor: accent.replace(")", " / 0.5)"),
+                    background: accent.replace(")", " / 0.10)"),
+                  }}
+                >
+                  +{todayCount} today
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-baseline gap-1.5 mt-0.5">
+              <span
+                className="font-display font-black text-4xl tabular-nums leading-none"
+                style={{
+                  color: isCold ? undefined : accent,
+                  textShadow: isCold ? undefined : `0 0 22px ${accent.replace(")", " / 0.5)")}`,
+                }}
+              >
+                {total.toLocaleString()}
+              </span>
+              <span className="text-xs font-bold text-muted-foreground">days</span>
+            </div>
+
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <span
+                className={cn(
+                  "inline-flex items-center px-1.5 py-0.5 rounded-md border text-[9px] font-black tracking-widest uppercase",
+                  isCold && "border-border/60 text-muted-foreground",
+                  !isCold && !isFirestorm && "border-[hsl(18_95%_58%)]/40 text-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%)]/10",
+                  isFirestorm && "border-transparent text-transparent bg-clip-text",
+                )}
+                style={isFirestorm ? {
+                  backgroundImage: "linear-gradient(90deg, hsl(195 90% 65%), hsl(265 80% 65%), hsl(310 85% 65%), hsl(195 90% 65%))",
+                  backgroundSize: "200% 100%",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  animation: "flame-plasma-hue 4s linear infinite, shimmer-slide 5s linear infinite",
+                  borderColor: "hsl(195 90% 65% / 0.5)",
+                } : undefined}
+              >
+                {tierName}
+              </span>
+              {avg !== null && (
+                <span className="text-[10px] text-muted-foreground/85 tabular-nums">
+                  avg <span className="font-black text-foreground/85">{avg}</span> · {memberCount} member{memberCount === 1 ? "" : "s"}
+                </span>
+              )}
+            </div>
+
+            {isCold && (
+              <p className="text-[10px] text-muted-foreground/70 mt-1.5 leading-snug">
+                This fire is cold — <span className="font-black text-foreground/80">30+ combined days</span> to ignite.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Segmented progress bar to next tier */}
       {!isCold && !atMax && (

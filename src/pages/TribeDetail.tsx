@@ -222,12 +222,32 @@ const TribeDetail = () => {
 
   // Optimistically grow the collective streak the instant a member checks in,
   // and fire a soft haptic when it's the current user's own check-in.
+  // Also detect tier-up crossings to play a celebration burst.
   const lastEventIdRef = useRef<string | null>(null);
+  const lastTierRef = useRef<number>(collectiveStreakTier(collectiveStreak));
+  const [tierUp, setTierUp] = useState<{ name: string; accent: string; key: number } | null>(null);
   useEffect(() => {
     const latest = fireReactor.events[fireReactor.events.length - 1];
     if (!latest || latest.id === lastEventIdRef.current) return;
     lastEventIdRef.current = latest.id;
-    setCollectiveStreak((prev) => prev + latest.delta);
+    setCollectiveStreak((prev) => {
+      const next = prev + latest.delta;
+      const prevTier = collectiveStreakTier(prev);
+      const nextTier = collectiveStreakTier(next);
+      if (nextTier > prevTier && nextTier >= 0) {
+        setTierUp({
+          name: collectiveTierName(next),
+          accent: collectiveAccent(next),
+          key: Date.now(),
+        });
+        // Auto-dismiss tier-up celebration after 4s
+        setTimeout(() => setTierUp(null), 4200);
+        // Stronger haptic for tier-ups
+        hapticImpact("medium");
+      }
+      lastTierRef.current = nextTier;
+      return next;
+    });
     if (latest.userId === profile?.user_id) {
       hapticImpact("light");
     }

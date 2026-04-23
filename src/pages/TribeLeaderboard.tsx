@@ -28,6 +28,7 @@ const TribeLeaderboard = () => {
   const [period, setPeriod] = useState<"weekly" | "all_time">("weekly");
   const [rows, setRows] = useState<Row[]>([]);
   const [myTribeIds, setMyTribeIds] = useState<Set<string>>(new Set());
+  const [streaksMap, setStreaksMap] = useState<Map<string, number>>(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

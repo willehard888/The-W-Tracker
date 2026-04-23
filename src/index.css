@@ -3148,15 +3148,16 @@
      .aurum-lava-layer       → main lava sheet, slow downward flow
      .aurum-lava-layer--fast → secondary thinner stream, faster + offset
      .aurum-lava-glow        → bottom ember bleed + top heat haze
-   All movement is GPU-only (mask-position + background-position + opacity).
+   Uses BOTH mask drift and transform drift so the flow is visible even on
+   browsers where animated mask-position is flaky.
    ═════════════════════════════════════════════════════════════════ */
 @keyframes aurum-lava-drip {
-  0%   { -webkit-mask-position: 50% -130%; mask-position: 50% -130%; }
-  100% { -webkit-mask-position: 50% 230%;  mask-position: 50% 230%;  }
+  0%   { -webkit-mask-position: 50% -130%; mask-position: 50% -130%; transform: translateY(-18%) scaleY(1.04); }
+  100% { -webkit-mask-position: 50% 230%;  mask-position: 50% 230%;  transform: translateY(18%) scaleY(1.12); }
 }
 @keyframes aurum-lava-drip-offset {
-  0%   { -webkit-mask-position: 50% 200%;  mask-position: 50% 200%;  }
-  100% { -webkit-mask-position: 50% -160%; mask-position: 50% -160%; }
+  0%   { -webkit-mask-position: 50% 200%;  mask-position: 50% 200%;  transform: translateY(14%) scaleY(1.08); }
+  100% { -webkit-mask-position: 50% -160%; mask-position: 50% -160%; transform: translateY(-14%) scaleY(1.02); }
 }
 @keyframes aurum-lava-shimmer {
   0%, 100% { background-position: 0% 30%;   filter: saturate(1.15) brightness(1); }
@@ -3167,7 +3168,15 @@
   50%      { opacity: 0.95; transform: translateY(1px); }
 }
 
-/* ── Main molten sheet ───────────────────────────────────────── */
+.aurum-lava-layer,
+.aurum-lava-layer--fast,
+.aurum-lava-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
 .aurum-lava-layer {
   background-blend-mode: screen;
   background-color: hsl(18 95% 42% / 0.35);
@@ -3198,10 +3207,9 @@
   opacity: 0.78;
   mix-blend-mode: hard-light;
   transition: opacity 500ms ease, filter 500ms ease;
-  will-change: mask-position, background-position, opacity;
+  will-change: mask-position, background-position, opacity, transform;
 }
 
-/* ── Secondary thinner stream — narrower mask, faster, offset ── */
 .aurum-lava-layer--fast {
   background-blend-mode: screen;
   background-color: hsl(14 100% 50% / 0.45);
@@ -3232,10 +3240,9 @@
   opacity: 0.6;
   mix-blend-mode: color-dodge;
   transition: opacity 500ms ease, filter 500ms ease;
-  will-change: mask-position, background-position, opacity;
+  will-change: mask-position, background-position, opacity, transform;
 }
 
-/* ── Bottom ember bleed + top heat haze ─────────────────────── */
 .aurum-lava-glow {
   background:
     radial-gradient(120% 50% at 50% 110%,
@@ -3247,7 +3254,6 @@
       transparent 55%);
   animation: aurum-ember-bleed 3.4s ease-in-out infinite;
   mix-blend-mode: screen;
-  pointer-events: none;
 }
 
 button:hover > .aurum-lava-layer {
@@ -3282,6 +3288,7 @@ button:active > .aurum-lava-glow { opacity: 0.4; }
     animation: none !important;
     -webkit-mask-position: 50% 50% !important;
             mask-position: 50% 50% !important;
+    transform: none !important;
   }
   .aurum-lava-layer { opacity: 0.55 !important; }
   .aurum-lava-layer--fast { opacity: 0.4 !important; }

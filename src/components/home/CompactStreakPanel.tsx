@@ -346,15 +346,15 @@ const CompactStreakPanel = ({
         )}
       </div>
 
-      {/* Hero: flame + number */}
-      <div className="relative flex items-center gap-3 z-10">
+      {/* Hero: flame + number — flame is the FOCAL POINT, oversized intentionally */}
+      <div className="relative flex items-center gap-3.5 z-10">
         <div
-          className="relative flex h-14 w-14 items-center justify-center rounded-xl shrink-0 overflow-visible"
+          className="relative flex h-20 w-20 items-center justify-center rounded-2xl shrink-0 overflow-visible"
           style={{
             background: flameBg,
             color: isHot ? "white" : "hsl(var(--muted-foreground))",
             boxShadow: isHot
-              ? `0 0 26px ${accent.replace(")", " / 0.55)")}, inset 0 1px 0 hsl(0 0% 100% / 0.25), inset 0 -6px 14px hsl(0 0% 0% / 0.35), inset 0 1px 2px hsl(0 0% 0% / 0.15)`
+              ? `0 0 38px ${accent.replace(")", " / 0.7)")}, 0 0 80px ${accent.replace(")", " / 0.32)")}, inset 0 1px 0 hsl(0 0% 100% / 0.28), inset 0 -8px 18px hsl(0 0% 0% / 0.4), inset 0 1px 2px hsl(0 0% 0% / 0.15)`
               : "inset 0 1px 0 hsl(0 0% 100% / 0.05), inset 0 -2px 6px hsl(0 0% 0% / 0.25)",
           }}
         >
@@ -362,7 +362,7 @@ const CompactStreakPanel = ({
           {isHot && (
             <span
               aria-hidden
-              className="streak-fx-fuel absolute left-1/2 bottom-0 h-3 w-10 rounded-[50%] pointer-events-none"
+              className="streak-fx-fuel absolute left-1/2 bottom-0 h-4 w-14 rounded-[50%] pointer-events-none"
               style={{
                 background: `radial-gradient(ellipse at center, ${accent}, transparent 75%)`,
                 animation: "streak-fuel-pulse 2.4s ease-in-out infinite",
@@ -451,19 +451,20 @@ const CompactStreakPanel = ({
           <RealisticFlame
             tier={tier.index}
             accent={accent}
-            size={42}
+            size={62}
             className="relative z-10"
           />
 
-          {/* Ground glow */}
+          {/* Ground glow — bigger, hotter, sells the heat */}
           {isHot && (
             <span
               aria-hidden
-              className="streak-fx-ground absolute -bottom-1 left-1/2 h-2 w-12 rounded-[50%] pointer-events-none"
+              className="streak-fx-ground absolute -bottom-1.5 left-1/2 h-2.5 w-16 rounded-[50%] pointer-events-none"
               style={{
-                background: `radial-gradient(ellipse at center, ${accent.replace(")", " / 0.7)")}, transparent 70%)`,
-                filter: "blur(3px)",
+                background: `radial-gradient(ellipse at center, ${accent.replace(")", " / 0.8)")}, transparent 70%)`,
+                filter: "blur(4px)",
                 animation: "streak-ground-pulse 2s ease-in-out infinite",
+                transform: "translateX(-50%)",
               }}
             />
           )}
@@ -508,6 +509,19 @@ const CompactStreakPanel = ({
               </span>
             )}
           </div>
+          {/* Loss-aversion microcopy — shown only when there's something to lose. */}
+          {displayStreak >= 3 && !deadline?.expired && (
+            <p
+              className="mt-1.5 text-[9px] font-black uppercase tracking-[0.18em] flex items-center gap-1 leading-none"
+              style={{
+                color: isHot ? accent : "hsl(var(--muted-foreground))",
+                textShadow: isHot ? `0 0 10px ${accent.replace(")", " / 0.45)")}` : undefined,
+              }}
+            >
+              <span aria-hidden className="inline-block h-1 w-1 rounded-full" style={{ background: accent, boxShadow: `0 0 6px ${accent}` }} />
+              {isLegendary ? "Don't let it die" : isDiamond ? "Protect the fire" : "Keep it alive"}
+            </p>
+          )}
         </div>
       </div>
 

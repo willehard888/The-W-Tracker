@@ -36,9 +36,10 @@ import TierUsername from "@/components/TierUsername";
 import TribeCollectiveFlame from "@/components/TribeCollectiveFlame";
 import MemberContributionStrip from "@/components/MemberContributionStrip";
 import FeedTheFireCTA from "@/components/FeedTheFireCTA";
+import TribeAmbientFireField from "@/components/TribeAmbientFireField";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { hapticImpact } from "@/lib/haptics";
-import { fetchTribeCollectiveStreak, collectiveAccent } from "@/lib/tribe-streak";
+import { fetchTribeCollectiveStreak, collectiveAccent, collectiveStreakTier, collectiveTierName } from "@/lib/tribe-streak";
 
 interface Member {
   user_id: string;

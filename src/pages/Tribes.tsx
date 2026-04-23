@@ -153,13 +153,13 @@ const Tribes = () => {
       setOwnedIds(owned);
       setJoinedIds(joined);
 
-      // Member avatar previews — top 4 per tribe
+      // Member avatar previews — top 4 per tribe, plus all-member map for reactor
       const { data: previews } = await supabase
         .from("tribe_members" as any)
         .select("tribe_id, user_id")
         .in("tribe_id", ids)
         .eq("status", "active")
-        .limit(ids.length * 6);
+        .limit(ids.length * 40);
       const userIds: string[] = Array.from(new Set(((previews as any) ?? []).map((p: any) => p.user_id as string)));
       const { data: profs } = userIds.length
         ? await supabase
@@ -169,14 +169,19 @@ const Tribes = () => {
         : { data: [] as any[] };
       const profMap = new Map(((profs as any) ?? []).map((p: any) => [p.user_id, p]));
       const map: Record<string, { user_id: string; avatar_url: string | null; username: string }[]> = {};
+      const u2t = new Map<string, string[]>();
       ((previews as any) ?? []).forEach((row: any) => {
         const arr = map[row.tribe_id] ?? (map[row.tribe_id] = []);
         if (arr.length < 4) {
           const p = profMap.get(row.user_id);
           if (p) arr.push(p as any);
         }
+        const tArr = u2t.get(row.user_id) ?? [];
+        tArr.push(row.tribe_id);
+        u2t.set(row.user_id, tArr);
       });
       setMemberPreviews(map);
+      setUserToTribes(u2t);
     } else {
       setOwnedIds(new Set());
       setJoinedIds(new Set());

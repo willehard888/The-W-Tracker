@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Crown, Medal, Award, Trophy, Loader2, Users, Lock, Zap } from "lucide-react";
+import Flame from "@/components/Flame";
 import { cn } from "@/lib/utils";
 
 interface Row {
@@ -144,13 +145,25 @@ const TribeLeaderboard = () => {
                 >
                   <div className="rounded-2xl p-4 bg-gradient-to-br from-card/90 via-card/80 to-card/70 flex items-center gap-3">
                     <div
-                      className="h-14 w-14 rounded-xl flex items-center justify-center shrink-0 border"
+                      className="relative h-14 w-14 rounded-xl flex items-center justify-center shrink-0 border overflow-hidden"
                       style={{
                         background: `linear-gradient(135deg, ${podium.color}30, ${podium.color}10)`,
                         borderColor: `${podium.color}60`,
                       }}
                     >
-                      <Icon size={24} style={{ color: podium.color }} strokeWidth={2.4} />
+                      {/* Live flame animation — intensity scales with rank */}
+                      <div className="absolute inset-0 flex items-end justify-center pb-0.5 opacity-90 pointer-events-none">
+                        <Flame
+                          status={r.rank === 1 ? "apex" : r.rank === 2 ? "elite" : "high_performer"}
+                          size={r.rank === 1 ? 44 : 36}
+                        />
+                      </div>
+                      <Icon
+                        size={r.rank === 1 ? 22 : 24}
+                        style={{ color: podium.color }}
+                        strokeWidth={2.4}
+                        className="relative z-10 drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]"
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">

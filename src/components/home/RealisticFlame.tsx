@@ -794,112 +794,224 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
         </>
       )}
 
-      {/* ── Industrial factory base — flame rises from a chimney/smokestack.
-          Pure SVG, static (no animations to add). Scales with `size` and only
-          renders at meaningful sizes so tiny inline flames stay clean. ───── */}
+      {/* ── Premium industrial factory base — flame rises from a brick chimney.
+          Pure SVG, static (no animations). Layered for real depth: ground
+          puddle of warm light → silhouette skyline behind → main building
+          with metal cladding, brick courses, lit windows, satellite dish,
+          ventilation pipes → twin chimneys with riveted bands and wash
+          stains. The taller central chimney's mouth glows hot under the
+          flame so the fire reads as escaping smelter heat. ───────────────── */}
       {isHot && size >= 36 && (
         <svg
           aria-hidden
           className="absolute left-1/2 pointer-events-none"
-          width={size * 1.9}
-          height={size * 0.95}
+          width={size * 2.2}
+          height={size * 1.05}
           viewBox="0 0 100 50"
           style={{
             transform: "translateX(-50%)",
             // Anchor the chimney top right at the flame base
             bottom: -size * 0.78,
             zIndex: -1,
-            filter: `drop-shadow(0 ${size * 0.04}px ${size * 0.12}px hsl(0 0% 0% / 0.55))`,
+            filter: `drop-shadow(0 ${size * 0.05}px ${size * 0.16}px hsl(0 0% 0% / 0.6))`,
           }}
         >
           <defs>
+            {/* Main building cladding — vertical metal panel shading */}
             <linearGradient id={`fac-body-${uid}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"  stopColor="hsl(220 14% 22%)" />
-              <stop offset="55%" stopColor="hsl(220 16% 14%)" />
-              <stop offset="100%" stopColor="hsl(220 18% 8%)" />
+              <stop offset="0%"  stopColor="hsl(220 16% 26%)" />
+              <stop offset="35%" stopColor="hsl(220 16% 16%)" />
+              <stop offset="100%" stopColor="hsl(220 18% 6%)" />
             </linearGradient>
+            {/* Brick chimney — warm desaturated red-brown with cylindrical shading */}
             <linearGradient id={`fac-chim-${uid}`} x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%"   stopColor="hsl(220 14% 10%)" />
-              <stop offset="22%"  stopColor="hsl(220 14% 22%)" />
-              <stop offset="50%"  stopColor="hsl(220 14% 28%)" />
-              <stop offset="78%"  stopColor="hsl(220 14% 18%)" />
+              <stop offset="0%"   stopColor="hsl(15 22% 8%)" />
+              <stop offset="22%"  stopColor="hsl(15 28% 22%)" />
+              <stop offset="50%"  stopColor="hsl(18 32% 30%)" />
+              <stop offset="78%"  stopColor="hsl(15 26% 18%)" />
+              <stop offset="100%" stopColor="hsl(15 22% 6%)" />
+            </linearGradient>
+            {/* Smaller secondary chimney — cooler steel pipe */}
+            <linearGradient id={`fac-pipe-${uid}`} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%"   stopColor="hsl(220 14% 8%)" />
+              <stop offset="50%"  stopColor="hsl(220 12% 24%)" />
               <stop offset="100%" stopColor="hsl(220 14% 6%)" />
             </linearGradient>
+            {/* Heat wash on chimney top — soot stained with warm halo */}
             <linearGradient id={`fac-rim-${uid}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"  stopColor={palette.wick} stopOpacity="0.95" />
-              <stop offset="60%" stopColor={palette.outer} stopOpacity="0.4" />
+              <stop offset="0%"  stopColor={palette.wick} stopOpacity="1" />
+              <stop offset="50%" stopColor={palette.outer} stopOpacity="0.5" />
               <stop offset="100%" stopColor="hsl(0 0% 0% / 0)" />
             </linearGradient>
+            {/* Soot streak running down the chimney from the mouth */}
+            <linearGradient id={`fac-soot-${uid}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"  stopColor="hsl(0 0% 0%)" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="hsl(0 0% 0%)" stopOpacity="0" />
+            </linearGradient>
+            {/* Pavement / ground reflection */}
+            <linearGradient id={`fac-ground-${uid}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"  stopColor="hsl(220 14% 14%)" />
+              <stop offset="100%" stopColor="hsl(220 16% 4%)" />
+            </linearGradient>
+            <radialGradient id={`fac-spill-${uid}`} cx="50%" cy="50%" r="50%">
+              <stop offset="0%"  stopColor={palette.haze} stopOpacity="0.9" />
+              <stop offset="60%" stopColor={palette.outer} stopOpacity="0.25" />
+              <stop offset="100%" stopColor="hsl(0 0% 0% / 0)" />
+            </radialGradient>
           </defs>
 
-          {/* Warm light spill from the chimney mouth lighting the building top */}
-          <ellipse
-            cx="50" cy="14" rx="22" ry="3"
-            fill={palette.haze}
-            opacity="0.55"
-            style={{ mixBlendMode: "screen" }}
-          />
+          {/* (1) Distant skyline silhouette — gives parallax depth behind the
+                  factory. Tiny, low contrast, blurred so it reads as "city
+                  far away". */}
+          <g opacity="0.55" style={{ filter: "blur(0.4px)" }}>
+            <rect x="0"  y="34" width="6"  height="14" fill="hsl(220 16% 8%)" />
+            <rect x="6"  y="30" width="3"  height="18" fill="hsl(220 14% 6%)" />
+            <rect x="9"  y="36" width="5"  height="12" fill="hsl(220 16% 9%)" />
+            <rect x="86" y="33" width="4"  height="15" fill="hsl(220 14% 8%)" />
+            <rect x="90" y="29" width="3"  height="19" fill="hsl(220 14% 6%)" />
+            <rect x="93" y="35" width="6"  height="13" fill="hsl(220 16% 9%)" />
+          </g>
 
-          {/* Main factory building — wide low block */}
-          <rect x="8" y="22" width="84" height="26" rx="1.2" fill={`url(#fac-body-${uid})`} />
+          {/* (2) Warm volumetric light spill from chimney mouth — lights the
+                  building roof and tints the air around it. */}
+          <ellipse cx="50" cy="14" rx="30" ry="6" fill={`url(#fac-spill-${uid})`}
+            style={{ mixBlendMode: "screen" }} />
 
-          {/* Sloped factory roof line (subtle highlight) */}
-          <rect x="8" y="22" width="84" height="1.2" fill="hsl(220 16% 32%)" opacity="0.85" />
+          {/* (3) Main factory building — wide low industrial block */}
+          <rect x="6" y="22" width="88" height="26" rx="0.6" fill={`url(#fac-body-${uid})`} />
 
-          {/* Side annex / shorter block on the left */}
-          <rect x="2" y="30" width="10" height="18" rx="0.8" fill="hsl(220 16% 12%)" />
-          <rect x="2" y="30" width="10" height="0.8" fill="hsl(220 16% 26%)" opacity="0.8" />
+          {/* (3b) Vertical metal panel seams on the cladding */}
+          {[14, 22, 30, 38, 62, 70, 78, 86].map((x, i) => (
+            <rect key={`seam-${i}`} x={x} y={22} width="0.3" height="26"
+              fill="hsl(0 0% 0%)" opacity="0.45" />
+          ))}
 
-          {/* Side annex on the right */}
-          <rect x="88" y="32" width="10" height="16" rx="0.8" fill="hsl(220 16% 11%)" />
-          <rect x="88" y="32" width="10" height="0.8" fill="hsl(220 16% 24%)" opacity="0.8" />
+          {/* (3c) Roof parapet line — bright top edge */}
+          <rect x="6" y="22" width="88" height="0.8" fill="hsl(220 16% 38%)" />
+          <rect x="6" y="22.8" width="88" height="0.4" fill="hsl(0 0% 0%)" opacity="0.5" />
 
-          {/* Glowing windows — warm amber light from inside */}
-          {[16, 24, 32, 60, 68, 76].map((x, i) => (
-            <rect
-              key={`w-${i}`}
-              x={x} y={30}
-              width="4" height="3.5"
+          {/* (3d) Sub-roof horizontal trim band */}
+          <rect x="6" y="34" width="88" height="0.6" fill="hsl(220 16% 22%)" opacity="0.7" />
+
+          {/* (4) Side annexes — give the silhouette industrial complexity */}
+          <rect x="0"  y="30" width="8"  height="18" rx="0.4" fill="hsl(220 16% 11%)" />
+          <rect x="0"  y="30" width="8"  height="0.8" fill="hsl(220 16% 26%)" opacity="0.85" />
+          <rect x="92" y="32" width="8"  height="16" rx="0.4" fill="hsl(220 16% 10%)" />
+          <rect x="92" y="32" width="8"  height="0.8" fill="hsl(220 16% 24%)" opacity="0.85" />
+
+          {/* (5) Loading dock + ramp on the right annex */}
+          <rect x="93.5" y="42" width="5" height="6" fill="hsl(0 0% 0%)" opacity="0.85" />
+          <rect x="93.5" y="42" width="5" height="0.5" fill={palette.wick} opacity="0.45"
+            style={{ mixBlendMode: "screen" }} />
+
+          {/* (6) Lit windows — three rows, randomly varied "occupancy" */}
+          {/* Row 1 */}
+          {[12, 18, 24, 30, 36, 60, 66, 72, 78, 84].map((x, i) => (
+            <rect key={`w1-${i}`} x={x} y={26} width="3.4" height="2.4"
+              fill={i % 3 === 0 ? palette.inner : palette.wick}
+              opacity={i % 4 === 0 ? 0.35 : 0.85}
+              style={{ mixBlendMode: "screen" }} />
+          ))}
+          {/* Row 2 */}
+          {[12, 18, 24, 30, 36, 60, 66, 72, 78, 84].map((x, i) => (
+            <rect key={`w2-${i}`} x={x} y={36} width="3.4" height="2.4"
+              fill={i % 2 === 0 ? palette.wick : palette.inner}
+              opacity={i % 5 === 0 ? 0.3 : 0.78}
+              style={{ mixBlendMode: "screen" }} />
+          ))}
+          {/* Row 3 — small floor-level slits */}
+          {[12, 18, 24, 30, 36, 60, 66, 72, 78, 84].map((x, i) => (
+            <rect key={`w3-${i}`} x={x} y={43} width="3.4" height="1.4"
               fill={palette.wick}
-              opacity={i % 2 === 0 ? 0.85 : 0.55}
-              style={{ mixBlendMode: "screen" }}
-            />
-          ))}
-          {[16, 24, 32, 60, 68, 76].map((x, i) => (
-            <rect
-              key={`w2-${i}`}
-              x={x} y={38}
-              width="4" height="3.5"
-              fill={palette.inner}
-              opacity={i % 2 === 0 ? 0.5 : 0.78}
-              style={{ mixBlendMode: "screen" }}
-            />
+              opacity={i % 3 === 0 ? 0.85 : 0.5}
+              style={{ mixBlendMode: "screen" }} />
           ))}
 
-          {/* Door */}
-          <rect x="46" y="40" width="6" height="8" fill="hsl(220 18% 6%)" />
-          <rect x="46" y="40" width="6" height="0.8" fill={palette.wick} opacity="0.6" style={{ mixBlendMode: "screen" }} />
+          {/* (7) Big arched factory door — main entrance */}
+          <rect x="46" y="40" width="8" height="8" fill="hsl(220 18% 4%)" />
+          <path d="M46 40 Q50 37.5 54 40 L54 41 L46 41 Z" fill="hsl(220 18% 4%)" />
+          <rect x="46" y="40" width="8" height="0.6" fill={palette.wick} opacity="0.7"
+            style={{ mixBlendMode: "screen" }} />
+          {/* Warm light pooling out of the door onto the ground */}
+          <ellipse cx="50" cy="48" rx="6" ry="1.2"
+            fill={palette.haze} opacity="0.6"
+            style={{ mixBlendMode: "screen" }} />
 
-          {/* Chimney / smokestack — tall column rising above the building.
-              The flame above sits exactly on top of this. */}
-          <rect x="44" y="6" width="12" height="20" fill={`url(#fac-chim-${uid})`} />
-          {/* Brick band rings */}
-          <rect x="44" y="10" width="12" height="0.8" fill="hsl(220 14% 6%)" opacity="0.9" />
-          <rect x="44" y="18" width="12" height="0.8" fill="hsl(220 14% 6%)" opacity="0.9" />
-          {/* Chimney lip — wider crown at the top */}
-          <rect x="42" y="4" width="16" height="2.6" rx="0.4" fill="hsl(220 14% 18%)" />
-          <rect x="42" y="4" width="16" height="0.6" fill="hsl(220 14% 30%)" />
+          {/* (8) Roof equipment — HVAC unit + satellite dish + venting pipe */}
+          {/* HVAC box */}
+          <rect x="14" y="18.5" width="8" height="3.5" fill="hsl(220 14% 16%)" />
+          <rect x="14" y="18.5" width="8" height="0.4" fill="hsl(220 14% 28%)" />
+          <rect x="15" y="20" width="1" height="2" fill="hsl(220 14% 8%)" />
+          <rect x="17" y="20" width="1" height="2" fill="hsl(220 14% 8%)" />
+          <rect x="19" y="20" width="1" height="2" fill="hsl(220 14% 8%)" />
+          {/* Satellite dish */}
+          <circle cx="78" cy="20" r="2.2" fill="hsl(220 14% 18%)" />
+          <circle cx="78" cy="20" r="2.2" fill="hsl(0 0% 0%)" opacity="0.4" />
+          <line x1="78" y1="20" x2="78" y2="22" stroke="hsl(220 14% 10%)" strokeWidth="0.4" />
+          {/* Antenna mast */}
+          <line x1="84" y1="22" x2="84" y2="13" stroke="hsl(220 14% 18%)" strokeWidth="0.4" />
+          <circle cx="84" cy="13" r="0.5" fill={palette.wick} opacity="0.8"
+            style={{ mixBlendMode: "screen" }} />
+          {/* Secondary thin steel pipe — venting steam */}
+          <rect x="68" y="13" width="2.4" height="9" fill={`url(#fac-pipe-${uid})`} />
+          <rect x="67.4" y="12.2" width="3.6" height="1.2" rx="0.2" fill="hsl(220 12% 22%)" />
+          <ellipse cx="69.2" cy="11.2" rx="2.5" ry="0.9"
+            fill="hsl(220 10% 70%)" opacity="0.18"
+            style={{ mixBlendMode: "screen" }} />
 
-          {/* Hot rim glow inside the chimney mouth — sells "fire below" */}
-          <rect x="44.4" y="5" width="11.2" height="3" fill={`url(#fac-rim-${uid})`} style={{ mixBlendMode: "screen" }} />
-          <ellipse cx="50" cy="6" rx="5.2" ry="1.1" fill={palette.core} opacity="0.9" style={{ mixBlendMode: "screen" }} />
+          {/* (9) Main brick chimney — taller, wider, riveted, sooted.
+                  The flame above sits exactly on top of this. */}
+          {/* Soot wash on the building under the chimney */}
+          <rect x="40" y="22" width="20" height="12" fill={`url(#fac-soot-${uid})`} opacity="0.55" />
+          {/* Chimney shaft */}
+          <rect x="43" y="3" width="14" height="23" fill={`url(#fac-chim-${uid})`} />
+          {/* Brick course rings — alternating dark/highlight pairs */}
+          {[7, 12, 17, 22].map((y, i) => (
+            <g key={`brick-${i}`}>
+              <rect x="43" y={y} width="14" height="0.7" fill="hsl(15 22% 4%)" opacity="0.95" />
+              <rect x="43" y={y + 0.7} width="14" height="0.3" fill="hsl(20 30% 38%)" opacity="0.55" />
+            </g>
+          ))}
+          {/* Vertical mortar columns — subtle */}
+          <rect x="46.5" y="3" width="0.3" height="23" fill="hsl(0 0% 0%)" opacity="0.35" />
+          <rect x="50"   y="3" width="0.3" height="23" fill="hsl(0 0% 0%)" opacity="0.45" />
+          <rect x="53.5" y="3" width="0.3" height="23" fill="hsl(0 0% 0%)" opacity="0.35" />
+          {/* Iron support bands with rivets */}
+          {[5.5, 24].map((y, i) => (
+            <g key={`band-${i}`}>
+              <rect x="42.4" y={y} width="15.2" height="1.2" fill="hsl(220 14% 12%)" />
+              <rect x="42.4" y={y} width="15.2" height="0.3" fill="hsl(220 14% 28%)" />
+              {[44, 47, 50, 53, 56].map((rx, ri) => (
+                <circle key={`rv-${i}-${ri}`} cx={rx} cy={y + 0.6} r="0.35"
+                  fill="hsl(220 14% 6%)" />
+              ))}
+            </g>
+          ))}
+          {/* Chimney crown — wider corbeled lip */}
+          <rect x="40.8" y="1.2" width="18.4" height="2.4" rx="0.3" fill="hsl(15 22% 18%)" />
+          <rect x="40.8" y="1.2" width="18.4" height="0.5" fill="hsl(20 30% 36%)" />
+          <rect x="40.8" y="3.4" width="18.4" height="0.5" fill="hsl(0 0% 0%)" opacity="0.7" />
+          {/* Heat-discolored top of the brick (sooted with warm halo) */}
+          <rect x="43" y="3" width="14" height="2.4" fill="hsl(0 0% 0%)" opacity="0.6" />
+          <rect x="43.4" y="2" width="13.2" height="3.2" fill={`url(#fac-rim-${uid})`}
+            style={{ mixBlendMode: "screen" }} />
+          {/* Glowing ember bed inside the chimney mouth — sells "fire below" */}
+          <ellipse cx="50" cy="3.2" rx="6.2" ry="1.4" fill={palette.core} opacity="0.95"
+            style={{ mixBlendMode: "screen" }} />
+          <ellipse cx="50" cy="3.2" rx="3.4" ry="0.8" fill="hsl(0 0% 100%)" opacity="0.55"
+            style={{ mixBlendMode: "screen" }} />
 
-          {/* Small secondary thin pipe on the right roof */}
-          <rect x="74" y="14" width="3" height="10" fill="hsl(220 14% 14%)" />
-          <rect x="73.3" y="13" width="4.4" height="1.4" rx="0.3" fill="hsl(220 14% 20%)" />
-
-          {/* Ground contact shadow line beneath the factory */}
-          <rect x="0" y="48" width="100" height="2" fill="hsl(0 0% 0%)" opacity="0.55" />
+          {/* (10) Pavement / asphalt strip beneath the factory */}
+          <rect x="0" y="48" width="100" height="2" fill={`url(#fac-ground-${uid})`} />
+          {/* Wet asphalt reflection of the chimney glow */}
+          <ellipse cx="50" cy="48.4" rx="22" ry="1.1"
+            fill={palette.haze} opacity="0.4"
+            style={{ mixBlendMode: "screen" }} />
+          {/* Dashed road lane marking */}
+          {[2, 14, 26, 38, 62, 74, 86, 98].map((x, i) => (
+            <rect key={`ln-${i}`} x={x} y={49} width="6" height="0.4"
+              fill="hsl(42 60% 55%)" opacity="0.18" />
+          ))}
         </svg>
       )}
 

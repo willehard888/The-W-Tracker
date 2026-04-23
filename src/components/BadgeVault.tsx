@@ -220,8 +220,8 @@ const BadgeVault = ({
           type="button"
           onClick={() => onBadgeClick?.(nextDrop.badge)}
           className={cn(
-            "group w-full mb-4 p-3 rounded-2xl border relative overflow-hidden text-left",
-            "border-gold/25 bg-[radial-gradient(120%_100%_at_85%_50%,hsl(42_50%_15%/0.5),transparent_60%)] bg-card",
+            "group w-full mb-4 p-3 rounded-2xl border relative overflow-hidden text-left glass-3d depth-realistic",
+            "border-gold/25",
             "transition-all duration-300 hover:border-gold/45 active:scale-[0.99]"
           )}
         >

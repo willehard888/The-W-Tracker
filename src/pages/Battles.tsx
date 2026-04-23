@@ -372,7 +372,7 @@ const Battles = () => {
 
       {/* Create Battle CTA */}
       {!showCreate ? (
-        <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-gold/20 bg-card p-6 text-center mb-6 card-depth-lg">
+        <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-gold/20 p-6 text-center mb-6 glass-3d depth-realistic">
           <div className="h-16 w-16 rounded-full gradient-gold flex items-center justify-center glow-gold mx-auto mb-4">
             <Swords size={30} className="text-primary-foreground" />
           </div>
@@ -386,7 +386,7 @@ const Battles = () => {
           </Button>
         </div>
       ) : (
-        <div className="animate-reveal rounded-xl border border-gold/30 bg-card p-5 mb-6">
+        <div className="animate-reveal rounded-xl border border-gold/30 p-5 mb-6 glass-3d depth-realistic">
           <h3 className="font-display font-bold text-sm mb-4">Challenge an opponent</h3>
 
           <div className="space-y-4">
@@ -481,7 +481,7 @@ const Battles = () => {
               const opp = getOpponent(battle);
               const typeInfo = getBattleTypeInfo(battle.battle_type);
               return (
-                <div key={battle.id} className="rounded-xl border border-gold/20 bg-card p-4 card-depth">
+                <div key={battle.id} className="rounded-xl border border-gold/20 p-4 glass-3d depth-realistic">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="h-10 w-10 rounded-full gradient-gold flex items-center justify-center text-sm font-black text-primary-foreground">
                       {opp.username?.charAt(0)?.toUpperCase()}
@@ -542,7 +542,7 @@ const Battles = () => {
               const oppProof = getOppProof(battle);
 
               return (
-                <div key={battle.id} className="rounded-xl border border-gold/20 bg-card overflow-hidden card-depth-lg">
+                <div key={battle.id} className="rounded-xl border border-gold/20 overflow-hidden glass-3d depth-realistic">
                   {/* Header */}
                   <div className="flex items-center justify-between p-4 pb-2">
                     <div className="flex items-center gap-2">
@@ -734,7 +734,7 @@ const Battles = () => {
               const totalVotes = challengerVotes + opponentVotes;
 
               return (
-                <div key={battle.id} className="rounded-xl border border-purple-500/20 bg-card overflow-hidden card-depth">
+                <div key={battle.id} className="rounded-xl border border-purple-500/20 overflow-hidden glass-3d depth-realistic">
                   <div className="flex items-center justify-between px-4 pt-3 pb-1">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1">
                       {typeInfo.emoji} {typeInfo.label} Battle — TIE

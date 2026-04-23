@@ -522,7 +522,7 @@ const Profile = () => {
       {/* Season Champion — moved under Position */}
       {championHistory && championHistory.wins > 0 && (
         <div className="mb-6 animate-reveal animate-reveal-delay-1">
-          <div className="rounded-2xl border-2 border-gold/50 bg-gold/10 p-5 glow-gold shadow-lg shadow-gold/20">
+          <div className="rounded-2xl border-2 border-gold/50 p-5 glow-gold glass-3d depth-realistic shadow-gold/20">
             <div className="flex items-center gap-2 mb-4">
               <Medal size={24} className="text-gold drop-shadow-[0_0_8px_hsl(42_78%_54%/0.6)]" />
               <h2 className="font-display font-black text-xl tracking-tight">Season Champion</h2>

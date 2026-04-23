@@ -3087,3 +3087,22 @@
   .fire-halo-ring { opacity: 0; }
 }
 
+
+/* ═════════════════════════════════════════════════════════════════
+   PHOTOGRAPHIC TEXTURE BUTTONS — magma & bullion
+   Slow background-position drift = the surface "lives" without
+   re-painting (GPU composited layers only).
+   ═════════════════════════════════════════════════════════════════ */
+@keyframes magma-drift {
+  0%   { background-position: 0%   50%, 0 0; }
+  50%  { background-position: 100% 50%, 0 0; }
+  100% { background-position: 0%   50%, 0 0; }
+}
+@keyframes bullion-shine-drift {
+  0%   { background-position: 30% 25%, 0 0; }
+  50%  { background-position: 70% 75%, 0 0; }
+  100% { background-position: 30% 25%, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*="magma-drift"], [class*="bullion-shine-drift"] { animation: none !important; }
+}

@@ -9,8 +9,11 @@
  * Why CSS vars: zero React re-renders for the actual visual; flames pick
  * the values up via `transform: rotate(calc(var(--wind-x) * 3deg))` etc.
  *
- * `triggerGust(strength)` lets feature code (check-in success, badge unlock,
- * tribe ignition) inject a punchy gust that all flames bend into briefly.
+ * Perf:
+ *   - Throttled to ~30fps (visually identical for slow drift).
+ *   - Skips writes when the new value rounds to the same string as the
+ *     previous one — prevents needless style recalcs across the whole tree.
+ *   - Pauses entirely when the tab is hidden.
  */
 
 let started = false;
@@ -19,6 +22,12 @@ let lastGustAt = 0;
 let nextGustIn = 9000; // ms — first gust window
 let manualGust = 0;    // 0..1, set by triggerGust, decays toward 0
 let manualGustAt = 0;
+let lastTick = 0;
+let lastX = "";
+let lastGust = "";
+let visible = true;
+
+const FRAME_MS = 1000 / 30;
 
 const noise = (t: number) => {
   // Cheap layered sine — pseudo-Perlin without the lookup tables.
@@ -34,6 +43,11 @@ const setVar = (name: string, value: string) => {
 };
 
 const tick = (now: number) => {
+  rafId = requestAnimationFrame(tick);
+  if (!visible) return;
+  if (now - lastTick < FRAME_MS) return;
+  lastTick = now;
+
   // Base wind drift — slow, evolving
   const x = Math.max(-1, Math.min(1, noise(now)));
 
@@ -48,7 +62,6 @@ const tick = (now: number) => {
 
   // Manual / scheduled gust decay
   const gustElapsed = now - manualGustAt;
-  // Quick attack (200ms), exponential decay over ~1.6s
   let gust = 0;
   if (manualGust > 0) {
     if (gustElapsed < 200) {
@@ -62,18 +75,30 @@ const tick = (now: number) => {
     }
   }
 
-  setVar("--wind-x", x.toFixed(3));
-  setVar("--wind-gust", gust.toFixed(3));
+  // Quantize to 2 decimals — kills near-duplicate writes that still trigger
+  // style recalcs but produce no visible change.
+  const xStr = x.toFixed(2);
+  const gStr = gust.toFixed(2);
+  if (xStr !== lastX) {
+    setVar("--wind-x", xStr);
+    lastX = xStr;
+  }
+  if (gStr !== lastGust) {
+    setVar("--wind-gust", gStr);
+    lastGust = gStr;
+  }
+};
 
-  rafId = requestAnimationFrame(tick);
+const onVisibility = () => {
+  visible = !document.hidden;
 };
 
 export const startWind = () => {
   if (started || typeof window === "undefined") return;
   started = true;
-  // initial values so CSS calc() never hits NaN before first frame
   setVar("--wind-x", "0");
   setVar("--wind-gust", "0");
+  document.addEventListener("visibilitychange", onVisibility);
   rafId = requestAnimationFrame(tick);
 };
 
@@ -81,6 +106,7 @@ export const stopWind = () => {
   if (!started) return;
   started = false;
   cancelAnimationFrame(rafId);
+  document.removeEventListener("visibilitychange", onVisibility);
 };
 
 /** Inject a gust — flames across the app will visibly bend & recover. */

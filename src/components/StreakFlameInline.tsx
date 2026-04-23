@@ -157,15 +157,51 @@ const StreakFlameInline = ({
     ? "flame-aurora-hue 10s linear infinite"
     : undefined;
 
+  // Wind reactivity — same global vars as RealisticFlame.
+  // We only apply wind tilt to Warm+ (cold/hot tiers stay still — they're tiny + dense in lists).
+  const windTilt = isWarm
+    ? "rotate(calc(var(--wind-x, 0) * 2.2deg + var(--wind-gust, 0) * 2.5deg)) translateX(calc(var(--wind-x, 0) * 0.4px))"
+    : undefined;
+
+  // Diamond+ adds breathing wrapper (very subtle — these are tiny).
+  const breathAnim = isDiamond
+    ? `, flame-breathe ${(speed * 5).toFixed(2)}s ease-in-out infinite`
+    : "";
+
   return (
     <span
       className={cn("inline-flex items-center gap-0.5 leading-none align-middle", className)}
     >
       <span
         className="relative inline-block shrink-0"
-        style={{ width: flameSize, height: flameSize * 1.15, animation: hueAnim }}
+        style={{
+          width: flameSize,
+          height: flameSize * 1.15,
+          animation: hueAnim ? `${hueAnim}${breathAnim}` : breathAnim ? breathAnim.slice(2) : undefined,
+          transform: windTilt,
+          transformOrigin: "center bottom",
+          transition: windTilt ? "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)" : undefined,
+        }}
         aria-hidden
       >
+        {/* Volumetric ground-cast — projects warm light below the flame (Blazing+). */}
+        {isBlazing && (
+          <span
+            className="flame-ground-cast absolute left-1/2 rounded-[50%] pointer-events-none"
+            style={{
+              width: flameSize * 2.2,
+              height: flameSize * 0.4,
+              bottom: -flameSize * 0.12,
+              background: `radial-gradient(ellipse at 50% 50%, ${palette.glow.replace(")", " / 0.55)")} 0%, transparent 75%)`,
+              filter: "blur(5px)",
+              mixBlendMode: "screen",
+              transformOrigin: "50% 50%",
+              animation: `flame-ground-cast ${(speed * 4).toFixed(2)}s ease-in-out infinite`,
+              zIndex: 0,
+            }}
+          />
+        )}
+
         {/* Halo glow — Warm+ — bigger & punchier */}
         {isWarm && (
           <span
@@ -197,6 +233,7 @@ const StreakFlameInline = ({
             }}
           />
         )}
+
 
         {/* Outer flame body — teardrop with rim-light gradient */}
         <span
@@ -273,19 +310,41 @@ const StreakFlameInline = ({
           />
         )}
 
-        {/* Spark dot — Diamond+ */}
+        {/* Spark dot — Diamond+ — now a wind-reactive ember instead of a static dot. */}
         {isDiamond && (
           <span
-            className="absolute rounded-full pointer-events-none"
+            className="flame-ember absolute rounded-full pointer-events-none"
             style={{
-              width: 1.8,
-              height: 1.8,
+              width: Math.max(1.4, flameSize * 0.1),
+              height: Math.max(1.4, flameSize * 0.1),
               left: "50%",
-              top: 1,
+              bottom: flameSize * 0.6,
               background: palette.core,
-              boxShadow: `0 0 4px ${palette.core}`,
+              boxShadow: `0 0 ${flameSize * 0.35}px ${palette.glow}`,
               transform: "translateX(-50%)",
-              animation: `flame-crown-firefly 1.6s ease-in-out infinite`,
+              opacity: 0,
+              ["--ember-rise" as string]: `${-flameSize * 1.3}px`,
+              animation: `flame-ember-float ${(speed * 2.4).toFixed(2)}s ease-out infinite`,
+            }}
+          />
+        )}
+
+        {/* Second ember (Legendary+) — staggered for density. */}
+        {isLegendary && (
+          <span
+            className="flame-ember absolute rounded-full pointer-events-none"
+            style={{
+              width: Math.max(1.2, flameSize * 0.08),
+              height: Math.max(1.2, flameSize * 0.08),
+              left: "55%",
+              bottom: flameSize * 0.55,
+              background: palette.core,
+              boxShadow: `0 0 ${flameSize * 0.3}px ${palette.glow}`,
+              transform: "translateX(-50%)",
+              opacity: 0,
+              ["--ember-rise" as string]: `${-flameSize * 1.6}px`,
+              animation: `flame-ember-float ${(speed * 2.8).toFixed(2)}s ease-out infinite`,
+              animationDelay: `${(speed * 1.1).toFixed(2)}s`,
             }}
           />
         )}

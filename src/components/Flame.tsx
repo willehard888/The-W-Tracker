@@ -108,13 +108,31 @@ const Flame = ({ status, size = 28, label, className }: FlameProps) => {
   const w = size * widthScale;
   const h = size * 1.4 * heightScale;
 
+  // Wind reactivity — same global vars all flames in the app share.
+  // Stronger flames lean more (heavier flame head catches more wind).
+  const windTransform =
+    `rotate(calc(var(--wind-x, 0) * ${(2 + s * 2).toFixed(2)}deg + var(--wind-gust, 0) * 3deg)) ` +
+    `translateX(calc(var(--wind-x, 0) * ${(0.4 + s * 0.6).toFixed(2)}px))`;
+
+  // Breathing — only for strong+ flames; weak/dying flames stay still (a dying
+  // flame doesn't have the energy to breathe deeply).
+  const breathAnim = isStrong
+    ? `flame-breathe ${(flickerSpeed * 4.5).toFixed(2)}s ease-in-out infinite`
+    : undefined;
+
   return (
     <span
       className={cn(
         "relative inline-block align-middle pointer-events-none select-none",
         className,
       )}
-      style={{ width: size, height: size * 1.4 }}
+      style={{
+        width: size,
+        height: size * 1.4,
+        transform: windTransform,
+        transformOrigin: "center bottom",
+        transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)",
+      }}
       role={label ? "img" : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
@@ -175,7 +193,27 @@ const Flame = ({ status, size = 28, label, className }: FlameProps) => {
         </defs>
       </svg>
 
-      {/* 1. Halo — soft heat glow (only when not dying) */}
+      {/* Volumetric ground-cast — projects warm light onto the surface BELOW
+          the flame. Only when alive enough to actually radiate. */}
+      {!isDying && !isWeak && (
+        <span
+          className="flame-ground-cast absolute left-1/2 rounded-[50%] pointer-events-none"
+          style={{
+            width: w * 2.4,
+            height: w * 0.45,
+            bottom: -size * 0.06,
+            background: `radial-gradient(ellipse at 50% 50%, ${palette.halo.replace(")", " / 0.55)")} 0%, transparent 75%)`,
+            filter: `blur(${Math.max(4, size * 0.15)}px)`,
+            mixBlendMode: "screen",
+            transformOrigin: "50% 50%",
+            animation: `flame-ground-cast ${(flickerSpeed * 4).toFixed(2)}s ease-in-out infinite`,
+            animationDelay: `${seed.bodyDelay}s`,
+            zIndex: 0,
+          }}
+        />
+      )}
+
+      {/* Halo — soft heat glow (only when not dying) */}
       {!isDying && (
         <span
           className="absolute left-1/2 bottom-0 rounded-full"
@@ -193,43 +231,95 @@ const Flame = ({ status, size = 28, label, className }: FlameProps) => {
         />
       )}
 
-      {/* 2. Body — main flame (turbulence-warped) */}
-      <svg
-        className="absolute left-1/2 bottom-0"
-        width={w}
-        height={h}
-        viewBox="0 0 40 56"
+
+      {/* Breathing wrapper — slow inhale/exhale around body + core. Strong+ only. */}
+      <span
+        aria-hidden
+        className="absolute inset-0"
         style={{
-          transform: "translateX(-50%)",
-          transformOrigin: "center bottom",
-          filter: `url(#${filterId}) drop-shadow(0 0 ${size * 0.12}px ${palette.mid})`,
-          animation: `flame-inline-flicker ${flickerSpeed.toFixed(2)}s ease-in-out infinite`,
+          animation: breathAnim,
           animationDelay: `${seed.bodyDelay}s`,
-          mixBlendMode: "screen",
-          opacity: isDying ? 0.78 : 1,
+          transformOrigin: "center bottom",
+          willChange: breathAnim ? "transform" : undefined,
         }}
       >
-        <path d={FLAME_PATH} fill={`url(#${bodyGradId})`} />
-      </svg>
-
-      {/* 3. White-hot core (only above ~mid status — weak flames don't have it) */}
-      {!isWeak && (
+        {/* 2. Body — main flame (turbulence-warped) */}
         <svg
-          className="absolute left-1/2 bottom-[8%]"
-          width={w * 0.55}
-          height={h * 0.7}
+          className="absolute left-1/2 bottom-0"
+          width={w}
+          height={h}
           viewBox="0 0 40 56"
           style={{
             transform: "translateX(-50%)",
             transformOrigin: "center bottom",
-            filter: `drop-shadow(0 0 ${size * 0.18}px ${palette.core})`,
-            animation: `flame-inline-core ${(flickerSpeed * 0.7).toFixed(2)}s ease-in-out infinite`,
-            animationDelay: `${seed.coreDelay}s`,
+            filter: `url(#${filterId}) drop-shadow(0 0 ${size * 0.12}px ${palette.mid})`,
+            animation: `flame-inline-flicker ${flickerSpeed.toFixed(2)}s ease-in-out infinite`,
+            animationDelay: `${seed.bodyDelay}s`,
             mixBlendMode: "screen",
+            opacity: isDying ? 0.78 : 1,
           }}
         >
-          <path d={FLAME_PATH} fill={`url(#${coreGradId})`} />
+          <path d={FLAME_PATH} fill={`url(#${bodyGradId})`} />
         </svg>
+
+        {/* 3. White-hot core (only above ~mid status — weak flames don't have it) */}
+        {!isWeak && (
+          <svg
+            className="absolute left-1/2 bottom-[8%]"
+            width={w * 0.55}
+            height={h * 0.7}
+            viewBox="0 0 40 56"
+            style={{
+              transform: "translateX(-50%)",
+              transformOrigin: "center bottom",
+              filter: `drop-shadow(0 0 ${size * 0.18}px ${palette.core})`,
+              animation: `flame-inline-core ${(flickerSpeed * 0.7).toFixed(2)}s ease-in-out infinite`,
+              animationDelay: `${seed.coreDelay}s`,
+              mixBlendMode: "screen",
+            }}
+          >
+            <path d={FLAME_PATH} fill={`url(#${coreGradId})`} />
+          </svg>
+        )}
+      </span>
+
+      {/* Wind-reactive embers — small particles that drift with the wind (peak only). */}
+      {isPeak && (
+        <>
+          <span
+            className="flame-ember absolute rounded-full pointer-events-none"
+            style={{
+              width: Math.max(1.6, size * 0.08),
+              height: Math.max(1.6, size * 0.08),
+              left: "50%",
+              bottom: h * 0.45,
+              background: palette.core,
+              boxShadow: `0 0 ${size * 0.25}px ${palette.tip}`,
+              transform: "translateX(-50%)",
+              opacity: 0,
+              ["--ember-rise" as string]: `${-size * 1.2}px`,
+              animation: `flame-ember-float ${(flickerSpeed * 2.6).toFixed(2)}s ease-out infinite`,
+              mixBlendMode: "screen",
+            }}
+          />
+          <span
+            className="flame-ember absolute rounded-full pointer-events-none"
+            style={{
+              width: Math.max(1.4, size * 0.06),
+              height: Math.max(1.4, size * 0.06),
+              left: "55%",
+              bottom: h * 0.55,
+              background: palette.tip,
+              boxShadow: `0 0 ${size * 0.2}px ${palette.tip}`,
+              transform: "translateX(-50%)",
+              opacity: 0,
+              ["--ember-rise" as string]: `${-size * 1.5}px`,
+              animation: `flame-ember-float ${(flickerSpeed * 3).toFixed(2)}s ease-out infinite`,
+              animationDelay: `${(flickerSpeed * 1.3).toFixed(2)}s`,
+              mixBlendMode: "screen",
+            }}
+          />
+        </>
       )}
 
       {/* Base ember (only when alive enough to support a coal) */}

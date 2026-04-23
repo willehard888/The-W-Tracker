@@ -1347,12 +1347,7 @@
     bottom: 12%;
     animation: ember-rise 6s ease-in 1.8s infinite;
   }
-  @keyframes ember-rise {
-    0%   { transform: translateY(0) scale(0.6); opacity: 0; }
-    15%  { opacity: 1; }
-    80%  { opacity: 0.6; }
-    100% { transform: translateY(-180px) scale(1.1); opacity: 0; }
-  }
+  /* (ember-rise keyframe defined once in the cinematic flame block below) */
 
   /* Apex card border with animated conic gradient */
   .apex-conic-border {
@@ -1837,6 +1832,26 @@
   0%   { transform: translateY(0)    scale(0.85); opacity: 0; }
   20%  { opacity: 1; }
   100% { transform: translateY(-90px) scale(1.05); opacity: 0; }
+}
+
+/* Flame intake — the flame "inhales" oxygen when fed (scale + brightness) */
+@keyframes flame-intake {
+  0%   { transform: scale(1);    filter: brightness(1)   contrast(1); }
+  35%  { transform: scale(1.06); filter: brightness(1.18) contrast(1.08); }
+  100% { transform: scale(1);    filter: brightness(1)   contrast(1); }
+}
+
+/* Aurora rim flash — the border briefly lights up alongside intake */
+@keyframes flame-intake-glow {
+  0%, 100% { opacity: 0.85; }
+  35%      { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flame-intake-anim,
+  [style*="flame-intake"] {
+    animation: none !important;
+  }
 }
 
 

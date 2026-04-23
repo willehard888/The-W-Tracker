@@ -46,6 +46,12 @@ const TribeLeaderboard = () => {
           member_count: Number(r.member_count) || 0,
         }));
         setRows(normalized);
+        // Hydrate collective streaks for top tribes — drives the flame size/tier.
+        const ids = normalized.slice(0, 10).map((r) => r.tribe_id);
+        if (ids.length > 0) {
+          const m = await fetchTribeCollectiveStreaks(ids);
+          setStreaksMap(m);
+        }
       }
       if (profile?.user_id) {
         const { data: mems } = await supabase

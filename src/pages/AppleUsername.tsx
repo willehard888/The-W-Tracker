@@ -96,7 +96,7 @@ const AppleUsername = () => {
             {validationMessage ? <p className="text-xs text-destructive">{validationMessage}</p> : null}
           </div>
 
-          <Button type="submit" variant="gold" size="xl" className="w-full" disabled={saving || !!validationMessage || username.length < 3}>
+          <Button type="submit" variant="coal" size="xl" className="w-full" disabled={saving || !!validationMessage || username.length < 3}>
             {saving ? "Saving..." : "Continue to app"}
           </Button>
         </form>

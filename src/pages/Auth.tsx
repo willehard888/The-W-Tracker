@@ -228,7 +228,7 @@ const Auth = () => {
             </div>
           )}
 
-          <Button variant="gold" size="xl" className="w-full" type="submit" disabled={loading}>
+          <Button variant="coal" size="xl" className="w-full" type="submit" disabled={loading}>
             {loading ? "Loading..." : mode === "login" ? "Log In" : "Create Account"}
             <ArrowRight size={18} />
           </Button>

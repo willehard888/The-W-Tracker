@@ -158,7 +158,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
               </div>
             </div>
           </div>
-          <Button onClick={handleSaveMeta} disabled={savingMeta} className="w-full" variant="gold">
+          <Button onClick={handleSaveMeta} disabled={savingMeta} className="w-full" variant="coal">
             {savingMeta ? <Loader2 size={14} className="animate-spin" /> : null}
             Save changes
           </Button>

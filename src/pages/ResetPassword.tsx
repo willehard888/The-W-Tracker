@@ -79,7 +79,7 @@ const ResetPassword = () => {
           <p className="text-sm text-muted-foreground mb-6">
             Your password has been successfully reset.
           </p>
-          <Button variant="gold" size="xl" className="w-full" onClick={() => navigate("/")}>
+          <Button variant="coal" size="xl" className="w-full" onClick={() => navigate("/")}>
             Continue
           </Button>
         </div>
@@ -142,7 +142,7 @@ const ResetPassword = () => {
             </div>
           )}
 
-          <Button variant="gold" size="xl" className="w-full" type="submit" disabled={loading}>
+          <Button variant="coal" size="xl" className="w-full" type="submit" disabled={loading}>
             {loading ? "Updating..." : "Update Password"}
           </Button>
         </form>

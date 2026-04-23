@@ -381,7 +381,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
 
         {/* Actions */}
         <div className="flex gap-2 w-full pb-safe">
-          <Button variant="gold" size="default" className="flex-1" onClick={handleDownload} disabled={downloading}>
+          <Button variant="coal" size="default" className="flex-1" onClick={handleDownload} disabled={downloading}>
             <Download size={16} />
             {downloading ? "Saving..." : "Save Image"}
           </Button>

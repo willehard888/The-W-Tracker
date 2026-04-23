@@ -88,7 +88,7 @@ const PublicProfile = () => {
         <Lock size={32} className="text-muted-foreground/40 mb-3" />
         <h1 className="font-display text-xl font-black mb-2">User not found</h1>
         <p className="text-sm text-muted-foreground mb-6">@{username} doesn't exist on The W Tracker</p>
-        <Button variant="gold" onClick={() => navigate("/")}>Open The W Tracker</Button>
+        <Button variant="coal" onClick={() => navigate("/")}>Open The W Tracker</Button>
       </div>
     );
   }
@@ -302,7 +302,7 @@ const PublicProfile = () => {
 
         {/* CTA */}
         <Link to="/landing">
-          <Button variant="gold" size="lg" className="w-full">
+          <Button variant="coal" size="lg" className="w-full">
             <ExternalLink size={16} />
             Track your status — start free
           </Button>

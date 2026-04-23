@@ -169,7 +169,7 @@ const FeatureGateScreen = ({
           className="space-y-3"
         >
           {requiresElite ? (
-            <Button variant="gold" size="lg" onClick={() => navigate("/profile")} className="breathing-glow">
+            <Button variant="coal" size="lg" onClick={() => navigate("/profile")} className="breathing-glow">
               <Crown size={16} />
               Earn Your Elite Status
             </Button>

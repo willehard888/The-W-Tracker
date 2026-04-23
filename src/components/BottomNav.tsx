@@ -72,13 +72,21 @@ const BottomNav = () => {
                 {label}
               </span>
               {active && (
-                <div className={cn(
-                  "absolute -bottom-1.5 w-5 h-[3px] rounded-full",
-                  colors.dot,
-                  colors.glow,
-                )}
-                style={{ animation: "flame-rim-pulse 2.4s ease-in-out infinite" }}
-                />
+                <>
+                  <div className={cn(
+                    "absolute -bottom-1.5 w-6 h-[3px] rounded-full fire-coal-underline",
+                    colors.dot,
+                  )} />
+                  {/* Two micro embers rise from the active tab — premium fire signature */}
+                  <span
+                    className="fire-spark"
+                    style={{ left: "38%", bottom: "0px", animationDelay: "0s", animationDuration: "3.2s" }}
+                  />
+                  <span
+                    className="fire-spark"
+                    style={{ left: "62%", bottom: "2px", animationDelay: "1.6s", animationDuration: "3.6s" }}
+                  />
+                </>
               )}
             </button>
           );

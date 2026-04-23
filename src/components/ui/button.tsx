@@ -50,6 +50,7 @@ const buttonVariants = cva(
           "hover:after:[transform:translate3d(260%,0,0)]",
           // Hover: a touch brighter + warmer
           "hover:brightness-[1.05] hover:saturate-[1.06]",
+          "hover:[animation:fire-breathe-glow_3.6s_ease-in-out_infinite]",
           "hover:shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.6),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_-1px_0_hsl(30_82%_22%/0.6),inset_0_-6px_16px_-8px_hsl(30_82%_28%/0.5),0_2px_3px_hsl(30_60%_14%/0.4),0_12px_22px_-3px_hsl(40_92%_52%/0.55),0_24px_46px_-14px_hsl(38_88%_48%/0.6)]",
           // Pressed: muted + sunken
           "active:brightness-[0.96]",

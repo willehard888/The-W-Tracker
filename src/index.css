@@ -2941,3 +2941,149 @@
   .status-ember-rise { opacity: 0; }
 }
 
+/* ═════════════════════════════════════════════════════════════════
+   NEXT-LEVEL FIRE POLISH — global heat utilities & cinematic glows
+   GPU-only. Reduced-motion safe. Drop-in classes for any surface.
+   ═════════════════════════════════════════════════════════════════ */
+
+/* Slow living heat — for hero CTAs, premium cards, "alive" surfaces */
+@keyframes fire-breathe-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 0 hsl(18 95% 58% / 0),
+      0 8px 24px -8px hsl(18 95% 50% / 0.35),
+      0 18px 40px -16px hsl(28 88% 46% / 0.4);
+    filter: brightness(1) saturate(1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px hsl(18 95% 58% / 0.06),
+      0 12px 30px -8px hsl(18 95% 56% / 0.55),
+      0 24px 50px -14px hsl(28 92% 50% / 0.55);
+    filter: brightness(1.04) saturate(1.06);
+  }
+}
+
+/* Diagonal heat sweep — runs over surface (cards, banners, hero panels) */
+@keyframes fire-sweep {
+  0%   { transform: translate3d(-130%, 0, 0) skewX(-22deg); opacity: 0; }
+  18%  { opacity: 0.6; }
+  72%  { opacity: 0.5; }
+  100% { transform: translate3d(240%, 0, 0) skewX(-22deg); opacity: 0; }
+}
+
+/* Hot-coal underline — for active tab indicators, current-row markers */
+@keyframes fire-coal-underline {
+  0%, 100% {
+    opacity: 0.7;
+    box-shadow:
+      0 0 6px hsl(18 95% 58% / 0.55),
+      0 0 14px hsl(28 90% 56% / 0.35),
+      0 0 22px hsl(38 100% 60% / 0.18);
+  }
+  50% {
+    opacity: 1;
+    box-shadow:
+      0 0 8px hsl(18 95% 60% / 0.85),
+      0 0 18px hsl(28 92% 58% / 0.55),
+      0 0 28px hsl(42 100% 62% / 0.32);
+  }
+}
+
+/* Tiny rising spark — drop spans inside containers needing micro-fire */
+@keyframes fire-spark-rise {
+  0%   { transform: translate3d(0, 0, 0) scale(0.4); opacity: 0; }
+  20%  { opacity: 1; transform: translate3d(0, -10px, 0) scale(1); }
+  100% { transform: translate3d(-4px, -54px, 0) scale(0.3); opacity: 0; }
+}
+
+/* Heat haze ripple — subtle scaling halo for icons / avatars */
+@keyframes fire-halo-ripple {
+  0%   { transform: scale(0.85); opacity: 0.6; }
+  100% { transform: scale(1.6);  opacity: 0; }
+}
+
+/* Utility classes — composable across the app */
+.fire-breathe {
+  animation: fire-breathe-glow 4.8s ease-in-out infinite;
+  will-change: box-shadow, filter;
+}
+.fire-sweep-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+}
+.fire-sweep-overlay::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -40%;
+  width: 55%;
+  background: linear-gradient(
+    110deg,
+    transparent 28%,
+    hsl(48 100% 92% / 0.32) 50%,
+    transparent 72%
+  );
+  animation: fire-sweep 6.2s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.fire-coal-underline {
+  animation: fire-coal-underline 2.6s ease-in-out infinite;
+  will-change: opacity, box-shadow;
+}
+.fire-spark {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 9999px;
+  background: hsl(38 100% 64%);
+  box-shadow:
+    0 0 6px hsl(28 100% 60% / 0.85),
+    0 0 12px hsl(18 95% 58% / 0.55);
+  animation: fire-spark-rise 3.4s ease-out infinite;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+.fire-halo-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 1px solid hsl(28 95% 60% / 0.45);
+  pointer-events: none;
+  animation: fire-halo-ripple 2.6s ease-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Tag any element with `data-fire="true"` to give it a warm hover halo
+   without authoring per-component CSS — used for promotional chips, tags,
+   featured badges. */
+[data-fire="true"] {
+  transition:
+    box-shadow 0.3s var(--ease-soft),
+    filter 0.3s var(--ease-soft),
+    transform 0.2s var(--ease-spring);
+}
+[data-fire="true"]:hover {
+  filter: brightness(1.08) saturate(1.08);
+  box-shadow:
+    0 0 0 1px hsl(28 95% 60% / 0.5),
+    0 6px 18px -4px hsl(18 95% 56% / 0.45),
+    0 14px 32px -10px hsl(28 92% 50% / 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fire-breathe,
+  .fire-sweep-overlay::after,
+  .fire-coal-underline,
+  .fire-spark,
+  .fire-halo-ring {
+    animation: none !important;
+  }
+  .fire-spark { opacity: 0; }
+  .fire-halo-ring { opacity: 0; }
+}
+

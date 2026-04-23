@@ -2,12 +2,19 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** When true, the card pulses with a slow living fire halo + warm hover glow. */
+  fire?: boolean;
+}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, fire, ...props }, ref) => (
   <div
     ref={ref}
+    data-fire={fire ? "true" : undefined}
     className={cn(
       "rounded-lg text-card-foreground surface-panel transition-[transform,box-shadow] duration-300 will-change-transform hover:-translate-y-px",
       "hover:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05),inset_0_-1px_0_hsl(0_0%_0%/0.3),0_2px_2px_hsl(0_0%_0%/0.35),0_10px_22px_-6px_hsl(0_0%_0%/0.42)]",
+      fire && "fire-breathe",
       className,
     )}
     style={{

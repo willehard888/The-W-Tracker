@@ -614,6 +614,117 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
         </>
       )}
 
+      {/* ── Premium glass "source plate" — static (no animations). ──────────
+          Three composited layers fake a polished glass/obsidian disc that the
+          flame appears to rise from:
+            (a) Disc body — dark obsidian puck with subtle warm tint
+            (b) Top specular sweep — the polished rim catching the light
+            (c) Inner caustic — warm pool of light reflected by the glass
+          Pure presentation. No transforms over time, just static gradients. */}
+      {isHot && (
+        <>
+          {/* (a) Glass disc body — sits below the wick, slightly wider than
+                  the flame base. Layered gradients give it convexity + edge
+                  refraction so it reads as a solid 3D puck. */}
+          <span
+            aria-hidden
+            className="absolute left-1/2 rounded-[50%] pointer-events-none"
+            style={{
+              width: size * 1.05,
+              height: size * 0.22,
+              bottom: -size * 0.1,
+              transform: "translateX(-50%)",
+              background:
+                // Top-down convex shading (lighter top edge, darker belly)
+                `radial-gradient(ellipse at 50% 18%, hsl(0 0% 100% / 0.08) 0%, transparent 38%),` +
+                // Side-edge refractive tint (cool blue facets at sides)
+                `linear-gradient(90deg, hsl(210 60% 14% / 0.55) 0%, hsl(0 0% 6% / 0.8) 25%, hsl(0 0% 4% / 0.92) 50%, hsl(0 0% 6% / 0.8) 75%, hsl(210 60% 14% / 0.55) 100%),` +
+                // Base obsidian
+                `radial-gradient(ellipse at 50% 50%, hsl(0 0% 8%) 0%, hsl(0 0% 3%) 70%)`,
+              boxShadow:
+                // Outer contact shadow on the surface beneath
+                `0 ${size * 0.04}px ${size * 0.18}px hsl(0 0% 0% / 0.6),` +
+                // Inner top rim highlight (1px polished edge)
+                `inset 0 1px 0 hsl(0 0% 100% / 0.22),` +
+                // Inner bottom shadow (the disc has thickness)
+                `inset 0 -1px 0 hsl(0 0% 0% / 0.7),` +
+                // Warm halo seeping from above
+                `0 -${size * 0.02}px ${size * 0.08}px ${palette.haze.replace(")", " / 0.35)")}`,
+              zIndex: -1,
+            }}
+          />
+
+          {/* (b) Top specular rim — bright pinched highlight where the polished
+                  glass meets the light source above. The "wow" detail. */}
+          <span
+            aria-hidden
+            className="absolute left-1/2 rounded-[50%] pointer-events-none"
+            style={{
+              width: size * 0.78,
+              height: size * 0.06,
+              bottom: -size * 0.005,
+              transform: "translateX(-50%)",
+              background:
+                `linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.18) 18%, ${palette.wick.replace(")", " / 0.92)")} 48%, hsl(0 0% 100% / 0.95) 50%, ${palette.wick.replace(")", " / 0.92)")} 52%, hsl(0 0% 100% / 0.18) 82%, transparent 100%)`,
+              filter: "blur(0.5px)",
+              mixBlendMode: "screen",
+              opacity: 0.95,
+            }}
+          />
+
+          {/* (c) Inner caustic — warm light pooling on the glass top surface,
+                  as if the wick is dripping fuel. Gives the disc a "lit" feel. */}
+          <span
+            aria-hidden
+            className="absolute left-1/2 rounded-[50%] pointer-events-none"
+            style={{
+              width: size * 0.55,
+              height: size * 0.13,
+              bottom: -size * 0.04,
+              transform: "translateX(-50%)",
+              background: `radial-gradient(ellipse at 50% 35%, ${palette.inner.replace(")", " / 0.7)")} 0%, ${palette.outer.replace(")", " / 0.35)")} 40%, transparent 75%)`,
+              filter: "blur(2px)",
+              mixBlendMode: "screen",
+            }}
+          />
+
+          {/* (d) Side-facet glints — two small bright pips on the left/right
+                  edges of the disc that catch ambient light, selling glass. */}
+          {isWarm && (
+            <>
+              <span
+                aria-hidden
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  width: Math.max(2, size * 0.04),
+                  height: Math.max(2, size * 0.04),
+                  left: `${50 - 42}%`,
+                  bottom: -size * 0.06,
+                  background: "hsl(200 90% 92% / 0.85)",
+                  boxShadow: `0 0 ${size * 0.08}px hsl(200 90% 88% / 0.6)`,
+                  filter: "blur(0.4px)",
+                  mixBlendMode: "screen",
+                }}
+              />
+              <span
+                aria-hidden
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  width: Math.max(2, size * 0.04),
+                  height: Math.max(2, size * 0.04),
+                  right: `${50 - 42}%`,
+                  bottom: -size * 0.06,
+                  background: "hsl(42 100% 92% / 0.85)",
+                  boxShadow: `0 0 ${size * 0.08}px ${palette.wick.replace(")", " / 0.7)")}`,
+                  filter: "blur(0.4px)",
+                  mixBlendMode: "screen",
+                }}
+              />
+            </>
+          )}
+        </>
+      )}
+
       {/* Composite of all SVG flame bodies — wrapped so we can hue-shift Legendary
           AND apply the slow inhale/exhale "breath" cycle. The wrapper transforms-only
           so it stays GPU-cheap; the existing per-layer flickers ride on top of it. */}

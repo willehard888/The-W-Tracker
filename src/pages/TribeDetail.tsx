@@ -510,6 +510,7 @@ const TribeDetail = () => {
       {isMember && (
         <FeedTheFireCTA
           accent={collectiveStreak >= 30 ? collectiveAccent(collectiveStreak) : undefined}
+          tribeName={tribe?.name}
         />
       )}
 

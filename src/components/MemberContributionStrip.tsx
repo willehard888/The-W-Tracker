@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Crown } from "lucide-react";
 import RealisticFlame from "@/components/home/RealisticFlame";
 import { collectiveAccent, collectiveStreakTier } from "@/lib/tribe-streak";
 import { cn } from "@/lib/utils";
@@ -49,27 +50,51 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
           const accent = collectiveAccent(Math.max(streak * 10, 0));
           const showRealFlame = idx < maxFlames && streak >= 3;
           // Per-member flame size scales with their streak rank
-          const flameSize = idx === 0 ? 36 : idx === 1 ? 32 : idx === 2 ? 30 : 26;
+          const flameSize = idx === 0 ? 38 : idx === 1 ? 32 : idx === 2 ? 30 : 26;
+          const isTopStoker = idx === 0 && streak >= 3;
 
           return (
             <button
               key={m.user_id}
               onClick={() => navigate(`/user/${m.user_id}`)}
-              className="flex flex-col items-center gap-1 shrink-0 w-16"
-              aria-label={`${m.username} — ${streak} day streak`}
+              className={cn(
+                "flex flex-col items-center gap-1 shrink-0 w-16 group/m",
+                isTopStoker && "relative",
+              )}
+              aria-label={`${m.username} — ${streak} day streak${isTopStoker ? ", top stoker" : ""}`}
             >
+              {/* TOP STOKER ribbon above #1 */}
+              {isTopStoker && (
+                <span
+                  className="absolute -top-4 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[7px] font-black tracking-[0.18em] uppercase border whitespace-nowrap"
+                  style={{
+                    color: accent,
+                    background: `linear-gradient(180deg, ${accent.replace(")", " / 0.18)")} 0%, ${accent.replace(")", " / 0.06)")} 100%)`,
+                    borderColor: accent.replace(")", " / 0.55)"),
+                    boxShadow: `0 0 10px ${accent.replace(")", " / 0.5)")}`,
+                  }}
+                >
+                  <Crown size={7} strokeWidth={2.6} fill="currentColor" />
+                  Top
+                </span>
+              )}
               {/* Avatar with mini-flame floating above */}
               <div className="relative">
                 <div
                   className={cn(
-                    "h-12 w-12 rounded-full border-2 bg-secondary overflow-hidden",
+                    "h-12 w-12 rounded-full border-2 bg-secondary overflow-hidden transition-transform group-active/m:scale-95",
                     streak >= 30
                       ? "border-[hsl(18_95%_58%)] shadow-[0_0_10px_hsl(18_95%_58%/0.5)]"
                       : "border-border/60",
                   )}
                   style={
                     streak >= 30
-                      ? { borderColor: accent, boxShadow: `0 0 10px ${accent.replace(")", " / 0.5)")}` }
+                      ? {
+                          borderColor: accent,
+                          boxShadow: isTopStoker
+                            ? `0 0 18px ${accent.replace(")", " / 0.75)")}, inset 0 0 8px ${accent.replace(")", " / 0.3)")}`
+                            : `0 0 10px ${accent.replace(")", " / 0.5)")}`,
+                        }
                       : undefined
                   }
                 >
@@ -102,7 +127,12 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
               >
                 {streak}d
               </span>
-              <span className="text-[9px] truncate w-full text-center text-muted-foreground/80">
+              <span
+                className={cn(
+                  "text-[9px] truncate w-full text-center",
+                  isTopStoker ? "font-black text-foreground/95" : "text-muted-foreground/80",
+                )}
+              >
                 {m.username}
               </span>
             </button>

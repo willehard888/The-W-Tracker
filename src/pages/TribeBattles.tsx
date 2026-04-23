@@ -133,7 +133,8 @@ const TribeBattles = () => {
           <Button
             onClick={() => setChallengeOpen(true)}
             size="sm"
-            className="mt-3 w-full bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black"
+            variant="ember"
+            className="mt-3 w-full"
           >
             <Plus size={14} /> Challenge another tribe
           </Button>

@@ -158,10 +158,12 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
                     <Check size={10} /> Invited
                   </span>
                 ) : (
-                  <button
+                  <Button
                     onClick={() => handleInvite(u)}
                     disabled={isSending}
-                    className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1.5 rounded-md bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background shadow-[0_0_10px_hsl(18_95%_58%/0.4)] disabled:opacity-50"
+                    size="sm"
+                    variant="ember"
+                    className="h-8 px-2.5 text-[10px]"
                   >
                     {isSending ? (
                       <Loader2 size={10} className="animate-spin" />
@@ -169,7 +171,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
                       <UserPlus size={10} />
                     )}
                     Invite
-                  </button>
+                  </Button>
                 )}
               </div>
             );

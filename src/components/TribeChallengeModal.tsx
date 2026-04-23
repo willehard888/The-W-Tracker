@@ -168,7 +168,8 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
         <Button
           onClick={handleSubmit}
           disabled={!selected || submitting}
-          className="w-full bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black"
+          variant="ember"
+          className="w-full"
         >
           {submitting ? <Loader2 size={14} className="animate-spin" /> : <Swords size={14} />}
           Send Challenge

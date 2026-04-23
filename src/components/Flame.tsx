@@ -108,13 +108,31 @@ const Flame = ({ status, size = 28, label, className }: FlameProps) => {
   const w = size * widthScale;
   const h = size * 1.4 * heightScale;
 
+  // Wind reactivity — same global vars all flames in the app share.
+  // Stronger flames lean more (heavier flame head catches more wind).
+  const windTransform =
+    `rotate(calc(var(--wind-x, 0) * ${(2 + s * 2).toFixed(2)}deg + var(--wind-gust, 0) * 3deg)) ` +
+    `translateX(calc(var(--wind-x, 0) * ${(0.4 + s * 0.6).toFixed(2)}px))`;
+
+  // Breathing — only for strong+ flames; weak/dying flames stay still (a dying
+  // flame doesn't have the energy to breathe deeply).
+  const breathAnim = isStrong
+    ? `flame-breathe ${(flickerSpeed * 4.5).toFixed(2)}s ease-in-out infinite`
+    : undefined;
+
   return (
     <span
       className={cn(
         "relative inline-block align-middle pointer-events-none select-none",
         className,
       )}
-      style={{ width: size, height: size * 1.4 }}
+      style={{
+        width: size,
+        height: size * 1.4,
+        transform: windTransform,
+        transformOrigin: "center bottom",
+        transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)",
+      }}
       role={label ? "img" : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
@@ -175,7 +193,27 @@ const Flame = ({ status, size = 28, label, className }: FlameProps) => {
         </defs>
       </svg>
 
-      {/* 1. Halo — soft heat glow (only when not dying) */}
+      {/* Volumetric ground-cast — projects warm light onto the surface BELOW
+          the flame. Only when alive enough to actually radiate. */}
+      {!isDying && !isWeak && (
+        <span
+          className="flame-ground-cast absolute left-1/2 rounded-[50%] pointer-events-none"
+          style={{
+            width: w * 2.4,
+            height: w * 0.45,
+            bottom: -size * 0.06,
+            background: `radial-gradient(ellipse at 50% 50%, ${palette.halo.replace(")", " / 0.55)")} 0%, transparent 75%)`,
+            filter: `blur(${Math.max(4, size * 0.15)}px)`,
+            mixBlendMode: "screen",
+            transformOrigin: "50% 50%",
+            animation: `flame-ground-cast ${(flickerSpeed * 4).toFixed(2)}s ease-in-out infinite`,
+            animationDelay: `${seed.bodyDelay}s`,
+            zIndex: 0,
+          }}
+        />
+      )}
+
+      {/* Halo — soft heat glow (only when not dying) */}
       {!isDying && (
         <span
           className="absolute left-1/2 bottom-0 rounded-full"
@@ -192,6 +230,7 @@ const Flame = ({ status, size = 28, label, className }: FlameProps) => {
           }}
         />
       )}
+
 
       {/* 2. Body — main flame (turbulence-warped) */}
       <svg

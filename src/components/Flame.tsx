@@ -232,43 +232,94 @@ const Flame = ({ status, size = 28, label, className }: FlameProps) => {
       )}
 
 
-      {/* 2. Body — main flame (turbulence-warped) */}
-      <svg
-        className="absolute left-1/2 bottom-0"
-        width={w}
-        height={h}
-        viewBox="0 0 40 56"
+      {/* Breathing wrapper — slow inhale/exhale around body + core. Strong+ only. */}
+      <span
+        aria-hidden
+        className="absolute inset-0"
         style={{
-          transform: "translateX(-50%)",
-          transformOrigin: "center bottom",
-          filter: `url(#${filterId}) drop-shadow(0 0 ${size * 0.12}px ${palette.mid})`,
-          animation: `flame-inline-flicker ${flickerSpeed.toFixed(2)}s ease-in-out infinite`,
+          animation: breathAnim,
           animationDelay: `${seed.bodyDelay}s`,
-          mixBlendMode: "screen",
-          opacity: isDying ? 0.78 : 1,
+          transformOrigin: "center bottom",
+          willChange: breathAnim ? "transform" : undefined,
         }}
       >
-        <path d={FLAME_PATH} fill={`url(#${bodyGradId})`} />
-      </svg>
-
-      {/* 3. White-hot core (only above ~mid status — weak flames don't have it) */}
-      {!isWeak && (
+        {/* 2. Body — main flame (turbulence-warped) */}
         <svg
-          className="absolute left-1/2 bottom-[8%]"
-          width={w * 0.55}
-          height={h * 0.7}
+          className="absolute left-1/2 bottom-0"
+          width={w}
+          height={h}
           viewBox="0 0 40 56"
           style={{
             transform: "translateX(-50%)",
             transformOrigin: "center bottom",
-            filter: `drop-shadow(0 0 ${size * 0.18}px ${palette.core})`,
-            animation: `flame-inline-core ${(flickerSpeed * 0.7).toFixed(2)}s ease-in-out infinite`,
-            animationDelay: `${seed.coreDelay}s`,
+            filter: `url(#${filterId}) drop-shadow(0 0 ${size * 0.12}px ${palette.mid})`,
+            animation: `flame-inline-flicker ${flickerSpeed.toFixed(2)}s ease-in-out infinite`,
+            animationDelay: `${seed.bodyDelay}s`,
             mixBlendMode: "screen",
+            opacity: isDying ? 0.78 : 1,
           }}
         >
-          <path d={FLAME_PATH} fill={`url(#${coreGradId})`} />
+          <path d={FLAME_PATH} fill={`url(#${bodyGradId})`} />
         </svg>
+
+        {/* 3. White-hot core (only above ~mid status — weak flames don't have it) */}
+        {!isWeak && (
+          <svg
+            className="absolute left-1/2 bottom-[8%]"
+            width={w * 0.55}
+            height={h * 0.7}
+            viewBox="0 0 40 56"
+            style={{
+              transform: "translateX(-50%)",
+              transformOrigin: "center bottom",
+              filter: `drop-shadow(0 0 ${size * 0.18}px ${palette.core})`,
+              animation: `flame-inline-core ${(flickerSpeed * 0.7).toFixed(2)}s ease-in-out infinite`,
+              animationDelay: `${seed.coreDelay}s`,
+              mixBlendMode: "screen",
+            }}
+          >
+            <path d={FLAME_PATH} fill={`url(#${coreGradId})`} />
+          </svg>
+        )}
+      </span>
+
+      {/* Wind-reactive embers — small particles that drift with the wind (peak only). */}
+      {isPeak && (
+        <>
+          <span
+            className="flame-ember absolute rounded-full pointer-events-none"
+            style={{
+              width: Math.max(1.6, size * 0.08),
+              height: Math.max(1.6, size * 0.08),
+              left: "50%",
+              bottom: h * 0.45,
+              background: palette.core,
+              boxShadow: `0 0 ${size * 0.25}px ${palette.tip}`,
+              transform: "translateX(-50%)",
+              opacity: 0,
+              ["--ember-rise" as string]: `${-size * 1.2}px`,
+              animation: `flame-ember-float ${(flickerSpeed * 2.6).toFixed(2)}s ease-out infinite`,
+              mixBlendMode: "screen",
+            }}
+          />
+          <span
+            className="flame-ember absolute rounded-full pointer-events-none"
+            style={{
+              width: Math.max(1.4, size * 0.06),
+              height: Math.max(1.4, size * 0.06),
+              left: "55%",
+              bottom: h * 0.55,
+              background: palette.tip,
+              boxShadow: `0 0 ${size * 0.2}px ${palette.tip}`,
+              transform: "translateX(-50%)",
+              opacity: 0,
+              ["--ember-rise" as string]: `${-size * 1.5}px`,
+              animation: `flame-ember-float ${(flickerSpeed * 3).toFixed(2)}s ease-out infinite`,
+              animationDelay: `${(flickerSpeed * 1.3).toFixed(2)}s`,
+              mixBlendMode: "screen",
+            }}
+          />
+        </>
       )}
 
       {/* Base ember (only when alive enough to support a coal) */}

@@ -1,5 +1,11 @@
-import { useId, useMemo } from "react";
+import { forwardRef, useEffect, useId, useImperativeHandle, useMemo, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { triggerFlameShockwave } from "@/lib/wind";
+
+export interface RealisticFlameHandle {
+  /** Trigger a tier-up shockwave ring centered on the flame. */
+  shockwave: (color?: string) => void;
+}
 
 interface RealisticFlameProps {
   /** 0-5 — controls intensity, color richness, particle counts */
@@ -9,6 +15,11 @@ interface RealisticFlameProps {
   /** Pixel size of the flame container */
   size?: number;
   className?: string;
+  /**
+   * Enables pointer-wind reactivity (flame leans toward cursor) and a heavier
+   * heat-haze layer. Auto-enabled at size >= 64; explicitly opt-out with `false`.
+   */
+  interactive?: boolean;
 }
 
 /**

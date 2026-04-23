@@ -25,39 +25,35 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Primary — REFINED gold bar. Cleaner, brighter, more legible:
-        //   1. Bright vertical gradient (champagne top → rich gold belly → warm amber foot)
-        //   2. Soft horizontal satin band, kept gentle so text stays crisp
-        //   3. Subtle micro-grain for tactile feel (low opacity)
-        //   4. Crisp engraved bezel: bright top rim + dark hairline + warm bottom rim
-        //   5. Soft top-crown highlight + bottom inner glow
-        //   6. Slow diagonal shimmer sweep on hover
-        //   7. Warm gold drop-shadow for premium lift
+        // Primary — CLEAN gold bar. Optimized for clarity + GPU performance:
+        //   1. Single bright vertical gradient (no SVG noise = no paint cost)
+        //   2. Subtle satin band (low opacity so text never washes out)
+        //   3. Crisp engraved bezel (top highlight + dark hairline + warm bottom)
+        //   4. Hover-only diagonal shimmer (transform-based, GPU friendly)
+        //   5. Warm gold drop-shadow for premium lift
         default: [
           "text-[hsl(28_92%_10%)] font-extrabold tracking-[-0.005em]",
-          "[text-shadow:0_1px_0_hsl(50_100%_96%/0.7)]",
-          "overflow-hidden isolate",
-          // BASE: bright legible gold. Satin band capped at 0.22 so text never washes out.
-          "[background:linear-gradient(180deg,hsl(50_100%_98%/0)_0%,hsl(50_100%_99%/0.16)_42%,hsl(50_100%_99%/0.22)_50%,hsl(50_100%_99%/0.16)_58%,hsl(50_100%_98%/0)_70%),linear-gradient(180deg,hsl(50_100%_88%)_0%,hsl(48_100%_78%)_24%,hsl(46_100%_66%)_52%,hsl(42_98%_56%)_80%,hsl(38_94%_46%)_100%),url(\"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20120%2040'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.85%200.05'%20numOctaves%3D'2'%20stitchTiles%3D'stitch'%2F%3E%3CfeColorMatrix%20values%3D'0%200%200%200%200.96%20%200%200%200%200%200.82%20%200%200%200%200%200.42%20%200%200%200%200.16%200'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E\")]",
-          "[background-blend-mode:screen,normal,overlay]",
-          "[background-size:100%_100%,100%_100%,200px_60px]",
+          "[text-shadow:0_1px_0_hsl(50_100%_96%/0.65)]",
+          "overflow-hidden isolate [transform:translateZ(0)]",
+          // BASE: clean 5-stop gold + soft satin band (no SVG noise = much cheaper to paint)
+          "[background:linear-gradient(180deg,hsl(50_100%_98%/0)_0%,hsl(50_100%_99%/0.12)_44%,hsl(50_100%_99%/0.16)_50%,hsl(50_100%_99%/0.12)_56%,hsl(50_100%_98%/0)_70%),linear-gradient(180deg,hsl(50_100%_88%)_0%,hsl(48_100%_78%)_24%,hsl(46_100%_66%)_52%,hsl(42_98%_56%)_80%,hsl(38_94%_46%)_100%)]",
           // Engraved bezel — crisp & defined
-          "shadow-[inset_0_0_0_0.5px_hsl(30_75%_18%/0.55),inset_0_1px_0_hsl(50_100%_99%/0.95),inset_0_2px_0_hsl(50_100%_94%/0.45),inset_0_-1px_0_hsl(30_78%_24%/0.55),inset_0_-6px_14px_-8px_hsl(30_80%_30%/0.4),0_1px_2px_hsl(30_60%_14%/0.35),0_6px_14px_-3px_hsl(40_88%_50%/0.45),0_16px_30px_-12px_hsl(40_85%_48%/0.5)]",
-          // ::before — top crown highlight only (removed busy cross-grain facets for clarity)
+          "shadow-[inset_0_0_0_0.5px_hsl(30_75%_18%/0.55),inset_0_1px_0_hsl(50_100%_99%/0.95),inset_0_2px_0_hsl(50_100%_94%/0.4),inset_0_-1px_0_hsl(30_78%_24%/0.55),inset_0_-6px_14px_-8px_hsl(30_80%_30%/0.4),0_1px_2px_hsl(30_60%_14%/0.35),0_6px_14px_-3px_hsl(40_88%_50%/0.4),0_16px_30px_-12px_hsl(40_85%_48%/0.45)]",
+          // ::before — subtle top crown highlight (lightweight)
           "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
-          "before:[background:radial-gradient(120%_70%_at_50%_-20%,hsl(50_100%_99%/0.7)_0%,hsl(50_100%_96%/0.25)_30%,transparent_60%)]",
-          // ::after — soft bottom rim + slow diagonal shimmer
-          "after:content-[''] after:absolute after:inset-0 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
-          "after:[background:linear-gradient(180deg,transparent_68%,hsl(50_100%_92%/0.18)_90%,hsl(50_100%_96%/0.28)_100%),linear-gradient(110deg,transparent_38%,hsl(50_100%_99%/0.55)_50%,transparent_62%)]",
-          "after:[background-size:100%_100%,260%_100%] after:[background-position:0_0,140%_0]",
-          "after:transition-[background-position,opacity] after:duration-[1000ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
-          "hover:after:[background-position:0_0,-40%_0]",
+          "before:[background:radial-gradient(120%_70%_at_50%_-20%,hsl(50_100%_99%/0.5)_0%,hsl(50_100%_96%/0.16)_32%,transparent_62%)]",
+          // ::after — narrow diagonal shimmer that slides on hover (GPU transform, not background-position)
+          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
+          "after:[background:linear-gradient(110deg,transparent_30%,hsl(50_100%_99%/0.4)_50%,transparent_70%)]",
+          "after:opacity-70 after:[transform:translate3d(0,0,0)] after:will-change-transform",
+          "after:transition-transform after:duration-[800ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "hover:after:[transform:translate3d(260%,0,0)]",
           // Hover: a touch brighter + warm spill
           "hover:brightness-[1.04] hover:saturate-[1.05]",
-          "hover:shadow-[inset_0_0_0_0.5px_hsl(30_75%_18%/0.6),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_2px_0_hsl(50_100%_94%/0.5),inset_0_-1px_0_hsl(30_78%_24%/0.6),inset_0_-6px_16px_-8px_hsl(30_80%_30%/0.45),0_2px_3px_hsl(30_60%_14%/0.4),0_10px_20px_-3px_hsl(40_88%_50%/0.55),0_22px_44px_-14px_hsl(40_85%_48%/0.6)]",
+          "hover:shadow-[inset_0_0_0_0.5px_hsl(30_75%_18%/0.6),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_2px_0_hsl(50_100%_94%/0.45),inset_0_-1px_0_hsl(30_78%_24%/0.6),inset_0_-6px_16px_-8px_hsl(30_80%_30%/0.45),0_2px_3px_hsl(30_60%_14%/0.4),0_10px_20px_-3px_hsl(40_88%_50%/0.5),0_22px_44px_-14px_hsl(40_85%_48%/0.55)]",
           // Pressed: muted + sunken
           "active:brightness-[0.96]",
-          "active:before:opacity-50 active:after:opacity-40",
+          "active:before:opacity-50 active:after:opacity-30",
           "active:shadow-[inset_0_0_0_0.5px_hsl(24_85%_14%/0.7),inset_0_2px_4px_hsl(24_75%_16%/0.55),inset_0_-1px_0_hsl(50_100%_90%/0.2),inset_0_-6px_12px_-6px_hsl(30_80%_22%/0.4),0_1px_1px_hsl(0_0%_0%/0.3)]",
           "disabled:grayscale-[0.4] disabled:after:hidden disabled:before:hidden",
         ].join(" "),

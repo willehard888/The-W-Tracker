@@ -489,6 +489,7 @@ const Tribes = () => {
                 </div>
               )}
 
+              <div className="flex items-start gap-3 relative">
                 <div
                   className="relative h-14 w-14 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
                   style={{

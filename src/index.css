@@ -3142,3 +3142,23 @@
   [class*="aurum-halo-pulse"] { animation: none !important; }
 }
 
+/* Aurum lava overlay — child <span> inside <Button variant="aurum">.
+   Idle: invisible. Parent :hover → fade + scale to 100%. Parent :active → settle. */
+.aurum-lava-layer {
+  transform: scale(1.06);
+  transition: opacity 700ms cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 700ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: opacity, transform;
+}
+button:hover > .aurum-lava-layer {
+  opacity: 0.95;
+  transform: scale(1);
+}
+button:active > .aurum-lava-layer {
+  opacity: 0.6;
+  transform: scale(0.99);
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurum-lava-layer { transition: opacity 200ms linear !important; transform: none !important; }
+}
+

@@ -4,16 +4,19 @@ import { supabase } from "@/integrations/supabase/client";
 import StatusAvatar from "@/components/StatusAvatar";
 import ApexBadge from "@/components/ApexBadge";
 import StatusNameplate from "@/components/StatusNameplate";
+import ImageLightbox from "@/components/ImageLightbox";
 import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
-import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock } from "lucide-react";
+import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock, Heart, MessageCircle, Award, Play, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const PublicProfile = () => {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [lightboxPost, setLightboxPost] = useState<any>(null);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["public-profile", username],
@@ -51,6 +54,22 @@ const PublicProfile = () => {
         .eq("user_id", profile!.user_id)
         .order("earned_at", { ascending: false })
         .limit(8);
+      return data || [];
+    },
+  });
+
+  // Elite Feed posts with media — the loudest social proof on a public profile.
+  const { data: mediaPosts } = useQuery({
+    queryKey: ["public-media-posts", profile?.user_id],
+    enabled: !!profile?.user_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("feed_posts")
+        .select("id, content, image_url, video_url, likes_count, comments_count, kudos_count, created_at")
+        .eq("user_id", profile!.user_id)
+        .or("image_url.not.is.null,video_url.not.is.null")
+        .order("created_at", { ascending: false })
+        .limit(12);
       return data || [];
     },
   });
@@ -297,6 +316,150 @@ const PublicProfile = () => {
           </div>
         )}
 
+        {/* Elite Feed media — premium social showcase */}
+        {mediaPosts && mediaPosts.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-end justify-between mb-3">
+              <div>
+                <p className="font-display text-base font-black tracking-tight">
+                  Proof of Work
+                </p>
+                <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted-foreground/70 mt-0.5">
+                  {mediaPosts.length} {mediaPosts.length === 1 ? "drop" : "drops"} · Elite Feed
+                </p>
+              </div>
+              <Camera size={16} className="text-gold/70" />
+            </div>
+
+            {/* Hero post — first/most-recent media takes the full width */}
+            {(() => {
+              const hero: any = mediaPosts[0];
+              const heroIsVideo = !!hero.video_url;
+              const heroSrc = hero.image_url || hero.video_url;
+              return (
+                <motion.button
+                  type="button"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.42 }}
+                  onClick={() => {
+                    if (heroIsVideo) return; // videos play inline
+                    setLightboxUrl(heroSrc);
+                    setLightboxPost(hero);
+                  }}
+                  className="group relative block w-full aspect-[4/5] overflow-hidden rounded-2xl border border-gold/30 bg-secondary shadow-[0_18px_60px_-20px_hsl(42_78%_54%/0.45)]"
+                >
+                  {heroIsVideo ? (
+                    <video
+                      src={heroSrc}
+                      muted
+                      loop
+                      playsInline
+                      autoPlay
+                      preload="metadata"
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : (
+                    <img
+                      src={heroSrc}
+                      alt={`@${profile.username} on the Elite Feed`}
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                    />
+                  )}
+
+                  {/* Top hairline + gold rim */}
+                  <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
+
+                  {/* Bottom gradient + caption / metrics */}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 pt-10 bg-gradient-to-t from-black/85 via-black/45 to-transparent">
+                    {hero.content && (
+                      <p className="text-[13px] font-semibold text-foreground/95 line-clamp-2 mb-2 leading-snug">
+                        {hero.content}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-3 text-[11px] font-bold text-foreground/85">
+                      <span className="flex items-center gap-1">
+                        <Heart size={11} className="text-[hsl(350_80%_60%)]" />
+                        {hero.likes_count ?? 0}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MessageCircle size={11} className="text-foreground/70" />
+                        {hero.comments_count ?? 0}
+                      </span>
+                      {(hero.kudos_count ?? 0) > 0 && (
+                        <span className="flex items-center gap-1 text-gold">
+                          <Award size={11} />
+                          {hero.kudos_count}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {heroIsVideo && (
+                    <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-[9px] font-black tracking-wider uppercase text-foreground">
+                      <Play size={9} fill="currentColor" /> Video
+                    </span>
+                  )}
+                </motion.button>
+              );
+            })()}
+
+            {/* Grid of remaining media — 3 columns, square tiles */}
+            {mediaPosts.length > 1 && (
+              <div className="grid grid-cols-3 gap-1.5 mt-1.5">
+                {mediaPosts.slice(1).map((p: any, i) => {
+                  const isVideo = !!p.video_url;
+                  const src = p.image_url || p.video_url;
+                  return (
+                    <motion.button
+                      type="button"
+                      key={p.id}
+                      initial={{ opacity: 0, scale: 0.92 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.46 + i * 0.03 }}
+                      onClick={() => {
+                        if (isVideo) return;
+                        setLightboxUrl(src);
+                        setLightboxPost(p);
+                      }}
+                      className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-secondary"
+                    >
+                      {isVideo ? (
+                        <>
+                          <video
+                            src={src}
+                            muted
+                            playsInline
+                            preload="metadata"
+                            className="absolute inset-0 h-full w-full object-cover"
+                          />
+                          <span className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <Play size={18} className="text-foreground drop-shadow-lg" fill="currentColor" />
+                          </span>
+                        </>
+                      ) : (
+                        <img
+                          src={src}
+                          alt=""
+                          loading="lazy"
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      )}
+                      {(p.likes_count ?? 0) >= 5 && (
+                        <span className="absolute bottom-1 right-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-black/65 backdrop-blur text-[9px] font-bold text-foreground">
+                          <Heart size={8} className="text-[hsl(350_80%_60%)]" fill="currentColor" />
+                          {p.likes_count}
+                        </span>
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* CTA */}
         <Link to="/landing">
           <Button variant="coal" size="lg" className="w-full">
@@ -309,6 +472,24 @@ const PublicProfile = () => {
           DISCIPLINE IS THE NEW FLEX
         </p>
       </div>
+
+      <ImageLightbox
+        open={!!lightboxUrl}
+        imageUrl={lightboxUrl}
+        username={profile.username}
+        avatarUrl={profile.avatar_url}
+        tier={(profile.status_tier || "recruit") as any}
+        level={profile.level}
+        streak={profile.streak}
+        likes={lightboxPost?.likes_count}
+        comments={lightboxPost?.comments_count}
+        kudos={lightboxPost?.kudos_count}
+        caption={lightboxPost?.content}
+        onClose={() => {
+          setLightboxUrl(null);
+          setLightboxPost(null);
+        }}
+      />
     </div>
   );
 };

@@ -44,8 +44,8 @@ const AmbientParticles = () => {
 
     const computeCount = () => {
       const area = window.innerWidth * window.innerHeight;
-      // Denser field for a more cinematic, visible ambient glow.
-      const base = Math.min(44, Math.max(18, Math.round(area / 22000)));
+      // Lighter field — keeps the cinematic glow while halving fill cost.
+      const base = Math.min(28, Math.max(12, Math.round(area / 36000)));
       return mem <= 2 ? Math.round(base * 0.55) : base;
     };
 
@@ -102,12 +102,7 @@ const AmbientParticles = () => {
           Object.assign(p, createParticle(w, h, true));
         }
 
-        // Soft bloom halo for a more cinematic feel (single extra fill).
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * 3.2, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue},85%,${p.lightness}%,${p.opacity * 0.18})`;
-        ctx.fill();
-
+        // Single fill — bloom dropped (was costing ~2x fill rate per particle).
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = `hsla(${p.hue},90%,${Math.min(p.lightness + 6, 80)}%,${p.opacity})`;

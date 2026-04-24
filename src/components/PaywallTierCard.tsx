@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Loader2, ShieldCheck, Zap, Check } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ReactNode, forwardRef, useState } from "react";
 
 export type PaywallBillingPlan = "monthly" | "yearly";
 
@@ -23,7 +23,7 @@ interface PaywallTierCardProps {
   yearlyDiscountPct?: number;
 }
 
-const PaywallTierCard = ({
+const PaywallTierCard = forwardRef<HTMLDivElement, PaywallTierCardProps>(({
   variant,
   title,
   priceLabel,
@@ -39,7 +39,7 @@ const PaywallTierCard = ({
   highlighted,
   footnote,
   yearlyDiscountPct = 20,
-}: PaywallTierCardProps) => {
+}, ref) => {
   const isApex = variant === "apex";
   const [plan, setPlan] = useState<PaywallBillingPlan>(
     yearlyPriceLabel ? "yearly" : "monthly",
@@ -56,6 +56,7 @@ const PaywallTierCard = ({
 
   return (
     <div
+      ref={ref}
       className={cn(
         "relative rounded-2xl p-5 overflow-hidden",
         isApex
@@ -274,6 +275,8 @@ const PaywallTierCard = ({
       </div>
     </div>
   );
-};
+});
+
+PaywallTierCard.displayName = "PaywallTierCard";
 
 export default PaywallTierCard;

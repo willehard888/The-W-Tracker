@@ -1,15 +1,20 @@
-import { ReactNode } from "react";
+import { useState } from "react";
 import { Loader2, ShieldCheck, Flame, Trophy, Swords, Sparkles, Crown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RealisticFlame from "@/components/home/RealisticFlame";
 import { cn } from "@/lib/utils";
 
+export type BillingPlan = "monthly" | "yearly";
+
 interface IosEntryHeroProps {
-  priceLabel: string;
+  monthlyPriceLabel: string;
+  yearlyPriceLabel: string;
   loading?: boolean;
-  onCta: () => void;
+  onCta: (plan: BillingPlan) => void;
   ctaLabel?: string;
   footnote?: string;
+  /** Discount percent shown on the yearly tab (e.g. 20 for -20%). */
+  yearlyDiscountPct?: number;
 }
 
 const HARD_FEATURES = [
@@ -22,16 +27,29 @@ const HARD_FEATURES = [
 
 /**
  * iOS-only "hard" entry paywall hero. Single dominant Member card with
- * urgency copy, flame backdrop, and a giant gold CTA. Apex stays as a small
- * secondary option below (rendered separately by the parent).
+ * urgency copy, flame backdrop, and a giant gold CTA. Includes a Monthly/Yearly
+ * billing selector — yearly is highlighted with a -20% savings tag.
  */
 const IosEntryHero = ({
-  priceLabel,
+  monthlyPriceLabel,
+  yearlyPriceLabel,
   loading,
   onCta,
-  ctaLabel = "Start 7-Day Trial",
+  ctaLabel,
   footnote,
+  yearlyDiscountPct = 20,
 }: IosEntryHeroProps) => {
+  const [plan, setPlan] = useState<BillingPlan>("yearly");
+  const isYearly = plan === "yearly";
+  const activePrice = isYearly ? yearlyPriceLabel : monthlyPriceLabel;
+  const cadence = isYearly ? "/yr" : "/mo";
+  const resolvedFootnote =
+    footnote ??
+    (isYearly
+      ? `Free for 7 days · then ${yearlyPriceLabel}/yr · Cancel anytime`
+      : `Free for 7 days · then ${monthlyPriceLabel}/mo · Cancel anytime`);
+  const resolvedCtaLabel = ctaLabel ?? "Start 7-Day Trial";
+
   return (
     <div
       className={cn(
@@ -79,21 +97,77 @@ const IosEntryHero = ({
         </h2>
         <p className="text-center text-[12px] text-muted-foreground mb-5 max-w-[260px] mx-auto leading-relaxed">
           One way in. Full access for 7 days — then{" "}
-          <span className="text-gold font-semibold">{priceLabel}/mo</span> if
+          <span className="text-gold font-semibold">{activePrice}{cadence}</span> if
           you're built for it.
         </p>
+
+        {/* Billing toggle */}
+        <div className="flex justify-center mb-5">
+          <div
+            role="tablist"
+            className="relative inline-flex items-center rounded-full p-1 bg-background/60 border border-gold/30 backdrop-blur shadow-[inset_0_1px_0_hsl(var(--gold)/0.15)]"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={!isYearly}
+              onClick={() => setPlan("monthly")}
+              className={cn(
+                "relative px-4 py-1.5 rounded-full text-[11px] font-black tracking-wider uppercase transition-all duration-200",
+                !isYearly
+                  ? "bg-gold text-background shadow-[0_0_12px_hsl(var(--gold)/0.5)]"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={isYearly}
+              onClick={() => setPlan("yearly")}
+              className={cn(
+                "relative px-4 py-1.5 rounded-full text-[11px] font-black tracking-wider uppercase transition-all duration-200 flex items-center gap-1.5",
+                isYearly
+                  ? "bg-gold text-background shadow-[0_0_12px_hsl(var(--gold)/0.5)]"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              Yearly
+              <span
+                className={cn(
+                  "px-1.5 py-0.5 rounded-full text-[8.5px] font-black tracking-wider",
+                  isYearly
+                    ? "bg-background/25 text-background"
+                    : "bg-gold/15 text-gold border border-gold/30",
+                )}
+              >
+                −{yearlyDiscountPct}%
+              </span>
+            </button>
+          </div>
+        </div>
 
         {/* Price block */}
         <div className="text-center mb-5">
           <p className="font-display font-black leading-none text-5xl text-gold drop-shadow-[0_2px_12px_hsl(var(--gold)/0.55)]">
-            {priceLabel}
+            {activePrice}
             <span className="text-lg font-bold text-muted-foreground/80">
-              /mo
+              {cadence}
             </span>
           </p>
-          <p className="text-[10px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
-            Free for 7 days · No charge until day 8
-          </p>
+          {isYearly ? (
+            <p className="text-[10.5px] text-muted-foreground/90 mt-2 tracking-wide">
+              <span className="line-through opacity-60">
+                {monthlyPriceLabel}/mo × 12
+              </span>{" "}
+              · <span className="text-gold font-bold">Save {yearlyDiscountPct}%</span>
+            </p>
+          ) : (
+            <p className="text-[10px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
+              Free for 7 days · No charge until day 8
+            </p>
+          )}
         </div>
 
         {/* Features */}
@@ -118,21 +192,19 @@ const IosEntryHero = ({
             !loading && "breathing-glow",
           )}
           disabled={loading}
-          onClick={onCta}
+          onClick={() => onCta(plan)}
         >
           {loading ? (
             <Loader2 size={20} className="animate-spin" />
           ) : (
             <ShieldCheck size={20} strokeWidth={2.8} />
           )}
-          {ctaLabel}
+          {resolvedCtaLabel}
         </Button>
 
-        {footnote && (
-          <p className="text-[10px] text-muted-foreground/80 text-center mt-2.5 tracking-wide">
-            {footnote}
-          </p>
-        )}
+        <p className="text-[10px] text-muted-foreground/80 text-center mt-2.5 tracking-wide">
+          {resolvedFootnote}
+        </p>
       </div>
     </div>
   );

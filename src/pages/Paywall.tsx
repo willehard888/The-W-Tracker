@@ -34,11 +34,28 @@ const APEX_FEATURES = [
   { icon: Sparkles, text: "All Member features included" },
 ] as const;
 
+/** Compute a -20% yearly fallback price from a monthly EUR string like "4,99 €". */
+const estimateYearlyFromMonthly = (monthly: string, discountPct = 20): string => {
+  const match = monthly.match(/(\d+[.,]\d+|\d+)/);
+  if (!match) return monthly;
+  const num = parseFloat(match[0].replace(",", "."));
+  if (!isFinite(num)) return monthly;
+  const yearly = num * 12 * (1 - discountPct / 100);
+  // Try to detect EUR symbol position
+  const hasEuroSuffix = /\d\s*€/.test(monthly);
+  const hasEuroPrefix = /€\s*\d/.test(monthly);
+  const formatted = yearly.toFixed(2).replace(".", ",");
+  if (hasEuroPrefix) return `€${formatted}`;
+  if (hasEuroSuffix) return `${formatted} €`;
+  return `${formatted} €`;
+};
+
 const Paywall = () => {
   const { isElite, isApexSubscriber, checkSubscription, profile } = useAuth();
   const {
-    packages, purchase, purchaseProduct, purchaseApex, restorePurchases,
+    packages, purchase, purchaseProduct, purchaseElitePlan, purchaseApexPlan, restorePurchases,
     rcLoading, rcReady, monthlyPriceLabel, apexPriceLabel,
+    eliteYearlyPriceLabel, apexYearlyPriceLabel,
   } = useRevenueCat();
   const navigate = useNavigate();
 
@@ -48,6 +65,12 @@ const Paywall = () => {
 
   const elitePrice = isNative ? (monthlyPriceLabel ?? "4,99 €") : "4,99 €";
   const apexPrice = isNative ? (apexPriceLabel ?? "17,99 €") : "17,99 €";
+  const eliteYearlyPrice = isNative
+    ? (eliteYearlyPriceLabel ?? estimateYearlyFromMonthly(elitePrice))
+    : estimateYearlyFromMonthly(elitePrice);
+  const apexYearlyPrice = isNative
+    ? (apexYearlyPriceLabel ?? estimateYearlyFromMonthly(apexPrice))
+    : estimateYearlyFromMonthly(apexPrice);
 
   useEffect(() => {
     if (isElite && !wasMemberRef.current) {

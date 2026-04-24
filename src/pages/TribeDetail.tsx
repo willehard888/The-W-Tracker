@@ -530,6 +530,18 @@ const TribeDetail = () => {
       {/* Cinematic Apex header */}
       <div className="relative rounded-2xl mb-4 p-[2px] apex-conic-border overflow-hidden">
         <div className="relative rounded-2xl p-5 overflow-hidden bg-gradient-to-br from-[hsl(18_95%_58%)]/15 via-card/85 to-[hsl(var(--gold))]/10 apex-aura-large apex-spotlight apex-embers apex-shimmer-sweep apex-portal-glow">
+          {/* Cover photo background — owner-uploaded, dimmed for legibility */}
+          {tribe.cover_url && (
+            <div className="absolute inset-0 pointer-events-none">
+              <img
+                src={tribe.cover_url}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover opacity-35"
+                style={{ transform: `translateY(${parallax * 0.5}px) scale(1.05)` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/55 to-background/85" />
+            </div>
+          )}
           <div
             className="absolute inset-0 pointer-events-none opacity-60"
             style={{

@@ -40,6 +40,13 @@ const IosApexSecondary = ({
         "hover:border-[hsl(18_95%_58%)]/60 hover:shadow-[0_0_24px_hsl(18_95%_58%/0.25)]",
       )}
     >
+      {/* Ambient flame aura — realistic */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-2 -top-6 bottom-0 w-20 flex items-end justify-center opacity-90"
+      >
+        <RealisticFlame tier={5} accent="hsl(18 95% 58%)" size={68} interactive={false} />
+      </div>
       <div
         aria-hidden
         className="pointer-events-none absolute -right-10 -top-10 w-32 h-32 rounded-full blur-2xl opacity-50"
@@ -48,17 +55,18 @@ const IosApexSecondary = ({
             "radial-gradient(circle, hsl(18 95% 58% / 0.4) 0%, transparent 70%)",
         }}
       />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-12 -bottom-10 w-32 h-28 rounded-full blur-3xl opacity-55"
+        style={{
+          background:
+            "radial-gradient(ellipse, hsl(18 95% 58% / 0.45) 0%, transparent 70%)",
+        }}
+      />
 
-      <div className="relative">
+      <div className="relative pl-16">
         {/* Header row */}
         <div className="flex items-center gap-3 mb-2.5">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br from-[hsl(18_95%_58%)] to-[hsl(var(--gold))] shadow-[0_0_18px_hsl(18_95%_58%/0.5)]">
-            {loading ? (
-              <Loader2 size={18} className="text-background animate-spin" />
-            ) : (
-              <Zap size={18} className="text-background" strokeWidth={2.8} />
-            )}
-          </div>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-black tracking-[0.18em] uppercase text-[hsl(18_95%_58%)]">
               Skip the grind

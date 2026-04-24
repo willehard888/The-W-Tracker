@@ -445,15 +445,22 @@ const Tribes = () => {
                 </div>
                 <div className="flex items-start gap-4 relative">
                   <div className="relative h-20 w-20 rounded-2xl bg-gradient-to-br from-[hsl(18_95%_58%)]/35 via-gold/20 to-[hsl(18_95%_58%)]/25 border border-[hsl(18_95%_58%)]/55 flex items-center justify-center shrink-0 shadow-[0_0_28px_hsl(18_95%_58%/0.55)] overflow-hidden">
+                    {featured.cover_url && (
+                      <img
+                        src={featured.cover_url}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover opacity-70"
+                      />
+                    )}
                     {(collectiveStreaks.get(featured.id) ?? 0) >= 30 ? (
                       <RealisticFlame
                         tier={collectiveStreakTier(collectiveStreaks.get(featured.id) ?? 0)}
                         accent={collectiveAccent(collectiveStreaks.get(featured.id) ?? 0)}
                         size={64}
                       />
-                    ) : (
+                    ) : !featured.cover_url ? (
                       <Crown size={32} className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_10px_hsl(18_95%_58%/0.9)]" strokeWidth={2.4} />
-                    )}
+                    ) : null}
                     <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border-2 border-background flex items-center justify-center shadow-[0_0_8px_hsl(18_95%_58%/0.8)] animate-pulse">
                       <Zap size={10} className="text-background" strokeWidth={3} fill="currentColor" />
                     </div>

@@ -14,6 +14,12 @@ interface StreakFlameInlineProps {
   className?: string;
   /** Override count text class — for color/weight. Defaults to tier-based. */
   countClassName?: string;
+  /**
+   * Use the cinematic looping MP4 flame instead of the lightweight CSS one.
+   * ONLY enable on hero/featured spots — never inside long lists (leaderboard,
+   * feed) where many <video> elements would tank perf.
+   */
+  cinematic?: boolean;
 }
 
 /**

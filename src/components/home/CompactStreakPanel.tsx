@@ -660,8 +660,27 @@ const CompactStreakPanel = ({
                 windWeight: 4,
                 windWeightRot: 2,
               },
-              // 5 — CENTER core: the hero. Sits frontmost.
-              //     LOWEST wind weight — the rock everyone dances around.
+              // 4b — HERO mega flame: the new tall main body. Bigger than the
+              //      core, slightly translucent, sits BEHIND the core so the
+              //      core reads as a brighter heart inside it.
+              {
+                size: Math.round(master * 1.35),
+                accent: "hsl(22 96% 54%)",
+                tier: cappedTier,
+                offsetX: 0,
+                offsetY: -Math.round(master * 0.06),
+                z: 5,
+                opacity: 0.78,
+                rotate: 0,
+                shadowMul: 0,
+                rhythm: "flame-rhythm-2",
+                duration: 4.2,
+                easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+                delay: 0.2,
+                windWeight: 5,
+                windWeightRot: 2.5,
+              },
+              // 5 — CENTER core: the bright heart inside the hero flame.
               {
                 size: master,
                 accent: "hsl(20 98% 56%)",
@@ -701,8 +720,8 @@ const CompactStreakPanel = ({
               },
             ];
 
-            const bowlWidth = Math.round(master * 1.55);
-            const bowlHeight = Math.round(master * 2);
+            const bowlWidth = Math.round(master * 1.85);
+            const bowlHeight = Math.round(master * 2.2);
 
             return (
               <div

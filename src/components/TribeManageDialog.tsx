@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Crown, Loader2, Settings, Shield, ShieldOff, UserMinus, Globe, Lock } from "lucide-react";
+import { Crown, Loader2, Settings, Shield, ShieldOff, UserMinus, Lock, Image as ImageIcon, Trash2, Upload } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useModeration } from "@/hooks/use-moderation";
 
 interface Member {
   user_id: string;
@@ -30,12 +32,22 @@ interface Props {
   onChanged: () => void;
 }
 
+const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+const MAX_COVER_SIZE_MB = 8;
+
 const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, currentUserId, onChanged }: Props) => {
+  const { user } = useAuth();
+  const moderation = useModeration();
+  const fileRef = useRef<HTMLInputElement>(null);
+
   const [name, setName] = useState(tribe.name);
   const [description, setDescription] = useState(tribe.description ?? "");
-  // All tribes are private — visibility is locked, no setter needed.
+  // All tribes are private — visibility is locked.
   const visibility = "private" as const;
   const [coverUrl, setCoverUrl] = useState(tribe.cover_url ?? "");
+  const [coverPreview, setCoverPreview] = useState<string | null>(tribe.cover_url ?? null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [savingMeta, setSavingMeta] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -43,13 +55,42 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
     if (open) {
       setName(tribe.name);
       setDescription(tribe.description ?? "");
-      // visibility is locked to "private" — no reset needed
       setCoverUrl(tribe.cover_url ?? "");
+      setCoverPreview(tribe.cover_url ?? null);
+      setCoverFile(null);
     }
   }, [open, tribe]);
 
   const otherMembers = members.filter((m) => m.user_id !== currentUserId && m.role !== "owner");
   const adminCount = otherMembers.filter((m) => m.role === "admin").length;
+
+  const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const lower = file.name.toLowerCase();
+    const isImage = file.type.startsWith("image/") || SUPPORTED_IMAGE_EXTENSIONS.some((ext) => lower.endsWith(ext));
+    if (!isImage) {
+      toast.error("Please select an image (JPG, PNG, WEBP).");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > MAX_COVER_SIZE_MB * 1024 * 1024) {
+      toast.error(`Max ${MAX_COVER_SIZE_MB}MB.`);
+      e.target.value = "";
+      return;
+    }
+    setCoverFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setCoverPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveCover = () => {
+    setCoverFile(null);
+    setCoverPreview(null);
+    setCoverUrl("");
+    if (fileRef.current) fileRef.current.value = "";
+  };
 
   const handleSaveMeta = async () => {
     const trimmed = name.trim();
@@ -57,23 +98,54 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       toast.error("Name must be 3–40 characters");
       return;
     }
+    if (!user) {
+      toast.error("Not signed in");
+      return;
+    }
     setSavingMeta(true);
     try {
+      let nextCoverUrl: string | null = coverUrl.trim() || null;
+      const willClear = !coverFile && !coverPreview;
+
+      // If a new file was selected, moderate + upload it first.
+      if (coverFile) {
+        setUploading(true);
+        const outcome = await moderation.moderateImage({ file: coverFile, kind: "feed_post" });
+        if (outcome.blocked) {
+          throw new Error(outcome.friendlyMessage ?? "Image rejected by content policy");
+        }
+        const ext = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        const safeExt = ["jpeg", "jpg", "png", "webp"].includes(ext) ? ext : "jpg";
+        const path = `${user.id}/tribe-covers/${tribeId}-${Date.now()}.${safeExt}`;
+        const contentType = coverFile.type || `image/${safeExt === "jpg" ? "jpeg" : safeExt}`;
+        const { error: upErr } = await supabase.storage.from("feed-images").upload(path, coverFile, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType,
+        });
+        if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
+        nextCoverUrl = supabase.storage.from("feed-images").getPublicUrl(path).data.publicUrl;
+        setUploading(false);
+      }
+
       const { error } = await supabase.rpc("update_tribe" as any, {
         p_tribe_id: tribeId,
         p_name: trimmed,
         p_description: description,
         p_visibility: visibility,
-        p_cover_url: coverUrl.trim() || null,
-        p_clear_cover: coverUrl.trim() === "",
+        p_cover_url: nextCoverUrl,
+        p_clear_cover: willClear,
       });
       if (error) throw error;
       toast.success("Tribe updated");
+      setCoverFile(null);
       onChanged();
+      onOpenChange(false);
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to update tribe");
     } finally {
       setSavingMeta(false);
+      setUploading(false);
     }
   };
 
@@ -113,6 +185,8 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
     }
   };
 
+  const busy = savingMeta || uploading;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
@@ -120,8 +194,58 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
           <DialogTitle className="flex items-center gap-2">
             <Settings size={16} className="text-gold" /> Manage tribe
           </DialogTitle>
-          <DialogDescription>Edit tribe details and member roles. Max 2 admins.</DialogDescription>
+          <DialogDescription>Edit tribe details, cover photo, and member roles.</DialogDescription>
         </DialogHeader>
+
+        {/* Cover photo uploader */}
+        <div>
+          <Label className="text-xs mb-2 block">Cover photo</Label>
+          <div className="relative rounded-xl overflow-hidden border border-border bg-card/40 aspect-[16/9]">
+            {coverPreview ? (
+              <>
+                <img src={coverPreview} alt="Cover preview" className="absolute inset-0 h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+                <div className="absolute bottom-2 right-2 flex gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={busy}
+                    className="h-8 px-2.5 rounded-md bg-background/85 backdrop-blur border border-border text-[11px] font-bold inline-flex items-center gap-1 hover:bg-background transition-colors disabled:opacity-40"
+                  >
+                    <Upload size={11} /> Change
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCover}
+                    disabled={busy}
+                    className="h-8 w-8 rounded-md bg-background/85 backdrop-blur border border-border text-destructive inline-flex items-center justify-center hover:bg-destructive/10 transition-colors disabled:opacity-40"
+                    aria-label="Remove cover"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={busy}
+                className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-gold hover:bg-gold/5 transition-colors disabled:opacity-40"
+              >
+                <ImageIcon size={22} />
+                <span className="text-[11px] font-bold uppercase tracking-wider">Add cover photo</span>
+                <span className="text-[10px] text-muted-foreground/70">JPG, PNG, WEBP · max {MAX_COVER_SIZE_MB}MB</span>
+              </button>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              hidden
+              onChange={handleCoverSelect}
+            />
+          </div>
+        </div>
 
         {/* Metadata edit */}
         <div className="space-y-3">
@@ -140,15 +264,6 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
             />
           </div>
           <div>
-            <Label className="text-xs">Cover image URL (optional)</Label>
-            <Input
-              value={coverUrl}
-              onChange={(e) => setCoverUrl(e.target.value)}
-              placeholder="https://…"
-              className="mt-1"
-            />
-          </div>
-          <div>
             <Label className="text-xs mb-1 block">Privacy</Label>
             <div className="rounded-lg border border-gold/40 bg-gold/8 p-2.5 flex items-center gap-2.5">
               <Lock size={14} className="text-gold shrink-0" />
@@ -158,9 +273,9 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
               </div>
             </div>
           </div>
-          <Button onClick={handleSaveMeta} disabled={savingMeta} className="w-full" variant="coal">
-            {savingMeta ? <Loader2 size={14} className="animate-spin" /> : null}
-            Save changes
+          <Button onClick={handleSaveMeta} disabled={busy} className="w-full" variant="coal">
+            {busy ? <Loader2 size={14} className="animate-spin" /> : null}
+            {uploading ? "Uploading…" : savingMeta ? "Saving…" : "Save changes"}
           </Button>
         </div>
 

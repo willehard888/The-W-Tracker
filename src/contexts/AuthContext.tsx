@@ -9,6 +9,7 @@ interface AuthContextType {
   session: Session | null;
   profile: any | null;
   loading: boolean;
+  subscriptionLoading: boolean;
   isElite: boolean;
   isApexSubscriber: boolean;
   subscriptionEnd: string | null;
@@ -32,6 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const [isElite, setIsElite] = useState(false);
   const [isApexSubscriber, setIsApexSubscriber] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
@@ -181,6 +183,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
+      setSubscriptionLoading(true);
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) {
         console.error("check-subscription error:", error);
@@ -200,6 +203,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (e) {
       console.error("Failed to check subscription:", e);
+    } finally {
+      setSubscriptionLoading(false);
     }
   }, [user, isElite, isApexSubscriber]);
 
@@ -271,7 +276,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, isElite, isApexSubscriber, subscriptionEnd, checkSubscription, signUp, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, subscriptionLoading, isElite, isApexSubscriber, subscriptionEnd, checkSubscription, signUp, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

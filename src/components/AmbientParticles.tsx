@@ -35,21 +35,28 @@ const AmbientParticles = () => {
 
     // Mobile/touch devices get a much lighter field — Safari iOS canvas fill is expensive.
     const isMobile = window.matchMedia?.("(pointer: coarse)").matches || window.innerWidth < 768;
+    // Low-end desktop (≤4 logical cores or ≤2GB) gets the same lighter treatment.
+    const cores = (navigator as any).hardwareConcurrency || 8;
+    const isLowEnd = cores <= 4 || mem <= 2;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
+    // Cap DPR aggressively even on desktop — particles are ambient, no one notices.
     const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 0.85 : 1);
     let w = 0;
     let h = 0;
 
     const computeCount = () => {
       const area = window.innerWidth * window.innerHeight;
-      // Lighter field — keeps the cinematic glow while halving fill cost.
-      const base = Math.min(isMobile ? 16 : 28, Math.max(8, Math.round(area / (isMobile ? 60000 : 36000))));
-      return mem <= 2 ? Math.round(base * 0.55) : base;
+      // Lighter field — fewer particles, lower fill cost across the board.
+      const base = Math.min(
+        isMobile ? 14 : 22,
+        Math.max(8, Math.round(area / (isMobile ? 65000 : 48000))),
+      );
+      return isLowEnd ? Math.round(base * 0.55) : base;
     };
 
     const resize = () => {
@@ -82,8 +89,8 @@ const AmbientParticles = () => {
     };
     document.addEventListener("visibilitychange", onVisibility);
 
-    // Throttle frame rate — 24fps on mobile, 30fps elsewhere. Visually identical for ambient drift.
-    const FRAME_MS = 1000 / (isMobile ? 24 : 30);
+    // Throttle frame rate — 20fps mobile / low-end, 24fps desktop. Ambient drift doesn't need more.
+    const FRAME_MS = 1000 / (isMobile || isLowEnd ? 20 : 24);
     let last = 0;
     const animate = (now: number) => {
       if (!running.current) return;

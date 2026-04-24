@@ -68,7 +68,8 @@ const IosApexSecondary = ({
         {/* Header row */}
         <div className="flex items-center gap-3 mb-2.5">
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-black tracking-[0.18em] uppercase text-[hsl(18_95%_58%)]">
+            <p className="text-[10px] font-black tracking-[0.18em] uppercase text-[hsl(18_95%_58%)] flex items-center gap-1.5">
+              {loading && <Loader2 size={10} className="animate-spin" />}
               Skip the grind
             </p>
             <p className="font-display text-[15px] font-black leading-tight bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] bg-clip-text text-transparent">

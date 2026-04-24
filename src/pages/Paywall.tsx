@@ -61,7 +61,12 @@ const Paywall = () => {
 
   useEffect(() => {
     if (isElite && !wasMemberRef.current) {
-      toast.success("Welcome aboard. Membership active.");
+      // Only fire the welcome toast once per browser session — prevents the
+      // "Welcome aboard" loop when checkSubscription re-runs.
+      if (!sessionStorage.getItem("w_welcome_toast_shown")) {
+        sessionStorage.setItem("w_welcome_toast_shown", "1");
+        toast.success("Welcome aboard. Membership active.");
+      }
     }
     wasMemberRef.current = isElite;
   }, [isElite]);

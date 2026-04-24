@@ -777,16 +777,13 @@ const CompactStreakPanel = ({
                       marginLeft: -L.size / 2,
                       // Custom props consumed by flame-roar-* keyframes so each
                       // layer breathes around its own resting offset/rotation.
-                      // @ts-expect-error CSS custom props
-                      "--rx": `${L.offsetX}px`,
-                      // @ts-expect-error
-                      "--ry": `${L.offsetY}px`,
-                      // @ts-expect-error
-                      "--rr": `${L.rotate}deg`,
-                      // @ts-expect-error
-                      "--sx": L.scaleX,
-                      // @ts-expect-error
-                      "--sy": L.scaleY,
+                      ...({
+                        "--rx": `${L.offsetX}px`,
+                        "--ry": `${L.offsetY}px`,
+                        "--rr": `${L.rotate}deg`,
+                        "--sx": `${L.scaleX}`,
+                        "--sy": `${L.scaleY}`,
+                      } as React.CSSProperties),
                       transform: `translateX(${L.offsetX}px) translateY(${L.offsetY}px) rotate(${L.rotate}deg) scale(${L.scaleX}, ${L.scaleY})`,
                       transformOrigin: "center bottom",
                       filter: `${dropShadow(L.accent, L.shadowMul)}${L.blur ? ` blur(${L.blur}px)` : ""}`,

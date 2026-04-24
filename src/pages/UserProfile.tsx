@@ -593,28 +593,25 @@ const UserProfile = () => {
         )}
       </div>
 
-      {/* User Posts */}
-      {userPosts && userPosts.length > 0 && (
-        <div className="mt-6 animate-reveal animate-reveal-delay-3">
-          <h2 className="font-display font-bold text-sm mb-3 tracking-tight">Posts ({userPosts.length})</h2>
-          <div className="space-y-3">
-            {userPosts.map((post) => (
-              <div key={post.id} className="rounded-xl border border-border bg-card p-4">
-                {post.content && <p className="text-sm mb-2">{post.content}</p>}
-                {post.image_url && (
-                  <img src={post.image_url} alt="Post" className="w-full rounded-lg object-cover max-h-48 mb-2" />
-                )}
-                <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><Heart size={10} /> {post.likes_count}</span>
-                  <span className="flex items-center gap-1"><MessageSquare size={10} /> {post.comments_count}</span>
-                  <span className="ml-auto">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
       </div>
+
+      <ImageLightbox
+        open={!!lightboxUrl}
+        imageUrl={lightboxUrl}
+        username={profile.username}
+        avatarUrl={profile.avatar_url}
+        tier={(profile.status_tier || "recruit") as any}
+        level={profile.level}
+        streak={profile.streak}
+        likes={lightboxPost?.likes_count}
+        comments={lightboxPost?.comments_count}
+        kudos={lightboxPost?.kudos_count}
+        caption={lightboxPost?.content}
+        onClose={() => {
+          setLightboxUrl(null);
+          setLightboxPost(null);
+        }}
+      />
     </div>
   );
 };

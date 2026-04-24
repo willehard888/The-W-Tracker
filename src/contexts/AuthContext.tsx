@@ -249,13 +249,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Check subscription on login and periodically
+  // Check subscription on login and periodically.
+  // Only depend on user.id — checkSubscription is now stable (empty deps),
+  // and depending on its identity here previously caused an infinite refetch
+  // loop on /paywall (Stripe returned subscribed:true → setIsElite → identity
+  // change → effect re-ran → new request → repeat).
   useEffect(() => {
     if (!user) return;
     checkSubscription();
     const interval = setInterval(checkSubscription, 300000);
     return () => clearInterval(interval);
-  }, [user, checkSubscription]);
+  }, [user?.id]);
 
   const signUp = async (email: string, password: string, username: string) => {
     const { error } = await supabase.auth.signUp({

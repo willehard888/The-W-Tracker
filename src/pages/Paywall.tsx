@@ -265,10 +265,10 @@ const Paywall = () => {
         // ─── iOS hard entry: dominant Member hero + small Apex secondary ───
         <div className="space-y-3 animate-reveal animate-reveal-delay-1">
           <IosEntryHero
-            priceLabel={elitePrice}
+            monthlyPriceLabel={elitePrice}
+            yearlyPriceLabel={eliteYearlyPrice}
             loading={purchasingTier === "elite"}
             onCta={handleNativeElite}
-            footnote={`Free for 7 days · then ${elitePrice}/mo · Cancel anytime`}
           />
 
           {/* Subtle divider */}
@@ -281,7 +281,8 @@ const Paywall = () => {
           </div>
 
           <IosApexSecondary
-            priceLabel={apexPrice}
+            monthlyPriceLabel={apexPrice}
+            yearlyPriceLabel={apexYearlyPrice}
             loading={purchasingTier === "apex"}
             onClick={handleNativeApex}
           />

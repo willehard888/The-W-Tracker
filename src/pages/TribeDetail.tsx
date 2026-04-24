@@ -285,9 +285,26 @@ const TribeDetail = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const handleScroll = () => {
-    if (scrollRef.current) setParallax(Math.min(scrollRef.current.scrollTop * 0.3, 80));
-  };
+  // Parallax follows the *parent* scroller (App.tsx provides the single
+  // overflow-y container). Listening on window or the nearest scrollable
+  // ancestor — we walk up from our wrapper to find it.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    let parent: HTMLElement | null = el.parentElement;
+    while (parent) {
+      const oy = getComputedStyle(parent).overflowY;
+      if (oy === "auto" || oy === "scroll") break;
+      parent = parent.parentElement;
+    }
+    const target: HTMLElement | Window = parent ?? window;
+    const onScroll = () => {
+      const top = parent ? parent.scrollTop : window.scrollY;
+      setParallax(Math.min(top * 0.3, 80));
+    };
+    target.addEventListener("scroll", onScroll, { passive: true });
+    return () => target.removeEventListener("scroll", onScroll);
+  }, []);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -420,7 +437,7 @@ const TribeDetail = () => {
     : null;
 
   return (
-    <div ref={scrollRef} onScroll={handleScroll} className="min-h-full pb-8 px-4 pt-4 safe-top overflow-y-auto relative">
+    <div ref={scrollRef} className="pb-8 px-4 pt-4 safe-top relative">
       {/* Subtle page tint toward the tribe's tier color */}
       {pageTint && (
         <div

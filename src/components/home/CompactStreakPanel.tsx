@@ -854,22 +854,7 @@ const CompactStreakPanel = ({
             </div>
           )}
           <div className="flex items-baseline gap-1.5 leading-none relative">
-            {/* Glowing tier-color halo behind the number */}
-            {isHot && (
-              <span
-                aria-hidden
-                className="absolute pointer-events-none"
-                style={{
-                  left: -8,
-                  top: -6,
-                  width: 80,
-                  height: 60,
-                  background: `radial-gradient(ellipse at center, ${accent.replace(")", " / 0.35)")} 0%, transparent 70%)`,
-                  filter: "blur(10px)",
-                  zIndex: -1,
-                }}
-              />
-            )}
+            {/* Number halo removed */}
             <span
               key={numberKey.current}
               className={cn(

@@ -658,51 +658,93 @@ const CompactStreakPanel = ({
             const dropShadow = (acc: string, mul: number) =>
               `drop-shadow(0 -3px ${(6 + displayStreak * 0.25) * mul}px ${acc.replace(")", " / 0.7)")}) drop-shadow(0 -10px ${(16 + displayStreak * 0.4) * mul}px ${acc.replace(")", " / 0.35)")})`;
 
-            // 3 layers only:
-            //  - back-left small tongue (faint)
-            //  - back-right small tongue (faint)
-            //  - main central flame (full opacity, no blur, frontmost)
+            // 6 layers — back tongues are STRONG (high opacity, full tier
+            // intensity, taller) so they read clearly behind the main core.
+            // Each uses a distinct hue: deep red, crimson, amber-orange,
+            // yellow-orange, pure orange-core, gold-tip.
             const layers = [
+              // Far back-left — deep red, tall, leans hard left
               {
-                size: Math.round(master * 0.5),
-                accent: "hsl(18 92% 52%)",
-                tier: Math.max(cappedTier - 1, 1),
-                offsetX: -Math.round(master * 0.26),
-                offsetY: -Math.round(master * 0.05),
+                size: Math.round(master * 0.62),
+                accent: "hsl(8 92% 46%)",
+                tier: cappedTier,
+                offsetX: -Math.round(master * 0.34),
+                offsetY: -Math.round(master * 0.1),
                 z: 1,
-                opacity: 0.85,
-                rotate: -10,
-                shadowMul: 0.55,
+                opacity: 0.95,
+                rotate: -16,
+                shadowMul: 0.85,
                 roar: 0,
               },
+              // Far back-right — crimson, tall, leans hard right
               {
-                size: Math.round(master * 0.55),
-                accent: "hsl(20 95% 54%)",
-                tier: Math.max(cappedTier - 1, 1),
-                offsetX: Math.round(master * 0.27),
-                offsetY: -Math.round(master * 0.07),
+                size: Math.round(master * 0.66),
+                accent: "hsl(12 95% 50%)",
+                tier: cappedTier,
+                offsetX: Math.round(master * 0.36),
+                offsetY: -Math.round(master * 0.12),
                 z: 1,
-                opacity: 0.88,
-                rotate: 9,
-                shadowMul: 0.6,
+                opacity: 0.96,
+                rotate: 14,
+                shadowMul: 0.9,
                 roar: 1,
               },
+              // Mid back-left — amber, peeks behind core
+              {
+                size: Math.round(master * 0.72),
+                accent: "hsl(28 96% 54%)",
+                tier: cappedTier,
+                offsetX: -Math.round(master * 0.2),
+                offsetY: -Math.round(master * 0.04),
+                z: 2,
+                opacity: 0.95,
+                rotate: -8,
+                shadowMul: 0.85,
+                roar: 2,
+              },
+              // Mid back-right — yellow-orange, peeks behind core
+              {
+                size: Math.round(master * 0.76),
+                accent: "hsl(34 100% 58%)",
+                tier: cappedTier,
+                offsetX: Math.round(master * 0.21),
+                offsetY: -Math.round(master * 0.05),
+                z: 2,
+                opacity: 0.95,
+                rotate: 7,
+                shadowMul: 0.85,
+                roar: 0,
+              },
+              // Inner-back gold halo — slightly behind core, broad
+              {
+                size: Math.round(master * 0.88),
+                accent: "hsl(40 100% 60%)",
+                tier: cappedTier,
+                offsetX: 0,
+                offsetY: -Math.round(master * 0.02),
+                z: 3,
+                opacity: 0.85,
+                rotate: 0,
+                shadowMul: 0.8,
+                roar: 1,
+              },
+              // CENTER core — pure orange, frontmost, biggest
               {
                 size: master,
                 accent: "hsl(22 98% 56%)",
                 tier: cappedTier,
                 offsetX: 0,
                 offsetY: 0,
-                z: 5,
+                z: 6,
                 opacity: 1,
                 rotate: 0,
                 shadowMul: 1,
-                roar: -1, // no roar animation, organic flame motion only
+                roar: -1,
               },
             ];
 
-            const bowlWidth = Math.round(master * 1.7);
-            const bowlHeight = Math.round(master * 1.55);
+            const bowlWidth = Math.round(master * 2.0);
+            const bowlHeight = Math.round(master * 1.7);
 
             return (
               <div

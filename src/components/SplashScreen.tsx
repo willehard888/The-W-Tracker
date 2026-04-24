@@ -1,7 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import BrandLogo from "./BrandLogo";
 import RealisticFlame from "./home/RealisticFlame";
 
+/**
+ * SplashScreen — cinematic ignition sequence.
+ *
+ * Reveal pipeline (≈1.65s total):
+ *   0ms       : dark vignette + dim halo
+ *   ~120ms    : ignition flash + heat shockwave ring + 12 radial sparks fan out
+ *   ~200ms    : flame begins growing from ember to full size (with overshoot)
+ *   ~250ms    : logo ignition flash (brightness pulse)
+ *   ~600ms    : embers begin rising past the logo (continuous loop)
+ *   1300ms    : exit (scale up, fade out)
+ *
+ * GPU-only: every animated property is transform/opacity/filter.
+ */
 const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
   const [phase, setPhase] = useState<"reveal" | "settle" | "exit">("reveal");
 
@@ -14,6 +27,33 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
     return () => timers.forEach(clearTimeout);
   }, [onComplete]);
 
+  // 12 radial sparks fanning out at ignition — pre-computed once.
+  const sparks = useMemo(
+    () =>
+      Array.from({ length: 12 }).map((_, i) => {
+        const angle = (i / 12) * 360 + (Math.random() * 18 - 9);
+        const distance = -(70 + Math.random() * 60); // upward (negative Y)
+        const delay = 120 + Math.random() * 80;
+        const duration = 650 + Math.random() * 350;
+        return { angle, distance, delay, duration, id: i };
+      }),
+    [],
+  );
+
+  // 8 slow rising embers — start after flame catches.
+  const embers = useMemo(
+    () =>
+      Array.from({ length: 8 }).map((_, i) => {
+        const left = 38 + Math.random() * 24; // % across logo
+        const drift = (Math.random() - 0.5) * 30; // px horizontal drift
+        const delay = 600 + Math.random() * 900;
+        const duration = 2200 + Math.random() * 1400;
+        const size = 2 + Math.random() * 3;
+        return { left, drift, delay, duration, size, id: i };
+      }),
+    [],
+  );
+
   return (
     <div
       className={`fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden transition-opacity duration-400 ease-out ${
@@ -25,17 +65,16 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
         contain: "layout paint size",
       }}
     >
-      {/* Single static gold glow — no animation, no conic spin */}
+      {/* Static gold glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
             "radial-gradient(circle at 50% 50%, hsl(42 90% 55% / 0.20) 0%, hsl(42 80% 45% / 0.06) 35%, transparent 65%)",
-          willChange: "opacity",
         }}
       />
 
-      {/* Logo container — only transform + opacity (compositor-only) */}
+      {/* Logo container */}
       <div
         className="relative flex flex-col items-center"
         style={{
@@ -51,7 +90,7 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
           willChange: "transform, opacity",
         }}
       >
-        {/* Static halo — no breathe animation (was the heaviest filter cost) */}
+        {/* Static halo */}
         <div
           className="absolute -inset-8 rounded-full pointer-events-none"
           style={{
@@ -62,17 +101,109 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
           aria-hidden
         />
 
-        {/* Logo with growing RealisticFlame underneath */}
+        {/* === IGNITION STAGE — flame, sparks, embers, shockwave === */}
         <div className="relative">
-          {/* Real cinematic flame igniting behind/under the logo */}
+          {/* Ignition flash — single white-hot burst at flame base */}
+          <div
+            className="absolute left-1/2 -bottom-2 pointer-events-none rounded-full"
+            style={{
+              width: 60,
+              height: 60,
+              background:
+                "radial-gradient(circle, hsl(42 100% 90% / 0.95) 0%, hsl(42 95% 65% / 0.55) 35%, transparent 70%)",
+              animation:
+                phase === "reveal"
+                  ? undefined
+                  : "splash-flash 700ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both",
+              willChange: "transform, opacity",
+              mixBlendMode: "screen",
+              zIndex: 3,
+            }}
+            aria-hidden
+          />
+
+          {/* Heat shockwave — expanding ring at ignition */}
+          <div
+            className="absolute left-1/2 -bottom-2 pointer-events-none rounded-full"
+            style={{
+              width: 80,
+              height: 80,
+              border: "2px solid hsl(42 95% 65% / 0.7)",
+              boxShadow:
+                "0 0 24px hsl(42 95% 60% / 0.55), inset 0 0 16px hsl(42 95% 70% / 0.4)",
+              animation:
+                phase === "reveal"
+                  ? undefined
+                  : "splash-shockwave 950ms cubic-bezier(0.22, 1, 0.36, 1) 140ms both",
+              willChange: "transform, opacity",
+              zIndex: 2,
+            }}
+            aria-hidden
+          />
+
+          {/* Second softer shockwave — staggered for layered depth */}
+          <div
+            className="absolute left-1/2 -bottom-2 pointer-events-none rounded-full"
+            style={{
+              width: 80,
+              height: 80,
+              border: "1px solid hsl(28 95% 60% / 0.5)",
+              animation:
+                phase === "reveal"
+                  ? undefined
+                  : "splash-shockwave 1100ms cubic-bezier(0.22, 1, 0.36, 1) 280ms both",
+              willChange: "transform, opacity",
+              zIndex: 2,
+            }}
+            aria-hidden
+          />
+
+          {/* 12 radial sparks fanning out — bright pinpoints with trails */}
+          <div
+            className="absolute left-1/2 -bottom-2 pointer-events-none"
+            style={{ width: 0, height: 0, zIndex: 4 }}
+            aria-hidden
+          >
+            {sparks.map((s) => (
+              <span
+                key={s.id}
+                className="absolute"
+                style={{
+                  left: 0,
+                  top: 0,
+                  width: 3,
+                  height: 10,
+                  marginLeft: -1.5,
+                  marginTop: -5,
+                  borderRadius: 2,
+                  background:
+                    "linear-gradient(to top, transparent, hsl(42 100% 80%) 40%, hsl(42 100% 95%))",
+                  boxShadow:
+                    "0 0 8px hsl(42 100% 70%), 0 0 16px hsl(42 95% 60% / 0.6)",
+                  // CSS vars consumed by the keyframe
+                  ["--spark-angle" as any]: `${s.angle}deg`,
+                  ["--spark-distance" as any]: `${s.distance}px`,
+                  animation:
+                    phase === "reveal"
+                      ? undefined
+                      : `splash-spark ${s.duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${s.delay}ms both`,
+                  willChange: "transform, opacity",
+                  mixBlendMode: "screen",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Real cinematic flame — bigger and igniting under the logo */}
           <div
             className="absolute left-1/2 -bottom-4 pointer-events-none"
             style={{
-              width: 96,
-              height: 110,
+              width: 120,
+              height: 140,
               transform: "translateX(-50%)",
               opacity: phase === "reveal" ? 0 : 1,
               transition: "opacity 500ms ease-out 200ms",
+              zIndex: 1,
             }}
             aria-hidden
           >
@@ -83,15 +214,56 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
                 animation:
                   phase === "reveal"
                     ? undefined
-                    : "splash-flame-grow 900ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both",
+                    : "splash-flame-grow 1100ms cubic-bezier(0.34, 1.4, 0.4, 1) 200ms both",
                 transformOrigin: "center bottom",
               }}
             >
-              <RealisticFlame tier={5} accent="hsl(42 95% 60%)" size={96} />
+              <RealisticFlame tier={5} accent="hsl(42 95% 60%)" size={120} />
             </div>
           </div>
 
-          <BrandLogo size={112} priority className="relative rounded-3xl" />
+          {/* Rising embers — slow drifting particles past the logo */}
+          <div
+            className="absolute inset-0 pointer-events-none overflow-visible"
+            style={{ zIndex: 5 }}
+            aria-hidden
+          >
+            {embers.map((e) => (
+              <span
+                key={e.id}
+                className="absolute rounded-full"
+                style={{
+                  left: `${e.left}%`,
+                  bottom: -6,
+                  width: e.size,
+                  height: e.size,
+                  background: "hsl(42 95% 70%)",
+                  boxShadow:
+                    "0 0 6px hsl(42 95% 65%), 0 0 12px hsl(42 90% 55% / 0.6)",
+                  ["--ember-drift" as any]: `${e.drift}px`,
+                  animation:
+                    phase === "reveal"
+                      ? undefined
+                      : `splash-ember ${e.duration}ms ease-out ${e.delay}ms infinite`,
+                  willChange: "transform, opacity",
+                  mixBlendMode: "screen",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Logo — gets a brightness pulse the moment fire catches */}
+          <div
+            style={{
+              animation:
+                phase === "reveal"
+                  ? undefined
+                  : "splash-logo-ignite 1100ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both",
+              willChange: "filter",
+            }}
+          >
+            <BrandLogo size={112} priority className="relative rounded-3xl" />
+          </div>
         </div>
 
         {/* Wordmark */}
@@ -104,7 +276,7 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
                 ? "translate3d(0, 8px, 0)"
                 : "translate3d(0, 0, 0)",
             transition:
-              "opacity 450ms ease-out 150ms, transform 550ms cubic-bezier(0.16, 1, 0.3, 1) 150ms",
+              "opacity 450ms ease-out 250ms, transform 550ms cubic-bezier(0.16, 1, 0.3, 1) 250ms",
             willChange: "transform, opacity",
           }}
         >
@@ -129,7 +301,7 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
             background:
               "linear-gradient(90deg, transparent, hsl(42 80% 55% / 0.6), transparent)",
             opacity: phase === "settle" ? 1 : 0,
-            transition: "opacity 400ms ease-out 250ms",
+            transition: "opacity 400ms ease-out 350ms",
           }}
         />
 
@@ -144,7 +316,7 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
                 ? "translate3d(0, 0, 0)"
                 : "translate3d(0, 4px, 0)",
             transition:
-              "opacity 400ms ease-out 300ms, transform 400ms ease-out 300ms",
+              "opacity 400ms ease-out 400ms, transform 400ms ease-out 400ms",
             willChange: "transform, opacity",
           }}
         >
@@ -152,7 +324,7 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
         </p>
       </div>
 
-      {/* Bottom vignette — static */}
+      {/* Bottom vignette */}
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3"
         style={{

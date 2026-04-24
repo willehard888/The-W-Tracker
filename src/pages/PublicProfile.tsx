@@ -200,7 +200,7 @@ const PublicProfile = () => {
         >
           <StatusNameplate
             tier={profile.status_tier || 'recruit'}
-            size="sm"
+            size="md"
           />
           {isApexSubscriber && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-[0.18em] bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold">

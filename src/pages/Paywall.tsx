@@ -306,12 +306,13 @@ const Paywall = () => {
             badgeLabel="7-day free trial"
             tagline="Full access, then earn your status."
             priceLabel={elitePrice}
+            yearlyPriceLabel={eliteYearlyPrice}
             ctaLabel="Start 7-Day Trial"
             ctaIcon={<ShieldCheck size={18} />}
             features={MEMBER_FEATURES}
             loading={purchasingTier === "elite"}
-            onCta={() => handleStripeCheckout("elite")}
-            footnote={`Free for 7 days, then ${elitePrice}/mo.`}
+            onCta={(plan) => handleStripeCheckout("elite", plan)}
+            footnote={`Free for 7 days · cancel anytime.`}
           />
 
           {/* Apex Instant tier */}
@@ -321,12 +322,13 @@ const Paywall = () => {
             badgeLabel="Skip the grind"
             tagline="Instant top 1% status. Lead a Tribe."
             priceLabel={apexPrice}
+            yearlyPriceLabel={apexYearlyPrice}
             ctaLabel="Become Apex Now"
             ctaIcon={<Zap size={18} strokeWidth={2.6} />}
             features={APEX_FEATURES}
             highlighted
             loading={purchasingTier === "apex"}
-            onCta={() => handleStripeCheckout("apex")}
+            onCta={(plan) => handleStripeCheckout("apex", plan)}
             footnote="No trial. Charged immediately. Cancel anytime."
           />
 

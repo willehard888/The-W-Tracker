@@ -116,7 +116,7 @@ const PublicProfile = () => {
   const isLegendPinned = Boolean((profile as any).legend_pinned);
 
   return (
-    <div className="min-h-[100dvh] relative">
+    <div className="min-h-[100dvh] relative pb-10">
       {/* Back button */}
       <button
         onClick={() => navigate(-1)}
@@ -126,169 +126,219 @@ const PublicProfile = () => {
       </button>
 
       <div className="px-4 pt-12">
-        {/* Cinematic hero card — mirrors /profile */}
-        <div className="animate-reveal relative mb-6 overflow-hidden rounded-3xl border border-gold/25 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(42_70%_18%/0.55),hsl(255_14%_6%)_60%)] p-6 pt-10 pb-7">
-          {/* Top vignette glow */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[160%] h-64 blur-3xl opacity-70"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, hsl(42 78% 54% / 0.35), transparent 70%)",
-            }}
-          />
-          <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
-
-          <div className="relative flex flex-col items-center text-center">
-            <p className="text-[10px] font-black uppercase tracking-[0.32em] text-gold/70 mb-3">
-              The W Tracker
-            </p>
-
-            {/* Avatar — large, gold ring */}
-            <motion.div
-              initial={{ scale: 0.85, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="relative mb-5"
-            >
-              <div className="absolute inset-0 -m-3 rounded-full bg-gold/35 blur-2xl" aria-hidden />
-              <div className="relative">
-                <StatusAvatar
-                  src={profile.avatar_url}
-                  name={profile.username}
-                  tier={profile.status_tier || 'recruit'}
-                  size="xl"
-                />
-              </div>
-            </motion.div>
-
-            {/* PREMIUM ribbon — only for Founding Apex subscribers */}
-            {isApexSubscriber && (
-              <div className="mb-2 flex justify-center">
-                <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm text-[10px] font-black uppercase tracking-[0.22em] bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold shadow-[0_0_14px_hsl(var(--gold)/0.55)]">
-                  <Crown size={11} strokeWidth={3} />
-                  Premium · Day-One
-                </span>
-              </div>
-            )}
-
-            {/* Username — colored by status tier */}
-            <motion.h1
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className={cn(
-                "font-display text-[34px] leading-none font-black tracking-tight",
-                getTierUsernameClass(profile.status_tier || 'recruit'),
-              )}
-            >
-              @{profile.username}
-            </motion.h1>
-            {profile.display_name && (
-              <p className="text-sm text-muted-foreground mt-1.5">{profile.display_name}</p>
-            )}
-
-            {/* MASSIVE status nameplate — the loudest element on the page */}
-            <div className="mt-5 w-full">
-              <StatusNameplate
+        {/* IG-style compact header: avatar + stats row */}
+        <div className="flex items-center gap-5 mb-4">
+          {/* Avatar */}
+          <motion.div
+            initial={{ scale: 0.85, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="relative shrink-0"
+          >
+            <div className="absolute inset-0 -m-2 rounded-full bg-gold/25 blur-xl" aria-hidden />
+            <div className="relative">
+              <StatusAvatar
+                src={profile.avatar_url}
+                name={profile.username}
                 tier={profile.status_tier || 'recruit'}
-                size="md"
+                size="lg"
               />
             </div>
+          </motion.div>
 
-            {/* Status pills — Apex/Legend supersede Elite (no duplicate badges) */}
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              className="flex flex-wrap items-center justify-center gap-2 mt-4"
-            >
-              {profile.status_tier === 'apex' ? (
-                <ApexBadge isFounding={isApexSubscriber} size="md" />
-              ) : profile.status_tier === 'legend' ? (
-                <ApexBadge tier="legend" size="md" />
-              ) : profile.is_elite ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
-                  <Crown size={12} className="text-gold" />
-                  <span className="text-[11px] font-black text-gold tracking-wider uppercase">Elite</span>
-                </span>
-              ) : null}
-              <span className="inline-flex items-center px-3 py-1.5 rounded-full">
-                <span className="text-[11px] font-black tracking-wider text-muted-foreground/80 uppercase">
-                  Level {profile.level}
-                </span>
-              </span>
-              {championHistory && championHistory.wins > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
-                  <Trophy size={12} className="text-gold" />
-                  <span className="text-[11px] font-black text-gold tracking-wider uppercase">
-                    Season Champion{championHistory.wins > 1 ? ` ×${championHistory.wins}` : ''}
-                  </span>
-                </span>
-              )}
-              {isLegendPinned && profile.status_tier !== 'legend' && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[hsl(280_70%_60%)]/45 bg-[hsl(280_70%_55%)]/10">
-                  <Crown size={12} className="text-[hsl(280_70%_70%)]" />
-                  <span className="text-[11px] font-black tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-[hsl(280_70%_70%)] via-gold to-[hsl(350_80%_60%)]">
-                    Founders Circle
-                  </span>
-                </span>
-              )}
-            </motion.div>
-
-            {/* Hero XP — massive */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.35 }}
-              className="mt-6 flex flex-col items-center"
-            >
-              <p className="font-display font-black text-[64px] leading-none text-gold drop-shadow-[0_0_24px_hsl(42_78%_54%/0.55)] tabular-nums">
-                {profile.xp.toLocaleString().replace(/,/g, " ")}
-              </p>
-              <p className="text-[10px] font-black tracking-[0.32em] text-gold/70 mt-2">TOTAL XP</p>
-            </motion.div>
-
-            {/* Tier message — italic, evocative (matches /profile) */}
-            <p className="text-sm text-muted-foreground/70 font-medium italic mt-5 max-w-[280px]">
-              {tier.message}
-            </p>
-          </div>
-
-          <div className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
-        </div>
-
-        {/* Quick stats row */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          {[
-            { icon: Zap, label: "LEVEL", value: profile.level, color: "text-gold" },
-            { icon: Flame, label: "STREAK", value: `${profile.streak}d`, color: "text-[hsl(18_95%_58%)]" },
-            { icon: Trophy, label: "BEST", value: `${profile.longest_streak}d`, color: "text-gold" },
-          ].map((s, i) => {
-            const Icon = s.icon;
-            return (
+          {/* Stats row — IG-style: count on top, label below */}
+          <div className="flex-1 grid grid-cols-3 gap-1 text-center">
+            {[
+              { label: "XP", value: profile.xp >= 1000 ? `${(profile.xp / 1000).toFixed(1)}k` : profile.xp.toString(), color: "text-gold" },
+              { label: "Streak", value: `${profile.streak}d`, color: "text-[hsl(18_95%_58%)]" },
+              { label: "Level", value: profile.level.toString(), color: "text-foreground" },
+            ].map((s, i) => (
               <motion.div
                 key={s.label}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + i * 0.05 }}
-                className="rounded-xl border border-border bg-card p-3 text-center"
+                transition={{ delay: 0.1 + i * 0.05 }}
               >
-                <Icon size={14} className={cn("mx-auto mb-1", s.color)} />
-                <p className={cn("font-display font-black text-xl tabular-nums", s.color)}>
+                <p className={cn("font-display font-black text-xl leading-none tabular-nums", s.color)}>
                   {s.value}
                 </p>
-                <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mt-1">
                   {s.label}
                 </p>
               </motion.div>
-            );
-          })}
+            ))}
+          </div>
         </div>
 
-        {/* Badges */}
+        {/* Username + display name + tier */}
+        <div className="mb-3">
+          <motion.h1
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            className={cn(
+              "font-display text-xl leading-tight font-black tracking-tight",
+              getTierUsernameClass(profile.status_tier || 'recruit'),
+            )}
+          >
+            @{profile.username}
+          </motion.h1>
+          {profile.display_name && (
+            <p className="text-sm text-foreground/85 font-semibold mt-0.5">{profile.display_name}</p>
+          )}
+          <p className="text-[12px] text-muted-foreground/80 italic mt-1.5 leading-snug">
+            {tier.message}
+          </p>
+        </div>
+
+        {/* Status pills row */}
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22 }}
+          className="flex flex-wrap items-center gap-1.5 mb-4"
+        >
+          <StatusNameplate
+            tier={profile.status_tier || 'recruit'}
+            size="md"
+          />
+          {isApexSubscriber && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-[0.18em] bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold">
+              <Crown size={9} strokeWidth={3} />
+              Day-One
+            </span>
+          )}
+          {profile.status_tier === 'apex' ? (
+            <ApexBadge isFounding={isApexSubscriber} size="sm" />
+          ) : profile.status_tier === 'legend' ? (
+            <ApexBadge tier="legend" size="sm" />
+          ) : profile.is_elite ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gold/45 bg-gold/5">
+              <Crown size={10} className="text-gold" />
+              <span className="text-[10px] font-black text-gold tracking-wider uppercase">Elite</span>
+            </span>
+          ) : null}
+          {championHistory && championHistory.wins > 0 && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gold/45 bg-gold/5">
+              <Trophy size={10} className="text-gold" />
+              <span className="text-[10px] font-black text-gold tracking-wider uppercase">
+                Champion{championHistory.wins > 1 ? ` ×${championHistory.wins}` : ''}
+              </span>
+            </span>
+          )}
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border bg-card">
+            <Trophy size={10} className="text-muted-foreground" />
+            <span className="text-[10px] font-black text-muted-foreground tracking-wider uppercase">
+              Best {profile.longest_streak}d
+            </span>
+          </span>
+        </motion.div>
+
+        {/* CTA — moved up so it's visible above the fold */}
+        <Link to="/landing" className="block mb-5">
+          <Button variant="coal" size="default" className="w-full">
+            <ExternalLink size={14} />
+            Track your status
+          </Button>
+        </Link>
+
+        {/* Elite Feed media — IG-style 3-col grid, edge-to-edge */}
+        {mediaPosts && mediaPosts.length > 0 && (
+          <div className="mb-6 -mx-4">
+            {/* Tab bar — IG style */}
+            <div className="flex items-center justify-center border-t border-border">
+              <div className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-t-2 border-foreground -mt-px">
+                <Camera size={12} className="text-foreground" />
+                <span className="text-[10px] font-black tracking-[0.22em] uppercase text-foreground">
+                  Posts · {mediaPosts.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Tight 3-col grid, 2px gutters — pure Instagram */}
+            <div className="grid grid-cols-3 gap-[2px]">
+              {mediaPosts.map((p: any, i) => {
+                const isVideo = !!p.video_url;
+                const src = p.image_url || p.video_url;
+                return (
+                  <motion.button
+                    type="button"
+                    key={p.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.28 + i * 0.025 }}
+                    onClick={() => {
+                      if (isVideo) return;
+                      setLightboxUrl(src);
+                      setLightboxPost(p);
+                    }}
+                    className="group relative aspect-square overflow-hidden bg-secondary"
+                  >
+                    {isVideo ? (
+                      <>
+                        <video
+                          src={src}
+                          muted
+                          playsInline
+                          preload="metadata"
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                        <span className="absolute top-1.5 right-1.5">
+                          <Play size={14} className="text-foreground drop-shadow-lg" fill="currentColor" />
+                        </span>
+                      </>
+                    ) : (
+                      <img
+                        src={src}
+                        alt={`@${profile.username} post`}
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    )}
+                    {/* Hover overlay with metrics — desktop nicety */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/45 transition-colors flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                      <span className="flex items-center gap-1 text-[12px] font-black text-foreground">
+                        <Heart size={12} fill="currentColor" />
+                        {p.likes_count ?? 0}
+                      </span>
+                      <span className="flex items-center gap-1 text-[12px] font-black text-foreground">
+                        <MessageCircle size={12} fill="currentColor" />
+                        {p.comments_count ?? 0}
+                      </span>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Empty state when no posts */}
+        {mediaPosts && mediaPosts.length === 0 && (
+          <div className="mb-6 -mx-4">
+            <div className="flex items-center justify-center border-t border-border">
+              <div className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-t-2 border-foreground -mt-px">
+                <Camera size={12} className="text-foreground" />
+                <span className="text-[10px] font-black tracking-[0.22em] uppercase text-foreground">
+                  Posts
+                </span>
+              </div>
+            </div>
+            <div className="py-16 flex flex-col items-center text-center px-6">
+              <div className="h-14 w-14 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center mb-3">
+                <Camera size={22} className="text-muted-foreground/60" />
+              </div>
+              <p className="text-sm font-bold text-foreground">No posts yet</p>
+              <p className="text-[11px] text-muted-foreground mt-1 max-w-[220px]">
+                When @{profile.username} drops proof on the Elite Feed, it'll show here.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Badges — moved below the feed */}
         {badges && badges.length > 0 && (
-          <div className="mb-6">
+          <div className="px-0 mb-4">
             <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-2">
               Recent Badges
             </p>
@@ -315,158 +365,6 @@ const PublicProfile = () => {
             </div>
           </div>
         )}
-
-        {/* Elite Feed media — premium social showcase */}
-        {mediaPosts && mediaPosts.length > 0 && (
-          <div className="mb-6">
-            <div className="flex items-end justify-between mb-3">
-              <div>
-                <p className="font-display text-base font-black tracking-tight">
-                  Proof of Work
-                </p>
-                <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted-foreground/70 mt-0.5">
-                  {mediaPosts.length} {mediaPosts.length === 1 ? "drop" : "drops"} · Elite Feed
-                </p>
-              </div>
-              <Camera size={16} className="text-gold/70" />
-            </div>
-
-            {/* Hero post — first/most-recent media takes the full width */}
-            {(() => {
-              const hero: any = mediaPosts[0];
-              const heroIsVideo = !!hero.video_url;
-              const heroSrc = hero.image_url || hero.video_url;
-              return (
-                <motion.button
-                  type="button"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.42 }}
-                  onClick={() => {
-                    if (heroIsVideo) return; // videos play inline
-                    setLightboxUrl(heroSrc);
-                    setLightboxPost(hero);
-                  }}
-                  className="group relative block w-full aspect-[4/5] overflow-hidden rounded-2xl border border-gold/30 bg-secondary shadow-[0_18px_60px_-20px_hsl(42_78%_54%/0.45)]"
-                >
-                  {heroIsVideo ? (
-                    <video
-                      src={heroSrc}
-                      muted
-                      loop
-                      playsInline
-                      autoPlay
-                      preload="metadata"
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
-                  ) : (
-                    <img
-                      src={heroSrc}
-                      alt={`@${profile.username} on the Elite Feed`}
-                      loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                    />
-                  )}
-
-                  {/* Top hairline + gold rim */}
-                  <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
-
-                  {/* Bottom gradient + caption / metrics */}
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 pt-10 bg-gradient-to-t from-black/85 via-black/45 to-transparent">
-                    {hero.content && (
-                      <p className="text-[13px] font-semibold text-foreground/95 line-clamp-2 mb-2 leading-snug">
-                        {hero.content}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-3 text-[11px] font-bold text-foreground/85">
-                      <span className="flex items-center gap-1">
-                        <Heart size={11} className="text-[hsl(350_80%_60%)]" />
-                        {hero.likes_count ?? 0}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MessageCircle size={11} className="text-foreground/70" />
-                        {hero.comments_count ?? 0}
-                      </span>
-                      {(hero.kudos_count ?? 0) > 0 && (
-                        <span className="flex items-center gap-1 text-gold">
-                          <Award size={11} />
-                          {hero.kudos_count}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {heroIsVideo && (
-                    <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-[9px] font-black tracking-wider uppercase text-foreground">
-                      <Play size={9} fill="currentColor" /> Video
-                    </span>
-                  )}
-                </motion.button>
-              );
-            })()}
-
-            {/* Grid of remaining media — 3 columns, square tiles */}
-            {mediaPosts.length > 1 && (
-              <div className="grid grid-cols-3 gap-1.5 mt-1.5">
-                {mediaPosts.slice(1).map((p: any, i) => {
-                  const isVideo = !!p.video_url;
-                  const src = p.image_url || p.video_url;
-                  return (
-                    <motion.button
-                      type="button"
-                      key={p.id}
-                      initial={{ opacity: 0, scale: 0.92 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.46 + i * 0.03 }}
-                      onClick={() => {
-                        if (isVideo) return;
-                        setLightboxUrl(src);
-                        setLightboxPost(p);
-                      }}
-                      className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-secondary"
-                    >
-                      {isVideo ? (
-                        <>
-                          <video
-                            src={src}
-                            muted
-                            playsInline
-                            preload="metadata"
-                            className="absolute inset-0 h-full w-full object-cover"
-                          />
-                          <span className="absolute inset-0 flex items-center justify-center bg-black/30">
-                            <Play size={18} className="text-foreground drop-shadow-lg" fill="currentColor" />
-                          </span>
-                        </>
-                      ) : (
-                        <img
-                          src={src}
-                          alt=""
-                          loading="lazy"
-                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                      )}
-                      {(p.likes_count ?? 0) >= 5 && (
-                        <span className="absolute bottom-1 right-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-black/65 backdrop-blur text-[9px] font-bold text-foreground">
-                          <Heart size={8} className="text-[hsl(350_80%_60%)]" fill="currentColor" />
-                          {p.likes_count}
-                        </span>
-                      )}
-                    </motion.button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* CTA */}
-        <Link to="/landing">
-          <Button variant="coal" size="lg" className="w-full">
-            <ExternalLink size={16} />
-            Track your status — start free
-          </Button>
-        </Link>
 
         <p className="text-[10px] text-center text-muted-foreground/60 font-semibold mt-3 tracking-wider">
           DISCIPLINE IS THE NEW FLEX

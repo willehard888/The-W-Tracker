@@ -933,6 +933,7 @@ const CompactStreakPanel = ({
                 delay: 0.7,
                 windWeight: 5,
                 windWeightRot: 4,
+              },
               // 8 — NEW Tiny crimson sputter (left low): small detached tongue.
               {
                 size: Math.round(master * 0.34),

@@ -573,27 +573,50 @@ const CompactStreakPanel = ({
             </>
           )}
 
-          {/* Flame — anchored to the ember bed but rises FAR above the chamber.
-              Sits in panel-space (overflow visible from chamber, clipped only by panel). */}
-          <span
-            className={cn(
-              "absolute left-1/2 -translate-x-1/2 bottom-[6px] z-[20] flex items-end justify-center pointer-events-none flame-bowl",
-            )}
-            style={{
-              width: 160,
-              height: 200,
-              filter: isHot
-                ? `drop-shadow(0 -6px 24px ${accent.replace(")", " / 0.85)")}) drop-shadow(0 -16px 48px ${accent.replace(")", " / 0.55)")}) drop-shadow(0 -28px 72px ${accent.replace(")", " / 0.3)")})`
-                : undefined,
-            }}
-          >
-            <RealisticFlame
-              tier={Math.max(tier.index, 4)}
-              accent={accent}
-              size={160}
-              interactive={false}
-            />
-          </span>
+          {/* Flame — REAL fire: red/orange palette, scales LIVE with streak.
+              Size grows from 90px (3d) to 220px (100d+); intensity layers up via tier. */}
+          {(() => {
+            // Force a warm red/orange accent regardless of tier color (no purple/blue).
+            const fireAccent = isLegendary
+              ? "hsl(20 100% 55%)"
+              : isDiamond
+              ? "hsl(22 98% 56%)"
+              : isBlazing
+              ? "hsl(24 96% 56%)"
+              : isOnFire
+              ? "hsl(18 95% 54%)"
+              : isWarm
+              ? "hsl(14 92% 52%)"
+              : "hsl(12 88% 50%)";
+
+            // Live streak → size mapping (true reactivity, not just tier buckets)
+            // 0d: 80px, 3d: 96, 7d: 112, 14d: 132, 30d: 156, 60d: 184, 100d+: 220
+            const streakSize = Math.round(
+              80 + Math.min(140, Math.pow(Math.min(displayStreak, 120), 0.62) * 13),
+            );
+            // Cap tier so palette stays warm (Diamond=4 to keep all rich layers but no purple)
+            const cappedTier = Math.min(Math.max(tier.index, 2), 4);
+
+            return (
+              <span
+                className={cn(
+                  "absolute left-1/2 -translate-x-1/2 bottom-[6px] z-[20] flex items-end justify-center pointer-events-none flame-bowl",
+                )}
+                style={{
+                  width: streakSize,
+                  height: Math.round(streakSize * 1.25),
+                  filter: `drop-shadow(0 -6px ${10 + displayStreak * 0.4}px ${fireAccent.replace(")", " / 0.9)")}) drop-shadow(0 -16px ${24 + displayStreak * 0.6}px ${fireAccent.replace(")", " / 0.55)")}) drop-shadow(0 -28px ${40 + displayStreak * 0.8}px ${fireAccent.replace(")", " / 0.3)")})`,
+                }}
+              >
+                <RealisticFlame
+                  tier={cappedTier}
+                  accent={fireAccent}
+                  size={streakSize}
+                  interactive={false}
+                />
+              </span>
+            );
+          })()}
           {/* Ground glow — outside the chamber, sells radiated heat */}
           {isHot && (
             <span

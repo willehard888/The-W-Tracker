@@ -1,22 +1,26 @@
 /**
  * FlameDevPanel — floating developer controls for the bonfire flame.
  *
- * Visibility: only mounts when `?devflame=1` is set in the URL or
- * `localStorage.flameDevPanel === "1"`. Append `?devflame=0` to dismiss.
+ * Auto-shows on dev/preview hosts. Dismiss via the X button (persists), or use
+ * `?devflame=1` / `?devflame=0` to force-toggle visibility.
  *
- * Adjusts layer density, opacity multiplier, dense-core boost, and switches
- * between Normal / High-Contrast modes — all without code changes.
+ * Controls: contrast preset (Normal / High-Contrast / Razor Sharp), layer
+ * density, opacity multiplier, dense-core boost, edge clipping (kills halo
+ * fringe), and an auto-degrade toggle that watches FPS in real time.
  */
 import { useEffect, useState } from "react";
-import { X, Flame, RotateCcw } from "lucide-react";
+import { X, Flame, RotateCcw, Activity } from "lucide-react";
 import {
   DEFAULT_FLAME_SETTINGS,
   type FlameContrastMode,
+  classifyPerf,
   isFlameDevPanelEnabled,
   readFlameSettings,
+  useFps,
   writeFlameSettings,
 } from "@/lib/flame-dev-settings";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +28,8 @@ const FlameDevPanel = () => {
   const [enabled, setEnabled] = useState(false);
   const [open, setOpen] = useState(true);
   const [settings, setSettings] = useState(() => readFlameSettings());
+  const fps = useFps();
+  const tier = classifyPerf(fps);
 
   useEffect(() => {
     setEnabled(isFlameDevPanelEnabled());
@@ -51,6 +57,14 @@ const FlameDevPanel = () => {
     setEnabled(false);
   };
 
+  // Color the FPS chip green/amber/red based on perf tier.
+  const fpsColor =
+    tier === "smooth"
+      ? "hsl(140 80% 55%)"
+      : tier === "ok"
+      ? "hsl(38 95% 60%)"
+      : "hsl(0 85% 62%)";
+
   return (
     <div
       className={cn(
@@ -73,7 +87,20 @@ const FlameDevPanel = () => {
             {open ? "▾" : "▸"}
           </span>
         </button>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
+          {/* Live FPS chip */}
+          <span
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-black tabular-nums border"
+            style={{
+              color: fpsColor,
+              borderColor: `${fpsColor.replace(")", " / 0.45)")}`,
+              background: `${fpsColor.replace(")", " / 0.12)")}`,
+            }}
+            title={`${fps} FPS — ${tier}`}
+          >
+            <Activity className="h-3 w-3" />
+            {fps}
+          </span>
           <Button
             type="button"
             size="icon"
@@ -98,31 +125,95 @@ const FlameDevPanel = () => {
       </div>
 
       {open && (
-        <div className="px-3 py-3 space-y-4">
-          {/* Contrast mode */}
+        <div className="px-3 py-3 space-y-4 max-h-[70vh] overflow-y-auto">
+          {/* Contrast mode — 3 presets in a row */}
           <div>
             <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground mb-1.5">
-              Contrast Mode
+              Sharpening Mode
             </p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {(["normal", "high-contrast"] as FlameContrastMode[]).map((mode) => {
-                const active = settings.contrastMode === mode;
-                return (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => update({ contrastMode: mode })}
-                    className={cn(
-                      "px-2 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider border transition-colors",
-                      active
-                        ? "bg-[hsl(18_95%_58%)] text-white border-transparent"
-                        : "bg-secondary/40 border-border/60 text-foreground/80 hover:bg-secondary/70",
-                    )}
-                  >
-                    {mode === "normal" ? "Normal" : "High-Contrast"}
-                  </button>
-                );
-              })}
+            <div className="grid grid-cols-3 gap-1.5">
+              {(["normal", "high-contrast", "razor-sharp"] as FlameContrastMode[]).map(
+                (mode) => {
+                  const active = settings.contrastMode === mode;
+                  const label =
+                    mode === "normal"
+                      ? "Normal"
+                      : mode === "high-contrast"
+                      ? "High"
+                      : "Razor";
+                  return (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => update({ contrastMode: mode })}
+                      className={cn(
+                        "px-2 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border transition-colors",
+                        active
+                          ? mode === "razor-sharp"
+                            ? "bg-[hsl(0_85%_55%)] text-white border-transparent"
+                            : "bg-[hsl(18_95%_58%)] text-white border-transparent"
+                          : "bg-secondary/40 border-border/60 text-foreground/80 hover:bg-secondary/70",
+                      )}
+                    >
+                      {label}
+                    </button>
+                  );
+                },
+              )}
+            </div>
+            <p className="mt-1 text-[9px] text-muted-foreground/70 leading-snug">
+              {settings.contrastMode === "razor-sharp"
+                ? "Maximum contrast + saturation, blur stripped from overlays."
+                : settings.contrastMode === "high-contrast"
+                ? "Boosted contrast, stronger drop-shadows."
+                : "Default soft balance."}
+            </p>
+          </div>
+
+          {/* Edge clipping */}
+          <div className="rounded-xl border border-border/60 bg-secondary/30 p-2.5 space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black tracking-widest uppercase">
+                  Edge Clipping
+                </p>
+                <p className="text-[9px] text-muted-foreground/70 leading-snug">
+                  Mask sharpening to flame interior — kills halo fringe.
+                </p>
+              </div>
+              <Switch
+                checked={settings.edgeClipping}
+                onCheckedChange={(v) => update({ edgeClipping: v })}
+              />
+            </div>
+            {settings.edgeClipping && (
+              <SliderRow
+                label="Edge Softness"
+                value={settings.edgeSoftness}
+                min={0}
+                max={1}
+                step={0.05}
+                display={`${Math.round(settings.edgeSoftness * 100)}%`}
+                onChange={(v) => update({ edgeSoftness: v })}
+              />
+            )}
+          </div>
+
+          {/* Auto-degrade */}
+          <div className="rounded-xl border border-border/60 bg-secondary/30 p-2.5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black tracking-widest uppercase">
+                  Auto-Degrade
+                </p>
+                <p className="text-[9px] text-muted-foreground/70 leading-snug">
+                  Drops layers + softens filters when FPS &lt; 35 for 1.5s.
+                </p>
+              </div>
+              <Switch
+                checked={settings.autoDegrade}
+                onCheckedChange={(v) => update({ autoDegrade: v })}
+              />
             </div>
           </div>
 

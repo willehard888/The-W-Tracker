@@ -314,6 +314,73 @@ const CompactStreakPanel = ({
         </>
       )}
 
+      {/* === NEXT-LEVEL cinematic background layer ============================== */}
+      {isHot && (
+        <>
+          {/* God-ray light cone rising from the bonfire */}
+          <span
+            aria-hidden
+            className="absolute top-0 pointer-events-none"
+            style={{
+              left: "25%",
+              width: 110,
+              height: "85%",
+              transform: "translateX(-50%)",
+              background: `radial-gradient(ellipse 50% 100% at 50% 100%, ${accent.replace(")", " / 0.32)")} 0%, ${accent.replace(")", " / 0.10)")} 40%, transparent 75%)`,
+              filter: "blur(8px)",
+              animation: "streak-light-cone 4s ease-in-out infinite",
+              mixBlendMode: "screen",
+              zIndex: 1,
+            }}
+          />
+
+          {/* Heat haze band — vertical ripple just above flame */}
+          <span
+            aria-hidden
+            className="absolute left-0 right-0 pointer-events-none"
+            style={{
+              top: "20%",
+              height: "55%",
+              background: `repeating-linear-gradient(0deg, transparent 0px, ${accent.replace(")", " / 0.04)")} 6px, transparent 14px)`,
+              filter: "blur(1.5px)",
+              animation: "streak-heat-haze 3.5s ease-in-out infinite",
+              mixBlendMode: "screen",
+              zIndex: 1,
+            }}
+          />
+
+          {/* Panel-wide drifting embers — float up and across the entire card */}
+          {Array.from({ length: isLegendary ? 14 : isDiamond ? 11 : isBlazing ? 9 : 7 }).map((_, i) => {
+            const left = 8 + ((i * 13) % 84);
+            const size = 1.5 + (i % 3) * 0.6;
+            const duration = 4 + (i % 5) * 0.7;
+            const delay = (i / 8) * 4;
+            const xDrift = ((i % 2 === 0 ? -1 : 1) * (8 + (i * 4) % 22));
+            return (
+              <span
+                key={`cinema-ember-${i}`}
+                aria-hidden
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  width: size,
+                  height: size,
+                  left: `${left}%`,
+                  bottom: 8,
+                  background: emberColor,
+                  boxShadow: `0 0 ${size * 4}px ${emberColor}, 0 0 ${size * 8}px ${accent.replace(")", " / 0.5)")}`,
+                  opacity: 0,
+                  // @ts-expect-error CSS custom prop
+                  "--ce-x": `${xDrift}px`,
+                  animation: `streak-cinema-ember ${duration}s ease-out infinite`,
+                  animationDelay: `${delay}s`,
+                  zIndex: 2,
+                }}
+              />
+            );
+          })}
+        </>
+      )}
+
       {/* Top: label + tier badge */}
       <div className="relative flex items-center justify-between z-10">
         <div className="flex items-center gap-2">

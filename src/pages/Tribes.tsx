@@ -445,15 +445,22 @@ const Tribes = () => {
                 </div>
                 <div className="flex items-start gap-4 relative">
                   <div className="relative h-20 w-20 rounded-2xl bg-gradient-to-br from-[hsl(18_95%_58%)]/35 via-gold/20 to-[hsl(18_95%_58%)]/25 border border-[hsl(18_95%_58%)]/55 flex items-center justify-center shrink-0 shadow-[0_0_28px_hsl(18_95%_58%/0.55)] overflow-hidden">
+                    {featured.cover_url && (
+                      <img
+                        src={featured.cover_url}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover opacity-70"
+                      />
+                    )}
                     {(collectiveStreaks.get(featured.id) ?? 0) >= 30 ? (
                       <RealisticFlame
                         tier={collectiveStreakTier(collectiveStreaks.get(featured.id) ?? 0)}
                         accent={collectiveAccent(collectiveStreaks.get(featured.id) ?? 0)}
                         size={64}
                       />
-                    ) : (
+                    ) : !featured.cover_url ? (
                       <Crown size={32} className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_10px_hsl(18_95%_58%/0.9)]" strokeWidth={2.4} />
-                    )}
+                    ) : null}
                     <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border-2 border-background flex items-center justify-center shadow-[0_0_8px_hsl(18_95%_58%/0.8)] animate-pulse">
                       <Zap size={10} className="text-background" strokeWidth={3} fill="currentColor" />
                     </div>
@@ -551,10 +558,17 @@ const Tribes = () => {
                     boxShadow: cTier >= 0 ? `0 0 14px ${cAccent.replace(")", " / 0.4)")}` : undefined,
                   }}
                 >
+                  {t.cover_url && (
+                    <img
+                      src={t.cover_url}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover opacity-75"
+                    />
+                  )}
                   {cTier >= 0 ? (
                     <div
                       key={rowPulse.get(t.id) ?? 0}
-                      className="w-full h-full flex items-center justify-center"
+                      className="relative w-full h-full flex items-center justify-center"
                       style={
                         (rowPulse.get(t.id) ?? 0) > 0
                           ? {
@@ -567,9 +581,9 @@ const Tribes = () => {
                     >
                       <RealisticFlame tier={cTier} accent={cAccent} size={Math.min(56, 36 + cTier * 6)} />
                     </div>
-                  ) : (
+                  ) : !t.cover_url ? (
                     <span className="text-2xl opacity-50 leading-none">🕯️</span>
-                  )}
+                  ) : null}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-display font-black text-base truncate leading-tight">{t.name}</p>

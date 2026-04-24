@@ -778,7 +778,7 @@ const CompactStreakPanel = ({
                 offsetX: -Math.round(master * 0.2),
                 offsetY: -Math.round(master * 0.08),
                 z: 3,
-                opacity: 1,
+                opacity: 0.85,
                 rotate: -8,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-2",

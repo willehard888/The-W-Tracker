@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Zap, ArrowRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import RealisticFlame from "@/components/home/RealisticFlame";
 
 export type ApexBillingPlan = "monthly" | "yearly";
 

@@ -45,10 +45,14 @@ interface RevenueCatContextType {
   rcReady: boolean;
   monthlyPriceLabel: string | null;
   apexPriceLabel: string | null;
+  eliteYearlyPriceLabel: string | null;
+  apexYearlyPriceLabel: string | null;
   packages: any[];
   purchase: (pkg: any) => Promise<void>;
   purchaseProduct: (productId: string) => Promise<void>;
   purchaseApex: () => Promise<void>;
+  purchaseElitePlan: (plan: "monthly" | "yearly") => Promise<void>;
+  purchaseApexPlan: (plan: "monthly" | "yearly") => Promise<void>;
   restorePurchases: () => Promise<void>;
 }
 

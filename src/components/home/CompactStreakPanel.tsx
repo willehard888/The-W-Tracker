@@ -266,6 +266,135 @@ const CompactStreakPanel = ({
     >
       {/* Floor warm glow removed for crisp look */}
 
+      {/* ═══ THE SCREEN IS BURNING — cinematic fire FX layer ═══ */}
+      {isHot && (
+        <>
+          {/* Top burning edge — looks like the panel rim is on fire */}
+          <span
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-3 pointer-events-none rounded-t-2xl"
+            style={{
+              background:
+                "linear-gradient(180deg, hsl(48 100% 75% / 0.95) 0%, hsl(28 95% 55% / 0.7) 35%, hsl(14 90% 45% / 0.4) 70%, transparent 100%)",
+              filter: "blur(2px)",
+              mixBlendMode: "screen",
+              animation: "burn-edge-flicker 1.4s ease-in-out infinite",
+              zIndex: 30,
+            }}
+          />
+          {/* Ambient flame light cast on the panel — orange wash */}
+          <span
+            aria-hidden
+            className="absolute inset-0 pointer-events-none rounded-2xl"
+            style={{
+              background: `radial-gradient(ellipse 70% 55% at 30% 70%, ${accent.replace(")", " / 0.18)")} 0%, transparent 65%)`,
+              mixBlendMode: "screen",
+              animation: "burn-ambient-pulse 2.4s ease-in-out infinite",
+              zIndex: 1,
+            }}
+          />
+          {/* Heat haze on bottom half — distorts the air */}
+          <span
+            aria-hidden
+            className="absolute inset-x-0 bottom-0 h-2/3 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(0deg, hsl(22 95% 55% / 0.06) 0%, transparent 60%)",
+              mixBlendMode: "screen",
+              animation: "burn-heat-haze 1.8s ease-in-out infinite",
+              zIndex: 2,
+            }}
+          />
+          {/* Sparks shooting up from the chamber and out into the panel */}
+          {Array.from({ length: isBlazing ? 14 : 9 }).map((_, i) => {
+            const left = 22 + ((i * 23) % 56);
+            const dur = 1.6 + (i % 5) * 0.35;
+            const delay = (i * 0.27) % 3;
+            const drift = ((i % 2 === 0 ? 1 : -1) * (3 + (i * 4) % 16));
+            const size = 1.5 + (i % 3) * 0.6;
+            return (
+              <span
+                key={`sp-${i}`}
+                aria-hidden
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  left: `${left}%`,
+                  bottom: 60,
+                  width: size,
+                  height: size,
+                  background: i % 4 === 0 ? "hsl(48 100% 88%)" : accent,
+                  boxShadow: `0 0 ${size * 4}px ${accent}, 0 0 ${size * 9}px ${accent.replace(")", " / 0.55)")}`,
+                  // @ts-expect-error css var
+                  "--spark-x": `${drift}px`,
+                  animation: `burn-spark-rise ${dur}s ease-out infinite`,
+                  animationDelay: `${delay}s`,
+                  mixBlendMode: "screen",
+                  zIndex: 25,
+                }}
+              />
+            );
+          })}
+          {/* Smoke plume rising from the chamber top */}
+          <span
+            aria-hidden
+            className="absolute pointer-events-none rounded-full"
+            style={{
+              left: "27%",
+              top: 8,
+              width: 80,
+              height: 60,
+              background:
+                "radial-gradient(ellipse at center, hsl(0 0% 70% / 0.45) 0%, hsl(0 0% 50% / 0.25) 45%, transparent 75%)",
+              animation: "burn-smoke-drift 4.5s ease-out infinite",
+              zIndex: 28,
+            }}
+          />
+          <span
+            aria-hidden
+            className="absolute pointer-events-none rounded-full"
+            style={{
+              left: "27%",
+              top: 8,
+              width: 60,
+              height: 50,
+              background:
+                "radial-gradient(ellipse at center, hsl(0 0% 75% / 0.35) 0%, transparent 75%)",
+              animation: "burn-smoke-drift 5.2s ease-out 1.8s infinite",
+              zIndex: 28,
+            }}
+          />
+          {/* Falling embers — outside the chamber, rain down past the right side */}
+          {isBlazing && Array.from({ length: 6 }).map((_, i) => {
+            const right = 6 + (i * 11) % 30;
+            const top = 20 + (i * 17) % 40;
+            const dur = 2.4 + (i % 3) * 0.6;
+            const delay = (i * 0.7) % 4;
+            const size = 1.5 + (i % 2);
+            return (
+              <span
+                key={`em-${i}`}
+                aria-hidden
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  right: `${right}%`,
+                  top: `${top}%`,
+                  width: size,
+                  height: size,
+                  background: accent,
+                  boxShadow: `0 0 ${size * 3}px ${accent}`,
+                  // @ts-expect-error css var
+                  "--ember-x": `${(i % 2 === 0 ? -1 : 1) * 8}px`,
+                  animation: `burn-ember-fall ${dur}s ease-in infinite`,
+                  animationDelay: `${delay}s`,
+                  mixBlendMode: "screen",
+                  zIndex: 24,
+                }}
+              />
+            );
+          })}
+        </>
+      )}
+
       {/* Aurora sweep (Legendary only — premium tier flex) */}
       {isLegendary && (
         <div

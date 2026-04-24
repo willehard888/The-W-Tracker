@@ -658,40 +658,43 @@ const CompactStreakPanel = ({
             const dropShadow = (acc: string, mul: number) =>
               `drop-shadow(0 -4px ${(8 + displayStreak * 0.3) * mul}px ${acc.replace(")", " / 0.85)")}) drop-shadow(0 -12px ${(20 + displayStreak * 0.5) * mul}px ${acc.replace(")", " / 0.45)")})`;
 
-            // ONE UNIFIED BONFIRE — three tightly-stacked cores at the exact same point.
-            // Inner = brightest, Outer = wide blurred halo. NO horizontal offsets — pure vertical depth.
+            // ONE UNIFIED BONFIRE — layers share the same core anchor and only
+            // interleave by a few pixels. Side bloom is clipped so they read as
+            // one fire mass instead of separate candles.
             const layers = [
-              // Wide blurred outer halo — the "hot air mass" that makes the bonfire feel huge
               {
-                size: Math.round(master * 1.15),
-                accent: "hsl(14 90% 46%)",
+                size: Math.round(master * 0.8),
+                accent: "hsl(16 92% 50%)",
                 tier: Math.max(cappedTier - 1, 2),
-                offsetY: 4,
+                offsetX: -4,
+                offsetY: 6,
                 z: 1,
-                opacity: 0.42,
-                scaleX: 1.05,
-                scaleY: 0.92,
-                blur: 5,
-                shadowMul: 0.5,
+                opacity: 0.44,
+                scaleX: 1.06,
+                scaleY: 0.94,
+                blur: 3.2,
+                shadowMul: 0.48,
+                clipInset: "inset(0 16% 0 16%)",
               },
-              // Mid body — full warm orange tongue
               {
-                size: Math.round(master * 0.92),
+                size: Math.round(master * 0.9),
                 accent: "hsl(20 96% 54%)",
                 tier: cappedTier,
-                offsetY: 2,
+                offsetX: 3,
+                offsetY: 3,
                 z: 3,
-                opacity: 0.85,
-                scaleX: 0.98,
-                scaleY: 1.0,
-                blur: 1.2,
-                shadowMul: 0.78,
+                opacity: 0.78,
+                scaleX: 1.02,
+                scaleY: 0.98,
+                blur: 1.1,
+                shadowMul: 0.76,
+                clipInset: "inset(0 12% 0 12%)",
               },
-              // CENTER core — the brightest, hottest, most defined flame
               {
                 size: master,
                 accent: "hsl(24 100% 58%)",
                 tier: cappedTier,
+                offsetX: 0,
                 offsetY: 0,
                 z: 5,
                 opacity: 1,
@@ -699,15 +702,19 @@ const CompactStreakPanel = ({
                 scaleY: 1,
                 blur: 0,
                 shadowMul: 1,
+                clipInset: "inset(0 8% 0 8%)",
               },
             ];
+
+            const bowlWidth = Math.round(master * 1.04);
+            const bowlHeight = Math.round(master * 1.42);
 
             return (
               <div
                 className="absolute left-1/2 bottom-[2px] z-[20] pointer-events-none"
                 style={{
-                  width: Math.round(master * 1.3),
-                  height: Math.round(master * 1.55),
+                  width: bowlWidth,
+                  height: bowlHeight,
                   transform: "translateX(-50%)",
                   overflow: "visible",
                 }}
@@ -715,25 +722,37 @@ const CompactStreakPanel = ({
                 {layers.map((L, i) => (
                   <span
                     key={i}
-                    className="flame-bowl absolute left-1/2 bottom-0"
+                    className="absolute left-1/2 bottom-0 flex items-end justify-center"
                     style={{
-                      width: L.size,
-                      height: Math.round(L.size * 1.25),
-                      marginLeft: -L.size / 2,
-                      transform: `translateY(${L.offsetY}px) scale(${L.scaleX}, ${L.scaleY})`,
+                      width: bowlWidth,
+                      height: bowlHeight,
+                      marginLeft: -bowlWidth / 2,
+                      transform: `translateX(${L.offsetX}px) translateY(${L.offsetY}px)`,
                       transformOrigin: "center bottom",
-                      filter: `${dropShadow(L.accent, L.shadowMul)}${L.blur ? ` blur(${L.blur}px)` : ""}`,
                       opacity: L.opacity,
                       zIndex: L.z,
                       mixBlendMode: i < 2 ? "lighten" : "normal",
                     }}
                   >
-                    <RealisticFlame
-                      tier={L.tier}
-                      accent={L.accent}
-                      size={L.size}
-                      interactive={false}
-                    />
+                    <span
+                      className="flex items-end justify-center"
+                      style={{
+                        width: L.size,
+                        height: Math.round(L.size * 1.25),
+                        transform: `scale(${L.scaleX}, ${L.scaleY})`,
+                        transformOrigin: "center bottom",
+                        filter: `${dropShadow(L.accent, L.shadowMul)}${L.blur ? ` blur(${L.blur}px)` : ""}`,
+                        clipPath: L.clipInset,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <RealisticFlame
+                        tier={L.tier}
+                        accent={L.accent}
+                        size={L.size}
+                        interactive={false}
+                      />
+                    </span>
                   </span>
                 ))}
               </div>

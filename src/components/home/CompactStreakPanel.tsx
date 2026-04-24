@@ -702,7 +702,7 @@ const CompactStreakPanel = ({
             ];
 
             const bowlWidth = Math.round(master * 1.55);
-            const bowlHeight = Math.round(master * 1.65);
+            const bowlHeight = Math.round(master * 2);
 
             return (
               <div

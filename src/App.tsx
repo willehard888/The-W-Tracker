@@ -66,6 +66,19 @@ const queryClient = new QueryClient({
   },
 });
 
+// Heavy ambient particle field — skip it on routes that already have rich
+// per-screen visual effects (paywall, tribes, battles, briefings) so iOS
+// Safari doesn't fight two GPU canvases at once.
+const HEAVY_VISUAL_ROUTES = [
+  "/paywall", "/tribes", "/battles", "/briefing", "/feed", "/coach",
+];
+const AmbientParticlesGate = () => {
+  const { pathname } = useLocation();
+  const skip = HEAVY_VISUAL_ROUTES.some((r) => pathname.startsWith(r));
+  if (skip) return null;
+  return <AmbientParticles />;
+};
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   if (loading) return <RouteFallback />;
@@ -188,7 +201,7 @@ const App = () => {
             <AuthProvider>
               <RevenueCatProvider>
                 <WindProvider>
-                  {splashDone && <AmbientParticles />}
+                  {splashDone && <AmbientParticlesGate />}
                   <AppRoutes />
                 </WindProvider>
               </RevenueCatProvider>

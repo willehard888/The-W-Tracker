@@ -33,19 +33,22 @@ const AmbientParticles = () => {
     const mem = (navigator as any).deviceMemory || 4;
     if (window.innerWidth < 360 || mem <= 1) return;
 
+    // Mobile/touch devices get a much lighter field — Safari iOS canvas fill is expensive.
+    const isMobile = window.matchMedia?.("(pointer: coarse)").matches || window.innerWidth < 768;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 1);
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 0.85 : 1);
     let w = 0;
     let h = 0;
 
     const computeCount = () => {
       const area = window.innerWidth * window.innerHeight;
       // Lighter field — keeps the cinematic glow while halving fill cost.
-      const base = Math.min(28, Math.max(12, Math.round(area / 36000)));
+      const base = Math.min(isMobile ? 16 : 28, Math.max(8, Math.round(area / (isMobile ? 60000 : 36000))));
       return mem <= 2 ? Math.round(base * 0.55) : base;
     };
 
@@ -79,8 +82,8 @@ const AmbientParticles = () => {
     };
     document.addEventListener("visibilitychange", onVisibility);
 
-    // Throttle to ~30 fps — visually identical for ambient drift, halves the GPU cost.
-    const FRAME_MS = 1000 / 30;
+    // Throttle frame rate — 24fps on mobile, 30fps elsewhere. Visually identical for ambient drift.
+    const FRAME_MS = 1000 / (isMobile ? 24 : 30);
     let last = 0;
     const animate = (now: number) => {
       if (!running.current) return;

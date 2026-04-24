@@ -573,14 +573,23 @@ const CompactStreakPanel = ({
             </>
           )}
 
-          {/* Flame — rises from behind the logs, on top of the ember bed */}
+          {/* Flame — rises from behind the logs and shoots up beyond the chamber rim */}
           <span
-            className={cn("absolute inset-x-0 bottom-[6px] z-[6] flex items-end justify-center pointer-events-none flame-bowl")}
+            className={cn(
+              "absolute left-1/2 -translate-x-1/2 bottom-[6px] z-[6] flex items-end justify-center pointer-events-none flame-bowl",
+            )}
+            style={{
+              width: 90,
+              height: 110,
+              filter: isHot
+                ? `drop-shadow(0 -4px 18px ${accent.replace(")", " / 0.7)")}) drop-shadow(0 -10px 32px ${accent.replace(")", " / 0.45)")})`
+                : undefined,
+            }}
           >
             <RealisticFlame
               tier={tier.index}
               accent={accent}
-              size={60}
+              size={90}
             />
           </span>
           {/* Ground glow — outside the chamber, sells radiated heat */}

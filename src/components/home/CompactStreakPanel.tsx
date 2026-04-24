@@ -750,6 +750,10 @@ const CompactStreakPanel = ({
                         "--rr": `${L.rotate}deg`,
                         "--sx": "1",
                         "--sy": "1",
+                        // Per-layer wind responsiveness — back tongues + tip
+                        // whip dramatically; halo + core stay steady.
+                        "--wind-weight": `${L.windWeight}px`,
+                        "--wind-weight-rot": `${L.windWeightRot}deg`,
                       } as React.CSSProperties),
                       transform: `translateX(${L.offsetX}px) translateY(${L.offsetY}px) rotate(${L.rotate}deg)`,
                       transformOrigin: "center bottom",

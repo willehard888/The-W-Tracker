@@ -30,6 +30,8 @@ const UserProfile = () => {
   const [battleType, setBattleType] = useState("xp");
   const [duration, setDuration] = useState(7);
   const [creating, setCreating] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [lightboxPost, setLightboxPost] = useState<any>(null);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["user-profile", userId],

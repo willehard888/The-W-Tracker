@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import BrandLogo from "@/components/BrandLogo";
 import PaywallTierCard from "@/components/PaywallTierCard";
+import IosEntryHero from "@/components/paywall/IosEntryHero";
+import IosApexSecondary from "@/components/paywall/IosApexSecondary";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
 const ELITE_PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"];
@@ -225,20 +227,58 @@ const Paywall = () => {
         </div>
       )}
 
-      {/* Hero */}
-      <div className="text-center mb-6 mt-4 animate-reveal">
-        <BrandLogo size={72} priority className="mx-auto rounded-2xl glow-gold mb-3" />
-        <h1 className="font-display text-2xl font-black tracking-tight mb-1">
-          Choose your <span className="text-gold glow-gold-text">level</span>
-        </h1>
-        <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-          Start with Member or skip the grind with Apex Instant. Cancel anytime.
-        </p>
-      </div>
+      {/* Hero — softer header on native (the IosEntryHero is the real hero) */}
+      {isNative ? (
+        <div className="text-center mb-4 mt-2 animate-reveal">
+          <BrandLogo size={56} priority className="mx-auto rounded-2xl glow-gold" />
+        </div>
+      ) : (
+        <div className="text-center mb-6 mt-4 animate-reveal">
+          <BrandLogo size={72} priority className="mx-auto rounded-2xl glow-gold mb-3" />
+          <h1 className="font-display text-2xl font-black tracking-tight mb-1">
+            Choose your <span className="text-gold glow-gold-text">level</span>
+          </h1>
+          <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+            Start with Member or skip the grind with Apex Instant. Cancel anytime.
+          </p>
+        </div>
+      )}
 
       {isNative && rcLoading ? (
         <div className="flex items-center justify-center py-8">
           <Loader2 size={24} className="animate-spin text-gold" />
+        </div>
+      ) : isNative ? (
+        // ─── iOS hard entry: dominant Member hero + small Apex secondary ───
+        <div className="space-y-3 animate-reveal animate-reveal-delay-1">
+          <IosEntryHero
+            priceLabel={elitePrice}
+            loading={purchasingTier === "elite"}
+            onCta={handleNativeElite}
+            footnote={`Free for 7 days · then ${elitePrice}/mo · Cancel anytime`}
+          />
+
+          {/* Subtle divider */}
+          <div className="flex items-center gap-3 px-2 pt-1">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+            <span className="text-[9px] font-black tracking-[0.25em] uppercase text-muted-foreground/60">
+              Or
+            </span>
+            <div className="flex-1 h-px bg-gradient-to-l from-transparent via-border to-transparent" />
+          </div>
+
+          <IosApexSecondary
+            priceLabel={apexPrice}
+            loading={purchasingTier === "apex"}
+            onClick={handleNativeApex}
+          />
+
+          <p className="text-center text-[10.5px] text-muted-foreground/80 leading-relaxed pt-2 px-2">
+            <span className="text-gold font-semibold">Earned Apex</span> (top 1%
+            by rank, activity & streak) stays possible at{" "}
+            <span className="text-gold font-semibold">{elitePrice}/mo</span> —
+            the grind respects those who do it.
+          </p>
         </div>
       ) : (
         <div className="space-y-4 animate-reveal animate-reveal-delay-1">
@@ -253,7 +293,7 @@ const Paywall = () => {
             ctaIcon={<ShieldCheck size={18} />}
             features={MEMBER_FEATURES}
             loading={purchasingTier === "elite"}
-            onCta={isNative ? handleNativeElite : () => handleStripeCheckout("elite")}
+            onCta={() => handleStripeCheckout("elite")}
             footnote={`Free for 7 days, then ${elitePrice}/mo.`}
           />
 
@@ -269,7 +309,7 @@ const Paywall = () => {
             features={APEX_FEATURES}
             highlighted
             loading={purchasingTier === "apex"}
-            onCta={isNative ? handleNativeApex : () => handleStripeCheckout("apex")}
+            onCta={() => handleStripeCheckout("apex")}
             footnote="No trial. Charged immediately. Cancel anytime."
           />
 

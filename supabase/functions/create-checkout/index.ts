@@ -8,15 +8,14 @@ const corsHeaders = {
 };
 
 // Tier × Plan → Stripe price ID map
-// Replace yearly placeholders with real Stripe price IDs in Stripe Dashboard.
 const PRICE_IDS = {
   elite: {
     monthly: "price_1TOyJsBm4ZLIG9fvj0SVO7T5",        // 4.99€/mo Member (entry paywall)
-    yearly:  "price_elite_yearly_placeholder",        // 49.99€/yr Member yearly
+    yearly:  "price_1TPdy3Bm4ZLIG9fv3ycnctke",        // 49.99€/yr Member yearly
   },
   apex: {
     monthly: "price_1TOvvEBm4ZLIG9fvG3mE1Whe",        // 17.99€/mo Apex Instant
-    yearly:  "price_apex_yearly_placeholder",         // 172.99€/yr Apex yearly
+    yearly:  "price_1TPdyPBm4ZLIG9fv1hGRAQ7X",        // 172.99€/yr Apex Instant yearly
   },
 } as const;
 

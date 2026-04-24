@@ -554,14 +554,14 @@ const CompactStreakPanel = ({
           {(() => {
             const cappedTier = Math.min(Math.max(tier.index, 2), 4);
 
-            // Live streak → master size (true reactivity)
-            // 0d: 80px, 7d: 110, 30d: 145, 100d+: 180
+            // Live streak → master size (fits inside h-44 w-32 chamber)
+            // 0d: 64px, 7d: 86, 30d: 110, 100d+: 132
             const master = Math.round(
-              80 + Math.min(100, Math.pow(Math.min(displayStreak, 120), 0.6) * 9.5),
+              64 + Math.min(70, Math.pow(Math.min(displayStreak, 120), 0.6) * 6.7),
             );
 
             const dropShadow = (acc: string, mul: number) =>
-              `drop-shadow(0 -3px ${(6 + displayStreak * 0.25) * mul}px ${acc.replace(")", " / 0.7)")}) drop-shadow(0 -10px ${(16 + displayStreak * 0.4) * mul}px ${acc.replace(")", " / 0.35)")})`;
+              `drop-shadow(0 -2px ${(4 + displayStreak * 0.18) * mul}px ${acc.replace(")", " / 0.65)")}) drop-shadow(0 -7px ${(11 + displayStreak * 0.28) * mul}px ${acc.replace(")", " / 0.3)")})`;
 
             // 8 layers — each with its OWN rhythm, duration, easing, and
             // animation delay so the bonfire never feels mechanical.

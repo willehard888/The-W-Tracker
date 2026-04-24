@@ -52,7 +52,7 @@ const estimateYearlyFromMonthly = (monthly: string, discountPct = 20): string =>
 const Paywall = () => {
   const { isElite, isApexSubscriber, checkSubscription, profile } = useAuth();
   const {
-    packages, purchase, purchaseProduct, purchaseElitePlan, purchaseApexPlan, restorePurchases,
+    purchaseElitePlan, purchaseApexPlan, restorePurchases,
     rcLoading, rcReady, monthlyPriceLabel, apexPriceLabel,
     eliteYearlyPriceLabel, apexYearlyPriceLabel,
   } = useRevenueCat();

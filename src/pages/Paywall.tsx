@@ -78,16 +78,16 @@ const Paywall = () => {
       void checkSubscription();
     };
 
-    window.addEventListener("focus", syncMembership);
-    document.addEventListener("visibilitychange", () => {
+    const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") syncMembership();
-    });
+    };
+
+    window.addEventListener("focus", syncMembership);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener("focus", syncMembership);
-      document.removeEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible") syncMembership();
-      });
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [checkSubscription, isNative]);
 

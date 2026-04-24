@@ -4,8 +4,11 @@ import { cn } from "@/lib/utils";
 import { getEffectiveStreak, getStreakDeadlineState } from "@/lib/streak";
 import {
   applyFlameOpacity,
+  flameEdgeMaskImage,
+  flameShadowMultiplier,
+  flameSharpenFilter,
   selectKeptLayerIndices,
-  useFlameDevSettings,
+  useEffectiveFlameSettings,
 } from "@/lib/flame-dev-settings";
 import RealisticFlame from "./RealisticFlame";
 

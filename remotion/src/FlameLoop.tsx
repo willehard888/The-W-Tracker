@@ -88,31 +88,30 @@ export const FlameLoop: React.FC = () => {
         }}
       />
 
-      {/* Heat-haze SVG displacement layer */}
+      {/* Heat-haze SVG displacement layer — soft-edged radial */}
       <svg
         width={width}
         height={height}
-        style={{ position: "absolute", inset: 0, mixBlendMode: "screen", opacity: 0.7 }}
+        style={{ position: "absolute", inset: 0, mixBlendMode: "screen", opacity: 0.55 }}
       >
         <defs>
-          <filter id="heat" x="-20%" y="-20%" width="140%" height="140%">
+          <radialGradient id="hazeMask" cx="50%" cy="65%" r="42%">
+            <stop offset="0%" stopColor="rgba(255, 140, 60, 0.55)" />
+            <stop offset="55%" stopColor="rgba(255, 100, 40, 0.18)" />
+            <stop offset="100%" stopColor="rgba(255, 80, 20, 0)" />
+          </radialGradient>
+          <filter id="heat" x="-30%" y="-30%" width="160%" height="160%">
             <feTurbulence
               type="fractalNoise"
               baseFrequency={`${0.012 + Math.sin(phase) * 0.004} ${0.028 + Math.cos(phase) * 0.005}`}
               numOctaves={2}
               seed={3}
             />
-            <feDisplacementMap in="SourceGraphic" scale={16} />
+            <feDisplacementMap in="SourceGraphic" scale={14} />
+            <feGaussianBlur stdDeviation={2} />
           </filter>
         </defs>
-        <ellipse
-          cx={width / 2}
-          cy={height * 0.65}
-          rx={width * 0.32}
-          ry={height * 0.42}
-          fill="rgba(255, 130, 50, 0.35)"
-          filter="url(#heat)"
-        />
+        <rect width={width} height={height} fill="url(#hazeMask)" filter="url(#heat)" />
       </svg>
 
       {/* Volumetric ground halo */}

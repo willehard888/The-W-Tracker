@@ -333,7 +333,7 @@ const CompactStreakPanel = ({
             boxShadow: isHot
               ? `inset 0 2px 0 hsl(0 0% 100% / 0.08), inset 0 -10px 22px hsl(0 0% 0% / 0.7), inset 0 0 26px hsl(0 0% 0% / 0.55)`
               : undefined,
-            overflow: "hidden",
+            overflow: "visible",
           }}
         >
           {/* Stone-textured chamber walls — subtle hatching */}

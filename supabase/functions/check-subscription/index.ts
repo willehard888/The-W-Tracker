@@ -1,6 +1,5 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import Stripe from "npm:stripe@18.5.0";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,7 +19,7 @@ const PRICE_IDS = {
   ]),
 } as const;
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -74,13 +73,14 @@ serve(async (req) => {
 
     // Wrap any promise with an overall deadline so the edge function
     // can't sit at the 150s idle timeout when Stripe is slow / unreachable.
-    const withDeadline = <T,>(p: Promise<T>, ms: number, label: string): Promise<T> =>
-      Promise.race([
+    function withDeadline<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+      return Promise.race([
         p,
         new Promise<T>((_, reject) =>
           setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms),
         ),
       ]);
+    }
 
     const customers = await withDeadline(
       stripe.customers.list({ email: userEmail, limit: 1 }),

@@ -452,9 +452,9 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
               />
             )}
 
-            {/* === The flame itself — multi-layer cinematic === */}
-            <div className="relative z-10 flex items-end justify-center h-full w-full pb-1">
-              <RealisticFlame tier={tier.index} accent={accent} size={56} />
+            {/* === The flame itself — rises from behind the logs, on top of the ember bed === */}
+            <div className="absolute inset-x-0 bottom-[6px] z-[6] flex items-end justify-center pointer-events-none">
+              <RealisticFlame tier={tier.index} accent={accent} size={54} />
             </div>
 
             {/* Top-edge highlight — chrome rim */}

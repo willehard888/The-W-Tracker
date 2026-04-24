@@ -251,6 +251,8 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       setPackages([]);
       setMonthlyPriceLabel(null);
       setApexPriceLabel(null);
+      setEliteYearlyPriceLabel(null);
+      setApexYearlyPriceLabel(null);
       setRcLoading(false);
       setRcReady(false);
       updateRevenueCatDebug({ appUserId: null, entitlement: null });

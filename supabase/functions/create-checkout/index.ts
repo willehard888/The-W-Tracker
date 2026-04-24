@@ -12,11 +12,11 @@ const corsHeaders = {
 const PRICE_IDS = {
   elite: {
     monthly: "price_1TOyJsBm4ZLIG9fvj0SVO7T5",        // 4.99€/mo Member (entry paywall)
-    yearly:  "price_elite_yearly_placeholder",        // ~47.88€/yr (-20%)
+    yearly:  "price_elite_yearly_placeholder",        // 49.99€/yr Member yearly
   },
   apex: {
     monthly: "price_1TOvvEBm4ZLIG9fvG3mE1Whe",        // 17.99€/mo Apex Instant
-    yearly:  "price_apex_yearly_placeholder",         // ~172.70€/yr (-20%)
+    yearly:  "price_apex_yearly_placeholder",         // 172.99€/yr Apex yearly
   },
 } as const;
 

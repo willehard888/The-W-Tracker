@@ -331,7 +331,7 @@ const CompactStreakPanel = ({
               : "transparent",
             color: isHot ? "white" : "hsl(var(--muted-foreground))",
             boxShadow: isHot
-              ? `0 0 38px hsl(22 98% 55% / 0.5), 0 0 80px hsl(18 95% 50% / 0.22), inset 0 2px 0 hsl(0 0% 100% / 0.10), inset 0 -10px 22px hsl(0 0% 0% / 0.7), inset 0 0 26px hsl(0 0% 0% / 0.55)`
+              ? `inset 0 2px 0 hsl(0 0% 100% / 0.08), inset 0 -10px 22px hsl(0 0% 0% / 0.7), inset 0 0 26px hsl(0 0% 0% / 0.55)`
               : undefined,
             overflow: "hidden",
           }}

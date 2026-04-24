@@ -517,6 +517,73 @@ const UserProfile = () => {
           />
         )}
 
+        {/* Elite Feed media — IG-style 3-col grid, edge-to-edge */}
+        {mediaPosts && mediaPosts.length > 0 && (
+          <div className="mb-6 -mx-4 mt-2">
+            <div className="flex items-center justify-center border-t border-border">
+              <div className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-t-2 border-foreground -mt-px">
+                <Camera size={12} className="text-foreground" />
+                <span className="text-[10px] font-black tracking-[0.22em] uppercase text-foreground">
+                  Posts · {mediaPosts.length}
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-[2px]">
+              {mediaPosts.map((p: any, i) => {
+                const isVideo = !!p.video_url;
+                const src = p.image_url || p.video_url;
+                return (
+                  <motion.button
+                    type="button"
+                    key={p.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.05 + i * 0.02 }}
+                    onClick={() => {
+                      if (isVideo) return;
+                      setLightboxUrl(src);
+                      setLightboxPost(p);
+                    }}
+                    className="group relative aspect-square overflow-hidden bg-secondary"
+                  >
+                    {isVideo ? (
+                      <>
+                        <video
+                          src={src}
+                          muted
+                          playsInline
+                          preload="metadata"
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                        <span className="absolute top-1.5 right-1.5">
+                          <Play size={14} className="text-foreground drop-shadow-lg" fill="currentColor" />
+                        </span>
+                      </>
+                    ) : (
+                      <img
+                        src={src}
+                        alt={`@${profile.username} post`}
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/45 transition-colors flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                      <span className="flex items-center gap-1 text-[12px] font-black text-foreground">
+                        <Heart size={12} fill="currentColor" />
+                        {p.likes_count ?? 0}
+                      </span>
+                      <span className="flex items-center gap-1 text-[12px] font-black text-foreground">
+                        <MessageSquare size={12} fill="currentColor" />
+                        {p.comments_count ?? 0}
+                      </span>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Head-to-head comparison (only when viewing another user) */}
         {!isOwnProfile && myProfile && (
           <HeadToHead

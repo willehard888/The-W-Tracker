@@ -591,65 +591,66 @@ const CompactStreakPanel = ({
             const dropShadow = (acc: string, mul: number) =>
               `drop-shadow(0 -4px ${(8 + displayStreak * 0.3) * mul}px ${acc.replace(")", " / 0.85)")}) drop-shadow(0 -12px ${(20 + displayStreak * 0.5) * mul}px ${acc.replace(")", " / 0.45)")})`;
 
-            // 5 layered flames — back-to-front, smallest/coolest to biggest/hottest
+            // ONE UNIFIED BONFIRE — all flames stacked at center, no horizontal spread.
+            // Layers vary only in size/blur/opacity to build volumetric depth.
             const layers = [
-              // Furthest back-left, low & wide, deep red, blurred (hot air mass)
+              // Halo — wide hot-air mass, very blurred, deep red, sits behind everything
               {
-                size: Math.round(master * 0.55),
-                accent: "hsl(14 90% 48%)",
+                size: Math.round(master * 1.05),
+                accent: "hsl(14 88% 45%)",
                 tier: Math.max(cappedTier - 2, 1),
-                offsetX: -master * 0.28,
-                offsetY: 6,
+                offsetX: 0,
+                offsetY: 8,
                 z: 1,
-                opacity: 0.6,
-                scaleX: 1.15,
-                scaleY: 0.9,
-                blur: 1.5,
-                shadowMul: 0.5,
+                opacity: 0.45,
+                scaleX: 1.1,
+                scaleY: 0.85,
+                blur: 4,
+                shadowMul: 0.4,
               },
-              // Furthest back-right, slightly taller, mirrored
+              // Outer body — tall warm orange wash, slight blur for atmosphere
               {
-                size: Math.round(master * 0.6),
+                size: Math.round(master * 0.9),
                 accent: "hsl(16 92% 50%)",
-                tier: Math.max(cappedTier - 2, 1),
-                offsetX: master * 0.26,
-                offsetY: 5,
+                tier: Math.max(cappedTier - 1, 2),
+                offsetX: 0,
+                offsetY: 4,
                 z: 2,
                 opacity: 0.7,
-                scaleX: -1.05,
-                scaleY: 0.95,
-                blur: 1.2,
-                shadowMul: 0.55,
+                scaleX: 1.02,
+                scaleY: 1.0,
+                blur: 1.6,
+                shadowMul: 0.6,
               },
-              // Mid-left flame, medium height
+              // Mid body — primary orange tongue
               {
-                size: Math.round(master * 0.72),
-                accent: "hsl(18 95% 53%)",
-                tier: Math.max(cappedTier - 1, 2),
-                offsetX: -master * 0.18,
-                offsetY: 3,
-                z: 3,
-                opacity: 0.88,
-                scaleX: 1,
-                scaleY: 1,
-                blur: 0.4,
-                shadowMul: 0.7,
-              },
-              // Mid-right flame, slightly bigger, mirrored
-              {
-                size: Math.round(master * 0.78),
+                size: Math.round(master * 0.82),
                 accent: "hsl(20 96% 54%)",
                 tier: Math.max(cappedTier - 1, 2),
-                offsetX: master * 0.16,
+                offsetX: 0,
                 offsetY: 2,
+                z: 3,
+                opacity: 0.85,
+                scaleX: 0.95,
+                scaleY: 1.05,
+                blur: 0.6,
+                shadowMul: 0.75,
+              },
+              // Inner body — bright tongue, slightly mirrored to break symmetry
+              {
+                size: Math.round(master * 0.7),
+                accent: "hsl(24 100% 58%)",
+                tier: cappedTier,
+                offsetX: 0,
+                offsetY: 1,
                 z: 4,
                 opacity: 0.92,
-                scaleX: -1,
+                scaleX: -0.92,
                 scaleY: 1.02,
-                blur: 0.3,
-                shadowMul: 0.78,
+                blur: 0.2,
+                shadowMul: 0.85,
               },
-              // CENTER hero flame — tallest, hottest, frontmost
+              // CENTER core — tallest, hottest, frontmost
               {
                 size: master,
                 accent: "hsl(22 100% 56%)",

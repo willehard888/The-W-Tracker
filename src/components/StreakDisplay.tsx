@@ -263,22 +263,16 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
 
         {/* Hero row — flame + number */}
         <div className="flex items-center gap-4 mb-5">
-          {/* Flame badge — deep furnace chamber */}
+          {/* Fireplace hearth — stone chamber with charred logs and ember bed */}
           <div
-            className="relative flex h-[72px] w-[72px] items-center justify-center rounded-2xl shrink-0 overflow-visible"
+            className="relative flex h-[72px] w-[72px] items-center justify-center rounded-2xl shrink-0 overflow-hidden"
             style={{
-              background: isLegendary
-                ? "radial-gradient(ellipse at 50% 110%, hsl(350 85% 35%) 0%, hsl(280 60% 18%) 45%, hsl(255 30% 8%) 100%)"
-                : isDiamond
-                ? "radial-gradient(ellipse at 50% 110%, hsl(42 78% 38%) 0%, hsl(200 50% 18%) 45%, hsl(220 30% 8%) 100%)"
-                : isBlazing
-                ? "radial-gradient(ellipse at 50% 110%, hsl(18 95% 38%) 0%, hsl(28 60% 18%) 50%, hsl(20 30% 6%) 100%)"
-                : isOnFire
-                ? "radial-gradient(ellipse at 50% 110%, hsl(14 90% 32%) 0%, hsl(18 50% 14%) 55%, hsl(12 30% 5%) 100%)"
-                : isWarm
-                ? "radial-gradient(ellipse at 50% 110%, hsl(14 85% 28%) 0%, hsl(16 45% 12%) 60%, hsl(10 30% 5%) 100%)"
-                : isHot
-                ? "radial-gradient(ellipse at 50% 110%, hsl(14 70% 22%) 0%, hsl(16 40% 10%) 65%, hsl(10 25% 5%) 100%)"
+              // Stone hearth: cool slate at the top fading into the warm fire pit at the bottom
+              background: isHot
+                ? `
+                  radial-gradient(ellipse 80% 55% at 50% 105%, ${accent.replace(")", " / 0.85)")} 0%, ${accent.replace(")", " / 0.35)")} 25%, transparent 55%),
+                  radial-gradient(ellipse at 50% 115%, hsl(18 85% 32%) 0%, hsl(16 45% 14%) 35%, hsl(20 22% 7%) 70%, hsl(230 18% 6%) 100%)
+                `
                 : "hsl(var(--secondary))",
               color: isHot ? "white" : "hsl(var(--muted-foreground))",
               boxShadow: isHot
@@ -286,30 +280,127 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
                 : undefined,
             }}
           >
-            {/* Inner well shadow — adds depth so the flame sits inside the chamber */}
+            {/* Stone-textured chamber walls — subtle vertical bands evoke a hearth back */}
             {isHot && (
               <span
                 aria-hidden
-                className="absolute inset-1 rounded-xl pointer-events-none"
+                className="absolute inset-0 pointer-events-none opacity-40"
                 style={{
-                  background: `radial-gradient(circle at 50% 85%, ${accent.replace(")", " / 0.55)")} 0%, transparent 60%)`,
-                  mixBlendMode: "screen",
+                  background:
+                    "repeating-linear-gradient(90deg, transparent 0px, hsl(0 0% 100% / 0.025) 6px, transparent 12px), repeating-linear-gradient(0deg, transparent 0px, hsl(0 0% 0% / 0.18) 14px, transparent 28px)",
+                  mixBlendMode: "overlay",
                 }}
               />
             )}
 
-            {/* Fuel pool — soft warm puddle right under the flame base */}
+            {/* Top vignette — chimney shadow */}
             {isHot && (
               <span
                 aria-hidden
-                className="absolute left-1/2 bottom-1 h-3 w-12 rounded-[50%] pointer-events-none"
+                className="absolute inset-x-0 top-0 h-5 pointer-events-none"
                 style={{
-                  background: `radial-gradient(ellipse at center, ${accent} 0%, ${accent.replace(")", " / 0.4)")} 50%, transparent 80%)`,
+                  background: "linear-gradient(180deg, hsl(0 0% 0% / 0.55), transparent)",
+                }}
+              />
+            )}
+
+            {/* Ember bed — glowing coal pile at the bottom of the pit */}
+            {isHot && (
+              <span
+                aria-hidden
+                className="absolute left-1/2 bottom-[3px] h-[10px] w-[58px] rounded-[50%] pointer-events-none"
+                style={{
+                  background: `radial-gradient(ellipse at center, ${accent} 0%, ${accent.replace(")", " / 0.55)")} 40%, hsl(14 80% 28% / 0.5) 70%, transparent 100%)`,
                   transform: "translateX(-50%)",
-                  filter: "blur(4px)",
+                  filter: "blur(2.5px)",
                   animation: `streak-fuel-pulse ${isLegendary ? 1.6 : isDiamond ? 1.9 : isBlazing ? 2.2 : 2.6}s ease-in-out infinite`,
                   mixBlendMode: "screen",
-                  zIndex: 1,
+                  zIndex: 2,
+                }}
+              />
+            )}
+
+            {/* Glowing coals — tiny bright pinpoints inside the ember bed */}
+            {isHot && [
+              { left: "32%", size: 2.5, delay: "0s" },
+              { left: "48%", size: 3, delay: "0.6s" },
+              { left: "62%", size: 2, delay: "1.2s" },
+              { left: "40%", size: 2, delay: "1.8s" },
+              { left: "56%", size: 2.5, delay: "0.3s" },
+            ].map((c, i) => (
+              <span
+                key={`coal-${i}`}
+                aria-hidden
+                className="absolute bottom-[3px] rounded-full pointer-events-none"
+                style={{
+                  left: c.left,
+                  width: c.size,
+                  height: c.size,
+                  background: accent,
+                  boxShadow: `0 0 ${c.size * 3}px ${accent}, 0 0 ${c.size * 6}px ${accent.replace(")", " / 0.6)")}`,
+                  animation: `streak-fuel-pulse ${1.4 + i * 0.3}s ease-in-out infinite`,
+                  animationDelay: c.delay,
+                  zIndex: 3,
+                }}
+              />
+            ))}
+
+            {/* Charred log #1 — left-leaning */}
+            {isHot && (
+              <span
+                aria-hidden
+                className="absolute pointer-events-none"
+                style={{
+                  left: "8px",
+                  bottom: "5px",
+                  width: "30px",
+                  height: "6px",
+                  borderRadius: "3px",
+                  background:
+                    "linear-gradient(180deg, hsl(20 18% 14%) 0%, hsl(18 12% 8%) 60%, hsl(0 0% 3%) 100%)",
+                  boxShadow: `inset 0 1px 0 hsl(0 0% 100% / 0.06), inset 0 -1px 0 hsl(0 0% 0% / 0.5), 0 -1px 4px ${accent.replace(")", " / 0.45)")}`,
+                  transform: "rotate(-12deg)",
+                  zIndex: 4,
+                }}
+              />
+            )}
+
+            {/* Charred log #2 — right-leaning, crossing over log #1 */}
+            {isHot && (
+              <span
+                aria-hidden
+                className="absolute pointer-events-none"
+                style={{
+                  right: "6px",
+                  bottom: "4px",
+                  width: "32px",
+                  height: "6px",
+                  borderRadius: "3px",
+                  background:
+                    "linear-gradient(180deg, hsl(20 16% 13%) 0%, hsl(16 10% 7%) 60%, hsl(0 0% 2%) 100%)",
+                  boxShadow: `inset 0 1px 0 hsl(0 0% 100% / 0.05), inset 0 -1px 0 hsl(0 0% 0% / 0.55), 0 -1px 5px ${accent.replace(")", " / 0.55)")}`,
+                  transform: "rotate(10deg)",
+                  zIndex: 4,
+                }}
+              />
+            )}
+
+            {/* Hot crack along log #2 — glowing fissure where the wood is burning through */}
+            {isHot && (
+              <span
+                aria-hidden
+                className="absolute pointer-events-none"
+                style={{
+                  right: "10px",
+                  bottom: "6px",
+                  width: "22px",
+                  height: "1.5px",
+                  background: `linear-gradient(90deg, transparent, ${accent}, transparent)`,
+                  boxShadow: `0 0 6px ${accent}`,
+                  transform: "rotate(10deg)",
+                  filter: "blur(0.4px)",
+                  animation: `streak-fuel-pulse ${isBlazing ? 1.8 : 2.4}s ease-in-out infinite`,
+                  zIndex: 5,
                 }}
               />
             )}

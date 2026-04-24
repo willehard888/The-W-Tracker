@@ -7,13 +7,21 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Tier → Stripe price ID map
+// Tier × Plan → Stripe price ID map
+// Replace yearly placeholders with real Stripe price IDs in Stripe Dashboard.
 const PRICE_IDS = {
-  elite: "price_1TOyJsBm4ZLIG9fvj0SVO7T5",        // 4.99€/mo Member (entry paywall)
-  apex:  "price_1TOvvEBm4ZLIG9fvG3mE1Whe",        // 17.99€/mo Apex Instant
+  elite: {
+    monthly: "price_1TOyJsBm4ZLIG9fvj0SVO7T5",        // 4.99€/mo Member (entry paywall)
+    yearly:  "price_elite_yearly_placeholder",        // ~47.88€/yr (-20%)
+  },
+  apex: {
+    monthly: "price_1TOvvEBm4ZLIG9fvG3mE1Whe",        // 17.99€/mo Apex Instant
+    yearly:  "price_apex_yearly_placeholder",         // ~172.70€/yr (-20%)
+  },
 } as const;
 
 type Tier = keyof typeof PRICE_IDS;
+type Plan = "monthly" | "yearly";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -33,12 +41,14 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
 
     let tier: Tier = "elite";
+    let plan: Plan = "monthly";
     try {
       const body = await req.json().catch(() => ({}));
       if (body?.tier === "apex" || body?.tier === "elite") tier = body.tier;
+      if (body?.plan === "yearly" || body?.plan === "monthly") plan = body.plan;
     } catch (_) { /* no body */ }
 
-    const priceId = PRICE_IDS[tier];
+    const priceId = PRICE_IDS[tier][plan];
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",

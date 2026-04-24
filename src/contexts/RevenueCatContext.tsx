@@ -142,6 +142,8 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const [rcReady, setRcReady] = useState(false);
   const [monthlyPriceLabel, setMonthlyPriceLabel] = useState<string | null>(null);
   const [apexPriceLabel, setApexPriceLabel] = useState<string | null>(null);
+  const [eliteYearlyPriceLabel, setEliteYearlyPriceLabel] = useState<string | null>(null);
+  const [apexYearlyPriceLabel, setApexYearlyPriceLabel] = useState<string | null>(null);
 
   /** Sync subscription flags to database. */
   const syncEntitlements = useCallback(

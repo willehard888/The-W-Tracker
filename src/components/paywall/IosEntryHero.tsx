@@ -164,7 +164,7 @@ const IosEntryHero = ({
             </p>
           ) : (
             <p className="text-[10px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
-              Free for 7 days · No charge until day 8
+              Billed monthly · Cancel anytime
             </p>
           )}
         </div>

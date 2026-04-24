@@ -259,8 +259,9 @@ const CompactStreakPanel = ({
         // Pure deep black — keeps the flame as the only light source
         background: "radial-gradient(120% 100% at 50% 0%, hsl(0 0% 5%), hsl(0 0% 1.5%))",
         boxShadow: isHot
-          ? `inset 0 0 80px hsl(0 0% 0% / 0.85)`
+          ? `inset 0 0 80px hsl(0 0% 0% / 0.85), 0 0 32px hsl(22 98% 55% / 0.35), 0 0 70px hsl(18 95% 50% / 0.18)`
           : "inset 0 0 40px hsl(0 0% 0% / 0.6)",
+        animation: isHot ? "burn-border-ignite 3s ease-in-out infinite" : undefined,
       }}
     >
       {/* Floor warm glow removed for crisp look */}

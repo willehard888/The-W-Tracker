@@ -44,7 +44,7 @@ const FlameDevPanel = () => {
 
   const dismiss = () => {
     try {
-      localStorage.removeItem("flameDevPanel");
+      localStorage.setItem("flameDevPanel", "0");
     } catch {
       /* noop */
     }

@@ -165,6 +165,11 @@ const Index = () => {
         }}
       />
 
+      {/* AI-GENERATED FIRE STREAK — looping cinematic hero video */}
+      <div className="-mx-4 mb-4 relative z-10 rounded-b-3xl overflow-hidden border-b border-border/30 shadow-[0_30px_80px_-20px_hsl(18_95%_50%/0.35)]">
+        <FireStreakVideo height={220} />
+      </div>
+
       {/* COMMAND DECK — Streak + Lock Your Day */}
       <div className="animate-reveal mb-4 relative z-10">
         <CommandDeck

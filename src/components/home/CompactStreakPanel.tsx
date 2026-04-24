@@ -668,22 +668,28 @@ const CompactStreakPanel = ({
 
             return (
               <div
-                className="absolute inset-x-0 bottom-[2px] z-[20] flex items-end justify-center pointer-events-none"
-                style={{ overflow: "visible", height: Math.round(master * 1.4) }}
+                className="absolute left-1/2 bottom-[2px] z-[20] pointer-events-none"
+                style={{
+                  width: Math.round(master * 1.2),
+                  height: Math.round(master * 1.5),
+                  transform: "translateX(-50%)",
+                  overflow: "visible",
+                }}
               >
                 {layers.map((L, i) => (
                   <span
                     key={i}
-                    className="flame-bowl absolute left-1/2 bottom-0 flex items-end justify-center"
+                    className="flame-bowl absolute left-1/2 bottom-0"
                     style={{
                       width: L.size,
                       height: Math.round(L.size * 1.25),
-                      transform: `translateX(calc(-50% + ${L.offsetX}px)) translateY(${L.offsetY}px) scale(${L.scaleX}, ${L.scaleY})`,
+                      marginLeft: -L.size / 2,
+                      transform: `translateY(${L.offsetY}px) scale(${L.scaleX}, ${L.scaleY})`,
                       transformOrigin: "center bottom",
                       filter: `${dropShadow(L.accent, L.shadowMul)}${L.blur ? ` blur(${L.blur}px)` : ""}`,
                       opacity: L.opacity,
                       zIndex: L.z,
-                      mixBlendMode: i < 4 ? "screen" : "normal",
+                      mixBlendMode: i < 4 ? "lighten" : "normal",
                     }}
                   >
                     <RealisticFlame

@@ -38,7 +38,7 @@ const ELITE_YEARLY_FALLBACK = "49,99 €";
 const APEX_YEARLY_FALLBACK = "172,99 €";
 
 const Paywall = () => {
-  const { isElite, isApexSubscriber, checkSubscription, profile } = useAuth();
+  const { isElite, isApexSubscriber, checkSubscription, profile, subscriptionLoading } = useAuth();
   const {
     purchaseElitePlan, purchaseApexPlan, restorePurchases,
     rcLoading, rcReady, monthlyPriceLabel, apexPriceLabel,
@@ -70,6 +70,26 @@ const Paywall = () => {
     }
     wasMemberRef.current = isElite;
   }, [isElite]);
+
+  useEffect(() => {
+    if (isNative) return;
+
+    const syncMembership = () => {
+      void checkSubscription();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") syncMembership();
+    };
+
+    window.addEventListener("focus", syncMembership);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", syncMembership);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [checkSubscription, isNative]);
 
   // Already a member
   if (isElite) {
@@ -224,6 +244,13 @@ const Paywall = () => {
   // ─── Render ─────────────────────────────────────────
   return (
     <div className="min-h-screen pb-8 px-4 pt-6 safe-top">
+      {subscriptionLoading && !isElite && (
+        <div className="mb-4 flex items-center justify-center gap-2 rounded-xl border border-border/70 bg-card/80 px-4 py-3 text-sm text-muted-foreground">
+          <Loader2 size={16} className="animate-spin" />
+          Verifying membership…
+        </div>
+      )}
+
       {creditsActive && (
         <div className="animate-reveal mb-4 rounded-xl border border-gold/40 bg-gold/10 p-4 text-center">
           <p className="text-xs font-bold text-gold tracking-wide">

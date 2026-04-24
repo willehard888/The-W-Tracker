@@ -7,8 +7,18 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const APEX_PRICE_ID = "price_1TOvvEBm4ZLIG9fvG3mE1Whe";
-const ELITE_PRICE_ID = "price_1TFEFvBm4ZLIG9fvnzdsqL6m";
+const PRICE_IDS = {
+  elite: new Set([
+    "price_1TOyJsBm4ZLIG9fvj0SVO7T5",
+    "price_1TPdy3Bm4ZLIG9fv3ycnctke",
+    "price_1TFEFvBm4ZLIG9fvnzdsqL6m",
+  ]),
+  apex: new Set([
+    "price_1TOvvEBm4ZLIG9fvG3mE1Whe",
+    "price_1TPdyPBm4ZLIG9fv1hGRAQ7X",
+    "price_1TOvbkBm4ZLIG9fvoppvTJ7D",
+  ]),
+} as const;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -105,10 +115,15 @@ serve(async (req) => {
       let isApex = false;
       let isElite = false;
       let endTs: number | null = null;
+      const matchedPriceIds = new Set<string>();
       for (const sub of subscriptions.data) {
-        const priceId = sub.items.data[0]?.price?.id;
-        if (priceId === APEX_PRICE_ID) isApex = true;
-        else if (priceId === ELITE_PRICE_ID) isElite = true;
+        for (const item of sub.items.data) {
+          const priceId = item.price?.id;
+          if (!priceId) continue;
+          matchedPriceIds.add(priceId);
+          if (PRICE_IDS.apex.has(priceId)) isApex = true;
+          else if (PRICE_IDS.elite.has(priceId)) isElite = true;
+        }
         const periodEnd = sub.current_period_end;
         if (periodEnd && typeof periodEnd === "number" && (endTs === null || periodEnd > endTs)) {
           endTs = periodEnd;
@@ -117,8 +132,13 @@ serve(async (req) => {
       if (endTs) subscriptionEnd = new Date(endTs * 1000).toISOString();
 
       tier = isApex ? "apex" : isElite ? "elite" : null;
+      const hasRecognizedAccess = tier !== null;
 
-      const update: Record<string, any> = { is_elite: tier !== null };
+      if (!hasRecognizedAccess && matchedPriceIds.size > 0) {
+        console.warn("check-subscription: active subscription found with unmapped price ids", [...matchedPriceIds]);
+      }
+
+      const update: Record<string, any> = { is_elite: hasRecognizedAccess };
       if (isApex) {
         update.is_apex_subscriber = true;
         if (!subscriptionEnd) update.apex_subscription_started_at = new Date().toISOString();
@@ -138,7 +158,7 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
+      subscribed: tier !== null,
       tier,
       subscription_end: subscriptionEnd,
     }), {

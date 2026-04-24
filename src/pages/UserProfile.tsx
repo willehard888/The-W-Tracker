@@ -78,15 +78,17 @@ const UserProfile = () => {
     enabled: !!userId,
   });
 
-  const { data: userPosts } = useQuery({
-    queryKey: ["user-posts", userId],
+  // Elite Feed media posts — IG-style grid, the loudest social proof on the profile
+  const { data: mediaPosts } = useQuery({
+    queryKey: ["user-media-posts", userId],
     queryFn: async () => {
       const { data } = await supabase
         .from("feed_posts")
-        .select("*")
+        .select("id, content, image_url, video_url, likes_count, comments_count, kudos_count, created_at")
         .eq("user_id", userId!)
+        .or("image_url.not.is.null,video_url.not.is.null")
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(18);
       return data || [];
     },
     enabled: !!userId,

@@ -789,9 +789,9 @@ const CompactStreakPanel = ({
                   aria-hidden
                   className="absolute left-1/2 pointer-events-none"
                   style={{
-                    width: Math.round(master * 0.18),
-                    height: Math.round(master * 0.28),
-                    bottom: Math.round(master * 0.95),
+                    width: Math.round(master * 0.22),
+                    height: Math.round(master * 0.32),
+                    bottom: Math.round(master * 0.78),
                     transform: "translateX(-50%)",
                     background: `radial-gradient(ellipse at 50% 80%,
                       hsl(50 100% 88%) 0%,

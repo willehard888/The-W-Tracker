@@ -242,8 +242,8 @@ const CompactStreakPanel = ({
     [],
   );
 
-  // Panel grows with streak so big flames never clip
-  const panelMinH = 240 + Math.min(120, Math.round(Math.pow(Math.min(displayStreak, 120), 0.62) * 11));
+  // Panel grows with streak so big flames never clip — base raised for 3-flame trio
+  const panelMinH = 280 + Math.min(80, Math.round(Math.pow(Math.min(displayStreak, 120), 0.6) * 7));
 
   return (
     <div

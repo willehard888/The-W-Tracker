@@ -568,120 +568,107 @@ const CompactStreakPanel = ({
             // Spectrum stacks: deep blood-red → crimson → vermillion → amber
             // → orange-gold → yellow-tip → gold halo → orange core (front).
             const layers = [
-              // 0 — Far back-left: deep blood-red, slow lazy sway
+              // 0 — Far back-left: deep blood-red, slow lazy sway.
+              //     Tall + narrow so it peeks ABOVE the core's shoulders.
               {
-                size: Math.round(master * 0.62),
-                accent: "hsl(4 95% 42%)",
+                size: Math.round(master * 0.7),
+                accent: "hsl(4 95% 44%)",
                 tier: cappedTier,
-                offsetX: -Math.round(master * 0.28),
-                offsetY: -Math.round(master * 0.1),
+                offsetX: -Math.round(master * 0.26),
+                offsetY: -Math.round(master * 0.14),
                 z: 1,
-                opacity: 0.96,
-                rotate: -18,
-                shadowMul: 0.85,
+                opacity: 0.92,
+                rotate: -14,
+                shadowMul: 0.95,
                 rhythm: "flame-rhythm-0",
                 duration: 4.7,
                 easing: "ease-in-out",
                 delay: 0,
               },
-              // 1 — Far back-right: crimson, sharp jolt rhythm
+              // 1 — Far back-right: crimson, sharp jolt rhythm.
               {
-                size: Math.round(master * 0.66),
-                accent: "hsl(10 96% 48%)",
+                size: Math.round(master * 0.74),
+                accent: "hsl(10 96% 50%)",
                 tier: cappedTier,
-                offsetX: Math.round(master * 0.3),
-                offsetY: -Math.round(master * 0.12),
+                offsetX: Math.round(master * 0.27),
+                offsetY: -Math.round(master * 0.16),
                 z: 1,
-                opacity: 0.97,
-                rotate: 16,
-                shadowMul: 0.9,
+                opacity: 0.94,
+                rotate: 13,
+                shadowMul: 1,
                 rhythm: "flame-rhythm-1",
                 duration: 3.3,
                 easing: "cubic-bezier(0.45, 0, 0.25, 1)",
                 delay: 0.6,
               },
-              // 6 — NEW back-far-left ember tongue: vermillion staccato whip
+              // 6 — Side ember tongue (left): vermillion staccato whip.
+              //     Lower + smaller so it reads as a side-flick, not a 2nd flame.
               {
-                size: Math.round(master * 0.5),
-                accent: "hsl(16 98% 52%)",
+                size: Math.round(master * 0.42),
+                accent: "hsl(16 98% 54%)",
                 tier: cappedTier,
-                offsetX: -Math.round(master * 0.36),
-                offsetY: -Math.round(master * 0.04),
-                z: 1,
-                opacity: 0.88,
-                rotate: -24,
-                shadowMul: 0.75,
+                offsetX: -Math.round(master * 0.32),
+                offsetY: Math.round(master * 0.02),
+                z: 2,
+                opacity: 0.85,
+                rotate: -22,
+                shadowMul: 0.65,
                 rhythm: "flame-rhythm-6",
                 duration: 2.1,
                 easing: "cubic-bezier(0.7, 0, 0.3, 1)",
                 delay: 0.25,
               },
-              // 2 — Mid back-left: warm amber, fast double-flick
+              // 2 — Mid back-left: warm amber. Now z=3 so it sits IN FRONT of
+              //     the deep red but BEHIND the gold halo — proper layering.
               {
-                size: Math.round(master * 0.72),
-                accent: "hsl(24 98% 54%)",
+                size: Math.round(master * 0.78),
+                accent: "hsl(24 98% 56%)",
                 tier: cappedTier,
-                offsetX: -Math.round(master * 0.2),
-                offsetY: -Math.round(master * 0.04),
-                z: 2,
-                opacity: 0.95,
-                rotate: -8,
+                offsetX: -Math.round(master * 0.16),
+                offsetY: -Math.round(master * 0.06),
+                z: 3,
+                opacity: 0.9,
+                rotate: -7,
                 shadowMul: 0.85,
                 rhythm: "flame-rhythm-2",
                 duration: 2.4,
                 easing: "cubic-bezier(0.6, 0.05, 0.4, 1)",
                 delay: 0.15,
               },
-              // 3 — Mid back-right: yellow-orange, smooth counter-arc
+              // 3 — Mid back-right: orange, smooth counter-arc.
               {
-                size: Math.round(master * 0.76),
-                accent: "hsl(34 100% 58%)",
+                size: Math.round(master * 0.82),
+                accent: "hsl(30 100% 58%)",
                 tier: cappedTier,
-                offsetX: Math.round(master * 0.21),
-                offsetY: -Math.round(master * 0.05),
-                z: 2,
-                opacity: 0.95,
-                rotate: 7,
+                offsetX: Math.round(master * 0.17),
+                offsetY: -Math.round(master * 0.07),
+                z: 3,
+                opacity: 0.9,
+                rotate: 6,
                 shadowMul: 0.85,
                 rhythm: "flame-rhythm-3",
                 duration: 2.9,
                 easing: "ease-in-out",
                 delay: 1.1,
               },
-              // 7 — NEW bright yellow inner tongue (between halo and core):
-              //     fast nervous flicker, true candle-tip energy
+              // 4 — Inner gold halo: BIG soft mass behind the core. Lower opacity
+              //     so amber/red layers bleed THROUGH instead of being smothered.
               {
-                size: Math.round(master * 0.58),
-                accent: "hsl(46 100% 64%)",
-                tier: cappedTier,
-                offsetX: Math.round(master * 0.06),
-                offsetY: -Math.round(master * 0.08),
-                z: 4,
-                opacity: 0.92,
-                rotate: -3,
-                shadowMul: 0.7,
-                rhythm: "flame-rhythm-7",
-                duration: 1.8,
-                easing: "cubic-bezier(0.5, 0, 0.5, 1)",
-                delay: 0.35,
-              },
-              // 4 — Inner gold halo: slow broad breath, opacity-modulated
-              {
-                size: Math.round(master * 0.88),
-                accent: "hsl(40 100% 60%)",
+                size: Math.round(master * 0.94),
+                accent: "hsl(38 100% 62%)",
                 tier: cappedTier,
                 offsetX: 0,
-                offsetY: -Math.round(master * 0.02),
-                z: 3,
-                opacity: 0.85,
+                offsetY: -Math.round(master * 0.03),
+                z: 4,
+                opacity: 0.6,
                 rotate: 0,
-                shadowMul: 0.8,
+                shadowMul: 0.9,
                 rhythm: "flame-rhythm-4",
                 duration: 5.5,
                 easing: "ease-in-out",
                 delay: 0.4,
               },
-              // 5 — CENTER core: hero. Subtle, constant breath. Frontmost.
+              // 5 — CENTER core: the hero. Sits frontmost.
               {
                 size: master,
                 accent: "hsl(20 98% 56%)",
@@ -696,6 +683,24 @@ const CompactStreakPanel = ({
                 duration: 3.6,
                 easing: "cubic-bezier(0.4, 0, 0.2, 1)",
                 delay: 0,
+              },
+              // 7 — Bright yellow inner tongue: NOW the topmost flicker, narrow
+              //     and tall, sits inside the core's tip — true wick energy.
+              //     Small + low opacity so it accents the core, not replaces it.
+              {
+                size: Math.round(master * 0.42),
+                accent: "hsl(48 100% 68%)",
+                tier: cappedTier,
+                offsetX: 0,
+                offsetY: -Math.round(master * 0.18),
+                z: 7,
+                opacity: 0.78,
+                rotate: 0,
+                shadowMul: 0.55,
+                rhythm: "flame-rhythm-7",
+                duration: 1.8,
+                easing: "cubic-bezier(0.5, 0, 0.5, 1)",
+                delay: 0.35,
               },
             ];
 

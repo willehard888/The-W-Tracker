@@ -3,8 +3,6 @@ import BadgeCard from "@/components/BadgeCard";
 import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
-import CinematicFlame from "@/components/home/CinematicFlame";
-import FireStreak from "@/components/home/FireStreak";
 import RankProgressHub from "@/components/home/RankProgressHub";
 import CoachStrip from "@/components/home/CoachStrip";
 import Reveal from "@/components/home/Reveal";
@@ -135,9 +133,6 @@ const Index = () => {
 
   return (
     <div className="h-full pb-6 px-4 pt-5 safe-top relative overflow-y-auto overflow-x-hidden">
-      {/* Blazing fire streak — shoots across screen periodically */}
-      <FireStreak intervalMs={5600} />
-
       {/* Tier-reactive top aura */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[760px] h-[460px] pointer-events-none z-0"
@@ -168,11 +163,6 @@ const Index = () => {
           animation: "shimmer-slide 6s ease-in-out infinite",
         }}
       />
-
-      {/* CINEMATIC FLAME — hero atmospheric element */}
-      <div className="-mx-4 mb-4 relative z-10 rounded-b-3xl overflow-hidden border-b border-border/30 shadow-[0_30px_80px_-20px_hsl(18_95%_50%/0.35)]">
-        <CinematicFlame height={280} />
-      </div>
 
       {/* COMMAND DECK — Streak + Lock Your Day */}
       <div className="animate-reveal mb-4 relative z-10">

@@ -3885,3 +3885,39 @@ button:active > .aurum-lava-glow {
     animation: none !important;
   }
 }
+
+/* ========================================================================
+ * FireStreak — AAA-style fire streak shooting across the screen
+ * ====================================================================== */
+@keyframes firestreak-traverse {
+  0% {
+    transform: translateX(var(--fs-start)) rotate(var(--fs-tilt, 0deg));
+    opacity: 0;
+  }
+  8% { opacity: 1; }
+  88% { opacity: 1; }
+  100% {
+    transform: translateX(var(--fs-end)) rotate(var(--fs-tilt, 0deg));
+    opacity: 0;
+  }
+}
+
+@keyframes firestreak-head-pulse {
+  0%, 100% { transform: scale(1); filter: blur(2px) brightness(1); }
+  50%      { transform: scale(1.18); filter: blur(2.5px) brightness(1.2); }
+}
+
+@keyframes firestreak-spark {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--fs-spark-x), var(--fs-spark-y)) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="firestreak"] { animation: none !important; }
+}

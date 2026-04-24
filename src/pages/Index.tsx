@@ -1,269 +1,199 @@
-import { ChevronRight } from "lucide-react";
-import BadgeCard from "@/components/BadgeCard";
-import TierRiskBanner from "@/components/TierRiskBanner";
-import InviteCTA from "@/components/InviteCTA";
-import CommandDeck from "@/components/home/CommandDeck";
-import RankProgressHub from "@/components/home/RankProgressHub";
-import CoachStrip from "@/components/home/CoachStrip";
-import Reveal from "@/components/home/Reveal";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { getTierConfig } from "@/lib/status-tiers";
-import { useTierRisk } from "@/hooks/use-tier-risk";
-import { useMyRank } from "@/hooks/use-my-rank";
-import { useDailyPulse } from "@/hooks/use-daily-pulse";
+import { useEffect, useState } from "react";
+import RealisticFlame from "@/components/home/RealisticFlame";
 import FlameDevPanel from "@/components/dev/FlameDevPanel";
+import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
+import {
+  flameEdgeMaskImage,
+  flameSharpenFilter,
+  useEffectiveFlameSettings,
+} from "@/lib/flame-dev-settings";
+
+/**
+ * Flame Editor — pelkistetty Home-näkymä liekin reaaliaikaiseen säätämiseen.
+ *
+ * Keskellä iso liekki mustalla kankaalla, alla pikasäätimet (tier, koko, accent).
+ * Oikeassa alakulmassa Flame Dev Panel pakotettuna auki tarkempaan finetuneen.
+ */
+
+const ACCENT_PRESETS: { label: string; value: string }[] = [
+  { label: "Ember", value: "hsl(18 95% 58%)" },
+  { label: "Gold", value: "hsl(42 85% 60%)" },
+  { label: "Crimson", value: "hsl(350 85% 58%)" },
+  { label: "Cyan", value: "hsl(190 90% 60%)" },
+  { label: "Violet", value: "hsl(280 80% 65%)" },
+  { label: "Lime", value: "hsl(95 80% 55%)" },
+];
 
 const Index = () => {
-  const navigate = useNavigate();
-  const { profile, isElite } = useAuth();
+  const [tier, setTier] = useState(4);
+  const [size, setSize] = useState(280);
+  const [accent, setAccent] = useState(ACCENT_PRESETS[0].value);
+  const { effective: flameSettings, fps, degraded } = useEffectiveFlameSettings();
 
-  const { data: latestNudge } = useQuery({
-    queryKey: ["latest-coach-nudge", profile?.user_id],
-    queryFn: async () => {
-      if (!profile || !isElite) return null;
-      const { data } = await supabase
-        .from("coach_nudges")
-        .select("id, headline, content, seen_at, created_at")
-        .eq("user_id", profile.user_id)
-        .is("seen_at", null)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!profile && isElite,
-  });
-
-  const { data: latestBriefing } = useQuery({
-    queryKey: ["latest-briefing", profile?.user_id],
-    queryFn: async () => {
-      if (!profile || !isElite) return null;
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { data } = await supabase
-        .from("weekly_briefings")
-        .select("id, headline, viewed_at, generated_at")
-        .eq("user_id", profile.user_id)
-        .gte("generated_at", sevenDaysAgo)
-        .order("generated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!profile && isElite,
-  });
-
-  const { data: userBadges } = useQuery({
-    queryKey: ["user-badges", profile?.user_id],
-    queryFn: async () => {
-      if (!profile) return [];
-      const { data } = await supabase
-        .from("user_badges")
-        .select("*, badges(*)")
-        .eq("user_id", profile.user_id)
-        .order("earned_at", { ascending: false })
-        .limit(3);
-      return data || [];
-    },
-    enabled: !!profile,
-  });
-
-  const { data: lastCheckin } = useQuery({
-    queryKey: ["last-checkin", profile?.user_id],
-    queryFn: async () => {
-      if (!profile) return null;
-      const { data } = await supabase
-        .from("daily_checkins")
-        .select("checked_in_at")
-        .eq("user_id", profile.user_id)
-        .order("checked_in_at", { ascending: false })
-        .limit(1)
-        .single();
-      return data;
-    },
-    enabled: !!profile,
-  });
-
-  const { data: rankData } = useMyRank(profile?.user_id);
-  const tierRisk = useTierRisk({
-    tier: profile?.status_tier || "recruit",
-    rankScore: Number((profile as any)?.rank_score) || 0,
-    streak: profile?.streak || 0,
-    lastCheckinAt: lastCheckin?.checked_in_at,
-  });
-
-  // Live rank delta for HeroHeader pulse line
-  const pulse = useDailyPulse(
-    profile?.user_id || "",
-    rankData?.rank ?? 0,
-    Number((profile as any)?.rank_score) || 0,
-    rankData?.totalUsers ?? 0,
-  );
-
-  if (!profile) return null;
-
-  const xpToNext = profile.level * 500;
-  const tier = profile.status_tier || "recruit";
-  const tierConfig = getTierConfig(tier);
-  const isLegend = tier === "legend";
-  const isApex = tier === "apex";
-
-  const canCheckin =
-    !lastCheckin ||
-    Date.now() - new Date(lastCheckin.checked_in_at).getTime() > 24 * 60 * 60 * 1000;
-
-  const getTimeUntilCheckin = () => {
-    if (!lastCheckin || canCheckin) return null;
-    const nextTime = new Date(lastCheckin.checked_in_at).getTime() + 24 * 60 * 60 * 1000;
-    const diff = nextTime - Date.now();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${hours}h ${mins}m`;
-  };
-
-  // Tier-reactive page-level aura — softer, wider falloff
-  const pageAura = isLegend
-    ? "radial-gradient(ellipse 90% 70% at center top, hsl(280 70% 60% / 0.11) 0%, hsl(42 78% 54% / 0.05) 45%, transparent 80%)"
-    : isApex
-    ? "radial-gradient(ellipse 90% 70% at center top, hsl(18 95% 58% / 0.10) 0%, hsl(42 78% 54% / 0.04) 45%, transparent 80%)"
-    : tier === "elite"
-    ? "radial-gradient(ellipse 90% 70% at center top, hsl(42 78% 54% / 0.10) 0%, hsl(180 70% 50% / 0.04) 45%, transparent 80%)"
-    : "radial-gradient(ellipse 90% 70% at center top, hsl(42 78% 54% / 0.075) 0%, hsl(42 78% 54% / 0.025) 45%, transparent 80%)";
+  // Force the dev panel open whenever this editor is mounted, so the user can
+  // always reach the deep settings without typing ?devflame=1 in the URL.
+  useEffect(() => {
+    try {
+      localStorage.setItem("flameDevPanel", "1");
+    } catch {
+      /* noop */
+    }
+  }, []);
 
   return (
-    <div className="h-full pb-6 px-4 pt-5 safe-top relative overflow-y-auto overflow-x-hidden">
-      {/* Tier-reactive top aura */}
+    <div className="h-full w-full relative overflow-hidden bg-black text-foreground">
+      {/* Stage — pure black canvas so the flame is the only light source */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[760px] h-[460px] pointer-events-none z-0"
-        style={{ background: pageAura }}
-      />
-
-      {/* Ember band — soft fire-in-the-distance warmth tied to user's streak */}
-      {profile.streak >= 3 && (
-        <div
-          aria-hidden
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[520px] h-[180px] pointer-events-none z-0 opacity-70"
-          style={{
-            background:
-              isApex
-                ? "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(18 95% 58% / 0.22) 0%, hsl(42 78% 54% / 0.10) 40%, transparent 75%)"
-                : isLegend
-                ? "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(280 70% 60% / 0.20) 0%, hsl(42 78% 54% / 0.10) 40%, transparent 75%)"
-                : "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(18 92% 56% / 0.18) 0%, hsl(42 78% 54% / 0.08) 45%, transparent 80%)",
-          }}
-        />
-      )}
-
-      <div
-        className="absolute top-0 left-0 right-0 h-[1px] pointer-events-none z-10 opacity-25"
+        className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(90deg, transparent 10%, hsl(42 78% 54% / 0.6) 50%, transparent 90%)",
-          animation: "shimmer-slide 6s ease-in-out infinite",
+            "radial-gradient(ellipse 80% 60% at 50% 55%, hsl(0 0% 6%) 0%, hsl(0 0% 1.5%) 70%, #000 100%)",
         }}
       />
 
-      {/* COMMAND DECK — Streak + Lock Your Day */}
-      <div className="animate-reveal mb-4 relative z-10">
-        <CommandDeck
-          streak={profile.streak}
-          longestStreak={profile.longest_streak}
-          lastCheckinAt={lastCheckin?.checked_in_at}
-          canCheckin={canCheckin}
-          timeUntilCheckin={getTimeUntilCheckin()}
-          tier={tier}
-        />
+      {/* Header */}
+      <div className="absolute top-0 inset-x-0 z-20 px-4 pt-4 safe-top flex items-center justify-between">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[hsl(18_95%_58%)]">
+            Flame Editor
+          </p>
+          <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+            Säädä asetuksia reaaliajassa
+          </p>
+        </div>
+        <span
+          className={cn(
+            "text-[10px] font-black tabular-nums px-2 py-1 rounded-md border",
+            degraded
+              ? "text-[hsl(0_85%_62%)] border-[hsl(0_85%_62%/0.4)] bg-[hsl(0_85%_62%/0.1)]"
+              : "text-[hsl(140_80%_55%)] border-[hsl(140_80%_55%/0.4)] bg-[hsl(140_80%_55%/0.1)]",
+          )}
+          title={degraded ? "Auto-degrade aktiivinen" : "Sujuva renderöinti"}
+        >
+          {fps} FPS
+        </span>
       </div>
 
-      {/* TIER RISK */}
-      {tierRisk.level !== "safe" && (
-        <Reveal className="mb-4 relative z-10">
-          <TierRiskBanner risk={tierRisk} />
-        </Reveal>
-      )}
-
-      {/* RANK + PROGRESS HUB — identity strip + Pressure/Rivals/Level/Elite/Quests */}
-      <Reveal className="mb-4 relative z-10">
-        <RankProgressHub
-          username={profile.username}
-          tier={tier}
-          userId={profile.user_id}
-          rank={rankData?.rank ?? null}
-          totalUsers={rankData?.totalUsers ?? 0}
-          percentile={rankData?.percentile ?? 0}
-          hasRank={rankData?.hasRank ?? false}
-          rankScore={Number((profile as any).rank_score) || 0}
-          daysAtTier={
-            (profile as any).rank_score_updated_at
-              ? Math.max(
-                  1,
-                  Math.floor(
-                    (Date.now() -
-                      new Date((profile as any).rank_score_updated_at).getTime()) /
-                      (1000 * 60 * 60 * 24),
-                  ),
-                )
-              : undefined
-          }
-          rankDelta={pulse.loading ? 0 : pulse.rankDelta}
-          level={profile.level}
-          xp={profile.xp}
-          xpToNext={xpToNext}
-          canCheckin={canCheckin}
-        />
-      </Reveal>
-
-      {/* COACH STRIP */}
-      <Reveal className="mb-5 relative z-10">
-        <CoachStrip latestNudge={latestNudge ?? null} latestBriefing={latestBriefing ?? null} />
-      </Reveal>
-
-      {/* GROWTH ROW — Invite + Recent Badges */}
-      <Reveal className="mb-4">
-        <InviteCTA referralCount={profile.referral_count || 0} />
-      </Reveal>
-
-      <Reveal className="mb-2">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display font-bold text-base tracking-tight">Recent Badges</h2>
-          <button
-            onClick={() => navigate("/profile")}
-            className="flex items-center gap-1 text-xs text-gold font-medium hover:underline"
-          >
-            View All <ChevronRight size={14} />
-          </button>
+      {/* Flame stage — centered, isolated for filter/blend correctness */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div
+          style={{
+            width: size,
+            height: size * 1.4,
+            isolation: "isolate",
+            filter: flameSharpenFilter(flameSettings),
+            WebkitMaskImage: flameSettings.edgeClipping
+              ? flameEdgeMaskImage(flameSettings.edgeSoftness)
+              : undefined,
+            maskImage: flameSettings.edgeClipping
+              ? flameEdgeMaskImage(flameSettings.edgeSoftness)
+              : undefined,
+          }}
+          className="relative flex items-end justify-center"
+        >
+          <RealisticFlame tier={tier} accent={accent} size={size} interactive />
         </div>
-        {userBadges && userBadges.length > 0 ? (
-          <div className="grid grid-cols-3 gap-3">
-            {userBadges.map((ub: any) => (
-              <BadgeCard
-                key={ub.id}
-                name={ub.badges.name}
-                icon={ub.badges.icon}
-                rarity={ub.badges.rarity}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-xl glass-card p-6 text-center">
-            <p className="text-sm text-muted-foreground">Complete check-ins to earn badges</p>
-          </div>
-        )}
-      </Reveal>
+      </div>
 
-      {/* Tier message footer */}
-      <div className="mt-4 mb-2 text-center">
-        <p className="text-[10px] text-muted-foreground/40 font-semibold tracking-widest uppercase">
-          {tierConfig.message}
+      {/* Bottom quick-controls dock */}
+      <div
+        className="absolute inset-x-0 bottom-0 z-20 px-4 pb-6 pt-4 space-y-4"
+        style={{
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)",
+          background:
+            "linear-gradient(180deg, transparent 0%, hsl(0 0% 0% / 0.7) 35%, hsl(0 0% 0% / 0.95) 100%)",
+        }}
+      >
+        {/* Tier */}
+        <ControlRow label="Tier" value={`${tier} / 5`}>
+          <Slider
+            value={[tier]}
+            min={0}
+            max={5}
+            step={1}
+            onValueChange={(v) => setTier(v[0])}
+          />
+        </ControlRow>
+
+        {/* Size */}
+        <ControlRow label="Koko" value={`${size}px`}>
+          <Slider
+            value={[size]}
+            min={120}
+            max={420}
+            step={4}
+            onValueChange={(v) => setSize(v[0])}
+          />
+        </ControlRow>
+
+        {/* Accent presets */}
+        <div>
+          <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground mb-2">
+            Accent
+          </p>
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            {ACCENT_PRESETS.map((p) => {
+              const active = p.value === accent;
+              return (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => setAccent(p.value)}
+                  className={cn(
+                    "shrink-0 flex flex-col items-center gap-1.5 px-2.5 py-1.5 rounded-xl border transition-colors",
+                    active
+                      ? "border-foreground/80 bg-foreground/5"
+                      : "border-border/50 hover:border-border",
+                  )}
+                >
+                  <span
+                    className="block h-5 w-5 rounded-full ring-1 ring-black/40"
+                    style={{
+                      background: p.value,
+                      boxShadow: `0 0 10px ${p.value.replace(")", " / 0.7)")}`,
+                    }}
+                  />
+                  <span className="text-[9px] font-black uppercase tracking-wider">
+                    {p.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <p className="text-[9px] text-muted-foreground/60 text-center leading-snug">
+          Tarkemmat asetukset oikean alakulman <span className="text-[hsl(18_95%_58%)] font-bold">Flame Dev</span> -paneelista.
         </p>
       </div>
 
-      {/* Developer-only flame controls — visible with ?devflame=1 */}
+      {/* Always-on dev panel for deep tuning */}
       <FlameDevPanel />
     </div>
   );
 };
+
+const ControlRow = ({
+  label,
+  value,
+  children,
+}: {
+  label: string;
+  value: string;
+  children: React.ReactNode;
+}) => (
+  <div>
+    <div className="flex items-center justify-between mb-1.5">
+      <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">
+        {label}
+      </p>
+      <span className="text-[10px] font-black tabular-nums text-foreground/90">
+        {value}
+      </span>
+    </div>
+    {children}
+  </div>
+);
 
 export default Index;

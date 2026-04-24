@@ -314,6 +314,73 @@ const CompactStreakPanel = ({
         </>
       )}
 
+      {/* === NEXT-LEVEL cinematic background layer ============================== */}
+      {isHot && (
+        <>
+          {/* God-ray light cone rising from the bonfire */}
+          <span
+            aria-hidden
+            className="absolute top-0 pointer-events-none"
+            style={{
+              left: "25%",
+              width: 110,
+              height: "85%",
+              transform: "translateX(-50%)",
+              background: `radial-gradient(ellipse 50% 100% at 50% 100%, ${accent.replace(")", " / 0.32)")} 0%, ${accent.replace(")", " / 0.10)")} 40%, transparent 75%)`,
+              filter: "blur(8px)",
+              animation: "streak-light-cone 4s ease-in-out infinite",
+              mixBlendMode: "screen",
+              zIndex: 1,
+            }}
+          />
+
+          {/* Heat haze band — vertical ripple just above flame */}
+          <span
+            aria-hidden
+            className="absolute left-0 right-0 pointer-events-none"
+            style={{
+              top: "20%",
+              height: "55%",
+              background: `repeating-linear-gradient(0deg, transparent 0px, ${accent.replace(")", " / 0.04)")} 6px, transparent 14px)`,
+              filter: "blur(1.5px)",
+              animation: "streak-heat-haze 3.5s ease-in-out infinite",
+              mixBlendMode: "screen",
+              zIndex: 1,
+            }}
+          />
+
+          {/* Panel-wide drifting embers — float up and across the entire card */}
+          {Array.from({ length: isLegendary ? 14 : isDiamond ? 11 : isBlazing ? 9 : 7 }).map((_, i) => {
+            const left = 8 + ((i * 13) % 84);
+            const size = 1.5 + (i % 3) * 0.6;
+            const duration = 4 + (i % 5) * 0.7;
+            const delay = (i / 8) * 4;
+            const xDrift = ((i % 2 === 0 ? -1 : 1) * (8 + (i * 4) % 22));
+            return (
+              <span
+                key={`cinema-ember-${i}`}
+                aria-hidden
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  width: size,
+                  height: size,
+                  left: `${left}%`,
+                  bottom: 8,
+                  background: emberColor,
+                  boxShadow: `0 0 ${size * 4}px ${emberColor}, 0 0 ${size * 8}px ${accent.replace(")", " / 0.5)")}`,
+                  opacity: 0,
+                  // @ts-expect-error CSS custom prop
+                  "--ce-x": `${xDrift}px`,
+                  animation: `streak-cinema-ember ${duration}s ease-out infinite`,
+                  animationDelay: `${delay}s`,
+                  zIndex: 2,
+                }}
+              />
+            );
+          })}
+        </>
+      )}
+
       {/* Top: label + tier badge */}
       <div className="relative flex items-center justify-between z-10">
         <div className="flex items-center gap-2">
@@ -591,71 +658,40 @@ const CompactStreakPanel = ({
             const dropShadow = (acc: string, mul: number) =>
               `drop-shadow(0 -4px ${(8 + displayStreak * 0.3) * mul}px ${acc.replace(")", " / 0.85)")}) drop-shadow(0 -12px ${(20 + displayStreak * 0.5) * mul}px ${acc.replace(")", " / 0.45)")})`;
 
-            // ONE UNIFIED BONFIRE — all flames stacked at center, no horizontal spread.
-            // Layers vary only in size/blur/opacity to build volumetric depth.
+            // ONE UNIFIED BONFIRE — three tightly-stacked cores at the exact same point.
+            // Inner = brightest, Outer = wide blurred halo. NO horizontal offsets — pure vertical depth.
             const layers = [
-              // Halo — wide hot-air mass, very blurred, deep red, sits behind everything
+              // Wide blurred outer halo — the "hot air mass" that makes the bonfire feel huge
               {
-                size: Math.round(master * 1.05),
-                accent: "hsl(14 88% 45%)",
-                tier: Math.max(cappedTier - 2, 1),
-                offsetX: 0,
-                offsetY: 8,
-                z: 1,
-                opacity: 0.45,
-                scaleX: 1.1,
-                scaleY: 0.85,
-                blur: 4,
-                shadowMul: 0.4,
-              },
-              // Outer body — tall warm orange wash, slight blur for atmosphere
-              {
-                size: Math.round(master * 0.9),
-                accent: "hsl(16 92% 50%)",
+                size: Math.round(master * 1.15),
+                accent: "hsl(14 90% 46%)",
                 tier: Math.max(cappedTier - 1, 2),
-                offsetX: 0,
                 offsetY: 4,
-                z: 2,
-                opacity: 0.7,
-                scaleX: 1.02,
-                scaleY: 1.0,
-                blur: 1.6,
-                shadowMul: 0.6,
+                z: 1,
+                opacity: 0.42,
+                scaleX: 1.05,
+                scaleY: 0.92,
+                blur: 5,
+                shadowMul: 0.5,
               },
-              // Mid body — primary orange tongue
+              // Mid body — full warm orange tongue
               {
-                size: Math.round(master * 0.82),
+                size: Math.round(master * 0.92),
                 accent: "hsl(20 96% 54%)",
-                tier: Math.max(cappedTier - 1, 2),
-                offsetX: 0,
+                tier: cappedTier,
                 offsetY: 2,
                 z: 3,
                 opacity: 0.85,
-                scaleX: 0.95,
-                scaleY: 1.05,
-                blur: 0.6,
-                shadowMul: 0.75,
+                scaleX: 0.98,
+                scaleY: 1.0,
+                blur: 1.2,
+                shadowMul: 0.78,
               },
-              // Inner body — bright tongue, slightly mirrored to break symmetry
-              {
-                size: Math.round(master * 0.7),
-                accent: "hsl(24 100% 58%)",
-                tier: cappedTier,
-                offsetX: 0,
-                offsetY: 1,
-                z: 4,
-                opacity: 0.92,
-                scaleX: -0.92,
-                scaleY: 1.02,
-                blur: 0.2,
-                shadowMul: 0.85,
-              },
-              // CENTER core — tallest, hottest, frontmost
+              // CENTER core — the brightest, hottest, most defined flame
               {
                 size: master,
-                accent: "hsl(22 100% 56%)",
+                accent: "hsl(24 100% 58%)",
                 tier: cappedTier,
-                offsetX: 0,
                 offsetY: 0,
                 z: 5,
                 opacity: 1,
@@ -670,8 +706,8 @@ const CompactStreakPanel = ({
               <div
                 className="absolute left-1/2 bottom-[2px] z-[20] pointer-events-none"
                 style={{
-                  width: Math.round(master * 1.2),
-                  height: Math.round(master * 1.5),
+                  width: Math.round(master * 1.3),
+                  height: Math.round(master * 1.55),
                   transform: "translateX(-50%)",
                   overflow: "visible",
                 }}
@@ -689,7 +725,7 @@ const CompactStreakPanel = ({
                       filter: `${dropShadow(L.accent, L.shadowMul)}${L.blur ? ` blur(${L.blur}px)` : ""}`,
                       opacity: L.opacity,
                       zIndex: L.z,
-                      mixBlendMode: i < 4 ? "lighten" : "normal",
+                      mixBlendMode: i < 2 ? "lighten" : "normal",
                     }}
                   >
                     <RealisticFlame
@@ -720,27 +756,66 @@ const CompactStreakPanel = ({
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-1.5 leading-none">
+          {/* Live "fire is burning" indicator */}
+          {isHot && (
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span
+                aria-hidden
+                className="inline-block h-1.5 w-1.5 rounded-full"
+                style={{
+                  background: accent,
+                  boxShadow: `0 0 8px ${accent}, 0 0 16px ${accent.replace(")", " / 0.5)")}`,
+                  animation: "pulse 1.2s ease-in-out infinite",
+                }}
+              />
+              <span
+                className="text-[8px] font-black uppercase tracking-[0.24em]"
+                style={{ color: accent }}
+              >
+                Burning · {tier.name}
+              </span>
+            </div>
+          )}
+          <div className="flex items-baseline gap-1.5 leading-none relative">
+            {/* Glowing tier-color halo behind the number */}
+            {isHot && (
+              <span
+                aria-hidden
+                className="absolute pointer-events-none"
+                style={{
+                  left: -8,
+                  top: -6,
+                  width: 80,
+                  height: 60,
+                  background: `radial-gradient(ellipse at center, ${accent.replace(")", " / 0.35)")} 0%, transparent 70%)`,
+                  filter: "blur(10px)",
+                  zIndex: -1,
+                }}
+              />
+            )}
             <span
               key={numberKey.current}
               className={cn(
                 "font-black font-display tabular-nums tracking-tighter leading-[0.85] inline-block",
-                displayStreak >= 100 ? "text-[40px]" : "text-[48px]",
+                displayStreak >= 100 ? "text-[44px]" : "text-[54px]",
                 numberClass,
               )}
               style={{
                 filter: isHot
-                  ? `drop-shadow(0 3px 12px ${accent.replace(")", " / 0.55)")})`
+                  ? `drop-shadow(0 3px 14px ${accent.replace(")", " / 0.7)")}) drop-shadow(0 0 24px ${accent.replace(")", " / 0.4)")})`
                   : undefined,
                 animation: isHot
-                  ? "streak-number-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), streak-number-breathe 3.6s ease-in-out infinite 0.7s"
+                  ? "streak-number-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), streak-number-fire-pulse 2.4s ease-in-out infinite 0.7s"
                   : "streak-number-in 0.5s ease-out",
                 transformOrigin: "center bottom",
               }}
             >
               {countDisplay}
             </span>
-            <span className="font-black text-muted-foreground/70 font-display text-[10px] uppercase tracking-[0.2em]">
+            <span
+              className="font-black font-display text-[11px] uppercase tracking-[0.22em]"
+              style={{ color: isHot ? accent : "hsl(var(--muted-foreground) / 0.7)" }}
+            >
               day{displayStreak === 1 ? "" : "s"}
             </span>
           </div>

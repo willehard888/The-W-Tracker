@@ -563,12 +563,11 @@ const CompactStreakPanel = ({
             const dropShadow = (acc: string, mul: number) =>
               `drop-shadow(0 -3px ${(6 + displayStreak * 0.25) * mul}px ${acc.replace(")", " / 0.7)")}) drop-shadow(0 -10px ${(16 + displayStreak * 0.4) * mul}px ${acc.replace(")", " / 0.35)")})`;
 
-            // 6 layers — back tongues are STRONG (high opacity, full tier
-            // intensity, taller) so they read clearly behind the main core.
-            // Each uses a distinct hue: deep red, crimson, amber-orange,
-            // yellow-orange, pure orange-core, gold-tip.
+            // 6 layers — each with its OWN rhythm, duration, easing, and
+            // animation delay so the bonfire never feels mechanical.
+            // Distinct hues stack from deep red (back) → gold halo → orange core.
             const layers = [
-              // Far back-left — deep red, tall, leans hard left
+              // 0 — Far back-left: deep red, slow lazy sway
               {
                 size: Math.round(master * 0.62),
                 accent: "hsl(8 92% 46%)",
@@ -579,9 +578,12 @@ const CompactStreakPanel = ({
                 opacity: 0.95,
                 rotate: -16,
                 shadowMul: 0.85,
-                roar: 0,
+                rhythm: "flame-rhythm-0",
+                duration: 4.7,
+                easing: "ease-in-out",
+                delay: 0,
               },
-              // Far back-right — crimson, tall, leans hard right
+              // 1 — Far back-right: crimson, sharp jolt rhythm
               {
                 size: Math.round(master * 0.66),
                 accent: "hsl(12 95% 50%)",
@@ -592,9 +594,12 @@ const CompactStreakPanel = ({
                 opacity: 0.96,
                 rotate: 14,
                 shadowMul: 0.9,
-                roar: 1,
+                rhythm: "flame-rhythm-1",
+                duration: 3.3,
+                easing: "cubic-bezier(0.45, 0, 0.25, 1)",
+                delay: 0.6,
               },
-              // Mid back-left — amber, peeks behind core
+              // 2 — Mid back-left: amber, fast double-flick
               {
                 size: Math.round(master * 0.72),
                 accent: "hsl(28 96% 54%)",
@@ -605,9 +610,12 @@ const CompactStreakPanel = ({
                 opacity: 0.95,
                 rotate: -8,
                 shadowMul: 0.85,
-                roar: 2,
+                rhythm: "flame-rhythm-2",
+                duration: 2.4,
+                easing: "cubic-bezier(0.6, 0.05, 0.4, 1)",
+                delay: 0.15,
               },
-              // Mid back-right — yellow-orange, peeks behind core
+              // 3 — Mid back-right: yellow-orange, smooth counter-arc
               {
                 size: Math.round(master * 0.76),
                 accent: "hsl(34 100% 58%)",
@@ -618,9 +626,12 @@ const CompactStreakPanel = ({
                 opacity: 0.95,
                 rotate: 7,
                 shadowMul: 0.85,
-                roar: 0,
+                rhythm: "flame-rhythm-3",
+                duration: 2.9,
+                easing: "ease-in-out",
+                delay: 1.1,
               },
-              // Inner-back gold halo — slightly behind core, broad
+              // 4 — Inner gold halo: slow broad breath, opacity-modulated
               {
                 size: Math.round(master * 0.88),
                 accent: "hsl(40 100% 60%)",
@@ -631,9 +642,12 @@ const CompactStreakPanel = ({
                 opacity: 0.85,
                 rotate: 0,
                 shadowMul: 0.8,
-                roar: 1,
+                rhythm: "flame-rhythm-4",
+                duration: 5.5,
+                easing: "ease-in-out",
+                delay: 0.4,
               },
-              // CENTER core — pure orange, frontmost, biggest
+              // 5 — CENTER core: hero. Subtle, constant breath. Frontmost.
               {
                 size: master,
                 accent: "hsl(22 98% 56%)",
@@ -644,7 +658,10 @@ const CompactStreakPanel = ({
                 opacity: 1,
                 rotate: 0,
                 shadowMul: 1,
-                roar: -1,
+                rhythm: "flame-rhythm-core",
+                duration: 3.6,
+                easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+                delay: 0,
               },
             ];
 
@@ -681,11 +698,9 @@ const CompactStreakPanel = ({
                       filter: dropShadow(L.accent, L.shadowMul),
                       opacity: L.opacity,
                       zIndex: L.z,
-                      animation:
-                        L.roar >= 0
-                          ? `flame-roar-${L.roar} ${(2.8 + L.roar * 0.4).toFixed(2)}s ease-in-out infinite`
-                          : undefined,
-                      animationDelay: `${(i * 0.22).toFixed(2)}s`,
+                      animation: `${L.rhythm} ${L.duration.toFixed(2)}s ${L.easing} infinite`,
+                      animationDelay: `${L.delay.toFixed(2)}s`,
+                      willChange: "transform, opacity",
                     }}
                   >
                     <RealisticFlame

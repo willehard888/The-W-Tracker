@@ -14,6 +14,7 @@ import { getTierConfig } from "@/lib/status-tiers";
 import { useTierRisk } from "@/hooks/use-tier-risk";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { useDailyPulse } from "@/hooks/use-daily-pulse";
+import FlameDevPanel from "@/components/dev/FlameDevPanel";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -258,6 +259,9 @@ const Index = () => {
           {tierConfig.message}
         </p>
       </div>
+
+      {/* Developer-only flame controls — visible with ?devflame=1 */}
+      <FlameDevPanel />
     </div>
   );
 };

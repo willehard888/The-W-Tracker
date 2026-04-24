@@ -93,6 +93,14 @@ function isApexPid(id: string | null): boolean {
   return !!id && (APEX_PRODUCT_IDS as readonly string[]).includes(id);
 }
 
+function isEliteYearlyPid(id: string | null): boolean {
+  return !!id && (ELITE_YEARLY_PRODUCT_IDS as readonly string[]).includes(id);
+}
+
+function isApexYearlyPid(id: string | null): boolean {
+  return !!id && (APEX_YEARLY_PRODUCT_IDS as readonly string[]).includes(id);
+}
+
 function priceLabel(value: any): string | null {
   if (typeof value?.priceString === "string" && value.priceString) return value.priceString;
   if (typeof value?.priceFormatted === "string" && value.priceFormatted) return value.priceFormatted;

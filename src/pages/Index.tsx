@@ -1,509 +1,265 @@
-import { useState } from "react";
-import { Eye, EyeOff, Copy, Trash2, Plus, ArrowUp, ArrowDown, RotateCcw } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  type FlameBlendMode,
-  type FlameLayer,
-  useCustomFlameLayers,
-} from "@/lib/custom-flame";
-
-/**
- * Flame Builder — käyttäjän oma liekki kerros kerrokselta.
- *
- * Vasen/yläpaneeli: live-esikatselu mustalla.
- * Oikea/alapaneeli: kerroslista + valitun kerroksen täydet säätimet.
- * Kaikki tila tallentuu localStorage:iin reaaliaikaisesti.
- */
-
-const BLEND_MODES: FlameBlendMode[] = [
-  "screen",
-  "lighten",
-  "color-dodge",
-  "plus-lighter",
-  "overlay",
-  "normal",
-];
+import { ChevronRight } from "lucide-react";
+import BadgeCard from "@/components/BadgeCard";
+import TierRiskBanner from "@/components/TierRiskBanner";
+import InviteCTA from "@/components/InviteCTA";
+import CommandDeck from "@/components/home/CommandDeck";
+import RankProgressHub from "@/components/home/RankProgressHub";
+import CoachStrip from "@/components/home/CoachStrip";
+import Reveal from "@/components/home/Reveal";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { getTierConfig } from "@/lib/status-tiers";
+import { useTierRisk } from "@/hooks/use-tier-risk";
+import { useMyRank } from "@/hooks/use-my-rank";
+import { useDailyPulse } from "@/hooks/use-daily-pulse";
 
 const Index = () => {
-  const {
-    layers,
-    updateLayer,
-    addLayer,
-    removeLayer,
-    duplicateLayer,
-    moveLayer,
-    reset,
-  } = useCustomFlameLayers();
-  const [selectedId, setSelectedId] = useState<string | null>(layers[0]?.id ?? null);
-  const selected = layers.find((l) => l.id === selectedId) ?? layers[0] ?? null;
+  const navigate = useNavigate();
+  const { profile, isElite } = useAuth();
+
+  const { data: latestNudge } = useQuery({
+    queryKey: ["latest-coach-nudge", profile?.user_id],
+    queryFn: async () => {
+      if (!profile || !isElite) return null;
+      const { data } = await supabase
+        .from("coach_nudges")
+        .select("id, headline, content, seen_at, created_at")
+        .eq("user_id", profile.user_id)
+        .is("seen_at", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!profile && isElite,
+  });
+
+  const { data: latestBriefing } = useQuery({
+    queryKey: ["latest-briefing", profile?.user_id],
+    queryFn: async () => {
+      if (!profile || !isElite) return null;
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await supabase
+        .from("weekly_briefings")
+        .select("id, headline, viewed_at, generated_at")
+        .eq("user_id", profile.user_id)
+        .gte("generated_at", sevenDaysAgo)
+        .order("generated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!profile && isElite,
+  });
+
+  const { data: userBadges } = useQuery({
+    queryKey: ["user-badges", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return [];
+      const { data } = await supabase
+        .from("user_badges")
+        .select("*, badges(*)")
+        .eq("user_id", profile.user_id)
+        .order("earned_at", { ascending: false })
+        .limit(3);
+      return data || [];
+    },
+    enabled: !!profile,
+  });
+
+  const { data: lastCheckin } = useQuery({
+    queryKey: ["last-checkin", profile?.user_id],
+    queryFn: async () => {
+      if (!profile) return null;
+      const { data } = await supabase
+        .from("daily_checkins")
+        .select("checked_in_at")
+        .eq("user_id", profile.user_id)
+        .order("checked_in_at", { ascending: false })
+        .limit(1)
+        .single();
+      return data;
+    },
+    enabled: !!profile,
+  });
+
+  const { data: rankData } = useMyRank(profile?.user_id);
+  const tierRisk = useTierRisk({
+    tier: profile?.status_tier || "recruit",
+    rankScore: Number((profile as any)?.rank_score) || 0,
+    streak: profile?.streak || 0,
+    lastCheckinAt: lastCheckin?.checked_in_at,
+  });
+
+  // Live rank delta for HeroHeader pulse line
+  const pulse = useDailyPulse(
+    profile?.user_id || "",
+    rankData?.rank ?? 0,
+    Number((profile as any)?.rank_score) || 0,
+    rankData?.totalUsers ?? 0,
+  );
+
+  if (!profile) return null;
+
+  const xpToNext = profile.level * 500;
+  const tier = profile.status_tier || "recruit";
+  const tierConfig = getTierConfig(tier);
+  const isLegend = tier === "legend";
+  const isApex = tier === "apex";
+
+  const canCheckin =
+    !lastCheckin ||
+    Date.now() - new Date(lastCheckin.checked_in_at).getTime() > 24 * 60 * 60 * 1000;
+
+  const getTimeUntilCheckin = () => {
+    if (!lastCheckin || canCheckin) return null;
+    const nextTime = new Date(lastCheckin.checked_in_at).getTime() + 24 * 60 * 60 * 1000;
+    const diff = nextTime - Date.now();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${mins}m`;
+  };
+
+  // Tier-reactive page-level aura — softer, wider falloff
+  const pageAura = isLegend
+    ? "radial-gradient(ellipse 90% 70% at center top, hsl(280 70% 60% / 0.11) 0%, hsl(42 78% 54% / 0.05) 45%, transparent 80%)"
+    : isApex
+    ? "radial-gradient(ellipse 90% 70% at center top, hsl(18 95% 58% / 0.10) 0%, hsl(42 78% 54% / 0.04) 45%, transparent 80%)"
+    : tier === "elite"
+    ? "radial-gradient(ellipse 90% 70% at center top, hsl(42 78% 54% / 0.10) 0%, hsl(180 70% 50% / 0.04) 45%, transparent 80%)"
+    : "radial-gradient(ellipse 90% 70% at center top, hsl(42 78% 54% / 0.075) 0%, hsl(42 78% 54% / 0.025) 45%, transparent 80%)";
 
   return (
-    <div className="h-full w-full flex flex-col bg-black text-foreground overflow-hidden">
-      {/* Header */}
-      <div className="shrink-0 px-4 pt-4 pb-3 flex items-center justify-between border-b border-border/40">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[hsl(18_95%_58%)]">
-            Flame Builder
-          </p>
-          <p className="text-[10px] text-muted-foreground/70 mt-0.5">
-            Rakenna oma liekki kerros kerrokselta
-          </p>
-        </div>
-        <Button
-          type="button"
-          size="sm"
-          onClick={reset}
-          className="h-7 px-3 text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(322_90%_55%)] via-[hsl(20_95%_56%)] to-[hsl(48_100%_64%)] text-white border-0 shadow-[0_0_14px_hsl(20_95%_56%/0.6)] hover:opacity-90"
-        >
-          <RotateCcw className="h-3 w-3 mr-1" />
-          Cinematic Inferno
-        </Button>
-      </div>
-
-      {/* Stage */}
+    <div className="h-full pb-6 px-4 pt-5 safe-top relative overflow-y-auto overflow-x-hidden">
+      {/* Tier-reactive top aura */}
       <div
-        className="shrink-0 relative"
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[760px] h-[460px] pointer-events-none z-0"
+        style={{ background: pageAura }}
+      />
+
+      {/* Ember band — soft fire-in-the-distance warmth tied to user's streak */}
+      {profile.streak >= 3 && (
+        <div
+          aria-hidden
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[520px] h-[180px] pointer-events-none z-0 opacity-70"
+          style={{
+            background:
+              isApex
+                ? "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(18 95% 58% / 0.22) 0%, hsl(42 78% 54% / 0.10) 40%, transparent 75%)"
+                : isLegend
+                ? "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(280 70% 60% / 0.20) 0%, hsl(42 78% 54% / 0.10) 40%, transparent 75%)"
+                : "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(18 92% 56% / 0.18) 0%, hsl(42 78% 54% / 0.08) 45%, transparent 80%)",
+          }}
+        />
+      )}
+
+      <div
+        className="absolute top-0 left-0 right-0 h-[1px] pointer-events-none z-10 opacity-25"
         style={{
-          height: "38vh",
-          minHeight: 240,
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 60%, hsl(0 0% 6%) 0%, hsl(0 0% 1.5%) 70%, #000 100%)",
+            "linear-gradient(90deg, transparent 10%, hsl(42 78% 54% / 0.6) 50%, transparent 90%)",
+          animation: "shimmer-slide 6s ease-in-out infinite",
         }}
-      >
-        <div className="absolute inset-0 flex items-end justify-center pb-6">
-          <FlameStage layers={layers} />
-        </div>
-        <span className="absolute top-2 right-3 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
-          {layers.filter((l) => l.visible).length} / {layers.length} layers
-        </span>
+      />
+
+      {/* COMMAND DECK — Streak + Lock Your Day */}
+      <div className="animate-reveal mb-4 relative z-10">
+        <CommandDeck
+          streak={profile.streak}
+          longestStreak={profile.longest_streak}
+          lastCheckinAt={lastCheckin?.checked_in_at}
+          canCheckin={canCheckin}
+          timeUntilCheckin={getTimeUntilCheckin()}
+          tier={tier}
+        />
       </div>
 
-      {/* Layer list + editor */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
-        {/* Layer list */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-              Kerrokset (taakse → eteen)
-            </p>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={addLayer}
-              className="h-7 px-2 text-[10px] font-black uppercase tracking-wider"
-            >
-              <Plus className="h-3 w-3 mr-1" />
-              Lisää
-            </Button>
-          </div>
-          <div className="space-y-1.5">
-            {layers.map((layer, idx) => {
-              const isSelected = layer.id === selectedId;
-              return (
-                <div
-                  key={layer.id}
-                  className={cn(
-                    "flex items-center gap-2 rounded-lg border px-2 py-1.5 transition-colors",
-                    isSelected
-                      ? "border-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%/0.08)]"
-                      : "border-border/50 hover:border-border bg-secondary/20",
-                  )}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setSelectedId(layer.id)}
-                    className="flex-1 flex items-center gap-2 text-left min-w-0"
-                  >
-                    <span
-                      className="block h-5 w-5 rounded-md ring-1 ring-black/40 shrink-0"
-                      style={{
-                        background: layer.color,
-                        boxShadow: `0 0 8px ${layer.color.replace(")", " / 0.6)")}`,
-                        opacity: layer.visible ? 1 : 0.3,
-                      }}
-                    />
-                    <span className="truncate text-xs font-bold">{layer.name}</span>
-                    <span className="text-[9px] text-muted-foreground/60 tabular-nums shrink-0">
-                      #{idx + 1}
-                    </span>
-                  </button>
-                  <div className="flex items-center gap-0.5">
-                    <IconBtn
-                      title="Visibility"
-                      onClick={() => updateLayer(layer.id, { visible: !layer.visible })}
-                    >
-                      {layer.visible ? (
-                        <Eye className="h-3 w-3" />
-                      ) : (
-                        <EyeOff className="h-3 w-3 opacity-50" />
-                      )}
-                    </IconBtn>
-                    <IconBtn
-                      title="Move back"
-                      disabled={idx === 0}
-                      onClick={() => moveLayer(layer.id, -1)}
-                    >
-                      <ArrowDown className="h-3 w-3" />
-                    </IconBtn>
-                    <IconBtn
-                      title="Move front"
-                      disabled={idx === layers.length - 1}
-                      onClick={() => moveLayer(layer.id, 1)}
-                    >
-                      <ArrowUp className="h-3 w-3" />
-                    </IconBtn>
-                    <IconBtn title="Duplicate" onClick={() => duplicateLayer(layer.id)}>
-                      <Copy className="h-3 w-3" />
-                    </IconBtn>
-                    <IconBtn
-                      title="Delete"
-                      disabled={layers.length <= 1}
-                      onClick={() => {
-                        if (layer.id === selectedId) {
-                          const next = layers.filter((l) => l.id !== layer.id);
-                          setSelectedId(next[0]?.id ?? null);
-                        }
-                        removeLayer(layer.id);
-                      }}
-                    >
-                      <Trash2 className="h-3 w-3 text-[hsl(0_75%_60%)]" />
-                    </IconBtn>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+      {/* TIER RISK */}
+      {tierRisk.level !== "safe" && (
+        <Reveal className="mb-4 relative z-10">
+          <TierRiskBanner risk={tierRisk} />
+        </Reveal>
+      )}
+
+      {/* RANK + PROGRESS HUB — identity strip + Pressure/Rivals/Level/Elite/Quests */}
+      <Reveal className="mb-4 relative z-10">
+        <RankProgressHub
+          username={profile.username}
+          tier={tier}
+          userId={profile.user_id}
+          rank={rankData?.rank ?? null}
+          totalUsers={rankData?.totalUsers ?? 0}
+          percentile={rankData?.percentile ?? 0}
+          hasRank={rankData?.hasRank ?? false}
+          rankScore={Number((profile as any).rank_score) || 0}
+          daysAtTier={
+            (profile as any).rank_score_updated_at
+              ? Math.max(
+                  1,
+                  Math.floor(
+                    (Date.now() -
+                      new Date((profile as any).rank_score_updated_at).getTime()) /
+                      (1000 * 60 * 60 * 24),
+                  ),
+                )
+              : undefined
+          }
+          rankDelta={pulse.loading ? 0 : pulse.rankDelta}
+          level={profile.level}
+          xp={profile.xp}
+          xpToNext={xpToNext}
+          canCheckin={canCheckin}
+        />
+      </Reveal>
+
+      {/* COACH STRIP */}
+      <Reveal className="mb-5 relative z-10">
+        <CoachStrip latestNudge={latestNudge ?? null} latestBriefing={latestBriefing ?? null} />
+      </Reveal>
+
+      {/* GROWTH ROW — Invite + Recent Badges */}
+      <Reveal className="mb-4">
+        <InviteCTA referralCount={profile.referral_count || 0} />
+      </Reveal>
+
+      <Reveal className="mb-2">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-display font-bold text-base tracking-tight">Recent Badges</h2>
+          <button
+            onClick={() => navigate("/profile")}
+            className="flex items-center gap-1 text-xs text-gold font-medium hover:underline"
+          >
+            View All <ChevronRight size={14} />
+          </button>
         </div>
-
-        {/* Editor for selected */}
-        {selected && (
-          <div className="rounded-xl border border-border/50 bg-secondary/20 p-3 space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <Input
-                value={selected.name}
-                onChange={(e) => updateLayer(selected.id, { name: e.target.value })}
-                className="h-7 text-xs font-bold bg-background/50"
+        {userBadges && userBadges.length > 0 ? (
+          <div className="grid grid-cols-3 gap-3">
+            {userBadges.map((ub: any) => (
+              <BadgeCard
+                key={ub.id}
+                name={ub.badges.name}
+                icon={ub.badges.icon}
+                rarity={ub.badges.rarity}
               />
-            </div>
-
-            {/* Color */}
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">
-                Väri (HSL)
-              </p>
-              <div className="flex items-center gap-2">
-                <span
-                  className="block h-9 w-9 rounded-md ring-1 ring-black/40 shrink-0"
-                  style={{
-                    background: selected.color,
-                    boxShadow: `0 0 12px ${selected.color.replace(")", " / 0.7)")}`,
-                  }}
-                />
-                <Input
-                  value={selected.color}
-                  onChange={(e) => updateLayer(selected.id, { color: e.target.value })}
-                  className="h-9 text-xs font-mono bg-background/50"
-                  placeholder="hsl(28 95% 58%)"
-                />
-              </div>
-              <HuePicker
-                value={selected.color}
-                onChange={(c) => updateLayer(selected.id, { color: c })}
-              />
-            </div>
-
-            <Row label="Leveys" value={`${selected.width}px`}>
-              <Slider
-                value={[selected.width]}
-                min={20}
-                max={400}
-                step={2}
-                onValueChange={(v) => updateLayer(selected.id, { width: v[0] })}
-              />
-            </Row>
-            <Row label="Korkeus" value={`${selected.height}px`}>
-              <Slider
-                value={[selected.height]}
-                min={20}
-                max={500}
-                step={2}
-                onValueChange={(v) => updateLayer(selected.id, { height: v[0] })}
-              />
-            </Row>
-            <Row label="Y-poikkeama" value={`${selected.offsetY}px`}>
-              <Slider
-                value={[selected.offsetY]}
-                min={-120}
-                max={120}
-                step={1}
-                onValueChange={(v) => updateLayer(selected.id, { offsetY: v[0] })}
-              />
-            </Row>
-            <Row label="X-poikkeama" value={`${selected.offsetX}px`}>
-              <Slider
-                value={[selected.offsetX]}
-                min={-120}
-                max={120}
-                step={1}
-                onValueChange={(v) => updateLayer(selected.id, { offsetX: v[0] })}
-              />
-            </Row>
-            <Row label="Opacity" value={`${Math.round(selected.opacity * 100)}%`}>
-              <Slider
-                value={[selected.opacity]}
-                min={0}
-                max={1}
-                step={0.02}
-                onValueChange={(v) => updateLayer(selected.id, { opacity: v[0] })}
-              />
-            </Row>
-            <Row label="Blur" value={`${selected.blur}px`}>
-              <Slider
-                value={[selected.blur]}
-                min={0}
-                max={60}
-                step={1}
-                onValueChange={(v) => updateLayer(selected.id, { blur: v[0] })}
-              />
-            </Row>
-
-            {/* Blend */}
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">
-                Blend mode
-              </p>
-              <div className="grid grid-cols-3 gap-1">
-                {BLEND_MODES.map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => updateLayer(selected.id, { blend: m })}
-                    className={cn(
-                      "px-2 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border transition-colors",
-                      selected.blend === m
-                        ? "bg-[hsl(18_95%_58%)] text-white border-transparent"
-                        : "bg-secondary/40 border-border/60 text-foreground/80 hover:bg-secondary/70",
-                    )}
-                  >
-                    {m}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <Row
-              label="Flicker speed"
-              value={selected.flickerSpeed === 0 ? "off" : `${selected.flickerSpeed.toFixed(2)}s`}
-            >
-              <Slider
-                value={[selected.flickerSpeed]}
-                min={0}
-                max={4}
-                step={0.05}
-                onValueChange={(v) => updateLayer(selected.id, { flickerSpeed: v[0] })}
-              />
-            </Row>
-            <Row label="Flicker amount" value={`${Math.round(selected.flickerAmount * 100)}%`}>
-              <Slider
-                value={[selected.flickerAmount]}
-                min={0}
-                max={1}
-                step={0.05}
-                onValueChange={(v) => updateLayer(selected.id, { flickerAmount: v[0] })}
-              />
-            </Row>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl glass-card p-6 text-center">
+            <p className="text-sm text-muted-foreground">Complete check-ins to earn badges</p>
           </div>
         )}
+      </Reveal>
 
-        <p className="text-[9px] text-muted-foreground/50 text-center pt-2">
-          Tallentuu automaattisesti tähän selaimeen.
+      {/* Tier message footer */}
+      <div className="mt-4 mb-2 text-center">
+        <p className="text-[10px] text-muted-foreground/40 font-semibold tracking-widest uppercase">
+          {tierConfig.message}
         </p>
       </div>
     </div>
   );
 };
-
-/* ─── Preview stage ───────────────────────────────────────────────────── */
-const FlameStage = ({ layers }: { layers: FlameLayer[] }) => (
-  <div className="relative" style={{ width: 320, height: 320, isolation: "isolate" }}>
-    {layers.map((layer, i) => {
-      if (!layer.visible) return null;
-      const flickerScaleMax = 1 + layer.flickerAmount * 0.12;
-      const flickerScaleMin = 1 - layer.flickerAmount * 0.06;
-      const flickerOpacityMin = Math.max(0.3, layer.opacity * (1 - layer.flickerAmount * 0.35));
-      const animation =
-        layer.flickerSpeed > 0
-          ? `custom-flame-flicker ${layer.flickerSpeed}s ease-in-out infinite`
-          : "none";
-      return (
-        <div
-          key={layer.id}
-          className="absolute pointer-events-none rounded-full"
-          style={{
-            left: "50%",
-            bottom: 0,
-            width: layer.width,
-            height: layer.height,
-            opacity: layer.opacity,
-            filter: layer.blur > 0 ? `blur(${layer.blur}px)` : undefined,
-            mixBlendMode: layer.blend,
-            zIndex: i,
-            background: `radial-gradient(ellipse at 50% 80%, ${layer.color} 0%, ${layer.color.replace(
-              ")",
-              " / 0.6)",
-            )} 35%, ${layer.color.replace(")", " / 0)")} 70%)`,
-            // Center horizontally + apply offsets via transform via CSS vars,
-            // so the flicker keyframe can layer its own translate cleanly.
-            transform: `translate(calc(-50% + ${layer.offsetX}px), ${-layer.offsetY}px)`,
-            // CSS vars consumed by @keyframes custom-flame-flicker
-            ["--cf-x" as string]: "0px",
-            ["--cf-y" as string]: "0px",
-            ["--cf-scale-min" as string]: flickerScaleMin.toString(),
-            ["--cf-scale-mid" as string]: "1",
-            ["--cf-scale-max" as string]: flickerScaleMax.toString(),
-            ["--cf-opacity-min" as string]: flickerOpacityMin.toString(),
-            ["--cf-opacity-mid" as string]: layer.opacity.toString(),
-            ["--cf-opacity-max" as string]: "1",
-            transformOrigin: "50% 100%",
-            // Wrap the actual flicker on a child via animation here — we'd lose
-            // the centering transform. Instead apply a second translate via
-            // animation that *adds* to the existing one through CSS vars.
-            animation,
-          }}
-        />
-      );
-    })}
-  </div>
-);
-
-/* ─── small helpers ───────────────────────────────────────────────────── */
-const Row = ({
-  label,
-  value,
-  children,
-}: {
-  label: string;
-  value: string;
-  children: React.ReactNode;
-}) => (
-  <div>
-    <div className="flex items-center justify-between mb-1">
-      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-        {label}
-      </p>
-      <span className="text-[10px] font-black tabular-nums text-foreground/90">{value}</span>
-    </div>
-    {children}
-  </div>
-);
-
-const IconBtn = ({
-  children,
-  onClick,
-  title,
-  disabled,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  title: string;
-  disabled?: boolean;
-}) => (
-  <button
-    type="button"
-    title={title}
-    onClick={onClick}
-    disabled={disabled}
-    className="h-6 w-6 rounded-md inline-flex items-center justify-center text-foreground/80 hover:bg-foreground/10 disabled:opacity-30 disabled:pointer-events-none"
-  >
-    {children}
-  </button>
-);
-
-/** Quick HSL hue strip — drags through the rainbow at fixed S/L. */
-const HuePicker = ({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (next: string) => void;
-}) => {
-  // Parse "hsl(H S% L%)" — fall back to 28/95/58 defaults if it doesn't match.
-  const m = value.match(/hsl\(\s*(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/);
-  const h = m ? Number(m[1]) : 28;
-  const s = m ? Number(m[2]) : 95;
-  const l = m ? Number(m[3]) : 58;
-
-  const setH = (next: number) => onChange(`hsl(${Math.round(next)} ${s}% ${l}%)`);
-  const setS = (next: number) => onChange(`hsl(${h} ${Math.round(next)}% ${l}%)`);
-  const setL = (next: number) => onChange(`hsl(${h} ${s}% ${Math.round(next)}%)`);
-
-  return (
-    <div className="mt-2 space-y-2">
-      <HslStrip
-        label={`H ${Math.round(h)}°`}
-        value={h}
-        max={360}
-        gradient="linear-gradient(to right, hsl(0 95% 58%), hsl(60 95% 58%), hsl(120 95% 58%), hsl(180 95% 58%), hsl(240 95% 58%), hsl(300 95% 58%), hsl(360 95% 58%))"
-        onChange={setH}
-      />
-      <HslStrip
-        label={`S ${Math.round(s)}%`}
-        value={s}
-        max={100}
-        gradient={`linear-gradient(to right, hsl(${h} 0% ${l}%), hsl(${h} 100% ${l}%))`}
-        onChange={setS}
-      />
-      <HslStrip
-        label={`L ${Math.round(l)}%`}
-        value={l}
-        max={100}
-        gradient={`linear-gradient(to right, hsl(${h} ${s}% 0%), hsl(${h} ${s}% 50%), hsl(${h} ${s}% 100%))`}
-        onChange={setL}
-      />
-    </div>
-  );
-};
-
-const HslStrip = ({
-  label,
-  value,
-  max,
-  gradient,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  max: number;
-  gradient: string;
-  onChange: (v: number) => void;
-}) => (
-  <div>
-    <div className="flex items-center justify-between mb-0.5">
-      <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground/80">
-        {label}
-      </p>
-    </div>
-    <div className="relative h-6 rounded-md overflow-hidden ring-1 ring-border/60" style={{ background: gradient }}>
-      <input
-        type="range"
-        min={0}
-        max={max}
-        step={1}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-      />
-      <span
-        aria-hidden
-        className="absolute top-0 bottom-0 w-1 bg-white/90 rounded-full pointer-events-none shadow-[0_0_4px_rgba(0,0,0,0.6)]"
-        style={{ left: `calc(${(value / max) * 100}% - 2px)` }}
-      />
-    </div>
-  </div>
-);
 
 export default Index;

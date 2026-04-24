@@ -2725,6 +2725,20 @@
   50%      { transform: scale(1.035); filter: brightness(1.18); }
 }
 
+/* Roaring bonfire side tongues — three offset rhythms so layers don't sync */
+@keyframes flame-roar-0 {
+  0%, 100% { transform: translateX(var(--rx, 0px)) translateY(var(--ry, 0px)) rotate(var(--rr, 0deg)) scale(var(--sx, 1), var(--sy, 1)); }
+  50%      { transform: translateX(calc(var(--rx, 0px) - 4px)) translateY(calc(var(--ry, 0px) - 6px)) rotate(calc(var(--rr, 0deg) - 4deg)) scale(calc(var(--sx, 1) * 0.96), calc(var(--sy, 1) * 1.08)); }
+}
+@keyframes flame-roar-1 {
+  0%, 100% { transform: translateX(var(--rx, 0px)) translateY(var(--ry, 0px)) rotate(var(--rr, 0deg)) scale(var(--sx, 1), var(--sy, 1)); }
+  50%      { transform: translateX(calc(var(--rx, 0px) + 5px)) translateY(calc(var(--ry, 0px) - 8px)) rotate(calc(var(--rr, 0deg) + 5deg)) scale(calc(var(--sx, 1) * 1.04), calc(var(--sy, 1) * 1.12)); }
+}
+@keyframes flame-roar-2 {
+  0%, 100% { transform: translateX(var(--rx, 0px)) translateY(var(--ry, 0px)) rotate(var(--rr, 0deg)) scale(var(--sx, 1), var(--sy, 1)); }
+  50%      { transform: translateX(var(--rx, 0px)) translateY(calc(var(--ry, 0px) - 10px)) rotate(var(--rr, 0deg)) scale(calc(var(--sx, 1) * 1.02), calc(var(--sy, 1) * 1.06)); }
+}
+
 /* === Realistic depth utility v2 — premium 3D card lift with side rims, contact shadow,
        AND a top specular highlight that reads as light hitting glass. === */
 .depth-realistic {

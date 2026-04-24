@@ -15,8 +15,7 @@ import IosEntryHero from "@/components/paywall/IosEntryHero";
 import IosApexSecondary from "@/components/paywall/IosApexSecondary";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
-const ELITE_PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"];
-const PRIMARY_ELITE_PRODUCT_ID = ELITE_PRODUCT_IDS[0];
+
 
 const MEMBER_FEATURES = [
   { icon: Flame, text: "Daily check-ins, XP, streaks" },

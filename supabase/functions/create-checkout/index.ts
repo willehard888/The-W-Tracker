@@ -65,12 +65,12 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      metadata: { tier, user_id: user.id },
+      metadata: { tier, plan, user_id: user.id },
       success_url: `${req.headers.get("origin")}/profile?checkout=success`,
       cancel_url: `${req.headers.get("origin")}/paywall`,
     });
 
-    return new Response(JSON.stringify({ url: session.url, tier }), {
+    return new Response(JSON.stringify({ url: session.url, tier, plan }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

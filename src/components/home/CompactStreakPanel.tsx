@@ -566,14 +566,17 @@ const CompactStreakPanel = ({
             </>
           )}
 
-          <span className={cn("relative z-10 flame-bowl", isHot && "")}>
+          {/* Flame — rises from behind the logs, on top of the ember bed */}
+          <span
+            className={cn("absolute inset-x-0 bottom-[6px] z-[6] flex items-end justify-center pointer-events-none flame-bowl")}
+          >
             <RealisticFlame
               tier={tier.index}
               accent={accent}
-              size={62}
+              size={60}
             />
           </span>
-          {/* Ground glow — bigger, hotter, sells the heat */}
+          {/* Ground glow — outside the chamber, sells radiated heat */}
           {isHot && (
             <span
               aria-hidden
@@ -583,6 +586,7 @@ const CompactStreakPanel = ({
                 filter: "blur(4px)",
                 animation: "streak-ground-pulse 2s ease-in-out infinite",
                 transform: "translateX(-50%)",
+                zIndex: 7,
               }}
             />
           )}

@@ -3,6 +3,7 @@ import BadgeCard from "@/components/BadgeCard";
 import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
+import FireStreakVideo from "@/components/home/FireStreakVideo";
 import RankProgressHub from "@/components/home/RankProgressHub";
 import CoachStrip from "@/components/home/CoachStrip";
 import Reveal from "@/components/home/Reveal";

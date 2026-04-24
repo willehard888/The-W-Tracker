@@ -55,12 +55,11 @@ const Index = () => {
         <Button
           type="button"
           size="sm"
-          variant="ghost"
           onClick={reset}
-          className="h-7 px-2 text-[10px] font-black uppercase tracking-wider"
+          className="h-7 px-3 text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(322_90%_55%)] via-[hsl(20_95%_56%)] to-[hsl(48_100%_64%)] text-white border-0 shadow-[0_0_14px_hsl(20_95%_56%/0.6)] hover:opacity-90"
         >
           <RotateCcw className="h-3 w-3 mr-1" />
-          Reset
+          Cinematic Inferno
         </Button>
       </div>
 

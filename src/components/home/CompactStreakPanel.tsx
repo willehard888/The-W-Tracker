@@ -752,7 +752,7 @@ const CompactStreakPanel = ({
           {/* === NEXT-LEVEL CORE OVERLAYS — only on the central flame, sits ON TOP === */}
           {isHot && (() => {
             const master = Math.round(
-              80 + Math.min(100, Math.pow(Math.min(displayStreak, 120), 0.6) * 9.5),
+              64 + Math.min(70, Math.pow(Math.min(displayStreak, 120), 0.6) * 6.7),
             );
             return (
               <>

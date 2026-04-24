@@ -34,7 +34,7 @@ const ALL_PRODUCT_IDS = [
 
 const PRIMARY_ELITE_PRODUCT_ID = "elitemonthly499";
 const PRIMARY_APEX_PRODUCT_ID = "Apex888";
-const PRIMARY_ELITE_YEARLY_PRODUCT_ID = "eliteyearly4799";
+const PRIMARY_ELITE_YEARLY_PRODUCT_ID = "eliteyearly4999";
 const PRIMARY_APEX_YEARLY_PRODUCT_ID = "apexyearly17299";
 
 // ─── Types ──────────────────────────────────────────────

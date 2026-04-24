@@ -242,23 +242,27 @@ const CompactStreakPanel = ({
     [],
   );
 
+  // Panel grows with streak so big flames never clip
+  const panelMinH = 240 + Math.min(120, Math.round(Math.pow(Math.min(displayStreak, 120), 0.62) * 11));
+
   return (
     <div
       className={cn(
-        "relative rounded-2xl overflow-hidden p-4 pt-6 border flex flex-col justify-between gap-3 isolate min-h-[260px]",
+        "relative rounded-2xl overflow-hidden p-4 pt-6 border flex flex-col justify-between gap-3 isolate",
         isHot && "depth-realistic-warm",
         !isHot && "depth-realistic",
         className,
       )}
       style={{
+        minHeight: `${panelMinH}px`,
         borderColor: isHot ? `${accent.replace(")", " / 0.55)")}` : "hsl(var(--border))",
         // Pure dark — deep black with a subtle warm ember vignette at the bottom only
         background: isHot
-          ? `radial-gradient(ellipse 70% 50% at 22% 100%, ${accent.replace(")", " / 0.10)")} 0%, transparent 60%),
+          ? `radial-gradient(ellipse 70% 50% at 22% 100%, hsl(18 95% 50% / 0.10) 0%, transparent 60%),
              radial-gradient(120% 90% at 50% 0%, hsl(0 0% 4%), hsl(0 0% 2%))`
           : "linear-gradient(135deg, hsl(0 0% 5%), hsl(0 0% 2%))",
         boxShadow: isHot
-          ? `inset 0 0 60px hsl(0 0% 0% / 0.7), 0 0 32px ${accent.replace(")", " / 0.12)")}`
+          ? `inset 0 0 60px hsl(0 0% 0% / 0.7), 0 0 32px hsl(18 95% 50% / 0.12)`
           : "inset 0 0 40px hsl(0 0% 0% / 0.6)",
       }}
     >
@@ -573,27 +577,50 @@ const CompactStreakPanel = ({
             </>
           )}
 
-          {/* Flame — anchored to the ember bed but rises FAR above the chamber.
-              Sits in panel-space (overflow visible from chamber, clipped only by panel). */}
-          <span
-            className={cn(
-              "absolute left-1/2 -translate-x-1/2 bottom-[6px] z-[20] flex items-end justify-center pointer-events-none flame-bowl",
-            )}
-            style={{
-              width: 160,
-              height: 200,
-              filter: isHot
-                ? `drop-shadow(0 -6px 24px ${accent.replace(")", " / 0.85)")}) drop-shadow(0 -16px 48px ${accent.replace(")", " / 0.55)")}) drop-shadow(0 -28px 72px ${accent.replace(")", " / 0.3)")})`
-                : undefined,
-            }}
-          >
-            <RealisticFlame
-              tier={Math.max(tier.index, 4)}
-              accent={accent}
-              size={160}
-              interactive={false}
-            />
-          </span>
+          {/* Flame — REAL fire: red/orange palette, scales LIVE with streak.
+              Size grows from 90px (3d) to 220px (100d+); intensity layers up via tier. */}
+          {(() => {
+            // Force a warm red/orange accent regardless of tier color (no purple/blue).
+            const fireAccent = isLegendary
+              ? "hsl(20 100% 55%)"
+              : isDiamond
+              ? "hsl(22 98% 56%)"
+              : isBlazing
+              ? "hsl(24 96% 56%)"
+              : isOnFire
+              ? "hsl(18 95% 54%)"
+              : isWarm
+              ? "hsl(14 92% 52%)"
+              : "hsl(12 88% 50%)";
+
+            // Live streak → size mapping (true reactivity, not just tier buckets)
+            // 0d: 80px, 3d: 96, 7d: 112, 14d: 132, 30d: 156, 60d: 184, 100d+: 220
+            const streakSize = Math.round(
+              80 + Math.min(140, Math.pow(Math.min(displayStreak, 120), 0.62) * 13),
+            );
+            // Cap tier so palette stays warm (Diamond=4 to keep all rich layers but no purple)
+            const cappedTier = Math.min(Math.max(tier.index, 2), 4);
+
+            return (
+              <span
+                className={cn(
+                  "absolute left-1/2 -translate-x-1/2 bottom-[6px] z-[20] flex items-end justify-center pointer-events-none flame-bowl",
+                )}
+                style={{
+                  width: streakSize,
+                  height: Math.round(streakSize * 1.25),
+                  filter: `drop-shadow(0 -6px ${10 + displayStreak * 0.4}px ${fireAccent.replace(")", " / 0.9)")}) drop-shadow(0 -16px ${24 + displayStreak * 0.6}px ${fireAccent.replace(")", " / 0.55)")}) drop-shadow(0 -28px ${40 + displayStreak * 0.8}px ${fireAccent.replace(")", " / 0.3)")})`,
+                }}
+              >
+                <RealisticFlame
+                  tier={cappedTier}
+                  accent={fireAccent}
+                  size={streakSize}
+                  interactive={false}
+                />
+              </span>
+            );
+          })()}
           {/* Ground glow — outside the chamber, sells radiated heat */}
           {isHot && (
             <span

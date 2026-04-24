@@ -591,71 +591,40 @@ const CompactStreakPanel = ({
             const dropShadow = (acc: string, mul: number) =>
               `drop-shadow(0 -4px ${(8 + displayStreak * 0.3) * mul}px ${acc.replace(")", " / 0.85)")}) drop-shadow(0 -12px ${(20 + displayStreak * 0.5) * mul}px ${acc.replace(")", " / 0.45)")})`;
 
-            // ONE UNIFIED BONFIRE — all flames stacked at center, no horizontal spread.
-            // Layers vary only in size/blur/opacity to build volumetric depth.
+            // ONE UNIFIED BONFIRE — three tightly-stacked cores at the exact same point.
+            // Inner = brightest, Outer = wide blurred halo. NO horizontal offsets — pure vertical depth.
             const layers = [
-              // Halo — wide hot-air mass, very blurred, deep red, sits behind everything
+              // Wide blurred outer halo — the "hot air mass" that makes the bonfire feel huge
               {
-                size: Math.round(master * 1.05),
-                accent: "hsl(14 88% 45%)",
-                tier: Math.max(cappedTier - 2, 1),
-                offsetX: 0,
-                offsetY: 8,
-                z: 1,
-                opacity: 0.45,
-                scaleX: 1.1,
-                scaleY: 0.85,
-                blur: 4,
-                shadowMul: 0.4,
-              },
-              // Outer body — tall warm orange wash, slight blur for atmosphere
-              {
-                size: Math.round(master * 0.9),
-                accent: "hsl(16 92% 50%)",
+                size: Math.round(master * 1.15),
+                accent: "hsl(14 90% 46%)",
                 tier: Math.max(cappedTier - 1, 2),
-                offsetX: 0,
                 offsetY: 4,
-                z: 2,
-                opacity: 0.7,
-                scaleX: 1.02,
-                scaleY: 1.0,
-                blur: 1.6,
-                shadowMul: 0.6,
+                z: 1,
+                opacity: 0.42,
+                scaleX: 1.05,
+                scaleY: 0.92,
+                blur: 5,
+                shadowMul: 0.5,
               },
-              // Mid body — primary orange tongue
+              // Mid body — full warm orange tongue
               {
-                size: Math.round(master * 0.82),
+                size: Math.round(master * 0.92),
                 accent: "hsl(20 96% 54%)",
-                tier: Math.max(cappedTier - 1, 2),
-                offsetX: 0,
+                tier: cappedTier,
                 offsetY: 2,
                 z: 3,
                 opacity: 0.85,
-                scaleX: 0.95,
-                scaleY: 1.05,
-                blur: 0.6,
-                shadowMul: 0.75,
+                scaleX: 0.98,
+                scaleY: 1.0,
+                blur: 1.2,
+                shadowMul: 0.78,
               },
-              // Inner body — bright tongue, slightly mirrored to break symmetry
-              {
-                size: Math.round(master * 0.7),
-                accent: "hsl(24 100% 58%)",
-                tier: cappedTier,
-                offsetX: 0,
-                offsetY: 1,
-                z: 4,
-                opacity: 0.92,
-                scaleX: -0.92,
-                scaleY: 1.02,
-                blur: 0.2,
-                shadowMul: 0.85,
-              },
-              // CENTER core — tallest, hottest, frontmost
+              // CENTER core — the brightest, hottest, most defined flame
               {
                 size: master,
-                accent: "hsl(22 100% 56%)",
+                accent: "hsl(24 100% 58%)",
                 tier: cappedTier,
-                offsetX: 0,
                 offsetY: 0,
                 z: 5,
                 opacity: 1,
@@ -670,8 +639,8 @@ const CompactStreakPanel = ({
               <div
                 className="absolute left-1/2 bottom-[2px] z-[20] pointer-events-none"
                 style={{
-                  width: Math.round(master * 1.2),
-                  height: Math.round(master * 1.5),
+                  width: Math.round(master * 1.3),
+                  height: Math.round(master * 1.55),
                   transform: "translateX(-50%)",
                   overflow: "visible",
                 }}
@@ -689,7 +658,7 @@ const CompactStreakPanel = ({
                       filter: `${dropShadow(L.accent, L.shadowMul)}${L.blur ? ` blur(${L.blur}px)` : ""}`,
                       opacity: L.opacity,
                       zIndex: L.z,
-                      mixBlendMode: i < 4 ? "lighten" : "normal",
+                      mixBlendMode: i < 2 ? "lighten" : "normal",
                     }}
                   >
                     <RealisticFlame

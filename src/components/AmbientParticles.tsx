@@ -82,8 +82,8 @@ const AmbientParticles = () => {
     };
     document.addEventListener("visibilitychange", onVisibility);
 
-    // Throttle to ~30 fps — visually identical for ambient drift, halves the GPU cost.
-    const FRAME_MS = 1000 / 30;
+    // Throttle frame rate — 24fps on mobile, 30fps elsewhere. Visually identical for ambient drift.
+    const FRAME_MS = 1000 / (isMobile ? 24 : 30);
     let last = 0;
     const animate = (now: number) => {
       if (!running.current) return;

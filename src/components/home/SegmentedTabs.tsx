@@ -28,17 +28,29 @@ const SegmentedTabs = ({
   const activeTab = tabs.find((t) => t.id === active) || tabs[0];
 
   return (
-    <div className={cn("rounded-2xl glass-card-gold p-3 relative overflow-hidden", className)}>
+    <div className={cn("rounded-2xl glass-card-gold p-3.5 relative overflow-hidden", className)}>
       {title && (
-        <p
-          className="text-[10px] font-black uppercase tracking-[0.22em] mb-2 px-1"
-          style={{ color: titleAccent || "hsl(var(--muted-foreground))" }}
-        >
-          {title}
-        </p>
+        <div className="flex items-center gap-2 mb-3 px-0.5">
+          <span
+            className="h-[3px] w-[3px] rounded-full"
+            style={{ background: titleAccent || "hsl(var(--muted-foreground))", boxShadow: `0 0 8px ${titleAccent || "hsl(var(--muted-foreground))"}` }}
+          />
+          <p
+            className="text-[10px] font-black uppercase tracking-[0.28em]"
+            style={{ color: titleAccent || "hsl(var(--muted-foreground))" }}
+          >
+            {title}
+          </p>
+          <span
+            className="flex-1 h-px"
+            style={{
+              background: `linear-gradient(to right, ${titleAccent || "hsl(var(--border))"}33, transparent)`,
+            }}
+          />
+        </div>
       )}
-      <div className="segmented-tabs-wrap mb-3">
-        <div className="flex gap-1 p-1 rounded-xl bg-secondary/60 border border-border/60">
+      <div className="segmented-tabs-wrap mb-3.5">
+        <div className="flex gap-0.5 p-[3px] rounded-full bg-[hsl(255_14%_8%)] border border-border/40 shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.4)]">
           {tabs.map((t) => {
             const isActive = t.id === active;
             return (
@@ -47,10 +59,10 @@ const SegmentedTabs = ({
                 type="button"
                 onClick={() => setActive(t.id)}
                 className={cn(
-                  "flex-1 text-[11px] font-black uppercase tracking-wider py-1.5 rounded-lg transition-all relative",
+                  "flex-1 text-[10px] font-black uppercase tracking-[0.14em] py-1.5 px-1 rounded-full transition-all duration-300 relative",
                   isActive
-                    ? "bg-gradient-to-br from-gold/90 to-gold-dark text-primary-foreground shadow-[0_2px_10px_-2px_hsl(42_78%_54%/0.6)]"
-                    : "text-muted-foreground hover:text-foreground",
+                    ? "bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] shadow-[0_2px_8px_-1px_hsl(42_78%_54%/0.55),inset_0_1px_0_hsl(42_95%_75%/0.6)]"
+                    : "text-muted-foreground/70 hover:text-foreground/90",
                 )}
               >
                 <span className="inline-flex items-center gap-1.5 justify-center">

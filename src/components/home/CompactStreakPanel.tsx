@@ -699,6 +699,81 @@ const CompactStreakPanel = ({
               </div>
             );
           })()}
+
+          {/* === NEXT-LEVEL CORE OVERLAYS — only on the central flame, sits ON TOP === */}
+          {isHot && (() => {
+            const master = Math.round(
+              80 + Math.min(100, Math.pow(Math.min(displayStreak, 120), 0.6) * 9.5),
+            );
+            return (
+              <>
+                {/* White-hot plasma sliver — narrow vertical wick of pure white at the
+                    flame's heart. Sells "this fire is burning at 1500°C". */}
+                <span
+                  aria-hidden
+                  className="absolute left-1/2 pointer-events-none rounded-full"
+                  style={{
+                    width: Math.round(master * 0.13),
+                    height: Math.round(master * 0.55),
+                    bottom: Math.round(master * 0.18),
+                    transform: "translateX(-50%)",
+                    background: `linear-gradient(180deg,
+                      hsl(0 0% 100% / 0) 0%,
+                      hsl(48 100% 92% / 0.95) 35%,
+                      hsl(50 100% 96%) 55%,
+                      hsl(42 100% 80% / 0.85) 80%,
+                      hsl(28 95% 60% / 0) 100%)`,
+                    filter: `blur(0.6px) drop-shadow(0 0 ${Math.round(master * 0.18)}px hsl(48 100% 90% / 0.9))`,
+                    animation: "streak-fuel-pulse 1.6s ease-in-out infinite",
+                    mixBlendMode: "screen",
+                    zIndex: 25,
+                  }}
+                />
+
+                {/* Sharp gold tip — flickering bright tongue at the very top of the core */}
+                <span
+                  aria-hidden
+                  className="absolute left-1/2 pointer-events-none"
+                  style={{
+                    width: Math.round(master * 0.18),
+                    height: Math.round(master * 0.28),
+                    bottom: Math.round(master * 0.95),
+                    transform: "translateX(-50%)",
+                    background: `radial-gradient(ellipse at 50% 80%,
+                      hsl(50 100% 88%) 0%,
+                      hsl(42 100% 70% / 0.9) 40%,
+                      hsl(28 95% 60% / 0.4) 70%,
+                      transparent 100%)`,
+                    borderRadius: "50% 50% 50% 50% / 70% 70% 30% 30%",
+                    filter: `drop-shadow(0 -4px ${Math.round(master * 0.2)}px hsl(42 100% 65% / 0.85))`,
+                    animation: "flame-roar-2 1.4s ease-in-out infinite",
+                    mixBlendMode: "screen",
+                    zIndex: 26,
+                  }}
+                />
+
+                {/* Cool blue undertone at the base — real flames have a thin blue band
+                    where combustion is hottest. Diamond+ gets it stronger. */}
+                <span
+                  aria-hidden
+                  className="absolute left-1/2 pointer-events-none rounded-full"
+                  style={{
+                    width: Math.round(master * 0.5),
+                    height: Math.round(master * 0.18),
+                    bottom: Math.round(master * 0.06),
+                    transform: "translateX(-50%)",
+                    background: `radial-gradient(ellipse at 50% 50%,
+                      hsl(200 95% 70% / ${isDiamond ? 0.55 : 0.35}) 0%,
+                      hsl(220 90% 60% / ${isDiamond ? 0.3 : 0.18}) 40%,
+                      transparent 75%)`,
+                    filter: "blur(2px)",
+                    mixBlendMode: "screen",
+                    zIndex: 24,
+                  }}
+                />
+              </>
+            );
+          })()}
           {/* Ground glow — outside the chamber, sells radiated heat */}
           {isHot && (
             <span

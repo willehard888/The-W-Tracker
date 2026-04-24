@@ -46,9 +46,9 @@ const IosEntryHero = ({
   const resolvedFootnote =
     footnote ??
     (isYearly
-      ? `Free for 7 days · then ${yearlyPriceLabel}/yr · Cancel anytime`
-      : `Free for 7 days · then ${monthlyPriceLabel}/mo · Cancel anytime`);
-  const resolvedCtaLabel = ctaLabel ?? "Start 7-Day Trial";
+      ? `Billed ${yearlyPriceLabel}/yr · Cancel anytime`
+      : `Billed ${monthlyPriceLabel}/mo · Cancel anytime`);
+  const resolvedCtaLabel = ctaLabel ?? "Become a Member";
 
   return (
     <div
@@ -86,7 +86,7 @@ const IosEntryHero = ({
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/70 backdrop-blur border border-gold/40 shadow-[0_0_16px_hsl(var(--gold)/0.4)]">
             <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
             <span className="text-[10px] font-black tracking-[0.2em] uppercase text-gold">
-              7 Days. Then prove it.
+              Members only. Pay to enter.
             </span>
           </div>
         </div>
@@ -96,9 +96,8 @@ const IosEntryHero = ({
           Become a Member
         </h2>
         <p className="text-center text-[12px] text-muted-foreground mb-5 max-w-[260px] mx-auto leading-relaxed">
-          One way in. Full access for 7 days — then{" "}
-          <span className="text-gold font-semibold">{activePrice}{cadence}</span> if
-          you're built for it.
+          One way in. Membership unlocks everything —{" "}
+          <span className="text-gold font-semibold">{activePrice}{cadence}</span>.
         </p>
 
         {/* Billing toggle */}
@@ -165,7 +164,7 @@ const IosEntryHero = ({
             </p>
           ) : (
             <p className="text-[10px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
-              Free for 7 days · No charge until day 8
+              Billed monthly · Cancel anytime
             </p>
           )}
         </div>

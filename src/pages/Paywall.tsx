@@ -302,16 +302,16 @@ const Paywall = () => {
           <PaywallTierCard
             variant="elite"
             title="Member"
-            badgeLabel="7-day free trial"
-            tagline="Full access, then earn your status."
+            badgeLabel="Members only"
+            tagline="Pay to enter. Earn your status."
             priceLabel={elitePrice}
             yearlyPriceLabel={eliteYearlyPrice}
-            ctaLabel="Start 7-Day Trial"
+            ctaLabel="Become a Member"
             ctaIcon={<ShieldCheck size={18} />}
             features={MEMBER_FEATURES}
             loading={purchasingTier === "elite"}
             onCta={(plan) => handleStripeCheckout("elite", plan)}
-            footnote={`Free for 7 days · cancel anytime.`}
+            footnote={`Billed ${elitePrice}/mo · cancel anytime.`}
           />
 
           {/* Apex Instant tier */}

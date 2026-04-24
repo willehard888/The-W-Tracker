@@ -2,6 +2,11 @@ import { Zap, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getEffectiveStreak, getStreakDeadlineState } from "@/lib/streak";
+import {
+  applyFlameOpacity,
+  selectKeptLayerIndices,
+  useFlameDevSettings,
+} from "@/lib/flame-dev-settings";
 import RealisticFlame from "./RealisticFlame";
 
 interface CompactStreakPanelProps {
@@ -112,6 +117,7 @@ const CompactStreakPanel = ({
   const displayStreak = getEffectiveStreak(streak, lastCheckinAt);
   const deadline = getStreakDeadlineState(streak, lastCheckinAt);
   const tier = getStreakTier(displayStreak);
+  const flameSettings = useFlameDevSettings();
 
   const isHot = tier.index >= 0;
   const isWarm = tier.index >= 1;
@@ -1009,6 +1015,17 @@ const CompactStreakPanel = ({
               },
             ];
 
+            // Apply dev settings: filter layers by density (drops outer/back
+            // first, keeps high-z core), then re-map opacity per layer.
+            const keptIndices = selectKeptLayerIndices(layers, flameSettings.layerDensity);
+            const visibleLayers = layers
+              .map((L, i) => ({ L, i }))
+              .filter(({ i }) => keptIndices.has(i));
+
+            // High-contrast mode also boosts shadow strength on the core.
+            const contrastShadowBoost =
+              flameSettings.contrastMode === "high-contrast" ? 1.6 : 1;
+
             const bowlWidth = Math.round(master * 1.85);
             const bowlHeight = Math.round(master * 2.2);
 
@@ -1022,7 +1039,7 @@ const CompactStreakPanel = ({
                   overflow: "visible",
                 }}
               >
-                {layers.map((L, i) => (
+                {visibleLayers.map(({ L, i }) => (
                   <span
                     key={i}
                     className="absolute left-1/2 bottom-0 flex items-end justify-center"
@@ -1043,8 +1060,8 @@ const CompactStreakPanel = ({
                       } as React.CSSProperties),
                       transform: `translateX(${L.offsetX}px) translateY(${L.offsetY}px) rotate(${L.rotate}deg)`,
                       transformOrigin: "center bottom",
-                      filter: dropShadow(L.accent, L.shadowMul),
-                      opacity: L.opacity,
+                      filter: dropShadow(L.accent, L.shadowMul * contrastShadowBoost),
+                      opacity: applyFlameOpacity(L.opacity, L.z, flameSettings),
                       zIndex: L.z,
                       animation: `${L.rhythm} ${L.duration.toFixed(2)}s ${L.easing} infinite`,
                       animationDelay: `${L.delay.toFixed(2)}s`,

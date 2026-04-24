@@ -245,7 +245,7 @@ const CompactStreakPanel = ({
   return (
     <div
       className={cn(
-        "relative rounded-2xl p-4 border flex flex-col justify-between gap-3 isolate min-h-[200px]",
+        "relative rounded-2xl overflow-hidden p-4 pt-6 border flex flex-col justify-between gap-3 isolate min-h-[260px]",
         isHot && "depth-realistic-warm",
         !isHot && "depth-realistic",
         className,
@@ -573,23 +573,25 @@ const CompactStreakPanel = ({
             </>
           )}
 
-          {/* Flame — rises from behind the logs and shoots up far beyond the chamber rim (2× scale) */}
+          {/* Flame — anchored to the ember bed but rises FAR above the chamber.
+              Sits in panel-space (overflow visible from chamber, clipped only by panel). */}
           <span
             className={cn(
               "absolute left-1/2 -translate-x-1/2 bottom-[6px] z-[20] flex items-end justify-center pointer-events-none flame-bowl",
             )}
             style={{
-              width: 180,
-              height: 220,
+              width: 160,
+              height: 200,
               filter: isHot
-                ? `drop-shadow(0 -8px 28px ${accent.replace(")", " / 0.85)")}) drop-shadow(0 -18px 56px ${accent.replace(")", " / 0.6)")}) drop-shadow(0 -32px 80px ${accent.replace(")", " / 0.35)")})`
+                ? `drop-shadow(0 -6px 24px ${accent.replace(")", " / 0.85)")}) drop-shadow(0 -16px 48px ${accent.replace(")", " / 0.55)")}) drop-shadow(0 -28px 72px ${accent.replace(")", " / 0.3)")})`
                 : undefined,
             }}
           >
             <RealisticFlame
-              tier={tier.index}
+              tier={Math.max(tier.index, 4)}
               accent={accent}
-              size={180}
+              size={160}
+              interactive={false}
             />
           </span>
           {/* Ground glow — outside the chamber, sells radiated heat */}

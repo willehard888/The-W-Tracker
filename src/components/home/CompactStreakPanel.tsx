@@ -354,23 +354,22 @@ const CompactStreakPanel = ({
         )}
       </div>
 
-      {/* Hero: flame + number — flame is the FOCAL POINT, oversized intentionally */}
+      {/* Hero: 3-flame fire-pit + number — flame trio is the FOCAL POINT */}
       <div className="relative flex items-center gap-3.5 z-10">
         <div
-          className="relative flex h-20 w-20 items-center justify-center rounded-2xl shrink-0"
+          className="relative flex h-44 w-32 items-end justify-center rounded-2xl shrink-0 pb-1"
           style={{
             // Stone fire-pit: deep black chamber with warm ember glow at the very bottom
             background: isHot
               ? `
-                radial-gradient(ellipse 80% 50% at 50% 108%, ${accent.replace(")", " / 0.9)")} 0%, ${accent.replace(")", " / 0.32)")} 26%, transparent 55%),
-                radial-gradient(ellipse at 50% 115%, hsl(18 75% 22%) 0%, hsl(16 35% 9%) 32%, hsl(0 0% 3%) 68%, hsl(0 0% 1%) 100%)
+                radial-gradient(ellipse 85% 35% at 50% 102%, hsl(22 98% 55% / 0.95) 0%, hsl(20 95% 50% / 0.4) 28%, transparent 60%),
+                radial-gradient(ellipse at 50% 110%, hsl(18 75% 22%) 0%, hsl(16 35% 9%) 32%, hsl(0 0% 3%) 68%, hsl(0 0% 1%) 100%)
               `
               : "transparent",
             color: isHot ? "white" : "hsl(var(--muted-foreground))",
             boxShadow: isHot
-              ? `0 0 38px ${accent.replace(")", " / 0.45)")}, 0 0 80px ${accent.replace(")", " / 0.18)")}, inset 0 2px 0 hsl(0 0% 100% / 0.10), inset 0 -10px 22px hsl(0 0% 0% / 0.7), inset 0 0 26px hsl(0 0% 0% / 0.55)`
+              ? `0 0 38px hsl(22 98% 55% / 0.5), 0 0 80px hsl(18 95% 50% / 0.22), inset 0 2px 0 hsl(0 0% 100% / 0.10), inset 0 -10px 22px hsl(0 0% 0% / 0.7), inset 0 0 26px hsl(0 0% 0% / 0.55)`
               : undefined,
-            // Allow flame to rise above the chamber rim
             overflow: "visible",
           }}
         >

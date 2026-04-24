@@ -255,130 +255,35 @@ const CompactStreakPanel = ({
       )}
       style={{
         minHeight: `${panelMinH}px`,
-        borderColor: isHot ? `${accent.replace(")", " / 0.55)")}` : "hsl(var(--border))",
-        // Pure dark — deep black with a subtle warm ember vignette at the bottom only
-        background: isHot
-          ? `radial-gradient(ellipse 70% 50% at 22% 100%, hsl(18 95% 50% / 0.10) 0%, transparent 60%),
-             radial-gradient(120% 90% at 50% 0%, hsl(0 0% 4%), hsl(0 0% 2%))`
-          : "linear-gradient(135deg, hsl(0 0% 5%), hsl(0 0% 2%))",
+        borderColor: isHot ? `${accent.replace(")", " / 0.35)")}` : "hsl(var(--border))",
+        // Pure deep black — keeps the flame as the only light source
+        background: "radial-gradient(120% 100% at 50% 0%, hsl(0 0% 5%), hsl(0 0% 1.5%))",
         boxShadow: isHot
-          ? `inset 0 0 60px hsl(0 0% 0% / 0.7), 0 0 32px hsl(18 95% 50% / 0.12)`
+          ? `inset 0 0 80px hsl(0 0% 0% / 0.85), 0 0 24px hsl(18 95% 50% / 0.08)`
           : "inset 0 0 40px hsl(0 0% 0% / 0.6)",
       }}
     >
-      {/* Background heat shimmer (Champion+) */}
-      {isBlazing && (
+      {/* Subtle warm floor glow — bottom only, doesn't bleed into text area */}
+      {isHot && (
         <div
-          className="streak-fx-bg-shimmer absolute inset-x-0 bottom-0 h-2/3 pointer-events-none"
+          aria-hidden
+          className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
           style={{
-            background: `radial-gradient(ellipse at center bottom, ${accent.replace(")", " / 0.18)")} 0%, transparent 70%)`,
-            animation: "streak-bg-shimmer 3.5s ease-in-out infinite",
+            background: `radial-gradient(ellipse 65% 100% at 30% 100%, ${accent.replace(")", " / 0.18)")} 0%, transparent 70%)`,
           }}
         />
       )}
 
-      {/* Aurora sweep (Legendary) */}
+      {/* Aurora sweep (Legendary only — premium tier flex) */}
       {isLegendary && (
         <div
-          className="streak-fx-aurora absolute inset-y-0 w-1/2 pointer-events-none"
+          className="streak-fx-aurora absolute inset-y-0 w-1/2 pointer-events-none opacity-50"
           style={{
             background:
-              "linear-gradient(90deg, transparent, hsl(280 80% 70% / 0.18) 30%, hsl(42 95% 70% / 0.22) 50%, hsl(350 85% 65% / 0.18) 70%, transparent)",
+              "linear-gradient(90deg, transparent, hsl(280 80% 70% / 0.14) 30%, hsl(42 95% 70% / 0.16) 50%, hsl(350 85% 65% / 0.14) 70%, transparent)",
             animation: "streak-aurora-sweep 6s ease-in-out infinite",
           }}
         />
-      )}
-
-      {/* Lightning flickers (Legendary) */}
-      {isLegendary && (
-        <>
-          <div
-            className="streak-fx-lightning absolute top-2 right-3 w-px h-12 pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(180deg, transparent, hsl(280 90% 80%), hsl(42 95% 75%), transparent)",
-              boxShadow: "0 0 8px hsl(280 90% 80%)",
-              animation: "streak-lightning 4.5s ease-in-out infinite",
-            }}
-          />
-          <div
-            className="streak-fx-lightning absolute top-6 left-4 w-px h-10 pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(180deg, transparent, hsl(200 90% 80%), transparent)",
-              boxShadow: "0 0 8px hsl(200 90% 80%)",
-              animation: "streak-lightning 6s ease-in-out infinite",
-              animationDelay: "1.2s",
-            }}
-          />
-        </>
-      )}
-
-      {/* === NEXT-LEVEL cinematic background layer ============================== */}
-      {isHot && (
-        <>
-          {/* God-ray light cone rising from the bonfire */}
-          <span
-            aria-hidden
-            className="absolute top-0 pointer-events-none"
-            style={{
-              left: "25%",
-              width: 110,
-              height: "85%",
-              transform: "translateX(-50%)",
-              background: `radial-gradient(ellipse 50% 100% at 50% 100%, ${accent.replace(")", " / 0.32)")} 0%, ${accent.replace(")", " / 0.10)")} 40%, transparent 75%)`,
-              filter: "blur(8px)",
-              animation: "streak-light-cone 4s ease-in-out infinite",
-              mixBlendMode: "screen",
-              zIndex: 1,
-            }}
-          />
-
-          {/* Heat haze band — vertical ripple just above flame */}
-          <span
-            aria-hidden
-            className="absolute left-0 right-0 pointer-events-none"
-            style={{
-              top: "20%",
-              height: "55%",
-              background: `repeating-linear-gradient(0deg, transparent 0px, ${accent.replace(")", " / 0.04)")} 6px, transparent 14px)`,
-              filter: "blur(1.5px)",
-              animation: "streak-heat-haze 3.5s ease-in-out infinite",
-              mixBlendMode: "screen",
-              zIndex: 1,
-            }}
-          />
-
-          {/* Panel-wide drifting embers — float up and across the entire card */}
-          {Array.from({ length: isLegendary ? 14 : isDiamond ? 11 : isBlazing ? 9 : 7 }).map((_, i) => {
-            const left = 8 + ((i * 13) % 84);
-            const size = 1.5 + (i % 3) * 0.6;
-            const duration = 4 + (i % 5) * 0.7;
-            const delay = (i / 8) * 4;
-            const xDrift = ((i % 2 === 0 ? -1 : 1) * (8 + (i * 4) % 22));
-            return (
-              <span
-                key={`cinema-ember-${i}`}
-                aria-hidden
-                className="absolute rounded-full pointer-events-none"
-                style={{
-                  width: size,
-                  height: size,
-                  left: `${left}%`,
-                  bottom: 8,
-                  background: emberColor,
-                  boxShadow: `0 0 ${size * 4}px ${emberColor}, 0 0 ${size * 8}px ${accent.replace(")", " / 0.5)")}`,
-                  opacity: 0,
-                  // @ts-expect-error CSS custom prop
-                  "--ce-x": `${xDrift}px`,
-                  animation: `streak-cinema-ember ${duration}s ease-out infinite`,
-                  animationDelay: `${delay}s`,
-                  zIndex: 2,
-                }}
-              />
-            );
-          })}
-        </>
       )}
 
       {/* Top: label + tier badge */}
@@ -792,6 +697,81 @@ const CompactStreakPanel = ({
                   </span>
                 ))}
               </div>
+            );
+          })()}
+
+          {/* === NEXT-LEVEL CORE OVERLAYS — only on the central flame, sits ON TOP === */}
+          {isHot && (() => {
+            const master = Math.round(
+              80 + Math.min(100, Math.pow(Math.min(displayStreak, 120), 0.6) * 9.5),
+            );
+            return (
+              <>
+                {/* White-hot plasma sliver — narrow vertical wick of pure white at the
+                    flame's heart. Sells "this fire is burning at 1500°C". */}
+                <span
+                  aria-hidden
+                  className="absolute left-1/2 pointer-events-none rounded-full"
+                  style={{
+                    width: Math.round(master * 0.13),
+                    height: Math.round(master * 0.55),
+                    bottom: Math.round(master * 0.18),
+                    transform: "translateX(-50%)",
+                    background: `linear-gradient(180deg,
+                      hsl(0 0% 100% / 0) 0%,
+                      hsl(48 100% 92% / 0.95) 35%,
+                      hsl(50 100% 96%) 55%,
+                      hsl(42 100% 80% / 0.85) 80%,
+                      hsl(28 95% 60% / 0) 100%)`,
+                    filter: `blur(0.6px) drop-shadow(0 0 ${Math.round(master * 0.18)}px hsl(48 100% 90% / 0.9))`,
+                    animation: "streak-fuel-pulse 1.6s ease-in-out infinite",
+                    mixBlendMode: "screen",
+                    zIndex: 25,
+                  }}
+                />
+
+                {/* Sharp gold tip — flickering bright tongue at the very top of the core */}
+                <span
+                  aria-hidden
+                  className="absolute left-1/2 pointer-events-none"
+                  style={{
+                    width: Math.round(master * 0.18),
+                    height: Math.round(master * 0.28),
+                    bottom: Math.round(master * 0.95),
+                    transform: "translateX(-50%)",
+                    background: `radial-gradient(ellipse at 50% 80%,
+                      hsl(50 100% 88%) 0%,
+                      hsl(42 100% 70% / 0.9) 40%,
+                      hsl(28 95% 60% / 0.4) 70%,
+                      transparent 100%)`,
+                    borderRadius: "50% 50% 50% 50% / 70% 70% 30% 30%",
+                    filter: `drop-shadow(0 -4px ${Math.round(master * 0.2)}px hsl(42 100% 65% / 0.85))`,
+                    animation: "flame-roar-2 1.4s ease-in-out infinite",
+                    mixBlendMode: "screen",
+                    zIndex: 26,
+                  }}
+                />
+
+                {/* Cool blue undertone at the base — real flames have a thin blue band
+                    where combustion is hottest. Diamond+ gets it stronger. */}
+                <span
+                  aria-hidden
+                  className="absolute left-1/2 pointer-events-none rounded-full"
+                  style={{
+                    width: Math.round(master * 0.5),
+                    height: Math.round(master * 0.18),
+                    bottom: Math.round(master * 0.06),
+                    transform: "translateX(-50%)",
+                    background: `radial-gradient(ellipse at 50% 50%,
+                      hsl(200 95% 70% / ${isDiamond ? 0.55 : 0.35}) 0%,
+                      hsl(220 90% 60% / ${isDiamond ? 0.3 : 0.18}) 40%,
+                      transparent 75%)`,
+                    filter: "blur(2px)",
+                    mixBlendMode: "screen",
+                    zIndex: 24,
+                  }}
+                />
+              </>
             );
           })()}
           {/* Ground glow — outside the chamber, sells radiated heat */}

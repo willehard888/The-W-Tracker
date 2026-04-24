@@ -161,11 +161,14 @@ const Paywall = () => {
     : null;
 
   // ─── Handlers ───────────────────────────────────────
-  const handleStripeCheckout = async (tier: "elite" | "apex") => {
+  const handleStripeCheckout = async (
+    tier: "elite" | "apex",
+    plan: "monthly" | "yearly" = "monthly",
+  ) => {
     setPurchasingTier(tier);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { tier },
+        body: { tier, plan },
       });
       if (error) throw error;
       if (!data?.url) throw new Error("No checkout URL received");

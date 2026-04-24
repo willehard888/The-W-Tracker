@@ -3921,3 +3921,57 @@ button:active > .aurum-lava-glow {
 @media (prefers-reduced-motion: reduce) {
   [class*="firestreak"] { animation: none !important; }
 }
+
+/* ── Stylized Streak Flame keyframes ──────────────────────────────────── */
+@keyframes stylized-flame-flicker {
+  0%, 100% { transform: translateX(-50%) scaleY(1) scaleX(1); opacity: 0.95; }
+  25%      { transform: translateX(-50%) scaleY(1.06) scaleX(0.96); opacity: 1; }
+  50%      { transform: translateX(-50%) scaleY(0.97) scaleX(1.03); opacity: 0.92; }
+  75%      { transform: translateX(-50%) scaleY(1.04) scaleX(0.98); opacity: 0.98; }
+}
+@keyframes stylized-flame-core {
+  0%, 100% { transform: translateX(-50%) scaleY(1)    scaleX(1);    opacity: 1; }
+  50%      { transform: translateX(-50%) scaleY(1.12) scaleX(0.92); opacity: 0.85; }
+}
+@keyframes stylized-aura-pulse {
+  0%, 100% { transform: translateX(-50%) scale(1);    opacity: 0.85; }
+  50%      { transform: translateX(-50%) scale(1.12); opacity: 1; }
+}
+@keyframes stylized-flame-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
+}
+@keyframes stylized-ember-rise {
+  0%   { transform: translate(0, 0)                                  scale(1);   opacity: 0; }
+  15%  { opacity: 1; }
+  100% { transform: translate(var(--ember-x, 0), var(--ember-rise, -60px)) scale(0.4); opacity: 0; }
+}
+@keyframes stylized-stage-burst {
+  0%   { transform: translateX(-50%) translateY(50%) scale(0.4); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateX(-50%) translateY(50%) scale(2.4); opacity: 0; }
+}
+@keyframes stylized-ray-shoot {
+  0%   { transform: translateX(-50%) rotate(var(--ray-angle, 0deg)) translateY(0)     scale(1, 0.4); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateX(-50%) rotate(var(--ray-angle, 0deg)) translateY(-46px) scale(1, 1.6); opacity: 0; }
+}
+@keyframes stylized-burst-flash {
+  0%   { opacity: 0; transform: scale(0.6); }
+  30%  { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="stylized-"],
+  [style*="stylized-flame-flicker"],
+  [style*="stylized-flame-core"],
+  [style*="stylized-aura-pulse"],
+  [style*="stylized-flame-bob"],
+  [style*="stylized-ember-rise"],
+  [style*="stylized-stage-burst"],
+  [style*="stylized-ray-shoot"],
+  [style*="stylized-burst-flash"] {
+    animation: none !important;
+  }
+}

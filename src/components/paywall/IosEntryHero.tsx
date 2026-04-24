@@ -46,9 +46,9 @@ const IosEntryHero = ({
   const resolvedFootnote =
     footnote ??
     (isYearly
-      ? `Free for 7 days · then ${yearlyPriceLabel}/yr · Cancel anytime`
-      : `Free for 7 days · then ${monthlyPriceLabel}/mo · Cancel anytime`);
-  const resolvedCtaLabel = ctaLabel ?? "Start 7-Day Trial";
+      ? `Billed ${yearlyPriceLabel}/yr · Cancel anytime`
+      : `Billed ${monthlyPriceLabel}/mo · Cancel anytime`);
+  const resolvedCtaLabel = ctaLabel ?? "Become a Member";
 
   return (
     <div

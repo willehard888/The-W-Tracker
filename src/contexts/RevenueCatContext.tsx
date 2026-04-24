@@ -350,7 +350,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     [applyEntitlements],
   );
 
-  /** Convenience wrapper to purchase Apex Instant. */
+  /** Convenience wrapper to purchase Apex Instant (monthly default). */
   const purchaseApex = useCallback(async () => {
     // Try package first (offering), fall back to direct product
     const apexPkg = packages.find((pkg: any) => {
@@ -363,6 +363,44 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       await purchaseProduct(PRIMARY_APEX_PRODUCT_ID);
     }
   }, [packages, purchase, purchaseProduct]);
+
+  /** Purchase Elite tier with selectable billing plan. */
+  const purchaseElitePlan = useCallback(
+    async (plan: "monthly" | "yearly") => {
+      const targetId =
+        plan === "yearly" ? PRIMARY_ELITE_YEARLY_PRODUCT_ID : PRIMARY_ELITE_PRODUCT_ID;
+      const matcher = plan === "yearly" ? isEliteYearlyPid : isElitePid;
+      const pkg = packages.find((p: any) => {
+        const pid = productId(storeProduct(p));
+        return pid === targetId || matcher(pid);
+      });
+      if (pkg) {
+        await purchase(pkg);
+      } else {
+        await purchaseProduct(targetId);
+      }
+    },
+    [packages, purchase, purchaseProduct],
+  );
+
+  /** Purchase Apex tier with selectable billing plan. */
+  const purchaseApexPlan = useCallback(
+    async (plan: "monthly" | "yearly") => {
+      const targetId =
+        plan === "yearly" ? PRIMARY_APEX_YEARLY_PRODUCT_ID : PRIMARY_APEX_PRODUCT_ID;
+      const matcher = plan === "yearly" ? isApexYearlyPid : isApexPid;
+      const pkg = packages.find((p: any) => {
+        const pid = productId(storeProduct(p));
+        return pid === targetId || matcher(pid);
+      });
+      if (pkg) {
+        await purchase(pkg);
+      } else {
+        await purchaseProduct(targetId);
+      }
+    },
+    [packages, purchase, purchaseProduct],
+  );
 
   // ─── Restore ────────────────────────────────────────
   const restorePurchases = useCallback(async () => {
@@ -385,10 +423,14 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
         rcReady,
         monthlyPriceLabel,
         apexPriceLabel,
+        eliteYearlyPriceLabel,
+        apexYearlyPriceLabel,
         packages,
         purchase,
         purchaseProduct,
         purchaseApex,
+        purchaseElitePlan,
+        purchaseApexPlan,
         restorePurchases,
       }}
     >

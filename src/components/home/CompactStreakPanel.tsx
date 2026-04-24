@@ -120,7 +120,7 @@ const CompactStreakPanel = ({
   const displayStreak = getEffectiveStreak(streak, lastCheckinAt);
   const deadline = getStreakDeadlineState(streak, lastCheckinAt);
   const tier = getStreakTier(displayStreak);
-  const flameSettings = useFlameDevSettings();
+  const { effective: flameSettings } = useEffectiveFlameSettings();
 
   const isHot = tier.index >= 0;
   const isWarm = tier.index >= 1;

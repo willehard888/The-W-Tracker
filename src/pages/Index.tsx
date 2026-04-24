@@ -4,6 +4,7 @@ import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
 import CinematicFlame from "@/components/home/CinematicFlame";
+import FireStreak from "@/components/home/FireStreak";
 import RankProgressHub from "@/components/home/RankProgressHub";
 import CoachStrip from "@/components/home/CoachStrip";
 import Reveal from "@/components/home/Reveal";
@@ -134,6 +135,9 @@ const Index = () => {
 
   return (
     <div className="h-full pb-6 px-4 pt-5 safe-top relative overflow-y-auto overflow-x-hidden">
+      {/* Blazing fire streak — shoots across screen periodically */}
+      <FireStreak intervalMs={5600} />
+
       {/* Tier-reactive top aura */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[760px] h-[460px] pointer-events-none z-0"

@@ -2727,67 +2727,77 @@
 
 /* === Per-flame signature rhythms — each layer gets a distinct dance ===
    Each keyframe varies translation, rotation, and scale through 3-4 keyframe
-   stops (not just 50%) so motion feels organic and never linear-mirrored. */
+   stops (not just 50%) so motion feels organic and never linear-mirrored.
+
+   NEW: Every keyframe also bakes in `--wind-x` (global ambient wind) multiplied
+   by `--wind-weight` (per-layer responsiveness — smaller for the core, bigger
+   for back tongues). This makes the whole bonfire physically lean as one mass
+   when the user moves the cursor or when ambient wind drifts. The base offset
+   `var(--rx)` and rotation `var(--rr)` keep each layer's identity intact. */
 
 /* Layer 0: Far back-left — slow, deep sway with a quick exhale */
 @keyframes flame-rhythm-0 {
-  0%, 100% { transform: translateX(var(--rx, 0px))            translateY(var(--ry, 0px))                  rotate(var(--rr, 0deg))                       scale(var(--sx, 1),                  var(--sy, 1)); }
-  35%      { transform: translateX(calc(var(--rx, 0px) - 5px)) translateY(calc(var(--ry, 0px) - 9px))      rotate(calc(var(--rr, 0deg) - 5deg))          scale(calc(var(--sx, 1) * 0.94),    calc(var(--sy, 1) * 1.12)); }
-  70%      { transform: translateX(calc(var(--rx, 0px) - 2px)) translateY(calc(var(--ry, 0px) - 4px))      rotate(calc(var(--rr, 0deg) - 2deg))          scale(calc(var(--sx, 1) * 1.02),    calc(var(--sy, 1) * 1.04)); }
+  0%, 100% { transform: translateX(calc(var(--rx, 0px) + var(--wind-x, 0) * var(--wind-weight, 8px)))               translateY(var(--ry, 0px))                  rotate(calc(var(--rr, 0deg) + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))                       scale(var(--sx, 1),                  var(--sy, 1)); }
+  35%      { transform: translateX(calc(var(--rx, 0px) - 5px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.2))   translateY(calc(var(--ry, 0px) - 9px))      rotate(calc(var(--rr, 0deg) - 5deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))                scale(calc(var(--sx, 1) * 0.94),    calc(var(--sy, 1) * 1.12)); }
+  70%      { transform: translateX(calc(var(--rx, 0px) - 2px + var(--wind-x, 0) * var(--wind-weight, 8px) * 0.9))   translateY(calc(var(--ry, 0px) - 4px))      rotate(calc(var(--rr, 0deg) - 2deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 0.8))          scale(calc(var(--sx, 1) * 1.02),    calc(var(--sy, 1) * 1.04)); }
 }
 
 /* Layer 1: Far back-right — sharper jolt, longer settle */
 @keyframes flame-rhythm-1 {
-  0%, 100% { transform: translateX(var(--rx, 0px))            translateY(var(--ry, 0px))                  rotate(var(--rr, 0deg))                       scale(var(--sx, 1),                  var(--sy, 1)); }
-  25%      { transform: translateX(calc(var(--rx, 0px) + 7px)) translateY(calc(var(--ry, 0px) - 11px))     rotate(calc(var(--rr, 0deg) + 7deg))          scale(calc(var(--sx, 1) * 1.08),    calc(var(--sy, 1) * 1.16)); }
-  60%      { transform: translateX(calc(var(--rx, 0px) + 3px)) translateY(calc(var(--ry, 0px) - 5px))      rotate(calc(var(--rr, 0deg) + 3deg))          scale(calc(var(--sx, 1) * 0.98),    calc(var(--sy, 1) * 1.06)); }
+  0%, 100% { transform: translateX(calc(var(--rx, 0px) + var(--wind-x, 0) * var(--wind-weight, 8px)))               translateY(var(--ry, 0px))                  rotate(calc(var(--rr, 0deg) + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))                       scale(var(--sx, 1),                  var(--sy, 1)); }
+  25%      { transform: translateX(calc(var(--rx, 0px) + 7px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.15))  translateY(calc(var(--ry, 0px) - 11px))     rotate(calc(var(--rr, 0deg) + 7deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))                scale(calc(var(--sx, 1) * 1.08),    calc(var(--sy, 1) * 1.16)); }
+  60%      { transform: translateX(calc(var(--rx, 0px) + 3px + var(--wind-x, 0) * var(--wind-weight, 8px) * 0.95))  translateY(calc(var(--ry, 0px) - 5px))      rotate(calc(var(--rr, 0deg) + 3deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 0.85))         scale(calc(var(--sx, 1) * 0.98),    calc(var(--sy, 1) * 1.06)); }
 }
 
 /* Layer 2: Mid back-left — quick double-flick (S-curve breath) */
 @keyframes flame-rhythm-2 {
-  0%, 100% { transform: translateX(var(--rx, 0px))            translateY(var(--ry, 0px))                  rotate(var(--rr, 0deg))                       scale(var(--sx, 1),                  var(--sy, 1)); }
-  20%      { transform: translateX(calc(var(--rx, 0px) - 3px)) translateY(calc(var(--ry, 0px) - 6px))      rotate(calc(var(--rr, 0deg) - 3deg))          scale(calc(var(--sx, 1) * 1.04),    calc(var(--sy, 1) * 1.08)); }
-  45%      { transform: translateX(calc(var(--rx, 0px) + 2px)) translateY(calc(var(--ry, 0px) - 9px))      rotate(calc(var(--rr, 0deg) + 2deg))          scale(calc(var(--sx, 1) * 0.96),    calc(var(--sy, 1) * 1.14)); }
-  75%      { transform: translateX(calc(var(--rx, 0px) - 1px)) translateY(calc(var(--ry, 0px) - 3px))      rotate(calc(var(--rr, 0deg) - 1deg))          scale(calc(var(--sx, 1) * 1.01),    calc(var(--sy, 1) * 1.03)); }
+  0%, 100% { transform: translateX(calc(var(--rx, 0px) + var(--wind-x, 0) * var(--wind-weight, 8px)))               translateY(var(--ry, 0px))                  rotate(calc(var(--rr, 0deg) + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))                       scale(var(--sx, 1),                  var(--sy, 1)); }
+  20%      { transform: translateX(calc(var(--rx, 0px) - 3px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.05))  translateY(calc(var(--ry, 0px) - 6px))      rotate(calc(var(--rr, 0deg) - 3deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))                scale(calc(var(--sx, 1) * 1.04),    calc(var(--sy, 1) * 1.08)); }
+  45%      { transform: translateX(calc(var(--rx, 0px) + 2px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.1))   translateY(calc(var(--ry, 0px) - 9px))      rotate(calc(var(--rr, 0deg) + 2deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 1.1))          scale(calc(var(--sx, 1) * 0.96),    calc(var(--sy, 1) * 1.14)); }
+  75%      { transform: translateX(calc(var(--rx, 0px) - 1px + var(--wind-x, 0) * var(--wind-weight, 8px) * 0.9))   translateY(calc(var(--ry, 0px) - 3px))      rotate(calc(var(--rr, 0deg) - 1deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 0.9))          scale(calc(var(--sx, 1) * 1.01),    calc(var(--sy, 1) * 1.03)); }
 }
 
 /* Layer 3: Mid back-right — counter-phase to layer 2, smoother arc */
 @keyframes flame-rhythm-3 {
-  0%, 100% { transform: translateX(var(--rx, 0px))            translateY(var(--ry, 0px))                  rotate(var(--rr, 0deg))                       scale(var(--sx, 1),                  var(--sy, 1)); }
-  30%      { transform: translateX(calc(var(--rx, 0px) + 4px)) translateY(calc(var(--ry, 0px) - 7px))      rotate(calc(var(--rr, 0deg) + 4deg))          scale(calc(var(--sx, 1) * 1.05),    calc(var(--sy, 1) * 1.10)); }
-  65%      { transform: translateX(calc(var(--rx, 0px) + 1px)) translateY(calc(var(--ry, 0px) - 11px))     rotate(calc(var(--rr, 0deg) + 1deg))          scale(calc(var(--sx, 1) * 0.97),    calc(var(--sy, 1) * 1.13)); }
+  0%, 100% { transform: translateX(calc(var(--rx, 0px) + var(--wind-x, 0) * var(--wind-weight, 8px)))               translateY(var(--ry, 0px))                  rotate(calc(var(--rr, 0deg) + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))                       scale(var(--sx, 1),                  var(--sy, 1)); }
+  30%      { transform: translateX(calc(var(--rx, 0px) + 4px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.05))  translateY(calc(var(--ry, 0px) - 7px))      rotate(calc(var(--rr, 0deg) + 4deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))                scale(calc(var(--sx, 1) * 1.05),    calc(var(--sy, 1) * 1.10)); }
+  65%      { transform: translateX(calc(var(--rx, 0px) + 1px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.15))  translateY(calc(var(--ry, 0px) - 11px))     rotate(calc(var(--rr, 0deg) + 1deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 1.15))         scale(calc(var(--sx, 1) * 0.97),    calc(var(--sy, 1) * 1.13)); }
 }
 
-/* Layer 4: Inner gold halo — slow, broad breath that "inflates" mass */
+/* Layer 4: Inner gold halo — slow, broad breath that "inflates" mass.
+   Halo gets EXTRA wind weight because it's the soft outer aura — readable lean. */
 @keyframes flame-rhythm-4 {
-  0%, 100% { transform: translateX(var(--rx, 0px))            translateY(var(--ry, 0px))                  rotate(var(--rr, 0deg))                       scale(var(--sx, 1),                  var(--sy, 1));   opacity: 0.78; }
-  50%      { transform: translateX(var(--rx, 0px))            translateY(calc(var(--ry, 0px) - 6px))      rotate(var(--rr, 0deg))                       scale(calc(var(--sx, 1) * 1.06),    calc(var(--sy, 1) * 1.05)); opacity: 0.92; }
+  0%, 100% { transform: translateX(calc(var(--rx, 0px) + var(--wind-x, 0) * var(--wind-weight, 8px)))               translateY(var(--ry, 0px))                  rotate(calc(var(--rr, 0deg) + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))                       scale(var(--sx, 1),                  var(--sy, 1));   opacity: 0.78; }
+  50%      { transform: translateX(calc(var(--rx, 0px) + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.1))         translateY(calc(var(--ry, 0px) - 6px))      rotate(calc(var(--rr, 0deg) + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 1.05))                scale(calc(var(--sx, 1) * 1.06),    calc(var(--sy, 1) * 1.05)); opacity: 0.92; }
 }
 
 /* Layer 5: CENTER core — the showpiece. Subtle but constant breath plus
-   micro-tip whip that gives the impression of a real candle wick. */
+   micro-tip whip that gives the impression of a real candle wick.
+   Core has the LOWEST wind weight — it's the anchor everyone else dances around. */
 @keyframes flame-rhythm-core {
-  0%, 100% { transform: translateX(var(--rx, 0px))            translateY(var(--ry, 0px))                  rotate(var(--rr, 0deg))                       scale(var(--sx, 1),                  var(--sy, 1)); }
-  22%      { transform: translateX(calc(var(--rx, 0px) - 1px)) translateY(calc(var(--ry, 0px) - 3px))      rotate(calc(var(--rr, 0deg) - 1.2deg))        scale(calc(var(--sx, 1) * 1.01),    calc(var(--sy, 1) * 1.05)); }
-  48%      { transform: translateX(calc(var(--rx, 0px) + 1px)) translateY(calc(var(--ry, 0px) - 5px))      rotate(calc(var(--rr, 0deg) + 1.5deg))        scale(calc(var(--sx, 1) * 0.99),    calc(var(--sy, 1) * 1.08)); }
-  74%      { transform: translateX(calc(var(--rx, 0px) - 0.5px)) translateY(calc(var(--ry, 0px) - 2px))    rotate(calc(var(--rr, 0deg) - 0.6deg))        scale(calc(var(--sx, 1) * 1.02),    calc(var(--sy, 1) * 1.04)); }
+  0%, 100% { transform: translateX(calc(var(--rx, 0px) + var(--wind-x, 0) * var(--wind-weight, 8px)))               translateY(var(--ry, 0px))                  rotate(calc(var(--rr, 0deg) + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))                       scale(var(--sx, 1),                  var(--sy, 1)); }
+  22%      { transform: translateX(calc(var(--rx, 0px) - 1px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.05))  translateY(calc(var(--ry, 0px) - 3px))      rotate(calc(var(--rr, 0deg) - 1.2deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))              scale(calc(var(--sx, 1) * 1.01),    calc(var(--sy, 1) * 1.05)); }
+  48%      { transform: translateX(calc(var(--rx, 0px) + 1px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.1))   translateY(calc(var(--ry, 0px) - 5px))      rotate(calc(var(--rr, 0deg) + 1.5deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 1.1))        scale(calc(var(--sx, 1) * 0.99),    calc(var(--sy, 1) * 1.08)); }
+  74%      { transform: translateX(calc(var(--rx, 0px) - 0.5px + var(--wind-x, 0) * var(--wind-weight, 8px) * 0.95)) translateY(calc(var(--ry, 0px) - 2px))     rotate(calc(var(--rr, 0deg) - 0.6deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 0.95))       scale(calc(var(--sx, 1) * 1.02),    calc(var(--sy, 1) * 1.04)); }
 }
 
-/* Layer 6: Side ember tongue — staccato whip, breaks the symmetry */
+/* Layer 6: Side ember tongue — staccato whip, breaks the symmetry.
+   Side tongues get the HIGHEST wind weight — they whip dramatically when wind blows. */
 @keyframes flame-rhythm-6 {
-  0%, 100% { transform: translateX(var(--rx, 0px))            translateY(var(--ry, 0px))                  rotate(var(--rr, 0deg))                       scale(var(--sx, 1),                  var(--sy, 1));   opacity: 0.82; }
-  18%      { transform: translateX(calc(var(--rx, 0px) - 6px)) translateY(calc(var(--ry, 0px) - 12px))     rotate(calc(var(--rr, 0deg) - 9deg))          scale(calc(var(--sx, 1) * 1.10),    calc(var(--sy, 1) * 1.22)); opacity: 0.95; }
-  42%      { transform: translateX(calc(var(--rx, 0px) - 3px)) translateY(calc(var(--ry, 0px) - 5px))      rotate(calc(var(--rr, 0deg) - 4deg))          scale(calc(var(--sx, 1) * 0.92),    calc(var(--sy, 1) * 1.06)); opacity: 0.78; }
-  68%      { transform: translateX(calc(var(--rx, 0px) - 8px)) translateY(calc(var(--ry, 0px) - 9px))      rotate(calc(var(--rr, 0deg) - 6deg))          scale(calc(var(--sx, 1) * 1.04),    calc(var(--sy, 1) * 1.16)); opacity: 0.88; }
+  0%, 100% { transform: translateX(calc(var(--rx, 0px) + var(--wind-x, 0) * var(--wind-weight, 8px)))               translateY(var(--ry, 0px))                  rotate(calc(var(--rr, 0deg) + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))                       scale(var(--sx, 1),                  var(--sy, 1));   opacity: 0.82; }
+  18%      { transform: translateX(calc(var(--rx, 0px) - 6px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.3))   translateY(calc(var(--ry, 0px) - 12px))     rotate(calc(var(--rr, 0deg) - 9deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 1.2))          scale(calc(var(--sx, 1) * 1.10),    calc(var(--sy, 1) * 1.22)); opacity: 0.95; }
+  42%      { transform: translateX(calc(var(--rx, 0px) - 3px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.1))   translateY(calc(var(--ry, 0px) - 5px))      rotate(calc(var(--rr, 0deg) - 4deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))                scale(calc(var(--sx, 1) * 0.92),    calc(var(--sy, 1) * 1.06)); opacity: 0.78; }
+  68%      { transform: translateX(calc(var(--rx, 0px) - 8px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.25))  translateY(calc(var(--ry, 0px) - 9px))      rotate(calc(var(--rr, 0deg) - 6deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 1.15))         scale(calc(var(--sx, 1) * 1.04),    calc(var(--sy, 1) * 1.16)); opacity: 0.88; }
 }
 
-/* Layer 7: Bright yellow inner tongue — fast nervous flicker (true candle-tip energy) */
+/* Layer 7: Bright yellow inner tongue — fast nervous flicker (true candle-tip energy).
+   The TIP is the most wind-sensitive part of any flame — high rotation weight. */
 @keyframes flame-rhythm-7 {
-  0%, 100% { transform: translateX(var(--rx, 0px))            translateY(var(--ry, 0px))                  rotate(var(--rr, 0deg))                       scale(var(--sx, 1),                  var(--sy, 1));   opacity: 0.9; }
-  15%      { transform: translateX(calc(var(--rx, 0px) + 1px)) translateY(calc(var(--ry, 0px) - 4px))      rotate(calc(var(--rr, 0deg) + 2deg))          scale(calc(var(--sx, 1) * 0.96),    calc(var(--sy, 1) * 1.10)); opacity: 1; }
-  38%      { transform: translateX(calc(var(--rx, 0px) - 2px)) translateY(calc(var(--ry, 0px) - 7px))      rotate(calc(var(--rr, 0deg) - 3deg))          scale(calc(var(--sx, 1) * 1.05),    calc(var(--sy, 1) * 1.18)); opacity: 0.85; }
-  62%      { transform: translateX(calc(var(--rx, 0px) + 2px)) translateY(calc(var(--ry, 0px) - 3px))      rotate(calc(var(--rr, 0deg) + 1deg))          scale(calc(var(--sx, 1) * 0.98),    calc(var(--sy, 1) * 1.06)); opacity: 0.96; }
-  85%      { transform: translateX(var(--rx, 0px))             translateY(calc(var(--ry, 0px) - 5px))      rotate(calc(var(--rr, 0deg) - 1deg))          scale(calc(var(--sx, 1) * 1.02),    calc(var(--sy, 1) * 1.12)); opacity: 0.92; }
+  0%, 100% { transform: translateX(calc(var(--rx, 0px) + var(--wind-x, 0) * var(--wind-weight, 8px)))               translateY(var(--ry, 0px))                  rotate(calc(var(--rr, 0deg) + var(--wind-x, 0) * var(--wind-weight-rot, 4deg)))                       scale(var(--sx, 1),                  var(--sy, 1));   opacity: 0.9; }
+  15%      { transform: translateX(calc(var(--rx, 0px) + 1px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.2))   translateY(calc(var(--ry, 0px) - 4px))      rotate(calc(var(--rr, 0deg) + 2deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 1.3))          scale(calc(var(--sx, 1) * 0.96),    calc(var(--sy, 1) * 1.10)); opacity: 1; }
+  38%      { transform: translateX(calc(var(--rx, 0px) - 2px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.15))  translateY(calc(var(--ry, 0px) - 7px))      rotate(calc(var(--rr, 0deg) - 3deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 1.4))          scale(calc(var(--sx, 1) * 1.05),    calc(var(--sy, 1) * 1.18)); opacity: 0.85; }
+  62%      { transform: translateX(calc(var(--rx, 0px) + 2px + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.25))  translateY(calc(var(--ry, 0px) - 3px))      rotate(calc(var(--rr, 0deg) + 1deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 1.2))          scale(calc(var(--sx, 1) * 0.98),    calc(var(--sy, 1) * 1.06)); opacity: 0.96; }
+  85%      { transform: translateX(calc(var(--rx, 0px) + var(--wind-x, 0) * var(--wind-weight, 8px) * 1.1))         translateY(calc(var(--ry, 0px) - 5px))      rotate(calc(var(--rr, 0deg) - 1deg + var(--wind-x, 0) * var(--wind-weight-rot, 4deg) * 1.25))         scale(calc(var(--sx, 1) * 1.02),    calc(var(--sy, 1) * 1.12)); opacity: 0.92; }
 }
 
 /* Legacy aliases — keep so other components still work */

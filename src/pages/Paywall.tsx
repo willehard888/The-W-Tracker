@@ -71,6 +71,16 @@ const Paywall = () => {
     wasMemberRef.current = isElite;
   }, [isElite]);
 
+  // Once membership is active, leave the paywall behind entirely.
+  // Apex subscribers go to /tribes (their unlocked surface), everyone else
+  // lands on the home dashboard. This prevents the paywall screen from ever
+  // being shown to a paid user, even briefly.
+  useEffect(() => {
+    if (!isElite) return;
+    const target = isApexSubscriber ? "/tribes" : "/";
+    navigate(target, { replace: true });
+  }, [isElite, isApexSubscriber, navigate]);
+
   useEffect(() => {
     if (isNative) return;
 

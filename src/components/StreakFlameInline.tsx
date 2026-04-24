@@ -14,12 +14,6 @@ interface StreakFlameInlineProps {
   className?: string;
   /** Override count text class — for color/weight. Defaults to tier-based. */
   countClassName?: string;
-  /**
-   * Use the cinematic looping MP4 flame instead of the lightweight CSS one.
-   * ONLY enable on hero/featured spots — never inside long lists (leaderboard,
-   * feed) where many <video> elements would tank perf.
-   */
-  cinematic?: boolean;
 }
 
 /**
@@ -41,69 +35,7 @@ const StreakFlameInline = ({
   suffix = "",
   className,
   countClassName,
-  cinematic = false,
 }: StreakFlameInlineProps) => {
-  // Cinematic short-circuit — looping MP4 flame for hero displays.
-  if (cinematic) {
-    const tIdx =
-      streak >= 200 ? 6 :
-      streak >= 100 ? 5 :
-      streak >= 60  ? 4 :
-      streak >= 30  ? 3 :
-      streak >= 14  ? 2 :
-      streak >= 7   ? 1 :
-      streak >= 3   ? 0 : -1;
-    const flameSize = size ?? 32;
-    const textColor =
-      tIdx >= 6 ? "hsl(195 95% 72%)" :
-      tIdx >= 5 ? "hsl(280 80% 70%)" :
-      tIdx >= 4 ? "hsl(200 85% 70%)" :
-      tIdx >= 3 ? "hsl(42 90% 65%)" :
-      tIdx >= 2 ? "hsl(28 95% 65%)" :
-      tIdx >= 1 ? "hsl(18 95% 62%)" :
-      tIdx >= 0 ? "hsl(14 90% 62%)" :
-      "hsl(var(--muted-foreground))";
-    return (
-      <span className={cn("inline-flex items-center gap-1 leading-none align-middle", className)}>
-        <span
-          className="relative inline-block shrink-0 overflow-hidden"
-          style={{ width: flameSize, height: flameSize * 1.15 }}
-          aria-hidden
-        >
-          <video
-            src="/cinematic-flame.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            className="absolute left-1/2 bottom-0"
-            style={{
-              width: flameSize * 1.5,
-              height: flameSize * 1.5,
-              transform: "translateX(-50%)",
-              mixBlendMode: "screen",
-              objectFit: "cover",
-            }}
-          />
-        </span>
-        {showCount && (
-          <span
-            className={cn("font-black tabular-nums", countClassName)}
-            style={{
-              color: countClassName ? undefined : textColor,
-              textShadow: !countClassName && tIdx >= 2
-                ? `0 0 8px ${textColor.replace(")", " / 0.55)")}`
-                : undefined,
-            }}
-          >
-            {streak}{suffix}
-          </span>
-        )}
-      </span>
-    );
-  }
-
   // Tier (mirrors StreakDisplay)
   const tierIndex =
     streak >= 200 ? 6 :

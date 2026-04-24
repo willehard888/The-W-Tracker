@@ -11,7 +11,6 @@ import {
   useEffectiveFlameSettings,
 } from "@/lib/flame-dev-settings";
 import RealisticFlame from "./RealisticFlame";
-import CinematicStreakFlame from "@/components/CinematicStreakFlame";
 
 interface CompactStreakPanelProps {
   streak: number;
@@ -476,22 +475,6 @@ const CompactStreakPanel = ({
             overflow: "visible",
           }}
         >
-          {/* CINEMATIC backdrop — looping MP4 flame, screen-blended behind everything.
-              Sells the "real fire is burning in this chamber" illusion. */}
-          {isHot && (
-            <span
-              aria-hidden
-              className="absolute inset-x-0 bottom-0 pointer-events-none flex items-end justify-center"
-              style={{
-                height: "100%",
-                zIndex: 0,
-                opacity: isLegendary ? 0.85 : isDiamond ? 0.78 : isBlazing ? 0.72 : isOnFire ? 0.65 : isWarm ? 0.55 : 0.45,
-              }}
-            >
-              <CinematicStreakFlame size={148} withGlow={false} />
-            </span>
-          )}
-
           {/* Stone-textured chamber walls — subtle hatching */}
           {isHot && (
             <span

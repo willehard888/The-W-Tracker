@@ -658,56 +658,104 @@ const CompactStreakPanel = ({
             const dropShadow = (acc: string, mul: number) =>
               `drop-shadow(0 -4px ${(8 + displayStreak * 0.3) * mul}px ${acc.replace(")", " / 0.85)")}) drop-shadow(0 -12px ${(20 + displayStreak * 0.5) * mul}px ${acc.replace(")", " / 0.45)")})`;
 
-            // ONE UNIFIED BONFIRE — layers share the same core anchor and only
-            // interleave by a few pixels. Side bloom is clipped so they read as
-            // one fire mass instead of separate candles.
+            // ROARING BONFIRE — main core stays unified, but several smaller
+            // background tongues escape upward and to the sides so the fire
+            // visibly roars instead of standing still as one neat flame.
             const layers = [
+              // Far back-left tongue — small, blurred, leans left+up
               {
-                size: Math.round(master * 0.8),
-                accent: "hsl(16 92% 50%)",
-                tier: Math.max(cappedTier - 1, 2),
-                offsetX: -4,
-                offsetY: 6,
+                size: Math.round(master * 0.55),
+                accent: "hsl(14 88% 46%)",
+                tier: Math.max(cappedTier - 2, 1),
+                offsetX: -Math.round(master * 0.32),
+                offsetY: -Math.round(master * 0.18),
                 z: 1,
-                opacity: 0.44,
-                scaleX: 1.06,
-                scaleY: 0.94,
-                blur: 3.2,
-                shadowMul: 0.48,
-                clipInset: "inset(0 16% 0 16%)",
+                opacity: 0.55,
+                scaleX: 0.9,
+                scaleY: 1.15,
+                rotate: -14,
+                blur: 2.6,
+                shadowMul: 0.55,
               },
+              // Far back-right tongue — slightly bigger, leans right+up
               {
-                size: Math.round(master * 0.9),
-                accent: "hsl(20 96% 54%)",
-                tier: cappedTier,
-                offsetX: 3,
-                offsetY: 3,
-                z: 3,
-                opacity: 0.78,
-                scaleX: 1.02,
-                scaleY: 0.98,
-                blur: 1.1,
-                shadowMul: 0.76,
-                clipInset: "inset(0 12% 0 12%)",
+                size: Math.round(master * 0.62),
+                accent: "hsl(16 92% 50%)",
+                tier: Math.max(cappedTier - 2, 1),
+                offsetX: Math.round(master * 0.34),
+                offsetY: -Math.round(master * 0.22),
+                z: 1,
+                opacity: 0.6,
+                scaleX: 0.95,
+                scaleY: 1.2,
+                rotate: 12,
+                blur: 2.4,
+                shadowMul: 0.55,
               },
+              // Mid-left flicker — closer, taller, more saturated
+              {
+                size: Math.round(master * 0.7),
+                accent: "hsl(20 96% 54%)",
+                tier: Math.max(cappedTier - 1, 2),
+                offsetX: -Math.round(master * 0.18),
+                offsetY: -Math.round(master * 0.08),
+                z: 2,
+                opacity: 0.78,
+                scaleX: 0.95,
+                scaleY: 1.1,
+                rotate: -7,
+                blur: 1.2,
+                shadowMul: 0.7,
+              },
+              // Mid-right flicker — peeks out behind the core
+              {
+                size: Math.round(master * 0.78),
+                accent: "hsl(22 98% 56%)",
+                tier: Math.max(cappedTier - 1, 2),
+                offsetX: Math.round(master * 0.18),
+                offsetY: -Math.round(master * 0.05),
+                z: 2,
+                opacity: 0.82,
+                scaleX: 0.98,
+                scaleY: 1.08,
+                rotate: 6,
+                blur: 1.0,
+                shadowMul: 0.75,
+              },
+              // Wide blurred halo body behind the core — gives mass
+              {
+                size: Math.round(master * 1.15),
+                accent: "hsl(18 95% 50%)",
+                tier: Math.max(cappedTier - 1, 2),
+                offsetX: 0,
+                offsetY: 4,
+                z: 3,
+                opacity: 0.55,
+                scaleX: 1.08,
+                scaleY: 0.95,
+                rotate: 0,
+                blur: 4.5,
+                shadowMul: 0.65,
+              },
+              // CENTER core — tallest, hottest, frontmost
               {
                 size: master,
                 accent: "hsl(24 100% 58%)",
                 tier: cappedTier,
                 offsetX: 0,
                 offsetY: 0,
-                z: 5,
+                z: 6,
                 opacity: 1,
                 scaleX: 1,
                 scaleY: 1,
+                rotate: 0,
                 blur: 0,
                 shadowMul: 1,
-                clipInset: "inset(0 8% 0 8%)",
               },
             ];
 
-            const bowlWidth = Math.round(master * 1.04);
-            const bowlHeight = Math.round(master * 1.42);
+            const bowlWidth = Math.round(master * 2.0);
+            const bowlHeight = Math.round(master * 1.85);
 
             return (
               <div
@@ -724,35 +772,25 @@ const CompactStreakPanel = ({
                     key={i}
                     className="absolute left-1/2 bottom-0 flex items-end justify-center"
                     style={{
-                      width: bowlWidth,
-                      height: bowlHeight,
-                      marginLeft: -bowlWidth / 2,
-                      transform: `translateX(${L.offsetX}px) translateY(${L.offsetY}px)`,
+                      width: L.size,
+                      height: Math.round(L.size * 1.3),
+                      marginLeft: -L.size / 2,
+                      transform: `translateX(${L.offsetX}px) translateY(${L.offsetY}px) rotate(${L.rotate}deg) scale(${L.scaleX}, ${L.scaleY})`,
                       transformOrigin: "center bottom",
+                      filter: `${dropShadow(L.accent, L.shadowMul)}${L.blur ? ` blur(${L.blur}px)` : ""}`,
                       opacity: L.opacity,
                       zIndex: L.z,
-                      mixBlendMode: i < 2 ? "lighten" : "normal",
+                      mixBlendMode: i < 5 ? "lighten" : "normal",
+                      animation: `flame-roar-${i % 3} ${(2.6 + (i % 3) * 0.4).toFixed(2)}s ease-in-out infinite`,
+                      animationDelay: `${(i * 0.18).toFixed(2)}s`,
                     }}
                   >
-                    <span
-                      className="flex items-end justify-center"
-                      style={{
-                        width: L.size,
-                        height: Math.round(L.size * 1.25),
-                        transform: `scale(${L.scaleX}, ${L.scaleY})`,
-                        transformOrigin: "center bottom",
-                        filter: `${dropShadow(L.accent, L.shadowMul)}${L.blur ? ` blur(${L.blur}px)` : ""}`,
-                        clipPath: L.clipInset,
-                        overflow: "hidden",
-                      }}
-                    >
-                      <RealisticFlame
-                        tier={L.tier}
-                        accent={L.accent}
-                        size={L.size}
-                        interactive={false}
-                      />
-                    </span>
+                    <RealisticFlame
+                      tier={L.tier}
+                      accent={L.accent}
+                      size={L.size}
+                      interactive={false}
+                    />
                   </span>
                 ))}
               </div>

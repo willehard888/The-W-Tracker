@@ -96,9 +96,8 @@ const IosEntryHero = ({
           Become a Member
         </h2>
         <p className="text-center text-[12px] text-muted-foreground mb-5 max-w-[260px] mx-auto leading-relaxed">
-          One way in. Full access for 7 days — then{" "}
-          <span className="text-gold font-semibold">{activePrice}{cadence}</span> if
-          you're built for it.
+          One way in. Membership unlocks everything —{" "}
+          <span className="text-gold font-semibold">{activePrice}{cadence}</span>.
         </p>
 
         {/* Billing toggle */}

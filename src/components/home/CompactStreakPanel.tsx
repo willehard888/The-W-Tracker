@@ -1025,9 +1025,14 @@ const CompactStreakPanel = ({
               .map((L, i) => ({ L, i }))
               .filter(({ i }) => keptIndices.has(i));
 
-            // High-contrast mode also boosts shadow strength on the core.
-            const contrastShadowBoost =
-              flameSettings.contrastMode === "high-contrast" ? 1.6 : 1;
+            // Per-mode shadow boost (Razor Sharp pushes hardest).
+            const contrastShadowBoost = flameShadowMultiplier(flameSettings);
+
+            // Edge-clipping mask — confines the punchy filter to the flame's
+            // interior so the rim halo / fringe never blooms outside the body.
+            const maskImage = flameSettings.edgeClipping
+              ? flameEdgeMaskImage(flameSettings.edgeSoftness)
+              : undefined;
 
             const bowlWidth = Math.round(master * 1.85);
             const bowlHeight = Math.round(master * 2.2);
@@ -1040,13 +1045,20 @@ const CompactStreakPanel = ({
                   height: bowlHeight,
                   transform: "translateX(-50%)",
                   overflow: "visible",
-                  // RAZOR-SHARP STACK — pumps saturation + contrast across the
-                  // entire flame so silhouettes read crisp, not blurry.
-                  filter:
-                    flameSettings.contrastMode === "high-contrast"
-                      ? "contrast(1.6) saturate(1.55) brightness(1.05)"
-                      : "contrast(1.4) saturate(1.4) brightness(1.02)",
+                  // SHARPENING STACK — saturation + contrast tuned per mode.
+                  // Razor Sharp ramps hardest; auto-degrade backs off if FPS drops.
+                  filter: flameSharpenFilter(flameSettings),
                   isolation: "isolate",
+                  ...(maskImage
+                    ? {
+                        WebkitMaskImage: maskImage,
+                        maskImage,
+                        WebkitMaskRepeat: "no-repeat",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskSize: "100% 100%",
+                        maskSize: "100% 100%",
+                      }
+                    : {}),
                 }}
               >
                 {visibleLayers.map(({ L, i }) => (

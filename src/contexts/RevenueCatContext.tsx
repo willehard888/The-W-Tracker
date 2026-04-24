@@ -17,12 +17,25 @@ const RC_API_KEY_APPLE = "appl_qgpDFJEtyXTeNTJZxBoHzxzgiTr";
 const ELITE_ENTITLEMENT = "The W Tracker Pro";
 const APEX_ENTITLEMENT = "apex_subscriber";
 
+// Monthly products
 const ELITE_PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"] as const;
 const APEX_PRODUCT_IDS = ["Apex888", "com.app.Apex888", "apexmonthly1599", "com.app.apexmonthly1599"] as const;
-const ALL_PRODUCT_IDS = [...ELITE_PRODUCT_IDS, ...APEX_PRODUCT_IDS] as const;
+
+// Yearly products (~20% discount). Placeholders — update IDs in App Store Connect.
+const ELITE_YEARLY_PRODUCT_IDS = ["eliteyearly4799", "com.app.eliteyearly4799"] as const;
+const APEX_YEARLY_PRODUCT_IDS = ["apexyearly17299", "com.app.apexyearly17299"] as const;
+
+const ALL_PRODUCT_IDS = [
+  ...ELITE_PRODUCT_IDS,
+  ...APEX_PRODUCT_IDS,
+  ...ELITE_YEARLY_PRODUCT_IDS,
+  ...APEX_YEARLY_PRODUCT_IDS,
+] as const;
 
 const PRIMARY_ELITE_PRODUCT_ID = "elitemonthly499";
 const PRIMARY_APEX_PRODUCT_ID = "Apex888";
+const PRIMARY_ELITE_YEARLY_PRODUCT_ID = "eliteyearly4799";
+const PRIMARY_APEX_YEARLY_PRODUCT_ID = "apexyearly17299";
 
 // ─── Types ──────────────────────────────────────────────
 interface RevenueCatContextType {
@@ -32,10 +45,14 @@ interface RevenueCatContextType {
   rcReady: boolean;
   monthlyPriceLabel: string | null;
   apexPriceLabel: string | null;
+  eliteYearlyPriceLabel: string | null;
+  apexYearlyPriceLabel: string | null;
   packages: any[];
   purchase: (pkg: any) => Promise<void>;
   purchaseProduct: (productId: string) => Promise<void>;
   purchaseApex: () => Promise<void>;
+  purchaseElitePlan: (plan: "monthly" | "yearly") => Promise<void>;
+  purchaseApexPlan: (plan: "monthly" | "yearly") => Promise<void>;
   restorePurchases: () => Promise<void>;
 }
 
@@ -74,6 +91,14 @@ function isElitePid(id: string | null): boolean {
 
 function isApexPid(id: string | null): boolean {
   return !!id && (APEX_PRODUCT_IDS as readonly string[]).includes(id);
+}
+
+function isEliteYearlyPid(id: string | null): boolean {
+  return !!id && (ELITE_YEARLY_PRODUCT_IDS as readonly string[]).includes(id);
+}
+
+function isApexYearlyPid(id: string | null): boolean {
+  return !!id && (APEX_YEARLY_PRODUCT_IDS as readonly string[]).includes(id);
 }
 
 function priceLabel(value: any): string | null {
@@ -117,6 +142,8 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const [rcReady, setRcReady] = useState(false);
   const [monthlyPriceLabel, setMonthlyPriceLabel] = useState<string | null>(null);
   const [apexPriceLabel, setApexPriceLabel] = useState<string | null>(null);
+  const [eliteYearlyPriceLabel, setEliteYearlyPriceLabel] = useState<string | null>(null);
+  const [apexYearlyPriceLabel, setApexYearlyPriceLabel] = useState<string | null>(null);
 
   /** Sync subscription flags to database. */
   const syncEntitlements = useCallback(
@@ -184,6 +211,22 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
         if (label) setApexPriceLabel(label);
       }
 
+      const eliteYearlyP =
+        products?.find((x: any) => productId(x) === PRIMARY_ELITE_YEARLY_PRODUCT_ID) ??
+        products?.find((x: any) => isEliteYearlyPid(productId(x)));
+      if (eliteYearlyP) {
+        const label = priceLabel(eliteYearlyP);
+        if (label) setEliteYearlyPriceLabel(label);
+      }
+
+      const apexYearlyP =
+        products?.find((x: any) => productId(x) === PRIMARY_APEX_YEARLY_PRODUCT_ID) ??
+        products?.find((x: any) => isApexYearlyPid(productId(x)));
+      if (apexYearlyP) {
+        const label = priceLabel(apexYearlyP);
+        if (label) setApexYearlyPriceLabel(label);
+      }
+
       updateRevenueCatDebug({
         loadedProductIds,
         monthlyPriceLabel: eliteP ? priceLabel(eliteP) : null,
@@ -208,6 +251,8 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       setPackages([]);
       setMonthlyPriceLabel(null);
       setApexPriceLabel(null);
+      setEliteYearlyPriceLabel(null);
+      setApexYearlyPriceLabel(null);
       setRcLoading(false);
       setRcReady(false);
       updateRevenueCatDebug({ appUserId: null, entitlement: null });
@@ -305,7 +350,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     [applyEntitlements],
   );
 
-  /** Convenience wrapper to purchase Apex Instant. */
+  /** Convenience wrapper to purchase Apex Instant (monthly default). */
   const purchaseApex = useCallback(async () => {
     // Try package first (offering), fall back to direct product
     const apexPkg = packages.find((pkg: any) => {
@@ -318,6 +363,44 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       await purchaseProduct(PRIMARY_APEX_PRODUCT_ID);
     }
   }, [packages, purchase, purchaseProduct]);
+
+  /** Purchase Elite tier with selectable billing plan. */
+  const purchaseElitePlan = useCallback(
+    async (plan: "monthly" | "yearly") => {
+      const targetId =
+        plan === "yearly" ? PRIMARY_ELITE_YEARLY_PRODUCT_ID : PRIMARY_ELITE_PRODUCT_ID;
+      const matcher = plan === "yearly" ? isEliteYearlyPid : isElitePid;
+      const pkg = packages.find((p: any) => {
+        const pid = productId(storeProduct(p));
+        return pid === targetId || matcher(pid);
+      });
+      if (pkg) {
+        await purchase(pkg);
+      } else {
+        await purchaseProduct(targetId);
+      }
+    },
+    [packages, purchase, purchaseProduct],
+  );
+
+  /** Purchase Apex tier with selectable billing plan. */
+  const purchaseApexPlan = useCallback(
+    async (plan: "monthly" | "yearly") => {
+      const targetId =
+        plan === "yearly" ? PRIMARY_APEX_YEARLY_PRODUCT_ID : PRIMARY_APEX_PRODUCT_ID;
+      const matcher = plan === "yearly" ? isApexYearlyPid : isApexPid;
+      const pkg = packages.find((p: any) => {
+        const pid = productId(storeProduct(p));
+        return pid === targetId || matcher(pid);
+      });
+      if (pkg) {
+        await purchase(pkg);
+      } else {
+        await purchaseProduct(targetId);
+      }
+    },
+    [packages, purchase, purchaseProduct],
+  );
 
   // ─── Restore ────────────────────────────────────────
   const restorePurchases = useCallback(async () => {
@@ -340,10 +423,14 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
         rcReady,
         monthlyPriceLabel,
         apexPriceLabel,
+        eliteYearlyPriceLabel,
+        apexYearlyPriceLabel,
         packages,
         purchase,
         purchaseProduct,
         purchaseApex,
+        purchaseElitePlan,
+        purchaseApexPlan,
         restorePurchases,
       }}
     >

@@ -1,28 +1,33 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Loader2, ShieldCheck, Zap, Check } from "lucide-react";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
+
+export type PaywallBillingPlan = "monthly" | "yearly";
 
 interface PaywallTierCardProps {
   variant: "elite" | "apex";
   title: string;
   priceLabel: string;
+  yearlyPriceLabel?: string;
   cadence?: string;
   tagline: string;
   badgeLabel: string;
   features: ReadonlyArray<{ icon: any; text: string }>;
   ctaLabel: string;
   ctaIcon?: ReactNode;
-  onCta: () => void;
+  onCta: (plan: PaywallBillingPlan) => void;
   loading?: boolean;
   highlighted?: boolean;
   footnote?: string;
+  yearlyDiscountPct?: number;
 }
 
 const PaywallTierCard = ({
   variant,
   title,
   priceLabel,
+  yearlyPriceLabel,
   cadence = "/mo",
   tagline,
   badgeLabel,
@@ -33,8 +38,21 @@ const PaywallTierCard = ({
   loading,
   highlighted,
   footnote,
+  yearlyDiscountPct = 20,
 }: PaywallTierCardProps) => {
   const isApex = variant === "apex";
+  const [plan, setPlan] = useState<PaywallBillingPlan>(
+    yearlyPriceLabel ? "yearly" : "monthly",
+  );
+  const showToggle = !!yearlyPriceLabel;
+  const isYearly = showToggle && plan === "yearly";
+  const activePrice = isYearly ? yearlyPriceLabel! : priceLabel;
+  const activeCadence = isYearly ? "/yr" : cadence;
+  const accentClass = isApex ? "text-[hsl(18_95%_58%)]" : "text-gold";
+  const accentBgClass = isApex ? "bg-[hsl(18_95%_58%)]" : "bg-gold";
+  const accentBorderClass = isApex
+    ? "border-[hsl(18_95%_58%)]/40"
+    : "border-gold/30";
 
   return (
     <div
@@ -133,20 +151,79 @@ const PaywallTierCard = ({
         </h3>
         <p className="text-[11px] text-muted-foreground mb-3">{tagline}</p>
 
+        {/* Billing toggle */}
+        {showToggle && (
+          <div className="mb-3">
+            <div
+              role="tablist"
+              className={cn(
+                "inline-flex items-center rounded-full p-0.5 bg-background/60 border backdrop-blur",
+                accentBorderClass,
+              )}
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={!isYearly}
+                onClick={() => setPlan("monthly")}
+                className={cn(
+                  "px-3 py-1 rounded-full text-[10px] font-black tracking-wider uppercase transition-all duration-200",
+                  !isYearly
+                    ? cn(accentBgClass, "text-background shadow-md")
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Monthly
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={isYearly}
+                onClick={() => setPlan("yearly")}
+                className={cn(
+                  "px-3 py-1 rounded-full text-[10px] font-black tracking-wider uppercase transition-all duration-200 flex items-center gap-1.5",
+                  isYearly
+                    ? cn(accentBgClass, "text-background shadow-md")
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Yearly
+                <span
+                  className={cn(
+                    "px-1 py-px rounded-full text-[8px] font-black tracking-wider",
+                    isYearly
+                      ? "bg-background/25 text-background"
+                      : cn(accentClass, "border", accentBorderClass),
+                  )}
+                >
+                  −{yearlyDiscountPct}%
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Price */}
         <p
           className={cn(
-            "font-display font-black leading-none mb-3 text-3xl",
+            "font-display font-black leading-none mb-1 text-3xl",
             isApex
               ? "text-[hsl(18_95%_58%)]"
               : "text-gold drop-shadow-[0_2px_8px_hsl(var(--gold)/0.45)]",
           )}
         >
-          {priceLabel}
+          {activePrice}
           <span className="text-base font-semibold text-muted-foreground">
-            {cadence}
+            {activeCadence}
           </span>
         </p>
+        {isYearly && (
+          <p className="text-[10.5px] text-muted-foreground mb-3">
+            <span className="line-through opacity-60">{priceLabel}/mo × 12</span>{" "}
+            · <span className={cn("font-bold", accentClass)}>Save {yearlyDiscountPct}%</span>
+          </p>
+        )}
+        {!isYearly && <div className="mb-3" />}
 
         {/* Features */}
         <ul className="space-y-2 mb-4">
@@ -183,7 +260,7 @@ const PaywallTierCard = ({
             !loading && "breathing-glow",
           )}
           disabled={loading}
-          onClick={onCta}
+          onClick={() => onCta(plan)}
         >
           {loading ? <Loader2 size={18} className="animate-spin" /> : ctaIcon}
           {ctaLabel}

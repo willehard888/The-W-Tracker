@@ -15,8 +15,7 @@ import IosEntryHero from "@/components/paywall/IosEntryHero";
 import IosApexSecondary from "@/components/paywall/IosApexSecondary";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
-const ELITE_PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"];
-const PRIMARY_ELITE_PRODUCT_ID = ELITE_PRODUCT_IDS[0];
+
 
 const MEMBER_FEATURES = [
   { icon: Flame, text: "Daily check-ins, XP, streaks" },
@@ -34,11 +33,28 @@ const APEX_FEATURES = [
   { icon: Sparkles, text: "All Member features included" },
 ] as const;
 
+/** Compute a -20% yearly fallback price from a monthly EUR string like "4,99 €". */
+const estimateYearlyFromMonthly = (monthly: string, discountPct = 20): string => {
+  const match = monthly.match(/(\d+[.,]\d+|\d+)/);
+  if (!match) return monthly;
+  const num = parseFloat(match[0].replace(",", "."));
+  if (!isFinite(num)) return monthly;
+  const yearly = num * 12 * (1 - discountPct / 100);
+  // Try to detect EUR symbol position
+  const hasEuroSuffix = /\d\s*€/.test(monthly);
+  const hasEuroPrefix = /€\s*\d/.test(monthly);
+  const formatted = yearly.toFixed(2).replace(".", ",");
+  if (hasEuroPrefix) return `€${formatted}`;
+  if (hasEuroSuffix) return `${formatted} €`;
+  return `${formatted} €`;
+};
+
 const Paywall = () => {
   const { isElite, isApexSubscriber, checkSubscription, profile } = useAuth();
   const {
-    packages, purchase, purchaseProduct, purchaseApex, restorePurchases,
+    purchaseElitePlan, purchaseApexPlan, restorePurchases,
     rcLoading, rcReady, monthlyPriceLabel, apexPriceLabel,
+    eliteYearlyPriceLabel, apexYearlyPriceLabel,
   } = useRevenueCat();
   const navigate = useNavigate();
 
@@ -48,6 +64,12 @@ const Paywall = () => {
 
   const elitePrice = isNative ? (monthlyPriceLabel ?? "4,99 €") : "4,99 €";
   const apexPrice = isNative ? (apexPriceLabel ?? "17,99 €") : "17,99 €";
+  const eliteYearlyPrice = isNative
+    ? (eliteYearlyPriceLabel ?? estimateYearlyFromMonthly(elitePrice))
+    : estimateYearlyFromMonthly(elitePrice);
+  const apexYearlyPrice = isNative
+    ? (apexYearlyPriceLabel ?? estimateYearlyFromMonthly(apexPrice))
+    : estimateYearlyFromMonthly(apexPrice);
 
   useEffect(() => {
     if (isElite && !wasMemberRef.current) {
@@ -138,11 +160,14 @@ const Paywall = () => {
     : null;
 
   // ─── Handlers ───────────────────────────────────────
-  const handleStripeCheckout = async (tier: "elite" | "apex") => {
+  const handleStripeCheckout = async (
+    tier: "elite" | "apex",
+    plan: "monthly" | "yearly" = "monthly",
+  ) => {
     setPurchasingTier(tier);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { tier },
+        body: { tier, plan },
       });
       if (error) throw error;
       if (!data?.url) throw new Error("No checkout URL received");
@@ -156,22 +181,12 @@ const Paywall = () => {
     }
   };
 
-  const handleNativeElite = async () => {
+  const handleNativeElite = async (plan: "monthly" | "yearly" = "monthly") => {
     if (!rcReady) { toast.info("Loading store… please wait."); return; }
     hapticImpact("medium");
     setPurchasingTier("elite");
     try {
-      const monthlyPkg = packages.find((pkg: any) => {
-        const id = pkg?.product?.identifier ?? pkg?.storeProduct?.identifier;
-        return id === PRIMARY_ELITE_PRODUCT_ID;
-      }) ?? packages.find((pkg: any) => {
-        const id = pkg?.product?.identifier ?? pkg?.storeProduct?.identifier;
-        return ELITE_PRODUCT_IDS.includes(id);
-      });
-
-      if (monthlyPkg) await purchase(monthlyPkg);
-      else await purchaseProduct(PRIMARY_ELITE_PRODUCT_ID);
-
+      await purchaseElitePlan(plan);
       await checkSubscription();
       hapticNotification("success");
     } catch (e: any) {
@@ -183,12 +198,12 @@ const Paywall = () => {
     }
   };
 
-  const handleNativeApex = async () => {
+  const handleNativeApex = async (plan: "monthly" | "yearly" = "monthly") => {
     if (!rcReady) { toast.info("Loading store… please wait."); return; }
     hapticImpact("heavy");
     setPurchasingTier("apex");
     try {
-      await purchaseApex();
+      await purchaseApexPlan(plan);
       await checkSubscription();
       hapticNotification("success");
     } catch (e: any) {
@@ -252,10 +267,10 @@ const Paywall = () => {
         // ─── iOS hard entry: dominant Member hero + small Apex secondary ───
         <div className="space-y-3 animate-reveal animate-reveal-delay-1">
           <IosEntryHero
-            priceLabel={elitePrice}
+            monthlyPriceLabel={elitePrice}
+            yearlyPriceLabel={eliteYearlyPrice}
             loading={purchasingTier === "elite"}
             onCta={handleNativeElite}
-            footnote={`Free for 7 days · then ${elitePrice}/mo · Cancel anytime`}
           />
 
           {/* Subtle divider */}
@@ -268,7 +283,8 @@ const Paywall = () => {
           </div>
 
           <IosApexSecondary
-            priceLabel={apexPrice}
+            monthlyPriceLabel={apexPrice}
+            yearlyPriceLabel={apexYearlyPrice}
             loading={purchasingTier === "apex"}
             onClick={handleNativeApex}
           />
@@ -289,12 +305,13 @@ const Paywall = () => {
             badgeLabel="7-day free trial"
             tagline="Full access, then earn your status."
             priceLabel={elitePrice}
+            yearlyPriceLabel={eliteYearlyPrice}
             ctaLabel="Start 7-Day Trial"
             ctaIcon={<ShieldCheck size={18} />}
             features={MEMBER_FEATURES}
             loading={purchasingTier === "elite"}
-            onCta={() => handleStripeCheckout("elite")}
-            footnote={`Free for 7 days, then ${elitePrice}/mo.`}
+            onCta={(plan) => handleStripeCheckout("elite", plan)}
+            footnote={`Free for 7 days · cancel anytime.`}
           />
 
           {/* Apex Instant tier */}
@@ -304,12 +321,13 @@ const Paywall = () => {
             badgeLabel="Skip the grind"
             tagline="Instant top 1% status. Lead a Tribe."
             priceLabel={apexPrice}
+            yearlyPriceLabel={apexYearlyPrice}
             ctaLabel="Become Apex Now"
             ctaIcon={<Zap size={18} strokeWidth={2.6} />}
             features={APEX_FEATURES}
             highlighted
             loading={purchasingTier === "apex"}
-            onCta={() => handleStripeCheckout("apex")}
+            onCta={(plan) => handleStripeCheckout("apex", plan)}
             footnote="No trial. Charged immediately. Cancel anytime."
           />
 

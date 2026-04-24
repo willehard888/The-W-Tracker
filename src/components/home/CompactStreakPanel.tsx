@@ -756,27 +756,66 @@ const CompactStreakPanel = ({
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-1.5 leading-none">
+          {/* Live "fire is burning" indicator */}
+          {isHot && (
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span
+                aria-hidden
+                className="inline-block h-1.5 w-1.5 rounded-full"
+                style={{
+                  background: accent,
+                  boxShadow: `0 0 8px ${accent}, 0 0 16px ${accent.replace(")", " / 0.5)")}`,
+                  animation: "pulse 1.2s ease-in-out infinite",
+                }}
+              />
+              <span
+                className="text-[8px] font-black uppercase tracking-[0.24em]"
+                style={{ color: accent }}
+              >
+                Burning · {tier.name}
+              </span>
+            </div>
+          )}
+          <div className="flex items-baseline gap-1.5 leading-none relative">
+            {/* Glowing tier-color halo behind the number */}
+            {isHot && (
+              <span
+                aria-hidden
+                className="absolute pointer-events-none"
+                style={{
+                  left: -8,
+                  top: -6,
+                  width: 80,
+                  height: 60,
+                  background: `radial-gradient(ellipse at center, ${accent.replace(")", " / 0.35)")} 0%, transparent 70%)`,
+                  filter: "blur(10px)",
+                  zIndex: -1,
+                }}
+              />
+            )}
             <span
               key={numberKey.current}
               className={cn(
                 "font-black font-display tabular-nums tracking-tighter leading-[0.85] inline-block",
-                displayStreak >= 100 ? "text-[40px]" : "text-[48px]",
+                displayStreak >= 100 ? "text-[44px]" : "text-[54px]",
                 numberClass,
               )}
               style={{
                 filter: isHot
-                  ? `drop-shadow(0 3px 12px ${accent.replace(")", " / 0.55)")})`
+                  ? `drop-shadow(0 3px 14px ${accent.replace(")", " / 0.7)")}) drop-shadow(0 0 24px ${accent.replace(")", " / 0.4)")})`
                   : undefined,
                 animation: isHot
-                  ? "streak-number-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), streak-number-breathe 3.6s ease-in-out infinite 0.7s"
+                  ? "streak-number-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), streak-number-fire-pulse 2.4s ease-in-out infinite 0.7s"
                   : "streak-number-in 0.5s ease-out",
                 transformOrigin: "center bottom",
               }}
             >
               {countDisplay}
             </span>
-            <span className="font-black text-muted-foreground/70 font-display text-[10px] uppercase tracking-[0.2em]">
+            <span
+              className="font-black font-display text-[11px] uppercase tracking-[0.22em]"
+              style={{ color: isHot ? accent : "hsl(var(--muted-foreground) / 0.7)" }}
+            >
               day{displayStreak === 1 ? "" : "s"}
             </span>
           </div>

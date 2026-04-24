@@ -3828,3 +3828,60 @@ button:active > .aurum-lava-glow {
     opacity: var(--cf-opacity-mid, 0.92);
   }
 }
+
+/* ============================================================
+ * Cinematic Flame — keyframes for src/components/home/CinematicFlame
+ * ============================================================ */
+@keyframes cinematic-flame-breathe {
+  0%, 100% {
+    transform: translateX(-50%) scaleY(0.97) scaleX(1.02);
+    filter: saturate(1.15) contrast(1.05) brightness(1);
+  }
+  50% {
+    transform: translateX(-50%) scaleY(1.05) scaleX(0.98);
+    filter: saturate(1.25) contrast(1.1) brightness(1.08);
+  }
+}
+
+@keyframes cinematic-flame-flicker {
+  0%, 100% {
+    transform: translateX(-50%) scaleY(1) scaleX(1) rotate(0deg);
+    opacity: 0.7;
+  }
+  35% {
+    transform: translateX(-49%) scaleY(1.04) scaleX(0.96) rotate(0.6deg);
+    opacity: 0.82;
+  }
+  65% {
+    transform: translateX(-51%) scaleY(0.96) scaleX(1.04) rotate(-0.5deg);
+    opacity: 0.65;
+  }
+}
+
+@keyframes cinematic-core-pulse {
+  0%, 100% { opacity: 0.65; transform: translateX(-50%) scale(1); }
+  50%      { opacity: 1;    transform: translateX(-50%) scale(1.12); }
+}
+
+@keyframes cinematic-ground-pulse {
+  0%, 100% { opacity: 0.7;  transform: translateX(-50%) scaleX(1)    scaleY(1); }
+  50%      { opacity: 1;    transform: translateX(-50%) scaleX(1.15) scaleY(1.05); }
+}
+
+@keyframes cinematic-ember-rise {
+  0%   { transform: translate(0, 0) scale(0.5);                                 opacity: 0; }
+  10%  {                                                                         opacity: 1; }
+  80%  {                                                                         opacity: 0.8; }
+  100% { transform: translate(var(--cf-drift, 0px), var(--cf-rise, -200px)) scale(0.2); opacity: 0; }
+}
+
+@keyframes cinematic-smoke-drift {
+  0%, 100% { transform: translateX(-50%) translateY(0)    scale(1);    opacity: 0.5; }
+  50%      { transform: translateX(-48%) translateY(-12px) scale(1.08); opacity: 0.7; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="cinematic-flame"], [style*="cinematic-"] {
+    animation: none !important;
+  }
+}

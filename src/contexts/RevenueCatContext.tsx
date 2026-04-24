@@ -21,8 +21,8 @@ const APEX_ENTITLEMENT = "apex_subscriber";
 const ELITE_PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"] as const;
 const APEX_PRODUCT_IDS = ["Apex888", "com.app.Apex888", "apexmonthly1599", "com.app.apexmonthly1599"] as const;
 
-// Yearly products (~20% discount). Placeholders — update IDs in App Store Connect.
-const ELITE_YEARLY_PRODUCT_IDS = ["eliteyearly4799", "com.app.eliteyearly4799"] as const;
+// Yearly products. Update IDs in App Store Connect to match.
+const ELITE_YEARLY_PRODUCT_IDS = ["eliteyearly4999", "com.app.eliteyearly4999"] as const;
 const APEX_YEARLY_PRODUCT_IDS = ["apexyearly17299", "com.app.apexyearly17299"] as const;
 
 const ALL_PRODUCT_IDS = [

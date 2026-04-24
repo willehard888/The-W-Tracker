@@ -333,7 +333,7 @@ const CompactStreakPanel = ({
             boxShadow: isHot
               ? `inset 0 2px 0 hsl(0 0% 100% / 0.08), inset 0 -10px 22px hsl(0 0% 0% / 0.7), inset 0 0 26px hsl(0 0% 0% / 0.55)`
               : undefined,
-            overflow: "hidden",
+            overflow: "visible",
           }}
         >
           {/* Stone-textured chamber walls — subtle hatching */}
@@ -559,7 +559,7 @@ const CompactStreakPanel = ({
                 offsetX: -Math.round(master * 0.3),
                 offsetY: -Math.round(master * 0.16),
                 z: 1,
-                opacity: 1,
+                opacity: 0.7,
                 rotate: -16,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-0",
@@ -577,7 +577,7 @@ const CompactStreakPanel = ({
                 offsetX: Math.round(master * 0.31),
                 offsetY: -Math.round(master * 0.18),
                 z: 1,
-                opacity: 1,
+                opacity: 0.72,
                 rotate: 15,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-1",
@@ -595,7 +595,7 @@ const CompactStreakPanel = ({
                 offsetX: -Math.round(master * 0.36),
                 offsetY: Math.round(master * 0.02),
                 z: 2,
-                opacity: 0.98,
+                opacity: 0.7,
                 rotate: -24,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-6",
@@ -613,7 +613,7 @@ const CompactStreakPanel = ({
                 offsetX: -Math.round(master * 0.2),
                 offsetY: -Math.round(master * 0.08),
                 z: 3,
-                opacity: 1,
+                opacity: 0.75,
                 rotate: -8,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-2",
@@ -631,7 +631,7 @@ const CompactStreakPanel = ({
                 offsetX: Math.round(master * 0.21),
                 offsetY: -Math.round(master * 0.09),
                 z: 3,
-                opacity: 1,
+                opacity: 0.75,
                 rotate: 7,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-3",
@@ -650,7 +650,7 @@ const CompactStreakPanel = ({
                 offsetX: 0,
                 offsetY: -Math.round(master * 0.03),
                 z: 4,
-                opacity: 0.32,
+                opacity: 0.22,
                 rotate: 0,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-4",
@@ -669,7 +669,7 @@ const CompactStreakPanel = ({
                 offsetX: 0,
                 offsetY: 0,
                 z: 6,
-                opacity: 1,
+                opacity: 0.82,
                 rotate: 0,
                 shadowMul: 1,
                 rhythm: "flame-rhythm-core",
@@ -689,7 +689,7 @@ const CompactStreakPanel = ({
                 offsetX: 0,
                 offsetY: -Math.round(master * 0.18),
                 z: 7,
-                opacity: 0.78,
+                opacity: 0.6,
                 rotate: 0,
                 shadowMul: 0.55,
                 rhythm: "flame-rhythm-7",
@@ -702,7 +702,7 @@ const CompactStreakPanel = ({
             ];
 
             const bowlWidth = Math.round(master * 1.55);
-            const bowlHeight = Math.round(master * 1.65);
+            const bowlHeight = Math.round(master * 2);
 
             return (
               <div

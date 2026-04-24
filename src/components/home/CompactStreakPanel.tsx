@@ -2,6 +2,11 @@ import { Zap, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getEffectiveStreak, getStreakDeadlineState } from "@/lib/streak";
+import {
+  applyFlameOpacity,
+  selectKeptLayerIndices,
+  useFlameDevSettings,
+} from "@/lib/flame-dev-settings";
 import RealisticFlame from "./RealisticFlame";
 
 interface CompactStreakPanelProps {

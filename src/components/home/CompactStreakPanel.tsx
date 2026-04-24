@@ -497,7 +497,7 @@ const CompactStreakPanel = ({
             />
           )}
 
-          {/* Inner overflow clip for embers */}
+          {/* Inner overflow clip for embers (kept clipped so embers stay within stone walls) */}
           <div className="absolute inset-0 rounded-xl overflow-hidden">
             {isHot && <Embers count={emberCount} color={emberColor} />}
             {/* Inner glow ring */}
@@ -506,7 +506,7 @@ const CompactStreakPanel = ({
                 aria-hidden
                 className="absolute inset-1 rounded-lg pointer-events-none"
                 style={{
-                  background: `radial-gradient(circle at 50% 80%, ${accent.replace(")", " / 0.5)")}, transparent 65%)`,
+                  background: `radial-gradient(circle at 50% 80%, ${accent.replace(")", " / 0.55)")}, transparent 65%)`,
                 }}
               />
             )}

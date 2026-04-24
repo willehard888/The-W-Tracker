@@ -863,9 +863,7 @@ const CompactStreakPanel = ({
                 numberClass,
               )}
               style={{
-                filter: isHot
-                  ? `drop-shadow(0 3px 14px ${accent.replace(")", " / 0.7)")}) drop-shadow(0 0 24px ${accent.replace(")", " / 0.4)")})`
-                  : undefined,
+                filter: undefined,
                 animation: isHot
                   ? "streak-number-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), streak-number-fire-pulse 2.4s ease-in-out infinite 0.7s"
                   : "streak-number-in 0.5s ease-out",

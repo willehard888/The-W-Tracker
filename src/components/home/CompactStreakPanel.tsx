@@ -342,7 +342,7 @@ const CompactStreakPanel = ({
             boxShadow: isHot
               ? `0 0 38px hsl(22 98% 55% / 0.5), 0 0 80px hsl(18 95% 50% / 0.22), inset 0 2px 0 hsl(0 0% 100% / 0.10), inset 0 -10px 22px hsl(0 0% 0% / 0.7), inset 0 0 26px hsl(0 0% 0% / 0.55)`
               : undefined,
-            overflow: "visible",
+            overflow: "hidden",
           }}
         >
           {/* Stone-textured chamber walls — subtle hatching */}
@@ -554,14 +554,14 @@ const CompactStreakPanel = ({
           {(() => {
             const cappedTier = Math.min(Math.max(tier.index, 2), 4);
 
-            // Live streak → master size (true reactivity)
-            // 0d: 80px, 7d: 110, 30d: 145, 100d+: 180
+            // Live streak → master size (fits inside h-44 w-32 chamber)
+            // 0d: 64px, 7d: 86, 30d: 110, 100d+: 132
             const master = Math.round(
-              80 + Math.min(100, Math.pow(Math.min(displayStreak, 120), 0.6) * 9.5),
+              64 + Math.min(70, Math.pow(Math.min(displayStreak, 120), 0.6) * 6.7),
             );
 
             const dropShadow = (acc: string, mul: number) =>
-              `drop-shadow(0 -3px ${(6 + displayStreak * 0.25) * mul}px ${acc.replace(")", " / 0.7)")}) drop-shadow(0 -10px ${(16 + displayStreak * 0.4) * mul}px ${acc.replace(")", " / 0.35)")})`;
+              `drop-shadow(0 -2px ${(4 + displayStreak * 0.18) * mul}px ${acc.replace(")", " / 0.65)")}) drop-shadow(0 -7px ${(11 + displayStreak * 0.28) * mul}px ${acc.replace(")", " / 0.3)")})`;
 
             // 8 layers — each with its OWN rhythm, duration, easing, and
             // animation delay so the bonfire never feels mechanical.
@@ -573,7 +573,7 @@ const CompactStreakPanel = ({
                 size: Math.round(master * 0.62),
                 accent: "hsl(4 95% 42%)",
                 tier: cappedTier,
-                offsetX: -Math.round(master * 0.36),
+                offsetX: -Math.round(master * 0.28),
                 offsetY: -Math.round(master * 0.1),
                 z: 1,
                 opacity: 0.96,
@@ -589,7 +589,7 @@ const CompactStreakPanel = ({
                 size: Math.round(master * 0.66),
                 accent: "hsl(10 96% 48%)",
                 tier: cappedTier,
-                offsetX: Math.round(master * 0.38),
+                offsetX: Math.round(master * 0.3),
                 offsetY: -Math.round(master * 0.12),
                 z: 1,
                 opacity: 0.97,
@@ -605,7 +605,7 @@ const CompactStreakPanel = ({
                 size: Math.round(master * 0.5),
                 accent: "hsl(16 98% 52%)",
                 tier: cappedTier,
-                offsetX: -Math.round(master * 0.46),
+                offsetX: -Math.round(master * 0.36),
                 offsetY: -Math.round(master * 0.04),
                 z: 1,
                 opacity: 0.88,
@@ -699,8 +699,8 @@ const CompactStreakPanel = ({
               },
             ];
 
-            const bowlWidth = Math.round(master * 2.2);
-            const bowlHeight = Math.round(master * 1.75);
+            const bowlWidth = Math.round(master * 1.55);
+            const bowlHeight = Math.round(master * 1.65);
 
             return (
               <div
@@ -752,7 +752,7 @@ const CompactStreakPanel = ({
           {/* === NEXT-LEVEL CORE OVERLAYS — only on the central flame, sits ON TOP === */}
           {isHot && (() => {
             const master = Math.round(
-              80 + Math.min(100, Math.pow(Math.min(displayStreak, 120), 0.6) * 9.5),
+              64 + Math.min(70, Math.pow(Math.min(displayStreak, 120), 0.6) * 6.7),
             );
             return (
               <>

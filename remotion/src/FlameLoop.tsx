@@ -92,12 +92,13 @@ export const FlameLoop: React.FC = () => {
       <svg
         width={width}
         height={height}
-        style={{ position: "absolute", inset: 0, mixBlendMode: "screen", opacity: 0.55 }}
+        style={{ position: "absolute", inset: 0, mixBlendMode: "screen", opacity: 0.25 }}
       >
         <defs>
-          <radialGradient id="hazeMask" cx="50%" cy="65%" r="42%">
-            <stop offset="0%" stopColor="rgba(255, 140, 60, 0.55)" />
-            <stop offset="55%" stopColor="rgba(255, 100, 40, 0.18)" />
+          <radialGradient id="hazeMask" cx="50%" cy="65%" r="50%">
+            <stop offset="0%" stopColor="rgba(255, 140, 60, 0.4)" />
+            <stop offset="40%" stopColor="rgba(255, 100, 40, 0.1)" />
+            <stop offset="80%" stopColor="rgba(255, 80, 20, 0)" />
             <stop offset="100%" stopColor="rgba(255, 80, 20, 0)" />
           </radialGradient>
           <filter id="heat" x="-30%" y="-30%" width="160%" height="160%">

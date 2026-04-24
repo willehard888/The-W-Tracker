@@ -558,10 +558,17 @@ const Tribes = () => {
                     boxShadow: cTier >= 0 ? `0 0 14px ${cAccent.replace(")", " / 0.4)")}` : undefined,
                   }}
                 >
+                  {t.cover_url && (
+                    <img
+                      src={t.cover_url}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover opacity-75"
+                    />
+                  )}
                   {cTier >= 0 ? (
                     <div
                       key={rowPulse.get(t.id) ?? 0}
-                      className="w-full h-full flex items-center justify-center"
+                      className="relative w-full h-full flex items-center justify-center"
                       style={
                         (rowPulse.get(t.id) ?? 0) > 0
                           ? {
@@ -574,9 +581,9 @@ const Tribes = () => {
                     >
                       <RealisticFlame tier={cTier} accent={cAccent} size={Math.min(56, 36 + cTier * 6)} />
                     </div>
-                  ) : (
+                  ) : !t.cover_url ? (
                     <span className="text-2xl opacity-50 leading-none">🕯️</span>
-                  )}
+                  ) : null}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-display font-black text-base truncate leading-tight">{t.name}</p>

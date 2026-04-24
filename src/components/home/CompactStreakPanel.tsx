@@ -680,8 +680,25 @@ const CompactStreakPanel = ({
             // Spectrum stacks: deep blood-red → crimson → vermillion → amber
             // → orange-gold → yellow-tip → gold halo → orange core (front).
             const layers = [
+              // -1 — OUTER AURA: deepest dark-red base, widest mass behind everything.
+              {
+                size: Math.round(master * 1.05),
+                accent: "hsl(0 92% 38%)",
+                tier: cappedTier,
+                offsetX: 0,
+                offsetY: -Math.round(master * 0.04),
+                z: 0,
+                opacity: 1,
+                rotate: 0,
+                shadowMul: 0,
+                rhythm: "flame-rhythm-4",
+                duration: 6.2,
+                easing: "ease-in-out",
+                delay: 0.1,
+                windWeight: 4,
+                windWeightRot: 2.2,
+              },
               // 0 — Far back-left: deep blood-red, slow lazy sway.
-              //     Tall + narrow so it peeks ABOVE the core's shoulders.
               {
                 size: Math.round(master * 0.82),
                 accent: "hsl(4 95% 46%)",
@@ -689,7 +706,7 @@ const CompactStreakPanel = ({
                 offsetX: -Math.round(master * 0.3),
                 offsetY: -Math.round(master * 0.16),
                 z: 1,
-                opacity: 0.7,
+                opacity: 1,
                 rotate: -16,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-0",
@@ -707,7 +724,7 @@ const CompactStreakPanel = ({
                 offsetX: Math.round(master * 0.31),
                 offsetY: -Math.round(master * 0.18),
                 z: 1,
-                opacity: 0.72,
+                opacity: 1,
                 rotate: 15,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-1",
@@ -725,13 +742,31 @@ const CompactStreakPanel = ({
                 offsetX: -Math.round(master * 0.36),
                 offsetY: Math.round(master * 0.02),
                 z: 2,
-                opacity: 0.7,
+                opacity: 1,
                 rotate: -24,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-6",
                 duration: 2.1,
                 easing: "cubic-bezier(0.7, 0, 0.3, 1)",
                 delay: 0.25,
+                windWeight: 14,
+                windWeightRot: 9,
+              },
+              // 6b — NEW Side ember tongue (right): vermillion mirror whip.
+              {
+                size: Math.round(master * 0.48),
+                accent: "hsl(14 98% 55%)",
+                tier: cappedTier,
+                offsetX: Math.round(master * 0.37),
+                offsetY: Math.round(master * 0.03),
+                z: 2,
+                opacity: 1,
+                rotate: 25,
+                shadowMul: 0,
+                rhythm: "flame-rhythm-7",
+                duration: 2.3,
+                easing: "cubic-bezier(0.7, 0, 0.3, 1)",
+                delay: 0.9,
                 windWeight: 14,
                 windWeightRot: 9,
               },
@@ -743,7 +778,7 @@ const CompactStreakPanel = ({
                 offsetX: -Math.round(master * 0.2),
                 offsetY: -Math.round(master * 0.08),
                 z: 3,
-                opacity: 0.75,
+                opacity: 1,
                 rotate: -8,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-2",
@@ -761,7 +796,7 @@ const CompactStreakPanel = ({
                 offsetX: Math.round(master * 0.21),
                 offsetY: -Math.round(master * 0.09),
                 z: 3,
-                opacity: 0.75,
+                opacity: 1,
                 rotate: 7,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-3",
@@ -771,8 +806,7 @@ const CompactStreakPanel = ({
                 windWeight: 6,
                 windWeightRot: 3.5,
               },
-              // 4 — Inner gold halo: smaller + much more transparent so the
-              //     red/amber back layers stay clearly visible.
+              // 4 — Inner gold halo: warm body wrap.
               {
                 size: Math.round(master * 0.78),
                 accent: "hsl(38 100% 62%)",
@@ -780,7 +814,7 @@ const CompactStreakPanel = ({
                 offsetX: 0,
                 offsetY: -Math.round(master * 0.03),
                 z: 4,
-                opacity: 0.22,
+                opacity: 1,
                 rotate: 0,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-4",
@@ -790,9 +824,7 @@ const CompactStreakPanel = ({
                 windWeight: 4,
                 windWeightRot: 2,
               },
-              // 4b — HERO mega flame: the new tall main body. Bigger than the
-              //      core, slightly translucent, sits BEHIND the core so the
-              //      core reads as a brighter heart inside it.
+              // 4b — HERO mega flame: the tall main body behind the core.
               {
                 size: Math.round(master * 1.35),
                 accent: "hsl(22 96% 54%)",
@@ -800,7 +832,7 @@ const CompactStreakPanel = ({
                 offsetX: 0,
                 offsetY: -Math.round(master * 0.06),
                 z: 5,
-                opacity: 0.78,
+                opacity: 1,
                 rotate: 0,
                 shadowMul: 0,
                 rhythm: "flame-rhythm-2",
@@ -810,7 +842,25 @@ const CompactStreakPanel = ({
                 windWeight: 5,
                 windWeightRot: 2.5,
               },
-              // 5 — CENTER core: the bright heart inside the hero flame.
+              // 4c — NEW Inner amber wrap: tighter mid layer between hero and core.
+              {
+                size: Math.round(master * 1.08),
+                accent: "hsl(28 100% 56%)",
+                tier: cappedTier,
+                offsetX: 0,
+                offsetY: -Math.round(master * 0.04),
+                z: 5,
+                opacity: 1,
+                rotate: -2,
+                shadowMul: 0,
+                rhythm: "flame-rhythm-3",
+                duration: 3.4,
+                easing: "cubic-bezier(0.5, 0, 0.3, 1)",
+                delay: 0.85,
+                windWeight: 4,
+                windWeightRot: 2.5,
+              },
+              // 5 — CENTER core: the bright heart.
               {
                 size: master,
                 accent: "hsl(20 98% 56%)",
@@ -818,7 +868,7 @@ const CompactStreakPanel = ({
                 offsetX: 0,
                 offsetY: 0,
                 z: 6,
-                opacity: 0.82,
+                opacity: 1,
                 rotate: 0,
                 shadowMul: 1,
                 rhythm: "flame-rhythm-core",
@@ -828,9 +878,26 @@ const CompactStreakPanel = ({
                 windWeight: 3,
                 windWeightRot: 1.8,
               },
-              // 7 — Bright yellow inner tongue: NOW the topmost flicker, narrow
-              //     and tall, sits inside the core's tip — true wick energy.
-              //     HIGH rotation weight — the tip whips most in real flames.
+              // 5b — NEW Bright orange-gold inner core: sharper, narrower body
+              //      sitting inside the main core for more depth at the heart.
+              {
+                size: Math.round(master * 0.72),
+                accent: "hsl(34 100% 62%)",
+                tier: cappedTier,
+                offsetX: 0,
+                offsetY: -Math.round(master * 0.04),
+                z: 6,
+                opacity: 1,
+                rotate: 0,
+                shadowMul: 0,
+                rhythm: "flame-rhythm-core",
+                duration: 2.7,
+                easing: "cubic-bezier(0.45, 0, 0.2, 1)",
+                delay: 0.5,
+                windWeight: 3,
+                windWeightRot: 2,
+              },
+              // 7 — Bright yellow inner tongue: tall narrow wick energy.
               {
                 size: Math.round(master * 0.42),
                 accent: "hsl(48 100% 68%)",
@@ -838,7 +905,7 @@ const CompactStreakPanel = ({
                 offsetX: 0,
                 offsetY: -Math.round(master * 0.18),
                 z: 7,
-                opacity: 0.6,
+                opacity: 1,
                 rotate: 0,
                 shadowMul: 0.55,
                 rhythm: "flame-rhythm-7",
@@ -847,6 +914,25 @@ const CompactStreakPanel = ({
                 delay: 0.35,
                 windWeight: 7,
                 windWeightRot: 8,
+              },
+              // 7b — NEW Bright yellow crown: wider, lower, behind the wick — a
+              //      golden cap that completes the flame top.
+              {
+                size: Math.round(master * 0.58),
+                accent: "hsl(44 100% 65%)",
+                tier: cappedTier,
+                offsetX: 0,
+                offsetY: -Math.round(master * 0.12),
+                z: 7,
+                opacity: 1,
+                rotate: 0,
+                shadowMul: 0,
+                rhythm: "flame-rhythm-4",
+                duration: 2.6,
+                easing: "ease-in-out",
+                delay: 0.7,
+                windWeight: 5,
+                windWeightRot: 4,
               },
             ];
 

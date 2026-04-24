@@ -353,19 +353,21 @@ const CompactStreakPanel = ({
       {/* Hero: flame + number — flame is the FOCAL POINT, oversized intentionally */}
       <div className="relative flex items-center gap-3.5 z-10">
         <div
-          className="relative flex h-20 w-20 items-center justify-center rounded-2xl shrink-0 overflow-hidden"
+          className="relative flex h-20 w-20 items-center justify-center rounded-2xl shrink-0"
           style={{
-            // Stone fire-pit: warm ember glow at the bottom fading to slate at the top
+            // Stone fire-pit: deep black chamber with warm ember glow at the very bottom
             background: isHot
               ? `
-                radial-gradient(ellipse 80% 55% at 50% 105%, ${accent.replace(")", " / 0.85)")} 0%, ${accent.replace(")", " / 0.32)")} 28%, transparent 55%),
-                radial-gradient(ellipse at 50% 115%, hsl(18 85% 32%) 0%, hsl(16 45% 14%) 35%, hsl(20 22% 7%) 70%, hsl(230 18% 6%) 100%)
+                radial-gradient(ellipse 80% 50% at 50% 108%, ${accent.replace(")", " / 0.9)")} 0%, ${accent.replace(")", " / 0.32)")} 26%, transparent 55%),
+                radial-gradient(ellipse at 50% 115%, hsl(18 75% 22%) 0%, hsl(16 35% 9%) 32%, hsl(0 0% 3%) 68%, hsl(0 0% 1%) 100%)
               `
               : "transparent",
             color: isHot ? "white" : "hsl(var(--muted-foreground))",
             boxShadow: isHot
-              ? `0 0 38px ${accent.replace(")", " / 0.45)")}, 0 0 80px ${accent.replace(")", " / 0.18)")}, inset 0 2px 0 hsl(0 0% 100% / 0.14), inset 0 -10px 22px hsl(0 0% 0% / 0.55), inset 0 0 26px hsl(0 0% 0% / 0.4)`
+              ? `0 0 38px ${accent.replace(")", " / 0.45)")}, 0 0 80px ${accent.replace(")", " / 0.18)")}, inset 0 2px 0 hsl(0 0% 100% / 0.10), inset 0 -10px 22px hsl(0 0% 0% / 0.7), inset 0 0 26px hsl(0 0% 0% / 0.55)`
               : undefined,
+            // Allow flame to rise above the chamber rim
+            overflow: "visible",
           }}
         >
           {/* Stone-textured chamber walls — subtle hatching */}

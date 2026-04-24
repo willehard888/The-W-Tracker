@@ -86,7 +86,7 @@ const IosEntryHero = ({
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/70 backdrop-blur border border-gold/40 shadow-[0_0_16px_hsl(var(--gold)/0.4)]">
             <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
             <span className="text-[10px] font-black tracking-[0.2em] uppercase text-gold">
-              7 Days. Then prove it.
+              Members only. Pay to enter.
             </span>
           </div>
         </div>

@@ -245,16 +245,21 @@ const CompactStreakPanel = ({
   return (
     <div
       className={cn(
-        "relative rounded-2xl overflow-hidden p-4 border flex flex-col justify-between gap-3 isolate min-h-[200px]",
+        "relative rounded-2xl p-4 border flex flex-col justify-between gap-3 isolate min-h-[200px]",
         isHot && "depth-realistic-warm",
         !isHot && "depth-realistic",
         className,
       )}
       style={{
-        borderColor: isHot ? `${accent.replace(")", " / 0.5)")}` : "hsl(var(--border))",
+        borderColor: isHot ? `${accent.replace(")", " / 0.55)")}` : "hsl(var(--border))",
+        // Pure dark — deep black with a subtle warm ember vignette at the bottom only
         background: isHot
-          ? "radial-gradient(120% 90% at 0% 0%, hsl(255 14% 11%), hsl(255 14% 6%))"
-          : "linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 6%))",
+          ? `radial-gradient(ellipse 70% 50% at 22% 100%, ${accent.replace(")", " / 0.10)")} 0%, transparent 60%),
+             radial-gradient(120% 90% at 50% 0%, hsl(0 0% 4%), hsl(0 0% 2%))`
+          : "linear-gradient(135deg, hsl(0 0% 5%), hsl(0 0% 2%))",
+        boxShadow: isHot
+          ? `inset 0 0 60px hsl(0 0% 0% / 0.7), 0 0 32px ${accent.replace(")", " / 0.12)")}`
+          : "inset 0 0 40px hsl(0 0% 0% / 0.6)",
       }}
     >
       {/* Background heat shimmer (Champion+) */}

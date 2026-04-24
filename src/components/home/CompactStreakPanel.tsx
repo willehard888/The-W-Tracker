@@ -829,20 +829,7 @@ const CompactStreakPanel = ({
               </>
             );
           })()}
-          {/* Ground glow — outside the chamber, sells radiated heat */}
-          {isHot && (
-            <span
-              aria-hidden
-              className="streak-fx-ground absolute -bottom-1.5 left-1/2 h-2.5 w-16 rounded-[50%] pointer-events-none"
-              style={{
-                background: `radial-gradient(ellipse at center, ${accent.replace(")", " / 0.8)")}, transparent 70%)`,
-                filter: "blur(4px)",
-                animation: "streak-ground-pulse 2s ease-in-out infinite",
-                transform: "translateX(-50%)",
-                zIndex: 7,
-              }}
-            />
-          )}
+          {/* Ground glow removed */}
         </div>
 
         <div className="min-w-0 flex-1">

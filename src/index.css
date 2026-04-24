@@ -3812,3 +3812,19 @@ button:active > .aurum-lava-glow {
   0%, 100% { box-shadow: 0 0 28px hsl(22 98% 55% / 0.45), inset 0 0 22px hsl(20 95% 50% / 0.15), 0 0 60px hsl(18 95% 50% / 0.22); }
   50%      { box-shadow: 0 0 44px hsl(22 98% 60% / 0.7),  inset 0 0 30px hsl(20 95% 55% / 0.28), 0 0 90px hsl(18 95% 55% / 0.38); }
 }
+
+/* Custom flame editor — per-layer flicker animation. CSS vars supplied inline. */
+@keyframes custom-flame-flicker {
+  0%, 100% {
+    transform: translate(var(--cf-x, 0px), calc(var(--cf-y, 0px) * 1)) scale(var(--cf-scale-min, 0.96));
+    opacity: var(--cf-opacity-min, 0.85);
+  }
+  35% {
+    transform: translate(calc(var(--cf-x, 0px) - 3px), calc(var(--cf-y, 0px) - 4px)) scale(var(--cf-scale-max, 1.06));
+    opacity: var(--cf-opacity-max, 1);
+  }
+  65% {
+    transform: translate(calc(var(--cf-x, 0px) + 2px), calc(var(--cf-y, 0px) - 2px)) scale(var(--cf-scale-mid, 1.02));
+    opacity: var(--cf-opacity-mid, 0.92);
+  }
+}

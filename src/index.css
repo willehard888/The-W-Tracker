@@ -2077,15 +2077,55 @@
   }
 }
 
-/* Splash screen flame growth — small ember → roaring flame */
+/* Splash screen flame growth — small ember → roaring flame, with overshoot */
 @keyframes splash-flame-grow {
-  0%   { transform: translateX(-50%) scale(0.3) translateY(8px); opacity: 0; }
-  35%  { transform: translateX(-50%) scale(0.7) translateY(2px); opacity: 0.8; }
-  100% { transform: translateX(-50%) scale(1)   translateY(0);   opacity: 1; }
+  0%   { transform: translateX(-50%) scale(0.18) translateY(14px); opacity: 0; filter: brightness(1.4) saturate(1.3); }
+  18%  { transform: translateX(-50%) scale(0.55) translateY(6px);  opacity: 0.85; filter: brightness(1.25) saturate(1.2); }
+  55%  { transform: translateX(-50%) scale(1.08) translateY(-2px); opacity: 1;    filter: brightness(1.1)  saturate(1.1); }
+  78%  { transform: translateX(-50%) scale(0.96) translateY(1px);  opacity: 1;    filter: brightness(1)    saturate(1); }
+  100% { transform: translateX(-50%) scale(1)    translateY(0);    opacity: 1;    filter: brightness(1)    saturate(1); }
 }
 @keyframes splash-flame-flicker {
   0%, 100% { transform: translateX(-50%) scaleY(1)    scaleX(1); }
   50%      { transform: translateX(-50%) scaleY(1.06) scaleX(0.96); }
+}
+
+/* Splash heat shockwave — expanding ring at ignition */
+@keyframes splash-shockwave {
+  0%   { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+  18%  { opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) scale(3.6); opacity: 0; }
+}
+
+/* Splash radial flash — single luminous burst at ignition */
+@keyframes splash-flash {
+  0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+  12%  { opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+}
+
+/* Splash spark — radial spark shooting outward from the ignition point.
+   Uses a CSS variable for angle so each spark fans in a different direction. */
+@keyframes splash-spark {
+  0%   { transform: rotate(var(--spark-angle, 0deg)) translateY(0)    scale(0.4); opacity: 0; }
+  15%  { opacity: 1; }
+  60%  { opacity: 1; }
+  100% { transform: rotate(var(--spark-angle, 0deg)) translateY(var(--spark-distance, -90px)) scale(0.2); opacity: 0; }
+}
+
+/* Splash ember — slow rising particle drifting up past the logo */
+@keyframes splash-ember {
+  0%   { transform: translate(0, 24px) scale(0.5); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 0.85; }
+  100% { transform: translate(var(--ember-drift, 4px), -200px) scale(0.25); opacity: 0; }
+}
+
+/* Splash logo ignition flash — bright pulse on the logo when fire catches */
+@keyframes splash-logo-ignite {
+  0%   { filter: brightness(1) drop-shadow(0 0 0 transparent); }
+  35%  { filter: brightness(1.45) drop-shadow(0 0 28px hsl(42 95% 65% / 0.85)); }
+  100% { filter: brightness(1) drop-shadow(0 4px 14px hsl(42 90% 55% / 0.4)); }
 }
 
 /* Realistic flame flicker — non-uniform, alive (legacy single-icon)

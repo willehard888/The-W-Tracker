@@ -188,7 +188,7 @@ const App = () => {
             <AuthProvider>
               <RevenueCatProvider>
                 <WindProvider>
-                  {splashDone && <AmbientParticles />}
+                  {splashDone && <AmbientParticlesGate />}
                   <AppRoutes />
                 </WindProvider>
               </RevenueCatProvider>

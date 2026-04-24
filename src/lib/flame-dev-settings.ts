@@ -54,10 +54,12 @@ export function writeFlameSettings(s: FlameDevSettings) {
   }
 }
 
-/** True when the dev panel should be visible. */
+/** True when the dev panel should be visible.
+ *  Auto-on in dev/preview environments (localhost + lovable preview hosts),
+ *  unless explicitly dismissed via `?devflame=0` or removing the storage key.
+ */
 export function isFlameDevPanelEnabled(): boolean {
   if (typeof window === "undefined") return false;
-  // URL param activates persistently
   try {
     const params = new URLSearchParams(window.location.search);
     if (params.get("devflame") === "1") {
@@ -65,10 +67,23 @@ export function isFlameDevPanelEnabled(): boolean {
       return true;
     }
     if (params.get("devflame") === "0") {
-      localStorage.removeItem(VISIBILITY_KEY);
+      localStorage.setItem(VISIBILITY_KEY, "0");
       return false;
     }
-    return localStorage.getItem(VISIBILITY_KEY) === "1";
+
+    const stored = localStorage.getItem(VISIBILITY_KEY);
+    if (stored === "1") return true;
+    if (stored === "0") return false;
+
+    // Default ON in dev / preview hosts
+    const host = window.location.hostname;
+    const isDevHost =
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host.endsWith(".lovableproject.com") ||
+      host.endsWith(".lovable.app") ||
+      host.endsWith(".lovable.dev");
+    return isDevHost;
   } catch {
     return false;
   }

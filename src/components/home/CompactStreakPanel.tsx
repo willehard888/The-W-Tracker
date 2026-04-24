@@ -259,20 +259,11 @@ const CompactStreakPanel = ({
         // Pure deep black — keeps the flame as the only light source
         background: "radial-gradient(120% 100% at 50% 0%, hsl(0 0% 5%), hsl(0 0% 1.5%))",
         boxShadow: isHot
-          ? `inset 0 0 80px hsl(0 0% 0% / 0.85), 0 0 24px hsl(18 95% 50% / 0.08)`
+          ? `inset 0 0 80px hsl(0 0% 0% / 0.85)`
           : "inset 0 0 40px hsl(0 0% 0% / 0.6)",
       }}
     >
-      {/* Subtle warm floor glow — bottom only, doesn't bleed into text area */}
-      {isHot && (
-        <div
-          aria-hidden
-          className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
-          style={{
-            background: `radial-gradient(ellipse 65% 100% at 30% 100%, ${accent.replace(")", " / 0.18)")} 0%, transparent 70%)`,
-          }}
-        />
-      )}
+      {/* Floor warm glow removed for crisp look */}
 
       {/* Aurora sweep (Legendary only — premium tier flex) */}
       {isLegendary && (
@@ -340,7 +331,7 @@ const CompactStreakPanel = ({
               : "transparent",
             color: isHot ? "white" : "hsl(var(--muted-foreground))",
             boxShadow: isHot
-              ? `0 0 38px hsl(22 98% 55% / 0.5), 0 0 80px hsl(18 95% 50% / 0.22), inset 0 2px 0 hsl(0 0% 100% / 0.10), inset 0 -10px 22px hsl(0 0% 0% / 0.7), inset 0 0 26px hsl(0 0% 0% / 0.55)`
+              ? `inset 0 2px 0 hsl(0 0% 100% / 0.08), inset 0 -10px 22px hsl(0 0% 0% / 0.7), inset 0 0 26px hsl(0 0% 0% / 0.55)`
               : undefined,
             overflow: "hidden",
           }}
@@ -475,16 +466,7 @@ const CompactStreakPanel = ({
           {/* Inner overflow clip for embers (kept clipped so embers stay within stone walls) */}
           <div className="absolute inset-0 rounded-xl overflow-hidden">
             {isHot && <Embers count={emberCount} color={emberColor} />}
-            {/* Inner glow ring */}
-            {isHot && (
-              <span
-                aria-hidden
-                className="absolute inset-1 rounded-lg pointer-events-none"
-                style={{
-                  background: `radial-gradient(circle at 50% 80%, ${accent.replace(")", " / 0.55)")}, transparent 65%)`,
-                }}
-              />
-            )}
+            {/* Inner glow ring removed */}
           </div>
 
           {/* Pulse rings (outside clip) */}
@@ -560,8 +542,8 @@ const CompactStreakPanel = ({
               64 + Math.min(70, Math.pow(Math.min(displayStreak, 120), 0.6) * 6.7),
             );
 
-            const dropShadow = (acc: string, mul: number) =>
-              `drop-shadow(0 -2px ${(4 + displayStreak * 0.18) * mul}px ${acc.replace(")", " / 0.65)")}) drop-shadow(0 -7px ${(11 + displayStreak * 0.28) * mul}px ${acc.replace(")", " / 0.3)")})`;
+            // Glow removed — flames render with crisp edges only.
+            const dropShadow = (_acc: string, _mul: number) => "none";
 
             // 8 layers — each with its OWN rhythm, duration, easing, and
             // animation delay so the bonfire never feels mechanical.
@@ -571,33 +553,33 @@ const CompactStreakPanel = ({
               // 0 — Far back-left: deep blood-red, slow lazy sway.
               //     Tall + narrow so it peeks ABOVE the core's shoulders.
               {
-                size: Math.round(master * 0.7),
-                accent: "hsl(4 95% 44%)",
+                size: Math.round(master * 0.82),
+                accent: "hsl(4 95% 46%)",
                 tier: cappedTier,
-                offsetX: -Math.round(master * 0.26),
-                offsetY: -Math.round(master * 0.14),
+                offsetX: -Math.round(master * 0.3),
+                offsetY: -Math.round(master * 0.16),
                 z: 1,
-                opacity: 0.92,
-                rotate: -14,
-                shadowMul: 0.95,
+                opacity: 1,
+                rotate: -16,
+                shadowMul: 0,
                 rhythm: "flame-rhythm-0",
                 duration: 4.7,
                 easing: "ease-in-out",
                 delay: 0,
-                windWeight: 9,    // back layer — leans noticeably
+                windWeight: 9,
                 windWeightRot: 5,
               },
               // 1 — Far back-right: crimson, sharp jolt rhythm.
               {
-                size: Math.round(master * 0.74),
-                accent: "hsl(10 96% 50%)",
+                size: Math.round(master * 0.86),
+                accent: "hsl(10 96% 52%)",
                 tier: cappedTier,
-                offsetX: Math.round(master * 0.27),
-                offsetY: -Math.round(master * 0.16),
+                offsetX: Math.round(master * 0.31),
+                offsetY: -Math.round(master * 0.18),
                 z: 1,
-                opacity: 0.94,
-                rotate: 13,
-                shadowMul: 1,
+                opacity: 1,
+                rotate: 15,
+                shadowMul: 0,
                 rhythm: "flame-rhythm-1",
                 duration: 3.3,
                 easing: "cubic-bezier(0.45, 0, 0.25, 1)",
@@ -606,18 +588,16 @@ const CompactStreakPanel = ({
                 windWeightRot: 5,
               },
               // 6 — Side ember tongue (left): vermillion staccato whip.
-              //     Lower + smaller so it reads as a side-flick, not a 2nd flame.
-              //     HIGHEST wind weight — whips dramatically.
               {
-                size: Math.round(master * 0.42),
-                accent: "hsl(16 98% 54%)",
+                size: Math.round(master * 0.5),
+                accent: "hsl(16 98% 56%)",
                 tier: cappedTier,
-                offsetX: -Math.round(master * 0.32),
+                offsetX: -Math.round(master * 0.36),
                 offsetY: Math.round(master * 0.02),
                 z: 2,
-                opacity: 0.85,
-                rotate: -22,
-                shadowMul: 0.65,
+                opacity: 0.98,
+                rotate: -24,
+                shadowMul: 0,
                 rhythm: "flame-rhythm-6",
                 duration: 2.1,
                 easing: "cubic-bezier(0.7, 0, 0.3, 1)",
@@ -625,18 +605,17 @@ const CompactStreakPanel = ({
                 windWeight: 14,
                 windWeightRot: 9,
               },
-              // 2 — Mid back-left: warm amber. Now z=3 so it sits IN FRONT of
-              //     the deep red but BEHIND the gold halo — proper layering.
+              // 2 — Mid back-left: warm amber.
               {
-                size: Math.round(master * 0.78),
+                size: Math.round(master * 0.86),
                 accent: "hsl(24 98% 56%)",
                 tier: cappedTier,
-                offsetX: -Math.round(master * 0.16),
-                offsetY: -Math.round(master * 0.06),
+                offsetX: -Math.round(master * 0.2),
+                offsetY: -Math.round(master * 0.08),
                 z: 3,
-                opacity: 0.9,
-                rotate: -7,
-                shadowMul: 0.85,
+                opacity: 1,
+                rotate: -8,
+                shadowMul: 0,
                 rhythm: "flame-rhythm-2",
                 duration: 2.4,
                 easing: "cubic-bezier(0.6, 0.05, 0.4, 1)",
@@ -646,15 +625,15 @@ const CompactStreakPanel = ({
               },
               // 3 — Mid back-right: orange, smooth counter-arc.
               {
-                size: Math.round(master * 0.82),
+                size: Math.round(master * 0.9),
                 accent: "hsl(30 100% 58%)",
                 tier: cappedTier,
-                offsetX: Math.round(master * 0.17),
-                offsetY: -Math.round(master * 0.07),
+                offsetX: Math.round(master * 0.21),
+                offsetY: -Math.round(master * 0.09),
                 z: 3,
-                opacity: 0.9,
-                rotate: 6,
-                shadowMul: 0.85,
+                opacity: 1,
+                rotate: 7,
+                shadowMul: 0,
                 rhythm: "flame-rhythm-3",
                 duration: 2.9,
                 easing: "ease-in-out",
@@ -662,19 +641,18 @@ const CompactStreakPanel = ({
                 windWeight: 6,
                 windWeightRot: 3.5,
               },
-              // 4 — Inner gold halo: BIG soft mass behind the core. Lower opacity
-              //     so amber/red layers bleed THROUGH instead of being smothered.
-              //     LOW wind weight — halo is the soft anchor.
+              // 4 — Inner gold halo: smaller + much more transparent so the
+              //     red/amber back layers stay clearly visible.
               {
-                size: Math.round(master * 0.94),
+                size: Math.round(master * 0.78),
                 accent: "hsl(38 100% 62%)",
                 tier: cappedTier,
                 offsetX: 0,
                 offsetY: -Math.round(master * 0.03),
                 z: 4,
-                opacity: 0.6,
+                opacity: 0.32,
                 rotate: 0,
-                shadowMul: 0.9,
+                shadowMul: 0,
                 rhythm: "flame-rhythm-4",
                 duration: 5.5,
                 easing: "ease-in-out",
@@ -851,20 +829,7 @@ const CompactStreakPanel = ({
               </>
             );
           })()}
-          {/* Ground glow — outside the chamber, sells radiated heat */}
-          {isHot && (
-            <span
-              aria-hidden
-              className="streak-fx-ground absolute -bottom-1.5 left-1/2 h-2.5 w-16 rounded-[50%] pointer-events-none"
-              style={{
-                background: `radial-gradient(ellipse at center, ${accent.replace(")", " / 0.8)")}, transparent 70%)`,
-                filter: "blur(4px)",
-                animation: "streak-ground-pulse 2s ease-in-out infinite",
-                transform: "translateX(-50%)",
-                zIndex: 7,
-              }}
-            />
-          )}
+          {/* Ground glow removed */}
         </div>
 
         <div className="min-w-0 flex-1">
@@ -889,22 +854,7 @@ const CompactStreakPanel = ({
             </div>
           )}
           <div className="flex items-baseline gap-1.5 leading-none relative">
-            {/* Glowing tier-color halo behind the number */}
-            {isHot && (
-              <span
-                aria-hidden
-                className="absolute pointer-events-none"
-                style={{
-                  left: -8,
-                  top: -6,
-                  width: 80,
-                  height: 60,
-                  background: `radial-gradient(ellipse at center, ${accent.replace(")", " / 0.35)")} 0%, transparent 70%)`,
-                  filter: "blur(10px)",
-                  zIndex: -1,
-                }}
-              />
-            )}
+            {/* Number halo removed */}
             <span
               key={numberKey.current}
               className={cn(
@@ -913,9 +863,7 @@ const CompactStreakPanel = ({
                 numberClass,
               )}
               style={{
-                filter: isHot
-                  ? `drop-shadow(0 3px 14px ${accent.replace(")", " / 0.7)")}) drop-shadow(0 0 24px ${accent.replace(")", " / 0.4)")})`
-                  : undefined,
+                filter: undefined,
                 animation: isHot
                   ? "streak-number-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), streak-number-fire-pulse 2.4s ease-in-out infinite 0.7s"
                   : "streak-number-in 0.5s ease-out",

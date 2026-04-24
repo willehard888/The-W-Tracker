@@ -576,85 +576,123 @@ const CompactStreakPanel = ({
             </>
           )}
 
-          {/* Three-flame trio — center flame is biggest. All red/orange.
+          {/* Layered bonfire — 5 flames stacked at different depths/sizes,
+              all sharing one ember bed. Center is biggest & frontmost.
               Sizes scale LIVE with streak; intensity layers up via tier. */}
           {(() => {
-            const fireAccent = "hsl(20 100% 55%)";
-            const sideAccent = "hsl(16 95% 52%)";
-
-            // Live streak → center size mapping (true reactivity)
-            // 0d: 80px, 7d: 110, 30d: 145, 100d+: 180
-            const centerSize = Math.round(
-              80 + Math.min(100, Math.pow(Math.min(displayStreak, 120), 0.6) * 9.5),
-            );
-            const sideSize = Math.round(centerSize * 0.62);
             const cappedTier = Math.min(Math.max(tier.index, 2), 4);
 
+            // Live streak → master size (true reactivity)
+            // 0d: 80px, 7d: 110, 30d: 145, 100d+: 180
+            const master = Math.round(
+              80 + Math.min(100, Math.pow(Math.min(displayStreak, 120), 0.6) * 9.5),
+            );
+
             const dropShadow = (acc: string, mul: number) =>
-              `drop-shadow(0 -4px ${(8 + displayStreak * 0.3) * mul}px ${acc.replace(")", " / 0.85)")}) drop-shadow(0 -12px ${(20 + displayStreak * 0.5) * mul}px ${acc.replace(")", " / 0.5)")})`;
+              `drop-shadow(0 -4px ${(8 + displayStreak * 0.3) * mul}px ${acc.replace(")", " / 0.85)")}) drop-shadow(0 -12px ${(20 + displayStreak * 0.5) * mul}px ${acc.replace(")", " / 0.45)")})`;
+
+            // 5 layered flames — back-to-front, smallest/coolest to biggest/hottest
+            const layers = [
+              // Furthest back-left, low & wide, deep red, blurred (hot air mass)
+              {
+                size: Math.round(master * 0.55),
+                accent: "hsl(14 90% 48%)",
+                tier: Math.max(cappedTier - 2, 1),
+                offsetX: -master * 0.28,
+                offsetY: 6,
+                z: 1,
+                opacity: 0.6,
+                scaleX: 1.15,
+                scaleY: 0.9,
+                blur: 1.5,
+                shadowMul: 0.5,
+              },
+              // Furthest back-right, slightly taller, mirrored
+              {
+                size: Math.round(master * 0.6),
+                accent: "hsl(16 92% 50%)",
+                tier: Math.max(cappedTier - 2, 1),
+                offsetX: master * 0.26,
+                offsetY: 5,
+                z: 2,
+                opacity: 0.7,
+                scaleX: -1.05,
+                scaleY: 0.95,
+                blur: 1.2,
+                shadowMul: 0.55,
+              },
+              // Mid-left flame, medium height
+              {
+                size: Math.round(master * 0.72),
+                accent: "hsl(18 95% 53%)",
+                tier: Math.max(cappedTier - 1, 2),
+                offsetX: -master * 0.18,
+                offsetY: 3,
+                z: 3,
+                opacity: 0.88,
+                scaleX: 1,
+                scaleY: 1,
+                blur: 0.4,
+                shadowMul: 0.7,
+              },
+              // Mid-right flame, slightly bigger, mirrored
+              {
+                size: Math.round(master * 0.78),
+                accent: "hsl(20 96% 54%)",
+                tier: Math.max(cappedTier - 1, 2),
+                offsetX: master * 0.16,
+                offsetY: 2,
+                z: 4,
+                opacity: 0.92,
+                scaleX: -1,
+                scaleY: 1.02,
+                blur: 0.3,
+                shadowMul: 0.78,
+              },
+              // CENTER hero flame — tallest, hottest, frontmost
+              {
+                size: master,
+                accent: "hsl(22 100% 56%)",
+                tier: cappedTier,
+                offsetX: 0,
+                offsetY: 0,
+                z: 5,
+                opacity: 1,
+                scaleX: 1,
+                scaleY: 1,
+                blur: 0,
+                shadowMul: 1,
+              },
+            ];
 
             return (
               <div
-                className="absolute inset-x-0 bottom-[4px] z-[20] flex items-end justify-center gap-0 pointer-events-none"
-                style={{ overflow: "visible" }}
+                className="absolute inset-x-0 bottom-[2px] z-[20] flex items-end justify-center pointer-events-none"
+                style={{ overflow: "visible", height: Math.round(master * 1.4) }}
               >
-                {/* Left flame — slightly behind, smaller */}
-                <span
-                  className="flame-bowl flex items-end justify-center"
-                  style={{
-                    width: sideSize,
-                    height: Math.round(sideSize * 1.25),
-                    marginRight: -sideSize * 0.35,
-                    marginBottom: 2,
-                    filter: dropShadow(sideAccent, 0.7),
-                    transform: "scaleX(-1)",
-                    opacity: 0.92,
-                  }}
-                >
-                  <RealisticFlame
-                    tier={Math.max(cappedTier - 1, 1)}
-                    accent={sideAccent}
-                    size={sideSize}
-                    interactive={false}
-                  />
-                </span>
-
-                {/* Center flame — biggest, in front */}
-                <span
-                  className="flame-bowl flex items-end justify-center relative z-10"
-                  style={{
-                    width: centerSize,
-                    height: Math.round(centerSize * 1.3),
-                    filter: dropShadow(fireAccent, 1),
-                  }}
-                >
-                  <RealisticFlame
-                    tier={cappedTier}
-                    accent={fireAccent}
-                    size={centerSize}
-                    interactive={false}
-                  />
-                </span>
-
-                {/* Right flame — slightly behind, smaller */}
-                <span
-                  className="flame-bowl flex items-end justify-center"
-                  style={{
-                    width: sideSize,
-                    height: Math.round(sideSize * 1.25),
-                    marginLeft: -sideSize * 0.35,
-                    marginBottom: 4,
-                    filter: dropShadow(sideAccent, 0.7),
-                    opacity: 0.9,
-                  }}
-                >
-                  <RealisticFlame
-                    tier={Math.max(cappedTier - 1, 1)}
-                    accent={sideAccent}
-                    size={sideSize}
-                    interactive={false}
-                  />
-                </span>
+                {layers.map((L, i) => (
+                  <span
+                    key={i}
+                    className="flame-bowl absolute left-1/2 bottom-0 flex items-end justify-center"
+                    style={{
+                      width: L.size,
+                      height: Math.round(L.size * 1.25),
+                      transform: `translateX(calc(-50% + ${L.offsetX}px)) translateY(${L.offsetY}px) scale(${L.scaleX}, ${L.scaleY})`,
+                      transformOrigin: "center bottom",
+                      filter: `${dropShadow(L.accent, L.shadowMul)}${L.blur ? ` blur(${L.blur}px)` : ""}`,
+                      opacity: L.opacity,
+                      zIndex: L.z,
+                      mixBlendMode: i < 4 ? "screen" : "normal",
+                    }}
+                  >
+                    <RealisticFlame
+                      tier={L.tier}
+                      accent={L.accent}
+                      size={L.size}
+                      interactive={false}
+                    />
+                  </span>
+                ))}
               </div>
             );
           })()}

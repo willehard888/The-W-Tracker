@@ -1,28 +1,33 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Loader2, ShieldCheck, Zap, Check } from "lucide-react";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
+
+export type PaywallBillingPlan = "monthly" | "yearly";
 
 interface PaywallTierCardProps {
   variant: "elite" | "apex";
   title: string;
   priceLabel: string;
+  yearlyPriceLabel?: string;
   cadence?: string;
   tagline: string;
   badgeLabel: string;
   features: ReadonlyArray<{ icon: any; text: string }>;
   ctaLabel: string;
   ctaIcon?: ReactNode;
-  onCta: () => void;
+  onCta: (plan: PaywallBillingPlan) => void;
   loading?: boolean;
   highlighted?: boolean;
   footnote?: string;
+  yearlyDiscountPct?: number;
 }
 
 const PaywallTierCard = ({
   variant,
   title,
   priceLabel,
+  yearlyPriceLabel,
   cadence = "/mo",
   tagline,
   badgeLabel,
@@ -33,8 +38,21 @@ const PaywallTierCard = ({
   loading,
   highlighted,
   footnote,
+  yearlyDiscountPct = 20,
 }: PaywallTierCardProps) => {
   const isApex = variant === "apex";
+  const [plan, setPlan] = useState<PaywallBillingPlan>(
+    yearlyPriceLabel ? "yearly" : "monthly",
+  );
+  const showToggle = !!yearlyPriceLabel;
+  const isYearly = showToggle && plan === "yearly";
+  const activePrice = isYearly ? yearlyPriceLabel! : priceLabel;
+  const activeCadence = isYearly ? "/yr" : cadence;
+  const accentClass = isApex ? "text-[hsl(18_95%_58%)]" : "text-gold";
+  const accentBgClass = isApex ? "bg-[hsl(18_95%_58%)]" : "bg-gold";
+  const accentBorderClass = isApex
+    ? "border-[hsl(18_95%_58%)]/40"
+    : "border-gold/30";
 
   return (
     <div

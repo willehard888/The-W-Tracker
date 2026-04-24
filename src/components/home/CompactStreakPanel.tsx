@@ -563,20 +563,21 @@ const CompactStreakPanel = ({
             const dropShadow = (acc: string, mul: number) =>
               `drop-shadow(0 -3px ${(6 + displayStreak * 0.25) * mul}px ${acc.replace(")", " / 0.7)")}) drop-shadow(0 -10px ${(16 + displayStreak * 0.4) * mul}px ${acc.replace(")", " / 0.35)")})`;
 
-            // 6 layers — each with its OWN rhythm, duration, easing, and
+            // 8 layers — each with its OWN rhythm, duration, easing, and
             // animation delay so the bonfire never feels mechanical.
-            // Distinct hues stack from deep red (back) → gold halo → orange core.
+            // Spectrum stacks: deep blood-red → crimson → vermillion → amber
+            // → orange-gold → yellow-tip → gold halo → orange core (front).
             const layers = [
-              // 0 — Far back-left: deep red, slow lazy sway
+              // 0 — Far back-left: deep blood-red, slow lazy sway
               {
                 size: Math.round(master * 0.62),
-                accent: "hsl(8 92% 46%)",
+                accent: "hsl(4 95% 42%)",
                 tier: cappedTier,
-                offsetX: -Math.round(master * 0.34),
+                offsetX: -Math.round(master * 0.36),
                 offsetY: -Math.round(master * 0.1),
                 z: 1,
-                opacity: 0.95,
-                rotate: -16,
+                opacity: 0.96,
+                rotate: -18,
                 shadowMul: 0.85,
                 rhythm: "flame-rhythm-0",
                 duration: 4.7,
@@ -586,23 +587,39 @@ const CompactStreakPanel = ({
               // 1 — Far back-right: crimson, sharp jolt rhythm
               {
                 size: Math.round(master * 0.66),
-                accent: "hsl(12 95% 50%)",
+                accent: "hsl(10 96% 48%)",
                 tier: cappedTier,
-                offsetX: Math.round(master * 0.36),
+                offsetX: Math.round(master * 0.38),
                 offsetY: -Math.round(master * 0.12),
                 z: 1,
-                opacity: 0.96,
-                rotate: 14,
+                opacity: 0.97,
+                rotate: 16,
                 shadowMul: 0.9,
                 rhythm: "flame-rhythm-1",
                 duration: 3.3,
                 easing: "cubic-bezier(0.45, 0, 0.25, 1)",
                 delay: 0.6,
               },
-              // 2 — Mid back-left: amber, fast double-flick
+              // 6 — NEW back-far-left ember tongue: vermillion staccato whip
+              {
+                size: Math.round(master * 0.5),
+                accent: "hsl(16 98% 52%)",
+                tier: cappedTier,
+                offsetX: -Math.round(master * 0.46),
+                offsetY: -Math.round(master * 0.04),
+                z: 1,
+                opacity: 0.88,
+                rotate: -24,
+                shadowMul: 0.75,
+                rhythm: "flame-rhythm-6",
+                duration: 2.1,
+                easing: "cubic-bezier(0.7, 0, 0.3, 1)",
+                delay: 0.25,
+              },
+              // 2 — Mid back-left: warm amber, fast double-flick
               {
                 size: Math.round(master * 0.72),
-                accent: "hsl(28 96% 54%)",
+                accent: "hsl(24 98% 54%)",
                 tier: cappedTier,
                 offsetX: -Math.round(master * 0.2),
                 offsetY: -Math.round(master * 0.04),
@@ -631,6 +648,23 @@ const CompactStreakPanel = ({
                 easing: "ease-in-out",
                 delay: 1.1,
               },
+              // 7 — NEW bright yellow inner tongue (between halo and core):
+              //     fast nervous flicker, true candle-tip energy
+              {
+                size: Math.round(master * 0.58),
+                accent: "hsl(46 100% 64%)",
+                tier: cappedTier,
+                offsetX: Math.round(master * 0.06),
+                offsetY: -Math.round(master * 0.08),
+                z: 4,
+                opacity: 0.92,
+                rotate: -3,
+                shadowMul: 0.7,
+                rhythm: "flame-rhythm-7",
+                duration: 1.8,
+                easing: "cubic-bezier(0.5, 0, 0.5, 1)",
+                delay: 0.35,
+              },
               // 4 — Inner gold halo: slow broad breath, opacity-modulated
               {
                 size: Math.round(master * 0.88),
@@ -650,7 +684,7 @@ const CompactStreakPanel = ({
               // 5 — CENTER core: hero. Subtle, constant breath. Frontmost.
               {
                 size: master,
-                accent: "hsl(22 98% 56%)",
+                accent: "hsl(20 98% 56%)",
                 tier: cappedTier,
                 offsetX: 0,
                 offsetY: 0,

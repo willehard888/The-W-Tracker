@@ -245,16 +245,21 @@ const CompactStreakPanel = ({
   return (
     <div
       className={cn(
-        "relative rounded-2xl overflow-hidden p-4 border flex flex-col justify-between gap-3 isolate min-h-[200px]",
+        "relative rounded-2xl p-4 border flex flex-col justify-between gap-3 isolate min-h-[200px]",
         isHot && "depth-realistic-warm",
         !isHot && "depth-realistic",
         className,
       )}
       style={{
-        borderColor: isHot ? `${accent.replace(")", " / 0.5)")}` : "hsl(var(--border))",
+        borderColor: isHot ? `${accent.replace(")", " / 0.55)")}` : "hsl(var(--border))",
+        // Pure dark — deep black with a subtle warm ember vignette at the bottom only
         background: isHot
-          ? "radial-gradient(120% 90% at 0% 0%, hsl(255 14% 11%), hsl(255 14% 6%))"
-          : "linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 6%))",
+          ? `radial-gradient(ellipse 70% 50% at 22% 100%, ${accent.replace(")", " / 0.10)")} 0%, transparent 60%),
+             radial-gradient(120% 90% at 50% 0%, hsl(0 0% 4%), hsl(0 0% 2%))`
+          : "linear-gradient(135deg, hsl(0 0% 5%), hsl(0 0% 2%))",
+        boxShadow: isHot
+          ? `inset 0 0 60px hsl(0 0% 0% / 0.7), 0 0 32px ${accent.replace(")", " / 0.12)")}`
+          : "inset 0 0 40px hsl(0 0% 0% / 0.6)",
       }}
     >
       {/* Background heat shimmer (Champion+) */}
@@ -348,19 +353,21 @@ const CompactStreakPanel = ({
       {/* Hero: flame + number — flame is the FOCAL POINT, oversized intentionally */}
       <div className="relative flex items-center gap-3.5 z-10">
         <div
-          className="relative flex h-20 w-20 items-center justify-center rounded-2xl shrink-0 overflow-hidden"
+          className="relative flex h-20 w-20 items-center justify-center rounded-2xl shrink-0"
           style={{
-            // Stone fire-pit: warm ember glow at the bottom fading to slate at the top
+            // Stone fire-pit: deep black chamber with warm ember glow at the very bottom
             background: isHot
               ? `
-                radial-gradient(ellipse 80% 55% at 50% 105%, ${accent.replace(")", " / 0.85)")} 0%, ${accent.replace(")", " / 0.32)")} 28%, transparent 55%),
-                radial-gradient(ellipse at 50% 115%, hsl(18 85% 32%) 0%, hsl(16 45% 14%) 35%, hsl(20 22% 7%) 70%, hsl(230 18% 6%) 100%)
+                radial-gradient(ellipse 80% 50% at 50% 108%, ${accent.replace(")", " / 0.9)")} 0%, ${accent.replace(")", " / 0.32)")} 26%, transparent 55%),
+                radial-gradient(ellipse at 50% 115%, hsl(18 75% 22%) 0%, hsl(16 35% 9%) 32%, hsl(0 0% 3%) 68%, hsl(0 0% 1%) 100%)
               `
               : "transparent",
             color: isHot ? "white" : "hsl(var(--muted-foreground))",
             boxShadow: isHot
-              ? `0 0 38px ${accent.replace(")", " / 0.45)")}, 0 0 80px ${accent.replace(")", " / 0.18)")}, inset 0 2px 0 hsl(0 0% 100% / 0.14), inset 0 -10px 22px hsl(0 0% 0% / 0.55), inset 0 0 26px hsl(0 0% 0% / 0.4)`
+              ? `0 0 38px ${accent.replace(")", " / 0.45)")}, 0 0 80px ${accent.replace(")", " / 0.18)")}, inset 0 2px 0 hsl(0 0% 100% / 0.10), inset 0 -10px 22px hsl(0 0% 0% / 0.7), inset 0 0 26px hsl(0 0% 0% / 0.55)`
               : undefined,
+            // Allow flame to rise above the chamber rim
+            overflow: "visible",
           }}
         >
           {/* Stone-textured chamber walls — subtle hatching */}
@@ -490,7 +497,7 @@ const CompactStreakPanel = ({
             />
           )}
 
-          {/* Inner overflow clip for embers */}
+          {/* Inner overflow clip for embers (kept clipped so embers stay within stone walls) */}
           <div className="absolute inset-0 rounded-xl overflow-hidden">
             {isHot && <Embers count={emberCount} color={emberColor} />}
             {/* Inner glow ring */}
@@ -499,7 +506,7 @@ const CompactStreakPanel = ({
                 aria-hidden
                 className="absolute inset-1 rounded-lg pointer-events-none"
                 style={{
-                  background: `radial-gradient(circle at 50% 80%, ${accent.replace(")", " / 0.5)")}, transparent 65%)`,
+                  background: `radial-gradient(circle at 50% 80%, ${accent.replace(")", " / 0.55)")}, transparent 65%)`,
                 }}
               />
             )}
@@ -566,14 +573,23 @@ const CompactStreakPanel = ({
             </>
           )}
 
-          {/* Flame — rises from behind the logs, on top of the ember bed */}
+          {/* Flame — rises from behind the logs and shoots up beyond the chamber rim */}
           <span
-            className={cn("absolute inset-x-0 bottom-[6px] z-[6] flex items-end justify-center pointer-events-none flame-bowl")}
+            className={cn(
+              "absolute left-1/2 -translate-x-1/2 bottom-[6px] z-[6] flex items-end justify-center pointer-events-none flame-bowl",
+            )}
+            style={{
+              width: 90,
+              height: 110,
+              filter: isHot
+                ? `drop-shadow(0 -4px 18px ${accent.replace(")", " / 0.7)")}) drop-shadow(0 -10px 32px ${accent.replace(")", " / 0.45)")})`
+                : undefined,
+            }}
           >
             <RealisticFlame
               tier={tier.index}
               accent={accent}
-              size={60}
+              size={90}
             />
           </span>
           {/* Ground glow — outside the chamber, sells radiated heat */}

@@ -1037,6 +1037,13 @@ const CompactStreakPanel = ({
                   height: bowlHeight,
                   transform: "translateX(-50%)",
                   overflow: "visible",
+                  // RAZOR-SHARP STACK — pumps saturation + contrast across the
+                  // entire flame so silhouettes read crisp, not blurry.
+                  filter:
+                    flameSettings.contrastMode === "high-contrast"
+                      ? "contrast(1.6) saturate(1.55) brightness(1.05)"
+                      : "contrast(1.4) saturate(1.4) brightness(1.02)",
+                  isolation: "isolate",
                 }}
               >
                 {visibleLayers.map(({ L, i }) => (

@@ -437,7 +437,7 @@ const TribeDetail = () => {
     : null;
 
   return (
-    <div ref={scrollRef} onScroll={handleScroll} className="min-h-full pb-8 px-4 pt-4 safe-top overflow-y-auto relative">
+    <div ref={scrollRef} className="pb-8 px-4 pt-4 safe-top relative">
       {/* Subtle page tint toward the tribe's tier color */}
       {pageTint && (
         <div

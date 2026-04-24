@@ -263,16 +263,7 @@ const CompactStreakPanel = ({
           : "inset 0 0 40px hsl(0 0% 0% / 0.6)",
       }}
     >
-      {/* Subtle warm floor glow — bottom only, doesn't bleed into text area */}
-      {isHot && (
-        <div
-          aria-hidden
-          className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
-          style={{
-            background: `radial-gradient(ellipse 65% 100% at 30% 100%, ${accent.replace(")", " / 0.18)")} 0%, transparent 70%)`,
-          }}
-        />
-      )}
+      {/* Floor warm glow removed for crisp look */}
 
       {/* Aurora sweep (Legendary only — premium tier flex) */}
       {isLegendary && (

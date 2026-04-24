@@ -253,16 +253,62 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
           </div>
 
           {/* Logo — gets a brightness pulse the moment fire catches */}
-          <div
-            style={{
-              animation:
-                phase === "reveal"
-                  ? undefined
-                  : "splash-logo-ignite 1100ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both",
-              willChange: "filter",
-            }}
-          >
-            <BrandLogo size={112} priority className="relative rounded-3xl" />
+          {/* Logo + ignition layers (afterglow → logo flash → heat shimmer) */}
+          <div className="relative">
+            {/* Afterglow halo — soft warm bloom that swells then lingers behind the logo */}
+            <div
+              className="absolute left-1/2 top-1/2 pointer-events-none rounded-full"
+              style={{
+                width: 180,
+                height: 180,
+                background:
+                  "radial-gradient(circle, hsl(42 100% 75% / 0.7) 0%, hsl(28 95% 55% / 0.3) 35%, hsl(18 90% 45% / 0.08) 60%, transparent 75%)",
+                filter: "blur(14px)",
+                animation:
+                  phase === "reveal"
+                    ? undefined
+                    : "splash-logo-afterglow 1800ms cubic-bezier(0.16, 1, 0.3, 1) 280ms both",
+                willChange: "transform, opacity",
+                mixBlendMode: "screen",
+                zIndex: 0,
+              }}
+              aria-hidden
+            />
+
+            {/* The logo itself — gets a brighter, longer ignite pulse with subtle blur shimmer */}
+            <div
+              className="relative"
+              style={{
+                animation:
+                  phase === "reveal"
+                    ? undefined
+                    : "splash-logo-ignite 1300ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both",
+                willChange: "filter",
+                zIndex: 1,
+              }}
+            >
+              <BrandLogo size={112} priority className="relative rounded-3xl" />
+            </div>
+
+            {/* Heat-shimmer band — thin hot-air ripple sweeping up across the logo once */}
+            <div
+              className="absolute left-1/2 bottom-0 pointer-events-none"
+              style={{
+                width: 130,
+                height: 28,
+                background:
+                  "radial-gradient(ellipse at center, hsl(42 100% 80% / 0.35) 0%, hsl(42 90% 55% / 0.18) 45%, transparent 75%)",
+                filter: "blur(6px)",
+                animation:
+                  phase === "reveal"
+                    ? undefined
+                    : "splash-heat-shimmer 1100ms cubic-bezier(0.22, 1, 0.36, 1) 320ms both",
+                willChange: "transform, opacity",
+                mixBlendMode: "screen",
+                zIndex: 2,
+              }}
+              aria-hidden
+            />
           </div>
         </div>
 

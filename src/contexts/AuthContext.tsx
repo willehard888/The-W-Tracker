@@ -174,9 +174,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (user) await fetchProfile(user);
   };
 
+  // Refs hold latest state so checkSubscription identity doesn't change
+  // every time isElite/isApexSubscriber updates (which would re-trigger
+  // the polling useEffect and cause an infinite request loop on /paywall).
+  const isEliteRef = useRef(isElite);
+  const isApexRef = useRef(isApexSubscriber);
+  const userRef = useRef(user);
+  useEffect(() => { isEliteRef.current = isElite; }, [isElite]);
+  useEffect(() => { isApexRef.current = isApexSubscriber; }, [isApexSubscriber]);
+  useEffect(() => { userRef.current = user; }, [user]);
+
   const checkSubscription = useCallback(async () => {
+    const currentUser = userRef.current;
     if (isNativePlatform()) {
-      if (user) await fetchProfile(user);
+      if (currentUser) await fetchProfile(currentUser);
       return;
     }
 
@@ -186,22 +197,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error("check-subscription error:", error);
         return;
       }
-      if (data?.subscribed) {
-        setIsElite(true);
-        setSubscriptionEnd(data.subscription_end);
-      } else if (data && !data.error) {
-        setIsElite(false);
-        setSubscriptionEnd(null);
-      }
-      const nextElite = Boolean(data?.subscribed);
+      // Only trust subscribed:true when a real tier is returned.
+      // Stripe sometimes returns subscribed:true with tier:null when the
+      // customer has unrelated subscriptions — we shouldn't flip Elite on
+      // for those.
+      const nextElite = Boolean(data?.subscribed) && data?.tier !== null && data?.tier !== undefined;
       const nextApex = data?.tier === "apex";
-      if (user && (nextElite !== isElite || nextApex !== isApexSubscriber)) {
-        await fetchProfile(user, true);
+
+      if (data && !data.error) {
+        setIsElite(nextElite);
+        setSubscriptionEnd(nextElite ? data.subscription_end ?? null : null);
+      }
+
+      if (currentUser && (nextElite !== isEliteRef.current || nextApex !== isApexRef.current)) {
+        await fetchProfile(currentUser, true);
       }
     } catch (e) {
       console.error("Failed to check subscription:", e);
     }
-  }, [user, isElite, isApexSubscriber]);
+  }, []);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -235,13 +249,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Check subscription on login and periodically
+  // Check subscription on login and periodically.
+  // Only depend on user.id — checkSubscription is now stable (empty deps),
+  // and depending on its identity here previously caused an infinite refetch
+  // loop on /paywall (Stripe returned subscribed:true → setIsElite → identity
+  // change → effect re-ran → new request → repeat).
   useEffect(() => {
     if (!user) return;
     checkSubscription();
     const interval = setInterval(checkSubscription, 300000);
     return () => clearInterval(interval);
-  }, [user, checkSubscription]);
+  }, [user?.id]);
 
   const signUp = async (email: string, password: string, username: string) => {
     const { error } = await supabase.auth.signUp({

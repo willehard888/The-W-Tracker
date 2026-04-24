@@ -179,22 +179,12 @@ const Paywall = () => {
     }
   };
 
-  const handleNativeElite = async () => {
+  const handleNativeElite = async (plan: "monthly" | "yearly" = "monthly") => {
     if (!rcReady) { toast.info("Loading store… please wait."); return; }
     hapticImpact("medium");
     setPurchasingTier("elite");
     try {
-      const monthlyPkg = packages.find((pkg: any) => {
-        const id = pkg?.product?.identifier ?? pkg?.storeProduct?.identifier;
-        return id === PRIMARY_ELITE_PRODUCT_ID;
-      }) ?? packages.find((pkg: any) => {
-        const id = pkg?.product?.identifier ?? pkg?.storeProduct?.identifier;
-        return ELITE_PRODUCT_IDS.includes(id);
-      });
-
-      if (monthlyPkg) await purchase(monthlyPkg);
-      else await purchaseProduct(PRIMARY_ELITE_PRODUCT_ID);
-
+      await purchaseElitePlan(plan);
       await checkSubscription();
       hapticNotification("success");
     } catch (e: any) {
@@ -206,12 +196,12 @@ const Paywall = () => {
     }
   };
 
-  const handleNativeApex = async () => {
+  const handleNativeApex = async (plan: "monthly" | "yearly" = "monthly") => {
     if (!rcReady) { toast.info("Loading store… please wait."); return; }
     hapticImpact("heavy");
     setPurchasingTier("apex");
     try {
-      await purchaseApex();
+      await purchaseApexPlan(plan);
       await checkSubscription();
       hapticNotification("success");
     } catch (e: any) {

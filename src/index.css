@@ -2695,6 +2695,36 @@
   100% { transform: scale(3.2); opacity: 0; border-width: 0.5px; }
 }
 
+/* === NEXT-LEVEL streak panel: cinematic embers floating across the entire panel === */
+@keyframes streak-cinema-ember {
+  0%   { transform: translate(0, 0) scale(0); opacity: 0; }
+  10%  { opacity: 0.95; transform: translate(0, -10px) scale(1); }
+  100% { transform: translate(var(--ce-x, 0px), -160px) scale(0.2); opacity: 0; }
+}
+
+/* Slow, drifting heat haze — vertical ripple band */
+@keyframes streak-heat-haze {
+  0%, 100% { transform: translateY(0) scaleY(1); opacity: 0.08; }
+  50%      { transform: translateY(-6px) scaleY(1.04); opacity: 0.16; }
+}
+
+/* God-ray light cone breathing above the flame */
+@keyframes streak-light-cone {
+  0%, 100% { opacity: 0.18; transform: translateX(-50%) scaleY(1) scaleX(1); }
+  50%      { opacity: 0.34; transform: translateX(-50%) scaleY(1.06) scaleX(1.04); }
+}
+
+/* Tier ring slow rotation around the streak number */
+@keyframes streak-tier-ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Number "fire pulse" — heartbeat that syncs with flame */
+@keyframes streak-number-fire-pulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50%      { transform: scale(1.035); filter: brightness(1.18); }
+}
+
 /* === Realistic depth utility v2 — premium 3D card lift with side rims, contact shadow,
        AND a top specular highlight that reads as light hitting glass. === */
 .depth-realistic {

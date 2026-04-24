@@ -73,13 +73,14 @@ Deno.serve(async (req) => {
 
     // Wrap any promise with an overall deadline so the edge function
     // can't sit at the 150s idle timeout when Stripe is slow / unreachable.
-    const withDeadline = <T,>(p: Promise<T>, ms: number, label: string): Promise<T> =>
-      Promise.race([
+    function withDeadline<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+      return Promise.race([
         p,
         new Promise<T>((_, reject) =>
           setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms),
         ),
       ]);
+    }
 
     const customers = await withDeadline(
       stripe.customers.list({ email: userEmail, limit: 1 }),

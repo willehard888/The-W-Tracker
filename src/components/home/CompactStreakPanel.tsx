@@ -560,8 +560,8 @@ const CompactStreakPanel = ({
               64 + Math.min(70, Math.pow(Math.min(displayStreak, 120), 0.6) * 6.7),
             );
 
-            const dropShadow = (acc: string, mul: number) =>
-              `drop-shadow(0 -2px ${(4 + displayStreak * 0.18) * mul}px ${acc.replace(")", " / 0.65)")}) drop-shadow(0 -7px ${(11 + displayStreak * 0.28) * mul}px ${acc.replace(")", " / 0.3)")})`;
+            // Glow removed — flames render with crisp edges only.
+            const dropShadow = (_acc: string, _mul: number) => "none";
 
             // 8 layers — each with its OWN rhythm, duration, easing, and
             // animation delay so the bonfire never feels mechanical.

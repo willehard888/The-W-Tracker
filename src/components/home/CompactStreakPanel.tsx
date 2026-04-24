@@ -643,9 +643,9 @@ const CompactStreakPanel = ({
             </>
           )}
 
-          {/* Layered bonfire — 5 flames stacked at different depths/sizes,
-              all sharing one ember bed. Center is biggest & frontmost.
-              Sizes scale LIVE with streak; intensity layers up via tier. */}
+          {/* Clean realistic bonfire — ONE dominant central flame with two
+              smaller tongues peeking from behind. No overlapping blends, no
+              washed-out blurs. Reads as a real fire silhouette. */}
           {(() => {
             const cappedTier = Math.min(Math.max(tier.index, 2), 4);
 
@@ -656,106 +656,53 @@ const CompactStreakPanel = ({
             );
 
             const dropShadow = (acc: string, mul: number) =>
-              `drop-shadow(0 -4px ${(8 + displayStreak * 0.3) * mul}px ${acc.replace(")", " / 0.85)")}) drop-shadow(0 -12px ${(20 + displayStreak * 0.5) * mul}px ${acc.replace(")", " / 0.45)")})`;
+              `drop-shadow(0 -3px ${(6 + displayStreak * 0.25) * mul}px ${acc.replace(")", " / 0.7)")}) drop-shadow(0 -10px ${(16 + displayStreak * 0.4) * mul}px ${acc.replace(")", " / 0.35)")})`;
 
-            // ROARING BONFIRE — main core stays unified, but several smaller
-            // background tongues escape upward and to the sides so the fire
-            // visibly roars instead of standing still as one neat flame.
+            // 3 layers only:
+            //  - back-left small tongue (faint)
+            //  - back-right small tongue (faint)
+            //  - main central flame (full opacity, no blur, frontmost)
             const layers = [
-              // Far back-left tongue — small, blurred, leans left+up
+              {
+                size: Math.round(master * 0.5),
+                accent: "hsl(18 92% 52%)",
+                tier: Math.max(cappedTier - 1, 1),
+                offsetX: -Math.round(master * 0.26),
+                offsetY: -Math.round(master * 0.05),
+                z: 1,
+                opacity: 0.85,
+                rotate: -10,
+                shadowMul: 0.55,
+                roar: 0,
+              },
               {
                 size: Math.round(master * 0.55),
-                accent: "hsl(14 88% 46%)",
-                tier: Math.max(cappedTier - 2, 1),
-                offsetX: -Math.round(master * 0.32),
-                offsetY: -Math.round(master * 0.18),
+                accent: "hsl(20 95% 54%)",
+                tier: Math.max(cappedTier - 1, 1),
+                offsetX: Math.round(master * 0.27),
+                offsetY: -Math.round(master * 0.07),
                 z: 1,
-                opacity: 0.55,
-                scaleX: 0.9,
-                scaleY: 1.15,
-                rotate: -14,
-                blur: 2.6,
-                shadowMul: 0.55,
+                opacity: 0.88,
+                rotate: 9,
+                shadowMul: 0.6,
+                roar: 1,
               },
-              // Far back-right tongue — slightly bigger, leans right+up
-              {
-                size: Math.round(master * 0.62),
-                accent: "hsl(16 92% 50%)",
-                tier: Math.max(cappedTier - 2, 1),
-                offsetX: Math.round(master * 0.34),
-                offsetY: -Math.round(master * 0.22),
-                z: 1,
-                opacity: 0.6,
-                scaleX: 0.95,
-                scaleY: 1.2,
-                rotate: 12,
-                blur: 2.4,
-                shadowMul: 0.55,
-              },
-              // Mid-left flicker — closer, taller, more saturated
-              {
-                size: Math.round(master * 0.7),
-                accent: "hsl(20 96% 54%)",
-                tier: Math.max(cappedTier - 1, 2),
-                offsetX: -Math.round(master * 0.18),
-                offsetY: -Math.round(master * 0.08),
-                z: 2,
-                opacity: 0.78,
-                scaleX: 0.95,
-                scaleY: 1.1,
-                rotate: -7,
-                blur: 1.2,
-                shadowMul: 0.7,
-              },
-              // Mid-right flicker — peeks out behind the core
-              {
-                size: Math.round(master * 0.78),
-                accent: "hsl(22 98% 56%)",
-                tier: Math.max(cappedTier - 1, 2),
-                offsetX: Math.round(master * 0.18),
-                offsetY: -Math.round(master * 0.05),
-                z: 2,
-                opacity: 0.82,
-                scaleX: 0.98,
-                scaleY: 1.08,
-                rotate: 6,
-                blur: 1.0,
-                shadowMul: 0.75,
-              },
-              // Wide blurred halo body behind the core — gives mass
-              {
-                size: Math.round(master * 1.15),
-                accent: "hsl(18 95% 50%)",
-                tier: Math.max(cappedTier - 1, 2),
-                offsetX: 0,
-                offsetY: 4,
-                z: 3,
-                opacity: 0.55,
-                scaleX: 1.08,
-                scaleY: 0.95,
-                rotate: 0,
-                blur: 4.5,
-                shadowMul: 0.65,
-              },
-              // CENTER core — tallest, hottest, frontmost
               {
                 size: master,
-                accent: "hsl(24 100% 58%)",
+                accent: "hsl(22 98% 56%)",
                 tier: cappedTier,
                 offsetX: 0,
                 offsetY: 0,
-                z: 6,
+                z: 5,
                 opacity: 1,
-                scaleX: 1,
-                scaleY: 1,
                 rotate: 0,
-                blur: 0,
                 shadowMul: 1,
+                roar: -1, // no roar animation, organic flame motion only
               },
             ];
 
-            const bowlWidth = Math.round(master * 2.0);
-            const bowlHeight = Math.round(master * 1.85);
+            const bowlWidth = Math.round(master * 1.7);
+            const bowlHeight = Math.round(master * 1.55);
 
             return (
               <div
@@ -775,25 +722,23 @@ const CompactStreakPanel = ({
                       width: L.size,
                       height: Math.round(L.size * 1.3),
                       marginLeft: -L.size / 2,
-                      // Custom props consumed by flame-roar-* keyframes so each
-                      // layer breathes around its own resting offset/rotation.
                       ...({
                         "--rx": `${L.offsetX}px`,
                         "--ry": `${L.offsetY}px`,
                         "--rr": `${L.rotate}deg`,
-                        "--sx": `${L.scaleX}`,
-                        "--sy": `${L.scaleY}`,
+                        "--sx": "1",
+                        "--sy": "1",
                       } as React.CSSProperties),
-                      transform: `translateX(${L.offsetX}px) translateY(${L.offsetY}px) rotate(${L.rotate}deg) scale(${L.scaleX}, ${L.scaleY})`,
+                      transform: `translateX(${L.offsetX}px) translateY(${L.offsetY}px) rotate(${L.rotate}deg)`,
                       transformOrigin: "center bottom",
-                      filter: `${dropShadow(L.accent, L.shadowMul)}${L.blur ? ` blur(${L.blur}px)` : ""}`,
+                      filter: dropShadow(L.accent, L.shadowMul),
                       opacity: L.opacity,
                       zIndex: L.z,
-                      mixBlendMode: i < 5 ? "lighten" : "normal",
-                      animation: i === 5
-                        ? undefined
-                        : `flame-roar-${i % 3} ${(2.6 + (i % 3) * 0.4).toFixed(2)}s ease-in-out infinite`,
-                      animationDelay: `${(i * 0.18).toFixed(2)}s`,
+                      animation:
+                        L.roar >= 0
+                          ? `flame-roar-${L.roar} ${(2.8 + L.roar * 0.4).toFixed(2)}s ease-in-out infinite`
+                          : undefined,
+                      animationDelay: `${(i * 0.22).toFixed(2)}s`,
                     }}
                   >
                     <RealisticFlame

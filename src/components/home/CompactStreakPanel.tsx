@@ -605,7 +605,7 @@ const CompactStreakPanel = ({
                 size: Math.round(master * 0.5),
                 accent: "hsl(16 98% 52%)",
                 tier: cappedTier,
-                offsetX: -Math.round(master * 0.46),
+                offsetX: -Math.round(master * 0.36),
                 offsetY: -Math.round(master * 0.04),
                 z: 1,
                 opacity: 0.88,

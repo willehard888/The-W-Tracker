@@ -2,7 +2,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Crown, TrendingUp, Share2, Trophy } from "lucide-react";
+import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Crown, TrendingUp, Share2, Trophy, Camera, Play } from "lucide-react";
+import ImageLightbox from "@/components/ImageLightbox";
 import StatusAvatar from "@/components/StatusAvatar";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
@@ -29,6 +30,8 @@ const UserProfile = () => {
   const [battleType, setBattleType] = useState("xp");
   const [duration, setDuration] = useState(7);
   const [creating, setCreating] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [lightboxPost, setLightboxPost] = useState<any>(null);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["user-profile", userId],
@@ -75,15 +78,17 @@ const UserProfile = () => {
     enabled: !!userId,
   });
 
-  const { data: userPosts } = useQuery({
-    queryKey: ["user-posts", userId],
+  // Elite Feed media posts — IG-style grid, the loudest social proof on the profile
+  const { data: mediaPosts } = useQuery({
+    queryKey: ["user-media-posts", userId],
     queryFn: async () => {
       const { data } = await supabase
         .from("feed_posts")
-        .select("*")
+        .select("id, content, image_url, video_url, likes_count, comments_count, kudos_count, created_at")
         .eq("user_id", userId!)
+        .or("image_url.not.is.null,video_url.not.is.null")
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(18);
       return data || [];
     },
     enabled: !!userId,
@@ -512,6 +517,73 @@ const UserProfile = () => {
           />
         )}
 
+        {/* Elite Feed media — IG-style 3-col grid, edge-to-edge */}
+        {mediaPosts && mediaPosts.length > 0 && (
+          <div className="mb-6 -mx-4 mt-2">
+            <div className="flex items-center justify-center border-t border-border">
+              <div className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-t-2 border-foreground -mt-px">
+                <Camera size={12} className="text-foreground" />
+                <span className="text-[10px] font-black tracking-[0.22em] uppercase text-foreground">
+                  Posts · {mediaPosts.length}
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-[2px]">
+              {mediaPosts.map((p: any, i) => {
+                const isVideo = !!p.video_url;
+                const src = p.image_url || p.video_url;
+                return (
+                  <motion.button
+                    type="button"
+                    key={p.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.05 + i * 0.02 }}
+                    onClick={() => {
+                      if (isVideo) return;
+                      setLightboxUrl(src);
+                      setLightboxPost(p);
+                    }}
+                    className="group relative aspect-square overflow-hidden bg-secondary"
+                  >
+                    {isVideo ? (
+                      <>
+                        <video
+                          src={src}
+                          muted
+                          playsInline
+                          preload="metadata"
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                        <span className="absolute top-1.5 right-1.5">
+                          <Play size={14} className="text-foreground drop-shadow-lg" fill="currentColor" />
+                        </span>
+                      </>
+                    ) : (
+                      <img
+                        src={src}
+                        alt={`@${profile.username} post`}
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/45 transition-colors flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                      <span className="flex items-center gap-1 text-[12px] font-black text-foreground">
+                        <Heart size={12} fill="currentColor" />
+                        {p.likes_count ?? 0}
+                      </span>
+                      <span className="flex items-center gap-1 text-[12px] font-black text-foreground">
+                        <MessageSquare size={12} fill="currentColor" />
+                        {p.comments_count ?? 0}
+                      </span>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Head-to-head comparison (only when viewing another user) */}
         {!isOwnProfile && myProfile && (
           <HeadToHead
@@ -588,28 +660,25 @@ const UserProfile = () => {
         )}
       </div>
 
-      {/* User Posts */}
-      {userPosts && userPosts.length > 0 && (
-        <div className="mt-6 animate-reveal animate-reveal-delay-3">
-          <h2 className="font-display font-bold text-sm mb-3 tracking-tight">Posts ({userPosts.length})</h2>
-          <div className="space-y-3">
-            {userPosts.map((post) => (
-              <div key={post.id} className="rounded-xl border border-border bg-card p-4">
-                {post.content && <p className="text-sm mb-2">{post.content}</p>}
-                {post.image_url && (
-                  <img src={post.image_url} alt="Post" className="w-full rounded-lg object-cover max-h-48 mb-2" />
-                )}
-                <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><Heart size={10} /> {post.likes_count}</span>
-                  <span className="flex items-center gap-1"><MessageSquare size={10} /> {post.comments_count}</span>
-                  <span className="ml-auto">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
       </div>
+
+      <ImageLightbox
+        open={!!lightboxUrl}
+        imageUrl={lightboxUrl}
+        username={profile.username}
+        avatarUrl={profile.avatar_url}
+        tier={(profile.status_tier || "recruit") as any}
+        level={profile.level}
+        streak={profile.streak}
+        likes={lightboxPost?.likes_count}
+        comments={lightboxPost?.comments_count}
+        kudos={lightboxPost?.kudos_count}
+        caption={lightboxPost?.content}
+        onClose={() => {
+          setLightboxUrl(null);
+          setLightboxPost(null);
+        }}
+      />
     </div>
   );
 };

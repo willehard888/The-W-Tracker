@@ -584,6 +584,8 @@ const CompactStreakPanel = ({
                 duration: 4.7,
                 easing: "ease-in-out",
                 delay: 0,
+                windWeight: 9,    // back layer — leans noticeably
+                windWeightRot: 5,
               },
               // 1 — Far back-right: crimson, sharp jolt rhythm.
               {
@@ -600,9 +602,12 @@ const CompactStreakPanel = ({
                 duration: 3.3,
                 easing: "cubic-bezier(0.45, 0, 0.25, 1)",
                 delay: 0.6,
+                windWeight: 9,
+                windWeightRot: 5,
               },
               // 6 — Side ember tongue (left): vermillion staccato whip.
               //     Lower + smaller so it reads as a side-flick, not a 2nd flame.
+              //     HIGHEST wind weight — whips dramatically.
               {
                 size: Math.round(master * 0.42),
                 accent: "hsl(16 98% 54%)",
@@ -617,6 +622,8 @@ const CompactStreakPanel = ({
                 duration: 2.1,
                 easing: "cubic-bezier(0.7, 0, 0.3, 1)",
                 delay: 0.25,
+                windWeight: 14,
+                windWeightRot: 9,
               },
               // 2 — Mid back-left: warm amber. Now z=3 so it sits IN FRONT of
               //     the deep red but BEHIND the gold halo — proper layering.
@@ -634,6 +641,8 @@ const CompactStreakPanel = ({
                 duration: 2.4,
                 easing: "cubic-bezier(0.6, 0.05, 0.4, 1)",
                 delay: 0.15,
+                windWeight: 6,
+                windWeightRot: 3.5,
               },
               // 3 — Mid back-right: orange, smooth counter-arc.
               {
@@ -650,9 +659,12 @@ const CompactStreakPanel = ({
                 duration: 2.9,
                 easing: "ease-in-out",
                 delay: 1.1,
+                windWeight: 6,
+                windWeightRot: 3.5,
               },
               // 4 — Inner gold halo: BIG soft mass behind the core. Lower opacity
               //     so amber/red layers bleed THROUGH instead of being smothered.
+              //     LOW wind weight — halo is the soft anchor.
               {
                 size: Math.round(master * 0.94),
                 accent: "hsl(38 100% 62%)",
@@ -667,8 +679,11 @@ const CompactStreakPanel = ({
                 duration: 5.5,
                 easing: "ease-in-out",
                 delay: 0.4,
+                windWeight: 4,
+                windWeightRot: 2,
               },
               // 5 — CENTER core: the hero. Sits frontmost.
+              //     LOWEST wind weight — the rock everyone dances around.
               {
                 size: master,
                 accent: "hsl(20 98% 56%)",
@@ -683,10 +698,12 @@ const CompactStreakPanel = ({
                 duration: 3.6,
                 easing: "cubic-bezier(0.4, 0, 0.2, 1)",
                 delay: 0,
+                windWeight: 3,
+                windWeightRot: 1.8,
               },
               // 7 — Bright yellow inner tongue: NOW the topmost flicker, narrow
               //     and tall, sits inside the core's tip — true wick energy.
-              //     Small + low opacity so it accents the core, not replaces it.
+              //     HIGH rotation weight — the tip whips most in real flames.
               {
                 size: Math.round(master * 0.42),
                 accent: "hsl(48 100% 68%)",
@@ -701,6 +718,8 @@ const CompactStreakPanel = ({
                 duration: 1.8,
                 easing: "cubic-bezier(0.5, 0, 0.5, 1)",
                 delay: 0.35,
+                windWeight: 7,
+                windWeightRot: 8,
               },
             ];
 

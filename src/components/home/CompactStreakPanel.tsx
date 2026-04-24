@@ -775,13 +775,27 @@ const CompactStreakPanel = ({
                       width: L.size,
                       height: Math.round(L.size * 1.3),
                       marginLeft: -L.size / 2,
+                      // Custom props consumed by flame-roar-* keyframes so each
+                      // layer breathes around its own resting offset/rotation.
+                      // @ts-expect-error CSS custom props
+                      "--rx": `${L.offsetX}px`,
+                      // @ts-expect-error
+                      "--ry": `${L.offsetY}px`,
+                      // @ts-expect-error
+                      "--rr": `${L.rotate}deg`,
+                      // @ts-expect-error
+                      "--sx": L.scaleX,
+                      // @ts-expect-error
+                      "--sy": L.scaleY,
                       transform: `translateX(${L.offsetX}px) translateY(${L.offsetY}px) rotate(${L.rotate}deg) scale(${L.scaleX}, ${L.scaleY})`,
                       transformOrigin: "center bottom",
                       filter: `${dropShadow(L.accent, L.shadowMul)}${L.blur ? ` blur(${L.blur}px)` : ""}`,
                       opacity: L.opacity,
                       zIndex: L.z,
                       mixBlendMode: i < 5 ? "lighten" : "normal",
-                      animation: `flame-roar-${i % 3} ${(2.6 + (i % 3) * 0.4).toFixed(2)}s ease-in-out infinite`,
+                      animation: i === 5
+                        ? undefined
+                        : `flame-roar-${i % 3} ${(2.6 + (i % 3) * 0.4).toFixed(2)}s ease-in-out infinite`,
                       animationDelay: `${(i * 0.18).toFixed(2)}s`,
                     }}
                   >

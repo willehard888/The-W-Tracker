@@ -576,48 +576,86 @@ const CompactStreakPanel = ({
             </>
           )}
 
-          {/* Flame — REAL fire: red/orange palette, scales LIVE with streak.
-              Size grows from 90px (3d) to 220px (100d+); intensity layers up via tier. */}
+          {/* Three-flame trio — center flame is biggest. All red/orange.
+              Sizes scale LIVE with streak; intensity layers up via tier. */}
           {(() => {
-            // Force a warm red/orange accent regardless of tier color (no purple/blue).
-            const fireAccent = isLegendary
-              ? "hsl(20 100% 55%)"
-              : isDiamond
-              ? "hsl(22 98% 56%)"
-              : isBlazing
-              ? "hsl(24 96% 56%)"
-              : isOnFire
-              ? "hsl(18 95% 54%)"
-              : isWarm
-              ? "hsl(14 92% 52%)"
-              : "hsl(12 88% 50%)";
+            const fireAccent = "hsl(20 100% 55%)";
+            const sideAccent = "hsl(16 95% 52%)";
 
-            // Live streak → size mapping (true reactivity, not just tier buckets)
-            // 0d: 80px, 3d: 96, 7d: 112, 14d: 132, 30d: 156, 60d: 184, 100d+: 220
-            const streakSize = Math.round(
-              80 + Math.min(140, Math.pow(Math.min(displayStreak, 120), 0.62) * 13),
+            // Live streak → center size mapping (true reactivity)
+            // 0d: 80px, 7d: 110, 30d: 145, 100d+: 180
+            const centerSize = Math.round(
+              80 + Math.min(100, Math.pow(Math.min(displayStreak, 120), 0.6) * 9.5),
             );
-            // Cap tier so palette stays warm (Diamond=4 to keep all rich layers but no purple)
+            const sideSize = Math.round(centerSize * 0.62);
             const cappedTier = Math.min(Math.max(tier.index, 2), 4);
 
+            const dropShadow = (acc: string, mul: number) =>
+              `drop-shadow(0 -4px ${(8 + displayStreak * 0.3) * mul}px ${acc.replace(")", " / 0.85)")}) drop-shadow(0 -12px ${(20 + displayStreak * 0.5) * mul}px ${acc.replace(")", " / 0.5)")})`;
+
             return (
-              <span
-                className={cn(
-                  "absolute left-1/2 -translate-x-1/2 bottom-[6px] z-[20] flex items-end justify-center pointer-events-none flame-bowl",
-                )}
-                style={{
-                  width: streakSize,
-                  height: Math.round(streakSize * 1.25),
-                  filter: `drop-shadow(0 -6px ${10 + displayStreak * 0.4}px ${fireAccent.replace(")", " / 0.9)")}) drop-shadow(0 -16px ${24 + displayStreak * 0.6}px ${fireAccent.replace(")", " / 0.55)")}) drop-shadow(0 -28px ${40 + displayStreak * 0.8}px ${fireAccent.replace(")", " / 0.3)")})`,
-                }}
+              <div
+                className="absolute inset-x-0 bottom-[4px] z-[20] flex items-end justify-center gap-0 pointer-events-none"
+                style={{ overflow: "visible" }}
               >
-                <RealisticFlame
-                  tier={cappedTier}
-                  accent={fireAccent}
-                  size={streakSize}
-                  interactive={false}
-                />
-              </span>
+                {/* Left flame — slightly behind, smaller */}
+                <span
+                  className="flame-bowl flex items-end justify-center"
+                  style={{
+                    width: sideSize,
+                    height: Math.round(sideSize * 1.25),
+                    marginRight: -sideSize * 0.35,
+                    marginBottom: 2,
+                    filter: dropShadow(sideAccent, 0.7),
+                    transform: "scaleX(-1)",
+                    opacity: 0.92,
+                  }}
+                >
+                  <RealisticFlame
+                    tier={Math.max(cappedTier - 1, 1)}
+                    accent={sideAccent}
+                    size={sideSize}
+                    interactive={false}
+                  />
+                </span>
+
+                {/* Center flame — biggest, in front */}
+                <span
+                  className="flame-bowl flex items-end justify-center relative z-10"
+                  style={{
+                    width: centerSize,
+                    height: Math.round(centerSize * 1.3),
+                    filter: dropShadow(fireAccent, 1),
+                  }}
+                >
+                  <RealisticFlame
+                    tier={cappedTier}
+                    accent={fireAccent}
+                    size={centerSize}
+                    interactive={false}
+                  />
+                </span>
+
+                {/* Right flame — slightly behind, smaller */}
+                <span
+                  className="flame-bowl flex items-end justify-center"
+                  style={{
+                    width: sideSize,
+                    height: Math.round(sideSize * 1.25),
+                    marginLeft: -sideSize * 0.35,
+                    marginBottom: 4,
+                    filter: dropShadow(sideAccent, 0.7),
+                    opacity: 0.9,
+                  }}
+                >
+                  <RealisticFlame
+                    tier={Math.max(cappedTier - 1, 1)}
+                    accent={sideAccent}
+                    size={sideSize}
+                    interactive={false}
+                  />
+                </span>
+              </div>
             );
           })()}
           {/* Ground glow — outside the chamber, sells radiated heat */}

@@ -97,8 +97,9 @@ const BottomNav = () => {
               onClick={() => handleNav(path)}
               className={cn(
                 "group relative flex flex-col items-center justify-center gap-0.5 px-1.5 py-1.5 rounded-xl",
-                "transition-transform duration-150 will-change-transform",
-                "active:scale-[0.94]",
+                "transition-[transform,color,opacity] duration-220 will-change-transform",
+                "[transition-timing-function:cubic-bezier(0.16,1.2,0.32,1)]",
+                "active:scale-[0.92]",
                 active ? c.text : "text-muted-foreground/55",
               )}
               style={{ WebkitTapHighlightColor: "transparent" }}

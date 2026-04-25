@@ -127,23 +127,25 @@ const Thread = ({ cfg, uid, idx }: { cfg: ThreadConfig; uid: string; idx: number
 
   return (
     <div
-      className="absolute"
+      className="absolute eft-thread-breathe"
       style={{
         ...anchorStyle,
         width: cfg.width * 4,
         height: cfg.length,
-        willChange: "transform, filter",
+        willChange: "transform, filter, opacity",
+        animationDelay: `${cfg.phase}s`,
+        animationDuration: `${(2.4 / cfg.speed).toFixed(2)}s`,
       }}
     >
       <div
-        className="absolute inset-0 eft-thread-breathe"
+        className="absolute inset-0"
         style={{
           transformOrigin: "center bottom",
-          // CSS-only millisecond-tarkka reaktio — kaikki menee GPU:lle
+          // CSS-only millisecond-tarkka pointer-reaktio (transformsia ei
+          // päällekirjoita keyframe — keyframe vain pulssaa opacity/filter ulkokuorta)
           transform: `rotate(${tiltCalc}) scaleY(${stretchCalc})`,
           filter: `brightness(${brightnessCalc})`,
-          animationDelay: `${cfg.phase}s`,
-          animationDuration: `${(2.4 / cfg.speed).toFixed(2)}s`,
+          willChange: "transform, filter",
         }}
       >
         <svg

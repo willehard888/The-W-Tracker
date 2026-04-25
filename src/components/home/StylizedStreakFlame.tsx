@@ -199,14 +199,22 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
   }
 
   // Three turbulence filters — slow (back), medium (mid), fast (front)
+  // Each combined with an internal Gaussian-blur bloom to give the flame a
+  // self-emissive 3D feel WITHOUT a fake outer halo. The bloom is composited
+  // back over the source so the flame edge stays crisp while the body glows.
   const filterIds = [`ssf-t0-${uid}`, `ssf-t1-${uid}`, `ssf-t2-${uid}`];
   const turbConfigs = [
-    { freq: "0.018 0.045", peakFreq: "0.034 0.072", baseScale: 1.6, peakScale: 2.6, dur: 2.4 },
-    { freq: "0.028 0.062", peakFreq: "0.05 0.1",   baseScale: 2.2, peakScale: 3.4, dur: 1.6 },
-    { freq: "0.04 0.085",  peakFreq: "0.07 0.14",  baseScale: 2.8, peakScale: 4.2, dur: 1.0 },
+    // back row — softer warp, larger internal bloom (out-of-focus depth)
+    { freq: "0.018 0.045", peakFreq: "0.034 0.072", baseScale: 1.6, peakScale: 2.6, dur: 2.4, bloomStdDev: 4.5 },
+    // mid row — moderate
+    { freq: "0.028 0.062", peakFreq: "0.05 0.1",   baseScale: 2.2, peakScale: 3.4, dur: 1.6, bloomStdDev: 2.8 },
+    // front row — sharp warp, tight bloom (high definition)
+    { freq: "0.04 0.085",  peakFreq: "0.07 0.14",  baseScale: 2.8, peakScale: 4.2, dur: 1.0, bloomStdDev: 1.4 },
   ];
-  // Ramp displacement & speed slightly with overall stage
   const intensityBoost = lerp(0.85, 1.25, t);
+
+  // Floor light pool — wash beneath the flames simulating ground reflection
+  const floorPoolColor = stage >= 6 ? "hsl(200 95% 65%)" : stage >= 4 ? "hsl(28 100% 60%)" : "hsl(18 95% 55%)";
 
   return (
     <div
@@ -219,16 +227,23 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
       }}
       aria-hidden
     >
-      {/* SVG defs — turbulence filters + per-intensity gradients */}
+      {/* SVG defs — turbulence + internal bloom filters + per-layer gradients */}
       <svg width="0" height="0" className="absolute" aria-hidden>
         <defs>
           {turbConfigs.map((cfg, i) => (
             <filter
               key={i}
               id={filterIds[i]}
-              x="-25%" y="-25%" width="150%" height="150%"
+              x="-40%" y="-30%" width="180%" height="160%"
+              colorInterpolationFilters="sRGB"
             >
-              <feTurbulence type="fractalNoise" baseFrequency={cfg.freq} numOctaves="2" seed={seed.a + i * 7}>
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency={cfg.freq}
+                numOctaves="2"
+                seed={seed.a + i * 7}
+                result="noise"
+              >
                 <animate
                   attributeName="baseFrequency"
                   dur={`${cfg.dur.toFixed(2)}s`}
@@ -242,7 +257,7 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
                   repeatCount="indefinite"
                 />
               </feTurbulence>
-              <feDisplacementMap in="SourceGraphic">
+              <feDisplacementMap in="SourceGraphic" in2="noise" result="warped">
                 <animate
                   attributeName="scale"
                   dur={`${(cfg.dur * 0.9).toFixed(2)}s`}
@@ -250,18 +265,23 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
                   repeatCount="indefinite"
                 />
               </feDisplacementMap>
+              {/* Internal bloom — blur warped flame and merge it back over itself */}
+              <feGaussianBlur in="warped" stdDeviation={cfg.bloomStdDev} result="bloomLarge" />
+              <feGaussianBlur in="warped" stdDeviation={cfg.bloomStdDev * 0.4} result="bloomTight" />
+              <feMerge>
+                <feMergeNode in="bloomLarge" />
+                <feMergeNode in="bloomLarge" />
+                <feMergeNode in="bloomTight" />
+                <feMergeNode in="warped" />
+              </feMerge>
             </filter>
           ))}
 
-          {/* Per-layer vertical gradients — palette shifts cooler in back, hotter in front.
-              Shared id pattern: ssf-grad-${uid}-${layerIndex}. We build below. */}
+          {/* Per-layer vertical gradients */}
           {layers.map((layer, i) => {
             const gradId = `ssf-grad-${uid}-${i}`;
-            // Base hue: deep red 8°, body 22°, shoulder 38°, tip 52°
-            // Higher intensity → push tip hotter (whiter), and shift everything slightly hotter
             const hShift = layer.hueShift;
             const inten = layer.intensity;
-            // Stops bottom→top
             const bottomBlue = stage >= 4 ? `hsl(${210 + hShift} 90% ${lerp(58, 70, inten)}%)` : `hsl(${10 + hShift} 88% ${lerp(40, 52, inten)}%)`;
             const deepBase = `hsl(${8 + hShift} 92% ${lerp(38, 48, inten)}%)`;
             const body = `hsl(${20 + hShift} 95% ${lerp(48, 58, inten)}%)`;
@@ -282,12 +302,59 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
               </linearGradient>
             );
           })}
+
+          {/* Inner white-hot core gradient for front-row flames (volumetric depth) */}
+          {layers.filter((l) => l.zIndex >= 3).map((_, idx) => {
+            const id = `ssf-core-${uid}-${idx}`;
+            return (
+              <radialGradient key={id} id={id} cx="50%" cy="65%" r="42%">
+                <stop offset="0%"   stopColor="hsl(58 100% 96%)" stopOpacity="1" />
+                <stop offset="35%"  stopColor="hsl(48 100% 80%)" stopOpacity="0.85" />
+                <stop offset="75%"  stopColor="hsl(36 100% 65%)" stopOpacity="0.35" />
+                <stop offset="100%" stopColor="hsl(28 100% 55%)" stopOpacity="0" />
+              </radialGradient>
+            );
+          })}
         </defs>
       </svg>
 
-      {/* ─── EMBER BED — the bright "burning fuel" line at the very bottom.
-          This is NOT a glow halo around the flames; it's the literal hot
-          coal/wood the flames sprout from. Stays anchored to the floor. ─── */}
+      {/* ─── FLOOR LIGHT POOL — ground lit by the fire (3D depth cue) ─── */}
+      <span
+        className="absolute left-1/2"
+        style={{
+          width: bedWidth * 2.2,
+          height: size * 0.18,
+          bottom: -size * 0.04,
+          transform: "translateX(-50%)",
+          background: `radial-gradient(ellipse at 50% 0%, ${floorPoolColor.replace(")", " / 0.55)")} 0%, ${floorPoolColor.replace(")", " / 0.18)")} 38%, transparent 75%)`,
+          filter: `blur(${Math.max(6, size * 0.07)}px)`,
+          mixBlendMode: "screen",
+          animation: `stylized-floor-pool 2.2s ease-in-out infinite`,
+          zIndex: 0,
+          opacity: lerp(0.55, 1, t),
+        }}
+      />
+
+      {/* ─── ATMOSPHERIC HAZE between back & front flame rows ─── */}
+      {stage >= 3 && (
+        <span
+          className="absolute left-1/2"
+          style={{
+            width: bedWidth * 1.6,
+            height: tallestH * 0.85,
+            bottom: size * 0.06,
+            transform: "translateX(-50%)",
+            background: `radial-gradient(ellipse at 50% 75%, hsl(22 80% 50% / 0.18) 0%, hsl(18 70% 40% / 0.08) 50%, transparent 80%)`,
+            filter: `blur(${Math.max(8, size * 0.09)}px)`,
+            mixBlendMode: "screen",
+            animation: `stylized-haze-drift 4s ease-in-out infinite`,
+            zIndex: 2,
+            opacity: lerp(0.4, 0.9, t),
+          }}
+        />
+      )}
+
+      {/* ─── EMBER BED — burning fuel line ─── */}
       <span
         className="absolute left-1/2"
         style={{
@@ -300,10 +367,10 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
           borderRadius: "50%",
           mixBlendMode: "screen",
           animation: `stylized-bed-pulse 1.4s ease-in-out infinite`,
-          zIndex: 0,
+          zIndex: 1,
         }}
       />
-      {/* Two tiny "coal" bright pinpoints in the bed for realism */}
+      {/* Glowing coal pinpoints */}
       {!isCold && Array.from({ length: Math.min(6, flameCount + 1) }).map((_, i) => {
         const span = bedWidth * 0.85;
         const left = -span / 2 + (span / Math.max(1, flameCount + 1)) * (i + 0.5);
@@ -327,7 +394,7 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
         );
       })}
 
-      {/* ─── FLAME WRAPPER (wind sway only — no glow) ─── */}
+      {/* ─── FLAME WRAPPER (wind sway + 3D perspective) ─── */}
       <div
         className="absolute left-1/2"
         style={{
@@ -338,59 +405,96 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
           height: tallestH,
           transformOrigin: "center bottom",
           animation: `stylized-flame-sway 3.4s ease-in-out infinite`,
+          // 3D depth: gentle perspective so back flames recede slightly
+          perspective: `${size * 4}px`,
+          transformStyle: "preserve-3d",
           willChange: "transform",
         }}
       >
-        {/* Each layered flame */}
-        {layers.map((layer, i) => {
-          const flameH = tallestH * layer.scale;
-          // Width is derived from path's natural ratio (100/140 ≈ 0.71)
-          const flameW = flameH * (100 / 140) * lerp(0.95, 1.05, (i % 3) / 2);
-          const xPx = (bedWidth * 0.5 - flameW * 0.5) * layer.xOffset;
-          const gradId = `ssf-grad-${uid}-${i}`;
-          const filterId = filterIds[layer.filterId];
-          const speedDur = layer.speed * lerp(1.5, 0.9, t); // faster when bigger
-          const swayDur = layer.speed * lerp(2.4, 1.4, t);
+        {(() => {
+          let frontIdx = 0;
+          return layers.map((layer, i) => {
+            const flameH = tallestH * layer.scale;
+            const flameW = flameH * (100 / 140) * lerp(0.95, 1.05, (i % 3) / 2);
+            const xPx = (bedWidth * 0.5 - flameW * 0.5) * layer.xOffset;
+            const gradId = `ssf-grad-${uid}-${i}`;
+            const filterId = filterIds[layer.filterId];
+            const speedDur = layer.speed * lerp(1.5, 0.9, t);
+            const swayDur = layer.speed * lerp(2.4, 1.4, t);
 
-          return (
-            <div
-              key={`flame-${i}`}
-              className="absolute"
-              style={{
-                left: `calc(50% + ${xPx.toFixed(1)}px)`,
-                bottom: 0,
-                width: flameW,
-                height: flameH,
-                transform: "translateX(-50%)",
-                transformOrigin: "center bottom",
-                zIndex: layer.zIndex,
-                animation: `stylized-flame-sway-${(i % 3) + 1} ${swayDur.toFixed(2)}s ease-in-out infinite`,
-                animationDelay: `${layer.delaySeed.toFixed(2)}s`,
-                willChange: "transform",
-                mixBlendMode: layer.zIndex >= 3 ? "screen" : "normal",
-              }}
-            >
-              <svg
-                width={flameW}
-                height={flameH}
-                viewBox="0 0 100 140"
-                preserveAspectRatio="none"
+            // 3D z-depth: back row receded, front pushed forward
+            const zDepth = layer.zIndex === 1 ? -size * 0.18 : layer.zIndex === 2 ? -size * 0.05 : size * 0.04;
+            // Atmospheric dimming for back layers
+            const layerOpacity = layer.zIndex === 1 ? 0.78 : layer.zIndex === 2 ? 0.92 : 1;
+
+            const isFront = layer.zIndex >= 3;
+            const coreId = isFront ? `ssf-core-${uid}-${frontIdx++}` : null;
+
+            return (
+              <div
+                key={`flame-${i}`}
+                className="absolute"
                 style={{
-                  filter: `url(#${filterId})`,
-                  animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s ease-in-out infinite`,
-                  animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
+                  left: `calc(50% + ${xPx.toFixed(1)}px)`,
+                  bottom: 0,
+                  width: flameW,
+                  height: flameH,
+                  transform: `translateX(-50%) translateZ(${zDepth.toFixed(1)}px)`,
                   transformOrigin: "center bottom",
-                  willChange: "transform, opacity",
+                  zIndex: layer.zIndex,
+                  animation: `stylized-flame-sway-${(i % 3) + 1} ${swayDur.toFixed(2)}s ease-in-out infinite`,
+                  animationDelay: `${layer.delaySeed.toFixed(2)}s`,
+                  willChange: "transform",
+                  mixBlendMode: "screen",
+                  opacity: layerOpacity,
                 }}
               >
-                <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${gradId})`} />
-              </svg>
-            </div>
-          );
-        })}
+                {/* Main body — turbulence + internal bloom = self-emissive depth */}
+                <svg
+                  width={flameW}
+                  height={flameH}
+                  viewBox="0 0 100 140"
+                  preserveAspectRatio="none"
+                  style={{
+                    filter: `url(#${filterId})`,
+                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s ease-in-out infinite`,
+                    animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
+                    transformOrigin: "center bottom",
+                    willChange: "transform, opacity",
+                  }}
+                >
+                  <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${gradId})`} />
+                </svg>
+
+                {/* Front-row inner WHITE-HOT CORE — biggest 3D depth cue */}
+                {isFront && coreId && (
+                  <svg
+                    width={flameW * 0.55}
+                    height={flameH * 0.72}
+                    viewBox="0 0 100 140"
+                    preserveAspectRatio="none"
+                    className="absolute left-1/2"
+                    style={{
+                      bottom: flameH * 0.08,
+                      transform: "translateX(-50%)",
+                      filter: `url(#${filterId})`,
+                      animation: `stylized-flame-flicker-${((i + 1) % 3) + 1} ${(speedDur * 0.8).toFixed(2)}s ease-in-out infinite`,
+                      animationDelay: `${(layer.delaySeed - 0.5).toFixed(2)}s`,
+                      transformOrigin: "center bottom",
+                      mixBlendMode: "screen",
+                      opacity: lerp(0.55, 0.95, t),
+                    }}
+                  >
+                    <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${coreId})`} />
+                  </svg>
+                )}
+              </div>
+            );
+          });
+        })()}
       </div>
 
-      {/* ─── Stage-up bed flash — quick brightness pop on the ember bed only ─── */}
+      {/* ─── Stage-up bed flash ─── */}
       {burst && (
         <span
           className="absolute left-1/2 rounded-full pointer-events-none"

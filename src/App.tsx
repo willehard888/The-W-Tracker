@@ -58,11 +58,15 @@ const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Sensible defaults — most reads are gameification data that can be
-      // cached briefly to keep the app feeling instant on tab switches.
+      // Tuned for a gameification app where most reads are cosmetic state.
+      // Per-query overrides can still tighten this where freshness matters.
       staleTime: 30_000,
+      gcTime: 5 * 60_000,
       refetchOnWindowFocus: false,
+      refetchOnReconnect: "always",
       retry: 1,
+      // Avoid layout-shift on remount by keeping previous data visible.
+      placeholderData: (prev: unknown) => prev,
     },
   },
 });
@@ -190,6 +194,12 @@ const App = () => {
     sessionStorage.setItem("w_splash_shown", "1");
     setSplashDone(true);
   }, []);
+
+  // Kick off background route preloading once the splash is dismissed.
+  // This makes subsequent navigation effectively instant (no Suspense flash).
+  useEffect(() => {
+    if (splashDone) preloadAppRoutes();
+  }, [splashDone]);
 
   return (
     <ErrorBoundary>

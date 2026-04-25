@@ -1255,7 +1255,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             .map((_, k) => {
               const off = (k + 1) * (sparkSize * 0.9);
               const a = (1 - (k + 1) / (trailLen + 1)) * 0.7;
-              return `0 ${off.toFixed(1)}px ${(sparkSize * 1.6).toFixed(1)}px hsl(28 100% 60% / ${a.toFixed(2)})`;
+              return `0 ${off.toFixed(1)}px ${(sparkSize * 1.6).toFixed(1)}px hsl(18 100% 54% / ${a.toFixed(2)})`;
             })
             .join(", ");
           return (

@@ -765,15 +765,16 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   }}
                 >
                   <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${gradId})`} />
-                  {/* Crisp outline — defines the silhouette of each individual flame */}
+                  {/* Tummennetut ääriviivat — antavat jokaiselle liekille selkeän siluetin
+                      (charred ember tones — ei valkoista, ei vaaleaa kultaa). */}
                   <path
                     d={FLAME_PATHS[layer.pathIndex]}
                     fill="none"
-                    stroke={layer.zIndex >= 3 ? "hsl(40 100% 58%)" : layer.zIndex === 2 ? "hsl(28 100% 52%)" : "hsl(14 95% 46%)"}
-                    strokeWidth={layer.zIndex >= 3 ? 2.2 : layer.zIndex === 2 ? 1.8 : 1.4}
+                    stroke={layer.zIndex >= 3 ? "hsl(8 95% 22%)" : layer.zIndex === 2 ? "hsl(6 90% 16%)" : "hsl(4 85% 12%)"}
+                    strokeWidth={layer.zIndex >= 3 ? 2.4 : layer.zIndex === 2 ? 2.0 : 1.6}
                     strokeLinejoin="round"
                     strokeLinecap="round"
-                    opacity={layer.zIndex >= 3 ? 0.85 : layer.zIndex === 2 ? 0.7 : 0.55}
+                    opacity={layer.zIndex >= 3 ? 0.92 : layer.zIndex === 2 ? 0.82 : 0.7}
                   />
                 </svg>
 

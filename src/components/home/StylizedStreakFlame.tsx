@@ -557,20 +557,16 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             </filter>
           ))}
 
-          {/* Per-layer vertical gradients — DEEP ORANGE palette
-              (charred ember → blood-red → deep tangerine → burnt orange → glowing amber → cream apex)
-              Yellows pushed back, oranges/reds dominate the body. */}
+          {/* Per-layer vertical gradients — PURE FIRE palette
+              (charred ember → blood-red → deep tangerine → burnt orange → glowing amber → warm yellow apex)
+              VAIN punainen / oranssi / keltainen — ei sinistä kaasubasea, ei valkoista cream-apex. */}
           {layers.map((layer, i) => {
             const gradId = `ssf-grad-${uid}-${i}`;
             const hShift = layer.hueShift;
             const inten = layer.intensity;
-            // Real combustion shows a faint blue base on hot, oxygen-rich flames.
-            // Lower the threshold so mid layers also get it (more authentic).
-            const showBlue = stage >= 3 && layer.zIndex >= 2 && inten > 0.55;
-            // Two-step base: a tiny dark "fuel shadow" then either blue neck or red ember.
+            // Pohjasta lämmin tumma punainen — ei sinistä happikaasua (luki "scifi-light"-sävyltä).
             const fuelShadow = `hsl(${0 + hShift} 55% ${lerp(8, 14, inten)}%)`;       // near-black base
-            const neckBlue   = `hsl(${214 + hShift} 92% ${lerp(54, 66, inten)}%)`;     // hot oxygen blue
-            const neckBase   = showBlue ? neckBlue : `hsl(${4 + hShift} 92% ${lerp(20, 28, inten)}%)`;
+            const neckBase   = `hsl(${4 + hShift} 92% ${lerp(20, 28, inten)}%)`;       // syvä punainen pohja
             const charred   = `hsl(${2 + hShift}  88% ${lerp(22, 32, inten)}%)`; // charred ember
             const ember     = `hsl(${6 + hShift}  96% ${lerp(32, 42, inten)}%)`; // blood ember red
             const deepBase  = `hsl(${12 + hShift} 100% ${lerp(40, 50, inten)}%)`;// dark crimson-orange
@@ -578,9 +574,11 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             const shoulder  = `hsl(${24 + hShift} 100% ${lerp(54, 64, inten)}%)`;// burnt orange
             const upperBody = `hsl(${30 + hShift} 100% ${lerp(60, 70, inten)}%)`;// rich tangerine
             const tipColor  = inten > 0.85
-              ? `hsl(${38 + hShift} 100% ${lerp(72, 84, inten)}%)`              // glowing amber
-              : `hsl(${34 + hShift} 100% ${lerp(66, 76, inten)}%)`;
-            const apex      = inten > 0.94 ? `hsl(46 100% 94%)` : tipColor;     // premium gold-cream apex
+              ? `hsl(${38 + hShift} 100% ${lerp(64, 72, inten)}%)`              // glowing amber
+              : `hsl(${34 + hShift} 100% ${lerp(58, 68, inten)}%)`;
+            // Apex: lämmin keltainen — ei valkoinen / kreemi (välttää cheap-glow).
+            const apex      = inten > 0.94 ? `hsl(48 100% 70%)` : tipColor;
+
 
             return (
               <linearGradient key={gradId} id={gradId} x1="50%" y1="100%" x2="50%" y2="0%">

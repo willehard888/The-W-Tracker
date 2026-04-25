@@ -249,7 +249,7 @@ const CompactStreakPanel = ({
   return (
     <div
       className={cn(
-        "relative rounded-2xl overflow-hidden p-4 pt-6 border flex flex-col justify-between gap-3 isolate",
+        "relative rounded-2xl p-4 pt-6 border flex flex-col justify-between gap-3 isolate",
         isHot && "depth-realistic-warm",
         !isHot && "depth-realistic",
         className,

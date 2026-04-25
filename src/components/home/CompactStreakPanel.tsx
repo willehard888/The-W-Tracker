@@ -670,7 +670,7 @@ const CompactStreakPanel = ({
           </div>
         </div>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 relative z-[50]">
           {/* Live "fire is burning" indicator */}
           {isHot && (
             <div className="flex items-center gap-1.5 mb-1.5">
@@ -684,7 +684,7 @@ const CompactStreakPanel = ({
                 }}
               />
               <span
-                className="text-[8px] font-black uppercase tracking-[0.24em]"
+                className="text-[8px] font-black uppercase tracking-[0.24em] text-3d-fire-sm"
                 style={{ color: accent }}
               >
                 Burning · {tier.name}
@@ -696,7 +696,7 @@ const CompactStreakPanel = ({
             <span
               key={numberKey.current}
               className={cn(
-                "font-black font-display tabular-nums tracking-tighter leading-[0.85] inline-block",
+                "font-black font-display tabular-nums tracking-tighter leading-[0.85] inline-block text-3d-fire",
                 displayStreak >= 100 ? "text-[44px]" : "text-[54px]",
                 numberClass,
               )}
@@ -711,7 +711,7 @@ const CompactStreakPanel = ({
               {countDisplay}
             </span>
             <span
-              className="font-black font-display text-[11px] uppercase tracking-[0.22em]"
+              className="font-black font-display text-[11px] uppercase tracking-[0.22em] text-3d-fire-sm"
               style={{ color: isHot ? accent : "hsl(var(--muted-foreground) / 0.7)" }}
             >
               day{displayStreak === 1 ? "" : "s"}

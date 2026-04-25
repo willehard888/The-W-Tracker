@@ -128,8 +128,8 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
     prevStageRef.current = stage;
   }, [stage]);
 
-  // How many flames at this stage (layered count) — 1, 2, 3, 4, 5, 6, 7, 8, 9
-  const flameCount = isCold ? 0 : Math.min(9, stage + (stage >= 5 ? 1 : 0));
+  // How many flames at this stage — fuller fire: 2..14 layered tongues
+  const flameCount = isCold ? 0 : Math.min(14, 2 + stage * 2);
 
   // Bed width (how wide the flames spread) and tallest flame height — wider, taller, smoother
   const bedWidth = lerp(0.55, 1.25, t) * size;
@@ -138,38 +138,41 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
   // Build layer plan deterministically per (uid, stage, t)
   const layers: FlameLayer[] = useMemo(() => {
     if (flameCount === 0) return [];
-    // A curated layout that stacks back→front for organic depth.
-    // Order in array == render order (back to front).
+    // 14 curated layers — back→front for organic depth, fuller bonfire feel.
     const plan: Omit<FlameLayer, "delaySeed">[] = [
-      // back row (cooler, shorter, behind)
-      { pathIndex: 0, scale: 0.78, xOffset: -0.55, zIndex: 1, speed: 1.0, hueShift: -4, intensity: 0.45, filterId: 0 },
-      { pathIndex: 5, scale: 0.72, xOffset:  0.55, zIndex: 1, speed: 1.05, hueShift: -2, intensity: 0.5, filterId: 0 },
-      { pathIndex: 8, scale: 0.66, xOffset:  0.0,  zIndex: 1, speed: 1.1, hueShift: -3, intensity: 0.5, filterId: 0 },
-      // mid row
-      { pathIndex: 1, scale: 0.86, xOffset: -0.32, zIndex: 2, speed: 0.9, hueShift: -1, intensity: 0.7, filterId: 1 },
-      { pathIndex: 7, scale: 0.82, xOffset:  0.34, zIndex: 2, speed: 0.95, hueShift:  1, intensity: 0.72, filterId: 1 },
-      { pathIndex: 3, scale: 0.78, xOffset:  0.12, zIndex: 2, speed: 0.85, hueShift:  2, intensity: 0.78, filterId: 1 },
-      // front row (hottest, tallest)
-      { pathIndex: 2, scale: 0.96, xOffset: -0.12, zIndex: 3, speed: 0.7, hueShift:  3, intensity: 0.9, filterId: 2 },
-      { pathIndex: 6, scale: 0.92, xOffset:  0.22, zIndex: 3, speed: 0.75, hueShift:  4, intensity: 0.92, filterId: 2 },
-      // hero — tallest, dead centre, sharpest tip
-      { pathIndex: 4, scale: 1.0,  xOffset:  0.0,  zIndex: 4, speed: 0.62, hueShift:  5, intensity: 1.0, filterId: 2 },
+      // ── BACK ROW (4) — cooler, shorter, soft warp ──
+      { pathIndex: 0, scale: 0.78, xOffset: -0.7,  zIndex: 1, speed: 1.05, hueShift: -5, intensity: 0.42, filterId: 0 },
+      { pathIndex: 5, scale: 0.74, xOffset:  0.7,  zIndex: 1, speed: 1.1,  hueShift: -3, intensity: 0.46, filterId: 0 },
+      { pathIndex: 8, scale: 0.7,  xOffset: -0.18, zIndex: 1, speed: 1.15, hueShift: -4, intensity: 0.5,  filterId: 0 },
+      { pathIndex: 0, scale: 0.66, xOffset:  0.22, zIndex: 1, speed: 1.0,  hueShift: -2, intensity: 0.5,  filterId: 0 },
+      // ── MID ROW (5) — fills the body of the fire ──
+      { pathIndex: 1, scale: 0.86, xOffset: -0.45, zIndex: 2, speed: 0.92, hueShift: -1, intensity: 0.68, filterId: 1 },
+      { pathIndex: 7, scale: 0.84, xOffset:  0.46, zIndex: 2, speed: 0.95, hueShift:  1, intensity: 0.7,  filterId: 1 },
+      { pathIndex: 3, scale: 0.82, xOffset: -0.15, zIndex: 2, speed: 0.88, hueShift:  2, intensity: 0.76, filterId: 1 },
+      { pathIndex: 1, scale: 0.8,  xOffset:  0.18, zIndex: 2, speed: 0.9,  hueShift:  0, intensity: 0.74, filterId: 1 },
+      { pathIndex: 6, scale: 0.78, xOffset:  0.0,  zIndex: 2, speed: 0.86, hueShift:  3, intensity: 0.8,  filterId: 1 },
+      // ── FRONT ROW (4) — hottest, sharpest tongues ──
+      { pathIndex: 2, scale: 0.96, xOffset: -0.28, zIndex: 3, speed: 0.72, hueShift:  3, intensity: 0.88, filterId: 2 },
+      { pathIndex: 6, scale: 0.94, xOffset:  0.3,  zIndex: 3, speed: 0.76, hueShift:  4, intensity: 0.9,  filterId: 2 },
+      { pathIndex: 3, scale: 0.92, xOffset: -0.08, zIndex: 3, speed: 0.7,  hueShift:  5, intensity: 0.92, filterId: 2 },
+      { pathIndex: 7, scale: 0.9,  xOffset:  0.12, zIndex: 3, speed: 0.74, hueShift:  4, intensity: 0.92, filterId: 2 },
+      // ── HERO — tallest, dead centre, sharpest tip ──
+      { pathIndex: 4, scale: 1.05, xOffset:  0.0,  zIndex: 4, speed: 0.62, hueShift:  6, intensity: 1.0,  filterId: 2 },
     ];
 
     // Take the right number, but always include the hero (last) when count >= 4
     let chosen: typeof plan;
     if (flameCount <= 3) {
-      // Tiny fires: pick from front row only (hero last)
-      chosen = plan.slice(6, 6 + flameCount);
+      // Tiny fires: pick from front row + hero
+      chosen = [...plan.slice(9, 9 + (flameCount - 1)), plan[plan.length - 1]].slice(0, flameCount);
     } else {
-      // Larger fires: include back rows progressively, always end with hero
       const heroLayer = plan[plan.length - 1];
       const others = plan.slice(0, plan.length - 1);
-      // pick first (flameCount - 1) others, prioritising mid + front, then back
+      // priority: mid → front → back so the body fills out first
       const ordered = [
-        ...others.slice(3, 6),            // mid row first (more central)
-        ...others.slice(6, 8),            // front row
-        ...others.slice(0, 3),            // back row last
+        ...others.slice(4, 9),            // mid row (5)
+        ...others.slice(9, 13),           // front row (4)
+        ...others.slice(0, 4),            // back row (4) last
       ];
       chosen = [...ordered.slice(0, flameCount - 1), heroLayer];
     }
@@ -179,9 +182,9 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
 
     return chosen.map((c, i) => ({
       ...c,
-      delaySeed: -((seed.a * (i + 1) + seed.b * (i + 3)) % 1900) / 1000,
+      delaySeed: -((seed.a * (i + 1) + seed.b * (i + 3) + seed.c * (i + 5)) % 2300) / 1000,
     }));
-  }, [flameCount, seed.a, seed.b]);
+  }, [flameCount, seed.a, seed.b, seed.c]);
 
   // Cold state — thin outline candle
   if (isCold) {

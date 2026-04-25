@@ -215,7 +215,7 @@ const Index = () => {
       </Reveal>
 
       {/* COACH STRIP */}
-      <Reveal className="mb-5 relative z-10">
+      <Reveal className="mb-5 relative z-10" delay={160}>
         <CoachStrip latestNudge={latestNudge ?? null} latestBriefing={latestBriefing ?? null} />
       </Reveal>
 

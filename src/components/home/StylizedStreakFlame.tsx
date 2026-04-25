@@ -1004,11 +1004,38 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   <path
                     d={FLAME_PATHS[layer.pathIndex]}
                     fill="none"
-                    stroke={layer.zIndex >= 3 ? "hsl(8 95% 18%)" : layer.zIndex === 2 ? "hsl(6 90% 14%)" : "hsl(4 85% 10%)"}
-                    strokeWidth={layer.zIndex >= 3 ? 2.4 : layer.zIndex === 2 ? 2.0 : 1.6}
+                    stroke={layer.zIndex >= 3 ? "hsl(6 98% 14%)" : layer.zIndex === 2 ? "hsl(4 95% 10%)" : "hsl(2 92% 7%)"}
+                    strokeWidth={layer.zIndex >= 3 ? 3.2 : layer.zIndex === 2 ? 2.7 : 2.1}
                     strokeLinejoin="round"
                     strokeLinecap="round"
-                    opacity={layer.zIndex >= 3 ? 0.95 : layer.zIndex === 2 ? 0.85 : 0.7}
+                    opacity={layer.zIndex >= 3 ? 1 : layer.zIndex === 2 ? 0.95 : 0.82}
+                  />
+                </svg>
+                {/* ─── EDGE HIGHLIGHT — kapea kirkas reunaviiva tuomaan terävää 3D-syvyyttä.
+                    Reunan sisäpuolinen kuuma punainen-oranssi sävy → silhuetti pomppaa esiin. */}
+                <svg
+                  width={flameW}
+                  height={flameH}
+                  viewBox="0 0 100 140"
+                  preserveAspectRatio="none"
+                  className="absolute inset-0"
+                  style={{
+                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+                    animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
+                    transformOrigin: "center bottom",
+                    mixBlendMode: "screen",
+                    pointerEvents: "none",
+                    filter: `url(#${filterId})`,
+                  }}
+                >
+                  <path
+                    d={FLAME_PATHS[layer.pathIndex]}
+                    fill="none"
+                    stroke={layer.zIndex >= 3 ? "hsl(22 100% 56%)" : layer.zIndex === 2 ? "hsl(16 100% 50%)" : "hsl(10 95% 44%)"}
+                    strokeWidth={layer.zIndex >= 3 ? 1.2 : 0.9}
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    opacity={layer.zIndex >= 3 ? 0.85 : layer.zIndex === 2 ? 0.7 : 0.5}
                   />
                 </svg>
 

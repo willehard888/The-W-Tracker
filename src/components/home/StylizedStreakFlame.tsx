@@ -449,10 +449,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
   // Floor light pool — wash beneath the flames simulating ground reflection
   const floorPoolColor = stage >= 6 ? "hsl(22 100% 55%)" : stage >= 4 ? "hsl(18 100% 50%)" : "hsl(14 95% 45%)";
 
-  // Tribe-style outer aura accent
-  const auraAccent = accent ?? (stage >= 6 ? "hsl(22 100% 60%)" : stage >= 4 ? "hsl(18 100% 56%)" : "hsl(14 95% 50%)");
-  const auraOpacity = 0.35 + intensityNorm * 0.55;
-  const auraSpread = size * (0.4 + intensityNorm * 1.6);
+  // (Tribe outer aura halo removed — looked like cheap glow.
+  //  Tribe intensity now expressed purely through doubled flame count + ferocity.)
 
   return (
     <div

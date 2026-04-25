@@ -492,6 +492,72 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
             );
           });
         })()}
+
+        {/* ─── WILD TONGUES — rogue licks shooting up randomly ─── */}
+        {stage >= 2 && Array.from({ length: Math.min(6, stage + 1) }).map((_, i) => {
+          const tongueW = bedWidth * lerp(0.08, 0.14, (i % 3) / 2);
+          const tongueH = tallestH * lerp(0.45, 0.85, (i % 4) / 3);
+          const xPos = ((i * 37 + seed.a * 13) % 100) / 100; // 0..1
+          const xPx = (bedWidth * 0.8) * (xPos - 0.5);
+          const dur = lerp(1.4, 0.9, t) + (i % 3) * 0.15;
+          const delay = -((i * 0.37 + seed.b * 0.013) % dur);
+          const filterId = filterIds[2];
+          const gradId = `ssf-grad-${uid}-${(i + 1) % Math.max(1, layers.length)}`;
+          return (
+            <svg
+              key={`tongue-${i}`}
+              width={tongueW}
+              height={tongueH}
+              viewBox="0 0 100 140"
+              preserveAspectRatio="none"
+              className="absolute left-1/2"
+              style={{
+                bottom: 0,
+                transform: `translateX(calc(-50% + ${xPx.toFixed(1)}px))`,
+                filter: `url(#${filterId})`,
+                animation: `stylized-flame-tongue ${dur.toFixed(2)}s ease-out infinite`,
+                animationDelay: `${delay.toFixed(2)}s`,
+                mixBlendMode: "screen",
+                zIndex: 4,
+                willChange: "transform, opacity",
+              }}
+            >
+              <path d={FLAME_PATHS[4]} fill={`url(#${gradId})`} />
+            </svg>
+          );
+        })}
+
+        {/* ─── RISING SPARKS — bright embers floating up ─── */}
+        {stage >= 3 && Array.from({ length: Math.min(10, stage * 2) }).map((_, i) => {
+          const xPos = ((i * 53 + seed.c * 11) % 100) / 100;
+          const xPx = (bedWidth * 0.9) * (xPos - 0.5);
+          const drift = ((i % 2 === 0 ? 1 : -1) * (4 + (i * 3) % 12));
+          const dur = 1.6 + ((i * 0.21) % 1.2);
+          const delay = -((i * 0.27 + seed.a * 0.011) % dur);
+          const sparkSize = lerp(1.8, 2.8, (i % 3) / 2);
+          const color = i % 4 === 0 ? "hsl(54 100% 92%)" : i % 3 === 0 ? "hsl(40 100% 72%)" : "hsl(28 100% 60%)";
+          return (
+            <span
+              key={`spark-${i}`}
+              className="absolute rounded-full"
+              style={{
+                width: sparkSize,
+                height: sparkSize,
+                left: `calc(50% + ${xPx.toFixed(1)}px)`,
+                bottom: size * 0.04,
+                background: color,
+                boxShadow: `0 0 ${sparkSize * 2.5}px ${color}`,
+                ["--spark-x" as string]: "0px",
+                ["--spark-drift" as string]: `${drift}px`,
+                animation: `stylized-spark-rise ${dur.toFixed(2)}s ease-out infinite`,
+                animationDelay: `${delay.toFixed(2)}s`,
+                mixBlendMode: "screen",
+                zIndex: 5,
+                willChange: "transform, opacity",
+              }}
+            />
+          );
+        })}
       </div>
 
       {/* ─── Stage-up bed flash ─── */}

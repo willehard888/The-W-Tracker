@@ -4038,7 +4038,10 @@ button:active > .aurum-lava-glow {
   [style*="stylized-sparkle-rise"],
   [style*="stylized-stage-burst"],
   [style*="stylized-ray-shoot"],
-  [style*="stylized-burst-flash"] {
+  [style*="stylized-burst-flash"],
+  [style*="stylized-fuel-pulse"],
+  [style*="stylized-whip-tip"],
+  [style*="stylized-smoke-rise"] {
     animation: none !important;
   }
 }

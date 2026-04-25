@@ -212,9 +212,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
     let lastInputT = performance.now();
     let inProximity = false; // hysteresis flag
 
-    // Dynamic import — webillä haptics no-op, natiivissa toimii
-    let hapticsMod: typeof import("@/lib/haptics") | null = null;
-    import("@/lib/haptics").then((m) => { hapticsMod = m; }).catch(() => {});
+    // (Haptic-kutsut poistettu — käyttäjän pyyntö: ei vähtelyä)
 
     const triggerBlast = () => {
       blast = 1;

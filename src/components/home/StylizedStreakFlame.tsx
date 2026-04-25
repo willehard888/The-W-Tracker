@@ -245,7 +245,7 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
   const intensityBoost = lerp(0.95, 1.65, ferocity);
 
   // Floor light pool — wash beneath the flames simulating ground reflection
-  const floorPoolColor = stage >= 6 ? "hsl(200 95% 65%)" : stage >= 4 ? "hsl(28 100% 60%)" : "hsl(18 95% 55%)";
+  const floorPoolColor = stage >= 6 ? "hsl(22 100% 55%)" : stage >= 4 ? "hsl(18 100% 50%)" : "hsl(14 95% 45%)";
 
   return (
     <div

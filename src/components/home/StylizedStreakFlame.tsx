@@ -629,9 +629,10 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
               // Wider & taller than front side licks — they form the silhouette halo
               const sw = bedWidth * lerp(0.10, 0.16, (i % 3) / 2);
               const sh = tallestH * lerp(0.55, 0.8, ferocity) * lerp(0.95, 1.15, (i % 3) / 2);
-              // Anchor low and a bit further out so they peek around the body edges
+              // Anchor low — close to flame base
               const vBottom = size * lerp(0.03, 0.10, (i * 0.37 + (side === "l" ? 0.1 : 0.3)) % 1);
-              const hOffset = bedWidth * lerp(0.18, 0.34, (i % 3) / 2) * (side === "l" ? -1 : 1);
+              // TIGHTER: hug the body edge instead of peeking far out
+              const hOffset = bedWidth * lerp(0.06, 0.14, (i % 3) / 2) * (side === "l" ? -1 : 1);
               // Slower cadence — back layers breathe at a calmer rhythm
               const dur = lerp(4.2, 3.0, ferocity) + (i * 0.53);
               const phaseOffset = side === "l" ? dur * 0.25 : dur * 0.75;

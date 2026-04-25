@@ -105,7 +105,7 @@ const TribePendingRequestsDialog = ({ tribeId, open, onOpenChange, onChanged }: 
               >
                 <div className="h-10 w-10 rounded-full bg-secondary border border-border overflow-hidden shrink-0">
                   {p.avatar_url ? (
-                    <img src={p.avatar_url} alt={p.username} className="h-full w-full object-cover" />
+                    <img loading="lazy" decoding="async" src={p.avatar_url} alt={p.username} className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
                       {p.username.slice(0, 2).toUpperCase()}

@@ -99,7 +99,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
                   }
                 >
                   {m.avatar_url ? (
-                    <img src={m.avatar_url} alt={m.username} className="h-full w-full object-cover" />
+                    <img loading="lazy" decoding="async" src={m.avatar_url} alt={m.username} className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
                       {m.username.slice(0, 2).toUpperCase()}

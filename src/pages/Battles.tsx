@@ -635,7 +635,7 @@ const Battles = () => {
                       <div className="flex-1">
                         {myProof ? (
                           <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
-                            <img src={myProof} alt="My proof" className="w-full h-full object-cover" />
+                            <img loading="lazy" decoding="async" src={myProof} alt="My proof" className="w-full h-full object-cover" />
                             <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
                               <span className="text-[9px] font-bold text-white">You ✅</span>
                             </div>
@@ -665,7 +665,7 @@ const Battles = () => {
                       <div className="flex-1">
                         {oppProof ? (
                           <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
-                            <img src={oppProof} alt="Opponent proof" className="w-full h-full object-cover" />
+                            <img loading="lazy" decoding="async" src={oppProof} alt="Opponent proof" className="w-full h-full object-cover" />
                             <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
                               <span className="text-[9px] font-bold text-white">@{opp.username} ✅</span>
                             </div>
@@ -747,7 +747,7 @@ const Battles = () => {
                     <div className="flex-1 text-center">
                       <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary mb-2">
                         {battle.challenger_proof_url ? (
-                          <img src={battle.challenger_proof_url} alt="Challenger proof" className="w-full h-full object-cover" />
+                          <img loading="lazy" decoding="async" src={battle.challenger_proof_url} alt="Challenger proof" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
                             <Image size={24} />
@@ -778,7 +778,7 @@ const Battles = () => {
                     <div className="flex-1 text-center">
                       <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary mb-2">
                         {battle.opponent_proof_url ? (
-                          <img src={battle.opponent_proof_url} alt="Opponent proof" className="w-full h-full object-cover" />
+                          <img loading="lazy" decoding="async" src={battle.opponent_proof_url} alt="Opponent proof" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
                             <Image size={24} />

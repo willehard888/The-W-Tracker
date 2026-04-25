@@ -759,7 +759,7 @@ const TribeDetail = () => {
                 className="flex flex-col items-center gap-1 shrink-0 w-14">
                 <div className={`relative h-12 w-12 rounded-full border-2 ${m.role === "owner" ? "border-gold shadow-[0_0_12px_hsl(42_78%_54%/0.6)]" : "border-[hsl(18_95%_58%)]/30"} bg-secondary overflow-hidden`}>
                   {m.avatar_url ? (
-                    <img src={m.avatar_url} alt={m.username} className="h-full w-full object-cover" />
+                    <img loading="lazy" decoding="async" src={m.avatar_url} alt={m.username} className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
                       {m.username.slice(0, 2).toUpperCase()}
@@ -805,7 +805,7 @@ const TribeDetail = () => {
           {/* Image preview */}
           {imagePreview && (
             <div className="relative mt-2 rounded-xl overflow-hidden">
-              <img src={imagePreview} alt="Preview" className="w-full max-h-56 object-cover" />
+              <img loading="lazy" decoding="async" src={imagePreview} alt="Preview" className="w-full max-h-56 object-cover" />
               <button onClick={() => { setImageFile(null); setImagePreview(null); }}
                 className="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80">
                 <X size={14} />

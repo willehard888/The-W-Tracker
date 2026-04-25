@@ -672,7 +672,7 @@ const Profile = () => {
               <div key={post.id} className="rounded-xl border border-border bg-card p-4">
                 {post.content && <p className="text-base mb-2">{post.content}</p>}
                 {post.image_url && (
-                  <img src={post.image_url} alt="Post" className="w-full rounded-lg object-cover max-h-48 mb-2" />
+                  <img loading="lazy" decoding="async" src={post.image_url} alt="Post" className="w-full rounded-lg object-cover max-h-48 mb-2" />
                 )}
                 <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                   <span className="flex items-center gap-1"><Heart size={10} /> {post.likes_count}</span>

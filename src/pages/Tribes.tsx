@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, Lock, Crown, Zap, Check, X, Sparkles, Mail, Trophy, ChevronRight } from "lucide-react";
+import { Users, Plus, Lock, Crown, Zap, Check, X, Sparkles, Mail, Trophy, ChevronRight, Pause, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import TribeSearchBar from "@/components/TribeSearchBar";
@@ -23,6 +23,8 @@ interface Tribe {
   visibility: string;
   member_count: number;
   owner_id: string;
+  is_paused?: boolean;
+  paused_reason?: string | null;
 }
 
 interface Invite {
@@ -257,6 +259,18 @@ const Tribes = () => {
     load();
   };
 
+  const handleClaim = async (id: string, name: string) => {
+    const { error } = await supabase.rpc("claim_paused_tribe" as any, {
+      p_tribe_id: id,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`You now lead ${name} — fire revived 🔥`);
+    load();
+  };
+
   const handleInviteResponse = async (invite: Invite, accept: boolean) => {
     setRespondingId(invite.id);
     const { error } = await supabase.rpc("respond_to_tribe_invite" as any, {
@@ -274,7 +288,7 @@ const Tribes = () => {
     if (accept && invite.tribe_id) navigate(`/tribes/${invite.tribe_id}`);
   };
 
-  const featured = tribes.find((t) => !joinedIds.has(t.id) && t.member_count > 0);
+  const featured = tribes.find((t) => !joinedIds.has(t.id) && t.member_count > 0 && !t.is_paused);
   const restList = featured ? tribes.filter((t) => t.id !== featured.id) : tribes;
 
   return (
@@ -391,6 +405,24 @@ const Tribes = () => {
         ))}
       </div>
 
+      {/* Membership cap explainer — clear rule, always visible */}
+      <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg border border-border/50 bg-secondary/20">
+        <Users size={11} className="text-muted-foreground shrink-0" />
+        <p className="text-[11px] text-muted-foreground leading-tight">
+          {canCreate ? (
+            <>
+              <span className="font-black text-foreground">Apex</span> — belong to up to{" "}
+              <span className="font-black text-[hsl(18_95%_58%)]">3 tribes</span>, lead up to 3
+            </>
+          ) : (
+            <>
+              You can belong to <span className="font-black text-foreground">1 tribe</span> at a time.{" "}
+              <span className="text-[hsl(18_95%_58%)] font-bold">Apex unlocks 3.</span>
+            </>
+          )}
+        </p>
+      </div>
+
       {/* Browse-only: search + leaderboard CTA */}
       {tab === "browse" && (
         <>
@@ -466,7 +498,9 @@ const Tribes = () => {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0 pt-1">
-                    <p className="font-display font-black text-lg truncate leading-tight">{featured.name}</p>
+                    <p className="font-display font-black text-2xl truncate leading-tight tracking-tight bg-gradient-to-r from-foreground via-[hsl(42_78%_70%)] to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_2px_12px_hsl(18_95%_58%/0.4)]">
+                      {featured.name}
+                    </p>
                     {featured.description && (
                       <p className="text-[11px] text-muted-foreground/90 line-clamp-2 mt-1">
                         {featured.description}
@@ -515,17 +549,23 @@ const Tribes = () => {
             const cStreak = collectiveStreaks.get(t.id) ?? 0;
             const cTier = collectiveStreakTier(cStreak);
             const cAccent = collectiveAccent(cStreak);
+            const isPaused = !!t.is_paused;
             // Ember-bar height grows with collective tier (cold → 0%, legendary → 100%)
             const heatPct = cTier < 0 ? 0 : Math.min(100, ((cTier + 1) / 6) * 100);
             return (
             <button
               key={t.id}
               onClick={() => navigate(`/tribes/${t.id}`)}
-              className="group w-full text-left rounded-2xl p-4 border border-[hsl(18_95%_58%)]/20 bg-gradient-to-br from-card/80 via-card/60 to-[hsl(18_95%_58%)]/5 apex-tribe-card-hover relative overflow-hidden"
+              className={cn(
+                "group w-full text-left rounded-2xl p-4 border apex-tribe-card-hover relative overflow-hidden",
+                isPaused
+                  ? "border-muted-foreground/30 bg-gradient-to-br from-card/60 to-secondary/20 grayscale-[0.4]"
+                  : "border-[hsl(18_95%_58%)]/20 bg-gradient-to-br from-card/80 via-card/60 to-[hsl(18_95%_58%)]/5"
+              )}
               style={{ animationDelay: `${idx * 60}ms` }}
             >
               {/* Left-edge ember bar — visible heat ladder when scanning the list */}
-              {cTier >= 0 && (
+              {!isPaused && cTier >= 0 && (
                 <div
                   aria-hidden
                   className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full"
@@ -538,7 +578,7 @@ const Tribes = () => {
               )}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-gradient-to-r from-transparent via-[hsl(18_95%_58%)]/8 to-transparent" />
 
-              {ownedIds.has(t.id) && (
+              {ownedIds.has(t.id) && !isPaused && (
                 <div className="absolute top-2 right-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gold/15 border border-gold/40">
                   <Crown size={8} className="text-gold" />
                   <span className="text-[9px] font-black tracking-wider uppercase text-gold">
@@ -547,15 +587,24 @@ const Tribes = () => {
                 </div>
               )}
 
+              {isPaused && (
+                <div className="absolute top-2 right-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted-foreground/15 border border-muted-foreground/40">
+                  <Pause size={8} className="text-muted-foreground" strokeWidth={2.6} fill="currentColor" />
+                  <span className="text-[9px] font-black tracking-wider uppercase text-muted-foreground">
+                    Paused
+                  </span>
+                </div>
+              )}
+
               <div className="flex items-start gap-3 relative">
                 <div
                   className="relative h-14 w-14 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
                   style={{
-                    background: cTier >= 0
+                    background: !isPaused && cTier >= 0
                       ? `radial-gradient(ellipse at 50% 90%, ${cAccent.replace(")", " / 0.30)")} 0%, transparent 70%)`
                       : "hsl(var(--secondary) / 0.5)",
-                    border: `1px solid ${cTier >= 0 ? cAccent.replace(")", " / 0.5)") : "hsl(var(--border))"}`,
-                    boxShadow: cTier >= 0 ? `0 0 14px ${cAccent.replace(")", " / 0.4)")}` : undefined,
+                    border: `1px solid ${!isPaused && cTier >= 0 ? cAccent.replace(")", " / 0.5)") : "hsl(var(--border))"}`,
+                    boxShadow: !isPaused && cTier >= 0 ? `0 0 14px ${cAccent.replace(")", " / 0.4)")}` : undefined,
                   }}
                 >
                   {t.cover_url && (
@@ -565,7 +614,7 @@ const Tribes = () => {
                       className="absolute inset-0 h-full w-full object-cover opacity-75"
                     />
                   )}
-                  {cTier >= 0 ? (
+                  {!isPaused && cTier >= 0 ? (
                     <div
                       key={rowPulse.get(t.id) ?? 0}
                       className="relative w-full h-full flex items-center justify-center"
@@ -582,18 +631,32 @@ const Tribes = () => {
                       <RealisticFlame tier={cTier} accent={cAccent} size={Math.min(56, 36 + cTier * 6)} />
                     </div>
                   ) : !t.cover_url ? (
-                    <span className="text-2xl opacity-50 leading-none">🕯️</span>
+                    <span className="text-2xl opacity-50 leading-none">{isPaused ? "⏸️" : "🕯️"}</span>
                   ) : null}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-display font-black text-base truncate leading-tight">{t.name}</p>
+                  {/* TRIBE NAME — dominant, gradient, larger so it reads first */}
+                  <p
+                    className={cn(
+                      "font-display font-black text-xl truncate leading-tight tracking-tight",
+                      isPaused
+                        ? "text-muted-foreground/80"
+                        : "bg-gradient-to-r from-foreground via-foreground to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_1px_8px_hsl(18_95%_58%/0.25)]"
+                    )}
+                  >
+                    {t.name}
+                  </p>
                   {t.description && (
                     <p className="text-[11px] text-muted-foreground/90 line-clamp-2 mt-0.5 leading-snug">
                       {t.description}
                     </p>
                   )}
-                  <div className="flex items-center gap-2 mt-2">
-                    {cTier >= 0 ? (
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    {isPaused ? (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border border-muted-foreground/40 bg-muted-foreground/10 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                        Awaiting Apex owner
+                      </span>
+                    ) : cTier >= 0 ? (
                       <span
                         className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[10px] font-black tabular-nums"
                         style={{
@@ -617,7 +680,21 @@ const Tribes = () => {
                     </span>
                   </div>
                 </div>
-                {tab === "browse" && !joinedIds.has(t.id) && (
+                {/* Action: Claim (paused + member + apex), or Join (not joined + browse) */}
+                {isPaused && joinedIds.has(t.id) && canCreate && (
+                  <Button
+                    size="sm"
+                    variant="magma"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleClaim(t.id, t.name);
+                    }}
+                    className="shrink-0"
+                  >
+                    <ShieldCheck size={12} /> Claim
+                  </Button>
+                )}
+                {tab === "browse" && !joinedIds.has(t.id) && !isPaused && (
                   <Button
                     size="sm"
                     variant="ember"

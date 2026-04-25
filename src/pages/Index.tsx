@@ -178,7 +178,7 @@ const Index = () => {
 
       {/* TIER RISK */}
       {tierRisk.level !== "safe" && (
-        <Reveal className="mb-4 relative z-10">
+        <Reveal className="mb-4 relative z-10" delay={0}>
           <TierRiskBanner risk={tierRisk} />
         </Reveal>
       )}

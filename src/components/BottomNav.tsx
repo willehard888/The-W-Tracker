@@ -6,24 +6,24 @@ import { hapticImpact } from "@/lib/haptics";
 
 const tabs = [
   { icon: Home, label: "Home", path: "/", color: "gold" },
-  { icon: Target, label: "Check-in", path: "/checkin", color: "teal" },
-  { icon: Flame, label: "Feed", path: "/feed", color: "orange" },
+  { icon: Target, label: "Check-in", path: "/checkin", color: "ember" },
+  { icon: Flame, label: "Feed", path: "/feed", color: "lava" },
   { icon: Users, label: "Tribes", path: "/tribes", color: "apex" },
-  { icon: MessageCircle, label: "DMs", path: "/messages", color: "purple" },
+  { icon: MessageCircle, label: "DMs", path: "/messages", color: "gold" },
   { icon: Trophy, label: "Ranks", path: "/leaderboard", color: "gold" },
-  { icon: Swords, label: "Battles", path: "/battles", color: "rose" },
+  { icon: Swords, label: "Battles", path: "/battles", color: "lava" },
   { icon: User, label: "Profile", path: "/profile", color: "gold" },
 ] as const;
 
 type TabColor = typeof tabs[number]["color"];
 
 const colorMap: Record<TabColor, { text: string; rgb: string }> = {
-  gold: { text: "text-gold", rgb: "var(--gold)" },
-  teal: { text: "text-[hsl(var(--teal))]", rgb: "var(--teal)" },
-  orange: { text: "text-[hsl(var(--streak-orange))]", rgb: "var(--streak-orange)" },
-  purple: { text: "text-[hsl(var(--purple))]", rgb: "var(--purple)" },
-  rose: { text: "text-[hsl(var(--rose))]", rgb: "var(--rose)" },
-  apex: { text: "text-[hsl(18_95%_58%)]", rgb: "18 95% 58%" },
+  // Unified Gold · Fire/Lava · Black palette — every tab lives in the same
+  // warm spectrum (no more cool teal / violet / pink accents in the nav).
+  gold:  { text: "text-[hsl(var(--gold))]",         rgb: "var(--gold)" },
+  ember: { text: "text-[hsl(var(--ember))]",        rgb: "var(--ember)" },
+  lava:  { text: "text-[hsl(var(--lava))]",         rgb: "var(--lava)" },
+  apex:  { text: "text-[hsl(18_95%_58%)]",          rgb: "18 95% 58%" },
 };
 
 const HIDDEN_PATHS = new Set(["/landing", "/auth", "/onboarding", "/paywall"]);

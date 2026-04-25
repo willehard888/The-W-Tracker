@@ -930,6 +930,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             >
               <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
               <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(48 100% 80%)" strokeWidth={1.4} strokeLinejoin="round" strokeLinecap="round" opacity={0.78} />
+            </svg>
           );
         })}
 

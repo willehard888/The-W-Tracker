@@ -653,6 +653,16 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   }}
                 >
                   <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${gradId})`} />
+                  {/* Crisp outline — defines the silhouette of each individual flame */}
+                  <path
+                    d={FLAME_PATHS[layer.pathIndex]}
+                    fill="none"
+                    stroke={layer.zIndex >= 3 ? "hsl(46 100% 82%)" : layer.zIndex === 2 ? "hsl(34 100% 64%)" : "hsl(20 95% 50%)"}
+                    strokeWidth={layer.zIndex >= 3 ? 2.2 : layer.zIndex === 2 ? 1.8 : 1.4}
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    opacity={layer.zIndex >= 3 ? 0.85 : layer.zIndex === 2 ? 0.7 : 0.55}
+                  />
                 </svg>
 
                 {/* Front-row inner WHITE-HOT CORE — biggest 3D depth cue */}
@@ -730,6 +740,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   }}
                 >
                   <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
+                  <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(16 90% 46%)" strokeWidth={1.2} strokeLinejoin="round" opacity={0.45} />
                 </svg>
               );
             })
@@ -782,6 +793,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   }}
                 >
                   <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
+                  <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(34 100% 64%)" strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" opacity={0.7} />
                 </svg>
               );
             })
@@ -818,6 +830,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               }}
             >
               <path d={FLAME_PATHS[4]} fill={`url(#${gradId})`} />
+              <path d={FLAME_PATHS[4]} fill="none" stroke="hsl(46 100% 78%)" strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" opacity={0.75} />
             </svg>
           );
         })}
@@ -868,6 +881,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               }}
             >
               <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
+              <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(30 100% 60%)" strokeWidth={1.3} strokeLinejoin="round" strokeLinecap="round" opacity={0.6} />
             </svg>
           );
         })}
@@ -915,6 +929,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               }}
             >
               <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
+              <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(48 100% 80%)" strokeWidth={1.4} strokeLinejoin="round" strokeLinecap="round" opacity={0.78} />
             </svg>
           );
         })}

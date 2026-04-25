@@ -395,13 +395,12 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
                   repeatCount="indefinite"
                 />
               </feDisplacementMap>
-              {/* Internal bloom — blur warped flame and merge it back over itself */}
+              {/* Internal bloom — single soft pass, then crisp source on top
+                  for sharp 3D edges (not soft halo). */}
               <feGaussianBlur in="warped" stdDeviation={cfg.bloomStdDev} result="bloomLarge" />
-              <feGaussianBlur in="warped" stdDeviation={cfg.bloomStdDev * 0.4} result="bloomTight" />
               <feMerge>
                 <feMergeNode in="bloomLarge" />
-                <feMergeNode in="bloomLarge" />
-                <feMergeNode in="bloomTight" />
+                <feMergeNode in="warped" />
                 <feMergeNode in="warped" />
               </feMerge>
             </filter>

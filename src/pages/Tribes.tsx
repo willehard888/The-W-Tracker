@@ -480,7 +480,9 @@ const Tribes = () => {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0 pt-1">
-                    <p className="font-display font-black text-lg truncate leading-tight">{featured.name}</p>
+                    <p className="font-display font-black text-2xl truncate leading-tight tracking-tight bg-gradient-to-r from-foreground via-[hsl(42_78%_70%)] to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_2px_12px_hsl(18_95%_58%/0.4)]">
+                      {featured.name}
+                    </p>
                     {featured.description && (
                       <p className="text-[11px] text-muted-foreground/90 line-clamp-2 mt-1">
                         {featured.description}

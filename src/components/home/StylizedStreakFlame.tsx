@@ -153,7 +153,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
   //      --ssf-idle     :  0..1 idle dimming (no input >4 s)
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [blastSparks, setBlastSparks] = useState<Array<{ id: number; angle: number; dist: number; size: number }>>([]);
-  const [blastRingKey, setBlastRingKey] = useState(0);
+  // (blastRingKey poistettu — tap-blast valkoinen rengas oli cheap glow)
   useEffect(() => {
     if (isCold) return;
     const el = containerRef.current;
@@ -191,7 +191,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
         size: 2 + Math.random() * 2.4,
       }));
       setBlastSparks(sparks);
-      setBlastRingKey((k) => k + 1);
+      // (rengasvälähdys poistettu — vain kipinät jäävät)
       window.setTimeout(() => setBlastSparks([]), 900);
     };
 

@@ -666,7 +666,7 @@ const CompactStreakPanel = ({
             className="absolute left-1/2 bottom-[2px] z-[40] pointer-events-none"
             style={{ transform: "translateX(-50%)", overflow: "visible" }}
           >
-            <StylizedStreakFlame streak={displayStreak} size={230} />
+            <StylizedStreakFlame streak={displayStreak} size={195} />
           </div>
         </div>
 

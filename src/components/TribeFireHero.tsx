@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { fetchUserTotalTribeHeat, collectiveStreakTier, collectiveTierName, collectiveAccent } from "@/lib/tribe-streak";
 import RealisticFlame from "@/components/home/RealisticFlame";
 import { cn } from "@/lib/utils";
-import { Flame, Sparkles } from "lucide-react";
+import { Flame, Sparkles, Users } from "lucide-react";
 
 const TIER_FLOORS = [0, 30, 100, 300, 700, 1500, 3000, 6000];
 
@@ -111,21 +111,38 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
         />
       )}
 
-      <div className="relative px-5 pt-7 pb-5 flex flex-col items-center text-center">
-        {/* Top label */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/40 backdrop-blur-sm border border-[hsl(18_95%_58%)]/50 mb-3 shadow-[0_0_18px_hsl(18_95%_58%/0.4)]">
-          <Sparkles size={10} className="text-[hsl(18_95%_58%)]" />
+      <div className="relative px-5 pt-6 pb-5 flex flex-col items-center text-center">
+        {/* Top label — solid background so the flame can't swallow it.
+            Higher z-index keeps it above the flame's bloom. */}
+        <div
+          className="relative z-20 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border mb-2 shadow-[0_4px_18px_rgba(0,0,0,0.45)]"
+          style={{
+            background: "hsl(0 0% 6% / 0.92)",
+            borderColor: !isCold ? accent.replace(")", " / 0.7)") : "hsl(var(--border))",
+          }}
+        >
+          <Sparkles size={11} className="text-[hsl(18_95%_58%)]" />
           <span
             className="text-[10px] font-black tracking-widest uppercase"
             style={!isCold ? { color: accent } : { color: "hsl(var(--muted-foreground))" }}
           >
-            Your Tribe Fire
+            Tribe Collective Fire
           </span>
         </div>
 
+        {/* Sub-explainer — ONE LINE, makes ownership unmistakable */}
+        <p
+          className="relative z-20 text-[11px] font-bold tracking-wide text-foreground/80 mb-3 px-3 py-0.5 rounded-full"
+          style={{ background: "hsl(0 0% 4% / 0.65)" }}
+        >
+          <Users size={11} className="inline -mt-0.5 mr-1 opacity-80" />
+          The combined fire of <span className="text-foreground font-black">{tribeCount}</span>{" "}
+          {tribeCount === 1 ? "tribe" : "tribes"} you belong to
+        </p>
+
         {/* The flame itself — the centerpiece */}
         <div
-          className="flex items-end justify-center mb-3"
+          className="relative z-10 flex items-end justify-center mb-3"
           style={{ width: size, height: size * 1.2 }}
         >
           {isCold ? (
@@ -176,12 +193,7 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
           >
             <Flame size={12} /> Find a fire to feed
           </button>
-        ) : (
-          <p className="text-xs text-muted-foreground mt-2">
-            <span className="font-bold tabular-nums text-foreground/80">{tribeCount}</span>{" "}
-            {tribeCount === 1 ? "tribe" : "tribes"} · combined heat
-          </p>
-        )}
+        ) : null}
 
         {/* Progress to next tier */}
         {!isCold && !atMax && (

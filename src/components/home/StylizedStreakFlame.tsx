@@ -796,7 +796,6 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                     opacity={layer.zIndex >= 3 ? 0.95 : layer.zIndex === 2 ? 0.85 : 0.7}
                   />
                 </svg>
-                </svg>
 
                 {/* Front-row inner WHITE-HOT CORE — biggest 3D depth cue */}
                 {isFront && coreId && (

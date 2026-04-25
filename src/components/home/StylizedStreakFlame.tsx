@@ -606,6 +606,58 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
           });
         })()}
 
+        {/* ─── SIDE FLAME LASHES — periodic lateral bursts shooting LEFT and RIGHT ───
+            These give the bonfire that "wind-licked" feel where flames briefly
+            whip out sideways instead of always reaching up. Always present (even
+            on stage 1), with cadence and reach scaling with ferocity. */}
+        {(() => {
+          // 2 per side at low ferocity, up to 4 per side at high ferocity
+          const perSide = Math.max(2, Math.round(lerp(2, 4, ferocity)));
+          const sides: Array<"l" | "r"> = ["l", "r"];
+          return sides.flatMap((side) =>
+            Array.from({ length: perSide }).map((_, i) => {
+              const sideKey = `${side}${i}`;
+              const sw = bedWidth * lerp(0.09, 0.16, (i % 3) / 2);
+              const sh = tallestH * lerp(0.55, 0.85, ferocity) * lerp(0.85, 1.05, (i % 3) / 2);
+              // Vertical anchor — start from low/mid of fire (where wind catches)
+              const vBottom = size * lerp(0.06, 0.18, (i * 0.4 + (side === "l" ? 0 : 0.2)) % 1);
+              // Horizontal anchor — close to flame body edge
+              const hOffset = bedWidth * 0.3 * (side === "l" ? -1 : 1);
+              // Cadence: stagger so left & right alternate
+              const dur = lerp(2.6, 1.7, ferocity) + (i * 0.23);
+              const phaseOffset = side === "l" ? 0 : dur * 0.5;
+              const delay = -(((i * 0.71 + seed.a * 0.013) % dur) + phaseOffset) % dur;
+              const filterId = filterIds[1]; // mid filter — softer than front
+              const gradId = `ssf-grad-${uid}-${(i + 3) % Math.max(1, layers.length)}`;
+              const pathIdx = (i * 5 + 1) % FLAME_PATHS.length;
+              return (
+                <svg
+                  key={`side-${sideKey}`}
+                  width={sw}
+                  height={sh}
+                  viewBox="0 0 100 140"
+                  preserveAspectRatio="none"
+                  className="absolute"
+                  style={{
+                    left: `calc(50% + ${hOffset.toFixed(1)}px)`,
+                    bottom: vBottom,
+                    transformOrigin: side === "l" ? "right bottom" : "left bottom",
+                    filter: `url(#${filterId}) saturate(1.08)`,
+                    animation: `stylized-flame-side-${side} ${dur.toFixed(2)}s cubic-bezier(0.22, 0.61, 0.36, 1) infinite`,
+                    animationDelay: `${delay.toFixed(2)}s`,
+                    mixBlendMode: "screen",
+                    zIndex: 3,
+                    opacity: lerp(0.7, 1, ferocity),
+                    willChange: "transform, opacity",
+                  }}
+                >
+                  <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
+                </svg>
+              );
+            })
+          );
+        })()}
+
         {/* ─── WILD TONGUES — rogue licks shooting up randomly (front emits) ─── */}
         {stage >= 2 && Array.from({ length: Math.min(8, Math.round(lerp(2, 8, ferocityFront))) }).map((_, i) => {
           const tongueW = bedWidth * lerp(0.07, 0.16, (i % 3) / 2);

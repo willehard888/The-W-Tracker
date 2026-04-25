@@ -1072,8 +1072,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
              eivät juuressa. Painottuvat siluetin reunoja seuraavaan kaareen, kallistuvat ulospäin
              jotta tuli näyttää "kuhisevan" reunoiltaan. Tiukasti rajattu määrä → sulava 60fps. */}
         {(() => {
-          // Tiukka cap → sulava animaatio. high=14, mid=10, low=7.
-          const COUNT = perfClass === "high" ? 14 : perfClass === "mid" ? 10 : 7;
+          // 2× tiheämpi: high=28, mid=20, low=14. Pidetään silti kevyenä koska SVG:t ovat pieniä.
+          const COUNT = perfClass === "high" ? 28 : perfClass === "mid" ? 20 : 14;
           const items: JSX.Element[] = [];
           for (let i = 0; i < COUNT; i++) {
             const side = i % 2 === 0 ? -1 : 1; // vuorotellen vasen/oikea
@@ -1084,17 +1084,18 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             // Reuna kaartuu sisäänpäin ylöspäin → x-offset pienenee korkeammalla
             const edgeCurve = 1 - Math.pow(yT, 1.6) * 0.7;
             // Pieni jitter etteivät istu rivissä
-            const yJitter = (((i * 31 + seed.b * 7) % 100) / 100 - 0.5) * 0.08;
-            const xJitter = (((i * 47 + seed.c * 11) % 100) / 100 - 0.5) * bedWidth * 0.05;
-            // Asetetaan sivuun bedWidth/2 + pieni puskuri ulospäin
-            const xPx = side * (bedWidth * 0.45 * edgeCurve + bedWidth * 0.06) + xJitter;
+            const yJitter = (((i * 31 + seed.b * 7) % 100) / 100 - 0.5) * 0.06;
+            const xJitter = (((i * 47 + seed.c * 11) % 100) / 100 - 0.5) * bedWidth * 0.03;
+            // LÄHEMPÄNÄ ison liekin reunaa: bedWidth*0.28 (oli 0.45) + 0.02 puskuri (oli 0.06)
+            // → liekit hipovat varsinaista flame-bodya, eivät leiju kaukana
+            const xPx = side * (bedWidth * 0.28 * edgeCurve + bedWidth * 0.02) + xJitter;
             const bottom = size * (0.05 + (yT + yJitter) * 0.55);
-            // Kallistus: alhaalla pystyssä, ylhäällä noussee enemmän ulospäin
-            const tiltDeg = side * (12 + yT * 30);
-            // Koko: pieniä mutta filtteristä yli (>=10px)
+            // Kallistus: alhaalla pystyssä, ylhäällä noussee enemmän ulospäin (mutta hillitymmin koska lähempänä)
+            const tiltDeg = side * (8 + yT * 22);
+            // Koko: pieniä mutta filtteristä yli (>=10px). 2× lisää → hieman pienempiä etteivät peitä päärunkoa.
             const sizeBoost = ((i * 13 + seed.a * 5) % 7) / 7;
-            const lickW = Math.max(10, bedWidth * lerp(0.10, 0.16, sizeBoost));
-            const lickH = Math.max(22, tallestH * lerp(0.20, 0.38, sizeBoost) * (1 - yT * 0.3));
+            const lickW = Math.max(10, bedWidth * lerp(0.08, 0.13, sizeBoost));
+            const lickH = Math.max(20, tallestH * lerp(0.16, 0.32, sizeBoost) * (1 - yT * 0.3));
             // Yksi animaatio per liekki — ei sway-keyframea joka pyyhkisi rotation
             const flickDur = lerp(1.6, 1.0, ferocity) + ((i * 0.17) % 0.5);
             const delay = -(((i * 0.27 + seed.c * 0.011) % flickDur));

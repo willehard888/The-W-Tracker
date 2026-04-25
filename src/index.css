@@ -4080,7 +4080,9 @@ button:active > .aurum-lava-glow {
   [style*="stylized-coal-pulse"],
   [style*="stylized-floor-pool"],
   [style*="stylized-haze-drift"],
-  [style*="stylized-bed-flash"] {
+  [style*="stylized-bed-flash"],
+  [style*="ssf-blast-ring"],
+  [style*="ssf-blast-spark"] {
     animation: none !important;
   }
 }

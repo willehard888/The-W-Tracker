@@ -6,13 +6,27 @@
     <title>The W Tracker — Daily Discipline & XP</title>
     <meta name="description" content="Track your daily habits, earn XP, compete in battles, and level up your discipline. The ultimate self-improvement tracker.">
     <meta name="author" content="The W Tracker" />
+
+    <!-- iOS PWA / native shell -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="W Tracker" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
     <link rel="icon" href="/app-icon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/app-icon.png" />
-    
+
     <meta name="theme-color" content="#0a0a0b" />
+
+    <!-- Preload splash hero asset so reveal has zero pop-in -->
+    <link rel="preload" as="image" href="/app-icon.png" fetchpriority="high" />
+
+    <!-- Background that EXACTLY matches SplashScreen so there is no flash
+         between native iOS splash → React splash → app shell -->
+    <style>
+      html, body { background: hsl(260 25% 4%); }
+      #root { min-height: 100dvh; }
+    </style>
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content="The W Tracker — Daily Discipline & XP">

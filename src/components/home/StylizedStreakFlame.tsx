@@ -466,7 +466,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             const tipColor  = inten > 0.85
               ? `hsl(${38 + hShift} 100% ${lerp(72, 84, inten)}%)`              // glowing amber
               : `hsl(${34 + hShift} 100% ${lerp(66, 76, inten)}%)`;
-            const apex      = inten > 0.94 ? `hsl(46 100% 92%)` : tipColor;     // cream apex
+            const apex      = inten > 0.94 ? `hsl(46 100% 94%)` : tipColor;     // premium gold-cream apex
 
             return (
               <linearGradient key={gradId} id={gradId} x1="50%" y1="100%" x2="50%" y2="0%">

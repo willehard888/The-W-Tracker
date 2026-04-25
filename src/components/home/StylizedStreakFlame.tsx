@@ -789,9 +789,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${gradId})`} />
                 </svg>
 
-                {/* Tummennettu ääriviiva — erillisessä SVG:ssä jolla on multiply-blend
-                    jotta tumma viiva oikeasti tummentaa liekin reunan (ei pyyhkiydy
-                    pois screen-blend-äidin alla). Antaa jokaiselle liekille terävän siluetin. */}
+                {/* Tummennettu ääriviiva — erillinen multiply-SVG, mutta ILMAN turbulence-suodinta
+                    (jaa sama path mutta vain kevyt feMorphology kautta jos halutaan; kustannussäästö ~50%). */}
                 <svg
                   width={flameW}
                   height={flameH}
@@ -799,12 +798,10 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   preserveAspectRatio="none"
                   className="absolute inset-0"
                   style={{
-                    filter: `url(#${filterId})`,
                     animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
                     animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
                     transformOrigin: "center bottom",
                     mixBlendMode: "multiply",
-                    willChange: "transform, opacity",
                     pointerEvents: "none",
                   }}
                 >

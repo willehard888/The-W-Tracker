@@ -280,36 +280,73 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
 
     // Perlin-tyyppinen luonnollinen turbulenssi (deterministinen sin-summa)
     // — antaa liekille orgaanisen "ei-koskaan-täysin-paikallaan" tunnun.
+    // RAUHALLINEN amplitudi: lähes huomaamaton sivellin ilman kosketusta.
     const t0 = performance.now();
     const turbulence = (now: number) => {
       const t = (now - t0) / 1000;
-      // Kolme eri taajuista sini-aaltoa summassa simuloi Perlin-noisea kevyesti.
-      const x = Math.sin(t * 0.83) * 0.6 + Math.sin(t * 1.91 + 1.3) * 0.3 + Math.sin(t * 3.7 + 2.1) * 0.1;
-      const y = Math.cos(t * 0.71 + 0.5) * 0.5 + Math.sin(t * 2.13 + 1.9) * 0.25 + Math.cos(t * 4.1 + 0.8) * 0.1;
-      return { x: x * 0.18, y: y * 0.12 }; // Skaalattu hienovaraiseksi (~±0.18 max)
+      // Hitaammat taajuudet + pienempi amplitudi → rauhallinen idle-tila.
+      const x = Math.sin(t * 0.55) * 0.6 + Math.sin(t * 1.27 + 1.3) * 0.25 + Math.sin(t * 2.4 + 2.1) * 0.08;
+      const y = Math.cos(t * 0.48 + 0.5) * 0.5 + Math.sin(t * 1.4 + 1.9) * 0.2 + Math.cos(t * 2.7 + 0.8) * 0.06;
+      return { x: x * 0.09, y: y * 0.06 }; // Puolitettu — todella hienovarainen
+    };
+
+    // Pointer-tila: kun käyttäjä päästää irti, vapautamme reaktiot AGGRESSIIVISESTI
+    // takaisin nollaan (eri vaimennuskertoimet kuin "passiivinen drift").
+    let pointerActive = false;
+    let releaseT = 0; // milloin pointer vapautettiin → nopea snap-back -ikkuna
+
+    const onPointerUp = () => {
+      pointerActive = false;
+      releaseT = performance.now();
+      // Sulje proximity-haptiikan hysteresis välittömästi
+      inProximity = false;
+    };
+
+    const onPointerDownTrack = (e: PointerEvent) => {
+      pointerActive = true;
+      onPointerDown(e);
     };
 
     const tick = () => {
       const now = performance.now();
       const turb = turbulence(now);
-      // Yhdistä user-input + ambient turbulence: turb tuo idle-tilaan eloa,
-      // mutta kun käyttäjä on lähellä (proximity > 0.3), turb feidaa pois → input vie vallan.
+      // Kun käyttäjä on lähellä, turb feidaa pois → input vie vallan.
       const turbBlend = Math.max(0.25, 1 - proximity * 1.4);
       const effectiveTargetX = targetWindX + turb.x * turbBlend;
       const effectiveTargetY = targetWindY + turb.y * turbBlend;
-      currentWindX += (effectiveTargetX - currentWindX) * 0.13;
-      currentWindY += (effectiveTargetY - currentWindY) * 0.10;
-      proximity += (targetProximity - proximity) * 0.08;
-      gust = Math.max(0, gust - gustDecay);
-      blast = Math.max(0, blast - 0.018);
-      // Idle ramp: 0 if recent input, → 1 over 1.6 s after 4 s silence
+
+      // Reaktiivisuus: pointer aktiivisena = pehmeä lerp; vapautuksen jälkeen
+      // 600ms ajan käytetään NOPEAA snap-backia jotta liekki "rentoutuu" heti.
+      const sinceRelease = now - releaseT;
+      const isReleasing = !pointerActive && releaseT > 0 && sinceRelease < 600;
+      const windLerpX = isReleasing ? 0.32 : 0.13;
+      const windLerpY = isReleasing ? 0.28 : 0.10;
+      const proxLerp  = isReleasing ? 0.30 : 0.08;
+      currentWindX += (effectiveTargetX - currentWindX) * windLerpX;
+      currentWindY += (effectiveTargetY - currentWindY) * windLerpY;
+      proximity += (targetProximity - proximity) * proxLerp;
+      // Gust ja blast vaimentuvat nopeammin vapautuksen jälkeen
+      const gustStep = isReleasing ? Math.max(gustDecay, 0.06) : gustDecay;
+      gust = Math.max(0, gust - gustStep);
+      blast = Math.max(0, blast - (isReleasing ? 0.045 : 0.018));
+
+      // Idle ramp: 0 jos viime input <1.5s, → 1 1.2s aikana (oli 4s+1.6s).
+      // Liekki rauhoittuu NOPEAMMIN normaalitilaan ilman kosketusta.
       const sinceInput = now - lastInputT;
-      const idleTarget = sinceInput > 4000 ? Math.min(1, (sinceInput - 4000) / 1600) : 0;
-      idle += (idleTarget - idle) * 0.04;
-      // Bleed targets back toward neutral when no input
-      targetWindX *= 0.985;
-      targetWindY *= 0.97;
-      targetProximity *= 0.92;
+      const idleTarget = sinceInput > 1500 ? Math.min(1, (sinceInput - 1500) / 1200) : 0;
+      idle += (idleTarget - idle) * 0.05;
+
+      // Vapautuksen jälkeen targets vetäytyvät NOPEASTI nollaan;
+      // muuten klassinen passiivinen drift (kevyt bleed).
+      if (isReleasing) {
+        targetWindX *= 0.78;
+        targetWindY *= 0.74;
+        targetProximity *= 0.70;
+      } else {
+        targetWindX *= 0.985;
+        targetWindY *= 0.97;
+        targetProximity *= 0.92;
+      }
 
       el.style.setProperty("--ssf-wind-x", currentWindX.toFixed(3));
       el.style.setProperty("--ssf-wind-y", currentWindY.toFixed(3));
@@ -323,12 +360,16 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
     };
 
     window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("pointerdown", onPointerDown, { passive: true });
+    window.addEventListener("pointerdown", onPointerDownTrack, { passive: true });
+    window.addEventListener("pointerup", onPointerUp, { passive: true });
+    window.addEventListener("pointercancel", onPointerUp, { passive: true });
     window.addEventListener("scroll", onScroll, { passive: true });
     raf = requestAnimationFrame(tick);
     return () => {
       window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointerdown", onPointerDownTrack);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(raf);
     };

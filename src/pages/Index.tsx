@@ -220,7 +220,7 @@ const Index = () => {
       </Reveal>
 
       {/* GROWTH ROW — Invite + Recent Badges */}
-      <Reveal className="mb-4">
+      <Reveal className="mb-4" delay={240}>
         <InviteCTA referralCount={profile.referral_count || 0} />
       </Reveal>
 

@@ -1261,7 +1261,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         })()}
 
         {/* ─── WILD TONGUES — rogue licks shooting up randomly (front emits) ─── */}
-        {stage >= 2 && Array.from({ length: Math.min(8, Math.round(lerp(2, 8, ferocityFront))) }).map((_, i) => {
+        {stage >= 2 && Array.from({ length: Math.min(3, Math.round(lerp(1, 3, ferocityFront))) }).map((_, i) => {
           const tongueW = bedWidth * lerp(0.07, 0.16, (i % 3) / 2);
           const tongueH = tallestH * lerp(0.45, 1.0, ferocityFront) * lerp(0.7, 1.1, (i % 4) / 3);
           const xPos = ((i * 37 + seed.a * 13) % 100) / 100;

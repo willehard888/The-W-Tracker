@@ -244,10 +244,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       targetWindY = Math.max(-1, Math.min(1, -dy / (size * 1.0))) * influence;
       // Proximity 0..1 (peaks within ~1× size)
       targetProximity = Math.max(0, Math.min(1, 1 - dist / (size * 1.6)));
-      // Hysteresis-gated proximity haptic
+      // (proximity-haptic poistettu)
       if (targetProximity > 0.7 && !inProximity) {
         inProximity = true;
-        hapticsMod?.hapticSelection().catch(() => {});
       } else if (targetProximity < 0.4 && inProximity) {
         inProximity = false;
       }

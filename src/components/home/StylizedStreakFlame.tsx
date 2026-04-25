@@ -308,41 +308,51 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
             </filter>
           ))}
 
-          {/* Per-layer vertical gradients */}
+          {/* Per-layer vertical gradients — naturalistic 7-stop fire palette
+              (deep ember-red → blood-orange → tangerine → amber gold → straw → cream-white) */}
           {layers.map((layer, i) => {
             const gradId = `ssf-grad-${uid}-${i}`;
             const hShift = layer.hueShift;
             const inten = layer.intensity;
-            const bottomBlue = stage >= 4 ? `hsl(${210 + hShift} 90% ${lerp(58, 70, inten)}%)` : `hsl(${10 + hShift} 88% ${lerp(40, 52, inten)}%)`;
-            const deepBase = `hsl(${8 + hShift} 92% ${lerp(38, 48, inten)}%)`;
-            const body = `hsl(${20 + hShift} 95% ${lerp(48, 58, inten)}%)`;
-            const shoulder = `hsl(${36 + hShift} 100% ${lerp(58, 70, inten)}%)`;
-            const tipColor = inten > 0.85
-              ? `hsl(${52 + hShift} 100% ${lerp(78, 92, inten)}%)`
-              : `hsl(${46 + hShift} 100% ${lerp(70, 82, inten)}%)`;
-            const apex = inten > 0.92 ? `hsl(56 100% 96%)` : tipColor;
+            // Physical blue base only on hot front+mid flames (where O2 mixes with fuel)
+            const showBlue = stage >= 4 && layer.zIndex >= 2 && inten > 0.65;
+            const bottomBlue = showBlue
+              ? `hsl(${208 + hShift} 95% ${lerp(60, 72, inten)}%)`
+              : `hsl(${6 + hShift} 88% ${lerp(22, 32, inten)}%)`;
+            const ember     = `hsl(${4 + hShift}  92% ${lerp(28, 38, inten)}%)`;  // deep blood-red coal
+            const deepBase  = `hsl(${10 + hShift} 95% ${lerp(40, 50, inten)}%)`;  // saturated red base
+            const body      = `hsl(${20 + hShift} 98% ${lerp(50, 60, inten)}%)`;  // blood-orange body
+            const shoulder  = `hsl(${32 + hShift} 100% ${lerp(58, 70, inten)}%)`; // tangerine
+            const upperBody = `hsl(${42 + hShift} 100% ${lerp(66, 78, inten)}%)`; // amber gold
+            const tipColor  = inten > 0.85
+              ? `hsl(${52 + hShift} 100% ${lerp(82, 94, inten)}%)`               // straw-cream
+              : `hsl(${46 + hShift} 100% ${lerp(72, 84, inten)}%)`;
+            const apex      = inten > 0.92 ? `hsl(54 100% 97%)` : tipColor;       // near-white apex
 
             return (
               <linearGradient key={gradId} id={gradId} x1="50%" y1="100%" x2="50%" y2="0%">
-                <stop offset="0%"   stopColor={bottomBlue} stopOpacity={stage >= 4 ? 0.85 : 0.95} />
-                <stop offset="8%"   stopColor={deepBase} stopOpacity="1" />
-                <stop offset="35%"  stopColor={body} stopOpacity="1" />
-                <stop offset="62%"  stopColor={shoulder} stopOpacity="0.98" />
-                <stop offset="85%"  stopColor={tipColor} stopOpacity="0.85" />
-                <stop offset="100%" stopColor={apex} stopOpacity="0" />
+                <stop offset="0%"   stopColor={bottomBlue} stopOpacity={showBlue ? 0.9 : 0.85} />
+                <stop offset="6%"   stopColor={ember}      stopOpacity="1" />
+                <stop offset="20%"  stopColor={deepBase}   stopOpacity="1" />
+                <stop offset="40%"  stopColor={body}       stopOpacity="1" />
+                <stop offset="58%"  stopColor={shoulder}   stopOpacity="0.99" />
+                <stop offset="75%"  stopColor={upperBody}  stopOpacity="0.95" />
+                <stop offset="90%"  stopColor={tipColor}   stopOpacity="0.78" />
+                <stop offset="100%" stopColor={apex}       stopOpacity="0" />
               </linearGradient>
             );
           })}
 
-          {/* Inner white-hot core gradient for front-row flames (volumetric depth) */}
+          {/* Inner white-hot core gradient — taller, more luminous core */}
           {layers.filter((l) => l.zIndex >= 3).map((_, idx) => {
             const id = `ssf-core-${uid}-${idx}`;
             return (
-              <radialGradient key={id} id={id} cx="50%" cy="65%" r="42%">
-                <stop offset="0%"   stopColor="hsl(58 100% 96%)" stopOpacity="1" />
-                <stop offset="35%"  stopColor="hsl(48 100% 80%)" stopOpacity="0.85" />
-                <stop offset="75%"  stopColor="hsl(36 100% 65%)" stopOpacity="0.35" />
-                <stop offset="100%" stopColor="hsl(28 100% 55%)" stopOpacity="0" />
+              <radialGradient key={id} id={id} cx="50%" cy="62%" r="46%">
+                <stop offset="0%"   stopColor="hsl(56 100% 98%)" stopOpacity="1" />
+                <stop offset="22%"  stopColor="hsl(50 100% 88%)" stopOpacity="0.95" />
+                <stop offset="48%"  stopColor="hsl(40 100% 72%)" stopOpacity="0.6" />
+                <stop offset="78%"  stopColor="hsl(28 100% 60%)" stopOpacity="0.25" />
+                <stop offset="100%" stopColor="hsl(18 95% 50%)"  stopOpacity="0" />
               </radialGradient>
             );
           })}

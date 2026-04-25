@@ -217,7 +217,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
     const triggerBlast = () => {
       blast = 1;
       lastInputT = performance.now();
-      hapticsMod?.hapticImpact("medium").catch(() => {});
+      // (haptic poistettu)
       const baseId = Date.now();
       const sparks = Array.from({ length: 8 }).map((_, i) => ({
         id: baseId + i,

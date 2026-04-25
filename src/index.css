@@ -4024,3 +4024,38 @@ button:active > .aurum-lava-glow {
     animation: none !important;
   }
 }
+
+/* ── 3D Fire Text — chiselled, raised letters that float above the flames ── */
+.text-3d-fire {
+  /* Stacked dark drops below + bright highlights above = chiselled depth.
+     Outer dark halos give the letters a hard silhouette so the fire
+     never visually "swallows" them. */
+  text-shadow:
+    /* deep base shadows (extrusion) */
+    0 1px 0 hsl(0 0% 0% / 0.95),
+    0 2px 0 hsl(0 0% 0% / 0.9),
+    0 3px 0 hsl(0 0% 0% / 0.85),
+    0 4px 0 hsl(0 0% 0% / 0.78),
+    0 5px 0 hsl(0 0% 0% / 0.7),
+    0 6px 1px hsl(0 0% 0% / 0.55),
+    /* black outline / hard silhouette */
+    -1px -1px 0 hsl(0 0% 0% / 0.95),
+     1px -1px 0 hsl(0 0% 0% / 0.95),
+    -1px  1px 0 hsl(0 0% 0% / 0.95),
+     1px  1px 0 hsl(0 0% 0% / 0.95),
+    /* outer ember glow so it reads as part of the fire */
+    0 0 14px hsl(22 100% 55% / 0.55),
+    0 0 28px hsl(14 95% 45% / 0.35);
+  /* Subtle top highlight via filter */
+  filter: drop-shadow(0 -1px 0 hsl(48 100% 90% / 0.35));
+}
+
+.text-3d-fire-sm {
+  text-shadow:
+    0 1px 0 hsl(0 0% 0% / 0.95),
+    0 2px 0 hsl(0 0% 0% / 0.85),
+    0 3px 1px hsl(0 0% 0% / 0.65),
+    -1px 0 0 hsl(0 0% 0% / 0.9),
+     1px 0 0 hsl(0 0% 0% / 0.9),
+    0 0 8px hsl(22 100% 55% / 0.5);
+}

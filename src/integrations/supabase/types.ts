@@ -1205,9 +1205,12 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_paused: boolean
           member_count: number
           name: string
           owner_id: string
+          paused_at: string | null
+          paused_reason: string | null
           slug: string
           updated_at: string
           visibility: string
@@ -1217,9 +1220,12 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_paused?: boolean
           member_count?: number
           name: string
           owner_id: string
+          paused_at?: string | null
+          paused_reason?: string | null
           slug: string
           updated_at?: string
           visibility?: string
@@ -1229,9 +1235,12 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_paused?: boolean
           member_count?: number
           name?: string
           owner_id?: string
+          paused_at?: string | null
+          paused_reason?: string | null
           slug?: string
           updated_at?: string
           visibility?: string
@@ -1343,6 +1352,7 @@ export type Database = {
       }
       calculate_rank_score: { Args: { p_user_id: string }; Returns: number }
       can_create_tribe: { Args: { _user_id: string }; Returns: boolean }
+      claim_paused_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
       claim_referral: { Args: { p_referrer_code: string }; Returns: Json }
       create_tribe: {
         Args: {
@@ -1437,6 +1447,7 @@ export type Database = {
         Args: { _tribe_id: string; _user_id: string }
         Returns: boolean
       }
+      is_valid_tribe_owner: { Args: { _user_id: string }; Returns: boolean }
       join_tribe: { Args: { p_tribe_id: string }; Returns: string }
       leave_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
       remove_tribe_member: {
@@ -1487,6 +1498,7 @@ export type Database = {
         Args: { battle_id: string; proof_url: string }
         Returns: undefined
       }
+      sync_tribe_pause_state: { Args: never; Returns: undefined }
       update_all_status_tiers: { Args: never; Returns: undefined }
       update_own_profile: {
         Args: {

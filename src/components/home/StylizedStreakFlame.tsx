@@ -1033,7 +1033,14 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   opacity: layerOpacity,
                 }}
               >
-                {/* Main body — turbulence + internal bloom = self-emissive depth */}
+                {/* ─── REALISTINEN YHDISTELMÄ — kolme kerrosta jotka jäljittelevät
+                     oikean liekin fysiikkaa: ulkoreuna kirkas (kaasu reagoi hapen
+                     kanssa), keskus läpinäkyvämpi (kuumin pyrolyysi-zoni), pohja
+                     syvän punainen. Yksi multiply-outline POISTETTU → ~25%
+                     kevyempi per liekki ilman että näyttää litteältä. */}
+
+                {/* 1) BODY — turbulenssilla muotoiltu päärunko vertikaalilla
+                     gradientilla. Tämä antaa silhouettin ja "lihan". */}
                 <svg
                   width={flameW}
                   height={flameH}
@@ -1045,39 +1052,17 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                     animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
                     transformOrigin: "center bottom",
                     willChange: layer.zIndex >= 3 ? "transform, opacity" : "auto",
+                    overflow: "visible",
                   }}
                 >
                   <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${gradId})`} />
                 </svg>
 
-                {/* Tummennettu ääriviiva — erillinen multiply-SVG, mutta ILMAN turbulence-suodinta
-                    (jaa sama path mutta vain kevyt feMorphology kautta jos halutaan; kustannussäästö ~50%). */}
-                <svg
-                  width={flameW}
-                  height={flameH}
-                  viewBox="0 0 100 140"
-                  preserveAspectRatio="none"
-                  className="absolute inset-0"
-                  style={{
-                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
-                    animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
-                    transformOrigin: "center bottom",
-                    mixBlendMode: "multiply",
-                    pointerEvents: "none",
-                  }}
-                >
-                  <path
-                    d={FLAME_PATHS[layer.pathIndex]}
-                    fill="none"
-                    stroke={layer.zIndex >= 3 ? "hsl(6 98% 14%)" : layer.zIndex === 2 ? "hsl(4 95% 10%)" : "hsl(2 92% 7%)"}
-                    strokeWidth={layer.zIndex >= 3 ? 3.2 : layer.zIndex === 2 ? 2.7 : 2.1}
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    opacity={layer.zIndex >= 3 ? 1 : layer.zIndex === 2 ? 0.95 : 0.82}
-                  />
-                </svg>
-                {/* ─── EDGE HIGHLIGHT — kapea kirkas reunaviiva tuomaan terävää 3D-syvyyttä.
-                    Reunan sisäpuolinen kuuma punainen-oranssi sävy → silhuetti pomppaa esiin. */}
+                {/* 2) RIM-LIGHT — kapea kirkas reuna (screen-blend) joka jäljittelee
+                     oikean liekin "neon-edge"-efektiä referenssikuvassa. Tämä on
+                     se mikä saa liekin näyttämään LÄPINÄKYVÄLTÄ ja ELÄVÄLTÄ
+                     pelkän tumman outlinen sijaan. Kustannus: 1 turbulenssikäyttö
+                     mutta vain stroke (ei fill) → halpa. */}
                 <svg
                   width={flameW}
                   height={flameH}
@@ -1091,36 +1076,79 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                     mixBlendMode: "screen",
                     pointerEvents: "none",
                     filter: `url(#${filterId})`,
+                    overflow: "visible",
                   }}
                 >
+                  {/* Ulompi pehmeä lämpöhehku — antaa "kuuman ilman" tunnun */}
                   <path
                     d={FLAME_PATHS[layer.pathIndex]}
                     fill="none"
-                    stroke={layer.zIndex >= 3 ? "hsl(22 100% 56%)" : layer.zIndex === 2 ? "hsl(16 100% 50%)" : "hsl(10 95% 44%)"}
-                    strokeWidth={layer.zIndex >= 3 ? 1.2 : 0.9}
+                    stroke={layer.zIndex >= 3 ? "hsl(28 100% 58%)" : layer.zIndex === 2 ? "hsl(20 100% 52%)" : "hsl(14 95% 46%)"}
+                    strokeWidth={layer.zIndex >= 3 ? 2.4 : 1.8}
                     strokeLinejoin="round"
                     strokeLinecap="round"
-                    opacity={layer.zIndex >= 3 ? 0.85 : layer.zIndex === 2 ? 0.7 : 0.5}
+                    opacity={layer.zIndex >= 3 ? 0.55 : layer.zIndex === 2 ? 0.42 : 0.3}
+                    style={{ filter: "blur(0.8px)" }}
+                  />
+                  {/* Sisempi terävä rim — keltais-oranssi viiva */}
+                  <path
+                    d={FLAME_PATHS[layer.pathIndex]}
+                    fill="none"
+                    stroke={layer.zIndex >= 3 ? "hsl(36 100% 62%)" : layer.zIndex === 2 ? "hsl(26 100% 54%)" : "hsl(18 95% 48%)"}
+                    strokeWidth={layer.zIndex >= 3 ? 1.0 : 0.7}
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    opacity={layer.zIndex >= 3 ? 0.9 : layer.zIndex === 2 ? 0.72 : 0.5}
                   />
                 </svg>
 
-                {/* Front-row inner SATURATED CORE — kylläinen oranssi-punainen sydän (ei valkoista) */}
+                {/* 3) DARK BASE — pelkkä ALAOSAN tummennus (ei koko outlinea).
+                     Pinnaa liekin maahan ja antaa kontrastia. KEVYT: ei filtteriä,
+                     vain pieni gradient-stroke alapäässä. */}
+                {layer.zIndex >= 2 && (
+                  <svg
+                    width={flameW}
+                    height={flameH * 0.35}
+                    viewBox="0 0 100 49"
+                    preserveAspectRatio="none"
+                    className="absolute left-0"
+                    style={{
+                      bottom: 0,
+                      mixBlendMode: "multiply",
+                      pointerEvents: "none",
+                      opacity: layer.zIndex >= 3 ? 0.7 : 0.5,
+                    }}
+                  >
+                    <path
+                      d={FLAME_PATHS[layer.pathIndex]}
+                      fill="none"
+                      stroke="hsl(0 85% 8%)"
+                      strokeWidth={2.2}
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                )}
+
+                {/* 4) FRONT CORE — kuuma sisäydin: kapea + matala → keskelle jää
+                     "rako" jota näkyy oikeissa liekeissä (kuumin kaasu palaa
+                     reunoilla, keskus on osittain läpinäkyvä). */}
                 {isFront && coreId && (
                   <svg
-                    width={flameW * 0.55}
-                    height={flameH * 0.72}
+                    width={flameW * 0.42}
+                    height={flameH * 0.6}
                     viewBox="0 0 100 140"
                     preserveAspectRatio="none"
                     className="absolute left-1/2"
                     style={{
-                      bottom: flameH * 0.08,
+                      bottom: flameH * 0.06,
                       transform: "translateX(-50%)",
                       filter: `url(#${filterId})`,
                       animation: `stylized-flame-flicker-${((i + 1) % 3) + 1} ${(speedDur * 0.8).toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
                       animationDelay: `${(layer.delaySeed - 0.5).toFixed(2)}s`,
                       transformOrigin: "center bottom",
                       mixBlendMode: "screen",
-                      opacity: lerp(0.55, 0.95, t),
+                      opacity: lerp(0.5, 0.9, t),
                     }}
                   >
                     <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${coreId})`} />

@@ -2,6 +2,24 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
+ * Detect device performance class once per page load.
+ * - "low": reduced-motion preference, low-core CPUs, or tiny screens → halve density
+ * - "high": desktops/tablets with 6+ cores and DPR>=2 → full inferno
+ */
+const detectPerfClass = (): "low" | "mid" | "high" => {
+  if (typeof window === "undefined") return "mid";
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return "low";
+  const cores = navigator.hardwareConcurrency ?? 4;
+  const dpr = window.devicePixelRatio ?? 1;
+  const mem = (navigator as { deviceMemory?: number }).deviceMemory ?? 4;
+  if (cores <= 4 || mem <= 3) return "low";
+  if (cores >= 8 && dpr >= 2 && mem >= 6) return "high";
+  return "mid";
+};
+let _perfClassCache: "low" | "mid" | "high" | null = null;
+const getPerfClass = () => (_perfClassCache ??= detectPerfClass());
+
+/**
  * StylizedStreakFlame v4 — layered "real bonfire" silhouettes.
  *
  * Design:

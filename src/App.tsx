@@ -11,7 +11,6 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
 import WindProvider from "@/contexts/WindProvider";
 import AmbientParticles from "@/components/AmbientParticles";
-import EdgeFireThreads from "@/components/EdgeFireThreads";
 import BottomNav from "@/components/BottomNav";
 import StatusHeader from "@/components/StatusHeader";
 import AccessGate from "@/components/AccessGate";
@@ -227,7 +226,6 @@ const App = () => {
               <RevenueCatProvider>
                 <WindProvider>
                   {splashDone && <AmbientParticlesGate />}
-                  {splashDone && <EdgeFireThreads />}
                   <AppRoutes />
                 </WindProvider>
               </RevenueCatProvider>

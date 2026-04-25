@@ -288,7 +288,7 @@ const Tribes = () => {
     if (accept && invite.tribe_id) navigate(`/tribes/${invite.tribe_id}`);
   };
 
-  const featured = tribes.find((t) => !joinedIds.has(t.id) && t.member_count > 0);
+  const featured = tribes.find((t) => !joinedIds.has(t.id) && t.member_count > 0 && !t.is_paused);
   const restList = featured ? tribes.filter((t) => t.id !== featured.id) : tribes;
 
   return (

@@ -633,8 +633,10 @@ const TribeDetail = () => {
                 <p className="text-[12px] text-foreground/80 leading-snug">
                   The founder is no longer Apex. The fire is on hold until a new <span className="font-black text-[hsl(18_95%_58%)]">Apex member</span> takes over leadership.
                 </p>
-                {isMember && (profile as any)?.is_apex_subscriber === true || profile?.status_tier === "apex" || profile?.status_tier === "legend" ? (
-                  isMember ? (
+                {isMember &&
+                  ((profile as any)?.is_apex_subscriber === true ||
+                    profile?.status_tier === "apex" ||
+                    profile?.status_tier === "legend") && (
                     <Button
                       size="sm"
                       variant="magma"
@@ -648,8 +650,7 @@ const TribeDetail = () => {
                     >
                       <Crown size={13} /> Claim leadership & revive
                     </Button>
-                  ) : null
-                ) : null}
+                  )}
               </div>
             )}
 

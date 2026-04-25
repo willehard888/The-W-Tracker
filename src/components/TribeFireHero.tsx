@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { fetchUserTotalTribeHeat, collectiveStreakTier, collectiveTierName, collectiveAccent } from "@/lib/tribe-streak";
 import RealisticFlame from "@/components/home/RealisticFlame";
 import { cn } from "@/lib/utils";
-import { Flame, Sparkles } from "lucide-react";
+import { Flame, Sparkles, Users } from "lucide-react";
 
 const TIER_FLOORS = [0, 30, 100, 300, 700, 1500, 3000, 6000];
 

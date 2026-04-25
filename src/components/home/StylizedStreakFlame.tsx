@@ -387,10 +387,11 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       gust = Math.max(0, gust - gustStep);
       blast = Math.max(0, blast - (isReleasing ? releaseBlastDecay : 0.018));
 
-      // Idle ramp: 0 jos viime input <1.5s, → 1 1.2s aikana (oli 4s+1.6s).
-      // Liekki rauhoittuu NOPEAMMIN normaalitilaan ilman kosketusta.
+      // Idle ramp: pidetään liekki AINA elossa — idle on rajoitettu 0.5 maksimiin
+      // jotta turbulenssi (sway/breathing) säilyy näkyvänä ilman vuorovaikutustakin.
+      // Tämä on käyttäjän vaatimus: liekit ovat koko ajan päällä, ei koskaan jähmettyneenä.
       const sinceInput = now - lastInputT;
-      const idleTarget = sinceInput > 1500 ? Math.min(1, (sinceInput - 1500) / 1200) : 0;
+      const idleTarget = sinceInput > 1500 ? Math.min(0.5, (sinceInput - 1500) / 2400) : 0;
       idle += (idleTarget - idle) * 0.05;
 
       // Vapautuksen jälkeen targets vetäytyvät NOPEASTI nollaan (kerroin

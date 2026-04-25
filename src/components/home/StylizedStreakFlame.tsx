@@ -367,7 +367,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       style={{
         width: size,
         height: size,
-        animation: `stylized-flame-bob ${(2.6).toFixed(2)}s ease-in-out infinite`,
+        animation: `stylized-flame-bob ${(3.4).toFixed(2)}s cubic-bezier(0.22, 0.61, 0.36, 1) infinite`,
         // Reactive lean: derived from pointer-tracked --ssf-wind-x (-1..1) and gust (0..1).
         ["--ssf-wind" as string]: `calc(var(--ssf-wind-x, 0) * 12deg + var(--ssf-gust, 0) * 6deg)`,
         // Gust + intensify both energise the fire — brighter & more saturated

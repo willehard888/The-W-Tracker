@@ -603,7 +603,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
   const intensityBoost = lerp(0.95, 1.65, ferocity);
 
   // Floor light pool — wash beneath the flames simulating ground reflection
-  const floorPoolColor = stage >= 6 ? "hsl(22 100% 55%)" : stage >= 4 ? "hsl(18 100% 50%)" : "hsl(14 95% 45%)";
+  const floorPoolColor = stage >= 6 ? "hsl(14 100% 50%)" : stage >= 4 ? "hsl(10 100% 46%)" : "hsl(6 95% 42%)";
 
   // (Tribe outer aura halo removed — looked like cheap glow.
   //  Tribe intensity now expressed purely through doubled flame count + ferocity.)

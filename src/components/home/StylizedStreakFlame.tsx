@@ -422,7 +422,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(raf);
     };
-  }, [isCold, size]);
+  }, [isCold, size, releaseSnapMs]);
 
 
   // How many flames at this stage — adaptiivinen perfClassin mukaan.

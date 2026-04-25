@@ -572,12 +572,12 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             const deepBase  = `hsl(${12 + hShift} 100% ${lerp(40, 50, inten)}%)`;// dark crimson-orange
             const body      = `hsl(${18 + hShift} 100% ${lerp(48, 58, inten)}%)`;// deep blood-orange
             const shoulder  = `hsl(${24 + hShift} 100% ${lerp(54, 64, inten)}%)`;// burnt orange
-            const upperBody = `hsl(${30 + hShift} 100% ${lerp(60, 70, inten)}%)`;// rich tangerine
+            const upperBody = `hsl(${30 + hShift} 100% ${lerp(54, 62, inten)}%)`;// rich tangerine (tummennettu)
             const tipColor  = inten > 0.85
-              ? `hsl(${38 + hShift} 100% ${lerp(64, 72, inten)}%)`              // glowing amber
-              : `hsl(${34 + hShift} 100% ${lerp(58, 68, inten)}%)`;
-            // Apex: lämmin keltainen — ei valkoinen / kreemi (välttää cheap-glow).
-            const apex      = inten > 0.94 ? `hsl(48 100% 70%)` : tipColor;
+              ? `hsl(${36 + hShift} 100% ${lerp(56, 62, inten)}%)`              // syvä amber (ei valkoinen)
+              : `hsl(${32 + hShift} 100% ${lerp(52, 58, inten)}%)`;
+            // Apex: kylläinen oranssi-keltainen — POISTA kaikki valkoisuus / kreemi.
+            const apex      = inten > 0.94 ? `hsl(42 100% 60%)` : tipColor;
 
 
             return (
@@ -599,19 +599,18 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             );
           })}
 
-          {/* Inner core — tight white-hot heart with rapid color falloff for realism.
-              Real flame cores are small, intense, and asymmetric (offset slightly upward). */}
+          {/* Inner core — kylläinen oranssi-punainen sydän, EI valkoista hot-spot. */}
           {layers.filter((l) => l.zIndex >= 3).map((_, idx) => {
             const id = `ssf-core-${uid}-${idx}`;
             return (
               <radialGradient key={id} id={id} cx="50%" cy="62%" r="38%">
-                {/* Pure orange-red core — ei valkoinen / kreemi keskipiste. */}
-                <stop offset="0%"   stopColor="hsl(40 100% 70%)" stopOpacity="1" />
-                <stop offset="14%"  stopColor="hsl(34 100% 60%)" stopOpacity="0.92" />
-                <stop offset="32%"  stopColor="hsl(24 100% 54%)" stopOpacity="0.72" />
-                <stop offset="56%"  stopColor="hsl(14 98% 48%)"  stopOpacity="0.4" />
-                <stop offset="80%"  stopColor="hsl(8 95% 40%)"   stopOpacity="0.15" />
-                <stop offset="100%" stopColor="hsl(4 90% 32%)"   stopOpacity="0" />
+                {/* Pure orange-red core — keskipiste maksimissaan kylläinen oranssi (ei vaalea). */}
+                <stop offset="0%"   stopColor="hsl(36 100% 58%)" stopOpacity="1" />
+                <stop offset="14%"  stopColor="hsl(28 100% 52%)" stopOpacity="0.92" />
+                <stop offset="32%"  stopColor="hsl(20 100% 48%)" stopOpacity="0.72" />
+                <stop offset="56%"  stopColor="hsl(12 98% 42%)"  stopOpacity="0.4" />
+                <stop offset="80%"  stopColor="hsl(6 95% 34%)"   stopOpacity="0.15" />
+                <stop offset="100%" stopColor="hsl(2 90% 26%)"   stopOpacity="0" />
               </radialGradient>
             );
           })}
@@ -766,19 +765,39 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   }}
                 >
                   <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${gradId})`} />
-                  {/* Crisp outline — defines the silhouette of each individual flame */}
+                </svg>
+
+                {/* Tummennettu ääriviiva — erillisessä SVG:ssä jolla on multiply-blend
+                    jotta tumma viiva oikeasti tummentaa liekin reunan (ei pyyhkiydy
+                    pois screen-blend-äidin alla). Antaa jokaiselle liekille terävän siluetin. */}
+                <svg
+                  width={flameW}
+                  height={flameH}
+                  viewBox="0 0 100 140"
+                  preserveAspectRatio="none"
+                  className="absolute inset-0"
+                  style={{
+                    filter: `url(#${filterId})`,
+                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+                    animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
+                    transformOrigin: "center bottom",
+                    mixBlendMode: "multiply",
+                    willChange: "transform, opacity",
+                    pointerEvents: "none",
+                  }}
+                >
                   <path
                     d={FLAME_PATHS[layer.pathIndex]}
                     fill="none"
-                    stroke={layer.zIndex >= 3 ? "hsl(40 100% 58%)" : layer.zIndex === 2 ? "hsl(28 100% 52%)" : "hsl(14 95% 46%)"}
-                    strokeWidth={layer.zIndex >= 3 ? 2.2 : layer.zIndex === 2 ? 1.8 : 1.4}
+                    stroke={layer.zIndex >= 3 ? "hsl(8 95% 18%)" : layer.zIndex === 2 ? "hsl(6 90% 14%)" : "hsl(4 85% 10%)"}
+                    strokeWidth={layer.zIndex >= 3 ? 2.4 : layer.zIndex === 2 ? 2.0 : 1.6}
                     strokeLinejoin="round"
                     strokeLinecap="round"
-                    opacity={layer.zIndex >= 3 ? 0.85 : layer.zIndex === 2 ? 0.7 : 0.55}
+                    opacity={layer.zIndex >= 3 ? 0.95 : layer.zIndex === 2 ? 0.85 : 0.7}
                   />
                 </svg>
 
-                {/* Front-row inner WHITE-HOT CORE — biggest 3D depth cue */}
+                {/* Front-row inner SATURATED CORE — kylläinen oranssi-punainen sydän (ei valkoista) */}
                 {isFront && coreId && (
                   <svg
                     width={flameW * 0.55}
@@ -853,7 +872,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   }}
                 >
                   <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
-                  <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(16 90% 46%)" strokeWidth={1.2} strokeLinejoin="round" opacity={0.45} />
+                  <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(10 95% 24%)" strokeWidth={1.4} strokeLinejoin="round" opacity={0.55} />
                 </svg>
               );
             })
@@ -906,7 +925,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   }}
                 >
                   <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
-                  <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(34 100% 64%)" strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" opacity={0.7} />
+                  <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(12 95% 26%)" strokeWidth={1.7} strokeLinejoin="round" strokeLinecap="round" opacity={0.78} />
                 </svg>
               );
             })
@@ -943,7 +962,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               }}
             >
               <path d={FLAME_PATHS[4]} fill={`url(#${gradId})`} />
-              <path d={FLAME_PATHS[4]} fill="none" stroke="hsl(38 100% 56%)" strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" opacity={0.75} />
+              <path d={FLAME_PATHS[4]} fill="none" stroke="hsl(14 95% 26%)" strokeWidth={1.7} strokeLinejoin="round" strokeLinecap="round" opacity={0.82} />
             </svg>
           );
         })}
@@ -994,7 +1013,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               }}
             >
               <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
-              <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(30 100% 60%)" strokeWidth={1.3} strokeLinejoin="round" strokeLinecap="round" opacity={0.6} />
+              <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(10 95% 22%)" strokeWidth={1.4} strokeLinejoin="round" strokeLinecap="round" opacity={0.7} />
             </svg>
           );
         })}
@@ -1042,7 +1061,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               }}
             >
               <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
-              <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(40 100% 58%)" strokeWidth={1.4} strokeLinejoin="round" strokeLinecap="round" opacity={0.78} />
+              <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(14 95% 24%)" strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" opacity={0.85} />
             </svg>
           );
         })}

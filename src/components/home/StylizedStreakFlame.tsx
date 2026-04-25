@@ -420,16 +420,18 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
             );
           })}
 
-          {/* Inner core — deep amber heart, smaller white pinprick */}
+          {/* Inner core — tight white-hot heart with rapid color falloff for realism.
+              Real flame cores are small, intense, and asymmetric (offset slightly upward). */}
           {layers.filter((l) => l.zIndex >= 3).map((_, idx) => {
             const id = `ssf-core-${uid}-${idx}`;
             return (
-              <radialGradient key={id} id={id} cx="50%" cy="60%" r="44%">
-                <stop offset="0%"   stopColor="hsl(46 100% 92%)" stopOpacity="1" />
-                <stop offset="14%"  stopColor="hsl(38 100% 78%)" stopOpacity="0.95" />
-                <stop offset="38%"  stopColor="hsl(28 100% 62%)" stopOpacity="0.7" />
-                <stop offset="68%"  stopColor="hsl(18 100% 52%)" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="hsl(10 95% 42%)"  stopOpacity="0" />
+              <radialGradient key={id} id={id} cx="50%" cy="62%" r="38%">
+                <stop offset="0%"   stopColor="hsl(50 100% 96%)" stopOpacity="1" />
+                <stop offset="10%"  stopColor="hsl(44 100% 86%)" stopOpacity="0.95" />
+                <stop offset="26%"  stopColor="hsl(34 100% 70%)" stopOpacity="0.78" />
+                <stop offset="50%"  stopColor="hsl(22 100% 56%)" stopOpacity="0.45" />
+                <stop offset="76%"  stopColor="hsl(12 98% 46%)"  stopOpacity="0.18" />
+                <stop offset="100%" stopColor="hsl(6 95% 38%)"   stopOpacity="0" />
               </radialGradient>
             );
           })}

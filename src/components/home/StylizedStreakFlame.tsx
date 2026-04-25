@@ -408,7 +408,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       ...c,
       delaySeed: -((seed.a * (i + 1) + seed.b * (i + 3) + seed.c * (i + 5)) % 2300) / 1000,
     }));
-  }, [flameCount, seed.a, seed.b, seed.c]);
+  }, [flameCount, passMultiplier, seed.a, seed.b, seed.c]);
 
   // Cold state — thin outline candle, gold-soft so it stays on-theme
   if (isCold) {

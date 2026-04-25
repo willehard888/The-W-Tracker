@@ -211,7 +211,7 @@ const TribeCollectiveFlame = ({
                     : undefined
                 }
               >
-                <RealisticFlame tier={tier} accent={accent} size={size} />
+                <RealisticFlame tier={tier} accent={accent} size={size} intensify={10} />
               </div>
             )}
             {/* Realtime ember-rise + "+N" overlay — extends well beyond flame container */}
@@ -289,7 +289,7 @@ const TribeCollectiveFlame = ({
             {isCold ? (
               <div className="text-4xl opacity-40 leading-none">🕯️</div>
             ) : (
-              <RealisticFlame tier={tier} accent={accent} size={size} />
+              <RealisticFlame tier={tier} accent={accent} size={size} intensify={10} />
             )}
           </div>
 

@@ -338,8 +338,24 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
   // How many flames at this stage — adaptiivinen perfClassin mukaan.
   // high = 6× base (84 max), mid = 4× (56 max), low = 3× (42 max).
   const perfClass = getPerfClass();
-  const passMultiplier = perfClass === "high" ? 6 : perfClass === "mid" ? 4 : 3;
+  const fullPassMultiplier = perfClass === "high" ? 6 : perfClass === "mid" ? 4 : 3;
   const flameCap = perfClass === "high" ? 84 : perfClass === "mid" ? 56 : 42;
+
+  // Progressive boot: render hero + front-row instantly (PASSES=2, ~28 layers),
+  // then ramp up to full density on the next animation frame so the perceived
+  // first paint is virtually instant. Layers stack additively in `screen` mode,
+  // so the upgrade is visually seamless — fire only gets richer.
+  const [passMultiplier, setPassMultiplier] = useState(() => Math.min(2, fullPassMultiplier));
+  useEffect(() => {
+    if (passMultiplier >= fullPassMultiplier) return;
+    // Defer the upgrade until after first paint + a short idle window
+    const raf = requestAnimationFrame(() => {
+      const id = setTimeout(() => setPassMultiplier(fullPassMultiplier), 120);
+      return () => clearTimeout(id);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [fullPassMultiplier, passMultiplier]);
+
   const flameCount = isCold ? 0 : Math.min(flameCap, (2 + stage * 2) * passMultiplier);
 
   // Bed width (how wide the flames spread) and tallest flame height — wider, taller, smoother

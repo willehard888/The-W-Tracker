@@ -184,7 +184,7 @@ const Index = () => {
       )}
 
       {/* RANK + PROGRESS HUB — identity strip + Pressure/Rivals/Level/Elite/Quests */}
-      <Reveal className="mb-4 relative z-10">
+      <Reveal className="mb-4 relative z-10" delay={80}>
         <RankProgressHub
           username={profile.username}
           tier={tier}

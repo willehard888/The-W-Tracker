@@ -385,7 +385,7 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
             height: tallestH * 0.85,
             bottom: size * 0.06,
             transform: "translateX(-50%)",
-            background: `radial-gradient(ellipse at 50% 75%, hsl(22 80% 50% / 0.18) 0%, hsl(18 70% 40% / 0.08) 50%, transparent 80%)`,
+            background: `radial-gradient(ellipse at 50% 78%, hsl(28 95% 55% / 0.28) 0%, hsl(18 90% 48% / 0.16) 40%, hsl(8 80% 38% / 0.06) 70%, transparent 85%)`,
             filter: `blur(${Math.max(8, size * 0.09)}px)`,
             mixBlendMode: "screen",
             animation: `stylized-haze-drift 4s ease-in-out infinite`,

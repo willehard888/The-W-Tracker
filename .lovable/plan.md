@@ -1,75 +1,86 @@
-# Realismi + nopeus + kiillotus -kierros (mitään ei poisteta)
+# Production Polish — iOS-first
 
-Pyyntö on laaja ("kaikki paremmin, nopeammin ja aidommalta"), joten työ jaetaan kolmeen rinnakkaiseen suuntaan: **suorituskyky**, **realismi** ja **kiillotus**. Yksikään olemassa oleva komponentti, ominaisuus tai visuaalinen elementti ei katoa — vain optimoidaan, viritetään ja syvennetään.
+Tämä on iso työ joka pilkotaan **5 vaiheeseen**. Jokainen vaihe on itsenäinen commit ja voidaan testata erikseen iOS:llä. **Mitään ominaisuuksia ei poisteta** — vain optimoidaan, viimeistellään ja paikataan bugit.
 
-## 1. Suorituskyky (latausnopeus + sulavuus)
+---
 
-**StylizedStreakFlame on tällä hetkellä ylivoimaisesti raskain elementti** (84 liekkiä × kaksi SVG-kerrosta + 3 turbulence-suodinta + 54 overlay-elementtiä = ~300 animoitua SVG-nodea). Käyttäjä näkee tämän heti Home-sivulla.
+## Vaihe 1 — Latausnopeus & käynnistys (iOS)
 
-- **Adaptiivinen tiheys**: lisätään `prefers-reduced-motion` ja low-end-tunnistus (`navigator.hardwareConcurrency <= 4` tai `devicePixelRatio < 2`) → 84 → 48 liekkiä, PASSES 6 → 4. Pidetään 84/6 vain tehokkailla laitteilla. Visuaalisesti ero on pieni koska liekit ovat päällekkäin.
-- **`will-change`-puhdistus**: monessa kerroksessa on `willChange: "transform, opacity"` → vain front-row pitää sen, back/mid-row ei. Vapauttaa GPU-muistia.
-- **Turbulence-suodinten yhdistäminen**: 3 erillistä `<filter>`-elementtiä per StylizedStreakFlame-instanssi. Yhdistetään `<defs>` koko sivulle (jos useita liekkejä, jaetaan suotimet).
-- **Multiply-stroke-SVG → CSS-mask**: viime kierroksen lisäämä erillinen multiply-SVG per liekki tuplaa SVG-nodet. Korvataan `filter: drop-shadow(0 0 0.5px hsl(8 95% 12%))` -tekniikalla, joka tuottaa saman tumman ääriviivan **yhdellä DOM-nodella per liekki** — sama visuaali, puolet työstä.
-- **Vite chunk -hienosäätö**: lisätään `framer-motion` ja `lucide-react` omiin chunkeihinsa (nyt ne menevät päärunkoon ja viivästyttävät ensimmäistä paintia).
-- **Kuvien lazy-loading**: tarkistetaan että kaikki `<img>` käyttävät `loading="lazy"` ja `decoding="async"` paitsi Above-the-fold.
-- **Reitin esilataus**: lisätään hover/focus-pohjainen `import()`-prefetch BottomNavin linkkeihin, jotta Leaderboard/Tribes/Profile latautuvat taustalla ennen klikkausta.
+**Mitä tehdään:**
+- **Splash lyhennetään** 1650 ms → 950 ms (iOS-natiivi splash näkyy jo ennen tätä, kaksi splashia tuntuu hitaalta).
+- **Preload kriittiset reitit**: `Index`, `DailyCheckin`, `Leaderboard`, `Profile` esiladataan idle-aikana → siirtymät ovat välittömiä eikä tyhjää `RouteFallback` -ikkunaa näy.
+- **Optimoi vendor-chunkit**: erotellaan `three`/`@react-three` omaksi async-chunkikseen, jota ladataan vain kun 3D-näkymä on käytössä (ei tällä hetkellä load-pathissa, mutta varmistetaan).
+- **Lazy-loadataan raskaat modaalit**: `EliteUnlockCelebration`, `LevelUpCelebration`, `BadgeUnlockModal`, `TierPromotionCelebration` → vain kun trigger laukeaa.
+- **React Query**: `staleTime: 30s` → eri ajat per kysely (profiili 60s, leaderboard 20s, viestit 5s) jotta ei turhia refetchejä mutta myös ei stale-dataa.
+- **Image preload**: BrandLogo, top-3 status-ringit ja ikonisetit `<link rel="preload">` index.html:ään.
 
-## 2. Realismi (super-aito tuli + visuaalit)
+**Mittari**: TTI mobiilisafarissa < 1.2 s (mitataan `browser--performance_profile`:lla ennen/jälkeen).
 
-- **Liekin lämpövärähtely**: lisätään hienovarainen radial heat-haze juuri liekin yläpuolelle (`backdrop-filter: blur(0.5px)` + slow morph) — saa ilman näyttämään värähtelevän kuumuudesta. Yksi DOM-node, ei vaikutusta perffiin.
-- **Säästä-anisotropia**: nykyinen `--ssf-wind-x/y` on lineaarinen. Lisätään pieni Perlin-tyyppinen offset (deterministinen sin/cos-summa) RAF-loopiin → liekki ei "leiju robotiisesti" vaan saa luonnollisen turbulenssin.
-- **Sub-pixel ember-välähdykset**: nykyiset embers ovat melko isoja. Lisätään 6-12 ekstra mikro-embers (1-2px) jotka syttyvät satunnaisesti pään seuduille — antaa todellisen "kipinämeren" tunnun.
-- **Ground reflection**: liekin alle hienovarainen anisotrooppinen kiilto/pool (jo olemassa, mutta venytetään horisontaalisesti niin että se reagoi `--ssf-wind-x`-arvoon → tuli "valaisee" maata oikeaan suuntaan).
-- **Tier-värisävytys**: nykyiset oranssi/punainen/keltainen pidetään alaspäin tier-tasoilla, mutta Apex/Legendary-tieriltä lisätään hyper-saturated cyan-kärki (vain tip-3%) — viittaa propaani/maagiseen liekkiin huipulla. Lisää "epic"-tunnetta menettämättä realismia.
+---
 
-## 3. Kiillotus (mikrointeraktiot + viimeistely)
+## Vaihe 2 — Liekkianimaatiot jatkuvasti päällä
 
-- **BottomNavin glassmorphism**: tarkistetaan että `backdrop-blur` on `saturate(180%)` + ohut yläreunan hairline (1px gradient). Apple-tyylinen.
-- **Reveal-animaatioiden viivästys**: nykyiset Home-osiot tulevat sisään yhtä aikaa. Porrastetaan 80ms välein → cinematic stagger.
-- **Haptinen feedback** kaikkiin primary-CTA-painikkeisiin (jo Capacitor Haptics on käytössä liekissä) — extend `Button` variant `premium`/`hero` triggers `Haptics.impact("light")` natiivilla.
-- **Skeleton-laatu**: tarkistetaan että kaikki `Skeleton`-komponentit käyttävät shimmer-gradient + matching aspect ratiot (estää layout shift).
+**Nykytila:** `StylizedStreakFlame` -liekki toimii, mutta `idle`-tilassa (1.5 s ilman kosketusta) animaatio rauhoittuu lähes paikoilleen → käyttäjä luulee että lagaa.
 
-## Tekniset muutokset (tiedostot)
+**Mitä tehdään:**
+- **Poistetaan idle freeze**: liekki saa aina vähintään ~40 % turbulenssista (turbulenssi/breathing/sway) — ei koskaan pysähdy.
+- **rAF-loop pidetään aina käynnissä** myös offscreenissä taustalla, mutta käytetään `IntersectionObserver` -gaatea: kun komponentti ei ole näkyvissä, droppi 60 fps → 12 fps (säästää akkua mutta ei pysäytä).
+- **`document.visibilitychange`** -käsittely: kun appi menee taustalle, pause; kun palaa, instant-resume ilman "kylmää startia".
+- **GPU-hint**: lisätään `transform: translate3d(0,0,0)` ja `will-change: transform` kaikkiin liekki-layereihin (osa puuttuu pienistä komponenteista).
+- **Capacitor App-state -hook**: `App.addListener('resume', ...)` resumes liekit + invalidates queryt yhdellä kertaa.
 
-```text
-src/components/home/StylizedStreakFlame.tsx
-  - Adaptiivinen flameCount/PASSES (low-end detect)
-  - will-change-puhdistus back/mid-rowista
-  - Multiply-SVG → drop-shadow filter (ääriviiva)
-  - Lisää: Perlin-tyyppinen wind, mikro-embers, heat-haze
-  - Apex tier: cyan-kärki (>= 0.97 intensity, vain Apex+)
+---
 
-src/index.css
-  - Heat-haze keyframe (subtle morph)
-  - Reveal-stagger hjälpväriä (.reveal-stagger > * { animation-delay: ... })
+## Vaihe 3 — Bugit & lagit
 
-vite.config.ts
-  - manualChunks: lisää framer-motion ja lucide-react omiin chunkeihin
+**Tunnetut/havaitut ongelmat tarkistetaan ja korjataan:**
+- `HeadToHead` delta-bugi (jo korjattu edellisessä commitissa) — verifioidaan.
+- `AnimatePresence` route-vaihdossa: nykyinen `mode="wait"` aiheuttaa 160 ms tyhjän hetken iOS:llä — vaihdetaan `mode="popLayout"` + `initial={false}` jotta uusi näkymä piirtyy päälle välittömästi.
+- **iOS scroll-bounce bug**: `overflow-x-hidden` ei estä bounce-skrollia kaikilla sivuilla → lisätään `overscroll-behavior: contain` globaalisti `index.css`:ään.
+- **Safe-area inset**: `BottomNav` ja `StatusHeader` käyttävät jo `env(safe-area-inset-*)` osittain — varmistetaan että kaikki modaalit, sheets, ja paywall myös.
+- **Memory leakit**: tarkistetaan rAF/setInterval -cleanupit (`StylizedStreakFlame`, `AmbientParticles`, `EmberRiseLayer`, `Ambient3DScene`, `SplashScreen`) → varmistetaan että jokainen palauttaa cleanup-funktion.
+- **React Query unmount race**: kysely-keyt joissa `userId` voi olla undefined → muutetaan `enabled: !!userId` -tarkistukset eksaktiksi kaikkialla.
+- **iOS keyboard push-up**: Auth/Chat-inputeissa `scroll-into-view` -fix ettei BottomNav peitä input-kenttää.
+- **Kuvalataus**: `ImageLightbox`, `LazyVideoPlayer`, feed-kuvat → lisätään `loading="lazy"` + `decoding="async"` kaikkialle missä puuttuu.
 
-src/components/BottomNav.tsx
-  - Hover/focus-pohjainen route-prefetch
-  - Yläreunan hairline-gradient
+---
 
-src/components/home/Reveal.tsx (jos olemassa)
-  - Lisää delay-prop tai automaattinen stagger
+## Vaihe 4 — Premium-tunne
 
-src/components/ui/button.tsx
-  - Premium/hero variant: Haptics.impact natiivilla onPointerDown
+**Visuaaliset hienosäädöt** (ei rakennemuutoksia):
+- **Mikrointeraktiot**: jokainen Button → `whileTap={{ scale: 0.97 }}` + light-haptic. Toistuva pattern → wrapped `<PremiumButton>` -komponentti, joka vaihdetaan vähitellen.
+- **Skeleton-loaderit**: `RouteFallback` korvataan brändätyllä shimmer-skeletonilla (gold gradient sweep) → loading-tila näyttää aina suunnitellulta.
+- **Page-transition**: nykyinen 160 ms fade → 220 ms fade + 4 px slide-up (iOS-tyylinen).
+- **Sheet/Modal-presentointi**: kaikki dialogit → spring-presence (framer-motion), ei jerky open/close.
+- **Pull-to-refresh**: lisätään `Index`, `Leaderboard`, `EliteFeed` → käytetään olemassa olevaa `PullRefreshIndicator` -komponenttia (näyttää käyttämättömältä monessa paikassa).
+- **Typography polish**: korjataan tracking/leading -epäjohdonmukaisuudet headerissa, statseissa, badgeissa.
+- **Subtle gold accent line** sticky-headerin ja BottomNav:in yläpuolelle (1 px gradient → premium "frame").
+- **Sound-free haptic feedback**: kaikki tärkeät onnistumiset (level-up, badge unlock, tier promotion) → `notification('success')`.
 
-Globaali pass:
-  - rg "loading=" ja varmista lazy/eager + decoding="async" kaikille img-tageille
-```
+---
 
-## Mitä EI muuteta / poisteta
+## Vaihe 5 — iOS-spesifit viimeistelyt
 
-- Ei poisteta yhtään liekkikerrosta, overlay-tongueja, sparkseja, tribe-aurahaloja eikä yhtään komponenttia
-- Ei muuteta värisemantiikkaa (oranssi/keltainen/punainen-paletti pidetään, paitsi Apex-tier-kärki)
-- Ei muuteta tier-järjestelmää, RLS:ää, Auth-flowta tai backend-rakennetta
-- Ei vaihdeta animaatiokirjastoa tai design-tokenia
+- **`capacitor.config.json`**: lisätään `ios.scrollEnabled: false` (annetaan reactin hoitaa scrolli), `ios.contentInset: "always"`, `ios.backgroundColor` matchaa splashia.
+- **Status bar**: `@capacitor/status-bar` styling — dark content, läpinäkyvä → korjaa "valkoinen patti" notch-alueella.
+- **Splash screen plugin** (`@capacitor/splash-screen`): konffataan natiivi splash matchaamaan reactin splashia → ei flickeriä.
+- **Keyboard plugin** (`@capacitor/keyboard`): `scroll: false`, custom resize → estää "appi nytkähtää" -efektin näppäimistöä avatessa.
+- **App Transport Security**: tarkistetaan `Info.plist` ettei mitään HTTP-loopholea.
+- **Production build**: `vite build` -optimointia (esim. `target: "es2020"` jotta SWC tuottaa pienempää bundlea iOS Safarille), tarkistetaan että lopullinen bundle < 500 kB gzipped.
 
-## Lopputulos
+---
 
-- **Latausaika**: arviolta -25-40% First Contentful Paint Home-sivulla (chunk-jako + adaptiivinen liekki)
-- **FPS**: 60fps myös keskitason puhelimissa (vrt. nykyiseen ~40-50 fps)
-- **Realismi**: liekki saa luonnollisen turbulenssin + lämpövärähtelyn + mikro-embers — näyttää kuvatulta videolta ei piirretyltä
-- **Kiilto**: porrastettu Reveal, glassmorphism-hairline, haptiset CTA:t
+## Tekniset huomautukset
+
+- **Mitään ei poisteta**: kaikki nykyiset komponentit, animaatiot ja sivut säilyvät. Vain optimoidaan ja paikataan.
+- **Memory**: `mem://style/flame-reactivity.md` ja `mem://ux/native-experience.md` päivitetään tämän työn jälkeen.
+- **Riskit**: Capacitor-natiivimuutokset (vaihe 5) vaativat `npx cap sync` käyttäjältä paikallisesti + uusi build Xcode Cloudilla. Web-muutokset (vaiheet 1–4) menevät live preview-URL:lle heti.
+- **Testaus**: jokaisen vaiheen jälkeen ajetaan `browser--performance_profile` ja verifioidaan ettei regressiota.
+
+---
+
+## Toimitustapa
+
+Toteutus tehdään **viidessä erillisessä commitissa** (yksi per vaihe), jotta voit testata ja hyväksyä jokaisen erikseen iOS:llä. Aloitan vaiheesta 1 (latausnopeus) heti hyväksynnän jälkeen.
+
+Jos haluat, että keskityn vain osaan vaiheista (esim. vain 1+2+3 — nopeus, liekit, bugit ja jätän premium-polishin myöhemmäksi), kerro mikä prioriteetti.

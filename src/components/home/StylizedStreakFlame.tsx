@@ -278,14 +278,32 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       }
     };
 
+    // Perlin-tyyppinen luonnollinen turbulenssi (deterministinen sin-summa)
+    // — antaa liekille orgaanisen "ei-koskaan-täysin-paikallaan" tunnun.
+    const t0 = performance.now();
+    const turbulence = (now: number) => {
+      const t = (now - t0) / 1000;
+      // Kolme eri taajuista sini-aaltoa summassa simuloi Perlin-noisea kevyesti.
+      const x = Math.sin(t * 0.83) * 0.6 + Math.sin(t * 1.91 + 1.3) * 0.3 + Math.sin(t * 3.7 + 2.1) * 0.1;
+      const y = Math.cos(t * 0.71 + 0.5) * 0.5 + Math.sin(t * 2.13 + 1.9) * 0.25 + Math.cos(t * 4.1 + 0.8) * 0.1;
+      return { x: x * 0.18, y: y * 0.12 }; // Skaalattu hienovaraiseksi (~±0.18 max)
+    };
+
     const tick = () => {
-      currentWindX += (targetWindX - currentWindX) * 0.13;
-      currentWindY += (targetWindY - currentWindY) * 0.10;
+      const now = performance.now();
+      const turb = turbulence(now);
+      // Yhdistä user-input + ambient turbulence: turb tuo idle-tilaan eloa,
+      // mutta kun käyttäjä on lähellä (proximity > 0.3), turb feidaa pois → input vie vallan.
+      const turbBlend = Math.max(0.25, 1 - proximity * 1.4);
+      const effectiveTargetX = targetWindX + turb.x * turbBlend;
+      const effectiveTargetY = targetWindY + turb.y * turbBlend;
+      currentWindX += (effectiveTargetX - currentWindX) * 0.13;
+      currentWindY += (effectiveTargetY - currentWindY) * 0.10;
       proximity += (targetProximity - proximity) * 0.08;
       gust = Math.max(0, gust - gustDecay);
       blast = Math.max(0, blast - 0.018);
       // Idle ramp: 0 if recent input, → 1 over 1.6 s after 4 s silence
-      const sinceInput = performance.now() - lastInputT;
+      const sinceInput = now - lastInputT;
       const idleTarget = sinceInput > 4000 ? Math.min(1, (sinceInput - 4000) / 1600) : 0;
       idle += (idleTarget - idle) * 0.04;
       // Bleed targets back toward neutral when no input
@@ -299,6 +317,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       el.style.setProperty("--ssf-proximity", proximity.toFixed(3));
       el.style.setProperty("--ssf-blast", blast.toFixed(3));
       el.style.setProperty("--ssf-idle", idle.toFixed(3));
+      // Heat-haze morph: hidas, riippumaton turbulence-aalto
+      el.style.setProperty("--ssf-haze", (Math.sin(now / 1700) * 0.5 + 0.5).toFixed(3));
       raf = requestAnimationFrame(tick);
     };
 

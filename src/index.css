@@ -194,6 +194,28 @@
       scroll-behavior: auto;
     }
   }
+
+  /* === Native shell tweaks (Capacitor iOS / Android) === */
+  body.is-native {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+  body.is-ios {
+    -webkit-font-smoothing: antialiased;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  body.is-ios input,
+  body.is-ios textarea,
+  body.is-ios [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  /* Status bar overlays webview — push sticky header below the notch. */
+  body.is-ios .safe-top {
+    padding-top: max(env(safe-area-inset-top), 12px);
+  }
 }
 
 @layer utilities {

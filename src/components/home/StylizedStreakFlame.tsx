@@ -128,6 +128,69 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
     prevStageRef.current = stage;
   }, [stage]);
 
+  // ── Reactivity: lean & flicker in response to pointer / touch movement.
+  // We track the global pointer and translate its movement into:
+  //   --ssf-wind-x : -1..1 horizontal lean intensity (smoothed)
+  //   --ssf-gust   : 0..1  short-lived "gust" amplitude that triggers on
+  //                  fast pointer moves, fades back to 0 (~600ms).
+  // Animations in CSS read these vars to tilt and energise the flame.
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (isCold) return;
+    const el = containerRef.current;
+    if (!el) return;
+    let raf = 0;
+    let targetWind = 0;
+    let currentWind = 0;
+    let lastX = 0;
+    let lastY = 0;
+    let lastT = performance.now();
+    let gust = 0;
+    let gustDecay = 0;
+
+    const onPointer = (e: PointerEvent) => {
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height * 0.65;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      // Distance falloff: full influence within 1.5× size, none beyond 4× size
+      const dist = Math.hypot(dx, dy);
+      const influence = Math.max(0, Math.min(1, 1 - (dist - size * 1.5) / (size * 2.5)));
+      // Lean opposite to pointer (fire bends AWAY from incoming wind)
+      targetWind = Math.max(-1, Math.min(1, -dx / (size * 1.2))) * influence;
+      // Gust = pointer speed
+      const now = performance.now();
+      const dt = Math.max(8, now - lastT);
+      const speed = Math.hypot(e.clientX - lastX, e.clientY - lastY) / dt; // px/ms
+      lastX = e.clientX; lastY = e.clientY; lastT = now;
+      const gustHit = Math.min(1, speed / 1.8) * influence;
+      if (gustHit > gust) {
+        gust = gustHit;
+        gustDecay = 0.018; // decay rate per frame
+      }
+    };
+
+    const tick = () => {
+      // Smooth lerp towards target (snappy but not jittery)
+      currentWind += (targetWind - currentWind) * 0.12;
+      // Decay gust
+      gust = Math.max(0, gust - gustDecay);
+      el.style.setProperty("--ssf-wind-x", currentWind.toFixed(3));
+      el.style.setProperty("--ssf-gust", gust.toFixed(3));
+      // Slowly bleed the wind target back to neutral if pointer is idle
+      targetWind *= 0.985;
+      raf = requestAnimationFrame(tick);
+    };
+
+    window.addEventListener("pointermove", onPointer, { passive: true });
+    raf = requestAnimationFrame(tick);
+    return () => {
+      window.removeEventListener("pointermove", onPointer);
+      cancelAnimationFrame(raf);
+    };
+  }, [isCold, size]);
+
   // How many flames at this stage — fuller fire: 2..14 layered tongues
   const flameCount = isCold ? 0 : Math.min(14, 2 + stage * 2);
 

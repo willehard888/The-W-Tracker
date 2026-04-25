@@ -4342,21 +4342,24 @@ html, body, #root {
 }
 
 /* EdgeFireThreads — orgaaninen "hengitys" tulisäikeille.
-   Lievä pystysuora skaalaus + pieni rotaatio antaa elävän, koskaan-täysin-paikallaan-olevan tulen tunnun.
-   Pointer-reaktio (rotate + scaleY + brightness) lisätään inline-styleissä,
-   joten tämä keyframe vain hengittää taustalla — efektit komposoituvat. */
+   Vain opacity + filter pulssaa täällä, koska transform on varattu
+   reaaliaikaiselle pointer-reaktiolle (rotate/scaleY inline-styleissä). */
 @keyframes eft-thread-breathe {
   0%, 100% {
-    transform: rotate(var(--eft-thread-tilt, 0deg)) scaleY(1) scaleX(1);
+    opacity: 0.92;
+    filter: brightness(1) saturate(1.05);
   }
-  25% {
-    transform: rotate(calc(var(--eft-thread-tilt, 0deg) + 1.2deg)) scaleY(1.06) scaleX(0.96);
+  30% {
+    opacity: 1;
+    filter: brightness(1.18) saturate(1.18);
   }
-  50% {
-    transform: rotate(calc(var(--eft-thread-tilt, 0deg) - 0.8deg)) scaleY(0.94) scaleX(1.04);
+  60% {
+    opacity: 0.86;
+    filter: brightness(0.92) saturate(0.95);
   }
-  75% {
-    transform: rotate(calc(var(--eft-thread-tilt, 0deg) + 0.6deg)) scaleY(1.03) scaleX(0.98);
+  80% {
+    opacity: 0.96;
+    filter: brightness(1.08) saturate(1.1);
   }
 }
 .eft-thread-breathe {

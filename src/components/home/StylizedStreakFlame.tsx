@@ -1083,60 +1083,66 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const xPx = fanSpan * xCentered;
             // Kallistus: keskellä ~0°, reunoilla jopa ±55° (ulospäin)
             const tiltDeg = xCentered * 110; // -55..+55
-            // Koko: pieniä → todella pieniä, hieman varianssia
+            // Koko: pieniä mutta selvästi näkyviä — alle 6px liekki häviää displacement-filtterin alle
             const sizeBoost = ((i * 13 + seed.a * 7) % 9) / 9; // 0..1
-            const lickW = bedWidth * lerp(0.025, 0.055, sizeBoost);
-            const lickH = tallestH * lerp(0.14, 0.32, sizeBoost) * lerp(0.85, 1.1, ferocity);
-            // Reunaliekit hieman matalampia (perspektiivi → kauempana ihmisen silmä lukee pienempänä)
+            const lickW = Math.max(8, bedWidth * lerp(0.07, 0.13, sizeBoost));
+            const lickH = Math.max(18, tallestH * lerp(0.22, 0.42, sizeBoost) * lerp(0.9, 1.1, ferocity));
+            // Reunaliekit hieman matalampia (perspektiivi)
             const edgeFalloff = 1 - Math.abs(xCentered) * 0.55;
             const finalH = lickH * Math.max(0.55, edgeFalloff);
-            // Pohjasijainti hieman bedin yläpuolella → näyttää että ne syttyvät hiilistä
-            const bottom = size * lerp(0.025, 0.06, ((i * 17) % 7) / 7);
-            // Animaatio: nopea välähdys ja soft sway. Eri päätaajuudet etteivät synkronoidu.
-            const flickDur = lerp(1.1, 0.55, ferocity) + ((i * 0.13) % 0.6);
-            const swayDur = lerp(2.6, 1.6, ferocity) + ((i * 0.21) % 0.9);
+            // Pohjasijainti hieman bedin yläpuolella
+            const bottom = size * lerp(0.02, 0.05, ((i * 17) % 7) / 7);
+            // Per-instance flicker-animaatio (sway-keyframe overridoi rotate-transformin → käytetään vain flickeriä)
+            const flickDur = lerp(1.3, 0.7, ferocity) + ((i * 0.13) % 0.5);
             const delay = -(((i * 0.23 + seed.c * 0.011) % flickDur));
-            // Filtteri: vuorottelevasti mid/front → microvariation
             const fId = filterIds[i % 2 === 0 ? 1 : 2];
-            // Värivariaatio gradientteja kierrättäen
             const gradId = `ssf-grad-${uid}-${i % Math.max(1, layers.length)}`;
             const pathIdx = (i * 3 + 5) % FLAME_PATHS.length;
-            // Reunalla olevat himmeämpiä → syvyyden illuusio
-            const baseOpacity = lerp(0.55, 0.92, ferocity) * lerp(0.6, 1, edgeFalloff);
+            const baseOpacity = lerp(0.6, 0.95, ferocity) * lerp(0.65, 1, edgeFalloff);
             return (
-              <svg
+              // Käärin rotaation OMAAN diviin jotta inline-animaatio ei pyyhi sitä pois
+              <div
                 key={`base-fan-${i}`}
-                width={lickW}
-                height={finalH}
-                viewBox="0 0 100 140"
-                preserveAspectRatio="none"
                 className="absolute left-1/2"
                 style={{
                   bottom,
+                  width: lickW,
+                  height: finalH,
                   transform: `translateX(calc(-50% + ${xPx.toFixed(1)}px)) rotate(${tiltDeg.toFixed(1)}deg)`,
                   transformOrigin: "center bottom",
-                  filter: `url(#${fId})`,
-                  animation: `stylized-flame-flicker-${(i % 3) + 1} ${flickDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite, stylized-flame-sway-${(i % 3) + 1} ${swayDur.toFixed(2)}s ease-in-out infinite`,
-                  animationDelay: `${delay.toFixed(2)}s, ${(delay * 0.7).toFixed(2)}s`,
+                  zIndex: 2,
+                  pointerEvents: "none",
                   mixBlendMode: "screen",
                   opacity: baseOpacity,
-                  zIndex: 2, // pohjarivin yllä mutta keskuksen alla
-                  willChange: "transform, opacity",
-                  pointerEvents: "none",
+                  willChange: "transform",
                 }}
                 aria-hidden
               >
-                <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
-                <path
-                  d={FLAME_PATHS[pathIdx]}
-                  fill="none"
-                  stroke="hsl(8 95% 16%)"
-                  strokeWidth={1.4}
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                  opacity={0.78}
-                />
-              </svg>
+                <svg
+                  width={lickW}
+                  height={finalH}
+                  viewBox="0 0 100 140"
+                  preserveAspectRatio="none"
+                  style={{
+                    filter: `url(#${fId})`,
+                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${flickDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+                    animationDelay: `${delay.toFixed(2)}s`,
+                    transformOrigin: "center bottom",
+                    overflow: "visible",
+                  }}
+                >
+                  <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
+                  <path
+                    d={FLAME_PATHS[pathIdx]}
+                    fill="none"
+                    stroke="hsl(6 98% 14%)"
+                    strokeWidth={2.2}
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    opacity={0.92}
+                  />
+                </svg>
+              </div>
             );
           });
         })()}

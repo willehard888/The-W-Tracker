@@ -696,14 +696,15 @@ const CompactStreakPanel = ({
             <span
               key={numberKey.current}
               className={cn(
-                "font-black font-display tabular-nums tracking-tighter leading-[0.85] inline-block text-3d-fire",
+                "font-black font-display tabular-nums tracking-tighter leading-[0.85] inline-block",
+                isHot ? "text-fire-hot" : "text-3d-fire",
                 displayStreak >= 100 ? "text-[44px]" : "text-[54px]",
                 numberClass,
               )}
               style={{
                 filter: undefined,
                 animation: isHot
-                  ? "streak-number-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), streak-number-fire-pulse 2.4s ease-in-out infinite 0.7s"
+                  ? "streak-number-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), text-fire-heat 3.2s ease-in-out infinite 0.7s, text-fire-shimmer 4.5s linear infinite 0.7s"
                   : "streak-number-in 0.5s ease-out",
                 transformOrigin: "center bottom",
               }}

@@ -804,6 +804,53 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
           );
         })}
 
+        {/* ─── FRONT MICRO FLAMES — small dancing tongues in FRONT of main body ───
+            Adds 3D parallax: tiny flames flicker in front of the hero flame,
+            making the fire feel volumetric. Restrained: low opacity, small
+            size, calm motion — accent rather than noise. */}
+        {Array.from({ length: Math.min(7, Math.round(lerp(3, 7, ferocity))) }).map((_, i) => {
+          // Tighter cluster around the centre — they hug the hero flame
+          const microW = bedWidth * lerp(0.04, 0.08, (i % 3) / 2);
+          const microH = tallestH * lerp(0.18, 0.36, (i % 4) / 3);
+          // Parabolic centre-bias so they cluster around the hero
+          const t01 = ((i * 41 + seed.c * 9) % 100) / 100;
+          const centred = (t01 - 0.5) * 0.85;
+          const xPx = bedWidth * 0.55 * centred;
+          const bottom = size * lerp(0.05, 0.14, (i % 3) / 2);
+          // Slower & calmer than back micro-flames so they don't add visual noise
+          const dur = lerp(1.8, 1.2, ferocity) + (i % 3) * 0.17;
+          const delay = -((i * 0.31 + seed.a * 0.011) % dur);
+          const hueRot = ((i * 13) % 6) - 2;
+          const filterId = filterIds[2]; // sharpest filter — front detail
+          const pathIdx = (i * 7 + 4) % FLAME_PATHS.length;
+          const gradId = `ssf-grad-${uid}-${(i + 1) % Math.max(1, layers.length)}`;
+          return (
+            <svg
+              key={`front-micro-${i}`}
+              width={microW}
+              height={microH}
+              viewBox="0 0 100 140"
+              preserveAspectRatio="none"
+              className="absolute left-1/2"
+              style={{
+                bottom,
+                transform: `translateX(calc(-50% + ${xPx.toFixed(1)}px))`,
+                filter: `url(#${filterId}) hue-rotate(${hueRot}deg) saturate(1.08) brightness(1.04)`,
+                animation: `stylized-flame-flicker-${(i % 3) + 1} ${dur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite, stylized-flame-sway-${((i + 1) % 3) + 1} ${(dur * 1.7).toFixed(2)}s ease-in-out infinite`,
+                animationDelay: `${delay.toFixed(2)}s, ${(delay * 0.6).toFixed(2)}s`,
+                mixBlendMode: "screen",
+                // Hillitty läpinäkyvyys — eivät peitä pääliekkiä, antavat vain syvyyttä
+                opacity: lerp(0.45, 0.7, ferocity),
+                zIndex: 4, // FRONT of main flames (front row = 3)
+                transformOrigin: "center bottom",
+                willChange: "transform, opacity",
+              }}
+            >
+              <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
+            </svg>
+          );
+        })}
+
         {/* ─── FRONT-ROW SHARP EMBERS with TRAILS — bright, fast, lingering ─── */}
         {stage >= 3 && Array.from({ length: Math.min(14, Math.round(lerp(4, 14, ferocityFront))) }).map((_, i) => {
           const xPos = ((i * 53 + seed.c * 11) % 100) / 100;

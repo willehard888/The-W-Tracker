@@ -1479,7 +1479,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             height: Math.max(6, size * 0.06),
             bottom: size * 0.02,
             transform: "translateX(-50%)",
-            background: `radial-gradient(ellipse at 50% 50%, hsl(44 100% 62%) 0%, hsl(28 100% 52%) 35%, transparent 75%)`,
+            background: `radial-gradient(ellipse at 50% 50%, hsl(28 100% 58%) 0%, hsl(14 100% 48%) 35%, transparent 75%)`,
             filter: "blur(3px)",
             mixBlendMode: "screen",
             animation: "stylized-bed-flash 0.7s ease-out forwards",

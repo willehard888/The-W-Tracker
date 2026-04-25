@@ -362,8 +362,22 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       onPointerDown(e);
     };
 
-    const tick = () => {
-      const now = performance.now();
+    // Adaptive frame budget — full 60 fps when visible, 12 fps when off-screen,
+    // paused when tab/app is hidden. The flame ALWAYS keeps animating when
+    // visible per user spec; off-screen we only down-throttle, never freeze.
+    let isVisible = true;
+    let isPageHidden = typeof document !== "undefined" && document.hidden;
+    let lastFrameT = 0;
+
+    const tick = (now: number) => {
+      // Off-screen throttle: cap to ~12 fps to save battery without freezing.
+      const minDelta = isVisible ? 0 : 80;
+      if (now - lastFrameT < minDelta) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      lastFrameT = now;
+
       const turb = turbulence(now);
       // Kun käyttäjä on lähellä, turb feidaa pois → input vie vallan.
       const turbBlend = Math.max(0.25, 1 - proximity * 1.4);
@@ -387,10 +401,11 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       gust = Math.max(0, gust - gustStep);
       blast = Math.max(0, blast - (isReleasing ? releaseBlastDecay : 0.018));
 
-      // Idle ramp: 0 jos viime input <1.5s, → 1 1.2s aikana (oli 4s+1.6s).
-      // Liekki rauhoittuu NOPEAMMIN normaalitilaan ilman kosketusta.
+      // Idle ramp: pidetään liekki AINA elossa — idle on rajoitettu 0.5 maksimiin
+      // jotta turbulenssi (sway/breathing) säilyy näkyvänä ilman vuorovaikutustakin.
+      // Tämä on käyttäjän vaatimus: liekit ovat koko ajan päällä, ei koskaan jähmettyneenä.
       const sinceInput = now - lastInputT;
-      const idleTarget = sinceInput > 1500 ? Math.min(1, (sinceInput - 1500) / 1200) : 0;
+      const idleTarget = sinceInput > 1500 ? Math.min(0.5, (sinceInput - 1500) / 2400) : 0;
       idle += (idleTarget - idle) * 0.05;
 
       // Vapautuksen jälkeen targets vetäytyvät NOPEASTI nollaan (kerroin
@@ -413,8 +428,33 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       el.style.setProperty("--ssf-idle", idle.toFixed(3));
       // Heat-haze morph: hidas, riippumaton turbulence-aalto
       el.style.setProperty("--ssf-haze", (Math.sin(now / 1700) * 0.5 + 0.5).toFixed(3));
-      raf = requestAnimationFrame(tick);
+
+      if (!isPageHidden) raf = requestAnimationFrame(tick);
     };
+
+    // ── Visibility observers — keep the flame alive when visible, throttle off-
+    //    screen, and pause completely when the tab/app is in background. On
+    //    resume we re-seed lastInputT so the idle ramp doesn't pop, and we
+    //    restart the rAF loop instantly.
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) isVisible = e.isIntersecting;
+      },
+      { threshold: 0.01 },
+    );
+    io.observe(el);
+
+    const onVisibility = () => {
+      const wasHidden = isPageHidden;
+      isPageHidden = document.hidden;
+      if (wasHidden && !isPageHidden) {
+        // App resumed — reset input timestamp & relaunch the loop instantly.
+        lastInputT = performance.now();
+        lastFrameT = 0;
+        raf = requestAnimationFrame(tick);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
 
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     window.addEventListener("pointerdown", onPointerDownTrack, { passive: true });
@@ -428,6 +468,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerUp);
       window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("visibilitychange", onVisibility);
+      io.disconnect();
       cancelAnimationFrame(raf);
     };
   }, [isCold, size, releaseSnapMs]);

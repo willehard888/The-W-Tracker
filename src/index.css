@@ -4293,3 +4293,28 @@ button:active > .aurum-lava-glow {
     animation: none !important;
   }
 }
+
+/* ────────────────────────────────────────────────────────────────────
+   Premium skeleton sweep — used by RouteFallback shimmer overlay.
+   Pure transform animation = composited on GPU, zero layout cost.
+   ──────────────────────────────────────────────────────────────────── */
+@keyframes skeleton-sweep {
+  0%   { transform: translateX(-100%); }
+  60%  { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   iOS production polish — overscroll containment, smooth scrolling,
+   tap-highlight removal. Applied globally so every screen feels native.
+   ──────────────────────────────────────────────────────────────────── */
+html, body, #root {
+  overscroll-behavior: contain;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* iOS smooth momentum scroll inside the main scroll container */
+.scroll-smooth {
+  -webkit-overflow-scrolling: touch;
+}

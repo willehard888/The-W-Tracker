@@ -461,6 +461,82 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
     window.addEventListener("pointerup", onPointerUp, { passive: true });
     window.addEventListener("pointercancel", onPointerUp, { passive: true });
     window.addEventListener("scroll", onScroll, { passive: true });
+
+    // ── DEVICE ORIENTATION & MOTION — millisekuntitason reagointi laitteen
+    //    kallistukseen ja liikkeeseen. Toimii sekä webissä (DeviceOrientation API)
+    //    että natiivissa Capacitor-buildissa. iOS 13+ vaatii permissionin →
+    //    pyydetään kerran ensimmäisen tap-eventin yhteydessä.
+    //    - beta  = etu-taakse kallistus (-180..180), käytetään y-tuulena
+    //    - gamma = sivuttainen kallistus (-90..90), käytetään x-tuulena
+    //    - rotationRate.alpha/beta/gamma → gust (kun puhelinta heilutetaan nopeasti)
+    let lastTiltX = 0;
+    let lastTiltY = 0;
+    let lastTiltT = performance.now();
+    const TILT_LERP_INTO_TARGET = 0.85; // erittäin nopea (ms-tason) responsiivisuus
+    const onOrientation = (e: DeviceOrientationEvent) => {
+      // Normalisoi: gamma -45..45 → -1..1 (kallistus käytännössä tuolla välillä)
+      const gamma = typeof e.gamma === "number" ? e.gamma : 0;
+      const beta = typeof e.beta === "number" ? e.beta : 0;
+      // Liekki taipuu KALLISTUSTA VASTAAN (kuin painovoima/inertia)
+      const tiltX = Math.max(-1, Math.min(1, -gamma / 35));
+      // Beta: 0=pysty, 90=vaakasuora. Käytetään pieni offsetti pysty-asennon ympärillä.
+      const tiltY = Math.max(-1, Math.min(1, -(beta - 60) / 45));
+      // Syötä SUORAAN target-arvoon → seuraavalla rAF-tickillä currentWind seuraa
+      // Painotetaan kovaa: tilt vie hallinnan jos käyttäjä ei kosketa
+      if (!pointerActive) {
+        targetWindX = targetWindX * (1 - TILT_LERP_INTO_TARGET) + tiltX * TILT_LERP_INTO_TARGET;
+        targetWindY = targetWindY * (1 - TILT_LERP_INTO_TARGET) + tiltY * TILT_LERP_INTO_TARGET;
+      } else {
+        // Pointer aktiivinen → tilt sekoittuu kevyesti
+        targetWindX = targetWindX * 0.7 + tiltX * 0.3;
+        targetWindY = targetWindY * 0.8 + tiltY * 0.2;
+      }
+      // Tilt-derivaatta = gust (nopea heilautus → puuska)
+      const now = performance.now();
+      const dt = Math.max(8, now - lastTiltT);
+      const dTilt = Math.hypot(tiltX - lastTiltX, tiltY - lastTiltY);
+      const tiltSpeed = dTilt / (dt / 1000); // per second
+      const gustHit = Math.min(1, tiltSpeed / 4);
+      if (gustHit > gust) {
+        gust = gustHit;
+        gustDecay = 0.022;
+      }
+      lastTiltX = tiltX;
+      lastTiltY = tiltY;
+      lastTiltT = now;
+      lastInputT = now;
+    };
+    const onMotion = (e: DeviceMotionEvent) => {
+      // RotationRate antaa kulmanopeuden °/s — heilautukset → gust
+      const rr = e.rotationRate;
+      if (!rr) return;
+      const speed = Math.hypot(rr.alpha || 0, rr.beta || 0, rr.gamma || 0);
+      const gustHit = Math.min(1, speed / 220); // 220°/s = vahva heilautus
+      if (gustHit > gust) {
+        gust = gustHit;
+        gustDecay = 0.025;
+      }
+      if (gustHit > 0.05) lastInputT = performance.now();
+    };
+    // iOS 13+ vaatii permissionin — yritetään hiljaa, fallback web-eventteihin
+    const requestOrientationPermission = () => {
+      const DOE = (window as unknown as { DeviceOrientationEvent?: { requestPermission?: () => Promise<string> } }).DeviceOrientationEvent;
+      const DME = (window as unknown as { DeviceMotionEvent?: { requestPermission?: () => Promise<string> } }).DeviceMotionEvent;
+      const reqs: Promise<string>[] = [];
+      if (DOE && typeof DOE.requestPermission === "function") reqs.push(DOE.requestPermission());
+      if (DME && typeof DME.requestPermission === "function") reqs.push(DME.requestPermission());
+      if (reqs.length === 0) return;
+      Promise.all(reqs).catch(() => {});
+    };
+    // Ensimmäinen pointerdown laukaisee permissionin (iOS vaatimus)
+    const onFirstTouch = () => {
+      requestOrientationPermission();
+      window.removeEventListener("pointerdown", onFirstTouch);
+    };
+    window.addEventListener("pointerdown", onFirstTouch, { once: true, passive: true });
+    window.addEventListener("deviceorientation", onOrientation, { passive: true });
+    window.addEventListener("devicemotion", onMotion, { passive: true });
+
     raf = requestAnimationFrame(tick);
     return () => {
       window.removeEventListener("pointermove", onPointerMove);
@@ -468,6 +544,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerUp);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("deviceorientation", onOrientation);
+      window.removeEventListener("devicemotion", onMotion);
+      window.removeEventListener("pointerdown", onFirstTouch);
       document.removeEventListener("visibilitychange", onVisibility);
       io.disconnect();
       cancelAnimationFrame(raf);

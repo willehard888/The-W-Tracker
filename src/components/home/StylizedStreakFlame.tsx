@@ -1398,7 +1398,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                 }}
                 aria-hidden
               >
-                <path d={heroPath} fill="hsl(44 100% 56% / 0.5)" />
+                <path d={heroPath} fill="hsl(28 100% 52% / 0.5)" />
               </svg>
             </>
           );

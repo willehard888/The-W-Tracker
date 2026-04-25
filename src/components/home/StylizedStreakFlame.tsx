@@ -470,29 +470,20 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       }}
       aria-hidden
     >
-      {/* ── TAP-BLAST RING — valkoinen renkaan välähdys liekin ympärillä ── */}
-      {blastRingKey > 0 && (
-        <span
-          key={`blast-ring-${blastRingKey}`}
-          className="absolute pointer-events-none rounded-full"
-          style={{
-            width: size * 1.1,
-            height: size * 1.1,
-            left: "50%",
-            top: "55%",
-            transform: "translate(-50%, -50%)",
-            border: `2px solid hsl(48 100% 92%)`,
-            boxShadow: `0 0 ${size * 0.25}px hsl(40 100% 70% / 0.7), inset 0 0 ${size * 0.18}px hsl(46 100% 88% / 0.5)`,
-            mixBlendMode: "screen",
-            animation: "ssf-blast-ring 850ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
-            zIndex: 6,
-          }}
-        />
-      )}
-      {/* ── TAP-BLAST SPARKS — 8 kipunaa sinkoutuu radiaalisesti ── */}
+      {/* (Tap-blast valkoinen rengasvälähdys poistettu — luki cheap-glown.
+          Vain orange/red-kipinät sinkoutuvat ulos, jolloin pysytään puhtaassa
+          tuli-värimaailmassa.) */}
+      {/* ── TAP-BLAST SPARKS — 8 lämmin-oranssia kipunaa sinkoutuu radiaalisesti ── */}
       {blastSparks.map((sp) => {
         const tx = Math.cos(sp.angle) * sp.dist;
         const ty = Math.sin(sp.angle) * sp.dist - size * 0.08; // pieni nostebias
+        // Värit pidetään puhtaasti tulipaletissa: keltainen → oranssi → punainen
+        const sparkPalette = [
+          { core: "hsl(48 100% 62%)",  glow: "hsl(38 100% 55%)" },  // keltainen kipuna
+          { core: "hsl(28 100% 56%)",  glow: "hsl(18 100% 48%)" },  // oranssi kipuna
+          { core: "hsl(12 95% 50%)",   glow: "hsl(4 90% 42%)"  },   // punainen kipuna
+        ];
+        const c = sparkPalette[sp.id % 3];
         return (
           <span
             key={`blast-spark-${sp.id}`}
@@ -502,8 +493,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               height: sp.size,
               left: "50%",
               top: "60%",
-              background: "hsl(48 100% 92%)",
-              boxShadow: `0 0 ${sp.size * 3}px hsl(38 100% 68%), 0 0 ${sp.size * 1.5}px hsl(48 100% 88%)`,
+              background: c.core,
+              // Tighter shadow — ei levitä blurmaista hehkua
+              boxShadow: `0 0 ${sp.size * 1.4}px ${c.glow}`,
               ["--blast-tx" as string]: `${tx.toFixed(1)}px`,
               ["--blast-ty" as string]: `${ty.toFixed(1)}px`,
               animation: "ssf-blast-spark 850ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards",

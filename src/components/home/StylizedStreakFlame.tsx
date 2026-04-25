@@ -640,6 +640,56 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
           );
         })}
 
+        {/* ─── MICRO FLAMES — small, fast-dancing tongues that fill gaps & add depth ───
+            These ride between the main flame layers (back of front-row, front of mid-row)
+            adding the small "tongue clusters" you see in real bonfires around bigger flames. */}
+        {Array.from({ length: Math.min(10, Math.round(lerp(3, 10, ferocity))) }).map((_, i) => {
+          // Two clusters: low/wide and mid-height tighter
+          const isLow = i % 2 === 0;
+          const microW = bedWidth * lerp(0.05, 0.11, (i % 4) / 3);
+          const microH = tallestH * (isLow ? lerp(0.22, 0.42, (i % 3) / 2) : lerp(0.35, 0.6, (i % 3) / 2));
+          // Spread them across the bed, denser toward the centre
+          const t01 = ((i * 29 + seed.b * 7) % 100) / 100;
+          // Bias toward centre with a parabolic curve
+          const centred = (t01 - 0.5) * (0.6 + Math.abs(t01 - 0.5) * 0.8);
+          const xPx = bedWidth * 0.95 * centred;
+          const bottom = size * (isLow ? 0.04 : lerp(0.06, 0.12, (i % 3) / 2));
+          const dur = lerp(1.4, 0.85, ferocity) + (i % 4) * 0.13;
+          const delay = -((i * 0.19 + seed.c * 0.009) % dur);
+          // Slight per-instance hue rotation so micro-flames don't look identical
+          const hueRot = ((i * 17) % 8) - 3;
+          const filterId = filterIds[isLow ? 1 : 2];
+          // Reuse a varied path for organic shape variation
+          const pathIdx = (i * 3 + 2) % FLAME_PATHS.length;
+          const gradId = `ssf-grad-${uid}-${(i + 2) % Math.max(1, layers.length)}`;
+          // Z between mid (2) and front (3) so they nestle BETWEEN main layers
+          const zIdx = isLow ? 2 : 3;
+          return (
+            <svg
+              key={`micro-${i}`}
+              width={microW}
+              height={microH}
+              viewBox="0 0 100 140"
+              preserveAspectRatio="none"
+              className="absolute left-1/2"
+              style={{
+                bottom,
+                transform: `translateX(calc(-50% + ${xPx.toFixed(1)}px))`,
+                filter: `url(#${filterId}) hue-rotate(${hueRot}deg) saturate(1.05)`,
+                animation: `stylized-flame-flicker-${(i % 3) + 1} ${dur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite, stylized-flame-sway-${(i % 3) + 1} ${(dur * 1.6).toFixed(2)}s ease-in-out infinite`,
+                animationDelay: `${delay.toFixed(2)}s, ${(delay * 0.7).toFixed(2)}s`,
+                mixBlendMode: "screen",
+                opacity: lerp(0.65, 0.95, ferocity) * (isLow ? 0.85 : 1),
+                zIndex: zIdx,
+                transformOrigin: "center bottom",
+                willChange: "transform, opacity",
+              }}
+            >
+              <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
+            </svg>
+          );
+        })}
+
         {/* ─── FRONT-ROW SHARP EMBERS with TRAILS — bright, fast, lingering ─── */}
         {stage >= 3 && Array.from({ length: Math.min(14, Math.round(lerp(4, 14, ferocityFront))) }).map((_, i) => {
           const xPos = ((i * 53 + seed.c * 11) % 100) / 100;

@@ -153,7 +153,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
   //      --ssf-idle     :  0..1 idle dimming (no input >4 s)
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [blastSparks, setBlastSparks] = useState<Array<{ id: number; angle: number; dist: number; size: number }>>([]);
-  const [blastRingKey, setBlastRingKey] = useState(0);
+  // (blastRingKey poistettu — tap-blast valkoinen rengas oli cheap glow)
   useEffect(() => {
     if (isCold) return;
     const el = containerRef.current;
@@ -191,7 +191,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
         size: 2 + Math.random() * 2.4,
       }));
       setBlastSparks(sparks);
-      setBlastRingKey((k) => k + 1);
+      // (rengasvälähdys poistettu — vain kipinät jäävät)
       window.setTimeout(() => setBlastSparks([]), 900);
     };
 
@@ -297,8 +297,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
   }, [isCold, size]);
 
 
-  // How many flames at this stage — TRIPLED for fuller volumetric fire: 6..42 layered tongues
-  const flameCount = isCold ? 0 : Math.min(42, (2 + stage * 2) * 3);
+  // How many flames at this stage — 6× base for ultra-volumetric inferno: 12..84 layered tongues
+  const flameCount = isCold ? 0 : Math.min(84, (2 + stage * 2) * 6);
 
   // Bed width (how wide the flames spread) and tallest flame height — wider, taller, smoother
   const bedWidth = lerp(0.55, 1.25, t) * size;
@@ -329,11 +329,12 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       { pathIndex: 4, scale: 1.05, xOffset:  0.0,  zIndex: 4, speed: 0.62, hueShift:  6, intensity: 1.0,  filterId: 2 },
     ];
 
-    // ── TRIPLE the plan: 3 passes per base layer with deterministic jitter
+    // ── 6× the plan: 6 passes per base layer with deterministic jitter
     // (different scale, xOffset, speed, hue) so layers stack as parallax
     // copies instead of identical clones — no two flames look the same.
+    const PASSES = 6;
     const plan: Omit<FlameLayer, "delaySeed">[] = [];
-    for (let pass = 0; pass < 3; pass++) {
+    for (let pass = 0; pass < PASSES; pass++) {
       basePlan.forEach((b, idx) => {
         // Jitter values vary per (pass, idx) — deterministic, no randomness
         const j = (pass * 17 + idx * 11) % 13;
@@ -341,8 +342,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
         const xJ = ((j - 6) / 80);                                // ±0.075 xOffset
         const speedJ = 1 + ((j - 6) / 50);                        // ±12% speed
         const hueJ = ((j - 6) / 6);                               // ±1 hue
-        // Pass 1 = original, pass 2 = slight back-shift, pass 3 = slight front-shift
-        const intenJ = pass === 0 ? 1 : pass === 1 ? 0.92 : 1.04;
+        // Pass intensity rotates so layers stratify into front/mid/back parallax bands
+        const intenCycle = [1, 0.92, 1.04, 0.88, 1.06, 0.96];
+        const intenJ = intenCycle[pass % intenCycle.length];
         const pathJ = (b.pathIndex + pass * 2) % FLAME_PATHS.length;
         plan.push({
           ...b,
@@ -363,10 +365,10 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       chosen = [...plan.slice(9, 9 + (flameCount - 1)), plan[13]].slice(0, flameCount);
     } else {
       const heroLayer = plan[13]; // hero from pass 0
-      // Build a priority order across all 3 passes: mid → front → back, pass 0 first
+      // Build a priority order across all passes: mid → front → back, pass 0 first
       const passSlice = (p: number) => plan.slice(p * 14, (p + 1) * 14);
       const ordered: typeof plan = [];
-      for (let p = 0; p < 3; p++) {
+      for (let p = 0; p < PASSES; p++) {
         const passLayers = passSlice(p);
         ordered.push(
           ...passLayers.slice(4, 9),            // mid row (5)
@@ -447,10 +449,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
   // Floor light pool — wash beneath the flames simulating ground reflection
   const floorPoolColor = stage >= 6 ? "hsl(22 100% 55%)" : stage >= 4 ? "hsl(18 100% 50%)" : "hsl(14 95% 45%)";
 
-  // Tribe-style outer aura accent
-  const auraAccent = accent ?? (stage >= 6 ? "hsl(22 100% 60%)" : stage >= 4 ? "hsl(18 100% 56%)" : "hsl(14 95% 50%)");
-  const auraOpacity = 0.35 + intensityNorm * 0.55;
-  const auraSpread = size * (0.4 + intensityNorm * 1.6);
+  // (Tribe outer aura halo removed — looked like cheap glow.
+  //  Tribe intensity now expressed purely through doubled flame count + ferocity.)
 
   return (
     <div
@@ -470,29 +470,20 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       }}
       aria-hidden
     >
-      {/* ── TAP-BLAST RING — valkoinen renkaan välähdys liekin ympärillä ── */}
-      {blastRingKey > 0 && (
-        <span
-          key={`blast-ring-${blastRingKey}`}
-          className="absolute pointer-events-none rounded-full"
-          style={{
-            width: size * 1.1,
-            height: size * 1.1,
-            left: "50%",
-            top: "55%",
-            transform: "translate(-50%, -50%)",
-            border: `2px solid hsl(48 100% 92%)`,
-            boxShadow: `0 0 ${size * 0.25}px hsl(40 100% 70% / 0.7), inset 0 0 ${size * 0.18}px hsl(46 100% 88% / 0.5)`,
-            mixBlendMode: "screen",
-            animation: "ssf-blast-ring 850ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
-            zIndex: 6,
-          }}
-        />
-      )}
-      {/* ── TAP-BLAST SPARKS — 8 kipunaa sinkoutuu radiaalisesti ── */}
+      {/* (Tap-blast valkoinen rengasvälähdys poistettu — luki cheap-glown.
+          Vain orange/red-kipinät sinkoutuvat ulos, jolloin pysytään puhtaassa
+          tuli-värimaailmassa.) */}
+      {/* ── TAP-BLAST SPARKS — 8 lämmin-oranssia kipunaa sinkoutuu radiaalisesti ── */}
       {blastSparks.map((sp) => {
         const tx = Math.cos(sp.angle) * sp.dist;
         const ty = Math.sin(sp.angle) * sp.dist - size * 0.08; // pieni nostebias
+        // Värit pidetään puhtaasti tulipaletissa: keltainen → oranssi → punainen
+        const sparkPalette = [
+          { core: "hsl(48 100% 62%)",  glow: "hsl(38 100% 55%)" },  // keltainen kipuna
+          { core: "hsl(28 100% 56%)",  glow: "hsl(18 100% 48%)" },  // oranssi kipuna
+          { core: "hsl(12 95% 50%)",   glow: "hsl(4 90% 42%)"  },   // punainen kipuna
+        ];
+        const c = sparkPalette[sp.id % 3];
         return (
           <span
             key={`blast-spark-${sp.id}`}
@@ -502,8 +493,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               height: sp.size,
               left: "50%",
               top: "60%",
-              background: "hsl(48 100% 92%)",
-              boxShadow: `0 0 ${sp.size * 3}px hsl(38 100% 68%), 0 0 ${sp.size * 1.5}px hsl(48 100% 88%)`,
+              background: c.core,
+              // Tighter shadow — ei levitä blurmaista hehkua
+              boxShadow: `0 0 ${sp.size * 1.4}px ${c.glow}`,
               ["--blast-tx" as string]: `${tx.toFixed(1)}px`,
               ["--blast-ty" as string]: `${ty.toFixed(1)}px`,
               animation: "ssf-blast-spark 850ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards",
@@ -513,24 +505,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
           />
         );
       })}
-      {/* TRIBE INFERNO AURA — only renders when intensify > 1 */}
-      {intensity > 1 && (
-        <span
-          aria-hidden
-          className="absolute pointer-events-none rounded-full"
-          style={{
-            width: auraSpread * 2,
-            height: auraSpread * 2,
-            left: "50%",
-            bottom: -auraSpread * 0.3,
-            transform: "translateX(-50%)",
-            background: `radial-gradient(circle, ${auraAccent.replace(")", ` / ${auraOpacity.toFixed(2)})`)} 0%, ${auraAccent.replace(")", ` / ${(auraOpacity * 0.4).toFixed(2)})`)} 28%, transparent 70%)`,
-            filter: `blur(${size * 0.25}px)`,
-            mixBlendMode: "screen",
-            zIndex: -1,
-          }}
-        />
-      )}
+      {/* (Tribe inferno aura halo removed — used to be a soft radial glow,
+          read as cheap lens-flare. Tribe intensity is now expressed only via
+          doubled flame count + reactive ferocity.) */}
       {/* SVG defs — turbulence + internal bloom filters + per-layer gradients */}
       <svg width="0" height="0" className="absolute" aria-hidden>
         <defs>
@@ -580,20 +557,16 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             </filter>
           ))}
 
-          {/* Per-layer vertical gradients — DEEP ORANGE palette
-              (charred ember → blood-red → deep tangerine → burnt orange → glowing amber → cream apex)
-              Yellows pushed back, oranges/reds dominate the body. */}
+          {/* Per-layer vertical gradients — PURE FIRE palette
+              (charred ember → blood-red → deep tangerine → burnt orange → glowing amber → warm yellow apex)
+              VAIN punainen / oranssi / keltainen — ei sinistä kaasubasea, ei valkoista cream-apex. */}
           {layers.map((layer, i) => {
             const gradId = `ssf-grad-${uid}-${i}`;
             const hShift = layer.hueShift;
             const inten = layer.intensity;
-            // Real combustion shows a faint blue base on hot, oxygen-rich flames.
-            // Lower the threshold so mid layers also get it (more authentic).
-            const showBlue = stage >= 3 && layer.zIndex >= 2 && inten > 0.55;
-            // Two-step base: a tiny dark "fuel shadow" then either blue neck or red ember.
+            // Pohjasta lämmin tumma punainen — ei sinistä happikaasua (luki "scifi-light"-sävyltä).
             const fuelShadow = `hsl(${0 + hShift} 55% ${lerp(8, 14, inten)}%)`;       // near-black base
-            const neckBlue   = `hsl(${214 + hShift} 92% ${lerp(54, 66, inten)}%)`;     // hot oxygen blue
-            const neckBase   = showBlue ? neckBlue : `hsl(${4 + hShift} 92% ${lerp(20, 28, inten)}%)`;
+            const neckBase   = `hsl(${4 + hShift} 92% ${lerp(20, 28, inten)}%)`;       // syvä punainen pohja
             const charred   = `hsl(${2 + hShift}  88% ${lerp(22, 32, inten)}%)`; // charred ember
             const ember     = `hsl(${6 + hShift}  96% ${lerp(32, 42, inten)}%)`; // blood ember red
             const deepBase  = `hsl(${12 + hShift} 100% ${lerp(40, 50, inten)}%)`;// dark crimson-orange
@@ -601,15 +574,17 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             const shoulder  = `hsl(${24 + hShift} 100% ${lerp(54, 64, inten)}%)`;// burnt orange
             const upperBody = `hsl(${30 + hShift} 100% ${lerp(60, 70, inten)}%)`;// rich tangerine
             const tipColor  = inten > 0.85
-              ? `hsl(${38 + hShift} 100% ${lerp(72, 84, inten)}%)`              // glowing amber
-              : `hsl(${34 + hShift} 100% ${lerp(66, 76, inten)}%)`;
-            const apex      = inten > 0.94 ? `hsl(46 100% 94%)` : tipColor;     // premium gold-cream apex
+              ? `hsl(${38 + hShift} 100% ${lerp(64, 72, inten)}%)`              // glowing amber
+              : `hsl(${34 + hShift} 100% ${lerp(58, 68, inten)}%)`;
+            // Apex: lämmin keltainen — ei valkoinen / kreemi (välttää cheap-glow).
+            const apex      = inten > 0.94 ? `hsl(48 100% 70%)` : tipColor;
+
 
             return (
               <linearGradient key={gradId} id={gradId} x1="50%" y1="100%" x2="50%" y2="0%">
                 {/* Dark fuel shadow — pins the flame to the ground visually */}
                 <stop offset="0%"   stopColor={fuelShadow} stopOpacity="0.9" />
-                <stop offset="3%"   stopColor={neckBase}   stopOpacity={showBlue ? 0.85 : 0.95} />
+                <stop offset="3%"   stopColor={neckBase}   stopOpacity="0.95" />
                 <stop offset="8%"   stopColor={charred}    stopOpacity="1" />
                 <stop offset="16%"  stopColor={ember}      stopOpacity="1" />
                 <stop offset="30%"  stopColor={deepBase}   stopOpacity="1" />
@@ -630,12 +605,13 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             const id = `ssf-core-${uid}-${idx}`;
             return (
               <radialGradient key={id} id={id} cx="50%" cy="62%" r="38%">
-                <stop offset="0%"   stopColor="hsl(50 100% 96%)" stopOpacity="1" />
-                <stop offset="10%"  stopColor="hsl(44 100% 86%)" stopOpacity="0.95" />
-                <stop offset="26%"  stopColor="hsl(34 100% 70%)" stopOpacity="0.78" />
-                <stop offset="50%"  stopColor="hsl(22 100% 56%)" stopOpacity="0.45" />
-                <stop offset="76%"  stopColor="hsl(12 98% 46%)"  stopOpacity="0.18" />
-                <stop offset="100%" stopColor="hsl(6 95% 38%)"   stopOpacity="0" />
+                {/* Pure orange-red core — ei valkoinen / kreemi keskipiste. */}
+                <stop offset="0%"   stopColor="hsl(40 100% 70%)" stopOpacity="1" />
+                <stop offset="14%"  stopColor="hsl(34 100% 60%)" stopOpacity="0.92" />
+                <stop offset="32%"  stopColor="hsl(24 100% 54%)" stopOpacity="0.72" />
+                <stop offset="56%"  stopColor="hsl(14 98% 48%)"  stopOpacity="0.4" />
+                <stop offset="80%"  stopColor="hsl(8 95% 40%)"   stopOpacity="0.15" />
+                <stop offset="100%" stopColor="hsl(4 90% 32%)"   stopOpacity="0" />
               </radialGradient>
             );
           })}
@@ -686,7 +662,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
           height: Math.max(4, size * 0.04),
           bottom: size * 0.02,
           transform: "translateX(-50%)",
-          background: `radial-gradient(ellipse at 50% 50%, hsl(40 100% 80% / 1) 0%, hsl(28 100% 62% / 0.95) 22%, hsl(18 100% 52% / 0.85) 48%, hsl(10 95% 42% / 0.6) 72%, hsl(4 88% 28% / 0.3) 90%, transparent 100%)`,
+          background: `radial-gradient(ellipse at 50% 50%, hsl(40 100% 60% / 1) 0%, hsl(28 100% 54% / 0.95) 22%, hsl(18 100% 48% / 0.85) 48%, hsl(10 95% 40% / 0.6) 72%, hsl(4 88% 28% / 0.3) 90%, transparent 100%)`,
           filter: "blur(2.5px)",
           borderRadius: "50%",
           mixBlendMode: "screen",
@@ -708,8 +684,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               height: dot,
               bottom: size * 0.025,
               transform: `translateX(calc(-50% + ${left.toFixed(1)}px))`,
-              background: i % 3 === 0 ? "hsl(54 100% 90%)" : "hsl(38 100% 68%)",
-              boxShadow: `0 0 ${dot * 2}px hsl(28 100% 58%)`,
+              background: i % 3 === 0 ? "hsl(44 100% 60%)" : "hsl(28 100% 54%)",
+              boxShadow: `0 0 ${dot * 1.4}px hsl(18 100% 48%)`,
               animation: `stylized-coal-pulse ${(1.6 + i * 0.27).toFixed(2)}s ease-in-out infinite`,
               animationDelay: `${(i * 0.3).toFixed(2)}s`,
               zIndex: 1,
@@ -794,7 +770,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   <path
                     d={FLAME_PATHS[layer.pathIndex]}
                     fill="none"
-                    stroke={layer.zIndex >= 3 ? "hsl(46 100% 82%)" : layer.zIndex === 2 ? "hsl(34 100% 64%)" : "hsl(20 95% 50%)"}
+                    stroke={layer.zIndex >= 3 ? "hsl(40 100% 58%)" : layer.zIndex === 2 ? "hsl(28 100% 52%)" : "hsl(14 95% 46%)"}
                     strokeWidth={layer.zIndex >= 3 ? 2.2 : layer.zIndex === 2 ? 1.8 : 1.4}
                     strokeLinejoin="round"
                     strokeLinecap="round"
@@ -967,7 +943,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               }}
             >
               <path d={FLAME_PATHS[4]} fill={`url(#${gradId})`} />
-              <path d={FLAME_PATHS[4]} fill="none" stroke="hsl(46 100% 78%)" strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" opacity={0.75} />
+              <path d={FLAME_PATHS[4]} fill="none" stroke="hsl(38 100% 56%)" strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" opacity={0.75} />
             </svg>
           );
         })}
@@ -1066,7 +1042,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               }}
             >
               <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
-              <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(48 100% 80%)" strokeWidth={1.4} strokeLinejoin="round" strokeLinecap="round" opacity={0.78} />
+              <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(40 100% 58%)" strokeWidth={1.4} strokeLinejoin="round" strokeLinecap="round" opacity={0.78} />
             </svg>
           );
         })}
@@ -1079,7 +1055,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
           const dur = lerp(2.2, 1.3, ferocity) + ((i * 0.21) % 1.0);
           const delay = -((i * 0.27 + seed.a * 0.011) % dur);
           const sparkSize = lerp(1.6, 3.0, (i % 3) / 2) * lerp(0.85, 1.25, ferocity);
-          const color = i % 4 === 0 ? "hsl(54 100% 94%)" : i % 3 === 0 ? "hsl(42 100% 74%)" : "hsl(28 100% 62%)";
+          const color = i % 4 === 0 ? "hsl(44 100% 60%)" : i % 3 === 0 ? "hsl(28 100% 54%)" : "hsl(14 95% 48%)";
           const riseDist = lerp(110, 170, ferocity); // %
           // Trail = stacked box-shadows behind the spark (tail effect)
           const trailLen = Math.max(2, Math.round(lerp(2, 6, ferocity)));
@@ -1158,7 +1134,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             height: Math.max(6, size * 0.06),
             bottom: size * 0.02,
             transform: "translateX(-50%)",
-            background: `radial-gradient(ellipse at 50% 50%, hsl(54 100% 92%) 0%, hsl(40 100% 65%) 35%, transparent 75%)`,
+            background: `radial-gradient(ellipse at 50% 50%, hsl(44 100% 62%) 0%, hsl(28 100% 52%) 35%, transparent 75%)`,
             filter: "blur(3px)",
             mixBlendMode: "screen",
             animation: "stylized-bed-flash 0.7s ease-out forwards",

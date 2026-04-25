@@ -1247,7 +1247,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
           const dur = lerp(2.2, 1.3, ferocity) + ((i * 0.21) % 1.0);
           const delay = -((i * 0.27 + seed.a * 0.011) % dur);
           const sparkSize = lerp(1.6, 3.0, (i % 3) / 2) * lerp(0.85, 1.25, ferocity);
-          const color = i % 4 === 0 ? "hsl(44 100% 60%)" : i % 3 === 0 ? "hsl(28 100% 54%)" : "hsl(14 95% 48%)";
+          const color = i % 4 === 0 ? "hsl(28 100% 56%)" : i % 3 === 0 ? "hsl(16 100% 50%)" : "hsl(6 95% 44%)";
           const riseDist = lerp(110, 170, ferocity); // %
           // Trail = stacked box-shadows behind the spark (tail effect)
           const trailLen = Math.max(2, Math.round(lerp(2, 6, ferocity)));

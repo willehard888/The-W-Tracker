@@ -142,68 +142,160 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
     prevStageRef.current = stage;
   }, [stage]);
 
-  // ── Reactivity: lean & flicker in response to pointer / touch movement.
-  // We track the global pointer and translate its movement into:
-  //   --ssf-wind-x : -1..1 horizontal lean intensity (smoothed)
-  //   --ssf-gust   : 0..1  short-lived "gust" amplitude that triggers on
-  //                  fast pointer moves, fades back to 0 (~600ms).
-  // Animations in CSS read these vars to tilt and energise the flame.
+  // ── REACTIVITY v2 — multi-axis lean, proximity bloom, scroll gust,
+  //    tap blast (with haptic), and idle breath. All driven via CSS vars
+  //    on the container so animations read live state without rerender.
+  //      --ssf-wind-x   : -1..1 horizontal lean (pointer X)
+  //      --ssf-wind-y   : -1..1 vertical reach  (pointer above flame = +)
+  //      --ssf-gust     :  0..1 short-lived burst (fast pointer / scroll)
+  //      --ssf-proximity:  0..1 closeness boost (brightness + saturation)
+  //      --ssf-blast    :  0..1 tap pop, decays ~800 ms
+  //      --ssf-idle     :  0..1 idle dimming (no input >4 s)
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [blastSparks, setBlastSparks] = useState<Array<{ id: number; angle: number; dist: number; size: number }>>([]);
+  const [blastRingKey, setBlastRingKey] = useState(0);
   useEffect(() => {
     if (isCold) return;
     const el = containerRef.current;
     if (!el) return;
     let raf = 0;
-    let targetWind = 0;
-    let currentWind = 0;
+    let targetWindX = 0;
+    let targetWindY = 0;
+    let currentWindX = 0;
+    let currentWindY = 0;
+    let proximity = 0;
+    let targetProximity = 0;
     let lastX = 0;
     let lastY = 0;
     let lastT = performance.now();
     let gust = 0;
     let gustDecay = 0;
+    let blast = 0;
+    let idle = 0;
+    let lastInputT = performance.now();
+    let inProximity = false; // hysteresis flag
 
-    const onPointer = (e: PointerEvent) => {
+    // Dynamic import — webillä haptics no-op, natiivissa toimii
+    let hapticsMod: typeof import("@/lib/haptics") | null = null;
+    import("@/lib/haptics").then((m) => { hapticsMod = m; }).catch(() => {});
+
+    const triggerBlast = () => {
+      blast = 1;
+      lastInputT = performance.now();
+      hapticsMod?.hapticImpact("medium").catch(() => {});
+      const baseId = Date.now();
+      const sparks = Array.from({ length: 8 }).map((_, i) => ({
+        id: baseId + i,
+        angle: (i / 8) * Math.PI * 2 + (Math.random() - 0.5) * 0.5,
+        dist: size * (0.55 + Math.random() * 0.45),
+        size: 2 + Math.random() * 2.4,
+      }));
+      setBlastSparks(sparks);
+      setBlastRingKey((k) => k + 1);
+      window.setTimeout(() => setBlastSparks([]), 900);
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
       const rect = el.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height * 0.65;
+      const cy = rect.top + rect.height * 0.6;
       const dx = e.clientX - cx;
       const dy = e.clientY - cy;
-      // Distance falloff: full influence within 1.5× size, none beyond 4× size
       const dist = Math.hypot(dx, dy);
-      const influence = Math.max(0, Math.min(1, 1 - (dist - size * 1.5) / (size * 2.5)));
-      // Lean opposite to pointer (fire bends AWAY from incoming wind)
-      targetWind = Math.max(-1, Math.min(1, -dx / (size * 1.2))) * influence;
-      // Gust = pointer speed
+      const influence = Math.max(0, Math.min(1, 1 - (dist - size * 1.4) / (size * 2.6)));
+      // Bend AWAY from pointer X
+      targetWindX = Math.max(-1, Math.min(1, -dx / (size * 1.1))) * influence;
+      // Reach UP toward pointer when above (dy<0), shrink slightly when below
+      targetWindY = Math.max(-1, Math.min(1, -dy / (size * 1.0))) * influence;
+      // Proximity 0..1 (peaks within ~1× size)
+      targetProximity = Math.max(0, Math.min(1, 1 - dist / (size * 1.6)));
+      // Hysteresis-gated proximity haptic
+      if (targetProximity > 0.7 && !inProximity) {
+        inProximity = true;
+        hapticsMod?.hapticSelection().catch(() => {});
+      } else if (targetProximity < 0.4 && inProximity) {
+        inProximity = false;
+      }
+      // Gust = pointer speed × influence
       const now = performance.now();
       const dt = Math.max(8, now - lastT);
-      const speed = Math.hypot(e.clientX - lastX, e.clientY - lastY) / dt; // px/ms
+      const speed = Math.hypot(e.clientX - lastX, e.clientY - lastY) / dt;
       lastX = e.clientX; lastY = e.clientY; lastT = now;
-      const gustHit = Math.min(1, speed / 1.8) * influence;
+      const gustHit = Math.min(1, speed / 1.6) * influence;
       if (gustHit > gust) {
         gust = gustHit;
-        gustDecay = 0.018; // decay rate per frame
+        gustDecay = 0.020;
+      }
+      lastInputT = now;
+    };
+
+    const onPointerDown = (e: PointerEvent) => {
+      const rect = el.getBoundingClientRect();
+      const inside =
+        e.clientX >= rect.left - 24 && e.clientX <= rect.right + 24 &&
+        e.clientY >= rect.top - 24 && e.clientY <= rect.bottom + 24;
+      if (inside) triggerBlast();
+    };
+
+    let lastScrollY = window.scrollY;
+    let lastScrollT = performance.now();
+    let lastScrollHaptic = 0;
+    const onScroll = () => {
+      const now = performance.now();
+      const dt = Math.max(16, now - lastScrollT);
+      const dy = window.scrollY - lastScrollY;
+      const speed = Math.abs(dy) / dt;
+      lastScrollY = window.scrollY;
+      lastScrollT = now;
+      const hit = Math.min(1, speed / 2.4);
+      if (hit > gust) { gust = hit; gustDecay = 0.025; }
+      // Scroll direction nudges horizontal lean
+      targetWindX += (dy > 0 ? -0.35 : 0.35) * hit;
+      targetWindX = Math.max(-1, Math.min(1, targetWindX));
+      lastInputT = now;
+      // Rate-limited light haptic (max once per 250 ms) on strong scroll
+      if (hit > 0.85 && now - lastScrollHaptic > 250) {
+        lastScrollHaptic = now;
+        hapticsMod?.hapticImpact("light").catch(() => {});
       }
     };
 
     const tick = () => {
-      // Smooth lerp towards target (snappy but not jittery)
-      currentWind += (targetWind - currentWind) * 0.12;
-      // Decay gust
+      currentWindX += (targetWindX - currentWindX) * 0.13;
+      currentWindY += (targetWindY - currentWindY) * 0.10;
+      proximity += (targetProximity - proximity) * 0.08;
       gust = Math.max(0, gust - gustDecay);
-      el.style.setProperty("--ssf-wind-x", currentWind.toFixed(3));
+      blast = Math.max(0, blast - 0.018);
+      // Idle ramp: 0 if recent input, → 1 over 1.6 s after 4 s silence
+      const sinceInput = performance.now() - lastInputT;
+      const idleTarget = sinceInput > 4000 ? Math.min(1, (sinceInput - 4000) / 1600) : 0;
+      idle += (idleTarget - idle) * 0.04;
+      // Bleed targets back toward neutral when no input
+      targetWindX *= 0.985;
+      targetWindY *= 0.97;
+      targetProximity *= 0.92;
+
+      el.style.setProperty("--ssf-wind-x", currentWindX.toFixed(3));
+      el.style.setProperty("--ssf-wind-y", currentWindY.toFixed(3));
       el.style.setProperty("--ssf-gust", gust.toFixed(3));
-      // Slowly bleed the wind target back to neutral if pointer is idle
-      targetWind *= 0.985;
+      el.style.setProperty("--ssf-proximity", proximity.toFixed(3));
+      el.style.setProperty("--ssf-blast", blast.toFixed(3));
+      el.style.setProperty("--ssf-idle", idle.toFixed(3));
       raf = requestAnimationFrame(tick);
     };
 
-    window.addEventListener("pointermove", onPointer, { passive: true });
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("pointerdown", onPointerDown, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     raf = requestAnimationFrame(tick);
     return () => {
-      window.removeEventListener("pointermove", onPointer);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(raf);
     };
   }, [isCold, size]);
+
 
   // How many flames at this stage — TRIPLED for fuller volumetric fire: 6..42 layered tongues
   const flameCount = isCold ? 0 : Math.min(42, (2 + stage * 2) * 3);

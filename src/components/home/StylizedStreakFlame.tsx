@@ -695,6 +695,25 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
         />
       )}
 
+      {/* ─── HEAT-HAZE — kuumuuden aiheuttama ilmanvärähtely liekin yläpuolella ─── */}
+      {stage >= 2 && (
+        <span
+          className="absolute left-1/2 pointer-events-none"
+          style={{
+            width: bedWidth * 1.1,
+            height: tallestH * 0.55,
+            bottom: tallestH * 0.55,
+            transform: `translateX(-50%) translateY(calc(var(--ssf-haze, 0.5) * -3px)) scaleY(calc(1 + var(--ssf-haze, 0.5) * 0.04))`,
+            background: `radial-gradient(ellipse at 50% 30%, hsl(28 80% 70% / 0.10) 0%, hsl(20 70% 60% / 0.05) 45%, transparent 80%)`,
+            filter: `blur(${Math.max(3, size * 0.04)}px)`,
+            mixBlendMode: "screen",
+            zIndex: 5,
+            opacity: lerp(0.5, 1, t),
+            transition: "transform 0.08s linear",
+          }}
+        />
+      )}
+
       {/* ─── EMBER BED — burning fuel line ─── */}
       <span
         className="absolute left-1/2"

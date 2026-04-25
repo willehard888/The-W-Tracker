@@ -308,51 +308,53 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
             </filter>
           ))}
 
-          {/* Per-layer vertical gradients — naturalistic 7-stop fire palette
-              (deep ember-red → blood-orange → tangerine → amber gold → straw → cream-white) */}
+          {/* Per-layer vertical gradients — DEEP ORANGE palette
+              (charred ember → blood-red → deep tangerine → burnt orange → glowing amber → cream apex)
+              Yellows pushed back, oranges/reds dominate the body. */}
           {layers.map((layer, i) => {
             const gradId = `ssf-grad-${uid}-${i}`;
             const hShift = layer.hueShift;
             const inten = layer.intensity;
-            // Physical blue base only on hot front+mid flames (where O2 mixes with fuel)
             const showBlue = stage >= 4 && layer.zIndex >= 2 && inten > 0.65;
             const bottomBlue = showBlue
-              ? `hsl(${208 + hShift} 95% ${lerp(60, 72, inten)}%)`
-              : `hsl(${6 + hShift} 88% ${lerp(22, 32, inten)}%)`;
-            const ember     = `hsl(${4 + hShift}  92% ${lerp(28, 38, inten)}%)`;  // deep blood-red coal
-            const deepBase  = `hsl(${10 + hShift} 95% ${lerp(40, 50, inten)}%)`;  // saturated red base
-            const body      = `hsl(${20 + hShift} 98% ${lerp(50, 60, inten)}%)`;  // blood-orange body
-            const shoulder  = `hsl(${32 + hShift} 100% ${lerp(58, 70, inten)}%)`; // tangerine
-            const upperBody = `hsl(${42 + hShift} 100% ${lerp(66, 78, inten)}%)`; // amber gold
+              ? `hsl(${210 + hShift} 95% ${lerp(58, 70, inten)}%)`
+              : `hsl(${4 + hShift} 90% ${lerp(18, 28, inten)}%)`;
+            const charred   = `hsl(${2 + hShift}  88% ${lerp(20, 30, inten)}%)`; // charred ember
+            const ember     = `hsl(${6 + hShift}  95% ${lerp(30, 40, inten)}%)`; // blood ember red
+            const deepBase  = `hsl(${12 + hShift} 100% ${lerp(38, 48, inten)}%)`;// dark crimson-orange
+            const body      = `hsl(${18 + hShift} 100% ${lerp(46, 56, inten)}%)`;// deep blood-orange
+            const shoulder  = `hsl(${24 + hShift} 100% ${lerp(52, 62, inten)}%)`;// burnt orange
+            const upperBody = `hsl(${30 + hShift} 100% ${lerp(58, 68, inten)}%)`;// rich tangerine
             const tipColor  = inten > 0.85
-              ? `hsl(${52 + hShift} 100% ${lerp(82, 94, inten)}%)`               // straw-cream
-              : `hsl(${46 + hShift} 100% ${lerp(72, 84, inten)}%)`;
-            const apex      = inten > 0.92 ? `hsl(54 100% 97%)` : tipColor;       // near-white apex
+              ? `hsl(${38 + hShift} 100% ${lerp(70, 82, inten)}%)`              // glowing amber (no straw yellow)
+              : `hsl(${34 + hShift} 100% ${lerp(64, 74, inten)}%)`;
+            const apex      = inten > 0.94 ? `hsl(44 100% 90%)` : tipColor;     // pulled-back cream apex
 
             return (
               <linearGradient key={gradId} id={gradId} x1="50%" y1="100%" x2="50%" y2="0%">
-                <stop offset="0%"   stopColor={bottomBlue} stopOpacity={showBlue ? 0.9 : 0.85} />
-                <stop offset="6%"   stopColor={ember}      stopOpacity="1" />
-                <stop offset="20%"  stopColor={deepBase}   stopOpacity="1" />
-                <stop offset="40%"  stopColor={body}       stopOpacity="1" />
-                <stop offset="58%"  stopColor={shoulder}   stopOpacity="0.99" />
-                <stop offset="75%"  stopColor={upperBody}  stopOpacity="0.95" />
-                <stop offset="90%"  stopColor={tipColor}   stopOpacity="0.78" />
+                <stop offset="0%"   stopColor={bottomBlue} stopOpacity={showBlue ? 0.85 : 0.92} />
+                <stop offset="5%"   stopColor={charred}    stopOpacity="1" />
+                <stop offset="14%"  stopColor={ember}      stopOpacity="1" />
+                <stop offset="28%"  stopColor={deepBase}   stopOpacity="1" />
+                <stop offset="46%"  stopColor={body}       stopOpacity="1" />
+                <stop offset="62%"  stopColor={shoulder}   stopOpacity="0.99" />
+                <stop offset="78%"  stopColor={upperBody}  stopOpacity="0.95" />
+                <stop offset="92%"  stopColor={tipColor}   stopOpacity="0.7" />
                 <stop offset="100%" stopColor={apex}       stopOpacity="0" />
               </linearGradient>
             );
           })}
 
-          {/* Inner white-hot core gradient — taller, more luminous core */}
+          {/* Inner core — deep amber heart, smaller white pinprick */}
           {layers.filter((l) => l.zIndex >= 3).map((_, idx) => {
             const id = `ssf-core-${uid}-${idx}`;
             return (
-              <radialGradient key={id} id={id} cx="50%" cy="62%" r="46%">
-                <stop offset="0%"   stopColor="hsl(56 100% 98%)" stopOpacity="1" />
-                <stop offset="22%"  stopColor="hsl(50 100% 88%)" stopOpacity="0.95" />
-                <stop offset="48%"  stopColor="hsl(40 100% 72%)" stopOpacity="0.6" />
-                <stop offset="78%"  stopColor="hsl(28 100% 60%)" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="hsl(18 95% 50%)"  stopOpacity="0" />
+              <radialGradient key={id} id={id} cx="50%" cy="60%" r="44%">
+                <stop offset="0%"   stopColor="hsl(46 100% 92%)" stopOpacity="1" />
+                <stop offset="14%"  stopColor="hsl(38 100% 78%)" stopOpacity="0.95" />
+                <stop offset="38%"  stopColor="hsl(28 100% 62%)" stopOpacity="0.7" />
+                <stop offset="68%"  stopColor="hsl(18 100% 52%)" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="hsl(10 95% 42%)"  stopOpacity="0" />
               </radialGradient>
             );
           })}

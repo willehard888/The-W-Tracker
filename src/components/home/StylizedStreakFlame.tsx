@@ -1292,7 +1292,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
           const delay = -((i * 0.19 + seed.a * 0.013) % dur);
           const dotSize = 1 + ((i % 3) * 0.5); // 1.0 / 1.5 / 2.0 px
           const drift = ((i % 2 === 0 ? 1 : -1) * (3 + (i * 2) % 8));
-          const color = i % 3 === 0 ? "hsl(48 100% 65%)" : i % 2 === 0 ? "hsl(32 100% 58%)" : "hsl(18 95% 50%)";
+          const color = i % 3 === 0 ? "hsl(30 100% 58%)" : i % 2 === 0 ? "hsl(20 100% 52%)" : "hsl(10 95% 46%)";
           return (
             <span
               key={`micro-ember-${i}`}

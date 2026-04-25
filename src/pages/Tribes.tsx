@@ -259,6 +259,18 @@ const Tribes = () => {
     load();
   };
 
+  const handleClaim = async (id: string, name: string) => {
+    const { error } = await supabase.rpc("claim_paused_tribe" as any, {
+      p_tribe_id: id,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`You now lead ${name} — fire revived 🔥`);
+    load();
+  };
+
   const handleInviteResponse = async (invite: Invite, accept: boolean) => {
     setRespondingId(invite.id);
     const { error } = await supabase.rpc("respond_to_tribe_invite" as any, {

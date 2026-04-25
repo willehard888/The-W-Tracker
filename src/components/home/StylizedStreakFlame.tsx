@@ -470,7 +470,7 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
                   transform: `translateX(-50%) translateZ(${zDepth.toFixed(1)}px)`,
                   transformOrigin: "center bottom",
                   zIndex: layer.zIndex,
-                  animation: `stylized-flame-sway-${(i % 3) + 1} ${swayDur.toFixed(2)}s ease-in-out infinite`,
+                  animation: `stylized-flame-sway-${(i % 3) + 1} ${swayDur.toFixed(2)}s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite`,
                   animationDelay: `${layer.delaySeed.toFixed(2)}s`,
                   willChange: "transform",
                   mixBlendMode: "screen",

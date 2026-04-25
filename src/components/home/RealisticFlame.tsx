@@ -42,10 +42,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
 
     useImperativeHandle(ref, () => ({
       shockwave: (color?: string) => {
-        const el = containerRef.current;
-        if (!el) return;
-        const rect = el.getBoundingClientRect();
-        triggerFlameShockwave(rect.left + rect.width / 2, rect.top + rect.height * 0.5, color ?? accent);
+        triggerFlameShockwave(containerRef.current, color ?? accent);
       },
     }), [accent]);
 

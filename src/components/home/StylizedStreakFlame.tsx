@@ -1068,61 +1068,63 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
           });
         })()}
 
-        {/* ─── BASE FAN — 50 pientä, hieman viistossa olevaa juuriliekkiä jotka levittävät tulen kantaa.
-             Anchored juuri ember-bedin päälle, kallistetaan ulospäin kasvavalla kulmalla niin että keskellä lähes pystyssä,
-             reunoilla jopa ~55° viistossa → tuli leviää aidosti leveämpänä alaosastaan. Pieniä, lyhyitä, nopeasti välkkyviä. */}
+        {/* ─── EDGE LICKS — pieniä liekkejä ISON liekin REUNOILLA (vasemmalla & oikealla),
+             eivät juuressa. Painottuvat siluetin reunoja seuraavaan kaareen, kallistuvat ulospäin
+             jotta tuli näyttää "kuhisevan" reunoiltaan. Tiukasti rajattu määrä → sulava 60fps. */}
         {(() => {
-          const COUNT = 50;
-          const fanSpan = bedWidth * 1.35; // hieman bedWidthia leveämpi → vaikutelma siitä, että tuli kuhisee yli reunojen
-          // Reduced-motion / low-perf: leikkaa määrää (vain visuaalinen vaikutelma säilyy)
-          const effectiveCount = perfClass === "low" ? Math.round(COUNT * 0.5) : perfClass === "mid" ? Math.round(COUNT * 0.78) : COUNT;
-          return Array.from({ length: effectiveCount }).map((_, i) => {
-            // Tasainen jakauma yli fanin, pieni jitter etteivät istu rivissä
-            const evenT = (i + 0.5) / effectiveCount; // 0..1
-            const jitter = (((i * 37 + seed.b * 11) % 100) / 100 - 0.5) * (1 / effectiveCount) * 1.6;
-            const xT = Math.max(0, Math.min(1, evenT + jitter)); // 0..1
-            const xCentered = xT - 0.5; // -0.5..0.5
-            const xPx = fanSpan * xCentered;
-            // Kallistus: keskellä ~0°, reunoilla jopa ±55° (ulospäin)
-            const tiltDeg = xCentered * 110; // -55..+55
-            // Koko: pieniä mutta selvästi näkyviä — alle 6px liekki häviää displacement-filtterin alle
-            const sizeBoost = ((i * 13 + seed.a * 7) % 9) / 9; // 0..1
-            const lickW = Math.max(8, bedWidth * lerp(0.07, 0.13, sizeBoost));
-            const lickH = Math.max(18, tallestH * lerp(0.22, 0.42, sizeBoost) * lerp(0.9, 1.1, ferocity));
-            // Reunaliekit hieman matalampia (perspektiivi)
-            const edgeFalloff = 1 - Math.abs(xCentered) * 0.55;
-            const finalH = lickH * Math.max(0.55, edgeFalloff);
-            // Pohjasijainti hieman bedin yläpuolella
-            const bottom = size * lerp(0.02, 0.05, ((i * 17) % 7) / 7);
-            // Per-instance flicker-animaatio (sway-keyframe overridoi rotate-transformin → käytetään vain flickeriä)
-            const flickDur = lerp(1.3, 0.7, ferocity) + ((i * 0.13) % 0.5);
-            const delay = -(((i * 0.23 + seed.c * 0.011) % flickDur));
+          // Tiukka cap → sulava animaatio. high=14, mid=10, low=7.
+          const COUNT = perfClass === "high" ? 14 : perfClass === "mid" ? 10 : 7;
+          const items: JSX.Element[] = [];
+          for (let i = 0; i < COUNT; i++) {
+            const side = i % 2 === 0 ? -1 : 1; // vuorotellen vasen/oikea
+            const idxOnSide = Math.floor(i / 2);
+            const perSide = Math.ceil(COUNT / 2);
+            // y-paikka 0 (alhaalla) .. 1 (ylhäällä keskuksen seinämässä)
+            const yT = (idxOnSide + 0.5) / perSide; // 0..1
+            // Reuna kaartuu sisäänpäin ylöspäin → x-offset pienenee korkeammalla
+            const edgeCurve = 1 - Math.pow(yT, 1.6) * 0.7;
+            // Pieni jitter etteivät istu rivissä
+            const yJitter = (((i * 31 + seed.b * 7) % 100) / 100 - 0.5) * 0.08;
+            const xJitter = (((i * 47 + seed.c * 11) % 100) / 100 - 0.5) * bedWidth * 0.05;
+            // Asetetaan sivuun bedWidth/2 + pieni puskuri ulospäin
+            const xPx = side * (bedWidth * 0.45 * edgeCurve + bedWidth * 0.06) + xJitter;
+            const bottom = size * (0.05 + (yT + yJitter) * 0.55);
+            // Kallistus: alhaalla pystyssä, ylhäällä noussee enemmän ulospäin
+            const tiltDeg = side * (12 + yT * 30);
+            // Koko: pieniä mutta filtteristä yli (>=10px)
+            const sizeBoost = ((i * 13 + seed.a * 5) % 7) / 7;
+            const lickW = Math.max(10, bedWidth * lerp(0.10, 0.16, sizeBoost));
+            const lickH = Math.max(22, tallestH * lerp(0.20, 0.38, sizeBoost) * (1 - yT * 0.3));
+            // Yksi animaatio per liekki — ei sway-keyframea joka pyyhkisi rotation
+            const flickDur = lerp(1.6, 1.0, ferocity) + ((i * 0.17) % 0.5);
+            const delay = -(((i * 0.27 + seed.c * 0.011) % flickDur));
             const fId = filterIds[i % 2 === 0 ? 1 : 2];
             const gradId = `ssf-grad-${uid}-${i % Math.max(1, layers.length)}`;
             const pathIdx = (i * 3 + 5) % FLAME_PATHS.length;
-            const baseOpacity = lerp(0.6, 0.95, ferocity) * lerp(0.65, 1, edgeFalloff);
-            return (
-              // Käärin rotaation OMAAN diviin jotta inline-animaatio ei pyyhi sitä pois
+            const baseOpacity = lerp(0.6, 0.9, ferocity) * (1 - yT * 0.2);
+            items.push(
               <div
-                key={`base-fan-${i}`}
+                key={`edge-lick-${i}`}
                 className="absolute left-1/2"
                 style={{
                   bottom,
                   width: lickW,
-                  height: finalH,
+                  height: lickH,
                   transform: `translateX(calc(-50% + ${xPx.toFixed(1)}px)) rotate(${tiltDeg.toFixed(1)}deg)`,
                   transformOrigin: "center bottom",
-                  zIndex: 2,
+                  zIndex: 3,
                   pointerEvents: "none",
                   mixBlendMode: "screen",
                   opacity: baseOpacity,
-                  willChange: "transform",
+                  // Containment → composite layer eristyy → ei aiheuta layoutia
+                  contain: "layout paint" as React.CSSProperties["contain"],
+                  willChange: "transform, opacity",
                 }}
                 aria-hidden
               >
                 <svg
                   width={lickW}
-                  height={finalH}
+                  height={lickH}
                   viewBox="0 0 100 140"
                   preserveAspectRatio="none"
                   style={{
@@ -1138,15 +1140,16 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                     d={FLAME_PATHS[pathIdx]}
                     fill="none"
                     stroke="hsl(6 98% 14%)"
-                    strokeWidth={2.2}
+                    strokeWidth={1.8}
                     strokeLinejoin="round"
                     strokeLinecap="round"
-                    opacity={0.92}
+                    opacity={0.85}
                   />
                 </svg>
               </div>
             );
-          });
+          }
+          return items;
         })()}
 
         {/* ─── BACK-ROW SIDE FLAME LICKS — depth layer behind main flames ───

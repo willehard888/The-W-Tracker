@@ -294,7 +294,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
     }));
   }, [flameCount, seed.a, seed.b, seed.c]);
 
-  // Cold state — thin outline candle
+  // Cold state — thin outline candle, gold-soft so it stays on-theme
   if (isCold) {
     return (
       <div
@@ -302,8 +302,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
         style={{ width: size, height: size }}
         aria-hidden
       >
-        <svg width={size * 0.3} height={size * 0.5} viewBox="0 0 100 140" fill="none" className="opacity-30">
-          <path d={FLAME_PATHS[2]} stroke="currentColor" strokeWidth="3" strokeLinejoin="round" className="text-muted-foreground" />
+        <svg width={size * 0.3} height={size * 0.5} viewBox="0 0 100 140" fill="none" className="opacity-40">
+          <path d={FLAME_PATHS[2]} stroke="currentColor" strokeWidth="3" strokeLinejoin="round" style={{ color: "hsl(var(--gold-soft) / 0.55)" }} />
         </svg>
       </div>
     );

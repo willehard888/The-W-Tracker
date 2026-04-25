@@ -1168,17 +1168,33 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             // Reuna kaartuu sisäänpäin ylös, mutta lievemmin kuin small licks
             const edgeCurve = 1 - Math.pow(yT, 1.5) * 0.6;
             const yJitter = (((i * 41 + seed.a * 9) % 100) / 100 - 0.5) * 0.08;
-            const xJitter = (((i * 53 + seed.b * 13) % 100) / 100 - 0.5) * bedWidth * 0.04;
-            // Hieman ULOMPANA kuin small licks (0.34 vs 0.28) → kerrostuu reunalle
-            const xPx = side * (bedWidth * 0.34 * edgeCurve + bedWidth * 0.03) + xJitter;
+            const xJitter = (((i * 53 + seed.b * 13) % 100) / 100 - 0.5) * bedWidth * 0.03;
+            // LÄHEMPÄNÄ päärunkoa: 0.22 (oli 0.34) + 0.015 puskuri → hipovat siluettia
+            const xPx = side * (bedWidth * 0.22 * edgeCurve + bedWidth * 0.015) + xJitter;
             const bottom = size * (0.04 + (yT + yJitter) * 0.6);
             const tiltDeg = side * (10 + yT * 26);
             // KESKIKOKO: ~1.6× isompia kuin small licks
             const sizeBoost = ((i * 17 + seed.c * 7) % 9) / 9;
             const lickW = Math.max(14, bedWidth * lerp(0.13, 0.2, sizeBoost));
             const lickH = Math.max(32, tallestH * lerp(0.26, 0.46, sizeBoost) * (1 - yT * 0.25));
-            const flickDur = lerp(1.8, 1.1, ferocity) + ((i * 0.19) % 0.6);
-            const delay = -(((i * 0.31 + seed.a * 0.013) % flickDur));
+            // OMA RYTMI per liekki — kolme deterministista pseudosatunnaista lukua → ainutlaatuinen kesto, viive ja keyframe-variantti
+            const r1 = ((i * 73 + seed.a * 17 + seed.b * 3) % 1000) / 1000; // 0..1
+            const r2 = ((i * 109 + seed.b * 23 + seed.c * 5) % 1000) / 1000;
+            const r3 = ((i * 157 + seed.c * 29 + seed.a * 7) % 1000) / 1000;
+            // Kesto vaihtelee 0.85s..2.4s — leveä jakauma → ei syntyisi yhteistä rytmiä
+            const flickDur = lerp(0.85, 2.4, r1);
+            // Viive negatiivinen ja täysi kesto → eri vaiheet
+            const delay = -(r2 * flickDur);
+            // Kolme keyframe-varianttia (1/2/3) deterministisesti per liekki
+            const variant = Math.floor(r3 * 3) + 1; // 1..3
+            // Easing-variaatio: vuorottelee jotta liike ei tunnu mekaaniselta
+            const easings = [
+              "cubic-bezier(0.4, 0, 0.6, 1)",
+              "cubic-bezier(0.5, 0.1, 0.5, 0.9)",
+              "cubic-bezier(0.65, 0, 0.35, 1)",
+              "ease-in-out",
+            ];
+            const easing = easings[(i + Math.floor(r1 * 4)) % easings.length];
             const fId = filterIds[i % 2 === 0 ? 1 : 2];
             const gradId = `ssf-grad-${uid}-${i % Math.max(1, layers.length)}`;
             const pathIdx = (i * 5 + 3) % FLAME_PATHS.length;
@@ -1209,7 +1225,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   preserveAspectRatio="none"
                   style={{
                     filter: `url(#${fId})`,
-                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${flickDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+                    animation: `stylized-flame-flicker-${variant} ${flickDur.toFixed(2)}s ${easing} infinite`,
                     animationDelay: `${delay.toFixed(2)}s`,
                     transformOrigin: "center bottom",
                     overflow: "visible",

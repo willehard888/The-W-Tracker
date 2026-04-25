@@ -343,10 +343,18 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
     const targetSnapMulProx = Math.max(0.5, targetSnapMul);
 
     const onPointerUp = () => {
+      // Vain jos käyttäjä oli oikeasti vuorovaikutuksessa liekin kanssa
+      // (ei satunnainen window-tason pointer-up jossain muualla UI:ssa).
+      const wasInteracting = pointerActive;
       pointerActive = false;
       releaseT = performance.now();
       // Sulje proximity-haptiikan hysteresis välittömästi
       inProximity = false;
+      // Hienovarainen "release"-haptiikka: tekee snap-back -tunteesta tyydyttävämmän.
+      // Light-impact = pieni napsahdus joka resonoi liekkien rauhoittumisen kanssa.
+      if (wasInteracting) {
+        hapticsMod?.hapticImpact("light").catch(() => {});
+      }
     };
 
     const onPointerDownTrack = (e: PointerEvent) => {

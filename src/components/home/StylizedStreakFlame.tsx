@@ -846,18 +846,19 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
 
             return (
               <linearGradient key={gradId} id={gradId} x1="50%" y1="100%" x2="50%" y2="0%">
-                {/* Dark fuel shadow — pins the flame to the ground visually */}
-                <stop offset="0%"   stopColor={fuelShadow} stopOpacity="0.9" />
-                <stop offset="3%"   stopColor={neckBase}   stopOpacity="0.95" />
-                <stop offset="8%"   stopColor={charred}    stopOpacity="1" />
-                <stop offset="16%"  stopColor={ember}      stopOpacity="1" />
-                <stop offset="30%"  stopColor={deepBase}   stopOpacity="1" />
-                <stop offset="48%"  stopColor={body}       stopOpacity="1" />
-                <stop offset="64%"  stopColor={shoulder}   stopOpacity="0.99" />
-                <stop offset="80%"  stopColor={upperBody}  stopOpacity="0.93" />
-                {/* Faster fade-out near tip — real flames dissolve into air, not into solid color */}
-                <stop offset="90%"  stopColor={tipColor}   stopOpacity="0.55" />
-                <stop offset="97%"  stopColor={apex}       stopOpacity="0.18" />
+                {/* Pohja: tummaa hiiltynyttä punaista — pinnaa liekin maahan */}
+                <stop offset="0%"   stopColor={fuelShadow} stopOpacity="0.92" />
+                <stop offset="4%"   stopColor={neckBase}   stopOpacity="0.97" />
+                <stop offset="10%"  stopColor={charred}    stopOpacity="1" />
+                <stop offset="20%"  stopColor={ember}      stopOpacity="1" />
+                {/* Keskirunko: täydet värit, kaikki kuumin alue */}
+                <stop offset="35%"  stopColor={deepBase}   stopOpacity="0.98" />
+                <stop offset="52%"  stopColor={body}       stopOpacity="0.95" />
+                <stop offset="68%"  stopColor={shoulder}   stopOpacity="0.88" />
+                {/* Yläosa: NOPEA alpha-feidaus → läpinäkyvä kärki kuten oikeassa liekissä */}
+                <stop offset="82%"  stopColor={upperBody}  stopOpacity="0.65" />
+                <stop offset="91%"  stopColor={tipColor}   stopOpacity="0.32" />
+                <stop offset="97%"  stopColor={apex}       stopOpacity="0.1" />
                 <stop offset="100%" stopColor={apex}       stopOpacity="0" />
               </linearGradient>
             );

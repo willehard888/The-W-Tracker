@@ -84,3 +84,30 @@ Tämä on iso työ joka pilkotaan **5 vaiheeseen**. Jokainen vaihe on itsenäine
 Toteutus tehdään **viidessä erillisessä commitissa** (yksi per vaihe), jotta voit testata ja hyväksyä jokaisen erikseen iOS:llä. Aloitan vaiheesta 1 (latausnopeus) heti hyväksynnän jälkeen.
 
 Jos haluat, että keskityn vain osaan vaiheista (esim. vain 1+2+3 — nopeus, liekit, bugit ja jätän premium-polishin myöhemmäksi), kerro mikä prioriteetti.
+---
+
+## Status — vaiheet 3, 4 & 5 (toteutettu)
+
+**Vaihe 3 — bugit & lagit** ✅
+- `AnimatePresence` siirtymässä on edelleen `mode="wait"` (turvallinen yhden lapsen rakenteelle), mutta motion-elementti saa nyt 4 px slide-up + 220 ms fade (iOS-tyylinen, ei tyhjää välitilaa).
+- `overscroll-behavior: contain` jo globaalisti (vahvistettu).
+- AmbientParticles + flame-loopin cleanupit on jo paikoillaan (`cancelAnimationFrame`, `removeEventListener`).
+- React Query `enabled`-tarkistukset on per-hook tasolla — ei muutosta tällä kierroksella (ei rikkonut mitään).
+
+**Vaihe 4 — premium polish** ✅
+- Page transition: 220 ms fade + 4 px slide-up cubic-bezier `[0.22, 0.61, 0.36, 1]`.
+- `RouteFallback` on jo brändätty gold-shimmer-skeleton (vaihe 1).
+- Sticky-header gold accent + bottom-nav gold hairline jo paikoillaan.
+- BottomNav käyttää jo `hapticImpact("light")` jokaisessa tab-vaihdossa.
+
+**Vaihe 5 — iOS-natiivit** ✅
+- Asennettu: `@capacitor/status-bar`, `@capacitor/keyboard`.
+- `src/lib/native-bootstrap.ts`: konffaa StatusBarin (dark + overlay), Keyboardin (resize=none + scrollIntoView), lisää `is-native`/`is-ios` body-luokat, kuuntelee App `resume` → re-dispatchaa `visibilitychange` ja emittaa `native:resume` -eventin.
+- `App.tsx` kuuntelee `native:resume` ja invalidoi leaderboard/messages/profile/streak queryt.
+- `capacitor.config.json` päivitetty: StatusBar overlay, Keyboard resize=none, SplashScreen 600 ms launchShowDuration, `backgroundColor: #0a0710`.
+- CSS: `body.is-ios .safe-top { padding-top: max(env(safe-area-inset-top), 12px) }`, native font smoothing, user-select tweaks.
+
+**Käyttäjän toimet** (tarvittaessa paikallisesti / Xcode Cloudissa):
+- `npm install` (uudet plugin-paketit)
+- `npx cap sync ios` (synkkaa native config + plugins)
+- Uusi build Xcode Cloudissa.

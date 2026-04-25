@@ -19,10 +19,12 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
   const [phase, setPhase] = useState<"reveal" | "settle" | "exit">("reveal");
 
   useEffect(() => {
+    // Tightened timing — native iOS splash already shows before this React splash mounts,
+    // so we keep it short to avoid double-splash feel. Total ~950 ms.
     const timers = [
-      window.setTimeout(() => setPhase("settle"), 500),
-      window.setTimeout(() => setPhase("exit"), 1300),
-      window.setTimeout(onComplete, 1650),
+      window.setTimeout(() => setPhase("settle"), 280),
+      window.setTimeout(() => setPhase("exit"), 720),
+      window.setTimeout(onComplete, 950),
     ];
     return () => timers.forEach(clearTimeout);
   }, [onComplete]);

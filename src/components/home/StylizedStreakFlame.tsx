@@ -131,9 +131,9 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
   // How many flames at this stage (layered count) — 1, 2, 3, 4, 5, 6, 7, 8, 9
   const flameCount = isCold ? 0 : Math.min(9, stage + (stage >= 5 ? 1 : 0));
 
-  // Bed width (how wide the flames spread) and tallest flame height — taller, wilder
-  const bedWidth = lerp(0.4, 1.0, t) * size;
-  const tallestH = lerp(0.7, 1.25, t) * size;
+  // Bed width (how wide the flames spread) and tallest flame height — wider, taller, smoother
+  const bedWidth = lerp(0.55, 1.25, t) * size;
+  const tallestH = lerp(0.75, 1.3, t) * size;
 
   // Build layer plan deterministically per (uid, stage, t)
   const layers: FlameLayer[] = useMemo(() => {
@@ -211,35 +211,35 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
   const ferocityFront = Math.min(1, ferocity * 1.15); // front layer reacts hardest
 
   const turbConfigs = [
-    // back row — bigger warp, deeper bloom
+    // back row — soft warp, deeper bloom (slow & smooth)
     {
-      freq: "0.022 0.055",
-      peakFreq: "0.048 0.095",
-      baseScale: lerp(2.4, 4.2, ferocity),
-      peakScale: lerp(4.0, 7.6, ferocity),
-      dur: lerp(2.0, 1.1, ferocity),
-      bloomStdDev: lerp(4.0, 5.6, ferocity),
+      freq: "0.020 0.048",
+      peakFreq: "0.040 0.082",
+      baseScale: lerp(2.0, 3.6, ferocity),
+      peakScale: lerp(3.4, 6.2, ferocity),
+      dur: lerp(2.6, 1.6, ferocity),
+      bloomStdDev: lerp(4.4, 6.0, ferocity),
     },
-    // mid row — strong roar
+    // mid row — flowing roar
     {
-      freq: "0.034 0.075",
-      peakFreq: "0.07 0.14",
-      baseScale: lerp(3.0, 5.4, ferocity),
-      peakScale: lerp(5.0, 8.4, ferocity),
-      dur: lerp(1.4, 0.75, ferocity),
-      bloomStdDev: lerp(2.4, 3.6, ferocity),
+      freq: "0.030 0.066",
+      peakFreq: "0.060 0.12",
+      baseScale: lerp(2.6, 4.6, ferocity),
+      peakScale: lerp(4.4, 7.2, ferocity),
+      dur: lerp(1.8, 1.1, ferocity),
+      bloomStdDev: lerp(2.6, 3.8, ferocity),
     },
-    // front row — violent whipping tips
+    // front row — sharper, but smoother whip
     {
-      freq: "0.05 0.11",
-      peakFreq: "0.1 0.2",
-      baseScale: lerp(3.8, 6.6, ferocityFront),
-      peakScale: lerp(6.4, 11, ferocityFront),
-      dur: lerp(0.95, 0.5, ferocityFront),
-      bloomStdDev: lerp(1.2, 2.0, ferocity),
+      freq: "0.046 0.10",
+      peakFreq: "0.090 0.18",
+      baseScale: lerp(3.2, 5.6, ferocityFront),
+      peakScale: lerp(5.4, 9.0, ferocityFront),
+      dur: lerp(1.25, 0.75, ferocityFront),
+      bloomStdDev: lerp(1.4, 2.2, ferocity),
     },
   ];
-  const intensityBoost = lerp(1.0, 1.85, ferocity);
+  const intensityBoost = lerp(0.95, 1.65, ferocity);
 
   // Floor light pool — wash beneath the flames simulating ground reflection
   const floorPoolColor = stage >= 6 ? "hsl(200 95% 65%)" : stage >= 4 ? "hsl(28 100% 60%)" : "hsl(18 95% 55%)";
@@ -447,8 +447,8 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
             const xPx = (bedWidth * 0.5 - flameW * 0.5) * layer.xOffset;
             const gradId = `ssf-grad-${uid}-${i}`;
             const filterId = filterIds[layer.filterId];
-            const speedDur = layer.speed * lerp(1.0, 0.55, t);
-            const swayDur = layer.speed * lerp(1.6, 0.85, t);
+            const speedDur = layer.speed * lerp(1.4, 0.85, t);
+            const swayDur = layer.speed * lerp(2.6, 1.5, t);
 
             // 3D z-depth: back row receded, front pushed forward
             const zDepth = layer.zIndex === 1 ? -size * 0.18 : layer.zIndex === 2 ? -size * 0.05 : size * 0.04;
@@ -470,7 +470,7 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
                   transform: `translateX(-50%) translateZ(${zDepth.toFixed(1)}px)`,
                   transformOrigin: "center bottom",
                   zIndex: layer.zIndex,
-                  animation: `stylized-flame-sway-${(i % 3) + 1} ${swayDur.toFixed(2)}s ease-in-out infinite`,
+                  animation: `stylized-flame-sway-${(i % 3) + 1} ${swayDur.toFixed(2)}s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite`,
                   animationDelay: `${layer.delaySeed.toFixed(2)}s`,
                   willChange: "transform",
                   mixBlendMode: "screen",
@@ -485,7 +485,7 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
                   preserveAspectRatio="none"
                   style={{
                     filter: `url(#${filterId})`,
-                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s ease-in-out infinite`,
+                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
                     animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
                     transformOrigin: "center bottom",
                     willChange: "transform, opacity",
@@ -506,7 +506,7 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
                       bottom: flameH * 0.08,
                       transform: "translateX(-50%)",
                       filter: `url(#${filterId})`,
-                      animation: `stylized-flame-flicker-${((i + 1) % 3) + 1} ${(speedDur * 0.8).toFixed(2)}s ease-in-out infinite`,
+                      animation: `stylized-flame-flicker-${((i + 1) % 3) + 1} ${(speedDur * 0.8).toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
                       animationDelay: `${(layer.delaySeed - 0.5).toFixed(2)}s`,
                       transformOrigin: "center bottom",
                       mixBlendMode: "screen",

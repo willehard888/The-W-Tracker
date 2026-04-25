@@ -308,32 +308,32 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
   const ferocityFront = Math.min(1, ferocity * 1.15); // front layer reacts hardest
 
   const turbConfigs = [
-    // back row — soft warp, deeper bloom (slow & smooth)
+    // back row — soft warp, moderate bloom (slow & smooth)
     {
       freq: "0.020 0.048",
       peakFreq: "0.040 0.082",
       baseScale: lerp(2.0, 3.6, ferocity),
       peakScale: lerp(3.4, 6.2, ferocity),
       dur: lerp(2.6, 1.6, ferocity),
-      bloomStdDev: lerp(4.4, 6.0, ferocity),
+      bloomStdDev: lerp(2.6, 3.4, ferocity), // reduced for sharper silhouette
     },
-    // mid row — flowing roar
+    // mid row — flowing roar, crisper edges
     {
       freq: "0.030 0.066",
       peakFreq: "0.060 0.12",
       baseScale: lerp(2.6, 4.6, ferocity),
       peakScale: lerp(4.4, 7.2, ferocity),
       dur: lerp(1.8, 1.1, ferocity),
-      bloomStdDev: lerp(2.6, 3.8, ferocity),
+      bloomStdDev: lerp(1.4, 2.0, ferocity), // reduced
     },
-    // front row — sharper, but smoother whip
+    // front row — SHARP whip, minimal bloom for crisp 3D edges
     {
       freq: "0.046 0.10",
       peakFreq: "0.090 0.18",
       baseScale: lerp(3.2, 5.6, ferocityFront),
       peakScale: lerp(5.4, 9.0, ferocityFront),
       dur: lerp(1.25, 0.75, ferocityFront),
-      bloomStdDev: lerp(1.4, 2.2, ferocity),
+      bloomStdDev: lerp(0.6, 1.1, ferocity), // razor-sharp tips
     },
   ];
   const intensityBoost = lerp(0.95, 1.65, ferocity);

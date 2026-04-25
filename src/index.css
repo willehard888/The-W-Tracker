@@ -4340,3 +4340,33 @@ html, body, #root {
 .scroll-smooth {
   -webkit-overflow-scrolling: touch;
 }
+
+/* EdgeFireThreads — orgaaninen "hengitys" tulisäikeille.
+   Vain opacity + filter pulssaa täällä, koska transform on varattu
+   reaaliaikaiselle pointer-reaktiolle (rotate/scaleY inline-styleissä). */
+@keyframes eft-thread-breathe {
+  0%, 100% {
+    opacity: 0.92;
+    filter: brightness(1) saturate(1.05);
+  }
+  30% {
+    opacity: 1;
+    filter: brightness(1.18) saturate(1.18);
+  }
+  60% {
+    opacity: 0.86;
+    filter: brightness(0.92) saturate(0.95);
+  }
+  80% {
+    opacity: 0.96;
+    filter: brightness(1.08) saturate(1.1);
+  }
+}
+.eft-thread-breathe {
+  animation: eft-thread-breathe 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eft-thread-breathe {
+    animation: none;
+  }
+}

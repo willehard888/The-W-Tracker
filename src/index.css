@@ -4340,3 +4340,30 @@ html, body, #root {
 .scroll-smooth {
   -webkit-overflow-scrolling: touch;
 }
+
+/* EdgeFireThreads — orgaaninen "hengitys" tulisäikeille.
+   Lievä pystysuora skaalaus + pieni rotaatio antaa elävän, koskaan-täysin-paikallaan-olevan tulen tunnun.
+   Pointer-reaktio (rotate + scaleY + brightness) lisätään inline-styleissä,
+   joten tämä keyframe vain hengittää taustalla — efektit komposoituvat. */
+@keyframes eft-thread-breathe {
+  0%, 100% {
+    transform: rotate(var(--eft-thread-tilt, 0deg)) scaleY(1) scaleX(1);
+  }
+  25% {
+    transform: rotate(calc(var(--eft-thread-tilt, 0deg) + 1.2deg)) scaleY(1.06) scaleX(0.96);
+  }
+  50% {
+    transform: rotate(calc(var(--eft-thread-tilt, 0deg) - 0.8deg)) scaleY(0.94) scaleX(1.04);
+  }
+  75% {
+    transform: rotate(calc(var(--eft-thread-tilt, 0deg) + 0.6deg)) scaleY(1.03) scaleX(0.98);
+  }
+}
+.eft-thread-breathe {
+  animation: eft-thread-breathe 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eft-thread-breathe {
+    animation: none;
+  }
+}

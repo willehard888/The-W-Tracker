@@ -3936,23 +3936,40 @@ button:active > .aurum-lava-glow {
 
 /* ── Stylized Streak Flame v4 — layered silhouettes, no glow ─────────── */
 @keyframes stylized-flame-bob {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-2px); }
+  0%, 100% { transform: translateY(calc(0px - var(--ssf-idle, 0) * 0.6px)); }
+  50%      { transform: translateY(calc(-2px + var(--ssf-idle, 0) * 1.2px)); }
 }
 @keyframes stylized-flame-sway {
   0%, 100% {
     transform:
-      translateX(calc(-50% + var(--ssf-wind-x, 0) * 6px))
+      translateX(calc(-50% + var(--ssf-wind-x, 0) * 8px))
       rotate(calc(var(--ssf-wind, 0deg) - 0.6deg))
-      scaleY(calc(1 + var(--ssf-gust, 0) * 0.18))
-      scaleX(calc(1 - var(--ssf-gust, 0) * 0.06));
+      scaleY(calc(1 + var(--ssf-gust, 0) * 0.18 + var(--ssf-wind-y, 0) * 0.15 + var(--ssf-blast, 0) * 0.22 - var(--ssf-idle, 0) * 0.06))
+      scaleX(calc(1 - var(--ssf-gust, 0) * 0.06 - var(--ssf-blast, 0) * 0.05));
   }
   50% {
     transform:
-      translateX(calc(-50% + var(--ssf-wind-x, 0) * 6px))
+      translateX(calc(-50% + var(--ssf-wind-x, 0) * 8px))
       rotate(calc(var(--ssf-wind, 0deg) + 0.6deg))
-      scaleY(calc(1 + var(--ssf-gust, 0) * 0.22))
-      scaleX(calc(1 - var(--ssf-gust, 0) * 0.08));
+      scaleY(calc(1 + var(--ssf-gust, 0) * 0.22 + var(--ssf-wind-y, 0) * 0.15 + var(--ssf-blast, 0) * 0.22 - var(--ssf-idle, 0) * 0.06))
+      scaleX(calc(1 - var(--ssf-gust, 0) * 0.08 - var(--ssf-blast, 0) * 0.05));
+  }
+}
+/* TAP-BLAST: valkoinen renkaan välähdys */
+@keyframes ssf-blast-ring {
+  0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+  15%  { opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+}
+/* TAP-BLAST: yksittäinen radial-kipinä */
+@keyframes ssf-blast-spark {
+  0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+  10%  { transform: translate(-50%, -50%) scale(1);   opacity: 1; }
+  100% {
+    transform:
+      translate(calc(-50% + var(--blast-tx, 0px)), calc(-50% + var(--blast-ty, 0px)))
+      scale(0.2);
+    opacity: 0;
   }
 }
 /* Per-flame sway variants — SMOOTH ROAR: gentler curves, fluid motion */
@@ -4063,7 +4080,9 @@ button:active > .aurum-lava-glow {
   [style*="stylized-coal-pulse"],
   [style*="stylized-floor-pool"],
   [style*="stylized-haze-drift"],
-  [style*="stylized-bed-flash"] {
+  [style*="stylized-bed-flash"],
+  [style*="ssf-blast-ring"],
+  [style*="ssf-blast-spark"] {
     animation: none !important;
   }
 }

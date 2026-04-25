@@ -50,8 +50,27 @@ interface StylizedStreakFlameProps {
   intensify?: number;
   /** Optional accent color (hsl) for outer aura when intensify > 1. */
   accent?: string;
+  /**
+   * Snap-back duration in ms after the user lifts their finger. During this
+   * window, wind/proximity/gust/blast vaimenevat ~3× nopeammin kuin
+   * passiivisessa driftissä, jolloin liekki "rentoutuu" terävästi.
+   * - Mobile / coarse pointer (sormi): default 260 ms — terävin tuntu
+   * - Desktop / fine pointer (hiiri):  default 600 ms — pehmeämpi
+   * Pass an explicit number to override device autodetection.
+   * Range: 80–1500 ms (clamped).
+   */
+  releaseSnapMs?: number;
   className?: string;
 }
+
+/**
+ * Detect whether the primary input device is a coarse pointer (touch/finger).
+ * Used to default the snap-back to a tighter, more tactile value on mobile.
+ */
+const isCoarsePointer = (): boolean => {
+  if (typeof window === "undefined" || !window.matchMedia) return false;
+  return window.matchMedia("(pointer: coarse)").matches;
+};
 
 const STAGE_THRESHOLDS = [1, 3, 7, 14, 30, 60, 100, 200];
 const MAX_STAGE_INDEX = STAGE_THRESHOLDS.length;
@@ -124,7 +143,7 @@ interface FlameLayer {
   filterId: 0 | 1 | 2;  // which turbulence filter to use
 }
 
-const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, className }: StylizedStreakFlameProps) => {
+const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releaseSnapMs, className }: StylizedStreakFlameProps) => {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   // Intensify clamped & normalized: 1 = base, 10 = inferno
   const intensity = Math.max(1, Math.min(10, intensify));
@@ -295,6 +314,34 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
     let pointerActive = false;
     let releaseT = 0; // milloin pointer vapautettiin → nopea snap-back -ikkuna
 
+    // Resolve snap-back duration:
+    //   - explicit prop wins (clamped to 80–1500 ms)
+    //   - else: 260 ms on coarse pointer (mobile/touch), 600 ms otherwise
+    const resolvedSnapMs = (() => {
+      if (typeof releaseSnapMs === "number" && Number.isFinite(releaseSnapMs)) {
+        return Math.max(80, Math.min(1500, releaseSnapMs));
+      }
+      return isCoarsePointer() ? 260 : 600;
+    })();
+
+    // Pre-compute lerp coefficients that produce the requested snap duration.
+    // 60fps → ~16.7ms/frame. To reach ~95% of target in N frames we need
+    // lerp ≈ 1 - 0.05^(1/N). We cap at 0.55 so motion stays smooth (no jank).
+    const framesInWindow = Math.max(4, Math.round(resolvedSnapMs / 16.7));
+    const baseLerp = Math.min(0.55, 1 - Math.pow(0.05, 1 / framesInWindow));
+    const releaseLerpX = baseLerp;             // sway/wind X — snappiest axis
+    const releaseLerpY = baseLerp * 0.88;      // Y slightly softer (vertical reach)
+    const releaseLerpProx = baseLerp * 0.94;   // proximity bloom decays smoothly
+    // Decay-per-frame for additive scalars (gust/blast).
+    // ~95% gone in `framesInWindow` frames.
+    const releaseGustDecay = Math.min(0.18, 1 - Math.pow(0.05, 1 / framesInWindow));
+    const releaseBlastDecay = releaseGustDecay * 0.78;
+    // Target multipliers per frame (push targets toward 0 hard during snap).
+    const targetSnapMul = Math.pow(0.05, 1 / framesInWindow); // → ~0.05 left after window
+    const targetSnapMulX = Math.max(0.6, targetSnapMul);
+    const targetSnapMulY = Math.max(0.55, targetSnapMul);
+    const targetSnapMulProx = Math.max(0.5, targetSnapMul);
+
     const onPointerUp = () => {
       pointerActive = false;
       releaseT = performance.now();
@@ -316,19 +363,21 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       const effectiveTargetY = targetWindY + turb.y * turbBlend;
 
       // Reaktiivisuus: pointer aktiivisena = pehmeä lerp; vapautuksen jälkeen
-      // 600ms ajan käytetään NOPEAA snap-backia jotta liekki "rentoutuu" heti.
+      // resolvedSnapMs aikaikkuna käyttää NOPEAA snap-backia jotta liekki
+      // "rentoutuu" terävästi. Mobiilissa lyhyempi → tactile, desktopilla
+      // pidempi → pehmeä.
       const sinceRelease = now - releaseT;
-      const isReleasing = !pointerActive && releaseT > 0 && sinceRelease < 600;
-      const windLerpX = isReleasing ? 0.32 : 0.13;
-      const windLerpY = isReleasing ? 0.28 : 0.10;
-      const proxLerp  = isReleasing ? 0.30 : 0.08;
+      const isReleasing = !pointerActive && releaseT > 0 && sinceRelease < resolvedSnapMs;
+      const windLerpX = isReleasing ? releaseLerpX : 0.13;
+      const windLerpY = isReleasing ? releaseLerpY : 0.10;
+      const proxLerp  = isReleasing ? releaseLerpProx : 0.08;
       currentWindX += (effectiveTargetX - currentWindX) * windLerpX;
       currentWindY += (effectiveTargetY - currentWindY) * windLerpY;
       proximity += (targetProximity - proximity) * proxLerp;
       // Gust ja blast vaimentuvat nopeammin vapautuksen jälkeen
-      const gustStep = isReleasing ? Math.max(gustDecay, 0.06) : gustDecay;
+      const gustStep = isReleasing ? Math.max(gustDecay, releaseGustDecay) : gustDecay;
       gust = Math.max(0, gust - gustStep);
-      blast = Math.max(0, blast - (isReleasing ? 0.045 : 0.018));
+      blast = Math.max(0, blast - (isReleasing ? releaseBlastDecay : 0.018));
 
       // Idle ramp: 0 jos viime input <1.5s, → 1 1.2s aikana (oli 4s+1.6s).
       // Liekki rauhoittuu NOPEAMMIN normaalitilaan ilman kosketusta.
@@ -336,12 +385,12 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       const idleTarget = sinceInput > 1500 ? Math.min(1, (sinceInput - 1500) / 1200) : 0;
       idle += (idleTarget - idle) * 0.05;
 
-      // Vapautuksen jälkeen targets vetäytyvät NOPEASTI nollaan;
-      // muuten klassinen passiivinen drift (kevyt bleed).
+      // Vapautuksen jälkeen targets vetäytyvät NOPEASTI nollaan (kerroin
+      // skaalattu snap-ikkunan mukaan); muuten klassinen passiivinen drift.
       if (isReleasing) {
-        targetWindX *= 0.78;
-        targetWindY *= 0.74;
-        targetProximity *= 0.70;
+        targetWindX *= targetSnapMulX;
+        targetWindY *= targetSnapMulY;
+        targetProximity *= targetSnapMulProx;
       } else {
         targetWindX *= 0.985;
         targetWindY *= 0.97;
@@ -373,7 +422,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(raf);
     };
-  }, [isCold, size]);
+  }, [isCold, size, releaseSnapMs]);
 
 
   // How many flames at this stage — adaptiivinen perfClassin mukaan.

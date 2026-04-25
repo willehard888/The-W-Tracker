@@ -354,7 +354,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
     // ── 6× the plan: 6 passes per base layer with deterministic jitter
     // (different scale, xOffset, speed, hue) so layers stack as parallax
     // copies instead of identical clones — no two flames look the same.
-    const PASSES = 6;
+    const PASSES = passMultiplier;
     const plan: Omit<FlameLayer, "delaySeed">[] = [];
     for (let pass = 0; pass < PASSES; pass++) {
       basePlan.forEach((b, idx) => {

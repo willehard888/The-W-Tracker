@@ -3922,126 +3922,73 @@ button:active > .aurum-lava-glow {
   [class*="firestreak"] { animation: none !important; }
 }
 
-/* ── Stylized Streak Flame keyframes ──────────────────────────────────── */
-@keyframes stylized-flame-flicker {
-  0%, 100% { transform: translateX(-50%) scaleY(1)    scaleX(1);    opacity: 0.95; }
-  20%      { transform: translateX(-50%) scaleY(1.07) scaleX(0.95); opacity: 1; }
-  42%      { transform: translateX(-50%) scaleY(0.96) scaleX(1.04); opacity: 0.9; }
-  61%      { transform: translateX(-50%) scaleY(1.05) scaleX(0.97); opacity: 1; }
-  83%      { transform: translateX(-50%) scaleY(0.98) scaleX(1.02); opacity: 0.93; }
-}
-@keyframes stylized-flame-core {
-  0%, 100% { transform: translateX(-50%) scaleY(1)    scaleX(1);    opacity: 1; }
-  35%      { transform: translateX(-50%) scaleY(1.14) scaleX(0.9);  opacity: 0.82; }
-  70%      { transform: translateX(-50%) scaleY(0.92) scaleX(1.06); opacity: 0.95; }
-}
-@keyframes stylized-tongue-dance-a {
-  0%, 100% { transform: translateX(-50%) translateX(-8%) scaleY(1)    scaleX(1)    rotate(-1deg); opacity: 0.9; }
-  30%      { transform: translateX(-50%) translateX(-12%) scaleY(1.1) scaleX(0.92) rotate(2deg);  opacity: 1; }
-  60%      { transform: translateX(-50%) translateX(-4%)  scaleY(0.95) scaleX(1.05) rotate(-3deg); opacity: 0.8; }
-}
-@keyframes stylized-tongue-dance-b {
-  0%, 100% { transform: translateX(-50%) translateX(8%)  scaleY(1)    scaleX(1)    rotate(1deg);  opacity: 0.75; }
-  35%      { transform: translateX(-50%) translateX(12%) scaleY(1.12) scaleX(0.9)  rotate(-2deg); opacity: 0.95; }
-  70%      { transform: translateX(-50%) translateX(4%)  scaleY(0.94) scaleX(1.07) rotate(3deg);  opacity: 0.7; }
-}
-@keyframes stylized-tip-pulse {
-  0%, 100% { transform: translateX(-50%) scaleY(1)    scaleX(1);    opacity: 0.7; }
-  50%      { transform: translateX(-50%) scaleY(1.15) scaleX(0.88); opacity: 1; }
-}
-@keyframes stylized-aura-pulse {
-  0%, 100% { transform: translateX(-50%) scale(1);    opacity: 0.85; }
-  50%      { transform: translateX(-50%) scale(1.13); opacity: 1; }
-}
-@keyframes stylized-base-flicker {
-  0%, 100% { transform: translateX(-50%) scaleX(1)    scaleY(1);    opacity: 0.85; }
-  50%      { transform: translateX(-50%) scaleX(1.08) scaleY(0.92); opacity: 1; }
-}
-@keyframes stylized-light-cast {
-  0%, 100% { transform: translateX(-50%) scaleX(1)    scaleY(1);    opacity: 0.85; }
-  50%      { transform: translateX(-50%) scaleX(1.18) scaleY(1.08); opacity: 1; }
-}
-@keyframes stylized-godrays-sway {
-  0%, 100% { transform: translateX(-50%) rotate(-2deg); opacity: 0.6; }
-  50%      { transform: translateX(-50%) rotate(2deg);  opacity: 0.9; }
-}
-@keyframes stylized-heat-shimmer {
-  0%, 100% { transform: translateX(-50%) translateY(0) scaleY(1)    skewX(-2deg); opacity: 0.5; }
-  33%      { transform: translateX(-50%) translateY(-3px) scaleY(1.2) skewX(2deg);  opacity: 0.9; }
-  66%      { transform: translateX(-50%) translateY(-1px) scaleY(0.95) skewX(-1deg); opacity: 0.7; }
-}
-@keyframes stylized-flame-sway {
-  0%, 100% { transform: translateX(-50%) rotate(calc(var(--ssf-wind, 0deg) - 0.5deg)); }
-  50%      { transform: translateX(-50%) rotate(calc(var(--ssf-wind, 0deg) + 0.5deg)); }
-}
+/* ── Stylized Streak Flame v4 — layered silhouettes, no glow ─────────── */
 @keyframes stylized-flame-bob {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-2px); }
 }
-@keyframes stylized-fuel-pulse {
-  0%, 100% { transform: scaleY(1)    scaleX(1); }
-  40%      { transform: scaleY(1.06) scaleX(0.97); }
-  70%      { transform: scaleY(0.97) scaleX(1.03); }
+@keyframes stylized-flame-sway {
+  0%, 100% { transform: translateX(-50%) rotate(calc(var(--ssf-wind, 0deg) - 0.6deg)); }
+  50%      { transform: translateX(-50%) rotate(calc(var(--ssf-wind, 0deg) + 0.6deg)); }
 }
-@keyframes stylized-whip-tip {
-  0%, 100% { transform: translateX(-50%) scaleY(1)    scaleX(1)    rotate(0deg); opacity: 0.85; }
-  25%      { transform: translateX(-50%) scaleY(1.18) scaleX(0.85) rotate(-3deg); opacity: 1; }
-  55%      { transform: translateX(-50%) scaleY(0.92) scaleX(1.1)  rotate(4deg);  opacity: 0.7; }
-  80%      { transform: translateX(-50%) scaleY(1.08) scaleX(0.92) rotate(-2deg); opacity: 0.95; }
+/* Per-flame sway variants — different rhythms so they never sync */
+@keyframes stylized-flame-sway-1 {
+  0%, 100% { transform: translateX(-50%) rotate(-2deg) scaleY(1); }
+  35%      { transform: translateX(-50%) rotate(1.5deg) scaleY(1.04); }
+  70%      { transform: translateX(-50%) rotate(-0.5deg) scaleY(0.98); }
 }
-@keyframes stylized-smoke-rise {
-  0%   { transform: translateY(0)    scale(0.6); opacity: 0; }
-  20%  { opacity: 0.7; }
-  100% { transform: translateY(-90px) scale(1.6); opacity: 0; }
+@keyframes stylized-flame-sway-2 {
+  0%, 100% { transform: translateX(-50%) rotate(2deg) scaleY(1); }
+  40%      { transform: translateX(-50%) rotate(-1.5deg) scaleY(1.05); }
+  75%      { transform: translateX(-50%) rotate(0.5deg) scaleY(0.97); }
 }
-@keyframes stylized-ember-rise {
-  0%   { transform: translate(0, 0) scale(1);   opacity: 0; }
-  15%  { opacity: 1; }
-  100% { transform: translate(var(--ember-x, 0), var(--ember-rise, -60px)) scale(0.35); opacity: 0; }
+@keyframes stylized-flame-sway-3 {
+  0%, 100% { transform: translateX(-50%) rotate(-1deg) scaleY(1); }
+  45%      { transform: translateX(-50%) rotate(2.5deg) scaleY(1.06); }
+  80%      { transform: translateX(-50%) rotate(-2deg) scaleY(0.96); }
 }
-@keyframes stylized-sparkle-rise {
-  0%   { transform: translate(0, 0) scale(0.6); opacity: 0; }
-  20%  { opacity: 1; transform: translate(calc(var(--ember-x, 0) * 0.3), calc(var(--ember-rise, -60px) * 0.3)) scale(1); }
-  60%  { opacity: 0.8; }
-  100% { transform: translate(var(--ember-x, 0), var(--ember-rise, -60px)) scale(0.2); opacity: 0; }
+/* Per-flame flicker variants — rapid scale/opacity micro-pulses */
+@keyframes stylized-flame-flicker-1 {
+  0%, 100% { transform: scaleY(1)    scaleX(1);    opacity: 0.96; }
+  25%      { transform: scaleY(1.08) scaleX(0.94); opacity: 1; }
+  55%      { transform: scaleY(0.95) scaleX(1.05); opacity: 0.92; }
+  80%      { transform: scaleY(1.04) scaleX(0.97); opacity: 1; }
 }
-@keyframes stylized-stage-burst {
-  0%   { transform: translateX(-50%) translateY(50%) scale(0.4); opacity: 0; }
-  20%  { opacity: 1; }
-  100% { transform: translateX(-50%) translateY(50%) scale(2.6); opacity: 0; }
+@keyframes stylized-flame-flicker-2 {
+  0%, 100% { transform: scaleY(1)    scaleX(1);    opacity: 0.94; }
+  30%      { transform: scaleY(1.1)  scaleX(0.92); opacity: 1; }
+  60%      { transform: scaleY(0.93) scaleX(1.06); opacity: 0.88; }
+  85%      { transform: scaleY(1.05) scaleX(0.96); opacity: 0.98; }
 }
-@keyframes stylized-ray-shoot {
-  0%   { transform: translateX(-50%) rotate(var(--ray-angle, 0deg)) translateY(0)     scale(1, 0.4); opacity: 0; }
-  20%  { opacity: 1; }
-  100% { transform: translateX(-50%) rotate(var(--ray-angle, 0deg)) translateY(-52px) scale(1, 1.7); opacity: 0; }
+@keyframes stylized-flame-flicker-3 {
+  0%, 100% { transform: scaleY(1)    scaleX(1);    opacity: 1; }
+  20%      { transform: scaleY(1.12) scaleX(0.9);  opacity: 0.85; }
+  50%      { transform: scaleY(0.94) scaleX(1.07); opacity: 0.95; }
+  75%      { transform: scaleY(1.07) scaleX(0.95); opacity: 1; }
 }
-@keyframes stylized-burst-flash {
-  0%   { opacity: 0; transform: scale(0.6); }
-  30%  { opacity: 1; transform: scale(1.15); }
-  100% { opacity: 0; transform: scale(1.5); }
+/* Ember bed pulses — the "burning fuel" line */
+@keyframes stylized-bed-pulse {
+  0%, 100% { transform: translateX(-50%) scaleX(1)    scaleY(1);    opacity: 0.92; }
+  50%      { transform: translateX(-50%) scaleX(1.06) scaleY(1.15); opacity: 1; }
+}
+@keyframes stylized-coal-pulse {
+  0%, 100% { opacity: 0.55; transform: translateX(calc(-50% + var(--coal-x, 0px))) scale(1); }
+  50%      { opacity: 1;    transform: translateX(calc(-50% + var(--coal-x, 0px))) scale(1.25); }
+}
+/* Stage-up bed flash */
+@keyframes stylized-bed-flash {
+  0%   { opacity: 0; transform: translateX(-50%) scaleX(0.8) scaleY(0.6); }
+  25%  { opacity: 1; transform: translateX(-50%) scaleX(1.15) scaleY(1.6); }
+  100% { opacity: 0; transform: translateX(-50%) scaleX(1.4) scaleY(2); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [class*="stylized-"],
-  [style*="stylized-flame-flicker"],
-  [style*="stylized-flame-core"],
-  [style*="stylized-tongue-dance"],
-  [style*="stylized-tip-pulse"],
-  [style*="stylized-aura-pulse"],
-  [style*="stylized-base-flicker"],
-  [style*="stylized-light-cast"],
-  [style*="stylized-godrays-sway"],
-  [style*="stylized-heat-shimmer"],
-  [style*="stylized-flame-sway"],
   [style*="stylized-flame-bob"],
-  [style*="stylized-ember-rise"],
-  [style*="stylized-sparkle-rise"],
-  [style*="stylized-stage-burst"],
-  [style*="stylized-ray-shoot"],
-  [style*="stylized-burst-flash"],
-  [style*="stylized-fuel-pulse"],
-  [style*="stylized-whip-tip"],
-  [style*="stylized-smoke-rise"] {
+  [style*="stylized-flame-sway"],
+  [style*="stylized-flame-flicker"],
+  [style*="stylized-bed-pulse"],
+  [style*="stylized-coal-pulse"],
+  [style*="stylized-bed-flash"] {
     animation: none !important;
   }
 }

@@ -797,7 +797,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   />
                 </svg>
 
-                {/* Front-row inner WHITE-HOT CORE — biggest 3D depth cue */}
+                {/* Front-row inner SATURATED CORE — kylläinen oranssi-punainen sydän (ei valkoista) */}
                 {isFront && coreId && (
                   <svg
                     width={flameW * 0.55}

@@ -1298,7 +1298,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         {/* ─── MICRO FLAMES — small, fast-dancing tongues that fill gaps & add depth ───
             These ride between the main flame layers (back of front-row, front of mid-row)
             adding the small "tongue clusters" you see in real bonfires around bigger flames. */}
-        {Array.from({ length: Math.min(10, Math.round(lerp(3, 10, ferocity))) }).map((_, i) => {
+        {Array.from({ length: Math.min(4, Math.round(lerp(2, 4, ferocity))) }).map((_, i) => {
           // Two clusters: low/wide and mid-height tighter
           const isLow = i % 2 === 0;
           const microW = bedWidth * lerp(0.05, 0.11, (i % 4) / 3);

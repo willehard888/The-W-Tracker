@@ -3986,11 +3986,20 @@ button:active > .aurum-lava-glow {
   80%  { transform: translateX(-50%) translateY(-45%) scaleY(1.2) scaleX(0.55); opacity: 0.35; }
   100% { transform: translateX(-50%) translateY(-65%) scaleY(0.9) scaleX(0.4);  opacity: 0; }
 }
-/* Spark/ember rising from the bed */
+/* Spark/ember rising from the bed — bright with lingering tail fade */
 @keyframes stylized-spark-rise {
   0%   { transform: translate(var(--spark-x, 0), 0) scale(1); opacity: 0; }
-  15%  { opacity: 1; }
-  100% { transform: translate(calc(var(--spark-x, 0) + var(--spark-drift, 0)), -120%) scale(0.3); opacity: 0; }
+  10%  { opacity: 1; }
+  55%  { opacity: 0.9; }
+  80%  { opacity: 0.45; }
+  100% { transform: translate(calc(var(--spark-x, 0) + var(--spark-drift, 0)), var(--spark-rise, -120%)) scale(0.25); opacity: 0; }
+}
+/* Soft smoky wisp rising from the back row — slow, expanding, fading */
+@keyframes stylized-smoke-puff {
+  0%   { transform: translate(var(--spark-x, 0), 0) scale(0.6); opacity: 0; }
+  20%  { opacity: 0.85; }
+  60%  { opacity: 0.55; }
+  100% { transform: translate(calc(var(--spark-x, 0) + var(--spark-drift, 0)), var(--spark-rise, -160%)) scale(1.8); opacity: 0; }
 }
 /* Ember bed pulses — the "burning fuel" line */
 @keyframes stylized-bed-pulse {

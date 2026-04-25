@@ -355,6 +355,11 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
   // Floor light pool — wash beneath the flames simulating ground reflection
   const floorPoolColor = stage >= 6 ? "hsl(22 100% 55%)" : stage >= 4 ? "hsl(18 100% 50%)" : "hsl(14 95% 45%)";
 
+  // Tribe-style outer aura accent
+  const auraAccent = accent ?? (stage >= 6 ? "hsl(22 100% 60%)" : stage >= 4 ? "hsl(18 100% 56%)" : "hsl(14 95% 50%)");
+  const auraOpacity = 0.35 + intensityNorm * 0.55;
+  const auraSpread = size * (0.4 + intensityNorm * 1.6);
+
   return (
     <div
       ref={containerRef}
@@ -365,12 +370,30 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
         animation: `stylized-flame-bob ${(2.6).toFixed(2)}s ease-in-out infinite`,
         // Reactive lean: derived from pointer-tracked --ssf-wind-x (-1..1) and gust (0..1).
         ["--ssf-wind" as string]: `calc(var(--ssf-wind-x, 0) * 12deg + var(--ssf-gust, 0) * 6deg)`,
-        // Gust energises the fire — brighter & more saturated when reacting
-        filter: `brightness(calc(1 + var(--ssf-gust, 0) * 0.25)) saturate(calc(1 + var(--ssf-gust, 0) * 0.3))`,
+        // Gust + intensify both energise the fire — brighter & more saturated
+        filter: `brightness(calc(${(1 + intensityNorm * 0.35).toFixed(3)} + var(--ssf-gust, 0) * 0.25)) saturate(calc(${(1 + intensityNorm * 0.4).toFixed(3)} + var(--ssf-gust, 0) * 0.3))`,
         transition: "filter 0.25s ease-out",
       }}
       aria-hidden
     >
+      {/* TRIBE INFERNO AURA — only renders when intensify > 1 */}
+      {intensity > 1 && (
+        <span
+          aria-hidden
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            width: auraSpread * 2,
+            height: auraSpread * 2,
+            left: "50%",
+            bottom: -auraSpread * 0.3,
+            transform: "translateX(-50%)",
+            background: `radial-gradient(circle, ${auraAccent.replace(")", ` / ${auraOpacity.toFixed(2)})`)} 0%, ${auraAccent.replace(")", ` / ${(auraOpacity * 0.4).toFixed(2)})`)} 28%, transparent 70%)`,
+            filter: `blur(${size * 0.25}px)`,
+            mixBlendMode: "screen",
+            zIndex: -1,
+          }}
+        />
+      )}
       {/* SVG defs — turbulence + internal bloom filters + per-layer gradients */}
       <svg width="0" height="0" className="absolute" aria-hidden>
         <defs>

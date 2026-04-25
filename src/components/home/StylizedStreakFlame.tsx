@@ -1439,7 +1439,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
 
         {/* ─── MICRO-EMBERS — sub-pixel kipinämeri liekin pään yläpuolella
             (1–2px nopeasti syttyviä ja sammuvia välähdyksiä — antaa "kipinämeren" tunnun). */}
-        {stage >= 2 && perfClass !== "low" && Array.from({ length: perfClass === "high" ? 14 : 8 }).map((_, i) => {
+        {stage >= 2 && perfClass !== "low" && Array.from({ length: perfClass === "high" ? 6 : 4 }).map((_, i) => {
           const xPos = ((i * 67 + seed.b * 19) % 100) / 100;
           const xPx = (bedWidth * 0.7) * (xPos - 0.5);
           const startBottom = tallestH * lerp(0.45, 0.7, (i % 4) / 3);

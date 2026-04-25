@@ -131,9 +131,9 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
   // How many flames at this stage (layered count) — 1, 2, 3, 4, 5, 6, 7, 8, 9
   const flameCount = isCold ? 0 : Math.min(9, stage + (stage >= 5 ? 1 : 0));
 
-  // Bed width (how wide the flames spread) and tallest flame height
-  const bedWidth = lerp(0.36, 0.92, t) * size;
-  const tallestH = lerp(0.55, 1.05, t) * size;
+  // Bed width (how wide the flames spread) and tallest flame height — taller, wilder
+  const bedWidth = lerp(0.4, 1.0, t) * size;
+  const tallestH = lerp(0.7, 1.25, t) * size;
 
   // Build layer plan deterministically per (uid, stage, t)
   const layers: FlameLayer[] = useMemo(() => {

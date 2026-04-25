@@ -131,7 +131,7 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
           {isCold ? (
             <div className="text-7xl opacity-40 leading-none animate-pulse">🕯️</div>
           ) : (
-            <RealisticFlame tier={tier} accent={accent} size={size} />
+            <RealisticFlame tier={tier} accent={accent} size={size} intensify={10} />
           )}
         </div>
 

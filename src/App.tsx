@@ -201,6 +201,19 @@ const App = () => {
     if (splashDone) preloadAppRoutes();
   }, [splashDone]);
 
+  // When the native shell resumes from background, refresh hot caches so the
+  // user sees fresh leaderboard / message / streak data immediately.
+  useEffect(() => {
+    const onResume = () => {
+      queryClient.invalidateQueries({ queryKey: ["leaderboard"] }).catch(() => {});
+      queryClient.invalidateQueries({ queryKey: ["messages"] }).catch(() => {});
+      queryClient.invalidateQueries({ queryKey: ["profile"] }).catch(() => {});
+      queryClient.invalidateQueries({ queryKey: ["streak"] }).catch(() => {});
+    };
+    window.addEventListener("native:resume", onResume);
+    return () => window.removeEventListener("native:resume", onResume);
+  }, []);
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>

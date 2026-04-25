@@ -605,12 +605,13 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             const id = `ssf-core-${uid}-${idx}`;
             return (
               <radialGradient key={id} id={id} cx="50%" cy="62%" r="38%">
-                <stop offset="0%"   stopColor="hsl(50 100% 96%)" stopOpacity="1" />
-                <stop offset="10%"  stopColor="hsl(44 100% 86%)" stopOpacity="0.95" />
-                <stop offset="26%"  stopColor="hsl(34 100% 70%)" stopOpacity="0.78" />
-                <stop offset="50%"  stopColor="hsl(22 100% 56%)" stopOpacity="0.45" />
-                <stop offset="76%"  stopColor="hsl(12 98% 46%)"  stopOpacity="0.18" />
-                <stop offset="100%" stopColor="hsl(6 95% 38%)"   stopOpacity="0" />
+                {/* Pure orange-red core — ei valkoinen / kreemi keskipiste. */}
+                <stop offset="0%"   stopColor="hsl(40 100% 70%)" stopOpacity="1" />
+                <stop offset="14%"  stopColor="hsl(34 100% 60%)" stopOpacity="0.92" />
+                <stop offset="32%"  stopColor="hsl(24 100% 54%)" stopOpacity="0.72" />
+                <stop offset="56%"  stopColor="hsl(14 98% 48%)"  stopOpacity="0.4" />
+                <stop offset="80%"  stopColor="hsl(8 95% 40%)"   stopOpacity="0.15" />
+                <stop offset="100%" stopColor="hsl(4 90% 32%)"   stopOpacity="0" />
               </radialGradient>
             );
           })}

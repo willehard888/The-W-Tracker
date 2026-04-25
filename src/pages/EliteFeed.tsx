@@ -818,7 +818,7 @@ const EliteFeed = () => {
                         <div className="mt-2 rounded-lg border border-border/50 bg-card p-2">
                           <p className="text-xs text-foreground/80 line-clamp-2">{report.post.content || "(image only)"}</p>
                           {report.post.image_url && (
-                            <img src={report.post.image_url} alt="" className="mt-1 h-16 w-24 object-cover rounded" />
+                            <img loading="lazy" decoding="async" src={report.post.image_url} alt="" className="mt-1 h-16 w-24 object-cover rounded" />
                           )}
                         </div>
                       )}
@@ -874,7 +874,7 @@ const EliteFeed = () => {
 
           {imagePreview && (
             <div className="relative mt-3 rounded-xl overflow-hidden">
-              <img src={imagePreview} alt="Preview" className="w-full max-h-48 object-cover rounded-xl" />
+              <img loading="lazy" decoding="async" src={imagePreview} alt="Preview" className="w-full max-h-48 object-cover rounded-xl" />
               <button
                 onClick={() => { setImageFile(null); setImagePreview(null); }}
                 className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80 transition-colors"

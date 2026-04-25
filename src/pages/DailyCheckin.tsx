@@ -620,7 +620,7 @@ const DailyCheckin = () => {
             </label>
             {proofPreview && (
               <div className="relative mt-2 rounded-xl overflow-hidden">
-                <img src={proofPreview} alt="Proof" className="w-full max-h-40 object-cover rounded-xl" />
+                <img loading="lazy" decoding="async" src={proofPreview} alt="Proof" className="w-full max-h-40 object-cover rounded-xl" />
                 <button
                   onClick={() => { setProofFile(null); setProofPreview(null); }}
                   className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80 transition-colors"

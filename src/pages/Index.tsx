@@ -178,13 +178,13 @@ const Index = () => {
 
       {/* TIER RISK */}
       {tierRisk.level !== "safe" && (
-        <Reveal className="mb-4 relative z-10">
+        <Reveal className="mb-4 relative z-10" delay={0}>
           <TierRiskBanner risk={tierRisk} />
         </Reveal>
       )}
 
       {/* RANK + PROGRESS HUB — identity strip + Pressure/Rivals/Level/Elite/Quests */}
-      <Reveal className="mb-4 relative z-10">
+      <Reveal className="mb-4 relative z-10" delay={80}>
         <RankProgressHub
           username={profile.username}
           tier={tier}
@@ -215,16 +215,16 @@ const Index = () => {
       </Reveal>
 
       {/* COACH STRIP */}
-      <Reveal className="mb-5 relative z-10">
+      <Reveal className="mb-5 relative z-10" delay={160}>
         <CoachStrip latestNudge={latestNudge ?? null} latestBriefing={latestBriefing ?? null} />
       </Reveal>
 
       {/* GROWTH ROW — Invite + Recent Badges */}
-      <Reveal className="mb-4">
+      <Reveal className="mb-4" delay={240}>
         <InviteCTA referralCount={profile.referral_count || 0} />
       </Reveal>
 
-      <Reveal className="mb-2">
+      <Reveal className="mb-2" delay={320}>
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-display font-bold text-base tracking-tight">Recent Badges</h2>
           <button

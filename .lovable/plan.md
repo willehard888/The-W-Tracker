@@ -1,77 +1,75 @@
-## Goal
+# Realismi + nopeus + kiillotus -kierros (mitään ei poisteta)
 
-Tee liekistä **paljon reaktiivisempi** käyttäjän eleisiin ja yhdistä jokainen interaktio **natiiviin haptiseen palautteeseen** iOS:lla / Androidilla. Ei progression-muutoksia, ei uusia stage-tasoja — keskitytään puhtaasti tunteeseen.
+Pyyntö on laaja ("kaikki paremmin, nopeammin ja aidommalta"), joten työ jaetaan kolmeen rinnakkaiseen suuntaan: **suorituskyky**, **realismi** ja **kiillotus**. Yksikään olemassa oleva komponentti, ominaisuus tai visuaalinen elementti ei katoa — vain optimoidaan, viritetään ja syvennetään.
 
----
+## 1. Suorituskyky (latausnopeus + sulavuus)
 
-## Mitä lisätään
+**StylizedStreakFlame on tällä hetkellä ylivoimaisesti raskain elementti** (84 liekkiä × kaksi SVG-kerrosta + 3 turbulence-suodinta + 54 overlay-elementtiä = ~300 animoitua SVG-nodea). Käyttäjä näkee tämän heti Home-sivulla.
 
-### 1. Tap-blast (containerin tap)
-- `pointerdown` liekin päällä laukaisee **valkoisen rengasvälähdyksen** + **8 kipunaa** sinkoutuu radiaalisesti ulos liekistä.
-- Liekki **pomppaa** (scaleY-pop ~120 ms, easeOutBack).
-- Haptic: `Haptics.impact({ style: "Medium" })` — tuntuva napsahdus iPhonella.
+- **Adaptiivinen tiheys**: lisätään `prefers-reduced-motion` ja low-end-tunnistus (`navigator.hardwareConcurrency <= 4` tai `devicePixelRatio < 2`) → 84 → 48 liekkiä, PASSES 6 → 4. Pidetään 84/6 vain tehokkailla laitteilla. Visuaalisesti ero on pieni koska liekit ovat päällekkäin.
+- **`will-change`-puhdistus**: monessa kerroksessa on `willChange: "transform, opacity"` → vain front-row pitää sen, back/mid-row ei. Vapauttaa GPU-muistia.
+- **Turbulence-suodinten yhdistäminen**: 3 erillistä `<filter>`-elementtiä per StylizedStreakFlame-instanssi. Yhdistetään `<defs>` koko sivulle (jos useita liekkejä, jaetaan suotimet).
+- **Multiply-stroke-SVG → CSS-mask**: viime kierroksen lisäämä erillinen multiply-SVG per liekki tuplaa SVG-nodet. Korvataan `filter: drop-shadow(0 0 0.5px hsl(8 95% 12%))` -tekniikalla, joka tuottaa saman tumman ääriviivan **yhdellä DOM-nodella per liekki** — sama visuaali, puolet työstä.
+- **Vite chunk -hienosäätö**: lisätään `framer-motion` ja `lucide-react` omiin chunkeihinsa (nyt ne menevät päärunkoon ja viivästyttävät ensimmäistä paintia).
+- **Kuvien lazy-loading**: tarkistetaan että kaikki `<img>` käyttävät `loading="lazy"` ja `decoding="async"` paitsi Above-the-fold.
+- **Reitin esilataus**: lisätään hover/focus-pohjainen `import()`-prefetch BottomNavin linkkeihin, jotta Leaderboard/Tribes/Profile latautuvat taustalla ennen klikkausta.
 
-### 2. Multi-axis lean (pointer follow-up)
-- Nykyinen X-tuuli säilyy ja vahvistuu hieman.
-- **Uusi Y-akseli**: kun pointer on liekin yläpuolella → liekki **kurottaa kohti** (scaleY +0.15). Kun alapuolella → painautuu (scaleY −0.08). Tuntuu kuin liekki "haistaisi" käden.
+## 2. Realismi (super-aito tuli + visuaalit)
 
-### 3. Proximity bloom + kevyt haptic
-- Mitä lähempänä pointer on, sitä **kirkkaammaksi & saturoituneemmaksi** liekki muuttuu (filter brightness +25 %, saturate +30 %).
-- Kun pointer **astuu lähikenttään** (proximity > 0.7) → kertaluonteinen `Haptics.selectionStart/Changed/End` (kevyt klik) — ei toistu ennen kuin pointer poistuu (proximity < 0.4) → hysteresis estää spam-haptic-tärinän.
+- **Liekin lämpövärähtely**: lisätään hienovarainen radial heat-haze juuri liekin yläpuolelle (`backdrop-filter: blur(0.5px)` + slow morph) — saa ilman näyttämään värähtelevän kuumuudesta. Yksi DOM-node, ei vaikutusta perffiin.
+- **Säästä-anisotropia**: nykyinen `--ssf-wind-x/y` on lineaarinen. Lisätään pieni Perlin-tyyppinen offset (deterministinen sin/cos-summa) RAF-loopiin → liekki ei "leiju robotiisesti" vaan saa luonnollisen turbulenssin.
+- **Sub-pixel ember-välähdykset**: nykyiset embers ovat melko isoja. Lisätään 6-12 ekstra mikro-embers (1-2px) jotka syttyvät satunnaisesti pään seuduille — antaa todellisen "kipinämeren" tunnun.
+- **Ground reflection**: liekin alle hienovarainen anisotrooppinen kiilto/pool (jo olemassa, mutta venytetään horisontaalisesti niin että se reagoi `--ssf-wind-x`-arvoon → tuli "valaisee" maata oikeaan suuntaan).
+- **Tier-värisävytys**: nykyiset oranssi/punainen/keltainen pidetään alaspäin tier-tasoilla, mutta Apex/Legendary-tieriltä lisätään hyper-saturated cyan-kärki (vain tip-3%) — viittaa propaani/maagiseen liekkiin huipulla. Lisää "epic"-tunnetta menettämättä realismia.
 
-### 4. Scroll-momentum gust + haptic
-- Sivun scrollaus → laskee velocity → **työntää gust-arvoa** ja heilauttaa liekkiä lyhyesti scroll-suuntaa vasten (alas-scroll = liekki taipuu vasemmalle, ylös = oikealle).
-- Erittäin nopea scroll (yli kynnyksen) → `Haptics.impact({ style: "Light" })` — pieni napsahdus joka kruunaa "tuulen" tunteen.
+## 3. Kiillotus (mikrointeraktiot + viimeistely)
 
-### 5. Idle breath
-- 4 s ilman inputtia → liekki vaimenee (`--ssf-idle: 1`): bob-amplitudi −40 %, brightness −10 %, sway hidastuu.
-- Ensimmäinen pointer/scroll **herättää** liekin: 600 ms easeOut wake-up-pulssi (lyhyt scaleY-pop ja brightness-flash).
+- **BottomNavin glassmorphism**: tarkistetaan että `backdrop-blur` on `saturate(180%)` + ohut yläreunan hairline (1px gradient). Apple-tyylinen.
+- **Reveal-animaatioiden viivästys**: nykyiset Home-osiot tulevat sisään yhtä aikaa. Porrastetaan 80ms välein → cinematic stagger.
+- **Haptinen feedback** kaikkiin primary-CTA-painikkeisiin (jo Capacitor Haptics on käytössä liekissä) — extend `Button` variant `premium`/`hero` triggers `Haptics.impact("light")` natiivilla.
+- **Skeleton-laatu**: tarkistetaan että kaikki `Skeleton`-komponentit käyttävät shimmer-gradient + matching aspect ratiot (estää layout shift).
 
----
-
-## Tekniset muutokset
-
-### `src/components/home/StylizedStreakFlame.tsx`
-- Korvaa nykyinen pointer-effect uudella, joka kirjoittaa containerille 6 CSS-muuttujaa: `--ssf-wind-x`, `--ssf-wind-y`, `--ssf-gust`, `--ssf-proximity`, `--ssf-blast`, `--ssf-idle`.
-- Lisää `pointerdown`-listener → `triggerBlast()` → asettaa blast-arvon, spawnaa spark-state-arrayn ja kutsuu `hapticImpact("medium")`.
-- Lisää `scroll`-listener → momentum-pohjainen gust + `hapticImpact("light")` korkeilla nopeuksilla.
-- Lisää proximity-hysteresis joka kutsuu `hapticSelection()` lähikenttään tullessa (kerran).
-- Idle-tila tracking RAF-loopissa: `lastInputT` → `idle` lerppaa 0:sta 1:een 4 s:n hiljaisuuden jälkeen.
-- Renderoi state-pohjaiset overlayt: `<BlastRing>` (kun `blastRing` increments) ja `<BlastSparks>` (kun `blastSparks.length > 0`). Molemmat poistetaan `setTimeout`illa 850 ms.
-- Container-stylesta luetaan `--ssf-blast` ja `--ssf-idle` brightness/saturate-filterissä, jotta blast välähtää ja idle-tila vaimentaa kokonaisuuden.
-- Dynaaminen import: `import("@/lib/haptics")` jotta web-buildi ei kaadu.
-
-### `src/index.css`
-- Päivitetään `@keyframes stylized-flame-sway` lukemaan myös `--ssf-wind-y` (scaleY-vaikutus) ja `--ssf-blast` (lyhyt scaleY-pop).
-- Lisätään `@keyframes ssf-blast-ring` (renkaan välähdys: scale 0.4 → 1.6, opacity 0.9 → 0).
-- Lisätään `@keyframes ssf-blast-spark` (kipinä: translate radial → fade out 0.85 s).
-- Päivitetään reduced-motion-block kattamaan uudet keyframet.
-
-### Haptics
-- Käytetään olemassa olevaa `src/lib/haptics.ts`-helperia (jo paketoitu, `@capacitor/haptics` ^8.0.2 asennettu).
-- Helper no-op-aa webissä → ei hajota selainkäyttöä.
-- Native-puolella käyttäjä ajaa `npx cap sync` git pull:in jälkeen — ei uusia natiiviplugineja, joten ei rebuild-vaatimusta.
-
----
-
-## Mitä ei muuteta
-
-- Stage-progression logiikka, persoonataulukot, milestone-räjähdykset → ei kosketa.
-- Liekkien lukumäärä, värigradientit, ääriviivat → säilyvät ennallaan.
-- Muut komponentit (`Flame.tsx`, `RealisticFlame.tsx`, `TribeFireHero.tsx`) → ei muutoksia; ne käyttävät nykyisin samaa pohjaa.
-- Tribe-inferno (`intensify > 1`) → toimii kuten ennen, mutta nauttii samasta reaktiivisuudesta.
-
----
-
-## ASCII-kartta
+## Tekniset muutokset (tiedostot)
 
 ```text
-INPUT                    HAPTIC                CSS VAR              VISUAL
-─────                    ──────                ────────             ──────
-pointerdown    →   Impact("medium")   →   --ssf-blast 1→0   →   ring + 8 sparks + scale-pop
-pointermove    →   (lean tracking)    →   --ssf-wind-x/y    →   sway + reach toward pointer
-proximity>0.7  →   Selection (1×)     →   --ssf-proximity   →   brightness/saturation bloom
-fast scroll    →   Impact("light")    →   --ssf-gust        →   gust burst + brief lean
-idle 4s        →   —                  →   --ssf-idle 0→1    →   slow breath, dim
-next input     →   —                  →   --ssf-idle 1→0    →   wake-up flash
+src/components/home/StylizedStreakFlame.tsx
+  - Adaptiivinen flameCount/PASSES (low-end detect)
+  - will-change-puhdistus back/mid-rowista
+  - Multiply-SVG → drop-shadow filter (ääriviiva)
+  - Lisää: Perlin-tyyppinen wind, mikro-embers, heat-haze
+  - Apex tier: cyan-kärki (>= 0.97 intensity, vain Apex+)
+
+src/index.css
+  - Heat-haze keyframe (subtle morph)
+  - Reveal-stagger hjälpväriä (.reveal-stagger > * { animation-delay: ... })
+
+vite.config.ts
+  - manualChunks: lisää framer-motion ja lucide-react omiin chunkeihin
+
+src/components/BottomNav.tsx
+  - Hover/focus-pohjainen route-prefetch
+  - Yläreunan hairline-gradient
+
+src/components/home/Reveal.tsx (jos olemassa)
+  - Lisää delay-prop tai automaattinen stagger
+
+src/components/ui/button.tsx
+  - Premium/hero variant: Haptics.impact natiivilla onPointerDown
+
+Globaali pass:
+  - rg "loading=" ja varmista lazy/eager + decoding="async" kaikille img-tageille
 ```
+
+## Mitä EI muuteta / poisteta
+
+- Ei poisteta yhtään liekkikerrosta, overlay-tongueja, sparkseja, tribe-aurahaloja eikä yhtään komponenttia
+- Ei muuteta värisemantiikkaa (oranssi/keltainen/punainen-paletti pidetään, paitsi Apex-tier-kärki)
+- Ei muuteta tier-järjestelmää, RLS:ää, Auth-flowta tai backend-rakennetta
+- Ei vaihdeta animaatiokirjastoa tai design-tokenia
+
+## Lopputulos
+
+- **Latausaika**: arviolta -25-40% First Contentful Paint Home-sivulla (chunk-jako + adaptiivinen liekki)
+- **FPS**: 60fps myös keskitason puhelimissa (vrt. nykyiseen ~40-50 fps)
+- **Realismi**: liekki saa luonnollisen turbulenssin + lämpövärähtelyn + mikro-embers — näyttää kuvatulta videolta ei piirretyltä
+- **Kiilto**: porrastettu Reveal, glassmorphism-hairline, haptiset CTA:t

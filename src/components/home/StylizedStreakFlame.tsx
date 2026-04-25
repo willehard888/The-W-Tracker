@@ -2,6 +2,24 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
+ * Detect device performance class once per page load.
+ * - "low": reduced-motion preference, low-core CPUs, or tiny screens → halve density
+ * - "high": desktops/tablets with 6+ cores and DPR>=2 → full inferno
+ */
+const detectPerfClass = (): "low" | "mid" | "high" => {
+  if (typeof window === "undefined") return "mid";
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return "low";
+  const cores = navigator.hardwareConcurrency ?? 4;
+  const dpr = window.devicePixelRatio ?? 1;
+  const mem = (navigator as { deviceMemory?: number }).deviceMemory ?? 4;
+  if (cores <= 4 || mem <= 3) return "low";
+  if (cores >= 8 && dpr >= 2 && mem >= 6) return "high";
+  return "mid";
+};
+let _perfClassCache: "low" | "mid" | "high" | null = null;
+const getPerfClass = () => (_perfClassCache ??= detectPerfClass());
+
+/**
  * StylizedStreakFlame v4 — layered "real bonfire" silhouettes.
  *
  * Design:
@@ -260,14 +278,32 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       }
     };
 
+    // Perlin-tyyppinen luonnollinen turbulenssi (deterministinen sin-summa)
+    // — antaa liekille orgaanisen "ei-koskaan-täysin-paikallaan" tunnun.
+    const t0 = performance.now();
+    const turbulence = (now: number) => {
+      const t = (now - t0) / 1000;
+      // Kolme eri taajuista sini-aaltoa summassa simuloi Perlin-noisea kevyesti.
+      const x = Math.sin(t * 0.83) * 0.6 + Math.sin(t * 1.91 + 1.3) * 0.3 + Math.sin(t * 3.7 + 2.1) * 0.1;
+      const y = Math.cos(t * 0.71 + 0.5) * 0.5 + Math.sin(t * 2.13 + 1.9) * 0.25 + Math.cos(t * 4.1 + 0.8) * 0.1;
+      return { x: x * 0.18, y: y * 0.12 }; // Skaalattu hienovaraiseksi (~±0.18 max)
+    };
+
     const tick = () => {
-      currentWindX += (targetWindX - currentWindX) * 0.13;
-      currentWindY += (targetWindY - currentWindY) * 0.10;
+      const now = performance.now();
+      const turb = turbulence(now);
+      // Yhdistä user-input + ambient turbulence: turb tuo idle-tilaan eloa,
+      // mutta kun käyttäjä on lähellä (proximity > 0.3), turb feidaa pois → input vie vallan.
+      const turbBlend = Math.max(0.25, 1 - proximity * 1.4);
+      const effectiveTargetX = targetWindX + turb.x * turbBlend;
+      const effectiveTargetY = targetWindY + turb.y * turbBlend;
+      currentWindX += (effectiveTargetX - currentWindX) * 0.13;
+      currentWindY += (effectiveTargetY - currentWindY) * 0.10;
       proximity += (targetProximity - proximity) * 0.08;
       gust = Math.max(0, gust - gustDecay);
       blast = Math.max(0, blast - 0.018);
       // Idle ramp: 0 if recent input, → 1 over 1.6 s after 4 s silence
-      const sinceInput = performance.now() - lastInputT;
+      const sinceInput = now - lastInputT;
       const idleTarget = sinceInput > 4000 ? Math.min(1, (sinceInput - 4000) / 1600) : 0;
       idle += (idleTarget - idle) * 0.04;
       // Bleed targets back toward neutral when no input
@@ -281,6 +317,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       el.style.setProperty("--ssf-proximity", proximity.toFixed(3));
       el.style.setProperty("--ssf-blast", blast.toFixed(3));
       el.style.setProperty("--ssf-idle", idle.toFixed(3));
+      // Heat-haze morph: hidas, riippumaton turbulence-aalto
+      el.style.setProperty("--ssf-haze", (Math.sin(now / 1700) * 0.5 + 0.5).toFixed(3));
       raf = requestAnimationFrame(tick);
     };
 
@@ -297,8 +335,12 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
   }, [isCold, size]);
 
 
-  // How many flames at this stage — 6× base for ultra-volumetric inferno: 12..84 layered tongues
-  const flameCount = isCold ? 0 : Math.min(84, (2 + stage * 2) * 6);
+  // How many flames at this stage — adaptiivinen perfClassin mukaan.
+  // high = 6× base (84 max), mid = 4× (56 max), low = 3× (42 max).
+  const perfClass = getPerfClass();
+  const passMultiplier = perfClass === "high" ? 6 : perfClass === "mid" ? 4 : 3;
+  const flameCap = perfClass === "high" ? 84 : perfClass === "mid" ? 56 : 42;
+  const flameCount = isCold ? 0 : Math.min(flameCap, (2 + stage * 2) * passMultiplier);
 
   // Bed width (how wide the flames spread) and tallest flame height — wider, taller, smoother
   const bedWidth = lerp(0.55, 1.25, t) * size;
@@ -332,7 +374,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
     // ── 6× the plan: 6 passes per base layer with deterministic jitter
     // (different scale, xOffset, speed, hue) so layers stack as parallax
     // copies instead of identical clones — no two flames look the same.
-    const PASSES = 6;
+    const PASSES = passMultiplier;
     const plan: Omit<FlameLayer, "delaySeed">[] = [];
     for (let pass = 0; pass < PASSES; pass++) {
       basePlan.forEach((b, idx) => {
@@ -386,7 +428,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       ...c,
       delaySeed: -((seed.a * (i + 1) + seed.b * (i + 3) + seed.c * (i + 5)) % 2300) / 1000,
     }));
-  }, [flameCount, seed.a, seed.b, seed.c]);
+  }, [flameCount, passMultiplier, seed.a, seed.b, seed.c]);
 
   // Cold state — thin outline candle, gold-soft so it stays on-theme
   if (isCold) {
@@ -653,6 +695,25 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
         />
       )}
 
+      {/* ─── HEAT-HAZE — kuumuuden aiheuttama ilmanvärähtely liekin yläpuolella ─── */}
+      {stage >= 2 && (
+        <span
+          className="absolute left-1/2 pointer-events-none"
+          style={{
+            width: bedWidth * 1.1,
+            height: tallestH * 0.55,
+            bottom: tallestH * 0.55,
+            transform: `translateX(-50%) translateY(calc(var(--ssf-haze, 0.5) * -3px)) scaleY(calc(1 + var(--ssf-haze, 0.5) * 0.04))`,
+            background: `radial-gradient(ellipse at 50% 30%, hsl(28 80% 70% / 0.10) 0%, hsl(20 70% 60% / 0.05) 45%, transparent 80%)`,
+            filter: `blur(${Math.max(3, size * 0.04)}px)`,
+            mixBlendMode: "screen",
+            zIndex: 5,
+            opacity: lerp(0.5, 1, t),
+            transition: "transform 0.08s linear",
+          }}
+        />
+      )}
+
       {/* ─── EMBER BED — burning fuel line ─── */}
       <span
         className="absolute left-1/2"
@@ -745,7 +806,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   zIndex: layer.zIndex,
                   animation: `stylized-flame-sway-${(i % 3) + 1} ${swayDur.toFixed(2)}s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite`,
                   animationDelay: `${layer.delaySeed.toFixed(2)}s`,
-                  willChange: "transform",
+                  willChange: layer.zIndex >= 3 ? "transform" : "auto",
                   mixBlendMode: "screen",
                   opacity: layerOpacity,
                 }}
@@ -761,15 +822,14 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                     animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
                     animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
                     transformOrigin: "center bottom",
-                    willChange: "transform, opacity",
+                    willChange: layer.zIndex >= 3 ? "transform, opacity" : "auto",
                   }}
                 >
                   <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${gradId})`} />
                 </svg>
 
-                {/* Tummennettu ääriviiva — erillisessä SVG:ssä jolla on multiply-blend
-                    jotta tumma viiva oikeasti tummentaa liekin reunan (ei pyyhkiydy
-                    pois screen-blend-äidin alla). Antaa jokaiselle liekille terävän siluetin. */}
+                {/* Tummennettu ääriviiva — erillinen multiply-SVG, mutta ILMAN turbulence-suodinta
+                    (jaa sama path mutta vain kevyt feMorphology kautta jos halutaan; kustannussäästö ~50%). */}
                 <svg
                   width={flameW}
                   height={flameH}
@@ -777,12 +837,10 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   preserveAspectRatio="none"
                   className="absolute inset-0"
                   style={{
-                    filter: `url(#${filterId})`,
                     animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
                     animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
                     transformOrigin: "center bottom",
                     mixBlendMode: "multiply",
-                    willChange: "transform, opacity",
                     pointerEvents: "none",
                   }}
                 >
@@ -1104,6 +1162,40 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                 mixBlendMode: "screen",
                 zIndex: 5,
                 willChange: "transform, opacity",
+              }}
+            />
+          );
+        })}
+
+        {/* ─── MICRO-EMBERS — sub-pixel kipinämeri liekin pään yläpuolella
+            (1–2px nopeasti syttyviä ja sammuvia välähdyksiä — antaa "kipinämeren" tunnun). */}
+        {stage >= 2 && perfClass !== "low" && Array.from({ length: perfClass === "high" ? 14 : 8 }).map((_, i) => {
+          const xPos = ((i * 67 + seed.b * 19) % 100) / 100;
+          const xPx = (bedWidth * 0.7) * (xPos - 0.5);
+          const startBottom = tallestH * lerp(0.45, 0.7, (i % 4) / 3);
+          const dur = lerp(1.2, 0.7, ferocity) + ((i * 0.13) % 0.6);
+          const delay = -((i * 0.19 + seed.a * 0.013) % dur);
+          const dotSize = 1 + ((i % 3) * 0.5); // 1.0 / 1.5 / 2.0 px
+          const drift = ((i % 2 === 0 ? 1 : -1) * (3 + (i * 2) % 8));
+          const color = i % 3 === 0 ? "hsl(48 100% 65%)" : i % 2 === 0 ? "hsl(32 100% 58%)" : "hsl(18 95% 50%)";
+          return (
+            <span
+              key={`micro-ember-${i}`}
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                width: dotSize,
+                height: dotSize,
+                left: `calc(50% + ${xPx.toFixed(1)}px)`,
+                bottom: startBottom,
+                background: color,
+                boxShadow: `0 0 ${(dotSize * 3).toFixed(1)}px ${color}`,
+                ["--spark-drift" as string]: `${drift}px`,
+                ["--spark-rise" as string]: `-${lerp(50, 95, ferocity).toFixed(0)}%`,
+                animation: `stylized-spark-rise ${dur.toFixed(2)}s ease-out infinite`,
+                animationDelay: `${delay.toFixed(2)}s`,
+                mixBlendMode: "screen",
+                zIndex: 5,
+                opacity: lerp(0.7, 1, ferocity),
               }}
             />
           );

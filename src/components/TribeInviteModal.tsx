@@ -135,7 +135,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
               >
                 <div className="h-8 w-8 rounded-full bg-secondary border border-border overflow-hidden shrink-0">
                   {u.avatar_url ? (
-                    <img src={u.avatar_url} alt={u.username} className="h-full w-full object-cover" />
+                    <img loading="lazy" decoding="async" src={u.avatar_url} alt={u.username} className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
                       {u.username.slice(0, 2).toUpperCase()}

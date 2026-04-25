@@ -528,7 +528,7 @@ const Tribes = () => {
                               className="h-6 w-6 rounded-full bg-secondary border-2 border-background overflow-hidden"
                             >
                               {p.avatar_url ? (
-                                <img src={p.avatar_url} alt={p.username} className="h-full w-full object-cover" />
+                                <img loading="lazy" decoding="async" src={p.avatar_url} alt={p.username} className="h-full w-full object-cover" />
                               ) : (
                                 <div className="h-full w-full flex items-center justify-center text-[8px] font-black text-muted-foreground">
                                   {p.username.slice(0, 2).toUpperCase()}

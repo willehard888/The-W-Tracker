@@ -28,6 +28,25 @@ const colorMap: Record<TabColor, { text: string; rgb: string }> = {
 
 const HIDDEN_PATHS = new Set(["/landing", "/auth", "/onboarding", "/paywall"]);
 
+// Lazy-route prefetch map — käynnistetään import() kun käyttäjä hover/focus-tapahtuma
+// kohdistuu BottomNav-painikkeeseen, jolloin sivu on jo lähes valmis kun klikkaus tulee.
+// Käytetään jo olemassa olevia App.tsx:n lazy-importteja vastaavia dynamic importteja.
+const PREFETCH: Record<string, () => Promise<unknown>> = {
+  "/checkin": () => import("@/pages/DailyCheckin"),
+  "/feed": () => import("@/pages/EliteFeed"),
+  "/tribes": () => import("@/pages/Tribes"),
+  "/messages": () => import("@/pages/Messages"),
+  "/leaderboard": () => import("@/pages/Leaderboard"),
+  "/battles": () => import("@/pages/Battles"),
+  "/profile": () => import("@/pages/Profile"),
+};
+const prefetched = new Set<string>();
+const prefetchRoute = (path: string) => {
+  if (prefetched.has(path)) return;
+  prefetched.add(path);
+  PREFETCH[path]?.().catch(() => prefetched.delete(path));
+};
+
 const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -95,6 +114,9 @@ const BottomNav = () => {
               aria-label={label}
               aria-current={active ? "page" : undefined}
               onClick={() => handleNav(path)}
+              onPointerEnter={() => prefetchRoute(path)}
+              onFocus={() => prefetchRoute(path)}
+              onTouchStart={() => prefetchRoute(path)}
               className={cn(
                 "group relative flex flex-col items-center justify-center gap-0.5 px-1.5 py-1.5 rounded-xl",
                 "transition-[transform,color,opacity] duration-220 will-change-transform",

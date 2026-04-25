@@ -24,6 +24,8 @@ export default defineConfig(({ mode }) => {
             charts: ["recharts"],
             three: ["three", "@react-three/fiber", "@react-three/drei"],
             query: ["@tanstack/react-query"],
+            motion: ["framer-motion"],
+            icons: ["lucide-react"],
           },
         },
       },

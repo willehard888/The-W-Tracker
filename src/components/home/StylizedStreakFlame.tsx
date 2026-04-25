@@ -668,7 +668,7 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
           );
         })()}
 
-
+        {/* ─── SIDE FLAME LICKS — gentle lateral tongues that lean outward ───
             Restrained: small lean, mostly upward growth, soft fade. Real flames
             "breathing" sideways rather than horizontal jets. */}
         {(() => {

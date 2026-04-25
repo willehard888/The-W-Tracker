@@ -684,8 +684,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               height: dot,
               bottom: size * 0.025,
               transform: `translateX(calc(-50% + ${left.toFixed(1)}px))`,
-              background: i % 3 === 0 ? "hsl(54 100% 90%)" : "hsl(38 100% 68%)",
-              boxShadow: `0 0 ${dot * 2}px hsl(28 100% 58%)`,
+              background: i % 3 === 0 ? "hsl(44 100% 60%)" : "hsl(28 100% 54%)",
+              boxShadow: `0 0 ${dot * 1.4}px hsl(18 100% 48%)`,
               animation: `stylized-coal-pulse ${(1.6 + i * 0.27).toFixed(2)}s ease-in-out infinite`,
               animationDelay: `${(i * 0.3).toFixed(2)}s`,
               zIndex: 1,
@@ -770,7 +770,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   <path
                     d={FLAME_PATHS[layer.pathIndex]}
                     fill="none"
-                    stroke={layer.zIndex >= 3 ? "hsl(46 100% 82%)" : layer.zIndex === 2 ? "hsl(34 100% 64%)" : "hsl(20 95% 50%)"}
+                    stroke={layer.zIndex >= 3 ? "hsl(40 100% 58%)" : layer.zIndex === 2 ? "hsl(28 100% 52%)" : "hsl(14 95% 46%)"}
                     strokeWidth={layer.zIndex >= 3 ? 2.2 : layer.zIndex === 2 ? 1.8 : 1.4}
                     strokeLinejoin="round"
                     strokeLinecap="round"
@@ -943,7 +943,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               }}
             >
               <path d={FLAME_PATHS[4]} fill={`url(#${gradId})`} />
-              <path d={FLAME_PATHS[4]} fill="none" stroke="hsl(46 100% 78%)" strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" opacity={0.75} />
+              <path d={FLAME_PATHS[4]} fill="none" stroke="hsl(38 100% 56%)" strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" opacity={0.75} />
             </svg>
           );
         })}
@@ -1042,7 +1042,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               }}
             >
               <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
-              <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(48 100% 80%)" strokeWidth={1.4} strokeLinejoin="round" strokeLinecap="round" opacity={0.78} />
+              <path d={FLAME_PATHS[pathIdx]} fill="none" stroke="hsl(40 100% 58%)" strokeWidth={1.4} strokeLinejoin="round" strokeLinecap="round" opacity={0.78} />
             </svg>
           );
         })}
@@ -1055,7 +1055,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
           const dur = lerp(2.2, 1.3, ferocity) + ((i * 0.21) % 1.0);
           const delay = -((i * 0.27 + seed.a * 0.011) % dur);
           const sparkSize = lerp(1.6, 3.0, (i % 3) / 2) * lerp(0.85, 1.25, ferocity);
-          const color = i % 4 === 0 ? "hsl(54 100% 94%)" : i % 3 === 0 ? "hsl(42 100% 74%)" : "hsl(28 100% 62%)";
+          const color = i % 4 === 0 ? "hsl(44 100% 60%)" : i % 3 === 0 ? "hsl(28 100% 54%)" : "hsl(14 95% 48%)";
           const riseDist = lerp(110, 170, ferocity); // %
           // Trail = stacked box-shadows behind the spark (tail effect)
           const trailLen = Math.max(2, Math.round(lerp(2, 6, ferocity)));
@@ -1134,7 +1134,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             height: Math.max(6, size * 0.06),
             bottom: size * 0.02,
             transform: "translateX(-50%)",
-            background: `radial-gradient(ellipse at 50% 50%, hsl(54 100% 92%) 0%, hsl(40 100% 65%) 35%, transparent 75%)`,
+            background: `radial-gradient(ellipse at 50% 50%, hsl(44 100% 62%) 0%, hsl(28 100% 52%) 35%, transparent 75%)`,
             filter: "blur(3px)",
             mixBlendMode: "screen",
             animation: "stylized-bed-flash 0.7s ease-out forwards",

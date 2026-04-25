@@ -521,13 +521,13 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
           });
         })()}
 
-        {/* ─── WILD TONGUES — rogue licks shooting up randomly ─── */}
-        {stage >= 2 && Array.from({ length: Math.min(6, stage + 1) }).map((_, i) => {
-          const tongueW = bedWidth * lerp(0.08, 0.14, (i % 3) / 2);
-          const tongueH = tallestH * lerp(0.45, 0.85, (i % 4) / 3);
-          const xPos = ((i * 37 + seed.a * 13) % 100) / 100; // 0..1
-          const xPx = (bedWidth * 0.8) * (xPos - 0.5);
-          const dur = lerp(1.4, 0.9, t) + (i % 3) * 0.15;
+        {/* ─── WILD TONGUES — rogue licks shooting up randomly (front emits) ─── */}
+        {stage >= 2 && Array.from({ length: Math.min(8, Math.round(lerp(2, 8, ferocityFront))) }).map((_, i) => {
+          const tongueW = bedWidth * lerp(0.07, 0.16, (i % 3) / 2);
+          const tongueH = tallestH * lerp(0.45, 1.0, ferocityFront) * lerp(0.7, 1.1, (i % 4) / 3);
+          const xPos = ((i * 37 + seed.a * 13) % 100) / 100;
+          const xPx = (bedWidth * 0.85) * (xPos - 0.5);
+          const dur = lerp(1.6, 0.8, ferocity) + (i % 3) * 0.12;
           const delay = -((i * 0.37 + seed.b * 0.013) % dur);
           const filterId = filterIds[2];
           const gradId = `ssf-grad-${uid}-${(i + 1) % Math.max(1, layers.length)}`;
@@ -555,15 +555,25 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
           );
         })}
 
-        {/* ─── RISING SPARKS — bright embers floating up ─── */}
-        {stage >= 3 && Array.from({ length: Math.min(10, stage * 2) }).map((_, i) => {
+        {/* ─── FRONT-ROW SHARP EMBERS with TRAILS — bright, fast, lingering ─── */}
+        {stage >= 3 && Array.from({ length: Math.min(14, Math.round(lerp(4, 14, ferocityFront))) }).map((_, i) => {
           const xPos = ((i * 53 + seed.c * 11) % 100) / 100;
           const xPx = (bedWidth * 0.9) * (xPos - 0.5);
-          const drift = ((i % 2 === 0 ? 1 : -1) * (4 + (i * 3) % 12));
-          const dur = 1.6 + ((i * 0.21) % 1.2);
+          const drift = ((i % 2 === 0 ? 1 : -1) * (4 + (i * 3) % 14)) * lerp(0.7, 1.4, ferocity);
+          const dur = lerp(2.2, 1.3, ferocity) + ((i * 0.21) % 1.0);
           const delay = -((i * 0.27 + seed.a * 0.011) % dur);
-          const sparkSize = lerp(1.8, 2.8, (i % 3) / 2);
-          const color = i % 4 === 0 ? "hsl(54 100% 92%)" : i % 3 === 0 ? "hsl(40 100% 72%)" : "hsl(28 100% 60%)";
+          const sparkSize = lerp(1.6, 3.0, (i % 3) / 2) * lerp(0.85, 1.25, ferocity);
+          const color = i % 4 === 0 ? "hsl(54 100% 94%)" : i % 3 === 0 ? "hsl(42 100% 74%)" : "hsl(28 100% 62%)";
+          const riseDist = lerp(110, 170, ferocity); // %
+          // Trail = stacked box-shadows behind the spark (tail effect)
+          const trailLen = Math.max(2, Math.round(lerp(2, 6, ferocity)));
+          const trail = Array.from({ length: trailLen })
+            .map((_, k) => {
+              const off = (k + 1) * (sparkSize * 0.9);
+              const a = (1 - (k + 1) / (trailLen + 1)) * 0.7;
+              return `0 ${off.toFixed(1)}px ${(sparkSize * 1.6).toFixed(1)}px hsl(28 100% 60% / ${a.toFixed(2)})`;
+            })
+            .join(", ");
           return (
             <span
               key={`spark-${i}`}
@@ -574,13 +584,48 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
                 left: `calc(50% + ${xPx.toFixed(1)}px)`,
                 bottom: size * 0.04,
                 background: color,
-                boxShadow: `0 0 ${sparkSize * 2.5}px ${color}`,
+                boxShadow: `0 0 ${sparkSize * 2.8}px ${color}, ${trail}`,
                 ["--spark-x" as string]: "0px",
                 ["--spark-drift" as string]: `${drift}px`,
+                ["--spark-rise" as string]: `-${riseDist}%`,
                 animation: `stylized-spark-rise ${dur.toFixed(2)}s ease-out infinite`,
                 animationDelay: `${delay.toFixed(2)}s`,
                 mixBlendMode: "screen",
                 zIndex: 5,
+                willChange: "transform, opacity",
+              }}
+            />
+          );
+        })}
+
+        {/* ─── BACK-ROW SOFT SMOKY WISPS — slow, large, fading puffs ─── */}
+        {stage >= 2 && Array.from({ length: Math.min(8, Math.round(lerp(2, 8, ferocity))) }).map((_, i) => {
+          const xPos = ((i * 41 + seed.b * 17) % 100) / 100;
+          const xPx = (bedWidth * 1.0) * (xPos - 0.5);
+          const drift = ((i % 2 === 0 ? -1 : 1) * (8 + (i * 5) % 18));
+          const dur = lerp(4.5, 3.0, ferocity) + (i % 3) * 0.4;
+          const delay = -((i * 0.61 + seed.c * 0.017) % dur);
+          const wispSize = lerp(8, 18, (i % 3) / 2) * lerp(0.9, 1.4, ferocity);
+          const tint = i % 3 === 0 ? "hsl(20 30% 60% / 0.35)" : "hsl(28 18% 50% / 0.28)";
+          return (
+            <span
+              key={`wisp-${i}`}
+              className="absolute rounded-full"
+              style={{
+                width: wispSize,
+                height: wispSize,
+                left: `calc(50% + ${xPx.toFixed(1)}px)`,
+                bottom: size * 0.18,
+                background: `radial-gradient(circle at 50% 50%, ${tint} 0%, transparent 70%)`,
+                filter: `blur(${(wispSize * 0.18).toFixed(1)}px)`,
+                ["--spark-x" as string]: "0px",
+                ["--spark-drift" as string]: `${drift}px`,
+                ["--spark-rise" as string]: `-${lerp(140, 200, ferocity)}%`,
+                animation: `stylized-smoke-puff ${dur.toFixed(2)}s ease-out infinite`,
+                animationDelay: `${delay.toFixed(2)}s`,
+                mixBlendMode: "screen",
+                zIndex: 0,
+                opacity: lerp(0.4, 0.85, ferocity),
                 willChange: "transform, opacity",
               }}
             />

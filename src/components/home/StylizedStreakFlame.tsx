@@ -508,8 +508,9 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
         style={{
           left: "50%",
           bottom: size * 0.05,
-          // Reactive: lean horizontally + scale up vertically on gust (fire flares from a sudden puff)
-          transform: `translateX(calc(-50% + var(--ssf-wind-x, 0) * 6px)) scaleY(calc(1 + var(--ssf-gust, 0) * 0.18)) scaleX(calc(1 - var(--ssf-gust, 0) * 0.06))`,
+          // Reactive lean + gust scale handled inside @keyframes stylized-flame-sway
+          // (it reads --ssf-wind-x / --ssf-wind / --ssf-gust set by the pointer effect)
+          transform: "translateX(-50%)",
           width: bedWidth,
           height: tallestH,
           transformOrigin: "center bottom",

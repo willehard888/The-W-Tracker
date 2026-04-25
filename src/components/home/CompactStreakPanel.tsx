@@ -696,7 +696,7 @@ const CompactStreakPanel = ({
             <span
               key={numberKey.current}
               className={cn(
-                "font-black font-display tabular-nums tracking-tighter leading-[0.85] inline-block",
+                "font-black font-display tabular-nums tracking-tighter leading-[0.85] inline-block text-3d-fire",
                 displayStreak >= 100 ? "text-[44px]" : "text-[54px]",
                 numberClass,
               )}
@@ -711,7 +711,7 @@ const CompactStreakPanel = ({
               {countDisplay}
             </span>
             <span
-              className="font-black font-display text-[11px] uppercase tracking-[0.22em]"
+              className="font-black font-display text-[11px] uppercase tracking-[0.22em] text-3d-fire-sm"
               style={{ color: isHot ? accent : "hsl(var(--muted-foreground) / 0.7)" }}
             >
               day{displayStreak === 1 ? "" : "s"}

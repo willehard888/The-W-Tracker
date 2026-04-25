@@ -224,7 +224,7 @@ const Index = () => {
         <InviteCTA referralCount={profile.referral_count || 0} />
       </Reveal>
 
-      <Reveal className="mb-2">
+      <Reveal className="mb-2" delay={320}>
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-display font-bold text-base tracking-tight">Recent Badges</h2>
           <button

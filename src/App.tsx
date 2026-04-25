@@ -227,6 +227,7 @@ const App = () => {
               <RevenueCatProvider>
                 <WindProvider>
                   {splashDone && <AmbientParticlesGate />}
+                  {splashDone && <EdgeFireThreads />}
                   <AppRoutes />
                 </WindProvider>
               </RevenueCatProvider>

@@ -191,8 +191,8 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
     };
   }, [isCold, size]);
 
-  // How many flames at this stage — fuller fire: 2..14 layered tongues
-  const flameCount = isCold ? 0 : Math.min(14, 2 + stage * 2);
+  // How many flames at this stage — TRIPLED for fuller volumetric fire: 6..42 layered tongues
+  const flameCount = isCold ? 0 : Math.min(42, (2 + stage * 2) * 3);
 
   // Bed width (how wide the flames spread) and tallest flame height — wider, taller, smoother
   const bedWidth = lerp(0.55, 1.25, t) * size;
@@ -201,8 +201,8 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
   // Build layer plan deterministically per (uid, stage, t)
   const layers: FlameLayer[] = useMemo(() => {
     if (flameCount === 0) return [];
-    // 14 curated layers — back→front for organic depth, fuller bonfire feel.
-    const plan: Omit<FlameLayer, "delaySeed">[] = [
+    // Base 14 curated layers — back→front for organic depth, fuller bonfire feel.
+    const basePlan: Omit<FlameLayer, "delaySeed">[] = [
       // ── BACK ROW (4) — cooler, shorter, soft warp ──
       { pathIndex: 0, scale: 0.78, xOffset: -0.7,  zIndex: 1, speed: 1.05, hueShift: -5, intensity: 0.42, filterId: 0 },
       { pathIndex: 5, scale: 0.74, xOffset:  0.7,  zIndex: 1, speed: 1.1,  hueShift: -3, intensity: 0.46, filterId: 0 },
@@ -223,20 +223,51 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
       { pathIndex: 4, scale: 1.05, xOffset:  0.0,  zIndex: 4, speed: 0.62, hueShift:  6, intensity: 1.0,  filterId: 2 },
     ];
 
-    // Take the right number, but always include the hero (last) when count >= 4
+    // ── TRIPLE the plan: 3 passes per base layer with deterministic jitter
+    // (different scale, xOffset, speed, hue) so layers stack as parallax
+    // copies instead of identical clones — no two flames look the same.
+    const plan: Omit<FlameLayer, "delaySeed">[] = [];
+    for (let pass = 0; pass < 3; pass++) {
+      basePlan.forEach((b, idx) => {
+        // Jitter values vary per (pass, idx) — deterministic, no randomness
+        const j = (pass * 17 + idx * 11) % 13;
+        const scaleJ = 1 + ((j - 6) / 60);                       // ±10% scale
+        const xJ = ((j - 6) / 80);                                // ±0.075 xOffset
+        const speedJ = 1 + ((j - 6) / 50);                        // ±12% speed
+        const hueJ = ((j - 6) / 6);                               // ±1 hue
+        // Pass 1 = original, pass 2 = slight back-shift, pass 3 = slight front-shift
+        const intenJ = pass === 0 ? 1 : pass === 1 ? 0.92 : 1.04;
+        const pathJ = (b.pathIndex + pass * 2) % FLAME_PATHS.length;
+        plan.push({
+          ...b,
+          pathIndex: pathJ,
+          scale: Math.max(0.5, Math.min(1.18, b.scale * scaleJ)),
+          xOffset: Math.max(-0.85, Math.min(0.85, b.xOffset + xJ)),
+          speed: Math.max(0.5, b.speed * speedJ),
+          hueShift: b.hueShift + hueJ,
+          intensity: Math.max(0.35, Math.min(1, b.intensity * intenJ)),
+        });
+      });
+    }
+
+    // Take the right number, but always include the hero (last of pass 0)
     let chosen: typeof plan;
     if (flameCount <= 3) {
-      // Tiny fires: pick from front row + hero
-      chosen = [...plan.slice(9, 9 + (flameCount - 1)), plan[plan.length - 1]].slice(0, flameCount);
+      // Tiny fires: pick from front row + hero of pass 0
+      chosen = [...plan.slice(9, 9 + (flameCount - 1)), plan[13]].slice(0, flameCount);
     } else {
-      const heroLayer = plan[plan.length - 1];
-      const others = plan.slice(0, plan.length - 1);
-      // priority: mid → front → back so the body fills out first
-      const ordered = [
-        ...others.slice(4, 9),            // mid row (5)
-        ...others.slice(9, 13),           // front row (4)
-        ...others.slice(0, 4),            // back row (4) last
-      ];
+      const heroLayer = plan[13]; // hero from pass 0
+      // Build a priority order across all 3 passes: mid → front → back, pass 0 first
+      const passSlice = (p: number) => plan.slice(p * 14, (p + 1) * 14);
+      const ordered: typeof plan = [];
+      for (let p = 0; p < 3; p++) {
+        const passLayers = passSlice(p);
+        ordered.push(
+          ...passLayers.slice(4, 9),            // mid row (5)
+          ...passLayers.slice(9, 13),           // front row (4)
+          ...passLayers.slice(0, 4),            // back row (4)
+        );
+      }
       chosen = [...ordered.slice(0, flameCount - 1), heroLayer];
     }
 

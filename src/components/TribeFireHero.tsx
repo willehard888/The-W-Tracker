@@ -193,12 +193,7 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
           >
             <Flame size={12} /> Find a fire to feed
           </button>
-        ) : (
-          <p className="text-xs text-muted-foreground mt-2">
-            <span className="font-bold tabular-nums text-foreground/80">{tribeCount}</span>{" "}
-            {tribeCount === 1 ? "tribe" : "tribes"} · combined heat
-          </p>
-        )}
+        ) : null}
 
         {/* Progress to next tier */}
         {!isCold && !atMax && (

@@ -294,7 +294,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
     }));
   }, [flameCount, seed.a, seed.b, seed.c]);
 
-  // Cold state — thin outline candle
+  // Cold state — thin outline candle, gold-soft so it stays on-theme
   if (isCold) {
     return (
       <div
@@ -302,8 +302,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
         style={{ width: size, height: size }}
         aria-hidden
       >
-        <svg width={size * 0.3} height={size * 0.5} viewBox="0 0 100 140" fill="none" className="opacity-30">
-          <path d={FLAME_PATHS[2]} stroke="currentColor" strokeWidth="3" strokeLinejoin="round" className="text-muted-foreground" />
+        <svg width={size * 0.3} height={size * 0.5} viewBox="0 0 100 140" fill="none" className="opacity-40">
+          <path d={FLAME_PATHS[2]} stroke="currentColor" strokeWidth="3" strokeLinejoin="round" style={{ color: "hsl(var(--gold-soft) / 0.55)" }} />
         </svg>
       </div>
     );
@@ -367,7 +367,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       style={{
         width: size,
         height: size,
-        animation: `stylized-flame-bob ${(2.6).toFixed(2)}s ease-in-out infinite`,
+        animation: `stylized-flame-bob ${(3.4).toFixed(2)}s cubic-bezier(0.22, 0.61, 0.36, 1) infinite`,
         // Reactive lean: derived from pointer-tracked --ssf-wind-x (-1..1) and gust (0..1).
         ["--ssf-wind" as string]: `calc(var(--ssf-wind-x, 0) * 12deg + var(--ssf-gust, 0) * 6deg)`,
         // Gust + intensify both energise the fire — brighter & more saturated
@@ -466,7 +466,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             const tipColor  = inten > 0.85
               ? `hsl(${38 + hShift} 100% ${lerp(72, 84, inten)}%)`              // glowing amber
               : `hsl(${34 + hShift} 100% ${lerp(66, 76, inten)}%)`;
-            const apex      = inten > 0.94 ? `hsl(46 100% 92%)` : tipColor;     // cream apex
+            const apex      = inten > 0.94 ? `hsl(46 100% 94%)` : tipColor;     // premium gold-cream apex
 
             return (
               <linearGradient key={gradId} id={gradId} x1="50%" y1="100%" x2="50%" y2="0%">

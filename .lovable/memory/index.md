@@ -15,6 +15,7 @@ Elite: EARNED status tier (top 5% rank + 14 active days + 30-day streak). Apex t
 ## Memories
 - [Brand Identity](mem://style/brand-identity) — Core visual identity, golden W logo, cinematic effects
 - [Color Palette](mem://style/color-palette) — Functional colors for features (Teal, Rose, Amber, Purple, Orange)
+- [Unified Fire Theme](mem://style/unified-fire-theme) — All accent tokens re-tinted to warm fire spectrum; BottomNav uses gold/ember/lava only
 - [Visual Effects](mem://style/visual-effects) — AmbientParticles, light cones, vignettes, glassmorphism
 - [UI Layout](mem://style/ui-layout-decisions) — h-[100dvh] flex, shrink-0 nav, hidden on specific routes
 - [Native UX](mem://ux/native-experience) — Capacitor Haptics, BottomNav with safe-area and backdrop-blur

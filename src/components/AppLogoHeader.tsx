@@ -11,12 +11,13 @@ const AppLogoHeader = () => (
           background: "radial-gradient(circle, hsl(42 78% 54% / 0.55), transparent 70%)",
         }}
       />
-      {/* Inner tight glow */}
+      {/* Inner tight glow — slow, premium pulse */}
       <div
         aria-hidden
         className="absolute -inset-2 rounded-3xl opacity-70 blur-lg pointer-events-none"
         style={{
           background: "radial-gradient(circle, hsl(42 85% 60% / 0.45), transparent 65%)",
+          animation: "aura-breathe 6s ease-in-out infinite",
         }}
       />
       <BrandLogo

@@ -50,8 +50,27 @@ interface StylizedStreakFlameProps {
   intensify?: number;
   /** Optional accent color (hsl) for outer aura when intensify > 1. */
   accent?: string;
+  /**
+   * Snap-back duration in ms after the user lifts their finger. During this
+   * window, wind/proximity/gust/blast vaimenevat ~3× nopeammin kuin
+   * passiivisessa driftissä, jolloin liekki "rentoutuu" terävästi.
+   * - Mobile / coarse pointer (sormi): default 260 ms — terävin tuntu
+   * - Desktop / fine pointer (hiiri):  default 600 ms — pehmeämpi
+   * Pass an explicit number to override device autodetection.
+   * Range: 80–1500 ms (clamped).
+   */
+  releaseSnapMs?: number;
   className?: string;
 }
+
+/**
+ * Detect whether the primary input device is a coarse pointer (touch/finger).
+ * Used to default the snap-back to a tighter, more tactile value on mobile.
+ */
+const isCoarsePointer = (): boolean => {
+  if (typeof window === "undefined" || !window.matchMedia) return false;
+  return window.matchMedia("(pointer: coarse)").matches;
+};
 
 const STAGE_THRESHOLDS = [1, 3, 7, 14, 30, 60, 100, 200];
 const MAX_STAGE_INDEX = STAGE_THRESHOLDS.length;

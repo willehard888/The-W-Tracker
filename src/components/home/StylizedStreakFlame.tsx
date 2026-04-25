@@ -315,8 +315,12 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
   }, [isCold, size]);
 
 
-  // How many flames at this stage — 6× base for ultra-volumetric inferno: 12..84 layered tongues
-  const flameCount = isCold ? 0 : Math.min(84, (2 + stage * 2) * 6);
+  // How many flames at this stage — adaptiivinen perfClassin mukaan.
+  // high = 6× base (84 max), mid = 4× (56 max), low = 3× (42 max).
+  const perfClass = getPerfClass();
+  const passMultiplier = perfClass === "high" ? 6 : perfClass === "mid" ? 4 : 3;
+  const flameCap = perfClass === "high" ? 84 : perfClass === "mid" ? 56 : 42;
+  const flameCount = isCold ? 0 : Math.min(flameCap, (2 + stage * 2) * passMultiplier);
 
   // Bed width (how wide the flames spread) and tallest flame height — wider, taller, smoother
   const bedWidth = lerp(0.55, 1.25, t) * size;

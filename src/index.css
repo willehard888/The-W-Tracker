@@ -3978,6 +3978,22 @@ button:active > .aurum-lava-glow {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-2px); }
 }
+@keyframes stylized-fuel-pulse {
+  0%, 100% { transform: scaleY(1)    scaleX(1); }
+  40%      { transform: scaleY(1.06) scaleX(0.97); }
+  70%      { transform: scaleY(0.97) scaleX(1.03); }
+}
+@keyframes stylized-whip-tip {
+  0%, 100% { transform: translateX(-50%) scaleY(1)    scaleX(1)    rotate(0deg); opacity: 0.85; }
+  25%      { transform: translateX(-50%) scaleY(1.18) scaleX(0.85) rotate(-3deg); opacity: 1; }
+  55%      { transform: translateX(-50%) scaleY(0.92) scaleX(1.1)  rotate(4deg);  opacity: 0.7; }
+  80%      { transform: translateX(-50%) scaleY(1.08) scaleX(0.92) rotate(-2deg); opacity: 0.95; }
+}
+@keyframes stylized-smoke-rise {
+  0%   { transform: translateY(0)    scale(0.6); opacity: 0; }
+  20%  { opacity: 0.7; }
+  100% { transform: translateY(-90px) scale(1.6); opacity: 0; }
+}
 @keyframes stylized-ember-rise {
   0%   { transform: translate(0, 0) scale(1);   opacity: 0; }
   15%  { opacity: 1; }
@@ -4022,7 +4038,10 @@ button:active > .aurum-lava-glow {
   [style*="stylized-sparkle-rise"],
   [style*="stylized-stage-burst"],
   [style*="stylized-ray-shoot"],
-  [style*="stylized-burst-flash"] {
+  [style*="stylized-burst-flash"],
+  [style*="stylized-fuel-pulse"],
+  [style*="stylized-whip-tip"],
+  [style*="stylized-smoke-rise"] {
     animation: none !important;
   }
 }

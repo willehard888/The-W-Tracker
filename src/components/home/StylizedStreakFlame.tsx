@@ -721,19 +721,20 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const hShift = layer.hueShift;
             const inten = layer.intensity;
             // Pohjasta lämmin tumma punainen — ei sinistä happikaasua (luki "scifi-light"-sävyltä).
-            const fuelShadow = `hsl(${0 + hShift} 55% ${lerp(8, 14, inten)}%)`;       // near-black base
-            const neckBase   = `hsl(${4 + hShift} 92% ${lerp(20, 28, inten)}%)`;       // syvä punainen pohja
-            const charred   = `hsl(${2 + hShift}  88% ${lerp(22, 32, inten)}%)`; // charred ember
-            const ember     = `hsl(${6 + hShift}  96% ${lerp(32, 42, inten)}%)`; // blood ember red
-            const deepBase  = `hsl(${12 + hShift} 100% ${lerp(40, 50, inten)}%)`;// dark crimson-orange
-            const body      = `hsl(${18 + hShift} 100% ${lerp(48, 58, inten)}%)`;// deep blood-orange
-            const shoulder  = `hsl(${24 + hShift} 100% ${lerp(54, 64, inten)}%)`;// burnt orange
-            const upperBody = `hsl(${30 + hShift} 100% ${lerp(54, 62, inten)}%)`;// rich tangerine (tummennettu)
-            const tipColor  = inten > 0.85
-              ? `hsl(${36 + hShift} 100% ${lerp(56, 62, inten)}%)`              // syvä amber (ei valkoinen)
-              : `hsl(${32 + hShift} 100% ${lerp(52, 58, inten)}%)`;
-            // Apex: kylläinen oranssi-keltainen — POISTA kaikki valkoisuus / kreemi.
-            const apex      = inten > 0.94 ? `hsl(42 100% 60%)` : tipColor;
+            // Koko paletti siirretty PUNAISEMPAAN suuntaan: vähemmän keltaista, enemmän verenpunaa & syvää oranssia.
+            const fuelShadow = `hsl(${0 + hShift} 60% ${lerp(8, 13, inten)}%)`;        // near-black blood base
+            const neckBase   = `hsl(${2 + hShift} 95% ${lerp(18, 26, inten)}%)`;        // syvä punainen pohja
+            const charred    = `hsl(${0 + hShift}  92% ${lerp(20, 30, inten)}%)`;       // charred crimson ember
+            const ember      = `hsl(${4 + hShift}  98% ${lerp(30, 40, inten)}%)`;       // blood ember red
+            const deepBase   = `hsl(${8 + hShift} 100% ${lerp(38, 48, inten)}%)`;       // deep red-orange
+            const body       = `hsl(${12 + hShift} 100% ${lerp(46, 55, inten)}%)`;      // crimson-orange body
+            const shoulder   = `hsl(${16 + hShift} 100% ${lerp(50, 58, inten)}%)`;      // burnt blood-orange
+            const upperBody  = `hsl(${20 + hShift} 100% ${lerp(50, 57, inten)}%)`;      // deep tangerine
+            const tipColor   = inten > 0.85
+              ? `hsl(${24 + hShift} 100% ${lerp(52, 58, inten)}%)`                      // syvä oranssi (ei amber/keltainen)
+              : `hsl(${22 + hShift} 100% ${lerp(48, 54, inten)}%)`;
+            // Apex: kylläinen syvä oranssi — EI keltaista, EI valkoista.
+            const apex       = inten > 0.94 ? `hsl(28 100% 56%)` : tipColor;
 
 
             return (

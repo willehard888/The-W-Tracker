@@ -128,6 +128,69 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
     prevStageRef.current = stage;
   }, [stage]);
 
+  // ── Reactivity: lean & flicker in response to pointer / touch movement.
+  // We track the global pointer and translate its movement into:
+  //   --ssf-wind-x : -1..1 horizontal lean intensity (smoothed)
+  //   --ssf-gust   : 0..1  short-lived "gust" amplitude that triggers on
+  //                  fast pointer moves, fades back to 0 (~600ms).
+  // Animations in CSS read these vars to tilt and energise the flame.
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (isCold) return;
+    const el = containerRef.current;
+    if (!el) return;
+    let raf = 0;
+    let targetWind = 0;
+    let currentWind = 0;
+    let lastX = 0;
+    let lastY = 0;
+    let lastT = performance.now();
+    let gust = 0;
+    let gustDecay = 0;
+
+    const onPointer = (e: PointerEvent) => {
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height * 0.65;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      // Distance falloff: full influence within 1.5× size, none beyond 4× size
+      const dist = Math.hypot(dx, dy);
+      const influence = Math.max(0, Math.min(1, 1 - (dist - size * 1.5) / (size * 2.5)));
+      // Lean opposite to pointer (fire bends AWAY from incoming wind)
+      targetWind = Math.max(-1, Math.min(1, -dx / (size * 1.2))) * influence;
+      // Gust = pointer speed
+      const now = performance.now();
+      const dt = Math.max(8, now - lastT);
+      const speed = Math.hypot(e.clientX - lastX, e.clientY - lastY) / dt; // px/ms
+      lastX = e.clientX; lastY = e.clientY; lastT = now;
+      const gustHit = Math.min(1, speed / 1.8) * influence;
+      if (gustHit > gust) {
+        gust = gustHit;
+        gustDecay = 0.018; // decay rate per frame
+      }
+    };
+
+    const tick = () => {
+      // Smooth lerp towards target (snappy but not jittery)
+      currentWind += (targetWind - currentWind) * 0.12;
+      // Decay gust
+      gust = Math.max(0, gust - gustDecay);
+      el.style.setProperty("--ssf-wind-x", currentWind.toFixed(3));
+      el.style.setProperty("--ssf-gust", gust.toFixed(3));
+      // Slowly bleed the wind target back to neutral if pointer is idle
+      targetWind *= 0.985;
+      raf = requestAnimationFrame(tick);
+    };
+
+    window.addEventListener("pointermove", onPointer, { passive: true });
+    raf = requestAnimationFrame(tick);
+    return () => {
+      window.removeEventListener("pointermove", onPointer);
+      cancelAnimationFrame(raf);
+    };
+  }, [isCold, size]);
+
   // How many flames at this stage — fuller fire: 2..14 layered tongues
   const flameCount = isCold ? 0 : Math.min(14, 2 + stage * 2);
 
@@ -245,16 +308,21 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
   const intensityBoost = lerp(0.95, 1.65, ferocity);
 
   // Floor light pool — wash beneath the flames simulating ground reflection
-  const floorPoolColor = stage >= 6 ? "hsl(200 95% 65%)" : stage >= 4 ? "hsl(28 100% 60%)" : "hsl(18 95% 55%)";
+  const floorPoolColor = stage >= 6 ? "hsl(22 100% 55%)" : stage >= 4 ? "hsl(18 100% 50%)" : "hsl(14 95% 45%)";
 
   return (
     <div
+      ref={containerRef}
       className={cn("relative pointer-events-none flex items-end justify-center", className)}
       style={{
         width: size,
         height: size,
         animation: `stylized-flame-bob ${(2.6).toFixed(2)}s ease-in-out infinite`,
-        ["--ssf-wind" as string]: `calc(var(--wind-x, 0) * 1.6deg + var(--wind-gust, 0) * 2deg)`,
+        // Reactive lean: derived from pointer-tracked --ssf-wind-x (-1..1) and gust (0..1).
+        ["--ssf-wind" as string]: `calc(var(--ssf-wind-x, 0) * 12deg + var(--ssf-gust, 0) * 6deg)`,
+        // Gust energises the fire — brighter & more saturated when reacting
+        filter: `brightness(calc(1 + var(--ssf-gust, 0) * 0.25)) saturate(calc(1 + var(--ssf-gust, 0) * 0.3))`,
+        transition: "filter 0.25s ease-out",
       }}
       aria-hidden
     >
@@ -308,51 +376,53 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
             </filter>
           ))}
 
-          {/* Per-layer vertical gradients — naturalistic 7-stop fire palette
-              (deep ember-red → blood-orange → tangerine → amber gold → straw → cream-white) */}
+          {/* Per-layer vertical gradients — DEEP ORANGE palette
+              (charred ember → blood-red → deep tangerine → burnt orange → glowing amber → cream apex)
+              Yellows pushed back, oranges/reds dominate the body. */}
           {layers.map((layer, i) => {
             const gradId = `ssf-grad-${uid}-${i}`;
             const hShift = layer.hueShift;
             const inten = layer.intensity;
-            // Physical blue base only on hot front+mid flames (where O2 mixes with fuel)
             const showBlue = stage >= 4 && layer.zIndex >= 2 && inten > 0.65;
             const bottomBlue = showBlue
-              ? `hsl(${208 + hShift} 95% ${lerp(60, 72, inten)}%)`
-              : `hsl(${6 + hShift} 88% ${lerp(22, 32, inten)}%)`;
-            const ember     = `hsl(${4 + hShift}  92% ${lerp(28, 38, inten)}%)`;  // deep blood-red coal
-            const deepBase  = `hsl(${10 + hShift} 95% ${lerp(40, 50, inten)}%)`;  // saturated red base
-            const body      = `hsl(${20 + hShift} 98% ${lerp(50, 60, inten)}%)`;  // blood-orange body
-            const shoulder  = `hsl(${32 + hShift} 100% ${lerp(58, 70, inten)}%)`; // tangerine
-            const upperBody = `hsl(${42 + hShift} 100% ${lerp(66, 78, inten)}%)`; // amber gold
+              ? `hsl(${210 + hShift} 95% ${lerp(58, 70, inten)}%)`
+              : `hsl(${4 + hShift} 90% ${lerp(18, 28, inten)}%)`;
+            const charred   = `hsl(${2 + hShift}  88% ${lerp(20, 30, inten)}%)`; // charred ember
+            const ember     = `hsl(${6 + hShift}  95% ${lerp(30, 40, inten)}%)`; // blood ember red
+            const deepBase  = `hsl(${12 + hShift} 100% ${lerp(38, 48, inten)}%)`;// dark crimson-orange
+            const body      = `hsl(${18 + hShift} 100% ${lerp(46, 56, inten)}%)`;// deep blood-orange
+            const shoulder  = `hsl(${24 + hShift} 100% ${lerp(52, 62, inten)}%)`;// burnt orange
+            const upperBody = `hsl(${30 + hShift} 100% ${lerp(58, 68, inten)}%)`;// rich tangerine
             const tipColor  = inten > 0.85
-              ? `hsl(${52 + hShift} 100% ${lerp(82, 94, inten)}%)`               // straw-cream
-              : `hsl(${46 + hShift} 100% ${lerp(72, 84, inten)}%)`;
-            const apex      = inten > 0.92 ? `hsl(54 100% 97%)` : tipColor;       // near-white apex
+              ? `hsl(${38 + hShift} 100% ${lerp(70, 82, inten)}%)`              // glowing amber (no straw yellow)
+              : `hsl(${34 + hShift} 100% ${lerp(64, 74, inten)}%)`;
+            const apex      = inten > 0.94 ? `hsl(44 100% 90%)` : tipColor;     // pulled-back cream apex
 
             return (
               <linearGradient key={gradId} id={gradId} x1="50%" y1="100%" x2="50%" y2="0%">
-                <stop offset="0%"   stopColor={bottomBlue} stopOpacity={showBlue ? 0.9 : 0.85} />
-                <stop offset="6%"   stopColor={ember}      stopOpacity="1" />
-                <stop offset="20%"  stopColor={deepBase}   stopOpacity="1" />
-                <stop offset="40%"  stopColor={body}       stopOpacity="1" />
-                <stop offset="58%"  stopColor={shoulder}   stopOpacity="0.99" />
-                <stop offset="75%"  stopColor={upperBody}  stopOpacity="0.95" />
-                <stop offset="90%"  stopColor={tipColor}   stopOpacity="0.78" />
+                <stop offset="0%"   stopColor={bottomBlue} stopOpacity={showBlue ? 0.85 : 0.92} />
+                <stop offset="5%"   stopColor={charred}    stopOpacity="1" />
+                <stop offset="14%"  stopColor={ember}      stopOpacity="1" />
+                <stop offset="28%"  stopColor={deepBase}   stopOpacity="1" />
+                <stop offset="46%"  stopColor={body}       stopOpacity="1" />
+                <stop offset="62%"  stopColor={shoulder}   stopOpacity="0.99" />
+                <stop offset="78%"  stopColor={upperBody}  stopOpacity="0.95" />
+                <stop offset="92%"  stopColor={tipColor}   stopOpacity="0.7" />
                 <stop offset="100%" stopColor={apex}       stopOpacity="0" />
               </linearGradient>
             );
           })}
 
-          {/* Inner white-hot core gradient — taller, more luminous core */}
+          {/* Inner core — deep amber heart, smaller white pinprick */}
           {layers.filter((l) => l.zIndex >= 3).map((_, idx) => {
             const id = `ssf-core-${uid}-${idx}`;
             return (
-              <radialGradient key={id} id={id} cx="50%" cy="62%" r="46%">
-                <stop offset="0%"   stopColor="hsl(56 100% 98%)" stopOpacity="1" />
-                <stop offset="22%"  stopColor="hsl(50 100% 88%)" stopOpacity="0.95" />
-                <stop offset="48%"  stopColor="hsl(40 100% 72%)" stopOpacity="0.6" />
-                <stop offset="78%"  stopColor="hsl(28 100% 60%)" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="hsl(18 95% 50%)"  stopOpacity="0" />
+              <radialGradient key={id} id={id} cx="50%" cy="60%" r="44%">
+                <stop offset="0%"   stopColor="hsl(46 100% 92%)" stopOpacity="1" />
+                <stop offset="14%"  stopColor="hsl(38 100% 78%)" stopOpacity="0.95" />
+                <stop offset="38%"  stopColor="hsl(28 100% 62%)" stopOpacity="0.7" />
+                <stop offset="68%"  stopColor="hsl(18 100% 52%)" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="hsl(10 95% 42%)"  stopOpacity="0" />
               </radialGradient>
             );
           })}
@@ -385,7 +455,7 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
             height: tallestH * 0.85,
             bottom: size * 0.06,
             transform: "translateX(-50%)",
-            background: `radial-gradient(ellipse at 50% 78%, hsl(28 95% 55% / 0.28) 0%, hsl(18 90% 48% / 0.16) 40%, hsl(8 80% 38% / 0.06) 70%, transparent 85%)`,
+            background: `radial-gradient(ellipse at 50% 78%, hsl(22 100% 50% / 0.32) 0%, hsl(14 95% 42% / 0.18) 40%, hsl(6 85% 32% / 0.08) 70%, transparent 88%)`,
             filter: `blur(${Math.max(8, size * 0.09)}px)`,
             mixBlendMode: "screen",
             animation: `stylized-haze-drift 4s ease-in-out infinite`,
@@ -403,7 +473,7 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
           height: Math.max(4, size * 0.04),
           bottom: size * 0.02,
           transform: "translateX(-50%)",
-          background: `radial-gradient(ellipse at 50% 50%, hsl(54 100% 88% / 1) 0%, hsl(42 100% 70% / 0.95) 22%, hsl(28 100% 58% / 0.85) 48%, hsl(14 95% 48% / 0.6) 72%, hsl(6 88% 32% / 0.3) 90%, transparent 100%)`,
+          background: `radial-gradient(ellipse at 50% 50%, hsl(40 100% 80% / 1) 0%, hsl(28 100% 62% / 0.95) 22%, hsl(18 100% 52% / 0.85) 48%, hsl(10 95% 42% / 0.6) 72%, hsl(4 88% 28% / 0.3) 90%, transparent 100%)`,
           filter: "blur(2.5px)",
           borderRadius: "50%",
           mixBlendMode: "screen",
@@ -441,15 +511,17 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
         style={{
           left: "50%",
           bottom: size * 0.05,
+          // Reactive lean + gust scale handled inside @keyframes stylized-flame-sway
+          // (it reads --ssf-wind-x / --ssf-wind / --ssf-gust set by the pointer effect)
           transform: "translateX(-50%)",
           width: bedWidth,
           height: tallestH,
           transformOrigin: "center bottom",
           animation: `stylized-flame-sway 3.4s ease-in-out infinite`,
-          // 3D depth: gentle perspective so back flames recede slightly
           perspective: `${size * 4}px`,
           transformStyle: "preserve-3d",
           willChange: "transform",
+          transition: "transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1)",
         }}
       >
         {(() => {

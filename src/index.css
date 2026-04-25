@@ -3928,8 +3928,20 @@ button:active > .aurum-lava-glow {
   50%      { transform: translateY(-2px); }
 }
 @keyframes stylized-flame-sway {
-  0%, 100% { transform: translateX(-50%) rotate(calc(var(--ssf-wind, 0deg) - 0.6deg)); }
-  50%      { transform: translateX(-50%) rotate(calc(var(--ssf-wind, 0deg) + 0.6deg)); }
+  0%, 100% {
+    transform:
+      translateX(calc(-50% + var(--ssf-wind-x, 0) * 6px))
+      rotate(calc(var(--ssf-wind, 0deg) - 0.6deg))
+      scaleY(calc(1 + var(--ssf-gust, 0) * 0.18))
+      scaleX(calc(1 - var(--ssf-gust, 0) * 0.06));
+  }
+  50% {
+    transform:
+      translateX(calc(-50% + var(--ssf-wind-x, 0) * 6px))
+      rotate(calc(var(--ssf-wind, 0deg) + 0.6deg))
+      scaleY(calc(1 + var(--ssf-gust, 0) * 0.22))
+      scaleX(calc(1 - var(--ssf-gust, 0) * 0.08));
+  }
 }
 /* Per-flame sway variants — SMOOTH ROAR: gentler curves, fluid motion */
 @keyframes stylized-flame-sway-1 {

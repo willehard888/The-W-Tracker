@@ -584,7 +584,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
               <linearGradient key={gradId} id={gradId} x1="50%" y1="100%" x2="50%" y2="0%">
                 {/* Dark fuel shadow — pins the flame to the ground visually */}
                 <stop offset="0%"   stopColor={fuelShadow} stopOpacity="0.9" />
-                <stop offset="3%"   stopColor={neckBase}   stopOpacity={showBlue ? 0.85 : 0.95} />
+                <stop offset="3%"   stopColor={neckBase}   stopOpacity="0.95" />
                 <stop offset="8%"   stopColor={charred}    stopOpacity="1" />
                 <stop offset="16%"  stopColor={ember}      stopOpacity="1" />
                 <stop offset="30%"  stopColor={deepBase}   stopOpacity="1" />

@@ -212,14 +212,12 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
     let lastInputT = performance.now();
     let inProximity = false; // hysteresis flag
 
-    // Dynamic import — webillä haptics no-op, natiivissa toimii
-    let hapticsMod: typeof import("@/lib/haptics") | null = null;
-    import("@/lib/haptics").then((m) => { hapticsMod = m; }).catch(() => {});
+    // (Haptic-kutsut poistettu — käyttäjän pyyntö: ei vähtelyä)
 
     const triggerBlast = () => {
       blast = 1;
       lastInputT = performance.now();
-      hapticsMod?.hapticImpact("medium").catch(() => {});
+      // (haptic poistettu)
       const baseId = Date.now();
       const sparks = Array.from({ length: 8 }).map((_, i) => ({
         id: baseId + i,
@@ -246,10 +244,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       targetWindY = Math.max(-1, Math.min(1, -dy / (size * 1.0))) * influence;
       // Proximity 0..1 (peaks within ~1× size)
       targetProximity = Math.max(0, Math.min(1, 1 - dist / (size * 1.6)));
-      // Hysteresis-gated proximity haptic
+      // (proximity-haptic poistettu)
       if (targetProximity > 0.7 && !inProximity) {
         inProximity = true;
-        hapticsMod?.hapticSelection().catch(() => {});
       } else if (targetProximity < 0.4 && inProximity) {
         inProximity = false;
       }
@@ -276,7 +273,6 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
 
     let lastScrollY = window.scrollY;
     let lastScrollT = performance.now();
-    let lastScrollHaptic = 0;
     const onScroll = () => {
       const now = performance.now();
       const dt = Math.max(16, now - lastScrollT);
@@ -290,11 +286,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       targetWindX += (dy > 0 ? -0.35 : 0.35) * hit;
       targetWindX = Math.max(-1, Math.min(1, targetWindX));
       lastInputT = now;
-      // Rate-limited light haptic (max once per 250 ms) on strong scroll
-      if (hit > 0.85 && now - lastScrollHaptic > 250) {
-        lastScrollHaptic = now;
-        hapticsMod?.hapticImpact("light").catch(() => {});
-      }
+      // (scroll-haptic poistettu)
     };
 
     // Perlin-tyyppinen luonnollinen turbulenssi (deterministinen sin-summa)
@@ -343,18 +335,10 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
     const targetSnapMulProx = Math.max(0.5, targetSnapMul);
 
     const onPointerUp = () => {
-      // Vain jos käyttäjä oli oikeasti vuorovaikutuksessa liekin kanssa
-      // (ei satunnainen window-tason pointer-up jossain muualla UI:ssa).
-      const wasInteracting = pointerActive;
       pointerActive = false;
       releaseT = performance.now();
-      // Sulje proximity-haptiikan hysteresis välittömästi
       inProximity = false;
-      // Hienovarainen "release"-haptiikka: tekee snap-back -tunteesta tyydyttävämmän.
-      // Light-impact = pieni napsahdus joka resonoi liekkien rauhoittumisen kanssa.
-      if (wasInteracting) {
-        hapticsMod?.hapticImpact("light").catch(() => {});
-      }
+      // (release-haptic poistettu)
     };
 
     const onPointerDownTrack = (e: PointerEvent) => {

@@ -273,7 +273,6 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
 
     let lastScrollY = window.scrollY;
     let lastScrollT = performance.now();
-    let lastScrollHaptic = 0;
     const onScroll = () => {
       const now = performance.now();
       const dt = Math.max(16, now - lastScrollT);
@@ -287,11 +286,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       targetWindX += (dy > 0 ? -0.35 : 0.35) * hit;
       targetWindX = Math.max(-1, Math.min(1, targetWindX));
       lastInputT = now;
-      // Rate-limited light haptic (max once per 250 ms) on strong scroll
-      if (hit > 0.85 && now - lastScrollHaptic > 250) {
-        lastScrollHaptic = now;
-        hapticsMod?.hapticImpact("light").catch(() => {});
-      }
+      // (scroll-haptic poistettu)
     };
 
     // Perlin-tyyppinen luonnollinen turbulenssi (deterministinen sin-summa)

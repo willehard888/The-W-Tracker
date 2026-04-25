@@ -116,9 +116,9 @@ const AppRoutes = () => {
   }, [location.pathname]);
 
   return (
-    <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
+    <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10 overflow-x-hidden">
       <StatusHeader />
-      <div ref={scrollRef} className="flex-1 overflow-y-auto scroll-smooth">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth">
         <Suspense fallback={<RouteFallback />}>
           <AccessGate>
             <AnimatePresence mode="wait" initial={false}>

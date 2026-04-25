@@ -1167,6 +1167,40 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
           );
         })}
 
+        {/* ─── MICRO-EMBERS — sub-pixel kipinämeri liekin pään yläpuolella
+            (1–2px nopeasti syttyviä ja sammuvia välähdyksiä — antaa "kipinämeren" tunnun). */}
+        {stage >= 2 && perfClass !== "low" && Array.from({ length: perfClass === "high" ? 14 : 8 }).map((_, i) => {
+          const xPos = ((i * 67 + seed.b * 19) % 100) / 100;
+          const xPx = (bedWidth * 0.7) * (xPos - 0.5);
+          const startBottom = tallestH * lerp(0.45, 0.7, (i % 4) / 3);
+          const dur = lerp(1.2, 0.7, ferocity) + ((i * 0.13) % 0.6);
+          const delay = -((i * 0.19 + seed.a * 0.013) % dur);
+          const dotSize = 1 + ((i % 3) * 0.5); // 1.0 / 1.5 / 2.0 px
+          const drift = ((i % 2 === 0 ? 1 : -1) * (3 + (i * 2) % 8));
+          const color = i % 3 === 0 ? "hsl(48 100% 65%)" : i % 2 === 0 ? "hsl(32 100% 58%)" : "hsl(18 95% 50%)";
+          return (
+            <span
+              key={`micro-ember-${i}`}
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                width: dotSize,
+                height: dotSize,
+                left: `calc(50% + ${xPx.toFixed(1)}px)`,
+                bottom: startBottom,
+                background: color,
+                boxShadow: `0 0 ${(dotSize * 3).toFixed(1)}px ${color}`,
+                ["--spark-drift" as string]: `${drift}px`,
+                ["--spark-rise" as string]: `-${lerp(50, 95, ferocity).toFixed(0)}%`,
+                animation: `stylized-spark-rise ${dur.toFixed(2)}s ease-out infinite`,
+                animationDelay: `${delay.toFixed(2)}s`,
+                mixBlendMode: "screen",
+                zIndex: 5,
+                opacity: lerp(0.7, 1, ferocity),
+              }}
+            />
+          );
+        })}
+
         {/* ─── BACK-ROW SOFT SMOKY WISPS — slow, large, fading puffs ─── */}
         {stage >= 2 && Array.from({ length: Math.min(8, Math.round(lerp(2, 8, ferocity))) }).map((_, i) => {
           const xPos = ((i * 41 + seed.b * 17) % 100) / 100;

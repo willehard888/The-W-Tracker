@@ -131,9 +131,9 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
   // How many flames at this stage (layered count) — 1, 2, 3, 4, 5, 6, 7, 8, 9
   const flameCount = isCold ? 0 : Math.min(9, stage + (stage >= 5 ? 1 : 0));
 
-  // Bed width (how wide the flames spread) and tallest flame height
-  const bedWidth = lerp(0.36, 0.92, t) * size;
-  const tallestH = lerp(0.55, 1.05, t) * size;
+  // Bed width (how wide the flames spread) and tallest flame height — taller, wilder
+  const bedWidth = lerp(0.4, 1.0, t) * size;
+  const tallestH = lerp(0.7, 1.25, t) * size;
 
   // Build layer plan deterministically per (uid, stage, t)
   const layers: FlameLayer[] = useMemo(() => {
@@ -204,14 +204,14 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
   // back over the source so the flame edge stays crisp while the body glows.
   const filterIds = [`ssf-t0-${uid}`, `ssf-t1-${uid}`, `ssf-t2-${uid}`];
   const turbConfigs = [
-    // back row — softer warp, larger internal bloom (out-of-focus depth)
-    { freq: "0.018 0.045", peakFreq: "0.034 0.072", baseScale: 1.6, peakScale: 2.6, dur: 2.4, bloomStdDev: 4.5 },
-    // mid row — moderate
-    { freq: "0.028 0.062", peakFreq: "0.05 0.1",   baseScale: 2.2, peakScale: 3.4, dur: 1.6, bloomStdDev: 2.8 },
-    // front row — sharp warp, tight bloom (high definition)
-    { freq: "0.04 0.085",  peakFreq: "0.07 0.14",  baseScale: 2.8, peakScale: 4.2, dur: 1.0, bloomStdDev: 1.4 },
+    // back row — bigger warp, deeper bloom
+    { freq: "0.022 0.055", peakFreq: "0.048 0.095", baseScale: 3.2, peakScale: 5.4, dur: 1.6, bloomStdDev: 4.8 },
+    // mid row — strong roar
+    { freq: "0.034 0.075", peakFreq: "0.07 0.14",   baseScale: 4.0, peakScale: 6.6, dur: 1.1, bloomStdDev: 3.0 },
+    // front row — violent whipping tips
+    { freq: "0.05 0.11",   peakFreq: "0.1 0.2",     baseScale: 5.0, peakScale: 8.4, dur: 0.7, bloomStdDev: 1.6 },
   ];
-  const intensityBoost = lerp(0.85, 1.25, t);
+  const intensityBoost = lerp(1.1, 1.7, t);
 
   // Floor light pool — wash beneath the flames simulating ground reflection
   const floorPoolColor = stage >= 6 ? "hsl(200 95% 65%)" : stage >= 4 ? "hsl(28 100% 60%)" : "hsl(18 95% 55%)";
@@ -419,8 +419,8 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
             const xPx = (bedWidth * 0.5 - flameW * 0.5) * layer.xOffset;
             const gradId = `ssf-grad-${uid}-${i}`;
             const filterId = filterIds[layer.filterId];
-            const speedDur = layer.speed * lerp(1.5, 0.9, t);
-            const swayDur = layer.speed * lerp(2.4, 1.4, t);
+            const speedDur = layer.speed * lerp(1.0, 0.55, t);
+            const swayDur = layer.speed * lerp(1.6, 0.85, t);
 
             // 3D z-depth: back row receded, front pushed forward
             const zDepth = layer.zIndex === 1 ? -size * 0.18 : layer.zIndex === 2 ? -size * 0.05 : size * 0.04;
@@ -492,6 +492,72 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
             );
           });
         })()}
+
+        {/* ─── WILD TONGUES — rogue licks shooting up randomly ─── */}
+        {stage >= 2 && Array.from({ length: Math.min(6, stage + 1) }).map((_, i) => {
+          const tongueW = bedWidth * lerp(0.08, 0.14, (i % 3) / 2);
+          const tongueH = tallestH * lerp(0.45, 0.85, (i % 4) / 3);
+          const xPos = ((i * 37 + seed.a * 13) % 100) / 100; // 0..1
+          const xPx = (bedWidth * 0.8) * (xPos - 0.5);
+          const dur = lerp(1.4, 0.9, t) + (i % 3) * 0.15;
+          const delay = -((i * 0.37 + seed.b * 0.013) % dur);
+          const filterId = filterIds[2];
+          const gradId = `ssf-grad-${uid}-${(i + 1) % Math.max(1, layers.length)}`;
+          return (
+            <svg
+              key={`tongue-${i}`}
+              width={tongueW}
+              height={tongueH}
+              viewBox="0 0 100 140"
+              preserveAspectRatio="none"
+              className="absolute left-1/2"
+              style={{
+                bottom: 0,
+                transform: `translateX(calc(-50% + ${xPx.toFixed(1)}px))`,
+                filter: `url(#${filterId})`,
+                animation: `stylized-flame-tongue ${dur.toFixed(2)}s ease-out infinite`,
+                animationDelay: `${delay.toFixed(2)}s`,
+                mixBlendMode: "screen",
+                zIndex: 4,
+                willChange: "transform, opacity",
+              }}
+            >
+              <path d={FLAME_PATHS[4]} fill={`url(#${gradId})`} />
+            </svg>
+          );
+        })}
+
+        {/* ─── RISING SPARKS — bright embers floating up ─── */}
+        {stage >= 3 && Array.from({ length: Math.min(10, stage * 2) }).map((_, i) => {
+          const xPos = ((i * 53 + seed.c * 11) % 100) / 100;
+          const xPx = (bedWidth * 0.9) * (xPos - 0.5);
+          const drift = ((i % 2 === 0 ? 1 : -1) * (4 + (i * 3) % 12));
+          const dur = 1.6 + ((i * 0.21) % 1.2);
+          const delay = -((i * 0.27 + seed.a * 0.011) % dur);
+          const sparkSize = lerp(1.8, 2.8, (i % 3) / 2);
+          const color = i % 4 === 0 ? "hsl(54 100% 92%)" : i % 3 === 0 ? "hsl(40 100% 72%)" : "hsl(28 100% 60%)";
+          return (
+            <span
+              key={`spark-${i}`}
+              className="absolute rounded-full"
+              style={{
+                width: sparkSize,
+                height: sparkSize,
+                left: `calc(50% + ${xPx.toFixed(1)}px)`,
+                bottom: size * 0.04,
+                background: color,
+                boxShadow: `0 0 ${sparkSize * 2.5}px ${color}`,
+                ["--spark-x" as string]: "0px",
+                ["--spark-drift" as string]: `${drift}px`,
+                animation: `stylized-spark-rise ${dur.toFixed(2)}s ease-out infinite`,
+                animationDelay: `${delay.toFixed(2)}s`,
+                mixBlendMode: "screen",
+                zIndex: 5,
+                willChange: "transform, opacity",
+              }}
+            />
+          );
+        })}
       </div>
 
       {/* ─── Stage-up bed flash ─── */}

@@ -684,7 +684,7 @@ const CompactStreakPanel = ({
                 }}
               />
               <span
-                className="text-[8px] font-black uppercase tracking-[0.24em]"
+                className="text-[8px] font-black uppercase tracking-[0.24em] text-3d-fire-sm"
                 style={{ color: accent }}
               >
                 Burning · {tier.name}

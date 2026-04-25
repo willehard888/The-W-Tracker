@@ -606,27 +606,27 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
           });
         })()}
 
-        {/* ─── SIDE FLAME LASHES — periodic lateral bursts shooting LEFT and RIGHT ───
-            These give the bonfire that "wind-licked" feel where flames briefly
-            whip out sideways instead of always reaching up. Always present (even
-            on stage 1), with cadence and reach scaling with ferocity. */}
+        {/* ─── SIDE FLAME LICKS — gentle lateral tongues that lean outward ───
+            Restrained: small lean, mostly upward growth, soft fade. Real flames
+            "breathing" sideways rather than horizontal jets. */}
         {(() => {
-          // 2 per side at low ferocity, up to 4 per side at high ferocity
-          const perSide = Math.max(2, Math.round(lerp(2, 4, ferocity)));
+          // 1 per side at low ferocity, up to 2 per side at high ferocity
+          const perSide = Math.max(1, Math.round(lerp(1, 2, ferocity)));
           const sides: Array<"l" | "r"> = ["l", "r"];
           return sides.flatMap((side) =>
             Array.from({ length: perSide }).map((_, i) => {
               const sideKey = `${side}${i}`;
-              const sw = bedWidth * lerp(0.09, 0.16, (i % 3) / 2);
-              const sh = tallestH * lerp(0.55, 0.85, ferocity) * lerp(0.85, 1.05, (i % 3) / 2);
-              // Vertical anchor — start from low/mid of fire (where wind catches)
-              const vBottom = size * lerp(0.06, 0.18, (i * 0.4 + (side === "l" ? 0 : 0.2)) % 1);
-              // Horizontal anchor — close to flame body edge
-              const hOffset = bedWidth * 0.3 * (side === "l" ? -1 : 1);
-              // Cadence: stagger so left & right alternate
-              const dur = lerp(2.6, 1.7, ferocity) + (i * 0.23);
+              // Smaller, slimmer tongues — closer to a real flame lick scale
+              const sw = bedWidth * lerp(0.07, 0.11, (i % 2));
+              const sh = tallestH * lerp(0.45, 0.65, ferocity) * lerp(0.9, 1.05, (i % 2));
+              // Anchor low on fire body where wind catches naturally
+              const vBottom = size * lerp(0.05, 0.12, (i * 0.5 + (side === "l" ? 0 : 0.25)) % 1);
+              // Sit closer to the body so they read as part of the fire, not detached
+              const hOffset = bedWidth * 0.22 * (side === "l" ? -1 : 1);
+              // Slower, calmer cadence — gentle breaths rather than rapid bursts
+              const dur = lerp(3.4, 2.4, ferocity) + (i * 0.41);
               const phaseOffset = side === "l" ? 0 : dur * 0.5;
-              const delay = -(((i * 0.71 + seed.a * 0.013) % dur) + phaseOffset) % dur;
+              const delay = -(((i * 0.83 + seed.a * 0.013) % dur) + phaseOffset) % dur;
               const filterId = filterIds[1]; // mid filter — softer than front
               const gradId = `ssf-grad-${uid}-${(i + 3) % Math.max(1, layers.length)}`;
               const pathIdx = (i * 5 + 1) % FLAME_PATHS.length;
@@ -642,12 +642,12 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
                     left: `calc(50% + ${hOffset.toFixed(1)}px)`,
                     bottom: vBottom,
                     transformOrigin: side === "l" ? "right bottom" : "left bottom",
-                    filter: `url(#${filterId}) saturate(1.08)`,
-                    animation: `stylized-flame-side-${side} ${dur.toFixed(2)}s cubic-bezier(0.22, 0.61, 0.36, 1) infinite`,
+                    filter: `url(#${filterId}) saturate(1.04)`,
+                    animation: `stylized-flame-side-${side} ${dur.toFixed(2)}s cubic-bezier(0.34, 0.04, 0.4, 1) infinite`,
                     animationDelay: `${delay.toFixed(2)}s`,
                     mixBlendMode: "screen",
                     zIndex: 3,
-                    opacity: lerp(0.7, 1, ferocity),
+                    opacity: lerp(0.55, 0.85, ferocity),
                     willChange: "transform, opacity",
                   }}
                 >

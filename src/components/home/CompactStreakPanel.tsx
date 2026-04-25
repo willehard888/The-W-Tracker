@@ -725,8 +725,8 @@ const CompactStreakPanel = ({
             </span>
             {displayStreak === longestStreak && displayStreak > 0 && (
               <span
-                className="text-[8.5px] font-black uppercase tracking-wider flex items-center gap-0.5"
-                style={{ color: accent }}
+                className="text-[8.5px] font-black uppercase tracking-wider flex items-center gap-0.5 text-background"
+                style={{ backgroundColor: accent, padding: '1px 3px', borderRadius: '2px' }}
               >
                 <Zap size={8} className="animate-pulse" /> PB
               </span>

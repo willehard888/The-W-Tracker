@@ -143,7 +143,7 @@ interface FlameLayer {
   filterId: 0 | 1 | 2;  // which turbulence filter to use
 }
 
-const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, className }: StylizedStreakFlameProps) => {
+const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releaseSnapMs, className }: StylizedStreakFlameProps) => {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   // Intensify clamped & normalized: 1 = base, 10 = inferno
   const intensity = Math.max(1, Math.min(10, intensify));

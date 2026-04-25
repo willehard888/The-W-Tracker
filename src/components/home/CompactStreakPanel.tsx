@@ -670,7 +670,7 @@ const CompactStreakPanel = ({
           </div>
         </div>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 relative z-[50]">
           {/* Live "fire is burning" indicator */}
           {isHot && (
             <div className="flex items-center gap-1.5 mb-1.5">

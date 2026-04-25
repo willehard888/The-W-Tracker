@@ -577,17 +577,23 @@ const TribeDetail = () => {
               <div className="flex-1 min-w-0">
                 <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/40 backdrop-blur-sm border border-[hsl(18_95%_58%)]/50 mb-1.5">
                   <span className="text-[9px] font-black tracking-widest uppercase bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
-                    Apex Tribe
+                    {tribe.is_paused ? "Paused Tribe" : "Apex Tribe"}
                   </span>
                 </div>
-                <h1 className="font-display font-black text-xl truncate leading-tight">{tribe.name}</h1>
+                {/* TRIBE NAME — biggest text on the page, gradient, unmissable */}
+                <h1
+                  className="font-display font-black text-3xl leading-[1.05] tracking-tight bg-gradient-to-br from-foreground via-[hsl(42_78%_75%)] to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_2px_14px_hsl(18_95%_58%/0.45)] break-words"
+                  style={tribe.is_paused ? { filter: "grayscale(0.5)", opacity: 0.85 } : undefined}
+                >
+                  {tribe.name}
+                </h1>
                 {(() => {
                   const founder = members.find((m) => m.role === "owner");
                   if (!founder) return null;
                   return (
                     <button
                       onClick={() => navigate(`/user/${founder.user_id}`)}
-                      className="mt-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-gold/20 to-[hsl(18_95%_58%)]/15 border border-gold/45 hover:from-gold/25 transition-colors"
+                      className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-gold/20 to-[hsl(18_95%_58%)]/15 border border-gold/45 hover:from-gold/25 transition-colors"
                     >
                       <Crown size={9} className="text-gold" strokeWidth={2.8} fill="currentColor" />
                       <span className="text-[9px] font-black tracking-widest uppercase text-gold">Founder</span>
@@ -612,6 +618,40 @@ const TribeDetail = () => {
                 </div>
               </div>
             </div>
+
+            {/* Paused banner — owner lost Apex; offer Apex member to claim */}
+            {tribe.is_paused && (
+              <div className="mt-4 rounded-xl border border-muted-foreground/30 bg-gradient-to-br from-secondary/30 via-card/70 to-secondary/20 p-3">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-muted-foreground/15 border border-muted-foreground/40">
+                    <Crown size={12} className="text-muted-foreground" />
+                  </span>
+                  <p className="text-[11px] font-black tracking-widest uppercase text-muted-foreground">
+                    Tribe paused
+                  </p>
+                </div>
+                <p className="text-[12px] text-foreground/80 leading-snug">
+                  The founder is no longer Apex. The fire is on hold until a new <span className="font-black text-[hsl(18_95%_58%)]">Apex member</span> takes over leadership.
+                </p>
+                {isMember && (profile as any)?.is_apex_subscriber === true || profile?.status_tier === "apex" || profile?.status_tier === "legend" ? (
+                  isMember ? (
+                    <Button
+                      size="sm"
+                      variant="magma"
+                      className="mt-3 w-full"
+                      onClick={async () => {
+                        const { error } = await supabase.rpc("claim_paused_tribe" as any, { p_tribe_id: id });
+                        if (error) { toast.error(error.message); return; }
+                        toast.success(`You now lead ${tribe.name} — fire revived 🔥`);
+                        load();
+                      }}
+                    >
+                      <Crown size={13} /> Claim leadership & revive
+                    </Button>
+                  ) : null
+                ) : null}
+              </div>
+            )}
 
             <button
               onClick={() => navigate(`/tribes/${id}/battles`)}

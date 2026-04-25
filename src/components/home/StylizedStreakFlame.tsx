@@ -312,12 +312,14 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
 
   return (
     <div
+      ref={containerRef}
       className={cn("relative pointer-events-none flex items-end justify-center", className)}
       style={{
         width: size,
         height: size,
         animation: `stylized-flame-bob ${(2.6).toFixed(2)}s ease-in-out infinite`,
-        ["--ssf-wind" as string]: `calc(var(--wind-x, 0) * 1.6deg + var(--wind-gust, 0) * 2deg)`,
+        // Reactive lean: derived from pointer-tracked --ssf-wind-x (-1..1) and gust (0..1).
+        ["--ssf-wind" as string]: `calc(var(--ssf-wind-x, 0) * 12deg + var(--ssf-gust, 0) * 6deg)`,
       }}
       aria-hidden
     >

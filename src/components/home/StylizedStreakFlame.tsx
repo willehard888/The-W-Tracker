@@ -485,7 +485,7 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
                   preserveAspectRatio="none"
                   style={{
                     filter: `url(#${filterId})`,
-                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s ease-in-out infinite`,
+                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
                     animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
                     transformOrigin: "center bottom",
                     willChange: "transform, opacity",

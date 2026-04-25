@@ -23,6 +23,7 @@ import Auth from "./pages/Auth";
 import OAuthCallback from "./pages/OAuthCallback";
 import NotFound from "./pages/NotFound";
 import { isAppleUsernameSelectionPending } from "@/lib/apple-username";
+import { preloadAppRoutes } from "@/lib/route-preload";
 
 // Lazy-loaded pages for code-splitting
 const DailyCheckin = lazy(() => import("./pages/DailyCheckin"));

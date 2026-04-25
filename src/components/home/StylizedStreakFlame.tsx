@@ -599,19 +599,18 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             );
           })}
 
-          {/* Inner core — tight white-hot heart with rapid color falloff for realism.
-              Real flame cores are small, intense, and asymmetric (offset slightly upward). */}
+          {/* Inner core — kylläinen oranssi-punainen sydän, EI valkoista hot-spot. */}
           {layers.filter((l) => l.zIndex >= 3).map((_, idx) => {
             const id = `ssf-core-${uid}-${idx}`;
             return (
               <radialGradient key={id} id={id} cx="50%" cy="62%" r="38%">
-                {/* Pure orange-red core — ei valkoinen / kreemi keskipiste. */}
-                <stop offset="0%"   stopColor="hsl(40 100% 70%)" stopOpacity="1" />
-                <stop offset="14%"  stopColor="hsl(34 100% 60%)" stopOpacity="0.92" />
-                <stop offset="32%"  stopColor="hsl(24 100% 54%)" stopOpacity="0.72" />
-                <stop offset="56%"  stopColor="hsl(14 98% 48%)"  stopOpacity="0.4" />
-                <stop offset="80%"  stopColor="hsl(8 95% 40%)"   stopOpacity="0.15" />
-                <stop offset="100%" stopColor="hsl(4 90% 32%)"   stopOpacity="0" />
+                {/* Pure orange-red core — keskipiste maksimissaan kylläinen oranssi (ei vaalea). */}
+                <stop offset="0%"   stopColor="hsl(36 100% 58%)" stopOpacity="1" />
+                <stop offset="14%"  stopColor="hsl(28 100% 52%)" stopOpacity="0.92" />
+                <stop offset="32%"  stopColor="hsl(20 100% 48%)" stopOpacity="0.72" />
+                <stop offset="56%"  stopColor="hsl(12 98% 42%)"  stopOpacity="0.4" />
+                <stop offset="80%"  stopColor="hsl(6 95% 34%)"   stopOpacity="0.15" />
+                <stop offset="100%" stopColor="hsl(2 90% 26%)"   stopOpacity="0" />
               </radialGradient>
             );
           })}

@@ -10,8 +10,8 @@
     --ease-spring: cubic-bezier(0.16, 1.2, 0.32, 1);
     --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
 
-    /* Obsidian & Gold — unified theme */
-    --background: 258 22% 3%;
+    /* Obsidian & Gold — unified theme (Gold · Fire/Lava · Black) */
+    --background: 258 18% 2.5%;
     --foreground: 40 8% 94%;
     --foreground-muted: 40 6% 72%;
     --foreground-faint: 255 6% 38%;

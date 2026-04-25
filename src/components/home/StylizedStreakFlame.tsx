@@ -320,6 +320,9 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
         animation: `stylized-flame-bob ${(2.6).toFixed(2)}s ease-in-out infinite`,
         // Reactive lean: derived from pointer-tracked --ssf-wind-x (-1..1) and gust (0..1).
         ["--ssf-wind" as string]: `calc(var(--ssf-wind-x, 0) * 12deg + var(--ssf-gust, 0) * 6deg)`,
+        // Gust energises the fire — brighter & more saturated when reacting
+        filter: `brightness(calc(1 + var(--ssf-gust, 0) * 0.25)) saturate(calc(1 + var(--ssf-gust, 0) * 0.3))`,
+        transition: "filter 0.25s ease-out",
       }}
       aria-hidden
     >

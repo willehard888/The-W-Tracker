@@ -1472,7 +1472,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         })}
 
         {/* ─── BACK-ROW SOFT SMOKY WISPS — slow, large, fading puffs ─── */}
-        {stage >= 2 && Array.from({ length: Math.min(8, Math.round(lerp(2, 8, ferocity))) }).map((_, i) => {
+        {stage >= 2 && Array.from({ length: Math.min(3, Math.round(lerp(1, 3, ferocity))) }).map((_, i) => {
           const xPos = ((i * 41 + seed.b * 17) % 100) / 100;
           const xPx = (bedWidth * 1.0) * (xPos - 0.5);
           const drift = ((i % 2 === 0 ? -1 : 1) * (8 + (i * 5) % 18));

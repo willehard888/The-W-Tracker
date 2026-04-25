@@ -455,19 +455,64 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
   return (
     <div
       ref={containerRef}
-      className={cn("relative pointer-events-none flex items-end justify-center", className)}
+      className={cn("relative flex items-end justify-center", className)}
       style={{
         width: size,
         height: size,
+        // Container needs pointer events so taps register; inner aria-hidden children remain decorative.
+        pointerEvents: "auto",
         animation: `stylized-flame-bob ${(3.4).toFixed(2)}s cubic-bezier(0.22, 0.61, 0.36, 1) infinite`,
-        // Reactive lean: derived from pointer-tracked --ssf-wind-x (-1..1) and gust (0..1).
-        ["--ssf-wind" as string]: `calc(var(--ssf-wind-x, 0) * 12deg + var(--ssf-gust, 0) * 6deg)`,
-        // Gust + intensify both energise the fire — brighter & more saturated
-        filter: `brightness(calc(${(1 + intensityNorm * 0.35).toFixed(3)} + var(--ssf-gust, 0) * 0.25)) saturate(calc(${(1 + intensityNorm * 0.4).toFixed(3)} + var(--ssf-gust, 0) * 0.3))`,
-        transition: "filter 0.25s ease-out",
+        // Reactive lean: pointer-X + gust + scroll. Wind degrees fed to sway keyframes.
+        ["--ssf-wind" as string]: `calc(var(--ssf-wind-x, 0) * 16deg + var(--ssf-gust, 0) * 8deg)`,
+        // Filter: intensify-base + proximity bloom + gust flash + blast pop − idle dim
+        filter: `brightness(calc(${(1 + intensityNorm * 0.35).toFixed(3)} + var(--ssf-gust, 0) * 0.25 + var(--ssf-proximity, 0) * 0.25 + var(--ssf-blast, 0) * 0.55 - var(--ssf-idle, 0) * 0.18)) saturate(calc(${(1 + intensityNorm * 0.4).toFixed(3)} + var(--ssf-proximity, 0) * 0.3 + var(--ssf-gust, 0) * 0.3 - var(--ssf-idle, 0) * 0.12))`,
+        transition: "filter 0.18s ease-out",
       }}
       aria-hidden
     >
+      {/* ── TAP-BLAST RING — valkoinen renkaan välähdys liekin ympärillä ── */}
+      {blastRingKey > 0 && (
+        <span
+          key={`blast-ring-${blastRingKey}`}
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            width: size * 1.1,
+            height: size * 1.1,
+            left: "50%",
+            top: "55%",
+            transform: "translate(-50%, -50%)",
+            border: `2px solid hsl(48 100% 92%)`,
+            boxShadow: `0 0 ${size * 0.25}px hsl(40 100% 70% / 0.7), inset 0 0 ${size * 0.18}px hsl(46 100% 88% / 0.5)`,
+            mixBlendMode: "screen",
+            animation: "ssf-blast-ring 850ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+            zIndex: 6,
+          }}
+        />
+      )}
+      {/* ── TAP-BLAST SPARKS — 8 kipunaa sinkoutuu radiaalisesti ── */}
+      {blastSparks.map((sp) => {
+        const tx = Math.cos(sp.angle) * sp.dist;
+        const ty = Math.sin(sp.angle) * sp.dist - size * 0.08; // pieni nostebias
+        return (
+          <span
+            key={`blast-spark-${sp.id}`}
+            className="absolute pointer-events-none rounded-full"
+            style={{
+              width: sp.size,
+              height: sp.size,
+              left: "50%",
+              top: "60%",
+              background: "hsl(48 100% 92%)",
+              boxShadow: `0 0 ${sp.size * 3}px hsl(38 100% 68%), 0 0 ${sp.size * 1.5}px hsl(48 100% 88%)`,
+              ["--blast-tx" as string]: `${tx.toFixed(1)}px`,
+              ["--blast-ty" as string]: `${ty.toFixed(1)}px`,
+              animation: "ssf-blast-spark 850ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards",
+              mixBlendMode: "screen",
+              zIndex: 7,
+            }}
+          />
+        );
+      })}
       {/* TRIBE INFERNO AURA — only renders when intensify > 1 */}
       {intensity > 1 && (
         <span

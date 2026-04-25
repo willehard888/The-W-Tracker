@@ -661,13 +661,12 @@ const CompactStreakPanel = ({
             </>
           )}
 
-          {/* Stylized progressive streak flame — grows continuously with
-              the streak, level-up burst on tier crossings. */}
+          {/* Stylized progressive streak flame — escapes the panel for cinematic effect */}
           <div
-            className="absolute left-1/2 bottom-[2px] z-[20] pointer-events-none"
-            style={{ transform: "translateX(-50%)" }}
+            className="absolute left-1/2 bottom-[2px] z-[40] pointer-events-none"
+            style={{ transform: "translateX(-50%)", overflow: "visible" }}
           >
-            <StylizedStreakFlame streak={displayStreak} size={170} />
+            <StylizedStreakFlame streak={displayStreak} size={230} />
           </div>
         </div>
 

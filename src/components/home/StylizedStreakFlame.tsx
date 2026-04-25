@@ -765,17 +765,37 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                   }}
                 >
                   <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${gradId})`} />
-                  {/* Tummennetut ääriviivat — antavat jokaiselle liekille selkeän siluetin
-                      (charred ember tones — ei valkoista, ei vaaleaa kultaa). */}
+                </svg>
+
+                {/* Tummennettu ääriviiva — erillisessä SVG:ssä jolla on multiply-blend
+                    jotta tumma viiva oikeasti tummentaa liekin reunan (ei pyyhkiydy
+                    pois screen-blend-äidin alla). Antaa jokaiselle liekille terävän siluetin. */}
+                <svg
+                  width={flameW}
+                  height={flameH}
+                  viewBox="0 0 100 140"
+                  preserveAspectRatio="none"
+                  className="absolute inset-0"
+                  style={{
+                    filter: `url(#${filterId})`,
+                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+                    animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
+                    transformOrigin: "center bottom",
+                    mixBlendMode: "multiply",
+                    willChange: "transform, opacity",
+                    pointerEvents: "none",
+                  }}
+                >
                   <path
                     d={FLAME_PATHS[layer.pathIndex]}
                     fill="none"
-                    stroke={layer.zIndex >= 3 ? "hsl(8 95% 22%)" : layer.zIndex === 2 ? "hsl(6 90% 16%)" : "hsl(4 85% 12%)"}
+                    stroke={layer.zIndex >= 3 ? "hsl(8 95% 18%)" : layer.zIndex === 2 ? "hsl(6 90% 14%)" : "hsl(4 85% 10%)"}
                     strokeWidth={layer.zIndex >= 3 ? 2.4 : layer.zIndex === 2 ? 2.0 : 1.6}
                     strokeLinejoin="round"
                     strokeLinecap="round"
-                    opacity={layer.zIndex >= 3 ? 0.92 : layer.zIndex === 2 ? 0.82 : 0.7}
+                    opacity={layer.zIndex >= 3 ? 0.95 : layer.zIndex === 2 ? 0.85 : 0.7}
                   />
+                </svg>
                 </svg>
 
                 {/* Front-row inner WHITE-HOT CORE — biggest 3D depth cue */}

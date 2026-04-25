@@ -72,14 +72,12 @@ const Paywall = () => {
   }, [isElite]);
 
   // Once membership is active, leave the paywall behind entirely.
-  // Apex subscribers go to /tribes (their unlocked surface), everyone else
-  // lands on the home dashboard. This prevents the paywall screen from ever
-  // being shown to a paid user, even briefly.
+  // Every paid tier lands on the home dashboard — the streak hero is the
+  // emotional anchor of the app, so we always return there after unlock.
   useEffect(() => {
     if (!isElite) return;
-    const target = isApexSubscriber ? "/tribes" : "/";
-    navigate(target, { replace: true });
-  }, [isElite, isApexSubscriber, navigate]);
+    navigate("/", { replace: true });
+  }, [isElite, navigate]);
 
   useEffect(() => {
     if (isNative) return;

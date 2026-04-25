@@ -204,14 +204,14 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
   // back over the source so the flame edge stays crisp while the body glows.
   const filterIds = [`ssf-t0-${uid}`, `ssf-t1-${uid}`, `ssf-t2-${uid}`];
   const turbConfigs = [
-    // back row — softer warp, larger internal bloom (out-of-focus depth)
-    { freq: "0.018 0.045", peakFreq: "0.034 0.072", baseScale: 1.6, peakScale: 2.6, dur: 2.4, bloomStdDev: 4.5 },
-    // mid row — moderate
-    { freq: "0.028 0.062", peakFreq: "0.05 0.1",   baseScale: 2.2, peakScale: 3.4, dur: 1.6, bloomStdDev: 2.8 },
-    // front row — sharp warp, tight bloom (high definition)
-    { freq: "0.04 0.085",  peakFreq: "0.07 0.14",  baseScale: 2.8, peakScale: 4.2, dur: 1.0, bloomStdDev: 1.4 },
+    // back row — bigger warp, deeper bloom
+    { freq: "0.022 0.055", peakFreq: "0.048 0.095", baseScale: 3.2, peakScale: 5.4, dur: 1.6, bloomStdDev: 4.8 },
+    // mid row — strong roar
+    { freq: "0.034 0.075", peakFreq: "0.07 0.14",   baseScale: 4.0, peakScale: 6.6, dur: 1.1, bloomStdDev: 3.0 },
+    // front row — violent whipping tips
+    { freq: "0.05 0.11",   peakFreq: "0.1 0.2",     baseScale: 5.0, peakScale: 8.4, dur: 0.7, bloomStdDev: 1.6 },
   ];
-  const intensityBoost = lerp(0.85, 1.25, t);
+  const intensityBoost = lerp(1.1, 1.7, t);
 
   // Floor light pool — wash beneath the flames simulating ground reflection
   const floorPoolColor = stage >= 6 ? "hsl(200 95% 65%)" : stage >= 4 ? "hsl(28 100% 60%)" : "hsl(18 95% 55%)";

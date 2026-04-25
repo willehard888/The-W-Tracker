@@ -572,12 +572,12 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             const deepBase  = `hsl(${12 + hShift} 100% ${lerp(40, 50, inten)}%)`;// dark crimson-orange
             const body      = `hsl(${18 + hShift} 100% ${lerp(48, 58, inten)}%)`;// deep blood-orange
             const shoulder  = `hsl(${24 + hShift} 100% ${lerp(54, 64, inten)}%)`;// burnt orange
-            const upperBody = `hsl(${30 + hShift} 100% ${lerp(60, 70, inten)}%)`;// rich tangerine
+            const upperBody = `hsl(${30 + hShift} 100% ${lerp(54, 62, inten)}%)`;// rich tangerine (tummennettu)
             const tipColor  = inten > 0.85
-              ? `hsl(${38 + hShift} 100% ${lerp(64, 72, inten)}%)`              // glowing amber
-              : `hsl(${34 + hShift} 100% ${lerp(58, 68, inten)}%)`;
-            // Apex: lämmin keltainen — ei valkoinen / kreemi (välttää cheap-glow).
-            const apex      = inten > 0.94 ? `hsl(48 100% 70%)` : tipColor;
+              ? `hsl(${36 + hShift} 100% ${lerp(56, 62, inten)}%)`              // syvä amber (ei valkoinen)
+              : `hsl(${32 + hShift} 100% ${lerp(52, 58, inten)}%)`;
+            // Apex: kylläinen oranssi-keltainen — POISTA kaikki valkoisuus / kreemi.
+            const apex      = inten > 0.94 ? `hsl(42 100% 60%)` : tipColor;
 
 
             return (

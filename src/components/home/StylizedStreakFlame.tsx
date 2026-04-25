@@ -329,11 +329,12 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       { pathIndex: 4, scale: 1.05, xOffset:  0.0,  zIndex: 4, speed: 0.62, hueShift:  6, intensity: 1.0,  filterId: 2 },
     ];
 
-    // ── TRIPLE the plan: 3 passes per base layer with deterministic jitter
+    // ── 6× the plan: 6 passes per base layer with deterministic jitter
     // (different scale, xOffset, speed, hue) so layers stack as parallax
     // copies instead of identical clones — no two flames look the same.
+    const PASSES = 6;
     const plan: Omit<FlameLayer, "delaySeed">[] = [];
-    for (let pass = 0; pass < 3; pass++) {
+    for (let pass = 0; pass < PASSES; pass++) {
       basePlan.forEach((b, idx) => {
         // Jitter values vary per (pass, idx) — deterministic, no randomness
         const j = (pass * 17 + idx * 11) % 13;
@@ -341,8 +342,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
         const xJ = ((j - 6) / 80);                                // ±0.075 xOffset
         const speedJ = 1 + ((j - 6) / 50);                        // ±12% speed
         const hueJ = ((j - 6) / 6);                               // ±1 hue
-        // Pass 1 = original, pass 2 = slight back-shift, pass 3 = slight front-shift
-        const intenJ = pass === 0 ? 1 : pass === 1 ? 0.92 : 1.04;
+        // Pass intensity rotates so layers stratify into front/mid/back parallax bands
+        const intenCycle = [1, 0.92, 1.04, 0.88, 1.06, 0.96];
+        const intenJ = intenCycle[pass % intenCycle.length];
         const pathJ = (b.pathIndex + pass * 2) % FLAME_PATHS.length;
         plan.push({
           ...b,
@@ -363,10 +365,10 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
       chosen = [...plan.slice(9, 9 + (flameCount - 1)), plan[13]].slice(0, flameCount);
     } else {
       const heroLayer = plan[13]; // hero from pass 0
-      // Build a priority order across all 3 passes: mid → front → back, pass 0 first
+      // Build a priority order across all passes: mid → front → back, pass 0 first
       const passSlice = (p: number) => plan.slice(p * 14, (p + 1) * 14);
       const ordered: typeof plan = [];
-      for (let p = 0; p < 3; p++) {
+      for (let p = 0; p < PASSES; p++) {
         const passLayers = passSlice(p);
         ordered.push(
           ...passLayers.slice(4, 9),            // mid row (5)

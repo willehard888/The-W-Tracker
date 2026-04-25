@@ -211,35 +211,35 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
   const ferocityFront = Math.min(1, ferocity * 1.15); // front layer reacts hardest
 
   const turbConfigs = [
-    // back row — bigger warp, deeper bloom
+    // back row — soft warp, deeper bloom (slow & smooth)
     {
-      freq: "0.022 0.055",
-      peakFreq: "0.048 0.095",
-      baseScale: lerp(2.4, 4.2, ferocity),
-      peakScale: lerp(4.0, 7.6, ferocity),
-      dur: lerp(2.0, 1.1, ferocity),
-      bloomStdDev: lerp(4.0, 5.6, ferocity),
+      freq: "0.020 0.048",
+      peakFreq: "0.040 0.082",
+      baseScale: lerp(2.0, 3.6, ferocity),
+      peakScale: lerp(3.4, 6.2, ferocity),
+      dur: lerp(2.6, 1.6, ferocity),
+      bloomStdDev: lerp(4.4, 6.0, ferocity),
     },
-    // mid row — strong roar
+    // mid row — flowing roar
     {
-      freq: "0.034 0.075",
-      peakFreq: "0.07 0.14",
-      baseScale: lerp(3.0, 5.4, ferocity),
-      peakScale: lerp(5.0, 8.4, ferocity),
-      dur: lerp(1.4, 0.75, ferocity),
-      bloomStdDev: lerp(2.4, 3.6, ferocity),
+      freq: "0.030 0.066",
+      peakFreq: "0.060 0.12",
+      baseScale: lerp(2.6, 4.6, ferocity),
+      peakScale: lerp(4.4, 7.2, ferocity),
+      dur: lerp(1.8, 1.1, ferocity),
+      bloomStdDev: lerp(2.6, 3.8, ferocity),
     },
-    // front row — violent whipping tips
+    // front row — sharper, but smoother whip
     {
-      freq: "0.05 0.11",
-      peakFreq: "0.1 0.2",
-      baseScale: lerp(3.8, 6.6, ferocityFront),
-      peakScale: lerp(6.4, 11, ferocityFront),
-      dur: lerp(0.95, 0.5, ferocityFront),
-      bloomStdDev: lerp(1.2, 2.0, ferocity),
+      freq: "0.046 0.10",
+      peakFreq: "0.090 0.18",
+      baseScale: lerp(3.2, 5.6, ferocityFront),
+      peakScale: lerp(5.4, 9.0, ferocityFront),
+      dur: lerp(1.25, 0.75, ferocityFront),
+      bloomStdDev: lerp(1.4, 2.2, ferocity),
     },
   ];
-  const intensityBoost = lerp(1.0, 1.85, ferocity);
+  const intensityBoost = lerp(0.95, 1.65, ferocity);
 
   // Floor light pool — wash beneath the flames simulating ground reflection
   const floorPoolColor = stage >= 6 ? "hsl(200 95% 65%)" : stage >= 4 ? "hsl(28 100% 60%)" : "hsl(18 95% 55%)";

@@ -1153,6 +1153,85 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
           return items;
         })()}
 
+        {/* ─── MEDIUM EDGE LICKS — 50 keskikokoista liekkiä ison liekin reunoilla.
+             Suurempia kuin pienet edge licks, sijoitetaan hieman kauemmas siluetista
+             ja jakautuvat laajemmalle korkeusalueelle → tuovat täyteyttä ja leveyttä
+             ilman että peittävät päärungon. Skaalautuu perfClassin mukaan. */}
+        {(() => {
+          const COUNT = perfClass === "high" ? 50 : perfClass === "mid" ? 34 : 22;
+          const items: JSX.Element[] = [];
+          for (let i = 0; i < COUNT; i++) {
+            const side = i % 2 === 0 ? -1 : 1;
+            const idxOnSide = Math.floor(i / 2);
+            const perSide = Math.ceil(COUNT / 2);
+            const yT = (idxOnSide + 0.5) / perSide; // 0..1
+            // Reuna kaartuu sisäänpäin ylös, mutta lievemmin kuin small licks
+            const edgeCurve = 1 - Math.pow(yT, 1.5) * 0.6;
+            const yJitter = (((i * 41 + seed.a * 9) % 100) / 100 - 0.5) * 0.08;
+            const xJitter = (((i * 53 + seed.b * 13) % 100) / 100 - 0.5) * bedWidth * 0.04;
+            // Hieman ULOMPANA kuin small licks (0.34 vs 0.28) → kerrostuu reunalle
+            const xPx = side * (bedWidth * 0.34 * edgeCurve + bedWidth * 0.03) + xJitter;
+            const bottom = size * (0.04 + (yT + yJitter) * 0.6);
+            const tiltDeg = side * (10 + yT * 26);
+            // KESKIKOKO: ~1.6× isompia kuin small licks
+            const sizeBoost = ((i * 17 + seed.c * 7) % 9) / 9;
+            const lickW = Math.max(14, bedWidth * lerp(0.13, 0.2, sizeBoost));
+            const lickH = Math.max(32, tallestH * lerp(0.26, 0.46, sizeBoost) * (1 - yT * 0.25));
+            const flickDur = lerp(1.8, 1.1, ferocity) + ((i * 0.19) % 0.6);
+            const delay = -(((i * 0.31 + seed.a * 0.013) % flickDur));
+            const fId = filterIds[i % 2 === 0 ? 1 : 2];
+            const gradId = `ssf-grad-${uid}-${i % Math.max(1, layers.length)}`;
+            const pathIdx = (i * 5 + 3) % FLAME_PATHS.length;
+            const baseOpacity = lerp(0.55, 0.85, ferocity) * (1 - yT * 0.18);
+            items.push(
+              <div
+                key={`med-edge-lick-${i}`}
+                className="absolute left-1/2"
+                style={{
+                  bottom,
+                  width: lickW,
+                  height: lickH,
+                  transform: `translateX(calc(-50% + ${xPx.toFixed(1)}px)) rotate(${tiltDeg.toFixed(1)}deg)`,
+                  transformOrigin: "center bottom",
+                  zIndex: 2,
+                  pointerEvents: "none",
+                  mixBlendMode: "screen",
+                  opacity: baseOpacity,
+                  contain: "layout paint" as React.CSSProperties["contain"],
+                  willChange: "transform, opacity",
+                }}
+                aria-hidden
+              >
+                <svg
+                  width={lickW}
+                  height={lickH}
+                  viewBox="0 0 100 140"
+                  preserveAspectRatio="none"
+                  style={{
+                    filter: `url(#${fId})`,
+                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${flickDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+                    animationDelay: `${delay.toFixed(2)}s`,
+                    transformOrigin: "center bottom",
+                    overflow: "visible",
+                  }}
+                >
+                  <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
+                  <path
+                    d={FLAME_PATHS[pathIdx]}
+                    fill="none"
+                    stroke="hsl(6 98% 14%)"
+                    strokeWidth={1.6}
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    opacity={0.75}
+                  />
+                </svg>
+              </div>
+            );
+          }
+          return items;
+        })()}
+
         {/* ─── BACK-ROW SIDE FLAME LICKS — depth layer behind main flames ───
             Slower, larger, dimmer tongues sitting BEHIND the central body so the
             fire reads as a 3D volume with flames wrapping around the back rather

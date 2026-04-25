@@ -24,6 +24,14 @@ interface StylizedStreakFlameProps {
   streak: number;
   /** Pixel size of the flame container. Default 140. */
   size?: number;
+  /**
+   * Multiplier on visual intensity (extra ferocity, brightness, glow).
+   * 1 = normal (default). Tribe fire uses 10 → max-out everything for
+   * a dramatic "collective inferno" effect.
+   */
+  intensify?: number;
+  /** Optional accent color (hsl) for outer aura when intensify > 1. */
+  accent?: string;
   className?: string;
 }
 

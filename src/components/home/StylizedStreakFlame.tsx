@@ -615,6 +615,59 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
           });
         })()}
 
+        {/* ─── BACK-ROW SIDE FLAME LICKS — depth layer behind main flames ───
+            Slower, larger, dimmer tongues sitting BEHIND the central body so the
+            fire reads as a 3D volume with flames wrapping around the back rather
+            than a flat silhouette. Cooler hue (back-row filter), heavier blur. */}
+        {(() => {
+          // 2 per side at low ferocity, up to 4 per side at high ferocity
+          const perSideBack = Math.max(2, Math.round(lerp(2, 4, ferocity)));
+          const sides: Array<"l" | "r"> = ["l", "r"];
+          return sides.flatMap((side) =>
+            Array.from({ length: perSideBack }).map((_, i) => {
+              const sideKey = `back-${side}${i}`;
+              // Wider & taller than front side licks — they form the silhouette halo
+              const sw = bedWidth * lerp(0.10, 0.16, (i % 3) / 2);
+              const sh = tallestH * lerp(0.55, 0.8, ferocity) * lerp(0.95, 1.15, (i % 3) / 2);
+              // Anchor low and a bit further out so they peek around the body edges
+              const vBottom = size * lerp(0.03, 0.10, (i * 0.37 + (side === "l" ? 0.1 : 0.3)) % 1);
+              const hOffset = bedWidth * lerp(0.18, 0.34, (i % 3) / 2) * (side === "l" ? -1 : 1);
+              // Slower cadence — back layers breathe at a calmer rhythm
+              const dur = lerp(4.2, 3.0, ferocity) + (i * 0.53);
+              const phaseOffset = side === "l" ? dur * 0.25 : dur * 0.75;
+              const delay = -(((i * 0.97 + seed.b * 0.017) % dur) + phaseOffset) % dur;
+              const filterId = filterIds[0]; // back filter — softer warp, deeper bloom
+              const gradId = `ssf-grad-${uid}-${i % Math.max(1, layers.length)}`;
+              const pathIdx = (i * 7 + 3) % FLAME_PATHS.length;
+              return (
+                <svg
+                  key={sideKey}
+                  width={sw}
+                  height={sh}
+                  viewBox="0 0 100 140"
+                  preserveAspectRatio="none"
+                  className="absolute"
+                  style={{
+                    left: `calc(50% + ${hOffset.toFixed(1)}px)`,
+                    bottom: vBottom,
+                    transformOrigin: side === "l" ? "right bottom" : "left bottom",
+                    // Extra blur + slight desaturation for atmospheric distance
+                    filter: `url(#${filterId}) blur(0.8px) saturate(0.92) brightness(0.88)`,
+                    animation: `stylized-flame-side-${side} ${dur.toFixed(2)}s cubic-bezier(0.36, 0.04, 0.44, 1) infinite`,
+                    animationDelay: `${delay.toFixed(2)}s`,
+                    mixBlendMode: "screen",
+                    zIndex: 1, // BEHIND main flames (mid=2, front=3)
+                    opacity: lerp(0.42, 0.62, ferocity),
+                    willChange: "transform, opacity",
+                  }}
+                >
+                  <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
+                </svg>
+              );
+            })
+          );
+        })()}
+
         {/* ─── SIDE FLAME LICKS — gentle lateral tongues that lean outward ───
             Restrained: small lean, mostly upward growth, soft fade. Real flames
             "breathing" sideways rather than horizontal jets. */}

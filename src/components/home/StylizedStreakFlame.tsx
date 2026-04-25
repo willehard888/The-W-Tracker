@@ -783,7 +783,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
                     animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
                     animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
                     transformOrigin: "center bottom",
-                    willChange: "transform, opacity",
+                    willChange: layer.zIndex >= 3 ? "transform, opacity" : "auto",
                   }}
                 >
                   <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${gradId})`} />

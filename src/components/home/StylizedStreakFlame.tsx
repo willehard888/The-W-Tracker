@@ -1066,6 +1066,81 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
           });
         })()}
 
+        {/* ─── BASE FAN — 50 pientä, hieman viistossa olevaa juuriliekkiä jotka levittävät tulen kantaa.
+             Anchored juuri ember-bedin päälle, kallistetaan ulospäin kasvavalla kulmalla niin että keskellä lähes pystyssä,
+             reunoilla jopa ~55° viistossa → tuli leviää aidosti leveämpänä alaosastaan. Pieniä, lyhyitä, nopeasti välkkyviä. */}
+        {(() => {
+          const COUNT = 50;
+          const fanSpan = bedWidth * 1.35; // hieman bedWidthia leveämpi → vaikutelma siitä, että tuli kuhisee yli reunojen
+          // Reduced-motion / low-perf: leikkaa määrää (vain visuaalinen vaikutelma säilyy)
+          const effectiveCount = perfClass === "low" ? Math.round(COUNT * 0.5) : perfClass === "mid" ? Math.round(COUNT * 0.78) : COUNT;
+          return Array.from({ length: effectiveCount }).map((_, i) => {
+            // Tasainen jakauma yli fanin, pieni jitter etteivät istu rivissä
+            const evenT = (i + 0.5) / effectiveCount; // 0..1
+            const jitter = (((i * 37 + seed.b * 11) % 100) / 100 - 0.5) * (1 / effectiveCount) * 1.6;
+            const xT = Math.max(0, Math.min(1, evenT + jitter)); // 0..1
+            const xCentered = xT - 0.5; // -0.5..0.5
+            const xPx = fanSpan * xCentered;
+            // Kallistus: keskellä ~0°, reunoilla jopa ±55° (ulospäin)
+            const tiltDeg = xCentered * 110; // -55..+55
+            // Koko: pieniä → todella pieniä, hieman varianssia
+            const sizeBoost = ((i * 13 + seed.a * 7) % 9) / 9; // 0..1
+            const lickW = bedWidth * lerp(0.025, 0.055, sizeBoost);
+            const lickH = tallestH * lerp(0.14, 0.32, sizeBoost) * lerp(0.85, 1.1, ferocity);
+            // Reunaliekit hieman matalampia (perspektiivi → kauempana ihmisen silmä lukee pienempänä)
+            const edgeFalloff = 1 - Math.abs(xCentered) * 0.55;
+            const finalH = lickH * Math.max(0.55, edgeFalloff);
+            // Pohjasijainti hieman bedin yläpuolella → näyttää että ne syttyvät hiilistä
+            const bottom = size * lerp(0.025, 0.06, ((i * 17) % 7) / 7);
+            // Animaatio: nopea välähdys ja soft sway. Eri päätaajuudet etteivät synkronoidu.
+            const flickDur = lerp(1.1, 0.55, ferocity) + ((i * 0.13) % 0.6);
+            const swayDur = lerp(2.6, 1.6, ferocity) + ((i * 0.21) % 0.9);
+            const delay = -(((i * 0.23 + seed.c * 0.011) % flickDur));
+            // Filtteri: vuorottelevasti mid/front → microvariation
+            const fId = filterIds[i % 2 === 0 ? 1 : 2];
+            // Värivariaatio gradientteja kierrättäen
+            const gradId = `ssf-grad-${uid}-${i % Math.max(1, layers.length)}`;
+            const pathIdx = (i * 3 + 5) % FLAME_PATHS.length;
+            // Reunalla olevat himmeämpiä → syvyyden illuusio
+            const baseOpacity = lerp(0.55, 0.92, ferocity) * lerp(0.6, 1, edgeFalloff);
+            return (
+              <svg
+                key={`base-fan-${i}`}
+                width={lickW}
+                height={finalH}
+                viewBox="0 0 100 140"
+                preserveAspectRatio="none"
+                className="absolute left-1/2"
+                style={{
+                  bottom,
+                  transform: `translateX(calc(-50% + ${xPx.toFixed(1)}px)) rotate(${tiltDeg.toFixed(1)}deg)`,
+                  transformOrigin: "center bottom",
+                  filter: `url(#${fId})`,
+                  animation: `stylized-flame-flicker-${(i % 3) + 1} ${flickDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite, stylized-flame-sway-${(i % 3) + 1} ${swayDur.toFixed(2)}s ease-in-out infinite`,
+                  animationDelay: `${delay.toFixed(2)}s, ${(delay * 0.7).toFixed(2)}s`,
+                  mixBlendMode: "screen",
+                  opacity: baseOpacity,
+                  zIndex: 2, // pohjarivin yllä mutta keskuksen alla
+                  willChange: "transform, opacity",
+                  pointerEvents: "none",
+                }}
+                aria-hidden
+              >
+                <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />
+                <path
+                  d={FLAME_PATHS[pathIdx]}
+                  fill="none"
+                  stroke="hsl(8 95% 16%)"
+                  strokeWidth={1.4}
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  opacity={0.78}
+                />
+              </svg>
+            );
+          });
+        })()}
+
         {/* ─── BACK-ROW SIDE FLAME LICKS — depth layer behind main flames ───
             Slower, larger, dimmer tongues sitting BEHIND the central body so the
             fire reads as a 3D volume with flames wrapping around the back rather

@@ -114,6 +114,9 @@ const BottomNav = () => {
               aria-label={label}
               aria-current={active ? "page" : undefined}
               onClick={() => handleNav(path)}
+              onPointerEnter={() => prefetchRoute(path)}
+              onFocus={() => prefetchRoute(path)}
+              onTouchStart={() => prefetchRoute(path)}
               className={cn(
                 "group relative flex flex-col items-center justify-center gap-0.5 px-1.5 py-1.5 rounded-xl",
                 "transition-[transform,color,opacity] duration-220 will-change-transform",

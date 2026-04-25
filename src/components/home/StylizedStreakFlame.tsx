@@ -1395,7 +1395,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         })}
 
         {/* ─── FRONT-ROW SHARP EMBERS with TRAILS — bright, fast, lingering ─── */}
-        {stage >= 3 && Array.from({ length: Math.min(14, Math.round(lerp(4, 14, ferocityFront))) }).map((_, i) => {
+        {stage >= 3 && Array.from({ length: Math.min(6, Math.round(lerp(2, 6, ferocityFront))) }).map((_, i) => {
           const xPos = ((i * 53 + seed.c * 11) % 100) / 100;
           const xPx = (bedWidth * 0.9) * (xPos - 0.5);
           const drift = ((i % 2 === 0 ? 1 : -1) * (4 + (i * 3) % 14)) * lerp(0.7, 1.4, ferocity);

@@ -3775,6 +3775,25 @@ button:active > .aurum-lava-glow {
   .aurum-lava-glow { opacity: 0.55 !important; }
 }
 
+/* ── StylizedStreakFlame next-level viimeistely ── */
+@keyframes stylized-heart-pulse {
+  0%, 100% {
+    filter: blur(var(--heart-blur, 6px)) brightness(1);
+  }
+  50% {
+    filter: blur(var(--heart-blur, 6px)) brightness(1.18);
+  }
+}
+
+@keyframes stylized-heat-shimmer {
+  from {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════
    "THE SCREEN IS BURNING" — cinematic fire FX for the streak panel.

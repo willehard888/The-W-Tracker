@@ -1250,7 +1250,126 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
             />
           );
         })}
+        {/* ─── CHROMATIC HEAT ABERRATION — yksi punertava + yksi keltainen
+             "haamukopio" hero-liekistä, hieman siirrettynä → kuumuus rikkoo värin
+             kanavat reunoista. Tämä on se efekti joka erottaa CGI-tulen halvasta. */}
+        {stage >= 3 && perfClass !== "low" && (() => {
+          const heroPath = FLAME_PATHS[4];
+          const heroH = tallestH * 1.05;
+          const heroW = heroH * (100 / 140);
+          return (
+            <>
+              {/* Punainen kanava liu'utettu ylös-vasemmalle */}
+              <svg
+                width={heroW}
+                height={heroH}
+                viewBox="0 0 100 140"
+                preserveAspectRatio="none"
+                className="absolute left-1/2"
+                style={{
+                  bottom: 0,
+                  transform: "translateX(calc(-50% - 1.4px)) translateY(-1.2px)",
+                  filter: `url(#${filterIds[2]})`,
+                  mixBlendMode: "screen",
+                  opacity: lerp(0.18, 0.32, ferocity),
+                  zIndex: 4,
+                  willChange: "transform",
+                  pointerEvents: "none",
+                }}
+                aria-hidden
+              >
+                <path d={heroPath} fill="hsl(2 100% 48% / 0.55)" />
+              </svg>
+              {/* Keltainen kanava liu'utettu alas-oikealle */}
+              <svg
+                width={heroW}
+                height={heroH}
+                viewBox="0 0 100 140"
+                preserveAspectRatio="none"
+                className="absolute left-1/2"
+                style={{
+                  bottom: 0,
+                  transform: "translateX(calc(-50% + 1.4px)) translateY(0.8px)",
+                  filter: `url(#${filterIds[2]})`,
+                  mixBlendMode: "screen",
+                  opacity: lerp(0.16, 0.28, ferocity),
+                  zIndex: 4,
+                  willChange: "transform",
+                  pointerEvents: "none",
+                }}
+                aria-hidden
+              >
+                <path d={heroPath} fill="hsl(44 100% 56% / 0.5)" />
+              </svg>
+            </>
+          );
+        })()}
+
+        {/* ─── REACTIVE INNER HEART — kylläinen ydin joka pulsoi --ssf-proximity
+             ja --ssf-blast-arvojen mukaan. Sormea tuotaessa lähelle: liekki
+             "hengittää" kirkkaammin — tämä on hienovarainen mutta tuntuu elävältä. */}
+        {stage >= 2 && (
+          <span
+            className="absolute left-1/2 pointer-events-none rounded-full"
+            style={{
+              width: bedWidth * 0.55,
+              height: tallestH * 0.55,
+              bottom: size * 0.12,
+              transform: `translateX(-50%) scale(calc(1 + var(--ssf-proximity, 0) * 0.08 + var(--ssf-blast, 0) * 0.18))`,
+              background: `radial-gradient(ellipse at 50% 70%, hsl(38 100% 60% / 0.55) 0%, hsl(22 100% 50% / 0.32) 32%, hsl(10 95% 40% / 0.14) 60%, transparent 85%)`,
+              filter: `blur(${Math.max(4, size * 0.05)}px)`,
+              mixBlendMode: "screen",
+              opacity: `calc(${lerp(0.45, 0.85, ferocity).toFixed(2)} + var(--ssf-proximity, 0) * 0.35 + var(--ssf-blast, 0) * 0.6)` as unknown as number,
+              transformOrigin: "center bottom",
+              transition: "opacity 0.18s ease-out, transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1)",
+              zIndex: 4,
+              animation: `stylized-heart-pulse ${(2.4).toFixed(2)}s ease-in-out infinite`,
+            }}
+          />
+        )}
+
+        {/* ─── HEAT SHIMMER FLOOR — maasta nouseva conic-gradient lämpövärähtely
+             (subtle, melkein huomaamaton — antaa "kuuma maa" -tunteen). */}
+        {stage >= 4 && perfClass === "high" && (
+          <span
+            className="absolute left-1/2 pointer-events-none"
+            style={{
+              width: bedWidth * 1.4,
+              height: tallestH * 0.4,
+              bottom: size * 0.04,
+              transform: "translateX(-50%)",
+              background: `conic-gradient(from 0deg at 50% 100%, transparent 0deg, hsl(22 100% 55% / 0.06) 30deg, transparent 60deg, hsl(14 95% 48% / 0.05) 90deg, transparent 120deg, hsl(28 100% 58% / 0.05) 180deg, transparent 220deg, hsl(18 95% 50% / 0.06) 280deg, transparent 320deg)`,
+              filter: `blur(${Math.max(8, size * 0.1)}px)`,
+              mixBlendMode: "screen",
+              animation: `stylized-heat-shimmer 7s linear infinite`,
+              zIndex: 0,
+              opacity: lerp(0.55, 0.95, ferocity),
+            }}
+          />
+        )}
       </div>
+
+      {/* ─── VOLUMETRIC BACK-LIGHT BLOOM — liekki valaisee taustaa TAKAA;
+           pehmeä radiaali heittovalo joka istuu liekin TAKANA, antaa "tuli on
+           huoneessa" -syvyyden. Eri kuin "ulkohehku-rengas" — tämä on aidosti
+           takavalo joka näkyy reunaan saakka. */}
+      {stage >= 3 && (
+        <span
+          className="absolute left-1/2 pointer-events-none"
+          style={{
+            width: size * 1.55,
+            height: size * 1.4,
+            bottom: -size * 0.05,
+            transform: "translateX(-50%)",
+            background: `radial-gradient(ellipse at 50% 65%, hsl(22 100% 50% / ${lerp(0.18, 0.32, ferocity).toFixed(2)}) 0%, hsl(14 95% 42% / ${lerp(0.10, 0.18, ferocity).toFixed(2)}) 22%, hsl(8 85% 32% / ${lerp(0.06, 0.10, ferocity).toFixed(2)}) 42%, transparent 70%)`,
+            filter: `blur(${Math.max(14, size * 0.18)}px)`,
+            mixBlendMode: "screen",
+            zIndex: -1,
+            opacity: `calc(${lerp(0.6, 1, ferocity).toFixed(2)} + var(--ssf-proximity, 0) * 0.2 + var(--ssf-blast, 0) * 0.3 - var(--ssf-idle, 0) * 0.15)`,
+            transition: "opacity 0.25s ease-out",
+          }}
+        />
+      )}
 
       {/* ─── Stage-up bed flash ─── */}
       {burst && (

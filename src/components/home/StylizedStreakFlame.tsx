@@ -513,24 +513,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, classN
           />
         );
       })}
-      {/* TRIBE INFERNO AURA — only renders when intensify > 1 */}
-      {intensity > 1 && (
-        <span
-          aria-hidden
-          className="absolute pointer-events-none rounded-full"
-          style={{
-            width: auraSpread * 2,
-            height: auraSpread * 2,
-            left: "50%",
-            bottom: -auraSpread * 0.3,
-            transform: "translateX(-50%)",
-            background: `radial-gradient(circle, ${auraAccent.replace(")", ` / ${auraOpacity.toFixed(2)})`)} 0%, ${auraAccent.replace(")", ` / ${(auraOpacity * 0.4).toFixed(2)})`)} 28%, transparent 70%)`,
-            filter: `blur(${size * 0.25}px)`,
-            mixBlendMode: "screen",
-            zIndex: -1,
-          }}
-        />
-      )}
+      {/* (Tribe inferno aura halo removed — used to be a soft radial glow,
+          read as cheap lens-flare. Tribe intensity is now expressed only via
+          doubled flame count + reactive ferocity.) */}
       {/* SVG defs — turbulence + internal bloom filters + per-layer gradients */}
       <svg width="0" height="0" className="absolute" aria-hidden>
         <defs>

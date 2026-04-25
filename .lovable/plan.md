@@ -1,57 +1,127 @@
-## Stylized Progressive Streak Flame
+# Premium Polish — Gold · Fire/Lava · Obsidian
 
-A new clean, stylized flame component for the home page streak panel. It grows progressively through 5 visual stages tied to streak days, with smooth scaling, brightening core, expanding aura, and a level-up burst when the user crosses a stage.
+Tavoite: nostaa koko appi yhtenäiseen "Obsidian Gold" -tunnelmaan ilman että mikään olemassa oleva toiminto, komponentti tai sivu poistuu tai rikkoutuu. Kaikki muutokset ovat **additiivisia tai värinvaihtoja olemassa oleviin tokeneihin** — komponenttien rakenne, propsit ja logiikka säilyvät.
 
-### Visual stages (mapped to existing streak tiers)
+---
 
-| Stage | Streak days | Look |
-|---|---|---|
-| 1 — Tiny flicker | 1–2d | small candle flicker, soft orange |
-| 2 — Small steady | 3–6d (Ignited) | small steady flame, warm orange |
-| 3 — Medium active | 7–13d (Heating Up) | medium flame, brighter yellow tip, embers appear |
-| 4 — Large energetic | 14–29d (On Fire) | tall energetic flame, sparks rising, aura ring visible |
-| 5 — Champion blaze | 30–59d (Champion) | large roaring flame, pulsing aura, more particles |
-| 6 — Diamond | 60–99d | cool blue edges blend in, brighter white-hot core |
-| 7 — Legendary | 100–199d | aurora hue shift, dense particle field |
-| 8 — Inferno | 200d+ | plasma core, blinding white-cyan center |
+## 1. Theme unification — Gold / Fire / Black
 
-Smooth interpolation: flame size, core brightness, ember count, and aura radius scale **continuously** between stages (not stepped) so a 5d streak looks slightly bigger than a 3d streak — no sudden jumps inside a tier.
+Tällä hetkellä `index.css`:ssä elää neljä rinnakkaista aksenttiväriä (`--purple`, `--teal`, `--rose`, `--amber`) ja `glass-card`, `aura-halo-*`, `gradient-border-animated` ym. käyttävät niitä. Pidämme tokenit olemassa (jotta mikään ei rikkoonnu), mutta **uudelleenmäärittelemme niiden HSL-arvot lämpimäksi tuli/laava/kulta -spektriksi**:
 
-### Polish (per the brief)
+```text
+--gold        42 78% 54%   (säilyy — hero gold)
+--gold-light  42 90% 70%
+--gold-dark   42 60% 36%
+--ember       18 95% 58%   (uusi — orange ember)
+--lava        12 92% 50%   (uusi — deep lava red-orange)
+--ash         258 14% 11%  (alias — secondary-tumma)
 
-- **Stage-up burst**: when streak crosses a tier threshold, fire a short burst — circular shockwave ring + 8 ember rays + brief brightness pulse (~700ms).
-- **Energy aura**: soft circular gradient halo behind the flame; radius and opacity grow with stage.
-- **Glowing core**: gradient from soft orange (stage 1) → yellow-white (stage 4) → white-cyan (stage 8). Subtle blue at the base from stage 4 onward.
-- **Particles**: 0 (stage 1) → 14 (stage 8). Rise with slight horizontal drift.
-- **Gentle pulse**: subtle brightness pulse at all stages; faster at higher stages.
-- **Idle motion**: smooth flicker via SVG turbulence + per-instance seed so it never visibly loops.
-- **Reduced motion**: respect `prefers-reduced-motion` — keep silhouette + glow, drop ember/burst animations.
+# Re-tinted aliases (säilyvät nimet, vaihtuu sävy)
+--purple      → 24 80% 52%   (deep ember orange, korvaa violetin)
+--purple-light→ 30 92% 66%
+--purple-dark → 14 75% 32%
+--teal        → 38 90% 56%   (warm gold-amber, korvaa teal:n)
+--teal-light  → 44 95% 70%
+--teal-dark   → 32 78% 38%
+--rose        → 8 90% 56%    (lava red, korvaa pinkin)
+--amber       → säilyy lämpimänä (jo on)
+```
 
-### Where it goes
+Vaikutus: **kaikki** komponentit jotka käyttävät `text-purple-brand`, `glow-teal`, `gradient-rose`, `aura-halo-purple`, `glass-card::before` -kausaaligradientti jne. päivittyvät automaattisesti tuli-paletille — yksikään tiedosto ei tarvitse manuaalisia muutoksia. BadgeRare/Epic säilyttävät omat sinet/violet -värinsä (badge-järjestelmä on tarkoituksellinen ja ei "riko teemaa").
 
-- Replaces the flame inside `src/components/home/CompactStreakPanel.tsx` (the streak panel rendered by the home page `CommandDeck`). The panel chrome (label, number, tier badge, progress) is kept; only the central flame visual is swapped.
-- Other places that use `RealisticFlame` (TribeFireHero, StreakDisplay, etc.) are **not touched**.
+Lisäksi:
+- Body-taustan radial gradients (`index.css` rivit 100–111) saavat hieman syvemmän "lava floor" -hehkun alaosaan.
+- `--background` nostetaan minimaalisesti puhtaaseen obsidian-mustaan (258 22% 3% → 258 18% 2.5%) jotta kontrasti kultaan kasvaa.
 
-### Files
+---
 
-- **New**: `src/components/home/StylizedStreakFlame.tsx` — the new component.
-- **New**: keyframes added to `src/index.css` (`stylized-flame-flicker`, `stylized-aura-pulse`, `stylized-stage-burst`, `stylized-ember-rise`).
-- **Edit**: `src/components/home/CompactStreakPanel.tsx` — swap the central `RealisticFlame` for `StylizedStreakFlame`, wire the streak number through, keep stage-up detection so the burst fires when crossing a tier.
+## 2. Animation polish — sulavammat siirtymät
 
-### Technical notes
+Globaalit easing-tokenit (`--ease-spring`, `--ease-soft`) on jo määritelty mutta käyttö on epäjohdonmukaista. Muutokset:
 
-- Single SVG with three layered paths (outer body, mid body, white-hot core) plus an `<feTurbulence>` + `<feDisplacementMap>` filter for organic edge motion. Per-instance random seed avoids sync.
-- Continuous scaling helpers:
-  - `flameHeight = lerp(40, 120, normalizedStage)`
-  - `coreBrightness = lerp(0.5, 1, normalizedStage)`
-  - `auraRadius = lerp(60, 220, normalizedStage)`
-  - `emberCount = round(lerp(0, 14, normalizedStage))`
-- Stage-up detection: a `useEffect` watching `streak` derives the current stage; when it increases, sets `burst = true` for ~700ms which adds a one-shot ring + ember-ray group.
-- Props: `{ streak: number; size?: number; className?: string }`. Internally derives stage from streak using the existing tier thresholds (kept in sync with `src/lib/streak.ts`).
-- GPU-only animations (transform/opacity); SVG filter is small (160% bbox) and only mounted when `size >= 56` to keep list/grid use cheap.
+- **`tailwind.config.ts`**: lisää `animation`-bloki uudet luokat: `fade-in`, `fade-in-up`, `scale-in`, `slide-up`, `breathe`, `shimmer`, `ember-rise` (kaikki käyttävät `--ease-soft` / `--ease-spring`).
+- **`index.css`**: nykyinen `animate-reveal` -keyframe on hyvä, mutta lisätään stagger-utilities `animate-stagger-1..6` (80ms inkrementit) jotta listat ja gridit voi viimeistellä yhdellä luokalla.
+- **Card hover** (`card-hover`, `card-3d`) — nopeutetaan transitionit 300→220 ms ja vaihdetaan easing `--ease-spring`:iin → "kostea" pomppu, premium-feel.
+- **Buttons** (`src/components/ui/button.tsx`) — lisätään active-press scale `0.97` + 90 ms transition kaikkiin variantteihin, tactile native-tunnelma.
+- **Page transitions** — `RouteFallback.tsx` ja `App.tsx`-tason layout saavat `animate-fade-in-up` -wrappauksen jokaiselle reitille (`<main>` opacity-fade 220 ms, ei rikkomata routing-logiikkaa).
+- **Reduced-motion safe** — kaikki uudet animaatiot wrapatataan `@media (prefers-reduced-motion: reduce)` -säännöllä joka jo on käytössä.
 
-### Out of scope
+---
 
-- No backend changes.
-- No changes to streak logic itself — just the visual.
-- No new dependencies.
+## 3. Flame system polish
+
+`StylizedStreakFlame.tsx` on jo voimakas, mutta hienoa viimeistelyä:
+
+- **Color grading** — palettin gradient-stopit lämmitetään: nykyinen "deep red base → orange → yellow → near-white" päivitetään käyttämään yhtenäistä kulta-laava -spektriä (12° → 18° → 32° → 45° hue-sweep). Front-row hero saa **valkokultaisen kärjen** (42° 100% 92%) joka korostaa premium-kultaa.
+- **Floor pool** (`floorPoolColor`) — rivit 356–359, päivitetään käyttämään uusia `--lava` ja `--ember` tokeneita, jotta tribe collective inferno -laava-allas vastaa teemaa.
+- **Aura accent** — ei-tribe -liekeissä otetaan käyttöön hyvin pehmeä kulta-aura (opacity 0.08, ei nykyistä 0.35) jotta jokainen liekki istuu komponenttiinsa ilman että "loistaa läpi" ympäröivän sisällön. Tribe `intensify={10}` säilyy nykyisellä aurallaan.
+- **Bob-animaatio** — nykyinen 2.6s on hieman jäykkä; muutetaan 3.4s + ease-soft, lisäksi tinytiny `flame-shimmer` -overlay (1px kulta-glint joka liukuu liekin yli 6 s välein).
+- **Cold candle** — nykyinen muted-stroke vaihdetaan `text-gold-soft / 0.35` joten myös "kuollut liekki" pysyy teemassa.
+- **Reduced motion** — säilyy: olemassa oleva `[style*="stylized-"]` -globaali sääntö pysyy.
+
+`Flame.tsx`, `RealisticFlame.tsx`, `TribeFireHero.tsx`, `TribeCollectiveFlame.tsx` toimivat sellaisenaan koska ne ovat jo wrapper-pohjaisia engineä kohti — saavat parannukset automaattisesti.
+
+---
+
+## 4. Surfaces & cards
+
+- **`surface-glass`** — bottom shadow saa `+ 0 32px 64px -28px hsl(42 78% 54% / 0.18)` jotta kortit "leijuvat" lämpimällä kultahehkulla mustaa taustaa vasten.
+- **`card-3d`** hover — nykyinen `gold/0.08 + purple/0.12` -hover-hehku korvataan **puhtaalla `gold/0.18` + `ember/0.10`** -kombolla.
+- **Buttons (`button.tsx`)** — `default` varianttiin lisätään hienovarainen `inset 0 1px 0 hsl(42 90% 75% / 0.25)` highlight-rivi → metallinen kulta-kosketus.
+- **Inputs** — focus-ring jo on kullan sävyinen, OK.
+- **Dialog / Sheet** — backdrop päivitetään `bg-black/72 backdrop-blur-md` → `bg-[hsl(258_30%_2%/0.78)] backdrop-blur-lg` jotta dialogin alla oleva tausta vaihtuu mustempaan obsidian-sävyyn.
+
+---
+
+## 5. Bottom nav & header
+
+- **`BottomNav.tsx`** — aktiivisen tab-ikonin alla oleva indicator (jos käyttää muuta kuin kultaa) vaihdetaan `bg-[hsl(var(--gold))]`. Inaktiivinen state pysyy `text-foreground-faint`. Lisätään spring-transition aktiivisen tabin vaihtuessa (220 ms `--ease-spring`).
+- **`AppLogoHeader.tsx`** — säilyy ennallaan, mutta gradient-glow pulssi hidastetaan 4 s → 6 s, premium-tunne.
+
+---
+
+## 6. Tarkistuskohteet (no-break guarantee)
+
+Käyn kaikki tiedostot jotka osuvat muuttuneisiin tokeneihin:
+
+- `Ambient3DScene.tsx`, `EliteFeed.tsx`, `WeeklyBriefing.tsx`, `LevelCard.tsx`, `RankProgressHub.tsx`, `StatusBadge.tsx`, `StatusAvatar.tsx`, `StatusNameplate.tsx`, `TierLadder.tsx`, `Onboarding.tsx`, `Coach.tsx`, `DailyCheckin.tsx`, `DailyQuests.tsx`, `RankPressureCard.tsx`, `Battles.tsx`, `Leaderboard.tsx`, `PublicProfile.tsx`, `Profile.tsx`, `Referrals.tsx`, `TopInvitersWidget.tsx`, `TribePostCard.tsx`, `StatCard.tsx`, `StatusPreview.tsx`, `StatusHeader.tsx`, `ProfileActivityPulse.tsx`, `Messages.tsx`, `ImageLightbox.tsx`, `CheckinTierHeader.tsx`, `CheckinTierSummary.tsx`.
+
+→ **Ei muuteta logiikkaa eikä JSX-rakennetta.** Värit virtaavat tokenien kautta. Koska `--purple` jne. säilyvät `tailwind.config.ts`:n mappauksissa, jokainen `text-purple`, `bg-teal`, `from-rose-dark` jne. jatkaa toimintaansa mutta **renderöi nyt lämpimän tuli/kulta-sävyn**.
+
+Badge-järjestelmän `--badge-rare` (sininen) ja `--badge-epic` (violetti) jätetään koskematta — ne ovat tarkoituksellinen tier-signal.
+
+---
+
+## 7. Tiedostot joita muokataan
+
+**Muokattavat (vain värit / animaatiot, ei rakenteita):**
+- `src/index.css` — token-uudelleenmäärittely, body-gradient -hieno säätö, animation-utilities, surface-glass / card-3d / button hover -hehkut, dialog-backdrop.
+- `tailwind.config.ts` — uudet `animation`-luokat (fade-in-up, scale-in, ember-rise, breathe, stagger).
+- `src/components/home/StylizedStreakFlame.tsx` — gradient-stopit, floor pool, aura accent, bob-keston säätö.
+- `src/components/ui/button.tsx` — active-press scale, kulta-highlight inset.
+- `src/components/BottomNav.tsx` — aktiivisen tabin kulta-indicator + spring-transition.
+- `src/components/AppLogoHeader.tsx` — pulse-keston säätö.
+
+**Ei muuteta:** mikään muu komponentti tai sivu. Logiikka, propsit, RPC-kutsut, RLS, reititys, auth, tribet, badgeen liittyvät RPC:t, edge-functionit — kaikki säilyvät bittinä bitiltä.
+
+---
+
+## 8. Visuaalinen tulos
+
+```text
+ENNEN                          JÄLKEEN
+─────────────────────         ─────────────────────
+Obsidian + gold + violet      Obsidian + gold + lava ember
++ teal + rose accents         (yksi lämmin spektri)
+
+Stiff hover transitions       Spring-eased magnetic hover
+(300ms linear)                (220ms cubic-bezier 0.16,1.2,0.32,1)
+
+Flame: red→orange→yellow      Flame: lava→ember→gold→white-gold
+                              (premium kulta-kärki hero-liekissä)
+
+Glass card halo: violet drift Glass card halo: ember drift
+                              + lämmin kulta-pohjavarjostus
+```
+
+Lopputulos: yhden teemainen, sulava, premium "Obsidian × Liquid Gold × Living Fire" -tunnelma — ilman että yhtäkään ominaisuutta katoaa.

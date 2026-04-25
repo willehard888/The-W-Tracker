@@ -508,15 +508,16 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
         style={{
           left: "50%",
           bottom: size * 0.05,
-          transform: "translateX(-50%)",
+          // Reactive: lean horizontally + scale up vertically on gust (fire flares from a sudden puff)
+          transform: `translateX(calc(-50% + var(--ssf-wind-x, 0) * 6px)) scaleY(calc(1 + var(--ssf-gust, 0) * 0.18)) scaleX(calc(1 - var(--ssf-gust, 0) * 0.06))`,
           width: bedWidth,
           height: tallestH,
           transformOrigin: "center bottom",
           animation: `stylized-flame-sway 3.4s ease-in-out infinite`,
-          // 3D depth: gentle perspective so back flames recede slightly
           perspective: `${size * 4}px`,
           transformStyle: "preserve-3d",
           willChange: "transform",
+          transition: "transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1)",
         }}
       >
         {(() => {

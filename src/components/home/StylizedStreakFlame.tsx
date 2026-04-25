@@ -447,8 +447,8 @@ const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFl
             const xPx = (bedWidth * 0.5 - flameW * 0.5) * layer.xOffset;
             const gradId = `ssf-grad-${uid}-${i}`;
             const filterId = filterIds[layer.filterId];
-            const speedDur = layer.speed * lerp(1.0, 0.55, t);
-            const swayDur = layer.speed * lerp(1.6, 0.85, t);
+            const speedDur = layer.speed * lerp(1.4, 0.85, t);
+            const swayDur = layer.speed * lerp(2.6, 1.5, t);
 
             // 3D z-depth: back row receded, front pushed forward
             const zDepth = layer.zIndex === 1 ? -size * 0.18 : layer.zIndex === 2 ? -size * 0.05 : size * 0.04;

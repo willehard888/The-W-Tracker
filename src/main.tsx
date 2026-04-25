@@ -7,6 +7,10 @@ import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 import { toast } from "sonner";
 import { clearAppleAuthStarted, clearAppleUsernameSelectionPending } from "@/lib/apple-username";
 import { supabase } from "@/integrations/supabase/client";
+import { initNativeShell } from "@/lib/native-bootstrap";
+
+// Fire-and-forget — runs before React mount, but doesn't block it.
+void initNativeShell();
 
 let oauthHandled = false;
 

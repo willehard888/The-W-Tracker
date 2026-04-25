@@ -129,10 +129,10 @@ const AppRoutes = () => {
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={location.pathname}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.16, ease: "easeOut" }}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.22, ease: [0.22, 0.61, 0.36, 1] }}
                 className="h-full"
               >
                 <Routes location={location}>
@@ -200,6 +200,19 @@ const App = () => {
   useEffect(() => {
     if (splashDone) preloadAppRoutes();
   }, [splashDone]);
+
+  // When the native shell resumes from background, refresh hot caches so the
+  // user sees fresh leaderboard / message / streak data immediately.
+  useEffect(() => {
+    const onResume = () => {
+      queryClient.invalidateQueries({ queryKey: ["leaderboard"] }).catch(() => {});
+      queryClient.invalidateQueries({ queryKey: ["messages"] }).catch(() => {});
+      queryClient.invalidateQueries({ queryKey: ["profile"] }).catch(() => {});
+      queryClient.invalidateQueries({ queryKey: ["streak"] }).catch(() => {});
+    };
+    window.addEventListener("native:resume", onResume);
+    return () => window.removeEventListener("native:resume", onResume);
+  }, []);
 
   return (
     <ErrorBoundary>

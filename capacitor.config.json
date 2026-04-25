@@ -2,9 +2,34 @@
   "appId": "app.lovable.wtracker",
   "appName": "The W Tracker",
   "webDir": "dist",
+  "backgroundColor": "#0a0710",
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#0a0710",
+    "limitsNavigationsToAppBoundDomains": false,
+    "scrollEnabled": true
+  },
   "plugins": {
     "PushNotifications": {
       "presentationOptions": ["badge", "sound", "alert"]
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "overlaysWebView": true,
+      "backgroundColor": "#00000000"
+    },
+    "Keyboard": {
+      "resize": "none",
+      "style": "DARK",
+      "resizeOnFullScreen": false
+    },
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 600,
+      "backgroundColor": "#0a0710",
+      "showSpinner": false,
+      "splashFullScreen": true,
+      "splashImmersive": true
     }
   },
   "server": {

@@ -1349,7 +1349,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         {/* ─── FRONT MICRO FLAMES — small dancing tongues in FRONT of main body ───
             Adds 3D parallax: tiny flames flicker in front of the hero flame,
             making the fire feel volumetric. Brighter accent layer. */}
-        {Array.from({ length: Math.min(14, Math.round(lerp(7, 14, ferocity))) }).map((_, i) => {
+        {Array.from({ length: Math.min(5, Math.round(lerp(2, 5, ferocity))) }).map((_, i) => {
           // Tighter cluster around the centre — they hug the hero flame
           const microW = bedWidth * lerp(0.04, 0.085, (i % 3) / 2);
           const microH = tallestH * lerp(0.18, 0.38, (i % 4) / 3);

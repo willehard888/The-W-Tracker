@@ -106,11 +106,17 @@ interface FlameLayer {
   filterId: 0 | 1 | 2;  // which turbulence filter to use
 }
 
-const StylizedStreakFlame = ({ streak, size = 140, className }: StylizedStreakFlameProps) => {
+const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, className }: StylizedStreakFlameProps) => {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const stage = stageFromStreak(streak);
-  const t = progressFromStreak(streak);
-  const isCold = stage === 0;
+  // Intensify clamped & normalized: 1 = base, 10 = inferno
+  const intensity = Math.max(1, Math.min(10, intensify));
+  const intensityNorm = (intensity - 1) / 9; // 0..1
+  // When intensify > 1, push the effective streak deep into the max stage
+  // so the flame uses its biggest, most ferocious configuration.
+  const effectiveStreak = streak + Math.round(intensityNorm * 220);
+  const stage = stageFromStreak(effectiveStreak);
+  const t = progressFromStreak(effectiveStreak);
+  const isCold = stage === 0 && intensity <= 1;
 
   // Per-instance seed
   const seed = useMemo(() => {

@@ -195,15 +195,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setSubscriptionLoading(true);
-      const { data, error } = await supabase.functions.invoke("check-subscription");
+
+      // Retry once on transient edge-runtime cold-start (503 SUPABASE_EDGE_RUNTIME_ERROR).
+      // The function itself returns 200 on Stripe failures — a 503 means the runtime
+      // hadn't booted yet, which resolves on the next call.
+      let data: any = null;
+      let error: any = null;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const res = await supabase.functions.invoke("check-subscription");
+        data = res.data;
+        error = res.error;
+        const isTransient =
+          error &&
+          (error.status === 503 ||
+            /temporarily unavailable|EDGE_RUNTIME_ERROR/i.test(String(error.message ?? "")));
+        if (!isTransient) break;
+        if (attempt === 0) {
+          await new Promise((r) => setTimeout(r, 800));
+        }
+      }
+
       if (error) {
-        console.error("check-subscription error:", error);
+        // Silently tolerate transient runtime errors — UI keeps last-known state.
+        const transient =
+          error.status === 503 ||
+          /temporarily unavailable|EDGE_RUNTIME_ERROR/i.test(String(error.message ?? ""));
+        if (!transient) console.error("check-subscription error:", error);
         return;
       }
       // Only trust subscribed:true when a real tier is returned.
-      // Stripe sometimes returns subscribed:true with tier:null when the
-      // customer has unrelated subscriptions — we shouldn't flip Elite on
-      // for those.
       const nextElite = Boolean(data?.subscribed) && data?.tier !== null && data?.tier !== undefined;
       const nextApex = data?.tier === "apex";
 

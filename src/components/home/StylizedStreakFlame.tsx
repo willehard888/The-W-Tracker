@@ -689,6 +689,10 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       document.removeEventListener("visibilitychange", onVisibility);
       io.disconnect();
       cancelAnimationFrame(raf);
+      // Tap-blast timeoutit pois jotta unmountin jälkeen ei jää roikkumaan
+      if (blastSparksTimeoutRef.current) window.clearTimeout(blastSparksTimeoutRef.current);
+      if (smokePuffsTimeoutRef.current)  window.clearTimeout(smokePuffsTimeoutRef.current);
+      if (emberTrailTimeoutRef.current)  window.clearTimeout(emberTrailTimeoutRef.current);
     };
   }, [isCold, size, releaseSnapMs]);
 

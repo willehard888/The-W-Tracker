@@ -1467,8 +1467,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
               const vBottom = size * lerp(0.03, 0.10, (i * 0.37 + (side === "l" ? 0.1 : 0.3)) % 1);
               // TIGHTER: hug the body edge instead of peeking far out
               const hOffset = bedWidth * lerp(0.06, 0.14, (i % 3) / 2) * (side === "l" ? -1 : 1);
-              // Slower cadence — back layers breathe at a calmer rhythm
-              const dur = lerp(4.2, 3.0, ferocity) + (i * 0.53);
+              // Faster, livelier cadence — visible whipping motion
+              const dur = lerp(2.8, 1.9, ferocity) + (i * 0.31);
               const phaseOffset = side === "l" ? dur * 0.25 : dur * 0.75;
               const delay = -(((i * 0.97 + seed.b * 0.017) % dur) + phaseOffset) % dur;
               const filterId = filterIds[0]; // back filter — softer warp, deeper bloom
@@ -1521,8 +1521,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
               const vBottom = size * lerp(0.05, 0.12, (i * 0.5 + (side === "l" ? 0 : 0.25)) % 1);
               // Sit closer to the body so they read as part of the fire, not detached
               const hOffset = bedWidth * 0.22 * (side === "l" ? -1 : 1);
-              // Slower, calmer cadence — gentle breaths rather than rapid bursts
-              const dur = lerp(3.4, 2.4, ferocity) + (i * 0.41);
+              // Faster, snappier cadence — clearly dancing tongues
+              const dur = lerp(2.2, 1.4, ferocity) + (i * 0.23);
               const phaseOffset = side === "l" ? 0 : dur * 0.5;
               const delay = -(((i * 0.83 + seed.a * 0.013) % dur) + phaseOffset) % dur;
               const filterId = filterIds[1]; // mid filter — softer than front

@@ -4124,22 +4124,28 @@ button:active > .aurum-lava-glow {
   85%  { transform: translateX(-50%) translateY(-50%) scaleY(1.15) scaleX(0.55); opacity: 0.25; }
   100% { transform: translateX(-50%) translateY(-65%) scaleY(0.9)  scaleX(0.45); opacity: 0; }
 }
-/* Side flame lick — gentle organic tongues that lean slightly outward and rise.
-   Restrained: small lateral lean, mostly upward growth, soft fade — like real
-   flames that catch a breath of air rather than horizontal jets. */
+/* Side flame lick — alive, whipping tongues. Stronger lateral whip, multi-stage
+   rotation, breathing scale flicker. Each keyframe stop wiggles outward then
+   inward then outward again so the licks visibly DANCE while still rising. */
 @keyframes stylized-flame-side-l {
-  0%   { transform: translateY(2%)   translateX(0)    rotate(-6deg)  scaleY(0.55) scaleX(0.85); opacity: 0; }
-  22%  { transform: translateY(-10%) translateX(-4%)  rotate(-14deg) scaleY(0.95) scaleX(0.95); opacity: 0.7; }
-  55%  { transform: translateY(-22%) translateX(-9%)  rotate(-20deg) scaleY(1.08) scaleX(0.88); opacity: 0.85; }
-  80%  { transform: translateY(-32%) translateX(-12%) rotate(-24deg) scaleY(1.0)  scaleX(0.78); opacity: 0.45; }
-  100% { transform: translateY(-42%) translateX(-14%) rotate(-28deg) scaleY(0.85) scaleX(0.7);  opacity: 0; }
+  0%   { transform: translateY(2%)   translateX(0)    rotate(-4deg)  scaleY(0.55) scaleX(0.85); opacity: 0; }
+  12%  { transform: translateY(-6%)  translateX(-7%)  rotate(-22deg) scaleY(0.85) scaleX(1.02); opacity: 0.55; }
+  26%  { transform: translateY(-12%) translateX(-2%)  rotate(-8deg)  scaleY(1.05) scaleX(0.78); opacity: 0.78; }
+  42%  { transform: translateY(-18%) translateX(-13%) rotate(-30deg) scaleY(1.18) scaleX(0.95); opacity: 0.92; }
+  58%  { transform: translateY(-24%) translateX(-6%)  rotate(-12deg) scaleY(1.0)  scaleX(0.74); opacity: 0.85; }
+  74%  { transform: translateY(-30%) translateX(-16%) rotate(-34deg) scaleY(1.12) scaleX(0.9);  opacity: 0.6; }
+  88%  { transform: translateY(-36%) translateX(-10%) rotate(-20deg) scaleY(0.92) scaleX(0.72); opacity: 0.3; }
+  100% { transform: translateY(-44%) translateX(-15%) rotate(-30deg) scaleY(0.8)  scaleX(0.68); opacity: 0; }
 }
 @keyframes stylized-flame-side-r {
-  0%   { transform: translateY(2%)   translateX(0)   rotate(6deg)  scaleY(0.55) scaleX(0.85); opacity: 0; }
-  22%  { transform: translateY(-10%) translateX(4%)  rotate(14deg) scaleY(0.95) scaleX(0.95); opacity: 0.7; }
-  55%  { transform: translateY(-22%) translateX(9%)  rotate(20deg) scaleY(1.08) scaleX(0.88); opacity: 0.85; }
-  80%  { transform: translateY(-32%) translateX(12%) rotate(24deg) scaleY(1.0)  scaleX(0.78); opacity: 0.45; }
-  100% { transform: translateY(-42%) translateX(14%) rotate(28deg) scaleY(0.85) scaleX(0.7);  opacity: 0; }
+  0%   { transform: translateY(2%)   translateX(0)   rotate(4deg)  scaleY(0.55) scaleX(0.85); opacity: 0; }
+  12%  { transform: translateY(-6%)  translateX(7%)  rotate(22deg) scaleY(0.85) scaleX(1.02); opacity: 0.55; }
+  26%  { transform: translateY(-12%) translateX(2%)  rotate(8deg)  scaleY(1.05) scaleX(0.78); opacity: 0.78; }
+  42%  { transform: translateY(-18%) translateX(13%) rotate(30deg) scaleY(1.18) scaleX(0.95); opacity: 0.92; }
+  58%  { transform: translateY(-24%) translateX(6%)  rotate(12deg) scaleY(1.0)  scaleX(0.74); opacity: 0.85; }
+  74%  { transform: translateY(-30%) translateX(16%) rotate(34deg) scaleY(1.12) scaleX(0.9);  opacity: 0.6; }
+  88%  { transform: translateY(-36%) translateX(10%) rotate(20deg) scaleY(0.92) scaleX(0.72); opacity: 0.3; }
+  100% { transform: translateY(-44%) translateX(15%) rotate(30deg) scaleY(0.8)  scaleX(0.68); opacity: 0; }
 }
 /* Spark/ember rising from the bed — bright with lingering tail fade */
 @keyframes stylized-spark-rise {

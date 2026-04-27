@@ -9,6 +9,14 @@
     /* Premium easing tokens */
     --ease-spring: cubic-bezier(0.16, 1.2, 0.32, 1);
     --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+
+    /* Motion duration tokens — used across taps, transitions, modals */
+    --motion-tap: 80ms;
+    --motion-press-out: 140ms;
+    --motion-fade: 180ms;
+    --motion-slide: 260ms;
+    --motion-modal: 320ms;
 
     /* Obsidian & Gold — unified theme (Gold · Fire/Lava · Black) */
     --background: 258 18% 2.5%;
@@ -217,6 +225,37 @@
     padding-top: max(env(safe-area-inset-top), 12px);
   }
 }
+
+@layer base {
+  /* Native-feel touch defaults — kills 300ms tap delay, blue tap-highlight, and
+     accidental text selection on every interactive surface. Inputs/textareas
+     keep their text-selection ability via a more specific rule below. */
+  button,
+  a,
+  [role="button"],
+  [role="tab"],
+  [role="link"],
+  label,
+  summary {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+    touch-action: manipulation;
+  }
+  /* Honor reduced-motion globally for all our route transitions. */
+  @media (prefers-reduced-motion: reduce) {
+    .motion-route * {
+      transition-duration: 120ms !important;
+      animation-duration: 120ms !important;
+    }
+  }
 
 @layer utilities {
   .text-gold {

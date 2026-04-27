@@ -1187,17 +1187,29 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const bottom = size * (0.05 + (yT + yJitter) * 0.55);
             // Kallistus: alhaalla pystyssä, ylhäällä noussee enemmän ulospäin (mutta hillitymmin koska lähempänä)
             const tiltDeg = side * (8 + yT * 22);
-            // Koko: pieniä mutta filtteristä yli (>=10px). 2× lisää → hieman pienempiä etteivät peitä päärunkoa.
-            const sizeBoost = ((i * 13 + seed.a * 5) % 7) / 7;
-            const lickW = Math.max(10, bedWidth * lerp(0.08, 0.13, sizeBoost));
-            const lickH = Math.max(20, tallestH * lerp(0.16, 0.32, sizeBoost) * (1 - yT * 0.3));
+            // Koko: pieniä mutta filtteristä yli (>=10px). 20× lisää → laaja kokoskaala
+            // jotta tiheä massa ei näytä uniformilta — pienimmät 6px (sub-pixel kipinät).
+            const sizeBoost = ((i * 13 + seed.a * 5) % 11) / 11;
+            const lickW = Math.max(6, bedWidth * lerp(0.04, 0.12, sizeBoost));
+            const lickH = Math.max(14, tallestH * lerp(0.10, 0.30, sizeBoost) * (1 - yT * 0.3));
             // Yksi animaatio per liekki — ei sway-keyframea joka pyyhkisi rotation
             const flickDur = lerp(1.6, 1.0, ferocity) + ((i * 0.17) % 0.5);
             const delay = -(((i * 0.27 + seed.c * 0.011) % flickDur));
+            // OPTIMOINTI: vain joka 6. liekki saa kalliin turbulence-filtterin
+            // → tiheys 6× halvempi GPU:lle. Loput näyttävät silti elävältä koska
+            // CSS-flicker-keyframe pumppaa scale/opacity, ja stroke-rim antaa kontrastin.
+            const useFilter = i % 6 === 0;
             const fId = filterIds[i % 2 === 0 ? 1 : 2];
             const gradId = `ssf-grad-${uid}-${i % Math.max(1, layers.length)}`;
             const pathIdx = (i * 3 + 5) % FLAME_PATHS.length;
-            const baseOpacity = lerp(0.6, 0.9, ferocity) * (1 - yT * 0.2);
+            // Z-PARALLAX SYVYYS: kauempana keskuksesta = taaempana
+            // (negatiivinen depth → blur + dim → ilmaperspektiivi).
+            const depthBucket = (i * 7) % 5; // 0..4 (0 = lähimpänä, 4 = kaukana)
+            const depthBlur = depthBucket * 0.35; // 0..1.4 px
+            const depthDim = 1 - depthBucket * 0.08; // 1.0 .. 0.68
+            // Per-liekki tuulivaste: pienempi kuin päärungolla mutta orgaaninen
+            const windResp = lerp(2, 6, sizeBoost); // pienemmät reagoivat herkemmin
+            const baseOpacity = lerp(0.6, 0.9, ferocity) * (1 - yT * 0.2) * depthDim;
             items.push(
               <div
                 key={`edge-lick-${i}`}
@@ -1206,12 +1218,15 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   bottom,
                   width: lickW,
                   height: lickH,
-                  transform: `translateX(calc(-50% + ${xPx.toFixed(1)}px)) rotate(${tiltDeg.toFixed(1)}deg)`,
+                  // Tuulivaste suoraan transformiin → joka ainoa pieni liekki
+                  // taipuu kun käyttäjä siirtää sormea / kallistaa puhelinta
+                  transform: `translateX(calc(-50% + ${xPx.toFixed(1)}px + var(--ssf-wind-x, 0) * ${windResp.toFixed(1)}px)) translateY(calc(var(--ssf-wind-y, 0) * ${(-windResp * 0.6).toFixed(1)}px)) rotate(calc(${tiltDeg.toFixed(1)}deg + var(--ssf-wind-x, 0) * ${(side * 4).toFixed(1)}deg))`,
                   transformOrigin: "center bottom",
-                  zIndex: 3,
+                  zIndex: 3 - Math.floor(depthBucket / 2),
                   pointerEvents: "none",
                   mixBlendMode: "screen",
                   opacity: baseOpacity,
+                  filter: depthBlur > 0 ? `blur(${depthBlur.toFixed(2)}px) saturate(${depthDim.toFixed(2)})` : undefined,
                   // Containment → composite layer eristyy → ei aiheuta layoutia
                   contain: "layout paint" as React.CSSProperties["contain"],
                   willChange: "transform, opacity",
@@ -1224,7 +1239,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   viewBox="0 0 100 140"
                   preserveAspectRatio="none"
                   style={{
-                    filter: `url(#${fId})`,
+                    filter: useFilter ? `url(#${fId})` : undefined,
                     animation: `stylized-flame-flicker-${(i % 3) + 1} ${flickDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
                     animationDelay: `${delay.toFixed(2)}s`,
                     transformOrigin: "center bottom",

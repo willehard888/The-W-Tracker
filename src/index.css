@@ -4214,6 +4214,8 @@ button:active > .aurum-lava-glow {
   0%, 100% { opacity: 0.10; transform: translate(-50%, -50%) scale(1); }
   50%      { opacity: 0.18; transform: translate(-50%, -50%) scale(1.08); }
 }
+
+/* Spark/ember rising from the bed — bright with lingering tail fade */
 @keyframes stylized-spark-rise {
   0%   { transform: translate(var(--spark-x, 0), 0) scale(1); opacity: 0; }
   10%  { opacity: 1; }

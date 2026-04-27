@@ -51,15 +51,25 @@ const prefetchRoute = (path: string) => {
 const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const pressedAt = useRef<{ path: string; t: number } | null>(null);
 
-  const handleNav = useCallback(
-    (path: string) => {
-      if (location.pathname === path) return;
-      hapticImpact("light");
-      navigate(path);
-    },
-    [location.pathname, navigate],
-  );
+  // Fire haptic on pointer-down (16ms before navigation) so feedback feels
+  // instant. Navigate on pointer-up only if still on same target — cancels
+  // accidental drags / scroll-from-nav.
+  const onPointerDown = useCallback((path: string) => {
+    if (location.pathname === path) return;
+    hapticImpact("light");
+    pressedAt.current = { path, t: Date.now() };
+    prefetchRoute(path);
+  }, [location.pathname]);
+
+  const onPointerUp = useCallback((path: string) => {
+    const p = pressedAt.current;
+    pressedAt.current = null;
+    if (!p || p.path !== path) return;
+    if (location.pathname === path) return;
+    navigate(path);
+  }, [location.pathname, navigate]);
 
   if (HIDDEN_PATHS.has(location.pathname) || location.pathname.startsWith("/chat/")) {
     return null;

@@ -1353,7 +1353,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             // YLLE ASTI: ylimmät medium-lickit lähtevät keskikorkeudelta ja
             // yltävät hero-liekin huipulle. Ylä-osassa kapeammat etteivät peitä heroa.
             const bottom = size * (0.02 + (yT + yJitter) * 0.85);
-            const tiltDeg = side * (10 + yT * 26);
+            // Kallistus: alhaalla +8° ulos, ylhäällä −34° KOHTI HEROA → liekkikoori
+            // taipuu sisäänpäin hero-huipun ympärille premium-kompositiona.
+            const tiltDeg = side * (8 - yT * 42);
             // Laaja kokoskaala — pienistä keskikokoisiin → uniformiton massa
             const sizeBoost = ((i * 17 + seed.c * 7) % 13) / 13;
             // Leveys kapenee voimakkaammin ylös (1 → 0.4), korkeus 0.85 → 1.05

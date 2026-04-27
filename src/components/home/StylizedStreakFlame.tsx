@@ -820,12 +820,21 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         height: size,
         // Container needs pointer events so taps register; inner aria-hidden children remain decorative.
         pointerEvents: "auto",
+        // Base breath animation; emotion-state animations run on top via the
+        // child wrapper to avoid clobbering this loop.
         animation: `stylized-flame-bob ${(3.4).toFixed(2)}s cubic-bezier(0.22, 0.61, 0.36, 1) infinite`,
         // Reactive lean: pointer-X + gust + scroll. Wind degrees fed to sway keyframes.
         ["--ssf-wind" as string]: `calc(var(--ssf-wind-x, 0) * 16deg + var(--ssf-gust, 0) * 8deg)`,
+        // ── Streak-driven personality vars (consumed by all sway/flicker/bob keyframes) ──
+        ["--ssf-flicker" as string]: profile.flicker.toFixed(3),
+        ["--ssf-sway" as string]: profile.sway.toFixed(3),
+        ["--ssf-breath" as string]: profile.breath.toFixed(3),
+        ["--ssf-body-alpha" as string]: profile.bodyAlpha.toFixed(3),
         // Filter: intensify-base + proximity bloom + gust flash + blast pop − idle dim
+        // Multiplied by profile.bodyAlpha so low streaks fade transparently.
+        opacity: profile.bodyAlpha,
         filter: `brightness(calc(${(1 + intensityNorm * 0.35).toFixed(3)} + var(--ssf-gust, 0) * 0.25 + var(--ssf-proximity, 0) * 0.25 + var(--ssf-blast, 0) * 0.55 - var(--ssf-idle, 0) * 0.18)) saturate(calc(${(1 + intensityNorm * 0.4).toFixed(3)} + var(--ssf-proximity, 0) * 0.3 + var(--ssf-gust, 0) * 0.3 - var(--ssf-idle, 0) * 0.12))`,
-        transition: "filter 0.18s ease-out",
+        transition: "opacity 0.4s ease-out, filter 0.18s ease-out",
       }}
       aria-hidden
     >

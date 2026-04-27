@@ -571,25 +571,29 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
   const layers: FlameLayer[] = useMemo(() => {
     if (flameCount === 0) return [];
     // Base 14 curated layers — back→front for organic depth, fuller bonfire feel.
+    // HERO-DOMINANCE: keski-hero on selvästi suurin (1.45×) ja dominoi pystysuoraa
+    // siluettia. Sivuliekit palautettu maltillisempiin kokoihin (max 0.85) jotta
+    // ne istuvat hero-liekin YMPÄRILLE eivätkä kilpaile huipulla.
     const basePlan: Omit<FlameLayer, "delaySeed">[] = [
-      // ── BACK ROW (4) — cooler, shorter, soft warp ──
-      { pathIndex: 0, scale: 0.78, xOffset: -0.7,  zIndex: 1, speed: 1.05, hueShift: -5, intensity: 0.42, filterId: 0 },
-      { pathIndex: 5, scale: 0.74, xOffset:  0.7,  zIndex: 1, speed: 1.1,  hueShift: -3, intensity: 0.46, filterId: 0 },
-      { pathIndex: 8, scale: 0.7,  xOffset: -0.18, zIndex: 1, speed: 1.15, hueShift: -4, intensity: 0.5,  filterId: 0 },
-      { pathIndex: 0, scale: 0.66, xOffset:  0.22, zIndex: 1, speed: 1.0,  hueShift: -2, intensity: 0.5,  filterId: 0 },
-      // ── MID ROW (5) — fills the body of the fire ──
-      { pathIndex: 1, scale: 0.86, xOffset: -0.45, zIndex: 2, speed: 0.92, hueShift: -1, intensity: 0.68, filterId: 1 },
-      { pathIndex: 7, scale: 0.84, xOffset:  0.46, zIndex: 2, speed: 0.95, hueShift:  1, intensity: 0.7,  filterId: 1 },
-      { pathIndex: 3, scale: 0.82, xOffset: -0.15, zIndex: 2, speed: 0.88, hueShift:  2, intensity: 0.76, filterId: 1 },
-      { pathIndex: 1, scale: 0.8,  xOffset:  0.18, zIndex: 2, speed: 0.9,  hueShift:  0, intensity: 0.74, filterId: 1 },
-      { pathIndex: 6, scale: 0.78, xOffset:  0.0,  zIndex: 2, speed: 0.86, hueShift:  3, intensity: 0.8,  filterId: 1 },
-      // ── FRONT ROW (4) — hottest, sharpest tongues ──
-      { pathIndex: 2, scale: 0.96, xOffset: -0.28, zIndex: 3, speed: 0.72, hueShift:  3, intensity: 0.88, filterId: 2 },
-      { pathIndex: 6, scale: 0.94, xOffset:  0.3,  zIndex: 3, speed: 0.76, hueShift:  4, intensity: 0.9,  filterId: 2 },
-      { pathIndex: 3, scale: 0.92, xOffset: -0.08, zIndex: 3, speed: 0.7,  hueShift:  5, intensity: 0.92, filterId: 2 },
-      { pathIndex: 7, scale: 0.9,  xOffset:  0.12, zIndex: 3, speed: 0.74, hueShift:  4, intensity: 0.92, filterId: 2 },
-      // ── HERO — tallest, dead centre, sharpest tip ──
-      { pathIndex: 4, scale: 1.05, xOffset:  0.0,  zIndex: 4, speed: 0.62, hueShift:  6, intensity: 1.0,  filterId: 2 },
+      // ── BACK ROW (4) — cooler, shorter, soft warp — recessed background ──
+      { pathIndex: 0, scale: 0.62, xOffset: -0.7,  zIndex: 1, speed: 1.05, hueShift: -5, intensity: 0.40, filterId: 0 },
+      { pathIndex: 5, scale: 0.58, xOffset:  0.7,  zIndex: 1, speed: 1.1,  hueShift: -3, intensity: 0.44, filterId: 0 },
+      { pathIndex: 8, scale: 0.55, xOffset: -0.20, zIndex: 1, speed: 1.15, hueShift: -4, intensity: 0.48, filterId: 0 },
+      { pathIndex: 0, scale: 0.52, xOffset:  0.24, zIndex: 1, speed: 1.0,  hueShift: -2, intensity: 0.48, filterId: 0 },
+      // ── MID ROW (5) — fills the body of the fire, lower than hero ──
+      { pathIndex: 1, scale: 0.72, xOffset: -0.48, zIndex: 2, speed: 0.92, hueShift: -1, intensity: 0.66, filterId: 1 },
+      { pathIndex: 7, scale: 0.70, xOffset:  0.50, zIndex: 2, speed: 0.95, hueShift:  1, intensity: 0.68, filterId: 1 },
+      { pathIndex: 3, scale: 0.74, xOffset: -0.18, zIndex: 2, speed: 0.88, hueShift:  2, intensity: 0.74, filterId: 1 },
+      { pathIndex: 1, scale: 0.72, xOffset:  0.20, zIndex: 2, speed: 0.9,  hueShift:  0, intensity: 0.72, filterId: 1 },
+      { pathIndex: 6, scale: 0.68, xOffset:  0.0,  zIndex: 2, speed: 0.86, hueShift:  3, intensity: 0.78, filterId: 1 },
+      // ── FRONT ROW (4) — hottest tongues but SHORTER than hero ──
+      { pathIndex: 2, scale: 0.82, xOffset: -0.30, zIndex: 3, speed: 0.72, hueShift:  3, intensity: 0.86, filterId: 2 },
+      { pathIndex: 6, scale: 0.80, xOffset:  0.32, zIndex: 3, speed: 0.76, hueShift:  4, intensity: 0.88, filterId: 2 },
+      { pathIndex: 3, scale: 0.78, xOffset: -0.10, zIndex: 3, speed: 0.7,  hueShift:  5, intensity: 0.90, filterId: 2 },
+      { pathIndex: 7, scale: 0.76, xOffset:  0.14, zIndex: 3, speed: 0.74, hueShift:  4, intensity: 0.90, filterId: 2 },
+      // ── HERO — DOMINANT centerpiece: 1.45× scale, dead centre, intensity = 1.0
+      //    This is the crown of the fire. Everything else orbits around it.
+      { pathIndex: 4, scale: 1.45, xOffset:  0.0,  zIndex: 4, speed: 0.58, hueShift:  6, intensity: 1.0,  filterId: 2 },
     ];
 
     // ── 6× the plan: 6 passes per base layer with deterministic jitter

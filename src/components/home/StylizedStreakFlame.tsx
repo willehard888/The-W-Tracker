@@ -1348,17 +1348,19 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const lane = ((i * 19 + seed.b * 3) % 5) / 5; // 0..1, lane within 0.16..0.30 band
             const xRadius = lerp(0.16, 0.30, lane);
             const xPx = side * (bedWidth * xRadius * edgeCurve + bedWidth * 0.012) + xJitter;
-            // YLLE ASTI: 0.02..0.92 (oli 0.03..0.65) → ylimmät medium-lickit
-            // lähtevät korkealta ja yltävät hero-liekin huipulle
-            const bottom = size * (0.02 + (yT + yJitter) * 0.90);
+            // YLLE ASTI: ylimmät medium-lickit lähtevät keskikorkeudelta ja
+            // yltävät hero-liekin huipulle. Ylä-osassa kapeammat etteivät peitä heroa.
+            const bottom = size * (0.02 + (yT + yJitter) * 0.85);
             const tiltDeg = side * (10 + yT * 26);
             // Laaja kokoskaala — pienistä keskikokoisiin → uniformiton massa
             const sizeBoost = ((i * 17 + seed.c * 7) % 13) / 13;
-            // Leveys kapenee ylös (1 → 0.5), korkeus KASVAA ylös (0.9 → 1.2)
-            const widthTaper = 1 - yT * 0.5;
-            const heightBoost = lerp(0.9, 1.2, yT);
-            const lickW = Math.max(7, bedWidth * lerp(0.06, 0.18, sizeBoost) * widthTaper);
-            const lickH = Math.max(18, tallestH * lerp(0.20, 0.48, sizeBoost) * heightBoost);
+            // Leveys kapenee voimakkaammin ylös (1 → 0.4), korkeus 0.85 → 1.05
+            // → hero-liekki dominoi ylhäällä yksin, sivuliekit kapenevat ja levenevät pohjalle.
+            const widthTaper = 1 - yT * 0.6;
+            const heightBoost = lerp(0.85, 1.05, yT);
+            // Pienennetty (oli 0.06..0.18, nyt 0.04..0.13) → ei kilpaile heron kanssa
+            const lickW = Math.max(6, bedWidth * lerp(0.04, 0.13, sizeBoost) * widthTaper);
+            const lickH = Math.max(14, tallestH * lerp(0.14, 0.34, sizeBoost) * heightBoost);
             // OMA RYTMI per liekki — kolme deterministista pseudosatunnaista lukua → ainutlaatuinen kesto, viive ja keyframe-variantti
             const r1 = ((i * 73 + seed.a * 17 + seed.b * 3) % 1000) / 1000; // 0..1
             const r2 = ((i * 109 + seed.b * 23 + seed.c * 5) % 1000) / 1000;

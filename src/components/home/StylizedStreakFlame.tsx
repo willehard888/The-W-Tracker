@@ -820,45 +820,70 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             </filter>
           ))}
 
-          {/* Per-layer vertical gradients — PURE FIRE palette
-              (charred ember → blood-red → deep tangerine → burnt orange → glowing amber → warm yellow apex)
-              VAIN punainen / oranssi / keltainen — ei sinistä kaasubasea, ei valkoista cream-apex. */}
+          {/* Per-layer vertical gradients — PREMIUM FIRE PALETTE
+              Hot core paradigm: very saturated, hot YELLOW-WHITE apex on the
+              hero/front flames; deep crimson on back flames. The contrast
+              between deep blood-red base and incandescent gold tip is what
+              makes a premium fire read as "real fire" instead of a flat decal.
+              Values are biased per-layer by `intensity`:
+                inten ≥ 0.92 → HERO (gold/cream apex, full saturation, brightest body)
+                0.7 ≤ inten < 0.92 → MID (orange apex, rich body)
+                inten < 0.7 → BACK (deep ember apex, muted, atmospheric) */}
           {layers.map((layer, i) => {
             const gradId = `ssf-grad-${uid}-${i}`;
             const hShift = layer.hueShift;
             const inten = layer.intensity;
-            // Pohjasta lämmin tumma punainen — ei sinistä happikaasua (luki "scifi-light"-sävyltä).
-            // Koko paletti siirretty PUNAISEMPAAN suuntaan: vähemmän keltaista, enemmän verenpunaa & syvää oranssia.
-            const fuelShadow = `hsl(${0 + hShift} 60% ${lerp(8, 13, inten)}%)`;        // near-black blood base
-            const neckBase   = `hsl(${2 + hShift} 95% ${lerp(18, 26, inten)}%)`;        // syvä punainen pohja
-            const charred    = `hsl(${0 + hShift}  92% ${lerp(20, 30, inten)}%)`;       // charred crimson ember
-            const ember      = `hsl(${4 + hShift}  98% ${lerp(30, 40, inten)}%)`;       // blood ember red
-            const deepBase   = `hsl(${8 + hShift} 100% ${lerp(38, 48, inten)}%)`;       // deep red-orange
-            const body       = `hsl(${12 + hShift} 100% ${lerp(46, 55, inten)}%)`;      // crimson-orange body
-            const shoulder   = `hsl(${16 + hShift} 100% ${lerp(50, 58, inten)}%)`;      // burnt blood-orange
-            const upperBody  = `hsl(${20 + hShift} 100% ${lerp(50, 57, inten)}%)`;      // deep tangerine
-            const tipColor   = inten > 0.85
-              ? `hsl(${24 + hShift} 100% ${lerp(52, 58, inten)}%)`                      // syvä oranssi (ei amber/keltainen)
-              : `hsl(${22 + hShift} 100% ${lerp(48, 54, inten)}%)`;
-            // Apex: kylläinen syvä oranssi — EI keltaista, EI valkoista.
-            const apex       = inten > 0.94 ? `hsl(28 100% 56%)` : tipColor;
+            const isHero = inten >= 0.92;
+            const isMid = inten >= 0.7 && inten < 0.92;
 
+            // Pohja: syvä veripunainen — sama kaikille, antaa visuaalisen "juuren"
+            const fuelShadow = `hsl(${0 + hShift} 75% ${lerp(6, 11, inten)}%)`;
+            const neckBase   = `hsl(${2 + hShift} 95% ${lerp(16, 24, inten)}%)`;
+            const charred    = `hsl(${4 + hShift} 98% ${lerp(22, 32, inten)}%)`;
+            const ember      = `hsl(${8 + hShift} 100% ${lerp(32, 44, inten)}%)`;
+            const deepBase   = `hsl(${12 + hShift} 100% ${lerp(40, 50, inten)}%)`;
+            const body       = `hsl(${18 + hShift} 100% ${lerp(48, 56, inten)}%)`;
+            const shoulder   = `hsl(${24 + hShift} 100% ${lerp(52, 60, inten)}%)`;
+
+            // Yläosa: HERO saa kuuma kulta-keltainen; MID syvä oranssi; BACK feidaa punaiseksi
+            const upperBody = isHero
+              ? `hsl(${36 + hShift} 100% 64%)`
+              : isMid
+                ? `hsl(${28 + hShift} 100% 58%)`
+                : `hsl(${20 + hShift} 100% 52%)`;
+            const tipColor = isHero
+              ? `hsl(${48 + hShift} 100% 70%)`
+              : isMid
+                ? `hsl(${36 + hShift} 100% 62%)`
+                : `hsl(${24 + hShift} 100% 54%)`;
+            // APEX: hero saa lähes valkoisen kuumimman pisteen — premium-tunnu
+            const apex = isHero
+              ? `hsl(54 100% 82%)`
+              : isMid
+                ? `hsl(42 100% 68%)`
+                : `hsl(28 100% 58%)`;
+
+            // Alpha-profiili: hero pitää 60% opacity vielä 95%-kohdalla → kirkas
+            // huippu joka ei feidaa pois. Back row feidaa nopeasti → läpinäkyvä reuna.
+            const alphaUpper = isHero ? 0.92 : isMid ? 0.82 : 0.68;
+            const alphaTip   = isHero ? 0.78 : isMid ? 0.55 : 0.32;
+            const alphaApex  = isHero ? 0.42 : isMid ? 0.22 : 0.08;
 
             return (
               <linearGradient key={gradId} id={gradId} x1="50%" y1="100%" x2="50%" y2="0%">
                 {/* Pohja: tummaa hiiltynyttä punaista — pinnaa liekin maahan */}
-                <stop offset="0%"   stopColor={fuelShadow} stopOpacity="0.92" />
-                <stop offset="4%"   stopColor={neckBase}   stopOpacity="0.97" />
-                <stop offset="10%"  stopColor={charred}    stopOpacity="1" />
-                <stop offset="20%"  stopColor={ember}      stopOpacity="1" />
-                {/* Keskirunko: täydet värit, kaikki kuumin alue */}
-                <stop offset="35%"  stopColor={deepBase}   stopOpacity="0.98" />
-                <stop offset="52%"  stopColor={body}       stopOpacity="0.95" />
-                <stop offset="68%"  stopColor={shoulder}   stopOpacity="0.88" />
-                {/* Yläosa: NOPEA alpha-feidaus → läpinäkyvä kärki kuten oikeassa liekissä */}
-                <stop offset="82%"  stopColor={upperBody}  stopOpacity="0.65" />
-                <stop offset="91%"  stopColor={tipColor}   stopOpacity="0.32" />
-                <stop offset="97%"  stopColor={apex}       stopOpacity="0.1" />
+                <stop offset="0%"   stopColor={fuelShadow} stopOpacity="0.94" />
+                <stop offset="5%"   stopColor={neckBase}   stopOpacity="0.98" />
+                <stop offset="12%"  stopColor={charred}    stopOpacity="1" />
+                <stop offset="22%"  stopColor={ember}      stopOpacity="1" />
+                {/* Keskirunko: täydet värit */}
+                <stop offset="38%"  stopColor={deepBase}   stopOpacity="0.99" />
+                <stop offset="55%"  stopColor={body}       stopOpacity="0.97" />
+                <stop offset="70%"  stopColor={shoulder}   stopOpacity="0.92" />
+                {/* Yläosa: HERO pitää kirkkauden, BACK feidaa */}
+                <stop offset="82%"  stopColor={upperBody}  stopOpacity={alphaUpper} />
+                <stop offset="92%"  stopColor={tipColor}   stopOpacity={alphaTip} />
+                <stop offset="98%"  stopColor={apex}       stopOpacity={alphaApex} />
                 <stop offset="100%" stopColor={apex}       stopOpacity="0" />
               </linearGradient>
             );

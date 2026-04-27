@@ -1,5 +1,14 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import {
+  computeFlameProfile,
+  milestoneCrossed,
+  isDailySurge,
+  isStreakLost,
+  type FlameProfile,
+  type Milestone,
+} from "@/lib/flame-streak-state";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
 
 /**
  * Detect device performance class once per page load.

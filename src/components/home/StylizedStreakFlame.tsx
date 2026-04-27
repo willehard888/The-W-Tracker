@@ -1847,7 +1847,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             bottom: -size * 0.05,
             transform: "translateX(-50%)",
             background: `radial-gradient(ellipse at 50% 65%, hsl(14 100% 46% / ${lerp(0.18, 0.32, ferocity).toFixed(2)}) 0%, hsl(6 95% 38% / ${lerp(0.10, 0.18, ferocity).toFixed(2)}) 22%, hsl(0 88% 28% / ${lerp(0.06, 0.10, ferocity).toFixed(2)}) 42%, transparent 70%)`,
-            filter: `blur(${Math.max(14, size * 0.18)}px)`,
+            // (blur poistettu)
             mixBlendMode: "screen",
             zIndex: -1,
             opacity: `calc(${lerp(0.6, 1, ferocity).toFixed(2)} + var(--ssf-proximity, 0) * 0.2 + var(--ssf-blast, 0) * 0.3 - var(--ssf-idle, 0) * 0.15)`,

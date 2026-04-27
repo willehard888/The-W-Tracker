@@ -295,6 +295,35 @@ fi
 echo "✅ Capacitor xcconfig paths all properly quoted"
 
 # ---------------------------------------------------------------------------
+# Sanity gate: forbid -fmodule-map-file=...CapacitorCordova.modulemap.
+# Build 686 failed because swift-frontend was forced to load that modulemap,
+# whose umbrella header is declared *relatively* but actually lives inside
+# Cordova.framework/Headers/. The result was:
+#   error: umbrella header 'CapacitorCordova.h' not found
+#   error: could not build module 'Cordova'
+# `@import Cordova;` MUST resolve via the built Cordova.framework's own
+# Modules/module.modulemap (found through FRAMEWORK_SEARCH_PATHS), never via
+# Pods/Target Support Files/CapacitorCordova/CapacitorCordova.modulemap.
+# ---------------------------------------------------------------------------
+echo "🔒 Verifying no -fmodule-map-file points at CapacitorCordova.modulemap..."
+forbidden_modmap_hits=0
+for cfg_path in \
+  "$IOS_APP_DIR/Pods/Target Support Files/Capacitor/Capacitor.release.xcconfig" \
+  "$IOS_APP_DIR/Pods/Target Support Files/Capacitor/Capacitor.debug.xcconfig"; do
+  [[ -f "$cfg_path" ]] || continue
+  if grep -E 'fmodule-map-file=[^ ]*CapacitorCordova\.modulemap' "$cfg_path" >/dev/null 2>&1; then
+    echo "❌ $(basename "$cfg_path") forces CapacitorCordova.modulemap via -fmodule-map-file:"
+    grep -nE 'fmodule-map-file' "$cfg_path" || true
+    forbidden_modmap_hits=$((forbidden_modmap_hits + 1))
+  fi
+done
+if [[ "$forbidden_modmap_hits" -gt 0 ]]; then
+  echo "❌ Remove the -fmodule-map-file injection from Podfile post_install — let Cordova.framework provide the modulemap."
+  exit 1
+fi
+echo "✅ No forbidden -fmodule-map-file=CapacitorCordova.modulemap injection"
+
+# ---------------------------------------------------------------------------
 # Self-healing: ensure Swift-target xcconfigs are pinned to SWIFT_VERSION = 5.
 # The Podfile post_install hook writes these settings into build_settings, but
 # CocoaPods occasionally omits default-matching values from the emitted

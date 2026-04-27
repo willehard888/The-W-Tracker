@@ -613,14 +613,20 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         const intenCycle = [1, 0.92, 1.04, 0.88, 1.06, 0.96];
         const intenJ = intenCycle[pass % intenCycle.length];
         const pathJ = (b.pathIndex + pass * 2) % FLAME_PATHS.length;
+        // HERO (idx 13) säilyttää aina dominantin scalensa: clamp ylärajaan 1.55,
+        // muut clampataan 1.05:een ettei mikään sivuliekki ohita heroa.
+        const isHero = idx === 13;
+        const scaleMax = isHero ? 1.55 : 1.05;
+        const scaleMin = isHero ? 1.30 : 0.5;
         plan.push({
           ...b,
           pathIndex: pathJ,
-          scale: Math.max(0.5, Math.min(1.18, b.scale * scaleJ)),
-          xOffset: Math.max(-0.85, Math.min(0.85, b.xOffset + xJ)),
+          scale: Math.max(scaleMin, Math.min(scaleMax, b.scale * scaleJ)),
+          // Hero ei jittereöidy x-akselilla — pysyy keskellä
+          xOffset: isHero ? 0 : Math.max(-0.85, Math.min(0.85, b.xOffset + xJ)),
           speed: Math.max(0.5, b.speed * speedJ),
           hueShift: b.hueShift + hueJ,
-          intensity: Math.max(0.35, Math.min(1, b.intensity * intenJ)),
+          intensity: isHero ? 1.0 : Math.max(0.35, Math.min(0.94, b.intensity * intenJ)),
         });
       });
     }

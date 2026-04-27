@@ -1164,8 +1164,11 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
              eivät juuressa. Painottuvat siluetin reunoja seuraavaan kaareen, kallistuvat ulospäin
              jotta tuli näyttää "kuhisevan" reunoiltaan. Tiukasti rajattu määrä → sulava 60fps. */}
         {(() => {
-          // 2× tiheämpi: high=28, mid=20, low=14. Pidetään silti kevyenä koska SVG:t ovat pieniä.
-          const COUNT = perfClass === "high" ? 28 : perfClass === "mid" ? 20 : 14;
+          // 20× tiheämpi: high=560, mid=400, low=280. Suuri osa renderöidään
+          // KEVYESTI ilman turbulence-filtteriä — vain joka 6. saa filtterin
+          // (näkyvämmät, lähempänä kameraa). Loput käyttävät pelkkää fill+stroke
+          // SVG:tä → ~10× halvempi per liekki, sallii massiivisen tiheyden.
+          const COUNT = perfClass === "high" ? 560 : perfClass === "mid" ? 400 : 280;
           const items: JSX.Element[] = [];
           for (let i = 0; i < COUNT; i++) {
             const side = i % 2 === 0 ? -1 : 1; // vuorotellen vasen/oikea

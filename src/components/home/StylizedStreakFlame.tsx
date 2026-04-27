@@ -1011,10 +1011,10 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const zDepth = layer.zIndex === 1 ? -size * 0.18 : layer.zIndex === 2 ? -size * 0.05 : size * 0.04;
             // Atmospheric dimming for back layers
             const layerOpacity = layer.zIndex === 1 ? 0.78 : layer.zIndex === 2 ? 0.92 : 1;
-            // Atmospheric perspective: back layers saavat hivenen blur+desaturate
-            // → parallax-syvyys jossa lähimmät liekit terävät, kaukaiset pehmeät.
+            // Atmospheric perspective ILMAN bluria — pelkkä saturate + brightness
+            // → parallax-syvyys värisävyllä, ei sumealla pehmeydellä.
             const layerAirFilter = layer.zIndex === 1
-              ? "blur(0.8px) saturate(0.9) brightness(0.92)"
+              ? "saturate(0.9) brightness(0.92)"
               : layer.zIndex === 2
                 ? "saturate(0.98)"
                 : "brightness(1.05) saturate(1.06)";

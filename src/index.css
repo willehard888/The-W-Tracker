@@ -256,6 +256,7 @@
       animation-duration: 120ms !important;
     }
   }
+}
 
 @layer utilities {
   .text-gold {

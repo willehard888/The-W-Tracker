@@ -1721,7 +1721,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                 left: `calc(50% + ${xPx.toFixed(1)}px)`,
                 bottom: size * 0.18,
                 background: `radial-gradient(circle at 50% 50%, ${tint} 0%, transparent 70%)`,
-                filter: `blur(${(wispSize * 0.18).toFixed(1)}px)`,
+                // (blur poistettu)
                 ["--spark-x" as string]: "0px",
                 ["--spark-drift" as string]: `${drift}px`,
                 ["--spark-rise" as string]: `-${lerp(140, 200, ferocity)}%`,

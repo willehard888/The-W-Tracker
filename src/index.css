@@ -4158,7 +4158,7 @@ button:active > .aurum-lava-glow {
   70%  { transform: translate3d(16%, -30%, 0) rotate(34deg) scaleY(1.12) scaleX(0.9);  opacity: 0.55; }
   84%  { transform: translate3d(10%, -36%, 0) rotate(20deg) scaleY(0.92) scaleX(0.72); opacity: 0.18; }
   92%  { transform: translate3d(12%, -42%, 0) rotate(26deg) scaleY(0.8)  scaleX(0.68); opacity: 0; }
-  100% { transform: translate3d(0, 2%, 0)    rotate(4deg)  scaleY(4deg) scaleY(0.55) scaleX(0.85); opacity: 0; }
+  100% { transform: translate3d(0, 2%, 0)    rotate(4deg)  scaleY(0.55) scaleX(0.85); opacity: 0; }
 }
 /* Spark/ember rising from the bed — bright with lingering tail fade */
 @keyframes stylized-spark-rise {

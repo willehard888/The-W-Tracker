@@ -1223,7 +1223,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
           // KEVYESTI ilman turbulence-filtteriä — vain joka 6. saa filtterin
           // (näkyvämmät, lähempänä kameraa). Loput käyttävät pelkkää fill+stroke
           // SVG:tä → ~10× halvempi per liekki, sallii massiivisen tiheyden.
-          const COUNT = perfClass === "high" ? 560 : perfClass === "mid" ? 400 : 280;
+          const COUNT = perfClass === "high" ? 1120 : perfClass === "mid" ? 800 : 560;
           const items: JSX.Element[] = [];
           for (let i = 0; i < COUNT; i++) {
             const side = i % 2 === 0 ? -1 : 1; // vuorotellen vasen/oikea
@@ -1244,7 +1244,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             // YLLE ASTI: pohja ulottuu nyt 0.02..0.85 (oli 0.05..0.60) → ylimmät
             // lickit lähtevät ~85% korkeudelta ja niiden tongue jatkaa
             // tallestH:n yli (lickH ei ole skaalattu yT:llä) → yltävät HUIPPUUN.
-            const bottom = size * (0.02 + (yT + yJitter) * 0.83);
+            const bottom = size * (0.02 + (yT + yJitter) * 0.98);
             // Kallistus: alhaalla LIEVÄSTI ulospäin (+6°), ylhäällä KOHTI HEROA
             // (−30°) → ylimmät lickit kaartuvat sisäänpäin kuin liekkikuoro
             // hero-huipun ympärillä. yT=0 → +6°, yT=0.5 → −12°, yT=1 → −30°.
@@ -1338,7 +1338,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
              ja jakautuvat laajemmalle korkeusalueelle → tuovat täyteyttä, leveyttä
              ja syvyyttä. Vain joka 8. saa turbulence-filtterin → 8× kevyempi. */}
         {(() => {
-          const COUNT = perfClass === "high" ? 1000 : perfClass === "mid" ? 680 : 440;
+          const COUNT = perfClass === "high" ? 2000 : perfClass === "mid" ? 1360 : 880;
           const items: JSX.Element[] = [];
           for (let i = 0; i < COUNT; i++) {
             const side = i % 2 === 0 ? -1 : 1;
@@ -1356,7 +1356,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const xPx = side * (bedWidth * xRadius * edgeCurve + bedWidth * 0.012) + xJitter;
             // YLLE ASTI: ylimmät medium-lickit lähtevät keskikorkeudelta ja
             // yltävät hero-liekin huipulle. Ylä-osassa kapeammat etteivät peitä heroa.
-            const bottom = size * (0.02 + (yT + yJitter) * 0.85);
+            const bottom = size * (0.02 + (yT + yJitter) * 1.0);
             // Kallistus: alhaalla +8° ulos, ylhäällä −34° KOHTI HEROA → liekkikoori
             // taipuu sisäänpäin hero-huipun ympärille premium-kompositiona.
             const tiltDeg = side * (8 - yT * 42);
@@ -1455,7 +1455,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             than a flat silhouette. Cooler hue (back-row filter), heavier blur. */}
         {(() => {
           // 2 per side at low ferocity, up to 4 per side at high ferocity
-          const perSideBack = Math.max(2, Math.round(lerp(2, 4, ferocity)));
+          const perSideBack = Math.max(4, Math.round(lerp(4, 8, ferocity)));
           const sides: Array<"l" | "r"> = ["l", "r"];
           return sides.flatMap((side) =>
             Array.from({ length: perSideBack }).map((_, i) => {
@@ -1509,7 +1509,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             "breathing" sideways rather than horizontal jets. */}
         {(() => {
           // 1 per side at low ferocity, up to 2 per side at high ferocity
-          const perSide = Math.max(1, Math.round(lerp(1, 2, ferocity)));
+          const perSide = Math.max(2, Math.round(lerp(2, 4, ferocity)));
           const sides: Array<"l" | "r"> = ["l", "r"];
           return sides.flatMap((side) =>
             Array.from({ length: perSide }).map((_, i) => {

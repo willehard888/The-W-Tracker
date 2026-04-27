@@ -1205,11 +1205,17 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const bottom = size * (0.02 + (yT + yJitter) * 0.83);
             // Kallistus: alhaalla pystyssä, ylhäällä noussee enemmän ulospäin (mutta hillitymmin koska lähempänä)
             const tiltDeg = side * (8 + yT * 22);
-            // Koko: pieniä mutta filtteristä yli (>=10px). 20× lisää → laaja kokoskaala
-            // jotta tiheä massa ei näytä uniformilta — pienimmät 6px (sub-pixel kipinät).
+            // Koko: ylhäällä KAPEAMMAT mutta KORKEAMMAT → terävät tongue-tipit
+            // jotka jatkavat luonnollisesti hero-liekin huipulle. Alhaalla
+            // matalat ja leveät kuten nuotion polttoaineen reunalla.
             const sizeBoost = ((i * 13 + seed.a * 5) % 11) / 11;
-            const lickW = Math.max(6, bedWidth * lerp(0.04, 0.12, sizeBoost));
-            const lickH = Math.max(14, tallestH * lerp(0.10, 0.30, sizeBoost) * (1 - yT * 0.3));
+            // Leveys: kapenee ylöspäin (1 → 0.45) jotta tipit eivät tuki ylä-aluetta
+            const widthTaper = 1 - yT * 0.55;
+            const lickW = Math.max(5, bedWidth * lerp(0.04, 0.12, sizeBoost) * widthTaper);
+            // Korkeus: KASVAA hieman ylöspäin (0.85 → 1.15) → ylimmät lickit
+            // ovat selvästi pidempiä ja yltävät tallestH:n korkeudelle.
+            const heightBoost = lerp(0.85, 1.15, yT);
+            const lickH = Math.max(14, tallestH * lerp(0.14, 0.36, sizeBoost) * heightBoost);
             // Yksi animaatio per liekki — ei sway-keyframea joka pyyhkisi rotation
             const flickDur = lerp(1.6, 1.0, ferocity) + ((i * 0.17) % 0.5);
             const delay = -(((i * 0.27 + seed.c * 0.011) % flickDur));

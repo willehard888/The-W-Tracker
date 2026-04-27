@@ -1922,6 +1922,126 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         />
       )}
 
+      {/* ─── VOLUMETRIC HEAT-BLOOM — kuumuusvalo joka kylpee hero-liekin ympärillä.
+           Iso pehmeä radial-gradient hot-spot lähellä keski-alaosaa, antaa tunteen että
+           liekki säteilee VALOA ympäristöön. Pulssaa hiljaa hero-flickerin tahdissa. */}
+      {stage >= 2 && (
+        <span
+          className="absolute left-1/2 pointer-events-none"
+          style={{
+            width: bedWidth * 1.9,
+            height: tallestH * 1.1,
+            bottom: size * 0.05,
+            transform: "translateX(-50%)",
+            background: `radial-gradient(ellipse at 50% 60%, hsl(36 100% 62% / 0.32) 0%, hsl(22 100% 52% / 0.20) 28%, hsl(10 95% 42% / 0.10) 55%, transparent 80%)`,
+            mixBlendMode: "screen",
+            animation: `stylized-heat-bloom 1.8s ease-in-out infinite`,
+            zIndex: 3,
+            opacity: `calc(${lerp(0.65, 1, ferocity).toFixed(2)} + var(--ssf-proximity, 0) * 0.15 - var(--ssf-idle, 0) * 0.2)`,
+            transition: "opacity 0.25s ease-out",
+          }}
+        />
+      )}
+
+      {/* ─── HERO INNER-CORE HIGHLIGHT — kapea valkohehkuva ydin pääliekin sisällä.
+           Antaa kuvan että liekin keskellä on KAIKKEIN KUUMIN kohta — kuten oikeassa
+           tulessa missä happea on tarpeeksi täydelliseen palamiseen. Sijoitetaan
+           hero-liekin (zIndex 4) PÄÄLLE mutta savun ALLE. */}
+      {stage >= 3 && !isCold && (
+        <span
+          className="absolute left-1/2 pointer-events-none"
+          style={{
+            width: bedWidth * 0.18,
+            height: tallestH * 0.62,
+            bottom: size * 0.18,
+            transform: "translateX(-50%)",
+            background: `linear-gradient(to top, hsl(48 100% 78% / 0) 0%, hsl(50 100% 82% / 0.55) 18%, hsl(54 100% 88% / 0.85) 42%, hsl(50 100% 80% / 0.65) 70%, hsl(44 100% 70% / 0.25) 90%, transparent 100%)`,
+            borderRadius: "50% 50% 45% 45% / 60% 60% 40% 40%",
+            mixBlendMode: "screen",
+            animation: `stylized-core-highlight 0.9s ease-in-out infinite`,
+            zIndex: 5,
+            opacity: lerp(0.7, 1, ferocity),
+            filter: "saturate(1.15)",
+          }}
+        />
+      )}
+
+      {/* ─── DARK FUEL CHANNEL — pohjan tumma "hapeton" alue jossa polttoaine palaa.
+           Oikeassa liekissä juuren keskellä on hieman tummempi sininen/musta viiva
+           missä polttoainetta haihtuu — tämä myy realismin. */}
+      {!isCold && (
+        <span
+          className="absolute left-1/2 pointer-events-none"
+          style={{
+            width: bedWidth * 0.12,
+            height: size * 0.07,
+            bottom: size * 0.03,
+            transform: "translateX(-50%)",
+            background: `radial-gradient(ellipse at 50% 30%, hsl(220 60% 18% / 0.55) 0%, hsl(240 50% 14% / 0.35) 45%, transparent 80%)`,
+            borderRadius: "50%",
+            mixBlendMode: "multiply",
+            zIndex: 4,
+            opacity: lerp(0.5, 0.85, ferocity),
+          }}
+        />
+      )}
+
+      {/* ─── DRIFTING SMOKE WISPS — ohuet harmaa savukiehkurat liekin yläpuolella.
+           3 pientä pilveä jotka leijuvat ylös eri ajastuksilla — luonnollinen jälki
+           epätäydellisestä palamisesta. zIndex korkein → menee kaikkien yli. */}
+      {stage >= 3 && Array.from({ length: 3 }).map((_, i) => {
+        const dur = 3.2 + i * 0.6;
+        const delay = -((i * 1.1) % dur);
+        const wispW = bedWidth * lerp(0.35, 0.55, (i % 3) / 2);
+        const wispH = tallestH * lerp(0.30, 0.45, (i % 3) / 2);
+        return (
+          <span
+            key={`smoke-wisp-${i}`}
+            className="absolute left-1/2 pointer-events-none"
+            style={{
+              width: wispW,
+              height: wispH,
+              bottom: tallestH * 0.85,
+              background: `radial-gradient(ellipse at 50% 50%, hsl(0 0% 60% / 0.35) 0%, hsl(0 0% 45% / 0.18) 45%, transparent 80%)`,
+              borderRadius: "50%",
+              mixBlendMode: "screen",
+              animation: `stylized-smoke-wisp ${dur.toFixed(1)}s ease-out infinite`,
+              animationDelay: `${delay.toFixed(2)}s`,
+              zIndex: 6,
+              opacity: lerp(0.4, 0.7, ferocity),
+            }}
+          />
+        );
+      })}
+
+      {/* ─── CONVECTION UPDRAFT POINTS — pieniä kuumuus-helmiä jotka nousevat
+           liekin huipusta savuksi. Eroaa kipinöistä siinä että ne ovat suurempia,
+           pehmeämpiä ja menettävät hehkun nopeasti (jäähtyvät noustessa). */}
+      {stage >= 2 && !isCold && Array.from({ length: 5 }).map((_, i) => {
+        const dur = 2.4 + (i * 0.31);
+        const delay = -((i * 0.55 + seed.a * 0.013) % dur);
+        const xJ = ((i * 23 + seed.b * 7) % 100) / 100 - 0.5; // -0.5..0.5
+        const dotSize = lerp(3, 6, (i * 13) % 5 / 5);
+        return (
+          <span
+            key={`updraft-${i}`}
+            className="absolute left-1/2 rounded-full pointer-events-none"
+            style={{
+              width: dotSize,
+              height: dotSize,
+              bottom: tallestH * 0.65,
+              ["--up-x" as any]: `${(xJ * bedWidth * 0.4).toFixed(1)}px`,
+              background: `radial-gradient(circle, hsl(38 100% 70% / 0.85) 0%, hsl(20 100% 55% / 0.5) 50%, transparent 100%)`,
+              mixBlendMode: "screen",
+              animation: `stylized-updraft ${dur.toFixed(2)}s ease-out infinite`,
+              animationDelay: `${delay.toFixed(2)}s`,
+              zIndex: 5,
+              opacity: lerp(0.5, 0.85, ferocity),
+            }}
+          />
+        );
+      })}
+
       {/* ─── Stage-up bed flash ─── */}
       {burst && (
         <span

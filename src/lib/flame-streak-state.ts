@@ -64,14 +64,17 @@ export const stateForStreak = (streak: number): FlameState => {
 };
 
 const STATE_PROFILES: Record<FlameState, Omit<FlameProfile, "state" | "mood">> = {
-  ember:    { flicker: 0.95, sway: 0.20, breath: 0.35, bodyAlpha: 0.35, sparkRate: 0,    ambient: false, heavy: false },
-  kindling: { flicker: 0.85, sway: 0.55, breath: 0.55, bodyAlpha: 0.62, sparkRate: 0,    ambient: false, heavy: false },
-  lit:      { flicker: 0.55, sway: 0.40, breath: 0.50, bodyAlpha: 0.78, sparkRate: 0,    ambient: false, heavy: false },
-  steady:   { flicker: 0.40, sway: 0.35, breath: 0.55, bodyAlpha: 0.88, sparkRate: 0.13, ambient: false, heavy: false }, // ~1/8s
-  strong:   { flicker: 0.30, sway: 0.30, breath: 0.65, bodyAlpha: 0.94, sparkRate: 0.20, ambient: false, heavy: false }, // ~1/5s
-  roaring:  { flicker: 0.25, sway: 0.32, breath: 0.75, bodyAlpha: 1.00, sparkRate: 0.33, ambient: false, heavy: false }, // ~1/3s
-  elite:    { flicker: 0.18, sway: 0.22, breath: 0.85, bodyAlpha: 1.00, sparkRate: 0.50, ambient: true,  heavy: false }, // ~1/2s
-  legend:   { flicker: 0.14, sway: 0.18, breath: 1.00, bodyAlpha: 1.00, sparkRate: 1.00, ambient: true,  heavy: true  }, // ~2/2s
+  // Flicker-arvoja KOROTETTU jotta uusi monikohtainen flicker-keyframe näkyy
+  // selvästi joka tasolla. Legend pysyy rauhallisempana kuin ember mutta ei
+  // enää lähes liikkumattomana — pieni levoton sydän kertoo "elävästä" tulesta.
+  ember:    { flicker: 1.05, sway: 0.20, breath: 0.35, bodyAlpha: 0.35, sparkRate: 0,    ambient: false, heavy: false },
+  kindling: { flicker: 1.00, sway: 0.55, breath: 0.55, bodyAlpha: 0.62, sparkRate: 0,    ambient: false, heavy: false },
+  lit:      { flicker: 0.85, sway: 0.40, breath: 0.50, bodyAlpha: 0.78, sparkRate: 0,    ambient: false, heavy: false },
+  steady:   { flicker: 0.75, sway: 0.35, breath: 0.55, bodyAlpha: 0.88, sparkRate: 0.13, ambient: false, heavy: false },
+  strong:   { flicker: 0.65, sway: 0.30, breath: 0.65, bodyAlpha: 0.94, sparkRate: 0.20, ambient: false, heavy: false },
+  roaring:  { flicker: 0.58, sway: 0.32, breath: 0.75, bodyAlpha: 1.00, sparkRate: 0.33, ambient: false, heavy: false },
+  elite:    { flicker: 0.50, sway: 0.22, breath: 0.85, bodyAlpha: 1.00, sparkRate: 0.50, ambient: true,  heavy: false },
+  legend:   { flicker: 0.42, sway: 0.18, breath: 1.00, bodyAlpha: 1.00, sparkRate: 1.00, ambient: true,  heavy: true  },
 };
 
 const MS_HOUR = 3_600_000;

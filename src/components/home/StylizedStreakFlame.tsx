@@ -1229,15 +1229,17 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const xPx = (bedWidth * 0.5 - flameW * 0.5) * layer.xOffset;
             const gradId = `ssf-grad-${uid}-${i}`;
             const filterId = filterIds[layer.filterId];
-            // Per-layer rytmijitterointi ±28% — flicker- ja sway-kesto eivät
-            // enää lukitu samaan arvoon kaikille liekeille.
-            const durBase = layer.speed * lerp(1.4, 0.85, t);
-            const speedDur = durBase * lerp(0.72, 1.32, jDur);
+            // Per-layer rytmijitterointi — flicker NOPEAMPI (0.55–1.0s) jotta
+            // se erottuu silminnähtävästi nopeana värinänä (oikea tuli flickeröi
+            // ~10–25 Hz). Sway pidempi/rauhallisempi (2–4 s).
+            const flickerBase = lerp(0.95, 0.55, t); // streak↑ → flicker nopeampi
+            const speedDur = flickerBase * lerp(0.62, 1.42, jDur);
             const swayDur  = layer.speed * lerp(2.6, 1.5, t) * lerp(0.78, 1.28, 1 - jDur);
-            // Per-layer amplitudikerroin (0.62..1.32) → CSS-muuttujana joka
-            // skaalaa flicker/sway-keyframet. Tämä rikkoo synkronisaation:
-            // toiset liekit nykivät pieniä, toiset isoja → orgaaninen rytmi.
-            const layerAmp = lerp(0.62, 1.32, jAmp);
+            // Per-layer amplitudikerroin (0.55..1.55) — VAHVA per-liekki vaihtelu:
+            // toiset liekit nykivät rauhallisesti, toiset rajusti → tuli näyttää
+            // KAOOTTISELTA, ei yhteishengittävältä. Aluetta levennetty
+            // (0.62..1.32 → 0.55..1.55) jotta ero on heti silmiin pistävä.
+            const layerAmp = lerp(0.55, 1.55, jAmp);
             // Yksilöllinen aloitusvaihe (0..−swayDur) → ei koskaan saman-aikaa.
             const phaseDelay = -(jPhase * swayDur);
 

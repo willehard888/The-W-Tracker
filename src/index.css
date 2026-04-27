@@ -4050,9 +4050,11 @@ button:active > .aurum-lava-glow {
 }
 
 /* ── Stylized Streak Flame v4 — layered silhouettes, no glow ─────────── */
+/* Slow whole-flame "breath" — amplitude scaled by --ssf-breath (0..1).
+   Default 1 = ±2px (legacy). Low streaks = barely breathing; legend = full lung. */
 @keyframes stylized-flame-bob {
-  0%, 100% { transform: translateY(calc(0px - var(--ssf-idle, 0) * 0.6px)); }
-  50%      { transform: translateY(calc(-2px + var(--ssf-idle, 0) * 1.2px)); }
+  0%, 100% { transform: translateY(calc((0px - var(--ssf-idle, 0) * 0.6px) * var(--ssf-breath, 1))); }
+  50%      { transform: translateY(calc((-2px + var(--ssf-idle, 0) * 1.2px) * var(--ssf-breath, 1))); }
 }
 @keyframes stylized-flame-sway {
   0%, 100% {

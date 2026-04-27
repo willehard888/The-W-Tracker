@@ -276,6 +276,16 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
   //      --ssf-idle     :  0..1 idle dimming (no input >4 s)
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [blastSparks, setBlastSparks] = useState<Array<{ id: number; angle: number; dist: number; size: number }>>([]);
+  // 3D savu — yksittäiset wispit jotka nousevat ja kiertyvät tap-paikasta.
+  // 6 puffia eri kulmilla, eri viiveillä → näyttää syvältä, ei litteältä.
+  const [smokePuffs, setSmokePuffs] = useState<Array<{ id: number; xOffset: number; rise: number; rotate: number; scale: number; delay: number; duration: number }>>([]);
+  // Pidempi-elinjäisempi ember-trail — pienet hidasti nousevat hiilipisteet.
+  const [emberTrail, setEmberTrail] = useState<Array<{ id: number; xOffset: number; rise: number; size: number; delay: number; duration: number }>>([]);
+  // Refs jotta blast voidaan välittömästi lopettaa pointerupissa
+  // (tyhjentää sekä CSS-vakion että DOM-noden ilman uutta renderiä).
+  const blastSparksTimeoutRef = useRef<number | null>(null);
+  const smokePuffsTimeoutRef = useRef<number | null>(null);
+  const emberTrailTimeoutRef = useRef<number | null>(null);
   // (blastRingKey poistettu — tap-blast valkoinen rengas oli cheap glow)
   useEffect(() => {
     if (isCold) return;

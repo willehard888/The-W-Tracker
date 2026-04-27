@@ -1190,14 +1190,19 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             // y-paikka 0 (alhaalla) .. 1 (ylhäällä keskuksen seinämässä)
             const yT = (idxOnSide + 0.5) / perSide; // 0..1
             // Reuna kaartuu sisäänpäin ylöspäin → x-offset pienenee korkeammalla
-            const edgeCurve = 1 - Math.pow(yT, 1.6) * 0.7;
+            // Voimakkaampi kaarre (0.85) → ylhäällä lickit lähempänä keskilinjaa
+            // jolloin ne sulautuvat hero-liekin huipulle nätisti.
+            const edgeCurve = 1 - Math.pow(yT, 1.5) * 0.85;
             // Pieni jitter etteivät istu rivissä
             const yJitter = (((i * 31 + seed.b * 7) % 100) / 100 - 0.5) * 0.06;
             const xJitter = (((i * 47 + seed.c * 11) % 100) / 100 - 0.5) * bedWidth * 0.03;
             // LÄHEMPÄNÄ ison liekin reunaa: bedWidth*0.28 (oli 0.45) + 0.02 puskuri (oli 0.06)
             // → liekit hipovat varsinaista flame-bodya, eivät leiju kaukana
             const xPx = side * (bedWidth * 0.28 * edgeCurve + bedWidth * 0.02) + xJitter;
-            const bottom = size * (0.05 + (yT + yJitter) * 0.55);
+            // YLLE ASTI: pohja ulottuu nyt 0.02..0.85 (oli 0.05..0.60) → ylimmät
+            // lickit lähtevät ~85% korkeudelta ja niiden tongue jatkaa
+            // tallestH:n yli (lickH ei ole skaalattu yT:llä) → yltävät HUIPPUUN.
+            const bottom = size * (0.02 + (yT + yJitter) * 0.83);
             // Kallistus: alhaalla pystyssä, ylhäällä noussee enemmän ulospäin (mutta hillitymmin koska lähempänä)
             const tiltDeg = side * (8 + yT * 22);
             // Koko: pieniä mutta filtteristä yli (>=10px). 20× lisää → laaja kokoskaala

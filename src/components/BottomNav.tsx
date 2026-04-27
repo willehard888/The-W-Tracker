@@ -1,6 +1,7 @@
 import { Home, Target, Trophy, User, Swords, Flame, MessageCircle, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useRef } from "react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 

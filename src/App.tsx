@@ -1,11 +1,8 @@
-import { lazy, Suspense, useState, useCallback, useEffect, useRef } from "react";
+import { Suspense, useState, useCallback, useEffect } from "react";
 import SplashScreen from "@/components/SplashScreen";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, keepPreviousData } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
-import { BrowserRouter, Route, Routes, Navigate, useLocation, useNavigationType } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
-import { inferTransitionTier, transitionVariants } from "@/lib/route-transitions";
-import { useRouteScrollMemory } from "@/hooks/use-route-scroll-memory";
+import { BrowserRouter, useLocation, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,43 +16,10 @@ import AccessGate from "@/components/AccessGate";
 import TierPromotionCelebration from "@/components/TierPromotionCelebration";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import RouteFallback from "@/components/RouteFallback";
-import Index from "./pages/Index";
-import Landing from "./pages/Landing";
-import Auth from "./pages/Auth";
-import OAuthCallback from "./pages/OAuthCallback";
-import NotFound from "./pages/NotFound";
+import TabHost, { matchTabKey } from "@/components/TabHost";
+import ModalStack from "@/components/ModalStack";
 import { isAppleUsernameSelectionPending } from "@/lib/apple-username";
 import { preloadAppRoutes } from "@/lib/route-preload";
-
-// Lazy-loaded pages for code-splitting
-const DailyCheckin = lazy(() => import("./pages/DailyCheckin"));
-const Leaderboard = lazy(() => import("./pages/Leaderboard"));
-const Battles = lazy(() => import("./pages/Battles"));
-const Profile = lazy(() => import("./pages/Profile"));
-const EliteFeed = lazy(() => import("./pages/EliteFeed"));
-const Referrals = lazy(() => import("./pages/Referrals"));
-const Paywall = lazy(() => import("./pages/Paywall"));
-const BadgeCompare = lazy(() => import("./pages/BadgeCompare"));
-const UserProfile = lazy(() => import("./pages/UserProfile"));
-const Messages = lazy(() => import("./pages/Messages"));
-const Chat = lazy(() => import("./pages/Chat"));
-const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
-const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
-const Onboarding = lazy(() => import("./pages/Onboarding"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const IosDebug = lazy(() => import("./pages/IosDebug"));
-const AppleAuthLaunch = lazy(() => import("./pages/AppleAuthLaunch"));
-const AppleUsername = lazy(() => import("./pages/AppleUsername"));
-const PublicProfile = lazy(() => import("./pages/PublicProfile"));
-const Coach = lazy(() => import("./pages/Coach"));
-const WeeklyBriefing = lazy(() => import("./pages/WeeklyBriefing"));
-const AdminModeration = lazy(() => import("./pages/AdminModeration"));
-const Tribes = lazy(() => import("./pages/Tribes"));
-const TribeNew = lazy(() => import("./pages/TribeNew"));
-const TribeDetail = lazy(() => import("./pages/TribeDetail"));
-const TribeBattles = lazy(() => import("./pages/TribeBattles"));
-const TribeLeaderboard = lazy(() => import("./pages/TribeLeaderboard"));
-const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,15 +31,15 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnReconnect: "always",
       retry: 1,
-      // Avoid layout-shift on remount by keeping previous data visible.
-      placeholderData: (prev: unknown) => prev,
+      // CRITICAL for native feel: keep showing the previous data while the
+      // next page worth fetches in the background. No blank flashes, ever.
+      placeholderData: keepPreviousData,
     },
   },
 });
 
-// Heavy ambient particle field — skip it on routes that already have rich
-// per-screen visual effects (paywall, tribes, battles, briefings) so iOS
-// Safari doesn't fight two GPU canvases at once.
+// Heavy ambient particle field — skip on routes that already have rich
+// per-screen visual effects so iOS Safari doesn't fight two GPU canvases.
 const HEAVY_VISUAL_ROUTES = [
   "/paywall", "/tribes", "/battles", "/briefing", "/feed", "/coach",
 ];
@@ -86,22 +50,51 @@ const AmbientParticlesGate = () => {
   return <AmbientParticles />;
 };
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+/**
+ * Auth-level gate: handles login/onboarding/apple-username redirects.
+ * Returns either the children, a <Navigate>, or a fallback.
+ *
+ * Unlike the old <ProtectedRoute> wrapper-per-route pattern, we evaluate
+ * once at the layout level so the persistent tab tree never tears down.
+ */
+const AuthFlowGate = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
+
+  // While auth is resolving, show the route fallback (a tier-shaped skeleton)
+  // — never a blank screen.
   if (loading) return <RouteFallback />;
-  if (!user) return <Navigate to="/landing" replace />;
 
-  const path = window.location.pathname;
+  const path = location.pathname;
+  const isPublic =
+    path === "/landing" ||
+    path === "/auth" ||
+    path === "/reset-password" ||
+    path === "/privacy" ||
+    path === "/terms" ||
+    path === "/ios-debug" ||
+    path === "/apple-auth-launch" ||
+    path.startsWith("/oauth") ||
+    path.startsWith("/~oauth") ||
+    path.startsWith("/callback") ||
+    path.startsWith("/auth/") ||
+    path.startsWith("/u/");
 
+  if (!user) {
+    if (isPublic) return <>{children}</>;
+    return <Navigate to="/landing" replace />;
+  }
+
+  // Logged-in flows
   if (isAppleUsernameSelectionPending() && path !== "/apple-username") {
     return <Navigate to="/apple-username" replace />;
   }
 
-  // Read once per render; localStorage is sync but cheap, this just keeps it tidy.
   if (
     !localStorage.getItem("w_onboarding_done") &&
     path !== "/onboarding" &&
-    path !== "/apple-username"
+    path !== "/apple-username" &&
+    !isPublic
   ) {
     return <Navigate to="/onboarding" replace />;
   }
@@ -109,84 +102,54 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const AppRoutes = () => {
+const HIDDEN_HEADER_PATHS = new Set([
+  "/landing",
+  "/auth",
+  "/onboarding",
+  "/apple-username",
+  "/apple-auth-launch",
+  "/paywall",
+  "/reset-password",
+  "/privacy",
+  "/terms",
+  "/ios-debug",
+]);
+const isFullscreenPath = (p: string) =>
+  HIDDEN_HEADER_PATHS.has(p) ||
+  p.startsWith("/oauth") ||
+  p.startsWith("/~oauth") ||
+  p.startsWith("/callback") ||
+  p.startsWith("/auth/") ||
+  p.startsWith("/u/") ||
+  p.startsWith("/chat/");
+
+const AppShell = () => {
   const { user } = useAuth();
   const location = useLocation();
-  const navType = useNavigationType();
-  const scrollRef = useRef<HTMLDivElement>(null);
   usePushNotifications();
 
-  // Persistent scroll position per route (POP restores, PUSH resets).
-  useRouteScrollMemory(scrollRef);
-
-  // Pick the transition tier for this route. POP uses the reverse of push.
-  const tier = inferTransitionTier(location.pathname);
-  const variantKey =
-    tier === "push" && navType === "POP" ? "pop" : tier;
-  const v = transitionVariants[variantKey];
+  const fullscreen = isFullscreenPath(location.pathname);
 
   return (
-    <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10 overflow-x-hidden">
-      <StatusHeader />
-      <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth">
+    <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10 overflow-hidden">
+      {/* Status header is hidden on auth/landing/paywall — same logic as before */}
+      {!fullscreen && <StatusHeader />}
+
+      {/* Tab + modal layers share this stack. TabHost is always mounted
+          underneath; ModalStack floats over for non-tab routes. */}
+      <div
+        className="flex-1 relative overflow-hidden"
+        style={{ contain: "layout paint" }}
+      >
         <AccessGate>
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.div
-              key={location.pathname}
-              initial={v.initial}
-              animate={v.animate}
-              exit={v.exit}
-              transition={v.transition}
-              className="h-full"
-              style={{ willChange: "transform, opacity" }}
-            >
-              <Suspense fallback={<RouteFallback />}>
-                <Routes location={location}>
-                  <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
-                  <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
-                  <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                  <Route path="/apple-username" element={<ProtectedRoute><AppleUsername /></ProtectedRoute>} />
-                  <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/checkin" element={<ProtectedRoute><DailyCheckin /></ProtectedRoute>} />
-                  <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-                  <Route path="/battles" element={<ProtectedRoute><Battles /></ProtectedRoute>} />
-                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                  <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
-                  <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
-                  <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />
-                  <Route path="/badges/compare" element={<ProtectedRoute><BadgeCompare /></ProtectedRoute>} />
-                  <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-                  <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-                  <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
-                  <Route path="/coach" element={<ProtectedRoute><Coach /></ProtectedRoute>} />
-                  <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
-                  <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
-                  <Route path="/tribes" element={<ProtectedRoute><Tribes /></ProtectedRoute>} />
-                  <Route path="/tribes/leaderboard" element={<ProtectedRoute><TribeLeaderboard /></ProtectedRoute>} />
-                  <Route path="/tribes/new" element={<ProtectedRoute><TribeNew /></ProtectedRoute>} />
-                  <Route path="/tribes/:id" element={<ProtectedRoute><TribeDetail /></ProtectedRoute>} />
-                  <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />
-                  <Route path="/button-gallery" element={<ButtonGallery />} />
-                  <Route path="/u/:username" element={<PublicProfile />} />
-                  <Route path="/privacy" element={<PrivacyPolicy />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/terms" element={<TermsOfUse />} />
-                  <Route path="/ios-debug" element={<IosDebug />} />
-                  <Route path="/apple-auth-launch" element={<AppleAuthLaunch />} />
-                  <Route path="/~oauth" element={<OAuthCallback />} />
-                  <Route path="/~oauth/callback" element={<OAuthCallback />} />
-                  <Route path="/oauth" element={<OAuthCallback />} />
-                  <Route path="/callback" element={<OAuthCallback />} />
-                  <Route path="/oauth/:segment" element={<OAuthCallback />} />
-                  <Route path="/oauth/callback" element={<OAuthCallback />} />
-                  <Route path="/auth/callback" element={<OAuthCallback />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </motion.div>
-          </AnimatePresence>
+          <AuthFlowGate>
+            <TabHost />
+            <ModalStack />
+          </AuthFlowGate>
         </AccessGate>
       </div>
+
+      {/* Bottom nav hides on auth/landing/onboarding/paywall (its own list). */}
       <BottomNav />
       {user && <TierPromotionCelebration />}
     </div>
@@ -207,8 +170,7 @@ const App = () => {
     if (splashDone) preloadAppRoutes();
   }, [splashDone]);
 
-  // When the native shell resumes from background, refresh hot caches so the
-  // user sees fresh leaderboard / message / streak data immediately.
+  // When the native shell resumes from background, refresh hot caches.
   useEffect(() => {
     const onResume = () => {
       queryClient.invalidateQueries({ queryKey: ["leaderboard"] }).catch(() => {});
@@ -232,7 +194,7 @@ const App = () => {
               <RevenueCatProvider>
                 <WindProvider>
                   {splashDone && <AmbientParticlesGate />}
-                  <AppRoutes />
+                  <AppShell />
                 </WindProvider>
               </RevenueCatProvider>
             </AuthProvider>

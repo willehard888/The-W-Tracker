@@ -1551,6 +1551,10 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                     zIndex: 3,
                     opacity: lerp(0.55, 0.85, ferocity),
                     willChange: "transform, opacity",
+                    // GPU compositor hints — promote to its own layer, isolate paint
+                    backfaceVisibility: "hidden",
+                    WebkitBackfaceVisibility: "hidden",
+                    contain: "layout paint",
                   }}
                 >
                   <path d={FLAME_PATHS[pathIdx]} fill={`url(#${gradId})`} />

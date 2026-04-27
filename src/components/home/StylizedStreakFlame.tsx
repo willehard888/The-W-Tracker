@@ -891,7 +891,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
           bottom: -size * 0.04,
           transform: "translateX(-50%)",
           background: `radial-gradient(ellipse at 50% 0%, ${floorPoolColor.replace(")", " / 0.55)")} 0%, ${floorPoolColor.replace(")", " / 0.18)")} 38%, transparent 75%)`,
-          filter: `blur(${Math.max(6, size * 0.07)}px)`,
+          // (blur poistettu käyttäjän pyynnöstä)
           mixBlendMode: "screen",
           animation: `stylized-floor-pool 2.2s ease-in-out infinite`,
           zIndex: 0,

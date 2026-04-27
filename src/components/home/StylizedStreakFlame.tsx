@@ -313,17 +313,53 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
     const triggerBlast = () => {
       blast = 1;
       lastInputT = performance.now();
-      // (haptic poistettu)
       const baseId = Date.now();
-      const sparks = Array.from({ length: 8 }).map((_, i) => ({
-        id: baseId + i,
-        angle: (i / 8) * Math.PI * 2 + (Math.random() - 0.5) * 0.5,
-        dist: size * (0.55 + Math.random() * 0.45),
-        size: 2 + Math.random() * 2.4,
-      }));
+      // ── 18 kipinää (oli 8) — lähtevät radiaalisesti pohjasta + pieni
+      // satunnainen nostebias jotta ne lentävät hieman ylemmäs kuin sivuille.
+      const sparkCount = 18;
+      const sparks = Array.from({ length: sparkCount }).map((_, i) => {
+        const a = (i / sparkCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+        return {
+          id: baseId + i,
+          angle: a,
+          dist: size * (0.45 + Math.random() * 0.7),
+          size: 1.6 + Math.random() * 2.6,
+        };
+      });
       setBlastSparks(sparks);
-      // (rengasvälähdys poistettu — vain kipinät jäävät)
-      window.setTimeout(() => setBlastSparks([]), 900);
+      // ── 6 SAVUKIEHKURAA — eri x-offset, eri nousu, eri rotaatio →
+      // 3D-tuntu kun kiehkurat eivät kaikki nouse samasta paikasta saman
+      // näköisinä. Delay-arvo (0..220ms) staggereoi nousun.
+      const puffs = Array.from({ length: 6 }).map((_, i) => ({
+        id: baseId + 100 + i,
+        xOffset: (Math.random() - 0.5) * size * 0.55,
+        rise: size * (1.0 + Math.random() * 0.8),
+        rotate: (Math.random() - 0.5) * 70,
+        scale: 0.9 + Math.random() * 0.7,
+        delay: i * 35 + Math.random() * 60,
+        duration: 1100 + Math.random() * 600,
+      }));
+      setSmokePuffs(puffs);
+      // ── 10 EMBER-pistettä — pienet kuumat hiukkaset jotka leijuvat
+      // ylöspäin SAVUN sisällä. Hidaammat kuin kipinät, näkyvämpiä kuin savu.
+      const embers = Array.from({ length: 10 }).map((_, i) => ({
+        id: baseId + 200 + i,
+        xOffset: (Math.random() - 0.5) * size * 0.7,
+        rise: size * (0.9 + Math.random() * 0.6),
+        size: 1.2 + Math.random() * 1.4,
+        delay: Math.random() * 180,
+        duration: 900 + Math.random() * 500,
+      }));
+      setEmberTrail(embers);
+      // ── TIMEOUTS tallennettu refeihin → onPointerUp voi peruuttaa ne
+      // välittömästi ja tyhjentää kaiken samalla framella → "instant
+      // lopetus" supertulesta kun käyttäjä irrottaa sormen.
+      if (blastSparksTimeoutRef.current) window.clearTimeout(blastSparksTimeoutRef.current);
+      if (smokePuffsTimeoutRef.current)  window.clearTimeout(smokePuffsTimeoutRef.current);
+      if (emberTrailTimeoutRef.current)  window.clearTimeout(emberTrailTimeoutRef.current);
+      blastSparksTimeoutRef.current = window.setTimeout(() => setBlastSparks([]), 900);
+      smokePuffsTimeoutRef.current  = window.setTimeout(() => setSmokePuffs([]), 1900);
+      emberTrailTimeoutRef.current  = window.setTimeout(() => setEmberTrail([]), 1500);
     };
 
     const onPointerMove = (e: PointerEvent) => {

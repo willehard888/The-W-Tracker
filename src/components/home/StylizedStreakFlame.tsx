@@ -902,21 +902,22 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             );
           })}
 
-          {/* Inner core — kuuma KULTA-keltainen sydän hero-liekille:
-              keskipiste lähes valkoinen → keltainen → oranssi → tumma reuna.
-              Tämä antaa premium "incandescent core" -tunnun. */}
+          {/* Inner core — SYVÄ amber-gold sydän, EI valkokuumaa.
+              Premium-fire ei ole valkoinen vaan rikas oranssi-kulta — vrt.
+              hyvin valokuvattu nuotio: keskus on saturoitu kulta, ei pesty
+              valkoiseksi. Light-arvot pudotettu jokaisessa stopissa ~10–15%. */}
           {layers.filter((l) => l.zIndex >= 3).map((_, idx) => {
             const id = `ssf-core-${uid}-${idx}`;
             return (
               <radialGradient key={id} id={id} cx="50%" cy="62%" r="42%">
-                {/* Hot incandescent center — premium gold core. */}
-                <stop offset="0%"   stopColor="hsl(54 100% 88%)" stopOpacity="1" />
-                <stop offset="10%"  stopColor="hsl(48 100% 76%)" stopOpacity="0.95" />
-                <stop offset="22%"  stopColor="hsl(38 100% 64%)" stopOpacity="0.85" />
-                <stop offset="40%"  stopColor="hsl(26 100% 54%)" stopOpacity="0.62" />
-                <stop offset="62%"  stopColor="hsl(14 100% 46%)" stopOpacity="0.32" />
-                <stop offset="84%"  stopColor="hsl(4 95% 36%)"   stopOpacity="0.10" />
-                <stop offset="100%" stopColor="hsl(0 90% 24%)"   stopOpacity="0" />
+                {/* Saturoitu kulta-amber center — ei valkoinen */}
+                <stop offset="0%"   stopColor="hsl(42 100% 64%)" stopOpacity="0.95" />
+                <stop offset="12%"  stopColor="hsl(36 100% 58%)" stopOpacity="0.88" />
+                <stop offset="26%"  stopColor="hsl(28 100% 50%)" stopOpacity="0.78" />
+                <stop offset="44%"  stopColor="hsl(18 100% 44%)" stopOpacity="0.55" />
+                <stop offset="64%"  stopColor="hsl(10 100% 38%)" stopOpacity="0.28" />
+                <stop offset="84%"  stopColor="hsl(4 95% 28%)"   stopOpacity="0.08" />
+                <stop offset="100%" stopColor="hsl(0 90% 18%)"   stopOpacity="0" />
               </radialGradient>
             );
           })}

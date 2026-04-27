@@ -1078,13 +1078,15 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             return (
               <radialGradient key={id} id={id} cx="50%" cy="62%" r="42%">
                 {/* Saturoitu kulta-amber center — ei valkoinen */}
-                <stop offset="0%"   stopColor="hsl(42 100% 64%)" stopOpacity="0.95" />
-                <stop offset="12%"  stopColor="hsl(36 100% 58%)" stopOpacity="0.88" />
-                <stop offset="26%"  stopColor="hsl(28 100% 50%)" stopOpacity="0.78" />
-                <stop offset="44%"  stopColor="hsl(18 100% 44%)" stopOpacity="0.55" />
-                <stop offset="64%"  stopColor="hsl(10 100% 38%)" stopOpacity="0.28" />
-                <stop offset="84%"  stopColor="hsl(4 95% 28%)"   stopOpacity="0.08" />
-                <stop offset="100%" stopColor="hsl(0 90% 18%)"   stopOpacity="0" />
+                {/* Saturoitu kulta-amber center — desaturoitu hieman jotta
+                    ei näytä valkokuumalta neonilta. 100% sat → 86–92% sat. */}
+                <stop offset="0%"   stopColor="hsl(42 88% 64%)" stopOpacity="0.92" />
+                <stop offset="12%"  stopColor="hsl(36 90% 58%)" stopOpacity="0.84" />
+                <stop offset="26%"  stopColor="hsl(28 92% 50%)" stopOpacity="0.74" />
+                <stop offset="44%"  stopColor="hsl(18 92% 44%)" stopOpacity="0.50" />
+                <stop offset="64%"  stopColor="hsl(10 90% 38%)" stopOpacity="0.24" />
+                <stop offset="84%"  stopColor="hsl(4 86% 28%)"  stopOpacity="0.06" />
+                <stop offset="100%" stopColor="hsl(0 80% 18%)"  stopOpacity="0" />
               </radialGradient>
             );
           })}

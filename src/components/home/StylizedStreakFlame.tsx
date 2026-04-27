@@ -1824,7 +1824,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
               bottom: size * 0.04,
               transform: "translateX(-50%)",
               background: `conic-gradient(from 0deg at 50% 100%, transparent 0deg, hsl(14 100% 50% / 0.06) 30deg, transparent 60deg, hsl(6 95% 44% / 0.05) 90deg, transparent 120deg, hsl(20 100% 52% / 0.05) 180deg, transparent 220deg, hsl(10 95% 46% / 0.06) 280deg, transparent 320deg)`,
-              filter: `blur(${Math.max(8, size * 0.1)}px)`,
+              // (blur poistettu)
               mixBlendMode: "screen",
               animation: `stylized-heat-shimmer 7s linear infinite`,
               zIndex: 0,

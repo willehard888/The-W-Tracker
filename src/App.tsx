@@ -182,10 +182,10 @@ const AppRoutes = () => {
                   <Route path="/auth/callback" element={<OAuthCallback />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </motion.div>
-            </AnimatePresence>
-          </AccessGate>
-        </Suspense>
+              </Suspense>
+            </motion.div>
+          </AnimatePresence>
+        </AccessGate>
       </div>
       <BottomNav />
       {user && <TierPromotionCelebration />}

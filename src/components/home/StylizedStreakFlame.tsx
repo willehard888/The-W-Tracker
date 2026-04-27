@@ -470,9 +470,32 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       pointerActive = false;
       releaseT = performance.now();
       inProximity = false;
+      // ── INSTANT END: superliekki päättyy heti kun sormi nousee.
+      // Pakotetaan blast/gust nollaan välittömästi (ei snap-window-decayta)
+      // ja peruutetaan ajossa olevat spark/savu/ember timeoutit jotta ne
+      // poistuvat samalla framella. CSS-vakio --ssf-blast päivittyy
+      // seuraavalla rAF-tickillä (~16ms) → näyttää instantilta.
+      blast = 0;
+      gust = 0;
+      el.style.setProperty("--ssf-blast", "0");
+      el.style.setProperty("--ssf-gust", "0");
+      if (blastSparksTimeoutRef.current) {
+        window.clearTimeout(blastSparksTimeoutRef.current);
+        blastSparksTimeoutRef.current = null;
+      }
+      if (smokePuffsTimeoutRef.current) {
+        window.clearTimeout(smokePuffsTimeoutRef.current);
+        smokePuffsTimeoutRef.current = null;
+      }
+      if (emberTrailTimeoutRef.current) {
+        window.clearTimeout(emberTrailTimeoutRef.current);
+        emberTrailTimeoutRef.current = null;
+      }
+      setBlastSparks([]);
+      setSmokePuffs([]);
+      setEmberTrail([]);
       // (release-haptic poistettu)
     };
-
     const onPointerDownTrack = (e: PointerEvent) => {
       pointerActive = true;
       onPointerDown(e);

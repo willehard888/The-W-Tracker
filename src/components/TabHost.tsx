@@ -90,8 +90,15 @@ const TabPane = ({
       // `hidden` removes from a11y tree AND drops layout/paint cost; we still
       // pay the React render cost (which is what we want for instant return).
       hidden={!active}
-      // `contain: layout paint` isolates expensive subtrees from each other.
-      style={{ contain: "layout paint", height: "100%" }}
+      // Each tab owns its own scroll — DOM remembers scrollTop natively when
+      // the tab returns to view. `contain: layout paint` isolates each tab's
+      // layout/paint from siblings, so off-screen tabs cost ~nothing.
+      className="absolute inset-0 overflow-y-auto overflow-x-hidden"
+      style={{
+        contain: "layout paint",
+        WebkitOverflowScrolling: "touch",
+        overscrollBehavior: "contain",
+      }}
     >
       {children}
     </div>

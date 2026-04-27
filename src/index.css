@@ -4089,9 +4089,61 @@ button:active > .aurum-lava-glow {
     opacity: 0;
   }
 }
-/* Per-flame sway variants — amplitude scaled by --ssf-sway (state) AND
-   --ssf-layer-amp (per-layer 0.62..1.32). Yhdistelmä rikkoo synkronisaation:
-   eri liekit nyökkäilevät eri voimakkuudella, ei "yhteinen mato". */
+/* TAP-BLAST: 3D-savukiehkura. Nousee, kiertyy, skewautuu → näyttää
+   ilmavirran nostamalta savulta. translate3d pakottaa GPU-kerroksen. */
+@keyframes ssf-smoke-puff {
+  0%   {
+    transform: translate3d(-50%, 0, 0) scale(0.4) rotate(0deg) skewX(0deg);
+    opacity: 0;
+    filter: blur(2px);
+  }
+  18%  {
+    transform: translate3d(-50%, calc(var(--smoke-rise, -40px) * 0.25), 0)
+               scale(calc(var(--smoke-scale, 1) * 0.78))
+               rotate(calc(var(--smoke-rot, 0deg) * 0.35))
+               skewX(calc(var(--smoke-rot, 0deg) * 0.06));
+    opacity: 0.78;
+    filter: blur(2px);
+  }
+  55%  {
+    transform: translate3d(-50%, calc(var(--smoke-rise, -40px) * 0.6), 0)
+               scale(calc(var(--smoke-scale, 1) * 1.0))
+               rotate(calc(var(--smoke-rot, 0deg) * 0.7))
+               skewX(calc(var(--smoke-rot, 0deg) * 0.10));
+    opacity: 0.55;
+    filter: blur(3px);
+  }
+  100% {
+    transform: translate3d(-50%, var(--smoke-rise, -40px), 0)
+               scale(calc(var(--smoke-scale, 1) * 1.45))
+               rotate(var(--smoke-rot, 0deg))
+               skewX(calc(var(--smoke-rot, 0deg) * 0.14));
+    opacity: 0;
+    filter: blur(5px);
+  }
+}
+/* TAP-BLAST: ember — pieni kuuma hiukkanen leijuu ylöspäin, hieman
+   sivuvauhdilla (skew) jotta lentorata on luonnollinen, ei suora viiva. */
+@keyframes ssf-ember-rise {
+  0%   {
+    transform: translateX(-50%) translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  12%  {
+    transform: translateX(-50%) translateY(calc(var(--ember-rise, -50px) * 0.15)) scale(1);
+    opacity: 1;
+  }
+  60%  {
+    transform: translateX(calc(-50% + 4px)) translateY(calc(var(--ember-rise, -50px) * 0.6)) scale(0.85);
+    opacity: 0.78;
+  }
+  100% {
+    transform: translateX(calc(-50% - 6px)) translateY(var(--ember-rise, -50px)) scale(0.25);
+    opacity: 0;
+  }
+}
+/* Per-flame sway variants — amplitude scaled by --ssf-sway × --ssf-layer-amp.
+   Eri liekit nyökkäilevät eri voimakkuudella, ei "yhteinen mato". */
 @keyframes stylized-flame-sway-1 {
   0%, 100% { transform: translateX(-50%) rotate(calc(-3.5deg * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleY(1) scaleX(1); }
   33%      { transform: translateX(-50%) rotate(calc(2deg    * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleY(calc(1 + 0.10 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1)))  scaleX(calc(1 - 0.05 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))); }

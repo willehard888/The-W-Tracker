@@ -276,6 +276,16 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
   //      --ssf-idle     :  0..1 idle dimming (no input >4 s)
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [blastSparks, setBlastSparks] = useState<Array<{ id: number; angle: number; dist: number; size: number }>>([]);
+  // 3D savu — yksittäiset wispit jotka nousevat ja kiertyvät tap-paikasta.
+  // 6 puffia eri kulmilla, eri viiveillä → näyttää syvältä, ei litteältä.
+  const [smokePuffs, setSmokePuffs] = useState<Array<{ id: number; xOffset: number; rise: number; rotate: number; scale: number; delay: number; duration: number }>>([]);
+  // Pidempi-elinjäisempi ember-trail — pienet hidasti nousevat hiilipisteet.
+  const [emberTrail, setEmberTrail] = useState<Array<{ id: number; xOffset: number; rise: number; size: number; delay: number; duration: number }>>([]);
+  // Refs jotta blast voidaan välittömästi lopettaa pointerupissa
+  // (tyhjentää sekä CSS-vakion että DOM-noden ilman uutta renderiä).
+  const blastSparksTimeoutRef = useRef<number | null>(null);
+  const smokePuffsTimeoutRef = useRef<number | null>(null);
+  const emberTrailTimeoutRef = useRef<number | null>(null);
   // (blastRingKey poistettu — tap-blast valkoinen rengas oli cheap glow)
   useEffect(() => {
     if (isCold) return;
@@ -303,17 +313,53 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
     const triggerBlast = () => {
       blast = 1;
       lastInputT = performance.now();
-      // (haptic poistettu)
       const baseId = Date.now();
-      const sparks = Array.from({ length: 8 }).map((_, i) => ({
-        id: baseId + i,
-        angle: (i / 8) * Math.PI * 2 + (Math.random() - 0.5) * 0.5,
-        dist: size * (0.55 + Math.random() * 0.45),
-        size: 2 + Math.random() * 2.4,
-      }));
+      // ── 18 kipinää (oli 8) — lähtevät radiaalisesti pohjasta + pieni
+      // satunnainen nostebias jotta ne lentävät hieman ylemmäs kuin sivuille.
+      const sparkCount = 18;
+      const sparks = Array.from({ length: sparkCount }).map((_, i) => {
+        const a = (i / sparkCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+        return {
+          id: baseId + i,
+          angle: a,
+          dist: size * (0.45 + Math.random() * 0.7),
+          size: 1.6 + Math.random() * 2.6,
+        };
+      });
       setBlastSparks(sparks);
-      // (rengasvälähdys poistettu — vain kipinät jäävät)
-      window.setTimeout(() => setBlastSparks([]), 900);
+      // ── 6 SAVUKIEHKURAA — eri x-offset, eri nousu, eri rotaatio →
+      // 3D-tuntu kun kiehkurat eivät kaikki nouse samasta paikasta saman
+      // näköisinä. Delay-arvo (0..220ms) staggereoi nousun.
+      const puffs = Array.from({ length: 6 }).map((_, i) => ({
+        id: baseId + 100 + i,
+        xOffset: (Math.random() - 0.5) * size * 0.55,
+        rise: size * (1.0 + Math.random() * 0.8),
+        rotate: (Math.random() - 0.5) * 70,
+        scale: 0.9 + Math.random() * 0.7,
+        delay: i * 35 + Math.random() * 60,
+        duration: 1100 + Math.random() * 600,
+      }));
+      setSmokePuffs(puffs);
+      // ── 10 EMBER-pistettä — pienet kuumat hiukkaset jotka leijuvat
+      // ylöspäin SAVUN sisällä. Hidaammat kuin kipinät, näkyvämpiä kuin savu.
+      const embers = Array.from({ length: 10 }).map((_, i) => ({
+        id: baseId + 200 + i,
+        xOffset: (Math.random() - 0.5) * size * 0.7,
+        rise: size * (0.9 + Math.random() * 0.6),
+        size: 1.2 + Math.random() * 1.4,
+        delay: Math.random() * 180,
+        duration: 900 + Math.random() * 500,
+      }));
+      setEmberTrail(embers);
+      // ── TIMEOUTS tallennettu refeihin → onPointerUp voi peruuttaa ne
+      // välittömästi ja tyhjentää kaiken samalla framella → "instant
+      // lopetus" supertulesta kun käyttäjä irrottaa sormen.
+      if (blastSparksTimeoutRef.current) window.clearTimeout(blastSparksTimeoutRef.current);
+      if (smokePuffsTimeoutRef.current)  window.clearTimeout(smokePuffsTimeoutRef.current);
+      if (emberTrailTimeoutRef.current)  window.clearTimeout(emberTrailTimeoutRef.current);
+      blastSparksTimeoutRef.current = window.setTimeout(() => setBlastSparks([]), 900);
+      smokePuffsTimeoutRef.current  = window.setTimeout(() => setSmokePuffs([]), 1900);
+      emberTrailTimeoutRef.current  = window.setTimeout(() => setEmberTrail([]), 1500);
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -424,9 +470,32 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       pointerActive = false;
       releaseT = performance.now();
       inProximity = false;
+      // ── INSTANT END: superliekki päättyy heti kun sormi nousee.
+      // Pakotetaan blast/gust nollaan välittömästi (ei snap-window-decayta)
+      // ja peruutetaan ajossa olevat spark/savu/ember timeoutit jotta ne
+      // poistuvat samalla framella. CSS-vakio --ssf-blast päivittyy
+      // seuraavalla rAF-tickillä (~16ms) → näyttää instantilta.
+      blast = 0;
+      gust = 0;
+      el.style.setProperty("--ssf-blast", "0");
+      el.style.setProperty("--ssf-gust", "0");
+      if (blastSparksTimeoutRef.current) {
+        window.clearTimeout(blastSparksTimeoutRef.current);
+        blastSparksTimeoutRef.current = null;
+      }
+      if (smokePuffsTimeoutRef.current) {
+        window.clearTimeout(smokePuffsTimeoutRef.current);
+        smokePuffsTimeoutRef.current = null;
+      }
+      if (emberTrailTimeoutRef.current) {
+        window.clearTimeout(emberTrailTimeoutRef.current);
+        emberTrailTimeoutRef.current = null;
+      }
+      setBlastSparks([]);
+      setSmokePuffs([]);
+      setEmberTrail([]);
       // (release-haptic poistettu)
     };
-
     const onPointerDownTrack = (e: PointerEvent) => {
       pointerActive = true;
       onPointerDown(e);
@@ -620,6 +689,10 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       document.removeEventListener("visibilitychange", onVisibility);
       io.disconnect();
       cancelAnimationFrame(raf);
+      // Tap-blast timeoutit pois jotta unmountin jälkeen ei jää roikkumaan
+      if (blastSparksTimeoutRef.current) window.clearTimeout(blastSparksTimeoutRef.current);
+      if (smokePuffsTimeoutRef.current)  window.clearTimeout(smokePuffsTimeoutRef.current);
+      if (emberTrailTimeoutRef.current)  window.clearTimeout(emberTrailTimeoutRef.current);
     };
   }, [isCold, size, releaseSnapMs]);
 
@@ -944,6 +1017,62 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
           />
         );
       })}
+      {/* ── 3D-SAVUKIEHKURAT — nousevat tap-paikasta, kiertyvät ja skaalautuvat
+           jotta vaikutelma on ilmavirran nostama savutuprahdus, ei litteä blob.
+           translate3d + rotateZ + skewX yhdistelmällä → näyttää syvältä myös
+           2D:ssä. Harmaa tone screen-blendillä → erottuu liekistä mutta sulautuu
+           taustaan. Häviää INSTANT kun pointerup peruuttaa setSmokePuffs([]). */}
+      {smokePuffs.map((p) => (
+        <span
+          key={`smoke-${p.id}`}
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            left: `calc(50% + ${p.xOffset.toFixed(1)}px)`,
+            top: "55%",
+            width: size * 0.32,
+            height: size * 0.32,
+            background:
+              "radial-gradient(circle at 40% 40%, hsl(28 18% 78% / 0.55) 0%, hsl(20 14% 62% / 0.32) 38%, hsl(15 10% 38% / 0.14) 70%, transparent 100%)",
+            ["--smoke-rise" as string]: `${(-p.rise).toFixed(1)}px`,
+            ["--smoke-rot" as string]: `${p.rotate.toFixed(1)}deg`,
+            ["--smoke-scale" as string]: p.scale.toFixed(2),
+            animation: `ssf-smoke-puff ${p.duration}ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards`,
+            animationDelay: `${p.delay.toFixed(0)}ms`,
+            mixBlendMode: "screen",
+            opacity: 0,
+            transform: "translate(-50%, 0) scale(0.4)",
+            filter: "blur(2px)",
+            zIndex: 9,
+            willChange: "transform, opacity",
+          }}
+        />
+      ))}
+      {/* ── EMBER TRAIL — pienet kuumat hiukkaset, leijuvat ylöspäin savun
+           sisällä. Kestävät hieman pidempään kuin nopeat radiaalikipinät → 3D-
+           syvyys tulee siitä että kerrokset (kipinä → ember → savu) elävät eri
+           rytmissä. Häviää myös INSTANT kun pointerup. */}
+      {emberTrail.map((e) => (
+        <span
+          key={`ember-${e.id}`}
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            left: `calc(50% + ${e.xOffset.toFixed(1)}px)`,
+            top: "62%",
+            width: e.size,
+            height: e.size,
+            background: "hsl(32 100% 60%)",
+            boxShadow: `0 0 ${(e.size * 2).toFixed(1)}px hsl(20 100% 50% / 0.85)`,
+            ["--ember-rise" as string]: `${(-e.rise).toFixed(1)}px`,
+            animation: `ssf-ember-rise ${e.duration}ms cubic-bezier(0.4, 0, 0.6, 1) forwards`,
+            animationDelay: `${e.delay.toFixed(0)}ms`,
+            mixBlendMode: "screen",
+            opacity: 0,
+            transform: "translateX(-50%)",
+            zIndex: 10,
+            willChange: "transform, opacity",
+          }}
+        />
+      ))}
       {/* (Tribe inferno aura halo removed — used to be a soft radial glow,
           read as cheap lens-flare. Tribe intensity is now expressed only via
           doubled flame count + reactive ferocity.) */}

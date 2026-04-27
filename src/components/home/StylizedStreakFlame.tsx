@@ -60,6 +60,17 @@ interface StylizedStreakFlameProps {
    * Range: 80–1500 ms (clamped).
    */
   releaseSnapMs?: number;
+  /**
+   * ISO timestamp or epoch ms of the user's last successful checkin.
+   * Drives mood: healthy / at-risk (>18h) / broken (>24h).
+   * If omitted, the flame is always considered healthy.
+   */
+  lastCheckinAt?: string | number | null;
+  /**
+   * Render the elite/legend ambient halo behind the container.
+   * Defaults to true. Set false for tightly-packed UI (chips, inline avatars).
+   */
+  emitAmbient?: boolean;
   className?: string;
 }
 

@@ -4409,3 +4409,38 @@ html, body, #root {
 .scroll-smooth {
   -webkit-overflow-scrolling: touch;
 }
+
+/* ────────────────────────────────────────────────────────────────────
+   Native-feel interaction layer
+   - Instant visual press (≤16ms) on every interactive surface
+   - Removes 300ms touch delay
+   - Removes blue tap highlight
+   - Prevents text selection on UI chrome (taps shouldn't select)
+   ──────────────────────────────────────────────────────────────────── */
+button,
+[role="button"],
+a,
+.press {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform var(--motion-tap, 80ms) var(--ease-ios, cubic-bezier(0.32, 0.72, 0, 1));
+}
+
+button:active,
+[role="button"]:active,
+.press:active {
+  transform: scale(0.97);
+}
+
+/* Tab panes: kill any reflow flash when tab becomes visible. */
+[data-tab-active="true"] {
+  animation: none !important;
+}
+
+/* Restore selectable text inside content blocks (paragraphs, inputs, etc.) */
+p, span.selectable, input, textarea, [contenteditable] {
+  user-select: text;
+  -webkit-user-select: text;
+}

@@ -1,191 +1,181 @@
-# Native-Feel Polish Plan
-*No new features. Only how the app moves, responds, and breathes.*
+# Native-feel mobile upgrade — last 10%
 
-The app already has the bones (Capacitor, haptics, route preload, lazy chunks, gold-shimmer fallback). What still leaks "web feel" is the **transition layer**, **per-route skeletons**, **scroll behavior**, and **tap-to-paint latency**. This plan fixes only that.
-
----
-
-## 1. Why it still feels like a web app — and the exact fix
-
-| Symptom | Why it feels web | Fix |
-|---|---|---|
-| `RouteFallback` flashes a generic skeleton on every navigation | Suspense boundary wraps **all** routes — even cached ones replay the fallback | Move `Suspense` *inside* each route module so cached chunks render synchronously. Use a **per-route skeleton** that mirrors that screen's layout, never the generic shell |
-| Scroll resets to top on back-nav | `el.scrollTo({top:0})` runs on every `pathname` change, including `POP` | Maintain a `Map<path, scrollY>` and restore on `POP`, reset only on `PUSH`/`REPLACE` |
-| Header + nav fade in/out with the page | `motion.div` wraps the whole route incl. shared chrome | `StatusHeader` and `BottomNav` are already outside `AnimatePresence` ✅ — but the page-level `<Suspense fallback>` blanks their backdrop. Render fallback **inside** the scroll container only, never replacing the chrome |
-| Tap → 100–200 ms of nothing before next screen paints | React lazy chunk + first-paint queries | Keep current `prefetchRoute` on `pointerenter`/`touchstart`, **add** `onPointerDown` for true 0-ms intent detection; navigate on `pointerup` only if still on same target (cancels accidental drags) |
-| Inputs feel laggy on iOS | 300 ms tap delay from missing `touch-action`; focus jumps from keyboard resize | Add `touch-action: manipulation` to all interactive elements; already have `Keyboard.resize=none` ✅ — verify `scrollIntoView({block:"center"})` runs on every `<input>` focus inside scroll container |
-| Layout jumps when data arrives | Queries return `undefined` → `null` → array → re-layout | Render skeleton blocks at the **exact final dimensions** (fixed `min-height` per card) so swap is invisible |
-| `RouteFallback` covers full screen incl. above-the-fold | min-h-[100dvh] inside scroll container double-counts header | Constrain fallback to `min-h-[60dvh]` and align top, never cover the header |
-| 220 ms fade+slide on route change | Reads as a "page loaded" cue, not a system transition | iOS-style: drop the y-translate; use `opacity 180ms cubic-bezier(0.32,0.72,0,1)` only. Direction-aware push/pop handled per-stack (see §3) |
+Ei uusia ominaisuuksia. Vain feel, performance ja interaction.
 
 ---
 
-## 2. Continuity & flow — the transition system
+## 1. Root cause — miksi tuntuu webiltä
 
-**Three transition tiers**, applied automatically by route:
+**Rendering**
+- `AnimatePresence` ympäröi koko `<Routes>` → jokainen tab-vaihto unmountaa kokonaisen sivun ja sen react-query-konsumerit. Skroll, lokaali state, in-flight haut, IntersectionObserverit ja video-alustat heitetään pois → "lataa uudestaan"-tunne.
+- Suspense-fallback (`RouteFallback` / skeletons) renderöityy AnimatePresencen sisällä → uudelleenmount + skeleton flash, vaikka chunk olisi jo prefetched.
+- Tab-transition on cross-fade jossa `exit.opacity:0` (160 ms) — silmä näkee mustan välin ennen `enter`. Native iOS-tab vaihtuu **0 ms**.
+
+**Navigation**
+- Ei view-stackia. Tabit ovat siskoja `<Routes>`-rakenteessa, joten paluu ei palauta state/scrollia muusta kuin kahdesta rAF:stä → näkyvä hyppy.
+- Modaalit (paywall, chat, briefing) jakavat saman AnimatePresencen popLayout-moodissa → "hard transition" peittäen toisensa.
+- iOS:n swipe-back ei ole kytketty router-historiaan visuaalisesti.
+
+**State**
+- Hookit fetcheröivät kohdekomponentin `useEffect`issa eikä reactin queryClientin prefetchillä → ensikerralla aina blank.
+- `staleTime: 30s` on OK, mutta ilman per-route prefetchia ja `keepPreviousData`-käytäntöä lista-sivut näyttävät tyhjältä joka mountilla.
+- `placeholderData: prev` on globaali, mutta uudelleenmount tappaa "prev"-cachen samasta avaimesta toisessa mountin queryclientissa kun key muuttuu.
+
+**Network/loading**
+- Splash näkyy joka cold-startissa. Auth-loading + profile-loading + subscription-loading sarjana → blank-state ennen ekaa screen-paint.
+- `RouteFallback` on visuaalisesti eri kuin oikea sivu (eri taustat, eri kortit) → flash-of-skeleton.
+
+---
+
+## 2. Zero-loading -järjestelmä
+
+**Aina mountattuna sessiossa (persistent stack):**
+`/`, `/checkin`, `/feed`, `/tribes`, `/messages`, `/leaderboard`, `/battles`, `/profile`. Tabit pidetään DOMissa, näkymättömät tabit `display:none`-piilossa. Scroll, state, query-cache pysyy.
+
+**Aina preloadattu (chunkit):** kaikki tab-sivut + `Paywall`, `Coach` käynnistyvät splashin jälkeen idle-aikana (`route-preload.ts` jo olemassa — ulotetaan kaikkiin tabeihin).
+
+**Background:** detail-sivut (TribeDetail, UserProfile, Chat, BadgeCompare, Briefing) prefetchataan kun käyttäjä hover/pointerdown linkkiä.
+
+**Blank state pois:** placeholderit eivät ole skeletoneita vaan **viimeisin tunnettu data** (prev cache + `keepPreviousData` per query). Skeletons vain ensimmäisellä laitteen-elinaikaisella avauksella; tab-vaihtoon **ei koskaan**.
+
+**Splash:** näytetään vain ekalla session-cold-startilla (jo nyt). Kuvaikkunassa lyhennetään minimi 800 ms → 400 ms ja AppRoutes mountataan splashin alle, jotta paint on heti splashin alaslähdön jälkeen.
+
+---
+
+## 3. Navigation rewrite — persistent tab stack
+
+**Uusi malli:**
 
 ```text
-Tier A — Tab switches (BottomNav)     → Cross-fade 160ms, no translate
-Tier B — Push (detail from list)      → Slide-in-from-right 260ms ease-out, exit slides 40% left + dims
-Tier C — Modal-style (paywall, chat)  → Slide-up 320ms spring, dims background to 70%
+<RouterRoot>
+  <StatusHeader/>
+  <TabStack>                  ← always mounted, only top tab visible
+    <TabScreen path="/"/>     ← display:none kun ei aktiivinen
+    <TabScreen path="/checkin"/>
+    ...
+  </TabStack>
+  <ModalStack/>               ← /paywall, /chat/:id, /briefing/:id, detail-sivut
+  <BottomNav/>
+</RouterRoot>
 ```
 
-Implementation:
-- New `src/lib/route-transitions.ts` maps `pathname` → tier.
-- `AppRoutes` reads tier from `location.state?.tier ?? inferTier(prev, next)`.
-- `framer-motion` variants per tier; `mode="popLayout"` so incoming page paints **on top** of outgoing one — zero blank frame.
-- `initial={false}` on first mount so cold-start doesn't animate.
-
-What the user sees during every transition:
-- **Tab**: icon press scales 0.92 (60ms), screen cross-fades over current screen — current screen never disappears before new one paints.
-- **Push**: incoming screen slides over from right with a 1px gold edge highlight; outgoing parallaxes 30% to the left at 0.85 opacity (iOS standard).
-- **Pop**: reverse, with `interactivePop` enabled via swipe-from-edge gesture (`use-horizontal-swipe` already exists).
-- **Modal**: backdrop dims to `hsl(var(--background)/0.7)` over 200ms, sheet rises with spring `{stiffness:380, damping:34}`.
-
-No fallback is ever shown for routes whose chunk is already loaded (preload covers all 9 primary routes).
+- Tab-vaihto: `display:none` → `display:block`, **ei mitään animaatiota tabin sisällön ulkonäköön**, vain BottomNavin pill liikkuu (jo on). Aktivoituvan tabin scrollPosition säilyy DOMissa luonnostaan.
+- Detail-pushit (`/user/:id`, `/tribes/:id`, `/chat/:id`): renderöidään modal-stackissa **tab-tasolla aktiivisen tabin päälle** → swipe-back paljastaa alta tabin staattisena (ei mounttausta).
+- Pop: framer-motion translate `x: 100%` → `0` enter, paluulla translate `0` → `100%` exit, taustalla tab näkyy. 240 ms cubic-bezier(0.32, 0.72, 0, 1).
+- Modaalit (paywall, briefing): translate `y: 100%` → `0`. 280 ms.
+- iOS swipe-back: kuuntelijan touchmove `pageX > 24px from left edge` → seuraa sormea live-translateilla → release > 50% tai velocity > 0.5 → `navigate(-1)`.
 
 ---
 
-## 3. Performance feel (perceived instant)
+## 4. Rendering & state strategy
 
-**Already present** ✅: `preloadAppRoutes`, BottomNav `prefetchRoute`, React Query `staleTime`, `placeholderData: prev`.
-
-**Add**:
-1. **Route data prefetch on intent**: on `pointerenter`/`touchstart` of a nav button, also call `queryClient.prefetchQuery` for that route's primary query. New helper `src/lib/route-data-prefetch.ts` exporting `prefetchRouteData(path, queryClient, profile)` with one query per route (leaderboard top-50, feed first-page, profile-self).
-2. **Optimistic micro-feedback**: every nav button gets a 60ms scale-down on `pointerdown` *before* navigation fires — eye registers response in <16ms, masking the actual route mount.
-3. **Persistent scroll memory** per route: `useRouteScrollMemory()` hook attached to scroll container.
-4. **Skeleton hydration**: per-page skeletons live in `src/components/skeletons/` with **identical block heights** to real content. Swap is invisible; no shimmer needed when data arrives within 80ms (use `useDeferredValue` on isLoading flag with 80ms threshold).
-5. **Image strategy**: audit `<img>` for `decoding="async"` + `loading="lazy"` + intrinsic `width/height` to lock layout.
-6. **Defer non-critical**: `AmbientParticles` already gated; also defer `TierPromotionCelebration` mount until first idle tick after splash.
+- **TabHost** -komponentti: pitää sisällään `<Outlet>`-tyylisesti renderöidyt tab-sivut, valitsee `data-active` className-kytkimellä. Yksi kerros `position:absolute; inset:0; visibility:hidden;` epäaktiiveille → ei layout-laskentaa, ei IntersectionObserver-laukauksia.
+- Sivu-komponentti EI saa unmounttautua tabin vaihtuessa → kaikki react-query-tilat säilyvät ilman cachen kiertotietä.
+- Per-query: lisätään `placeholderData: keepPreviousData` ja `staleTime` per use case (60 s leaderboardille, 15 s feedille, 0 messages-listalle realtimen alla).
+- `framer-motion` `<motion.div>` ei käytä `key={pathname}` modaaleille → pelkkä mountti/unmount transformilla.
+- `contain: layout paint` lisätty isoille listoille (Feed, Leaderboard, Tribes) → reflow eristyy.
 
 ---
 
-## 4. Touch & interaction rules (system-wide)
+## 5. Touch response
 
-```text
-Tap target min size:        44×44 CSS px (iOS HIG)
-Press visual feedback:      scale(0.94) + 80ms ease-out, on pointerdown
-Press haptic:               light impact on pointerdown (not click) for primary actions
-Release/cancel:             scale back over 140ms cubic-bezier(0.16,1.2,0.32,1)
-Tap-to-action latency:      < 16ms visual, < 100ms navigation start
-Long-press threshold:       350ms, then medium haptic
-Swipe-back-to-pop:          left 24px edge zone, 60px commit distance
-Scroll deceleration:        native momentum (already on)
-Disabled state:             50% opacity, no pointer-events, no haptic
-```
-
-Apply via:
-- New `src/components/ui/tappable.tsx` wrapper (uses `framer-motion` `whileTap`) — wrap existing buttons by replacing `<button>` className pattern; keep `<Button>` shadcn intact, just add base classes (`active:scale-[0.94] transition-transform duration-[140ms]`) to `buttonVariants`.
-- Global CSS: `button, a, [role=button] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }` in `index.css` `@layer base`.
+**Säännöt:**
+- Visuaalinen feedback **≤ 16 ms** pointerdownista → CSS `:active` + `transform: scale(0.97)` heti.
+- Navigaatio **pointerup**:lla, mutta haptic + prefetch **pointerdown**:lla (jo BottomNavissa — laajennetaan kaikkiin korteihin/buttoneihin).
+- `touch-action: manipulation; -webkit-tap-highlight-color: transparent` globaalisti `<button>`, `[role=button]`, `<a>`-elementeille `index.css`:ssä.
+- Haptic-kartta:
+  - `light` — tab-switch, kortti-tap
+  - `medium` — submit, modal open
+  - `heavy` — destructive confirm, level-up
+- Press-state utility-luokka `.press` → kaikki interactive-kortit saavat sen.
 
 ---
 
-## 5. Microinteraction motion tokens
+## 6. Motion system
 
-Add to `:root` in `index.css`:
-```css
---motion-tap: 80ms;
---motion-press-out: 140ms;
---motion-fade: 180ms;
---motion-slide: 260ms;
---motion-modal: 320ms;
---ease-ios: cubic-bezier(0.32, 0.72, 0, 1);   /* iOS standard */
---ease-spring: cubic-bezier(0.16, 1.2, 0.32, 1);
---ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
-```
-
-Constraint: **no microinteraction over 320ms**. No bounce > 8% overshoot. No color flash on success — replace with single soft scale + haptic notification.
+- **Transition durations**:
+  - micro (toggle, ripple, press): 120 ms
+  - element (modal sheet, kortti enter): 220 ms
+  - screen (push/pop): 260 ms
+  - modal: 280 ms
+- **Easing** kaikkialla: `cubic-bezier(0.32, 0.72, 0, 1)` (iOS-tyyli). Mikrointeraktioissa decelerate `cubic-bezier(0.16, 1, 0.3, 1)`.
+- **Suunta**: push siirtyy oikealta sisään, pop oikealle ulos. Modaali ylhäältä? Ei — alhaalta ylös (sheet).
+- **Tab**: ei mitään. Vain BottomNav-pill animoituu.
+- **Listojen item-enter**: ei staggered fade-iniä — vain ensimmäisellä päivittymisellä. Uudelleenrender ei animoi.
 
 ---
 
-## 6. Visual polish (refine, do not redesign)
+## 7. Scroll & gesture
 
-| Before | After |
-|---|---|
-| Sticky header gold accent line at full opacity | Fade to `0.35` until scrollY > 8, then `0.7` (signals "scrolled") |
-| Skeleton cards have generic rounded boxes | Match real card `border-radius`, `padding`, and inner block layout per route |
-| BottomNav active pill renders only on active tab | Animate pill position with `layoutId="nav-pill"` so it slides between tabs (250ms spring) |
-| Page padding inconsistent (some `pt-6`, some `pt-4`) | Standardize to `pt-4 px-4 pb-24` via wrapper class `screen-shell` in `index.css` |
-| Cards stack with same elevation | Tier elevation: hero card `shadow-lg`, secondary `shadow-md`, list items flat with `border-border/30` |
-| Text hierarchy mixes weights freely | Codify: `H1 800/-0.02em`, `H2 700/-0.01em`, `body 500`, `meta 600 uppercase tracking-wide` — apply via `.text-h1 .text-h2 .text-meta` utility classes |
+- iOS overscroll lukitus tab-konttiin: `overscroll-behavior: contain`, ei `bounce` body-tasolla.
+- Scroll-säilyö per tab natively koska tab pysyy DOMissa (ei enää manuaalista `useRouteScrollMemory` tabeille — pidetään detail-sivuille).
+- Pull-to-refresh `use-pull-refresh` jo on; kytketään tab-host-tasolle vain `/`, `/feed`, `/messages`, `/leaderboard`.
+- Swipe-back kuvattu kohdassa 3.
 
 ---
 
-## 7. Loading & state handling fix
+## 8. Loading & data flow
 
-**Replace** the global `<Suspense fallback={<RouteFallback/>}>` with:
-1. **Inner `Suspense` per route** with route-specific skeleton.
-2. Persistent `<StatusHeader/>` + `<BottomNav/>` never unmount during route swap.
-3. Data-loading skeleton **inside** each page swaps to real content via `useDeferredValue` so flickers <80ms never render.
-4. On `native:resume`, queries already invalidate ✅ — **but** wrap in `keepPreviousData` so user sees stale data instantly while refetch runs.
-
-New files:
-- `src/components/skeletons/HomeSkeleton.tsx`
-- `src/components/skeletons/LeaderboardSkeleton.tsx`
-- `src/components/skeletons/ProfileSkeleton.tsx`
-- `src/components/skeletons/FeedSkeleton.tsx`
-- `src/components/skeletons/CheckinSkeleton.tsx`
-
-Each ≤ 60 lines, mirrors the real screen's first-screen blocks at exact pixel sizes.
+- `Index`-sivun 4 useQuery:tä rinnakkaisesti — varmistetaan `enabled: !!user.id` ja kaikilla `staleTime: 60_000`, `placeholderData: keepPreviousData`. Ei muutoksia sopimuksiin.
+- Optimistinen UI:
+  - `feed_reactions` insert → invalidate vasta onSettledissa, optimistinen `queryClient.setQueryData` heti.
+  - `daily_checkins` submit → optimistinen profile.xp + streak päivitys.
+  - `friendships`/`tribe_invites` accept → optimistinen status-flip.
+- Realtime (chat, feed) — jo tehty; varmistetaan ettei `subscribe → unsubscribe` tapahdu tab-vaihdossa (persistent mount korjaa tämän automaattisesti).
 
 ---
 
-## 8. The "Premium Standard" checklist
+## 9. Visual stability
 
-Must always be true:
-- [ ] Tap response visible in ≤ 16ms (one frame)
-- [ ] Navigation start ≤ 100ms after pointer-up
-- [ ] No screen ever shows a generic loader once visited (cached)
-- [ ] StatusHeader + BottomNav never unmount, never blink
-- [ ] No layout shift > 4px during data load
-- [ ] All animations 80–320ms; nothing longer except the splash
-- [ ] All easings from the 3 system tokens (`ios`, `spring`, `soft`) — no ad-hoc cubic-beziers
-- [ ] Every primary button: visual + haptic feedback on pointerdown, not click
-- [ ] No horizontal scroll, ever
-- [ ] Scroll position restored on back-nav within the session
-- [ ] Modal backdrop dims, never blacks-out
-- [ ] No emoji-as-icon in primary nav (use lucide) ✅ already true
-- [ ] Skeleton blocks match final layout to the pixel
-- [ ] All inputs `touch-action: manipulation`, focused inputs scroll into center on keyboard show
-- [ ] No `console.error` during navigation (assert via dev check)
+- Kaikki tab-rootit saavat `min-h-[100dvh]` ja `aspect-ratio` -placeholderit kuville (`avatar`, `tribe-cover`, `feed-image`).
+- Status header korkeus jo on lukittu — varmistetaan `flex-shrink-0` ja että trial-banneria ei swappaa korkeutta render-syklin aikana (mountataan `min-h-[40px]` placeholder).
+- BottomNav `contain: layout paint` jo asetettu — laajennetaan tab-hostiin.
+- `font-display: optional` lisätään brändifonteille → ei FOIT.
 
 ---
 
-## 9. Prioritized fix plan
+## 10. "Native feel" -tarkistuslista
 
-### High impact (ship first — biggest "web → native" jump)
-1. **Per-route skeletons + inner Suspense** → kills the global fallback flash.
-2. **Direction-aware route transitions** (`popLayout`, slide for push, fade for tab) — no blank frames.
-3. **Scroll position memory** on POP navigation.
-4. **`pointerdown` visual + haptic + prefetch** on BottomNav and every primary CTA.
-5. **Layout-animated active pill** on BottomNav (`layoutId`).
-
-### Medium (polish layer)
-6. Motion tokens centralized in `index.css`; remove ad-hoc transitions.
-7. `screen-shell` wrapper class for consistent padding/safe-area.
-8. `placeholderData: prev` audit — confirm every list query keeps last data on refetch.
-9. `touch-action: manipulation` global; tap-highlight off; user-select tightened.
-10. `useDeferredValue(isLoading, 80ms)` to suppress sub-frame skeletons.
-11. Defer `TierPromotionCelebration` and other modals to first idle.
-
-### Final 1%
-12. Header gold-accent opacity reacts to scrollY.
-13. Typography utility classes (`.text-h1`, `.text-meta` …) and replace inline weights on Index/Profile/Leaderboard.
-14. Image audit pass: `decoding="async"`, intrinsic dimensions.
-15. Edge-swipe-to-pop hook wired into push-tier routes.
-16. Replace remaining `transition-all` with explicit property lists for GPU cleanliness.
+Jos jokin näistä toistuu → palaa kohtaan ja korjaa:
+1. Pitäisikö skeleton näkyä tab-vaihdossa? **EI koskaan.**
+2. Tap-feedback ≤ 16 ms? **Pakko.**
+3. Layout-shift mountin jälkeen? **0 px.**
+4. "Hard cut" siirtymässä? **Vain tab-vaihtoon — kaikki muut transformeja.**
+5. Network-flash listoissa? **Optimistinen + keepPrevious.**
+6. Splash 2× session aikana? **Ei. Vain ensimmäinen kerta.**
+7. Backswipen alla tyhjä tausta? **Ei. Edellinen näkymä paljastuu live.**
 
 ---
 
-## Technical notes
+## 11. Suoritusjärjestys
 
-- No changes to data layer, no schema migrations, no new pages, no new business logic.
-- All work in `src/App.tsx`, `src/components/BottomNav.tsx`, `src/index.css`, `src/components/ui/button.tsx`, plus 5 new skeleton files and 2 new lib helpers (`route-transitions.ts`, `route-data-prefetch.ts`, `use-route-scroll-memory.ts`).
-- `framer-motion` already installed; no new deps.
-- Capacitor haptics already wired; reuse `hapticImpact("light")`.
-- `prefers-reduced-motion` honored: all transitions collapse to opacity-only at 120ms.
-- Memory updates after ship: `mem://ux/native-experience.md` extended with transition tier table and premium-standard checklist.
+**Vaihe A — Suurin vaikutus (heti):**
+1. **Persistent tab-host**: uudelleenrakenna `AppRoutes` niin että tab-routet renderöityvät yhtaikaa `<TabStack>` componentissa, joka kytkee `display`-statet location.pathnamen mukaan. Detail/modal-routet säilyvät framer-motion-stackissa.
+2. **Poista tab-tier exit-animaatio**: tab-tier `transition: { duration: 0 }`, ei opacityä.
+3. **`placeholderData: keepPreviousData`** kaikkiin Index/Leaderboard/EliteFeed/Tribes-useQueryihin.
+4. **Press-state utility** kortteihin (Feed, Leaderboard, Tribes-listat) ja kaikkiin `<button>` -elementteihin (CSS-luokka `index.css`:ssä).
+
+**Vaihe B — Rakenteellinen (medium):**
+5. **Modal-stack erilleen** (push/modal/popLayout) AnimatePresencessä, tab-stack ei ole AnimatePresencen alla lainkaan.
+6. **Optimistinen UI**: feed-reaction, kudos, friendship-accept, checkin-submit.
+7. **Swipe-back gesture** detail-sivuille.
+8. **Splash** lyhennys + paint-perfekti (mountti splashin alla).
+
+**Vaihe C — Polish:**
+9. iOS overscroll-lukitus + `font-display: optional`.
+10. Haptic-mappi laajennetaan kaikkiin CTA-buttoneihin yhtenäisellä helperillä.
+11. Tarkistus performance-profilerilla (long tasks ≤ 50 ms, INP ≤ 200 ms).
 
 ---
 
-Ready to implement in this exact order. I'll commit each high-impact item separately so you can verify on iOS between steps.
+## Tekninen yhteenveto (devs)
+
+- `App.tsx`: `<AppRoutes>` uudistuu — sisältää `<TabHost>` + `<ModalStack>` rinnan. AnimatePresence vain modal-stackiin.
+- Uusi `src/components/TabHost.tsx`: renderöi 8 tab-sivua sisäkkäin `display:none|block` `data-active`-attributtien mukaan, käyttää `useLocation`a aktiivisen tabin valintaan.
+- Uusi `src/components/ModalStack.tsx`: hallitsee push/modal-routet `AnimatePresence mode="popLayout"`:lla.
+- `route-transitions.ts`: tab-variant duration 0; push/modal säilyy.
+- `BottomNav`: pysyy nykyisellään (jo OK).
+- `index.css`: globaali `.press`, `touch-action: manipulation`, `font-display: optional`.
+- React Query: yhtenäinen `keepPreviousData`-helper `src/lib/query-defaults.ts`:ssä, käytetään isoilla useQueryillä.
+- `use-route-scroll-memory.ts`: jätetään detail-sivuille; tab-sivut säilyttävät scrollin DOMissa luonnollisesti.
+- Ei muutoksia sopimuksiin Supabasea kohti, ei uusia tauluja, ei uusia komponentteja UI-puolella.

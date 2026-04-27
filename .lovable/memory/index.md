@@ -19,6 +19,7 @@ Elite: EARNED status tier (top 5% rank + 14 active days + 30-day streak). Apex t
 - [Visual Effects](mem://style/visual-effects) — AmbientParticles, light cones, vignettes, glassmorphism
 - [UI Layout](mem://style/ui-layout-decisions) — h-[100dvh] flex, shrink-0 nav, hidden on specific routes
 - [Native UX](mem://ux/native-experience) — Capacitor Haptics, BottomNav with safe-area and backdrop-blur
+- [Native Transitions](mem://ux/native-transitions) — Three-tier route transitions (tab/push/modal), scroll memory on POP, instant pointerdown nav, layoutId pill, per-route skeletons
 - [Level Progression UI](mem://features/level-progression-ui) — Dynamic LevelCard (Rookie to Legendary), auto-updating styles
 - [Splash Screen](mem://style/splash-screen) — 2.3s session-based splash, sequence animation, gold particles
 - [Elite Unlock Animation](mem://features/elite-unlock-experience) — Full-screen celebration sequence triggered on upgrade

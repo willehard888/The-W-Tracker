@@ -2,8 +2,10 @@ import { lazy, Suspense, useState, useCallback, useEffect, useRef } from "react"
 import SplashScreen from "@/components/SplashScreen";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
-import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation, useNavigationType } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { inferTransitionTier, transitionVariants } from "@/lib/route-transitions";
+import { useRouteScrollMemory } from "@/hooks/use-route-scroll-memory";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -110,31 +112,35 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const navType = useNavigationType();
   const scrollRef = useRef<HTMLDivElement>(null);
   usePushNotifications();
 
-  // Premium social-media behavior: every route lands at the top, instantly.
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  }, [location.pathname]);
+  // Persistent scroll position per route (POP restores, PUSH resets).
+  useRouteScrollMemory(scrollRef);
+
+  // Pick the transition tier for this route. POP uses the reverse of push.
+  const tier = inferTransitionTier(location.pathname);
+  const variantKey =
+    tier === "push" && navType === "POP" ? "pop" : tier;
+  const v = transitionVariants[variantKey];
 
   return (
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10 overflow-x-hidden">
       <StatusHeader />
       <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth">
-        <Suspense fallback={<RouteFallback />}>
-          <AccessGate>
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.22, ease: [0.22, 0.61, 0.36, 1] }}
-                className="h-full"
-              >
+        <AccessGate>
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.div
+              key={location.pathname}
+              initial={v.initial}
+              animate={v.animate}
+              exit={v.exit}
+              transition={v.transition}
+              className="h-full"
+              style={{ willChange: "transform, opacity" }}
+            >
+              <Suspense fallback={<RouteFallback />}>
                 <Routes location={location}>
                   <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
                   <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
@@ -176,10 +182,10 @@ const AppRoutes = () => {
                   <Route path="/auth/callback" element={<OAuthCallback />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </motion.div>
-            </AnimatePresence>
-          </AccessGate>
-        </Suspense>
+              </Suspense>
+            </motion.div>
+          </AnimatePresence>
+        </AccessGate>
       </div>
       <BottomNav />
       {user && <TierPromotionCelebration />}

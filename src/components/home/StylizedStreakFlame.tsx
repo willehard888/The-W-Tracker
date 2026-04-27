@@ -1308,12 +1308,17 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const lane = ((i * 19 + seed.b * 3) % 5) / 5; // 0..1, lane within 0.16..0.30 band
             const xRadius = lerp(0.16, 0.30, lane);
             const xPx = side * (bedWidth * xRadius * edgeCurve + bedWidth * 0.012) + xJitter;
-            const bottom = size * (0.03 + (yT + yJitter) * 0.62);
+            // YLLE ASTI: 0.02..0.92 (oli 0.03..0.65) → ylimmät medium-lickit
+            // lähtevät korkealta ja yltävät hero-liekin huipulle
+            const bottom = size * (0.02 + (yT + yJitter) * 0.90);
             const tiltDeg = side * (10 + yT * 26);
             // Laaja kokoskaala — pienistä keskikokoisiin → uniformiton massa
             const sizeBoost = ((i * 17 + seed.c * 7) % 13) / 13;
-            const lickW = Math.max(8, bedWidth * lerp(0.06, 0.18, sizeBoost));
-            const lickH = Math.max(18, tallestH * lerp(0.16, 0.42, sizeBoost) * (1 - yT * 0.25));
+            // Leveys kapenee ylös (1 → 0.5), korkeus KASVAA ylös (0.9 → 1.2)
+            const widthTaper = 1 - yT * 0.5;
+            const heightBoost = lerp(0.9, 1.2, yT);
+            const lickW = Math.max(7, bedWidth * lerp(0.06, 0.18, sizeBoost) * widthTaper);
+            const lickH = Math.max(18, tallestH * lerp(0.20, 0.48, sizeBoost) * heightBoost);
             // OMA RYTMI per liekki — kolme deterministista pseudosatunnaista lukua → ainutlaatuinen kesto, viive ja keyframe-variantti
             const r1 = ((i * 73 + seed.a * 17 + seed.b * 3) % 1000) / 1000; // 0..1
             const r2 = ((i * 109 + seed.b * 23 + seed.c * 5) % 1000) / 1000;

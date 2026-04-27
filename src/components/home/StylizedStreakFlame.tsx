@@ -846,38 +846,41 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const isHero = inten >= 0.92;
             const isMid = inten >= 0.7 && inten < 0.92;
 
-            // Pohja: syvä veripunainen — sama kaikille, antaa visuaalisen "juuren"
-            const fuelShadow = `hsl(${0 + hShift} 75% ${lerp(6, 11, inten)}%)`;
-            const neckBase   = `hsl(${2 + hShift} 95% ${lerp(16, 24, inten)}%)`;
-            const charred    = `hsl(${4 + hShift} 98% ${lerp(22, 32, inten)}%)`;
-            const ember      = `hsl(${8 + hShift} 100% ${lerp(32, 44, inten)}%)`;
-            const deepBase   = `hsl(${12 + hShift} 100% ${lerp(40, 50, inten)}%)`;
-            const body       = `hsl(${18 + hShift} 100% ${lerp(48, 56, inten)}%)`;
-            const shoulder   = `hsl(${24 + hShift} 100% ${lerp(52, 60, inten)}%)`;
+            // Pohja: SYVEMPI veripunainen — sama kaikille, antaa visuaalisen "juuren"
+            // Kaikki light-arvot pudotettu 4–8 % → tummempi, rikkaampi pohja
+            const fuelShadow = `hsl(${358 + hShift} 85% ${lerp(4, 8, inten)}%)`;
+            const neckBase   = `hsl(${0 + hShift} 98% ${lerp(12, 18, inten)}%)`;
+            const charred    = `hsl(${2 + hShift} 100% ${lerp(16, 24, inten)}%)`;
+            const ember      = `hsl(${6 + hShift} 100% ${lerp(24, 34, inten)}%)`;
+            const deepBase   = `hsl(${10 + hShift} 100% ${lerp(32, 42, inten)}%)`;
+            const body       = `hsl(${14 + hShift} 100% ${lerp(40, 48, inten)}%)`;
+            const shoulder   = `hsl(${20 + hShift} 100% ${lerp(44, 52, inten)}%)`;
 
-            // Yläosa: HERO saa kuuma kulta-keltainen; MID syvä oranssi; BACK feidaa punaiseksi
+            // Yläosa: HERO saa rikas KULTA (ei valkoinen); MID syvä oranssi; BACK punainen-amber
+            // Light-arvot syvemmät → premium-amber sijaan halvalta näyttävä keltainen
             const upperBody = isHero
-              ? `hsl(${36 + hShift} 100% 64%)`
+              ? `hsl(${30 + hShift} 100% 54%)`
               : isMid
-                ? `hsl(${28 + hShift} 100% 58%)`
-                : `hsl(${20 + hShift} 100% 52%)`;
+                ? `hsl(${22 + hShift} 100% 48%)`
+                : `hsl(${16 + hShift} 100% 44%)`;
             const tipColor = isHero
-              ? `hsl(${48 + hShift} 100% 70%)`
+              ? `hsl(${38 + hShift} 100% 58%)`
               : isMid
-                ? `hsl(${36 + hShift} 100% 62%)`
-                : `hsl(${24 + hShift} 100% 54%)`;
-            // APEX: hero saa lähes valkoisen kuumimman pisteen — premium-tunnu
+                ? `hsl(${28 + hShift} 100% 52%)`
+                : `hsl(${20 + hShift} 100% 46%)`;
+            // APEX: hero saa rikas KULTA (45° hue, 62% light) — EI valkoinen
+            // Premium amber-gold sijaan halpa cream
             const apex = isHero
-              ? `hsl(54 100% 82%)`
+              ? `hsl(44 100% 62%)`
               : isMid
-                ? `hsl(42 100% 68%)`
-                : `hsl(28 100% 58%)`;
+                ? `hsl(34 100% 56%)`
+                : `hsl(22 100% 48%)`;
 
             // Alpha-profiili: hero pitää 60% opacity vielä 95%-kohdalla → kirkas
             // huippu joka ei feidaa pois. Back row feidaa nopeasti → läpinäkyvä reuna.
-            const alphaUpper = isHero ? 0.92 : isMid ? 0.82 : 0.68;
-            const alphaTip   = isHero ? 0.78 : isMid ? 0.55 : 0.32;
-            const alphaApex  = isHero ? 0.42 : isMid ? 0.22 : 0.08;
+            const alphaUpper = isHero ? 0.94 : isMid ? 0.82 : 0.66;
+            const alphaTip   = isHero ? 0.82 : isMid ? 0.55 : 0.30;
+            const alphaApex  = isHero ? 0.48 : isMid ? 0.22 : 0.06;
 
             return (
               <linearGradient key={gradId} id={gradId} x1="50%" y1="100%" x2="50%" y2="0%">

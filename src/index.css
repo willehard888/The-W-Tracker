@@ -4274,8 +4274,15 @@ button:active > .aurum-lava-glow {
   [style*="stylized-core-highlight"],
   [style*="stylized-smoke-wisp"],
   [style*="stylized-updraft"],
+  [style*="stylized-flame-surge"],
+  [style*="stylized-flame-milestone"],
+  [style*="stylized-flame-collapse"],
+  [style*="stylized-flame-ambient"],
   [style*="ssf-blast-ring"],
   [style*="ssf-blast-spark"] {
+    /* NOTE: stylized-flame-anxious is intentionally NOT disabled —
+       it's a critical UX signal (streak at risk) and the animation
+       is gentle opacity-only, no transform jitter. */
     animation: none !important;
   }
 }

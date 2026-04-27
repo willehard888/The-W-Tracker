@@ -107,38 +107,16 @@ post_install do |installer|
         end
       end
 
-      # Inject Cordova modulemap visibility for Swift targets that import
-      # Capacitor (which transitively requires `module Cordova`). Without this
-      # the swift-frontend cannot resolve `@import Cordova;` in Xcode 26.4.1.
-      #
-      # IMPORTANT: every value below contains literal whitespace ("Target
-      # Support Files"), so each entry MUST be wrapped in escaped double
-      # quotes. We also avoid splitting the existing setting on whitespace —
-      # that would shred any pre-existing quoted path with spaces. Instead we
-      # check for a stable substring (`cordova_marker`) to decide whether the
-      # injection has already happened.
-      if cordova_dependent_targets.include?(target.name)
-        # SWIFT_INCLUDE_PATHS — directory containing CapacitorCordova.modulemap
-        existing_inc = (config.build_settings['SWIFT_INCLUDE_PATHS'] || '$(inherited)').to_s
-        unless existing_inc.include?(cordova_marker.split('/').first) && existing_inc.include?('CapacitorCordova"')
-          config.build_settings['SWIFT_INCLUDE_PATHS'] = "#{existing_inc} #{cordova_modulemap_dir_quoted}".strip
-        end
-        # HEADER_SEARCH_PATHS — fallback so Clang sees Cordova umbrella header
-        existing_hdr = (config.build_settings['HEADER_SEARCH_PATHS'] || '$(inherited)').to_s
-        unless existing_hdr.include?('Cordova.framework/Headers"')
-          config.build_settings['HEADER_SEARCH_PATHS'] = "#{existing_hdr} #{cordova_headers_dir_quoted}".strip
-        end
-        # OTHER_SWIFT_FLAGS — pass `-Xcc -fmodule-map-file="..."` so Clang's
-        # module loader (invoked transitively by swift-frontend for ObjC
-        # imports) can find module Cordova by absolute path even if the
-        # framework hasn't been registered as a Swift module yet. The path is
-        # quoted so Xcode's flag tokenizer does not split on the space inside
-        # "Target Support Files".
-        unless config.build_settings['OTHER_SWIFT_FLAGS'].to_s.include?(cordova_marker)
-          config.build_settings['OTHER_SWIFT_FLAGS'] =
-            "#{config.build_settings['OTHER_SWIFT_FLAGS']} #{cordova_modulemap_flag}"
-        end
-      end
+      # NOTE: We intentionally do NOT inject SWIFT_INCLUDE_PATHS,
+      # HEADER_SEARCH_PATHS, or -fmodule-map-file flags pointing at
+      # Pods/Target Support Files/CapacitorCordova/CapacitorCordova.modulemap.
+      # That modulemap declares its umbrella header relatively, but the header
+      # is built into Cordova.framework/Headers/ — so forcing the modulemap to
+      # load via -fmodule-map-file fails with:
+      #   error: umbrella header 'CapacitorCordova.h' not found
+      # Letting CocoaPods' default FRAMEWORK_SEARCH_PATHS find Cordova.framework
+      # is the correct path; `@import Cordova;` resolves via the framework's
+      # own Modules/module.modulemap, where the umbrella header lives next to it.
     end
   end
 end

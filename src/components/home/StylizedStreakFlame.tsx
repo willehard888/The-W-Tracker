@@ -891,7 +891,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
           bottom: -size * 0.04,
           transform: "translateX(-50%)",
           background: `radial-gradient(ellipse at 50% 0%, ${floorPoolColor.replace(")", " / 0.55)")} 0%, ${floorPoolColor.replace(")", " / 0.18)")} 38%, transparent 75%)`,
-          filter: `blur(${Math.max(6, size * 0.07)}px)`,
+          // (blur poistettu käyttäjän pyynnöstä)
           mixBlendMode: "screen",
           animation: `stylized-floor-pool 2.2s ease-in-out infinite`,
           zIndex: 0,
@@ -909,7 +909,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             bottom: size * 0.06,
             transform: "translateX(-50%)",
             background: `radial-gradient(ellipse at 50% 78%, hsl(14 100% 46% / 0.32) 0%, hsl(6 95% 38% / 0.18) 40%, hsl(0 88% 28% / 0.08) 70%, transparent 88%)`,
-            filter: `blur(${Math.max(8, size * 0.09)}px)`,
+            // (blur poistettu)
             mixBlendMode: "screen",
             animation: `stylized-haze-drift 4s ease-in-out infinite`,
             zIndex: 2,
@@ -928,7 +928,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             bottom: tallestH * 0.55,
             transform: `translateX(-50%) translateY(calc(var(--ssf-haze, 0.5) * -3px)) scaleY(calc(1 + var(--ssf-haze, 0.5) * 0.04))`,
             background: `radial-gradient(ellipse at 50% 30%, hsl(18 80% 65% / 0.10) 0%, hsl(10 70% 55% / 0.05) 45%, transparent 80%)`,
-            filter: `blur(${Math.max(3, size * 0.04)}px)`,
+            // (blur poistettu)
             mixBlendMode: "screen",
             zIndex: 5,
             opacity: lerp(0.5, 1, t),
@@ -946,7 +946,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
           bottom: size * 0.02,
           transform: "translateX(-50%)",
           background: `radial-gradient(ellipse at 50% 50%, hsl(28 100% 56% / 1) 0%, hsl(18 100% 50% / 0.95) 22%, hsl(10 100% 45% / 0.85) 48%, hsl(4 95% 36% / 0.6) 72%, hsl(0 88% 24% / 0.3) 90%, transparent 100%)`,
-          filter: "blur(2.5px)",
+          // (blur poistettu)
           borderRadius: "50%",
           mixBlendMode: "screen",
           animation: `stylized-bed-pulse 1.4s ease-in-out infinite`,
@@ -1011,10 +1011,10 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const zDepth = layer.zIndex === 1 ? -size * 0.18 : layer.zIndex === 2 ? -size * 0.05 : size * 0.04;
             // Atmospheric dimming for back layers
             const layerOpacity = layer.zIndex === 1 ? 0.78 : layer.zIndex === 2 ? 0.92 : 1;
-            // Atmospheric perspective: back layers saavat hivenen blur+desaturate
-            // → parallax-syvyys jossa lähimmät liekit terävät, kaukaiset pehmeät.
+            // Atmospheric perspective ILMAN bluria — pelkkä saturate + brightness
+            // → parallax-syvyys värisävyllä, ei sumealla pehmeydellä.
             const layerAirFilter = layer.zIndex === 1
-              ? "blur(0.8px) saturate(0.9) brightness(0.92)"
+              ? "saturate(0.9) brightness(0.92)"
               : layer.zIndex === 2
                 ? "saturate(0.98)"
                 : "brightness(1.05) saturate(1.06)";
@@ -1102,7 +1102,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                     strokeLinejoin="round"
                     strokeLinecap="round"
                     opacity={layer.zIndex >= 3 ? 0.55 : layer.zIndex === 2 ? 0.42 : 0.3}
-                    style={{ filter: "blur(0.8px)" }}
+                    
                   />
                   {/* Sisempi terävä rim — keltais-oranssi viiva */}
                   <path
@@ -1239,7 +1239,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   pointerEvents: "none",
                   mixBlendMode: "screen",
                   opacity: baseOpacity,
-                  filter: depthBlur > 0 ? `blur(${depthBlur.toFixed(2)}px) saturate(${depthDim.toFixed(2)})` : undefined,
+                  filter: depthBlur > 0 ? `saturate(${depthDim.toFixed(2)})` : undefined,
                   // Containment → composite layer eristyy → ei aiheuta layoutia
                   contain: "layout paint" as React.CSSProperties["contain"],
                   willChange: "transform, opacity",
@@ -1347,7 +1347,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   pointerEvents: "none",
                   mixBlendMode: "screen",
                   opacity: baseOpacity,
-                  filter: depthBlur > 0 ? `blur(${depthBlur.toFixed(2)}px) saturate(${depthDim.toFixed(2)})` : undefined,
+                  filter: depthBlur > 0 ? `saturate(${depthDim.toFixed(2)})` : undefined,
                   contain: "layout paint" as React.CSSProperties["contain"],
                   willChange: "transform, opacity",
                 }}
@@ -1421,7 +1421,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                     bottom: vBottom,
                     transformOrigin: side === "l" ? "right bottom" : "left bottom",
                     // Extra blur + slight desaturation for atmospheric distance
-                    filter: `url(#${filterId}) blur(0.8px) saturate(0.92) brightness(0.88)`,
+                    filter: `url(#${filterId}) saturate(0.92) brightness(0.88)`,
                     animation: `stylized-flame-side-${side} ${dur.toFixed(2)}s cubic-bezier(0.36, 0.04, 0.44, 1) infinite`,
                     animationDelay: `${delay.toFixed(2)}s`,
                     mixBlendMode: "screen",
@@ -1721,7 +1721,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                 left: `calc(50% + ${xPx.toFixed(1)}px)`,
                 bottom: size * 0.18,
                 background: `radial-gradient(circle at 50% 50%, ${tint} 0%, transparent 70%)`,
-                filter: `blur(${(wispSize * 0.18).toFixed(1)}px)`,
+                // (blur poistettu)
                 ["--spark-x" as string]: "0px",
                 ["--spark-drift" as string]: `${drift}px`,
                 ["--spark-rise" as string]: `-${lerp(140, 200, ferocity)}%`,
@@ -1802,7 +1802,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
               bottom: size * 0.12,
               transform: `translateX(-50%) scale(calc(1 + var(--ssf-proximity, 0) * 0.08 + var(--ssf-blast, 0) * 0.18))`,
               background: `radial-gradient(ellipse at 50% 70%, hsl(26 100% 56% / 0.55) 0%, hsl(14 100% 46% / 0.32) 32%, hsl(4 95% 36% / 0.14) 60%, transparent 85%)`,
-              filter: `blur(${Math.max(4, size * 0.05)}px)`,
+              // (blur poistettu)
               mixBlendMode: "screen",
               opacity: `calc(${lerp(0.45, 0.85, ferocity).toFixed(2)} + var(--ssf-proximity, 0) * 0.35 + var(--ssf-blast, 0) * 0.6)` as unknown as number,
               transformOrigin: "center bottom",
@@ -1824,7 +1824,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
               bottom: size * 0.04,
               transform: "translateX(-50%)",
               background: `conic-gradient(from 0deg at 50% 100%, transparent 0deg, hsl(14 100% 50% / 0.06) 30deg, transparent 60deg, hsl(6 95% 44% / 0.05) 90deg, transparent 120deg, hsl(20 100% 52% / 0.05) 180deg, transparent 220deg, hsl(10 95% 46% / 0.06) 280deg, transparent 320deg)`,
-              filter: `blur(${Math.max(8, size * 0.1)}px)`,
+              // (blur poistettu)
               mixBlendMode: "screen",
               animation: `stylized-heat-shimmer 7s linear infinite`,
               zIndex: 0,
@@ -1847,7 +1847,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             bottom: -size * 0.05,
             transform: "translateX(-50%)",
             background: `radial-gradient(ellipse at 50% 65%, hsl(14 100% 46% / ${lerp(0.18, 0.32, ferocity).toFixed(2)}) 0%, hsl(6 95% 38% / ${lerp(0.10, 0.18, ferocity).toFixed(2)}) 22%, hsl(0 88% 28% / ${lerp(0.06, 0.10, ferocity).toFixed(2)}) 42%, transparent 70%)`,
-            filter: `blur(${Math.max(14, size * 0.18)}px)`,
+            // (blur poistettu)
             mixBlendMode: "screen",
             zIndex: -1,
             opacity: `calc(${lerp(0.6, 1, ferocity).toFixed(2)} + var(--ssf-proximity, 0) * 0.2 + var(--ssf-blast, 0) * 0.3 - var(--ssf-idle, 0) * 0.15)`,
@@ -1866,7 +1866,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             bottom: size * 0.02,
             transform: "translateX(-50%)",
             background: `radial-gradient(ellipse at 50% 50%, hsl(28 100% 58%) 0%, hsl(14 100% 48%) 35%, transparent 75%)`,
-            filter: "blur(3px)",
+            // (blur poistettu)
             mixBlendMode: "screen",
             animation: "stylized-bed-flash 0.7s ease-out forwards",
             zIndex: 5,

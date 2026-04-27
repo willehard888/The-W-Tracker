@@ -1,5 +1,14 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import {
+  computeFlameProfile,
+  milestoneCrossed,
+  isDailySurge,
+  isStreakLost,
+  type FlameProfile,
+  type Milestone,
+} from "@/lib/flame-streak-state";
+import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
 /**
  * Detect device performance class once per page load.
@@ -60,6 +69,17 @@ interface StylizedStreakFlameProps {
    * Range: 80–1500 ms (clamped).
    */
   releaseSnapMs?: number;
+  /**
+   * ISO timestamp or epoch ms of the user's last successful checkin.
+   * Drives mood: healthy / at-risk (>18h) / broken (>24h).
+   * If omitted, the flame is always considered healthy.
+   */
+  lastCheckinAt?: string | number | null;
+  /**
+   * Render the elite/legend ambient halo behind the container.
+   * Defaults to true. Set false for tightly-packed UI (chips, inline avatars).
+   */
+  emitAmbient?: boolean;
   className?: string;
 }
 
@@ -143,7 +163,7 @@ interface FlameLayer {
   filterId: 0 | 1 | 2;  // which turbulence filter to use
 }
 
-const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releaseSnapMs, className }: StylizedStreakFlameProps) => {
+const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releaseSnapMs, lastCheckinAt, emitAmbient = true, className }: StylizedStreakFlameProps) => {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   // Intensify clamped & normalized: 1 = base, 10 = inferno
   const intensity = Math.max(1, Math.min(10, intensify));
@@ -166,6 +186,16 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
     };
   }, [uid]);
 
+  // ── STREAK → EMOTION PROFILE ──
+  // Single source of truth for flicker/sway/breath/bodyAlpha/sparkRate/ambient.
+  // Tribe collective fires (intensify>1) ignore lastCheckinAt — they're never "at risk".
+  const profile: FlameProfile = useMemo(() => {
+    if (intensify > 1) {
+      return computeFlameProfile({ streak: effectiveStreak });
+    }
+    return computeFlameProfile({ streak, lastCheckinAt: lastCheckinAt ?? null });
+  }, [streak, effectiveStreak, intensify, lastCheckinAt]);
+
   // Stage-up burst (kept minimal — short brightness pop on the bed, no halo)
   const [burst, setBurst] = useState(false);
   const prevStageRef = useRef(stage);
@@ -178,6 +208,62 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
     }
     prevStageRef.current = stage;
   }, [stage]);
+
+  // ── WOW MOMENTS — surge / milestone / streak-lost detection ──
+  // Detected on streak prop changes. Each fires a one-shot CSS animation by
+  // toggling a state that becomes the container's `animationName`.
+  type EmotionAnim = null | "surge" | "milestone" | "collapse";
+  const [emotion, setEmotion] = useState<EmotionAnim>(null);
+  const [emotionKey, setEmotionKey] = useState(0); // forces re-trigger
+  const [milestoneHit, setMilestoneHit] = useState<Milestone | null>(null);
+  const prevStreakRef = useRef(streak);
+  useEffect(() => {
+    const prev = prevStreakRef.current;
+    const next = streak;
+    if (prev === next) return;
+
+    // Streak lost → 2.4s collapse, silent (no haptic)
+    if (isStreakLost(prev, next)) {
+      setEmotion("collapse");
+      setEmotionKey((k) => k + 1);
+      const id = setTimeout(() => setEmotion(null), 2400);
+      prevStreakRef.current = next;
+      return () => clearTimeout(id);
+    }
+
+    // Milestone (7/30/100/200) → 1.4s celebration + 2 haptics
+    const m = milestoneCrossed(prev, next);
+    if (m !== null) {
+      setEmotion("milestone");
+      setMilestoneHit(m);
+      setEmotionKey((k) => k + 1);
+      hapticImpact("light");
+      const heavyId = setTimeout(() => hapticImpact("heavy"), 300);
+      const successId = setTimeout(() => hapticNotification("success"), 600);
+      const id = setTimeout(() => {
+        setEmotion(null);
+        setMilestoneHit(null);
+      }, 1400);
+      prevStreakRef.current = next;
+      return () => {
+        clearTimeout(id);
+        clearTimeout(heavyId);
+        clearTimeout(successId);
+      };
+    }
+
+    // Plain daily increment → 220ms surge + 1 light haptic
+    if (isDailySurge(prev, next)) {
+      setEmotion("surge");
+      setEmotionKey((k) => k + 1);
+      hapticImpact("light");
+      const id = setTimeout(() => setEmotion(null), 240);
+      prevStreakRef.current = next;
+      return () => clearTimeout(id);
+    }
+
+    prevStreakRef.current = next;
+  }, [streak]);
 
   // ── REACTIVITY v2 — multi-axis lean, proximity bloom, scroll gust,
   //    tap blast (with haptic), and idle breath. All driven via CSS vars
@@ -734,15 +820,95 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         height: size,
         // Container needs pointer events so taps register; inner aria-hidden children remain decorative.
         pointerEvents: "auto",
+        // Base breath animation; emotion-state animations run on top via the
+        // child wrapper to avoid clobbering this loop.
         animation: `stylized-flame-bob ${(3.4).toFixed(2)}s cubic-bezier(0.22, 0.61, 0.36, 1) infinite`,
         // Reactive lean: pointer-X + gust + scroll. Wind degrees fed to sway keyframes.
         ["--ssf-wind" as string]: `calc(var(--ssf-wind-x, 0) * 16deg + var(--ssf-gust, 0) * 8deg)`,
+        // ── Streak-driven personality vars (consumed by all sway/flicker/bob keyframes) ──
+        ["--ssf-flicker" as string]: profile.flicker.toFixed(3),
+        ["--ssf-sway" as string]: profile.sway.toFixed(3),
+        ["--ssf-breath" as string]: profile.breath.toFixed(3),
+        ["--ssf-body-alpha" as string]: profile.bodyAlpha.toFixed(3),
         // Filter: intensify-base + proximity bloom + gust flash + blast pop − idle dim
+        // Multiplied by profile.bodyAlpha so low streaks fade transparently.
+        opacity: profile.bodyAlpha,
         filter: `brightness(calc(${(1 + intensityNorm * 0.35).toFixed(3)} + var(--ssf-gust, 0) * 0.25 + var(--ssf-proximity, 0) * 0.25 + var(--ssf-blast, 0) * 0.55 - var(--ssf-idle, 0) * 0.18)) saturate(calc(${(1 + intensityNorm * 0.4).toFixed(3)} + var(--ssf-proximity, 0) * 0.3 + var(--ssf-gust, 0) * 0.3 - var(--ssf-idle, 0) * 0.12))`,
-        transition: "filter 0.18s ease-out",
+        transition: "opacity 0.4s ease-out, filter 0.18s ease-out",
       }}
       aria-hidden
     >
+      {/* ── AMBIENT HALO — elite/legend only. Soft warm glow behind the flame
+          that signals "this fire occupies space in the UI". ─────────────── */}
+      {emitAmbient && profile.ambient && profile.mood === "healthy" && (
+        <span
+          className="absolute pointer-events-none"
+          style={{
+            left: "50%",
+            top: "55%",
+            width: size * 1.6,
+            height: size * 1.6,
+            borderRadius: "9999px",
+            background: `radial-gradient(circle at 50% 50%, hsl(28 100% 56% / 0.22) 0%, hsl(14 100% 46% / 0.10) 38%, transparent 72%)`,
+            mixBlendMode: "screen",
+            animation: "stylized-flame-ambient 4.6s ease-in-out infinite",
+            zIndex: 0,
+            willChange: "opacity, transform",
+          }}
+        />
+      )}
+
+      {/* ── EMOTION OVERLAY — at-risk pulse / surge / milestone / collapse ──
+          Sits ABOVE the flame, no blend. Pure CSS animation, one-shot or
+          continuous depending on state. */}
+      {profile.mood === "at-risk" && (
+        <span
+          key={`anxious-${emotionKey}`}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            animation: "stylized-flame-anxious 2.8s ease-in-out infinite",
+            zIndex: 6,
+            willChange: "opacity, filter",
+          }}
+        />
+      )}
+      {emotion && (
+        <span
+          key={`emotion-${emotion}-${emotionKey}`}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            transformOrigin: "center bottom",
+            animation:
+              emotion === "surge"
+                ? "stylized-flame-surge 240ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards"
+                : emotion === "milestone"
+                ? "stylized-flame-milestone 1400ms cubic-bezier(0.34, 1.2, 0.64, 1) forwards"
+                : "stylized-flame-collapse 2400ms cubic-bezier(0.4, 0, 0.2, 1) forwards",
+            zIndex: 7,
+            willChange: "transform, opacity, filter",
+          }}
+        />
+      )}
+      {/* Milestone celebration — extra radial sparks */}
+      {emotion === "milestone" && milestoneHit !== null && (
+        <span
+          key={`ms-${emotionKey}`}
+          className="absolute pointer-events-none"
+          style={{
+            left: "50%",
+            top: "60%",
+            width: 4,
+            height: 4,
+            borderRadius: "9999px",
+            background: "hsl(44 100% 62%)",
+            boxShadow:
+              "0 0 12px hsl(38 100% 56%), 0 0 28px hsl(28 100% 50% / 0.8)",
+            animation: "ssf-blast-ring 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards",
+            animationDelay: "260ms",
+            zIndex: 8,
+          }}
+        />
+      )}
       {/* (Tap-blast valkoinen rengasvälähdys poistettu — luki cheap-glown.
           Vain orange/red-kipinät sinkoutuvat ulos, jolloin pysytään puhtaassa
           tuli-värimaailmassa.) */}

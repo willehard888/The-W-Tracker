@@ -1,181 +1,158 @@
-# Native-feel mobile upgrade — last 10%
+# Streak → Fire Emotion System
 
-Ei uusia ominaisuuksia. Vain feel, performance ja interaction.
+The flame engine (`StylizedStreakFlame.tsx`) is already cinematic: 14-layer parallax, 3 turbulence filters, idle breath, pointer/gust/scroll/tilt reactivity, hero core, ember bed, floor pool, heat haze, snap-back release. **We do not rewrite it.** We add the missing emotional layer: a strict **streak → state machine** that makes the fire instantly readable as a status mirror, plus three "wow moment" sequences and a decay state that makes losing the streak feel like loss.
 
----
+## What's missing today
 
-## 1. Root cause — miksi tuntuu webiltä
+- Stages exist (`STAGE_THRESHOLDS = [1,3,7,14,30,60,100,200]`) but each stage is *more of the same* — there's no qualitative shift between them.
+- No "streak maintained today" daily-pulse animation.
+- No milestone burst (7/30/100/200).
+- No "streak at risk" or "streak lost" state — the fire just shrinks.
+- Idle behavior is uniform; doesn't communicate streak strength when no one is touching.
 
-**Rendering**
-- `AnimatePresence` ympäröi koko `<Routes>` → jokainen tab-vaihto unmountaa kokonaisen sivun ja sen react-query-konsumerit. Skroll, lokaali state, in-flight haut, IntersectionObserverit ja video-alustat heitetään pois → "lataa uudestaan"-tunne.
-- Suspense-fallback (`RouteFallback` / skeletons) renderöityy AnimatePresencen sisällä → uudelleenmount + skeleton flash, vaikka chunk olisi jo prefetched.
-- Tab-transition on cross-fade jossa `exit.opacity:0` (160 ms) — silmä näkee mustan välin ennen `enter`. Native iOS-tab vaihtuu **0 ms**.
+## 1. Streak state machine (single source of truth)
 
-**Navigation**
-- Ei view-stackia. Tabit ovat siskoja `<Routes>`-rakenteessa, joten paluu ei palauta state/scrollia muusta kuin kahdesta rAF:stä → näkyvä hyppy.
-- Modaalit (paywall, chat, briefing) jakavat saman AnimatePresencen popLayout-moodissa → "hard transition" peittäen toisensa.
-- iOS:n swipe-back ei ole kytketty router-historiaan visuaalisesti.
-
-**State**
-- Hookit fetcheröivät kohdekomponentin `useEffect`issa eikä reactin queryClientin prefetchillä → ensikerralla aina blank.
-- `staleTime: 30s` on OK, mutta ilman per-route prefetchia ja `keepPreviousData`-käytäntöä lista-sivut näyttävät tyhjältä joka mountilla.
-- `placeholderData: prev` on globaali, mutta uudelleenmount tappaa "prev"-cachen samasta avaimesta toisessa mountin queryclientissa kun key muuttuu.
-
-**Network/loading**
-- Splash näkyy joka cold-startissa. Auth-loading + profile-loading + subscription-loading sarjana → blank-state ennen ekaa screen-paint.
-- `RouteFallback` on visuaalisesti eri kuin oikea sivu (eri taustat, eri kortit) → flash-of-skeleton.
-
----
-
-## 2. Zero-loading -järjestelmä
-
-**Aina mountattuna sessiossa (persistent stack):**
-`/`, `/checkin`, `/feed`, `/tribes`, `/messages`, `/leaderboard`, `/battles`, `/profile`. Tabit pidetään DOMissa, näkymättömät tabit `display:none`-piilossa. Scroll, state, query-cache pysyy.
-
-**Aina preloadattu (chunkit):** kaikki tab-sivut + `Paywall`, `Coach` käynnistyvät splashin jälkeen idle-aikana (`route-preload.ts` jo olemassa — ulotetaan kaikkiin tabeihin).
-
-**Background:** detail-sivut (TribeDetail, UserProfile, Chat, BadgeCompare, Briefing) prefetchataan kun käyttäjä hover/pointerdown linkkiä.
-
-**Blank state pois:** placeholderit eivät ole skeletoneita vaan **viimeisin tunnettu data** (prev cache + `keepPreviousData` per query). Skeletons vain ensimmäisellä laitteen-elinaikaisella avauksella; tab-vaihtoon **ei koskaan**.
-
-**Splash:** näytetään vain ekalla session-cold-startilla (jo nyt). Kuvaikkunassa lyhennetään minimi 800 ms → 400 ms ja AppRoutes mountataan splashin alle, jotta paint on heti splashin alaslähdön jälkeen.
-
----
-
-## 3. Navigation rewrite — persistent tab stack
-
-**Uusi malli:**
+New file `src/lib/flame-streak-state.ts` exports:
 
 ```text
-<RouterRoot>
-  <StatusHeader/>
-  <TabStack>                  ← always mounted, only top tab visible
-    <TabScreen path="/"/>     ← display:none kun ei aktiivinen
-    <TabScreen path="/checkin"/>
-    ...
-  </TabStack>
-  <ModalStack/>               ← /paywall, /chat/:id, /briefing/:id, detail-sivut
-  <BottomNav/>
-</RouterRoot>
+type FlameState =
+  | "ember"        // 0 days   — fragile, almost dead
+  | "kindling"     // 1–3      — unstable, irregular
+  | "lit"          // 4–6      — small steady
+  | "steady"       // 7–13     — confident
+  | "strong"       // 14–29    — large, smooth
+  | "roaring"      // 30–59    — dense, sparks active
+  | "elite"        // 60–99    — controlled power, ambient light
+  | "legend"       // 100+     — heavy, slow, environment-affecting
+
+type FlameMood = "healthy" | "at-risk" | "broken"
+  // at-risk: streak alive but >18h since last check-in (deadline 24h)
+  // broken : streak ended (transient state, ~3s after detection, then ember)
 ```
 
-- Tab-vaihto: `display:none` → `display:block`, **ei mitään animaatiota tabin sisällön ulkonäköön**, vain BottomNavin pill liikkuu (jo on). Aktivoituvan tabin scrollPosition säilyy DOMissa luonnostaan.
-- Detail-pushit (`/user/:id`, `/tribes/:id`, `/chat/:id`): renderöidään modal-stackissa **tab-tasolla aktiivisen tabin päälle** → swipe-back paljastaa alta tabin staattisena (ei mounttausta).
-- Pop: framer-motion translate `x: 100%` → `0` enter, paluulla translate `0` → `100%` exit, taustalla tab näkyy. 240 ms cubic-bezier(0.32, 0.72, 0, 1).
-- Modaalit (paywall, briefing): translate `y: 100%` → `0`. 280 ms.
-- iOS swipe-back: kuuntelijan touchmove `pageX > 24px from left edge` → seuraa sormea live-translateilla → release > 50% tai velocity > 0.5 → `navigate(-1)`.
+Each state has a **personality profile** (not just size):
 
----
+```text
+ember      flicker=0.95 sway=0.20 breath=0.35 bodyOpacity=0.35 sparks=0   tier=cold
+kindling   flicker=0.85 sway=0.55 breath=0.55 bodyOpacity=0.62 sparks=0   tier=warm
+lit        flicker=0.55 sway=0.40 breath=0.50 bodyOpacity=0.78 sparks=0   tier=warm
+steady     flicker=0.40 sway=0.35 breath=0.55 bodyOpacity=0.88 sparks=1/8s
+strong     flicker=0.30 sway=0.30 breath=0.65 bodyOpacity=0.94 sparks=1/5s
+roaring    flicker=0.25 sway=0.32 breath=0.75 bodyOpacity=1.00 sparks=1/3s
+elite      flicker=0.18 sway=0.22 breath=0.85 bodyOpacity=1.00 sparks=1/2s + ambient pool
+legend     flicker=0.14 sway=0.18 breath=1.00 bodyOpacity=1.00 sparks=2/2s + slow embers + env light
+```
 
-## 4. Rendering & state strategy
+Read: low streaks are **erratic**, high streaks are **calm power**. This is the core readability — you can tell within 200ms.
 
-- **TabHost** -komponentti: pitää sisällään `<Outlet>`-tyylisesti renderöidyt tab-sivut, valitsee `data-active` className-kytkimellä. Yksi kerros `position:absolute; inset:0; visibility:hidden;` epäaktiiveille → ei layout-laskentaa, ei IntersectionObserver-laukauksia.
-- Sivu-komponentti EI saa unmounttautua tabin vaihtuessa → kaikki react-query-tilat säilyvät ilman cachen kiertotietä.
-- Per-query: lisätään `placeholderData: keepPreviousData` ja `staleTime` per use case (60 s leaderboardille, 15 s feedille, 0 messages-listalle realtimen alla).
-- `framer-motion` `<motion.div>` ei käytä `key={pathname}` modaaleille → pelkkä mountti/unmount transformilla.
-- `contain: layout paint` lisätty isoille listoille (Feed, Leaderboard, Tribes) → reflow eristyy.
+## 2. State-driven CSS variables (zero rerenders)
 
----
+`StylizedStreakFlame` writes 4 new vars on the container:
 
-## 5. Touch response
+```text
+--ssf-flicker     0..1   amplitude of flicker keyframes
+--ssf-sway        0..1   amplitude of sway keyframes
+--ssf-breath      0..1   amplitude of breath keyframes
+--ssf-body-alpha  0..1   global flame opacity multiplier
+```
 
-**Säännöt:**
-- Visuaalinen feedback **≤ 16 ms** pointerdownista → CSS `:active` + `transform: scale(0.97)` heti.
-- Navigaatio **pointerup**:lla, mutta haptic + prefetch **pointerdown**:lla (jo BottomNavissa — laajennetaan kaikkiin korteihin/buttoneihin).
-- `touch-action: manipulation; -webkit-tap-highlight-color: transparent` globaalisti `<button>`, `[role=button]`, `<a>`-elementeille `index.css`:ssä.
-- Haptic-kartta:
-  - `light` — tab-switch, kortti-tap
-  - `medium` — submit, modal open
-  - `heavy` — destructive confirm, level-up
-- Press-state utility-luokka `.press` → kaikki interactive-kortit saavat sen.
+Existing keyframes (`stylized-flame-flicker-1/2/3`, `-sway-1/2/3`, `-bob`) get refactored to multiply their delta by these vars (e.g. `transform: scale(calc(1 + 0.06 * var(--ssf-flicker, 1)))`). One change, all 14 layers respond. No rerender.
 
----
+## 3. Decay / risk / loss states
 
-## 6. Motion system
+- **`at-risk`** (>18h since checkin):
+  - `flicker` × 1.6, `sway` × 0.6 (unstable but smaller)
+  - sub-100ms erratic micro-dimming via new keyframe `stylized-flame-anxious` (opacity 1 → 0.78 → 1 → 0.85 random-feel)
+  - hero hue shifts −6° toward red (cooler, sicker)
+- **`broken`** (transient ~2.4s when streak resets):
+  - 0–600ms: rapid inward collapse (height → 30%, opacity → 0.4)
+  - 600–1400ms: 6 dim cinder sparks fall outward, no upward flame
+  - 1400–2400ms: fade to bare ember bed glow
+  - then settles into `ember` state
+  - one-shot, driven by `prevStreakRef` going N→0
 
-- **Transition durations**:
-  - micro (toggle, ripple, press): 120 ms
-  - element (modal sheet, kortti enter): 220 ms
-  - screen (push/pop): 260 ms
-  - modal: 280 ms
-- **Easing** kaikkialla: `cubic-bezier(0.32, 0.72, 0, 1)` (iOS-tyyli). Mikrointeraktioissa decelerate `cubic-bezier(0.16, 1, 0.3, 1)`.
-- **Suunta**: push siirtyy oikealta sisään, pop oikealle ulos. Modaali ylhäältä? Ei — alhaalta ylös (sheet).
-- **Tab**: ei mitään. Vain BottomNav-pill animoituu.
-- **Listojen item-enter**: ei staggered fade-iniä — vain ensimmäisellä päivittymisellä. Uudelleenrender ei animoi.
+## 4. Wow moments
 
----
+### A. Daily streak maintained (220ms surge)
+- Trigger: streak count increments while component is mounted.
+- Sequence:
+  - 0ms     hero scaleY 1.00 → 1.18
+  - 90ms    brightness +35%, saturate +20%
+  - 150ms   2 gold sparks emit upward from bed
+  - 220ms   ease back to baseline
+- Reuses existing `triggerFlameShockwave` infra + `setBlastSparks`.
+- Single haptic `Haptics.impact({style: ImpactStyle.Light})` (already in `src/lib/haptics.ts`).
 
-## 7. Scroll & gesture
+### B. Milestone (7/30/100/200) — full celebration (1.4s)
+- 0–200ms: flame compresses (scaleY 0.85), brightness drops to 0.7 → wind-up.
+- 200–500ms: explosive expand to 1.35×, bloom +60%, hero pathIndex shifts to a wider variant for 1 cycle.
+- 500–900ms: 14 radial sparks (existing `blastSparks` with stronger dist + larger size).
+- 900–1400ms: gentle settle back, hue cycles +12° gold for 1 breath.
+- Two haptics: `Light` at 200ms, `Heavy` at 500ms.
+- Optional (cheap): one-shot `<ConfettiBurst>` only on 30/100/200 — already exists.
 
-- iOS overscroll lukitus tab-konttiin: `overscroll-behavior: contain`, ei `bounce` body-tasolla.
-- Scroll-säilyö per tab natively koska tab pysyy DOMissa (ei enää manuaalista `useRouteScrollMemory` tabeille — pidetään detail-sivuille).
-- Pull-to-refresh `use-pull-refresh` jo on; kytketään tab-host-tasolle vain `/`, `/feed`, `/messages`, `/leaderboard`.
-- Swipe-back kuvattu kohdassa 3.
+### C. Streak loss (already detailed above as `broken` state)
+- Crucially **silent** — no haptic, no sound. Loss feels like absence.
 
----
+## 5. Tap / pointer rules (refine existing)
 
-## 8. Loading & data flow
+Already wired. Refinements only:
+- Tap on `ember` state has no flare (it's "almost dead" — tapping doesn't revive it visually; only checking in does).
+- Tap on `at-risk` adds extra flicker to spike rather than calm.
+- Tap on `legend` has the lowest blast amplitude (the fire is *unbothered* — communicates mastery).
 
-- `Index`-sivun 4 useQuery:tä rinnakkaisesti — varmistetaan `enabled: !!user.id` ja kaikilla `staleTime: 60_000`, `placeholderData: keepPreviousData`. Ei muutoksia sopimuksiin.
-- Optimistinen UI:
-  - `feed_reactions` insert → invalidate vasta onSettledissa, optimistinen `queryClient.setQueryData` heti.
-  - `daily_checkins` submit → optimistinen profile.xp + streak päivitys.
-  - `friendships`/`tribe_invites` accept → optimistinen status-flip.
-- Realtime (chat, feed) — jo tehty; varmistetaan ettei `subscribe → unsubscribe` tapahdu tab-vaihdossa (persistent mount korjaa tämän automaattisesti).
+## 6. Ambient / environment light (elite + legend only)
 
----
+- New optional prop `emitAmbient` (default true).
+- When state ∈ {elite, legend}, the container renders a fixed `pointer-events:none` `radial-gradient` halo behind it (z-index 0, no blur, mix-blend screen). 60–80px radius, opacity 0.10–0.18.
+- This is what makes the streak feel like it *occupies space in the UI*. Other components don't need changes — the halo is local to the flame container.
 
-## 9. Visual stability
+## 7. Performance guardrails
 
-- Kaikki tab-rootit saavat `min-h-[100dvh]` ja `aspect-ratio` -placeholderit kuville (`avatar`, `tribe-cover`, `feed-image`).
-- Status header korkeus jo on lukittu — varmistetaan `flex-shrink-0` ja että trial-banneria ei swappaa korkeutta render-syklin aikana (mountataan `min-h-[40px]` placeholder).
-- BottomNav `contain: layout paint` jo asetettu — laajennetaan tab-hostiin.
-- `font-display: optional` lisätään brändifonteille → ei FOIT.
+- All new logic is CSS-var writes + state machine — zero added React rerenders during animation.
+- Spark emission for `roaring/elite/legend` runs on the existing rAF loop (`tick`), not `setInterval` — gated by `perfClass` (low: ÷2, high: ×1.2).
+- Decay/milestone sequences use `setState` once at trigger and rely on CSS keyframes — no per-frame React work.
+- Off-screen + tab-hidden throttling already in place; no change needed.
+- Reduced-motion: state machine still applies (size/colour difference remains), but flicker/sway vars clamp to ≤0.15 — fire still readable, no wobble.
 
----
+## 8. Files touched
 
-## 10. "Native feel" -tarkistuslista
+```text
+new   src/lib/flame-streak-state.ts        ~120 lines, pure functions + types
+edit  src/components/home/StylizedStreakFlame.tsx
+        - import + use computeFlameState(streak, lastCheckinAt)
+        - write --ssf-flicker/sway/breath/body-alpha
+        - prevStreakRef detects increment → daily-surge
+        - milestone detection (7/30/100/200) → full burst
+        - broken-state detection (prev>0 && next===0) → collapse sequence
+        - at-risk visual overlay
+        - emitAmbient halo for elite/legend
+        ~200 lines added, no rewrites
+edit  src/index.css
+        - add @keyframes stylized-flame-anxious
+        - add @keyframes stylized-flame-collapse
+        - add @keyframes stylized-flame-surge
+        - retrofit flicker-1/2/3, sway-1/2/3, bob to multiply by --ssf-*
+        ~80 lines
+edit  src/components/Flame.tsx              wrapper accepts optional lastCheckinAt
+edit  src/components/StreakDisplay.tsx      pass lastCheckinAt through
+edit  src/components/StreakFlameInline.tsx  pass lastCheckinAt through
+```
 
-Jos jokin näistä toistuu → palaa kohtaan ja korjaa:
-1. Pitäisikö skeleton näkyä tab-vaihdossa? **EI koskaan.**
-2. Tap-feedback ≤ 16 ms? **Pakko.**
-3. Layout-shift mountin jälkeen? **0 px.**
-4. "Hard cut" siirtymässä? **Vain tab-vaihtoon — kaikki muut transformeja.**
-5. Network-flash listoissa? **Optimistinen + keepPrevious.**
-6. Splash 2× session aikana? **Ei. Vain ensimmäinen kerta.**
-7. Backswipen alla tyhjä tausta? **Ei. Edellinen näkymä paljastuu live.**
+No DB migration. `lastCheckinAt` already exists in `profiles` (used by `use-tier-risk.ts`) — we read it from the same query.
 
----
+## 9. Acceptance bar
 
-## 11. Suoritusjärjestys
+- A user glancing for <0.5s at any flame in the app can tell:
+  - Is the streak alive?
+  - Is it at risk?
+  - Is it small / mid / huge?
+- Without reading any number.
+- A user who maintained their streak today sees a 220ms surge on the very next flame they look at (because state flows through React Query cache → all instances animate once on first render after checkin).
+- A user who hits day 7/30/100/200 sees a full milestone burst exactly once.
+- A user who breaks their streak sees the flame *die*, not just shrink.
 
-**Vaihe A — Suurin vaikutus (heti):**
-1. **Persistent tab-host**: uudelleenrakenna `AppRoutes` niin että tab-routet renderöityvät yhtaikaa `<TabStack>` componentissa, joka kytkee `display`-statet location.pathnamen mukaan. Detail/modal-routet säilyvät framer-motion-stackissa.
-2. **Poista tab-tier exit-animaatio**: tab-tier `transition: { duration: 0 }`, ei opacityä.
-3. **`placeholderData: keepPreviousData`** kaikkiin Index/Leaderboard/EliteFeed/Tribes-useQueryihin.
-4. **Press-state utility** kortteihin (Feed, Leaderboard, Tribes-listat) ja kaikkiin `<button>` -elementteihin (CSS-luokka `index.css`:ssä).
+## Out of scope
 
-**Vaihe B — Rakenteellinen (medium):**
-5. **Modal-stack erilleen** (push/modal/popLayout) AnimatePresencessä, tab-stack ei ole AnimatePresencen alla lainkaan.
-6. **Optimistinen UI**: feed-reaction, kudos, friendship-accept, checkin-submit.
-7. **Swipe-back gesture** detail-sivuille.
-8. **Splash** lyhennys + paint-perfekti (mountti splashin alla).
-
-**Vaihe C — Polish:**
-9. iOS overscroll-lukitus + `font-display: optional`.
-10. Haptic-mappi laajennetaan kaikkiin CTA-buttoneihin yhtenäisellä helperillä.
-11. Tarkistus performance-profilerilla (long tasks ≤ 50 ms, INP ≤ 200 ms).
-
----
-
-## Tekninen yhteenveto (devs)
-
-- `App.tsx`: `<AppRoutes>` uudistuu — sisältää `<TabHost>` + `<ModalStack>` rinnan. AnimatePresence vain modal-stackiin.
-- Uusi `src/components/TabHost.tsx`: renderöi 8 tab-sivua sisäkkäin `display:none|block` `data-active`-attributtien mukaan, käyttää `useLocation`a aktiivisen tabin valintaan.
-- Uusi `src/components/ModalStack.tsx`: hallitsee push/modal-routet `AnimatePresence mode="popLayout"`:lla.
-- `route-transitions.ts`: tab-variant duration 0; push/modal säilyy.
-- `BottomNav`: pysyy nykyisellään (jo OK).
-- `index.css`: globaali `.press`, `touch-action: manipulation`, `font-display: optional`.
-- React Query: yhtenäinen `keepPreviousData`-helper `src/lib/query-defaults.ts`:ssä, käytetään isoilla useQueryillä.
-- `use-route-scroll-memory.ts`: jätetään detail-sivuille; tab-sivut säilyttävät scrollin DOMissa luonnollisesti.
-- Ei muutoksia sopimuksiin Supabasea kohti, ei uusia tauluja, ei uusia komponentteja UI-puolella.
+- No new pages, no new DB columns, no audio, no 3D/WebGL — pure 2D SVG/CSS additions on top of the current engine.
+- Tribe collective flame (`TribeCollectiveFlame.tsx`) is unchanged in this pass.

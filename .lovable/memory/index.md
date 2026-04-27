@@ -52,6 +52,7 @@ Elite: EARNED status tier (top 5% rank + 14 active days + 30-day streak). Apex t
 - [Authentication Methods](mem://auth/authentication-methods) — Managed Auth in Safari, username selection, oauthHandled flag
 - [Apple Username Selection](mem://auth/apple-username-selection) — Forces username choice for new/generic accounts, pending flag
 - [iOS Build Constraints](mem://technical/ios-development-build) — Xcode Cloud lockfile integrity, no @capacitor-community/apple-sign-in
+- [Capacitor Cordova modulemap](mem://technical/capacitor-cordova-modulemap) — Never inject -fmodule-map-file at CapacitorCordova.modulemap; let Cordova.framework provide it
 - [App Store Compliance](mem://constraints/app-store-compliance) — iPad orientations required, ITSAppUsesNonExemptEncryption=false
 - [iOS Debug View](mem://technical/ios-debug-system) — /ios-debug route logs OAuth and RevenueCat metadata
 - [Live Web UI Update](mem://technical/live-update-config) — Native app loads production URL, forces reload cache bypass

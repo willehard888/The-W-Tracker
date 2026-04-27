@@ -1102,7 +1102,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                     strokeLinejoin="round"
                     strokeLinecap="round"
                     opacity={layer.zIndex >= 3 ? 0.55 : layer.zIndex === 2 ? 0.42 : 0.3}
-                    style={{ filter: "blur(0.8px)" }}
+                    
                   />
                   {/* Sisempi terävä rim — keltais-oranssi viiva */}
                   <path

@@ -1270,8 +1270,11 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   transform: `translateX(calc(-50% + var(--ssf-wind-x, 0) * ${windRespX.toFixed(1)}px)) translateY(calc(var(--ssf-wind-y, 0) * ${(-windRespY).toFixed(1)}px)) translateZ(${zDepth.toFixed(1)}px)`,
                   transformOrigin: "center bottom",
                   zIndex: layer.zIndex,
+                  // Per-layer amplitudikerroin → keyframet kertovat tällä,
+                  // joten sway- ja flicker-amplitudi vaihtelee liekkien kesken.
+                  ["--ssf-layer-amp" as string]: layerAmp.toFixed(3),
                   animation: `stylized-flame-sway-${(i % 3) + 1} ${swayDur.toFixed(2)}s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite`,
-                  animationDelay: `${layer.delaySeed.toFixed(2)}s`,
+                  animationDelay: `${(layer.delaySeed + phaseDelay).toFixed(2)}s`,
                   willChange: layer.zIndex >= 3 ? "transform" : "auto",
                   mixBlendMode: "screen",
                   opacity: layerOpacity,
@@ -1293,8 +1296,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   preserveAspectRatio="none"
                   style={{
                     filter: `url(#${filterId})`,
-                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
-                    animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
+                    // Eri keyframe-variantti kuin sway → flicker desyncattu sway:sta
+                    animation: `stylized-flame-flicker-${((i * 2 + 1) % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+                    animationDelay: `${(layer.delaySeed - 0.3 + phaseDelay * 0.6).toFixed(2)}s`,
                     transformOrigin: "center bottom",
                     willChange: layer.zIndex >= 3 ? "transform, opacity" : "auto",
                     overflow: "visible",
@@ -1303,11 +1307,10 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${gradId})`} />
                 </svg>
 
-                {/* 2) RIM-LIGHT — kapea kirkas reuna (screen-blend) joka jäljittelee
-                     oikean liekin "neon-edge"-efektiä referenssikuvassa. Tämä on
-                     se mikä saa liekin näyttämään LÄPINÄKYVÄLTÄ ja ELÄVÄLTÄ
-                     pelkän tumman outlinen sijaan. Kustannus: 1 turbulenssikäyttö
-                     mutta vain stroke (ei fill) → halpa. */}
+                {/* 2) RIM-LIGHT — pehmeä, EI neon-outline. Stroke desaturoitu
+                     ja ohuempi → näyttää LÄMPÖHEHKULTA, ei keinotekoiselta
+                     viivalta. Saturaatio pudotettu 100% → 78–88% jotta reuna
+                     sulautuu kehoon eikä piirrä terävää ääriviivaa. */}
                 <svg
                   width={flameW}
                   height={flameH}
@@ -1315,8 +1318,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   preserveAspectRatio="none"
                   className="absolute inset-0"
                   style={{
-                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
-                    animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
+                    // Kolmas variantti → ei matchaa body- eikä sway-rytmiä
+                    animation: `stylized-flame-flicker-${((i * 3 + 2) % 3) + 1} ${(speedDur * 1.13).toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+                    animationDelay: `${(layer.delaySeed - 0.55 + phaseDelay * 0.8).toFixed(2)}s`,
                     transformOrigin: "center bottom",
                     mixBlendMode: "screen",
                     pointerEvents: "none",
@@ -1324,26 +1328,27 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                     overflow: "visible",
                   }}
                 >
-                  {/* Ulompi pehmeä lämpöhehku — antaa "kuuman ilman" tunnun */}
+                  {/* Ulompi pehmeä lämpöhehku — desaturoitu amber, ei terävä
+                      neon. Värit pudotettu 100% sat → 78–82% sat. */}
                   <path
                     d={FLAME_PATHS[layer.pathIndex]}
                     fill="none"
-                    stroke={layer.zIndex >= 3 ? "hsl(28 100% 58%)" : layer.zIndex === 2 ? "hsl(20 100% 52%)" : "hsl(14 95% 46%)"}
-                    strokeWidth={layer.zIndex >= 3 ? 2.4 : 1.8}
+                    stroke={layer.zIndex >= 3 ? "hsl(26 78% 56%)" : layer.zIndex === 2 ? "hsl(18 76% 50%)" : "hsl(12 72% 42%)"}
+                    strokeWidth={layer.zIndex >= 3 ? 1.8 : 1.4}
                     strokeLinejoin="round"
                     strokeLinecap="round"
-                    opacity={layer.zIndex >= 3 ? 0.55 : layer.zIndex === 2 ? 0.42 : 0.3}
-                    
+                    opacity={layer.zIndex >= 3 ? 0.38 : layer.zIndex === 2 ? 0.28 : 0.20}
                   />
-                  {/* Sisempi terävä rim — keltais-oranssi viiva */}
+                  {/* Sisempi rim — kapea, lämmin amber (EI keltainen).
+                      Saturaatio 82% → näyttää lämpövalolta, ei tussiviivalta. */}
                   <path
                     d={FLAME_PATHS[layer.pathIndex]}
                     fill="none"
-                    stroke={layer.zIndex >= 3 ? "hsl(36 100% 62%)" : layer.zIndex === 2 ? "hsl(26 100% 54%)" : "hsl(18 95% 48%)"}
-                    strokeWidth={layer.zIndex >= 3 ? 1.0 : 0.7}
+                    stroke={layer.zIndex >= 3 ? "hsl(34 82% 60%)" : layer.zIndex === 2 ? "hsl(24 80% 52%)" : "hsl(16 76% 46%)"}
+                    strokeWidth={layer.zIndex >= 3 ? 0.7 : 0.5}
                     strokeLinejoin="round"
                     strokeLinecap="round"
-                    opacity={layer.zIndex >= 3 ? 0.9 : layer.zIndex === 2 ? 0.72 : 0.5}
+                    opacity={layer.zIndex >= 3 ? 0.62 : layer.zIndex === 2 ? 0.48 : 0.32}
                   />
                 </svg>
 

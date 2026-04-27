@@ -694,7 +694,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         const scaleJ = 1 + ((j - 6) / 60);                       // ±10% scale
         const xJ = ((j - 6) / 80);                                // ±0.075 xOffset
         const speedJ = 1 + ((j - 6) / 50);                        // ±12% speed
-        const hueJ = ((j - 6) / 6);                               // ±1 hue
+        const hueJ = ((j - 6) / 1.8);                            // ±~3.3 hue
         // Pass intensity rotates so layers stratify into front/mid/back parallax bands
         const intenCycle = [1, 0.92, 1.04, 0.88, 1.06, 0.96];
         const intenJ = intenCycle[pass % intenCycle.length];

@@ -1017,6 +1017,62 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
           />
         );
       })}
+      {/* ── 3D-SAVUKIEHKURAT — nousevat tap-paikasta, kiertyvät ja skaalautuvat
+           jotta vaikutelma on ilmavirran nostama savutuprahdus, ei litteä blob.
+           translate3d + rotateZ + skewX yhdistelmällä → näyttää syvältä myös
+           2D:ssä. Harmaa tone screen-blendillä → erottuu liekistä mutta sulautuu
+           taustaan. Häviää INSTANT kun pointerup peruuttaa setSmokePuffs([]). */}
+      {smokePuffs.map((p) => (
+        <span
+          key={`smoke-${p.id}`}
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            left: `calc(50% + ${p.xOffset.toFixed(1)}px)`,
+            top: "55%",
+            width: size * 0.32,
+            height: size * 0.32,
+            background:
+              "radial-gradient(circle at 40% 40%, hsl(28 18% 78% / 0.55) 0%, hsl(20 14% 62% / 0.32) 38%, hsl(15 10% 38% / 0.14) 70%, transparent 100%)",
+            ["--smoke-rise" as string]: `${(-p.rise).toFixed(1)}px`,
+            ["--smoke-rot" as string]: `${p.rotate.toFixed(1)}deg`,
+            ["--smoke-scale" as string]: p.scale.toFixed(2),
+            animation: `ssf-smoke-puff ${p.duration}ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards`,
+            animationDelay: `${p.delay.toFixed(0)}ms`,
+            mixBlendMode: "screen",
+            opacity: 0,
+            transform: "translate(-50%, 0) scale(0.4)",
+            filter: "blur(2px)",
+            zIndex: 9,
+            willChange: "transform, opacity",
+          }}
+        />
+      ))}
+      {/* ── EMBER TRAIL — pienet kuumat hiukkaset, leijuvat ylöspäin savun
+           sisällä. Kestävät hieman pidempään kuin nopeat radiaalikipinät → 3D-
+           syvyys tulee siitä että kerrokset (kipinä → ember → savu) elävät eri
+           rytmissä. Häviää myös INSTANT kun pointerup. */}
+      {emberTrail.map((e) => (
+        <span
+          key={`ember-${e.id}`}
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            left: `calc(50% + ${e.xOffset.toFixed(1)}px)`,
+            top: "62%",
+            width: e.size,
+            height: e.size,
+            background: "hsl(32 100% 60%)",
+            boxShadow: `0 0 ${(e.size * 2).toFixed(1)}px hsl(20 100% 50% / 0.85)`,
+            ["--ember-rise" as string]: `${(-e.rise).toFixed(1)}px`,
+            animation: `ssf-ember-rise ${e.duration}ms cubic-bezier(0.4, 0, 0.6, 1) forwards`,
+            animationDelay: `${e.delay.toFixed(0)}ms`,
+            mixBlendMode: "screen",
+            opacity: 0,
+            transform: "translateX(-50%)",
+            zIndex: 10,
+            willChange: "transform, opacity",
+          }}
+        />
+      ))}
       {/* (Tribe inferno aura halo removed — used to be a soft radial glow,
           read as cheap lens-flare. Tribe intensity is now expressed only via
           doubled flame count + reactive ferocity.) */}

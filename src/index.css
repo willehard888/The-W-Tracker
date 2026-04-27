@@ -4142,7 +4142,8 @@ button:active > .aurum-lava-glow {
     opacity: 0;
   }
 }
-   eri liekit nyökkäilevät eri voimakkuudella, ei "yhteinen mato". */
+/* Per-flame sway variants — amplitude scaled by --ssf-sway × --ssf-layer-amp.
+   Eri liekit nyökkäilevät eri voimakkuudella, ei "yhteinen mato". */
 @keyframes stylized-flame-sway-1 {
   0%, 100% { transform: translateX(-50%) rotate(calc(-3.5deg * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleY(1) scaleX(1); }
   33%      { transform: translateX(-50%) rotate(calc(2deg    * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleY(calc(1 + 0.10 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1)))  scaleX(calc(1 - 0.05 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))); }

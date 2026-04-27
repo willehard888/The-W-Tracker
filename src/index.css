@@ -3856,6 +3856,31 @@ button:active > .aurum-lava-glow {
   }
 }
 
+/* Volumetric heat-bloom — pulsing light ball around the hero core */
+@keyframes stylized-heat-bloom {
+  0%, 100% { transform: translateX(-50%) scale(1);    opacity: 0.85; }
+  50%      { transform: translateX(-50%) scale(1.08); opacity: 1; }
+}
+/* Hero inner-core highlight — bright white-hot streak inside the hero flame */
+@keyframes stylized-core-highlight {
+  0%, 100% { transform: translateX(-50%) scaleY(1)    scaleX(1);    opacity: 0.78; }
+  35%      { transform: translateX(-50%) scaleY(1.10) scaleX(0.92); opacity: 1; }
+  65%      { transform: translateX(-50%) scaleY(0.94) scaleX(1.05); opacity: 0.88; }
+}
+/* Drifting smoke wisp — slow upward curl with sideways sway */
+@keyframes stylized-smoke-wisp {
+  0%   { transform: translate(-50%, 0)    scale(0.7) rotate(-2deg);  opacity: 0; }
+  20%  { opacity: 0.55; }
+  60%  { transform: translate(calc(-50% + 14px), -38%) scale(1.15) rotate(4deg); opacity: 0.4; }
+  100% { transform: translate(calc(-50% - 8px),  -85%) scale(1.5)  rotate(-3deg); opacity: 0; }
+}
+/* Convection updraft — hot-air shimmer rising above the flame tip */
+@keyframes stylized-updraft {
+  0%   { transform: translate(-50%, 0)    scale(0.6); opacity: 0; }
+  25%  { opacity: 0.7; }
+  100% { transform: translate(calc(-50% + var(--up-x, 0px)), -100%) scale(0.2); opacity: 0; }
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════
    "THE SCREEN IS BURNING" — cinematic fire FX for the streak panel.

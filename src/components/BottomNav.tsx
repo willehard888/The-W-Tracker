@@ -124,28 +124,32 @@ const BottomNav = () => {
               type="button"
               aria-label={label}
               aria-current={active ? "page" : undefined}
-              onClick={() => handleNav(path)}
+              onPointerDown={() => onPointerDown(path)}
+              onPointerUp={() => onPointerUp(path)}
+              onPointerCancel={() => { pressedAt.current = null; }}
+              onPointerLeave={() => { pressedAt.current = null; }}
               onPointerEnter={() => prefetchRoute(path)}
               onFocus={() => prefetchRoute(path)}
-              onTouchStart={() => prefetchRoute(path)}
               className={cn(
                 "group relative flex flex-col items-center justify-center gap-0.5 px-1.5 py-1.5 rounded-xl",
-                "transition-[transform,color,opacity] duration-220 will-change-transform",
+                "transition-[transform,color,opacity] duration-150 will-change-transform",
                 "[transition-timing-function:cubic-bezier(0.16,1.2,0.32,1)]",
                 "active:scale-[0.92]",
                 active ? c.text : "text-muted-foreground/55",
               )}
-              style={{ WebkitTapHighlightColor: "transparent" }}
+              style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
             >
-              {/* Active pill — sits behind the icon, no animated shadows */}
+              {/* Active pill — animates between tabs via shared layoutId */}
               {active && (
-                <span
+                <motion.span
+                  layoutId="bottom-nav-pill"
                   aria-hidden
                   className="absolute inset-x-1 top-0.5 bottom-1.5 rounded-xl pointer-events-none"
                   style={{
                     background: `linear-gradient(180deg, ${colorVar.replace(")", " / 0.14)")}, ${colorVar.replace(")", " / 0.04)")})`,
                     border: `1px solid ${colorVar.replace(")", " / 0.22)")}`,
                   }}
+                  transition={{ type: "spring", stiffness: 380, damping: 34 }}
                 />
               )}
 

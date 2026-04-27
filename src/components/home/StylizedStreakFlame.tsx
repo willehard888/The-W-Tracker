@@ -1011,6 +1011,17 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const zDepth = layer.zIndex === 1 ? -size * 0.18 : layer.zIndex === 2 ? -size * 0.05 : size * 0.04;
             // Atmospheric dimming for back layers
             const layerOpacity = layer.zIndex === 1 ? 0.78 : layer.zIndex === 2 ? 0.92 : 1;
+            // Atmospheric perspective: back layers saavat hivenen blur+desaturate
+            // → parallax-syvyys jossa lähimmät liekit terävät, kaukaiset pehmeät.
+            const layerAirFilter = layer.zIndex === 1
+              ? "blur(0.8px) saturate(0.9) brightness(0.92)"
+              : layer.zIndex === 2
+                ? "saturate(0.98)"
+                : "brightness(1.05) saturate(1.06)";
+            // Per-liekki tuulivaste: etummaiset reagoivat enemmän kuin takarivin
+            // (lähempänä ilmavirtaa) → orgaaninen 3D-tunnu kun kallistat puhelinta.
+            const windRespX = layer.zIndex === 3 ? 5 : layer.zIndex === 2 ? 3 : 1.6;
+            const windRespY = windRespX * 0.55;
 
             const isFront = layer.zIndex >= 3;
             const coreId = isFront ? `ssf-core-${uid}-${frontIdx++}` : null;
@@ -1024,7 +1035,8 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   bottom: 0,
                   width: flameW,
                   height: flameH,
-                  transform: `translateX(-50%) translateZ(${zDepth.toFixed(1)}px)`,
+                  // Per-liekki parallax: oma tuulivaste päälle + pohjana wrapper sway
+                  transform: `translateX(calc(-50% + var(--ssf-wind-x, 0) * ${windRespX.toFixed(1)}px)) translateY(calc(var(--ssf-wind-y, 0) * ${(-windRespY).toFixed(1)}px)) translateZ(${zDepth.toFixed(1)}px)`,
                   transformOrigin: "center bottom",
                   zIndex: layer.zIndex,
                   animation: `stylized-flame-sway-${(i % 3) + 1} ${swayDur.toFixed(2)}s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite`,
@@ -1032,6 +1044,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   willChange: layer.zIndex >= 3 ? "transform" : "auto",
                   mixBlendMode: "screen",
                   opacity: layerOpacity,
+                  filter: layerAirFilter,
                 }}
               >
                 {/* ─── REALISTINEN YHDISTELMÄ — kolme kerrosta jotka jäljittelevät

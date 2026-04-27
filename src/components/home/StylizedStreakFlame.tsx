@@ -1207,13 +1207,36 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         {(() => {
           let frontIdx = 0;
           return layers.map((layer, i) => {
+            // ── DETERMINISTIC PER-LAYER JITTER (rytmi + koko + amplitudi) ──
+            // Jokaisella liekillä OMA satunnaiselta tuntuva profiili → ei
+            // synkronoitua "yhteishengitystä". 4 itsenäistä jitter-arvoa
+            // 0..1 jotka eivät korreloi keskenään — fire näyttää elävältä
+            // koska jokainen tuliliekki on aidosti eri kokoinen, eri rytmi,
+            // eri amplitudi ja eri delay.
+            const jSize   = (((i * 31 + seed.a * 7)  % 97) / 96);   // 0..1
+            const jDur    = (((i * 53 + seed.b * 11) % 89) / 88);   // 0..1
+            const jAmp    = (((i * 41 + seed.c * 13) % 83) / 82);   // 0..1
+            const jPhase  = (((i * 67 + seed.a * 19) % 79) / 78);   // 0..1
+
             const flameH = tallestH * layer.scale;
-            const flameW = flameH * (100 / 140) * lerp(0.95, 1.05, (i % 3) / 2);
+            // Leveysvaihtelu KASVATETTU 5% → 22% → siluetit eivät näytä klooneilta.
+            // Kapea-leveä-jakelu antaa orgaanisen "valokielen" mosaiikin.
+            const widthVar = lerp(0.82, 1.18, jSize);
+            const flameW = flameH * (100 / 140) * widthVar;
             const xPx = (bedWidth * 0.5 - flameW * 0.5) * layer.xOffset;
             const gradId = `ssf-grad-${uid}-${i}`;
             const filterId = filterIds[layer.filterId];
-            const speedDur = layer.speed * lerp(1.4, 0.85, t);
-            const swayDur = layer.speed * lerp(2.6, 1.5, t);
+            // Per-layer rytmijitterointi ±28% — flicker- ja sway-kesto eivät
+            // enää lukitu samaan arvoon kaikille liekeille.
+            const durBase = layer.speed * lerp(1.4, 0.85, t);
+            const speedDur = durBase * lerp(0.72, 1.32, jDur);
+            const swayDur  = layer.speed * lerp(2.6, 1.5, t) * lerp(0.78, 1.28, 1 - jDur);
+            // Per-layer amplitudikerroin (0.62..1.32) → CSS-muuttujana joka
+            // skaalaa flicker/sway-keyframet. Tämä rikkoo synkronisaation:
+            // toiset liekit nykivät pieniä, toiset isoja → orgaaninen rytmi.
+            const layerAmp = lerp(0.62, 1.32, jAmp);
+            // Yksilöllinen aloitusvaihe (0..−swayDur) → ei koskaan saman-aikaa.
+            const phaseDelay = -(jPhase * swayDur);
 
             // 3D z-depth: back row receded, front pushed forward
             const zDepth = layer.zIndex === 1 ? -size * 0.18 : layer.zIndex === 2 ? -size * 0.05 : size * 0.04;

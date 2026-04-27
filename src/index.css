@@ -4196,6 +4196,10 @@ button:active > .aurum-lava-glow {
   [style*="stylized-floor-pool"],
   [style*="stylized-haze-drift"],
   [style*="stylized-bed-flash"],
+  [style*="stylized-heat-bloom"],
+  [style*="stylized-core-highlight"],
+  [style*="stylized-smoke-wisp"],
+  [style*="stylized-updraft"],
   [style*="ssf-blast-ring"],
   [style*="ssf-blast-spark"] {
     animation: none !important;

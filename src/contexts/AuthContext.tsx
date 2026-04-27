@@ -148,8 +148,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     setProfile(data);
-    setIsElite(Boolean(data?.is_elite));
-    setIsApexSubscriber(Boolean((data as any)?.is_apex_subscriber));
+    // BROADER ELITE DETECTION: any signal of an active paid membership counts.
+    // Prevents showing the paywall to users who already paid via Stripe (is_elite),
+    // RevenueCat / Apex (is_apex_subscriber), tier promotion (status_tier elite/apex/legend),
+    // or admin-granted credits (membership_credits_until / apex_credits_until in the future).
+    const now = Date.now();
+    const tier = (data as any)?.status_tier;
+    const tierIsPaid = tier === "elite" || tier === "apex" || tier === "legend";
+    const membershipUntil = (data as any)?.membership_credits_until;
+    const apexUntil = (data as any)?.apex_credits_until;
+    const hasMembershipCredits = membershipUntil && new Date(membershipUntil).getTime() > now;
+    const hasApexCredits = apexUntil && new Date(apexUntil).getTime() > now;
+    const nextElite = Boolean(
+      data?.is_elite ||
+      (data as any)?.is_apex_subscriber ||
+      tierIsPaid ||
+      hasMembershipCredits ||
+      hasApexCredits
+    );
+    setIsElite(nextElite);
+    setIsApexSubscriber(Boolean((data as any)?.is_apex_subscriber) || tier === "apex" || tier === "legend" || hasApexCredits);
 
     if (shouldForceAppleUsernameSetup(authUser, data)) {
       if (!data?.username || data.username === buildFallbackUsername(authUser)) {

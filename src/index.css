@@ -4089,36 +4089,38 @@ button:active > .aurum-lava-glow {
     opacity: 0;
   }
 }
-/* Per-flame sway variants — amplitude scaled by --ssf-sway (0..1).
-   Default 1 = full motion (matches legacy values). Lower values = calmer. */
+/* Per-flame sway variants — amplitude scaled by --ssf-sway (state) AND
+   --ssf-layer-amp (per-layer 0.62..1.32). Yhdistelmä rikkoo synkronisaation:
+   eri liekit nyökkäilevät eri voimakkuudella, ei "yhteinen mato". */
 @keyframes stylized-flame-sway-1 {
-  0%, 100% { transform: translateX(-50%) rotate(calc(-3.5deg * var(--ssf-sway, 1))) scaleY(1) scaleX(1); }
-  33%      { transform: translateX(-50%) rotate(calc(2deg    * var(--ssf-sway, 1))) scaleY(calc(1 + 0.10 * var(--ssf-sway, 1)))  scaleX(calc(1 - 0.05 * var(--ssf-sway, 1))); }
-  66%      { transform: translateX(-50%) rotate(calc(-1deg   * var(--ssf-sway, 1))) scaleY(calc(1 + 0.05 * var(--ssf-sway, 1)))  scaleX(calc(1 - 0.02 * var(--ssf-sway, 1))); }
+  0%, 100% { transform: translateX(-50%) rotate(calc(-3.5deg * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleY(1) scaleX(1); }
+  33%      { transform: translateX(-50%) rotate(calc(2deg    * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleY(calc(1 + 0.10 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1)))  scaleX(calc(1 - 0.05 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))); }
+  66%      { transform: translateX(-50%) rotate(calc(-1deg   * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleY(calc(1 + 0.05 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1)))  scaleX(calc(1 - 0.02 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))); }
 }
 @keyframes stylized-flame-sway-2 {
-  0%, 100% { transform: translateX(-50%) rotate(calc(3deg    * var(--ssf-sway, 1))) scaleY(1) scaleX(1); }
-  33%      { transform: translateX(-50%) rotate(calc(-2.5deg * var(--ssf-sway, 1))) scaleY(calc(1 + 0.12 * var(--ssf-sway, 1))) scaleX(calc(1 - 0.07 * var(--ssf-sway, 1))); }
-  66%      { transform: translateX(-50%) rotate(calc(1deg    * var(--ssf-sway, 1))) scaleY(calc(1 + 0.04 * var(--ssf-sway, 1))) scaleX(calc(1 - 0.01 * var(--ssf-sway, 1))); }
+  0%, 100% { transform: translateX(-50%) rotate(calc(3deg    * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleY(1) scaleX(1); }
+  33%      { transform: translateX(-50%) rotate(calc(-2.5deg * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleY(calc(1 + 0.12 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleX(calc(1 - 0.07 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))); }
+  66%      { transform: translateX(-50%) rotate(calc(1deg    * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleY(calc(1 + 0.04 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleX(calc(1 - 0.01 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))); }
 }
 @keyframes stylized-flame-sway-3 {
-  0%, 100% { transform: translateX(-50%) rotate(calc(-1.5deg * var(--ssf-sway, 1))) scaleY(1) scaleX(1); }
-  33%      { transform: translateX(-50%) rotate(calc(3.5deg  * var(--ssf-sway, 1))) scaleY(calc(1 + 0.14 * var(--ssf-sway, 1))) scaleX(calc(1 - 0.08 * var(--ssf-sway, 1))); }
-  66%      { transform: translateX(-50%) rotate(calc(-2deg   * var(--ssf-sway, 1))) scaleY(calc(1 + 0.06 * var(--ssf-sway, 1))) scaleX(calc(1 - 0.03 * var(--ssf-sway, 1))); }
+  0%, 100% { transform: translateX(-50%) rotate(calc(-1.5deg * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleY(1) scaleX(1); }
+  33%      { transform: translateX(-50%) rotate(calc(3.5deg  * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleY(calc(1 + 0.14 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleX(calc(1 - 0.08 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))); }
+  66%      { transform: translateX(-50%) rotate(calc(-2deg   * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleY(calc(1 + 0.06 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))) scaleX(calc(1 - 0.03 * var(--ssf-sway, 1) * var(--ssf-layer-amp, 1))); }
 }
-/* Per-flame flicker variants — amplitude scaled by --ssf-flicker (0..1).
-   Low streaks (kindling) = high flicker; legend = nearly motionless body. */
+/* Per-flame flicker variants — amplitudes multiplied by both state-level
+   --ssf-flicker AND per-layer --ssf-layer-amp. Tämä tekee jokaisesta
+   liekistä omanrytmisen: pieni amp = rauhallinen pulssi, iso amp = nykivä. */
 @keyframes stylized-flame-flicker-1 {
-  0%, 100% { transform: scaleY(1) scaleX(1); opacity: calc(0.95 + 0.05 * (1 - var(--ssf-flicker, 1))); }
-  50%      { transform: scaleY(calc(1 + 0.12 * var(--ssf-flicker, 1))) scaleX(calc(1 - 0.08 * var(--ssf-flicker, 1))); opacity: 1; }
+  0%, 100% { transform: scaleY(1) scaleX(1); opacity: calc(0.95 + 0.05 * (1 - var(--ssf-flicker, 1) * var(--ssf-layer-amp, 1))); }
+  50%      { transform: scaleY(calc(1 + 0.12 * var(--ssf-flicker, 1) * var(--ssf-layer-amp, 1))) scaleX(calc(1 - 0.08 * var(--ssf-flicker, 1) * var(--ssf-layer-amp, 1))); opacity: 1; }
 }
 @keyframes stylized-flame-flicker-2 {
-  0%, 100% { transform: scaleY(1) scaleX(1); opacity: calc(0.92 + 0.08 * (1 - var(--ssf-flicker, 1))); }
-  50%      { transform: scaleY(calc(1 + 0.16 * var(--ssf-flicker, 1))) scaleX(calc(1 - 0.10 * var(--ssf-flicker, 1))); opacity: 1; }
+  0%, 100% { transform: scaleY(1) scaleX(1); opacity: calc(0.92 + 0.08 * (1 - var(--ssf-flicker, 1) * var(--ssf-layer-amp, 1))); }
+  50%      { transform: scaleY(calc(1 + 0.16 * var(--ssf-flicker, 1) * var(--ssf-layer-amp, 1))) scaleX(calc(1 - 0.10 * var(--ssf-flicker, 1) * var(--ssf-layer-amp, 1))); opacity: 1; }
 }
 @keyframes stylized-flame-flicker-3 {
   0%, 100% { transform: scaleY(1) scaleX(1); opacity: 1; }
-  50%      { transform: scaleY(calc(1 + 0.20 * var(--ssf-flicker, 1))) scaleX(calc(1 - 0.12 * var(--ssf-flicker, 1))); opacity: calc(0.92 + 0.08 * (1 - var(--ssf-flicker, 1))); }
+  50%      { transform: scaleY(calc(1 + 0.20 * var(--ssf-flicker, 1) * var(--ssf-layer-amp, 1))) scaleX(calc(1 - 0.12 * var(--ssf-flicker, 1) * var(--ssf-layer-amp, 1))); opacity: calc(0.92 + 0.08 * (1 - var(--ssf-flicker, 1) * var(--ssf-layer-amp, 1))); }
 }
 /* Wild tongue — smooth lick rising and dissolving */
 @keyframes stylized-flame-tongue {

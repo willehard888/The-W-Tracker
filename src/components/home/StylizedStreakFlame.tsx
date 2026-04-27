@@ -694,7 +694,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         const scaleJ = 1 + ((j - 6) / 60);                       // ±10% scale
         const xJ = ((j - 6) / 80);                                // ±0.075 xOffset
         const speedJ = 1 + ((j - 6) / 50);                        // ±12% speed
-        const hueJ = ((j - 6) / 6);                               // ±1 hue
+        const hueJ = ((j - 6) / 1.8);                            // ±~3.3 hue
         // Pass intensity rotates so layers stratify into front/mid/back parallax bands
         const intenCycle = [1, 0.92, 1.04, 0.88, 1.06, 0.96];
         const intenJ = intenCycle[pass % intenCycle.length];
@@ -1012,41 +1012,42 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const isHero = inten >= 0.92;
             const isMid = inten >= 0.7 && inten < 0.92;
 
-            // Pohja: SYVEMPI veripunainen — sama kaikille, antaa visuaalisen "juuren"
-            // Kaikki light-arvot pudotettu 4–8 % → tummempi, rikkaampi pohja
-            const fuelShadow = `hsl(${358 + hShift} 85% ${lerp(4, 8, inten)}%)`;
-            const neckBase   = `hsl(${0 + hShift} 98% ${lerp(12, 18, inten)}%)`;
-            const charred    = `hsl(${2 + hShift} 100% ${lerp(16, 24, inten)}%)`;
-            const ember      = `hsl(${6 + hShift} 100% ${lerp(24, 34, inten)}%)`;
-            const deepBase   = `hsl(${10 + hShift} 100% ${lerp(32, 42, inten)}%)`;
-            const body       = `hsl(${14 + hShift} 100% ${lerp(40, 48, inten)}%)`;
-            const shoulder   = `hsl(${20 + hShift} 100% ${lerp(44, 52, inten)}%)`;
+            // Pohja: SYVEMPI veripunainen — sama kaikille, antaa visuaalisen "juuren".
+            // Saturaatio HIEMAN pudotettu (98→92, 100→94) → ei näytä kynsilakalta.
+            const fuelShadow = `hsl(${358 + hShift} 78% ${lerp(4, 8, inten)}%)`;
+            const neckBase   = `hsl(${0 + hShift} 88% ${lerp(12, 18, inten)}%)`;
+            const charred    = `hsl(${2 + hShift} 92% ${lerp(16, 24, inten)}%)`;
+            const ember      = `hsl(${6 + hShift} 94% ${lerp(24, 34, inten)}%)`;
+            const deepBase   = `hsl(${10 + hShift} 96% ${lerp(32, 42, inten)}%)`;
+            const body       = `hsl(${14 + hShift} 96% ${lerp(40, 48, inten)}%)`;
+            const shoulder   = `hsl(${20 + hShift} 92% ${lerp(44, 52, inten)}%)`;
 
-            // Yläosa: HERO saa rikas KULTA (ei valkoinen); MID syvä oranssi; BACK punainen-amber
-            // Light-arvot syvemmät → premium-amber sijaan halvalta näyttävä keltainen
+            // Yläosa: HERO saa rikas KULTA (ei valkoinen); MID syvä oranssi; BACK punainen-amber.
+            // Saturaatio 100% → 86–92% jotta tipit eivät näytä muoviselta keltaiselta.
+            // Oikea tuli on yläosassa hieman LÄPIKUULTAVA — ei umpikylläinen.
             const upperBody = isHero
-              ? `hsl(${30 + hShift} 100% 54%)`
+              ? `hsl(${30 + hShift} 92% 54%)`
               : isMid
-                ? `hsl(${22 + hShift} 100% 48%)`
-                : `hsl(${16 + hShift} 100% 44%)`;
+                ? `hsl(${22 + hShift} 90% 48%)`
+                : `hsl(${16 + hShift} 88% 44%)`;
             const tipColor = isHero
-              ? `hsl(${38 + hShift} 100% 58%)`
+              ? `hsl(${38 + hShift} 88% 58%)`
               : isMid
-                ? `hsl(${28 + hShift} 100% 52%)`
-                : `hsl(${20 + hShift} 100% 46%)`;
-            // APEX: hero saa rikas KULTA (45° hue, 62% light) — EI valkoinen
-            // Premium amber-gold sijaan halpa cream
+                ? `hsl(${28 + hShift} 86% 52%)`
+                : `hsl(${20 + hShift} 84% 46%)`;
+            // APEX: hero = lämmin amber-kulta (44° hue, 60% light, 86% sat).
+            // 100% saturaatio teki keltaisesta neon-kelloksen. 86% = aitoa lämpöä.
             const apex = isHero
-              ? `hsl(44 100% 62%)`
+              ? `hsl(44 86% 60%)`
               : isMid
-                ? `hsl(34 100% 56%)`
-                : `hsl(22 100% 48%)`;
+                ? `hsl(34 84% 54%)`
+                : `hsl(22 82% 46%)`;
 
-            // Alpha-profiili: hero pitää 60% opacity vielä 95%-kohdalla → kirkas
-            // huippu joka ei feidaa pois. Back row feidaa nopeasti → läpinäkyvä reuna.
-            const alphaUpper = isHero ? 0.94 : isMid ? 0.82 : 0.66;
-            const alphaTip   = isHero ? 0.82 : isMid ? 0.55 : 0.30;
-            const alphaApex  = isHero ? 0.48 : isMid ? 0.22 : 0.06;
+            // Alpha-profiili: hero pitää kirkkauden, back row feidaa nopeasti.
+            // Tipit hieman LÄPINÄKYVÄMMÄKSI → ei piirry terävää reunaa.
+            const alphaUpper = isHero ? 0.92 : isMid ? 0.78 : 0.62;
+            const alphaTip   = isHero ? 0.74 : isMid ? 0.48 : 0.26;
+            const alphaApex  = isHero ? 0.40 : isMid ? 0.18 : 0.05;
 
             return (
               <linearGradient key={gradId} id={gradId} x1="50%" y1="100%" x2="50%" y2="0%">
@@ -1077,13 +1078,15 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             return (
               <radialGradient key={id} id={id} cx="50%" cy="62%" r="42%">
                 {/* Saturoitu kulta-amber center — ei valkoinen */}
-                <stop offset="0%"   stopColor="hsl(42 100% 64%)" stopOpacity="0.95" />
-                <stop offset="12%"  stopColor="hsl(36 100% 58%)" stopOpacity="0.88" />
-                <stop offset="26%"  stopColor="hsl(28 100% 50%)" stopOpacity="0.78" />
-                <stop offset="44%"  stopColor="hsl(18 100% 44%)" stopOpacity="0.55" />
-                <stop offset="64%"  stopColor="hsl(10 100% 38%)" stopOpacity="0.28" />
-                <stop offset="84%"  stopColor="hsl(4 95% 28%)"   stopOpacity="0.08" />
-                <stop offset="100%" stopColor="hsl(0 90% 18%)"   stopOpacity="0" />
+                {/* Saturoitu kulta-amber center — desaturoitu hieman jotta
+                    ei näytä valkokuumalta neonilta. 100% sat → 86–92% sat. */}
+                <stop offset="0%"   stopColor="hsl(42 88% 64%)" stopOpacity="0.92" />
+                <stop offset="12%"  stopColor="hsl(36 90% 58%)" stopOpacity="0.84" />
+                <stop offset="26%"  stopColor="hsl(28 92% 50%)" stopOpacity="0.74" />
+                <stop offset="44%"  stopColor="hsl(18 92% 44%)" stopOpacity="0.50" />
+                <stop offset="64%"  stopColor="hsl(10 90% 38%)" stopOpacity="0.24" />
+                <stop offset="84%"  stopColor="hsl(4 86% 28%)"  stopOpacity="0.06" />
+                <stop offset="100%" stopColor="hsl(0 80% 18%)"  stopOpacity="0" />
               </radialGradient>
             );
           })}
@@ -1207,13 +1210,36 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         {(() => {
           let frontIdx = 0;
           return layers.map((layer, i) => {
+            // ── DETERMINISTIC PER-LAYER JITTER (rytmi + koko + amplitudi) ──
+            // Jokaisella liekillä OMA satunnaiselta tuntuva profiili → ei
+            // synkronoitua "yhteishengitystä". 4 itsenäistä jitter-arvoa
+            // 0..1 jotka eivät korreloi keskenään — fire näyttää elävältä
+            // koska jokainen tuliliekki on aidosti eri kokoinen, eri rytmi,
+            // eri amplitudi ja eri delay.
+            const jSize   = (((i * 31 + seed.a * 7)  % 97) / 96);   // 0..1
+            const jDur    = (((i * 53 + seed.b * 11) % 89) / 88);   // 0..1
+            const jAmp    = (((i * 41 + seed.c * 13) % 83) / 82);   // 0..1
+            const jPhase  = (((i * 67 + seed.a * 19) % 79) / 78);   // 0..1
+
             const flameH = tallestH * layer.scale;
-            const flameW = flameH * (100 / 140) * lerp(0.95, 1.05, (i % 3) / 2);
+            // Leveysvaihtelu KASVATETTU 5% → 22% → siluetit eivät näytä klooneilta.
+            // Kapea-leveä-jakelu antaa orgaanisen "valokielen" mosaiikin.
+            const widthVar = lerp(0.82, 1.18, jSize);
+            const flameW = flameH * (100 / 140) * widthVar;
             const xPx = (bedWidth * 0.5 - flameW * 0.5) * layer.xOffset;
             const gradId = `ssf-grad-${uid}-${i}`;
             const filterId = filterIds[layer.filterId];
-            const speedDur = layer.speed * lerp(1.4, 0.85, t);
-            const swayDur = layer.speed * lerp(2.6, 1.5, t);
+            // Per-layer rytmijitterointi ±28% — flicker- ja sway-kesto eivät
+            // enää lukitu samaan arvoon kaikille liekeille.
+            const durBase = layer.speed * lerp(1.4, 0.85, t);
+            const speedDur = durBase * lerp(0.72, 1.32, jDur);
+            const swayDur  = layer.speed * lerp(2.6, 1.5, t) * lerp(0.78, 1.28, 1 - jDur);
+            // Per-layer amplitudikerroin (0.62..1.32) → CSS-muuttujana joka
+            // skaalaa flicker/sway-keyframet. Tämä rikkoo synkronisaation:
+            // toiset liekit nykivät pieniä, toiset isoja → orgaaninen rytmi.
+            const layerAmp = lerp(0.62, 1.32, jAmp);
+            // Yksilöllinen aloitusvaihe (0..−swayDur) → ei koskaan saman-aikaa.
+            const phaseDelay = -(jPhase * swayDur);
 
             // 3D z-depth: back row receded, front pushed forward
             const zDepth = layer.zIndex === 1 ? -size * 0.18 : layer.zIndex === 2 ? -size * 0.05 : size * 0.04;
@@ -1247,8 +1273,11 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   transform: `translateX(calc(-50% + var(--ssf-wind-x, 0) * ${windRespX.toFixed(1)}px)) translateY(calc(var(--ssf-wind-y, 0) * ${(-windRespY).toFixed(1)}px)) translateZ(${zDepth.toFixed(1)}px)`,
                   transformOrigin: "center bottom",
                   zIndex: layer.zIndex,
+                  // Per-layer amplitudikerroin → keyframet kertovat tällä,
+                  // joten sway- ja flicker-amplitudi vaihtelee liekkien kesken.
+                  ["--ssf-layer-amp" as string]: layerAmp.toFixed(3),
                   animation: `stylized-flame-sway-${(i % 3) + 1} ${swayDur.toFixed(2)}s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite`,
-                  animationDelay: `${layer.delaySeed.toFixed(2)}s`,
+                  animationDelay: `${(layer.delaySeed + phaseDelay).toFixed(2)}s`,
                   willChange: layer.zIndex >= 3 ? "transform" : "auto",
                   mixBlendMode: "screen",
                   opacity: layerOpacity,
@@ -1270,8 +1299,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   preserveAspectRatio="none"
                   style={{
                     filter: `url(#${filterId})`,
-                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
-                    animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
+                    // Eri keyframe-variantti kuin sway → flicker desyncattu sway:sta
+                    animation: `stylized-flame-flicker-${((i * 2 + 1) % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+                    animationDelay: `${(layer.delaySeed - 0.3 + phaseDelay * 0.6).toFixed(2)}s`,
                     transformOrigin: "center bottom",
                     willChange: layer.zIndex >= 3 ? "transform, opacity" : "auto",
                     overflow: "visible",
@@ -1280,11 +1310,10 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   <path d={FLAME_PATHS[layer.pathIndex]} fill={`url(#${gradId})`} />
                 </svg>
 
-                {/* 2) RIM-LIGHT — kapea kirkas reuna (screen-blend) joka jäljittelee
-                     oikean liekin "neon-edge"-efektiä referenssikuvassa. Tämä on
-                     se mikä saa liekin näyttämään LÄPINÄKYVÄLTÄ ja ELÄVÄLTÄ
-                     pelkän tumman outlinen sijaan. Kustannus: 1 turbulenssikäyttö
-                     mutta vain stroke (ei fill) → halpa. */}
+                {/* 2) RIM-LIGHT — pehmeä, EI neon-outline. Stroke desaturoitu
+                     ja ohuempi → näyttää LÄMPÖHEHKULTA, ei keinotekoiselta
+                     viivalta. Saturaatio pudotettu 100% → 78–88% jotta reuna
+                     sulautuu kehoon eikä piirrä terävää ääriviivaa. */}
                 <svg
                   width={flameW}
                   height={flameH}
@@ -1292,8 +1321,9 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   preserveAspectRatio="none"
                   className="absolute inset-0"
                   style={{
-                    animation: `stylized-flame-flicker-${(i % 3) + 1} ${speedDur.toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
-                    animationDelay: `${(layer.delaySeed - 0.3).toFixed(2)}s`,
+                    // Kolmas variantti → ei matchaa body- eikä sway-rytmiä
+                    animation: `stylized-flame-flicker-${((i * 3 + 2) % 3) + 1} ${(speedDur * 1.13).toFixed(2)}s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+                    animationDelay: `${(layer.delaySeed - 0.55 + phaseDelay * 0.8).toFixed(2)}s`,
                     transformOrigin: "center bottom",
                     mixBlendMode: "screen",
                     pointerEvents: "none",
@@ -1301,26 +1331,27 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                     overflow: "visible",
                   }}
                 >
-                  {/* Ulompi pehmeä lämpöhehku — antaa "kuuman ilman" tunnun */}
+                  {/* Ulompi pehmeä lämpöhehku — desaturoitu amber, ei terävä
+                      neon. Värit pudotettu 100% sat → 78–82% sat. */}
                   <path
                     d={FLAME_PATHS[layer.pathIndex]}
                     fill="none"
-                    stroke={layer.zIndex >= 3 ? "hsl(28 100% 58%)" : layer.zIndex === 2 ? "hsl(20 100% 52%)" : "hsl(14 95% 46%)"}
-                    strokeWidth={layer.zIndex >= 3 ? 2.4 : 1.8}
+                    stroke={layer.zIndex >= 3 ? "hsl(26 78% 56%)" : layer.zIndex === 2 ? "hsl(18 76% 50%)" : "hsl(12 72% 42%)"}
+                    strokeWidth={layer.zIndex >= 3 ? 1.8 : 1.4}
                     strokeLinejoin="round"
                     strokeLinecap="round"
-                    opacity={layer.zIndex >= 3 ? 0.55 : layer.zIndex === 2 ? 0.42 : 0.3}
-                    
+                    opacity={layer.zIndex >= 3 ? 0.38 : layer.zIndex === 2 ? 0.28 : 0.20}
                   />
-                  {/* Sisempi terävä rim — keltais-oranssi viiva */}
+                  {/* Sisempi rim — kapea, lämmin amber (EI keltainen).
+                      Saturaatio 82% → näyttää lämpövalolta, ei tussiviivalta. */}
                   <path
                     d={FLAME_PATHS[layer.pathIndex]}
                     fill="none"
-                    stroke={layer.zIndex >= 3 ? "hsl(36 100% 62%)" : layer.zIndex === 2 ? "hsl(26 100% 54%)" : "hsl(18 95% 48%)"}
-                    strokeWidth={layer.zIndex >= 3 ? 1.0 : 0.7}
+                    stroke={layer.zIndex >= 3 ? "hsl(34 82% 60%)" : layer.zIndex === 2 ? "hsl(24 80% 52%)" : "hsl(16 76% 46%)"}
+                    strokeWidth={layer.zIndex >= 3 ? 0.7 : 0.5}
                     strokeLinejoin="round"
                     strokeLinecap="round"
-                    opacity={layer.zIndex >= 3 ? 0.9 : layer.zIndex === 2 ? 0.72 : 0.5}
+                    opacity={layer.zIndex >= 3 ? 0.62 : layer.zIndex === 2 ? 0.48 : 0.32}
                   />
                 </svg>
 

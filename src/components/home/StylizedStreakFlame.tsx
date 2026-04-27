@@ -571,25 +571,29 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
   const layers: FlameLayer[] = useMemo(() => {
     if (flameCount === 0) return [];
     // Base 14 curated layers — back→front for organic depth, fuller bonfire feel.
+    // HERO-DOMINANCE: keski-hero on selvästi suurin (1.45×) ja dominoi pystysuoraa
+    // siluettia. Sivuliekit palautettu maltillisempiin kokoihin (max 0.85) jotta
+    // ne istuvat hero-liekin YMPÄRILLE eivätkä kilpaile huipulla.
     const basePlan: Omit<FlameLayer, "delaySeed">[] = [
-      // ── BACK ROW (4) — cooler, shorter, soft warp ──
-      { pathIndex: 0, scale: 0.78, xOffset: -0.7,  zIndex: 1, speed: 1.05, hueShift: -5, intensity: 0.42, filterId: 0 },
-      { pathIndex: 5, scale: 0.74, xOffset:  0.7,  zIndex: 1, speed: 1.1,  hueShift: -3, intensity: 0.46, filterId: 0 },
-      { pathIndex: 8, scale: 0.7,  xOffset: -0.18, zIndex: 1, speed: 1.15, hueShift: -4, intensity: 0.5,  filterId: 0 },
-      { pathIndex: 0, scale: 0.66, xOffset:  0.22, zIndex: 1, speed: 1.0,  hueShift: -2, intensity: 0.5,  filterId: 0 },
-      // ── MID ROW (5) — fills the body of the fire ──
-      { pathIndex: 1, scale: 0.86, xOffset: -0.45, zIndex: 2, speed: 0.92, hueShift: -1, intensity: 0.68, filterId: 1 },
-      { pathIndex: 7, scale: 0.84, xOffset:  0.46, zIndex: 2, speed: 0.95, hueShift:  1, intensity: 0.7,  filterId: 1 },
-      { pathIndex: 3, scale: 0.82, xOffset: -0.15, zIndex: 2, speed: 0.88, hueShift:  2, intensity: 0.76, filterId: 1 },
-      { pathIndex: 1, scale: 0.8,  xOffset:  0.18, zIndex: 2, speed: 0.9,  hueShift:  0, intensity: 0.74, filterId: 1 },
-      { pathIndex: 6, scale: 0.78, xOffset:  0.0,  zIndex: 2, speed: 0.86, hueShift:  3, intensity: 0.8,  filterId: 1 },
-      // ── FRONT ROW (4) — hottest, sharpest tongues ──
-      { pathIndex: 2, scale: 0.96, xOffset: -0.28, zIndex: 3, speed: 0.72, hueShift:  3, intensity: 0.88, filterId: 2 },
-      { pathIndex: 6, scale: 0.94, xOffset:  0.3,  zIndex: 3, speed: 0.76, hueShift:  4, intensity: 0.9,  filterId: 2 },
-      { pathIndex: 3, scale: 0.92, xOffset: -0.08, zIndex: 3, speed: 0.7,  hueShift:  5, intensity: 0.92, filterId: 2 },
-      { pathIndex: 7, scale: 0.9,  xOffset:  0.12, zIndex: 3, speed: 0.74, hueShift:  4, intensity: 0.92, filterId: 2 },
-      // ── HERO — tallest, dead centre, sharpest tip ──
-      { pathIndex: 4, scale: 1.05, xOffset:  0.0,  zIndex: 4, speed: 0.62, hueShift:  6, intensity: 1.0,  filterId: 2 },
+      // ── BACK ROW (4) — cooler, shorter, soft warp — recessed background ──
+      { pathIndex: 0, scale: 0.62, xOffset: -0.7,  zIndex: 1, speed: 1.05, hueShift: -5, intensity: 0.40, filterId: 0 },
+      { pathIndex: 5, scale: 0.58, xOffset:  0.7,  zIndex: 1, speed: 1.1,  hueShift: -3, intensity: 0.44, filterId: 0 },
+      { pathIndex: 8, scale: 0.55, xOffset: -0.20, zIndex: 1, speed: 1.15, hueShift: -4, intensity: 0.48, filterId: 0 },
+      { pathIndex: 0, scale: 0.52, xOffset:  0.24, zIndex: 1, speed: 1.0,  hueShift: -2, intensity: 0.48, filterId: 0 },
+      // ── MID ROW (5) — fills the body of the fire, lower than hero ──
+      { pathIndex: 1, scale: 0.72, xOffset: -0.48, zIndex: 2, speed: 0.92, hueShift: -1, intensity: 0.66, filterId: 1 },
+      { pathIndex: 7, scale: 0.70, xOffset:  0.50, zIndex: 2, speed: 0.95, hueShift:  1, intensity: 0.68, filterId: 1 },
+      { pathIndex: 3, scale: 0.74, xOffset: -0.18, zIndex: 2, speed: 0.88, hueShift:  2, intensity: 0.74, filterId: 1 },
+      { pathIndex: 1, scale: 0.72, xOffset:  0.20, zIndex: 2, speed: 0.9,  hueShift:  0, intensity: 0.72, filterId: 1 },
+      { pathIndex: 6, scale: 0.68, xOffset:  0.0,  zIndex: 2, speed: 0.86, hueShift:  3, intensity: 0.78, filterId: 1 },
+      // ── FRONT ROW (4) — hottest tongues but SHORTER than hero ──
+      { pathIndex: 2, scale: 0.82, xOffset: -0.30, zIndex: 3, speed: 0.72, hueShift:  3, intensity: 0.86, filterId: 2 },
+      { pathIndex: 6, scale: 0.80, xOffset:  0.32, zIndex: 3, speed: 0.76, hueShift:  4, intensity: 0.88, filterId: 2 },
+      { pathIndex: 3, scale: 0.78, xOffset: -0.10, zIndex: 3, speed: 0.7,  hueShift:  5, intensity: 0.90, filterId: 2 },
+      { pathIndex: 7, scale: 0.76, xOffset:  0.14, zIndex: 3, speed: 0.74, hueShift:  4, intensity: 0.90, filterId: 2 },
+      // ── HERO — DOMINANT centerpiece: 1.45× scale, dead centre, intensity = 1.0
+      //    This is the crown of the fire. Everything else orbits around it.
+      { pathIndex: 4, scale: 1.45, xOffset:  0.0,  zIndex: 4, speed: 0.58, hueShift:  6, intensity: 1.0,  filterId: 2 },
     ];
 
     // ── 6× the plan: 6 passes per base layer with deterministic jitter
@@ -609,14 +613,20 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         const intenCycle = [1, 0.92, 1.04, 0.88, 1.06, 0.96];
         const intenJ = intenCycle[pass % intenCycle.length];
         const pathJ = (b.pathIndex + pass * 2) % FLAME_PATHS.length;
+        // HERO (idx 13) säilyttää aina dominantin scalensa: clamp ylärajaan 1.55,
+        // muut clampataan 1.05:een ettei mikään sivuliekki ohita heroa.
+        const isHero = idx === 13;
+        const scaleMax = isHero ? 1.55 : 1.05;
+        const scaleMin = isHero ? 1.30 : 0.5;
         plan.push({
           ...b,
           pathIndex: pathJ,
-          scale: Math.max(0.5, Math.min(1.18, b.scale * scaleJ)),
-          xOffset: Math.max(-0.85, Math.min(0.85, b.xOffset + xJ)),
+          scale: Math.max(scaleMin, Math.min(scaleMax, b.scale * scaleJ)),
+          // Hero ei jittereöidy x-akselilla — pysyy keskellä
+          xOffset: isHero ? 0 : Math.max(-0.85, Math.min(0.85, b.xOffset + xJ)),
           speed: Math.max(0.5, b.speed * speedJ),
           hueShift: b.hueShift + hueJ,
-          intensity: Math.max(0.35, Math.min(1, b.intensity * intenJ)),
+          intensity: isHero ? 1.0 : Math.max(0.35, Math.min(0.94, b.intensity * intenJ)),
         });
       });
     }
@@ -820,61 +830,89 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             </filter>
           ))}
 
-          {/* Per-layer vertical gradients — PURE FIRE palette
-              (charred ember → blood-red → deep tangerine → burnt orange → glowing amber → warm yellow apex)
-              VAIN punainen / oranssi / keltainen — ei sinistä kaasubasea, ei valkoista cream-apex. */}
+          {/* Per-layer vertical gradients — PREMIUM FIRE PALETTE
+              Hot core paradigm: very saturated, hot YELLOW-WHITE apex on the
+              hero/front flames; deep crimson on back flames. The contrast
+              between deep blood-red base and incandescent gold tip is what
+              makes a premium fire read as "real fire" instead of a flat decal.
+              Values are biased per-layer by `intensity`:
+                inten ≥ 0.92 → HERO (gold/cream apex, full saturation, brightest body)
+                0.7 ≤ inten < 0.92 → MID (orange apex, rich body)
+                inten < 0.7 → BACK (deep ember apex, muted, atmospheric) */}
           {layers.map((layer, i) => {
             const gradId = `ssf-grad-${uid}-${i}`;
             const hShift = layer.hueShift;
             const inten = layer.intensity;
-            // Pohjasta lämmin tumma punainen — ei sinistä happikaasua (luki "scifi-light"-sävyltä).
-            // Koko paletti siirretty PUNAISEMPAAN suuntaan: vähemmän keltaista, enemmän verenpunaa & syvää oranssia.
-            const fuelShadow = `hsl(${0 + hShift} 60% ${lerp(8, 13, inten)}%)`;        // near-black blood base
-            const neckBase   = `hsl(${2 + hShift} 95% ${lerp(18, 26, inten)}%)`;        // syvä punainen pohja
-            const charred    = `hsl(${0 + hShift}  92% ${lerp(20, 30, inten)}%)`;       // charred crimson ember
-            const ember      = `hsl(${4 + hShift}  98% ${lerp(30, 40, inten)}%)`;       // blood ember red
-            const deepBase   = `hsl(${8 + hShift} 100% ${lerp(38, 48, inten)}%)`;       // deep red-orange
-            const body       = `hsl(${12 + hShift} 100% ${lerp(46, 55, inten)}%)`;      // crimson-orange body
-            const shoulder   = `hsl(${16 + hShift} 100% ${lerp(50, 58, inten)}%)`;      // burnt blood-orange
-            const upperBody  = `hsl(${20 + hShift} 100% ${lerp(50, 57, inten)}%)`;      // deep tangerine
-            const tipColor   = inten > 0.85
-              ? `hsl(${24 + hShift} 100% ${lerp(52, 58, inten)}%)`                      // syvä oranssi (ei amber/keltainen)
-              : `hsl(${22 + hShift} 100% ${lerp(48, 54, inten)}%)`;
-            // Apex: kylläinen syvä oranssi — EI keltaista, EI valkoista.
-            const apex       = inten > 0.94 ? `hsl(28 100% 56%)` : tipColor;
+            const isHero = inten >= 0.92;
+            const isMid = inten >= 0.7 && inten < 0.92;
 
+            // Pohja: syvä veripunainen — sama kaikille, antaa visuaalisen "juuren"
+            const fuelShadow = `hsl(${0 + hShift} 75% ${lerp(6, 11, inten)}%)`;
+            const neckBase   = `hsl(${2 + hShift} 95% ${lerp(16, 24, inten)}%)`;
+            const charred    = `hsl(${4 + hShift} 98% ${lerp(22, 32, inten)}%)`;
+            const ember      = `hsl(${8 + hShift} 100% ${lerp(32, 44, inten)}%)`;
+            const deepBase   = `hsl(${12 + hShift} 100% ${lerp(40, 50, inten)}%)`;
+            const body       = `hsl(${18 + hShift} 100% ${lerp(48, 56, inten)}%)`;
+            const shoulder   = `hsl(${24 + hShift} 100% ${lerp(52, 60, inten)}%)`;
+
+            // Yläosa: HERO saa kuuma kulta-keltainen; MID syvä oranssi; BACK feidaa punaiseksi
+            const upperBody = isHero
+              ? `hsl(${36 + hShift} 100% 64%)`
+              : isMid
+                ? `hsl(${28 + hShift} 100% 58%)`
+                : `hsl(${20 + hShift} 100% 52%)`;
+            const tipColor = isHero
+              ? `hsl(${48 + hShift} 100% 70%)`
+              : isMid
+                ? `hsl(${36 + hShift} 100% 62%)`
+                : `hsl(${24 + hShift} 100% 54%)`;
+            // APEX: hero saa lähes valkoisen kuumimman pisteen — premium-tunnu
+            const apex = isHero
+              ? `hsl(54 100% 82%)`
+              : isMid
+                ? `hsl(42 100% 68%)`
+                : `hsl(28 100% 58%)`;
+
+            // Alpha-profiili: hero pitää 60% opacity vielä 95%-kohdalla → kirkas
+            // huippu joka ei feidaa pois. Back row feidaa nopeasti → läpinäkyvä reuna.
+            const alphaUpper = isHero ? 0.92 : isMid ? 0.82 : 0.68;
+            const alphaTip   = isHero ? 0.78 : isMid ? 0.55 : 0.32;
+            const alphaApex  = isHero ? 0.42 : isMid ? 0.22 : 0.08;
 
             return (
               <linearGradient key={gradId} id={gradId} x1="50%" y1="100%" x2="50%" y2="0%">
                 {/* Pohja: tummaa hiiltynyttä punaista — pinnaa liekin maahan */}
-                <stop offset="0%"   stopColor={fuelShadow} stopOpacity="0.92" />
-                <stop offset="4%"   stopColor={neckBase}   stopOpacity="0.97" />
-                <stop offset="10%"  stopColor={charred}    stopOpacity="1" />
-                <stop offset="20%"  stopColor={ember}      stopOpacity="1" />
-                {/* Keskirunko: täydet värit, kaikki kuumin alue */}
-                <stop offset="35%"  stopColor={deepBase}   stopOpacity="0.98" />
-                <stop offset="52%"  stopColor={body}       stopOpacity="0.95" />
-                <stop offset="68%"  stopColor={shoulder}   stopOpacity="0.88" />
-                {/* Yläosa: NOPEA alpha-feidaus → läpinäkyvä kärki kuten oikeassa liekissä */}
-                <stop offset="82%"  stopColor={upperBody}  stopOpacity="0.65" />
-                <stop offset="91%"  stopColor={tipColor}   stopOpacity="0.32" />
-                <stop offset="97%"  stopColor={apex}       stopOpacity="0.1" />
+                <stop offset="0%"   stopColor={fuelShadow} stopOpacity="0.94" />
+                <stop offset="5%"   stopColor={neckBase}   stopOpacity="0.98" />
+                <stop offset="12%"  stopColor={charred}    stopOpacity="1" />
+                <stop offset="22%"  stopColor={ember}      stopOpacity="1" />
+                {/* Keskirunko: täydet värit */}
+                <stop offset="38%"  stopColor={deepBase}   stopOpacity="0.99" />
+                <stop offset="55%"  stopColor={body}       stopOpacity="0.97" />
+                <stop offset="70%"  stopColor={shoulder}   stopOpacity="0.92" />
+                {/* Yläosa: HERO pitää kirkkauden, BACK feidaa */}
+                <stop offset="82%"  stopColor={upperBody}  stopOpacity={alphaUpper} />
+                <stop offset="92%"  stopColor={tipColor}   stopOpacity={alphaTip} />
+                <stop offset="98%"  stopColor={apex}       stopOpacity={alphaApex} />
                 <stop offset="100%" stopColor={apex}       stopOpacity="0" />
               </linearGradient>
             );
           })}
 
-          {/* Inner core — kylläinen oranssi-punainen sydän, EI valkoista hot-spot. */}
+          {/* Inner core — kuuma KULTA-keltainen sydän hero-liekille:
+              keskipiste lähes valkoinen → keltainen → oranssi → tumma reuna.
+              Tämä antaa premium "incandescent core" -tunnun. */}
           {layers.filter((l) => l.zIndex >= 3).map((_, idx) => {
             const id = `ssf-core-${uid}-${idx}`;
             return (
-              <radialGradient key={id} id={id} cx="50%" cy="62%" r="38%">
-                {/* Pure red-orange core — keskipiste syvä oranssi, EI keltainen, EI vaalea. */}
-                <stop offset="0%"   stopColor="hsl(24 100% 54%)" stopOpacity="1" />
-                <stop offset="14%"  stopColor="hsl(18 100% 50%)" stopOpacity="0.92" />
-                <stop offset="32%"  stopColor="hsl(12 100% 46%)" stopOpacity="0.72" />
-                <stop offset="56%"  stopColor="hsl(6 98% 40%)"  stopOpacity="0.4" />
-                <stop offset="80%"  stopColor="hsl(2 95% 32%)"   stopOpacity="0.15" />
+              <radialGradient key={id} id={id} cx="50%" cy="62%" r="42%">
+                {/* Hot incandescent center — premium gold core. */}
+                <stop offset="0%"   stopColor="hsl(54 100% 88%)" stopOpacity="1" />
+                <stop offset="10%"  stopColor="hsl(48 100% 76%)" stopOpacity="0.95" />
+                <stop offset="22%"  stopColor="hsl(38 100% 64%)" stopOpacity="0.85" />
+                <stop offset="40%"  stopColor="hsl(26 100% 54%)" stopOpacity="0.62" />
+                <stop offset="62%"  stopColor="hsl(14 100% 46%)" stopOpacity="0.32" />
+                <stop offset="84%"  stopColor="hsl(4 95% 36%)"   stopOpacity="0.10" />
                 <stop offset="100%" stopColor="hsl(0 90% 24%)"   stopOpacity="0" />
               </radialGradient>
             );
@@ -1211,11 +1249,13 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const sizeBoost = ((i * 13 + seed.a * 5) % 11) / 11;
             // Leveys: kapenee ylöspäin (1 → 0.45) jotta tipit eivät tuki ylä-aluetta
             const widthTaper = 1 - yT * 0.55;
-            const lickW = Math.max(5, bedWidth * lerp(0.04, 0.12, sizeBoost) * widthTaper);
-            // Korkeus: KASVAA hieman ylöspäin (0.85 → 1.15) → ylimmät lickit
-            // ovat selvästi pidempiä ja yltävät tallestH:n korkeudelle.
-            const heightBoost = lerp(0.85, 1.15, yT);
-            const lickH = Math.max(14, tallestH * lerp(0.14, 0.36, sizeBoost) * heightBoost);
+            // Pienennetty (oli 0.04..0.12, nyt 0.03..0.09) → small lickit eivät
+            // kilpaile hero-liekin kanssa visuaalisesti.
+            const lickW = Math.max(4, bedWidth * lerp(0.03, 0.09, sizeBoost) * widthTaper);
+            // Korkeus: kasvaa ylös (0.8 → 1.0) — ei ylitä hero-korkeutta enää.
+            const heightBoost = lerp(0.8, 1.0, yT);
+            // Pienempi suhteellinen korkeus (oli 0.14..0.36, nyt 0.10..0.26)
+            const lickH = Math.max(10, tallestH * lerp(0.10, 0.26, sizeBoost) * heightBoost);
             // Yksi animaatio per liekki — ei sway-keyframea joka pyyhkisi rotation
             const flickDur = lerp(1.6, 1.0, ferocity) + ((i * 0.17) % 0.5);
             const delay = -(((i * 0.27 + seed.c * 0.011) % flickDur));
@@ -1308,17 +1348,19 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const lane = ((i * 19 + seed.b * 3) % 5) / 5; // 0..1, lane within 0.16..0.30 band
             const xRadius = lerp(0.16, 0.30, lane);
             const xPx = side * (bedWidth * xRadius * edgeCurve + bedWidth * 0.012) + xJitter;
-            // YLLE ASTI: 0.02..0.92 (oli 0.03..0.65) → ylimmät medium-lickit
-            // lähtevät korkealta ja yltävät hero-liekin huipulle
-            const bottom = size * (0.02 + (yT + yJitter) * 0.90);
+            // YLLE ASTI: ylimmät medium-lickit lähtevät keskikorkeudelta ja
+            // yltävät hero-liekin huipulle. Ylä-osassa kapeammat etteivät peitä heroa.
+            const bottom = size * (0.02 + (yT + yJitter) * 0.85);
             const tiltDeg = side * (10 + yT * 26);
             // Laaja kokoskaala — pienistä keskikokoisiin → uniformiton massa
             const sizeBoost = ((i * 17 + seed.c * 7) % 13) / 13;
-            // Leveys kapenee ylös (1 → 0.5), korkeus KASVAA ylös (0.9 → 1.2)
-            const widthTaper = 1 - yT * 0.5;
-            const heightBoost = lerp(0.9, 1.2, yT);
-            const lickW = Math.max(7, bedWidth * lerp(0.06, 0.18, sizeBoost) * widthTaper);
-            const lickH = Math.max(18, tallestH * lerp(0.20, 0.48, sizeBoost) * heightBoost);
+            // Leveys kapenee voimakkaammin ylös (1 → 0.4), korkeus 0.85 → 1.05
+            // → hero-liekki dominoi ylhäällä yksin, sivuliekit kapenevat ja levenevät pohjalle.
+            const widthTaper = 1 - yT * 0.6;
+            const heightBoost = lerp(0.85, 1.05, yT);
+            // Pienennetty (oli 0.06..0.18, nyt 0.04..0.13) → ei kilpaile heron kanssa
+            const lickW = Math.max(6, bedWidth * lerp(0.04, 0.13, sizeBoost) * widthTaper);
+            const lickH = Math.max(14, tallestH * lerp(0.14, 0.34, sizeBoost) * heightBoost);
             // OMA RYTMI per liekki — kolme deterministista pseudosatunnaista lukua → ainutlaatuinen kesto, viive ja keyframe-variantti
             const r1 = ((i * 73 + seed.a * 17 + seed.b * 3) % 1000) / 1000; // 0..1
             const r2 = ((i * 109 + seed.b * 23 + seed.c * 5) % 1000) / 1000;

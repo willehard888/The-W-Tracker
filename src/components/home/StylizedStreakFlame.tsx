@@ -8,7 +8,7 @@ import {
   type FlameProfile,
   type Milestone,
 } from "@/lib/flame-streak-state";
-import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
 /**
  * Detect device performance class once per page load.

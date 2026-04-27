@@ -838,6 +838,77 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
       }}
       aria-hidden
     >
+      {/* ── AMBIENT HALO — elite/legend only. Soft warm glow behind the flame
+          that signals "this fire occupies space in the UI". ─────────────── */}
+      {emitAmbient && profile.ambient && profile.mood === "healthy" && (
+        <span
+          className="absolute pointer-events-none"
+          style={{
+            left: "50%",
+            top: "55%",
+            width: size * 1.6,
+            height: size * 1.6,
+            borderRadius: "9999px",
+            background: `radial-gradient(circle at 50% 50%, hsl(28 100% 56% / 0.22) 0%, hsl(14 100% 46% / 0.10) 38%, transparent 72%)`,
+            mixBlendMode: "screen",
+            animation: "stylized-flame-ambient 4.6s ease-in-out infinite",
+            zIndex: 0,
+            willChange: "opacity, transform",
+          }}
+        />
+      )}
+
+      {/* ── EMOTION OVERLAY — at-risk pulse / surge / milestone / collapse ──
+          Sits ABOVE the flame, no blend. Pure CSS animation, one-shot or
+          continuous depending on state. */}
+      {profile.mood === "at-risk" && (
+        <span
+          key={`anxious-${emotionKey}`}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            animation: "stylized-flame-anxious 2.8s ease-in-out infinite",
+            zIndex: 6,
+            willChange: "opacity, filter",
+          }}
+        />
+      )}
+      {emotion && (
+        <span
+          key={`emotion-${emotion}-${emotionKey}`}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            transformOrigin: "center bottom",
+            animation:
+              emotion === "surge"
+                ? "stylized-flame-surge 240ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards"
+                : emotion === "milestone"
+                ? "stylized-flame-milestone 1400ms cubic-bezier(0.34, 1.2, 0.64, 1) forwards"
+                : "stylized-flame-collapse 2400ms cubic-bezier(0.4, 0, 0.2, 1) forwards",
+            zIndex: 7,
+            willChange: "transform, opacity, filter",
+          }}
+        />
+      )}
+      {/* Milestone celebration — extra radial sparks */}
+      {emotion === "milestone" && milestoneHit !== null && (
+        <span
+          key={`ms-${emotionKey}`}
+          className="absolute pointer-events-none"
+          style={{
+            left: "50%",
+            top: "60%",
+            width: 4,
+            height: 4,
+            borderRadius: "9999px",
+            background: "hsl(44 100% 62%)",
+            boxShadow:
+              "0 0 12px hsl(38 100% 56%), 0 0 28px hsl(28 100% 50% / 0.8)",
+            animation: "ssf-blast-ring 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards",
+            animationDelay: "260ms",
+            zIndex: 8,
+          }}
+        />
+      )}
       {/* (Tap-blast valkoinen rengasvälähdys poistettu — luki cheap-glown.
           Vain orange/red-kipinät sinkoutuvat ulos, jolloin pysytään puhtaassa
           tuli-värimaailmassa.) */}

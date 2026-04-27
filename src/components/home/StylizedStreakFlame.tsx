@@ -1263,12 +1263,12 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
           return items;
         })()}
 
-        {/* ─── MEDIUM EDGE LICKS — 50 keskikokoista liekkiä ison liekin reunoilla.
+        {/* ─── MEDIUM EDGE LICKS — 20× tiheämpi: 1000/680/440 keskikokoista liekkiä.
              Suurempia kuin pienet edge licks, sijoitetaan hieman kauemmas siluetista
-             ja jakautuvat laajemmalle korkeusalueelle → tuovat täyteyttä ja leveyttä
-             ilman että peittävät päärungon. Skaalautuu perfClassin mukaan. */}
+             ja jakautuvat laajemmalle korkeusalueelle → tuovat täyteyttä, leveyttä
+             ja syvyyttä. Vain joka 8. saa turbulence-filtterin → 8× kevyempi. */}
         {(() => {
-          const COUNT = perfClass === "high" ? 50 : perfClass === "mid" ? 34 : 22;
+          const COUNT = perfClass === "high" ? 1000 : perfClass === "mid" ? 680 : 440;
           const items: JSX.Element[] = [];
           for (let i = 0; i < COUNT; i++) {
             const side = i % 2 === 0 ? -1 : 1;
@@ -1278,15 +1278,18 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             // Reuna kaartuu sisäänpäin ylös, mutta lievemmin kuin small licks
             const edgeCurve = 1 - Math.pow(yT, 1.5) * 0.6;
             const yJitter = (((i * 41 + seed.a * 9) % 100) / 100 - 0.5) * 0.08;
-            const xJitter = (((i * 53 + seed.b * 13) % 100) / 100 - 0.5) * bedWidth * 0.03;
-            // LÄHEMPÄNÄ päärunkoa: 0.22 (oli 0.34) + 0.015 puskuri → hipovat siluettia
-            const xPx = side * (bedWidth * 0.22 * edgeCurve + bedWidth * 0.015) + xJitter;
-            const bottom = size * (0.04 + (yT + yJitter) * 0.6);
+            const xJitter = (((i * 53 + seed.b * 13) % 100) / 100 - 0.5) * bedWidth * 0.05;
+            // Massiivinen tiheys vaatii laajemman x-skaalan jotta liekit eivät
+            // pinoudu samalle viivalle — käytetään xLane-vaihtelua sisäänpäin/ulospäin
+            const lane = ((i * 19 + seed.b * 3) % 5) / 5; // 0..1, lane within 0.16..0.30 band
+            const xRadius = lerp(0.16, 0.30, lane);
+            const xPx = side * (bedWidth * xRadius * edgeCurve + bedWidth * 0.012) + xJitter;
+            const bottom = size * (0.03 + (yT + yJitter) * 0.62);
             const tiltDeg = side * (10 + yT * 26);
-            // KESKIKOKO: ~1.6× isompia kuin small licks
-            const sizeBoost = ((i * 17 + seed.c * 7) % 9) / 9;
-            const lickW = Math.max(14, bedWidth * lerp(0.13, 0.2, sizeBoost));
-            const lickH = Math.max(32, tallestH * lerp(0.26, 0.46, sizeBoost) * (1 - yT * 0.25));
+            // Laaja kokoskaala — pienistä keskikokoisiin → uniformiton massa
+            const sizeBoost = ((i * 17 + seed.c * 7) % 13) / 13;
+            const lickW = Math.max(8, bedWidth * lerp(0.06, 0.18, sizeBoost));
+            const lickH = Math.max(18, tallestH * lerp(0.16, 0.42, sizeBoost) * (1 - yT * 0.25));
             // OMA RYTMI per liekki — kolme deterministista pseudosatunnaista lukua → ainutlaatuinen kesto, viive ja keyframe-variantti
             const r1 = ((i * 73 + seed.a * 17 + seed.b * 3) % 1000) / 1000; // 0..1
             const r2 = ((i * 109 + seed.b * 23 + seed.c * 5) % 1000) / 1000;
@@ -1305,10 +1308,18 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
               "ease-in-out",
             ];
             const easing = easings[(i + Math.floor(r1 * 4)) % easings.length];
+            // OPTIMOINTI: vain joka 8. saa kalliin turbulence-filtterin
+            const useFilter = i % 8 === 0;
             const fId = filterIds[i % 2 === 0 ? 1 : 2];
             const gradId = `ssf-grad-${uid}-${i % Math.max(1, layers.length)}`;
             const pathIdx = (i * 5 + 3) % FLAME_PATHS.length;
-            const baseOpacity = lerp(0.55, 0.85, ferocity) * (1 - yT * 0.18);
+            // SYVYYS-PARALLAX: kauempana keskuksesta → blur + dim → ilmaperspektiivi
+            const depthBucket = (i * 11) % 6; // 0..5
+            const depthBlur = depthBucket * 0.3; // 0..1.5 px
+            const depthDim = 1 - depthBucket * 0.07; // 1.0 .. 0.65
+            // Per-liekki tuulivaste — keskikokoiset reagoivat kohtuullisesti
+            const windResp = lerp(3, 8, sizeBoost);
+            const baseOpacity = lerp(0.55, 0.85, ferocity) * (1 - yT * 0.18) * depthDim;
             items.push(
               <div
                 key={`med-edge-lick-${i}`}
@@ -1317,12 +1328,13 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   bottom,
                   width: lickW,
                   height: lickH,
-                  transform: `translateX(calc(-50% + ${xPx.toFixed(1)}px)) rotate(${tiltDeg.toFixed(1)}deg)`,
+                  transform: `translateX(calc(-50% + ${xPx.toFixed(1)}px + var(--ssf-wind-x, 0) * ${windResp.toFixed(1)}px)) translateY(calc(var(--ssf-wind-y, 0) * ${(-windResp * 0.5).toFixed(1)}px)) rotate(calc(${tiltDeg.toFixed(1)}deg + var(--ssf-wind-x, 0) * ${(side * 5).toFixed(1)}deg))`,
                   transformOrigin: "center bottom",
-                  zIndex: 2,
+                  zIndex: 2 - Math.floor(depthBucket / 3), // 2 (etu) → 1 (taka) → 0 (kauimmainen)
                   pointerEvents: "none",
                   mixBlendMode: "screen",
                   opacity: baseOpacity,
+                  filter: depthBlur > 0 ? `blur(${depthBlur.toFixed(2)}px) saturate(${depthDim.toFixed(2)})` : undefined,
                   contain: "layout paint" as React.CSSProperties["contain"],
                   willChange: "transform, opacity",
                 }}
@@ -1334,7 +1346,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   viewBox="0 0 100 140"
                   preserveAspectRatio="none"
                   style={{
-                    filter: `url(#${fId})`,
+                    filter: useFilter ? `url(#${fId})` : undefined,
                     animation: `stylized-flame-flicker-${variant} ${flickDur.toFixed(2)}s ${easing} infinite`,
                     animationDelay: `${delay.toFixed(2)}s`,
                     transformOrigin: "center bottom",

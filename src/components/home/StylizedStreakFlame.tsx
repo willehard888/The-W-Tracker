@@ -1241,8 +1241,10 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             // lickit lähtevät ~85% korkeudelta ja niiden tongue jatkaa
             // tallestH:n yli (lickH ei ole skaalattu yT:llä) → yltävät HUIPPUUN.
             const bottom = size * (0.02 + (yT + yJitter) * 0.83);
-            // Kallistus: alhaalla pystyssä, ylhäällä noussee enemmän ulospäin (mutta hillitymmin koska lähempänä)
-            const tiltDeg = side * (8 + yT * 22);
+            // Kallistus: alhaalla LIEVÄSTI ulospäin (+6°), ylhäällä KOHTI HEROA
+            // (−30°) → ylimmät lickit kaartuvat sisäänpäin kuin liekkikuoro
+            // hero-huipun ympärillä. yT=0 → +6°, yT=0.5 → −12°, yT=1 → −30°.
+            const tiltDeg = side * (6 - yT * 36);
             // Koko: ylhäällä KAPEAMMAT mutta KORKEAMMAT → terävät tongue-tipit
             // jotka jatkavat luonnollisesti hero-liekin huipulle. Alhaalla
             // matalat ja leveät kuten nuotion polttoaineen reunalla.

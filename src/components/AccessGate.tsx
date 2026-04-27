@@ -33,7 +33,7 @@ const isAllowedPath = (pathname: string) =>
  * No free trial. No skip.
  */
 const AccessGate = ({ children }: { children: ReactNode }) => {
-  const { user, isElite, loading } = useAuth();
+  const { user, isElite, loading, profile, subscriptionLoading } = useAuth();
   const location = useLocation();
 
   if (loading) return <>{children}</>;
@@ -41,11 +41,17 @@ const AccessGate = ({ children }: { children: ReactNode }) => {
   // Not logged in → let route-level guards (ProtectedRoute) handle redirects.
   if (!user) return <>{children}</>;
 
-  // Paid subscribers (Elite/Apex) get full access.
+  // Paid subscribers (Elite/Apex/Legend, RevenueCat, credits) get full access.
   if (isElite) return <>{children}</>;
 
   // Allow auth-flow + legal + paywall pages through.
   if (isAllowedPath(location.pathname)) return <>{children}</>;
+
+  // CRITICAL: never redirect a logged-in user to the paywall before we've
+  // had a chance to load their profile or finish a subscription check.
+  // Otherwise paid users see a flash of the paywall on cold start while
+  // their is_elite / status_tier / apex_subscriber flags are still loading.
+  if (profile === null || subscriptionLoading) return <>{children}</>;
 
   // Everything else is locked → bounce to paywall.
   return <Navigate to="/paywall" replace />;

@@ -1455,7 +1455,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             than a flat silhouette. Cooler hue (back-row filter), heavier blur. */}
         {(() => {
           // 2 per side at low ferocity, up to 4 per side at high ferocity
-          const perSideBack = Math.max(2, Math.round(lerp(2, 4, ferocity)));
+          const perSideBack = Math.max(4, Math.round(lerp(4, 8, ferocity)));
           const sides: Array<"l" | "r"> = ["l", "r"];
           return sides.flatMap((side) =>
             Array.from({ length: perSideBack }).map((_, i) => {
@@ -1509,7 +1509,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             "breathing" sideways rather than horizontal jets. */}
         {(() => {
           // 1 per side at low ferocity, up to 2 per side at high ferocity
-          const perSide = Math.max(1, Math.round(lerp(1, 2, ferocity)));
+          const perSide = Math.max(2, Math.round(lerp(2, 4, ferocity)));
           const sides: Array<"l" | "r"> = ["l", "r"];
           return sides.flatMap((side) =>
             Array.from({ length: perSide }).map((_, i) => {

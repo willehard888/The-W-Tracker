@@ -1249,11 +1249,13 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             const sizeBoost = ((i * 13 + seed.a * 5) % 11) / 11;
             // Leveys: kapenee ylöspäin (1 → 0.45) jotta tipit eivät tuki ylä-aluetta
             const widthTaper = 1 - yT * 0.55;
-            const lickW = Math.max(5, bedWidth * lerp(0.04, 0.12, sizeBoost) * widthTaper);
-            // Korkeus: KASVAA hieman ylöspäin (0.85 → 1.15) → ylimmät lickit
-            // ovat selvästi pidempiä ja yltävät tallestH:n korkeudelle.
-            const heightBoost = lerp(0.85, 1.15, yT);
-            const lickH = Math.max(14, tallestH * lerp(0.14, 0.36, sizeBoost) * heightBoost);
+            // Pienennetty (oli 0.04..0.12, nyt 0.03..0.09) → small lickit eivät
+            // kilpaile hero-liekin kanssa visuaalisesti.
+            const lickW = Math.max(4, bedWidth * lerp(0.03, 0.09, sizeBoost) * widthTaper);
+            // Korkeus: kasvaa ylös (0.8 → 1.0) — ei ylitä hero-korkeutta enää.
+            const heightBoost = lerp(0.8, 1.0, yT);
+            // Pienempi suhteellinen korkeus (oli 0.14..0.36, nyt 0.10..0.26)
+            const lickH = Math.max(10, tallestH * lerp(0.10, 0.26, sizeBoost) * heightBoost);
             // Yksi animaatio per liekki — ei sway-keyframea joka pyyhkisi rotation
             const flickDur = lerp(1.6, 1.0, ferocity) + ((i * 0.17) % 0.5);
             const delay = -(((i * 0.27 + seed.c * 0.011) % flickDur));

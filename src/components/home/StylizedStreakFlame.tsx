@@ -889,17 +889,20 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
             );
           })}
 
-          {/* Inner core — kylläinen oranssi-punainen sydän, EI valkoista hot-spot. */}
+          {/* Inner core — kuuma KULTA-keltainen sydän hero-liekille:
+              keskipiste lähes valkoinen → keltainen → oranssi → tumma reuna.
+              Tämä antaa premium "incandescent core" -tunnun. */}
           {layers.filter((l) => l.zIndex >= 3).map((_, idx) => {
             const id = `ssf-core-${uid}-${idx}`;
             return (
-              <radialGradient key={id} id={id} cx="50%" cy="62%" r="38%">
-                {/* Pure red-orange core — keskipiste syvä oranssi, EI keltainen, EI vaalea. */}
-                <stop offset="0%"   stopColor="hsl(24 100% 54%)" stopOpacity="1" />
-                <stop offset="14%"  stopColor="hsl(18 100% 50%)" stopOpacity="0.92" />
-                <stop offset="32%"  stopColor="hsl(12 100% 46%)" stopOpacity="0.72" />
-                <stop offset="56%"  stopColor="hsl(6 98% 40%)"  stopOpacity="0.4" />
-                <stop offset="80%"  stopColor="hsl(2 95% 32%)"   stopOpacity="0.15" />
+              <radialGradient key={id} id={id} cx="50%" cy="62%" r="42%">
+                {/* Hot incandescent center — premium gold core. */}
+                <stop offset="0%"   stopColor="hsl(54 100% 88%)" stopOpacity="1" />
+                <stop offset="10%"  stopColor="hsl(48 100% 76%)" stopOpacity="0.95" />
+                <stop offset="22%"  stopColor="hsl(38 100% 64%)" stopOpacity="0.85" />
+                <stop offset="40%"  stopColor="hsl(26 100% 54%)" stopOpacity="0.62" />
+                <stop offset="62%"  stopColor="hsl(14 100% 46%)" stopOpacity="0.32" />
+                <stop offset="84%"  stopColor="hsl(4 95% 36%)"   stopOpacity="0.10" />
                 <stop offset="100%" stopColor="hsl(0 90% 24%)"   stopOpacity="0" />
               </radialGradient>
             );

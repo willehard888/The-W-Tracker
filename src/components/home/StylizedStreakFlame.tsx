@@ -1421,7 +1421,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                     bottom: vBottom,
                     transformOrigin: side === "l" ? "right bottom" : "left bottom",
                     // Extra blur + slight desaturation for atmospheric distance
-                    filter: `url(#${filterId}) blur(0.8px) saturate(0.92) brightness(0.88)`,
+                    filter: `url(#${filterId}) saturate(0.92) brightness(0.88)`,
                     animation: `stylized-flame-side-${side} ${dur.toFixed(2)}s cubic-bezier(0.36, 0.04, 0.44, 1) infinite`,
                     animationDelay: `${delay.toFixed(2)}s`,
                     mixBlendMode: "screen",

@@ -1347,7 +1347,7 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
                   pointerEvents: "none",
                   mixBlendMode: "screen",
                   opacity: baseOpacity,
-                  filter: depthBlur > 0 ? `blur(${depthBlur.toFixed(2)}px) saturate(${depthDim.toFixed(2)})` : undefined,
+                  filter: depthBlur > 0 ? `saturate(${depthDim.toFixed(2)})` : undefined,
                   contain: "layout paint" as React.CSSProperties["contain"],
                   willChange: "transform, opacity",
                 }}

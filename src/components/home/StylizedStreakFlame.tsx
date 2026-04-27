@@ -186,6 +186,16 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
     };
   }, [uid]);
 
+  // ── STREAK → EMOTION PROFILE ──
+  // Single source of truth for flicker/sway/breath/bodyAlpha/sparkRate/ambient.
+  // Tribe collective fires (intensify>1) ignore lastCheckinAt — they're never "at risk".
+  const profile: FlameProfile = useMemo(() => {
+    if (intensify > 1) {
+      return computeFlameProfile({ streak: effectiveStreak });
+    }
+    return computeFlameProfile({ streak, lastCheckinAt: lastCheckinAt ?? null });
+  }, [streak, effectiveStreak, intensify, lastCheckinAt]);
+
   // Stage-up burst (kept minimal — short brightness pop on the bed, no halo)
   const [burst, setBurst] = useState(false);
   const prevStageRef = useRef(stage);
@@ -198,6 +208,62 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
     }
     prevStageRef.current = stage;
   }, [stage]);
+
+  // ── WOW MOMENTS — surge / milestone / streak-lost detection ──
+  // Detected on streak prop changes. Each fires a one-shot CSS animation by
+  // toggling a state that becomes the container's `animationName`.
+  type EmotionAnim = null | "surge" | "milestone" | "collapse";
+  const [emotion, setEmotion] = useState<EmotionAnim>(null);
+  const [emotionKey, setEmotionKey] = useState(0); // forces re-trigger
+  const [milestoneHit, setMilestoneHit] = useState<Milestone | null>(null);
+  const prevStreakRef = useRef(streak);
+  useEffect(() => {
+    const prev = prevStreakRef.current;
+    const next = streak;
+    if (prev === next) return;
+
+    // Streak lost → 2.4s collapse, silent (no haptic)
+    if (isStreakLost(prev, next)) {
+      setEmotion("collapse");
+      setEmotionKey((k) => k + 1);
+      const id = setTimeout(() => setEmotion(null), 2400);
+      prevStreakRef.current = next;
+      return () => clearTimeout(id);
+    }
+
+    // Milestone (7/30/100/200) → 1.4s celebration + 2 haptics
+    const m = milestoneCrossed(prev, next);
+    if (m !== null) {
+      setEmotion("milestone");
+      setMilestoneHit(m);
+      setEmotionKey((k) => k + 1);
+      hapticImpact("light");
+      const heavyId = setTimeout(() => hapticImpact("heavy"), 300);
+      const successId = setTimeout(() => hapticNotification("success"), 600);
+      const id = setTimeout(() => {
+        setEmotion(null);
+        setMilestoneHit(null);
+      }, 1400);
+      prevStreakRef.current = next;
+      return () => {
+        clearTimeout(id);
+        clearTimeout(heavyId);
+        clearTimeout(successId);
+      };
+    }
+
+    // Plain daily increment → 220ms surge + 1 light haptic
+    if (isDailySurge(prev, next)) {
+      setEmotion("surge");
+      setEmotionKey((k) => k + 1);
+      hapticImpact("light");
+      const id = setTimeout(() => setEmotion(null), 240);
+      prevStreakRef.current = next;
+      return () => clearTimeout(id);
+    }
+
+    prevStreakRef.current = next;
+  }, [streak]);
 
   // ── REACTIVITY v2 — multi-axis lean, proximity bloom, scroll gust,
   //    tap blast (with haptic), and idle breath. All driven via CSS vars

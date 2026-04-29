@@ -893,6 +893,12 @@ const StylizedStreakFlame = ({ streak, size = 140, intensify = 1, accent, releas
         height: size,
         // Container needs pointer events so taps register; inner aria-hidden children remain decorative.
         pointerEvents: "auto",
+        // PERF: isolate this subtree from the rest of the page so the constant
+        // CSS-var updates + filter recalcs don't trigger document-wide style
+        // recalculation (was costing ~1.5s cumulative on first paint).
+        contain: "layout paint style",
+        willChange: "filter, transform",
+        transform: "translateZ(0)",
         // Base breath animation; emotion-state animations run on top via the
         // child wrapper to avoid clobbering this loop.
         animation: `stylized-flame-bob ${(3.4).toFixed(2)}s cubic-bezier(0.22, 0.61, 0.36, 1) infinite`,

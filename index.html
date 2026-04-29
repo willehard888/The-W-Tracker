@@ -18,8 +18,9 @@
 
     <meta name="theme-color" content="#0a0a0b" />
 
-    <!-- Preload splash hero asset so reveal has zero pop-in -->
-    <link rel="preload" as="image" href="/app-icon.png" fetchpriority="high" />
+    <!-- NOTE: removed the eager <link rel="preload" as="image" href="/app-icon.png">
+         because the file is 1.17MB and was blocking First Contentful Paint by
+         ~1.6s on slow networks. The splash component lazy-loads it itself. -->
 
     <!-- Background that EXACTLY matches SplashScreen so there is no flash
          between native iOS splash → React splash → app shell -->

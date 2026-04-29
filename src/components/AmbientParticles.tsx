@@ -134,7 +134,7 @@ const AmbientParticles = () => {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.95, willChange: "transform", mixBlendMode: "screen" }}
+      style={{ opacity: 0.95, willChange: "transform", mixBlendMode: "screen", contain: "strict", transform: "translateZ(0)" }}
       aria-hidden
     />
   );

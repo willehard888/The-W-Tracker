@@ -225,7 +225,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                   <div className="flex items-center gap-1.5 shrink-0 relative z-10">
                     {cfg.rank === 6 ? (
                       <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2.5 py-1 rounded-md text-background bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] border border-gold/60 shadow-[0_0_14px_hsl(280_70%_60%/0.55),inset_0_1px_0_hsl(var(--gold-light)/0.4)]">
-                        <Crown size={11} strokeWidth={3.2} fill="currentColor" /> Earn
+                        <Crown size={11} strokeWidth={3.2} fill="currentColor" /> Invite
                       </span>
                     ) : cfg.rank === 5 ? (
                       <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2.5 py-1 rounded-md text-background bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] border border-gold shadow-[0_0_14px_hsl(18_95%_58%/0.55),inset_0_1px_0_hsl(var(--gold-light)/0.5)]">
@@ -410,7 +410,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                     </div>
                   ) : isLegend ? (
                     <div className="rounded-lg p-3 text-center text-[12px] font-black bg-gradient-to-r from-[hsl(280_70%_55%)]/12 via-gold/12 to-[hsl(350_80%_55%)]/12 border border-gold/40 text-gold uppercase tracking-[0.18em]">
-                      🔱 Earned only
+                      🔱 Invite only
                     </div>
                   ) : (
                     <div className="rounded-lg p-3 text-center text-[11px] font-bold bg-muted/20 text-muted-foreground border border-border/50 uppercase tracking-wider flex items-center justify-center gap-2">

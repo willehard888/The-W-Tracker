@@ -228,24 +228,22 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                 {/* Right side: locked hint OR chevron */}
                 {isLocked ? (
                   <div className="flex items-center gap-1.5 shrink-0 relative z-10">
-                    {cfg.rank === 5 && !isApexSubscriber ? (
-                      <span className="relative inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2.5 py-1 rounded-md text-background bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] border-2 border-gold shadow-[0_0_14px_hsl(18_95%_58%/0.6),inset_0_1px_0_hsl(var(--gold-light)/0.6)]">
-                        <Lock size={11} strokeWidth={3.2} fill="currentColor" />
-                        <Zap size={11} strokeWidth={3.2} fill="currentColor" />
-                        <span>Unlock</span>
+                    {cfg.rank === 6 ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2.5 py-1 rounded-md text-background bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] border border-gold/60 shadow-[0_0_14px_hsl(280_70%_60%/0.55),inset_0_1px_0_hsl(var(--gold-light)/0.4)]">
+                        <Crown size={11} strokeWidth={3.2} fill="currentColor" /> Earn
                       </span>
-                    ) : cfg.rank === 6 ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded-md text-gold border-2 border-gold/70 bg-gradient-to-r from-gold/15 to-gold/5 shadow-[0_0_10px_hsl(var(--gold)/0.5),inset_0_1px_0_hsl(var(--gold)/0.3)]">
-                        <Lock size={10} strokeWidth={3.2} fill="currentColor" /> Locked
+                    ) : cfg.rank === 5 ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2.5 py-1 rounded-md text-background bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] border border-gold shadow-[0_0_14px_hsl(18_95%_58%/0.55),inset_0_1px_0_hsl(var(--gold-light)/0.5)]">
+                        <Zap size={11} strokeWidth={3.2} fill="currentColor" /> Earn
                       </span>
                     ) : (
                       <span className={cn(
-                        "inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black px-1.5 py-0.5 rounded",
-                        cfg.rank >= 5
-                          ? "text-gold border border-gold/50 bg-gradient-to-r from-gold/10 to-gold/5 shadow-[0_0_6px_hsl(var(--gold)/0.3)]"
-                          : "text-muted-foreground border border-border/50 bg-background/20",
+                        "inline-flex items-center gap-1 text-[9.5px] uppercase tracking-wider font-black px-2 py-1 rounded-md",
+                        cfg.rank >= 4
+                          ? "text-gold border border-gold/55 bg-gradient-to-r from-gold/15 to-gold/5 shadow-[0_0_8px_hsl(var(--gold)/0.35)]"
+                          : "text-foreground/80 border border-border/60 bg-background/30",
                       )}>
-                        <TrendingUp size={9} strokeWidth={3} />
+                        <TrendingUp size={10} strokeWidth={3} />
                         {stepsAway === 1 ? "Next" : `+${stepsAway}`}
                       </span>
                     )}
@@ -423,10 +421,6 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                     <div className="rounded-lg p-3 text-center text-[11px] font-bold bg-muted/20 text-muted-foreground border border-border/50 uppercase tracking-wider flex items-center justify-center gap-2">
                       <Lock size={11} strokeWidth={3} /> Not yet earned
                     </div>
-                  )}
-
-                  {isApex && !unlocked && !isApexSubscriber && (
-                    <TierUnlockPaywallCard className="mt-1" />
                   )}
                 </div>
 

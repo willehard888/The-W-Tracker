@@ -19,7 +19,7 @@ type: feature
 | **Operator** | percentile ≥ 25 AND 5 active days |
 | **Recruit** | default / `rank_score = 0` |
 
-Elite is consistency-driven (3 weeks of streak + 20 active days is enough) — does NOT require top 5% leaderboard rank. Apex / Legend stay rare (top 1% / 0.1%).
+Elite is consistency-driven (3 weeks of streak + 20 active days is enough) — does NOT require top 5% leaderboard rank. Apex requires top 10% + 30 days/streak. Legend stays rare (top 0.1%).
 
 ## Earning vs buying
 - **Earned tier**: `update_status_tier(user_id)` recalculates after every check-in / battle / referral milestone. Tier degrades automatically with inactivity.

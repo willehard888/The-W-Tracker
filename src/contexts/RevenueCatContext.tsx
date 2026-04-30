@@ -308,11 +308,14 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     if (!user) {
       setRcElite(false);
       setRcApex(false);
+      setRcPremium(false);
       setPackages([]);
       setMonthlyPriceLabel(null);
       setApexPriceLabel(null);
+      setPremiumPriceLabel(null);
       setEliteYearlyPriceLabel(null);
       setApexYearlyPriceLabel(null);
+      setPremiumYearlyPriceLabel(null);
       setRcLoading(false);
       setRcReady(false);
       updateRevenueCatDebug({ appUserId: null, entitlement: null });

@@ -1,70 +1,112 @@
-# Vaihda appin nimi: The W Tracker → Whealth Factory
 
-## Mitä muutetaan
+# Polish: Latausnopeus & sulavuus (Web + iOS Native)
 
-Appin **näkyvä nimi** vaihtuu kaikkialla **"Whealth Factory"** -muotoon. Kaikki muu (logo W, värit, brändi-ilme, ikonit, URL-osoitteet, RevenueCat-tuotteet, App Store -bundle ID) säilyy ennallaan, jotta:
+Tavoite: nopeampi cold-start, sulavammat siirtymät ja vähemmän jankia — **mitään featurea, animaatiota tai visuaalia ei poisteta**. Vain optimointi, prefetch, lazy ja virhekorjaukset.
 
-- iOS-build ei rikkoonnu (sama bundle ID `app.lovable.wtracker`, sama URL scheme, sama RevenueCat entitlement)
-- Tilaajat säilyvät (RevenueCat tunnistaa edelleen `"The W Tracker Pro"` entitlementin)
-- Lovable-domain ja Supabase-projekti säilyvät ennallaan
+---
 
-## Mitä EI muuteta (tärkeää)
+## 1. Cold start (latausnopeus)
 
-| Asia | Arvo | Miksi säilytetään |
-|---|---|---|
-| Bundle ID | `app.lovable.wtracker` | Vaihtaminen = uusi App Store -appi, kaikki tilaukset menetetään |
-| URL scheme | `app.lovable.wtracker` | Apple Sign-In callback rikkoutuisi |
-| RevenueCat entitlement | `"The W Tracker Pro"` | Vaihtaminen vaatii RevenueCat dashboard -muutoksen ja kaikkien tilaajien resyncin |
-| `package.json` name | `vite_react_shadcn_ts` | Sisäinen, ei näy käyttäjälle |
-| Lovable-domain | `status-level-up.lovable.app` | Tarvitsee custom domain -ostoa erikseen |
-| Logo (W-merkki) | sama | Brändi-identiteetti pohjautuu W-kirjaimeen — sopii edelleen "Whealth"iin |
-| Tukisähköposti | `support@wtracker.app` | Voi vaihtaa erikseen kun uusi domain on hankittu |
+**index.html**
+- Lisää `<link rel="preconnect">` ja `<link rel="dns-prefetch">` Supabase-domainille (`zjdljojkgrpgxurugixf.supabase.co`) niin että ensimmäinen API-kutsu lähtee ~200 ms aiemmin.
+- Lisää `<link rel="modulepreload" href="/src/main.tsx">` jotta JS-bundle alkaa latautua heti `<head>` parsetessa.
+- Korvaa `apple-touch-icon` osoittamaan kevyempään `/app-icon.webp` -versioon (1.2 MB → 6 KB) — natiivi-iOS PWA-icon ei muutu, vain web-välimuisti kevenee.
+- Lisää korkean prioriteetin font-display & system-font fallback `<style>`-blokkiin niin että teksti renderöityy heti.
 
-## Tiedostot joihin tehdään muutoksia
+**vite.config.ts**
+- Lisää `chunkSizeWarningLimit: 1200` ja jaa `manualChunks` hienommin: erota `supabase` (`@supabase/supabase-js`) omaan chunkkiinsa (ladataan lazy auth-flowin yhteydessä) ja `capacitor` (`@capacitor/*`) omaansa (ei ladata webissä).
+- Lisää `build.target: "es2020"` ja `cssCodeSplit: true` (oletus mutta varmistetaan) — pienempi initial CSS.
 
-### Native shell (näkyy iOS-laitteen kotinäytöllä ja App Storessa)
-- `capacitor.config.json` → `appName: "Whealth Factory"`
-- `ios/App/App/Info.plist` → `CFBundleDisplayName: "Whealth Factory"`
-- `index.html` → `<title>`, `apple-mobile-web-app-title`, OG/Twitter -tagit, meta description, author
+**src/lib/route-preload.ts**
+- Käytä `link rel="modulepreload"` -injektiota `import()`-kutsujen sijaan priority-routeille → selain alkaa ladata bundleja parallel ilman että execution lukitsee main threadin.
+- Lisää `connection.saveData` / `effectiveType === "2g"` -tarkistus → skippaa secondary-route preloadin hitaalla yhteydellä.
 
-### Pää-UI (näkyy joka sivulla)
-- `src/components/AppLogoHeader.tsx` — header-otsikko
-- `src/components/StatusHeader.tsx` — pää-headerin teksti + aria-label
-- `src/components/BrandLogo.tsx` — `alt`-teksti
-- `src/components/SplashScreen.tsx` — splash-ruudun nimi
-- `src/pages/Landing.tsx` — landing-headerin teksti
+**src/main.tsx**
+- Siirrä iOS-debug logging -callit `Capacitor.isNativePlatform()` -haaraan kokonaan (web-bundle ei sisällä `pushIosDebugLog` -kutsuja → pienempi initial JS).
+- `createRoot(...).render(<App />)` `requestIdleCallback`-wrapperin sijaan suora — varmistus että render alkaa heti, mutta `initNativeShell()` ja deep-link listenerit jätetään fire-and-forget mikrotehtäviin.
 
-### Sisältösivut & jaot
-- `src/pages/PublicProfile.tsx` — `document.title` (3 paikkaa) + "doesn't exist on…" + "Open…" -nappi
-- `src/pages/UserProfile.tsx` — share title + footer-merkintä
-- `src/pages/Referrals.tsx` — referral share title + text
-- `src/pages/TermsOfUse.tsx` — käyttöehtojen tekstit (3 mainintaa)
-- `src/pages/PrivacyPolicy.tsx` — tukisähköpostin yhteydessä oleva viittaus säilyy mutta nimi vaihtuu siellä missä mainittu
-- `src/components/StoryShareModal.tsx` — jaettavan kortin teksti (2 paikkaa) + share API title + viestit (3 paikkaa) + "THE W TRACKER" -tunnus → "WHEALTH FACTORY"
-- `src/components/BriefingShareCard.tsx` — `thewtracker.com` -merkintä
-- `src/lib/status-tiers.ts` — kommenttiotsikko
+---
 
-## Toteutusstrategia
+## 2. Sulavuus (smoothness / jank)
 
-Tehdään yhdellä erällä — jokainen muutos on yksittäinen tekstikorvaus. Käytän `code--exec` + `sed` -ajoa kaikille `.tsx/.ts`-tiedostoille kerralla, ja erilliset tarkat editit `index.html`, `Info.plist`, `capacitor.config.json` -tiedostoihin.
+**src/App.tsx**
+- Memoize `queryClient` (jo on module-scope, OK), mutta käärittele `<RevenueCatProvider>`/`<WindProvider>` `React.memo`:lla niin etteivät uudelleenrenderöidy splash-state-muutoksen yhteydessä.
+- Splash → app -siirtymä: lisää `requestAnimationFrame`-pohjainen siirtymä `setSplashDone(true)`:lle → ei "double-paint flash" ensimmäisellä framella.
 
-**Vaihto-säännöt** (sovelletaan tässä järjestyksessä):
-1. `THE W TRACKER` → `WHEALTH FACTORY` (caps)
-2. `The W-Tracker` → `Whealth Factory`
-3. `The W Tracker` → `Whealth Factory`
-4. `W Tracker` → `Whealth Factory` (muut esiintymät)
-5. Manuaalisesti `thewtracker.com` -teksti `BriefingShareCard.tsx`:ssä → `whealthfactory.app` (placeholder kunnes domain hankittu)
+**src/components/SplashScreen.tsx**
+- Splash sisältää tällä hetkellä `<RealisticFlame>` + 12 sparks + 8 embers + 2 shockwave-rinkiä — pidetään, mutta:
+  - Lisää `prefers-reduced-motion` -tarkistus joka skippaa partikkelit (säilyttää logon + word-mark) → reduced-motion käyttäjälle välitön.
+  - Pakota `contain: strict` koko containeriin (nyt `layout paint size`) → eristää paint splash-fadeoutin aikana.
 
-## QA-vaihe
+**src/components/AmbientParticles.tsx**
+- Lisää passive-detection: jos `(navigator as any).connection?.saveData` → skippaa kokonaan.
+- Vähennä `FRAME_MS`-throttle iOS:llä 18 fps (nyt 20) — silmä ei huomaa, mutta säästää ~10 % main-threadia.
 
-Muutosten jälkeen ajetaan vahvistus:
+**src/components/home/CommandDeck.tsx**
+- Korjaa konsolivaroitus: `background: ctaGradient` + `backgroundSize: "200% 200%"` aiheuttaa shorthand-collision warningin React-rerenderissä. Vaihda `background` → `backgroundImage` jolloin ei konfliktoi `backgroundSize`:n kanssa.
+
+**src/components/AppleSignInButton.tsx**
+- Korjaa konsolivaroitus: "Function components cannot be given refs" — kääri `forwardRef`:iin (Auth-page passaa refin saavutettavuus-syistä).
+
+**src/components/ModalStack.tsx**
+- Lisää `layoutId`-poisto modal-routeilta jotka eivät tarvitse layoutia → vähemmän framer-motion measurea.
+- `AnimatePresence mode="popLayout"` → vaihdetaan `"wait"`-moodiin **vain** modaaleille jotta exit-frame ei kilpaile enter-framen kanssa iOS Safarissa (push-routet pidetään popLayout-modessa).
+
+**src/components/TabHost.tsx**
+- Tabit pidetään mountattuna (jo on), mutta lisää `content-visibility: auto` + `contain-intrinsic-size: 100% 800px` ei-aktiivisille TabPaneille → selain skippaa paintin/layoutin off-screen tabeille kokonaan, palaa instantisti kun aktiivinen.
+
+**src/contexts/WindProvider.tsx + src/lib/wind.ts**
+- Lisää page-visibility -kuuntelija joka pysäyttää wind-rAF-loopin kun tab piilossa (säästää batteryä iOS:llä taustalla).
+- Throttle wind-tickrate 30 Hz → 24 Hz (käyttäjä ei näe eroa, säästää ~20 % CSS-var writeistä).
+
+---
+
+## 3. iOS native -spesifit
+
+**capacitor.config.json**
+- Vahvista `SplashScreen.launchShowDuration: 600` (nyt OK) ja lisää `SplashScreen.backgroundColor: "#0a0710"` matchaamaan React-splashin gradienttia (estää native→react flash).
+- `iosScheme: "app"` -varmistus jotta service-worker ei kaappaa initial loadia.
+
+**ios/App/App/Info.plist**
+- Lisää `WKAppBoundDomains` jos vielä puuttuu → nopeampi WKWebView-startup.
+
+**src/lib/native-bootstrap.ts**
+- Käännä Keyboard `keyboardWillShow` -listenerin `scrollIntoView` käyttämään `block: "nearest"` (nyt `"center"`) → estää isot scrollijumpit chat- ja checkin-näytöillä.
+
+---
+
+## 4. Mitä EI muuteta
+
+- AmbientParticles, splash-flame, ember-rain, sparkit, shockwavet, glow-haalot, story-share-grafiikat, tribe fire fieldit, AI Coach, Elite-feed — **kaikki säilytetään pikselilleen**.
+- Apple-sign-in -flow, RevenueCat, Supabase RLS, edge-functionit — ei muutoksia.
+- Brändi, värit, tekstit, navigaatio — ei muutoksia.
+
+---
+
+## Tiedostot joita muokataan
+
 ```
-rg -i "w tracker|w-tracker|thewtracker" src public index.html capacitor.config.json ios/App/App/Info.plist
+index.html
+vite.config.ts
+src/main.tsx
+src/App.tsx
+src/lib/route-preload.ts
+src/lib/native-bootstrap.ts
+src/lib/wind.ts
+src/contexts/WindProvider.tsx
+src/components/SplashScreen.tsx
+src/components/AmbientParticles.tsx
+src/components/AppleSignInButton.tsx
+src/components/ModalStack.tsx
+src/components/TabHost.tsx
+src/components/home/CommandDeck.tsx
+capacitor.config.json
+ios/App/App/Info.plist
 ```
-Pitäisi palauttaa **0 osumaa** ulkopuolella tarkoituksellisten paikkojen (RevenueCat entitlement, bundle ID, package.json sisäinen nimi).
 
-## Mitä käyttäjä huomaa
+## Odotettu vaikutus
 
-- **Heti webissä:** Selaintabin otsikko, jaettavat linkit, splash, header, kaikki sivut, share-kortit, käyttöehdot
-- **iOS-buildin jälkeen:** Kotinäytön ikonin nimi vaihtuu "Whealth Factory":ksi seuraavassa Xcode Cloud -buildissa
-- **App Store -listaus:** Ei muutu automaattisesti — pitää päivittää erikseen App Store Connectissa (display name App Storessa on eri asia kuin `CFBundleDisplayName`)
+- **Cold start:** -300…-600 ms First Contentful Paint webissä; -200 ms iOS WKWebView startup.
+- **Tab-switch:** instant (jo nyt mountattu, mutta `content-visibility` poistaa paint-lagin uudelleen-aktivoinnista).
+- **Konsoli:** kaksi React-warningia poistuu (CommandDeck shorthand, AppleSignInButton ref).
+- **Akku iOS:** wind/particle-loopit pysähtyvät kun appi taustalla.

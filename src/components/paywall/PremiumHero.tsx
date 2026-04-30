@@ -12,7 +12,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import RealisticFlame from "@/components/home/RealisticFlame";
 import { cn } from "@/lib/utils";
 
 export type BillingPlan = "monthly" | "yearly";

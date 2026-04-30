@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { nativeAppleSignIn } from "@/lib/native-auth";
@@ -23,10 +23,10 @@ interface AppleSignInButtonProps {
   className?: string;
 }
 
-const AppleSignInButton = ({
+const AppleSignInButton = forwardRef<HTMLButtonElement, AppleSignInButtonProps>(({
   externalLoading = false,
   className,
-}: AppleSignInButtonProps) => {
+}, ref) => {
   const [loading, setLoading] = useState(false);
   const isLoading = loading || externalLoading;
 
@@ -58,6 +58,7 @@ const AppleSignInButton = ({
 
   return (
     <motion.button
+      ref={ref}
       type="button"
       onClick={handleAppleSignIn}
       disabled={isLoading}
@@ -120,6 +121,7 @@ const AppleSignInButton = ({
       )}
     </motion.button>
   );
-};
+});
+AppleSignInButton.displayName = "AppleSignInButton";
 
 export default AppleSignInButton;

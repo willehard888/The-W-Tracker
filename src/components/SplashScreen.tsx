@@ -16,18 +16,27 @@ import RealisticFlame from "./home/RealisticFlame";
  * GPU-only: every animated property is transform/opacity/filter.
  */
 const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
+  const reduceMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
   const [phase, setPhase] = useState<"reveal" | "settle" | "exit">("reveal");
 
   useEffect(() => {
     // Tightened timing — native iOS splash already shows before this React splash mounts,
     // so we keep it short to avoid double-splash feel. Total ~950 ms.
+    // Reduced motion: skip straight to exit so the user isn't held for animation.
+    if (reduceMotion) {
+      const t = window.setTimeout(onComplete, 200);
+      return () => clearTimeout(t);
+    }
     const timers = [
       window.setTimeout(() => setPhase("settle"), 280),
       window.setTimeout(() => setPhase("exit"), 720),
       window.setTimeout(onComplete, 950),
     ];
     return () => timers.forEach(clearTimeout);
-  }, [onComplete]);
+  }, [onComplete, reduceMotion]);
 
   // 12 radial sparks fanning out at ignition — pre-computed once.
   const sparks = useMemo(
@@ -64,7 +73,7 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
       style={{
         background:
           "radial-gradient(ellipse at center, hsl(260 22% 8%) 0%, hsl(260 25% 4%) 60%, hsl(260 30% 2%) 100%)",
-        contain: "layout paint size",
+        contain: "strict",
       }}
     >
       {/* Static gold glow */}

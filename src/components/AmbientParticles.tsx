@@ -32,6 +32,9 @@ const AmbientParticles = () => {
     // Skip entirely on tiny / very low-memory devices (e.g. old phones) — saves real frames.
     const mem = (navigator as any).deviceMemory || 4;
     if (window.innerWidth < 360 || mem <= 1) return;
+    // Save-Data / very slow connection: skip the ambient field entirely.
+    const conn = (navigator as any).connection;
+    if (conn?.saveData || conn?.effectiveType === "2g" || conn?.effectiveType === "slow-2g") return;
 
     // Mobile/touch devices get a much lighter field — Safari iOS canvas fill is expensive.
     const isMobile = window.matchMedia?.("(pointer: coarse)").matches || window.innerWidth < 768;
@@ -89,8 +92,8 @@ const AmbientParticles = () => {
     };
     document.addEventListener("visibilitychange", onVisibility);
 
-    // Throttle frame rate — 20fps mobile / low-end, 24fps desktop. Ambient drift doesn't need more.
-    const FRAME_MS = 1000 / (isMobile || isLowEnd ? 20 : 24);
+    // Throttle frame rate — 18fps mobile / low-end, 24fps desktop. Ambient drift doesn't need more.
+    const FRAME_MS = 1000 / (isMobile || isLowEnd ? 18 : 24);
     let last = 0;
     const animate = (now: number) => {
       if (!running.current) return;

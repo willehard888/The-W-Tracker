@@ -43,7 +43,9 @@ const CommandDeck = ({
         className,
       )}
       style={{
-        background: ctaGradient,
+        // Use longhand `backgroundImage` so it doesn't conflict with
+        // `backgroundSize` on rerender (React shorthand-collision warning).
+        backgroundImage: ctaGradient,
         backgroundSize: "200% 200%",
         animation: canCheckin ? "shimmer-slide 5s ease-in-out infinite" : undefined,
       }}

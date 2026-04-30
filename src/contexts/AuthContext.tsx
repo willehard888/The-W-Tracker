@@ -276,6 +276,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           lastFetchedProfileUserId.current = null;
           setProfile(null);
           setIsElite(false);
+          setIsPremium(false);
           setIsApexSubscriber(false);
           setSubscriptionEnd(null);
         }

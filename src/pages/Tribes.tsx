@@ -378,7 +378,7 @@ const Tribes = () => {
               Reach Apex to lead your own tribe
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              Earn it via top 1% rank, or unlock instantly with Apex.
+              Earn it via top 10% rank, or unlock instantly with Apex.
             </p>
           </div>
           <Button size="sm" variant="ember-outline" onClick={() => navigate("/paywall")} className="shrink-0">

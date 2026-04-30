@@ -26,7 +26,7 @@ const MEMBER_FEATURES = [
 ] as const;
 
 const APEX_FEATURES = [
-  { icon: Zap, text: "Instant Apex status — top 1% tier" },
+  { icon: Zap, text: "Instant Apex status — top 10% tier" },
   { icon: Users, text: "Create Tribes (Communities) — up to 3" },
   { icon: Star, text: "Apex visual effects — flame aura everywhere" },
   { icon: Crown, text: "Tier protected — never drops while subscribed" },
@@ -318,7 +318,7 @@ const Paywall = () => {
           />
 
           <p className="text-center text-[10.5px] text-muted-foreground/80 leading-relaxed pt-2 px-2">
-            <span className="text-gold font-semibold">Earned Apex</span> (top 1%
+            <span className="text-gold font-semibold">Earned Apex</span> (top 10%
             by rank, activity & streak) stays possible at{" "}
             <span className="text-gold font-semibold">{elitePrice}/mo</span> —
             the grind respects those who do it.
@@ -347,7 +347,7 @@ const Paywall = () => {
             variant="apex"
             title="Apex Instant"
             badgeLabel="Skip the grind"
-            tagline="Instant top 1% status. Lead a Tribe."
+            tagline="Instant top 10% status. Lead a Tribe."
             priceLabel={apexPrice}
             yearlyPriceLabel={apexYearlyPrice}
             ctaLabel="Become Apex Now"

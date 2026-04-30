@@ -71,7 +71,7 @@ const ApexBadge = ({
     );
   }
 
-  // ── Earned Apex — hillitty top 1% ────────────────────────────────
+  // ── Earned Apex — hillitty top 10% ────────────────────────────────
   return (
     <span
       title="Earned Apex — Top 10%"

@@ -82,13 +82,15 @@ const PremiumHero = ({
         "shadow-[0_0_60px_hsl(var(--gold)/0.35),inset_0_1px_0_hsl(var(--gold)/0.55)]",
       )}
     >
-      {/* Ambient flame backdrop */}
+      {/* Static gold glow backdrop (no rAF, no canvas) */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-4 h-48 flex items-end justify-center opacity-90"
-      >
-        <RealisticFlame tier={5} accent="hsl(var(--gold))" size={140} interactive={false} />
-      </div>
+        className="pointer-events-none absolute inset-x-0 -top-4 h-48"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 80% at 50% 100%, hsl(var(--gold) / 0.55) 0%, hsl(var(--gold) / 0.18) 40%, transparent 75%)",
+        }}
+      />
       <div
         aria-hidden
         className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[120%] h-56 rounded-full blur-3xl opacity-70"

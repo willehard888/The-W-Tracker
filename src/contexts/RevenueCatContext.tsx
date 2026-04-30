@@ -514,18 +514,22 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       value={{
         rcElite,
         rcApex,
+        rcPremium,
         rcLoading,
         rcReady,
         monthlyPriceLabel,
         apexPriceLabel,
+        premiumPriceLabel,
         eliteYearlyPriceLabel,
         apexYearlyPriceLabel,
+        premiumYearlyPriceLabel,
         packages,
         purchase,
         purchaseProduct,
         purchaseApex,
         purchaseElitePlan,
         purchaseApexPlan,
+        purchasePremiumPlan,
         restorePurchases,
       }}
     >

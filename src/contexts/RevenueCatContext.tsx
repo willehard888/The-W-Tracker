@@ -271,6 +271,22 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
         if (label) setApexYearlyPriceLabel(label);
       }
 
+      const premiumP =
+        products?.find((x: any) => productId(x) === PRIMARY_PREMIUM_PRODUCT_ID) ??
+        products?.find((x: any) => isPremiumPid(productId(x)));
+      if (premiumP) {
+        const label = priceLabel(premiumP);
+        if (label) setPremiumPriceLabel(label);
+      }
+
+      const premiumYearlyP =
+        products?.find((x: any) => productId(x) === PRIMARY_PREMIUM_YEARLY_PRODUCT_ID) ??
+        products?.find((x: any) => isPremiumYearlyPid(productId(x)));
+      if (premiumYearlyP) {
+        const label = priceLabel(premiumYearlyP);
+        if (label) setPremiumYearlyPriceLabel(label);
+      }
+
       updateRevenueCatDebug({
         loadedProductIds,
         monthlyPriceLabel: eliteP ? priceLabel(eliteP) : null,

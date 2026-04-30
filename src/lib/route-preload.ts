@@ -29,6 +29,7 @@ const SECONDARY_ROUTES: ImportFn[] = [
   () => import("@/pages/Coach"),
   () => import("@/pages/Messages"),
   () => import("@/pages/Paywall"),
+  () => import("@/pages/Vault"),
 ];
 
 const ric =

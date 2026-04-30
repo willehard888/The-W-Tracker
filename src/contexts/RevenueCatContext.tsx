@@ -185,19 +185,21 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
 
   /** Sync subscription flags to database. */
   const syncEntitlements = useCallback(
-    async (elite: boolean, apex: boolean) => {
+    async (elite: boolean, apex: boolean, premium: boolean) => {
       if (!user) return;
-      // Elite covers both; Apex implies elite
+      const grantElite = elite || apex || premium;
+      // set_elite_status now also flips is_premium server-side.
       await supabase.rpc("set_elite_status", {
         target_user_id: user.id,
-        elite: elite || apex,
+        elite: grantElite,
       });
-      // Apex flag updated via webhook in production; this is a best-effort
-      // direct write so the UI reflects state immediately on native devices.
-      if (apex) {
+      const update: Record<string, any> = {};
+      if (apex) update.is_apex_subscriber = true;
+      if (premium || apex || elite) update.is_premium = true;
+      if (Object.keys(update).length > 0) {
         await supabase
           .from("profiles")
-          .update({ is_apex_subscriber: true })
+          .update(update)
           .eq("user_id", user.id);
       }
     },
@@ -209,16 +211,20 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     async (info: any) => {
       const elite = hasEntitlement(info, ELITE_ENTITLEMENT);
       const apex = hasEntitlement(info, APEX_ENTITLEMENT);
-      setRcElite(elite || apex);
+      const premium = hasEntitlement(info, PREMIUM_ENTITLEMENT);
+      setRcElite(elite || apex || premium);
       setRcApex(apex);
+      setRcPremium(premium || apex);
       updateRevenueCatDebug({
-        entitlement: apex
+        entitlement: premium
+          ? PREMIUM_ENTITLEMENT
+          : apex
           ? APEX_ENTITLEMENT
           : elite
           ? ELITE_ENTITLEMENT
           : null,
       });
-      await syncEntitlements(elite, apex);
+      await syncEntitlements(elite, apex, premium);
     },
     [syncEntitlements],
   );

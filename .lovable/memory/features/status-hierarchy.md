@@ -12,7 +12,7 @@ type: feature
 | Tier | Requirement |
 |---|---|
 | **Legend** | percentile ≥ 99.9 AND 30 active days AND 30-day streak |
-| **Apex** | percentile ≥ 99 AND 30 active days AND 30-day streak |
+| **Apex** | percentile ≥ 90 AND 30 active days AND 30-day streak |
 | **Elite** | percentile ≥ 80 **OR** (20 active days AND 21-day streak) |
 | **High Performer** | percentile ≥ 70 **OR** (15 active days AND 14-day streak) |
 | **Performer** | percentile ≥ 50 AND 7 active days |

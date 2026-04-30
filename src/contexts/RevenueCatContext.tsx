@@ -16,43 +16,70 @@ import { pushIosDebugLog, updateRevenueCatDebug } from "@/lib/ios-debug";
 const RC_API_KEY_APPLE = "appl_qgpDFJEtyXTeNTJZxBoHzxzgiTr";
 const ELITE_ENTITLEMENT = "The W Tracker Pro";
 const APEX_ENTITLEMENT = "apex_subscriber";
+const PREMIUM_ENTITLEMENT = "premium";
 
 // Monthly products
 const ELITE_PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"] as const;
+// Premium replaces Apex purchase. Existing Apex product IDs are kept as
+// fallback so legacy subscribers keep working seamlessly.
+const PREMIUM_PRODUCT_IDS = [
+  "premiummonthly1799",
+  "com.app.premiummonthly1799",
+  "Apex888",
+  "com.app.Apex888",
+  "apexmonthly1599",
+  "com.app.apexmonthly1599",
+] as const;
 const APEX_PRODUCT_IDS = ["Apex888", "com.app.Apex888", "apexmonthly1599", "com.app.apexmonthly1599"] as const;
 
 // Yearly products. Update IDs in App Store Connect to match.
 const ELITE_YEARLY_PRODUCT_IDS = ["eliteyearly4999", "com.app.eliteyearly4999"] as const;
+const PREMIUM_YEARLY_PRODUCT_IDS = [
+  "premiumyearly17299",
+  "com.app.premiumyearly17299",
+  "apexyearly17299",
+  "com.app.apexyearly17299",
+] as const;
 const APEX_YEARLY_PRODUCT_IDS = ["apexyearly17299", "com.app.apexyearly17299"] as const;
 
 const ALL_PRODUCT_IDS = [
   ...ELITE_PRODUCT_IDS,
+  ...PREMIUM_PRODUCT_IDS,
   ...APEX_PRODUCT_IDS,
   ...ELITE_YEARLY_PRODUCT_IDS,
+  ...PREMIUM_YEARLY_PRODUCT_IDS,
   ...APEX_YEARLY_PRODUCT_IDS,
 ] as const;
 
 const PRIMARY_ELITE_PRODUCT_ID = "elitemonthly499";
+const PRIMARY_PREMIUM_PRODUCT_ID = "premiummonthly1799";
 const PRIMARY_APEX_PRODUCT_ID = "Apex888";
 const PRIMARY_ELITE_YEARLY_PRODUCT_ID = "eliteyearly4999";
+const PRIMARY_PREMIUM_YEARLY_PRODUCT_ID = "premiumyearly17299";
 const PRIMARY_APEX_YEARLY_PRODUCT_ID = "apexyearly17299";
 
 // ─── Types ──────────────────────────────────────────────
 interface RevenueCatContextType {
   rcElite: boolean;
   rcApex: boolean;
+  rcPremium: boolean;
   rcLoading: boolean;
   rcReady: boolean;
   monthlyPriceLabel: string | null;
   apexPriceLabel: string | null;
+  premiumPriceLabel: string | null;
   eliteYearlyPriceLabel: string | null;
   apexYearlyPriceLabel: string | null;
+  premiumYearlyPriceLabel: string | null;
   packages: any[];
   purchase: (pkg: any) => Promise<void>;
   purchaseProduct: (productId: string) => Promise<void>;
+  /** @deprecated Use purchasePremiumPlan instead. */
   purchaseApex: () => Promise<void>;
   purchaseElitePlan: (plan: "monthly" | "yearly") => Promise<void>;
+  /** @deprecated Use purchasePremiumPlan instead. */
   purchaseApexPlan: (plan: "monthly" | "yearly") => Promise<void>;
+  purchasePremiumPlan: (plan: "monthly" | "yearly") => Promise<void>;
   restorePurchases: () => Promise<void>;
 }
 
@@ -97,6 +124,14 @@ function isEliteYearlyPid(id: string | null): boolean {
   return !!id && (ELITE_YEARLY_PRODUCT_IDS as readonly string[]).includes(id);
 }
 
+function isPremiumPid(id: string | null): boolean {
+  return !!id && (PREMIUM_PRODUCT_IDS as readonly string[]).includes(id);
+}
+
+function isPremiumYearlyPid(id: string | null): boolean {
+  return !!id && (PREMIUM_YEARLY_PRODUCT_IDS as readonly string[]).includes(id);
+}
+
 function isApexYearlyPid(id: string | null): boolean {
   return !!id && (APEX_YEARLY_PRODUCT_IDS as readonly string[]).includes(id);
 }
@@ -137,29 +172,34 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [rcElite, setRcElite] = useState(false);
   const [rcApex, setRcApex] = useState(false);
+  const [rcPremium, setRcPremium] = useState(false);
   const [packages, setPackages] = useState<any[]>([]);
   const [rcLoading, setRcLoading] = useState(true);
   const [rcReady, setRcReady] = useState(false);
   const [monthlyPriceLabel, setMonthlyPriceLabel] = useState<string | null>(null);
   const [apexPriceLabel, setApexPriceLabel] = useState<string | null>(null);
+  const [premiumPriceLabel, setPremiumPriceLabel] = useState<string | null>(null);
   const [eliteYearlyPriceLabel, setEliteYearlyPriceLabel] = useState<string | null>(null);
   const [apexYearlyPriceLabel, setApexYearlyPriceLabel] = useState<string | null>(null);
+  const [premiumYearlyPriceLabel, setPremiumYearlyPriceLabel] = useState<string | null>(null);
 
   /** Sync subscription flags to database. */
   const syncEntitlements = useCallback(
-    async (elite: boolean, apex: boolean) => {
+    async (elite: boolean, apex: boolean, premium: boolean) => {
       if (!user) return;
-      // Elite covers both; Apex implies elite
+      const grantElite = elite || apex || premium;
+      // set_elite_status now also flips is_premium server-side.
       await supabase.rpc("set_elite_status", {
         target_user_id: user.id,
-        elite: elite || apex,
+        elite: grantElite,
       });
-      // Apex flag updated via webhook in production; this is a best-effort
-      // direct write so the UI reflects state immediately on native devices.
-      if (apex) {
+      const update: Record<string, any> = {};
+      if (apex) update.is_apex_subscriber = true;
+      if (premium || apex || elite) update.is_premium = true;
+      if (Object.keys(update).length > 0) {
         await supabase
           .from("profiles")
-          .update({ is_apex_subscriber: true })
+          .update(update)
           .eq("user_id", user.id);
       }
     },
@@ -171,16 +211,20 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     async (info: any) => {
       const elite = hasEntitlement(info, ELITE_ENTITLEMENT);
       const apex = hasEntitlement(info, APEX_ENTITLEMENT);
-      setRcElite(elite || apex);
+      const premium = hasEntitlement(info, PREMIUM_ENTITLEMENT);
+      setRcElite(elite || apex || premium);
       setRcApex(apex);
+      setRcPremium(premium || apex);
       updateRevenueCatDebug({
-        entitlement: apex
+        entitlement: premium
+          ? PREMIUM_ENTITLEMENT
+          : apex
           ? APEX_ENTITLEMENT
           : elite
           ? ELITE_ENTITLEMENT
           : null,
       });
-      await syncEntitlements(elite, apex);
+      await syncEntitlements(elite, apex, premium);
     },
     [syncEntitlements],
   );
@@ -227,6 +271,22 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
         if (label) setApexYearlyPriceLabel(label);
       }
 
+      const premiumP =
+        products?.find((x: any) => productId(x) === PRIMARY_PREMIUM_PRODUCT_ID) ??
+        products?.find((x: any) => isPremiumPid(productId(x)));
+      if (premiumP) {
+        const label = priceLabel(premiumP);
+        if (label) setPremiumPriceLabel(label);
+      }
+
+      const premiumYearlyP =
+        products?.find((x: any) => productId(x) === PRIMARY_PREMIUM_YEARLY_PRODUCT_ID) ??
+        products?.find((x: any) => isPremiumYearlyPid(productId(x)));
+      if (premiumYearlyP) {
+        const label = priceLabel(premiumYearlyP);
+        if (label) setPremiumYearlyPriceLabel(label);
+      }
+
       updateRevenueCatDebug({
         loadedProductIds,
         monthlyPriceLabel: eliteP ? priceLabel(eliteP) : null,
@@ -248,11 +308,14 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     if (!user) {
       setRcElite(false);
       setRcApex(false);
+      setRcPremium(false);
       setPackages([]);
       setMonthlyPriceLabel(null);
       setApexPriceLabel(null);
+      setPremiumPriceLabel(null);
       setEliteYearlyPriceLabel(null);
       setApexYearlyPriceLabel(null);
+      setPremiumYearlyPriceLabel(null);
       setRcLoading(false);
       setRcReady(false);
       updateRevenueCatDebug({ appUserId: null, entitlement: null });
@@ -402,6 +465,38 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     [packages, purchase, purchaseProduct],
   );
 
+  /**
+   * Purchase Premium tier with selectable billing plan.
+   * Falls back to legacy Apex products at the same price point if the
+   * dedicated Premium products are not yet approved in App Store Connect,
+   * so the purchase flow never breaks during the rollout window.
+   */
+  const purchasePremiumPlan = useCallback(
+    async (plan: "monthly" | "yearly") => {
+      const yearly = plan === "yearly";
+      const targetId = yearly ? PRIMARY_PREMIUM_YEARLY_PRODUCT_ID : PRIMARY_PREMIUM_PRODUCT_ID;
+      const matcher = yearly ? isPremiumYearlyPid : isPremiumPid;
+      const pkg = packages.find((p: any) => {
+        const pid = productId(storeProduct(p));
+        return pid === targetId || matcher(pid);
+      });
+      if (pkg) {
+        await purchase(pkg);
+        return;
+      }
+      try {
+        await purchaseProduct(targetId);
+      } catch (e: any) {
+        if (isCancellation(e)) throw e;
+        // Fallback — legacy Apex product at the same €17.99 / €172.99 price.
+        const fallbackId: string = yearly ? PRIMARY_APEX_YEARLY_PRODUCT_ID : PRIMARY_APEX_PRODUCT_ID;
+        if (fallbackId === (targetId as string)) throw e;
+        await purchaseProduct(fallbackId);
+      }
+    },
+    [packages, purchase, purchaseProduct],
+  );
+
   // ─── Restore ────────────────────────────────────────
   const restorePurchases = useCallback(async () => {
     try {
@@ -419,18 +514,22 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       value={{
         rcElite,
         rcApex,
+        rcPremium,
         rcLoading,
         rcReady,
         monthlyPriceLabel,
         apexPriceLabel,
+        premiumPriceLabel,
         eliteYearlyPriceLabel,
         apexYearlyPriceLabel,
+        premiumYearlyPriceLabel,
         packages,
         purchase,
         purchaseProduct,
         purchaseApex,
         purchaseElitePlan,
         purchaseApexPlan,
+        purchasePremiumPlan,
         restorePurchases,
       }}
     >

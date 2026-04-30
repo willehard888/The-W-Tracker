@@ -11,6 +11,7 @@ interface AuthContextType {
   loading: boolean;
   subscriptionLoading: boolean;
   isElite: boolean;
+  isPremium: boolean;
   isApexSubscriber: boolean;
   subscriptionEnd: string | null;
   checkSubscription: () => Promise<void>;
@@ -35,6 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const [isElite, setIsElite] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const [isApexSubscriber, setIsApexSubscriber] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const lastFetchedProfileUserId = useRef<string | null>(null);
@@ -167,6 +169,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       hasApexCredits
     );
     setIsElite(nextElite);
+    setIsPremium(Boolean((data as any)?.is_premium) || nextElite);
     setIsApexSubscriber(Boolean((data as any)?.is_apex_subscriber) || tier === "apex" || tier === "legend" || hasApexCredits);
 
     if (shouldForceAppleUsernameSetup(authUser, data)) {
@@ -273,6 +276,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           lastFetchedProfileUserId.current = null;
           setProfile(null);
           setIsElite(false);
+          setIsPremium(false);
           setIsApexSubscriber(false);
           setSubscriptionEnd(null);
         }
@@ -327,12 +331,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     clearAppleUsernameSelectionPending();
     setProfile(null);
     setIsElite(false);
+    setIsPremium(false);
     setIsApexSubscriber(false);
     setSubscriptionEnd(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, subscriptionLoading, isElite, isApexSubscriber, subscriptionEnd, checkSubscription, signUp, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, subscriptionLoading, isElite, isPremium, isApexSubscriber, subscriptionEnd, checkSubscription, signUp, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

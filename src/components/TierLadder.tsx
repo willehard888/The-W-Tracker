@@ -17,13 +17,13 @@ interface TierLadderProps {
  * on the top tiers with strong static gradient borders + glow shadows.
  */
 const TIER_ROW_STYLE: Record<number, { base: string; accent: string; height: string }> = {
-  0: { base: "border-border/40 bg-secondary/30", accent: "bg-muted/40 text-muted-foreground", height: "min-h-[52px]" },
-  1: { base: "border-[hsl(var(--teal))]/30 bg-[hsl(var(--teal))]/[0.04] shadow-[0_0_10px_hsl(var(--teal)/0.08)]", accent: "bg-[hsl(var(--teal))]/15 text-[hsl(var(--teal))]", height: "min-h-[54px]" },
-  2: { base: "border-[hsl(210_90%_56%)]/35 bg-gradient-to-r from-[hsl(210_90%_56%)]/[0.06] to-transparent shadow-[0_0_14px_hsl(210_90%_56%/0.12)]", accent: "bg-[hsl(210_90%_56%)]/15 text-[hsl(210_90%_56%)]", height: "min-h-[56px]" },
-  3: { base: "border-[hsl(var(--purple))]/40 bg-[hsl(var(--purple))]/[0.06] shadow-[0_0_18px_hsl(var(--purple)/0.18)]", accent: "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))]", height: "min-h-[58px]" },
-  4: { base: "border-gold/50 bg-gold/[0.06] shadow-[0_0_22px_hsl(var(--gold)/0.22)]", accent: "gradient-gold text-primary-foreground", height: "min-h-[62px]" },
-  5: { base: "border-[hsl(18_95%_58%)]/60 bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.10] to-gold/[0.08] shadow-[0_0_22px_hsl(18_95%_58%/0.25)]", accent: "bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold text-background", height: "min-h-[68px]" },
-  6: { base: "border-[hsl(280_70%_60%)]/55 bg-gradient-to-br from-[hsl(280_70%_55%)]/[0.12] via-gold/[0.08] to-[hsl(350_80%_55%)]/[0.12] shadow-[0_0_26px_hsl(280_70%_60%/0.28)]", accent: "bg-gradient-to-br from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background", height: "min-h-[72px]" },
+  0: { base: "border-border/40 bg-secondary/30", accent: "bg-muted/40 text-muted-foreground", height: "min-h-[60px]" },
+  1: { base: "border-[hsl(var(--teal))]/30 bg-[hsl(var(--teal))]/[0.04] shadow-[0_0_10px_hsl(var(--teal)/0.08)]", accent: "bg-[hsl(var(--teal))]/15 text-[hsl(var(--teal))]", height: "min-h-[62px]" },
+  2: { base: "border-[hsl(210_90%_56%)]/35 bg-gradient-to-r from-[hsl(210_90%_56%)]/[0.06] to-transparent shadow-[0_0_14px_hsl(210_90%_56%/0.12)]", accent: "bg-[hsl(210_90%_56%)]/15 text-[hsl(210_90%_56%)]", height: "min-h-[64px]" },
+  3: { base: "border-[hsl(var(--purple))]/40 bg-[hsl(var(--purple))]/[0.06] shadow-[0_0_18px_hsl(var(--purple)/0.18)]", accent: "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))]", height: "min-h-[66px]" },
+  4: { base: "border-gold/50 bg-gold/[0.06] shadow-[0_0_22px_hsl(var(--gold)/0.22)]", accent: "gradient-gold text-primary-foreground", height: "min-h-[70px]" },
+  5: { base: "border-[hsl(18_95%_58%)]/60 bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.10] to-gold/[0.08] shadow-[0_0_22px_hsl(18_95%_58%/0.25)]", accent: "bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold text-background", height: "min-h-[76px]" },
+  6: { base: "border-[hsl(280_70%_60%)]/55 bg-gradient-to-br from-[hsl(280_70%_55%)]/[0.12] via-gold/[0.08] to-[hsl(350_80%_55%)]/[0.12] shadow-[0_0_26px_hsl(280_70%_60%/0.28)]", accent: "bg-gradient-to-br from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background", height: "min-h-[80px]" },
 };
 
 const TierLadder = ({ currentTier, className }: TierLadderProps) => {
@@ -161,13 +161,12 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                 {/* Tier icon block */}
                 <div
                   className={cn(
-                    "h-10 w-10 rounded-lg flex items-center justify-center font-black text-xs shrink-0 relative z-10 transition-transform group-hover:scale-105",
+                    "h-12 w-12 rounded-xl flex items-center justify-center font-black text-[13px] shrink-0 relative z-10 transition-transform group-hover:scale-105",
                     isCurrent
                       ? style.accent
                       : isUnlocked
-                      ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
+                      ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
                       : cn("bg-background/40 border border-gold/25", cfg.textClass),
-                    // Apex / Legend icon block — premium border + glow even when locked
                     cfg.rank === 5 && !isCurrent && !isUnlocked && "border-[hsl(18_95%_58%)]/55 shadow-[0_0_10px_hsl(18_95%_58%/0.35)]",
                     cfg.rank === 6 && !isCurrent && !isUnlocked && "border-[hsl(280_70%_60%)]/55 shadow-[0_0_12px_hsl(280_70%_60%/0.45)]",
                   )}
@@ -175,12 +174,11 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                   {isCurrent ? (
                     cfg.shortLabel
                   ) : isUnlocked ? (
-                    <Check size={15} strokeWidth={3} />
+                    <Check size={17} strokeWidth={3} />
                   ) : isLocked && cfg.rank >= 5 ? (
-                    // Silhouette: keep tier label visible on premium locked rows
-                    <span className="opacity-80 drop-shadow-[0_0_6px_hsl(var(--gold)/0.5)]">{cfg.shortLabel}</span>
+                    <span className="opacity-85 drop-shadow-[0_0_6px_hsl(var(--gold)/0.5)]">{cfg.shortLabel}</span>
                   ) : (
-                    <Lock size={13} className="opacity-70" />
+                    <Lock size={14} className="opacity-70" />
                   )}
                 </div>
 
@@ -189,28 +187,25 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                   <div className="flex items-center gap-2 flex-wrap">
                     <p
                       className={cn(
-                        "font-display font-black text-sm leading-tight",
-                        isCurrent ? cfg.textClass : isUnlocked ? "text-foreground" : "text-foreground/85",
-                        // Apex — orange→gold gradient text
+                        "font-display font-black text-[17px] leading-tight tracking-tight",
+                        isCurrent ? cfg.textClass : isUnlocked ? "text-foreground" : "text-foreground/90",
                         cfg.rank === 5 && !isCurrent && "bg-gradient-to-r from-[hsl(18_95%_62%)] via-gold to-[hsl(18_95%_62%)] bg-clip-text text-transparent",
-                        // Legend — jewel gradient text
                         cfg.rank === 6 && !isCurrent && "bg-gradient-to-r from-[hsl(280_70%_70%)] via-gold to-[hsl(350_80%_65%)] bg-clip-text text-transparent",
                       )}
                     >
                       {cfg.label}
                     </p>
                     {isCurrent && (
-                      <span className="relative text-[8px] uppercase tracking-[0.18em] font-black text-background bg-gradient-to-r from-gold to-gold-light px-1.5 py-[2px] rounded-sm shadow-[0_0_8px_hsl(var(--gold)/0.5)]">
-                        Current Tier
+                      <span className="relative text-[8.5px] uppercase tracking-[0.2em] font-black text-background bg-gradient-to-r from-gold to-gold-light px-1.5 py-[2px] rounded-sm shadow-[0_0_8px_hsl(var(--gold)/0.5)]">
+                        Current
                         <span
                           aria-hidden
                           className="pointer-events-none absolute -inset-[2px] rounded-sm border border-gold/60 status-amber-ring-breathe"
                         />
                       </span>
                     )}
-                    {/* Crown marker on Apex/Legend when locked */}
                     {!isCurrent && isLocked && cfg.rank === 5 && (
-                      <Crown size={10} className="text-gold drop-shadow-[0_0_4px_hsl(var(--gold)/0.7)]" strokeWidth={2.8} />
+                      <Crown size={11} className="text-gold drop-shadow-[0_0_4px_hsl(var(--gold)/0.7)]" strokeWidth={2.8} />
                     )}
                     {!isCurrent && isLocked && cfg.rank === 6 && (
                       <span className="inline-flex items-center gap-0.5 text-[8px] uppercase tracking-[0.18em] font-black px-1.5 py-[2px] rounded-sm bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background shadow-[0_0_8px_hsl(280_70%_60%/0.55)]">
@@ -218,7 +213,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       </span>
                     )}
                   </div>
-                  <p className={cn("text-[10px] truncate mt-0.5", isLocked ? "text-muted-foreground/80" : "text-muted-foreground")}>
+                  <p className={cn("text-[11px] font-semibold tracking-wide truncate mt-0.5", isLocked ? "text-muted-foreground/85" : "text-muted-foreground")}>
                     {cfg.requirements.percentile > 0
                       ? `Top ${(100 - cfg.requirements.percentile).toFixed(cfg.requirements.percentile >= 99 ? 1 : 0)}%`
                       : cfg.percentile}

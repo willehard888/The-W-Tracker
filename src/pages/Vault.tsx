@@ -31,32 +31,32 @@ interface VaultCategory {
 const CATEGORIES: VaultCategory[] = [
   {
     id: "recipes",
-    title: "Recipes & Easy Meals",
-    tagline: "Eat clean · cook fast",
+    title: "Performance Nutrition",
+    tagline: "Fuel · macros · meal prep",
     description:
-      "High-protein, real-food recipes you can throw together in minutes. Meal prep, snacks, post-workout fuel — built for busy weeks.",
+      "Macro-balanced, whole-food recipes engineered around your training load. Protein-forward (1.6–2.2 g/kg), realistic prep times, swap-friendly ingredients — built around evidence-based sports nutrition, not diet trends.",
     icon: Utensils,
     accent: "hsl(142 70% 50%)",
     preview: [
-      "10-min high-protein breakfast bowls",
-      "One-pan chicken & rice prep",
-      "Post-workout shake stack",
+      "High-protein breakfast bowls (40 g · 10 min)",
+      "Batch-cook chicken & rice — 4 meals, one pan",
+      "Pre / intra / post-workout fueling stack",
     ],
     dropLabel: "First drop · within 2 weeks",
     comingSoon: true,
   },
   {
     id: "training",
-    title: "Workouts & Movement",
-    tagline: "Programs you'll finish",
+    title: "Strength & Conditioning",
+    tagline: "Periodized programs",
     description:
-      "Structured 4–8 week programs and standalone sessions with crystal-clear movements. Strength, conditioning, mobility — at home or in the gym.",
+      "Structured 4–8 week blocks built on progressive overload, RPE-based loading and proper deload cycles. Each session has clear movement standards, video cues and substitutions for home or gym. Designed by S&C principles, not random workouts.",
     icon: Dumbbell,
     accent: "hsl(18 95% 58%)",
     preview: [
-      "Foundational Strength · 6-week",
-      "Conditioning sprints · 20-min",
-      "Daily mobility flow",
+      "Foundational Strength · 6-week linear progression",
+      "Zone 2 + VO₂max conditioning blocks",
+      "Daily 8-min mobility & joint prep",
     ],
     dropLabel: "First program · within 3 weeks",
     comingSoon: true,
@@ -64,47 +64,47 @@ const CATEGORIES: VaultCategory[] = [
   {
     id: "recovery",
     title: "Recovery & Sleep",
-    tagline: "Repair, then perform",
+    tagline: "Sleep · HRV · breathwork",
     description:
-      "Sleep protocols, breathwork, mobility flows and recovery rituals to bounce back faster from training and life.",
+      "Protocols grounded in circadian biology and autonomic recovery: light hygiene, sleep architecture, HRV-guided rest, and breathwork (box, 4-7-8, coherent breathing) that measurably shifts you out of sympathetic dominance.",
     icon: Moon,
     accent: "hsl(220 80% 65%)",
     preview: [
-      "Wind-down routine · 12 min",
-      "Box breathing · 5 min",
-      "Sunday recovery flow",
+      "Pre-sleep wind-down · 12-min protocol",
+      "Coherent breathing (5.5 bpm) for HRV",
+      "Sunday recovery & mobility flow",
     ],
     dropLabel: "Foundations live within 4 weeks",
     comingSoon: true,
   },
   {
     id: "mind",
-    title: "Mind & Mood",
-    tagline: "EFT · EMDR-style · body work",
+    title: "Mind & Emotional Skill",
+    tagline: "EFT · EMDR-informed · CBT tools",
     description:
-      "Tools for stress, anxiety, focus and emotional release — tapping sequences, eye-movement protocols and somatic exercises that actually move the needle.",
+      "Practical, trauma-informed techniques for stress, anxiety, focus and emotional regulation — clinical-style EFT tapping sequences, bilateral stimulation drills, cognitive reframing and somatic release work. Educational tools, not a replacement for therapy.",
     icon: Brain,
     accent: "hsl(280 70% 65%)",
     preview: [
-      "EFT tapping for anxiety",
-      "EMDR-style focus reset",
-      "Somatic shake-off (3 min)",
+      "EFT tapping protocol for acute anxiety",
+      "Bilateral stimulation focus reset (EMDR-informed)",
+      "Somatic discharge · 3-min shake-off",
     ],
     dropLabel: "Starter set · within 4 weeks",
     comingSoon: true,
   },
   {
     id: "nervous-system",
-    title: "Nervous System Reset",
-    tagline: "Hypnosis · deep regulation",
+    title: "Nervous System Regulation",
+    tagline: "Hypnosis · NSDR · vagal tone",
     description:
-      "Guided audio sessions to calm an overdriven nervous system, downshift from stress, and rewire stuck patterns. Headphones recommended.",
+      "Guided audio sessions built around polyvagal theory and clinical hypnosis: down-regulate a chronically activated nervous system, deepen parasympathetic tone, and rewire stuck stress responses. Headphones strongly recommended.",
     icon: WindIcon,
     accent: "hsl(190 80% 60%)",
     preview: [
-      "10-min hypnosis · sleep",
-      "Vagus nerve reset (audio)",
-      "NSDR-style power nap",
+      "Sleep hypnosis · 10-min induction",
+      "Vagus nerve activation · audio drill",
+      "NSDR-style power nap (Yoga Nidra-informed)",
     ],
     dropLabel: "First sessions · within 5 weeks",
     comingSoon: true,
@@ -193,9 +193,10 @@ const Vault = () => {
               Vault
             </span>
           </h1>
-          <p className="text-[12.5px] text-muted-foreground max-w-[300px] mx-auto leading-relaxed">
-            Your private library of recipes, training, recovery, mind work and
-            nervous-system tools. Built for the obsessed.
+          <p className="text-[12.5px] text-muted-foreground max-w-[310px] mx-auto leading-relaxed">
+            A curated, evidence-led library covering nutrition, strength &
+            conditioning, recovery, and nervous-system regulation — written
+            and reviewed by practitioners, not influencers.
           </p>
 
           {/* Stat trio */}
@@ -231,8 +232,8 @@ const Vault = () => {
             Founding-member access
           </p>
           <p className="text-[12px] text-foreground/85 leading-snug">
-            You're in early. New content drops weekly — your price stays locked
-            as long as you stay subscribed.
+            You're in before launch. New protocols and programs ship weekly —
+            your subscription price is locked for as long as you stay a member.
           </p>
         </div>
       </div>

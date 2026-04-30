@@ -465,6 +465,38 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     [packages, purchase, purchaseProduct],
   );
 
+  /**
+   * Purchase Premium tier with selectable billing plan.
+   * Falls back to legacy Apex products at the same price point if the
+   * dedicated Premium products are not yet approved in App Store Connect,
+   * so the purchase flow never breaks during the rollout window.
+   */
+  const purchasePremiumPlan = useCallback(
+    async (plan: "monthly" | "yearly") => {
+      const yearly = plan === "yearly";
+      const targetId = yearly ? PRIMARY_PREMIUM_YEARLY_PRODUCT_ID : PRIMARY_PREMIUM_PRODUCT_ID;
+      const matcher = yearly ? isPremiumYearlyPid : isPremiumPid;
+      const pkg = packages.find((p: any) => {
+        const pid = productId(storeProduct(p));
+        return pid === targetId || matcher(pid);
+      });
+      if (pkg) {
+        await purchase(pkg);
+        return;
+      }
+      try {
+        await purchaseProduct(targetId);
+      } catch (e: any) {
+        if (isCancellation(e)) throw e;
+        // Fallback — legacy Apex product at the same €17.99 / €172.99 price.
+        const fallbackId = yearly ? PRIMARY_APEX_YEARLY_PRODUCT_ID : PRIMARY_APEX_PRODUCT_ID;
+        if (fallbackId === targetId) throw e;
+        await purchaseProduct(fallbackId);
+      }
+    },
+    [packages, purchase, purchaseProduct],
+  );
+
   // ─── Restore ────────────────────────────────────────
   const restorePurchases = useCallback(async () => {
     try {

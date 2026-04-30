@@ -230,7 +230,7 @@ const UserProfile = () => {
     const url = `${window.location.origin}/u/${profile.username}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: `@${profile.username} on The W Tracker`, url });
+        await navigator.share({ title: `@${profile.username} on Whealth Factory`, url });
       } else {
         await navigator.clipboard.writeText(url);
         toast.success("Profile link copied");
@@ -276,7 +276,7 @@ const UserProfile = () => {
         <div className="relative z-10 text-center">
           {/* Brand kicker */}
           <p className="text-[10px] font-black uppercase tracking-[0.32em] text-gold/70 mb-3">
-            The W Tracker
+            Whealth Factory
           </p>
 
           {/* Avatar — large, gold ring with offset */}

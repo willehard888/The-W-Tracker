@@ -14,7 +14,7 @@ import { pushIosDebugLog, updateRevenueCatDebug } from "@/lib/ios-debug";
 
 // ─── Constants ──────────────────────────────────────────
 const RC_API_KEY_APPLE = "appl_qgpDFJEtyXTeNTJZxBoHzxzgiTr";
-const ELITE_ENTITLEMENT = "The W Tracker Pro";
+const ELITE_ENTITLEMENT = "Whealth Factory Pro";
 const APEX_ENTITLEMENT = "apex_subscriber";
 
 // Monthly products

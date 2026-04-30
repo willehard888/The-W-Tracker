@@ -78,7 +78,7 @@ const PublicProfile = () => {
   useEffect(() => {
     if (profile) {
       const tier = getTierConfig(profile.status_tier || 'recruit');
-      document.title = `@${profile.username} · ${tier.label} · The W Tracker`;
+      document.title = `@${profile.username} · ${tier.label} · Whealth Factory`;
       const desc = document.querySelector('meta[name="description"]');
       const text = `${tier.emoji} ${tier.label} · Level ${profile.level} · ${profile.streak}d streak · ${profile.xp.toLocaleString()} XP`;
       if (desc) desc.setAttribute('content', text);
@@ -89,7 +89,7 @@ const PublicProfile = () => {
         document.head.appendChild(m);
       }
     }
-    return () => { document.title = "The W Tracker"; };
+    return () => { document.title = "Whealth Factory"; };
   }, [profile]);
 
   if (isLoading) {
@@ -105,8 +105,8 @@ const PublicProfile = () => {
       <div className="min-h-[100dvh] flex flex-col items-center justify-center px-6 text-center">
         <Lock size={32} className="text-muted-foreground/40 mb-3" />
         <h1 className="font-display text-xl font-black mb-2">User not found</h1>
-        <p className="text-sm text-muted-foreground mb-6">@{username} doesn't exist on The W Tracker</p>
-        <Button variant="coal" onClick={() => navigate("/")}>Open The W Tracker</Button>
+        <p className="text-sm text-muted-foreground mb-6">@{username} doesn't exist on Whealth Factory</p>
+        <Button variant="coal" onClick={() => navigate("/")}>Open Whealth Factory</Button>
       </div>
     );
   }

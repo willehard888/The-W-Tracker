@@ -60,8 +60,8 @@ const Referrals = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Join The W Tracker",
-          text: `Join The W Tracker and level up your discipline. Use my referral link to get started!`,
+          title: "Join Whealth Factory",
+          text: `Join Whealth Factory and level up your discipline. Use my referral link to get started!`,
           url: referralLink,
         });
       } catch {}

@@ -27,7 +27,7 @@ const AppLogoHeader = () => (
       />
     </div>
     <span className="font-display text-xl font-bold tracking-tight text-gradient-gold">
-      The W Tracker
+      Whealth Factory
     </span>
   </div>
 );

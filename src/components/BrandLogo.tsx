@@ -12,7 +12,7 @@ interface BrandLogoProps {
 }
 
 export const BrandLogo = forwardRef<HTMLImageElement, BrandLogoProps>(
-  ({ size = 56, className, priority = false, alt = "The W Tracker" }, ref) => (
+  ({ size = 56, className, priority = false, alt = "Whealth Factory" }, ref) => (
     <img
       ref={ref}
       src={LOGO_DATA_URI}

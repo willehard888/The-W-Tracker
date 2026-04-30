@@ -16,7 +16,7 @@ const TermsOfUse = () => {
       <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
         <section>
           <h2 className="font-semibold text-foreground mb-2">1. Acceptance of Terms</h2>
-          <p>By using W Tracker, you agree to these Terms of Use. If you do not agree, please do not use the app.</p>
+          <p>By using Whealth Factory, you agree to these Terms of Use. If you do not agree, please do not use the app.</p>
         </section>
 
         <section>
@@ -36,12 +36,12 @@ const TermsOfUse = () => {
 
         <section>
           <h2 className="font-semibold text-foreground mb-2">5. Intellectual Property</h2>
-          <p>All content, branding, and features of W Tracker are owned by us. You retain ownership of content you create (check-in data, posts, photos).</p>
+          <p>All content, branding, and features of Whealth Factory are owned by us. You retain ownership of content you create (check-in data, posts, photos).</p>
         </section>
 
         <section>
           <h2 className="font-semibold text-foreground mb-2">6. Limitation of Liability</h2>
-          <p>W Tracker is provided "as is" without warranties. We are not liable for any damages arising from use of the app. The app does not provide medical or health advice.</p>
+          <p>Whealth Factory is provided "as is" without warranties. We are not liable for any damages arising from use of the app. The app does not provide medical or health advice.</p>
         </section>
 
         <section>

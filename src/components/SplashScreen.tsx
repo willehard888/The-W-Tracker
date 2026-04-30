@@ -338,7 +338,7 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
               textShadow: "0 2px 12px hsl(42 90% 50% / 0.35)",
             }}
           >
-            The W Tracker
+            Whealth Factory
           </h1>
         </div>
 

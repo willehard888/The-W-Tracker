@@ -1,5 +1,5 @@
 /**
- * Status Tier Configuration — the core hierarchy of The W Tracker
+ * Status Tier Configuration — the core hierarchy of Whealth Factory
  * 
  * Status is earned, visible, competitive, and fragile.
  */

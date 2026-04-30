@@ -683,6 +683,7 @@ export type Database = {
           id: string
           is_apex_subscriber: boolean
           is_elite: boolean
+          is_premium: boolean
           last_rank_snapshot: Json | null
           legend_pinned: boolean
           level: number
@@ -713,6 +714,7 @@ export type Database = {
           id?: string
           is_apex_subscriber?: boolean
           is_elite?: boolean
+          is_premium?: boolean
           last_rank_snapshot?: Json | null
           legend_pinned?: boolean
           level?: number
@@ -743,6 +745,7 @@ export type Database = {
           id?: string
           is_apex_subscriber?: boolean
           is_elite?: boolean
+          is_premium?: boolean
           last_rank_snapshot?: Json | null
           legend_pinned?: boolean
           level?: number
@@ -1424,6 +1427,7 @@ export type Database = {
         }[]
       }
       has_active_access: { Args: { _user_id: string }; Returns: boolean }
+      has_premium: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

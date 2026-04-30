@@ -1,112 +1,92 @@
+# Premium-tilaus + Vault-akatemia + sujuvampi IAP-flow
 
-# Polish: Latausnopeus & sulavuus (Web + iOS Native)
+## Mitä rakennetaan
 
-Tavoite: nopeampi cold-start, sulavammat siirtymät ja vähemmän jankia — **mitään featurea, animaatiota tai visuaalia ei poisteta**. Vain optimointi, prefetch, lazy ja virhekorjaukset.
+1. **Apex-osto poistuu kokonaan** — Apex säilyy ansaittuna tier-statuksena (top 10%), mutta sitä ei enää voi ostaa. Kaikki Apex-paywall-kortit, dialogit ja CTA:t poistetaan tai uudelleenohjataan Premiumiin.
+2. **Premium-tilaus €17.99/kk (+ vuosi €172,99)** — sama hinta kuin nykyinen Apex. Käytännössä Apex-tuoteperhe nimetään uudelleen Premiumiksi niin, että tilaajan oikeudet ovat: kaikki Member-edut + AI Coach + Elite Feed + uusi **Vault**-akatemia + Tribes-luonti (3 kpl).
+3. **Vault — Premium-akatemia (rakenne, sisältö myöhemmin)** — uusi `/vault`-reitti, paywall-gate, 5 kategoriaa "Coming Soon" -tilalla:
+   - Recipes & Clean Meals
+   - Training Programs & Movements
+   - Recovery & Sleep
+   - Mind & Mood (EFT, EMDR-tyyliset, kehoharjoitteet)
+   - Nervous System Reset (Hypnotherapy — kuukausittain uusi ohjattu sessio)
+4. **Yhden näytön IAP-flow** — paywall ei naviguoi pois oston aikana. Yksi `purchaseStatus`-state ohjaa kaiken: `idle → purchasing → verifying → success` (animoitu) tai `error` (inline-banner + Try Again / Restore). Kaksoiskutsut estetään, RevenueCatin not-ready-tilassa Buy-nappi disabloidaan eikä toastia näytetä.
 
----
+## Käyttäjäkokemus
 
-## 1. Cold start (latausnopeus)
-
-**index.html**
-- Lisää `<link rel="preconnect">` ja `<link rel="dns-prefetch">` Supabase-domainille (`zjdljojkgrpgxurugixf.supabase.co`) niin että ensimmäinen API-kutsu lähtee ~200 ms aiemmin.
-- Lisää `<link rel="modulepreload" href="/src/main.tsx">` jotta JS-bundle alkaa latautua heti `<head>` parsetessa.
-- Korvaa `apple-touch-icon` osoittamaan kevyempään `/app-icon.webp` -versioon (1.2 MB → 6 KB) — natiivi-iOS PWA-icon ei muutu, vain web-välimuisti kevenee.
-- Lisää korkean prioriteetin font-display & system-font fallback `<style>`-blokkiin niin että teksti renderöityy heti.
-
-**vite.config.ts**
-- Lisää `chunkSizeWarningLimit: 1200` ja jaa `manualChunks` hienommin: erota `supabase` (`@supabase/supabase-js`) omaan chunkkiinsa (ladataan lazy auth-flowin yhteydessä) ja `capacitor` (`@capacitor/*`) omaansa (ei ladata webissä).
-- Lisää `build.target: "es2020"` ja `cssCodeSplit: true` (oletus mutta varmistetaan) — pienempi initial CSS.
-
-**src/lib/route-preload.ts**
-- Käytä `link rel="modulepreload"` -injektiota `import()`-kutsujen sijaan priority-routeille → selain alkaa ladata bundleja parallel ilman että execution lukitsee main threadin.
-- Lisää `connection.saveData` / `effectiveType === "2g"` -tarkistus → skippaa secondary-route preloadin hitaalla yhteydellä.
-
-**src/main.tsx**
-- Siirrä iOS-debug logging -callit `Capacitor.isNativePlatform()` -haaraan kokonaan (web-bundle ei sisällä `pushIosDebugLog` -kutsuja → pienempi initial JS).
-- `createRoot(...).render(<App />)` `requestIdleCallback`-wrapperin sijaan suora — varmistus että render alkaa heti, mutta `initNativeShell()` ja deep-link listenerit jätetään fire-and-forget mikrotehtäviin.
-
----
-
-## 2. Sulavuus (smoothness / jank)
-
-**src/App.tsx**
-- Memoize `queryClient` (jo on module-scope, OK), mutta käärittele `<RevenueCatProvider>`/`<WindProvider>` `React.memo`:lla niin etteivät uudelleenrenderöidy splash-state-muutoksen yhteydessä.
-- Splash → app -siirtymä: lisää `requestAnimationFrame`-pohjainen siirtymä `setSplashDone(true)`:lle → ei "double-paint flash" ensimmäisellä framella.
-
-**src/components/SplashScreen.tsx**
-- Splash sisältää tällä hetkellä `<RealisticFlame>` + 12 sparks + 8 embers + 2 shockwave-rinkiä — pidetään, mutta:
-  - Lisää `prefers-reduced-motion` -tarkistus joka skippaa partikkelit (säilyttää logon + word-mark) → reduced-motion käyttäjälle välitön.
-  - Pakota `contain: strict` koko containeriin (nyt `layout paint size`) → eristää paint splash-fadeoutin aikana.
-
-**src/components/AmbientParticles.tsx**
-- Lisää passive-detection: jos `(navigator as any).connection?.saveData` → skippaa kokonaan.
-- Vähennä `FRAME_MS`-throttle iOS:llä 18 fps (nyt 20) — silmä ei huomaa, mutta säästää ~10 % main-threadia.
-
-**src/components/home/CommandDeck.tsx**
-- Korjaa konsolivaroitus: `background: ctaGradient` + `backgroundSize: "200% 200%"` aiheuttaa shorthand-collision warningin React-rerenderissä. Vaihda `background` → `backgroundImage` jolloin ei konfliktoi `backgroundSize`:n kanssa.
-
-**src/components/AppleSignInButton.tsx**
-- Korjaa konsolivaroitus: "Function components cannot be given refs" — kääri `forwardRef`:iin (Auth-page passaa refin saavutettavuus-syistä).
-
-**src/components/ModalStack.tsx**
-- Lisää `layoutId`-poisto modal-routeilta jotka eivät tarvitse layoutia → vähemmän framer-motion measurea.
-- `AnimatePresence mode="popLayout"` → vaihdetaan `"wait"`-moodiin **vain** modaaleille jotta exit-frame ei kilpaile enter-framen kanssa iOS Safarissa (push-routet pidetään popLayout-modessa).
-
-**src/components/TabHost.tsx**
-- Tabit pidetään mountattuna (jo on), mutta lisää `content-visibility: auto` + `contain-intrinsic-size: 100% 800px` ei-aktiivisille TabPaneille → selain skippaa paintin/layoutin off-screen tabeille kokonaan, palaa instantisti kun aktiivinen.
-
-**src/contexts/WindProvider.tsx + src/lib/wind.ts**
-- Lisää page-visibility -kuuntelija joka pysäyttää wind-rAF-loopin kun tab piilossa (säästää batteryä iOS:llä taustalla).
-- Throttle wind-tickrate 30 Hz → 24 Hz (käyttäjä ei näe eroa, säästää ~20 % CSS-var writeistä).
-
----
-
-## 3. iOS native -spesifit
-
-**capacitor.config.json**
-- Vahvista `SplashScreen.launchShowDuration: 600` (nyt OK) ja lisää `SplashScreen.backgroundColor: "#0a0710"` matchaamaan React-splashin gradienttia (estää native→react flash).
-- `iosScheme: "app"` -varmistus jotta service-worker ei kaappaa initial loadia.
-
-**ios/App/App/Info.plist**
-- Lisää `WKAppBoundDomains` jos vielä puuttuu → nopeampi WKWebView-startup.
-
-**src/lib/native-bootstrap.ts**
-- Käännä Keyboard `keyboardWillShow` -listenerin `scrollIntoView` käyttämään `block: "nearest"` (nyt `"center"`) → estää isot scrollijumpit chat- ja checkin-näytöillä.
-
----
-
-## 4. Mitä EI muuteta
-
-- AmbientParticles, splash-flame, ember-rain, sparkit, shockwavet, glow-haalot, story-share-grafiikat, tribe fire fieldit, AI Coach, Elite-feed — **kaikki säilytetään pikselilleen**.
-- Apple-sign-in -flow, RevenueCat, Supabase RLS, edge-functionit — ei muutoksia.
-- Brändi, värit, tekstit, navigaatio — ei muutoksia.
-
----
-
-## Tiedostot joita muokataan
-
-```
-index.html
-vite.config.ts
-src/main.tsx
-src/App.tsx
-src/lib/route-preload.ts
-src/lib/native-bootstrap.ts
-src/lib/wind.ts
-src/contexts/WindProvider.tsx
-src/components/SplashScreen.tsx
-src/components/AmbientParticles.tsx
-src/components/AppleSignInButton.tsx
-src/components/ModalStack.tsx
-src/components/TabHost.tsx
-src/components/home/CommandDeck.tsx
-capacitor.config.json
-ios/App/App/Info.plist
+```text
+Paywall (yksi näyttö)
+┌─────────────────────────────┐
+│   PREMIUM HERO              │
+│   €17.99 / kk · €172.99 / v │
+│   ✓ AI Coach                │
+│   ✓ Elite Feed              │
+│   ✓ Vault — kurssit & audio │
+│   ✓ Tribes (3)              │
+│                             │
+│   [ Unlock Premium ]        │
+│                             │
+│   ── verifying ──           │  (sama näyttö, ei navigointia)
+│   ── success → /vault       │  (auto-route 1.2s jälkeen)
+│   ── error: banner + retry  │  (sama näyttö pysyy)
+│                             │
+│   Restore · Manage          │
+└─────────────────────────────┘
 ```
 
-## Odotettu vaikutus
+Onnistuneen oston jälkeen ensikäynti ohjautuu `/vault`-näkymään (sisältö = arvolupauksen visuaalinen vahvistus) eikä Home-näkymään.
 
-- **Cold start:** -300…-600 ms First Contentful Paint webissä; -200 ms iOS WKWebView startup.
-- **Tab-switch:** instant (jo nyt mountattu, mutta `content-visibility` poistaa paint-lagin uudelleen-aktivoinnista).
-- **Konsoli:** kaksi React-warningia poistuu (CommandDeck shorthand, AppleSignInButton ref).
-- **Akku iOS:** wind/particle-loopit pysähtyvät kun appi taustalla.
+## Tekniset muutokset
+
+### Tietokanta
+- Migraatio: lisää `profiles.is_premium boolean default false` (ei riko olemassa olevia `is_elite`/`is_apex_subscriber`-kenttiä; `is_premium = true` aina kun käyttäjä on tilaaja).
+- RLS-helper `public.has_premium(uuid)` SECURITY DEFINER — käytetään myöhemmin Vault-sisältötaulujen suojaamiseen.
+- Migraatiossa: `UPDATE profiles SET is_premium = true WHERE is_apex_subscriber = true OR is_elite = true;` (säilyttää nykyisten tilaajien pääsyn).
+
+### RevenueCat
+- `src/contexts/RevenueCatContext.tsx`: lisätään uusi `PREMIUM_ENTITLEMENT = "premium"` ja primary product `premiummonthly1799` / `premiumyearly17299`. Vanhat Apex-tuotteet pidetään listassa fallbackeina (olemassa olevat tilaukset eivät katoa), mutta `purchaseApex*`-funktiot **deprekoidaan** ja Paywall ei enää kutsu niitä.
+- `applyEntitlements`: jos joko Premium- TAI Apex-entitlement on aktiivinen → asetetaan `is_premium = true` ja `is_elite = true`. Apex-flag asetetaan vain jos vanha entitlement on yhä aktiivinen (legacy-tilaajille).
+- App Store Connect -tuote `premiummonthly1799` täytyy luoda RevenueCat-konsolissa (käyttäjälle ohje lopussa). Kunnes se on luotu, koodi failoittaa hallitusti vanhalle Apex-tuotteelle (oikeudet pysyvät samoina, hinta sama).
+
+### check-subscription edge function
+- Lisätään uusi Stripe-price set `PRICE_IDS.premium` (sama hinta kuin Apex-priceit; käyttäjä luo uuden Stripe-tuotteen myöhemmin tai käytetään olemassa olevia Apex-priceitä premiumina).
+- Tilauksen havaitsemisen jälkeen päivitetään `is_premium = hasActiveSub` riippumatta tier-tunnistuksesta.
+
+### revenuecat-webhook
+- `PREMIUM_PRODUCT_IDS = ["premiummonthly1799", "com.app.premiummonthly1799", "premiumyearly17299", ...]`.
+- Grant-eventeissä asetetaan `is_premium = true, is_elite = true`. Apex-flag asetetaan vain legacy-Apex-tuotteilla.
+
+### Paywall.tsx (täysremontti)
+- Poistetaan `IosApexSecondary`, "Or"-divider, "Earned Apex"-disclaimer, kaksoiskortit.
+- Yksi `PremiumHero`-komponentti (uusi `src/components/paywall/PremiumHero.tsx` joka korvaa `IosEntryHero`+`IosApexSecondary`-parin) sekä webissä että natiivissa.
+- State-kone:
+  ```ts
+  type PurchaseStatus = "idle" | "purchasing" | "verifying" | "success" | { error: string };
+  ```
+- `verifying`-tilassa polletaan `checkSubscription()` 1s välein max 8s; `is_premium=true` → `success`. Timeout → `error: "Couldn't verify purchase"`.
+- Inline `<ErrorBanner>` Paywall-näytön yläosassa; ei toasteja paitsi Restore-success.
+- Ostonappi disabloituu kun `!rcReady` natiivissa (ei pelkkä toast).
+- Onnistumisen jälkeen `navigate("/vault", { replace: true })` 1.2s viiveellä (success-animaatio ehtii näkyä).
+
+### Vault-osio (uusi)
+- `src/pages/Vault.tsx` — paywall-gated landing. Jos `!isPremium` → näyttää lukitun preview-kortin + CTA `/paywall`.
+- 5 kategoriakorttia, jokainen "Coming Soon" -lipulla mutta visuaalisesti viimeisteltynä (gold-gradient, ikoni, lyhyt kuvaus). Kategoriat ovat staattinen JS-array — ei vielä omaa taulua.
+- `src/components/vault/VaultCategoryCard.tsx` + `src/components/vault/VaultLockedPreview.tsx`.
+- Reititys: `<Route path="/vault" element={<Vault />} />` `App.tsx`:ssä lazy-loadattuna `route-preload.ts`-listan kanssa.
+- BottomNav: korvataan `Tribes`-tabin sijasta **EI** (Tribes on tärkeä) — sen sijaan Vault korvaa tilan vain Premium-käyttäjille; muille pidetään nykyinen layout. Toteutus: `BottomNav.tsx` saa `isPremium`-flagin ja vaihtaa "Battles"-tabin tilalle "Vault"-tabin Premium-käyttäjälle (Battles säilyy reittinä, ohjautuu vain Profile-ylävalikon kautta). Päätös: pidetään BottomNav koskemattomana ja Vault saavutetaan **Home**-näkymästä uudella featured-kortilla + Profile-linkillä — ei ylimääräistä nav-kohinaa.
+- Home-näkymään (`src/components/home/CommandDeck.tsx` tai `Index.tsx`) lisätään `<VaultPromoCard />` joka ei-Premiumille on locked-CTA, Premiumille on shortcut.
+
+### Tekstit ja apuosiot
+- `src/lib/status-tiers.ts` — Apex-tier-`unlocks` ei enää mainitse "Apex visual effects" osto-kontekstissa; rivi "Tribes — create communities" pysyy (ansaittu Apex saa ne).
+- `src/components/paywall/IosApexSecondary.tsx` poistetaan tiedostoreferensseistä (ei käytössä).
+- `src/pages/TribeNew.tsx` ja `src/pages/Tribes.tsx`: "Earn it via top 10% rank, or unlock instantly with Apex." → "Earn Apex tier (top 10%) or unlock with Premium."
+- `src/components/PaywallTierCard.tsx` `variant="apex"` jätetään koodiin mutta sen instanssit poistetaan; voidaan poistaa myöhemmin.
+
+## Mitä EI muuteta nyt
+- Vault-sisältötauluja (recipes, programs, audios) ei luoda. Sisältö lisätään seuraavissa iteraatioissa kun rakenne on hyväksytty.
+- Stripe-side: emme luo uutta `premium`-priceä Stripeen tässä loopissa — käytetään olemassa olevia Apex-priceitä premium-tilauksina (sama hinta). Käyttäjä voi halutessaan tehdä uuden tuotteen Stripeen myöhemmin.
+- Olemassa olevat Apex-tilaajat säilyvät muuttumattomina (entitlement aktiivinen, `is_apex_subscriber=true`, tier pinnattu apexiin).
+
+## Käyttäjälle tehtävää oston jälkeen
+- App Store Connect: luo uusi auto-renewing subscription `premiummonthly1799` (€17.99) ja `premiumyearly17299` (€172.99), liitä RevenueCat-entitlementiin `premium`. Kunnes nämä ovat `Approved`, paywall toimii vanhojen Apex-tuotteiden kautta saman hintaisena.
+- `npx cap sync` natiivimuutosten jälkeen.

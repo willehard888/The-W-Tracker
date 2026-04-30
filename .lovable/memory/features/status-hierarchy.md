@@ -1,6 +1,6 @@
 ---
 name: Status Hierarchy
-description: 7-tier status system. Easier Elite (top 20% OR 20 days + 21 streak). Apex/Legend stay rare. Apex paywall €17.99/mo locks tier; Legend never purchasable.
+description: 7-tier status system. Easier Elite (top 20% OR 20 days + 21 streak). Apex now top 10% (+ 30 days + 30 streak). Legend stays top 0.1%. Apex paywall €17.99/mo locks tier; Legend never purchasable.
 type: feature
 ---
 # Status Hierarchy

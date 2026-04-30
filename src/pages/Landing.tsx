@@ -31,7 +31,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
             <div className="absolute -inset-2 rounded-2xl opacity-50 blur-lg" style={{ background: "hsl(42 78% 54% / 0.35)" }} />
             <BrandLogo size={80} priority className="relative rounded-2xl" />
           </div>
-          <span className="font-display font-bold text-lg tracking-tight text-gradient-gold">The W Tracker</span>
+          <span className="font-display font-bold text-lg tracking-tight text-gradient-gold">Whealth Factory</span>
         </div>
       </header>
 

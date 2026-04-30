@@ -87,7 +87,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
       ctx.fillStyle = "rgba(202, 158, 62, 0.9)";
       ctx.font = "bold 11px 'Inter', system-ui, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("THE W TRACKER", card.offsetWidth / 2, 44);
+      ctx.fillText("WHEALTH FACTORY", card.offsetWidth / 2, 44);
 
       // Tier badge
       ctx.fillStyle = tier === 'legend' ? "rgba(138, 79, 255, 0.9)" :
@@ -229,7 +229,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `w-tracker-${variant}.png`;
+        a.download = `whealth-factory-${variant}.png`;
         a.click();
         URL.revokeObjectURL(url);
         toast.success("Story card downloaded!");
@@ -246,12 +246,12 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "The W Tracker",
+          title: "Whealth Factory",
           text: variant === "streak"
-            ? `🔥 ${profile.streak}-day streak on The W Tracker. ${profile.streak >= 30 ? "Most fail before this." : "Beat my streak!"}`
+            ? `🔥 ${profile.streak}-day streak on Whealth Factory. ${profile.streak >= 30 ? "Most fail before this." : "Beat my streak!"}`
             : variant === "badge" && badgeData
-            ? `Just unlocked ${badgeData.name} ${badgeData.icon} (${badgeData.rarity.toUpperCase()}) on The W Tracker!`
-            : `${profile.xp.toLocaleString()} XP • Level ${profile.level} • ${tierConfig.emoji} ${tierConfig.label} on The W Tracker. The grind doesn't stop.`,
+            ? `Just unlocked ${badgeData.name} ${badgeData.icon} (${badgeData.rarity.toUpperCase()}) on Whealth Factory!`
+            : `${profile.xp.toLocaleString()} XP • Level ${profile.level} • ${tierConfig.emoji} ${tierConfig.label} on Whealth Factory. The grind doesn't stop.`,
           url: window.location.origin,
         });
       } catch {}
@@ -301,7 +301,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
           <div className="absolute bottom-3 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
 
           <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-            <p className="font-bold tracking-[0.3em] text-gold/80 mb-1 text-lg">THE W TRACKER</p>
+            <p className="font-bold tracking-[0.3em] text-gold/80 mb-1 text-lg">WHEALTH FACTORY</p>
             <p className={cn(
               "font-black uppercase tracking-wider mb-4 text-[10px]",
               tier === 'legend' ? "text-[hsl(280_70%_60%)]" :

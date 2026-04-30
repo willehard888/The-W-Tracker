@@ -13,7 +13,7 @@ interface ApexBadgeProps {
 /**
  * Tiny inline badge that distinguishes:
  *  - Founding Apex (paid, premium credit-card vibe — Crown+Zap, shimmer, sparkle accent)
- *  - Earned Apex (top 1%, hillitty 🔥)
+ *  - Earned Apex (top 10%, hillitty 🔥)
  *  - Founder (Legend, top 0.1%, Crown)
  *
  * Founding Apex is intentionally larger + flashier than Earned Apex
@@ -71,10 +71,10 @@ const ApexBadge = ({
     );
   }
 
-  // ── Earned Apex — hillitty top 1% ────────────────────────────────
+  // ── Earned Apex — hillitty top 10% ────────────────────────────────
   return (
     <span
-      title="Earned Apex — Top 1%"
+      title="Earned Apex — Top 10%"
       className={cn(
         "inline-flex items-center rounded-full font-black uppercase tracking-wider",
         "bg-gradient-to-r from-[hsl(18_95%_58%)] to-[hsl(var(--gold))]",

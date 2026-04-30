@@ -76,7 +76,7 @@ const IosApexSecondary = ({
               Apex Instant · {activePrice}{cadence}
             </p>
             <p className="text-[10.5px] text-muted-foreground mt-0.5 leading-tight">
-              Top 1% tier · Create Tribes · Tier-protected
+              Top 10% tier · Create Tribes · Tier-protected
             </p>
           </div>
         </div>

@@ -57,7 +57,7 @@ const TribeNew = () => {
           Apex tier required
         </h1>
         <p className="text-sm text-muted-foreground mb-6">
-          Tribes are founded by the top 1%. Earn Apex or unlock it instantly.
+          Tribes are founded by the top 10%. Earn Apex or unlock it instantly.
         </p>
         <Button onClick={() => navigate("/paywall")}>Unlock Apex</Button>
       </div>

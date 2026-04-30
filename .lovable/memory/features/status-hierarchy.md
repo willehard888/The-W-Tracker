@@ -1,6 +1,6 @@
 ---
 name: Status Hierarchy
-description: 7-tier status system. Easier Elite (top 20% OR 20 days + 21 streak). Apex/Legend stay rare. Apex paywall €17.99/mo locks tier; Legend never purchasable.
+description: 7-tier status system. Easier Elite (top 20% OR 20 days + 21 streak). Apex now top 10% (+ 30 days + 30 streak). Legend stays top 0.1%. Apex paywall €17.99/mo locks tier; Legend never purchasable.
 type: feature
 ---
 # Status Hierarchy
@@ -12,14 +12,14 @@ type: feature
 | Tier | Requirement |
 |---|---|
 | **Legend** | percentile ≥ 99.9 AND 30 active days AND 30-day streak |
-| **Apex** | percentile ≥ 99 AND 30 active days AND 30-day streak |
+| **Apex** | percentile ≥ 90 AND 30 active days AND 30-day streak |
 | **Elite** | percentile ≥ 80 **OR** (20 active days AND 21-day streak) |
 | **High Performer** | percentile ≥ 70 **OR** (15 active days AND 14-day streak) |
 | **Performer** | percentile ≥ 50 AND 7 active days |
 | **Operator** | percentile ≥ 25 AND 5 active days |
 | **Recruit** | default / `rank_score = 0` |
 
-Elite is consistency-driven (3 weeks of streak + 20 active days is enough) — does NOT require top 5% leaderboard rank. Apex / Legend stay rare (top 1% / 0.1%).
+Elite is consistency-driven (3 weeks of streak + 20 active days is enough) — does NOT require top 5% leaderboard rank. Apex requires top 10% + 30 days/streak. Legend stays rare (top 0.1%).
 
 ## Earning vs buying
 - **Earned tier**: `update_status_tier(user_id)` recalculates after every check-in / battle / referral milestone. Tier degrades automatically with inactivity.

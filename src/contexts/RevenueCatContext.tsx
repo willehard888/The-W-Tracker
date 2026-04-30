@@ -16,25 +16,46 @@ import { pushIosDebugLog, updateRevenueCatDebug } from "@/lib/ios-debug";
 const RC_API_KEY_APPLE = "appl_qgpDFJEtyXTeNTJZxBoHzxzgiTr";
 const ELITE_ENTITLEMENT = "The W Tracker Pro";
 const APEX_ENTITLEMENT = "apex_subscriber";
+const PREMIUM_ENTITLEMENT = "premium";
 
 // Monthly products
 const ELITE_PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"] as const;
+// Premium replaces Apex purchase. Existing Apex product IDs are kept as
+// fallback so legacy subscribers keep working seamlessly.
+const PREMIUM_PRODUCT_IDS = [
+  "premiummonthly1799",
+  "com.app.premiummonthly1799",
+  "Apex888",
+  "com.app.Apex888",
+  "apexmonthly1599",
+  "com.app.apexmonthly1599",
+] as const;
 const APEX_PRODUCT_IDS = ["Apex888", "com.app.Apex888", "apexmonthly1599", "com.app.apexmonthly1599"] as const;
 
 // Yearly products. Update IDs in App Store Connect to match.
 const ELITE_YEARLY_PRODUCT_IDS = ["eliteyearly4999", "com.app.eliteyearly4999"] as const;
+const PREMIUM_YEARLY_PRODUCT_IDS = [
+  "premiumyearly17299",
+  "com.app.premiumyearly17299",
+  "apexyearly17299",
+  "com.app.apexyearly17299",
+] as const;
 const APEX_YEARLY_PRODUCT_IDS = ["apexyearly17299", "com.app.apexyearly17299"] as const;
 
 const ALL_PRODUCT_IDS = [
   ...ELITE_PRODUCT_IDS,
+  ...PREMIUM_PRODUCT_IDS,
   ...APEX_PRODUCT_IDS,
   ...ELITE_YEARLY_PRODUCT_IDS,
+  ...PREMIUM_YEARLY_PRODUCT_IDS,
   ...APEX_YEARLY_PRODUCT_IDS,
 ] as const;
 
 const PRIMARY_ELITE_PRODUCT_ID = "elitemonthly499";
+const PRIMARY_PREMIUM_PRODUCT_ID = "premiummonthly1799";
 const PRIMARY_APEX_PRODUCT_ID = "Apex888";
 const PRIMARY_ELITE_YEARLY_PRODUCT_ID = "eliteyearly4999";
+const PRIMARY_PREMIUM_YEARLY_PRODUCT_ID = "premiumyearly17299";
 const PRIMARY_APEX_YEARLY_PRODUCT_ID = "apexyearly17299";
 
 // ─── Types ──────────────────────────────────────────────

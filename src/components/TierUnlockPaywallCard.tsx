@@ -8,9 +8,9 @@ interface TierUnlockPaywallCardProps {
 }
 
 const PERKS = [
-  { icon: Crown, text: "Apex aura + flame badge" },
-  { icon: Users, text: "Create & lead Tribes" },
-  { icon: Shield, text: "Tier protection — never demoted" },
+  { icon: Crown, text: "The Vault — recipes, training, recovery" },
+  { icon: Users, text: "Mind & nervous-system tools" },
+  { icon: Shield, text: "Full app access included" },
 ] as const;
 
 /**
@@ -50,13 +50,13 @@ const TierUnlockPaywallCard = ({ className }: TierUnlockPaywallCardProps) => {
 
       <div className="relative">
         <div className="flex items-center justify-between mb-2">
-          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[hsl(18_95%_58%)]/15 border border-[hsl(18_95%_58%)]/40">
-            <Zap size={10} className="text-[hsl(18_95%_58%)]" strokeWidth={3} />
-            <span className="text-[9px] font-black tracking-widest uppercase text-[hsl(18_95%_58%)]">
-              Skip the grind
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-gold/15 border border-gold/40">
+            <Zap size={10} className="text-gold" strokeWidth={3} />
+            <span className="text-[9px] font-black tracking-widest uppercase text-gold">
+              Unlock the Vault
             </span>
           </div>
-          <p className="font-display font-black text-base leading-none bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] bg-clip-text text-transparent">
+          <p className="font-display font-black text-base leading-none bg-gradient-to-r from-gold via-[hsl(var(--gold-light))] to-gold bg-clip-text text-transparent">
             €17.99
             <span className="text-[10px] font-bold text-muted-foreground ml-0.5">
               /mo
@@ -64,8 +64,8 @@ const TierUnlockPaywallCard = ({ className }: TierUnlockPaywallCardProps) => {
           </p>
         </div>
 
-        <p className="font-display text-sm font-black mb-2 bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] bg-clip-text text-transparent">
-          Apex Instant
+        <p className="font-display text-sm font-black mb-2 bg-gradient-to-r from-gold via-[hsl(var(--gold-light))] to-gold bg-clip-text text-transparent">
+          Premium
         </p>
 
         <ul className="space-y-1 mb-3">
@@ -74,10 +74,10 @@ const TierUnlockPaywallCard = ({ className }: TierUnlockPaywallCardProps) => {
               key={text}
               className="flex items-center gap-1.5 text-[11px] font-medium"
             >
-              <span className="h-4 w-4 rounded-md flex items-center justify-center shrink-0 bg-[hsl(18_95%_58%)]/12 border border-[hsl(18_95%_58%)]/30">
+              <span className="h-4 w-4 rounded-md flex items-center justify-center shrink-0 bg-gold/12 border border-gold/30">
                 <Icon
                   size={9}
-                  className="text-[hsl(18_95%_58%)]"
+                  className="text-gold"
                   strokeWidth={2.6}
                 />
               </span>
@@ -88,17 +88,17 @@ const TierUnlockPaywallCard = ({ className }: TierUnlockPaywallCardProps) => {
 
         <Button
           size="sm"
-          variant="ember"
+          variant="gold"
           className="w-full text-xs"
           onClick={() => navigate("/paywall")}
         >
           <Zap size={13} strokeWidth={3} />
-          Become Apex Now
+          Become Premium
           <ArrowRight size={12} strokeWidth={3} />
         </Button>
 
         <p className="text-[9px] text-muted-foreground/80 text-center mt-1.5">
-          Cancel anytime · Tier locked while subscribed
+          Cancel anytime · Vault unlocks instantly
         </p>
       </div>
     </div>

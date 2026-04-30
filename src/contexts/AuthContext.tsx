@@ -169,6 +169,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       hasApexCredits
     );
     setIsElite(nextElite);
+    setIsPremium(Boolean((data as any)?.is_premium) || nextElite);
     setIsApexSubscriber(Boolean((data as any)?.is_apex_subscriber) || tier === "apex" || tier === "legend" || hasApexCredits);
 
     if (shouldForceAppleUsernameSetup(authUser, data)) {

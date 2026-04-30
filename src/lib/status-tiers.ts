@@ -156,8 +156,8 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     auraSize: 'large',
     badgeVariant: "apex",
     rank: 5,
-    requirements: { percentile: 99, activeDays: 30, streak: 30 },
-    unlocks: ["Apex flame aura", "Top 1% status", "Tribes — create communities", "Priority visibility"],
+    requirements: { percentile: 90, activeDays: 30, streak: 30 },
+    unlocks: ["Apex flame aura", "Top 10% status", "Tribes — create communities", "Priority visibility"],
   },
   legend: {
     label: "Legend",

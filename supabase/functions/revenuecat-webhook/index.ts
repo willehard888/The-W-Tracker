@@ -6,9 +6,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// Apex Instant product identifiers (RevenueCat product_id)
-const APEX_PRODUCT_IDS = ["Apex888", "com.app.Apex888", "apexmonthly1599", "com.app.apexmonthly1599"];
+// Premium replaces Apex purchase. Apex IDs kept as legacy fallback.
+const PREMIUM_PRODUCT_IDS = [
+  "premiummonthly1799", "com.app.premiummonthly1799",
+  "premiumyearly17299", "com.app.premiumyearly17299",
+];
+const APEX_PRODUCT_IDS = ["Apex888", "com.app.Apex888", "apexmonthly1599", "com.app.apexmonthly1599", "apexyearly17299", "com.app.apexyearly17299"];
 const APEX_ENTITLEMENT = "apex_subscriber";
+const PREMIUM_ENTITLEMENT = "premium";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -44,12 +49,18 @@ Deno.serve(async (req) => {
     const isApexProduct =
       (productId && APEX_PRODUCT_IDS.includes(productId)) ||
       entitlementIds.includes(APEX_ENTITLEMENT);
+    const isPremiumProduct =
+      (productId && PREMIUM_PRODUCT_IDS.includes(productId)) ||
+      entitlementIds.includes(PREMIUM_ENTITLEMENT) ||
+      // Legacy Apex purchases also grant Premium content access.
+      isApexProduct;
 
     console.log(`RevenueCat webhook: ${event.type}`, JSON.stringify({
       app_user_id: event.app_user_id,
       type: event.type,
       product_id: productId,
       isApexProduct,
+      isPremiumProduct,
     }));
 
     const supabase = createClient(
@@ -97,13 +108,19 @@ Deno.serve(async (req) => {
     if (isElite !== null) {
       const update: Record<string, any> = { is_elite: isElite };
 
+      // Premium flag mirrors any active subscription (premium or legacy apex).
+      if (isPremiumProduct) {
+        update.is_premium = isElite;
+      } else if (!isElite) {
+        update.is_premium = false;
+      }
+
       if (isApexProduct) {
         update.is_apex_subscriber = isElite;
         if (isElite) {
           update.apex_subscription_started_at = new Date().toISOString();
         }
       } else if (!isElite) {
-        // Generic revoke — also clear apex subscriber flag if this was the only plan
         update.is_apex_subscriber = false;
       }
 

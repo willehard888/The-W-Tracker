@@ -91,6 +91,7 @@ Deno.serve(async (req) => {
     if (customers.data.length === 0) {
       await serviceClient.from("profiles").update({
         is_elite: false,
+        is_premium: false,
         is_apex_subscriber: false,
       }).eq("user_id", userId);
       return new Response(JSON.stringify({ subscribed: false, tier: null }), {
@@ -138,7 +139,11 @@ Deno.serve(async (req) => {
         console.warn("check-subscription: active subscription found with unmapped price ids", [...matchedPriceIds]);
       }
 
-      const update: Record<string, any> = { is_elite: hasRecognizedAccess };
+      const update: Record<string, any> = {
+        is_elite: hasRecognizedAccess,
+        // Any active recognized subscription grants Premium (Vault) access.
+        is_premium: hasRecognizedAccess,
+      };
       if (isApex) {
         update.is_apex_subscriber = true;
         if (!subscriptionEnd) update.apex_subscription_started_at = new Date().toISOString();
@@ -153,6 +158,7 @@ Deno.serve(async (req) => {
     } else {
       await serviceClient.from("profiles").update({
         is_elite: false,
+        is_premium: false,
         is_apex_subscriber: false,
       }).eq("user_id", userId);
     }

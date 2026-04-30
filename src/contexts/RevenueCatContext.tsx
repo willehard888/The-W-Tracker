@@ -124,6 +124,14 @@ function isEliteYearlyPid(id: string | null): boolean {
   return !!id && (ELITE_YEARLY_PRODUCT_IDS as readonly string[]).includes(id);
 }
 
+function isPremiumPid(id: string | null): boolean {
+  return !!id && (PREMIUM_PRODUCT_IDS as readonly string[]).includes(id);
+}
+
+function isPremiumYearlyPid(id: string | null): boolean {
+  return !!id && (PREMIUM_YEARLY_PRODUCT_IDS as readonly string[]).includes(id);
+}
+
 function isApexYearlyPid(id: string | null): boolean {
   return !!id && (APEX_YEARLY_PRODUCT_IDS as readonly string[]).includes(id);
 }

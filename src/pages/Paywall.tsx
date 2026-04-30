@@ -3,141 +3,86 @@ import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  Crown, Flame, Trophy, Swords, Sparkles, Zap, Users, ArrowLeft, Loader2, ShieldCheck, Star,
+  Crown, ArrowLeft, Loader2, ShieldCheck, Sparkles,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import BrandLogo from "@/components/BrandLogo";
-import PaywallTierCard from "@/components/PaywallTierCard";
-import IosEntryHero from "@/components/paywall/IosEntryHero";
-import IosApexSecondary from "@/components/paywall/IosApexSecondary";
+import PremiumHero from "@/components/paywall/PremiumHero";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
+const PREMIUM_YEARLY_FALLBACK = "172,99 €";
+const PREMIUM_MONTHLY_FALLBACK = "17,99 €";
 
-
-const MEMBER_FEATURES = [
-  { icon: Flame, text: "Daily check-ins, XP, streaks" },
-  { icon: Trophy, text: "Global leaderboard & seasons" },
-  { icon: Swords, text: "1v1 battles" },
-  { icon: Sparkles, text: "AI Coach" },
-  { icon: Crown, text: "Compete for earned Elite tier" },
-] as const;
-
-const APEX_FEATURES = [
-  { icon: Zap, text: "Instant Apex status — top 10% tier" },
-  { icon: Users, text: "Create Tribes (Communities) — up to 3" },
-  { icon: Star, text: "Apex visual effects — flame aura everywhere" },
-  { icon: Crown, text: "Tier protected — never drops while subscribed" },
-  { icon: Sparkles, text: "All Member features included" },
-] as const;
-
-/** Hard-coded yearly fallback prices (used when store doesn't return one). */
-const ELITE_YEARLY_FALLBACK = "49,99 €";
-const APEX_YEARLY_FALLBACK = "172,99 €";
+type PurchaseStatus = "idle" | "purchasing" | "verifying" | "error";
 
 const Paywall = () => {
-  const { isElite, isApexSubscriber, checkSubscription, profile, subscriptionLoading } = useAuth();
+  const { isElite, isPremium, checkSubscription, profile, subscriptionLoading } = useAuth();
   const {
-    purchaseElitePlan, purchaseApexPlan, restorePurchases,
-    rcLoading, rcReady, monthlyPriceLabel, apexPriceLabel,
-    eliteYearlyPriceLabel, apexYearlyPriceLabel,
+    purchasePremiumPlan, restorePurchases,
+    rcLoading, rcReady,
+    premiumPriceLabel, premiumYearlyPriceLabel,
+    apexPriceLabel, apexYearlyPriceLabel,
   } = useRevenueCat();
   const navigate = useNavigate();
-
-  const [purchasingTier, setPurchasingTier] = useState<"elite" | "apex" | null>(null);
-  const wasMemberRef = useRef(isElite);
   const isNative = isNativePlatform();
 
-  const elitePrice = isNative ? (monthlyPriceLabel ?? "4,99 €") : "4,99 €";
-  const apexPrice = isNative ? (apexPriceLabel ?? "17,99 €") : "17,99 €";
-  const eliteYearlyPrice = isNative
-    ? (eliteYearlyPriceLabel ?? ELITE_YEARLY_FALLBACK)
-    : ELITE_YEARLY_FALLBACK;
-  const apexYearlyPrice = isNative
-    ? (apexYearlyPriceLabel ?? APEX_YEARLY_FALLBACK)
-    : APEX_YEARLY_FALLBACK;
+  // Single state machine for the whole purchase flow
+  const [status, setStatus] = useState<PurchaseStatus>("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const wasMemberRef = useRef(isElite);
+
+  // Live prices — prefer Premium product price, fallback to Apex (same €17.99)
+  const monthlyLabel =
+    (isNative && (premiumPriceLabel ?? apexPriceLabel)) || PREMIUM_MONTHLY_FALLBACK;
+  const yearlyLabel =
+    (isNative && (premiumYearlyPriceLabel ?? apexYearlyPriceLabel)) || PREMIUM_YEARLY_FALLBACK;
+
+  // Welcome toast on transition into membership (once per session)
   useEffect(() => {
     if (isElite && !wasMemberRef.current) {
-      // Only fire the welcome toast once per browser session — prevents the
-      // "Welcome aboard" loop when checkSubscription re-runs.
       if (!sessionStorage.getItem("w_welcome_toast_shown")) {
         sessionStorage.setItem("w_welcome_toast_shown", "1");
-        toast.success("Welcome aboard. Membership active.");
+        toast.success("Welcome to Premium. The Vault is unlocked.");
       }
     }
     wasMemberRef.current = isElite;
   }, [isElite]);
 
-  // Once membership is active, leave the paywall behind entirely.
-  // Every paid tier lands on the home dashboard — the streak hero is the
-  // emotional anchor of the app, so we always return there after unlock.
+  // Once Premium is active, leave the paywall behind
   useEffect(() => {
-    if (!isElite) return;
-    navigate("/", { replace: true });
-  }, [isElite, navigate]);
+    if (!isPremium) return;
+    navigate("/vault", { replace: true });
+  }, [isPremium, navigate]);
 
+  // Web: re-check on focus / visibility
   useEffect(() => {
     if (isNative) return;
-
-    const syncMembership = () => {
-      void checkSubscription();
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") syncMembership();
-    };
-
-    window.addEventListener("focus", syncMembership);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
+    const sync = () => { void checkSubscription(); };
+    const onVis = () => { if (document.visibilityState === "visible") sync(); };
+    window.addEventListener("focus", sync);
+    document.addEventListener("visibilitychange", onVis);
     return () => {
-      window.removeEventListener("focus", syncMembership);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", sync);
+      document.removeEventListener("visibilitychange", onVis);
     };
   }, [checkSubscription, isNative]);
 
-  // Already a member
+  // ─── Already a member ────────────────────────────────────────
   if (isElite) {
     return (
       <div className="min-h-screen pb-4 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
-        <div
-          className={`h-20 w-20 rounded-full flex items-center justify-center mb-4 ${
-            isApexSubscriber ? "" : "gradient-gold glow-gold"
-          }`}
-          style={
-            isApexSubscriber
-              ? {
-                  background:
-                    "linear-gradient(135deg, hsl(18 95% 58%), hsl(var(--gold)))",
-                  boxShadow:
-                    "0 0 32px hsl(18 95% 58% / 0.5), 0 0 64px hsl(var(--gold) / 0.3)",
-                }
-              : undefined
-          }
-        >
-          {isApexSubscriber ? (
-            <Zap size={36} className="text-background" strokeWidth={2.6} />
-          ) : (
-            <ShieldCheck size={36} className="text-primary-foreground" />
-          )}
+        <div className="h-20 w-20 rounded-full flex items-center justify-center mb-4 gradient-gold glow-gold">
+          <Sparkles size={36} className="text-primary-foreground" strokeWidth={2.4} />
         </div>
-        <h1 className="font-display text-2xl font-bold mb-2">
-          {isApexSubscriber ? "Apex Instant Active" : "Membership Active"}
-        </h1>
-        <p className="text-sm text-muted-foreground mb-2 max-w-xs">
-          {isApexSubscriber
-            ? "You have Apex tier instantly. Build a Tribe, lead the community."
-            : "You have full access to the app. Now earn your Elite status — it's not bought, it's built."}
+        <h1 className="font-display text-2xl font-bold mb-2">Premium Active</h1>
+        <p className="text-sm text-muted-foreground mb-6 max-w-xs">
+          The Vault is unlocked. New content drops weekly.
         </p>
-        {!isApexSubscriber && (
-          <p className="text-[11px] text-muted-foreground/70 mb-6 tracking-wide">
-            Top 20% rank or 20 active days + 21-day streak
-          </p>
-        )}
-        <div className="flex gap-2 mt-4">
+        <div className="flex gap-2 mt-2 flex-wrap justify-center">
           <Button variant="gold-outline" onClick={() => navigate("/profile")}>
             <ArrowLeft size={14} /> Profile
           </Button>
@@ -148,27 +93,19 @@ const Paywall = () => {
                 window.open("https://apps.apple.com/account/subscriptions", "_blank");
                 return;
               }
-
               const { data, error } = await supabase.functions.invoke("customer-portal");
               if (error || !data?.url) {
                 toast.error("Could not open subscription management.");
                 return;
               }
-
               window.open(data.url, "_blank");
             }}
           >
-            <ShieldCheck size={14} /> Manage my subscription
+            <ShieldCheck size={14} /> Manage subscription
           </Button>
-          {isApexSubscriber ? (
-            <Button variant="ember" onClick={() => navigate("/tribes")}>
-              <Users size={14} /> Tribes
-            </Button>
-          ) : (
-            <Button variant="ember" onClick={() => navigate("/")}>
-              <Crown size={14} /> Road to Elite
-            </Button>
-          )}
+          <Button variant="ember" onClick={() => navigate("/vault")}>
+            <Crown size={14} /> Open the Vault
+          </Button>
         </div>
       </div>
     );
@@ -177,67 +114,100 @@ const Paywall = () => {
   const creditsUntilRaw: string | null = (profile as any)?.membership_credits_until ?? null;
   const creditsActive = creditsUntilRaw && new Date(creditsUntilRaw).getTime() > Date.now();
   const creditsUntilLabel = creditsActive
-    ? new Date(creditsUntilRaw as string).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })
+    ? new Date(creditsUntilRaw as string).toLocaleDateString(undefined, {
+        day: "numeric", month: "short", year: "numeric",
+      })
     : null;
 
-  // ─── Handlers ───────────────────────────────────────
-  const handleStripeCheckout = async (
-    tier: "elite" | "apex",
-    plan: "monthly" | "yearly" = "monthly",
-  ) => {
-    setPurchasingTier(tier);
+  // ─── Verify membership by polling checkSubscription ──────────
+  const pollVerification = useCallback(async (timeoutMs = 8000): Promise<boolean> => {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      try {
+        await checkSubscription();
+        // checkSubscription updates AuthContext; we read isElite via closure.
+        // Re-read from supabase as a safety net so we don't rely on async state.
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase
+            .from("profiles")
+            .select("is_elite, is_premium")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          if (data?.is_premium || data?.is_elite) return true;
+        }
+      } catch {
+        /* swallow & retry */
+      }
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    return false;
+  }, [checkSubscription]);
+
+  // ─── Native purchase handler ─────────────────────────────────
+  const handleNativePurchase = async (plan: "monthly" | "yearly") => {
+    if (!rcReady) {
+      setStatus("error");
+      setErrorMessage("Store not ready yet — please try again in a moment.");
+      return;
+    }
+    setErrorMessage(null);
+    hapticImpact("medium");
+    setStatus("purchasing");
+
+    try {
+      await purchasePremiumPlan(plan);
+      setStatus("verifying");
+      const ok = await pollVerification(8000);
+      if (ok) {
+        hapticNotification("success");
+        // Effect above will navigate to /vault when isPremium flips true
+      } else {
+        setStatus("error");
+        setErrorMessage(
+          "Payment confirmed but we couldn't verify access yet. Pull to refresh in a moment, or tap Restore.",
+        );
+        hapticNotification("warning");
+      }
+    } catch (e: any) {
+      // User cancellation — silently return to idle
+      if (e?.userCancelled || e?.code === "1" || e?.code === 1) {
+        setStatus("idle");
+        return;
+      }
+      hapticNotification("error");
+      setStatus("error");
+      setErrorMessage(
+        e?.message?.toString().slice(0, 200) || "Purchase failed. Please try again.",
+      );
+    }
+  };
+
+  // ─── Web (Stripe) purchase handler ───────────────────────────
+  const handleWebPurchase = async (plan: "monthly" | "yearly") => {
+    setErrorMessage(null);
+    setStatus("purchasing");
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { tier, plan },
+        body: { tier: "elite", plan }, // server treats elite as Premium
       });
       if (error) throw error;
       if (!data?.url) throw new Error("No checkout URL received");
       window.open(data.url, "_blank");
-      const poll = setInterval(() => checkSubscription(), 4000);
-      setTimeout(() => clearInterval(poll), 180_000);
+      setStatus("verifying");
+      const ok = await pollVerification(180_000);
+      if (!ok) {
+        setStatus("idle");
+      }
     } catch (e: any) {
-      toast.error(e?.message || "Could not start checkout.");
-    } finally {
-      setPurchasingTier(null);
-    }
-  };
-
-  const handleNativeElite = async (plan: "monthly" | "yearly" = "monthly") => {
-    if (!rcReady) { toast.info("Loading store… please wait."); return; }
-    hapticImpact("medium");
-    setPurchasingTier("elite");
-    try {
-      await purchaseElitePlan(plan);
-      await checkSubscription();
-      hapticNotification("success");
-    } catch (e: any) {
-      if (e?.userCancelled || e?.code === "1") return;
-      hapticNotification("error");
-      toast.error(e?.message || "Purchase failed.");
-    } finally {
-      setPurchasingTier(null);
-    }
-  };
-
-  const handleNativeApex = async (plan: "monthly" | "yearly" = "monthly") => {
-    if (!rcReady) { toast.info("Loading store… please wait."); return; }
-    hapticImpact("heavy");
-    setPurchasingTier("apex");
-    try {
-      await purchaseApexPlan(plan);
-      await checkSubscription();
-      hapticNotification("success");
-    } catch (e: any) {
-      if (e?.userCancelled || e?.code === "1") return;
-      hapticNotification("error");
-      toast.error(e?.message || "Apex purchase failed.");
-    } finally {
-      setPurchasingTier(null);
+      setStatus("error");
+      setErrorMessage(e?.message || "Could not start checkout.");
     }
   };
 
   const handleRestore = async () => {
     hapticImpact("light");
+    setErrorMessage(null);
     try {
       await restorePurchases();
       await checkSubscription();
@@ -249,7 +219,7 @@ const Paywall = () => {
     }
   };
 
-  // ─── Render ─────────────────────────────────────────
+  // ─── Render ──────────────────────────────────────────────────
   return (
     <div className="min-h-screen pb-8 px-4 pt-6 safe-top">
       {subscriptionLoading && !isElite && (
@@ -270,102 +240,35 @@ const Paywall = () => {
         </div>
       )}
 
-      {/* Hero — softer header on native (the IosEntryHero is the real hero) */}
-      {isNative ? (
-        <div className="text-center mb-4 mt-2 animate-reveal">
-          <BrandLogo size={56} priority className="mx-auto rounded-2xl glow-gold" />
-        </div>
-      ) : (
-        <div className="text-center mb-6 mt-4 animate-reveal">
-          <BrandLogo size={72} priority className="mx-auto rounded-2xl glow-gold mb-3" />
-          <h1 className="font-display text-2xl font-black tracking-tight mb-1">
-            Choose your <span className="text-gold glow-gold-text">level</span>
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-            Start with Member or skip the grind with Apex Instant. Cancel anytime.
-          </p>
-        </div>
-      )}
+      {/* Header */}
+      <div className="text-center mb-4 mt-2 animate-reveal">
+        <BrandLogo size={isNative ? 56 : 64} priority className="mx-auto rounded-2xl glow-gold" />
+      </div>
 
       {isNative && rcLoading ? (
         <div className="flex items-center justify-center py-8">
           <Loader2 size={24} className="animate-spin text-gold" />
         </div>
-      ) : isNative ? (
-        // ─── iOS hard entry: dominant Member hero + small Apex secondary ───
-        <div className="space-y-3 animate-reveal animate-reveal-delay-1">
-          <IosEntryHero
-            monthlyPriceLabel={elitePrice}
-            yearlyPriceLabel={eliteYearlyPrice}
-            loading={purchasingTier === "elite"}
-            onCta={handleNativeElite}
-          />
-
-          {/* Subtle divider */}
-          <div className="flex items-center gap-3 px-2 pt-1">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-            <span className="text-[9px] font-black tracking-[0.25em] uppercase text-muted-foreground/60">
-              Or
-            </span>
-            <div className="flex-1 h-px bg-gradient-to-l from-transparent via-border to-transparent" />
-          </div>
-
-          <IosApexSecondary
-            monthlyPriceLabel={apexPrice}
-            yearlyPriceLabel={apexYearlyPrice}
-            loading={purchasingTier === "apex"}
-            onClick={handleNativeApex}
-          />
-
-          <p className="text-center text-[10.5px] text-muted-foreground/80 leading-relaxed pt-2 px-2">
-            <span className="text-gold font-semibold">Earned Apex</span> (top 10%
-            by rank, activity & streak) stays possible at{" "}
-            <span className="text-gold font-semibold">{elitePrice}/mo</span> —
-            the grind respects those who do it.
-          </p>
-        </div>
       ) : (
-        <div className="space-y-4 animate-reveal animate-reveal-delay-1">
-          {/* Member tier */}
-          <PaywallTierCard
-            variant="elite"
-            title="Member"
-            badgeLabel="Members only"
-            tagline="Pay to enter. Earn your status."
-            priceLabel={elitePrice}
-            yearlyPriceLabel={eliteYearlyPrice}
-            ctaLabel="Become a Member"
-            ctaIcon={<ShieldCheck size={18} />}
-            features={MEMBER_FEATURES}
-            loading={purchasingTier === "elite"}
-            onCta={(plan) => handleStripeCheckout("elite", plan)}
-            footnote={`Billed ${elitePrice}/mo · cancel anytime.`}
+        <div className="animate-reveal animate-reveal-delay-1">
+          <PremiumHero
+            monthlyPriceLabel={monthlyLabel}
+            yearlyPriceLabel={yearlyLabel}
+            status={status}
+            errorMessage={errorMessage}
+            onDismissError={() => {
+              setStatus("idle");
+              setErrorMessage(null);
+            }}
+            onCta={isNative ? handleNativePurchase : handleWebPurchase}
           />
 
-          {/* Apex Instant tier */}
-          <PaywallTierCard
-            variant="apex"
-            title="Apex Instant"
-            badgeLabel="Skip the grind"
-            tagline="Instant top 10% status. Lead a Tribe."
-            priceLabel={apexPrice}
-            yearlyPriceLabel={apexYearlyPrice}
-            ctaLabel="Become Apex Now"
-            ctaIcon={<Zap size={18} strokeWidth={2.6} />}
-            features={APEX_FEATURES}
-            highlighted
-            loading={purchasingTier === "apex"}
-            onCta={(plan) => handleStripeCheckout("apex", plan)}
-            footnote="No trial. Charged immediately. Cancel anytime."
-          />
-
-          {/* Earned-vs-bought disclaimer */}
-          <div className="rounded-xl border border-gold/15 bg-gold/[0.03] p-3.5 text-center">
+          {/* Earned-Apex disclaimer (Apex tier still earnable, not buyable) */}
+          <div className="mt-3 rounded-xl border border-gold/15 bg-gold/[0.03] p-3.5 text-center">
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              <span className="text-gold font-semibold">Earned Apex</span> (top
-              1% by rank, activity & streak) is still possible at{" "}
-              <span className="text-gold font-semibold">{elitePrice}/mo</span>{" "}
-              — the grind respects those who do it.
+              <span className="text-gold font-semibold">Apex tier</span> (top
+              10% by rank, activity & streak) is earned through the grind — not
+              for sale. Premium unlocks the Vault and full app access.
             </p>
           </div>
         </div>
@@ -379,7 +282,10 @@ const Paywall = () => {
         >
           iOS Debug
         </button>
-        <button onClick={handleRestore} className="text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2">
+        <button
+          onClick={handleRestore}
+          className="text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2"
+        >
           Restore purchases
         </button>
       </div>
@@ -391,11 +297,17 @@ const Paywall = () => {
       </div>
 
       <div className="flex items-center justify-center gap-4 mt-4 mb-6">
-        <button onClick={() => navigate("/privacy")} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2">
+        <button
+          onClick={() => navigate("/privacy")}
+          className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+        >
           Privacy Policy
         </button>
         <span className="text-[10px] text-muted-foreground">•</span>
-        <button onClick={() => navigate("/terms")} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2">
+        <button
+          onClick={() => navigate("/terms")}
+          className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+        >
           Terms of Use
         </button>
       </div>

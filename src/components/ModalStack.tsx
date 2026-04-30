@@ -45,6 +45,7 @@ const TribeBattles = lazy(() => import("@/pages/TribeBattles"));
 const TribeLeaderboard = lazy(() => import("@/pages/TribeLeaderboard"));
 const ButtonGallery = lazy(() => import("@/pages/ButtonGallery"));
 const Referrals = lazy(() => import("@/pages/Referrals"));
+const Vault = lazy(() => import("@/pages/Vault"));
 
 type Tier = "push" | "modal" | "fullscreen";
 
@@ -165,6 +166,7 @@ const ModalStack = () => {
               <Route path="/chat/:partnerId" element={<Chat />} />
               <Route path="/coach" element={<Coach />} />
               <Route path="/referrals" element={<Referrals />} />
+              <Route path="/vault" element={<Vault />} />
               <Route path="/admin/moderation" element={<AdminModeration />} />
               <Route path="/tribes/new" element={<TribeNew />} />
               <Route path="/tribes/leaderboard" element={<TribeLeaderboard />} />

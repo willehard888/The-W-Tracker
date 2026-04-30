@@ -193,9 +193,10 @@ const Vault = () => {
               Vault
             </span>
           </h1>
-          <p className="text-[12.5px] text-muted-foreground max-w-[300px] mx-auto leading-relaxed">
-            Your private library of recipes, training, recovery, mind work and
-            nervous-system tools. Built for the obsessed.
+          <p className="text-[12.5px] text-muted-foreground max-w-[310px] mx-auto leading-relaxed">
+            A curated, evidence-led library covering nutrition, strength &
+            conditioning, recovery, and nervous-system regulation — written
+            and reviewed by practitioners, not influencers.
           </p>
 
           {/* Stat trio */}
@@ -231,8 +232,8 @@ const Vault = () => {
             Founding-member access
           </p>
           <p className="text-[12px] text-foreground/85 leading-snug">
-            You're in early. New content drops weekly — your price stays locked
-            as long as you stay subscribed.
+            You're in before launch. New protocols and programs ship weekly —
+            your subscription price is locked for as long as you stay a member.
           </p>
         </div>
       </div>

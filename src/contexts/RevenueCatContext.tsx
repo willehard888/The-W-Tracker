@@ -172,13 +172,16 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [rcElite, setRcElite] = useState(false);
   const [rcApex, setRcApex] = useState(false);
+  const [rcPremium, setRcPremium] = useState(false);
   const [packages, setPackages] = useState<any[]>([]);
   const [rcLoading, setRcLoading] = useState(true);
   const [rcReady, setRcReady] = useState(false);
   const [monthlyPriceLabel, setMonthlyPriceLabel] = useState<string | null>(null);
   const [apexPriceLabel, setApexPriceLabel] = useState<string | null>(null);
+  const [premiumPriceLabel, setPremiumPriceLabel] = useState<string | null>(null);
   const [eliteYearlyPriceLabel, setEliteYearlyPriceLabel] = useState<string | null>(null);
   const [apexYearlyPriceLabel, setApexYearlyPriceLabel] = useState<string | null>(null);
+  const [premiumYearlyPriceLabel, setPremiumYearlyPriceLabel] = useState<string | null>(null);
 
   /** Sync subscription flags to database. */
   const syncEntitlements = useCallback(

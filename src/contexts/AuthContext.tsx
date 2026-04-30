@@ -11,6 +11,7 @@ interface AuthContextType {
   loading: boolean;
   subscriptionLoading: boolean;
   isElite: boolean;
+  isPremium: boolean;
   isApexSubscriber: boolean;
   subscriptionEnd: string | null;
   checkSubscription: () => Promise<void>;

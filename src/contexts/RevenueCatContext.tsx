@@ -489,8 +489,8 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       } catch (e: any) {
         if (isCancellation(e)) throw e;
         // Fallback — legacy Apex product at the same €17.99 / €172.99 price.
-        const fallbackId = yearly ? PRIMARY_APEX_YEARLY_PRODUCT_ID : PRIMARY_APEX_PRODUCT_ID;
-        if (fallbackId === targetId) throw e;
+        const fallbackId: string = yearly ? PRIMARY_APEX_YEARLY_PRODUCT_ID : PRIMARY_APEX_PRODUCT_ID;
+        if (fallbackId === (targetId as string)) throw e;
         await purchaseProduct(fallbackId);
       }
     },

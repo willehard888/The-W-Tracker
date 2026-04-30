@@ -44,8 +44,10 @@ export const initNativeShell = async (): Promise<void> => {
       const tag = el.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable) {
         // Slight delay so the keyboard frame is reported.
+        // `nearest` avoids large jumps in chat/checkin screens where the input
+        // is already mostly visible.
         window.requestAnimationFrame(() => {
-          el.scrollIntoView({ block: "center", behavior: "smooth" });
+          el.scrollIntoView({ block: "nearest", behavior: "smooth" });
         });
       }
     });

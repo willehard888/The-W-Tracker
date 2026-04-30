@@ -98,7 +98,10 @@ const TabPane = ({
         contain: "layout paint",
         WebkitOverflowScrolling: "touch",
         overscrollBehavior: "contain",
-      }}
+        // Off-screen tabs skip layout & paint entirely — instant return when re-shown.
+        contentVisibility: active ? "visible" : "auto",
+        containIntrinsicSize: "100% 800px",
+      } as React.CSSProperties}
     >
       {children}
     </div>

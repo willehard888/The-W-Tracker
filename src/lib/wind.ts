@@ -27,7 +27,7 @@ let lastX = "";
 let lastGust = "";
 let visible = true;
 
-const FRAME_MS = 1000 / 30;
+const FRAME_MS = 1000 / 24;
 
 const noise = (t: number) => {
   // Cheap layered sine — pseudo-Perlin without the lookup tables.
@@ -131,7 +131,7 @@ let pointerTargetX = 0;
 let pointerCurrentX = 0;
 let pointerDecayRaf = 0;
 
-const POINTER_FRAME_MS = 1000 / 30;
+const POINTER_FRAME_MS = 1000 / 24;
 
 const writePointerVar = (val: number) => {
   const s = val.toFixed(2);

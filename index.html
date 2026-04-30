@@ -13,10 +13,17 @@
     <meta name="apple-mobile-web-app-title" content="Whealth Factory" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
-    <link rel="icon" href="/app-icon.png" type="image/png" />
-    <link rel="apple-touch-icon" href="/app-icon.png" />
+    <link rel="icon" href="/app-icon.webp" type="image/webp" />
+    <link rel="apple-touch-icon" href="/app-icon@2x.webp" />
 
     <meta name="theme-color" content="#0a0a0b" />
+
+    <!-- Speed up first API + asset roundtrips -->
+    <link rel="preconnect" href="https://zjdljojkgrpgxurugixf.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://zjdljojkgrpgxurugixf.supabase.co" />
+    <link rel="preconnect" href="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev" crossorigin />
+    <!-- Start fetching the entry module as soon as <head> parses -->
+    <link rel="modulepreload" href="/src/main.tsx" />
 
     <!-- NOTE: removed the eager <link rel="preload" as="image" href="/app-icon.png">
          because the file is 1.17MB and was blocking First Contentful Paint by
@@ -25,7 +32,12 @@
     <!-- Background that EXACTLY matches SplashScreen so there is no flash
          between native iOS splash → React splash → app shell -->
     <style>
-      html, body { background: hsl(260 25% 4%); }
+      html, body {
+        background: hsl(260 25% 4%);
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
       #root { min-height: 100dvh; }
     </style>
 

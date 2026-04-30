@@ -16,6 +16,9 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
+      target: "es2020",
+      cssCodeSplit: true,
+      chunkSizeWarningLimit: 1200,
       rollupOptions: {
         output: {
           manualChunks: {
@@ -26,6 +29,8 @@ export default defineConfig(({ mode }) => {
             query: ["@tanstack/react-query"],
             motion: ["framer-motion"],
             icons: ["lucide-react"],
+            supabase: ["@supabase/supabase-js"],
+            capacitor: ["@capacitor/core", "@capacitor/app", "@capacitor/keyboard", "@capacitor/status-bar", "@capacitor/haptics"],
           },
         },
       },

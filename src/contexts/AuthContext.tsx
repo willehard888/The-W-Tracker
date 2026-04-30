@@ -331,12 +331,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     clearAppleUsernameSelectionPending();
     setProfile(null);
     setIsElite(false);
+    setIsPremium(false);
     setIsApexSubscriber(false);
     setSubscriptionEnd(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, subscriptionLoading, isElite, isApexSubscriber, subscriptionEnd, checkSubscription, signUp, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, subscriptionLoading, isElite, isPremium, isApexSubscriber, subscriptionEnd, checkSubscription, signUp, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

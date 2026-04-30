@@ -78,9 +78,9 @@ const Paywall = () => {
         <div className="h-20 w-20 rounded-full flex items-center justify-center mb-4 gradient-gold glow-gold">
           <Sparkles size={36} className="text-primary-foreground" strokeWidth={2.4} />
         </div>
-        <h1 className="font-display text-2xl font-bold mb-2">Premium Active</h1>
+        <h1 className="font-display text-2xl font-black mb-2">You're Premium.</h1>
         <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-          The Vault is unlocked. New content drops weekly.
+          The Vault is unlocked. New drops every week — your price stays locked.
         </p>
         <div className="flex gap-2 mt-2 flex-wrap justify-center">
           <Button variant="gold-outline" onClick={() => navigate("/profile")}>
@@ -263,12 +263,13 @@ const Paywall = () => {
             onCta={isNative ? handleNativePurchase : handleWebPurchase}
           />
 
-          {/* Earned-Apex disclaimer (Apex tier still earnable, not buyable) */}
+          {/* Earned-Apex disclaimer */}
           <div className="mt-3 rounded-xl border border-gold/15 bg-gold/[0.03] p-3.5 text-center">
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              <span className="text-gold font-semibold">Apex tier</span> (top
-              10% by rank, activity & streak) is earned through the grind — not
-              for sale. Premium unlocks the Vault and full app access.
+              <span className="text-gold font-semibold">Apex status</span> (top
+              10% by rank, activity & streak) can't be bought — only earned.
+              <br className="hidden sm:block" />
+              Premium unlocks <span className="text-foreground font-semibold">The Vault</span> and the full app.
             </p>
           </div>
         </div>

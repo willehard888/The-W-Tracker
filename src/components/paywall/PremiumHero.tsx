@@ -10,6 +10,9 @@ import {
   Moon,
   Check,
   ShieldCheck,
+  Lock,
+  Crown,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -27,25 +30,45 @@ interface PremiumHeroProps {
   yearlyDiscountPct?: number;
 }
 
-const FEATURES = [
-  { icon: Utensils, text: "Recipes & easy meals" },
-  { icon: Dumbbell, text: "Workouts & movement" },
-  { icon: Moon, text: "Recovery, sleep, breathwork" },
-  { icon: Brain, text: "EFT, EMDR-style, somatic tools" },
-  { icon: Sparkles, text: "Nervous-system reset & hypnosis" },
-  { icon: Flame, text: "Daily check-ins · XP · streaks" },
-  { icon: Trophy, text: "Leaderboard, battles, AI Coach" },
+const PILLARS = [
+  {
+    icon: Utensils,
+    title: "Fuel",
+    text: "Real-food recipes & easy meals — high-protein, fast, no fluff.",
+  },
+  {
+    icon: Dumbbell,
+    title: "Train",
+    text: "Programs you'll actually finish — strength, conditioning, mobility.",
+  },
+  {
+    icon: Moon,
+    title: "Recover",
+    text: "Sleep protocols, breathwork, mobility — bounce back faster.",
+  },
+  {
+    icon: Brain,
+    title: "Regulate",
+    text: "EFT, EMDR-style & somatic tools for stress and stuck patterns.",
+  },
+  {
+    icon: Sparkles,
+    title: "Reset",
+    text: "Guided hypnosis & nervous-system downshifts. Calm, on demand.",
+  },
+  {
+    icon: Trophy,
+    title: "Compete",
+    text: "Full app: check-ins, streaks, battles, leaderboard, AI Coach.",
+  },
 ] as const;
 
-/**
- * Premium hero — single-screen IAP card. Replaces the old Member+Apex dual UI.
- *
- * Status states (controlled by parent):
- *   idle       → CTA enabled
- *   purchasing → CTA shows spinner, label "Opening Apple…"
- *   verifying  → CTA shows spinner, label "Confirming…"
- *   error      → inline banner above CTA + Try again
- */
+const TRUST_POINTS = [
+  "Cancel anytime in one tap",
+  "Secure Apple in-app purchase",
+  "New content drops weekly",
+] as const;
+
 const PremiumHero = ({
   monthlyPriceLabel,
   yearlyPriceLabel,
@@ -66,34 +89,34 @@ const PremiumHero = ({
     status === "purchasing"
       ? "Opening Apple…"
       : status === "verifying"
-      ? "Confirming…"
-      : "Become Premium";
+      ? "Confirming access…"
+      : "Unlock Premium";
 
   const footnote = isYearly
-    ? `Billed ${yearlyPriceLabel}/yr · Cancel anytime`
-    : `Billed ${monthlyPriceLabel}/mo · Cancel anytime`;
+    ? `Billed ${yearlyPriceLabel} once a year · Cancel anytime`
+    : `Billed ${monthlyPriceLabel} every month · Cancel anytime`;
 
   return (
     <div
       className={cn(
         "relative rounded-3xl overflow-hidden",
-        "border-2 border-gold/60",
-        "bg-gradient-to-b from-gold/[0.18] via-card/90 to-card",
-        "shadow-[0_0_60px_hsl(var(--gold)/0.35),inset_0_1px_0_hsl(var(--gold)/0.55)]",
+        "border border-gold/40",
+        "bg-gradient-to-b from-gold/[0.14] via-card/95 to-card",
+        "shadow-[0_30px_80px_-20px_hsl(var(--gold)/0.45),0_0_60px_hsl(var(--gold)/0.18),inset_0_1px_0_hsl(var(--gold)/0.55)]",
       )}
     >
-      {/* Static gold glow backdrop (no rAF, no canvas) */}
+      {/* Layered gold ambience */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-4 h-48"
+        className="pointer-events-none absolute inset-x-0 -top-4 h-56"
         style={{
           background:
-            "radial-gradient(ellipse 60% 80% at 50% 100%, hsl(var(--gold) / 0.55) 0%, hsl(var(--gold) / 0.18) 40%, transparent 75%)",
+            "radial-gradient(ellipse 65% 85% at 50% 100%, hsl(var(--gold) / 0.55) 0%, hsl(var(--gold) / 0.18) 40%, transparent 75%)",
         }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[120%] h-56 rounded-full blur-3xl opacity-70"
+        className="pointer-events-none absolute -top-28 left-1/2 -translate-x-1/2 w-[130%] h-64 rounded-full blur-3xl opacity-70"
         style={{
           background:
             "radial-gradient(ellipse, hsl(var(--gold) / 0.55) 0%, transparent 70%)",
@@ -101,27 +124,56 @@ const PremiumHero = ({
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-px h-full bg-gradient-to-b from-gold/60 via-gold/10 to-transparent"
+        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-px h-full bg-gradient-to-b from-gold/70 via-gold/10 to-transparent"
+      />
+      {/* Subtle film grain via dual radial dots */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
+        style={{
+          backgroundImage:
+            "radial-gradient(hsl(var(--gold)) 1px, transparent 1px)",
+          backgroundSize: "3px 3px",
+        }}
       />
 
-      <div className="relative pt-44 px-5 pb-5">
+      <div className="relative pt-12 px-5 pb-5">
+        {/* Crown crest */}
+        <div className="flex justify-center mb-4">
+          <div className="relative">
+            <div
+              aria-hidden
+              className="absolute inset-0 rounded-full blur-xl opacity-80"
+              style={{
+                background:
+                  "radial-gradient(circle, hsl(var(--gold)/0.55) 0%, transparent 70%)",
+              }}
+            />
+            <div className="relative h-14 w-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold-dark))] shadow-[0_8px_24px_hsl(var(--gold)/0.45),inset_0_1px_0_hsl(0_0%_100%/0.4)]">
+              <Crown size={26} className="text-background" strokeWidth={2.6} />
+            </div>
+          </div>
+        </div>
+
         {/* Tag */}
         <div className="flex justify-center mb-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/70 backdrop-blur border border-gold/40 shadow-[0_0_16px_hsl(var(--gold)/0.4)]">
             <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
-            <span className="text-[10px] font-black tracking-[0.2em] uppercase text-gold">
-              The Vault · Premium
+            <span className="text-[10px] font-black tracking-[0.22em] uppercase text-gold">
+              The Vault · Premium Membership
             </span>
           </div>
         </div>
 
         {/* Title */}
-        <h2 className="font-display text-center text-[34px] leading-none font-black tracking-tight mb-2 bg-gradient-to-b from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold))] bg-clip-text text-transparent drop-shadow-[0_0_18px_hsl(var(--gold)/0.5)]">
-          Become Premium
+        <h2 className="font-display text-center text-[36px] leading-[0.95] font-black tracking-tight mb-3 bg-gradient-to-b from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold))] bg-clip-text text-transparent drop-shadow-[0_0_18px_hsl(var(--gold)/0.5)]">
+          Your edge,<br />unlocked.
         </h2>
-        <p className="text-center text-[12px] text-muted-foreground mb-5 max-w-[280px] mx-auto leading-relaxed">
-          Recipes, training, recovery, hypnosis & nervous-system tools — plus
-          everything in the app.
+        <p className="text-center text-[12.5px] text-muted-foreground mb-5 max-w-[300px] mx-auto leading-relaxed">
+          One membership. Everything you need to{" "}
+          <span className="text-foreground font-semibold">train hard</span>,{" "}
+          <span className="text-foreground font-semibold">eat clean</span> and{" "}
+          <span className="text-foreground font-semibold">recover deep</span> — without 5 different apps.
         </p>
 
         {/* Billing toggle */}
@@ -167,7 +219,7 @@ const PremiumHero = ({
                     : "bg-gold/15 text-gold border border-gold/30",
                 )}
               >
-                −{yearlyDiscountPct}%
+                BEST · −{yearlyDiscountPct}%
               </span>
             </button>
           </div>
@@ -175,7 +227,7 @@ const PremiumHero = ({
 
         {/* Price */}
         <div className="text-center mb-5">
-          <p className="font-display font-black leading-none text-5xl text-gold drop-shadow-[0_2px_12px_hsl(var(--gold)/0.55)]">
+          <p className="font-display font-black leading-none text-[56px] text-gold drop-shadow-[0_2px_14px_hsl(var(--gold)/0.55)]">
             {activePrice}
             <span className="text-lg font-bold text-muted-foreground/80">
               {cadence}
@@ -186,27 +238,46 @@ const PremiumHero = ({
               <span className="line-through opacity-60">
                 {monthlyPriceLabel}/mo × 12
               </span>{" "}
-              · <span className="text-gold font-bold">Save {yearlyDiscountPct}%</span>
+              · <span className="text-gold font-bold">Save {yearlyDiscountPct}%</span> · ~2 months free
             </p>
           ) : (
             <p className="text-[10px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
-              Billed monthly · Cancel anytime
+              Switch to yearly anytime · Save {yearlyDiscountPct}%
             </p>
           )}
         </div>
 
-        {/* Features */}
-        <ul className="space-y-2 mb-5">
-          {FEATURES.map(({ icon: Icon, text }) => (
-            <li key={text} className="flex items-center gap-2.5 text-[12.5px]">
-              <span className="h-6 w-6 rounded-md flex items-center justify-center shrink-0 bg-gradient-to-br from-gold/35 to-gold/10 border border-gold/55 shadow-[0_0_10px_hsl(var(--gold)/0.35)]">
-                <Icon size={12} className="text-gold" strokeWidth={2.6} />
-              </span>
-              <span className="font-semibold flex-1">{text}</span>
-              <Check size={13} className="text-gold" strokeWidth={3} />
-            </li>
+        {/* Pillars grid (2 columns on small screens, premium look) */}
+        <div className="grid grid-cols-2 gap-2 mb-5">
+          {PILLARS.map(({ icon: Icon, title, text }) => (
+            <div
+              key={title}
+              className="relative rounded-xl p-3 bg-background/40 border border-gold/15 backdrop-blur-sm overflow-hidden"
+            >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -top-6 -right-6 w-16 h-16 rounded-full blur-xl opacity-60"
+                style={{
+                  background:
+                    "radial-gradient(circle, hsl(var(--gold)/0.25) 0%, transparent 70%)",
+                }}
+              />
+              <div className="relative">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="h-5 w-5 rounded-md flex items-center justify-center bg-gradient-to-br from-gold/35 to-gold/10 border border-gold/55 shadow-[0_0_8px_hsl(var(--gold)/0.35)]">
+                    <Icon size={11} className="text-gold" strokeWidth={2.8} />
+                  </span>
+                  <p className="text-[10px] font-black tracking-[0.18em] uppercase text-gold">
+                    {title}
+                  </p>
+                </div>
+                <p className="text-[11px] leading-snug text-foreground/85 font-medium">
+                  {text}
+                </p>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
 
         {/* Inline error */}
         {status === "error" && errorMessage && (
@@ -251,9 +322,50 @@ const PremiumHero = ({
           {ctaLabel}
         </Button>
 
-        <p className="text-[10px] text-muted-foreground/80 text-center mt-2.5 tracking-wide">
+        <p className="text-[10.5px] text-muted-foreground/85 text-center mt-2.5 tracking-wide">
           {footnote}
         </p>
+
+        {/* Trust strip */}
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
+          {TRUST_POINTS.map((t) => (
+            <div
+              key={t}
+              className="inline-flex items-center gap-1 text-[10px] text-muted-foreground/90"
+            >
+              <Check size={10} className="text-gold" strokeWidth={3} />
+              <span>{t}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Social proof / quote */}
+        <div className="mt-4 rounded-xl border border-gold/20 bg-background/40 p-3 backdrop-blur-sm">
+          <div className="flex items-center gap-1 mb-1">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                size={11}
+                className="text-gold"
+                fill="currentColor"
+                strokeWidth={0}
+              />
+            ))}
+            <span className="ml-1 text-[10px] font-bold tracking-wider uppercase text-muted-foreground">
+              Built for the obsessed
+            </span>
+          </div>
+          <p className="text-[11.5px] leading-snug text-foreground/85 italic">
+            "Stopped juggling 4 apps. Recipes, training, recovery, mind work — all in one place. Streak's at 87 days."
+          </p>
+          <p className="text-[10px] text-muted-foreground mt-1">— early Premium member</p>
+        </div>
+
+        {/* Lock-in micro-row */}
+        <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground/80">
+          <Lock size={10} className="text-gold/80" strokeWidth={2.6} />
+          <span>Locked at {isYearly ? yearlyPriceLabel + "/yr" : monthlyPriceLabel + "/mo"} as long as you stay subscribed.</span>
+        </div>
       </div>
     </div>
   );

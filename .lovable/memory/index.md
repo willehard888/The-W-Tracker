@@ -35,7 +35,8 @@ Apex tier: EARNED ONLY (top 10% rank), no longer purchasable. Existing Apex subs
 - [Elite Feed Kudos](mem://features/kudos-system) — 2 kudos/month for Elite users, awards +10 XP to poster
 - [Social Infrastructure](mem://features/social-infrastructure) — Real-time chat, friend requests, username search
 - [User Profiles](mem://features/user-profiles) — Stats, Season Champion history, Weekly Sleep XP multiplier
-- [Membership](mem://monetization/membership) — Two tiers: €4.99/mo Member (with trial) + €15.99/mo Apex Instant (no trial)
+- [Premium & The Vault](mem://features/premium-subscription) — €17.99/mo Premium replaces Apex purchase, unlocks /vault content hub
+- [Membership](mem://monetization/membership) — Legacy: Two tiers (€4.99/mo Member, €15.99/mo Apex). DEPRECATED — see Premium memory.
 - [Tribes](mem://features/tribes) — Apex-only communities (sub OR earned apex/legend), max 3 owned, RPC-gated
 - [Road to Elite](mem://features/road-to-elite) — Earned Elite tier requires top 5% + 14 active days + 30-day streak
 - [RevenueCat Sub Sync](mem://technical/subscription-sync) — Webhook handles INITIAL_PURCHASE, RENEWAL, EXPIRATION

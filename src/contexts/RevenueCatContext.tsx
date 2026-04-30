@@ -62,18 +62,24 @@ const PRIMARY_APEX_YEARLY_PRODUCT_ID = "apexyearly17299";
 interface RevenueCatContextType {
   rcElite: boolean;
   rcApex: boolean;
+  rcPremium: boolean;
   rcLoading: boolean;
   rcReady: boolean;
   monthlyPriceLabel: string | null;
   apexPriceLabel: string | null;
+  premiumPriceLabel: string | null;
   eliteYearlyPriceLabel: string | null;
   apexYearlyPriceLabel: string | null;
+  premiumYearlyPriceLabel: string | null;
   packages: any[];
   purchase: (pkg: any) => Promise<void>;
   purchaseProduct: (productId: string) => Promise<void>;
+  /** @deprecated Use purchasePremiumPlan instead. */
   purchaseApex: () => Promise<void>;
   purchaseElitePlan: (plan: "monthly" | "yearly") => Promise<void>;
+  /** @deprecated Use purchasePremiumPlan instead. */
   purchaseApexPlan: (plan: "monthly" | "yearly") => Promise<void>;
+  purchasePremiumPlan: (plan: "monthly" | "yearly") => Promise<void>;
   restorePurchases: () => Promise<void>;
 }
 

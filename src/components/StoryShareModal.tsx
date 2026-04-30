@@ -229,7 +229,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `w-tracker-${variant}.png`;
+        a.download = `whealth-factory-${variant}.png`;
         a.click();
         URL.revokeObjectURL(url);
         toast.success("Story card downloaded!");

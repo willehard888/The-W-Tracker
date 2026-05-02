@@ -160,6 +160,17 @@ const PerformanceOSDashboard = () => {
           )}
         </motion.div>
       )}
+
+      <Button
+        variant="ember-glass"
+        size="sm"
+        className="w-full"
+        loading={generating}
+        onClick={generateReview}
+      >
+        <RefreshCw size={12} className="mr-1.5" />
+        {review ? "Refresh weekly review" : "Generate weekly review"}
+      </Button>
     </div>
   );
 };

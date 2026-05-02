@@ -275,7 +275,55 @@ const VaultArticleSheet = ({
                 </article>
               </section>
 
-              {article.references_json?.length > 0 && (
+              {article.try_today?.length > 0 && (
+                <section
+                  className="rounded-2xl border p-4"
+                  style={{
+                    background: `linear-gradient(135deg, ${accent}14, hsl(var(--card)) 80%)`,
+                    borderColor: `${accent}55`,
+                  }}
+                >
+                  <SectionHeader Icon={Zap} label="Try this today" color={accent} />
+                  <ol className="space-y-2">
+                    {article.try_today.map((step, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-[12.5px]">
+                        <span
+                          className="mt-[1px] h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-black"
+                          style={{
+                            background: `${accent}25`,
+                            color: accent,
+                            border: `1px solid ${accent}55`,
+                          }}
+                        >
+                          {i + 1}
+                        </span>
+                        <span className="text-foreground/95 leading-snug">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              )}
+
+              {article.key_takeaways?.length > 0 && (
+                <section>
+                  <SectionHeader Icon={ListChecks} label="Key takeaways" color={accent} />
+                  <ul className="space-y-1.5">
+                    {article.key_takeaways.map((k, i) => (
+                      <li key={i} className="flex items-start gap-2 text-[12.5px]">
+                        <span
+                          className="mt-[7px] h-1.5 w-1.5 rounded-full shrink-0"
+                          style={{ background: accent }}
+                        />
+                        <span className="text-foreground/90 leading-snug">{k}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {article.quiz?.length > 0 && (
+                <LessonQuiz quiz={article.quiz} accent={accent} onScore={setQuizScore} />
+              )}
                 <section className="pt-2 border-t border-border/30">
                   <p className="text-[10px] font-black tracking-[0.18em] uppercase text-muted-foreground mb-2">
                     References

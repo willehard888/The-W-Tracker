@@ -180,6 +180,21 @@ const VaultArticleSheet = ({
                 paddingBottom: "calc(env(safe-area-inset-bottom) + 24px)",
               }}
             >
+              {article.why_it_matters && (
+                <section
+                  className="rounded-2xl border p-4"
+                  style={{
+                    background: `linear-gradient(135deg, ${accent}14, hsl(var(--card)) 80%)`,
+                    borderColor: `${accent}40`,
+                  }}
+                >
+                  <SectionHeader Icon={Lightbulb} label="Why it matters" color={accent} />
+                  <p className="text-[12.5px] text-foreground/90 leading-relaxed">
+                    {article.why_it_matters}
+                  </p>
+                </section>
+              )}
+
               {(article.protocol?.duration ||
                 article.protocol?.intensity ||
                 article.protocol?.frequency ||

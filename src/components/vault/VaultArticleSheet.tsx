@@ -353,7 +353,26 @@ const VaultArticleSheet = ({
                 </section>
               )}
 
-              <p className="text-[10px] text-muted-foreground/70 text-center pt-3">
+              <button
+                type="button"
+                onClick={handleComplete}
+                disabled={completeLesson.isPending || isCompleted}
+                className="w-full rounded-2xl py-3 text-[12px] font-black tracking-[0.18em] uppercase transition active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{
+                  background: isCompleted ? `${accent}20` : accent,
+                  color: isCompleted ? accent : "hsl(var(--background))",
+                  border: `1px solid ${accent}66`,
+                  boxShadow: isCompleted ? "none" : `0 8px 24px ${accent}40`,
+                }}
+              >
+                {isCompleted
+                  ? "✓ Lesson complete"
+                  : completeLesson.isPending
+                    ? "Saving…"
+                    : "Mark lesson complete"}
+              </button>
+
+              <p className="text-[10px] text-muted-foreground/70 text-center pt-1">
                 Educational content — not a substitute for medical advice.
               </p>
             </div>

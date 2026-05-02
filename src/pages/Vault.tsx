@@ -16,8 +16,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useVaultArticles, type VaultArticle } from "@/hooks/use-vault-articles";
+import { useVaultProgress } from "@/hooks/use-vault-progress";
 import EvidenceChip from "@/components/vault/EvidenceChip";
 import VaultArticleSheet from "@/components/vault/VaultArticleSheet";
+import CourseProgressRing from "@/components/vault/CourseProgressRing";
 import { hapticImpact } from "@/lib/haptics";
 
 interface VaultCategory {

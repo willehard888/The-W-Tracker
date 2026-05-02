@@ -44,6 +44,17 @@ const VaultArticleSheet = ({
   open: boolean;
   onClose: () => void;
 }) => {
+  const { data: progress } = useVaultProgress();
+  const completeLesson = useCompleteLesson();
+  const [quizScore, setQuizScore] = useState<number | null>(null);
+
+  const isCompleted = !!progress?.find((p) => p.article_id === article?.id);
+
+  // Reset quiz score whenever a new article opens
+  useEffect(() => {
+    setQuizScore(null);
+  }, [article?.id]);
+
   // Lock body scroll while open, escape-to-close
   useEffect(() => {
     if (!open) return;
@@ -58,6 +69,19 @@ const VaultArticleSheet = ({
       window.removeEventListener("keydown", onKey);
     };
   }, [open, onClose]);
+
+  const handleComplete = async () => {
+    if (!article) return;
+    hapticImpact("medium");
+    try {
+      await completeLesson.mutateAsync({ articleId: article.id, quizScore });
+      toast.success("Lesson complete", {
+        description: quizScore != null ? `Quiz: ${quizScore}/${article.quiz.length}` : undefined,
+      });
+    } catch (e: any) {
+      toast.error("Could not save progress", { description: e?.message });
+    }
+  };
 
   if (typeof document === "undefined") return null;
 

@@ -16,8 +16,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useVaultArticles, type VaultArticle } from "@/hooks/use-vault-articles";
+import { useVaultProgress } from "@/hooks/use-vault-progress";
 import EvidenceChip from "@/components/vault/EvidenceChip";
 import VaultArticleSheet from "@/components/vault/VaultArticleSheet";
+import CourseProgressRing from "@/components/vault/CourseProgressRing";
 import { hapticImpact } from "@/lib/haptics";
 
 interface VaultCategory {
@@ -243,7 +245,10 @@ const VaultCategoryBlock = ({
   // Fetch all articles once (cached) and filter locally — avoids per-category refetches
   // and ensures content is ready the moment the user expands a category.
   const { data: allArticles, isLoading, error } = useVaultArticles();
+  const { data: progress } = useVaultProgress();
   const articles = (allArticles ?? []).filter((a) => a.category_id === category.id);
+  const completedIds = new Set((progress ?? []).map((p) => p.article_id));
+  const doneCount = articles.filter((a) => completedIds.has(a.id)).length;
 
   return (
     <div
@@ -295,13 +300,20 @@ const VaultCategoryBlock = ({
             </p>
           </div>
 
-          <ChevronRight
-            size={18}
-            className={cn(
-              "shrink-0 mt-1 text-muted-foreground transition-transform",
-              expanded && "rotate-90",
-            )}
-          />
+          <div className="flex flex-col items-center gap-1 shrink-0">
+            <CourseProgressRing
+              done={doneCount}
+              total={articles.length}
+              color={category.accent}
+            />
+            <ChevronRight
+              size={14}
+              className={cn(
+                "text-muted-foreground transition-transform",
+                expanded && "rotate-90",
+              )}
+            />
+          </div>
         </div>
       </button>
 
@@ -326,38 +338,71 @@ const VaultCategoryBlock = ({
           )}
 
           {!isLoading &&
-            articles.map((a) => (
-              <button
-                key={a.id}
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenArticle(a);
-                }}
-                className="w-full text-left rounded-xl border border-border/50 bg-background/40 hover:border-border hover:bg-background/60 p-3 transition active:scale-[0.99]"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-display text-[13.5px] font-black tracking-tight leading-tight">
-                      {a.title}
-                    </p>
-                    {a.subtitle && (
-                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-                        {a.subtitle}
-                      </p>
-                    )}
-                    <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-                      <EvidenceChip tier={a.evidence_tier} />
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[8.5px] font-black tracking-[0.16em] uppercase text-muted-foreground">
-                        <Clock size={8} strokeWidth={3} />
-                        {a.read_time_min} min
-                      </span>
+            articles.map((a) => {
+              const done = completedIds.has(a.id);
+              return (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenArticle(a);
+                  }}
+                  className="w-full text-left rounded-xl border border-border/50 bg-background/40 hover:border-border hover:bg-background/60 p-3 transition active:scale-[0.99]"
+                  style={
+                    done
+                      ? {
+                          borderColor: `${category.accent}55`,
+                          background: `linear-gradient(135deg, ${category.accent}10, hsl(var(--background) / 0.4) 80%)`,
+                        }
+                      : undefined
+                  }
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        {a.lesson_number && (
+                          <span
+                            className="text-[9px] font-black tabular-nums tracking-wider uppercase shrink-0"
+                            style={{ color: category.accent }}
+                          >
+                            L{a.lesson_number}
+                          </span>
+                        )}
+                        <p className="font-display text-[13.5px] font-black tracking-tight leading-tight">
+                          {a.title}
+                        </p>
+                      </div>
+                      {a.subtitle && (
+                        <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                          {a.subtitle}
+                        </p>
+                      )}
+                      <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                        <EvidenceChip tier={a.evidence_tier} />
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[8.5px] font-black tracking-[0.16em] uppercase text-muted-foreground">
+                          <Clock size={8} strokeWidth={3} />
+                          {a.read_time_min} min
+                        </span>
+                        {done && (
+                          <span
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8.5px] font-black tracking-[0.16em] uppercase"
+                            style={{
+                              background: `${category.accent}22`,
+                              color: category.accent,
+                              border: `1px solid ${category.accent}55`,
+                            }}
+                          >
+                            ✓ Done
+                          </span>
+                        )}
+                      </div>
                     </div>
+                    <ChevronRight size={14} className="text-muted-foreground shrink-0 mt-1" />
                   </div>
-                  <ChevronRight size={14} className="text-muted-foreground shrink-0 mt-1" />
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
         </div>
       )}
     </div>

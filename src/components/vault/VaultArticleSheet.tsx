@@ -1,11 +1,24 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { useState } from "react";
-import { Clock, CheckCircle2, AlertTriangle, BookMarked, Target, X, Lightbulb, Zap, ListChecks, HelpCircle } from "lucide-react";
+import {
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  BookMarked,
+  Target,
+  X,
+  Lightbulb,
+  Zap,
+  ListChecks,
+} from "lucide-react";
 import EvidenceChip from "./EvidenceChip";
+import LessonQuiz from "./LessonQuiz";
 import type { VaultArticle } from "@/hooks/use-vault-articles";
+import { useCompleteLesson, useVaultProgress } from "@/hooks/use-vault-progress";
+import { hapticImpact } from "@/lib/haptics";
+import { toast } from "sonner";
 
 /**
  * VaultArticleSheet — bulletproof bottom sheet rendered via React Portal
@@ -31,6 +44,17 @@ const VaultArticleSheet = ({
   open: boolean;
   onClose: () => void;
 }) => {
+  const { data: progress } = useVaultProgress();
+  const completeLesson = useCompleteLesson();
+  const [quizScore, setQuizScore] = useState<number | null>(null);
+
+  const isCompleted = !!progress?.find((p) => p.article_id === article?.id);
+
+  // Reset quiz score whenever a new article opens
+  useEffect(() => {
+    setQuizScore(null);
+  }, [article?.id]);
+
   // Lock body scroll while open, escape-to-close
   useEffect(() => {
     if (!open) return;
@@ -45,6 +69,19 @@ const VaultArticleSheet = ({
       window.removeEventListener("keydown", onKey);
     };
   }, [open, onClose]);
+
+  const handleComplete = async () => {
+    if (!article) return;
+    hapticImpact("medium");
+    try {
+      await completeLesson.mutateAsync({ articleId: article.id, quizScore });
+      toast.success("Lesson complete", {
+        description: quizScore != null ? `Quiz: ${quizScore}/${article.quiz.length}` : undefined,
+      });
+    } catch (e: any) {
+      toast.error("Could not save progress", { description: e?.message });
+    }
+  };
 
   if (typeof document === "undefined") return null;
 
@@ -143,6 +180,21 @@ const VaultArticleSheet = ({
                 paddingBottom: "calc(env(safe-area-inset-bottom) + 24px)",
               }}
             >
+              {article.why_it_matters && (
+                <section
+                  className="rounded-2xl border p-4"
+                  style={{
+                    background: `linear-gradient(135deg, ${accent}14, hsl(var(--card)) 80%)`,
+                    borderColor: `${accent}40`,
+                  }}
+                >
+                  <SectionHeader Icon={Lightbulb} label="Why it matters" color={accent} />
+                  <p className="text-[12.5px] text-foreground/90 leading-relaxed">
+                    {article.why_it_matters}
+                  </p>
+                </section>
+              )}
+
               {(article.protocol?.duration ||
                 article.protocol?.intensity ||
                 article.protocol?.frequency ||
@@ -223,6 +275,56 @@ const VaultArticleSheet = ({
                 </article>
               </section>
 
+              {article.try_today?.length > 0 && (
+                <section
+                  className="rounded-2xl border p-4"
+                  style={{
+                    background: `linear-gradient(135deg, ${accent}14, hsl(var(--card)) 80%)`,
+                    borderColor: `${accent}55`,
+                  }}
+                >
+                  <SectionHeader Icon={Zap} label="Try this today" color={accent} />
+                  <ol className="space-y-2">
+                    {article.try_today.map((step, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-[12.5px]">
+                        <span
+                          className="mt-[1px] h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-black"
+                          style={{
+                            background: `${accent}25`,
+                            color: accent,
+                            border: `1px solid ${accent}55`,
+                          }}
+                        >
+                          {i + 1}
+                        </span>
+                        <span className="text-foreground/95 leading-snug">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              )}
+
+              {article.key_takeaways?.length > 0 && (
+                <section>
+                  <SectionHeader Icon={ListChecks} label="Key takeaways" color={accent} />
+                  <ul className="space-y-1.5">
+                    {article.key_takeaways.map((k, i) => (
+                      <li key={i} className="flex items-start gap-2 text-[12.5px]">
+                        <span
+                          className="mt-[7px] h-1.5 w-1.5 rounded-full shrink-0"
+                          style={{ background: accent }}
+                        />
+                        <span className="text-foreground/90 leading-snug">{k}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {article.quiz?.length > 0 && (
+                <LessonQuiz quiz={article.quiz} accent={accent} onScore={setQuizScore} />
+              )}
+
               {article.references_json?.length > 0 && (
                 <section className="pt-2 border-t border-border/30">
                   <p className="text-[10px] font-black tracking-[0.18em] uppercase text-muted-foreground mb-2">
@@ -251,7 +353,26 @@ const VaultArticleSheet = ({
                 </section>
               )}
 
-              <p className="text-[10px] text-muted-foreground/70 text-center pt-3">
+              <button
+                type="button"
+                onClick={handleComplete}
+                disabled={completeLesson.isPending || isCompleted}
+                className="w-full rounded-2xl py-3 text-[12px] font-black tracking-[0.18em] uppercase transition active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{
+                  background: isCompleted ? `${accent}20` : accent,
+                  color: isCompleted ? accent : "hsl(var(--background))",
+                  border: `1px solid ${accent}66`,
+                  boxShadow: isCompleted ? "none" : `0 8px 24px ${accent}40`,
+                }}
+              >
+                {isCompleted
+                  ? "✓ Lesson complete"
+                  : completeLesson.isPending
+                    ? "Saving…"
+                    : "Mark lesson complete"}
+              </button>
+
+              <p className="text-[10px] text-muted-foreground/70 text-center pt-1">
                 Educational content — not a substitute for medical advice.
               </p>
             </div>

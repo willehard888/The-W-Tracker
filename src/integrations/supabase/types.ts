@@ -588,6 +588,39 @@ export type Database = {
         }
         Relationships: []
       }
+      legend_invites: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          note: string | null
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       moderation_cache: {
         Row: {
           action: string
@@ -1357,6 +1390,10 @@ export type Database = {
       can_create_tribe: { Args: { _user_id: string }; Returns: boolean }
       claim_paused_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
       claim_referral: { Args: { p_referrer_code: string }; Returns: Json }
+      create_legend_invite: {
+        Args: { p_code?: string; p_expires_at?: string; p_note?: string }
+        Returns: Json
+      }
       create_tribe: {
         Args: {
           p_cover_url?: string
@@ -1454,6 +1491,7 @@ export type Database = {
       is_valid_tribe_owner: { Args: { _user_id: string }; Returns: boolean }
       join_tribe: { Args: { p_tribe_id: string }; Returns: string }
       leave_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
+      redeem_legend_invite: { Args: { p_code: string }; Returns: Json }
       remove_tribe_member: {
         Args: { p_tribe_id: string; p_user_id: string }
         Returns: undefined

@@ -39,6 +39,7 @@ const PublicProfile = lazy(() => import("@/pages/PublicProfile"));
 const Coach = lazy(() => import("@/pages/Coach"));
 const WeeklyBriefing = lazy(() => import("@/pages/WeeklyBriefing"));
 const AdminModeration = lazy(() => import("@/pages/AdminModeration"));
+const AdminLegendInvites = lazy(() => import("@/pages/AdminLegendInvites"));
 const TribeNew = lazy(() => import("@/pages/TribeNew"));
 const TribeDetail = lazy(() => import("@/pages/TribeDetail"));
 const TribeBattles = lazy(() => import("@/pages/TribeBattles"));
@@ -168,6 +169,7 @@ const ModalStack = () => {
               <Route path="/referrals" element={<Referrals />} />
               <Route path="/vault" element={<Vault />} />
               <Route path="/admin/moderation" element={<AdminModeration />} />
+              <Route path="/admin/legend-invites" element={<AdminLegendInvites />} />
               <Route path="/tribes/new" element={<TribeNew />} />
               <Route path="/tribes/leaderboard" element={<TribeLeaderboard />} />
               <Route path="/tribes/:id" element={<TribeDetail />} />

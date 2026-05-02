@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, Sparkles, ArrowLeft, Loader2, Crown } from "lucide-react";
+import { Send, Sparkles, ArrowLeft, Loader2, Crown, User, Brain } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,10 +16,11 @@ import ProgramWeekAccordion from "@/components/coach/ProgramWeekAccordion";
 import ProgressDashboard from "@/components/coach/ProgressDashboard";
 import { ProfileSkeleton as PageSkeleton } from "@/components/skeletons/PageSkeleton";
 import DailyMissionCard from "@/components/coach/DailyMissionCard";
-import ReadinessRing from "@/components/coach/ReadinessRing";
 import { useDailyPlan } from "@/hooks/use-daily-plan";
-
 import HabitsTab from "@/components/coach/HabitsTab";
+import AthleteProfileOnboarding from "@/components/coach/AthleteProfileOnboarding";
+import GoalTrackerCard from "@/components/coach/GoalTrackerCard";
+import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 
 type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";

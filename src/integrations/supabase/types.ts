@@ -139,6 +139,86 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_daily_plans: {
+        Row: {
+          adjustment: string
+          created_at: string
+          generated_at: string
+          generated_with: string
+          headline: string | null
+          id: string
+          missions: Json
+          plan_date: string
+          readiness_breakdown: Json
+          readiness_score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          adjustment?: string
+          created_at?: string
+          generated_at?: string
+          generated_with?: string
+          headline?: string | null
+          id?: string
+          missions?: Json
+          plan_date: string
+          readiness_breakdown?: Json
+          readiness_score?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          adjustment?: string
+          created_at?: string
+          generated_at?: string
+          generated_with?: string
+          headline?: string | null
+          id?: string
+          missions?: Json
+          plan_date?: string
+          readiness_breakdown?: Json
+          readiness_score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coach_mission_logs: {
+        Row: {
+          completed_at: string
+          daily_plan_id: string
+          id: string
+          mission_id: string
+          user_id: string
+          xp_awarded: number
+        }
+        Insert: {
+          completed_at?: string
+          daily_plan_id: string
+          id?: string
+          mission_id: string
+          user_id: string
+          xp_awarded?: number
+        }
+        Update: {
+          completed_at?: string
+          daily_plan_id?: string
+          id?: string
+          mission_id?: string
+          user_id?: string
+          xp_awarded?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_mission_logs_daily_plan_id_fkey"
+            columns: ["daily_plan_id"]
+            isOneToOne: false
+            referencedRelation: "coach_daily_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_nudges: {
         Row: {
           content: string
@@ -1491,6 +1571,10 @@ export type Database = {
       can_create_tribe: { Args: { _user_id: string }; Returns: boolean }
       claim_paused_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
       claim_referral: { Args: { p_referrer_code: string }; Returns: Json }
+      complete_coach_mission: {
+        Args: { _mission_id: string; _plan_id: string }
+        Returns: Json
+      }
       create_legend_invite: {
         Args: { p_code?: string; p_expires_at?: string; p_note?: string }
         Returns: Json
@@ -1694,6 +1778,18 @@ export type Database = {
           p_visibility?: string
         }
         Returns: undefined
+      }
+      upsert_daily_plan: {
+        Args: {
+          _adjustment: string
+          _generated_with: string
+          _headline: string
+          _missions: Json
+          _plan_date: string
+          _readiness_breakdown: Json
+          _readiness_score: number
+        }
+        Returns: string
       }
     }
     Enums: {

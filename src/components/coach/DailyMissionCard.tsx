@@ -188,6 +188,13 @@ const DailyMissionCard = () => {
           Re-read today's data
         </button>
       </div>
+
+      <ProtocolSheet
+        protocol={openProtocol?.p ?? null}
+        why={openProtocol?.why ?? null}
+        open={!!openProtocol}
+        onOpenChange={(v) => { if (!v) setOpenProtocol(null); }}
+      />
     </div>
   );
 };

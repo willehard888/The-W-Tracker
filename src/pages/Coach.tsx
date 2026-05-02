@@ -19,12 +19,15 @@ import DailyMissionCard from "@/components/coach/DailyMissionCard";
 import ReadinessRing from "@/components/coach/ReadinessRing";
 import { useDailyPlan } from "@/hooks/use-daily-plan";
 
+import HabitsTab from "@/components/coach/HabitsTab";
+
 type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";
 
 const TABS = [
   { id: "today", label: "Today" },
   { id: "program", label: "Program" },
+  { id: "habits", label: "Habits" },
   { id: "progress", label: "Progress" },
   { id: "chat", label: "Chat" },
 ] as const;
@@ -96,6 +99,7 @@ const Coach = () => {
           {tab === "program" && (
             <ProgramWeekAccordion program={program} currentWeek={currentWeek} logs={logs} />
           )}
+          {tab === "habits" && <HabitsTab />}
           {tab === "progress" && (
             <ProgressDashboard program={program} currentWeek={currentWeek} logs={logs} />
           )}

@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Loader2, Sparkles, Dumbbell, Moon, Brain, Droplet, Zap, RefreshCw } from "lucide-react";
+import { Check, Loader2, Sparkles, Dumbbell, Moon, Brain, Droplet, Zap, RefreshCw, ChevronDown, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { toast } from "sonner";
 import ReadinessRing from "./ReadinessRing";
 import { useDailyPlan, type Mission, type MissionKind } from "@/hooks/use-daily-plan";
+import { getProtocol, type Protocol, type EvidenceTier } from "@/lib/wellness-framework";
+import EvidenceChip from "./EvidenceChip";
+import ProtocolSheet from "./ProtocolSheet";
 
 const KIND_META: Record<MissionKind, { icon: typeof Dumbbell; tint: string; ring: string; chip: string }> = {
   primary:  { icon: Dumbbell, tint: "from-gold/20 to-transparent", ring: "border-gold/45",      chip: "text-gold bg-gold/10" },
@@ -26,6 +29,8 @@ const ADJ_LABEL: Record<string, string> = {
 const DailyMissionCard = () => {
   const { plan, completedIds, total, done, generate, completeMission, isLoading } = useDailyPlan();
   const [generating, setGenerating] = useState(false);
+  const [openProtocol, setOpenProtocol] = useState<{ p: Protocol; why?: string | null } | null>(null);
+  const [showWhy, setShowWhy] = useState(false);
 
   const onGenerate = async () => {
     setGenerating(true);
@@ -125,9 +130,38 @@ const DailyMissionCard = () => {
                   toast.error(e?.message ?? "Couldn't log mission.");
                 }
               }}
+              onOpenProtocol={(p, why) => setOpenProtocol({ p, why })}
             />
           ))}
         </ul>
+
+        {/* Why this plan */}
+        {(plan as any).rationale && (
+          <button
+            type="button"
+            onClick={() => { hapticImpact("light"); setShowWhy((v) => !v); }}
+            className="mt-3 w-full text-left rounded-xl border border-border/50 bg-background/40 px-3 py-2"
+          >
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
+                <Info size={11} /> Why this plan
+              </span>
+              <ChevronDown size={12} className={cn("text-muted-foreground transition-transform", showWhy && "rotate-180")} />
+            </div>
+            <AnimatePresence initial={false}>
+              {showWhy && (
+                <motion.p
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="text-[11.5px] text-muted-foreground/90 leading-snug overflow-hidden mt-2"
+                >
+                  {(plan as any).rationale}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </button>
+        )}
 
         {done === total && total > 0 && (
           <motion.div
@@ -163,15 +197,21 @@ const MissionRow = ({
   done,
   index,
   onComplete,
+  onOpenProtocol,
 }: {
   mission: Mission;
   done: boolean;
   index: number;
   onComplete: () => Promise<void>;
+  onOpenProtocol?: (p: Protocol, why?: string | null) => void;
 }) => {
   const [busy, setBusy] = useState(false);
   const meta = KIND_META[mission.kind] ?? KIND_META.habit;
   const Icon = meta.icon;
+  const protocolId = (mission as any).protocol_id as string | undefined;
+  const evidence = (mission as any).evidence as EvidenceTier | undefined;
+  const why = (mission as any).why as string | undefined;
+  const protocol = protocolId ? getProtocol(protocolId) : undefined;
 
   const handle = async () => {
     if (done || busy) return;
@@ -241,6 +281,20 @@ const MissionRow = ({
               <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
                 {mission.detail}
               </p>
+            )}
+            {(evidence || protocol) && (
+              <div className="mt-1.5 flex items-center gap-1.5">
+                {evidence && <EvidenceChip evidence={evidence} />}
+                {protocol && onOpenProtocol && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onOpenProtocol(protocol, why); }}
+                    className="text-[9.5px] font-black uppercase tracking-[0.16em] text-muted-foreground/70 hover:text-gold transition"
+                  >
+                    Why?
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>

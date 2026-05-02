@@ -37,6 +37,7 @@ const AppleAuthLaunch = lazy(() => import("@/pages/AppleAuthLaunch"));
 const AppleUsername = lazy(() => import("@/pages/AppleUsername"));
 const PublicProfile = lazy(() => import("@/pages/PublicProfile"));
 const Coach = lazy(() => import("@/pages/Coach"));
+const ProtocolLibrary = lazy(() => import("@/pages/ProtocolLibrary"));
 const WeeklyBriefing = lazy(() => import("@/pages/WeeklyBriefing"));
 const AdminModeration = lazy(() => import("@/pages/AdminModeration"));
 const AdminLegendInvites = lazy(() => import("@/pages/AdminLegendInvites"));
@@ -166,6 +167,7 @@ const ModalStack = () => {
               <Route path="/user/:userId" element={<UserProfile />} />
               <Route path="/chat/:partnerId" element={<Chat />} />
               <Route path="/coach" element={<Coach />} />
+              <Route path="/coach/library" element={<ProtocolLibrary />} />
               <Route path="/referrals" element={<Referrals />} />
               <Route path="/vault" element={<Vault />} />
               <Route path="/admin/moderation" element={<AdminModeration />} />

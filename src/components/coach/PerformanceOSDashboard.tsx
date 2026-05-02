@@ -38,6 +38,23 @@ const Sparkline = ({ values }: { values: number[] }) => {
 const PerformanceOSDashboard = () => {
   const { data: snaps, isLoading } = usePerformanceSnapshots(28);
   const { data: review } = useLatestWeeklyReview();
+  const qc = useQueryClient();
+  const [generating, setGenerating] = useState(false);
+
+  const generateReview = async () => {
+    setGenerating(true);
+    try {
+      const { error } = await supabase.functions.invoke("coach-weekly-review");
+      if (error) throw error;
+      toast.success("Weekly review updated");
+      await qc.invalidateQueries({ queryKey: ["coach-weekly-review-latest"] });
+      await qc.invalidateQueries({ queryKey: ["coach-performance-snapshots"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to generate review");
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   if (isLoading) {
     return <div className="h-32 rounded-2xl bg-card/40 border border-border/40 animate-pulse" />;

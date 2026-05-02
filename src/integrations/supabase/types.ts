@@ -411,6 +411,33 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_performance_snapshots: {
+        Row: {
+          components: Json
+          created_at: string
+          id: string
+          performance_score: number
+          snapshot_date: string
+          user_id: string
+        }
+        Insert: {
+          components?: Json
+          created_at?: string
+          id?: string
+          performance_score?: number
+          snapshot_date: string
+          user_id: string
+        }
+        Update: {
+          components?: Json
+          created_at?: string
+          id?: string
+          performance_score?: number
+          snapshot_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       coach_preference_signals: {
         Row: {
           created_at: string
@@ -539,6 +566,90 @@ export type Database = {
           updated_at?: string
           user_id?: string
           weeks?: number
+        }
+        Relationships: []
+      }
+      coach_reflections: {
+        Row: {
+          created_at: string
+          energy_1to5: number
+          friction: string | null
+          id: string
+          mood_1to5: number | null
+          reflection_date: string
+          rpe_1to10: number | null
+          sleep_quality_1to5: number | null
+          user_id: string
+          win: string | null
+        }
+        Insert: {
+          created_at?: string
+          energy_1to5: number
+          friction?: string | null
+          id?: string
+          mood_1to5?: number | null
+          reflection_date: string
+          rpe_1to10?: number | null
+          sleep_quality_1to5?: number | null
+          user_id: string
+          win?: string | null
+        }
+        Update: {
+          created_at?: string
+          energy_1to5?: number
+          friction?: string | null
+          id?: string
+          mood_1to5?: number | null
+          reflection_date?: string
+          rpe_1to10?: number | null
+          sleep_quality_1to5?: number | null
+          user_id?: string
+          win?: string | null
+        }
+        Relationships: []
+      }
+      coach_weekly_reviews: {
+        Row: {
+          created_at: string
+          driver_of_week: string | null
+          frictions: Json
+          generated_with: string
+          id: string
+          next_week_focus: string | null
+          performance_score: number
+          program_tweak: string | null
+          seen_at: string | null
+          user_id: string
+          week_starts_on: string
+          wins: Json
+        }
+        Insert: {
+          created_at?: string
+          driver_of_week?: string | null
+          frictions?: Json
+          generated_with?: string
+          id?: string
+          next_week_focus?: string | null
+          performance_score?: number
+          program_tweak?: string | null
+          seen_at?: string | null
+          user_id: string
+          week_starts_on: string
+          wins?: Json
+        }
+        Update: {
+          created_at?: string
+          driver_of_week?: string | null
+          frictions?: Json
+          generated_with?: string
+          id?: string
+          next_week_focus?: string | null
+          performance_score?: number
+          program_tweak?: string | null
+          seen_at?: string | null
+          user_id?: string
+          week_starts_on?: string
+          wins?: Json
         }
         Relationships: []
       }
@@ -1835,6 +1946,7 @@ export type Database = {
         Returns: string
       }
       add_user_habit: { Args: { _protocol_id: string }; Returns: Json }
+      append_chat_memory_batch: { Args: { _facts: Json }; Returns: number }
       approve_tribe_member: {
         Args: { p_accept: boolean; p_tribe_id: string; p_user_id: string }
         Returns: undefined
@@ -2177,6 +2289,39 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      upsert_performance_snapshot: {
+        Args: {
+          _components: Json
+          _performance_score: number
+          _snapshot_date: string
+        }
+        Returns: string
+      }
+      upsert_reflection: {
+        Args: {
+          _energy_1to5: number
+          _friction?: string
+          _mood_1to5?: number
+          _reflection_date: string
+          _rpe_1to10?: number
+          _sleep_quality_1to5?: number
+          _win?: string
+        }
+        Returns: string
+      }
+      upsert_weekly_review: {
+        Args: {
+          _driver_of_week: string
+          _frictions: Json
+          _generated_with: string
+          _next_week_focus: string
+          _performance_score: number
+          _program_tweak: string
+          _week_starts_on: string
+          _wins: Json
+        }
+        Returns: string
       }
     }
     Enums: {

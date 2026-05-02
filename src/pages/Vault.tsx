@@ -245,7 +245,10 @@ const VaultCategoryBlock = ({
   // Fetch all articles once (cached) and filter locally — avoids per-category refetches
   // and ensures content is ready the moment the user expands a category.
   const { data: allArticles, isLoading, error } = useVaultArticles();
+  const { data: progress } = useVaultProgress();
   const articles = (allArticles ?? []).filter((a) => a.category_id === category.id);
+  const completedIds = new Set((progress ?? []).map((p) => p.article_id));
+  const doneCount = articles.filter((a) => completedIds.has(a.id)).length;
 
   return (
     <div

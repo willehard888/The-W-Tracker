@@ -1894,6 +1894,66 @@ export type Database = {
         }
         Relationships: []
       }
+      vault_articles: {
+        Row: {
+          benefits: string[]
+          body_md: string
+          category_id: string
+          created_at: string
+          display_order: number
+          evidence_tier: string
+          id: string
+          protocol: Json
+          published_at: string
+          read_time_min: number
+          references_json: Json
+          risks: string[]
+          slug: string
+          subtitle: string | null
+          summary: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          benefits?: string[]
+          body_md: string
+          category_id: string
+          created_at?: string
+          display_order?: number
+          evidence_tier: string
+          id?: string
+          protocol?: Json
+          published_at?: string
+          read_time_min?: number
+          references_json?: Json
+          risks?: string[]
+          slug: string
+          subtitle?: string | null
+          summary: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          benefits?: string[]
+          body_md?: string
+          category_id?: string
+          created_at?: string
+          display_order?: number
+          evidence_tier?: string
+          id?: string
+          protocol?: Json
+          published_at?: string
+          read_time_min?: number
+          references_json?: Json
+          risks?: string[]
+          slug?: string
+          subtitle?: string | null
+          summary?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       weekly_briefings: {
         Row: {
           generated_at: string

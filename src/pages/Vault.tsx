@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -8,13 +8,17 @@ import {
   Brain,
   Wind as WindIcon,
   Sparkles,
-  Lock,
   ArrowLeft,
   Crown,
   Clock,
   Flame,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useVaultArticles, type VaultArticle } from "@/hooks/use-vault-articles";
+import EvidenceChip from "@/components/vault/EvidenceChip";
+import VaultArticleSheet from "@/components/vault/VaultArticleSheet";
+import { hapticImpact } from "@/lib/haptics";
 
 interface VaultCategory {
   id: string;
@@ -22,10 +26,7 @@ interface VaultCategory {
   tagline: string;
   description: string;
   icon: typeof Utensils;
-  accent: string; // hsl(...) string
-  preview: string[]; // 2-3 sample item titles
-  dropLabel: string;
-  comingSoon: boolean;
+  accent: string;
 }
 
 const CATEGORIES: VaultCategory[] = [
@@ -34,88 +35,55 @@ const CATEGORIES: VaultCategory[] = [
     title: "Performance Nutrition",
     tagline: "Fuel · macros · meal prep",
     description:
-      "Macro-balanced, whole-food recipes engineered around your training load. Protein-forward (1.6–2.2 g/kg), realistic prep times, swap-friendly ingredients — built around evidence-based sports nutrition, not diet trends.",
+      "Macro-balanced, evidence-led nutrition: protein dosing, workout fueling, the Mediterranean pattern, and caffeine timing — drawn from peer-reviewed sports nutrition, not diet trends.",
     icon: Utensils,
     accent: "hsl(142 70% 50%)",
-    preview: [
-      "High-protein breakfast bowls (40 g · 10 min)",
-      "Batch-cook chicken & rice — 4 meals, one pan",
-      "Pre / intra / post-workout fueling stack",
-    ],
-    dropLabel: "First drop · within 2 weeks",
-    comingSoon: true,
   },
   {
     id: "training",
     title: "Strength & Conditioning",
-    tagline: "Periodized programs",
+    tagline: "Lifts · zone 2 · VO₂max",
     description:
-      "Structured 4–8 week blocks built on progressive overload, RPE-based loading and proper deload cycles. Each session has clear movement standards, video cues and substitutions for home or gym. Designed by S&C principles, not random workouts.",
+      "Programming principles that hold across decades of S&C research: progressive overload, Zone 2 base, the Norwegian 4×4, and proper deload periodisation.",
     icon: Dumbbell,
     accent: "hsl(18 95% 58%)",
-    preview: [
-      "Foundational Strength · 6-week linear progression",
-      "Zone 2 + VO₂max conditioning blocks",
-      "Daily 8-min mobility & joint prep",
-    ],
-    dropLabel: "First program · within 3 weeks",
-    comingSoon: true,
   },
   {
     id: "recovery",
     title: "Recovery & Sleep",
-    tagline: "Sleep · HRV · breathwork",
+    tagline: "Sleep · light · cold",
     description:
-      "Protocols grounded in circadian biology and autonomic recovery: light hygiene, sleep architecture, HRV-guided rest, and breathwork (box, 4-7-8, coherent breathing) that measurably shifts you out of sympathetic dominance.",
+      "What actually works for recovery and sleep architecture: 7–9 h dose, morning light anchor, caffeine cut-off, and cold exposure timing without sabotaging strength gains.",
     icon: Moon,
     accent: "hsl(220 80% 65%)",
-    preview: [
-      "Pre-sleep wind-down · 12-min protocol",
-      "Coherent breathing (5.5 bpm) for HRV",
-      "Sunday recovery & mobility flow",
-    ],
-    dropLabel: "Foundations live within 4 weeks",
-    comingSoon: true,
   },
   {
     id: "mind",
     title: "Mind & Emotional Skill",
-    tagline: "EFT · EMDR-informed · CBT tools",
+    tagline: "Breath · CBT · MBSR",
     description:
-      "Practical, trauma-informed techniques for stress, anxiety, focus and emotional regulation — clinical-style EFT tapping sequences, bilateral stimulation drills, cognitive reframing and somatic release work. Educational tools, not a replacement for therapy.",
+      "Practical, well-evidenced cognitive and breath tools: box breathing, the physiological sigh, mindfulness, and CBT-style cognitive reframing.",
     icon: Brain,
     accent: "hsl(280 70% 65%)",
-    preview: [
-      "EFT tapping protocol for acute anxiety",
-      "Bilateral stimulation focus reset (EMDR-informed)",
-      "Somatic discharge · 3-min shake-off",
-    ],
-    dropLabel: "Starter set · within 4 weeks",
-    comingSoon: true,
   },
   {
     id: "nervous-system",
     title: "Nervous System Regulation",
-    tagline: "Hypnosis · NSDR · vagal tone",
+    tagline: "Polyvagal · NSDR · HRV",
     description:
-      "Guided audio sessions built around polyvagal theory and clinical hypnosis: down-regulate a chronically activated nervous system, deepen parasympathetic tone, and rewire stuck stress responses. Headphones strongly recommended.",
+      "Down-regulate a chronically activated nervous system: polyvagal toolkit, NSDR/Yoga Nidra, coherent breathing at the resonance frequency, and the mammalian dive reflex.",
     icon: WindIcon,
     accent: "hsl(190 80% 60%)",
-    preview: [
-      "Sleep hypnosis · 10-min induction",
-      "Vagus nerve activation · audio drill",
-      "NSDR-style power nap (Yoga Nidra-informed)",
-    ],
-    dropLabel: "First sessions · within 5 weeks",
-    comingSoon: true,
   },
 ];
 
 const Vault = () => {
   const navigate = useNavigate();
   const { isPremium, subscriptionLoading, profile } = useAuth();
+  const [openArticle, setOpenArticle] = useState<{ article: VaultArticle; accent: string } | null>(
+    null,
+  );
 
-  // Gate — non-premium → paywall
   useEffect(() => {
     if (subscriptionLoading) return;
     if (!isPremium) navigate("/paywall", { replace: true });
@@ -124,9 +92,7 @@ const Vault = () => {
   if (!isPremium) return null;
 
   const firstName =
-    (profile as any)?.username ||
-    (profile as any)?.display_name ||
-    null;
+    (profile as any)?.username || (profile as any)?.display_name || null;
 
   return (
     <div className="min-h-screen pb-12 px-4 pt-4 safe-top">
@@ -147,7 +113,7 @@ const Vault = () => {
         </div>
       </div>
 
-      {/* Hero — luxe panel */}
+      {/* Hero */}
       <div className="relative mb-6 animate-reveal animate-reveal-delay-1 overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-b from-gold/[0.14] via-card/95 to-card shadow-[0_30px_80px_-20px_hsl(var(--gold)/0.45),0_0_60px_hsl(var(--gold)/0.18),inset_0_1px_0_hsl(var(--gold)/0.55)]">
         <div
           aria-hidden
@@ -161,8 +127,7 @@ const Vault = () => {
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
           style={{
-            backgroundImage:
-              "radial-gradient(hsl(var(--gold)) 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(hsl(var(--gold)) 1px, transparent 1px)",
             backgroundSize: "3px 3px",
           }}
         />
@@ -194,17 +159,15 @@ const Vault = () => {
             </span>
           </h1>
           <p className="text-[12.5px] text-muted-foreground max-w-[310px] mx-auto leading-relaxed">
-            A curated, evidence-led library covering nutrition, strength &
-            conditioning, recovery, and nervous-system regulation — written
-            and reviewed by practitioners, not influencers.
+            A curated, evidence-led library of protocols across nutrition, training,
+            recovery and nervous-system regulation — every article cited.
           </p>
 
-          {/* Stat trio */}
           <div className="mt-4 grid grid-cols-3 gap-2">
             {[
+              { label: "Articles", value: "20" },
               { label: "Categories", value: "5" },
-              { label: "First drop", value: "2 wks" },
-              { label: "New / week", value: "Yes" },
+              { label: "Citations", value: "60+" },
             ].map((s) => (
               <div
                 key={s.label}
@@ -222,18 +185,18 @@ const Vault = () => {
         </div>
       </div>
 
-      {/* Drop status banner */}
+      {/* Banner */}
       <div className="mb-5 rounded-2xl border border-gold/25 bg-gradient-to-r from-gold/10 via-card/80 to-card px-4 py-3 animate-reveal animate-reveal-delay-2 flex items-start gap-3">
         <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-gold/15 border border-gold/40">
           <Flame size={16} className="text-gold" strokeWidth={2.6} />
         </div>
         <div className="min-w-0">
           <p className="text-[11px] font-black tracking-wider uppercase text-gold mb-0.5">
-            Founding-member access
+            Founding-member library
           </p>
           <p className="text-[12px] text-foreground/85 leading-snug">
-            You're in before launch. New protocols and programs ship weekly —
-            your subscription price is locked for as long as you stay a member.
+            New protocols ship regularly. Every article is graded by evidence tier
+            (strong / promising / speculative) and references the underlying research.
           </p>
         </div>
       </div>
@@ -241,34 +204,51 @@ const Vault = () => {
       {/* Categories */}
       <div className="space-y-3 animate-reveal animate-reveal-delay-3">
         {CATEGORIES.map((cat) => (
-          <VaultCategoryCard key={cat.id} category={cat} />
+          <VaultCategoryBlock
+            key={cat.id}
+            category={cat}
+            onOpenArticle={(a) => {
+              hapticImpact("light");
+              setOpenArticle({ article: a, accent: cat.accent });
+            }}
+          />
         ))}
       </div>
 
-      {/* Footer manage */}
       <div className="mt-8 text-center">
         <p className="text-[10px] tracking-widest uppercase text-muted-foreground/70">
           Premium member · €17.99/mo or yearly
         </p>
       </div>
+
+      <VaultArticleSheet
+        article={openArticle?.article ?? null}
+        accent={openArticle?.accent ?? "hsl(var(--gold))"}
+        open={!!openArticle}
+        onClose={() => setOpenArticle(null)}
+      />
     </div>
   );
 };
 
-const VaultCategoryCard = ({ category }: { category: VaultCategory }) => {
+const VaultCategoryBlock = ({
+  category,
+  onOpenArticle,
+}: {
+  category: VaultCategory;
+  onOpenArticle: (a: VaultArticle) => void;
+}) => {
   const Icon = category.icon;
+  const [expanded, setExpanded] = useState(false);
+  const { data: articles, isLoading } = useVaultArticles(expanded ? category.id : undefined);
+
   return (
     <div
-      className={cn(
-        "group relative w-full text-left rounded-2xl overflow-hidden border border-border/70 bg-card/80",
-        "transition-all duration-200",
-        "hover:border-gold/40",
-      )}
+      className="relative w-full text-left rounded-2xl overflow-hidden border border-border/70 bg-card/80 transition-all duration-200"
       style={{
         background: `linear-gradient(135deg, ${category.accent}15, hsl(var(--card)) 65%)`,
       }}
     >
-      {/* corner glow */}
       <div
         aria-hidden
         className="pointer-events-none absolute -top-10 -right-10 w-32 h-32 rounded-full blur-2xl opacity-50"
@@ -277,7 +257,14 @@ const VaultCategoryCard = ({ category }: { category: VaultCategory }) => {
         }}
       />
 
-      <div className="relative p-4">
+      <button
+        type="button"
+        onClick={() => {
+          hapticImpact("light");
+          setExpanded((v) => !v);
+        }}
+        className="relative w-full p-4 text-left"
+      >
         <div className="flex items-start gap-3.5">
           <div
             className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border"
@@ -291,20 +278,12 @@ const VaultCategoryCard = ({ category }: { category: VaultCategory }) => {
           </div>
 
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <p
-                className="text-[10px] font-black tracking-[0.18em] uppercase"
-                style={{ color: category.accent }}
-              >
-                {category.tagline}
-              </p>
-              {category.comingSoon && (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-background/60 border border-border/60 text-[8.5px] font-black tracking-wider uppercase text-muted-foreground">
-                  <Lock size={8} strokeWidth={3} />
-                  In production
-                </span>
-              )}
-            </div>
+            <p
+              className="text-[10px] font-black tracking-[0.18em] uppercase mb-1"
+              style={{ color: category.accent }}
+            >
+              {category.tagline}
+            </p>
             <p className="font-display text-base font-black leading-tight tracking-tight mb-1">
               {category.title}
             </p>
@@ -312,34 +291,63 @@ const VaultCategoryCard = ({ category }: { category: VaultCategory }) => {
               {category.description}
             </p>
           </div>
-        </div>
 
-        {/* Sample preview chips */}
-        <div className="mt-3 pl-[60px]">
-          <p className="text-[9.5px] font-black tracking-[0.18em] uppercase text-muted-foreground/80 mb-1.5">
-            What's coming
-          </p>
-          <ul className="space-y-1">
-            {category.preview.map((item) => (
-              <li
-                key={item}
-                className="flex items-center gap-2 text-[11.5px] text-foreground/85"
+          <ChevronRight
+            size={18}
+            className={cn(
+              "shrink-0 mt-1 text-muted-foreground transition-transform",
+              expanded && "rotate-90",
+            )}
+          />
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="relative px-4 pb-4 pt-1 space-y-2 border-t border-border/30">
+          {isLoading && (
+            <div className="space-y-2">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="h-16 rounded-xl bg-card/40 border border-border/40 animate-pulse" />
+              ))}
+            </div>
+          )}
+
+          {!isLoading && (articles ?? []).length === 0 && (
+            <p className="text-[11px] text-muted-foreground py-3 text-center">No articles yet.</p>
+          )}
+
+          {!isLoading &&
+            (articles ?? []).map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => onOpenArticle(a)}
+                className="w-full text-left rounded-xl border border-border/50 bg-background/40 hover:border-border hover:bg-background/60 p-3 transition active:scale-[0.99]"
               >
-                <span
-                  className="h-1.5 w-1.5 rounded-full shrink-0"
-                  style={{ background: category.accent }}
-                />
-                <span className="font-medium truncate">{item}</span>
-              </li>
+                <div className="flex items-start gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-display text-[13.5px] font-black tracking-tight leading-tight">
+                      {a.title}
+                    </p>
+                    {a.subtitle && (
+                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                        {a.subtitle}
+                      </p>
+                    )}
+                    <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                      <EvidenceChip tier={a.evidence_tier} />
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[8.5px] font-black tracking-[0.16em] uppercase text-muted-foreground">
+                        <Clock size={8} strokeWidth={3} />
+                        {a.read_time_min} min
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight size={14} className="text-muted-foreground shrink-0 mt-1" />
+                </div>
+              </button>
             ))}
-          </ul>
-
-          <div className="mt-2.5 inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase text-muted-foreground/90">
-            <Clock size={10} style={{ color: category.accent }} strokeWidth={2.8} />
-            <span>{category.dropLabel}</span>
-          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

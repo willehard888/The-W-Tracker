@@ -166,6 +166,107 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_program_logs: {
+        Row: {
+          completed: boolean
+          day_index: number
+          id: string
+          logged_at: string
+          notes: string | null
+          perceived_rpe: number | null
+          program_id: string
+          user_id: string
+          week: number
+        }
+        Insert: {
+          completed?: boolean
+          day_index: number
+          id?: string
+          logged_at?: string
+          notes?: string | null
+          perceived_rpe?: number | null
+          program_id: string
+          user_id: string
+          week: number
+        }
+        Update: {
+          completed?: boolean
+          day_index?: number
+          id?: string
+          logged_at?: string
+          notes?: string | null
+          perceived_rpe?: number | null
+          program_id?: string
+          user_id?: string
+          week?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_program_logs_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "coach_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_programs: {
+        Row: {
+          ai_summary: string | null
+          body_focus: string[]
+          constraints: string | null
+          created_at: string
+          days_per_week: number
+          equipment: string | null
+          experience: string
+          generated_with: string
+          goal: string
+          id: string
+          plan_json: Json
+          started_on: string
+          status: string
+          updated_at: string
+          user_id: string
+          weeks: number
+        }
+        Insert: {
+          ai_summary?: string | null
+          body_focus?: string[]
+          constraints?: string | null
+          created_at?: string
+          days_per_week?: number
+          equipment?: string | null
+          experience: string
+          generated_with?: string
+          goal: string
+          id?: string
+          plan_json: Json
+          started_on?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          weeks?: number
+        }
+        Update: {
+          ai_summary?: string | null
+          body_focus?: string[]
+          constraints?: string | null
+          created_at?: string
+          days_per_week?: number
+          equipment?: string | null
+          experience?: string
+          generated_with?: string
+          goal?: string
+          id?: string
+          plan_json?: Json
+          started_on?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          weeks?: number
+        }
+        Relationships: []
+      }
       content_moderations: {
         Row: {
           action: string
@@ -1430,6 +1531,33 @@ export type Database = {
         }
       }
       finalize_expired_leaderboard_seasons: { Args: never; Returns: undefined }
+      get_active_coach_program: {
+        Args: { _user_id: string }
+        Returns: {
+          ai_summary: string | null
+          body_focus: string[]
+          constraints: string | null
+          created_at: string
+          days_per_week: number
+          equipment: string | null
+          experience: string
+          generated_with: string
+          goal: string
+          id: string
+          plan_json: Json
+          started_on: string
+          status: string
+          updated_at: string
+          user_id: string
+          weeks: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "coach_programs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_top_inviters: {
         Args: { p_limit?: number }
         Returns: {

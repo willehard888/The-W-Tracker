@@ -324,6 +324,8 @@ const VaultArticleSheet = ({
               {article.quiz?.length > 0 && (
                 <LessonQuiz quiz={article.quiz} accent={accent} onScore={setQuizScore} />
               )}
+
+              {article.references_json?.length > 0 && (
                 <section className="pt-2 border-t border-border/30">
                   <p className="text-[10px] font-black tracking-[0.18em] uppercase text-muted-foreground mb-2">
                     References

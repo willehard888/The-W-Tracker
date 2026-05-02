@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Lock, Check, ChevronRight, Crown, TrendingUp, Sparkles, Zap, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TIER_CONFIG, TIER_ORDER, getTierConfig, type StatusTier } from "@/lib/status-tiers";
+import { RedeemLegendInviteDialog } from "@/components/RedeemLegendInviteDialog";
 interface TierLadderProps {
   currentTier: string;
   /** @deprecated Apex is earned-only — kept for backwards compatibility, not used. */
@@ -409,8 +410,17 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       <Check size={13} strokeWidth={3.5} /> Achieved
                     </div>
                   ) : isLegend ? (
-                    <div className="rounded-lg p-3 text-center text-[12px] font-black bg-gradient-to-r from-[hsl(280_70%_55%)]/12 via-gold/12 to-[hsl(350_80%_55%)]/12 border border-gold/40 text-gold uppercase tracking-[0.18em]">
-                      🔱 Invite only
+                    <div className="space-y-2">
+                      <div className="rounded-lg p-3 text-center text-[12px] font-black bg-gradient-to-r from-[hsl(280_70%_55%)]/12 via-gold/12 to-[hsl(350_80%_55%)]/12 border border-gold/40 text-gold uppercase tracking-[0.18em]">
+                        🔱 Invite only
+                      </div>
+                      <RedeemLegendInviteDialog
+                        trigger={
+                          <button className="w-full rounded-lg p-3 text-[12px] font-black bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background uppercase tracking-[0.18em] shadow-[0_0_22px_hsl(var(--gold)/0.35)] hover:brightness-110 transition inline-flex items-center justify-center gap-2">
+                            <Crown size={13} fill="currentColor" /> Redeem invite code
+                          </button>
+                        }
+                      />
                     </div>
                   ) : (
                     <div className="rounded-lg p-3 text-center text-[11px] font-bold bg-muted/20 text-muted-foreground border border-border/50 uppercase tracking-wider flex items-center justify-center gap-2">

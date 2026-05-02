@@ -279,6 +279,15 @@ const ChatTab = ({ session, program }: { session: any; program: any }) => {
     } finally {
       setStreaming(false);
       abortRef.current = null;
+      // Fire-and-forget: distill durable facts from the last exchange into chat memory.
+      try {
+        if (buf && buf.length > 20 && session?.access_token) {
+          const finalMsgs = [...next, { role: "assistant" as const, content: buf }];
+          supabase.functions.invoke("coach-extract-memory", {
+            body: { messages: finalMsgs.slice(-6) },
+          }).catch(() => { /* silent */ });
+        }
+      } catch { /* silent */ }
     }
   };
 

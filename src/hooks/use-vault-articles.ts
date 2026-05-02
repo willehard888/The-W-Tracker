@@ -28,7 +28,8 @@ export const useVaultArticles = (categoryId?: string) => {
   const { user, isPremium } = useAuth();
   return useQuery({
     queryKey: ["vault-articles", categoryId ?? "all", user?.id],
-    enabled: !!user?.id && isPremium,
+    enabled: !!user?.id && !!isPremium,
+    staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       let q = supabase
         .from("vault_articles")
@@ -38,7 +39,11 @@ export const useVaultArticles = (categoryId?: string) => {
         .order("display_order", { ascending: true });
       if (categoryId) q = q.eq("category_id", categoryId);
       const { data, error } = await q;
-      if (error) throw error;
+      if (error) {
+        console.error("[vault] fetch error", error);
+        throw error;
+      }
+      console.log("[vault] fetched", categoryId ?? "all", data?.length ?? 0);
       return (data ?? []) as VaultArticle[];
     },
   });

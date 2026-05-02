@@ -300,13 +300,20 @@ const VaultCategoryBlock = ({
             </p>
           </div>
 
-          <ChevronRight
-            size={18}
-            className={cn(
-              "shrink-0 mt-1 text-muted-foreground transition-transform",
-              expanded && "rotate-90",
-            )}
-          />
+          <div className="flex flex-col items-center gap-1 shrink-0">
+            <CourseProgressRing
+              done={doneCount}
+              total={articles.length}
+              color={category.accent}
+            />
+            <ChevronRight
+              size={14}
+              className={cn(
+                "text-muted-foreground transition-transform",
+                expanded && "rotate-90",
+              )}
+            />
+          </div>
         </div>
       </button>
 

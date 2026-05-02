@@ -504,6 +504,8 @@ Deno.serve(async (req) => {
         readiness_score: readiness.score,
         adjustment,
         headline,
+        rationale,
+        framework_version: FRAMEWORK_VERSION,
         missions,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },

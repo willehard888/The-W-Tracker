@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+export type VaultQuizQ = { q: string; choices: string[]; correct: number; explain: string };
+
 export type VaultArticle = {
   id: string;
   category_id: string;
@@ -22,6 +24,12 @@ export type VaultArticle = {
   body_md: string;
   references_json: { author: string; title: string; year?: number; url?: string }[];
   display_order: number;
+  lesson_number: number | null;
+  course_role: "foundations" | "protocol" | "recap";
+  why_it_matters: string | null;
+  try_today: string[];
+  key_takeaways: string[];
+  quiz: VaultQuizQ[];
 };
 
 export const useVaultArticles = (categoryId?: string) => {

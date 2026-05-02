@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Minus, Sparkles, Calendar } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Sparkles, Calendar, RefreshCw } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { usePerformanceSnapshots, useLatestWeeklyReview } from "@/hooks/use-performance-snapshots";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const Sparkline = ({ values }: { values: number[] }) => {

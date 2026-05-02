@@ -240,7 +240,10 @@ const VaultCategoryBlock = ({
 }) => {
   const Icon = category.icon;
   const [expanded, setExpanded] = useState(false);
-  const { data: articles, isLoading } = useVaultArticles(expanded ? category.id : undefined);
+  // Fetch all articles once (cached) and filter locally — avoids per-category refetches
+  // and ensures content is ready the moment the user expands a category.
+  const { data: allArticles, isLoading, error } = useVaultArticles();
+  const articles = (allArticles ?? []).filter((a) => a.category_id === category.id);
 
   return (
     <div

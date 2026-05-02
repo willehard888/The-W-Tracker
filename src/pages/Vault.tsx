@@ -240,7 +240,10 @@ const VaultCategoryBlock = ({
 }) => {
   const Icon = category.icon;
   const [expanded, setExpanded] = useState(false);
-  const { data: articles, isLoading } = useVaultArticles(expanded ? category.id : undefined);
+  // Fetch all articles once (cached) and filter locally — avoids per-category refetches
+  // and ensures content is ready the moment the user expands a category.
+  const { data: allArticles, isLoading, error } = useVaultArticles();
+  const articles = (allArticles ?? []).filter((a) => a.category_id === category.id);
 
   return (
     <div
@@ -312,16 +315,25 @@ const VaultCategoryBlock = ({
             </div>
           )}
 
-          {!isLoading && (articles ?? []).length === 0 && (
+          {!isLoading && error && (
+            <p className="text-[11px] text-rose-400/90 py-3 text-center">
+              Couldn't load articles. Pull to refresh.
+            </p>
+          )}
+
+          {!isLoading && !error && articles.length === 0 && (
             <p className="text-[11px] text-muted-foreground py-3 text-center">No articles yet.</p>
           )}
 
           {!isLoading &&
-            (articles ?? []).map((a) => (
+            articles.map((a) => (
               <button
                 key={a.id}
                 type="button"
-                onClick={() => onOpenArticle(a)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenArticle(a);
+                }}
                 className="w-full text-left rounded-xl border border-border/50 bg-background/40 hover:border-border hover:bg-background/60 p-3 transition active:scale-[0.99]"
               >
                 <div className="flex items-start gap-3">

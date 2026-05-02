@@ -11,7 +11,7 @@ export const FRAMEWORK_VERSION = "1.0";
 
 export type PillarId = "sleep" | "movement" | "nutrition" | "stress" | "recovery" | "connection";
 export type EvidenceTier = "strong" | "promising" | "speculative";
-export type ProtocolTag = "morning" | "evening" | "anytime" | "low-effort" | "high-effort" | "outdoor" | "social";
+export type ProtocolTag = "morning" | "midday" | "evening" | "anytime" | "low-effort" | "high-effort" | "outdoor" | "social";
 
 export interface PillarMeta {
   id: PillarId;

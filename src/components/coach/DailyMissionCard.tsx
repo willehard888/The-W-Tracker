@@ -197,15 +197,21 @@ const MissionRow = ({
   done,
   index,
   onComplete,
+  onOpenProtocol,
 }: {
   mission: Mission;
   done: boolean;
   index: number;
   onComplete: () => Promise<void>;
+  onOpenProtocol?: (p: Protocol, why?: string | null) => void;
 }) => {
   const [busy, setBusy] = useState(false);
   const meta = KIND_META[mission.kind] ?? KIND_META.habit;
   const Icon = meta.icon;
+  const protocolId = (mission as any).protocol_id as string | undefined;
+  const evidence = (mission as any).evidence as EvidenceTier | undefined;
+  const why = (mission as any).why as string | undefined;
+  const protocol = protocolId ? getProtocol(protocolId) : undefined;
 
   const handle = async () => {
     if (done || busy) return;

@@ -388,7 +388,8 @@ Deno.serve(async (req) => {
     }
 
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const [profileRes, checkinsRes, programRes] = await Promise.all([
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const [profileRes, checkinsRes, programRes, athleteRes, goalRes, memoryRes, skipRes] = await Promise.all([
       supabase
         .from("profiles")
         .select("username, status_tier, streak, longest_streak, xp, level")
@@ -410,6 +411,27 @@ Deno.serve(async (req) => {
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
+      supabase.from("coach_athlete_profile").select("*").eq("user_id", userId).maybeSingle(),
+      supabase
+        .from("coach_goals")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("coach_chat_memory")
+        .select("fact")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("coach_preference_signals")
+        .select("protocol_id")
+        .eq("user_id", userId)
+        .eq("signal_type", "skipped_protocol")
+        .gte("created_at", thirtyDaysAgo),
     ]);
 
     const profile = profileRes.data;

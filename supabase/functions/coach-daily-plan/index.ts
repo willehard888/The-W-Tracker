@@ -409,6 +409,7 @@ Deno.serve(async (req) => {
 
     // Generate via AI (or fallback)
     let headline: string | null = null;
+    let rationale: string | null = null;
     let missions: any[] = [];
 
     if (LOVABLE_API_KEY) {
@@ -425,7 +426,7 @@ Deno.serve(async (req) => {
             messages: [
               {
                 role: "system",
-                content: "You are a data-driven elite performance coach. Always emit the plan via the emit_daily_plan tool.",
+                content: "You are a data-driven elite performance coach grounded in the Wellness Framework. Always emit the plan via the emit_daily_plan tool. Pick protocol_id ONLY from the provided catalog.",
               },
               { role: "user", content: prompt },
             ],
@@ -439,14 +440,26 @@ Deno.serve(async (req) => {
           if (call?.function?.arguments) {
             const parsed = JSON.parse(call.function.arguments);
             headline = parsed.headline ?? null;
-            missions = (parsed.missions ?? []).map((m: any) => ({
-              id: String(m.id ?? crypto.randomUUID()).slice(0, 64),
-              kind: m.kind,
-              title: String(m.title ?? "").slice(0, 100),
-              detail: m.detail ? String(m.detail).slice(0, 160) : undefined,
-              xp: Math.max(10, Math.min(80, parseInt(m.xp ?? 20))),
-              priority: m.priority ?? "medium",
-            }));
+            rationale = parsed.rationale ?? null;
+            missions = (parsed.missions ?? [])
+              .map((m: any) => {
+                const protoId = typeof m.protocol_id === "string" ? m.protocol_id : null;
+                const proto = protoId ? PROTOCOL_BY_ID[protoId] : null;
+                if (!proto) return null; // drop missions referencing unknown protocols
+                return {
+                  id: String(m.id ?? crypto.randomUUID()).slice(0, 64),
+                  kind: m.kind,
+                  title: String(m.title ?? proto.title).slice(0, 100),
+                  detail: m.detail ? String(m.detail).slice(0, 160) : undefined,
+                  xp: Math.max(10, Math.min(80, parseInt(m.xp ?? 20))),
+                  priority: m.priority ?? "medium",
+                  protocol_id: proto.id,
+                  evidence: proto.evidence,
+                  pillar: proto.pillar,
+                  why: m.why ? String(m.why).slice(0, 200) : undefined,
+                };
+              })
+              .filter(Boolean);
           }
         } else {
           console.warn("AI gateway non-ok:", aiResp.status, await aiResp.text());
@@ -457,8 +470,9 @@ Deno.serve(async (req) => {
     }
 
     if (missions.length === 0) {
-      const fb = fallbackPlan(todayDay, adjustment, readiness.score);
+      const fb = fallbackPlan(todayDay, adjustment, readiness.score, readiness.breakdown);
       headline = fb.headline;
+      rationale = fb.rationale;
       missions = fb.missions;
     }
 
@@ -471,6 +485,8 @@ Deno.serve(async (req) => {
       _headline: headline,
       _missions: missions,
       _generated_with: LOVABLE_API_KEY ? "google/gemini-2.5-flash" : "fallback",
+      _rationale: rationale,
+      _framework_version: FRAMEWORK_VERSION,
     });
 
     if (rpcErr) {

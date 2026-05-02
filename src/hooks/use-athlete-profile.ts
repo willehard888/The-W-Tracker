@@ -47,7 +47,7 @@ export const useAthleteProfile = () => {
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
-      return (data ?? null) as AthleteProfile | null;
+      return (data ?? null) as unknown as AthleteProfile | null;
     },
   });
 

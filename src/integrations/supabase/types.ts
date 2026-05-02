@@ -1864,18 +1864,33 @@ export type Database = {
         }
         Returns: undefined
       }
-      upsert_daily_plan: {
-        Args: {
-          _adjustment: string
-          _generated_with: string
-          _headline: string
-          _missions: Json
-          _plan_date: string
-          _readiness_breakdown: Json
-          _readiness_score: number
-        }
-        Returns: string
-      }
+      upsert_daily_plan:
+        | {
+            Args: {
+              _adjustment: string
+              _generated_with: string
+              _headline: string
+              _missions: Json
+              _plan_date: string
+              _readiness_breakdown: Json
+              _readiness_score: number
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              _adjustment: string
+              _framework_version?: string
+              _generated_with: string
+              _headline: string
+              _missions: Json
+              _plan_date: string
+              _rationale?: string
+              _readiness_breakdown: Json
+              _readiness_score: number
+            }
+            Returns: string
+          }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

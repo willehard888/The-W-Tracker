@@ -1,0 +1,569 @@
+/**
+ * Wellness Framework v1
+ * Evidence-graded protocol catalog driving daily missions, the Protocol Library,
+ * and long-term Habits in W Coach.
+ *
+ * Pillars are weighted by 80/20 impact-per-minute against current research.
+ * Evidence tiers are a deliberate, conservative readout — not medical advice.
+ */
+
+export const FRAMEWORK_VERSION = "1.0";
+
+export type PillarId = "sleep" | "movement" | "nutrition" | "stress" | "recovery" | "connection";
+export type EvidenceTier = "strong" | "promising" | "speculative";
+export type ProtocolTag = "morning" | "evening" | "anytime" | "low-effort" | "high-effort" | "outdoor" | "social";
+
+export interface PillarMeta {
+  id: PillarId;
+  name: string;
+  blurb: string;
+  /** Tailwind class fragments (border / chip / glow tints) */
+  tint: { border: string; chip: string; glow: string; text: string };
+  emoji: string;
+}
+
+export interface ProtocolDose {
+  /** Human-readable summary, e.g. "10 min, 3–5×/week, morning" */
+  summary: string;
+  duration_min?: number;
+  frequency_per_week?: number;
+  time_of_day?: "morning" | "midday" | "evening" | "anytime";
+}
+
+export interface Protocol {
+  id: string;
+  pillar: PillarId;
+  title: string;
+  evidence: EvidenceTier;
+  dose: ProtocolDose;
+  /** What the research suggests you gain — 1 sentence. */
+  benefit: string;
+  /** Contraindications / what to avoid — 1 sentence. */
+  risk: string;
+  /** Up to 3 anchor citations (DOI, meta-analysis, or canonical reference). */
+  citations: string[];
+  tags: ProtocolTag[];
+  /** Suggested daily XP if logged as a habit (5–15). */
+  habit_xp_base?: number;
+}
+
+export const PILLARS: Record<PillarId, PillarMeta> = {
+  sleep: {
+    id: "sleep",
+    name: "Sleep",
+    blurb: "Strongest single lever for energy, mood, recovery.",
+    tint: {
+      border: "border-indigo-400/40",
+      chip: "text-indigo-300 bg-indigo-400/10",
+      glow: "from-indigo-400/15 to-transparent",
+      text: "text-indigo-300",
+    },
+    emoji: "🌙",
+  },
+  movement: {
+    id: "movement",
+    name: "Movement",
+    blurb: "Z2 + strength + a little VO2 — the survival stack.",
+    tint: {
+      border: "border-gold/40",
+      chip: "text-gold bg-gold/10",
+      glow: "from-gold/15 to-transparent",
+      text: "text-gold",
+    },
+    emoji: "💪",
+  },
+  nutrition: {
+    id: "nutrition",
+    name: "Nutrition",
+    blurb: "Protein, fibre, density. Skip the hacks.",
+    tint: {
+      border: "border-emerald-400/40",
+      chip: "text-emerald-300 bg-emerald-400/10",
+      glow: "from-emerald-400/15 to-transparent",
+      text: "text-emerald-300",
+    },
+    emoji: "🥩",
+  },
+  stress: {
+    id: "stress",
+    name: "Mind & Stress",
+    blurb: "Breath, attention, a calm nervous system.",
+    tint: {
+      border: "border-violet-400/40",
+      chip: "text-violet-300 bg-violet-400/10",
+      glow: "from-violet-400/15 to-transparent",
+      text: "text-violet-300",
+    },
+    emoji: "🧘",
+  },
+  recovery: {
+    id: "recovery",
+    name: "Recovery",
+    blurb: "Heat, cold, mobility — earn the next session.",
+    tint: {
+      border: "border-rose-400/40",
+      chip: "text-rose-300 bg-rose-400/10",
+      glow: "from-rose-400/15 to-transparent",
+      text: "text-rose-300",
+    },
+    emoji: "🔥",
+  },
+  connection: {
+    id: "connection",
+    name: "Connection",
+    blurb: "Relationships are an under-tracked vital sign.",
+    tint: {
+      border: "border-sky-400/40",
+      chip: "text-sky-300 bg-sky-400/10",
+      glow: "from-sky-400/15 to-transparent",
+      text: "text-sky-300",
+    },
+    emoji: "🤝",
+  },
+};
+
+export const EVIDENCE_META: Record<EvidenceTier, { label: string; chip: string; ring: string; description: string }> = {
+  strong: {
+    label: "STRONG",
+    chip: "text-emerald-300 bg-emerald-500/15 border-emerald-400/40",
+    ring: "ring-emerald-400/50",
+    description: "Multiple high-quality RCTs or meta-analyses converge.",
+  },
+  promising: {
+    label: "PROMISING",
+    chip: "text-amber-300 bg-amber-500/15 border-amber-400/40",
+    ring: "ring-amber-400/50",
+    description: "Consistent signal across smaller trials or observational data.",
+  },
+  speculative: {
+    label: "EARLY",
+    chip: "text-zinc-300 bg-zinc-500/15 border-zinc-400/40",
+    ring: "ring-zinc-400/40",
+    description: "Mechanistic or anecdotal — promising but not yet settled.",
+  },
+};
+
+export const PROTOCOLS: Protocol[] = [
+  // ── SLEEP ───────────────────────────────────────────────────────────────
+  {
+    id: "sleep-7-9h",
+    pillar: "sleep",
+    title: "Sleep 7–9 hours",
+    evidence: "strong",
+    dose: { summary: "7–9 h nightly, same window ±30 min", duration_min: 480, frequency_per_week: 7, time_of_day: "evening" },
+    benefit: "Largest single driver of next-day cognition, mood, glucose control and immune function.",
+    risk: "Spending >9 h in bed correlates with depression — track time asleep, not time horizontal.",
+    citations: ["Walker, 2017 — Why We Sleep", "Hirshkowitz, NSF Consensus 2015"],
+    tags: ["evening", "low-effort"],
+    habit_xp_base: 12,
+  },
+  {
+    id: "morning-light-10min",
+    pillar: "sleep",
+    title: "10 min morning light",
+    evidence: "strong",
+    dose: { summary: "10 min outside within 60 min of waking", duration_min: 10, frequency_per_week: 7, time_of_day: "morning" },
+    benefit: "Anchors circadian rhythm, advances sleep onset and improves daytime alertness.",
+    risk: "Never look directly at the sun. On dark winter mornings a 10,000-lux lamp is a substitute.",
+    citations: ["Wright et al., 2013 Curr Biol", "Blume et al., 2019 Somnologie"],
+    tags: ["morning", "outdoor", "low-effort"],
+    habit_xp_base: 10,
+  },
+  {
+    id: "caffeine-cutoff-8h",
+    pillar: "sleep",
+    title: "No caffeine 8h pre-bed",
+    evidence: "promising",
+    dose: { summary: "Cut caffeine ≥8–10 h before bed", frequency_per_week: 7, time_of_day: "midday" },
+    benefit: "Reduces sleep onset latency and increases deep-sleep time, especially in slow metabolisers.",
+    risk: "Individual genetics (CYP1A2) vary — some need 12 h, some tolerate 6 h.",
+    citations: ["Drake et al., 2013 J Clin Sleep Med"],
+    tags: ["anytime", "low-effort"],
+    habit_xp_base: 8,
+  },
+  {
+    id: "alcohol-zero-on-training",
+    pillar: "sleep",
+    title: "No alcohol on training days",
+    evidence: "strong",
+    dose: { summary: "Zero alcohol within 24 h of a hard session", frequency_per_week: 7 },
+    benefit: "Protects REM sleep, muscle protein synthesis, and same-week recovery.",
+    risk: "Social pressure — plan ahead. Effect is dose-dependent above ~0.5 g/kg.",
+    citations: ["Ebrahim et al., 2013 Alcohol Clin Exp Res", "Parr et al., 2014 PLoS One"],
+    tags: ["evening", "low-effort"],
+    habit_xp_base: 10,
+  },
+
+  // ── MOVEMENT ────────────────────────────────────────────────────────────
+  {
+    id: "zone-2-cardio",
+    pillar: "movement",
+    title: "Zone 2 cardio",
+    evidence: "strong",
+    dose: { summary: "150–180 min/week @ 60–70% HRmax", duration_min: 45, frequency_per_week: 3, time_of_day: "anytime" },
+    benefit: "Builds mitochondrial density, insulin sensitivity, and cardiovascular base — biggest longevity lever after sleep.",
+    risk: "Low impact, but volume jumps >10%/week raise overuse-injury risk.",
+    citations: ["WHO Physical Activity Guidelines 2020", "Maffetone, 2010"],
+    tags: ["anytime", "outdoor"],
+    habit_xp_base: 15,
+  },
+  {
+    id: "strength-2-3x",
+    pillar: "movement",
+    title: "Strength 2–3×/week",
+    evidence: "strong",
+    dose: { summary: "2–3 sessions, 8–12 hard sets per muscle/week", duration_min: 45, frequency_per_week: 3 },
+    benefit: "Preserves muscle, bone density, glucose handling and all-cause mortality reduction (~10–17%).",
+    risk: "Technique first. Untrained loads >5RM raise injury risk markedly.",
+    citations: ["Momma et al., 2022 BJSM (meta-analysis)", "ACSM Position Stand 2009"],
+    tags: ["anytime", "high-effort"],
+    habit_xp_base: 15,
+  },
+  {
+    id: "vo2-intervals-1x",
+    pillar: "movement",
+    title: "VO₂max intervals 1×/week",
+    evidence: "strong",
+    dose: { summary: "4×4 min @ ~90% HRmax, 3 min easy between", duration_min: 30, frequency_per_week: 1 },
+    benefit: "Highest VO₂max-per-time stimulus; VO₂max is among the strongest predictors of mortality risk.",
+    risk: "Not for sedentary beginners — build a Z2 base first. Avoid if uncontrolled cardiac risk.",
+    citations: ["Helgerud et al., 2007 Med Sci Sports Exerc", "Mandsager et al., 2018 JAMA"],
+    tags: ["high-effort"],
+    habit_xp_base: 14,
+  },
+  {
+    id: "strength-progressive-overload",
+    pillar: "movement",
+    title: "Progressive overload",
+    evidence: "strong",
+    dose: { summary: "+2.5–5% load when you hit top of rep range with form", frequency_per_week: 2 },
+    benefit: "The single mechanism behind long-term strength and hypertrophy adaptation.",
+    risk: "Form before load — track RPE and bar speed, not just plates.",
+    citations: ["Schoenfeld, 2010 J Strength Cond Res"],
+    tags: ["anytime", "high-effort"],
+    habit_xp_base: 10,
+  },
+  {
+    id: "walk-after-meals-10min",
+    pillar: "movement",
+    title: "10 min walk after meals",
+    evidence: "promising",
+    dose: { summary: "10 min easy walk within 30 min of largest meal", duration_min: 10, frequency_per_week: 7 },
+    benefit: "Blunts post-prandial glucose spikes by ~12–22% in trained and untrained.",
+    risk: "None of note. Replace, don't add to, sedentary time.",
+    citations: ["Buffey et al., 2022 Sports Med (meta)"],
+    tags: ["anytime", "low-effort", "outdoor"],
+    habit_xp_base: 8,
+  },
+
+  // ── NUTRITION ───────────────────────────────────────────────────────────
+  {
+    id: "protein-1-6g-per-kg",
+    pillar: "nutrition",
+    title: "Protein 1.6 g/kg/day",
+    evidence: "strong",
+    dose: { summary: "1.6 g/kg bodyweight daily, split across 3–4 meals", frequency_per_week: 7 },
+    benefit: "Optimal range for muscle protein synthesis, satiety and lean-mass retention in a deficit.",
+    risk: "No evidence of kidney harm in healthy individuals. Existing CKD patients should consult clinician.",
+    citations: ["Morton et al., 2018 BJSM (meta)", "Phillips, 2014 Nutr Metab"],
+    tags: ["anytime"],
+    habit_xp_base: 12,
+  },
+  {
+    id: "fiber-30g",
+    pillar: "nutrition",
+    title: "Fibre 25–35 g/day",
+    evidence: "strong",
+    dose: { summary: "25–35 g fibre, mostly from whole foods", frequency_per_week: 7 },
+    benefit: "Strongest dietary signal in mortality meta-analyses; supports microbiome and cardiometabolic health.",
+    risk: "Ramp slowly (+5 g/week) to avoid bloating. Hydrate.",
+    citations: ["Reynolds et al., 2019 Lancet"],
+    tags: ["anytime"],
+    habit_xp_base: 10,
+  },
+  {
+    id: "hydration-30ml-kg",
+    pillar: "nutrition",
+    title: "Hydration ~30 ml/kg",
+    evidence: "promising",
+    dose: { summary: "≈30 ml/kg/day, front-loaded; less after 19:00", frequency_per_week: 7 },
+    benefit: "Maintains plasma volume, performance, and reduces tension-headache frequency.",
+    risk: "Hyponatremia is rare but real in endurance athletes — match electrolytes when sweating heavily.",
+    citations: ["Sawka et al., 2007 ACSM Position Stand"],
+    tags: ["anytime", "low-effort"],
+    habit_xp_base: 8,
+  },
+  {
+    id: "fasted-cardio",
+    pillar: "nutrition",
+    title: "Fasted Z2 cardio",
+    evidence: "speculative",
+    dose: { summary: "30–60 min Z2 in a fasted state, 1–2×/week" },
+    benefit: "May raise fat-oxidation rate acutely; long-term bodyweight effect is small to null.",
+    risk: "Performance drops in glycolytic work. Avoid for VO₂max sessions.",
+    citations: ["Schoenfeld et al., 2014 J Int Soc Sports Nutr"],
+    tags: ["morning"],
+    habit_xp_base: 6,
+  },
+
+  // ── STRESS / MIND ───────────────────────────────────────────────────────
+  {
+    id: "breath-box-5min",
+    pillar: "stress",
+    title: "Box breathing 5 min",
+    evidence: "strong",
+    dose: { summary: "4-4-4-4 cadence, 5 min, before stress or sleep", duration_min: 5, frequency_per_week: 7 },
+    benefit: "Acutely shifts autonomic balance toward parasympathetic; lowers HR and subjective anxiety.",
+    risk: "Stop if dizzy. Not for severe untreated cardiopulmonary conditions.",
+    citations: ["Zaccaro et al., 2018 Front Hum Neurosci"],
+    tags: ["anytime", "low-effort"],
+    habit_xp_base: 8,
+  },
+  {
+    id: "breath-physiological-sigh",
+    pillar: "stress",
+    title: "Physiological sighs (1 min)",
+    evidence: "promising",
+    dose: { summary: "2 short inhales + 1 long exhale, 1 min, on demand", duration_min: 1, frequency_per_week: 7 },
+    benefit: "Fastest known voluntary technique to reduce acute anxiety in human RCT data.",
+    risk: "None of note.",
+    citations: ["Balban et al., 2023 Cell Reports Medicine"],
+    tags: ["anytime", "low-effort"],
+    habit_xp_base: 6,
+  },
+  {
+    id: "mindfulness-10min",
+    pillar: "stress",
+    title: "Mindfulness 10 min/day",
+    evidence: "strong",
+    dose: { summary: "10 min/day, 8 weeks minimum to see shift", duration_min: 10, frequency_per_week: 7 },
+    benefit: "Reduces anxiety, improves sustained attention; effect comparable to first-line psychotherapy in mild cases.",
+    risk: "Trauma history can surface — consider trauma-sensitive variants.",
+    citations: ["Goyal et al., 2014 JAMA Intern Med (meta)"],
+    tags: ["anytime", "low-effort"],
+    habit_xp_base: 10,
+  },
+  {
+    id: "nsdr-yoga-nidra-10min",
+    pillar: "stress",
+    title: "NSDR / Yoga Nidra 10–20 min",
+    evidence: "promising",
+    dose: { summary: "10–20 min mid-afternoon, audio-guided", duration_min: 15, frequency_per_week: 4, time_of_day: "midday" },
+    benefit: "Restores subjective alertness; some evidence of dopamine baseline restoration.",
+    risk: "Substitute for, not replacement of, full sleep.",
+    citations: ["Datta et al., 2017 Int J Yoga"],
+    tags: ["midday", "low-effort"],
+    habit_xp_base: 8,
+  },
+  {
+    id: "nature-2h-week",
+    pillar: "stress",
+    title: "≥2 hours nature/week",
+    evidence: "promising",
+    dose: { summary: "≥120 min/week in green or blue spaces, in any chunk size", frequency_per_week: 3 },
+    benefit: "Threshold dose linked to higher self-reported health and wellbeing across populations.",
+    risk: "Practical logistics. Urban parks count.",
+    citations: ["White et al., 2019 Sci Reports"],
+    tags: ["outdoor"],
+    habit_xp_base: 9,
+  },
+  {
+    id: "journaling-5min",
+    pillar: "stress",
+    title: "5 min evening journal",
+    evidence: "promising",
+    dose: { summary: "5 min, 3 bullets: did / learned / next", duration_min: 5, frequency_per_week: 5, time_of_day: "evening" },
+    benefit: "Improves metacognition, planning, and reduces rumination at sleep onset.",
+    risk: "Avoid spiraling — keep prompts structured.",
+    citations: ["Smyth et al., 2018 JMIR Ment Health"],
+    tags: ["evening", "low-effort"],
+    habit_xp_base: 7,
+  },
+
+  // ── RECOVERY ────────────────────────────────────────────────────────────
+  {
+    id: "mobility-10min",
+    pillar: "recovery",
+    title: "10 min mobility",
+    evidence: "promising",
+    dose: { summary: "10 min targeted mobility, evening", duration_min: 10, frequency_per_week: 5, time_of_day: "evening" },
+    benefit: "Improves joint range of motion and reduces chronic stiffness; modest effect on injury risk.",
+    risk: "Stretching alone does not reduce DOMS — pair with strength.",
+    citations: ["Behm et al., 2016 Appl Physiol Nutr Metab"],
+    tags: ["evening", "low-effort"],
+    habit_xp_base: 8,
+  },
+  {
+    id: "sauna-20min-4x",
+    pillar: "recovery",
+    title: "Sauna 20 min, 4×/week",
+    evidence: "promising",
+    dose: { summary: "20 min @ ~80 °C, 4×/week (Finnish style)", duration_min: 20, frequency_per_week: 4 },
+    benefit: "Observational data link 4×/week sauna to ~40% lower all-cause mortality vs 1×/week.",
+    risk: "Dehydration, hypotension. Avoid in pregnancy or uncontrolled cardiac disease.",
+    citations: ["Laukkanen et al., 2015 JAMA Intern Med"],
+    tags: ["evening", "high-effort"],
+    habit_xp_base: 10,
+  },
+  {
+    id: "cold-2-3min",
+    pillar: "recovery",
+    title: "Cold exposure 2–3 min",
+    evidence: "promising",
+    dose: { summary: "2–3 min ≤15 °C, 2–4×/week, away from strength sessions", duration_min: 3, frequency_per_week: 3 },
+    benefit: "Acute mood lift, brown-fat activation, possible insulin sensitivity gains.",
+    risk: "Cold within ~6 h after strength training blunts hypertrophy adaptation.",
+    citations: ["Roberts et al., 2015 J Physiol", "Søberg et al., 2021 Cell Reports Med"],
+    tags: ["morning", "high-effort"],
+    habit_xp_base: 9,
+  },
+  {
+    id: "sun-vitd-15min",
+    pillar: "recovery",
+    title: "15 min sun (skin)",
+    evidence: "promising",
+    dose: { summary: "10–20 min exposed skin midday, summer", duration_min: 15, frequency_per_week: 4 },
+    benefit: "Most efficient endogenous vitamin D source; correlates with mood at higher latitudes.",
+    risk: "Cumulative UV raises skin-cancer risk — never burn.",
+    citations: ["Holick, 2007 N Engl J Med"],
+    tags: ["midday", "outdoor"],
+    habit_xp_base: 6,
+  },
+  {
+    id: "cwt-contrast",
+    pillar: "recovery",
+    title: "Contrast hot/cold",
+    evidence: "speculative",
+    dose: { summary: "3 rounds: 3 min hot / 1 min cold" },
+    benefit: "Subjective recovery boost; objective markers inconsistent.",
+    risk: "Cardiovascular load — caution if hypertensive.",
+    citations: ["Higgins et al., 2017 Sports Med"],
+    tags: ["high-effort"],
+    habit_xp_base: 5,
+  },
+  {
+    id: "heart-rate-variability-track",
+    pillar: "recovery",
+    title: "Track morning HRV",
+    evidence: "speculative",
+    dose: { summary: "1 min lying down, same time daily", duration_min: 1, frequency_per_week: 7, time_of_day: "morning" },
+    benefit: "Trends (not single readings) can flag overreaching weeks before subjective fatigue.",
+    risk: "Single-day numbers are noisy — over-interpretation drives anxiety.",
+    citations: ["Plews et al., 2013 Sports Med"],
+    tags: ["morning", "low-effort"],
+    habit_xp_base: 4,
+  },
+  {
+    id: "ice-bath-pre-sleep",
+    pillar: "recovery",
+    title: "Cold dip <2 h before sleep",
+    evidence: "speculative",
+    dose: { summary: "Brief cold immersion late evening" },
+    benefit: "Anecdotal reports of deeper sleep onset.",
+    risk: "Acute cold close to bed can also delay sleep onset for some — test cautiously.",
+    citations: ["Anecdotal, awaiting RCT"],
+    tags: ["evening", "high-effort"],
+    habit_xp_base: 4,
+  },
+
+  // ── FOCUS — bucketed under "stress" pillar to keep 6 pillars clean ─────
+  {
+    id: "deep-work-90min",
+    pillar: "stress",
+    title: "90 min deep work block",
+    evidence: "strong",
+    dose: { summary: "90 min, single task, phone in another room", duration_min: 90, frequency_per_week: 5 },
+    benefit: "Repeated single-task blocks correlate with measurable output and reduced switching cost.",
+    risk: "Requires explicit calendaring — won't happen by accident.",
+    citations: ["Newport, 2016 Deep Work", "Mark et al., 2008 CHI"],
+    tags: ["anytime", "high-effort"],
+    habit_xp_base: 12,
+  },
+  {
+    id: "no-phone-first-60min",
+    pillar: "stress",
+    title: "Phone-free first hour",
+    evidence: "promising",
+    dose: { summary: "First 60 min after waking, no inbox / feeds", duration_min: 60, frequency_per_week: 5, time_of_day: "morning" },
+    benefit: "Lowers reactive cortisol spikes; sets attentional tone for the day.",
+    risk: "Mostly anecdotal at the population level.",
+    citations: ["Lanaj et al., 2014 Org Behav Hum Decis Process"],
+    tags: ["morning", "low-effort"],
+    habit_xp_base: 9,
+  },
+
+  // ── CONNECTION ──────────────────────────────────────────────────────────
+  {
+    id: "weekly-social-2x",
+    pillar: "connection",
+    title: "2 meaningful contacts/week",
+    evidence: "strong",
+    dose: { summary: "≥2 in-depth conversations weekly, in person ideally", frequency_per_week: 2 },
+    benefit: "Quality of relationships is the strongest single predictor of healthspan in 80-year longitudinal data.",
+    risk: "None — quality > quantity.",
+    citations: ["Waldinger & Schulz, 2023 — Harvard Study of Adult Dev."],
+    tags: ["social"],
+    habit_xp_base: 12,
+  },
+  {
+    id: "gratitude-3x",
+    pillar: "connection",
+    title: "3 gratitudes nightly",
+    evidence: "promising",
+    dose: { summary: "3 specific gratitudes, written, 14+ weeks", duration_min: 3, frequency_per_week: 7, time_of_day: "evening" },
+    benefit: "Modest but reproducible improvement in positive affect and sleep quality.",
+    risk: "Effect is small and tends to fade — combine with action.",
+    citations: ["Emmons & McCullough, 2003 J Pers Soc Psychol"],
+    tags: ["evening", "low-effort"],
+    habit_xp_base: 6,
+  },
+];
+
+// ── Helpers ──────────────────────────────────────────────────────────────
+export const getProtocol = (id: string): Protocol | undefined =>
+  PROTOCOLS.find((p) => p.id === id);
+
+export const protocolsByPillar = (pillar: PillarId): Protocol[] =>
+  PROTOCOLS.filter((p) => p.pillar === pillar);
+
+/** Compact catalog payload for AI tool-calling — keeps token count tight. */
+export const compactCatalogForAI = () =>
+  PROTOCOLS.map((p) => ({
+    id: p.id,
+    pillar: p.pillar,
+    evidence: p.evidence,
+    title: p.title,
+    dose: p.dose.summary,
+  }));
+
+export const PROTOCOL_IDS: string[] = PROTOCOLS.map((p) => p.id);
+
+// ── Habit progression rules (mirrored in DB log_habit RPC) ───────────────
+export interface HabitLevelRule {
+  level: number;
+  name: string;
+  min_streak: number;
+  xp_multiplier: number;
+  blurb: string;
+}
+
+export const HABIT_LEVELS: HabitLevelRule[] = [
+  { level: 1, name: "Spark",      min_streak: 0,   xp_multiplier: 1.0,  blurb: "Start small. Aim for 3×/week." },
+  { level: 2, name: "Rhythm",     min_streak: 7,   xp_multiplier: 1.25, blurb: "Hit the recommended dose this week." },
+  { level: 3, name: "Locked-in",  min_streak: 21,  xp_multiplier: 1.5,  blurb: "Add one variation. Earns first badge." },
+  { level: 4, name: "Compound",   min_streak: 60,  xp_multiplier: 1.75, blurb: "Stack with another habit." },
+  { level: 5, name: "Identity",   min_streak: 120, xp_multiplier: 2.0,  blurb: "You are this habit." },
+];
+
+export const getHabitLevel = (streak: number): HabitLevelRule => {
+  let current = HABIT_LEVELS[0];
+  for (const rule of HABIT_LEVELS) {
+    if (streak >= rule.min_streak) current = rule;
+  }
+  return current;
+};
+
+export const nextHabitLevel = (streak: number): HabitLevelRule | null => {
+  const current = getHabitLevel(streak);
+  return HABIT_LEVELS.find((r) => r.level === current.level + 1) ?? null;
+};

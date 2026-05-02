@@ -1,6 +1,6 @@
 ---
 name: Status Hierarchy
-description: 7-tier status system. Easier Elite (top 20% OR 20 days + 21 streak). Apex now top 10% (+ 30 days + 30 streak). Legend stays top 0.1%. Apex paywall €17.99/mo locks tier; Legend never purchasable.
+description: 7-tier status system. Legend is INVITE-ONLY (redeem_legend_invite RPC + legend_invites table, admin-managed codes). Apex earned via top 10% + 30/30. Elite via top 20% OR 20 days + 21 streak.
 type: feature
 ---
 # Status Hierarchy
@@ -11,56 +11,30 @@ type: feature
 ## Server-side thresholds (`update_status_tier` / `update_all_status_tiers`)
 | Tier | Requirement |
 |---|---|
-| **Legend** | percentile ≥ 99.9 AND 30 active days AND 30-day streak |
-| **Apex** | percentile ≥ 90 AND 30 active days AND 30-day streak |
+| **Legend** | INVITE ONLY — `legend_pinned = true` via `redeem_legend_invite(code)` RPC. Cannot be earned through XP/streaks. |
+| **Apex** | percentile ≥ 90 AND 30 active days AND 30-day streak — OR `is_apex_subscriber = true` / unexpired `apex_credits_until` |
 | **Elite** | percentile ≥ 80 **OR** (20 active days AND 21-day streak) |
 | **High Performer** | percentile ≥ 70 **OR** (15 active days AND 14-day streak) |
 | **Performer** | percentile ≥ 50 AND 7 active days |
 | **Operator** | percentile ≥ 25 AND 5 active days |
 | **Recruit** | default / `rank_score = 0` |
 
-Elite is consistency-driven (3 weeks of streak + 20 active days is enough) — does NOT require top 5% leaderboard rank. Apex requires top 10% + 30 days/streak. Legend stays rare (top 0.1%).
-
-## Earning vs buying
-- **Earned tier**: `update_status_tier(user_id)` recalculates after every check-in / battle / referral milestone. Tier degrades automatically with inactivity.
-- **Apex Instant subscription** (€17.99/mo, `is_apex_subscriber = true`): pins tier to at least `apex`. CTA in `TierLadder` Apex dialog routes to `/paywall`.
-- **Legend is never purchasable** — Founders Circle / 50-referral milestone only. TierLadder shows "Earned only · Founders Circle".
-
+## Legend invite-only flow
+- Table `legend_invites` (code unique, created_by, used_by, expires_at, note)
+- Admin RPC `create_legend_invite(p_code?, p_expires_at?, p_note?)` — autogenerates code if omitted
+- User RPC `redeem_legend_invite(p_code)` — pins legend_pinned=true, sets status_tier='legend', triggers founding-apex auto-grant
+- Admin UI: `/admin/legend-invites` (linked from `/admin/moderation`)
+- User UI: `RedeemLegendInviteDialog` mounted in TierLadder Legend detail view ("Redeem invite code" button)
+- Codes are single-use; once redeemed user is locked at Legend permanently
 
 ## Apex/Founder badge UI (ApexBadge.tsx)
-Tiny inline pill rendered ONLY on profile pages (Profile, PublicProfile, UserProfile) — kept rare/exclusive.
-- `tier="apex"` + `isFounding={true}` → ⚡ Founding Apex (subscriber, "Day-One Member")
-- `tier="apex"` + `isFounding={false}` → 🔥 Earned Apex (top 1%)
-- `tier="legend"` → 🔱 Founder pill on Legend tier (Crown icon, purple/gold/rose gradient — denotes Founders Circle membership inside Legend)
-NOT shown on leaderboards, tribes, feed.
+Tiny inline pill rendered ONLY on profile pages. Founders Circle = Legends + Day-One Apex subscribers.
 
-## Legend tier — houses the Founders Circle
-Top 0.1% tier remains labeled **"Legend"** (shortLabel "LGD", emoji 🔱). Requirements unchanged (99.9 percentile, 30 active days, 30-day streak). Cannot be purchased — fully earned.
-- The "Founders Circle" is the inner narrative for Legends + Day-One Apex subscribers, surfaced via the Founder ApexBadge pill on Legend profiles and microcopy ("Legends & Founders only", "The Founders Circle is watching").
-- Visual identity unchanged (purple/gold/rose conic gradient).
-
-## Visual treatment per tier
-- Recruit/Normal: muted, default secondary
-- Operator: teal accent
-- Performer: blue accent
-- High performer: purple accent
-- Elite: gold (Crown icon, gold ring/badge, glow-pulse 2.4s)
-- Apex: flame-orange + gold gradient (Zap icon, double-ring aura, apex-aura-large CSS class, glow-pulse 1.8s)
-- Legend: conic gradient (purple/gold/rose), Sparkles icon, animate-spin-slow ring
-
-## TierLadder progressive UI (`src/components/TierLadder.tsx`)
-Header reads "Your Ascension · 7 levels of dominance" with rotating Crown icon and gold divider. Each tier row escalates visually with rank: Recruit flat → Operator/Performer/HP get progressively stronger borders+glows → Elite gold ring → Apex/Legend get conic-spinning border (`apex-conic-border`) and increasing row height (52px → 72px). Current tier row uses `tier-shimmer-sweep` (gold light pulse every ~4s), a "Current Tier" gold ribbon and a pulsing dot on the left rail. Locked tiers show silhouette icons with a `+N` "TrendingUp" hint instead of a flat lock. A vertical gold gradient rail on the left fills proportionally to current rank/6 (metro-map style).
-
-## Founding Apex commercial positioning (`src/components/ApexBadge.tsx`)
-Founding Apex (paid €15.99/mo subscriber) is intentionally larger and flashier than Earned Apex to drive conversions:
-- Crown+Zap stacked icon (purchased + instant)
-- `.founding-premium-shimmer` CSS — credit-card style gold→amber→flame conic with sweeping white stripe every ~3.4s
-- Sparkle accent that pulses
-- Tooltip: "Founding Apex — €15.99/mo · Day-One Member · Tier locked at Apex"
-- On Profile.tsx, subscriber additionally gets a "PREMIUM · DAY-ONE" ribbon above the username
-Earned Apex (🔥 Flame) stays restrained — the visual gap is the funnel.
+## Visual treatment
+- Legend: conic gradient (purple/gold/rose), Crown "Founder"/"Invite" badges in TierLadder rank-6 row.
+- Apex: flame-orange + gold gradient (Zap icon, "Earn" badge for non-Apex viewers).
 
 ## Feature unlocks
-- `elite`/`apex`/`legend` status tier → can post in Elite Feed (RLS check)
-- `apex`/`legend` status tier OR `is_apex_subscriber` → can create Tribes
-- Other features (AI Coach, Elite Feed reading) gate on `is_elite` (subscription) not earned tier
+- `elite`/`apex`/`legend` status_tier → can post in Elite Feed (RLS check)
+- `apex`/`legend` status_tier OR `is_apex_subscriber` → can create Tribes / give tribe kudos
+- AI Coach + Elite Feed reading gate on `is_elite` (subscription) not earned tier

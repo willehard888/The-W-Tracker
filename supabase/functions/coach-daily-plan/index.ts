@@ -218,52 +218,78 @@ const TOOL_SCHEMA = {
   },
 };
 
-const fallbackPlan = (todayDay: any, adjustment: string, readinessScore: number) => {
+const fallbackPlan = (todayDay: any, adjustment: string, readinessScore: number, breakdown: any) => {
   const isSwap = adjustment === "swap";
-  const focus = todayDay?.focus ?? (isSwap ? "Active recovery" : "Training session");
-  const dur = todayDay?.duration_min ?? 30;
+  const lowSleep = (breakdown?.avg_sleep_h ?? 7) < 7;
   const missions: any[] = [
-    {
-      id: "primary-session",
-      kind: isSwap ? "recovery" : "primary",
-      title: isSwap ? `Recovery: ${focus}` : `${focus} · ${dur} min`,
-      detail: isSwap ? "20 min easy walk + mobility flow." : `Hit it ${adjustment === "push" ? "with intent" : "as planned"}.`,
-      xp: isSwap ? 35 : 55,
-      priority: "high",
-    },
+    isSwap
+      ? {
+          id: "primary-mobility",
+          kind: "recovery",
+          title: "Active recovery · 10 min mobility",
+          detail: "Easy walk + targeted mobility flow.",
+          xp: 35,
+          priority: "high",
+          protocol_id: "mobility-10min",
+          evidence: "promising",
+          why: "Readiness is low — shift load away from CNS today.",
+        }
+      : {
+          id: "primary-strength",
+          kind: "primary",
+          title: adjustment === "deload" ? "Strength · lighter loads" : "Strength · 8–12 hard sets",
+          detail: adjustment === "push" ? "Push for +2.5–5% overload." : "Hit prescribed sets crisply.",
+          xp: 55,
+          priority: "high",
+          protocol_id: "strength-2-3x",
+          evidence: "strong",
+          why: "Strength 2–3×/week is the highest-leverage longevity protocol after sleep.",
+        },
     {
       id: "sleep-tonight",
       kind: "recovery",
-      title: "Sleep ≥ 8h tonight",
+      title: "Sleep 7–9 h tonight",
       detail: "Lights down by 22:30. Phone out of bedroom.",
       xp: 30,
       priority: "high",
+      protocol_id: "sleep-7-9h",
+      evidence: "strong",
+      why: lowSleep ? "Avg sleep below 7 h — biggest single lever to recover." : "Protect the window — keeps tomorrow on track.",
     },
     {
       id: "deep-work",
       kind: "focus",
-      title: "20 min deep work, no phone",
+      title: "90 min deep work, no phone",
       detail: "One task. Phone in another room.",
-      xp: 20,
+      xp: 25,
       priority: "medium",
+      protocol_id: "deep-work-90min",
+      evidence: "strong",
+      why: "Single-task blocks compound output — the cognitive equivalent of progressive overload.",
     },
     {
-      id: "hydration-3l",
+      id: "hydration",
       kind: "habit",
-      title: "3L water before 18:00",
-      detail: "Front-load hydration; back off after 19:00.",
+      title: "Hydration ~30 ml/kg today",
+      detail: "Front-load before 18:00; ease off in the evening.",
       xp: 15,
       priority: "medium",
+      protocol_id: "hydration-30ml-kg",
+      evidence: "promising",
+      why: "Plasma volume drives performance and tames tension headaches.",
     },
   ];
   if (readinessScore >= 70) {
     missions.push({
-      id: "edge-cold-finish",
+      id: "edge-cold",
       kind: "edge",
-      title: "Edge: 2 min cold finish",
-      detail: "End your shower cold for 120s. Box-breathe.",
+      title: "Edge: 2–3 min cold finish",
+      detail: "End shower cold ≤15 °C. Box-breathe.",
       xp: 25,
       priority: "low",
+      protocol_id: "cold-2-3min",
+      evidence: "promising",
+      why: "Readiness is high — spend a little for mood lift and resilience.",
     });
   }
   const headline = adjustment === "push"
@@ -273,7 +299,8 @@ const fallbackPlan = (todayDay: any, adjustment: string, readinessScore: number)
     : adjustment === "swap"
     ? "Recovery swap — rebuild."
     : "Hold the line.";
-  return { headline, missions };
+  const rationale = `Readiness ${readinessScore}/100 → ${adjustment}. ${lowSleep ? "Sleep is the limiting signal." : "Stack the strong-evidence basics."} Framework v${FRAMEWORK_VERSION}.`;
+  return { headline, rationale, missions };
 };
 
 Deno.serve(async (req) => {

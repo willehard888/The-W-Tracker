@@ -1,127 +1,215 @@
 
-# Adaptive AI Coach v2 — Daily-driven personal trainer
+# Evidence-Based Wellness Framework for W Coach
 
-Tällä hetkellä Coach näyttää staattisen 4-viikon ohjelman (Today / Program / Progress / Chat). Käyttäjä saa treenin, mutta järjestelmä ei oikeasti **mukaudu päivän dataan** (uni, palautuminen, streak, eilinen RPE) eikä tarjoa **päivittäisiä korkean vaikutuksen mikrotehtäviä** treenin ulkopuolelta. Tämä päivitys tekee Coachista jatkuvasti adaptoituvan, mitattavan ja pelillistetyn.
+Tällä hetkellä Adaptive Coach v2 generoi päivittäiset missiot AI:lla mutta ilman **strukturoitua, näyttöön perustuvaa runkoa**. AI valitsee aiheet vapaasti, eikä käyttäjälle näy miksi tehtävä on määrätty, mikä on sen tieteellinen vahvuus, eikä järjestelmässä ole pitkän aikavälin habit/protocol-progressiota.
 
-## Mitä rakennetaan
+Tämä päivitys tuo **Wellness Framework v1**: 6 pilaria → ~30 protokollaa → evidence tier → annosohje (kesto/intensiteetti/frekvenssi) → odotettu hyöty → riskit. Framework toimii sekä **datan ankkurina AI-missioille** että **selattavana protocol library:nä** + **habit progression -järjestelmänä** käyttäjälle.
 
-### 1. Daily Plan — adaptiivinen päiväsuunnitelma
-Today-välilehden yläosaan lisätään uusi **"Today's Mission"** -kortti, joka näyttää 3–5 priorisoitua tehtävää joka aamu, generoituna käyttäjän edellisen vuorokauden datasta:
+## 1. Framework — 6 pilaria (20/80)
 
-- **Primary** — päivän treeni ohjelmasta (säädetty)
-- **Recovery** — esim. "Sleep ≥ 8h tonight (you got 6.2h yesterday)"
-- **Focus** — esim. "20 min deep work, no phone"
-- **Habit anchor** — esim. "3L water before 18:00"
-- **Edge** — yksi venyttävä haaste (esim. "2 min cold finish")
+Korkein vaikutus per käytetty minuutti, painotus tutkimusnäytön mukaan:
 
-Jokainen tehtävä:
-- näyttää **odotetun XP-palkkion** (15–60 XP impact-luokituksen mukaan)
-- on yhdellä napautuksella merkittävissä tehdyksi → haptinen + XP-flash + streak-tick
-- värikoodattu prioriteetilla (Gold = high impact, Teal = recovery, Purple = focus)
-
-### 2. Adaptive difficulty engine
-Uusi reuna­funktio `coach-daily-plan` (cron: 04:00 UTC + on-demand) tekee jokaiselle Premium-käyttäjälle:
-
-- Lukee 7 viime päivän `daily_checkins`, `coach_program_logs`, viimeisen RPE:n ja streak-tilan
-- Laskee **Readiness Score (0–100)** = f(uni 7d avg, eilinen RPE, streak velocity, missed sessions)
-- Säätää päivän treenin volyymia automaattisesti:
-  - readiness ≥ 80 → push: +1 set tai +5 % kuorma-vihje
-  - 60–79 → as planned
-  - 40–59 → deload: −1 set, lyhempi conditioning
-  - < 40 → swap to recovery day
-- Kutsuu Lovable AI Gateway (`google/gemini-2.5-flash`) generoimaan 3–5 mikrotehtävää tool-callingilla → tallennetaan `coach_daily_plans`-tauluun
-- Jos käyttäjä ei tee tehtäviä → seuraavana päivänä Coach kommentoi suoraan ("You skipped recovery twice — drop one workout this week")
-
-### 3. Weekly review + auto-progression
-Sunnuntai-iltaisin uusi cron `coach-weekly-review`:
-
-- Aggregoi viikon compliance, XP-trendi, RPE-keskiarvo, unen muutos
-- Päättää onko ohjelma **liian helppo / liian raskas / sopiva**
-- Päivittää `coach_programs.plan_json` -kentän tulevien viikkojen volyymin (progressive overload tai deload)
-- Luo `coach_nudges`-rivin: "Week recap: +12 % volume next week — you earned it."
-- Lisää **Weekly Challenge** -korin (esim. "5/5 sleep ≥ 7.5h" → 200 XP bonus)
-
-### 4. Honest, action-first feedback
-- "Coach's Read" -kortti Progress-välilehdellä saa kontekstin myös päivätehtävistä (ei vain check-ineistä)
-- AI-system prompttiin lisätään suora ohje: *"Be blunt. Name the gap. Prescribe next 24h, not theory."*
-- Streak-katkon jälkeen Coach lähettää automaattisen `coach_nudges`-viestin: "You broke a 14-day streak. Here's how we restart: …"
-
-### 5. Gamification layer
-- Päivätehtävän suoritus → +XP (vaikutuksen mukaan), näkyy heti Today-kortissa numero­animaationa
-- **Mission Streak** — erillinen streak-mittari "missions completed in a row"
-- Uusi badge-kategoria: "Adaptive Mastery" (esim. 7 perfect missions / 30 missions / readiness ≥ 80 viikon ajan)
-- Level up -event triggeröi koko-näytön celebration (samaa pattern kuin Elite Unlock)
-
-## Tekninen muutoslista
-
-### Tietokanta (migraatio)
 ```text
-coach_daily_plans
+1. SLEEP        — uni & sirkadiaaninen rytmi          (vahvin näyttö)
+2. MOVEMENT     — Z2 + voima + VO2 intervals          (vahva näyttö)
+3. NUTRITION    — proteiini, kuitu, ravintotiheys     (vahva–lupaava)
+4. STRESS/MIND  — hengitys, meditaatio, luonto        (vahva–lupaava)
+5. RECOVERY     — kylmä, lämpö, palautumistaidot      (lupaava–spekulatiivinen)
+6. CONNECTION   — sosiaaliset suhteet, merkitys       (vahva näyttö, vähän mitattu)
+```
+
+Jokainen pilari = `pillar_id`, ikoni, väri (jo olemassa: gold/teal/violet/sky/rose + uusi emerald connectionille).
+
+## 2. Protokolla-katalogi (~30 protokollaa)
+
+Iso datapohja — tallennetaan **versionoituna staticina** (`src/lib/wellness-framework.ts`), ei DB-tauluna. Esimerkkirivit:
+
+```text
+PROTOCOL                      PILLAR     EVIDENCE     DOSE                          BENEFIT                          RISK
+sleep-7-9h                    sleep      strong       7–9h, sama aika ±30min        kognitio, palautuminen           sängyssä >9h → masennusriski
+morning-light-10min           sleep      strong       10 min ulkona <60min heräämi  sirkadiaaninen ankkurointi       ei suoraan auringon katsominen
+zone-2-cardio                 movement   strong       150–180 min/vk @ 60–70% HRmax mitokondriot, insuliiniherkkyys  matalan kynnyksen ortop. riski
+strength-2-3x                 movement   strong       2–3 sessiota/vk, 8–12 sarjaa  lihasmassa, luusto, glukoosi     ei tekniikkaa → revähdys
+vo2-intervals-1x              movement   strong       4×4 min @ 90% HRmax, 1x/vk    VO2max, mortaliteettiriski ↓     ei vasta-aloittaneille
+protein-1-6g-per-kg           nutrition  strong       1.6 g/kg/vrk, jaettuna        lihasprotsynt., kylläisyys       ei merkitt. munuaisriskiä
+fiber-30g                     nutrition  strong       25–35 g/vrk                   mikrobiomi, kardiomet.           liikaa nopeasti → puhaltaa
+hydration-30ml-kg             nutrition  promising    ~30 ml/kg, ei myöh. iltaa     suorituskyky, päänsärky          hyponatremia hyvin harvoin
+breath-box-5min               stress     strong       4-4-4-4, 5 min                paras. autonomian tasapaino     ei
+nsdr-yoga-nidra-10min         stress     promising    10–20 min iltapäivä           palautumis-uni-substituutti      anekdoottinen unenlaatu
+mindfulness-10min             stress     strong       10 min/päivä 8 vk             ahdistus ↓, fokus ↑              ei
+nature-2h-week                stress     promising    ≥120 min/vk metsää            hyvinvointimittarit              käytännön logistiikka
+cold-2-3min                   recovery   promising    2–3 min ≤15 °C, 2–4x/vk       mieliala, ruskea rasva           voimaharjoituksen jälkeen ↓ hypertrofia
+sauna-20min-4x                recovery   promising    20 min @ 80 °C, 4x/vk         kardiov. mortaliteetti ↓ (obs)   nestehukka, raskaus
+mobility-10min                recovery   promising    10 min iltarutiini            liikkuvuus, kivuttomuus          ei
+cwt-contrast                  recovery   speculative  vuorot. kylmä/lämpö 3x        anekdoottinen palautuminen       sydänsairaat varovaisuus
+deep-work-90min               focus      strong       90 min ilman puhelinta        tuottavuus, flow                 vaatii kalenterointia
+no-phone-first-60min          focus      promising    1. tunti aamu ilman ruutua    kortisoli, ankkurointi           anekdoottinen
+journaling-5min               focus      promising    5 min iltapäivä, ranskalaiset metakognitio                     ei
+weekly-social-2x              connection strong       2 merkityksellistä kohtaamista mortaliteetti ↓ (Harvard 80v)   ei
+gratitude-3x                  connection promising    3 asiaa illalla, 14 vk        positiiv. affekti                lievä, lyhytkestoinen
+strength-progressive-overload movement   strong       +2.5–5% kuorma kun 12 reps    pitkäkest. adaptaatio            tekniikka edellä
+caffeine-cutoff-8h            sleep      promising    Ei kofeiinia 8–10h ennen unta latenssin lyheneminen            yksilölliset erot
+alcohol-zero-on-training      sleep      strong       Ei alkoholia treenipäivänä    REM-uni, lihasprotsynt.          sosiaaliset paineet
+walk-after-meals-10min        nutrition  promising    10 min kävely aterian jälk.   glukoosihuiput ↓                ei
+sun-vitd-15min                recovery   promising    15 min iho aurinkoa kesällä   D-vit, mieliala                  ihosyöpäriski yli-altistus
+breath-physiological-sigh     stress     promising    2 sisäänhenk. + uloshenk. 1min ahdistuksen lasku akuutisti     ei
+heart-rate-variability-track  recovery   speculative  Aamu-HRV trendi               yksilöllinen palautumismittari   yksittäisten arvojen ylitulkinta
+ice-bath-pre-sleep            recovery   speculative  kylmä <2h ennen unta          anekdoottinen unisyvyys          unen häiriintyminen
+fasted-cardio                 nutrition  speculative  Z2 paastotilassa              rasvanpolto-claim                heikko vaikutus pitkällä aik.
+```
+
+Tagit per protokolla:
+- `pillar`, `evidence: "strong" | "promising" | "speculative"`,
+- `dose: { value, unit, frequency_per_week, time_of_day? }`,
+- `benefit: string` (1 lause, mitä tutkimus osoittaa),
+- `risk: string` (1 lause, kontraindikaatiot),
+- `citations: string[]` (DOI tai meta-analyysi-viittaus, max 3),
+- `tags: ("morning"|"evening"|"low-effort"|"high-effort"...)[]`.
+
+## 3. AI-mission-generator käyttää frameworkkiä
+
+Muutos `coach-daily-plan` edge functionissa:
+
+1. Function lataa `wellness-framework.ts` -version (versioidaan: `framework_version: "1.0"`)
+2. Frameworkin protokollat injektoidaan **AI-systeemipromptiin** strukturoituna listana (vain `id`, `pillar`, `evidence`, `dose_summary`)
+3. Tool-schema laajennetaan: jokainen mission saa `protocol_id` + `evidence` + `pillar`
+4. AI:lle annetaan sääntö: **"Choose protocols only from the provided catalog. Never invent a protocol."**
+5. Painotussääntö: vähintään 60 % päivän XP:stä `evidence: "strong"` -protokollista
+
+Tool-schema lisäkenttä:
+```text
+protocol_id: enum (kaikki katalogin id:t)
+evidence:   "strong" | "promising" | "speculative"
+pillar:     "sleep" | "movement" | ...
+why:        max 90 chars — 1 lause perustelu (pohjautuu päivän dataan)
+```
+
+## 4. Käyttäjälle näkyvä UI
+
+### 4.1 Mission-rivien laajennus
+Olemassa oleva `MissionRow` (`DailyMissionCard.tsx`) saa pienen **evidence-mikrochipin** kind-chipin viereen:
+```text
++30 XP  •  STRONG    (vihreä)
++25 XP  •  PROMISING (keltainen)
++20 XP  •  EARLY     (harmaa)
+```
+Tap → avaa `<ProtocolSheet />` joka näyttää: pilari, annos, hyöty, riski, evidence-status, "miksi sinulle tänään" (AI:n `why`).
+
+### 4.2 Uusi reitti `/coach/library` — Protocol Library
+- 6 pilarisuodatinta (vaakaan scrollattava chip-rivi)
+- Evidence-toggle: "Show only strong-evidence protocols"
+- Hakukenttä
+- Card-grid: protokolla-kortti (pilari-väri, dose, evidence-badge)
+- Tap → sama `ProtocolSheet`
+- "Add to my habits" -nappi → tallentaa `user_habits`-tauluun
+
+### 4.3 Uusi Coach-välilehti **"Habits"** (5. tab)
+Tabit muuttuvat: `Today · Program · Habits · Progress · Chat`
+
+Sisältö:
+- Aktiiviset habitit (käyttäjän valitsemat protokollat) — max 5 kerralla, jotta ei tukehduta
+- Jokainen näyttää: streak (peräkkäiset päivät tehty), level (1→5 progression-säännöillä alla), seuraava milestone, evidence-tier
+- Inline-kuittaus (kuten daily mission) — antaa pienemmän XP:n (5–15 XP/habit/päivä) kuin daily mission, jotta päämissionit pysyvät pääfookuksena
+
+### 4.4 Today-tabin "Why this plan" -osio
+Daily mission -kortin alle pieni laajennettava blokki:
+```text
+▾ Why this plan
+This plan emphasises SLEEP and MOVEMENT because your 7-day
+sleep average is 6.2h (target 7.5h+) and you logged 1 missed
+session. 4/5 protocols are strong-evidence.
+```
+AI generoi tämän samalla tool-callilla (uusi schema-kenttä `rationale`).
+
+## 5. Habit Progression -järjestelmä
+
+Vältetään "kaikki kerralla" → tasoitettu progression:
+
+```text
+LEVEL 1  (Spark)      0–6 päivää  → "Yritä 3x/vk"          baseline XP
+LEVEL 2  (Rhythm)     7–20 päivää → "Tee suositusannos"     +25% XP
+LEVEL 3  (Locked-in)  21–59       → "Lisää 1 variaatio"     +50% XP, badge
+LEVEL 4  (Compound)   60–119      → "Yhdistä toiseen"       +75% XP, badge
+LEVEL 5  (Identity)   120+        → "You are this habit"    2× XP, premium badge
+```
+
+Säännöt:
+- Streak nollautuu 1 missatun päivän jälkeen → palaa edelliselle tasolle (ei nollaan), jotta ei rangaista yhdestä lipsumisesta
+- Maksimissaan 5 aktiivista habitia kerralla — uusi vaatii arkistoinnin
+
+## 6. Tekniset muutokset
+
+### 6.1 Uudet tiedostot
+- `src/lib/wellness-framework.ts` — koko katalogi + tyypit + version-vakio. ~600 LOC, mutta puhdas data.
+- `src/components/coach/ProtocolSheet.tsx` — bottom-sheet (käytä olemassa olevaa `Sheet` komponenttia)
+- `src/components/coach/HabitCard.tsx` — käyttäjän aktiivinen habit
+- `src/components/coach/HabitsTab.tsx` — Habits-välilehden sisältö
+- `src/pages/ProtocolLibrary.tsx` — `/coach/library`
+- `src/hooks/use-user-habits.ts` — react-query + realtime
+- `src/hooks/use-protocol.ts` — `getProtocol(id)` selektori
+
+### 6.2 Muokkaukset
+- `src/pages/Coach.tsx` — lisää 5. tab "Habits"
+- `src/components/coach/DailyMissionCard.tsx` — evidence-chip + tap → sheet, "Why this plan" -laajennus
+- `supabase/functions/coach-daily-plan/index.ts` — injektoi catalog, laajennettu tool-schema (`protocol_id`, `evidence`, `pillar`, `why`, `rationale`), 60 %-strong-XP-validointi serverpuolella (jos AI livahtaa, korjataan painotuksia ennen tallennusta)
+- `src/App.tsx` — uusi route `/coach/library`
+
+### 6.3 Migraatio (uudet taulut)
+```text
+user_habits
  ├─ id uuid PK
  ├─ user_id uuid
- ├─ plan_date date
- ├─ readiness_score int (0–100)
- ├─ readiness_breakdown jsonb (sleep, rpe, streak, missed)
- ├─ adjustment text  (push|hold|deload|swap)
- ├─ missions jsonb   ([{id, kind, title, detail, xp, priority, done}])
- ├─ generated_at timestamptz
- └─ UNIQUE (user_id, plan_date)
+ ├─ protocol_id text          -- viittaa wellness-framework.ts -id:hen
+ ├─ added_at timestamptz
+ ├─ archived_at timestamptz
+ ├─ current_streak int
+ ├─ best_streak int
+ ├─ level int                  -- 1..5
+ └─ UNIQUE (user_id, protocol_id) WHERE archived_at IS NULL
 
-coach_mission_logs
+user_habit_logs
  ├─ id uuid PK
+ ├─ habit_id uuid → user_habits
  ├─ user_id uuid
- ├─ daily_plan_id uuid
- ├─ mission_id text
- ├─ completed_at timestamptz
- └─ xp_awarded int
+ ├─ logged_on date
+ ├─ xp_awarded int
+ └─ UNIQUE (habit_id, logged_on)
 ```
-RLS: Premium gate insert/select kuten `coach_programs`. Mission completion XP päivitetään profiles.xp **SECURITY DEFINER RPC:llä** `award_mission_xp(_plan_id, _mission_id)`.
 
-Uusi badge-rivit (insert tool):  `mission_streak_7`, `mission_streak_30`, `readiness_master_7`, `perfect_mission_30`.
+RLS:
+- `user_habits` — Premium gate, omistaja CRUD
+- `user_habit_logs` — Premium gate, INSERT vain SECURITY DEFINER RPC `log_habit(_habit_id, _date)` joka:
+  1. tarkistaa ettei jo logattu kyseiselle päivälle
+  2. laskee level-säännöt → XP
+  3. päivittää `current_streak` / `best_streak` / `level`
+  4. lisää `profiles.xp` += XP
 
-### Edge functions
-- `coach-daily-plan` (uusi) — cron + on-demand, `verify_jwt = true`. Käyttää `google/gemini-2.5-flash` + tool-calling schemalla `emit_daily_plan`.
-- `coach-weekly-review` (uusi) — sunnuntai-cron. `google/gemini-2.5-flash`, päivittää `coach_programs.plan_json` ja luo `coach_nudges`-rivin.
-- `ai-coach` (muokkaus) — system promptiin injektoidaan tämän päivän mission-status + readiness score; tone "blunt action-first".
-- `pg_cron` + `pg_net` -ajastukset (insert tool, ei migraatio).
+### 6.4 `coach_daily_plans.missions` JSONB
+Lisätään olemassa oleviin missioneihin valinnaiset kentät: `protocol_id`, `evidence`, `pillar`, `why`. Vanhat plan-rivit toimivat (kentät optional). Lisätään myös `coach_daily_plans.rationale text NULLABLE`.
 
-### Frontend
-- Uusi: `src/hooks/use-daily-plan.ts` (react-query, real-time channel `coach_daily_plans`)
-- Uusi: `src/components/coach/DailyMissionCard.tsx` — animoitu lista, swipe-to-complete, XP-flash
-- Uusi: `src/components/coach/ReadinessRing.tsx` — pieni 0–100 rengasvisuaali Today-kortin ylälaitaan
-- Uusi: `src/components/coach/WeeklyChallengeCard.tsx` — Progress-välilehdelle
-- Muokkaus: `src/pages/Coach.tsx` Today-tab: Mission-kortti ennen TodaySessionCard:ia
-- Muokkaus: `src/components/home/CoachStrip.tsx` näyttää "X / Y missions done today" + readiness ring
-- Muokkaus: `src/components/coach/ProgressDashboard.tsx` lisää WeeklyChallengeCard ja Mission Streak -mittari
-
-### Cron
+Migraatio:
 ```text
-04:00 UTC daily   → coach-daily-plan (kaikki Premium-käyttäjät, batch 50)
-22:00 UTC sun     → coach-weekly-review
+ALTER TABLE coach_daily_plans
+  ADD COLUMN rationale text,
+  ADD COLUMN framework_version text NOT NULL DEFAULT '1.0';
 ```
 
-## Käyttäjäkokemus (uusi Today-tab)
+### 6.5 Memory-päivitys
+Päivitä `mem://features/ai-coach.md` kuvaamaan framework + evidence-tierit. Lisää uusi `mem://features/wellness-framework.md` jossa on katalogin versionumero ja yhteenveto.
 
-```text
-┌──────────────────────────────────────┐
-│  Today · Week 2 · Wed                │
-│  Readiness  ●●●●●○○○○○  72           │
-│  Hold the line — sleep was tight.    │
-├──────────────────────────────────────┤
-│ TODAY'S MISSION         3 / 5  ✓✓✓○○ │
-│ ◆ Lower body strength · 55 min  +60  │
-│ ◆ Sleep ≥ 8h tonight            +30  │
-│ ◆ 20 min deep work, no phone    +20  │
-│ ◆ 3L water before 18:00         +15  │
-│ ◆ Edge: 2 min cold finish       +25  │
-├──────────────────────────────────────┤
-│ [ Open today's session ]             │
-└──────────────────────────────────────┘
-```
+## 7. Mitä EI tehdä tässä erässä
 
-## Mitä EI muutu
-- Premium-paywall logiikka (sama `has_premium`/`has_active_access`)
-- Olemassa oleva 4-viikon `coach_programs` -rakenne — uusi taso tulee päälle, ei tilalle
-- Chat-välilehti säilyy ennallaan (saa vain rikkaamman kontekstin)
+- Ei muuteta olemassa olevaa daily check-in -listaa (ei pakoteta uutta UI:ta päämassalle)
+- Ei poisteta nykyisiä missioita / fallbackia
+- Ei lisätä ulkoisia API-integraatioita (Apple Health, Oura) — `wellness-framework.ts` toimii puhtaasti omasta datasta
+- Ei lisätä HRV-tracking-protokollaa aktiiviseksi habitiksi (näytetään kirjastossa "speculative")
 
-Hyväksy niin toteutan kerralla: migraatio + 2 edge functionia + cron + 4 uutta komponenttia + Today/Progress-päivitykset.
+## 8. Lopputulos käyttäjälle
+
+1. Päivän missiot ovat **läpinäkyviä**: jokainen kertoo "miksi minulle, miksi nyt, miten vahva näyttö"
+2. **Library** = selailtava tietokanta — käyttäjä voi oppia ja valita
+3. **Habits** = pitkän aikavälin progression, joka ei tukahdu yhteen lipsumiseen
+4. AI ei enää keksi protokollia — se valitsee ja perustelee tunnetuista
+5. Evidence tier opettaa rehellisesti: vahvasti todistettua erottuu kokeellisesta
+
+Hyväksy → toteutan kerralla: framework-data, 1 migraatio, edge function -laajennus, 4 uutta komponenttia, 1 uusi sivu, Habits-tab, ProtocolSheet, ja UI-evidenssimerkinnät.

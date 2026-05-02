@@ -143,12 +143,14 @@ export type Database = {
         Row: {
           adjustment: string
           created_at: string
+          framework_version: string
           generated_at: string
           generated_with: string
           headline: string | null
           id: string
           missions: Json
           plan_date: string
+          rationale: string | null
           readiness_breakdown: Json
           readiness_score: number
           updated_at: string
@@ -157,12 +159,14 @@ export type Database = {
         Insert: {
           adjustment?: string
           created_at?: string
+          framework_version?: string
           generated_at?: string
           generated_with?: string
           headline?: string | null
           id?: string
           missions?: Json
           plan_date: string
+          rationale?: string | null
           readiness_breakdown?: Json
           readiness_score?: number
           updated_at?: string
@@ -171,12 +175,14 @@ export type Database = {
         Update: {
           adjustment?: string
           created_at?: string
+          framework_version?: string
           generated_at?: string
           generated_with?: string
           headline?: string | null
           id?: string
           missions?: Json
           plan_date?: string
+          rationale?: string | null
           readiness_breakdown?: Json
           readiness_score?: number
           updated_at?: string
@@ -1493,6 +1499,83 @@ export type Database = {
           },
         ]
       }
+      user_habit_logs: {
+        Row: {
+          created_at: string
+          habit_id: string
+          id: string
+          logged_on: string
+          user_id: string
+          xp_awarded: number
+        }
+        Insert: {
+          created_at?: string
+          habit_id: string
+          id?: string
+          logged_on: string
+          user_id: string
+          xp_awarded?: number
+        }
+        Update: {
+          created_at?: string
+          habit_id?: string
+          id?: string
+          logged_on?: string
+          user_id?: string
+          xp_awarded?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_habit_logs_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "user_habits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_habits: {
+        Row: {
+          added_at: string
+          archived_at: string | null
+          best_streak: number
+          created_at: string
+          current_streak: number
+          id: string
+          last_logged_on: string | null
+          level: number
+          protocol_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          archived_at?: string | null
+          best_streak?: number
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_logged_on?: string | null
+          level?: number
+          protocol_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          archived_at?: string | null
+          best_streak?: number
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_logged_on?: string | null
+          level?: number
+          protocol_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -1558,6 +1641,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_user_habit: { Args: { _protocol_id: string }; Returns: Json }
       approve_tribe_member: {
         Args: { p_accept: boolean; p_tribe_id: string; p_user_id: string }
         Returns: undefined
@@ -1703,6 +1787,7 @@ export type Database = {
       is_valid_tribe_owner: { Args: { _user_id: string }; Returns: boolean }
       join_tribe: { Args: { p_tribe_id: string }; Returns: string }
       leave_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
+      log_habit: { Args: { _date?: string; _habit_id: string }; Returns: Json }
       redeem_legend_invite: { Args: { p_code: string }; Returns: Json }
       remove_tribe_member: {
         Args: { p_tribe_id: string; p_user_id: string }

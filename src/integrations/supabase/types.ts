@@ -1899,12 +1899,16 @@ export type Database = {
           benefits: string[]
           body_md: string
           category_id: string
+          course_role: string
           created_at: string
           display_order: number
           evidence_tier: string
           id: string
+          key_takeaways: string[]
+          lesson_number: number | null
           protocol: Json
           published_at: string
+          quiz: Json
           read_time_min: number
           references_json: Json
           risks: string[]
@@ -1912,18 +1916,24 @@ export type Database = {
           subtitle: string | null
           summary: string
           title: string
+          try_today: string[]
           updated_at: string
+          why_it_matters: string | null
         }
         Insert: {
           benefits?: string[]
           body_md: string
           category_id: string
+          course_role?: string
           created_at?: string
           display_order?: number
           evidence_tier: string
           id?: string
+          key_takeaways?: string[]
+          lesson_number?: number | null
           protocol?: Json
           published_at?: string
+          quiz?: Json
           read_time_min?: number
           references_json?: Json
           risks?: string[]
@@ -1931,18 +1941,24 @@ export type Database = {
           subtitle?: string | null
           summary: string
           title: string
+          try_today?: string[]
           updated_at?: string
+          why_it_matters?: string | null
         }
         Update: {
           benefits?: string[]
           body_md?: string
           category_id?: string
+          course_role?: string
           created_at?: string
           display_order?: number
           evidence_tier?: string
           id?: string
+          key_takeaways?: string[]
+          lesson_number?: number | null
           protocol?: Json
           published_at?: string
+          quiz?: Json
           read_time_min?: number
           references_json?: Json
           risks?: string[]
@@ -1950,9 +1966,43 @@ export type Database = {
           subtitle?: string | null
           summary?: string
           title?: string
+          try_today?: string[]
           updated_at?: string
+          why_it_matters?: string | null
         }
         Relationships: []
+      }
+      vault_lesson_progress: {
+        Row: {
+          article_id: string
+          completed_at: string
+          id: string
+          quiz_score: number | null
+          user_id: string
+        }
+        Insert: {
+          article_id: string
+          completed_at?: string
+          id?: string
+          quiz_score?: number | null
+          user_id: string
+        }
+        Update: {
+          article_id?: string
+          completed_at?: string
+          id?: string
+          quiz_score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_lesson_progress_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "vault_articles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       weekly_briefings: {
         Row: {

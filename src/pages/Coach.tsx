@@ -14,7 +14,7 @@ import ProgramOnboarding from "@/components/coach/ProgramOnboarding";
 import TodaySessionCard from "@/components/coach/TodaySessionCard";
 import ProgramWeekAccordion from "@/components/coach/ProgramWeekAccordion";
 import ProgressDashboard from "@/components/coach/ProgressDashboard";
-import PageSkeleton from "@/components/skeletons/PageSkeleton";
+import { PageSkeleton } from "@/components/skeletons/PageSkeleton";
 
 type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";

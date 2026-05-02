@@ -42,8 +42,10 @@ export const useVaultArticles = (categoryId?: string) => {
       let q = supabase
         .from("vault_articles")
         .select(
-          "id, category_id, slug, title, subtitle, summary, evidence_tier, read_time_min, protocol, benefits, risks, body_md, references_json, display_order",
+          "id, category_id, slug, title, subtitle, summary, evidence_tier, read_time_min, protocol, benefits, risks, body_md, references_json, display_order, lesson_number, course_role, why_it_matters, try_today, key_takeaways, quiz",
         )
+        .order("category_id", { ascending: true })
+        .order("lesson_number", { ascending: true, nullsFirst: false })
         .order("display_order", { ascending: true });
       if (categoryId) q = q.eq("category_id", categoryId);
       const { data, error } = await q;

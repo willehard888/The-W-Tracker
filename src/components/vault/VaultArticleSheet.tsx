@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { Clock, CheckCircle2, AlertTriangle, BookMarked, Target, X } from "lucide-react";
+import { useState } from "react";
+import { Clock, CheckCircle2, AlertTriangle, BookMarked, Target, X, Lightbulb, Zap, ListChecks, HelpCircle } from "lucide-react";
 import EvidenceChip from "./EvidenceChip";
 import type { VaultArticle } from "@/hooks/use-vault-articles";
 

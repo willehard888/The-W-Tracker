@@ -100,6 +100,20 @@ const VaultArticleSheet = ({
               </button>
 
               <div className="flex items-center gap-1.5 flex-wrap mb-2 pr-10">
+                {article.lesson_number && (
+                  <span
+                    className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black tracking-[0.18em] uppercase"
+                    style={{
+                      background: `${accent}22`,
+                      color: accent,
+                      border: `1px solid ${accent}55`,
+                    }}
+                  >
+                    {article.course_role === "foundations"
+                      ? "Lesson 1 · Foundations"
+                      : `Lesson ${article.lesson_number} of 5`}
+                  </span>
+                )}
                 <EvidenceChip tier={article.evidence_tier} />
                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[8.5px] font-black tracking-[0.16em] uppercase text-muted-foreground">
                   <Clock size={8} strokeWidth={3} />

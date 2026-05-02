@@ -1,11 +1,24 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { useState } from "react";
-import { Clock, CheckCircle2, AlertTriangle, BookMarked, Target, X, Lightbulb, Zap, ListChecks, HelpCircle } from "lucide-react";
+import {
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  BookMarked,
+  Target,
+  X,
+  Lightbulb,
+  Zap,
+  ListChecks,
+} from "lucide-react";
 import EvidenceChip from "./EvidenceChip";
+import LessonQuiz from "./LessonQuiz";
 import type { VaultArticle } from "@/hooks/use-vault-articles";
+import { useCompleteLesson, useVaultProgress } from "@/hooks/use-vault-progress";
+import { hapticImpact } from "@/lib/haptics";
+import { toast } from "sonner";
 
 /**
  * VaultArticleSheet — bulletproof bottom sheet rendered via React Portal

@@ -14,7 +14,10 @@ import ProgramOnboarding from "@/components/coach/ProgramOnboarding";
 import TodaySessionCard from "@/components/coach/TodaySessionCard";
 import ProgramWeekAccordion from "@/components/coach/ProgramWeekAccordion";
 import ProgressDashboard from "@/components/coach/ProgressDashboard";
-import { PageSkeleton } from "@/components/skeletons/PageSkeleton";
+import { ProfileSkeleton as PageSkeleton } from "@/components/skeletons/PageSkeleton";
+import DailyMissionCard from "@/components/coach/DailyMissionCard";
+import ReadinessRing from "@/components/coach/ReadinessRing";
+import { useDailyPlan } from "@/hooks/use-daily-plan";
 
 type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";
@@ -79,13 +82,16 @@ const Coach = () => {
       ) : (
         <div className="flex-1 overflow-y-auto px-4 pb-8">
           {tab === "today" && (
-            <TodaySessionCard
-              program={program}
-              currentWeek={currentWeek}
-              todayDayIndex={todayDayIndex}
-              logs={logs}
-              onLogged={() => refetch()}
-            />
+            <div className="space-y-4">
+              <DailyMissionCard />
+              <TodaySessionCard
+                program={program}
+                currentWeek={currentWeek}
+                todayDayIndex={todayDayIndex}
+                logs={logs}
+                onLogged={() => refetch()}
+              />
+            </div>
           )}
           {tab === "program" && (
             <ProgramWeekAccordion program={program} currentWeek={currentWeek} logs={logs} />

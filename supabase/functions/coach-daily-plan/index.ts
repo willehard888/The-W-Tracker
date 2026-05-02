@@ -437,6 +437,16 @@ Deno.serve(async (req) => {
     const profile = profileRes.data;
     const checkins = (checkinsRes.data ?? []) as Checkin[];
     const program = programRes.data as any;
+    const athlete = (athleteRes as any)?.data ?? null;
+    const goal = (goalRes as any)?.data ?? null;
+    const memories = (((memoryRes as any)?.data ?? []) as { fact: string }[]);
+    const skipRows = (((skipRes as any)?.data ?? []) as { protocol_id: string | null }[]);
+    const skipMap = new Map<string, number>();
+    for (const r of skipRows) {
+      if (!r.protocol_id) continue;
+      skipMap.set(r.protocol_id, (skipMap.get(r.protocol_id) ?? 0) + 1);
+    }
+    const skipStats = [...skipMap.entries()].map(([protocol_id, skips]) => ({ protocol_id, skips }));
 
     // Recent program logs (for missed sessions + last RPE)
     let lastRpe: number | null = null;
@@ -482,7 +492,7 @@ Deno.serve(async (req) => {
 
     if (LOVABLE_API_KEY) {
       try {
-        const prompt = buildPrompt(profile, program, todayDay, checkins, readiness, adjustment);
+        const prompt = buildPrompt(profile, program, todayDay, checkins, readiness, adjustment, athlete, goal, memories, skipStats);
         const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: {

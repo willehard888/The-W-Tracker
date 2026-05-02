@@ -82,7 +82,7 @@ export const useCoachProgram = () => {
         .limit(1)
         .maybeSingle();
       if (error) throw error;
-      return data as CoachProgram | null;
+      return (data as unknown as CoachProgram | null);
     },
   });
 

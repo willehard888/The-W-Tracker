@@ -1,215 +1,136 @@
 
-# Evidence-Based Wellness Framework for W Coach
+# AI Personal Trainer — Next Level + Deep Personalization
 
-Tällä hetkellä Adaptive Coach v2 generoi päivittäiset missiot AI:lla mutta ilman **strukturoitua, näyttöön perustuvaa runkoa**. AI valitsee aiheet vapaasti, eikä käyttäjälle näy miksi tehtävä on määrätty, mikä on sen tieteellinen vahvuus, eikä järjestelmässä ole pitkän aikavälin habit/protocol-progressiota.
+Building on the closed-loop upgrades, this plan adds a **personalization layer** so the Coach feels like it actually knows *this specific human* — their body, schedule, goals, language, history, and quirks.
 
-Tämä päivitys tuo **Wellness Framework v1**: 6 pilaria → ~30 protokollaa → evidence tier → annosohje (kesto/intensiteetti/frekvenssi) → odotettu hyöty → riskit. Framework toimii sekä **datan ankkurina AI-missioille** että **selattavana protocol library:nä** + **habit progression -järjestelmänä** käyttäjälle.
+---
 
-## 1. Framework — 6 pilaria (20/80)
+## A. Athlete Profile (the Coach's source of truth about *you*)
 
-Korkein vaikutus per käytetty minuutti, painotus tutkimusnäytön mukaan:
+A structured "who I am" model the AI reads on every generation.
 
-```text
-1. SLEEP        — uni & sirkadiaaninen rytmi          (vahvin näyttö)
-2. MOVEMENT     — Z2 + voima + VO2 intervals          (vahva näyttö)
-3. NUTRITION    — proteiini, kuitu, ravintotiheys     (vahva–lupaava)
-4. STRESS/MIND  — hengitys, meditaatio, luonto        (vahva–lupaava)
-5. RECOVERY     — kylmä, lämpö, palautumistaidot      (lupaava–spekulatiivinen)
-6. CONNECTION   — sosiaaliset suhteet, merkitys       (vahva näyttö, vähän mitattu)
-```
+- New `coach_athlete_profile` table (1 row per user):
+  - **Body**: age, sex, height_cm, weight_kg, body_fat_pct (optional)
+  - **Goals**: primary_goal (enum: strength / hypertrophy / endurance / fat_loss / longevity / focus), secondary_goal, target_horizon_weeks
+  - **Schedule**: timezone, wake_time, sleep_time, training_days_pref[], busy_blocks (e.g. "Wed 18-21")
+  - **Constraints**: injuries[], dietary (vegan/halal/lactose/etc), equipment[], no_go_protocols[] (user can blacklist e.g. "cold exposure")
+  - **Style**: language_pref (auto-detect or chosen), tone_pref (drill_sergeant / calm_mentor / scientist / hype), preferred_session_length_min
+  - **Identity**: `i_am` statement (one sentence: "I'm a father of 2 building strength after 35")
+- New onboarding flow `AthleteProfileOnboarding.tsx` — 6-step swipe (body → goal → schedule → constraints → tone → identity), takes ~90 seconds
+- Editable any time via `Coach › Settings → Profile`
 
-Jokainen pilari = `pillar_id`, ikoni, väri (jo olemassa: gold/teal/violet/sky/rose + uusi emerald connectionille).
+## B. Personalized Mission Generation
 
-## 2. Protokolla-katalogi (~30 protokollaa)
+Every prompt to `coach-daily-plan` now includes the athlete profile, not just stats.
 
-Iso datapohja — tallennetaan **versionoituna staticina** (`src/lib/wellness-framework.ts`), ei DB-tauluna. Esimerkkirivit:
+- Hard rules added:
+  - Skip protocols in `no_go_protocols`
+  - Respect `dietary` (no "post-workout whey" if vegan → "soy/pea protein")
+  - Respect `injuries` (no "back squat" if lower-back injury → "goblet squat")
+  - Respect `equipment` (home-only → no barbell prescriptions)
+  - Time missions to `wake_time` / `sleep_time` ("morning light within 60 min of your 06:30 wake")
+  - Match `tone_pref` exactly (system prompt swaps voice template)
+  - Prefer protocols matching `primary_goal` weighting (e.g. fat_loss → +Z2, +protein, −fasted_cardio gimmicks)
+- Mission detail includes a "for you because…" line referencing profile (e.g. "You said you want strength after 35 — progressive overload is non-negotiable.")
 
-```text
-PROTOCOL                      PILLAR     EVIDENCE     DOSE                          BENEFIT                          RISK
-sleep-7-9h                    sleep      strong       7–9h, sama aika ±30min        kognitio, palautuminen           sängyssä >9h → masennusriski
-morning-light-10min           sleep      strong       10 min ulkona <60min heräämi  sirkadiaaninen ankkurointi       ei suoraan auringon katsominen
-zone-2-cardio                 movement   strong       150–180 min/vk @ 60–70% HRmax mitokondriot, insuliiniherkkyys  matalan kynnyksen ortop. riski
-strength-2-3x                 movement   strong       2–3 sessiota/vk, 8–12 sarjaa  lihasmassa, luusto, glukoosi     ei tekniikkaa → revähdys
-vo2-intervals-1x              movement   strong       4×4 min @ 90% HRmax, 1x/vk    VO2max, mortaliteettiriski ↓     ei vasta-aloittaneille
-protein-1-6g-per-kg           nutrition  strong       1.6 g/kg/vrk, jaettuna        lihasprotsynt., kylläisyys       ei merkitt. munuaisriskiä
-fiber-30g                     nutrition  strong       25–35 g/vrk                   mikrobiomi, kardiomet.           liikaa nopeasti → puhaltaa
-hydration-30ml-kg             nutrition  promising    ~30 ml/kg, ei myöh. iltaa     suorituskyky, päänsärky          hyponatremia hyvin harvoin
-breath-box-5min               stress     strong       4-4-4-4, 5 min                paras. autonomian tasapaino     ei
-nsdr-yoga-nidra-10min         stress     promising    10–20 min iltapäivä           palautumis-uni-substituutti      anekdoottinen unenlaatu
-mindfulness-10min             stress     strong       10 min/päivä 8 vk             ahdistus ↓, fokus ↑              ei
-nature-2h-week                stress     promising    ≥120 min/vk metsää            hyvinvointimittarit              käytännön logistiikka
-cold-2-3min                   recovery   promising    2–3 min ≤15 °C, 2–4x/vk       mieliala, ruskea rasva           voimaharjoituksen jälkeen ↓ hypertrofia
-sauna-20min-4x                recovery   promising    20 min @ 80 °C, 4x/vk         kardiov. mortaliteetti ↓ (obs)   nestehukka, raskaus
-mobility-10min                recovery   promising    10 min iltarutiini            liikkuvuus, kivuttomuus          ei
-cwt-contrast                  recovery   speculative  vuorot. kylmä/lämpö 3x        anekdoottinen palautuminen       sydänsairaat varovaisuus
-deep-work-90min               focus      strong       90 min ilman puhelinta        tuottavuus, flow                 vaatii kalenterointia
-no-phone-first-60min          focus      promising    1. tunti aamu ilman ruutua    kortisoli, ankkurointi           anekdoottinen
-journaling-5min               focus      promising    5 min iltapäivä, ranskalaiset metakognitio                     ei
-weekly-social-2x              connection strong       2 merkityksellistä kohtaamista mortaliteetti ↓ (Harvard 80v)   ei
-gratitude-3x                  connection promising    3 asiaa illalla, 14 vk        positiiv. affekti                lievä, lyhytkestoinen
-strength-progressive-overload movement   strong       +2.5–5% kuorma kun 12 reps    pitkäkest. adaptaatio            tekniikka edellä
-caffeine-cutoff-8h            sleep      promising    Ei kofeiinia 8–10h ennen unta latenssin lyheneminen            yksilölliset erot
-alcohol-zero-on-training      sleep      strong       Ei alkoholia treenipäivänä    REM-uni, lihasprotsynt.          sosiaaliset paineet
-walk-after-meals-10min        nutrition  promising    10 min kävely aterian jälk.   glukoosihuiput ↓                ei
-sun-vitd-15min                recovery   promising    15 min iho aurinkoa kesällä   D-vit, mieliala                  ihosyöpäriski yli-altistus
-breath-physiological-sigh     stress     promising    2 sisäänhenk. + uloshenk. 1min ahdistuksen lasku akuutisti     ei
-heart-rate-variability-track  recovery   speculative  Aamu-HRV trendi               yksilöllinen palautumismittari   yksittäisten arvojen ylitulkinta
-ice-bath-pre-sleep            recovery   speculative  kylmä <2h ennen unta          anekdoottinen unisyvyys          unen häiriintyminen
-fasted-cardio                 nutrition  speculative  Z2 paastotilassa              rasvanpolto-claim                heikko vaikutus pitkällä aik.
-```
+## C. Adaptive Personalization Memory
 
-Tagit per protokolla:
-- `pillar`, `evidence: "strong" | "promising" | "speculative"`,
-- `dose: { value, unit, frequency_per_week, time_of_day? }`,
-- `benefit: string` (1 lause, mitä tutkimus osoittaa),
-- `risk: string` (1 lause, kontraindikaatiot),
-- `citations: string[]` (DOI tai meta-analyysi-viittaus, max 3),
-- `tags: ("morning"|"evening"|"low-effort"|"high-effort"...)[]`.
+The AI learns preferences from behavior, not just from the form.
 
-## 3. AI-mission-generator käyttää frameworkkiä
+- New `coach_preference_signals` table — append-only events:
+  - `skipped_protocol` (e.g. user skipped `cold-2-3min` 5×) → auto-add to soft-blacklist after 5 skips, surface UI prompt: "You keep skipping cold — remove from rotation?"
+  - `preferred_time_of_day` (when user usually completes missions) → schedule similar missions at that hour
+  - `language_used` (detected from chat) → updates `language_pref`
+  - `tone_feedback` (thumbs up/down on assistant messages) → drift `tone_pref` toward what they like
+- Weekly review surfaces top 3 inferred preferences and asks user to confirm/reject
 
-Muutos `coach-daily-plan` edge functionissa:
+## D. Conversational Memory & Long-term Context
 
-1. Function lataa `wellness-framework.ts` -version (versioidaan: `framework_version: "1.0"`)
-2. Frameworkin protokollat injektoidaan **AI-systeemipromptiin** strukturoituna listana (vain `id`, `pillar`, `evidence`, `dose_summary`)
-3. Tool-schema laajennetaan: jokainen mission saa `protocol_id` + `evidence` + `pillar`
-4. AI:lle annetaan sääntö: **"Choose protocols only from the provided catalog. Never invent a protocol."**
-5. Painotussääntö: vähintään 60 % päivän XP:stä `evidence: "strong"` -protokollista
+Right now chat only remembers last 7 days of stats. Make it remember *the relationship*.
 
-Tool-schema lisäkenttä:
-```text
-protocol_id: enum (kaikki katalogin id:t)
-evidence:   "strong" | "promising" | "speculative"
-pillar:     "sleep" | "movement" | ...
-why:        max 90 chars — 1 lause perustelu (pohjautuu päivän dataan)
-```
+- New `coach_chat_memory` table — AI-distilled facts (max 30 per user, FIFO):
+  - Auto-extracted by `coach-extract-memory` (runs after each chat session, summarizes new persistent facts: "User's daughter's name is Aino", "User races a 10k in October", "User dislikes running")
+  - Injected into `ai-coach` system prompt as "What I know about you:"
+- User-visible **Memory** screen at `/coach/memory` — list, edit, delete any fact (transparency + control)
+- "Forget that" command in chat triggers deletion
 
-## 4. Käyttäjälle näkyvä UI
+## E. Goal-Driven Mission Targeting
 
-### 4.1 Mission-rivien laajennus
-Olemassa oleva `MissionRow` (`DailyMissionCard.tsx`) saa pienen **evidence-mikrochipin** kind-chipin viereen:
-```text
-+30 XP  •  STRONG    (vihreä)
-+25 XP  •  PROMISING (keltainen)
-+20 XP  •  EARLY     (harmaa)
-```
-Tap → avaa `<ProtocolSheet />` joka näyttää: pilari, annos, hyöty, riski, evidence-status, "miksi sinulle tänään" (AI:n `why`).
+Generic missions become *your* missions tied to *your* goal.
 
-### 4.2 Uusi reitti `/coach/library` — Protocol Library
-- 6 pilarisuodatinta (vaakaan scrollattava chip-rivi)
-- Evidence-toggle: "Show only strong-evidence protocols"
-- Hakukenttä
-- Card-grid: protokolla-kortti (pilari-väri, dose, evidence-badge)
-- Tap → sama `ProtocolSheet`
-- "Add to my habits" -nappi → tallentaa `user_habits`-tauluun
+- Each athlete profile carries a **target metric** (e.g. "Bench 100kg by Aug", "Run 5k under 25min", "Sleep 7.5h avg for 30 days")
+- New `coach_goals` table with current value, target value, deadline, weekly_milestone
+- `coach-daily-plan` prompt: "Today's primary mission must move the needle on: Bench 100kg by Aug (currently 82.5kg, +0.5kg/week pace needed)"
+- New **Goal Tracker** card on Today tab: progress bar, projected ETA, on/off-pace badge
+- Weekly review computes pace and AI proposes goal adjustment if drifting >20%
 
-### 4.3 Uusi Coach-välilehti **"Habits"** (5. tab)
-Tabit muuttuvat: `Today · Program · Habits · Progress · Chat`
+## F. Voice & Language Personalization
 
-Sisältö:
-- Aktiiviset habitit (käyttäjän valitsemat protokollat) — max 5 kerralla, jotta ei tukehduta
-- Jokainen näyttää: streak (peräkkäiset päivät tehty), level (1→5 progression-säännöillä alla), seuraava milestone, evidence-tier
-- Inline-kuittaus (kuten daily mission) — antaa pienemmän XP:n (5–15 XP/habit/päivä) kuin daily mission, jotta päämissionit pysyvät pääfookuksena
+- Auto-detect user's chat language → all coach output (missions, headlines, voice replies) localized
+- `tone_pref` × language → 4 voice templates per language (drill / calm / scientist / hype)
+- Voice mode (from earlier plan) uses ElevenLabs-style or Web Speech voice matching `tone_pref`
 
-### 4.4 Today-tabin "Why this plan" -osio
-Daily mission -kortin alle pieni laajennettava blokki:
-```text
-▾ Why this plan
-This plan emphasises SLEEP and MOVEMENT because your 7-day
-sleep average is 6.2h (target 7.5h+) and you logged 1 missed
-session. 4/5 protocols are strong-evidence.
-```
-AI generoi tämän samalla tool-callilla (uusi schema-kenttä `rationale`).
+## G. Smart Plan Timing
 
-## 5. Habit Progression -järjestelmä
+The plan currently regenerates daily at midnight UTC. Personalize it.
 
-Vältetään "kaikki kerralla" → tasoitettu progression:
+- Plan auto-regenerates at **user's local wake time + 5 min** via per-user cron schedule (or on first app open after wake)
+- Reflection card appears **2h before user's local sleep time**, not blanket 19:00
+- Push triggers (pre-workout, reflection nudge) all use user's local schedule
 
-```text
-LEVEL 1  (Spark)      0–6 päivää  → "Yritä 3x/vk"          baseline XP
-LEVEL 2  (Rhythm)     7–20 päivää → "Tee suositusannos"     +25% XP
-LEVEL 3  (Locked-in)  21–59       → "Lisää 1 variaatio"     +50% XP, badge
-LEVEL 4  (Compound)   60–119      → "Yhdistä toiseen"       +75% XP, badge
-LEVEL 5  (Identity)   120+        → "You are this habit"    2× XP, premium badge
-```
+---
 
-Säännöt:
-- Streak nollautuu 1 missatun päivän jälkeen → palaa edelliselle tasolle (ei nollaan), jotta ei rangaista yhdestä lipsumisesta
-- Maksimissaan 5 aktiivista habitia kerralla — uusi vaatii arkistoinnin
+## Technical changes (additive to previous plan)
 
-## 6. Tekniset muutokset
+**New tables** (1 migration):
+- `coach_athlete_profile` (user_id PK, all fields above, RLS: user can CRUD own)
+- `coach_preference_signals` (event log, indexed on user_id+type)
+- `coach_chat_memory` (user_id, fact, source, created_at, max 30 enforced via trigger)
+- `coach_goals` (user_id, metric, current, target, deadline, weekly_milestone, status)
 
-### 6.1 Uudet tiedostot
-- `src/lib/wellness-framework.ts` — koko katalogi + tyypit + version-vakio. ~600 LOC, mutta puhdas data.
-- `src/components/coach/ProtocolSheet.tsx` — bottom-sheet (käytä olemassa olevaa `Sheet` komponenttia)
-- `src/components/coach/HabitCard.tsx` — käyttäjän aktiivinen habit
-- `src/components/coach/HabitsTab.tsx` — Habits-välilehden sisältö
-- `src/pages/ProtocolLibrary.tsx` — `/coach/library`
-- `src/hooks/use-user-habits.ts` — react-query + realtime
-- `src/hooks/use-protocol.ts` — `getProtocol(id)` selektori
+**New RPCs**:
+- `upsert_athlete_profile`, `log_preference_signal`, `add_chat_memory`, `delete_chat_memory`, `upsert_goal`, `update_goal_progress`
 
-### 6.2 Muokkaukset
-- `src/pages/Coach.tsx` — lisää 5. tab "Habits"
-- `src/components/coach/DailyMissionCard.tsx` — evidence-chip + tap → sheet, "Why this plan" -laajennus
-- `supabase/functions/coach-daily-plan/index.ts` — injektoi catalog, laajennettu tool-schema (`protocol_id`, `evidence`, `pillar`, `why`, `rationale`), 60 %-strong-XP-validointi serverpuolella (jos AI livahtaa, korjataan painotuksia ennen tallennusta)
-- `src/App.tsx` — uusi route `/coach/library`
+**New edge functions**:
+- `coach-extract-memory` (runs post-chat, distills facts via gemini-2.5-flash)
+- `coach-personalized-cron` (replaces blanket daily cron — fans out per user at their local wake time)
 
-### 6.3 Migraatio (uudet taulut)
-```text
-user_habits
- ├─ id uuid PK
- ├─ user_id uuid
- ├─ protocol_id text          -- viittaa wellness-framework.ts -id:hen
- ├─ added_at timestamptz
- ├─ archived_at timestamptz
- ├─ current_streak int
- ├─ best_streak int
- ├─ level int                  -- 1..5
- └─ UNIQUE (user_id, protocol_id) WHERE archived_at IS NULL
+**Edge function updates**:
+- `coach-daily-plan`: inject athlete_profile + chat_memory + active_goal into prompt, enforce constraints
+- `ai-coach`: inject athlete_profile + chat_memory + tone template, post-message trigger memory extraction
 
-user_habit_logs
- ├─ id uuid PK
- ├─ habit_id uuid → user_habits
- ├─ user_id uuid
- ├─ logged_on date
- ├─ xp_awarded int
- └─ UNIQUE (habit_id, logged_on)
-```
+**New / updated UI**:
+- `AthleteProfileOnboarding.tsx` (6-step, gates first plan generation)
+- `AthleteProfileSettings.tsx` (edit any time)
+- `CoachMemoryScreen.tsx` (`/coach/memory`)
+- `GoalTrackerCard.tsx` (Today tab, top)
+- `PreferenceConfirmModal.tsx` (weekly review surfaces inferred prefs)
+- Tone/language switcher in chat header
 
-RLS:
-- `user_habits` — Premium gate, omistaja CRUD
-- `user_habit_logs` — Premium gate, INSERT vain SECURITY DEFINER RPC `log_habit(_habit_id, _date)` joka:
-  1. tarkistaa ettei jo logattu kyseiselle päivälle
-  2. laskee level-säännöt → XP
-  3. päivittää `current_streak` / `best_streak` / `level`
-  4. lisää `profiles.xp` += XP
+**Memory update**: extend `mem://features/ai-coach.md` with athlete profile schema, memory extraction loop, and tone/language personalization rules.
 
-### 6.4 `coach_daily_plans.missions` JSONB
-Lisätään olemassa oleviin missioneihin valinnaiset kentät: `protocol_id`, `evidence`, `pillar`, `why`. Vanhat plan-rivit toimivat (kentät optional). Lisätään myös `coach_daily_plans.rationale text NULLABLE`.
+---
 
-Migraatio:
-```text
-ALTER TABLE coach_daily_plans
-  ADD COLUMN rationale text,
-  ADD COLUMN framework_version text NOT NULL DEFAULT '1.0';
-```
+## Out of scope (intentionally)
 
-### 6.5 Memory-päivitys
-Päivitä `mem://features/ai-coach.md` kuvaamaan framework + evidence-tierit. Lisää uusi `mem://features/wellness-framework.md` jossa on katalogin versionumero ja yhteenveto.
+- Wearables/Apple Health (still future)
+- Actual voice cloning (Web Speech is good enough v1)
+- Multi-user shared programs
 
-## 7. Mitä EI tehdä tässä erässä
+---
 
-- Ei muuteta olemassa olevaa daily check-in -listaa (ei pakoteta uutta UI:ta päämassalle)
-- Ei poisteta nykyisiä missioita / fallbackia
-- Ei lisätä ulkoisia API-integraatioita (Apple Health, Oura) — `wellness-framework.ts` toimii puhtaasti omasta datasta
-- Ei lisätä HRV-tracking-protokollaa aktiiviseksi habitiksi (näytetään kirjastossa "speculative")
+## Rollout order (combined with previous plan)
 
-## 8. Lopputulos käyttäjälle
+1. **Athlete profile** (table + onboarding + settings) — foundation everything else uses
+2. Reflections (closes daily loop)
+3. Personalized mission generation + adaptive preference signals
+4. Chat memory + memory screen
+5. Goals + tracker card
+6. Adaptive mission engine
+7. Weekly meta-coach review
+8. Performance OS dashboard
+9. Smart plan timing (per-user cron)
+10. Voice mode + tone-matched output
+11. Proactive push triggers (localized to user schedule)
 
-1. Päivän missiot ovat **läpinäkyviä**: jokainen kertoo "miksi minulle, miksi nyt, miten vahva näyttö"
-2. **Library** = selailtava tietokanta — käyttäjä voi oppia ja valita
-3. **Habits** = pitkän aikavälin progression, joka ei tukahdu yhteen lipsumiseen
-4. AI ei enää keksi protokollia — se valitsee ja perustelee tunnetuista
-5. Evidence tier opettaa rehellisesti: vahvasti todistettua erottuu kokeellisesta
-
-Hyväksy → toteutan kerralla: framework-data, 1 migraatio, edge function -laajennus, 4 uutta komponenttia, 1 uusi sivu, Habits-tab, ProtocolSheet, ja UI-evidenssimerkinnät.
+Approve and I'll build in this order.

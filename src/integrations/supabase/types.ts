@@ -139,6 +139,117 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_athlete_profile: {
+        Row: {
+          age: number | null
+          body_fat_pct: number | null
+          busy_blocks: Json
+          created_at: string
+          dietary: string[]
+          equipment: string[]
+          height_cm: number | null
+          i_am: string | null
+          injuries: string[]
+          language_pref: string
+          no_go_protocols: string[]
+          onboarded: boolean
+          preferred_session_length_min: number
+          primary_goal: string | null
+          secondary_goal: string | null
+          sex: string | null
+          sleep_time: string
+          target_horizon_weeks: number | null
+          timezone: string
+          tone_pref: string
+          training_days_pref: number[]
+          updated_at: string
+          user_id: string
+          wake_time: string
+          weight_kg: number | null
+        }
+        Insert: {
+          age?: number | null
+          body_fat_pct?: number | null
+          busy_blocks?: Json
+          created_at?: string
+          dietary?: string[]
+          equipment?: string[]
+          height_cm?: number | null
+          i_am?: string | null
+          injuries?: string[]
+          language_pref?: string
+          no_go_protocols?: string[]
+          onboarded?: boolean
+          preferred_session_length_min?: number
+          primary_goal?: string | null
+          secondary_goal?: string | null
+          sex?: string | null
+          sleep_time?: string
+          target_horizon_weeks?: number | null
+          timezone?: string
+          tone_pref?: string
+          training_days_pref?: number[]
+          updated_at?: string
+          user_id: string
+          wake_time?: string
+          weight_kg?: number | null
+        }
+        Update: {
+          age?: number | null
+          body_fat_pct?: number | null
+          busy_blocks?: Json
+          created_at?: string
+          dietary?: string[]
+          equipment?: string[]
+          height_cm?: number | null
+          i_am?: string | null
+          injuries?: string[]
+          language_pref?: string
+          no_go_protocols?: string[]
+          onboarded?: boolean
+          preferred_session_length_min?: number
+          primary_goal?: string | null
+          secondary_goal?: string | null
+          sex?: string | null
+          sleep_time?: string
+          target_horizon_weeks?: number | null
+          timezone?: string
+          tone_pref?: string
+          training_days_pref?: number[]
+          updated_at?: string
+          user_id?: string
+          wake_time?: string
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      coach_chat_memory: {
+        Row: {
+          confidence: number
+          created_at: string
+          fact: string
+          id: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          fact: string
+          id?: string
+          source?: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          fact?: string
+          id?: string
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       coach_daily_plans: {
         Row: {
           adjustment: string
@@ -187,6 +298,54 @@ export type Database = {
           readiness_score?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      coach_goals: {
+        Row: {
+          baseline_value: number | null
+          created_at: string
+          current_value: number | null
+          deadline: string | null
+          id: string
+          metric: string
+          status: string
+          target_value: number
+          title: string
+          unit: string
+          updated_at: string
+          user_id: string
+          weekly_milestone: number | null
+        }
+        Insert: {
+          baseline_value?: number | null
+          created_at?: string
+          current_value?: number | null
+          deadline?: string | null
+          id?: string
+          metric: string
+          status?: string
+          target_value: number
+          title: string
+          unit?: string
+          updated_at?: string
+          user_id: string
+          weekly_milestone?: number | null
+        }
+        Update: {
+          baseline_value?: number | null
+          created_at?: string
+          current_value?: number | null
+          deadline?: string | null
+          id?: string
+          metric?: string
+          status?: string
+          target_value?: number
+          title?: string
+          unit?: string
+          updated_at?: string
+          user_id?: string
+          weekly_milestone?: number | null
         }
         Relationships: []
       }
@@ -249,6 +408,36 @@ export type Database = {
           id?: string
           seen_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      coach_preference_signals: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json
+          protocol_id: string | null
+          signal_type: string
+          user_id: string
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          protocol_id?: string | null
+          signal_type: string
+          user_id: string
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          protocol_id?: string | null
+          signal_type?: string
+          user_id?: string
+          value?: string | null
         }
         Relationships: []
       }
@@ -1641,6 +1830,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_chat_memory: {
+        Args: { _confidence?: number; _fact: string; _source?: string }
+        Returns: string
+      }
       add_user_habit: { Args: { _protocol_id: string }; Returns: Json }
       approve_tribe_member: {
         Args: { p_accept: boolean; p_tribe_id: string; p_user_id: string }
@@ -1680,6 +1873,7 @@ export type Database = {
         }
         Returns: string
       }
+      delete_chat_memory: { Args: { _id: string }; Returns: boolean }
       delete_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
       ensure_active_leaderboard_season: {
         Args: never
@@ -1788,6 +1982,15 @@ export type Database = {
       join_tribe: { Args: { p_tribe_id: string }; Returns: string }
       leave_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
       log_habit: { Args: { _date?: string; _habit_id: string }; Returns: Json }
+      log_preference_signal: {
+        Args: {
+          _metadata?: Json
+          _protocol_id?: string
+          _signal_type: string
+          _value?: string
+        }
+        Returns: string
+      }
       redeem_legend_invite: { Args: { p_code: string }; Returns: Json }
       remove_tribe_member: {
         Args: { p_tribe_id: string; p_user_id: string }
@@ -1839,6 +2042,30 @@ export type Database = {
       }
       sync_tribe_pause_state: { Args: never; Returns: undefined }
       update_all_status_tiers: { Args: never; Returns: undefined }
+      update_goal_progress: {
+        Args: { _goal_id: string; _new_value: number }
+        Returns: {
+          baseline_value: number | null
+          created_at: string
+          current_value: number | null
+          deadline: string | null
+          id: string
+          metric: string
+          status: string
+          target_value: number
+          title: string
+          unit: string
+          updated_at: string
+          user_id: string
+          weekly_milestone: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "coach_goals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_own_profile: {
         Args: {
           clear_featured_badge?: boolean
@@ -1863,6 +2090,42 @@ export type Database = {
           p_visibility?: string
         }
         Returns: undefined
+      }
+      upsert_athlete_profile: {
+        Args: { _patch: Json }
+        Returns: {
+          age: number | null
+          body_fat_pct: number | null
+          busy_blocks: Json
+          created_at: string
+          dietary: string[]
+          equipment: string[]
+          height_cm: number | null
+          i_am: string | null
+          injuries: string[]
+          language_pref: string
+          no_go_protocols: string[]
+          onboarded: boolean
+          preferred_session_length_min: number
+          primary_goal: string | null
+          secondary_goal: string | null
+          sex: string | null
+          sleep_time: string
+          target_horizon_weeks: number | null
+          timezone: string
+          tone_pref: string
+          training_days_pref: number[]
+          updated_at: string
+          user_id: string
+          wake_time: string
+          weight_kg: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "coach_athlete_profile"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       upsert_daily_plan:
         | {
@@ -1891,6 +2154,30 @@ export type Database = {
             }
             Returns: string
           }
+      upsert_goal: {
+        Args: { _patch: Json }
+        Returns: {
+          baseline_value: number | null
+          created_at: string
+          current_value: number | null
+          deadline: string | null
+          id: string
+          metric: string
+          status: string
+          target_value: number
+          title: string
+          unit: string
+          updated_at: string
+          user_id: string
+          weekly_milestone: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "coach_goals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

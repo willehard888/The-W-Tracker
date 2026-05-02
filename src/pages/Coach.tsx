@@ -82,13 +82,16 @@ const Coach = () => {
       ) : (
         <div className="flex-1 overflow-y-auto px-4 pb-8">
           {tab === "today" && (
-            <TodaySessionCard
-              program={program}
-              currentWeek={currentWeek}
-              todayDayIndex={todayDayIndex}
-              logs={logs}
-              onLogged={() => refetch()}
-            />
+            <div className="space-y-4">
+              <DailyMissionCard />
+              <TodaySessionCard
+                program={program}
+                currentWeek={currentWeek}
+                todayDayIndex={todayDayIndex}
+                logs={logs}
+                onLogged={() => refetch()}
+              />
+            </div>
           )}
           {tab === "program" && (
             <ProgramWeekAccordion program={program} currentWeek={currentWeek} logs={logs} />

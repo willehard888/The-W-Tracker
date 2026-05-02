@@ -103,6 +103,12 @@ export default function AdminModeration() {
         <p className="text-sm text-muted-foreground">
           Low-confidence AI blocks waiting for human review.
         </p>
+        <a
+          href="/admin/legend-invites"
+          className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gold hover:underline"
+        >
+          → Legend invites
+        </a>
       </div>
 
       {isLoading && (

@@ -39,10 +39,22 @@ const Coach = () => {
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabId>("today");
   const { isLoading, program, logs, currentWeek, todayDayIndex, refetch } = useCoachProgram();
+  const { profile: athlete, isLoading: athleteLoading, refetch: refetchAthlete } = useAthleteProfile();
 
   if (subscriptionLoading) return <PageSkeleton />;
   if (!isPremium) return <PremiumCoachUpsell />;
-  if (isLoading) return <PageSkeleton />;
+  if (isLoading || athleteLoading) return <PageSkeleton />;
+
+  // Gate: athlete profile must be completed before anything else.
+  if (!athlete?.onboarded) {
+    return (
+      <div className="flex flex-col h-full">
+        <Header onBack={() => navigate(-1)} />
+        <AthleteProfileOnboarding onDone={() => refetchAthlete()} />
+      </div>
+    );
+  }
+
   if (!program) {
     return (
       <div className="flex flex-col h-full overflow-y-auto safe-top">
@@ -87,6 +99,7 @@ const Coach = () => {
         <div className="flex-1 overflow-y-auto px-4 pb-8">
           {tab === "today" && (
             <div className="space-y-4">
+              <GoalTrackerCard />
               <DailyMissionCard />
               <TodaySessionCard
                 program={program}
@@ -95,6 +108,24 @@ const Coach = () => {
                 logs={logs}
                 onLogged={() => refetch()}
               />
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button type="button" onClick={() => navigate("/coach/profile")}
+                  className="rounded-2xl border border-border/40 bg-card/40 px-3 py-3 flex items-center gap-2 text-left hover:border-[hsl(var(--gold)/0.4)] transition">
+                  <User size={14} className="text-gold shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold truncate">Athlete profile</p>
+                    <p className="text-[9px] text-muted-foreground">Tune your Coach</p>
+                  </div>
+                </button>
+                <button type="button" onClick={() => navigate("/coach/memory")}
+                  className="rounded-2xl border border-border/40 bg-card/40 px-3 py-3 flex items-center gap-2 text-left hover:border-[hsl(var(--gold)/0.4)] transition">
+                  <Brain size={14} className="text-gold shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold truncate">Coach memory</p>
+                    <p className="text-[9px] text-muted-foreground">What it remembers</p>
+                  </div>
+                </button>
+              </div>
             </div>
           )}
           {tab === "program" && (

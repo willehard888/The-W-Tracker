@@ -23,7 +23,6 @@ import GoalTrackerCard from "@/components/coach/GoalTrackerCard";
 import EveningReflectionCard from "@/components/coach/EveningReflectionCard";
 import PerformanceOSDashboard from "@/components/coach/PerformanceOSDashboard";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
-import { useEffect as useEffectMemoryProbe } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 type Msg = { role: "user" | "assistant"; content: string };

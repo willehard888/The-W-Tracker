@@ -20,7 +20,10 @@ import { useDailyPlan } from "@/hooks/use-daily-plan";
 import HabitsTab from "@/components/coach/HabitsTab";
 import AthleteProfileOnboarding from "@/components/coach/AthleteProfileOnboarding";
 import GoalTrackerCard from "@/components/coach/GoalTrackerCard";
+import EveningReflectionCard from "@/components/coach/EveningReflectionCard";
+import PerformanceOSDashboard from "@/components/coach/PerformanceOSDashboard";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
+import { supabase } from "@/integrations/supabase/client";
 
 type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";
@@ -101,6 +104,7 @@ const Coach = () => {
             <div className="space-y-4">
               <GoalTrackerCard />
               <DailyMissionCard />
+              <EveningReflectionCard />
               <TodaySessionCard
                 program={program}
                 currentWeek={currentWeek}
@@ -133,7 +137,10 @@ const Coach = () => {
           )}
           {tab === "habits" && <HabitsTab />}
           {tab === "progress" && (
-            <ProgressDashboard program={program} currentWeek={currentWeek} logs={logs} />
+            <div className="space-y-4">
+              <PerformanceOSDashboard />
+              <ProgressDashboard program={program} currentWeek={currentWeek} logs={logs} />
+            </div>
           )}
         </div>
       )}
@@ -271,6 +278,15 @@ const ChatTab = ({ session, program }: { session: any; program: any }) => {
     } finally {
       setStreaming(false);
       abortRef.current = null;
+      // Fire-and-forget: distill durable facts from the last exchange into chat memory.
+      try {
+        if (buf && buf.length > 20 && session?.access_token) {
+          const finalMsgs = [...next, { role: "assistant" as const, content: buf }];
+          supabase.functions.invoke("coach-extract-memory", {
+            body: { messages: finalMsgs.slice(-6) },
+          }).catch(() => { /* silent */ });
+        }
+      } catch { /* silent */ }
     }
   };
 

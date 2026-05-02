@@ -117,6 +117,13 @@ const PROTOCOL_BY_ID: Record<string, typeof PROTOCOL_CATALOG[number]> = Object.f
   PROTOCOL_CATALOG.map((p) => [p.id, p]),
 );
 
+const TONE_TEMPLATES: Record<string, string> = {
+  drill_sergeant: "Blunt, direct, push hard. Short imperative sentences. No pleasantries.",
+  calm_mentor: "Steady, supportive, precise. Calm authority. No hype.",
+  scientist: "Cite mechanisms briefly. Numbers, percentages, dose-response.",
+  hype: "High energy. Wins, momentum, identity language. Still specific.",
+};
+
 const buildPrompt = (
   profile: any,
   program: any,
@@ -124,6 +131,10 @@ const buildPrompt = (
   checkins: Checkin[],
   readiness: { score: number; breakdown: any },
   adjustment: string,
+  athlete: any,
+  goal: any,
+  memories: { fact: string }[],
+  skipStats: { protocol_id: string; skips: number }[],
 ) => {
   const username = profile?.username ?? "operator";
   const tier = profile?.status_tier ?? "recruit";
@@ -138,7 +149,38 @@ const buildPrompt = (
     ? `Program calls for: ${todayDay.focus} (${todayDay.duration_min} min, ${todayDay.blocks?.length ?? 0} blocks)`
     : "No program session scheduled today.";
 
-  const catalogLines = PROTOCOL_CATALOG
+  // Personalization block
+  const tone = athlete?.tone_pref ?? "calm_mentor";
+  const toneRule = TONE_TEMPLATES[tone] ?? TONE_TEMPLATES.calm_mentor;
+  const noGo = new Set<string>([
+    ...((athlete?.no_go_protocols as string[]) ?? []),
+    ...skipStats.filter((s) => s.skips >= 5).map((s) => s.protocol_id),
+  ]);
+  const allowedCatalog = PROTOCOL_CATALOG.filter((p) => !noGo.has(p.id));
+  const allowedIds = allowedCatalog.map((p) => p.id);
+
+  const profileBlock = athlete
+    ? `ATHLETE PROFILE
+- ${athlete.i_am ? `Identity: "${athlete.i_am}"` : "Identity: not set"}
+- Body: ${athlete.age ?? "?"}y, ${athlete.sex ?? "?"}, ${athlete.height_cm ?? "?"}cm, ${athlete.weight_kg ?? "?"}kg
+- Goal: ${athlete.primary_goal ?? "?"} over ${athlete.target_horizon_weeks ?? "?"} weeks
+- Schedule: wake ${athlete.wake_time}, sleep ${athlete.sleep_time}, sessions ~${athlete.preferred_session_length_min} min
+- Diet: ${(athlete.dietary ?? []).join(", ") || "omnivore"}
+- Equipment: ${(athlete.equipment ?? []).join(", ") || "bodyweight only"}
+- Injuries: ${(athlete.injuries ?? []).join(", ") || "none"}
+- Hard no-go protocols: ${[...noGo].join(", ") || "none"}
+- Tone: ${tone} — ${toneRule}`
+    : "ATHLETE PROFILE: not provided.";
+
+  const goalBlock = goal
+    ? `NORTH STAR GOAL: "${goal.title}" — currently ${goal.current_value ?? goal.baseline_value ?? "?"}${goal.unit} → target ${goal.target_value}${goal.unit}${goal.deadline ? ` by ${goal.deadline}` : ""}.`
+    : "NORTH STAR GOAL: none set.";
+
+  const memBlock = memories.length
+    ? `WHAT YOU KNOW ABOUT THIS ATHLETE:\n${memories.slice(0, 10).map((m) => `- ${m.fact}`).join("\n")}`
+    : "WHAT YOU KNOW: nothing yet.";
+
+  const catalogLines = allowedCatalog
     .map((p) => `- [${p.evidence.toUpperCase()}] ${p.id} (${p.pillar}) — ${p.title} :: ${p.dose}`)
     .join("\n");
 
@@ -150,7 +192,13 @@ Breakdown: avg sleep ${readiness.breakdown.avg_sleep_h}h, last RPE ${readiness.b
 ${recent}
 ${sessionLine}
 
-PROTOCOL CATALOG (you MUST pick protocol_id ONLY from this list):
+${profileBlock}
+
+${goalBlock}
+
+${memBlock}
+
+PROTOCOL CATALOG (you MUST pick protocol_id ONLY from this list — no-go items already filtered out):
 ${catalogLines}
 
 Build 4–5 high-impact missions for the next 24 hours.
@@ -159,25 +207,23 @@ HARD RULES:
 1. Every mission must reference a real \`protocol_id\` from the catalog above. Never invent ids.
 2. Every mission must include the protocol's \`evidence\` tier (strong | promising | speculative) verbatim from the catalog.
 3. At least 60% of total mission XP MUST come from "strong" evidence protocols.
-4. Exactly one mission with kind="primary":
-   - if a program session is scheduled and adjustment ∈ {push, hold}: tie it to a movement protocol (strength-* / vo2-* / zone-2-cardio).
-   - if adjustment="deload": still movement, but lower dose; reflect in title.
-   - if adjustment="swap": substitute with a recovery protocol (mobility-10min, nsdr-yoga-nidra-10min, sauna-20min-4x).
-5. Always include at least one "recovery" mission targeting the weakest signal.
-6. Always include one "focus" mission from the stress pillar (deep-work-90min / no-phone-first-60min / journaling-5min).
-7. Always include one "habit" anchor (hydration / protein / walk-after-meals / morning-light).
-8. If readiness ≥ 70 add one "edge" mission — a stretch challenge.
-9. Each mission needs a one-sentence \`why\` explaining why THIS protocol for THIS athlete TODAY (reference their actual data). ≤140 chars.
+4. Respect injuries, diet, equipment — never prescribe something the athlete physically cannot or will not do.
+5. Tailor at least one mission to the athlete's primary_goal (${athlete?.primary_goal ?? "general"}).
+6. If a North Star goal is set, the primary mission MUST move the needle on it; reference it in the \`why\`.
+7. Exactly one mission with kind="primary" (movement unless adjustment="swap" → recovery).
+8. Always include one "recovery", one "focus", one "habit" mission.
+9. If readiness ≥ 70 add one "edge" stretch mission.
+10. \`why\` MUST reference this athlete's actual data, identity, or goal in ≤140 chars. Speak in the chosen TONE: ${tone}.
 
 XP guidance: primary 50–60 · recovery 25–35 · focus 20–30 · habit 15–20 · edge 20–30.
 
-Tone: blunt, action-first, no fluff. Headlines ≤70 chars. Details ≤90 chars, prescriptive (numbers, durations).
+Tone rule: ${toneRule}
 
 Also produce:
-- "headline" (≤60 chars) summarizing today's stance.
+- "headline" (≤60 chars) summarizing today's stance, in the chosen tone.
 - "rationale" (≤220 chars) — one paragraph explaining the plan, citing the strongest data signal driving it.
 
-Use the emit_daily_plan tool. Mission ids must be short kebab-case.`;
+Use the emit_daily_plan tool. Mission ids must be short kebab-case. Allowed protocol_ids: ${allowedIds.length} options.`;
 };
 
 const TOOL_SCHEMA = {

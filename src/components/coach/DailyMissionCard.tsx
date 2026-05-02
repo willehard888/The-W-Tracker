@@ -282,6 +282,20 @@ const MissionRow = ({
                 {mission.detail}
               </p>
             )}
+            {(evidence || protocol) && (
+              <div className="mt-1.5 flex items-center gap-1.5">
+                {evidence && <EvidenceChip evidence={evidence} />}
+                {protocol && onOpenProtocol && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onOpenProtocol(protocol, why); }}
+                    className="text-[9.5px] font-black uppercase tracking-[0.16em] text-muted-foreground/70 hover:text-gold transition"
+                  >
+                    Why?
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </motion.li>

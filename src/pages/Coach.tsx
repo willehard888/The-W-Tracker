@@ -357,9 +357,6 @@ const ChatTab = ({ session, program }: { session: any; program: any }) => {
             <Send size={16} />
           </Button>
         </div>
-        <p className="text-[9px] text-muted-foreground/70 text-center mt-1.5">
-          Educational guidance — not medical advice.
-        </p>
       </div>
     </>
   );

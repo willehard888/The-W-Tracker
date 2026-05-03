@@ -65,11 +65,16 @@ const Coach = () => {
     );
   }
 
-  return (
-    <div className="flex flex-col h-full">
-      <Header onBack={() => navigate(-1)} />
+  return <CoachShell session={session} program={program} logs={logs} currentWeek={currentWeek} todayDayIndex={todayDayIndex} refetch={refetch} tab={tab} setTab={setTab} navigate={navigate} />;
+};
 
-      {/* Tab strip */}
+const CoachShell = ({ session, program, logs, currentWeek, todayDayIndex, refetch, tab, setTab, navigate }: any) => {
+  const [chatOpen, setChatOpen] = useState(false);
+
+  return (
+    <div className="flex flex-col h-full relative">
+      <Header onBack={() => navigate(-1)} navigate={navigate} />
+
       <div className="shrink-0 px-3 pt-1 pb-3">
         <div className="flex gap-0.5 p-[3px] rounded-full bg-[hsl(255_14%_8%)] border border-border/40 shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.4)]">
           {TABS.map((t) => {
@@ -80,9 +85,9 @@ const Coach = () => {
                 type="button"
                 onClick={() => { hapticImpact("light"); setTab(t.id); }}
                 className={cn(
-                  "flex-1 text-[10px] font-black uppercase tracking-[0.14em] py-1.5 px-1 rounded-full transition-all",
+                  "flex-1 text-[11px] font-bold py-2 px-1 rounded-full transition-all",
                   active
-                    ? "bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] shadow-[0_2px_8px_-1px_hsl(42_78%_54%/0.55)]"
+                    ? "bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] font-black shadow-[0_2px_8px_-1px_hsl(42_78%_54%/0.55)]"
                     : "text-muted-foreground/70",
                 )}
               >
@@ -93,76 +98,77 @@ const Coach = () => {
         </div>
       </div>
 
-      {/* Tab content */}
-      {tab === "chat" ? (
-        <ChatTab session={session} program={program} />
-      ) : (
-        <div className="flex-1 overflow-y-auto px-4 pb-8">
-          {tab === "today" && (
-            <div className="space-y-4">
-              <GoalTrackerCard />
-              <DailyMissionCard />
-              <EveningReflectionCard />
-              <TodaySessionCard
-                program={program}
-                currentWeek={currentWeek}
-                todayDayIndex={todayDayIndex}
-                logs={logs}
-                onLogged={() => refetch()}
-              />
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <button type="button" onClick={() => navigate("/coach/profile")}
-                  className="rounded-2xl border border-border/40 bg-card/40 px-3 py-3 flex items-center gap-2 text-left hover:border-[hsl(var(--gold)/0.4)] transition">
-                  <User size={14} className="text-gold shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-bold truncate">Athlete profile</p>
-                    <p className="text-[9px] text-muted-foreground">Tune your Coach</p>
-                  </div>
-                </button>
-                <button type="button" onClick={() => navigate("/coach/memory")}
-                  className="rounded-2xl border border-border/40 bg-card/40 px-3 py-3 flex items-center gap-2 text-left hover:border-[hsl(var(--gold)/0.4)] transition">
-                  <Brain size={14} className="text-gold shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-bold truncate">Coach memory</p>
-                    <p className="text-[9px] text-muted-foreground">What it remembers</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-          )}
-          {tab === "program" && (
-            <ProgramWeekAccordion program={program} currentWeek={currentWeek} logs={logs} />
-          )}
-          {tab === "habits" && <HabitsTab />}
-          {tab === "progress" && (
-            <div className="space-y-4">
-              <PerformanceOSDashboard />
-              <ProgressDashboard program={program} currentWeek={currentWeek} logs={logs} />
-            </div>
-          )}
+      <div className="flex-1 overflow-y-auto px-4 pb-24">
+        {tab === "today" && (
+          <div className="space-y-3">
+            <TodaySessionCard
+              program={program}
+              currentWeek={currentWeek}
+              todayDayIndex={todayDayIndex}
+              logs={logs}
+              onLogged={() => refetch()}
+            />
+            <DailyMissionCard />
+            <EveningReflectionCard />
+            <GoalTrackerCard />
+            <HabitsTab />
+          </div>
+        )}
+        {tab === "plan" && (
+          <ProgramWeekAccordion program={program} currentWeek={currentWeek} logs={logs} />
+        )}
+        {tab === "progress" && (
+          <div className="space-y-4">
+            <PerformanceOSDashboard />
+            <ProgressDashboard program={program} currentWeek={currentWeek} logs={logs} />
+          </div>
+        )}
+      </div>
+
+      {!chatOpen && (
+        <button
+          type="button"
+          onClick={() => { hapticImpact("medium"); setChatOpen(true); }}
+          aria-label="Ask coach"
+          className="absolute bottom-5 right-4 h-[52px] w-[52px] rounded-full bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] shadow-[0_8px_24px_-4px_hsl(42_78%_54%/0.55)] flex items-center justify-center active:scale-95 transition z-20"
+        >
+          <MessageCircle size={22} strokeWidth={2.4} />
+        </button>
+      )}
+
+      {chatOpen && (
+        <div className="absolute inset-0 bg-background z-30 flex flex-col">
+          <div className="shrink-0 px-3 pt-3 pb-2 flex items-center justify-between border-b border-border/30 bg-background/80 backdrop-blur-xl">
+            <span className="w-9" />
+            <p className="font-display text-sm font-black tracking-tight">Ask Coach</p>
+            <Button variant="ghost" size="icon-sm" onClick={() => setChatOpen(false)} aria-label="Close">
+              <X size={18} />
+            </Button>
+          </div>
+          <ChatTab session={session} program={program} />
         </div>
       )}
     </div>
   );
 };
 
-const Header = ({ onBack }: { onBack: () => void }) => (
+const Header = ({ onBack, navigate }: { onBack: () => void; navigate: any }) => (
   <div className="shrink-0 px-4 pt-3 pb-2 flex items-center justify-between border-b border-border/30 bg-background/60 backdrop-blur-xl">
     <Button variant="ghost" size="icon-sm" onClick={onBack} aria-label="Back">
       <ArrowLeft size={18} />
     </Button>
-    <div className="flex items-center gap-2">
-      <div className="h-7 w-7 rounded-full gradient-gold flex items-center justify-center shadow-[0_0_18px_hsl(var(--gold)/0.4)]">
-        <Sparkles size={14} className="text-primary-foreground" />
-      </div>
-      <div className="text-center">
-        <h1 className="font-display text-sm font-black tracking-tight leading-none">W Coach</h1>
-        <p className="text-[9px] text-gold tracking-widest uppercase mt-0.5 inline-flex items-center gap-1">
-          <Crown size={8} /> Premium
-        </p>
-      </div>
+    <div className="inline-flex items-center gap-1.5">
+      <span className="h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_8px_hsl(var(--gold))]" />
+      <h1 className="font-display text-base font-black tracking-tight">Coach</h1>
     </div>
-    <span className="w-9" />
+    <div className="flex items-center gap-1">
+      <Button variant="ghost" size="icon-sm" onClick={() => navigate("/coach/profile")} aria-label="Profile">
+        <User size={16} />
+      </Button>
+      <Button variant="ghost" size="icon-sm" onClick={() => navigate("/coach/memory")} aria-label="Memory">
+        <Brain size={16} />
+      </Button>
+    </div>
   </div>
 );
 

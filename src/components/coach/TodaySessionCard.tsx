@@ -55,8 +55,8 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
     <div
       className={cn(
         "relative rounded-3xl overflow-hidden border p-5",
-        "bg-gradient-to-b from-gold/[0.08] via-card/95 to-card border-gold/30",
-        "shadow-[0_20px_60px_-20px_hsl(var(--gold)/0.3)]",
+        "bg-card/70 border-border/50",
+        "shadow-[0_12px_36px_-18px_hsl(0_0%_0%/0.6)]",
       )}
     >
       <div

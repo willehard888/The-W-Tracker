@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, Sparkles, ArrowLeft, Loader2, Crown, User, Brain } from "lucide-react";
+import { Send, Sparkles, ArrowLeft, Loader2, User, Brain, MessageCircle, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";

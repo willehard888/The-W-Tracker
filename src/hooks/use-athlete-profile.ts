@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 export type ToneId = "drill_sergeant" | "calm_mentor" | "scientist" | "hype";
-export type GoalId = "strength" | "hypertrophy" | "endurance" | "fat_loss" | "longevity" | "focus";
+export type GoalId = "all" | "strength" | "hypertrophy" | "endurance" | "fat_loss" | "longevity" | "focus";
 
 export interface AthleteProfile {
   user_id: string;

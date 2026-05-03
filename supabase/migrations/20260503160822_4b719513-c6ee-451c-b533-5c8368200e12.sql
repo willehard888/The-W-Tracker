@@ -1,0 +1,2 @@
+ALTER TABLE public.coach_chat_memory DROP CONSTRAINT IF EXISTS coach_chat_memory_source_check;
+ALTER TABLE public.coach_chat_memory ADD CONSTRAINT coach_chat_memory_source_check CHECK (source IN ('chat','chat-extract','reflection','manual','system'));

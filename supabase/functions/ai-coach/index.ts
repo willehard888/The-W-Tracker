@@ -179,9 +179,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch last 7 days of checkins + latest briefing in parallel
+    // Fetch context in parallel
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const [checkinsRes, briefingRes] = await Promise.all([
+    const todayDate = new Date().toISOString().slice(0, 10);
+    const [checkinsRes, briefingRes, athleteRes, programRes, briefRes] = await Promise.all([
       supabase
         .from("daily_checkins")
         .select(
@@ -197,6 +198,9 @@ Deno.serve(async (req) => {
         .order("generated_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
+      supabase.from("coach_athlete_profile").select("*").eq("user_id", userId).maybeSingle(),
+      supabase.from("coach_programs").select("*").eq("user_id", userId).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("coach_daily_briefs").select("payload").eq("user_id", userId).eq("brief_date", todayDate).maybeSingle(),
     ]);
 
     const body = await req.json();
@@ -213,10 +217,26 @@ Deno.serve(async (req) => {
       content: String(m.content ?? "").slice(0, 4000),
     }));
 
+    // Compute today's prescribed session
+    const program: any = programRes.data ?? null;
+    let todaySession: any = null;
+    if (program?.plan_json?.weeks) {
+      const started = new Date(program.started_on);
+      const now = new Date();
+      const diffDays = Math.max(0, Math.floor((now.getTime() - new Date(started.getFullYear(), started.getMonth(), started.getDate()).getTime()) / 86400_000));
+      const weekIdx = Math.min(program.weeks ?? 1, Math.floor(diffDays / 7) + 1);
+      const dayIdx = (now.getDay() + 6) % 7;
+      const wk = program.plan_json.weeks.find((w: any) => w.week === weekIdx);
+      todaySession = wk?.days?.[dayIdx] ?? null;
+    }
+
     const systemPrompt = buildSystemPrompt(
       profile,
+      athleteRes.data ?? null,
       (checkinsRes.data ?? []) as Checkin[],
       (briefingRes.data?.key_insights as any[]) ?? null,
+      (briefRes.data?.payload as any) ?? null,
+      todaySession,
     );
 
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

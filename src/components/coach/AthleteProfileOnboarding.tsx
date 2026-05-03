@@ -282,6 +282,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
     if (last) {
       try {
         await upsert({ ...draft, onboarded: true } as any);
+        try { localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(STEP_KEY); } catch {}
         toast.success("Profile saved. Coach is now personal.");
         onDone();
       } catch (e: any) {

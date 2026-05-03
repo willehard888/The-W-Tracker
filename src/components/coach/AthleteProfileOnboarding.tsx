@@ -40,26 +40,47 @@ const INJURIES = ["Lower back","Knee","Shoulder","Hip","Wrist","Elbow","Neck"];
 const SESSION_PRESETS = [20, 30, 45, 60, 90];
 const HORIZON_PRESETS = [4, 8, 12, 26, 52];
 
+const loadDraft = (): any | null => {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+};
+const loadStep = (): number => {
+  try { return Number(localStorage.getItem(STEP_KEY) ?? 0) || 0; } catch { return 0; }
+};
+
 const AthleteProfileOnboarding = ({ onDone }: Props) => {
   const { profile, upsert, isSaving } = useAthleteProfile();
-  const [step, setStep] = useState(0);
-  const [draft, setDraft] = useState<any>({
-    age: profile?.age ?? 30,
-    sex: profile?.sex ?? "prefer_not_say",
-    height_cm: profile?.height_cm ?? 180,
-    weight_kg: profile?.weight_kg ?? 80,
-    primary_goal: profile?.primary_goal ?? "all",
-    target_horizon_weeks: profile?.target_horizon_weeks ?? 12,
-    wake_time: profile?.wake_time?.slice(0,5) ?? "07:00",
-    sleep_time: profile?.sleep_time?.slice(0,5) ?? "23:00",
-    training_days_pref: profile?.training_days_pref ?? [1,2,4,5],
-    injuries: profile?.injuries ?? [],
-    dietary: profile?.dietary ?? [],
-    equipment: profile?.equipment ?? [],
-    tone_pref: profile?.tone_pref ?? "calm_mentor",
-    preferred_session_length_min: profile?.preferred_session_length_min ?? 45,
-    i_am: profile?.i_am ?? "",
+  const [step, setStep] = useState<number>(() => loadStep());
+  const [draft, setDraft] = useState<any>(() => {
+    const saved = loadDraft();
+    return saved ?? {
+      age: profile?.age ?? 30,
+      sex: profile?.sex ?? "prefer_not_say",
+      height_cm: profile?.height_cm ?? 180,
+      weight_kg: profile?.weight_kg ?? 80,
+      primary_goal: profile?.primary_goal ?? "all",
+      target_horizon_weeks: profile?.target_horizon_weeks ?? 12,
+      wake_time: profile?.wake_time?.slice(0,5) ?? "07:00",
+      sleep_time: profile?.sleep_time?.slice(0,5) ?? "23:00",
+      training_days_pref: profile?.training_days_pref ?? [1,2,4,5],
+      injuries: profile?.injuries ?? [],
+      dietary: profile?.dietary ?? [],
+      equipment: profile?.equipment ?? [],
+      tone_pref: profile?.tone_pref ?? "calm_mentor",
+      preferred_session_length_min: profile?.preferred_session_length_min ?? 45,
+      i_am: profile?.i_am ?? "",
+    };
   });
+
+  // Persist draft + step on every change so user never loses progress.
+  useEffect(() => {
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch {}
+  }, [draft]);
+  useEffect(() => {
+    try { localStorage.setItem(STEP_KEY, String(step)); } catch {}
+  }, [step]);
 
   const set = (patch: any) => setDraft((d: any) => ({ ...d, ...patch }));
   const toggle = (key: string, val: any) => {

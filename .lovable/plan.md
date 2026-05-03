@@ -1,105 +1,69 @@
-## Make Coach feel like a premium, in-house personal trainer (not a separate app)
+# Make W Coach actually work + curated FAQ answers
 
-Goal: When the user opens Coach it should feel like the same W app — same chrome, same flame/gold language as Home — but with a single, focused "trainer in your pocket" experience. Premium, knowledgeable, contextual, calm.
+## Problems today
+1. **Chat is fragile.** The suggested-question chips in `TrainerBrief` and `ChatSheet` always hit `ai-coach` (streaming GPT-5). If the gateway is slow, rate-limited, or the user is on a flaky connection, the most common questions feel broken. There's also no instant feedback — every tap waits on a network round-trip.
+2. **No real FAQ.** "Suggested questions" are just prompts; tapping one starts a fresh AI call with zero guarantee of quality or speed.
+3. **Suggestions are unstable.** They come from `coach-daily-brief` so they change daily and there's no canonical, premium-quality answer attached to any of them.
 
-### Why it currently feels like a separate app
-- Custom back-button header replaces the global app shell → looks like a different product.
-- 3 generic tabs (Today / Plan / Progress) on top of an isolated card stack — no thread connecting them.
-- Chat is a hidden FAB; the trainer's "voice" never surfaces unprompted.
-- Trainer has no presence/identity — no name, no greeting, no read on today's state, no proactive note.
-- Training session card, missions, reflections, habits, goals are 5 unrelated cards instead of one coherent daily brief from the trainer.
+## What we'll ship
 
-### What changes (UX)
+### A) A real, curated FAQ knowledge base
+Create `src/lib/coach-faq.ts` — ~12 high-value questions a serious athlete actually asks, each with:
+- `id`, `question`, `category` (Training | Recovery | Nutrition | Mindset | Program)
+- `answer_md` — premium markdown answer (3–6 sentences, written in W Coach voice, with one bold takeaway and a final action line)
+- `tags` for matching free-text questions to a FAQ entry
 
-1. **Native shell, not an island** (`src/pages/Coach.tsx`)
-   - Drop the custom Header bar entirely. Use the standard app top spacing + `BottomNav` like Home.
-   - Profile/Memory shortcuts move into a tiny in-page "trainer card" overflow (•••), not a sub-header.
-   - Page background uses the same gradient/flame ambience as Home (subtle gold glow top, no boxed header).
+Examples (final list curated in code):
+- "Should I train if I slept under 6h?"
+- "What should I eat post-workout?"
+- "How do I deload properly?"
+- "How long until I see results?"
+- "Cold shower before or after training?"
+- "How do I fix a broken streak mentally?"
+- "Cardio on lifting days — yes or no?"
+- "How much protein do I actually need?"
+- "Pre-bed wind-down in 5 minutes?"
+- "I'm stalling on my main lift — what now?"
+- "Travel week — how do I not lose progress?"
+- "When should I switch programs?"
 
-2. **The Trainer becomes a person, not a tab system**
-   - At the top: a **Trainer Brief** — large, calm, signed by "W Coach". One paragraph, written fresh each morning by the AI based on athlete profile + last 7d + today's session + sleep:
-     > "Morning, Ville. Sleep was 6.4h — we'll keep volume but drop top set RPE to 7. Push lower body intent today; protein 180g; lights out by 23:30."
-   - Generated server-side, cached per day per user, regenerated when checkin/sleep updates.
-   - Below the brief: **today's session** as the hero, then a single compact "Daily focus" row (mission · reflection · habits as inline chips, not stacked cards).
-   - Goal progress shown as a 1-line ribbon at the very top of the brief ("Week 3 of 8 · Strength · on track").
+### B) Instant FAQ rendering in chat
+In `ChatSheet.send()`:
+- Before calling `ai-coach`, run `matchFaq(text)` (exact id match for chip taps; tag/keyword scoring for typed input above a threshold).
+- On match: push the user message + an assistant message with the canned `answer_md` immediately, with a tiny "Answered from W Coach playbook · Ask follow-up for more" footer. No network call. Still saved to localStorage so the conversation continues naturally.
+- On miss or if the user asks a follow-up: fall back to the existing streaming AI call (unchanged).
 
-3. **One scroll, one conversation thread**
-   - Replace the 3-tab pill with a **segmented inline jump**: `Today` (default), `This week`, `My plan`, `Progress` — but as in-page scroll anchors, not isolated views. The page is one continuous coach session, not 4 disconnected screens.
-   - "This week" = condensed week strip (7 dots, today highlighted, tap for that day).
-   - "My plan" = the program accordion inline.
-   - "Progress" = compact stats inline.
+### C) FAQ surface in the UI
+- **`TrainerBrief`**: keep the daily AI-generated suggestions, but append a small "Playbook" row with 3 rotating FAQ chips (deterministic by date so they feel curated, not random). Tap → opens chat with the canned answer pre-rendered.
+- **`ChatSheet` empty state**: replace the 4 hard-coded `SUGGESTIONS` with the top 6 FAQ entries, grouped under a "Quick answers" label. Each chip carries its `faq_id` so the answer is instant.
+- Add a tiny "Browse playbook" link in the empty state that opens an in-sheet list of all FAQs (simple scrollable list, tap to insert answer).
 
-4. **Chat as the trainer's voice, always reachable**
-   - Replace the floating circular FAB with a **persistent "Ask Coach" composer pinned to the bottom** of the Coach page (above BottomNav, like an iMessage input). One line, always visible. Tapping focuses; submitting opens the conversation as a sheet that slides up over content (not a separate route).
-   - Empty state shows 3 suggestions tailored to today's brief (e.g. "Why RPE 7 today?", "Swap squat — knee feels off", "Pre-bed routine").
-   - Messages persist; the brief at top references the latest exchange ("We adjusted today's squat to front squat — see plan").
+### D) Reliability fixes for the chat itself
+- In `ChatSheet.send()`, when the network/stream fails, currently we drop the user message silently. Change to: keep the user message, add an assistant message "Coach lost connection — tap to retry" with a retry button that re-runs `send(lastUserText)`.
+- Stop sending stale `localStorage` history on first open if it's > 24h old (current behavior reuses old context forever). Add a "New chat" button in the sheet header to clear.
+- Pass `faq_hits` (matched FAQ ids in this conversation) to `ai-coach` so AI follow-ups don't repeat the canned answer.
 
-5. **Trainer identity & polish**
-   - Small "W Coach" signature line under the brief with a subtle gold pulse dot when a new brief is ready.
-   - Tone strictly per athlete profile (`tone_pref`) — Drill Sergeant / Calm Mentor / Scientist / Hype — already in profile, just wire it into the daily brief prompt.
-   - Reference user by first name (from `i_am` / username) and reference 1-2 specific recent stats per brief — never generic.
+### E) Backend tweak (small)
+`supabase/functions/ai-coach/index.ts`:
+- Accept optional `faq_context` in body. If present, append to system prompt: *"The user just read the playbook answer to: '…'. Do not repeat it — go deeper or answer their follow-up."*
+- No schema/migration changes needed.
 
-### What changes (technical)
+## Files
 
-**New edge function: `coach-daily-brief`** (`supabase/functions/coach-daily-brief/index.ts`)
-- JWT auth + `has_active_access` gate.
-- Inputs: athlete profile, today's program day (week/day_index from active program), last 3 checkins, sleep, latest reflection, latest goal progress.
-- Calls Lovable AI Gateway `openai/gpt-5` (non-streaming, ~120 tokens) with a tight system prompt that bakes in the user's `tone_pref`, language, and the prescription style rules.
-- Tool-call output (structured): `{ ribbon, brief_md, prescriptions: [{label, value}], suggested_questions: string[3] }`.
-- Stores in new table `coach_daily_briefs(user_id, brief_date, payload jsonb, created_at)` with RLS (user can read own; insert via SECURITY DEFINER RPC `upsert_daily_brief`).
-- Triggered on Coach mount: client calls function; if a row exists for `today` returns cached, else generates.
+**New**
+- `src/lib/coach-faq.ts` — FAQ data + `matchFaq(text)` helper
+- `src/components/coach/FaqBrowser.tsx` — scrollable list inside ChatSheet
 
-**Migration**
-- Create table `coach_daily_briefs` + RLS policies (`select` own, no direct insert).
-- Create `upsert_daily_brief(_payload jsonb)` SECURITY DEFINER RPC.
+**Edited**
+- `src/pages/Coach.tsx` — ChatSheet empty state, instant-answer path in `send()`, retry on failure, "New chat" button, stale-history guard
+- `src/components/coach/TrainerBrief.tsx` — append Playbook chip row
+- `supabase/functions/ai-coach/index.ts` — accept `faq_context`
 
-**New components**
-- `src/components/coach/TrainerBrief.tsx` — ribbon, signed brief, prescriptions row, "ask" suggestions. Loading shimmer.
-- `src/components/coach/CoachComposer.tsx` — persistent bottom composer with sheet expansion (uses existing `framer-motion`).
-- `src/components/coach/WeekStrip.tsx` — 7-day dot strip with focus per day.
+## Out of scope
+- No new tables, no new edge functions, no migrations.
+- Daily brief generation stays as-is.
 
-**Refactor `src/pages/Coach.tsx`**
-- Remove `Header`, tab pills, FAB, full-screen chat overlay.
-- New layout (single scroll):
-  ```text
-  TrainerBrief                 ← daily AI brief, signed
-  TodaySessionCard             ← unchanged content, lighter chrome
-  WeekStrip                    ← horizontal week dots
-  Daily focus row              ← Mission · Reflection · Habits inline
-  ProgramWeekAccordion         ← inline, no tab
-  PerformanceOSDashboard       ← inline, no tab
-  CoachComposer (sticky)       ← always visible, opens chat sheet
-  ```
-- Keep BottomNav visible (don't hide it on /coach).
-
-**Refactor `TodaySessionCard.tsx`**
-- Drop the gold gradient panel; use a flat surface that matches Home cards (no separate-app vibe).
-- Header line shows trainer's RPE/tempo decision tied to today's brief: "Today's call: RPE 7, full ROM, 3-1-1 tempo."
-
-**Update `ai-coach` system prompt**
-- Inject athlete `tone_pref`, `i_am`, `primary_goal`, target horizon, equipment, no-go protocols.
-- Inject today's prescribed session (focus, blocks summary).
-- Inject today's brief if exists, so chat is consistent with the brief.
-- Reduce length cap; encourage 3-5 sentence answers + a single next action line.
-
-**Update `BottomNav.tsx`**
-- No change required; already shown on `/coach`. Just ensure Coach page padding leaves room for both the composer and BottomNav.
-
-### Files to add
-- `supabase/functions/coach-daily-brief/index.ts`
-- `src/components/coach/TrainerBrief.tsx`
-- `src/components/coach/CoachComposer.tsx`
-- `src/components/coach/WeekStrip.tsx`
-- New migration: `coach_daily_briefs` table + RLS + `upsert_daily_brief` RPC.
-
-### Files to edit
-- `src/pages/Coach.tsx` — strip tabs/header/FAB, single-scroll layout, mount TrainerBrief + composer.
-- `src/components/coach/TodaySessionCard.tsx` — flatter chrome, integrate trainer's call line.
-- `supabase/functions/ai-coach/index.ts` — richer system prompt (tone, today session, brief).
-- `src/components/coach/ProgramWeekAccordion.tsx` — minor: render inline (no own header) when embedded.
-
-### Out of scope
-- No changes to program generation logic or athlete onboarding flow.
-- No new payment gating (membership gate already covers it).
-
-Approve and I'll ship this in one pass.
+## Technical notes
+- `matchFaq`: lowercase + strip punctuation, score by tag overlap; threshold ≥ 2 tag hits OR exact id. Keep it dumb and fast — the chips cover 90% of taps anyway.
+- FAQ answers are written in the same voice as the system prompt (calm mentor by default, bold key numbers, end with one action). They should read as if the AI wrote them — users shouldn't notice the difference except for speed.
+- Rotating Playbook chips: `faqs[(dayOfYear + i) % faqs.length]` so the same 3 show all day but rotate daily.

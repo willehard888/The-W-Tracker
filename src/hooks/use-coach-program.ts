@@ -8,6 +8,9 @@ export interface ProgramBlock {
   reps: string;
   rpe?: number;
   notes?: string;
+  rest_sec?: number;
+  tempo?: string;
+  alt?: string;
 }
 export interface ProgramDay {
   day: string;
@@ -15,6 +18,8 @@ export interface ProgramDay {
   duration_min: number;
   blocks: ProgramBlock[];
   conditioning?: string;
+  warmup?: string;
+  cooldown?: string;
 }
 export interface ProgramWeek {
   week: number;
@@ -22,6 +27,7 @@ export interface ProgramWeek {
   days: ProgramDay[];
   nutrition: { protein_g_per_kg: number; daily_kcal_band: string; notes: string };
   recovery: { sleep_target_h: number; mobility_min: number; breathwork: string };
+  progression_note?: string;
 }
 export interface PlanJson {
   weeks: ProgramWeek[];
@@ -31,6 +37,7 @@ export interface PlanJson {
     hydration_l: number;
     perfect_days: number;
   };
+  coach_signature?: string;
 }
 export interface CoachProgram {
   id: string;

@@ -55,6 +55,12 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
 
             {open && (
               <div className="px-3 pb-4 space-y-2">
+                {week.progression_note && (
+                  <div className="rounded-xl border border-gold/25 bg-gold/[0.05] px-3 py-2 mb-1">
+                    <p className="text-[9.5px] font-black uppercase tracking-widest text-gold mb-0.5">Progression</p>
+                    <p className="text-[11.5px] text-foreground/85 leading-snug">{week.progression_note}</p>
+                  </div>
+                )}
                 {week.days.map((day, di) => {
                   const isRest = day.focus.toLowerCase() === "rest";
                   const isLogged = logs.some(

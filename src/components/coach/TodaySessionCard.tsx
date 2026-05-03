@@ -92,33 +92,60 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
           )}
 
           {!isRest ? (
-            <ul className="space-y-2 mb-5">
-              {day.blocks.map((b, i) => (
-                <li
-                  key={i}
-                  className="rounded-xl bg-background/40 border border-border/40 px-3 py-2.5"
-                >
-                  <div className="flex items-baseline justify-between gap-2 mb-0.5">
-                    <p className="font-bold text-sm text-foreground">{b.name}</p>
-                    <p className="text-[11px] font-black tracking-wider text-gold whitespace-nowrap">
-                      {b.sets} × {b.reps}
-                      {b.rpe ? ` @ RPE ${b.rpe}` : ""}
-                    </p>
-                  </div>
-                  {b.notes && (
-                    <p className="text-[11px] text-muted-foreground leading-snug">{b.notes}</p>
-                  )}
-                </li>
-              ))}
-              {day.conditioning && (
-                <li className="rounded-xl bg-background/40 border border-border/40 px-3 py-2.5">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gold mb-0.5">
-                    Conditioning
-                  </p>
-                  <p className="text-[12px] text-foreground/85">{day.conditioning}</p>
-                </li>
+            <div className="space-y-2 mb-5">
+              {day.warmup && (
+                <div className="rounded-xl bg-gold/[0.06] border border-gold/25 px-3 py-2">
+                  <p className="text-[9.5px] font-black uppercase tracking-widest text-gold mb-0.5">Warm-up</p>
+                  <p className="text-[11.5px] text-foreground/85 leading-snug">{day.warmup}</p>
+                </div>
               )}
-            </ul>
+              <ul className="space-y-2">
+                {day.blocks.map((b, i) => (
+                  <li
+                    key={i}
+                    className="rounded-xl bg-background/40 border border-border/40 px-3 py-2.5"
+                  >
+                    <div className="flex items-baseline justify-between gap-2 mb-0.5">
+                      <p className="font-bold text-sm text-foreground">{b.name}</p>
+                      <p className="text-[11px] font-black tracking-wider text-gold whitespace-nowrap">
+                        {b.sets} × {b.reps}
+                        {b.rpe ? ` @ RPE ${b.rpe}` : ""}
+                      </p>
+                    </div>
+                    {(b.rest_sec || b.tempo) && (
+                      <p className="text-[10px] text-muted-foreground/80 mb-0.5">
+                        {b.rest_sec ? `Rest ${b.rest_sec}s` : ""}
+                        {b.rest_sec && b.tempo ? " · " : ""}
+                        {b.tempo ? `Tempo ${b.tempo}` : ""}
+                      </p>
+                    )}
+                    {b.notes && (
+                      <p className="text-[11px] text-muted-foreground leading-snug">{b.notes}</p>
+                    )}
+                    {b.alt && (
+                      <p className="text-[10.5px] text-muted-foreground/85 mt-1">
+                        <span className="font-black uppercase tracking-widest text-gold/85 text-[9px] mr-1">Swap</span>
+                        {b.alt}
+                      </p>
+                    )}
+                  </li>
+                ))}
+                {day.conditioning && (
+                  <li className="rounded-xl bg-background/40 border border-border/40 px-3 py-2.5">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gold mb-0.5">
+                      Conditioning
+                    </p>
+                    <p className="text-[12px] text-foreground/85">{day.conditioning}</p>
+                  </li>
+                )}
+              </ul>
+              {day.cooldown && (
+                <div className="rounded-xl bg-background/30 border border-border/40 px-3 py-2">
+                  <p className="text-[9.5px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Cooldown</p>
+                  <p className="text-[11.5px] text-foreground/80 leading-snug">{day.cooldown}</p>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="rounded-xl bg-background/40 border border-border/40 p-4 mb-5">
               <div className="flex items-center gap-2 mb-1.5">

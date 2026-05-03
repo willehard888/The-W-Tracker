@@ -20,6 +20,7 @@ const TONES: Record<string, string> = {
   hype: "Hype coach",
 };
 const GOALS: Record<string, string> = {
+  all: "All-around",
   strength: "Strength",
   hypertrophy: "Hypertrophy",
   endurance: "Endurance",

@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
-import { Check, Clock, Dumbbell, Wind, Loader2 } from "lucide-react";
+import { Check, ChevronDown, Loader2, Wind } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CoachProgram, ProgramLog } from "@/hooks/use-coach-program";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { hapticNotification } from "@/lib/haptics";
+import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
 interface Props {
   program: CoachProgram;
@@ -19,15 +19,15 @@ interface Props {
 const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged }: Props) => {
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [openBlock, setOpenBlock] = useState<number | null>(null);
+  const [openWarmup, setOpenWarmup] = useState(false);
+  const [openCooldown, setOpenCooldown] = useState(false);
 
   const week = program.plan_json.weeks.find((w) => w.week === currentWeek);
   const day = week?.days[todayDayIndex];
 
   const alreadyLogged = useMemo(
-    () =>
-      logs.some(
-        (l) => l.week === currentWeek && l.day_index === todayDayIndex && l.completed,
-      ),
+    () => logs.some((l) => l.week === currentWeek && l.day_index === todayDayIndex && l.completed),
     [logs, currentWeek, todayDayIndex],
   );
 
@@ -45,167 +45,163 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
       completed: true,
     });
     setSaving(false);
-    if (error) {
-      toast.error("Couldn't log session.");
-      return;
-    }
+    if (error) { toast.error("Couldn't log session."); return; }
     hapticNotification("success");
-    toast.success(isRest ? "Rest logged. Recover well." : "Session logged. Great work.");
+    toast.success(isRest ? "Rest logged." : "Session done.");
     onLogged();
   };
 
   return (
-    <div className="space-y-4">
-      {/* Hero card */}
-      <div
-        className={cn(
-          "relative rounded-3xl overflow-hidden border p-5",
-          "bg-gradient-to-b from-gold/[0.10] via-card/95 to-card border-gold/35",
-          "shadow-[0_20px_60px_-20px_hsl(var(--gold)/0.35)]",
-        )}
-      >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-16 -right-16 w-44 h-44 rounded-full blur-3xl opacity-60"
-          style={{ background: "radial-gradient(circle, hsl(var(--gold)/0.45), transparent 70%)" }}
-        />
-        <div className="relative">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-black tracking-[0.22em] uppercase text-gold">
-              Today · Week {currentWeek} · {day.day}
-            </span>
-          </div>
-          <h2 className="font-display text-[28px] leading-[1.05] font-black tracking-tight mb-1">
-            {day.focus}
-          </h2>
-          {!isRest && (
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-4">
-              <span className="inline-flex items-center gap-1">
-                <Clock size={11} className="text-gold" />
-                {day.duration_min} min
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <Dumbbell size={11} className="text-gold" />
-                {day.blocks.length} block{day.blocks.length !== 1 && "s"}
-              </span>
-            </div>
-          )}
-
-          {!isRest ? (
-            <div className="space-y-2 mb-5">
-              {day.warmup && (
-                <div className="rounded-xl bg-gold/[0.06] border border-gold/25 px-3 py-2">
-                  <p className="text-[9.5px] font-black uppercase tracking-widest text-gold mb-0.5">Warm-up</p>
-                  <p className="text-[11.5px] text-foreground/85 leading-snug">{day.warmup}</p>
-                </div>
-              )}
-              <ul className="space-y-2">
-                {day.blocks.map((b, i) => (
-                  <li
-                    key={i}
-                    className="rounded-xl bg-background/40 border border-border/40 px-3 py-2.5"
-                  >
-                    <div className="flex items-baseline justify-between gap-2 mb-0.5">
-                      <p className="font-bold text-sm text-foreground">{b.name}</p>
-                      <p className="text-[11px] font-black tracking-wider text-gold whitespace-nowrap">
-                        {b.sets} × {b.reps}
-                        {b.rpe ? ` @ RPE ${b.rpe}` : ""}
-                      </p>
-                    </div>
-                    {(b.rest_sec || b.tempo) && (
-                      <p className="text-[10px] text-muted-foreground/80 mb-0.5">
-                        {b.rest_sec ? `Rest ${b.rest_sec}s` : ""}
-                        {b.rest_sec && b.tempo ? " · " : ""}
-                        {b.tempo ? `Tempo ${b.tempo}` : ""}
-                      </p>
-                    )}
-                    {b.notes && (
-                      <p className="text-[11px] text-muted-foreground leading-snug">{b.notes}</p>
-                    )}
-                    {b.alt && (
-                      <p className="text-[10.5px] text-muted-foreground/85 mt-1">
-                        <span className="font-black uppercase tracking-widest text-gold/85 text-[9px] mr-1">Swap</span>
-                        {b.alt}
-                      </p>
-                    )}
-                  </li>
-                ))}
-                {day.conditioning && (
-                  <li className="rounded-xl bg-background/40 border border-border/40 px-3 py-2.5">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gold mb-0.5">
-                      Conditioning
-                    </p>
-                    <p className="text-[12px] text-foreground/85">{day.conditioning}</p>
-                  </li>
-                )}
-              </ul>
-              {day.cooldown && (
-                <div className="rounded-xl bg-background/30 border border-border/40 px-3 py-2">
-                  <p className="text-[9.5px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Cooldown</p>
-                  <p className="text-[11.5px] text-foreground/80 leading-snug">{day.cooldown}</p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="rounded-xl bg-background/40 border border-border/40 p-4 mb-5">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Wind size={14} className="text-gold" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-gold">
-                  Recovery focus
-                </p>
-              </div>
-              <p className="text-[12px] text-foreground/85 leading-snug">
-                {week!.recovery.mobility_min} min mobility · breathwork: {week!.recovery.breathwork} ·
-                sleep target {week!.recovery.sleep_target_h} h.
-              </p>
-            </div>
-          )}
-
-          <Button
-            variant={alreadyLogged ? "secondary" : "gold"}
-            size="lg"
-            disabled={alreadyLogged || saving}
-            onClick={markDone}
-            className="w-full font-black"
-          >
-            {saving ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : alreadyLogged ? (
-              <>
-                <Check size={16} /> Logged for today
-              </>
-            ) : (
-              <>
-                <Check size={16} /> {isRest ? "Mark rest day" : "Mark session done"}
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
-
-      {/* Week context */}
-      {week && (
-        <div className="rounded-2xl border border-border/60 bg-card/60 p-4">
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
-            Week {week.week} theme
-          </p>
-          <p className="font-display text-base font-black mb-2">{week.theme}</p>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <Stat label="Sleep" value={`${week.recovery.sleep_target_h}h`} />
-            <Stat label="Protein" value={`${week.nutrition.protein_g_per_kg}g/kg`} />
-            <Stat label="Mobility" value={`${week.recovery.mobility_min}m`} />
-          </div>
-        </div>
+    <div
+      className={cn(
+        "relative rounded-3xl overflow-hidden border p-5",
+        "bg-gradient-to-b from-gold/[0.08] via-card/95 to-card border-gold/30",
+        "shadow-[0_20px_60px_-20px_hsl(var(--gold)/0.3)]",
       )}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-16 -right-16 w-44 h-44 rounded-full blur-3xl opacity-50"
+        style={{ background: "radial-gradient(circle, hsl(var(--gold)/0.4), transparent 70%)" }}
+      />
+      <div className="relative">
+        {/* Header band */}
+        <p className="text-[10px] font-black tracking-[0.2em] uppercase text-gold/90 mb-1">
+          Today · W{currentWeek} · {day.day}
+        </p>
+        <h2 className="font-display text-[26px] leading-[1.05] font-black tracking-tight">
+          {day.focus}
+        </h2>
+        {!isRest && (
+          <p className="text-[11px] text-muted-foreground mt-1 mb-4">
+            {day.duration_min} min · {day.blocks.length} block{day.blocks.length !== 1 && "s"}
+          </p>
+        )}
+
+        {!isRest ? (
+          <div className="space-y-1.5 mb-5">
+            {day.warmup && (
+              <CollapseRow
+                label="Warm-up"
+                preview={day.warmup}
+                open={openWarmup}
+                onToggle={() => { hapticImpact("light"); setOpenWarmup(v => !v); }}
+              />
+            )}
+
+            <ul className="space-y-1.5 py-1">
+              {day.blocks.map((b, i) => {
+                const hasMore = !!(b.notes || b.alt || b.rest_sec || b.tempo);
+                const open = openBlock === i;
+                return (
+                  <li key={i} className="border-b border-border/30 last:border-b-0 pb-1.5 last:pb-0">
+                    <button
+                      type="button"
+                      onClick={() => hasMore && (hapticImpact("light"), setOpenBlock(open ? null : i))}
+                      className="w-full flex items-baseline justify-between gap-2 py-1 text-left"
+                    >
+                      <span className="font-bold text-sm text-foreground truncate">{b.name}</span>
+                      <span className="text-[11px] font-black tracking-wider text-gold whitespace-nowrap inline-flex items-center gap-1">
+                        {b.sets}×{b.reps}{b.rpe ? ` · RPE ${b.rpe}` : ""}
+                        {hasMore && (
+                          <ChevronDown
+                            size={11}
+                            className={cn("text-muted-foreground/70 transition-transform", open && "rotate-180")}
+                          />
+                        )}
+                      </span>
+                    </button>
+                    {open && (
+                      <div className="pl-0 pb-1 space-y-0.5">
+                        {(b.rest_sec || b.tempo) && (
+                          <p className="text-[10.5px] text-muted-foreground/80">
+                            {b.rest_sec ? `Rest ${b.rest_sec}s` : ""}
+                            {b.rest_sec && b.tempo ? " · " : ""}
+                            {b.tempo ? `Tempo ${b.tempo}` : ""}
+                          </p>
+                        )}
+                        {b.notes && (
+                          <p className="text-[11px] text-muted-foreground leading-snug">{b.notes}</p>
+                        )}
+                        {b.alt && (
+                          <p className="text-[11px] text-muted-foreground/85">
+                            <span className="text-gold/85 font-black uppercase tracking-widest text-[9px] mr-1">Swap</span>
+                            {b.alt}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+              {day.conditioning && (
+                <li className="pt-1">
+                  <p className="text-[9.5px] font-black uppercase tracking-widest text-gold mb-0.5">Conditioning</p>
+                  <p className="text-[12px] text-foreground/85">{day.conditioning}</p>
+                </li>
+              )}
+            </ul>
+
+            {day.cooldown && (
+              <CollapseRow
+                label="Cooldown"
+                preview={day.cooldown}
+                open={openCooldown}
+                onToggle={() => { hapticImpact("light"); setOpenCooldown(v => !v); }}
+                muted
+              />
+            )}
+          </div>
+        ) : (
+          <div className="rounded-xl bg-background/40 border border-border/40 p-4 mb-5">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Wind size={14} className="text-gold" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-gold">Recovery</p>
+            </div>
+            <p className="text-[12px] text-foreground/85 leading-snug">
+              {week!.recovery.mobility_min} min mobility · {week!.recovery.breathwork} · sleep {week!.recovery.sleep_target_h}h.
+            </p>
+          </div>
+        )}
+
+        <Button
+          variant={alreadyLogged ? "secondary" : "gold"}
+          size="lg"
+          disabled={alreadyLogged || saving}
+          onClick={markDone}
+          className="w-full font-black"
+        >
+          {saving ? <Loader2 size={16} className="animate-spin" />
+            : alreadyLogged ? <><Check size={16} /> Done · today</>
+            : <><Check size={16} /> {isRest ? "Mark rest" : "Done"}</>}
+        </Button>
+      </div>
     </div>
   );
 };
 
-const Stat = ({ label, value }: { label: string; value: string }) => (
-  <div className="rounded-lg bg-background/40 border border-border/40 px-2 py-2">
-    <p className="font-display text-base font-black text-gold leading-none">{value}</p>
-    <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-1">{label}</p>
-  </div>
+const CollapseRow = ({
+  label, preview, open, onToggle, muted,
+}: { label: string; preview: string; open: boolean; onToggle: () => void; muted?: boolean }) => (
+  <button
+    type="button"
+    onClick={onToggle}
+    className={cn(
+      "w-full text-left flex items-start gap-2 px-0 py-1.5",
+    )}
+  >
+    <span className={cn(
+      "text-[9.5px] font-black uppercase tracking-widest mt-0.5 shrink-0",
+      muted ? "text-muted-foreground" : "text-gold",
+    )}>{label}</span>
+    <span className={cn(
+      "text-[11.5px] leading-snug flex-1",
+      open ? "text-foreground/90" : "text-foreground/70 truncate",
+    )}>
+      {preview}
+    </span>
+    <ChevronDown size={12} className={cn("text-muted-foreground/70 mt-1 transition-transform shrink-0", open && "rotate-180")} />
+  </button>
 );
 
 export default TodaySessionCard;

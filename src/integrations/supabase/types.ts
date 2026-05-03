@@ -250,6 +250,30 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_daily_briefs: {
+        Row: {
+          brief_date: string
+          created_at: string
+          id: string
+          payload: Json
+          user_id: string
+        }
+        Insert: {
+          brief_date: string
+          created_at?: string
+          id?: string
+          payload: Json
+          user_id: string
+        }
+        Update: {
+          brief_date?: string
+          created_at?: string
+          id?: string
+          payload?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       coach_daily_plans: {
         Row: {
           adjustment: string
@@ -2345,6 +2369,22 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "coach_athlete_profile"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      upsert_daily_brief: {
+        Args: { _payload: Json }
+        Returns: {
+          brief_date: string
+          created_at: string
+          id: string
+          payload: Json
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "coach_daily_briefs"
           isOneToOne: true
           isSetofReturn: false
         }

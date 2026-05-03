@@ -50,7 +50,7 @@ const Coach = () => {
   if (!athlete?.onboarded) {
     return (
       <div className="flex flex-col h-full">
-        <Header onBack={() => navigate(-1)} />
+        <Header onBack={() => navigate(-1)} navigate={navigate} />
         <AthleteProfileOnboarding onDone={() => refetchAthlete()} />
       </div>
     );
@@ -59,7 +59,7 @@ const Coach = () => {
   if (!program) {
     return (
       <div className="flex flex-col h-full overflow-y-auto safe-top">
-        <Header onBack={() => navigate(-1)} />
+        <Header onBack={() => navigate(-1)} navigate={navigate} />
         <ProgramOnboarding onGenerated={() => refetch()} />
       </div>
     );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft, Sparkles, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import { useAthleteProfile, type ToneId, type GoalId } from "@/hooks/use-athlete-profile";
 import { toast } from "sonner";
+
+const DRAFT_KEY = "w_coach_onboarding_draft_v2";
+const STEP_KEY = "w_coach_onboarding_step_v2";
 
 interface Props { onDone: () => void }
 

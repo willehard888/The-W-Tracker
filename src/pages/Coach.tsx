@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, Loader2, User, Brain, X, Sparkles } from "lucide-react";
+import { Send, ArrowLeft, Loader2, User, Brain, X, Sparkles, BookOpen, RotateCw, Plus } from "lucide-react";
+import { matchFaq, COACH_FAQ, FaqEntry } from "@/lib/coach-faq";
+import FaqBrowser from "@/components/coach/FaqBrowser";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";

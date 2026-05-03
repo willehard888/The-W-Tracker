@@ -30,10 +30,8 @@ const STORAGE_KEY = "w_coach_messages_v1";
 
 const TABS = [
   { id: "today", label: "Today" },
-  { id: "program", label: "Program" },
-  { id: "habits", label: "Habits" },
+  { id: "plan", label: "Plan" },
   { id: "progress", label: "Progress" },
-  { id: "chat", label: "Chat" },
 ] as const;
 type TabId = typeof TABS[number]["id"];
 

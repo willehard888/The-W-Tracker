@@ -240,7 +240,9 @@ Deno.serve(async (req) => {
       (briefingRes.data?.key_insights as any[]) ?? null,
       (briefRes.data?.payload as any) ?? null,
       todaySession,
-    );
+    ) + (faqContext
+      ? `\n\nThe user just read the Playbook answer to: "${faqContext.question}". Do NOT repeat that answer. Go deeper, address their follow-up directly, or apply it to their specific context.`
+      : "");
 
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

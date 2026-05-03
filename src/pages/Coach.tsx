@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, Loader2, User, Brain, X, Sparkles } from "lucide-react";
+import { Send, ArrowLeft, Loader2, User, Brain, X, Sparkles, BookOpen, RotateCw, Plus } from "lucide-react";
+import { matchFaq, COACH_FAQ, FaqEntry } from "@/lib/coach-faq";
+import FaqBrowser from "@/components/coach/FaqBrowser";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -205,52 +207,67 @@ const PersistentComposer = ({ onOpen }: { onOpen: (prompt?: string) => void }) =
 };
 
 // ── Chat sheet (slide-up over content) ────────────────────────────────────────
-const SUGGESTIONS = [
-  "Adjust today's session — I'm low on sleep.",
-  "What should I eat post-workout?",
-  "How do I deload week 4 properly?",
-  "Give me a 5-min pre-bed wind-down.",
-];
+type ChatMsg = Msg & { faq_id?: string; failed?: boolean; isFaq?: boolean };
+
+const STALE_MS = 24 * 60 * 60 * 1000;
+const HISTORY_TS_KEY = "w_coach_messages_v1_ts";
 
 const ChatSheet = ({
   session, program, initialPrompt, onClose,
 }: { session: any; program: any; initialPrompt: string | null; onClose: () => void }) => {
-  const [messages, setMessages] = useState<Msg[]>(() => {
+  const [messages, setMessages] = useState<ChatMsg[]>(() => {
     try {
+      const ts = Number(localStorage.getItem(HISTORY_TS_KEY) ?? 0);
+      if (Date.now() - ts > STALE_MS) return [];
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw) as Msg[];
+      if (raw) return JSON.parse(raw) as ChatMsg[];
     } catch {}
     return [];
   });
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [showBrowser, setShowBrowser] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const sentInitialRef = useRef(false);
+  const lastFaqRef = useRef<FaqEntry | null>(null);
 
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-40))); } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-40)));
+      localStorage.setItem(HISTORY_TS_KEY, String(Date.now()));
+    } catch {}
     requestAnimationFrame(() => {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
     });
   }, [messages, streaming]);
 
-  const send = async (textOverride?: string) => {
-    const text = (textOverride ?? input).trim();
-    if (!text || streaming) return;
+  const newChat = () => {
     hapticImpact("light");
-    setInput("");
-    const userMsg: Msg = { role: "user", content: text };
-    const next = [...messages, userMsg];
-    setMessages(next);
-    setStreaming(true);
+    setMessages([]);
+    lastFaqRef.current = null;
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+  };
 
+  /** Send a FAQ entry instantly — no network. */
+  const sendFaq = (entry: FaqEntry) => {
+    hapticImpact("light");
+    lastFaqRef.current = entry;
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: entry.question },
+      { role: "assistant", content: entry.answer_md, faq_id: entry.id, isFaq: true },
+    ]);
+  };
+
+  const callAi = async (history: ChatMsg[]) => {
+    setStreaming(true);
     let buf = "";
     const upsert = (chunk: string) => {
       buf += chunk;
       setMessages((prev) => {
         const last = prev[prev.length - 1];
-        if (last?.role === "assistant") {
+        if (last?.role === "assistant" && !last.isFaq) {
           return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: buf } : m));
         }
         return [...prev, { role: "assistant", content: buf }];
@@ -270,16 +287,21 @@ const ChatSheet = ({
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "",
         },
         body: JSON.stringify({
-          messages: next,
+          messages: history.map(({ role, content }) => ({ role, content })),
           program_context: program ? { goal: program.goal, summary: program.ai_summary } : null,
+          faq_context: lastFaqRef.current
+            ? { question: lastFaqRef.current.question, answer: lastFaqRef.current.answer_md }
+            : null,
         }),
       });
       if (!resp.ok || !resp.body) {
         if (resp.status === 429) toast.error("Coach is busy. Try again in a moment.");
         else if (resp.status === 402) toast.error("AI credits exhausted.");
         else toast.error("Coach failed to respond.");
-        setMessages((prev) => prev.slice(0, -1));
-        setStreaming(false);
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: "Coach lost connection. Tap to retry.", failed: true },
+        ]);
         return;
       }
       const reader = resp.body.getReader();
@@ -310,13 +332,19 @@ const ChatSheet = ({
         }
       }
     } catch (e: any) {
-      if (e?.name !== "AbortError") toast.error("Connection lost.");
+      if (e?.name !== "AbortError") {
+        toast.error("Connection lost.");
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: "Coach lost connection. Tap to retry.", failed: true },
+        ]);
+      }
     } finally {
       setStreaming(false);
       abortRef.current = null;
       try {
         if (buf && buf.length > 20 && session?.access_token) {
-          const finalMsgs = [...next, { role: "assistant" as const, content: buf }];
+          const finalMsgs = [...history, { role: "assistant" as const, content: buf }];
           supabase.functions.invoke("coach-extract-memory", {
             body: { messages: finalMsgs.slice(-6) },
           }).catch(() => { /* silent */ });
@@ -325,13 +353,43 @@ const ChatSheet = ({
     }
   };
 
+  const send = async (textOverride?: string, opts?: { faqId?: string }) => {
+    const text = (textOverride ?? input).trim();
+    if (!text || streaming) return;
+
+    // Instant FAQ path
+    const faq = matchFaq(text, opts?.faqId);
+    if (faq) {
+      setInput("");
+      sendFaq(faq);
+      return;
+    }
+
+    hapticImpact("light");
+    setInput("");
+    const userMsg: ChatMsg = { role: "user", content: text };
+    const next = [...messages.filter((m) => !m.failed), userMsg];
+    setMessages(next);
+    await callAi(next);
+  };
+
+  const retryLast = async () => {
+    const lastUser = [...messages].reverse().find((m) => m.role === "user");
+    if (!lastUser) return;
+    setMessages((prev) => prev.filter((m) => !m.failed));
+    await callAi(messages.filter((m) => !m.failed));
+  };
+
   // Auto-send initial prompt
   useEffect(() => {
     if (!sentInitialRef.current && initialPrompt && initialPrompt.trim()) {
       sentInitialRef.current = true;
       send(initialPrompt);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPrompt]);
+
+  const quickAnswers = COACH_FAQ.slice(0, 6);
 
   return (
     <motion.div
@@ -342,7 +400,9 @@ const ChatSheet = ({
       className="absolute inset-0 z-40 bg-background flex flex-col"
     >
       <div className="shrink-0 px-3 pt-3 pb-2 flex items-center justify-between border-b border-border/30 bg-background/85 backdrop-blur-xl">
-        <span className="w-9" />
+        <Button variant="ghost" size="icon-sm" onClick={newChat} aria-label="New chat" title="New chat">
+          <Plus size={18} />
+        </Button>
         <div className="inline-flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_8px_hsl(var(--gold))]" />
           <p className="font-display text-sm font-black tracking-tight">W Coach</p>
@@ -354,17 +414,29 @@ const ChatSheet = ({
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {messages.length === 0 && (
-          <div className="text-center pt-6 pb-4">
-            <p className="text-xs text-muted-foreground max-w-[260px] mx-auto mb-5">
-              Coach knows your active program and last 7 days. Ask anything.
+          <div className="text-center pt-4 pb-2">
+            <p className="text-xs text-muted-foreground max-w-[280px] mx-auto mb-4">
+              Ask anything. Coach knows your program, last 7 days, and the playbook below.
+            </p>
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80 mb-2">
+              Quick answers
             </p>
             <div className="flex flex-col gap-2 max-w-sm mx-auto">
-              {SUGGESTIONS.map((s) => (
-                <Button key={s} variant="ember-glass" size="sm" onClick={() => send(s)}
-                  className="justify-start text-left h-auto py-2.5 whitespace-normal">
-                  {s}
-                </Button>
+              {quickAnswers.map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => send(f.question, { faqId: f.id })}
+                  className="text-left rounded-xl border border-gold/20 bg-gold/[0.04] hover:bg-gold/[0.1] hover:border-gold/40 px-3.5 py-2.5 text-sm transition"
+                >
+                  {f.question}
+                </button>
               ))}
+              <button
+                onClick={() => { hapticImpact("light"); setShowBrowser(true); }}
+                className="mt-1 inline-flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-gold transition"
+              >
+                <BookOpen size={12} /> Browse playbook
+              </button>
             </div>
           </div>
         )}
@@ -375,14 +447,32 @@ const ChatSheet = ({
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.18 }}
-              className={m.role === "user" ? "flex justify-end" : "flex justify-start"}
+              className={m.role === "user" ? "flex justify-end" : "flex flex-col items-start"}
             >
               <div className={m.role === "user"
                 ? "max-w-[82%] rounded-2xl rounded-br-md px-3.5 py-2.5 bg-gold text-primary-foreground text-sm whitespace-pre-wrap"
-                : "max-w-[88%] rounded-2xl rounded-bl-md px-3.5 py-2.5 bg-card/70 border border-border/40 text-sm prose prose-invert prose-sm max-w-none prose-p:my-1.5 prose-strong:text-foreground"
-              }>
+                : `max-w-[88%] rounded-2xl rounded-bl-md px-3.5 py-2.5 text-sm prose prose-invert prose-sm max-w-none prose-p:my-1.5 prose-strong:text-foreground ${
+                    m.failed
+                      ? "bg-destructive/10 border border-destructive/30 cursor-pointer"
+                      : m.isFaq
+                        ? "bg-gold/[0.06] border border-gold/25"
+                        : "bg-card/70 border border-border/40"
+                  }`
+              }
+              onClick={m.failed ? retryLast : undefined}
+              >
                 {m.role === "assistant" ? <ReactMarkdown>{m.content || "…"}</ReactMarkdown> : m.content}
+                {m.failed && (
+                  <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-destructive font-bold">
+                    <RotateCw size={11} /> Tap to retry
+                  </div>
+                )}
               </div>
+              {m.isFaq && m.role === "assistant" && (
+                <p className="mt-1 ml-1 text-[10px] text-muted-foreground/70">
+                  From Coach Playbook · Ask a follow-up for more
+                </p>
+              )}
             </motion.div>
           ))}
         </AnimatePresence>
@@ -419,6 +509,15 @@ const ChatSheet = ({
           </Button>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showBrowser && (
+          <FaqBrowser
+            onClose={() => setShowBrowser(false)}
+            onSelect={(f) => { setShowBrowser(false); send(f.question, { faqId: f.id }); }}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

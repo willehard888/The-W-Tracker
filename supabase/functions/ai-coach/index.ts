@@ -205,6 +205,9 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const messages: ChatMessage[] = Array.isArray(body?.messages) ? body.messages : [];
+    const faqContext = body?.faq_context && typeof body.faq_context === "object"
+      ? { question: String(body.faq_context.question ?? "").slice(0, 300), answer: String(body.faq_context.answer ?? "").slice(0, 2000) }
+      : null;
     if (messages.length === 0) {
       return new Response(JSON.stringify({ error: "No messages" }), {
         status: 400,
@@ -237,7 +240,9 @@ Deno.serve(async (req) => {
       (briefingRes.data?.key_insights as any[]) ?? null,
       (briefRes.data?.payload as any) ?? null,
       todaySession,
-    );
+    ) + (faqContext
+      ? `\n\nThe user just read the Playbook answer to: "${faqContext.question}". Do NOT repeat that answer. Go deeper, address their follow-up directly, or apply it to their specific context.`
+      : "");
 
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
+import { dailyPlaybookPicks } from "@/lib/coach-faq";
 
 interface BriefPayload {
   ribbon: string;
@@ -153,6 +154,25 @@ const TrainerBrief = ({ onAsk }: Props) => {
             ))}
           </div>
         )}
+
+        {/* Playbook — instant, curated answers */}
+        <div className="mt-3 px-0.5">
+          <p className="text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground/70 mb-1.5">
+            Playbook · instant answers
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {dailyPlaybookPicks(3).map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => { hapticImpact("light"); onAsk(f.question); }}
+                className="text-[11px] px-3 py-1.5 rounded-full border border-border/40 bg-card/60 text-foreground/80 hover:border-gold/40 hover:bg-gold/[0.08] transition-colors"
+              >
+                {f.question}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </motion.div>
   );

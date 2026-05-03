@@ -339,25 +339,31 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
   );
 };
 
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div>
-    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
-    {children}
-  </div>
+const Field = forwardRef<HTMLDivElement, { label: string; children: React.ReactNode }>(
+  ({ label, children }, ref) => (
+    <div ref={ref}>
+      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
+      {children}
+    </div>
+  ),
 );
+Field.displayName = "Field";
 
-const Chip = ({ active, onClick, children, small }: { active: boolean; onClick: () => void; children: React.ReactNode; small?: boolean }) => (
-  <button type="button" onClick={onClick}
-    className={cn(
-      "rounded-full border transition-all capitalize",
-      small ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm",
-      active
-        ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.12)] text-[hsl(var(--gold))] font-bold"
-        : "border-border/40 bg-card/40 text-muted-foreground"
-    )}>
-    {children}
-  </button>
+const Chip = forwardRef<HTMLButtonElement, { active: boolean; onClick: () => void; children: React.ReactNode; small?: boolean }>(
+  ({ active, onClick, children, small }, ref) => (
+    <button ref={ref} type="button" onClick={onClick}
+      className={cn(
+        "rounded-full border transition-all capitalize",
+        small ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm",
+        active
+          ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.12)] text-[hsl(var(--gold))] font-bold"
+          : "border-border/40 bg-card/40 text-muted-foreground"
+      )}>
+      {children}
+    </button>
+  ),
 );
+Chip.displayName = "Chip";
 
 const Stepper = ({
   label, unit, value, min, max, step, onChange,

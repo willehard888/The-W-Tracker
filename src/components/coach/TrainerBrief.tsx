@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
+import { dailyPlaybookPicks } from "@/lib/coach-faq";
 
 interface BriefPayload {
   ribbon: string;

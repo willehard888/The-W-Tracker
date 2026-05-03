@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft, Sparkles, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import { useAthleteProfile, type ToneId, type GoalId } from "@/hooks/use-athlete-profile";
 import { toast } from "sonner";
+
+const DRAFT_KEY = "w_coach_onboarding_draft_v2";
+const STEP_KEY = "w_coach_onboarding_step_v2";
 
 interface Props { onDone: () => void }
 
@@ -37,26 +40,47 @@ const INJURIES = ["Lower back","Knee","Shoulder","Hip","Wrist","Elbow","Neck"];
 const SESSION_PRESETS = [20, 30, 45, 60, 90];
 const HORIZON_PRESETS = [4, 8, 12, 26, 52];
 
+const loadDraft = (): any | null => {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+};
+const loadStep = (): number => {
+  try { return Number(localStorage.getItem(STEP_KEY) ?? 0) || 0; } catch { return 0; }
+};
+
 const AthleteProfileOnboarding = ({ onDone }: Props) => {
   const { profile, upsert, isSaving } = useAthleteProfile();
-  const [step, setStep] = useState(0);
-  const [draft, setDraft] = useState<any>({
-    age: profile?.age ?? 30,
-    sex: profile?.sex ?? "prefer_not_say",
-    height_cm: profile?.height_cm ?? 180,
-    weight_kg: profile?.weight_kg ?? 80,
-    primary_goal: profile?.primary_goal ?? "all",
-    target_horizon_weeks: profile?.target_horizon_weeks ?? 12,
-    wake_time: profile?.wake_time?.slice(0,5) ?? "07:00",
-    sleep_time: profile?.sleep_time?.slice(0,5) ?? "23:00",
-    training_days_pref: profile?.training_days_pref ?? [1,2,4,5],
-    injuries: profile?.injuries ?? [],
-    dietary: profile?.dietary ?? [],
-    equipment: profile?.equipment ?? [],
-    tone_pref: profile?.tone_pref ?? "calm_mentor",
-    preferred_session_length_min: profile?.preferred_session_length_min ?? 45,
-    i_am: profile?.i_am ?? "",
+  const [step, setStep] = useState<number>(() => loadStep());
+  const [draft, setDraft] = useState<any>(() => {
+    const saved = loadDraft();
+    return saved ?? {
+      age: profile?.age ?? 30,
+      sex: profile?.sex ?? "prefer_not_say",
+      height_cm: profile?.height_cm ?? 180,
+      weight_kg: profile?.weight_kg ?? 80,
+      primary_goal: profile?.primary_goal ?? "all",
+      target_horizon_weeks: profile?.target_horizon_weeks ?? 12,
+      wake_time: profile?.wake_time?.slice(0,5) ?? "07:00",
+      sleep_time: profile?.sleep_time?.slice(0,5) ?? "23:00",
+      training_days_pref: profile?.training_days_pref ?? [1,2,4,5],
+      injuries: profile?.injuries ?? [],
+      dietary: profile?.dietary ?? [],
+      equipment: profile?.equipment ?? [],
+      tone_pref: profile?.tone_pref ?? "calm_mentor",
+      preferred_session_length_min: profile?.preferred_session_length_min ?? 45,
+      i_am: profile?.i_am ?? "",
+    };
   });
+
+  // Persist draft + step on every change so user never loses progress.
+  useEffect(() => {
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch {}
+  }, [draft]);
+  useEffect(() => {
+    try { localStorage.setItem(STEP_KEY, String(step)); } catch {}
+  }, [step]);
 
   const set = (patch: any) => setDraft((d: any) => ({ ...d, ...patch }));
   const toggle = (key: string, val: any) => {
@@ -258,6 +282,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
     if (last) {
       try {
         await upsert({ ...draft, onboarded: true } as any);
+        try { localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(STEP_KEY); } catch {}
         toast.success("Profile saved. Coach is now personal.");
         onDone();
       } catch (e: any) {
@@ -314,25 +339,31 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
   );
 };
 
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div>
-    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
-    {children}
-  </div>
+const Field = forwardRef<HTMLDivElement, { label: string; children: React.ReactNode }>(
+  ({ label, children }, ref) => (
+    <div ref={ref}>
+      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
+      {children}
+    </div>
+  ),
 );
+Field.displayName = "Field";
 
-const Chip = ({ active, onClick, children, small }: { active: boolean; onClick: () => void; children: React.ReactNode; small?: boolean }) => (
-  <button type="button" onClick={onClick}
-    className={cn(
-      "rounded-full border transition-all capitalize",
-      small ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm",
-      active
-        ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.12)] text-[hsl(var(--gold))] font-bold"
-        : "border-border/40 bg-card/40 text-muted-foreground"
-    )}>
-    {children}
-  </button>
+const Chip = forwardRef<HTMLButtonElement, { active: boolean; onClick: () => void; children: React.ReactNode; small?: boolean }>(
+  ({ active, onClick, children, small }, ref) => (
+    <button ref={ref} type="button" onClick={onClick}
+      className={cn(
+        "rounded-full border transition-all capitalize",
+        small ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm",
+        active
+          ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.12)] text-[hsl(var(--gold))] font-bold"
+          : "border-border/40 bg-card/40 text-muted-foreground"
+      )}>
+      {children}
+    </button>
+  ),
 );
+Chip.displayName = "Chip";
 
 const Stepper = ({
   label, unit, value, min, max, step, onChange,

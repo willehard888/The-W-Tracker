@@ -219,7 +219,7 @@ Deno.serve(async (req) => {
     // Fetch context in parallel
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const todayDate = new Date().toISOString().slice(0, 10);
-    const [checkinsRes, briefingRes, athleteRes, programRes, briefRes] = await Promise.all([
+    const [checkinsRes, briefingRes, athleteRes, programRes, briefRes, reflectionsRes, goalsRes] = await Promise.all([
       supabase
         .from("daily_checkins")
         .select(
@@ -238,10 +238,23 @@ Deno.serve(async (req) => {
       supabase.from("coach_athlete_profile").select("*").eq("user_id", userId).maybeSingle(),
       supabase.from("coach_programs").select("*").eq("user_id", userId).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle(),
       supabase.from("coach_daily_briefs").select("payload").eq("user_id", userId).eq("brief_date", todayDate).maybeSingle(),
+      supabase
+        .from("coach_reflections")
+        .select("rpe_1to10, energy_1to5, sleep_quality_1to5, mood_1to5, friction, reflection_date")
+        .eq("user_id", userId)
+        .order("reflection_date", { ascending: false })
+        .limit(3),
+      supabase
+        .from("coach_goals")
+        .select("title, metric, unit, baseline_value, current_value, target_value, deadline")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .limit(5),
     ]);
 
     const body = await req.json();
     const messages: ChatMessage[] = Array.isArray(body?.messages) ? body.messages : [];
+    const goDeep = body?.go_deep === true;
     const faqContext = body?.faq_context && typeof body.faq_context === "object"
       ? { question: String(body.faq_context.question ?? "").slice(0, 300), answer: String(body.faq_context.answer ?? "").slice(0, 2000) }
       : null;
@@ -257,9 +270,10 @@ Deno.serve(async (req) => {
       content: String(m.content ?? "").slice(0, 4000),
     }));
 
-    // Compute today's prescribed session
+    // Compute today's prescribed session and recent program logs
     const program: any = programRes.data ?? null;
     let todaySession: any = null;
+    let recentLogs: any[] = [];
     if (program?.plan_json?.weeks) {
       const started = new Date(program.started_on);
       const now = new Date();
@@ -268,6 +282,15 @@ Deno.serve(async (req) => {
       const dayIdx = (now.getDay() + 6) % 7;
       const wk = program.plan_json.weeks.find((w: any) => w.week === weekIdx);
       todaySession = wk?.days?.[dayIdx] ?? null;
+
+      const { data: logs } = await supabase
+        .from("coach_program_logs")
+        .select("week, day_index, completed, perceived_rpe, logged_at")
+        .eq("user_id", userId)
+        .eq("program_id", program.id)
+        .order("logged_at", { ascending: false })
+        .limit(5);
+      recentLogs = logs ?? [];
     }
 
     const systemPrompt = buildSystemPrompt(
@@ -277,6 +300,9 @@ Deno.serve(async (req) => {
       (briefingRes.data?.key_insights as any[]) ?? null,
       (briefRes.data?.payload as any) ?? null,
       todaySession,
+      reflectionsRes.data ?? [],
+      goalsRes.data ?? [],
+      recentLogs,
     ) + (faqContext
       ? `\n\nThe user just read the Playbook answer to: "${faqContext.question}". Do NOT repeat that answer. Go deeper, address their follow-up directly, or apply it to their specific context.`
       : "");
@@ -291,6 +317,7 @@ Deno.serve(async (req) => {
         model: "openai/gpt-5",
         stream: true,
         messages: [{ role: "system", content: systemPrompt }, ...trimmed],
+        reasoning: { effort: goDeep ? "high" : "medium" },
       }),
     });
 

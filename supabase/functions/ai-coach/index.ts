@@ -65,6 +65,9 @@ const buildSystemPrompt = (
   briefingInsights: any[] | null,
   todayBrief: any | null,
   todaySession: any | null,
+  reflections: any[],
+  goals: any[],
+  recentLogs: any[],
 ) => {
   const tier = profile?.status_tier ?? "recruit";
   const streak = profile?.streak ?? 0;
@@ -91,10 +94,39 @@ const buildSystemPrompt = (
     ? `\n\nToday's prescribed session: ${todaySession.focus} · ${todaySession.duration_min ?? "?"} min · ${todaySession.blocks?.length ?? 0} blocks${todaySession.blocks?.[0]?.name ? ` (lead: ${todaySession.blocks[0].name})` : ""}.`
     : "";
 
+  const reflectionsBlock = reflections.length
+    ? `\n\nLast ${reflections.length} reflections (newest first): ${reflections
+        .map((r) => `RPE ${r.rpe_1to10 ?? "?"}, energy ${r.energy_1to5 ?? "?"}/5, sleepQ ${r.sleep_quality_1to5 ?? "?"}/5, mood ${r.mood_1to5 ?? "?"}/5${r.friction ? `, friction: ${String(r.friction).slice(0, 80)}` : ""}`)
+        .join(" | ")}`
+    : "";
+
+  const goalsBlock = goals.length
+    ? `\n\nActive goals:\n${goals
+        .map((g) => {
+          const cur = Number(g.current_value ?? 0);
+          const tgt = Number(g.target_value ?? 0);
+          const base = Number(g.baseline_value ?? 0);
+          const span = tgt - base || 1;
+          const pct = Math.max(0, Math.min(100, Math.round(((cur - base) / span) * 100)));
+          return `- ${g.title}: ${cur} → ${tgt} ${g.unit ?? ""} (${pct}%${g.deadline ? `, by ${g.deadline}` : ""})`;
+        })
+        .join("\n")}`
+    : "";
+
+  const logsBlock = recentLogs.length
+    ? `\n\nLast ${recentLogs.length} session logs: ${recentLogs
+        .map((l) => `W${l.week}D${l.day_index + 1} ${l.completed ? "✓" : "skip"}${l.perceived_rpe ? ` @RPE${l.perceived_rpe}` : ""}`)
+        .join(", ")}`
+    : "";
+
+  const today = new Date();
+  const dayName = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][today.getDay()];
+
   return `You are W Coach — ${firstName}'s personal performance trainer inside the W app. You speak directly to them as their trainer. They pay for you. Earn that.
 
 ${tone}
 Reply language: match the user's input. Default ${athlete?.language_pref ?? "en"}.
+Today is ${dayName}, ${today.toISOString().slice(0, 10)}.
 
 Athlete:
 - Name: ${firstName} (handle: ${username})
@@ -108,15 +140,20 @@ Athlete:
 - Tier: ${tier} · Streak ${streak}d (longest ${longest})
 
 Recent activity:
-${recentSummary}${insightsBlock}${briefBlock}${sessionBlock}
+${recentSummary}${reflectionsBlock}${goalsBlock}${logsBlock}${insightsBlock}${briefBlock}${sessionBlock}
+
+Reasoning protocol (do silently, do NOT print these labels):
+1. Identify the single biggest gap or risk relevant to the user's question, grounded in the data above.
+2. Pick the cheapest intervention with the highest leverage in the next 24h.
+3. Reply.
 
 Style:
-- 3-5 sentences max unless the user explicitly asks for depth.
+- ≤6 sentences unless the user explicitly asks for depth.
 - Direct, knowledgeable, calm. No motivational clichés. No "as an AI".
-- Name the relevant gap. Prescribe the next 24h.
-- Use markdown sparingly (bold for key numbers, short lists when prescribing 2-3 steps).
-- Reference at most ONE concrete stat from their recent activity, only if it sharpens the answer.
-- End with a single, specific next action.
+- Use markdown sparingly (bold for key numbers, short list when prescribing 2–3 steps).
+- Reference at most ONE concrete stat from their data, only if it sharpens the answer.
+- If today has a prescribed session, keep advice consistent with it (or explicitly justify deviating).
+- End with ONE specific next action, dated to today or tomorrow.
 - Refuse medical/legal/financial advice that requires a licensed pro — give a framework and suggest seeing one.
 - Never break character. Never name your model or that you are AI.`;
 };

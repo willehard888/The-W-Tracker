@@ -1,6 +1,13 @@
 // coach-generate-program — Premium-only. Designs a fully personalized 4-week program
 // using the user's athlete profile, last 30d check-ins, last 14d reflections and active goals.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import {
+  buildAllowedMovementCatalog,
+  filterMovements,
+  normalizeEquipment,
+  normalizeInjuries,
+  validateProgram,
+} from "./movements.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

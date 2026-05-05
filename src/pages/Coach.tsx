@@ -260,7 +260,7 @@ const ChatSheet = ({
     ]);
   };
 
-  const callAi = async (history: ChatMsg[]) => {
+  const callAi = async (history: ChatMsg[], opts?: { goDeep?: boolean }) => {
     setStreaming(true);
     let buf = "";
     const upsert = (chunk: string) => {
@@ -289,6 +289,7 @@ const ChatSheet = ({
         body: JSON.stringify({
           messages: history.map(({ role, content }) => ({ role, content })),
           program_context: program ? { goal: program.goal, summary: program.ai_summary } : null,
+          go_deep: !!opts?.goDeep,
           faq_context: lastFaqRef.current
             ? { question: lastFaqRef.current.question, answer: lastFaqRef.current.answer_md }
             : null,

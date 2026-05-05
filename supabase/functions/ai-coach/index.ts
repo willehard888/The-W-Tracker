@@ -65,6 +65,9 @@ const buildSystemPrompt = (
   briefingInsights: any[] | null,
   todayBrief: any | null,
   todaySession: any | null,
+  reflections: any[],
+  goals: any[],
+  recentLogs: any[],
 ) => {
   const tier = profile?.status_tier ?? "recruit";
   const streak = profile?.streak ?? 0;
@@ -91,10 +94,39 @@ const buildSystemPrompt = (
     ? `\n\nToday's prescribed session: ${todaySession.focus} · ${todaySession.duration_min ?? "?"} min · ${todaySession.blocks?.length ?? 0} blocks${todaySession.blocks?.[0]?.name ? ` (lead: ${todaySession.blocks[0].name})` : ""}.`
     : "";
 
+  const reflectionsBlock = reflections.length
+    ? `\n\nLast ${reflections.length} reflections (newest first): ${reflections
+        .map((r) => `RPE ${r.rpe_1to10 ?? "?"}, energy ${r.energy_1to5 ?? "?"}/5, sleepQ ${r.sleep_quality_1to5 ?? "?"}/5, mood ${r.mood_1to5 ?? "?"}/5${r.friction ? `, friction: ${String(r.friction).slice(0, 80)}` : ""}`)
+        .join(" | ")}`
+    : "";
+
+  const goalsBlock = goals.length
+    ? `\n\nActive goals:\n${goals
+        .map((g) => {
+          const cur = Number(g.current_value ?? 0);
+          const tgt = Number(g.target_value ?? 0);
+          const base = Number(g.baseline_value ?? 0);
+          const span = tgt - base || 1;
+          const pct = Math.max(0, Math.min(100, Math.round(((cur - base) / span) * 100)));
+          return `- ${g.title}: ${cur} → ${tgt} ${g.unit ?? ""} (${pct}%${g.deadline ? `, by ${g.deadline}` : ""})`;
+        })
+        .join("\n")}`
+    : "";
+
+  const logsBlock = recentLogs.length
+    ? `\n\nLast ${recentLogs.length} session logs: ${recentLogs
+        .map((l) => `W${l.week}D${l.day_index + 1} ${l.completed ? "✓" : "skip"}${l.perceived_rpe ? ` @RPE${l.perceived_rpe}` : ""}`)
+        .join(", ")}`
+    : "";
+
+  const today = new Date();
+  const dayName = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][today.getDay()];
+
   return `You are W Coach — ${firstName}'s personal performance trainer inside the W app. You speak directly to them as their trainer. They pay for you. Earn that.
 
 ${tone}
 Reply language: match the user's input. Default ${athlete?.language_pref ?? "en"}.
+Today is ${dayName}, ${today.toISOString().slice(0, 10)}.
 
 Athlete:
 - Name: ${firstName} (handle: ${username})
@@ -108,15 +140,20 @@ Athlete:
 - Tier: ${tier} · Streak ${streak}d (longest ${longest})
 
 Recent activity:
-${recentSummary}${insightsBlock}${briefBlock}${sessionBlock}
+${recentSummary}${reflectionsBlock}${goalsBlock}${logsBlock}${insightsBlock}${briefBlock}${sessionBlock}
+
+Reasoning protocol (do silently, do NOT print these labels):
+1. Identify the single biggest gap or risk relevant to the user's question, grounded in the data above.
+2. Pick the cheapest intervention with the highest leverage in the next 24h.
+3. Reply.
 
 Style:
-- 3-5 sentences max unless the user explicitly asks for depth.
+- ≤6 sentences unless the user explicitly asks for depth.
 - Direct, knowledgeable, calm. No motivational clichés. No "as an AI".
-- Name the relevant gap. Prescribe the next 24h.
-- Use markdown sparingly (bold for key numbers, short lists when prescribing 2-3 steps).
-- Reference at most ONE concrete stat from their recent activity, only if it sharpens the answer.
-- End with a single, specific next action.
+- Use markdown sparingly (bold for key numbers, short list when prescribing 2–3 steps).
+- Reference at most ONE concrete stat from their data, only if it sharpens the answer.
+- If today has a prescribed session, keep advice consistent with it (or explicitly justify deviating).
+- End with ONE specific next action, dated to today or tomorrow.
 - Refuse medical/legal/financial advice that requires a licensed pro — give a framework and suggest seeing one.
 - Never break character. Never name your model or that you are AI.`;
 };
@@ -182,7 +219,7 @@ Deno.serve(async (req) => {
     // Fetch context in parallel
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const todayDate = new Date().toISOString().slice(0, 10);
-    const [checkinsRes, briefingRes, athleteRes, programRes, briefRes] = await Promise.all([
+    const [checkinsRes, briefingRes, athleteRes, programRes, briefRes, reflectionsRes, goalsRes] = await Promise.all([
       supabase
         .from("daily_checkins")
         .select(
@@ -201,10 +238,23 @@ Deno.serve(async (req) => {
       supabase.from("coach_athlete_profile").select("*").eq("user_id", userId).maybeSingle(),
       supabase.from("coach_programs").select("*").eq("user_id", userId).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle(),
       supabase.from("coach_daily_briefs").select("payload").eq("user_id", userId).eq("brief_date", todayDate).maybeSingle(),
+      supabase
+        .from("coach_reflections")
+        .select("rpe_1to10, energy_1to5, sleep_quality_1to5, mood_1to5, friction, reflection_date")
+        .eq("user_id", userId)
+        .order("reflection_date", { ascending: false })
+        .limit(3),
+      supabase
+        .from("coach_goals")
+        .select("title, metric, unit, baseline_value, current_value, target_value, deadline")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .limit(5),
     ]);
 
     const body = await req.json();
     const messages: ChatMessage[] = Array.isArray(body?.messages) ? body.messages : [];
+    const goDeep = body?.go_deep === true;
     const faqContext = body?.faq_context && typeof body.faq_context === "object"
       ? { question: String(body.faq_context.question ?? "").slice(0, 300), answer: String(body.faq_context.answer ?? "").slice(0, 2000) }
       : null;
@@ -220,9 +270,10 @@ Deno.serve(async (req) => {
       content: String(m.content ?? "").slice(0, 4000),
     }));
 
-    // Compute today's prescribed session
+    // Compute today's prescribed session and recent program logs
     const program: any = programRes.data ?? null;
     let todaySession: any = null;
+    let recentLogs: any[] = [];
     if (program?.plan_json?.weeks) {
       const started = new Date(program.started_on);
       const now = new Date();
@@ -231,6 +282,15 @@ Deno.serve(async (req) => {
       const dayIdx = (now.getDay() + 6) % 7;
       const wk = program.plan_json.weeks.find((w: any) => w.week === weekIdx);
       todaySession = wk?.days?.[dayIdx] ?? null;
+
+      const { data: logs } = await supabase
+        .from("coach_program_logs")
+        .select("week, day_index, completed, perceived_rpe, logged_at")
+        .eq("user_id", userId)
+        .eq("program_id", program.id)
+        .order("logged_at", { ascending: false })
+        .limit(5);
+      recentLogs = logs ?? [];
     }
 
     const systemPrompt = buildSystemPrompt(
@@ -240,6 +300,9 @@ Deno.serve(async (req) => {
       (briefingRes.data?.key_insights as any[]) ?? null,
       (briefRes.data?.payload as any) ?? null,
       todaySession,
+      reflectionsRes.data ?? [],
+      goalsRes.data ?? [],
+      recentLogs,
     ) + (faqContext
       ? `\n\nThe user just read the Playbook answer to: "${faqContext.question}". Do NOT repeat that answer. Go deeper, address their follow-up directly, or apply it to their specific context.`
       : "");
@@ -254,6 +317,7 @@ Deno.serve(async (req) => {
         model: "openai/gpt-5",
         stream: true,
         messages: [{ role: "system", content: systemPrompt }, ...trimmed],
+        reasoning: { effort: goDeep ? "high" : "medium" },
       }),
     });
 

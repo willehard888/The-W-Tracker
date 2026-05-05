@@ -260,7 +260,7 @@ const ChatSheet = ({
     ]);
   };
 
-  const callAi = async (history: ChatMsg[]) => {
+  const callAi = async (history: ChatMsg[], opts?: { goDeep?: boolean }) => {
     setStreaming(true);
     let buf = "";
     const upsert = (chunk: string) => {
@@ -289,6 +289,7 @@ const ChatSheet = ({
         body: JSON.stringify({
           messages: history.map(({ role, content }) => ({ role, content })),
           program_context: program ? { goal: program.goal, summary: program.ai_summary } : null,
+          go_deep: !!opts?.goDeep,
           faq_context: lastFaqRef.current
             ? { question: lastFaqRef.current.question, answer: lastFaqRef.current.answer_md }
             : null,
@@ -378,6 +379,15 @@ const ChatSheet = ({
     if (!lastUser) return;
     setMessages((prev) => prev.filter((m) => !m.failed));
     await callAi(messages.filter((m) => !m.failed));
+  };
+
+  const goDeeper = async () => {
+    if (streaming) return;
+    hapticImpact("light");
+    const nudge: ChatMsg = { role: "user", content: "Go deeper — full reasoning, the science, and a concrete 7-day plan." };
+    const next = [...messages, nudge];
+    setMessages(next);
+    await callAi(next, { goDeep: true });
   };
 
   // Auto-send initial prompt
@@ -472,6 +482,15 @@ const ChatSheet = ({
                 <p className="mt-1 ml-1 text-[10px] text-muted-foreground/70">
                   From Coach Playbook · Ask a follow-up for more
                 </p>
+              )}
+              {m.role === "assistant" && !m.failed && !m.isFaq && !streaming && i === messages.length - 1 && m.content.length > 60 && (
+                <button
+                  type="button"
+                  onClick={goDeeper}
+                  className="mt-1.5 ml-1 inline-flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-wider text-gold/85 hover:text-gold transition"
+                >
+                  <Sparkles size={10} /> Go deeper
+                </button>
               )}
             </motion.div>
           ))}

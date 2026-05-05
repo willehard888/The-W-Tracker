@@ -1,69 +1,100 @@
-# Make W Coach actually work + curated FAQ answers
+# Goal
+Make `coach-generate-program` produce **coach-grade, varied 4-week blocks** and make `ai-coach` chat **actually useful** (knows the program, today's session, recent reflections, can act, not just talk).
 
-## Problems today
-1. **Chat is fragile.** The suggested-question chips in `TrainerBrief` and `ChatSheet` always hit `ai-coach` (streaming GPT-5). If the gateway is slow, rate-limited, or the user is on a flaky connection, the most common questions feel broken. There's also no instant feedback — every tap waits on a network round-trip.
-2. **No real FAQ.** "Suggested questions" are just prompts; tapping one starts a fresh AI call with zero guarantee of quality or speed.
-3. **Suggestions are unstable.** They come from `coach-daily-brief` so they change daily and there's no canonical, premium-quality answer attached to any of them.
+---
 
-## What we'll ship
+## 1. Program generator — real quality + variety
 
-### A) A real, curated FAQ knowledge base
-Create `src/lib/coach-faq.ts` — ~12 high-value questions a serious athlete actually asks, each with:
-- `id`, `question`, `category` (Training | Recovery | Nutrition | Mindset | Program)
-- `answer_md` — premium markdown answer (3–6 sentences, written in W Coach voice, with one bold takeaway and a final action line)
-- `tags` for matching free-text questions to a FAQ entry
+### A. Movement library (new file `supabase/functions/coach-generate-program/movements.ts`)
+Curated catalog grouped by **pattern × equipment × difficulty × injury contraindications**:
+- Patterns: `squat`, `hinge`, `vertical_push`, `horizontal_push`, `vertical_pull`, `horizontal_pull`, `lunge`, `carry`, `rotation`, `core_anti`, `conditioning`.
+- Each entry: name, equipment[], primary_muscles[], contra[] (e.g. `lower_back`, `knee`), difficulty 1–3, default rep range, default rest, tempo hint, regression, progression.
+- ~120 movements covering bodyweight, dumbbells, barbell, kettlebell, bands, machines, cable, rower/bike/run.
 
-Examples (final list curated in code):
-- "Should I train if I slept under 6h?"
-- "What should I eat post-workout?"
-- "How do I deload properly?"
-- "How long until I see results?"
-- "Cold shower before or after training?"
-- "How do I fix a broken streak mentally?"
-- "Cardio on lifting days — yes or no?"
-- "How much protein do I actually need?"
-- "Pre-bed wind-down in 5 minutes?"
-- "I'm stalling on my main lift — what now?"
-- "Travel week — how do I not lose progress?"
-- "When should I switch programs?"
+The generator passes the **filtered subset** (matching user equipment, excluding contraindicated by injuries) to the model so the AI can only choose realistic, safe movements — and is **forced to vary** by pattern across the week.
 
-### B) Instant FAQ rendering in chat
-In `ChatSheet.send()`:
-- Before calling `ai-coach`, run `matchFaq(text)` (exact id match for chip taps; tag/keyword scoring for typed input above a threshold).
-- On match: push the user message + an assistant message with the canned `answer_md` immediately, with a tiny "Answered from W Coach playbook · Ask follow-up for more" footer. No network call. Still saved to localStorage so the conversation continues naturally.
-- On miss or if the user asks a follow-up: fall back to the existing streaming AI call (unchanged).
+### B. Stronger prompt + schema rules
+Tighten `emit_program` tool + system prompt:
+- **Pattern coverage rule**: each training week must hit all primary patterns relevant to the goal (e.g. hypertrophy: squat+hinge+H-push+V-push+H-pull+V-pull at least once).
+- **No-repeat rule**: same exercise cannot appear on two consecutive training days.
+- **Progression model**: every week must specify per-exercise progression (`+2.5kg`, `+1 rep`, `−10s rest`, `RPE +0.5`) in `progression_note` AND `notes` per main lift.
+- **Real numbers**: use the athlete's `weight_kg` to suggest absolute load bands when equipment includes barbell/dumbbell ("DB press: ~30–35% BW per hand").
+- **Warm-up A/B**: 2 lines — general (RAMP) + specific ramp sets for the day's main lift.
+- **Deload trigger**: explicit if/then in prompt (already there, kept).
+- **Conditioning variety**: rotate Z2 / threshold / VO2 / strongman finisher / mobility flow across the 4 weeks.
+- **Test day**: week 4 includes one PR/AMRAP opportunity unless deload triggered.
 
-### C) FAQ surface in the UI
-- **`TrainerBrief`**: keep the daily AI-generated suggestions, but append a small "Playbook" row with 3 rotating FAQ chips (deterministic by date so they feel curated, not random). Tap → opens chat with the canned answer pre-rendered.
-- **`ChatSheet` empty state**: replace the 4 hard-coded `SUGGESTIONS` with the top 6 FAQ entries, grouped under a "Quick answers" label. Each chip carries its `faq_id` so the answer is instant.
-- Add a tiny "Browse playbook" link in the empty state that opens an in-sheet list of all FAQs (simple scrollable list, tap to insert answer).
+### C. Reasoning + retries
+- Switch model call to `openai/gpt-5` with `reasoning: { effort: "high" }`.
+- Add **server-side validator** after the tool call:
+  - days_per_week matches profile.training_days_pref
+  - no duplicate primary movement within 48h
+  - every block uses only allowed equipment
+  - every working set has sets/reps/rpe/rest
+- If validation fails → 1 automatic regeneration with the violations fed back as a `user` correction message. After 2 fails, return 422 with details.
 
-### D) Reliability fixes for the chat itself
-- In `ChatSheet.send()`, when the network/stream fails, currently we drop the user message silently. Change to: keep the user message, add an assistant message "Coach lost connection — tap to retry" with a retry button that re-runs `send(lastUserText)`.
-- Stop sending stale `localStorage` history on first open if it's > 24h old (current behavior reuses old context forever). Add a "New chat" button in the sheet header to clear.
-- Pass `faq_hits` (matched FAQ ids in this conversation) to `ai-coach` so AI follow-ups don't repeat the canned answer.
+### D. UI polish (`ProgramWeekAccordion`, `TodaySessionCard`)
+- Show **warmup / cooldown / tempo / rest / alt** (already in schema; ensure all are surfaced in TodaySessionCard).
+- Add per-exercise "Why this?" tooltip pulled from `notes`.
+- Show **progression delta** vs prior week per main lift.
 
-### E) Backend tweak (small)
-`supabase/functions/ai-coach/index.ts`:
-- Accept optional `faq_context` in body. If present, append to system prompt: *"The user just read the playbook answer to: '…'. Do not repeat it — go deeper or answer their follow-up."*
-- No schema/migration changes needed.
+---
 
-## Files
+## 2. AI Coach chat — actually intelligent
 
-**New**
-- `src/lib/coach-faq.ts` — FAQ data + `matchFaq(text)` helper
-- `src/components/coach/FaqBrowser.tsx` — scrollable list inside ChatSheet
+### A. Richer context (in `ai-coach/index.ts`)
+Already injects: profile, athlete, 7d check-ins, last briefing, today's session, FAQ context.
+Add:
+- **Last 3 reflections** (RPE/energy/sleep/mood/friction) — turns vague advice into specific.
+- **Active goals + progress %** from `coach_goals`.
+- **Last 5 program logs** (completed/skipped + perceived RPE) → coach can call out drift.
+- **Tier risk + streak** already covered via profile.
+- **Today's date + day-of-week** explicitly so it stops guessing.
 
-**Edited**
-- `src/pages/Coach.tsx` — ChatSheet empty state, instant-answer path in `send()`, retry on failure, "New chat" button, stale-history guard
-- `src/components/coach/TrainerBrief.tsx` — append Playbook chip row
-- `supabase/functions/ai-coach/index.ts` — accept `faq_context`
+### B. Tool calls (turn chat into an agent)
+Expose 4 tools the model can call (handled server-side, returned as structured assistant messages the UI renders as action chips):
+1. `log_today_session(perceived_rpe, notes)` → writes `coach_program_logs`.
+2. `adjust_today_session(reason, swaps[])` → stores override in `coach_program_logs.notes`.
+3. `set_goal(title, metric, target_value, unit, deadline)` → inserts into `coach_goals`.
+4. `flag_recovery(severity, reason)` → triggers tomorrow's session to deload via a flag row.
+
+Streaming response remains; tool calls are detected and surfaced to the UI as confirm-buttons before execution (no silent writes).
+
+### C. Reasoning + style discipline
+- `reasoning: { effort: "medium" }` on chat completion.
+- System prompt addition: "Before answering, silently identify (1) the gap, (2) the cheapest intervention, (3) the next 24h action. Reply must contain those three, in that order, in ≤6 sentences unless asked for depth."
+- Add **"Go deeper"** chip in UI that resends the last exchange with `effort: "high"` and `max_tokens` raised.
+
+### D. FAQ Playbook expansion
+- Grow `src/lib/coach-faq.ts` from 12 → ~30 entries covering: deload signs, travel weeks, sick-day protocol, plateau breakers, sleep debt recovery, cutting vs maintaining, injury return, RPE explained, rep ranges per goal, supplements baseline, caffeine cutoff, mobility minimums, mindset reset.
+- Improve matcher: add per-entry synonyms array, stem-aware tokenization (drop trailing s/ing/ed), require min score 2 to match (avoid false positives sending users to FAQ when they want chat).
+
+### E. Reliability
+- Keep stale-history guard + retry chip (already in place).
+- Add **abort on close**: aborting the in-flight stream when the sheet closes.
+- Persist chat to Supabase (`coach_chat_messages` table, RLS by user_id) so it survives device changes; localStorage stays as cache.
+
+---
+
+## Technical details
+
+**New files**
+- `supabase/functions/coach-generate-program/movements.ts` — movement catalog + filter helpers.
+- `supabase/migrations/<ts>_coach_chat_messages.sql` — `coach_chat_messages(id, user_id, role, content, created_at)` + RLS (user can CRUD own).
+
+**Edited files**
+- `supabase/functions/coach-generate-program/index.ts` — pass filtered movement library, harden prompt, add validator + 1 retry, enable reasoning.
+- `supabase/functions/ai-coach/index.ts` — extra context (reflections/goals/logs), 4 tools, reasoning, tool-call passthrough in stream.
+- `src/pages/Coach.tsx` — render tool-call action chips, "Go deeper" button, persist chat to backend, abort on close.
+- `src/components/coach/TodaySessionCard.tsx` — surface warmup/cooldown/tempo/rest/alt + progression delta.
+- `src/components/coach/ProgramWeekAccordion.tsx` — show progression deltas, "Why this?" notes.
+- `src/lib/coach-faq.ts` — expand to ~30 entries, stronger matcher.
+
+**No DB schema changes** other than `coach_chat_messages`. Existing `coach_programs.plan_json` already allows the richer fields.
+
+---
 
 ## Out of scope
-- No new tables, no new edge functions, no migrations.
-- Daily brief generation stays as-is.
-
-## Technical notes
-- `matchFaq`: lowercase + strip punctuation, score by tag overlap; threshold ≥ 2 tag hits OR exact id. Keep it dumb and fast — the chips cover 90% of taps anyway.
-- FAQ answers are written in the same voice as the system prompt (calm mentor by default, bold key numbers, end with one action). They should read as if the AI wrote them — users shouldn't notice the difference except for speed.
-- Rotating Playbook chips: `faqs[(dayOfYear + i) % faqs.length]` so the same 3 show all day but rotate daily.
+- Exercise video library / GIFs.
+- Multi-week auto-regeneration cron.
+- Voice coach / TTS.

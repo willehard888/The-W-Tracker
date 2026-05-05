@@ -483,6 +483,15 @@ const ChatSheet = ({
                   From Coach Playbook · Ask a follow-up for more
                 </p>
               )}
+              {m.role === "assistant" && !m.failed && !m.isFaq && !streaming && i === messages.length - 1 && m.content.length > 60 && (
+                <button
+                  type="button"
+                  onClick={goDeeper}
+                  className="mt-1.5 ml-1 inline-flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-wider text-gold/85 hover:text-gold transition"
+                >
+                  <Sparkles size={10} /> Go deeper
+                </button>
+              )}
             </motion.div>
           ))}
         </AnimatePresence>

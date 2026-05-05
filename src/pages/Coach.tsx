@@ -381,6 +381,15 @@ const ChatSheet = ({
     await callAi(messages.filter((m) => !m.failed));
   };
 
+  const goDeeper = async () => {
+    if (streaming) return;
+    hapticImpact("light");
+    const nudge: ChatMsg = { role: "user", content: "Go deeper — full reasoning, the science, and a concrete 7-day plan." };
+    const next = [...messages, nudge];
+    setMessages(next);
+    await callAi(next, { goDeep: true });
+  };
+
   // Auto-send initial prompt
   useEffect(() => {
     if (!sentInitialRef.current && initialPrompt && initialPrompt.trim()) {

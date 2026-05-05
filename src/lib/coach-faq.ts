@@ -8,6 +8,8 @@ export interface FaqEntry {
   question: string;
   category: FaqCategory;
   tags: string[];
+  /** Optional extra phrases that should also match (whole phrases, lowercased). */
+  synonyms?: string[];
   answer_md: string;
 }
 

@@ -103,6 +103,14 @@ export const COACH_FAQ: FaqEntry[] = [
       "You won't lose meaningful muscle in **under 3 weeks** if you hit a maintenance dose: **2 short sessions per week, full-body, RPE 8**.\n\nMinimum kit anywhere:\n- Goblet squat or split squat × 3 sets of 10\n- Push-ups (or DB press) × 3 × AMRAP\n- DB row or inverted row × 3 × 10\n- Carry or plank × 2 × 45s\n\nProtein and sleep hold the line more than training does. Walk 8k+ steps daily.\n\n**Action:** Book the 2 sessions in your calendar before you fly. Pack a band.",
   },
   {
+    id: "switch-program",
+    question: "When should I switch programs?",
+    category: "Program",
+    tags: ["switch", "change", "new", "program", "plan", "different", "next"],
+    answer_md:
+      "Switch when **one** is true:\n- You've run it for **8–12 weeks** with consistent progression.\n- Progression has stalled for **3+ weeks** despite a deload.\n- Your goal has changed (cut → build, strength → hypertrophy, etc.).\n\nNever switch out of boredom — that's how people spend years as beginners. Variation lives **inside** the program (rep ranges, accessories), not by abandoning it.\n\n**Action:** Note today's date and current top set. Re-evaluate at week 8. If you're still progressing, stay.",
+  },
+  {
     id: "rpe-explained",
     question: "What does RPE actually mean?",
     category: "Training",

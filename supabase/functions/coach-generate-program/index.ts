@@ -291,24 +291,43 @@ Deno.serve(async (req) => {
     const periodization = GOAL_PERIODIZATION[goal] ?? GOAL_PERIODIZATION.all;
     const toneRule = TONE_INSTRUCTIONS[tone] ?? TONE_INSTRUCTIONS.calm_mentor;
 
+    // Movement catalog grounded to this athlete
+    const eqSet = normalizeEquipment(equipment_arr);
+    const injSet = normalizeInjuries(injuries);
+    const allowedMovements = filterMovements(eqSet, injSet);
+    const allowedNames = new Set(allowedMovements.map((m) => m.name));
+    const catalogText = buildAllowedMovementCatalog(allowedMovements);
+    const trainDayNames: string[] = (profile.training_days_pref ?? [1, 2, 4, 5]).map((n: number) => DAY_NAMES[n]);
+
     // ── Prompts ──────────────────────────────────────────────────────────────
     const systemPrompt = `You are W Coach — a senior strength & conditioning coach with 20 years of experience.
 You design programs that real coaches would sign off on. Every prescription is specific, not generic.
 
 VOICE: ${toneRule}
 
-NON-NEGOTIABLES:
+HARD CONSTRAINTS (violating any of these is a failure):
 - Schedule training sessions ONLY on these weekdays: ${train_days}. Every other day must be focus="Rest", duration_min=0, blocks=[].
 - duration_min must be ≤ ${session_min} on every training day.
-- For each injury in the athlete profile, NEVER prescribe contraindicated movements. Always provide a safe "alt" swap respecting their actual equipment.
-- Use ONLY equipment the athlete actually has: ${equipment}.
+- You may ONLY pick movement "name" values from the allowed catalog below — exact spelling. Never invent movements.
+- Same primary (first-block) movement cannot appear on two consecutive training days within a week.
+- Never prescribe contraindicated movements; the catalog already excludes them. For each working block also provide a sensible "alt" from the same allowed catalog.
+
+PROGRAM DESIGN RULES:
 - Periodization model for this goal: ${periodization}
-- Week 4: deload (volume −40%, RPE −1) ONLY if recent avg RPE > 8 OR avg sleep < 6.5 OR avg energy ≤ 2. Otherwise week 4 = consolidation/test week with PR opportunity.
-- Every working set: prescribe sets, reps, RPE (6–9), rest_sec, and tempo (use "" if tempo isn't meaningful for that movement, e.g. running).
-- Provide a per-day warmup (3–5 min, specific to the focus) and cooldown (2–5 min). Empty strings on rest days.
-- Per-week progression_note: explain WHAT changed vs prior week (load %, set count, density, intent) and WHY.
-- ai_summary must be in the athlete's voice/tone preference and reference their actual goal and a real personal datapoint from below.
-- coach_signature: one short closing sentence in the same voice.
+- Pattern coverage per training week: include at minimum squat, hinge, a horizontal push, a horizontal pull, a vertical push OR vertical pull, and one core/anti pattern. Add lunge/carry/rotation when ≥4 days/wk.
+- Week 4: deload (volume −40%, RPE −1) ONLY if recent avg RPE > 8 OR avg sleep < 6.5 OR avg energy ≤ 2. Otherwise week 4 = consolidation/test week with ONE PR or AMRAP opportunity on the main lift.
+- Conditioning across the 4 weeks should rotate styles (e.g. Z2, threshold, VO2, finisher complex, mobility flow) — do not prescribe the same style every week.
+- Every working set: prescribe sets, reps, RPE (6–9), rest_sec, and tempo (use "" if tempo isn't meaningful, e.g. running).
+- Per-exercise progression: for the 1–2 main lifts of each session, write the next-week progression in "notes" using a concrete delta (e.g. "+2.5 kg top set", "+1 rep across all sets", "−10s rest", "RPE +0.5").
+- Per-day warmup: 3–5 min including (a) a general RAMP (raise/activate/mobilize/potentiate) and (b) 2–3 ramp sets of the day's main lift at 40/60/80%.
+- Per-day cooldown: 2–5 min mobility specific to what was trained.
+- Per-week progression_note: explicitly describe WHAT changed vs prior week (load %, sets, density, intent) and WHY in 1–2 sentences.
+- ai_summary: 3–4 sentences in the athlete's preferred voice, naming their goal AND one real datapoint from the data block.
+- coach_signature: one short closing sentence in the same voice (≤90 chars).
+- weekly_check_targets must be realistic given days_per_week and current trailing averages.
+
+ALLOWED MOVEMENT CATALOG (name → typical reps, rest, tempo):
+${catalogText}
 
 EMIT VIA THE emit_program TOOL. Never reply in plain text.`;
 
@@ -346,64 +365,71 @@ LAST 14 DAYS (reflections, n=${r})
 - Avg mood: ${avgMood}/5
 - Recurring frictions: ${frictions.length ? frictions.join(" | ") : "none reported"}
 
-DESIGN A 4-WEEK BLOCK that progressively pushes this athlete toward their goal, respects every constraint above,
+DESIGN A 4-WEEK BLOCK that progressively pushes this athlete toward their goal, respects every hard constraint,
 explains the progression each week, and includes warm-up, cooldown, rest, tempo, and an injury/equipment-aware
 alternative for every working block. Address the athlete in their preferred voice.`;
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-5",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        tools: [TOOL],
-        tool_choice: { type: "function", function: { name: "emit_program" } },
-      }),
-    });
-
-    if (!aiResp.ok) {
-      if (aiResp.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited. Try again shortly." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // ── Generate (with one auto-retry on validation failure) ─────────────────
+    const callAi = async (corrections: string[]): Promise<{ parsed: any; rawErr?: string }> => {
+      const messages: any[] = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ];
+      if (corrections.length) {
+        messages.push({
+          role: "user",
+          content: `Your previous draft failed validation. Fix exactly these issues and resubmit via emit_program:\n- ${corrections.join("\n- ")}`,
         });
       }
-      if (aiResp.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-5",
+          messages,
+          tools: [TOOL],
+          tool_choice: { type: "function", function: { name: "emit_program" } },
+          reasoning: { effort: "high" },
+        }),
+      });
+      if (!aiResp.ok) {
+        if (aiResp.status === 429) throw new Response(JSON.stringify({ error: "Rate limited. Try again shortly." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (aiResp.status === 402) throw new Response(JSON.stringify({ error: "AI credits exhausted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        const t = await aiResp.text();
+        return { parsed: null, rawErr: `AI gateway ${aiResp.status}: ${t.slice(0, 300)}` };
       }
-      const t = await aiResp.text();
-      console.error("AI gateway error:", aiResp.status, t);
-      return new Response(JSON.stringify({ error: "AI gateway error" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      const aiJson = await aiResp.json();
+      const toolCall = aiJson?.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall?.function?.arguments) return { parsed: null, rawErr: "No tool call returned" };
+      try { return { parsed: JSON.parse(toolCall.function.arguments) }; }
+      catch { return { parsed: null, rawErr: "Invalid program JSON" }; }
+    };
+
+    let parsed: any = null;
+    let lastErr = "";
+    let corrections: string[] = [];
+    for (let attempt = 0; attempt < 2; attempt++) {
+      let result;
+      try { result = await callAi(corrections); }
+      catch (resp) { return resp as Response; }
+      if (!result.parsed) { lastErr = result.rawErr ?? "unknown"; continue; }
+      const violations = validateProgram(result.parsed.plan, {
+        trainDayNames,
+        sessionMinCap: session_min,
+        allowedNames,
       });
+      if (violations.length === 0) { parsed = result.parsed; break; }
+      corrections = violations.slice(0, 8);
+      lastErr = `validation failed: ${violations.slice(0, 3).join(" | ")}`;
     }
 
-    const aiJson = await aiResp.json();
-    const toolCall = aiJson?.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall?.function?.arguments) {
-      console.error("No tool call returned:", JSON.stringify(aiJson).slice(0, 500));
-      return new Response(JSON.stringify({ error: "Coach failed to draft a program" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    let parsed: any;
-    try {
-      parsed = JSON.parse(toolCall.function.arguments);
-    } catch {
-      return new Response(JSON.stringify({ error: "Invalid program JSON" }), {
-        status: 500,
+    if (!parsed) {
+      console.error("Program generation failed:", lastErr);
+      return new Response(JSON.stringify({ error: `Coach couldn't finalize a clean program (${lastErr}). Try again.` }), {
+        status: 422,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

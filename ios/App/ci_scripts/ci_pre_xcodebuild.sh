@@ -401,4 +401,32 @@ if [[ -f "$RC_RELEASE_CFG" ]]; then
   fi
 fi
 
+
+# ── Pre-build CapacitorCordova ─────────────────────────────────────────────
+# Xcode 26 runs a dependency scan for ALL targets in parallel BEFORE building
+# anything. When it scans Capacitor's headers it hits @import Cordova
+# (CAPInstanceDescriptor.h:5) but Cordova.framework doesn't exist yet.
+# A PBXTargetDependency only serialises COMPILE phases, not the scan phase.
+# Pre-building CapacitorCordova here puts Cordova.framework on disk first.
+echo "🔨 Pre-building CapacitorCordova (Xcode 26 scan-phase race fix)..."
+PREBUILD_LOG=$(mktemp)
+xcodebuild build \
+  -project "${IOS_APP_DIR}/Pods/Pods.xcodeproj" \
+  -target CapacitorCordova \
+  -sdk iphoneos \
+  -configuration Release \
+  -derivedDataPath /Volumes/workspace/DerivedData \
+  CODE_SIGNING_REQUIRED=NO \
+  CODE_SIGN_IDENTITY=- \
+  ONLY_ACTIVE_ARCH=NO \
+  > "${PREBUILD_LOG}" 2>&1
+PREBUILD_STATUS=$?
+tail -5 "${PREBUILD_LOG}"
+if [ "${PREBUILD_STATUS}" -ne 0 ]; then
+  echo "❌ CapacitorCordova pre-build failed"
+  cat "${PREBUILD_LOG}"
+  exit 1
+fi
+echo "✅ Cordova.framework pre-built — scan-phase race eliminated"
+
 echo "✅ pre-xcodebuild setup complete"

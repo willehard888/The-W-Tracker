@@ -427,6 +427,18 @@ cp "${CORDOVA_PKG}/CapacitorCordova.modulemap" "${CORDOVA_FW}/Modules/module.mod
 if [[ -f "${CORDOVA_FW}/Modules/module.modulemap" && -f "${CORDOVA_FW}/Headers/CapacitorCordova.h" ]]; then
   HDR_COUNT=$(ls "${CORDOVA_FW}/Headers/" | wc -l | tr -d ' ')
   echo "✅ Stub Cordova.framework ready (${HDR_COUNT} headers)"
+# ── Patch pod xcconfigs with absolute -F flag for Cordova ───────────────────
+# FRAMEWORK_SEARCH_PATHS uses ${PODS_CONFIGURATION_BUILD_DIR} which may not
+# expand at scan time. OTHER_CFLAGS -F/absolute bypasses variable expansion.
+echo "🔧 Patching pod xcconfigs with absolute -F${DERIVED_PRODUCTS}/CapacitorCordova..."
+CORDOVA_ABSPATH="${DERIVED_PRODUCTS}/CapacitorCordova"
+find "${IOS_APP_DIR}/Pods/Target Support Files" -name "*.release.xcconfig" | while IFS= read -r CFG; do
+  if [[ -f "${CFG}" ]] && ! grep -q "CORDOVA_ABS_PATCHED" "${CFG}" 2>/dev/null; then
+    printf '\n# CORDOVA_ABS_PATCHED\nOTHER_CFLAGS = $(inherited) -F%s\n' "${CORDOVA_ABSPATH}" >> "${CFG}"
+  fi
+done
+echo "✅ Pod xcconfigs patched"
+
 else
   echo "❌ Stub Cordova.framework creation failed"
   exit 1

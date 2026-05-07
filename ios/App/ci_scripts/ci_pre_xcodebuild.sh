@@ -401,46 +401,70 @@ if [[ -f "$RC_RELEASE_CFG" ]]; then
   fi
 fi
 
-
 # ── Stub Cordova.framework for Xcode 26 dependency scanner ─────────────────
-# Xcode 26 scans ALL targets' headers in parallel BEFORE building anything.
-# When it scans Capacitor's headers it hits CAPInstanceDescriptor.h:5:
-#   @import Cordova
-# but Cordova.framework doesn't exist yet (CapacitorCordova not compiled).
-# A PBXTargetDependency serialises COMPILE phases only, not the scan phase.
+# Xcode 26's build system runs a Swift module dependency scan for ALL targets
+# simultaneously BEFORE any compilation begins. Capacitor.swift reaches
+# `@import Cordova` (via CAPInstanceDescriptor.h:5) during this scan phase,
+# but Cordova.framework hasn't been compiled yet by the CapacitorCordova target.
 #
-# Fix: create a stub Cordova.framework with the real public headers from
-# node_modules BEFORE xcodebuild starts. The scanner resolves the Cordova
-# module and all CDV types → scan succeeds. The real Cordova.framework
-# (with binary) is built by the CapacitorCordova target and overwrites the
-# stub. The Podfile add_dependency ensures the real binary is in place
-# before Capacitor's ObjC compilation actually links against it.
-REPO_ROOT="${IOS_APP_DIR}/../.."
-CORDOVA_PKG="${REPO_ROOT}/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova"
-DERIVED_PRODUCTS="/Volumes/workspace/DerivedData/Build/Products/Release-iphoneos"
+# Fix: pre-create a stub Cordova.framework with the real source headers so the
+# scanner can resolve `module Cordova`. The real CapacitorCordova compilation
+# will overwrite the stub with a proper binary later in the build.
+#
+# This works in combination with the Podfile's OTHER_SWIFT_FLAGS injection of
+# `-Xcc -fmodule-map-file=...CapacitorCordova.modulemap`, which tells Swift's
+# Clang importer where to find the Cordova module definition. The modulemap
+# declares `framework module Cordova`, so Clang then searches FRAMEWORK_SEARCH_PATHS
+# for `Cordova.framework` — our stub is placed exactly where CocoaPods' generated
+# xcconfig already points: ${PODS_CONFIGURATION_BUILD_DIR}/CapacitorCordova/
+echo "🔨 Creating Cordova.framework stub for Xcode 26 scan-phase race..."
+
+CORDOVA_SRC="${ROOT_DIR}/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova"
+
+# Determine PODS_CONFIGURATION_BUILD_DIR (= BUILD_DIR/Release-iphoneos)
+# In Xcode Cloud the DerivedData root is always /Volumes/workspace/DerivedData.
+if [[ -d "/Volumes/workspace/DerivedData" ]]; then
+  DERIVED_PRODUCTS="/Volumes/workspace/DerivedData/Build/Products/Release-iphoneos"
+else
+  # Local fallback: ask xcodebuild for BUILD_DIR
+  _bdir=$(xcodebuild -workspace "${IOS_APP_DIR}/App.xcworkspace" \
+    -scheme App -configuration Release \
+    -showBuildSettings 2>/dev/null \
+    | awk -F' = ' '/^[[:space:]]*BUILD_DIR[[:space:]]*=/{print $2}' | tr -d ' ')
+  DERIVED_PRODUCTS="${_bdir}/Release-iphoneos"
+fi
 CORDOVA_FW="${DERIVED_PRODUCTS}/CapacitorCordova/Cordova.framework"
 
-echo "🔨 Stubbing Cordova.framework for Xcode 26 scan-phase race fix..."
-mkdir -p "${CORDOVA_FW}/Headers" "${CORDOVA_FW}/Modules"
-find "${CORDOVA_PKG}" -name "*.h" -exec cp {} "${CORDOVA_FW}/Headers/" \;
-cp "${CORDOVA_PKG}/CapacitorCordova.modulemap" "${CORDOVA_FW}/Modules/module.modulemap"
-if [[ -f "${CORDOVA_FW}/Modules/module.modulemap" && -f "${CORDOVA_FW}/Headers/CapacitorCordova.h" ]]; then
-  HDR_COUNT=$(ls "${CORDOVA_FW}/Headers/" | wc -l | tr -d ' ')
-  echo "✅ Stub Cordova.framework ready (${HDR_COUNT} headers)"
-# ── Patch pod xcconfigs with absolute -F flag for Cordova ───────────────────
-# FRAMEWORK_SEARCH_PATHS uses ${PODS_CONFIGURATION_BUILD_DIR} which may not
-# expand at scan time. OTHER_CFLAGS -F/absolute bypasses variable expansion.
-echo "🔧 Patching pod xcconfigs with absolute -F${DERIVED_PRODUCTS}/CapacitorCordova..."
-CORDOVA_ABSPATH="${DERIVED_PRODUCTS}/CapacitorCordova"
-find "${IOS_APP_DIR}/Pods/Target Support Files" -name "*.release.xcconfig" | while IFS= read -r CFG; do
-  if [[ -f "${CFG}" ]] && ! grep -q "CORDOVA_ABS_PATCHED" "${CFG}" 2>/dev/null; then
-    printf '\n// CORDOVA_ABS_PATCHED\nOTHER_CFLAGS = $(inherited) -F%s\n' "${CORDOVA_ABSPATH}" >> "${CFG}"
-  fi
-done
-echo "✅ Pod xcconfigs patched"
+if [[ ! -d "${CORDOVA_SRC}" ]]; then
+  echo "❌ Cordova source not found at ${CORDOVA_SRC}"
+  exit 1
+fi
 
+mkdir -p "${CORDOVA_FW}/Headers" "${CORDOVA_FW}/Modules"
+
+# Copy every public Cordova header into the stub
+find "${CORDOVA_SRC}" -name "*.h" -exec cp {} "${CORDOVA_FW}/Headers/" \;
+
+# Write the framework modulemap (must define 'module Cordova', not 'CapacitorCordova')
+cat > "${CORDOVA_FW}/Modules/module.modulemap" << 'MODULEMAP'
+framework module Cordova {
+  umbrella header "CapacitorCordova.h"
+  export *
+  module * { export * }
+}
+MODULEMAP
+
+# Create a placeholder binary so the framework looks complete to tools that
+# check for its existence before opening the headers.
+touch "${CORDOVA_FW}/Cordova"
+
+HDR_COUNT=$(ls "${CORDOVA_FW}/Headers/" | wc -l | tr -d ' ')
+if [[ -f "${CORDOVA_FW}/Modules/module.modulemap" && -f "${CORDOVA_FW}/Headers/CapacitorCordova.h" ]]; then
+  echo "✅ Stub Cordova.framework ready at ${CORDOVA_FW} (${HDR_COUNT} headers)"
 else
-  echo "❌ Stub Cordova.framework creation failed"
+  echo "❌ Stub Cordova.framework creation failed — headers or modulemap missing"
+  ls -la "${CORDOVA_FW}/Headers/" | head -5
+  ls -la "${CORDOVA_FW}/Modules/" | head -5
   exit 1
 fi
 

@@ -434,7 +434,7 @@ echo "🔧 Patching pod xcconfigs with absolute -F${DERIVED_PRODUCTS}/CapacitorC
 CORDOVA_ABSPATH="${DERIVED_PRODUCTS}/CapacitorCordova"
 find "${IOS_APP_DIR}/Pods/Target Support Files" -name "*.release.xcconfig" | while IFS= read -r CFG; do
   if [[ -f "${CFG}" ]] && ! grep -q "CORDOVA_ABS_PATCHED" "${CFG}" 2>/dev/null; then
-    printf '\n# CORDOVA_ABS_PATCHED\nOTHER_CFLAGS = $(inherited) -F%s\n' "${CORDOVA_ABSPATH}" >> "${CFG}"
+    printf '\n// CORDOVA_ABS_PATCHED\nOTHER_CFLAGS = $(inherited) -F%s\n' "${CORDOVA_ABSPATH}" >> "${CFG}"
   fi
 done
 echo "✅ Pod xcconfigs patched"

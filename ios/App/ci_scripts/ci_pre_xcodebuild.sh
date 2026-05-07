@@ -402,31 +402,34 @@ if [[ -f "$RC_RELEASE_CFG" ]]; then
 fi
 
 
-# ── Pre-build CapacitorCordova ─────────────────────────────────────────────
-# Xcode 26 runs a dependency scan for ALL targets in parallel BEFORE building
-# anything. When it scans Capacitor's headers it hits @import Cordova
-# (CAPInstanceDescriptor.h:5) but Cordova.framework doesn't exist yet.
-# A PBXTargetDependency only serialises COMPILE phases, not the scan phase.
-# Pre-building CapacitorCordova here puts Cordova.framework on disk first.
-echo "🔨 Pre-building CapacitorCordova (Xcode 26 scan-phase race fix)..."
-PREBUILD_LOG=$(mktemp)
-xcodebuild build \
-  -project "${IOS_APP_DIR}/Pods/Pods.xcodeproj" \
-  -target CapacitorCordova \
-  -sdk iphoneos \
-  -configuration Release \
-  -derivedDataPath /Volumes/workspace/DerivedData \
-  CODE_SIGNING_REQUIRED=NO \
-  CODE_SIGN_IDENTITY=- \
-  ONLY_ACTIVE_ARCH=NO \
-  > "${PREBUILD_LOG}" 2>&1
-PREBUILD_STATUS=$?
-tail -5 "${PREBUILD_LOG}"
-if [ "${PREBUILD_STATUS}" -ne 0 ]; then
-  echo "❌ CapacitorCordova pre-build failed"
-  cat "${PREBUILD_LOG}"
+# ── Stub Cordova.framework for Xcode 26 dependency scanner ─────────────────
+# Xcode 26 scans ALL targets' headers in parallel BEFORE building anything.
+# When it scans Capacitor's headers it hits CAPInstanceDescriptor.h:5:
+#   @import Cordova
+# but Cordova.framework doesn't exist yet (CapacitorCordova not compiled).
+# A PBXTargetDependency serialises COMPILE phases only, not the scan phase.
+#
+# Fix: create a stub Cordova.framework with the real public headers from
+# node_modules BEFORE xcodebuild starts. The scanner resolves the Cordova
+# module and all CDV types → scan succeeds. The real Cordova.framework
+# (with binary) is built by the CapacitorCordova target and overwrites the
+# stub. The Podfile add_dependency ensures the real binary is in place
+# before Capacitor's ObjC compilation actually links against it.
+REPO_ROOT="${IOS_APP_DIR}/../.."
+CORDOVA_PKG="${REPO_ROOT}/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova"
+DERIVED_PRODUCTS="/Volumes/workspace/DerivedData/Build/Products/Release-iphoneos"
+CORDOVA_FW="${DERIVED_PRODUCTS}/CapacitorCordova/Cordova.framework"
+
+echo "🔨 Stubbing Cordova.framework for Xcode 26 scan-phase race fix..."
+mkdir -p "${CORDOVA_FW}/Headers" "${CORDOVA_FW}/Modules"
+find "${CORDOVA_PKG}" -name "*.h" -exec cp {} "${CORDOVA_FW}/Headers/" \;
+cp "${CORDOVA_PKG}/CapacitorCordova.modulemap" "${CORDOVA_FW}/Modules/module.modulemap"
+if [[ -f "${CORDOVA_FW}/Modules/module.modulemap" && -f "${CORDOVA_FW}/Headers/CapacitorCordova.h" ]]; then
+  HDR_COUNT=$(ls "${CORDOVA_FW}/Headers/" | wc -l | tr -d ' ')
+  echo "✅ Stub Cordova.framework ready (${HDR_COUNT} headers)"
+else
+  echo "❌ Stub Cordova.framework creation failed"
   exit 1
 fi
-echo "✅ Cordova.framework pre-built — scan-phase race eliminated"
 
 echo "✅ pre-xcodebuild setup complete"

@@ -402,83 +402,104 @@ if [[ -f "$RC_RELEASE_CFG" ]]; then
 fi
 
 # ── Stub Cordova.framework for Xcode 26 dependency scanner ─────────────────
-# Xcode 26's build system runs a Swift module dependency scan for ALL targets
-# simultaneously BEFORE any compilation begins. Capacitor.swift reaches
-# `@import Cordova` (via CAPInstanceDescriptor.h:5) during this scan phase,
-# but Cordova.framework hasn't been compiled yet by the CapacitorCordova target.
+# Xcode 26's explicit-modules build system scans ALL Swift targets for module
+# dependencies BEFORE any compilation begins. Capacitor's headers reach
+# `@import Cordova` (CAPInstanceDescriptor.h:5) during that scan, but
+# Cordova.framework hasn't been compiled yet → Module 'Cordova' not found.
 #
-# Fix: pre-create a stub Cordova.framework with the real source headers so the
-# scanner can resolve `module Cordova`. The real CapacitorCordova compilation
-# will overwrite the stub with a proper binary later in the build.
+# Strategy — two stubs, belt-and-suspenders:
 #
-# This works in combination with the Podfile's OTHER_SWIFT_FLAGS injection of
-# `-Xcc -fmodule-map-file=...CapacitorCordova.modulemap`, which tells Swift's
-# Clang importer where to find the Cordova module definition. The modulemap
-# declares `framework module Cordova`, so Clang then searches FRAMEWORK_SEARCH_PATHS
-# for `Cordova.framework` — our stub is placed exactly where CocoaPods' generated
-# xcconfig already points: ${PODS_CONFIGURATION_BUILD_DIR}/CapacitorCordova/
+# 1. FIXED stub inside Pods/CordovaStub/ (absolute path, no variable expansion).
+#    We patch the Capacitor xcconfig files to add this path to FRAMEWORK_SEARCH_PATHS
+#    so the scanner finds it regardless of how PODS_CONFIGURATION_BUILD_DIR resolves.
+#
+# 2. DerivedData stub at ${BUILD_DIR}/Release-iphoneos/CapacitorCordova/ — where
+#    CocoaPods' xcconfig already points via ${PODS_CONFIGURATION_BUILD_DIR}.
+#    Belt-and-suspenders: if variable expansion is correct this path also works.
+#
+# Both stubs are populated with the real Cordova headers from node_modules so
+# `@import Cordova` compiles cleanly. The real CapacitorCordova target overwrites
+# the DerivedData stub with a proper binary during normal compilation.
 echo "🔨 Creating Cordova.framework stub for Xcode 26 scan-phase race..."
 
 CORDOVA_SRC="${ROOT_DIR}/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova"
-
-# Determine PODS_CONFIGURATION_BUILD_DIR (= BUILD_DIR/Release-iphoneos).
-#
-# IMPORTANT: Xcode Cloud's xcodebuild runs with -derivedDataPath /Volumes/workspace/DerivedData,
-# but that directory is created BY xcodebuild — it doesn't exist yet when this script runs.
-# Checking for /Volumes/workspace/DerivedData would therefore always be false in CI, causing
-# the fallback to ask a plain `xcodebuild -showBuildSettings` (no -derivedDataPath), which
-# returns a completely different ~/Library/Developer/Xcode/DerivedData/… path. The stub then
-# lands in the wrong place and xcodebuild never finds Cordova.framework.
-#
-# Fix: detect CI by checking /Volumes/workspace (the workspace ROOT, always present on XC Cloud)
-# rather than its not-yet-created DerivedData sub-directory.
-if [[ -d "/Volumes/workspace" ]]; then
-  # Xcode Cloud: DerivedData root matches the -derivedDataPath passed to xcodebuild archive.
-  DERIVED_PRODUCTS="/Volumes/workspace/DerivedData/Build/Products/Release-iphoneos"
-  echo "🌐 XC Cloud environment detected — using /Volumes/workspace/DerivedData"
-else
-  # Local dev machine: ask xcodebuild for the actual build dir.
-  _bdir=$(xcodebuild -workspace "${IOS_APP_DIR}/App.xcworkspace" \
-    -scheme App -configuration Release \
-    -showBuildSettings 2>/dev/null \
-    | awk -F' = ' '/^[[:space:]]*BUILD_DIR[[:space:]]*=/{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
-  DERIVED_PRODUCTS="${_bdir}/Release-iphoneos"
-  echo "💻 Local environment — BUILD_DIR=${_bdir}"
-fi
-echo "📍 Stub target: ${DERIVED_PRODUCTS}/CapacitorCordova/Cordova.framework"
-CORDOVA_FW="${DERIVED_PRODUCTS}/CapacitorCordova/Cordova.framework"
 
 if [[ ! -d "${CORDOVA_SRC}" ]]; then
   echo "❌ Cordova source not found at ${CORDOVA_SRC}"
   exit 1
 fi
 
-mkdir -p "${CORDOVA_FW}/Headers" "${CORDOVA_FW}/Modules"
-
-# Copy every public Cordova header into the stub
-find "${CORDOVA_SRC}" -name "*.h" -exec cp {} "${CORDOVA_FW}/Headers/" \;
-
-# Write the framework modulemap (must define 'module Cordova', not 'CapacitorCordova')
-cat > "${CORDOVA_FW}/Modules/module.modulemap" << 'MODULEMAP'
+# Helper: populate a Cordova.framework directory with real headers + modulemap.
+_make_cordova_fw() {
+  local fw="$1"
+  mkdir -p "${fw}/Headers" "${fw}/Modules"
+  find "${CORDOVA_SRC}" -name "*.h" -exec cp {} "${fw}/Headers/" \;
+  cat > "${fw}/Modules/module.modulemap" << 'MODULEMAP'
 framework module Cordova {
   umbrella header "CapacitorCordova.h"
   export *
   module * { export * }
 }
 MODULEMAP
+  # Placeholder binary — some tools check framework bundle completeness.
+  touch "${fw}/Cordova"
+}
 
-# Create a placeholder binary so the framework looks complete to tools that
-# check for its existence before opening the headers.
-touch "${CORDOVA_FW}/Cordova"
+# ── 1. Fixed stub: inside Pods directory (always exists after pod install) ────
+PODS_DIR="${IOS_APP_DIR}/Pods"
+FIXED_STUB_DIR="${PODS_DIR}/CordovaStub"
+FIXED_FW="${FIXED_STUB_DIR}/Cordova.framework"
 
-HDR_COUNT=$(ls "${CORDOVA_FW}/Headers/" | wc -l | tr -d ' ')
-if [[ -f "${CORDOVA_FW}/Modules/module.modulemap" && -f "${CORDOVA_FW}/Headers/CapacitorCordova.h" ]]; then
-  echo "✅ Stub Cordova.framework ready at ${CORDOVA_FW} (${HDR_COUNT} headers)"
+_make_cordova_fw "${FIXED_FW}"
+
+HDR_COUNT=$(ls "${FIXED_FW}/Headers/" 2>/dev/null | wc -l | tr -d ' ')
+if [[ -f "${FIXED_FW}/Modules/module.modulemap" && -f "${FIXED_FW}/Headers/CapacitorCordova.h" ]]; then
+  echo "✅ Fixed stub at ${FIXED_FW} (${HDR_COUNT} headers)"
 else
-  echo "❌ Stub Cordova.framework creation failed — headers or modulemap missing"
-  ls -la "${CORDOVA_FW}/Headers/" | head -5
-  ls -la "${CORDOVA_FW}/Modules/" | head -5
+  echo "❌ Fixed stub creation failed"
+  ls -la "${FIXED_FW}/Headers/" 2>/dev/null | head -5
   exit 1
 fi
+
+# Patch Capacitor xcconfigs: add FIXED_STUB_DIR to FRAMEWORK_SEARCH_PATHS.
+# In xcconfig the LAST definition wins; we include $(inherited) to preserve
+# all existing paths, and explicitly list ${PODS_CONFIGURATION_BUILD_DIR}/CapacitorCordova
+# so both search locations are active.
+for _xcc in \
+  "${PODS_DIR}/Target Support Files/Capacitor/Capacitor.release.xcconfig" \
+  "${PODS_DIR}/Target Support Files/Capacitor/Capacitor.debug.xcconfig"; do
+  if [[ -f "$_xcc" ]]; then
+    # Guard: skip if we already patched this file (idempotent).
+    if grep -q "CordovaStub" "$_xcc" 2>/dev/null; then
+      echo "ℹ️  $(basename "$_xcc") already patched — skipping"
+    else
+      printf '\n// Cordova stub — injected by ci_pre_xcodebuild.sh\nFRAMEWORK_SEARCH_PATHS = $(inherited) "%s" "${PODS_CONFIGURATION_BUILD_DIR}/CapacitorCordova"\n' \
+        "${FIXED_STUB_DIR}" >> "$_xcc"
+      echo "✅ Patched $(basename "$_xcc") with CordovaStub FRAMEWORK_SEARCH_PATHS"
+    fi
+  else
+    echo "⚠️  xcconfig not found: $_xcc"
+  fi
+done
+
+# ── 2. DerivedData stub (belt-and-suspenders via PODS_CONFIGURATION_BUILD_DIR) ─
+# Xcode Cloud runs xcodebuild with -derivedDataPath /Volumes/workspace/DerivedData.
+# That directory is CREATED BY xcodebuild — it doesn't exist yet when this script
+# runs, so we can't verify it. We just pre-create the path; xcodebuild won't clean it.
+if [[ -d "/Volumes/workspace" ]]; then
+  DERIVED_PRODUCTS="/Volumes/workspace/DerivedData/Build/Products/Release-iphoneos"
+  echo "🌐 XC Cloud — also stubbing ${DERIVED_PRODUCTS}/CapacitorCordova/Cordova.framework"
+else
+  _bdir=$(xcodebuild -workspace "${IOS_APP_DIR}/App.xcworkspace" \
+    -scheme App -configuration Release \
+    -showBuildSettings 2>/dev/null \
+    | awk -F' = ' '/^[[:space:]]*BUILD_DIR[[:space:]]*=/{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
+  DERIVED_PRODUCTS="${_bdir}/Release-iphoneos"
+  echo "💻 Local — also stubbing ${DERIVED_PRODUCTS}/CapacitorCordova/Cordova.framework"
+fi
+
+DERIVED_FW="${DERIVED_PRODUCTS}/CapacitorCordova/Cordova.framework"
+_make_cordova_fw "${DERIVED_FW}"
+echo "✅ DerivedData stub at ${DERIVED_FW}"
 
 echo "✅ pre-xcodebuild setup complete"

@@ -13,5 +13,8 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-  }
+    // Prevent Supabase from consuming OAuth tokens from the URL on every page load.
+    // Deep link / OAuth handling is done explicitly in main.tsx via applySessionFromUrl().
+    detectSessionInUrl: false,
+  },
 });

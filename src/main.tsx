@@ -13,6 +13,9 @@ import { initNativeShell } from "@/lib/native-bootstrap";
 void initNativeShell();
 
 let oauthHandled = false;
+// Timestamp of when oauthHandled was set, so we can expire it after a safe window.
+let oauthHandledAt = 0;
+const OAUTH_HANDLED_TTL_MS = 30_000;
 
 function summarizeUrl(url: string) {
   try {
@@ -50,9 +53,14 @@ async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
     summary: summarizeUrl(url),
   });
 
-  if (oauthHandled) {
+  // Allow retry after TTL so a stuck flag doesn't permanently block the user.
+  if (oauthHandled && Date.now() - oauthHandledAt < OAUTH_HANDLED_TTL_MS) {
     pushIosDebugLog("DeepLink", "Skipping duplicate OAuth callback", { source });
     return;
+  }
+  if (oauthHandled) {
+    pushIosDebugLog("DeepLink", "oauthHandled TTL expired — retrying", { source });
+    oauthHandled = false;
   }
 
   // Only handle OAuth callback URLs
@@ -62,6 +70,7 @@ async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
   }
 
   oauthHandled = true;
+  oauthHandledAt = Date.now();
   console.log(`[DeepLink] Processing ${source} OAuth callback`);
 
   try {
@@ -152,11 +161,22 @@ if (Capacitor.isNativePlatform()) {
         void handleOAuthUrl(data.url, "appUrlOpen");
       });
 
-      CapApp.addListener("resume", () => {
+      CapApp.addListener("resume", async () => {
         pushIosDebugLog("DeepLink", "App resumed", {
           oauthHandled,
           href: window.location.href.slice(0, 160),
         });
+
+        // If we were waiting for an OAuth session but none arrived yet,
+        // check if Supabase already has a valid session from the redirect.
+        if (!oauthHandled) {
+          const { data } = await supabase.auth.getSession();
+          if (data?.session) {
+            pushIosDebugLog("DeepLink", "Session found on resume without deep link", {
+              userId: data.session.user?.id,
+            });
+          }
+        }
       });
     })
     .catch((err) => {

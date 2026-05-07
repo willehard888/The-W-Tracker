@@ -1,10 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+// Webhooks are server-to-server — no CORS headers needed.
+const jsonHeaders = { "Content-Type": "application/json" };
 
 // Premium replaces Apex purchase. Apex IDs kept as legacy fallback.
 const PREMIUM_PRODUCT_IDS = [
@@ -16,8 +13,11 @@ const APEX_ENTITLEMENT = "apex_subscriber";
 const PREMIUM_ENTITLEMENT = "premium";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: jsonHeaders,
+    });
   }
 
   try {
@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
       console.error("Unauthorized webhook request");
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: jsonHeaders,
       });
     }
 
@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     if (!event) {
       return new Response(JSON.stringify({ error: "No event in payload" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: jsonHeaders,
       });
     }
 
@@ -65,14 +65,15 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { persistSession: false, autoRefreshToken: false } },
     );
 
     const appUserId = event.app_user_id;
     if (!appUserId) {
       return new Response(JSON.stringify({ error: "No app_user_id" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: jsonHeaders,
       });
     }
 
@@ -101,7 +102,7 @@ Deno.serve(async (req) => {
       console.log("Cancellation received - user keeps access until expiration");
       return new Response(JSON.stringify({ success: true, action: "none" }), {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: jsonHeaders,
       });
     }
 
@@ -135,7 +136,7 @@ Deno.serve(async (req) => {
           JSON.stringify({ error: "Failed to update profile" }),
           {
             status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: jsonHeaders,
           }
         );
       }
@@ -165,14 +166,14 @@ Deno.serve(async (req) => {
       JSON.stringify({ success: true, is_elite: isElite, apex: isApexProduct }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: jsonHeaders,
       }
     );
   } catch (err) {
     console.error("Webhook error:", err);
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: jsonHeaders,
     });
   }
 });

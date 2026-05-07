@@ -1,63 +1,44 @@
-import { Component, ReactNode } from "react";
-import BrandLogo from "@/components/BrandLogo";
+import { Component, ErrorInfo, ReactNode } from "react";
 
-interface ErrorBoundaryProps {
+interface Props {
   children: ReactNode;
+  fallback?: ReactNode;
 }
 
-interface ErrorBoundaryState {
+interface State {
   hasError: boolean;
   error: Error | null;
 }
 
-/**
- * Top-level safety net so a single component crash never produces a
- * blank white screen on a published TestFlight or production build.
- */
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  state: ErrorBoundaryState = { hasError: false, error: null };
+export class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, info: { componentStack?: string }) {
-    // Surface the crash in the browser console — Lovable's read-console-logs
-    // tool will pick it up so we can debug after the fact.
-    console.error("[ErrorBoundary] Unhandled render error:", error, info);
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("[ErrorBoundary]", error, info.componentStack);
   }
-
-  handleReload = () => {
-    // Clear any half-broken state by reloading the SPA.
-    window.location.reload();
-  };
 
   render() {
-    if (!this.state.hasError) return this.props.children;
-
-    return (
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-4 px-6 text-center">
-        <BrandLogo size={64} className="rounded-xl glow-gold mb-2" />
-        <h1 className="font-display text-xl font-bold tracking-tight">
-          Something broke
-        </h1>
-        <p className="text-sm text-muted-foreground max-w-xs">
-          We hit an unexpected error. Reloading usually fixes it.
-        </p>
-        <button
-          onClick={this.handleReload}
-          className="mt-2 h-11 px-6 rounded-xl bg-gold text-primary-foreground font-semibold text-sm active:scale-95 transition-transform"
-        >
-          Reload app
-        </button>
-        {import.meta.env.DEV && this.state.error && (
-          <pre className="mt-4 max-w-full overflow-x-auto text-[10px] text-destructive/80 bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-left">
-            {this.state.error.message}
-          </pre>
-        )}
-      </div>
-    );
+    if (this.state.hasError) {
+      if (this.props.fallback) return this.props.fallback;
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6 text-center">
+          <p className="text-white/80 text-sm">Something went wrong. Please reload the app.</p>
+          <button
+            className="px-4 py-2 rounded-lg bg-gold text-black text-sm font-semibold"
+            onClick={() => window.location.reload()}
+          >
+            Reload
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
   }
 }
-
-export default ErrorBoundary;

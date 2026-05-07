@@ -119,4 +119,17 @@ post_install do |installer|
       # own Modules/module.modulemap, where the umbrella header lives next to it.
     end
   end
+  # Xcode 26 parallel build fix: explicit Capacitor → CapacitorCordova dependency.
+  # Without this, Xcode 26's parallel scheduler starts compiling both targets
+  # simultaneously. Capacitor tries @import Cordova before CapacitorCordova.framework
+  # is linked — causing: error: module 'Cordova' not found
+  cap_target = installer.pods_project.targets.find { |t| t.name == 'Capacitor' }
+  cordova_target = installer.pods_project.targets.find { |t| t.name == 'CapacitorCordova' }
+  if cap_target && cordova_target
+    unless cap_target.dependencies.map(&:name).include?('CapacitorCordova')
+      cap_target.add_dependency(cordova_target)
+      puts '✅ Added explicit Capacitor → CapacitorCordova build dependency'
+    end
+  end
+
 end

@@ -11,75 +11,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import { Purchases as CapPurchases } from "@revenuecat/purchases-capacitor";
 import { pushIosDebugLog, updateRevenueCatDebug } from "@/lib/ios-debug";
+import { toast } from "sonner";
 
 // ─── Constants ──────────────────────────────────────────
 const RC_API_KEY_APPLE = "appl_qgpDFJEtyXTeNTJZxBoHzxzgiTr";
-const ELITE_ENTITLEMENT = "The W Tracker Pro";
-const APEX_ENTITLEMENT = "apex_subscriber";
-const PREMIUM_ENTITLEMENT = "premium";
-
-// Monthly products
-const ELITE_PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"] as const;
-// Premium replaces Apex purchase. Existing Apex product IDs are kept as
-// fallback so legacy subscribers keep working seamlessly.
-const PREMIUM_PRODUCT_IDS = [
-  "premiummonthly1799",
-  "com.app.premiummonthly1799",
-  "Apex888",
-  "com.app.Apex888",
-  "apexmonthly1599",
-  "com.app.apexmonthly1599",
-] as const;
-const APEX_PRODUCT_IDS = ["Apex888", "com.app.Apex888", "apexmonthly1599", "com.app.apexmonthly1599"] as const;
-
-// Yearly products. Update IDs in App Store Connect to match.
-const ELITE_YEARLY_PRODUCT_IDS = ["eliteyearly4999", "com.app.eliteyearly4999"] as const;
-const PREMIUM_YEARLY_PRODUCT_IDS = [
-  "premiumyearly17299",
-  "com.app.premiumyearly17299",
-  "apexyearly17299",
-  "com.app.apexyearly17299",
-] as const;
-const APEX_YEARLY_PRODUCT_IDS = ["apexyearly17299", "com.app.apexyearly17299"] as const;
-
-const ALL_PRODUCT_IDS = [
-  ...ELITE_PRODUCT_IDS,
-  ...PREMIUM_PRODUCT_IDS,
-  ...APEX_PRODUCT_IDS,
-  ...ELITE_YEARLY_PRODUCT_IDS,
-  ...PREMIUM_YEARLY_PRODUCT_IDS,
-  ...APEX_YEARLY_PRODUCT_IDS,
-] as const;
-
-const PRIMARY_ELITE_PRODUCT_ID = "elitemonthly499";
-const PRIMARY_PREMIUM_PRODUCT_ID = "premiummonthly1799";
-const PRIMARY_APEX_PRODUCT_ID = "Apex888";
-const PRIMARY_ELITE_YEARLY_PRODUCT_ID = "eliteyearly4999";
-const PRIMARY_PREMIUM_YEARLY_PRODUCT_ID = "premiumyearly17299";
-const PRIMARY_APEX_YEARLY_PRODUCT_ID = "apexyearly17299";
+const ENTITLEMENT = "The W Tracker Pro";
+const PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"] as const;
+const PRIMARY_PRODUCT_ID = "elitemonthly499";
 
 // ─── Types ──────────────────────────────────────────────
 interface RevenueCatContextType {
   rcElite: boolean;
-  rcApex: boolean;
-  rcPremium: boolean;
   rcLoading: boolean;
   rcReady: boolean;
   monthlyPriceLabel: string | null;
-  apexPriceLabel: string | null;
-  premiumPriceLabel: string | null;
-  eliteYearlyPriceLabel: string | null;
-  apexYearlyPriceLabel: string | null;
-  premiumYearlyPriceLabel: string | null;
   packages: any[];
   purchase: (pkg: any) => Promise<void>;
   purchaseProduct: (productId: string) => Promise<void>;
-  /** @deprecated Use purchasePremiumPlan instead. */
-  purchaseApex: () => Promise<void>;
-  purchaseElitePlan: (plan: "monthly" | "yearly") => Promise<void>;
-  /** @deprecated Use purchasePremiumPlan instead. */
-  purchaseApexPlan: (plan: "monthly" | "yearly") => Promise<void>;
-  purchasePremiumPlan: (plan: "monthly" | "yearly") => Promise<void>;
   restorePurchases: () => Promise<void>;
 }
 
@@ -96,46 +44,26 @@ export const useRevenueCat = () => {
 
 // ─── Helpers ────────────────────────────────────────────
 
-function hasEntitlement(info: any, entitlement: string): boolean {
-  return !!info?.entitlements?.active?.[entitlement];
+/** Check whether a customerInfo has our entitlement active. */
+function hasElite(info: any): boolean {
+  return !!info?.entitlements?.active?.[ENTITLEMENT];
 }
 
+/** Unwrap the store product from a package or raw product. */
 function storeProduct(value: any) {
   return value?.product ?? value?.storeProduct ?? value ?? null;
 }
 
+/** Get the product identifier string. */
 function productId(value: any): string | null {
   return value?.identifier ?? value?.productIdentifier ?? value?.id ?? null;
 }
 
-function isKnownProductId(id: string | null): boolean {
-  return !!id && (ALL_PRODUCT_IDS as readonly string[]).includes(id);
+function isKnownMonthlyId(id: string | null): boolean {
+  return !!id && PRODUCT_IDS.includes(id as (typeof PRODUCT_IDS)[number]);
 }
 
-function isElitePid(id: string | null): boolean {
-  return !!id && (ELITE_PRODUCT_IDS as readonly string[]).includes(id);
-}
-
-function isApexPid(id: string | null): boolean {
-  return !!id && (APEX_PRODUCT_IDS as readonly string[]).includes(id);
-}
-
-function isEliteYearlyPid(id: string | null): boolean {
-  return !!id && (ELITE_YEARLY_PRODUCT_IDS as readonly string[]).includes(id);
-}
-
-function isPremiumPid(id: string | null): boolean {
-  return !!id && (PREMIUM_PRODUCT_IDS as readonly string[]).includes(id);
-}
-
-function isPremiumYearlyPid(id: string | null): boolean {
-  return !!id && (PREMIUM_YEARLY_PRODUCT_IDS as readonly string[]).includes(id);
-}
-
-function isApexYearlyPid(id: string | null): boolean {
-  return !!id && (APEX_YEARLY_PRODUCT_IDS as readonly string[]).includes(id);
-}
-
+/** Get a formatted price string. */
 function priceLabel(value: any): string | null {
   if (typeof value?.priceString === "string" && value.priceString) return value.priceString;
   if (typeof value?.priceFormatted === "string" && value.priceFormatted) return value.priceFormatted;
@@ -152,6 +80,12 @@ function priceLabel(value: any): string | null {
   return null;
 }
 
+/** True when product matches our monthly subscription. */
+function isMonthly(value: any): boolean {
+  return isKnownMonthlyId(productId(storeProduct(value)));
+}
+
+/** True when user cancelled (not a real error). */
 function isCancellation(e: any): boolean {
   return e?.code === "1" || e?.code === 1 || !!e?.userCancelled;
 }
@@ -171,135 +105,87 @@ function toMessage(err: unknown): string {
 export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [rcElite, setRcElite] = useState(false);
-  const [rcApex, setRcApex] = useState(false);
-  const [rcPremium, setRcPremium] = useState(false);
   const [packages, setPackages] = useState<any[]>([]);
   const [rcLoading, setRcLoading] = useState(true);
   const [rcReady, setRcReady] = useState(false);
   const [monthlyPriceLabel, setMonthlyPriceLabel] = useState<string | null>(null);
-  const [apexPriceLabel, setApexPriceLabel] = useState<string | null>(null);
-  const [premiumPriceLabel, setPremiumPriceLabel] = useState<string | null>(null);
-  const [eliteYearlyPriceLabel, setEliteYearlyPriceLabel] = useState<string | null>(null);
-  const [apexYearlyPriceLabel, setApexYearlyPriceLabel] = useState<string | null>(null);
-  const [premiumYearlyPriceLabel, setPremiumYearlyPriceLabel] = useState<string | null>(null);
 
-  /** Sync subscription flags to database. */
-  const syncEntitlements = useCallback(
-    async (elite: boolean, apex: boolean, premium: boolean) => {
+  /** Sync elite status to database with simple retry. */
+  const syncElite = useCallback(
+    async (elite: boolean) => {
       if (!user) return;
-      const grantElite = elite || apex || premium;
-      // set_elite_status now also flips is_premium server-side.
-      await supabase.rpc("set_elite_status", {
-        target_user_id: user.id,
-        elite: grantElite,
-      });
-      const update: Record<string, any> = {};
-      if (apex) update.is_apex_subscriber = true;
-      if (premium || apex || elite) update.is_premium = true;
-      if (Object.keys(update).length > 0) {
-        await supabase
-          .from("profiles")
-          .update(update)
-          .eq("user_id", user.id);
+      const MAX_ATTEMPTS = 3;
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        const { error } = await supabase.rpc("set_elite_status", {
+          target_user_id: user.id,
+          elite,
+        });
+        if (!error) return;
+        console.warn(`[RC] syncElite attempt ${attempt} failed:`, error);
+        if (attempt < MAX_ATTEMPTS) await new Promise((r) => setTimeout(r, attempt * 1000));
       }
+      console.error("[RC] syncElite failed after all retries");
     },
     [user],
   );
 
-  /** Update entitlement state from RevenueCat customer info. */
-  const applyEntitlements = useCallback(
+  /** Update elite state + sync to DB. */
+  const applyElite = useCallback(
     async (info: any) => {
-      const elite = hasEntitlement(info, ELITE_ENTITLEMENT);
-      const apex = hasEntitlement(info, APEX_ENTITLEMENT);
-      const premium = hasEntitlement(info, PREMIUM_ENTITLEMENT);
-      setRcElite(elite || apex || premium);
-      setRcApex(apex);
-      setRcPremium(premium || apex);
+      const elite = hasElite(info);
+      setRcElite(elite);
       updateRevenueCatDebug({
-        entitlement: premium
-          ? PREMIUM_ENTITLEMENT
-          : apex
-          ? APEX_ENTITLEMENT
-          : elite
-          ? ELITE_ENTITLEMENT
-          : null,
+        entitlement: elite ? ENTITLEMENT : null,
       });
-      await syncEntitlements(elite, apex, premium);
+      await syncElite(elite);
     },
-    [syncEntitlements],
+    [syncElite],
   );
 
-  /** Load product prices for both tiers. */
-  const loadPrices = useCallback(async () => {
+  /** Fetch the monthly product directly and set the price label. */
+  const loadMonthlyPrice = useCallback(async () => {
     try {
       const { products } = await CapPurchases.getProducts({
-        productIdentifiers: [...ALL_PRODUCT_IDS],
+        productIdentifiers: [...PRODUCT_IDS],
       });
       const loadedProductIds = (products ?? [])
         .map((x: any) => productId(x))
         .filter((id: string | null): id is string => Boolean(id));
 
-      const eliteP =
-        products?.find((x: any) => productId(x) === PRIMARY_ELITE_PRODUCT_ID) ??
-        products?.find((x: any) => isElitePid(productId(x)));
-      if (eliteP) {
-        const label = priceLabel(eliteP);
+      const p =
+        products?.find((x: any) => productId(x) === PRIMARY_PRODUCT_ID) ??
+        products?.find((x: any) => isKnownMonthlyId(productId(x)));
+      if (p) {
+        const label = priceLabel(p);
+        console.log("[RC] Monthly product:", productId(p), label);
         if (label) setMonthlyPriceLabel(label);
+        updateRevenueCatDebug({
+          loadedProductIds,
+          monthlyPriceLabel: label,
+          lastProductFetchError: null,
+        });
+        pushIosDebugLog("RevenueCat", "Monthly product loaded", {
+          loadedProductIds,
+          priceLabel: label,
+        });
+      } else {
+        const message = `Monthly product missing. Expected one of: ${PRODUCT_IDS.join(", ")}. Store returned: ${loadedProductIds.join(", ") || "none"}`;
+        updateRevenueCatDebug({
+          loadedProductIds,
+          lastProductFetchError: message,
+        });
+        pushIosDebugLog("RevenueCat", "Monthly product missing from store response", {
+          loadedProductIds,
+        });
       }
-
-      const apexP =
-        products?.find((x: any) => productId(x) === PRIMARY_APEX_PRODUCT_ID) ??
-        products?.find((x: any) => isApexPid(productId(x)));
-      if (apexP) {
-        const label = priceLabel(apexP);
-        if (label) setApexPriceLabel(label);
-      }
-
-      const eliteYearlyP =
-        products?.find((x: any) => productId(x) === PRIMARY_ELITE_YEARLY_PRODUCT_ID) ??
-        products?.find((x: any) => isEliteYearlyPid(productId(x)));
-      if (eliteYearlyP) {
-        const label = priceLabel(eliteYearlyP);
-        if (label) setEliteYearlyPriceLabel(label);
-      }
-
-      const apexYearlyP =
-        products?.find((x: any) => productId(x) === PRIMARY_APEX_YEARLY_PRODUCT_ID) ??
-        products?.find((x: any) => isApexYearlyPid(productId(x)));
-      if (apexYearlyP) {
-        const label = priceLabel(apexYearlyP);
-        if (label) setApexYearlyPriceLabel(label);
-      }
-
-      const premiumP =
-        products?.find((x: any) => productId(x) === PRIMARY_PREMIUM_PRODUCT_ID) ??
-        products?.find((x: any) => isPremiumPid(productId(x)));
-      if (premiumP) {
-        const label = priceLabel(premiumP);
-        if (label) setPremiumPriceLabel(label);
-      }
-
-      const premiumYearlyP =
-        products?.find((x: any) => productId(x) === PRIMARY_PREMIUM_YEARLY_PRODUCT_ID) ??
-        products?.find((x: any) => isPremiumYearlyPid(productId(x)));
-      if (premiumYearlyP) {
-        const label = priceLabel(premiumYearlyP);
-        if (label) setPremiumYearlyPriceLabel(label);
-      }
-
-      updateRevenueCatDebug({
-        loadedProductIds,
-        monthlyPriceLabel: eliteP ? priceLabel(eliteP) : null,
-        lastProductFetchError: null,
-      });
-      pushIosDebugLog("RevenueCat", "Products loaded", { loadedProductIds });
     } catch (e) {
-      console.warn("[RC] Could not load products:", e);
+      console.warn("[RC] Could not load monthly product:", e);
       const message = toMessage(e);
       updateRevenueCatDebug({
         loadedProductIds: [],
         lastProductFetchError: message,
       });
+      pushIosDebugLog("RevenueCat", "Monthly product fetch failed", { message });
     }
   }, []);
 
@@ -307,18 +193,14 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!user) {
       setRcElite(false);
-      setRcApex(false);
-      setRcPremium(false);
       setPackages([]);
       setMonthlyPriceLabel(null);
-      setApexPriceLabel(null);
-      setPremiumPriceLabel(null);
-      setEliteYearlyPriceLabel(null);
-      setApexYearlyPriceLabel(null);
-      setPremiumYearlyPriceLabel(null);
       setRcLoading(false);
       setRcReady(false);
-      updateRevenueCatDebug({ appUserId: null, entitlement: null });
+      updateRevenueCatDebug({
+        appUserId: null,
+        entitlement: null,
+      });
       return;
     }
 
@@ -331,6 +213,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
 
     (async () => {
       try {
+        // 1. Configure SDK
         await CapPurchases.configure({ apiKey: RC_API_KEY_APPLE, appUserID: user.id });
         if (cancelled) return;
         setRcReady(true);
@@ -340,22 +223,69 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
           lastOfferingError: null,
           lastProductFetchError: null,
         });
+        pushIosDebugLog("RevenueCat", "SDK configured", {
+          appUserId: user.id,
+          entitlement: ENTITLEMENT,
+          productIds: PRODUCT_IDS,
+        });
 
+        // 2. Check entitlements
         const { customerInfo } = await CapPurchases.getCustomerInfo();
         if (cancelled) return;
-        await applyEntitlements(customerInfo);
+        await applyElite(customerInfo);
 
+        // 3. Load offerings (for package-based purchase)
         try {
           const { current } = await CapPurchases.getOfferings();
           if (cancelled) return;
           if (current?.availablePackages) {
             setPackages(current.availablePackages);
+            const offeringPackageIds = current.availablePackages
+              .map((pkg: any) => pkg?.identifier)
+              .filter((id: string | undefined): id is string => Boolean(id));
+            const offeringProductIds = current.availablePackages
+              .map((pkg: any) => productId(storeProduct(pkg)))
+              .filter((id: string | null): id is string => Boolean(id));
+
+            const monthly =
+              current.availablePackages.find((pkg: any) => productId(storeProduct(pkg)) === PRIMARY_PRODUCT_ID) ??
+              current.availablePackages.find(isMonthly);
+            if (monthly) {
+              const label = priceLabel(storeProduct(monthly));
+              if (label) setMonthlyPriceLabel(label);
+              updateRevenueCatDebug({ monthlyPriceLabel: label });
+            }
+
+            updateRevenueCatDebug({
+              offeringPackageIds,
+              offeringProductIds,
+              lastOfferingError: null,
+            });
+            pushIosDebugLog("RevenueCat", "Offerings loaded", {
+              offeringPackageIds,
+              offeringProductIds,
+            });
+          } else {
+            updateRevenueCatDebug({
+              offeringPackageIds: [],
+              offeringProductIds: [],
+              lastOfferingError: "No available packages in current offering",
+            });
+            pushIosDebugLog("RevenueCat", "No available packages in current offering");
           }
         } catch (e) {
-          console.log("[RC] No offerings configured:", e);
+          console.log("[RC] No offerings configured, using direct product:", e);
+          const message = toMessage(e);
+          updateRevenueCatDebug({
+            offeringPackageIds: [],
+            offeringProductIds: [],
+            lastOfferingError: message,
+          });
+          pushIosDebugLog("RevenueCat", "Offerings fetch failed", { message });
         }
 
-        await loadPrices();
+        // 4. Always fetch the actual product to guarantee correct price
+        await loadMonthlyPrice();
       } catch (e) {
         console.error("[RC] Init error:", e);
       } finally {
@@ -364,172 +294,118 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     })();
 
     return () => { cancelled = true; };
-  }, [user, applyEntitlements, loadPrices]);
+  }, [user, applyElite, loadMonthlyPrice]);
 
   // ─── Purchase via package ───────────────────────────
   const purchase = useCallback(
     async (pkg: any) => {
       try {
+        console.log("[RC] Purchasing package:", pkg?.identifier);
+        updateRevenueCatDebug({
+          lastPurchaseError: null,
+          lastPurchasedProductId: productId(storeProduct(pkg)),
+        });
+        pushIosDebugLog("RevenueCat", "Package purchase started", {
+          packageId: pkg?.identifier,
+          productId: productId(storeProduct(pkg)),
+        });
+
         const { customerInfo } = await CapPurchases.purchasePackage({ aPackage: pkg });
-        await applyEntitlements(customerInfo);
+        await applyElite(customerInfo);
       } catch (e: any) {
         if (isCancellation(e)) return;
+        console.error("[RC] Package purchase error:", e);
         const message = toMessage(e);
         updateRevenueCatDebug({ lastPurchaseError: message });
+        pushIosDebugLog("RevenueCat", "Package purchase failed", { message });
+        toast.error("Purchase failed. Please try again.");
         throw e;
       }
     },
-    [applyEntitlements],
+    [applyElite],
   );
 
   // ─── Purchase via product ID (fallback) ─────────────
   const purchaseProduct = useCallback(
     async (id: string) => {
       try {
-        const fallbackIds = ALL_PRODUCT_IDS.filter((pid) => pid !== id);
+        console.log("[RC] Purchasing product:", id);
+        updateRevenueCatDebug({
+          lastPurchaseError: null,
+          lastPurchasedProductId: id,
+        });
+        pushIosDebugLog("RevenueCat", "Direct product purchase started", {
+          productId: id,
+        });
+
+        const fallbackIds = PRODUCT_IDS.filter((pid) => pid !== id);
         const requestedIds = [id, ...fallbackIds];
         const { products } = await CapPurchases.getProducts({ productIdentifiers: requestedIds });
+        const loadedProductIds = (products ?? [])
+          .map((x: any) => productId(x))
+          .filter((pid: string | null): pid is string => Boolean(pid));
 
         const selectedProduct =
           products?.find((p: any) => productId(p) === id) ??
-          products?.find((p: any) => isKnownProductId(productId(p))) ??
+          products?.find((p: any) => isKnownMonthlyId(productId(p))) ??
           null;
 
+        updateRevenueCatDebug({
+          loadedProductIds,
+          lastProductFetchError: selectedProduct
+            ? null
+            : `Tuotetta ei löydy. Odotettiin yhtä näistä: ${requestedIds.join(", ")}. Store palautti: ${loadedProductIds.join(", ") || "none"}`,
+        });
+
         if (!selectedProduct) {
-          throw new Error(`Tuotetta "${id}" ei löydy.`);
+          throw new Error(
+            `Tuotetta "${id}" ei löydy. Varmista että App Store Connectissa ja RevenueCatissa on sama Product ID (${requestedIds.join(" tai ")}).`,
+          );
         }
 
         const { customerInfo } = await CapPurchases.purchaseStoreProduct({
           product: selectedProduct,
         });
-        await applyEntitlements(customerInfo);
+        await applyElite(customerInfo);
       } catch (e: any) {
         if (isCancellation(e)) return;
+        console.error("[RC] Product purchase error:", e);
         const message = toMessage(e);
         updateRevenueCatDebug({ lastPurchaseError: message });
+        pushIosDebugLog("RevenueCat", "Direct product purchase failed", { message });
+        toast.error("Purchase failed. Please try again.");
         throw e;
       }
     },
-    [applyEntitlements],
-  );
-
-  /** Convenience wrapper to purchase Apex Instant (monthly default). */
-  const purchaseApex = useCallback(async () => {
-    // Try package first (offering), fall back to direct product
-    const apexPkg = packages.find((pkg: any) => {
-      const pid = productId(storeProduct(pkg));
-      return isApexPid(pid);
-    });
-    if (apexPkg) {
-      await purchase(apexPkg);
-    } else {
-      await purchaseProduct(PRIMARY_APEX_PRODUCT_ID);
-    }
-  }, [packages, purchase, purchaseProduct]);
-
-  /** Purchase Elite tier with selectable billing plan. */
-  const purchaseElitePlan = useCallback(
-    async (plan: "monthly" | "yearly") => {
-      const targetId =
-        plan === "yearly" ? PRIMARY_ELITE_YEARLY_PRODUCT_ID : PRIMARY_ELITE_PRODUCT_ID;
-      const matcher = plan === "yearly" ? isEliteYearlyPid : isElitePid;
-      const pkg = packages.find((p: any) => {
-        const pid = productId(storeProduct(p));
-        return pid === targetId || matcher(pid);
-      });
-      if (pkg) {
-        await purchase(pkg);
-      } else {
-        await purchaseProduct(targetId);
-      }
-    },
-    [packages, purchase, purchaseProduct],
-  );
-
-  /** Purchase Apex tier with selectable billing plan. */
-  const purchaseApexPlan = useCallback(
-    async (plan: "monthly" | "yearly") => {
-      const targetId =
-        plan === "yearly" ? PRIMARY_APEX_YEARLY_PRODUCT_ID : PRIMARY_APEX_PRODUCT_ID;
-      const matcher = plan === "yearly" ? isApexYearlyPid : isApexPid;
-      const pkg = packages.find((p: any) => {
-        const pid = productId(storeProduct(p));
-        return pid === targetId || matcher(pid);
-      });
-      if (pkg) {
-        await purchase(pkg);
-      } else {
-        await purchaseProduct(targetId);
-      }
-    },
-    [packages, purchase, purchaseProduct],
-  );
-
-  /**
-   * Purchase Premium tier with selectable billing plan.
-   * Falls back to legacy Apex products at the same price point if the
-   * dedicated Premium products are not yet approved in App Store Connect,
-   * so the purchase flow never breaks during the rollout window.
-   */
-  const purchasePremiumPlan = useCallback(
-    async (plan: "monthly" | "yearly") => {
-      const yearly = plan === "yearly";
-      const targetId = yearly ? PRIMARY_PREMIUM_YEARLY_PRODUCT_ID : PRIMARY_PREMIUM_PRODUCT_ID;
-      const matcher = yearly ? isPremiumYearlyPid : isPremiumPid;
-      const pkg = packages.find((p: any) => {
-        const pid = productId(storeProduct(p));
-        return pid === targetId || matcher(pid);
-      });
-      if (pkg) {
-        await purchase(pkg);
-        return;
-      }
-      try {
-        await purchaseProduct(targetId);
-      } catch (e: any) {
-        if (isCancellation(e)) throw e;
-        // Fallback — legacy Apex product at the same €17.99 / €172.99 price.
-        const fallbackId: string = yearly ? PRIMARY_APEX_YEARLY_PRODUCT_ID : PRIMARY_APEX_PRODUCT_ID;
-        if (fallbackId === (targetId as string)) throw e;
-        await purchaseProduct(fallbackId);
-      }
-    },
-    [packages, purchase, purchaseProduct],
+    [applyElite],
   );
 
   // ─── Restore ────────────────────────────────────────
   const restorePurchases = useCallback(async () => {
     try {
+      updateRevenueCatDebug({ lastRestoreError: null });
+      pushIosDebugLog("RevenueCat", "Restore purchases started");
       const { customerInfo } = await CapPurchases.restorePurchases();
-      await applyEntitlements(customerInfo);
+      await applyElite(customerInfo);
     } catch (e) {
+      console.error("[RC] Restore error:", e);
       const message = toMessage(e);
       updateRevenueCatDebug({ lastRestoreError: message });
+      pushIosDebugLog("RevenueCat", "Restore purchases failed", { message });
       throw e;
     }
-  }, [applyEntitlements]);
+  }, [applyElite]);
 
   return (
     <RevenueCatContext.Provider
       value={{
         rcElite,
-        rcApex,
-        rcPremium,
         rcLoading,
         rcReady,
         monthlyPriceLabel,
-        apexPriceLabel,
-        premiumPriceLabel,
-        eliteYearlyPriceLabel,
-        apexYearlyPriceLabel,
-        premiumYearlyPriceLabel,
         packages,
         purchase,
         purchaseProduct,
-        purchaseApex,
-        purchaseElitePlan,
-        purchaseApexPlan,
-        purchasePremiumPlan,
         restorePurchases,
       }}
     >

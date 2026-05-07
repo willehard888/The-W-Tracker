@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode, useRef } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
@@ -9,10 +9,7 @@ interface AuthContextType {
   session: Session | null;
   profile: any | null;
   loading: boolean;
-  subscriptionLoading: boolean;
   isElite: boolean;
-  isPremium: boolean;
-  isApexSubscriber: boolean;
   subscriptionEnd: string | null;
   checkSubscription: () => Promise<void>;
   signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
@@ -34,13 +31,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const [isElite, setIsElite] = useState(false);
-  const [isPremium, setIsPremium] = useState(false);
-  const [isApexSubscriber, setIsApexSubscriber] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
-  const lastFetchedProfileUserId = useRef<string | null>(null);
-  const inFlightProfileFetch = useRef<Promise<void> | null>(null);
+
+  // Guards against concurrent fetchProfile calls for the same user.
+  const fetchingProfileFor = useRef<string | null>(null);
 
   const buildFallbackUsername = (authUser: User) => {
     const rawUsername = String(
@@ -58,18 +53,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const ensureProfile = async (authUser: User) => {
     const username = buildFallbackUsername(authUser);
 
-    // IMPORTANT: Use insert (not upsert) so we never overwrite an existing
-    // username/referral_code. If a profile row already exists, ignore the
-    // duplicate-key error — fetchProfile will re-read whatever is stored.
-    const { error } = await supabase.from("profiles").insert({
-      user_id: authUser.id,
-      username,
-      referral_code: `${username}_${authUser.id.slice(0, 6)}`.slice(0, 20),
-    });
-
-    if (error && error.code !== "23505") {
-      console.warn("ensureProfile insert error:", error);
-    }
+    await supabase.from("profiles").upsert(
+      {
+        user_id: authUser.id,
+        username,
+        referral_code: `${username}_${authUser.id.slice(0, 6)}`.slice(0, 20),
+      },
+      { onConflict: "user_id" },
+    );
   };
 
   const shouldForceAppleUsernameSetup = (authUser: User, nextProfile: any | null) => {
@@ -84,112 +75,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return isAppleUser && (!username || username === fallbackUsername);
   };
 
-  const tryClaimPendingReferral = async (authUser: User, currentProfile: any | null) => {
+  const fetchProfile = async (authUser: User) => {
+    // Deduplicate concurrent calls for the same user.
+    if (fetchingProfileFor.current === authUser.id) return;
+    fetchingProfileFor.current = authUser.id;
+
     try {
-      const code = typeof localStorage !== "undefined" ? localStorage.getItem("pending_referral_code") : null;
-      if (!code) return false;
-      if (currentProfile?.referred_by) {
-        localStorage.removeItem("pending_referral_code");
-        return false;
-      }
-      const { data, error } = await supabase.functions.invoke("claim-referral", {
-        body: { code },
-      });
-      if (error) {
-        console.warn("claim-referral invoke error:", error);
-        return false;
-      }
-      const reason = (data as any)?.reason;
-      const definitive = (data as any)?.success
-        || reason === "self_referral"
-        || reason === "already_referred"
-        || reason === "duplicate"
-        || reason === "invalid_code"
-        || reason === "empty_code";
-      if (definitive) localStorage.removeItem("pending_referral_code");
-      return Boolean((data as any)?.success);
-    } catch (e) {
-      console.warn("claim-referral failed:", e);
-      return false;
-    }
-  };
-
-  const fetchProfile = async (authUser: User, force = false) => {
-    if (!force && lastFetchedProfileUserId.current === authUser.id && inFlightProfileFetch.current) {
-      await inFlightProfileFetch.current;
-      return;
-    }
-
-    const run = (async () => {
-    let { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("user_id", authUser.id)
-      .maybeSingle();
-
-    if (!data) {
-      await ensureProfile(authUser);
-
-      const retry = await supabase
+      let { data } = await supabase
         .from("profiles")
         .select("*")
         .eq("user_id", authUser.id)
         .maybeSingle();
 
-      data = retry.data ?? null;
-    }
+      if (!data) {
+        await ensureProfile(authUser);
 
-    const claimed = await tryClaimPendingReferral(authUser, data);
-    if (claimed) {
-      const refreshed = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", authUser.id)
-        .maybeSingle();
-      data = refreshed.data ?? data;
-    }
+        const retry = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", authUser.id)
+          .maybeSingle();
 
-    setProfile(data);
-    // BROADER ELITE DETECTION: any signal of an active paid membership counts.
-    // Prevents showing the paywall to users who already paid via Stripe (is_elite),
-    // RevenueCat / Apex (is_apex_subscriber), tier promotion (status_tier elite/apex/legend),
-    // or admin-granted credits (membership_credits_until / apex_credits_until in the future).
-    const now = Date.now();
-    const tier = (data as any)?.status_tier;
-    const tierIsPaid = tier === "elite" || tier === "apex" || tier === "legend";
-    const membershipUntil = (data as any)?.membership_credits_until;
-    const apexUntil = (data as any)?.apex_credits_until;
-    const hasMembershipCredits = membershipUntil && new Date(membershipUntil).getTime() > now;
-    const hasApexCredits = apexUntil && new Date(apexUntil).getTime() > now;
-    const nextElite = Boolean(
-      data?.is_elite ||
-      (data as any)?.is_apex_subscriber ||
-      tierIsPaid ||
-      hasMembershipCredits ||
-      hasApexCredits
-    );
-    setIsElite(nextElite);
-    setIsPremium(Boolean((data as any)?.is_premium) || nextElite);
-    setIsApexSubscriber(Boolean((data as any)?.is_apex_subscriber) || tier === "apex" || tier === "legend" || hasApexCredits);
-
-    if (shouldForceAppleUsernameSetup(authUser, data)) {
-      if (!data?.username || data.username === buildFallbackUsername(authUser)) {
-        clearAppleAuthStarted();
-        markAppleUsernameSelectionPending();
-        return;
+        data = retry.data ?? null;
       }
-    }
 
-    clearAppleAuthStarted();
-    clearAppleUsernameSelectionPending();
-    lastFetchedProfileUserId.current = authUser.id;
-    })();
+      setProfile(data);
+      setIsElite(Boolean(data?.is_elite));
 
-    inFlightProfileFetch.current = run;
-    try {
-      await run;
+      if (shouldForceAppleUsernameSetup(authUser, data)) {
+        if (!data?.username || data.username === buildFallbackUsername(authUser)) {
+          clearAppleAuthStarted();
+          markAppleUsernameSelectionPending();
+          return;
+        }
+      }
+
+      clearAppleAuthStarted();
+      clearAppleUsernameSelectionPending();
     } finally {
-      inFlightProfileFetch.current = null;
+      fetchingProfileFor.current = null;
     }
   };
 
@@ -197,116 +121,76 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (user) await fetchProfile(user);
   };
 
-  // Refs hold latest state so checkSubscription identity doesn't change
-  // every time isElite/isApexSubscriber updates (which would re-trigger
-  // the polling useEffect and cause an infinite request loop on /paywall).
-  const isEliteRef = useRef(isElite);
-  const isApexRef = useRef(isApexSubscriber);
-  const userRef = useRef(user);
-  useEffect(() => { isEliteRef.current = isElite; }, [isElite]);
-  useEffect(() => { isApexRef.current = isApexSubscriber; }, [isApexSubscriber]);
-  useEffect(() => { userRef.current = user; }, [user]);
-
   const checkSubscription = useCallback(async () => {
-    const currentUser = userRef.current;
     if (isNativePlatform()) {
-      if (currentUser) await fetchProfile(currentUser);
+      if (user) await fetchProfile(user);
       return;
     }
 
     try {
-      setSubscriptionLoading(true);
-
-      // Retry once on transient edge-runtime cold-start (503 SUPABASE_EDGE_RUNTIME_ERROR).
-      // The function itself returns 200 on Stripe failures — a 503 means the runtime
-      // hadn't booted yet, which resolves on the next call.
-      let data: any = null;
-      let error: any = null;
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const res = await supabase.functions.invoke("check-subscription");
-        data = res.data;
-        error = res.error;
-        const isTransient =
-          error &&
-          (error.status === 503 ||
-            /temporarily unavailable|EDGE_RUNTIME_ERROR/i.test(String(error.message ?? "")));
-        if (!isTransient) break;
-        if (attempt === 0) {
-          await new Promise((r) => setTimeout(r, 800));
-        }
-      }
-
+      const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) {
-        // Silently tolerate transient runtime errors — UI keeps last-known state.
-        const transient =
-          error.status === 503 ||
-          /temporarily unavailable|EDGE_RUNTIME_ERROR/i.test(String(error.message ?? ""));
-        if (!transient) console.error("check-subscription error:", error);
+        console.error("check-subscription error:", error);
         return;
       }
-      // Only trust subscribed:true when a real tier is returned.
-      const nextElite = Boolean(data?.subscribed) && data?.tier !== null && data?.tier !== undefined;
-      const nextApex = data?.tier === "apex";
-
-      if (data && !data.error) {
-        setIsElite(nextElite);
-        setSubscriptionEnd(nextElite ? data.subscription_end ?? null : null);
+      if (data?.subscribed) {
+        setIsElite(true);
+        setSubscriptionEnd(data.subscription_end);
+      } else if (data && !data.error) {
+        setIsElite(false);
+        setSubscriptionEnd(null);
       }
-
-      if (currentUser && (nextElite !== isEliteRef.current || nextApex !== isApexRef.current)) {
-        await fetchProfile(currentUser, true);
-      }
+      // Refresh profile to get synced is_elite
+      if (user) await fetchProfile(user);
     } catch (e) {
       console.error("Failed to check subscription:", e);
-    } finally {
-      setSubscriptionLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
+    // getSession resolves synchronously from storage most of the time.
+    // onAuthStateChange also fires with the initial session.
+    // We call fetchProfile from onAuthStateChange only and let getSession
+    // just set the sync state so loading turns off fast.
+    let initialised = false;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!initialised) {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) fetchProfile(session.user);
+        setLoading(false);
+        initialised = true;
+      }
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          if (_event !== "TOKEN_REFRESHED") {
-            setTimeout(() => fetchProfile(session.user), 0);
-          }
+          // defer to avoid calling Supabase inside the onAuthStateChange callback
+          setTimeout(() => fetchProfile(session.user), 0);
         } else {
-          lastFetchedProfileUserId.current = null;
           setProfile(null);
           setIsElite(false);
-          setIsPremium(false);
-          setIsApexSubscriber(false);
           setSubscriptionEnd(null);
         }
         setLoading(false);
-      }
+        initialised = true;
+      },
     );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user);
-      }
-      setLoading(false);
-    });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Check subscription on login and periodically.
-  // Only depend on user.id — checkSubscription is now stable (empty deps),
-  // and depending on its identity here previously caused an infinite refetch
-  // loop on /paywall (Stripe returned subscribed:true → setIsElite → identity
-  // change → effect re-ran → new request → repeat).
+  // Check subscription on login and periodically
   useEffect(() => {
     if (!user) return;
     checkSubscription();
-    const interval = setInterval(checkSubscription, 300000);
+    const interval = setInterval(checkSubscription, 60000);
     return () => clearInterval(interval);
-  }, [user?.id]);
+  }, [user, checkSubscription]);
 
   const signUp = async (email: string, password: string, username: string) => {
     const { error } = await supabase.auth.signUp({
@@ -331,13 +215,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     clearAppleUsernameSelectionPending();
     setProfile(null);
     setIsElite(false);
-    setIsPremium(false);
-    setIsApexSubscriber(false);
     setSubscriptionEnd(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, subscriptionLoading, isElite, isPremium, isApexSubscriber, subscriptionEnd, checkSubscription, signUp, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, isElite, subscriptionEnd, checkSubscription, signUp, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

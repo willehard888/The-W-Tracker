@@ -3,23 +3,6 @@
 # of silently continuing past a broken pod install.
 set -euo pipefail
 
-# ---------------------------------------------------------------------------
-# 🛑 Xcode Cloud kill switch
-# ---------------------------------------------------------------------------
-# Automatic Xcode Cloud archive builds keep failing and we don't want them to
-# burn build minutes / clutter App Store Connect until the underlying issues
-# are resolved manually. To re-enable, set XCODE_CLOUD_ENABLED=1 as an
-# environment variable in the Xcode Cloud workflow's "Environment" tab.
-# Local developer rebuilds via scripts/ios-rebuild.sh are unaffected because
-# they never invoke this script.
-if [[ "${XCODE_CLOUD_ENABLED:-0}" != "1" ]]; then
-  echo "🛑 Xcode Cloud auto-build is DISABLED for this project."
-  echo "   To re-enable: add XCODE_CLOUD_ENABLED=1 in App Store Connect →"
-  echo "   Xcode Cloud → Workflow → Environment → Environment Variables,"
-  echo "   or delete this kill switch block from ci_post_clone.sh."
-  exit 1
-fi
-
 echo "🔧 Running post-clone setup for iOS build..."
 echo "ℹ️  PWD=$(pwd)"
 echo "ℹ️  USER=$(whoami)"

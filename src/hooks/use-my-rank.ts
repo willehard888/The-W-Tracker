@@ -39,12 +39,12 @@ export const useMyRank = (userId: string | undefined) => {
       };
     },
     enabled: !!userId,
-    // Always refetch when a screen using rank mounts so % stays in sync
-    // with leaderboard / tier changes (cache showing stale "89%" after
-    // user climbed to #1 was reported).
-    staleTime: 0,
+    // 30s stale window — rank doesn't change that fast, and staleTime: 0 was
+    // triggering an RPC call on every single mount/window-focus event (multiple
+    // components use this hook simultaneously).
+    staleTime: 30_000,
     gcTime: 5 * 60_000,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 };

@@ -86,8 +86,7 @@ const Battles = () => {
       return map;
     },
     enabled: participantIds.length > 0,
-    refetchInterval: 10000,
-    refetchIntervalInBackground: true,
+    refetchInterval: 15000,
   });
 
   const pendingBattles = battles?.filter((b: any) => b.status === "pending" && b.opponent_id === profile?.user_id) || [];

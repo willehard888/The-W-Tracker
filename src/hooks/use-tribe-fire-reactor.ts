@@ -121,12 +121,18 @@ export function useTribeFireReactor(memberIds: string[]): ReactorState {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  // Auto-prune stale events
+  // Auto-prune stale events.
+  // Return the previous array unchanged when nothing is filtered out —
+  // this keeps events.length stable and avoids recreating the interval
+  // unnecessarily on every tick that doesn't actually prune anything.
   useEffect(() => {
     if (events.length === 0) return;
     const t = setInterval(() => {
       const cutoff = Date.now() - EVENT_TTL_MS - 200;
-      setEvents((prev) => prev.filter((e) => e.ts > cutoff));
+      setEvents((prev) => {
+        const next = prev.filter((e) => e.ts > cutoff);
+        return next.length !== prev.length ? next : prev;
+      });
     }, 400);
     return () => clearInterval(t);
   }, [events.length]);

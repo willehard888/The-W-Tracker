@@ -123,6 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkSubscription = useCallback(async () => {
     if (isNativePlatform()) {
+      // On native, subscription state lives in RevenueCat; fetchProfile syncs it.
       if (user) await fetchProfile(user);
       return;
     }
@@ -133,6 +134,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error("check-subscription error:", error);
         return;
       }
+      // Update subscription state directly from the edge-function response —
+      // no need to re-fetch the full profile here (fetchProfile was already
+      // called on login and is called by the 5-minute refresh interval).
       if (data?.subscribed) {
         setIsElite(true);
         setSubscriptionEnd(data.subscription_end);
@@ -140,8 +144,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsElite(false);
         setSubscriptionEnd(null);
       }
-      // Refresh profile to get synced is_elite
-      if (user) await fetchProfile(user);
     } catch (e) {
       console.error("Failed to check subscription:", e);
     }
@@ -184,11 +186,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Check subscription on login and periodically
+  // Check subscription on login and periodically (every 5 minutes).
+  // The immediate call on login is intentional — it syncs is_elite fast.
+  // The interval is kept long to avoid hammering the edge function.
   useEffect(() => {
     if (!user) return;
     checkSubscription();
-    const interval = setInterval(checkSubscription, 60000);
+    const interval = setInterval(checkSubscription, 5 * 60_000);
     return () => clearInterval(interval);
   }, [user, checkSubscription]);
 

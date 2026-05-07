@@ -15,6 +15,11 @@ export default defineConfig(({ mode }) => {
         overlay: false,
       },
     },
+    // Strip console.* and debugger from production bundles only.
+    // esbuild is the top-level option; build.minify stays at default ("esbuild").
+    ...(mode === "production" && {
+      esbuild: { drop: ["console", "debugger"] as ("console" | "debugger")[] },
+    }),
     build: {
       target: "es2020",
       cssCodeSplit: true,

@@ -123,12 +123,29 @@ post_install do |installer|
   # Without this, Xcode 26's parallel scheduler starts compiling both targets
   # simultaneously. Capacitor tries @import Cordova before CapacitorCordova.framework
   # is linked — causing: error: module 'Cordova' not found
-  cap_target = installer.pods_project.targets.find { |t| t.name == 'Capacitor' }
+  cap_target     = installer.pods_project.targets.find { |t| t.name == 'Capacitor' }
   cordova_target = installer.pods_project.targets.find { |t| t.name == 'CapacitorCordova' }
+
+  # Step 1: Capacitor waits for CapacitorCordova
   if cap_target && cordova_target
     unless cap_target.dependencies.map(&:name).include?('CapacitorCordova')
       cap_target.add_dependency(cordova_target)
-      puts '✅ Added explicit Capacitor → CapacitorCordova build dependency'
+      puts '✅ Added Capacitor → CapacitorCordova dependency'
+    end
+  end
+
+  # Step 2: All plugin targets wait for Capacitor.
+  # Without this, Xcode 26 starts HapticsPlugin/AppPlugin/etc. in parallel
+  # with Capacitor. Their Swift compiler builds the Capacitor ObjC module
+  # inline → hits @import Cordova → Cordova.framework missing → crash.
+  if cap_target
+    installer.pods_project.targets.each do |target|
+      next if %w[Capacitor CapacitorCordova].include?(target.name)
+      next if target.name.start_with?('Pods-')
+      next if target.product_type == 'com.apple.product-type.bundle'
+      next if target.dependencies.map(&:name).include?('Capacitor')
+      target.add_dependency(cap_target)
+      puts "✅ Added #{target.name} → Capacitor dependency"
     end
   end
 

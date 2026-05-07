@@ -421,18 +421,31 @@ echo "🔨 Creating Cordova.framework stub for Xcode 26 scan-phase race..."
 
 CORDOVA_SRC="${ROOT_DIR}/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova"
 
-# Determine PODS_CONFIGURATION_BUILD_DIR (= BUILD_DIR/Release-iphoneos)
-# In Xcode Cloud the DerivedData root is always /Volumes/workspace/DerivedData.
-if [[ -d "/Volumes/workspace/DerivedData" ]]; then
+# Determine PODS_CONFIGURATION_BUILD_DIR (= BUILD_DIR/Release-iphoneos).
+#
+# IMPORTANT: Xcode Cloud's xcodebuild runs with -derivedDataPath /Volumes/workspace/DerivedData,
+# but that directory is created BY xcodebuild — it doesn't exist yet when this script runs.
+# Checking for /Volumes/workspace/DerivedData would therefore always be false in CI, causing
+# the fallback to ask a plain `xcodebuild -showBuildSettings` (no -derivedDataPath), which
+# returns a completely different ~/Library/Developer/Xcode/DerivedData/… path. The stub then
+# lands in the wrong place and xcodebuild never finds Cordova.framework.
+#
+# Fix: detect CI by checking /Volumes/workspace (the workspace ROOT, always present on XC Cloud)
+# rather than its not-yet-created DerivedData sub-directory.
+if [[ -d "/Volumes/workspace" ]]; then
+  # Xcode Cloud: DerivedData root matches the -derivedDataPath passed to xcodebuild archive.
   DERIVED_PRODUCTS="/Volumes/workspace/DerivedData/Build/Products/Release-iphoneos"
+  echo "🌐 XC Cloud environment detected — using /Volumes/workspace/DerivedData"
 else
-  # Local fallback: ask xcodebuild for BUILD_DIR
+  # Local dev machine: ask xcodebuild for the actual build dir.
   _bdir=$(xcodebuild -workspace "${IOS_APP_DIR}/App.xcworkspace" \
     -scheme App -configuration Release \
     -showBuildSettings 2>/dev/null \
-    | awk -F' = ' '/^[[:space:]]*BUILD_DIR[[:space:]]*=/{print $2}' | tr -d ' ')
+    | awk -F' = ' '/^[[:space:]]*BUILD_DIR[[:space:]]*=/{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
   DERIVED_PRODUCTS="${_bdir}/Release-iphoneos"
+  echo "💻 Local environment — BUILD_DIR=${_bdir}"
 fi
+echo "📍 Stub target: ${DERIVED_PRODUCTS}/CapacitorCordova/Cordova.framework"
 CORDOVA_FW="${DERIVED_PRODUCTS}/CapacitorCordova/Cordova.framework"
 
 if [[ ! -d "${CORDOVA_SRC}" ]]; then

@@ -18,6 +18,8 @@ export const useCoachMemory = () => {
   const query = useQuery({
     queryKey: ["coach-memory", user?.id],
     enabled: !!user?.id,
+    staleTime: 5 * 60_000,   // memory entries update when user chats with coach
+    gcTime:    15 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("coach_chat_memory" as any)

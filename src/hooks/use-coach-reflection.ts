@@ -16,6 +16,8 @@ export const useTodayReflection = () => {
   const query = useQuery({
     queryKey: ["coach-reflection", user?.id, date],
     enabled: !!user?.id,
+    staleTime: 10 * 60_000,  // today's reflection won't change often
+    gcTime:    24 * 60 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("coach_reflections")

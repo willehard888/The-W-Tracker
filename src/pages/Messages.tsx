@@ -20,6 +20,8 @@ const Messages = () => {
   // Fetch accepted friends
   const { data: friends } = useQuery({
     queryKey: ["friends", user?.id],
+    staleTime: 5 * 60_000,
+    gcTime:    15 * 60_000,
     queryFn: async () => {
       if (!user) return [];
       const { data } = await supabase
@@ -42,6 +44,8 @@ const Messages = () => {
   // Fetch pending incoming requests
   const { data: pendingRequests } = useQuery({
     queryKey: ["pending-friend-requests", user?.id],
+    staleTime: 2 * 60_000,   // pending requests should be reasonably fresh
+    gcTime:    10 * 60_000,
     queryFn: async () => {
       if (!user) return [];
       const { data } = await supabase
@@ -82,6 +86,8 @@ const Messages = () => {
 
   const { data: conversations, isLoading } = useQuery({
     queryKey: ["conversations", user?.id],
+    staleTime: 30_000,       // conversations should be reasonably real-time
+    gcTime:    5 * 60_000,
     queryFn: async () => {
       if (!user) return [];
       const { data: msgs } = await supabase

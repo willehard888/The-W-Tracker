@@ -79,6 +79,8 @@ export const useCoachProgram = () => {
   const programQuery = useQuery({
     queryKey: ["coach-program", user?.id],
     enabled: !!user?.id,
+    staleTime: 10 * 60_000,  // program rarely changes mid-session
+    gcTime:    30 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("coach_programs")
@@ -96,6 +98,8 @@ export const useCoachProgram = () => {
   const logsQuery = useQuery({
     queryKey: ["coach-program-logs", user?.id, programQuery.data?.id],
     enabled: !!user?.id && !!programQuery.data?.id,
+    staleTime: 5 * 60_000,
+    gcTime:    15 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("coach_program_logs")

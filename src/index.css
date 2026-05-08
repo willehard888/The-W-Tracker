@@ -4606,3 +4606,21 @@ p, span.selectable, input, textarea, [contenteditable] {
   user-select: text;
   -webkit-user-select: text;
 }
+
+/* ── Performance: CSS-only looping animations (replaces framer-motion repeat:Infinity) ── */
+@keyframes breathe-soft {
+  0%, 100% { opacity: 0.92; }
+  50%       { opacity: 1;    }
+}
+@keyframes scale-pulse {
+  0%, 100% { transform: scale(1);    }
+  50%       { transform: scale(1.04); }
+}
+.animate-breathe-soft {
+  animation: breathe-soft 6s ease-in-out infinite;
+  will-change: opacity;
+}
+.animate-scale-pulse {
+  animation: scale-pulse 2.2s ease-in-out infinite;
+  will-change: transform;
+}

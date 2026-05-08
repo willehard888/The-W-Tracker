@@ -10,6 +10,8 @@ interface Particle {
   fadeDir: number;
   hue: number;
   lightness: number;
+  /** Pre-built "hsla(h,90%,l%," prefix — avoids string interpolation per draw call. */
+  fillPrefix: string;
 }
 
 /**
@@ -118,7 +120,8 @@ const AmbientParticles = () => {
         // Single fill — bloom dropped (was costing ~2x fill rate per particle).
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue},90%,${Math.min(p.lightness + 6, 80)}%,${p.opacity})`;
+        // fillPrefix is pre-built at particle creation — avoids 4-token interpolation per frame.
+        ctx.fillStyle = p.fillPrefix + p.opacity.toFixed(2) + ")";
         ctx.fill();
       }
     };
@@ -170,6 +173,8 @@ function createParticle(w: number, h: number, fromBottom = false): Particle {
     fadeDir: 1,
     hue,
     lightness,
+    // Pre-build static portion of fillStyle — only opacity varies per frame.
+    fillPrefix: `hsla(${hue},90%,${Math.min(lightness + 6, 80)}%,`,
   };
 }
 

@@ -279,11 +279,7 @@ const StatusHeader = () => {
 
           {/* Status pill — Apex > Elite > Trial — calmer, luxurious */}
           {isApex ? (
-            <motion.div
-              className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-[hsl(18_95%_58%)]/55"
-              animate={{ opacity: [0.92, 1, 0.92] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            >
+            <div className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-[hsl(18_95%_58%)]/55 animate-breathe-soft">
               <Zap
                 size={11}
                 className="relative z-10 text-primary-foreground status-flame-flicker"
@@ -293,36 +289,29 @@ const StatusHeader = () => {
               <span className="relative z-10 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
                 {isApexSubscriber ? "Apex⚡" : "Apex"}
               </span>
-            </motion.div>
+            </div>
           ) : isElite ? (
-            <motion.div
-              className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/55"
-              animate={{ opacity: [0.92, 1, 0.92] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            >
+            <div className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/55 animate-breathe-soft">
               <Crown size={11} className="relative z-10 text-primary-foreground status-flame-flicker" />
               <span className="relative z-10 text-[10px] font-bold text-primary-foreground uppercase tracking-wider">
                 Elite
               </span>
-            </motion.div>
+            </div>
           ) : isInTrial ? (
-            <motion.button
+            <button
               onClick={() => navigate("/paywall")}
               className={cn(
-                "shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors",
+                "shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors active:scale-[0.96]",
                 trialUrgent
-                  ? "bg-destructive/15 border-destructive/50 text-destructive"
+                  ? "bg-destructive/15 border-destructive/50 text-destructive animate-scale-pulse"
                   : "bg-secondary/70 border-border text-foreground",
               )}
-              whileTap={{ scale: 0.96 }}
-              animate={trialUrgent ? { scale: [1, 1.04, 1] } : {}}
-              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
             >
               <Clock size={11} />
               <span className="text-[10px] font-bold uppercase tracking-wider">
                 {trialLabel}
               </span>
-            </motion.button>
+            </button>
           ) : null}
         </div>
       </div>

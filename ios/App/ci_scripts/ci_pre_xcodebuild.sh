@@ -503,7 +503,9 @@ if [[ -d "/Volumes/workspace" ]]; then
   PRODUCTS_PODS_CFG_BUILD_DIR="${XC_DD}/Build/Products/Release-iphoneos"
   for _cap_cordova_dir in \
     "${ARCHIVE_PODS_CFG_BUILD_DIR}/CapacitorCordova" \
-    "${PRODUCTS_PODS_CFG_BUILD_DIR}/CapacitorCordova"; do
+    "${PRODUCTS_PODS_CFG_BUILD_DIR}/CapacitorCordova" \
+    "${ARCHIVE_PODS_CFG_BUILD_DIR}/Capacitor" \
+    "${PRODUCTS_PODS_CFG_BUILD_DIR}/Capacitor"; do
     _make_cordova_fw "${_cap_cordova_dir}/Cordova.framework"
     echo "✅ Pre-seeded stub at ${_cap_cordova_dir}/Cordova.framework"
   done
@@ -513,9 +515,93 @@ else
     -scheme App -configuration Release \
     -showBuildSettings 2>/dev/null \
     | awk -F' = ' '/^[[:space:]]*BUILD_DIR[[:space:]]*=/{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
-  _cap_cordova_dir="${_bdir}/Release-iphoneos/CapacitorCordova"
-  _make_cordova_fw "${_cap_cordova_dir}/Cordova.framework"
-  echo "💻 Local — pre-seeded stub at ${_cap_cordova_dir}/Cordova.framework"
+  for _subdir in CapacitorCordova Capacitor; do
+    _cap_cordova_dir="${_bdir}/Release-iphoneos/${_subdir}"
+    _make_cordova_fw "${_cap_cordova_dir}/Cordova.framework"
+    echo "💻 Local — pre-seeded stub at ${_cap_cordova_dir}/Cordova.framework"
+  done
+fi
+
+# ── 3. SOURCE-LEVEL PATCH (the nuclear option that ALWAYS works) ───────────────
+# All previous attempts (FRAMEWORK_SEARCH_PATHS, OTHER_SWIFT_FLAGS -Xcc -F,
+# pre-seeded stubs) rely on Xcode 26 honouring xcconfig propagation to
+# swift-frontend's embedded Clang — which it demonstrably does NOT do for the
+# Pods.xcodeproj's Capacitor target during archive builds.
+#
+# The remaining-rock-solid fix: change the SOURCE so the umbrella header
+# (CAPInstanceDescriptor.h) no longer needs the Cordova module during the
+# scan/import-underlying-module phase. The header only uses ONE Cordova type —
+# CDVConfigParser — and only as a property type, so a forward `@class`
+# declaration is sufficient. The .m and .swift files inside the Capacitor target
+# can still find Cordova via the existing OTHER_LDFLAGS link directive.
+echo "🔧 Source-patching CAPInstanceDescriptor.h to drop @import Cordova umbrella dependency..."
+CAP_HDR="${ROOT_DIR}/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPInstanceDescriptor.h"
+if [[ -f "${CAP_HDR}" ]]; then
+  if grep -q "// @import Cordova; — patched by ci_pre_xcodebuild.sh" "${CAP_HDR}" 2>/dev/null; then
+    echo "ℹ️  CAPInstanceDescriptor.h already patched — skipping"
+  elif grep -q "^@import Cordova;" "${CAP_HDR}" 2>/dev/null; then
+    # Replace `@import Cordova;` with a forward declaration of the only Cordova
+    # symbol referenced in this header (CDVConfigParser).
+    /usr/bin/sed -i.bak \
+      -e 's|^@import Cordova;|// @import Cordova; — patched by ci_pre_xcodebuild.sh\n@class CDVConfigParser;|' \
+      "${CAP_HDR}"
+    rm -f "${CAP_HDR}.bak"
+    if grep -q "@class CDVConfigParser;" "${CAP_HDR}"; then
+      echo "✅ Patched CAPInstanceDescriptor.h: @import Cordova → @class CDVConfigParser"
+    else
+      echo "❌ sed patch did not produce expected output in CAPInstanceDescriptor.h"
+      grep -n "Cordova\|CDVConfigParser" "${CAP_HDR}" | head -5
+      exit 1
+    fi
+  else
+    echo "⚠️  CAPInstanceDescriptor.h does not contain '@import Cordova;' — header may have changed"
+    grep -n "Cordova" "${CAP_HDR}" | head -5
+  fi
+else
+  echo "❌ CAPInstanceDescriptor.h not found at ${CAP_HDR}"
+  exit 1
+fi
+
+# ── 4. Inject build settings DIRECTLY into Pods.xcodeproj (overrides xcconfig) ─
+# When xcconfig changes don't propagate, target-level build settings in
+# project.pbxproj DO. We use the xcodeproj ruby gem (bundled with CocoaPods,
+# already present after pod install) to edit Pods.xcodeproj.
+echo "🔧 Injecting OTHER_SWIFT_FLAGS / FRAMEWORK_SEARCH_PATHS into Pods.xcodeproj..."
+_pods_proj="${PODS_DIR}/Pods.xcodeproj"
+if [[ -d "${_pods_proj}" ]]; then
+  /usr/bin/ruby <<RUBY || echo "⚠️  xcodeproj injection failed (non-fatal — source patch is primary fix)"
+require 'xcodeproj'
+project = Xcodeproj::Project.open("${_pods_proj}")
+stub_dir = "${FIXED_STUB_DIR}"
+%w[Capacitor].each do |target_name|
+  target = project.targets.find { |t| t.name == target_name }
+  next unless target
+  target.build_configurations.each do |cfg|
+    bs = cfg.build_settings
+    fsp = Array(bs['FRAMEWORK_SEARCH_PATHS'] || ['\$(inherited)'])
+    fsp << "\"#{stub_dir}\"" unless fsp.any? { |p| p.include?('CordovaStub') }
+    bs['FRAMEWORK_SEARCH_PATHS'] = fsp
+
+    osf = bs['OTHER_SWIFT_FLAGS'] || '\$(inherited)'
+    osf = osf.is_a?(Array) ? osf.join(' ') : osf
+    unless osf.include?('CordovaStub')
+      osf = "#{osf} -Xcc -F#{stub_dir}"
+    end
+    bs['OTHER_SWIFT_FLAGS'] = osf
+
+    ocf = bs['OTHER_CFLAGS'] || '\$(inherited)'
+    ocf = ocf.is_a?(Array) ? ocf.join(' ') : ocf
+    unless ocf.include?('CordovaStub')
+      ocf = "#{ocf} -F#{stub_dir}"
+    end
+    bs['OTHER_CFLAGS'] = ocf
+  end
+  puts "  ✅ Patched target #{target_name} build settings"
+end
+project.save
+RUBY
+else
+  echo "⚠️  Pods.xcodeproj not found at ${_pods_proj}"
 fi
 
 echo "✅ pre-xcodebuild setup complete"

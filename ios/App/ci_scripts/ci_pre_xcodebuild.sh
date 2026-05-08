@@ -615,6 +615,65 @@ if [[ ! -f "${_relative_target}" ]]; then
 fi
 echo "✅ CDVConfigParser.h confirmed at ${_relative_target}"
 
+# ── 3c. Make CDVScreenOrientationDelegate visible in the category header ──────
+# CAPBridgeViewController+CDVScreenOrientationDelegate.h declares the category
+# `CAPBridgeViewController (CDVScreenOrientationDelegate) <CDVScreenOrientationDelegate>`
+# but only imports <Capacitor/Capacitor-Swift.h>. The protocol declaration
+# CDVScreenOrientationDelegate previously came in transitively via
+# @import Cordova in CAPInstanceDescriptor.h — which we now strip. So this
+# header now needs its own explicit reference to the protocol.
+#
+# Same bulletproof technique: relative-path #import to the real header on disk.
+# CDVScreenOrientationDelegate.h only imports <Foundation/Foundation.h>.
+# Only one consumer of this category header (the corresponding .m), so no
+# downstream impact.
+CAP_CAT_HDR="${ROOT_DIR}/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPBridgeViewController+CDVScreenOrientationDelegate.h"
+if [[ -f "${CAP_CAT_HDR}" ]]; then
+  if grep -q "// CDVScreenOrientationDelegate header injected by ci_pre_xcodebuild.sh" "${CAP_CAT_HDR}" 2>/dev/null; then
+    echo "ℹ️  CAPBridgeViewController+CDVScreenOrientationDelegate.h already patched — skipping"
+  else
+    /usr/bin/sed -i.bak \
+      -e '1i\
+// CDVScreenOrientationDelegate header injected by ci_pre_xcodebuild.sh — see CAPInstanceDescriptor.h patch\
+#import "../../CapacitorCordova/CapacitorCordova/Classes/Public/CDVScreenOrientationDelegate.h"\
+' \
+      "${CAP_CAT_HDR}"
+    rm -f "${CAP_CAT_HDR}.bak"
+    if grep -q '#import "../../CapacitorCordova/CapacitorCordova/Classes/Public/CDVScreenOrientationDelegate.h"' "${CAP_CAT_HDR}"; then
+      echo "✅ Patched CAPBridgeViewController+CDVScreenOrientationDelegate.h with direct import"
+    else
+      echo "❌ sed patch did not produce expected output"
+      head -5 "${CAP_CAT_HDR}"
+      exit 1
+    fi
+  fi
+else
+  echo "❌ Category header not found at ${CAP_CAT_HDR}"
+  exit 1
+fi
+_relative_target2="${ROOT_DIR}/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVScreenOrientationDelegate.h"
+if [[ ! -f "${_relative_target2}" ]]; then
+  echo "❌ CDVScreenOrientationDelegate.h not found at expected location: ${_relative_target2}"
+  exit 1
+fi
+echo "✅ CDVScreenOrientationDelegate.h confirmed at ${_relative_target2}"
+
+# ── 3d. Sweep for ANY other Cordova-symbol references in Capacitor headers ────
+# Catch-all: scan all Capacitor public headers / source files for unresolved
+# Cordova type references (CDV*) that aren't already satisfied by an import.
+# Reports findings so future builds surface this kind of issue early instead of
+# during xcodebuild. Non-fatal — informational only.
+echo "🔍 Scanning Capacitor sources for additional Cordova type references…"
+CAP_SRC_DIR="${ROOT_DIR}/node_modules/@capacitor/ios/Capacitor/Capacitor"
+_extra_cdv_refs=$(grep -rEho '\bCDV[A-Z][A-Za-z0-9_]+' "${CAP_SRC_DIR}" \
+  --include="*.h" --include="*.m" --include="*.swift" 2>/dev/null \
+  | sort -u \
+  | grep -v -E '^(CDVConfigParser|CDVScreenOrientationDelegate)$' || true)
+if [[ -n "${_extra_cdv_refs}" ]]; then
+  echo "ℹ️  Other Cordova types referenced (already covered by Cordova module via .m / .swift compilation):"
+  echo "${_extra_cdv_refs}" | sed 's/^/    - /'
+fi
+
 # ── 4. Inject build settings DIRECTLY into Pods.xcodeproj (overrides xcconfig) ─
 # When xcconfig changes don't propagate, target-level build settings in
 # project.pbxproj DO. We use the xcodeproj ruby gem (bundled with CocoaPods,

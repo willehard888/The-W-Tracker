@@ -67,6 +67,8 @@ const Profile = () => {
 
   const { data: allBadges } = useQuery({
     queryKey: ["all-badges"],
+    staleTime: 60 * 60_000,  // badge catalog is essentially static
+    gcTime:    4  * 60 * 60_000,
     queryFn: async () => {
       const { data } = await supabase.from("badges").select("*").order("rarity");
       return data || [];
@@ -75,6 +77,8 @@ const Profile = () => {
 
   const { data: earnedBadgeIds } = useQuery({
     queryKey: ["earned-badges", profile?.user_id],
+    staleTime: 10 * 60_000,  // changes after check-in; 10 min is safe
+    gcTime:    30 * 60_000,
     queryFn: async () => {
       if (!profile) return [];
       const { data } = await supabase
@@ -88,6 +92,8 @@ const Profile = () => {
 
   const { data: battleStats } = useQuery({
     queryKey: ["battle-stats", profile?.user_id],
+    staleTime: 10 * 60_000,
+    gcTime:    30 * 60_000,
     queryFn: async () => {
       if (!profile) return { won: 0 };
       const { count } = await supabase
@@ -101,6 +107,8 @@ const Profile = () => {
 
   const { data: userPosts } = useQuery({
     queryKey: ["user-posts", profile?.user_id],
+    staleTime: 2 * 60_000,   // posts can change when user creates one
+    gcTime:    10 * 60_000,
     queryFn: async () => {
       if (!profile) return [];
       const { data } = await supabase
@@ -116,6 +124,8 @@ const Profile = () => {
 
   const { data: kudosReceived } = useQuery({
     queryKey: ["kudos-received", profile?.user_id],
+    staleTime: 5 * 60_000,
+    gcTime:    20 * 60_000,
     queryFn: async () => {
       if (!profile) return 0;
       const { count } = await supabase
@@ -129,6 +139,8 @@ const Profile = () => {
 
   const { data: weeklySleep } = useQuery({
     queryKey: ["weekly-sleep", profile?.user_id],
+    staleTime: 10 * 60_000,  // sleep data changes only at daily check-in
+    gcTime:    30 * 60_000,
     queryFn: async () => {
       if (!profile) return null;
       const sevenDaysAgo = subDays(new Date(), 7).toISOString();
@@ -159,6 +171,8 @@ const Profile = () => {
 
   const { data: lastCheckin } = useQuery({
     queryKey: ["last-checkin-profile", profile?.user_id],
+    staleTime: 5 * 60_000,
+    gcTime:    30 * 60_000,
     queryFn: async () => {
       if (!profile) return null;
       const { data } = await supabase
@@ -175,6 +189,8 @@ const Profile = () => {
 
   const { data: championHistory } = useQuery({
     queryKey: ["champion-history", profile?.user_id],
+    staleTime: 30 * 60_000,  // champion history is very stable
+    gcTime:    60 * 60_000,
     queryFn: async () => {
       if (!profile) return { wins: 0, seasons: [] };
       const db = supabase as any;
@@ -200,6 +216,8 @@ const Profile = () => {
 
   const { data: badgeProgress } = useQuery({
     queryKey: ["badge-progress", profile?.user_id],
+    staleTime: 10 * 60_000,
+    gcTime:    30 * 60_000,
     queryFn: () => getBadgeProgress(profile!.user_id),
     enabled: !!profile,
   });

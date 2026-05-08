@@ -93,6 +93,8 @@ const Leaderboard = () => {
 
   const { data: allTimeLeaders } = useQuery({
     queryKey: ["leaderboard-all-time"],
+    staleTime: 5 * 60_000,   // leaderboard refreshes every 5 min is more than enough
+    gcTime:    15 * 60_000,
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
@@ -106,6 +108,8 @@ const Leaderboard = () => {
 
   const { data: totalCount } = useQuery({
     queryKey: ["total-users"],
+    staleTime: 30 * 60_000,  // user count barely changes
+    gcTime:    60 * 60_000,
     queryFn: async () => {
       const { count } = await supabase
         .from("profiles")
@@ -119,6 +123,8 @@ const Leaderboard = () => {
 
   const { data: activeSeason } = useQuery({
     queryKey: ["active-season"],
+    staleTime: 10 * 60_000,
+    gcTime:    30 * 60_000,
     queryFn: async () => {
       const db = supabase as any;
 
@@ -145,6 +151,8 @@ const Leaderboard = () => {
   const { data: seasonData } = useQuery({
     queryKey: ["leaderboard-season", activeSeason?.id, profile?.user_id],
     enabled: !!activeSeason?.id,
+    staleTime: 5 * 60_000,
+    gcTime:    15 * 60_000,
     queryFn: async () => {
       const db = supabase as any;
       const [{ data: baselines }, { data: profiles }] = await Promise.all([
@@ -179,6 +187,8 @@ const Leaderboard = () => {
 
   const { data: championData } = useQuery({
     queryKey: ["leaderboard-champions"],
+    staleTime: 30 * 60_000,  // champion history doesn't change mid-session
+    gcTime:    60 * 60_000,
     queryFn: async () => {
       const db = supabase as any;
       const [{ data: champions }, { data: seasons }] = await Promise.all([

@@ -9,6 +9,7 @@ import Reveal from "@/components/home/Reveal";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getTierConfig } from "@/lib/status-tiers";
 import { useTierRisk } from "@/hooks/use-tier-risk";
@@ -21,6 +22,8 @@ const Index = () => {
 
   const { data: latestNudge } = useQuery({
     queryKey: ["latest-coach-nudge", profile?.user_id],
+    staleTime: 5 * 60_000,   // nudges don't change every second
+    gcTime:    10 * 60_000,
     queryFn: async () => {
       if (!profile || !isElite) return null;
       const { data } = await supabase
@@ -38,6 +41,8 @@ const Index = () => {
 
   const { data: latestBriefing } = useQuery({
     queryKey: ["latest-briefing", profile?.user_id],
+    staleTime: 60 * 60_000,  // weekly briefings are stable for an hour
+    gcTime:    2  * 60 * 60_000,
     queryFn: async () => {
       if (!profile || !isElite) return null;
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -56,6 +61,8 @@ const Index = () => {
 
   const { data: userBadges } = useQuery({
     queryKey: ["user-badges", profile?.user_id],
+    staleTime: 10 * 60_000,  // badges change only after check-in
+    gcTime:    30 * 60_000,
     queryFn: async () => {
       if (!profile) return [];
       const { data } = await supabase
@@ -71,6 +78,8 @@ const Index = () => {
 
   const { data: lastCheckin } = useQuery({
     queryKey: ["last-checkin", profile?.user_id],
+    staleTime: 5 * 60_000,   // canCheckin window is 24h — 5 min stale is fine
+    gcTime:    30 * 60_000,
     queryFn: async () => {
       if (!profile) return null;
       const { data } = await supabase
@@ -101,6 +110,23 @@ const Index = () => {
     rankData?.totalUsers ?? 0,
   );
 
+  // ── Checkin-derived values (hooks must be before any early return) ────────
+  const canCheckin = useMemo(
+    () =>
+      !lastCheckin ||
+      Date.now() - new Date(lastCheckin.checked_in_at).getTime() > 24 * 60 * 60 * 1000,
+    [lastCheckin],
+  );
+
+  const timeUntilCheckin = useMemo(() => {
+    if (!lastCheckin || canCheckin) return null;
+    const nextTime = new Date(lastCheckin.checked_in_at).getTime() + 24 * 60 * 60 * 1000;
+    const diff = nextTime - Date.now();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${mins}m`;
+  }, [lastCheckin, canCheckin]);
+
   if (!profile) return null;
 
   const xpToNext = profile.level * 500;
@@ -108,19 +134,6 @@ const Index = () => {
   const tierConfig = getTierConfig(tier);
   const isLegend = tier === "legend";
   const isApex = tier === "apex";
-
-  const canCheckin =
-    !lastCheckin ||
-    Date.now() - new Date(lastCheckin.checked_in_at).getTime() > 24 * 60 * 60 * 1000;
-
-  const getTimeUntilCheckin = () => {
-    if (!lastCheckin || canCheckin) return null;
-    const nextTime = new Date(lastCheckin.checked_in_at).getTime() + 24 * 60 * 60 * 1000;
-    const diff = nextTime - Date.now();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${hours}h ${mins}m`;
-  };
 
   // Tier-reactive page-level aura — softer, wider falloff
   const pageAura = isLegend
@@ -171,7 +184,7 @@ const Index = () => {
           longestStreak={profile.longest_streak}
           lastCheckinAt={lastCheckin?.checked_in_at}
           canCheckin={canCheckin}
-          timeUntilCheckin={getTimeUntilCheckin()}
+          timeUntilCheckin={timeUntilCheckin}
           tier={tier}
         />
       </div>

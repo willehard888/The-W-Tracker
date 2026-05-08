@@ -734,29 +734,40 @@ project = Xcodeproj::Project.open("${_pods_proj}")
     fsp << cordova_path unless fsp.any? { |p| p.include?('CapacitorCordova') }
     bs['FRAMEWORK_SEARCH_PATHS'] = fsp
 
-    # 2) OTHER_LDFLAGS: explicit -F to where Cordova.framework lives.
+    # 2) OTHER_LDFLAGS: explicit -F to where Cordova.framework actually lives.
+    #
+    # DIAGNOSED FROM BUILD 748 LINKER LOG:
+    #   Ld /Volumes/workspace/DerivedData/Build/Intermediates.noindex/
+    #     ArchiveIntermediates/App/IntermediateBuildFilesPath/UninstalledProducts/
+    #     iphoneos/Cordova.framework/Cordova normal
+    #
+    # In Xcode 26 ARCHIVE mode, frameworks built by pod targets that have
+    # SKIP_INSTALL=YES land in \$(OBJROOT)/UninstalledProducts/\$(PLATFORM_NAME),
+    # NOT in \$(PODS_CONFIGURATION_BUILD_DIR)/<TargetName> as the xcconfig assumes.
+    # That's why FRAMEWORK_SEARCH_PATHS = "\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
+    # is silently ignored by ld — the path simply contains no framework.
+    #
+    # We add BOTH paths so it works whether the build is archive or non-archive.
     ldflags = bs['OTHER_LDFLAGS'] || '\$(inherited)'
     ldflags = ldflags.is_a?(Array) ? ldflags.join(' ') : ldflags
-    unless ldflags.include?('-F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova')
-      ldflags = "#{ldflags} -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
+    unless ldflags.include?('-F\$(OBJROOT)/UninstalledProducts')
+      ldflags = "#{ldflags} -F\$(OBJROOT)/UninstalledProducts/\$(PLATFORM_NAME) -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
     end
     bs['OTHER_LDFLAGS'] = ldflags
 
     # 3) Compile-time -F via OTHER_SWIFT_FLAGS / OTHER_CFLAGS for swift-frontend's
-    #    embedded Clang and CompileC tasks. Adds the REAL Cordova path (where
-    #    CapacitorCordova actually builds Cordova.framework). NO MORE stub path —
-    #    that empty-binary stub was confusing the linker.
+    #    embedded Clang and CompileC tasks. Same dual-path approach.
     osf = bs['OTHER_SWIFT_FLAGS'] || '\$(inherited)'
     osf = osf.is_a?(Array) ? osf.join(' ') : osf
-    unless osf.include?('-Xcc -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova')
-      osf = "#{osf} -Xcc -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
+    unless osf.include?('-Xcc -F\$(OBJROOT)/UninstalledProducts')
+      osf = "#{osf} -Xcc -F\$(OBJROOT)/UninstalledProducts/\$(PLATFORM_NAME) -Xcc -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
     end
     bs['OTHER_SWIFT_FLAGS'] = osf
 
     ocf = bs['OTHER_CFLAGS'] || '\$(inherited)'
     ocf = ocf.is_a?(Array) ? ocf.join(' ') : ocf
-    unless ocf.include?('-F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova')
-      ocf = "#{ocf} -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
+    unless ocf.include?('-F\$(OBJROOT)/UninstalledProducts')
+      ocf = "#{ocf} -F\$(OBJROOT)/UninstalledProducts/\$(PLATFORM_NAME) -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
     end
     bs['OTHER_CFLAGS'] = ocf
   end

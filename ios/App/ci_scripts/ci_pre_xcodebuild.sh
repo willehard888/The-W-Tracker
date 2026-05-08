@@ -562,6 +562,41 @@ else
   exit 1
 fi
 
+# ── 3b. Restore @import Cordova in the .m file ────────────────────────────────
+# Removing @import Cordova from the .h leaves CAPInstanceDescriptor.m with only
+# the @class forward declaration of CDVConfigParser, which doesn't expose
+# +alloc / -init. The .m IS compiled by a regular CompileC task (NOT by
+# swift-frontend's embedded Clang), and runs AFTER CapacitorCordova has built
+# — so a normal `@import Cordova;` here resolves cleanly via the standard
+# FRAMEWORK_SEARCH_PATHS.
+CAP_IMPL="${ROOT_DIR}/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPInstanceDescriptor.m"
+if [[ -f "${CAP_IMPL}" ]]; then
+  if grep -q "// Cordova import injected by ci_pre_xcodebuild.sh" "${CAP_IMPL}" 2>/dev/null; then
+    echo "ℹ️  CAPInstanceDescriptor.m already patched — skipping"
+  elif grep -q "^@import Cordova;" "${CAP_IMPL}" 2>/dev/null; then
+    echo "ℹ️  CAPInstanceDescriptor.m already has @import Cordova — skipping"
+  else
+    # Insert before the first #import line
+    /usr/bin/sed -i.bak \
+      -e '1i\
+// Cordova import injected by ci_pre_xcodebuild.sh — see CAPInstanceDescriptor.h patch\
+@import Cordova;\
+' \
+      "${CAP_IMPL}"
+    rm -f "${CAP_IMPL}.bak"
+    if grep -q "^@import Cordova;" "${CAP_IMPL}"; then
+      echo "✅ Patched CAPInstanceDescriptor.m: prepended @import Cordova;"
+    else
+      echo "❌ sed patch did not insert @import Cordova into CAPInstanceDescriptor.m"
+      head -5 "${CAP_IMPL}"
+      exit 1
+    fi
+  fi
+else
+  echo "❌ CAPInstanceDescriptor.m not found at ${CAP_IMPL}"
+  exit 1
+fi
+
 # ── 4. Inject build settings DIRECTLY into Pods.xcodeproj (overrides xcconfig) ─
 # When xcconfig changes don't propagate, target-level build settings in
 # project.pbxproj DO. We use the xcodeproj ruby gem (bundled with CocoaPods,

@@ -485,43 +485,53 @@ for _xcc in \
   fi
 done
 
-# ── 2b. Pre-create Cordova.framework stub at the ARCHIVE INTERMEDIATES path ────
-# During xcodebuild archive, PODS_CONFIGURATION_BUILD_DIR resolves to:
-#   DerivedData/Build/Intermediates.noindex/ArchiveIntermediates/App/BuildProductsPath/Release-iphoneos
-# (NOT Build/Products/Release-iphoneos — that is only for non-archive builds).
-# Capacitor.xcconfig has FRAMEWORK_SEARCH_PATHS = … "${PODS_CONFIGURATION_BUILD_DIR}/CapacitorCordova"
-# which is the directory the BUILT Cordova.framework would land in.
-# By pre-creating our stub there, Clang finds Cordova.framework the moment it looks
-# (even before CapacitorCordova has been compiled by xcodebuild).
-# xcodebuild's own CreateBuildDirectory step only creates the directory, it does NOT
-# clear it, so our pre-seeded framework survives into the actual compile phase.
+# ── 2b. (REMOVED) DerivedData stub no longer needed ───────────────────────────
+# Build 746 revealed that pre-seeding our stub Cordova.framework at the path
+# CapacitorCordova would normally build into (${PODS_CONFIGURATION_BUILD_DIR}/
+# CapacitorCordova/Cordova.framework) caused the linker to fail with
+# "Framework 'Cordova' not found": once our stub exists at that path,
+# xcodebuild treats the framework as already-up-to-date and skips producing
+# the real binary, leaving the linker with our empty Cordova binary stub.
+#
+# With the source-level patches in section 3 (CAPInstanceDescriptor.h/.m and
+# CAPBridgeViewController+CDVScreenOrientationDelegate.h), Cordova module
+# resolution at compile time no longer depends on these pre-seeded stubs:
+#   - CAPInstanceDescriptor.h: @class forward decl, no module needed
+#   - CAPInstanceDescriptor.m: relative-path #import to real header on disk
+#   - Category .h: inline protocol declaration, no module needed
+# So the DerivedData stubs were doing harm without any remaining benefit.
+#
+# We KEEP only the Pods/CordovaStub/ stub (above), which is at a path
+# xcodebuild never writes to — so it's purely additive and never blocks
+# real framework builds.
+#
+# Sanity-check that xcodebuild WILL produce Cordova.framework as expected:
+# the CapacitorCordova podspec sets `s.module_name = 'Cordova'`, so its
+# build product is Cordova.framework at PODS_CONFIGURATION_BUILD_DIR/CapacitorCordova/.
+echo "ℹ️  Skipping DerivedData stub seeding — relies on real CapacitorCordova target build instead"
+
+# Sanity-check the actual build path will not contain a leftover empty stub
+# from a previous build run (safe-guard against caching across builds).
 if [[ -d "/Volumes/workspace" ]]; then
-  # Xcode Cloud: derivedDataPath is always /Volumes/workspace/DerivedData
   XC_DD="/Volumes/workspace/DerivedData"
-  # Cover both the archive-intermediates path (primary) and the products path (fallback)
   ARCHIVE_PODS_CFG_BUILD_DIR="${XC_DD}/Build/Intermediates.noindex/ArchiveIntermediates/App/BuildProductsPath/Release-iphoneos"
   PRODUCTS_PODS_CFG_BUILD_DIR="${XC_DD}/Build/Products/Release-iphoneos"
-  for _cap_cordova_dir in \
-    "${ARCHIVE_PODS_CFG_BUILD_DIR}/CapacitorCordova" \
-    "${PRODUCTS_PODS_CFG_BUILD_DIR}/CapacitorCordova" \
-    "${ARCHIVE_PODS_CFG_BUILD_DIR}/Capacitor" \
-    "${PRODUCTS_PODS_CFG_BUILD_DIR}/Capacitor"; do
-    _make_cordova_fw "${_cap_cordova_dir}/Cordova.framework"
-    echo "✅ Pre-seeded stub at ${_cap_cordova_dir}/Cordova.framework"
-  done
-else
-  # Local dev: derive from xcodebuild showBuildSettings
-  _bdir=$(xcodebuild -workspace "${IOS_APP_DIR}/App.xcworkspace" \
-    -scheme App -configuration Release \
-    -showBuildSettings 2>/dev/null \
-    | awk -F' = ' '/^[[:space:]]*BUILD_DIR[[:space:]]*=/{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
-  for _subdir in CapacitorCordova Capacitor; do
-    _cap_cordova_dir="${_bdir}/Release-iphoneos/${_subdir}"
-    _make_cordova_fw "${_cap_cordova_dir}/Cordova.framework"
-    echo "💻 Local — pre-seeded stub at ${_cap_cordova_dir}/Cordova.framework"
+  for _stale in \
+    "${ARCHIVE_PODS_CFG_BUILD_DIR}/CapacitorCordova/Cordova.framework" \
+    "${PRODUCTS_PODS_CFG_BUILD_DIR}/CapacitorCordova/Cordova.framework" \
+    "${ARCHIVE_PODS_CFG_BUILD_DIR}/Capacitor/Cordova.framework" \
+    "${PRODUCTS_PODS_CFG_BUILD_DIR}/Capacitor/Cordova.framework"; do
+    if [[ -d "${_stale}" ]]; then
+      _stale_bin="${_stale}/Cordova"
+      # Heuristic: a stub binary is < 100 bytes (we touched it empty).
+      # A real Mach-O binary is many KB. Remove only if it's stub-sized.
+      if [[ -f "${_stale_bin}" ]] && [[ $(stat -f%z "${_stale_bin}" 2>/dev/null || stat -c%s "${_stale_bin}" 2>/dev/null) -lt 100 ]]; then
+        echo "🧹 Removing stale stub framework at ${_stale}"
+        rm -rf "${_stale}"
+      fi
+    fi
   done
 fi
-
 # ── 3. SOURCE-LEVEL PATCH (the nuclear option that ALWAYS works) ───────────────
 # All previous attempts (FRAMEWORK_SEARCH_PATHS, OTHER_SWIFT_FLAGS -Xcc -F,
 # pre-seeded stubs) rely on Xcode 26 honouring xcconfig propagation to

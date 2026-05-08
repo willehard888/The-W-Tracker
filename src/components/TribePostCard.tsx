@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, memo } from "react";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -706,4 +706,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
   );
 };
 
-export default TribePostCard;
+// Memoize so EliteFeed state changes (filter, search, typing) don't re-render
+// all 50 cards simultaneously. Props are stable: post comes from query data,
+// booleans are primitives, and onChanged is wrapped in useCallback upstream.
+export default memo(TribePostCard);

@@ -401,9 +401,16 @@ const EliteFeed = () => {
     enabled: !!user,
   });
 
-  const userKudosPosts = userInteractions?.kudosPosts ?? [];
+  // Use Sets for O(1) per-post lookups instead of O(n) array.includes()
+  const userKudosPosts = useMemo(
+    () => new Set(userInteractions?.kudosPosts ?? []),
+    [userInteractions?.kudosPosts],
+  );
   const kudosGivenThisMonth = userInteractions?.kudosMonth ?? 0;
-  const reactions = userInteractions?.reactionPosts ?? [];
+  const reactions = useMemo(
+    () => new Set(userInteractions?.reactionPosts ?? []),
+    [userInteractions?.reactionPosts],
+  );
   const kudosRemaining = Math.max(0, 2 - kudosGivenThisMonth);
 
   const createPost = useMutation({
@@ -486,7 +493,7 @@ const EliteFeed = () => {
   const toggleReaction = useMutation({
     mutationFn: async (postId: string) => {
       if (!user) return;
-      const liked = reactions?.includes(postId);
+      const liked = reactions?.has(postId);
       hapticImpact(liked ? "light" : "medium");
       if (liked) {
         await supabase.from("feed_reactions").delete().eq("post_id", postId).eq("user_id", user.id);
@@ -506,7 +513,7 @@ const EliteFeed = () => {
       if (kudosRemaining <= 0) {
         throw new Error("Monthly kudos used up");
       }
-      const alreadyGiven = userKudosPosts?.includes(postId);
+      const alreadyGiven = userKudosPosts?.has(postId);
       if (alreadyGiven) {
         await supabase.from("kudos").delete().eq("post_id", postId).eq("giver_id", user.id);
       } else {
@@ -985,8 +992,8 @@ const EliteFeed = () => {
         {posts?.map((post: any, index: number) => {
           const isOwn = post.user_id === user?.id;
           const tierStyle = TIER_STYLES[post.profile?.status_tier] || TIER_STYLES.normal;
-          const liked = reactions?.includes(post.id);
-          const hasGivenKudos = userKudosPosts?.includes(post.id);
+          const liked = reactions?.has(post.id);
+          const hasGivenKudos = userKudosPosts?.has(post.id);
 
           return (
             <div

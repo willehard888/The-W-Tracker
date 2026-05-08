@@ -7,6 +7,8 @@ export const usePerformanceSnapshots = (days = 28) => {
   return useQuery({
     queryKey: ["coach-performance-snapshots", user?.id, days],
     enabled: !!user?.id,
+    staleTime: 10 * 60_000,  // snapshots are computed once daily
+    gcTime:    30 * 60_000,
     queryFn: async () => {
       const since = new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
       const { data, error } = await supabase
@@ -26,6 +28,8 @@ export const useLatestWeeklyReview = () => {
   return useQuery({
     queryKey: ["coach-weekly-review-latest", user?.id],
     enabled: !!user?.id,
+    staleTime: 30 * 60_000,  // weekly reviews only change once per week
+    gcTime:    60 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("coach_weekly_reviews")

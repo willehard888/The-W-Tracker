@@ -86,13 +86,25 @@ const AmbientParticles = () => {
     };
     window.addEventListener("resize", onResize, { passive: true });
 
+    // Pause when the browser tab is hidden.
     const onVisibility = () => {
-      running.current = !document.hidden;
-      if (running.current) {
-        raf.current = requestAnimationFrame(animate);
-      }
+      running.current = canvasVisible && !document.hidden;
+      if (running.current) raf.current = requestAnimationFrame(animate);
     };
     document.addEventListener("visibilitychange", onVisibility);
+
+    // Also pause when the canvas itself is scrolled/hidden out of the viewport
+    // (important for TabHost which keeps all tabs mounted but sets them hidden).
+    let canvasVisible = true;
+    const io = new IntersectionObserver(
+      (entries) => {
+        canvasVisible = entries[0]?.isIntersecting ?? true;
+        running.current = canvasVisible && !document.hidden;
+        if (running.current) raf.current = requestAnimationFrame(animate);
+      },
+      { threshold: 0 },
+    );
+    io.observe(canvas);
 
     // Throttle frame rate — 18fps mobile / low-end, 24fps desktop. Ambient drift doesn't need more.
     const FRAME_MS = 1000 / (isMobile || isLowEnd ? 18 : 24);
@@ -133,6 +145,7 @@ const AmbientParticles = () => {
       cancelAnimationFrame(resizeRaf);
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisibility);
+      io.disconnect();
     };
   }, []);
 

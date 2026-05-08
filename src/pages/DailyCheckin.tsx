@@ -85,6 +85,8 @@ const DailyCheckin = () => {
 
   const { data: lastCheckin } = useQuery({
     queryKey: ["last-checkin", user?.id],
+    staleTime: 5 * 60_000,   // 24h check-in window — 5 min stale is fine
+    gcTime:    30 * 60_000,
     queryFn: async () => {
       if (!user) return null;
       const { data } = await supabase
@@ -102,6 +104,8 @@ const DailyCheckin = () => {
   // Recent sleep history (last 7 days) — used to detect chronic over-sleep
   const { data: recentSleep } = useQuery({
     queryKey: ["recent-sleep-7d", user?.id],
+    staleTime: 10 * 60_000,
+    gcTime:    30 * 60_000,
     queryFn: async () => {
       if (!user) return [] as number[];
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();

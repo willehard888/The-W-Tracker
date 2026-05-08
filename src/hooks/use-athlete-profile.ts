@@ -40,6 +40,8 @@ export const useAthleteProfile = () => {
   const query = useQuery({
     queryKey: ["athlete-profile", user?.id],
     enabled: !!user?.id,
+    staleTime: 10 * 60_000,  // profile rarely changes mid-session
+    gcTime:    30 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("coach_athlete_profile" as any)

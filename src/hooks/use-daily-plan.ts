@@ -49,6 +49,8 @@ export const useDailyPlan = () => {
   const planQuery = useQuery({
     queryKey: ["coach-daily-plan", user?.id, date],
     enabled: !!user?.id,
+    staleTime: 5 * 60_000,  // plan is per-day; realtime sub handles live updates
+    gcTime:    24 * 60 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("coach_daily_plans")
@@ -64,6 +66,8 @@ export const useDailyPlan = () => {
   const logsQuery = useQuery({
     queryKey: ["coach-mission-logs", user?.id, planQuery.data?.id],
     enabled: !!user?.id && !!planQuery.data?.id,
+    staleTime: 2 * 60_000,  // mission logs update frequently; realtime also refreshes
+    gcTime:    10 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("coach_mission_logs")

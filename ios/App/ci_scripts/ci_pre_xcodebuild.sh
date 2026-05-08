@@ -482,6 +482,20 @@ for _xcc in \
   fi
 done
 
+# Patch ALL pod xcconfigs so every importing target (plugin targets like
+# LocalNotificationsPlugin, HapticsPlugin, etc.) can also resolve Cordova.framework
+# during Xcode 26's per-importer dependency scan.
+echo "🔨 Injecting CordovaStub into ALL pod xcconfigs…"
+_patch_count=0
+while IFS= read -r -d '' _xcc; do
+  # Skip if already patched (idempotent)
+  grep -q "CordovaStub" "$_xcc" 2>/dev/null && continue
+  printf '\n// Cordova stub — injected by ci_pre_xcodebuild.sh\nFRAMEWORK_SEARCH_PATHS = $(inherited) "%s"\n' \
+    "${FIXED_STUB_DIR}" >> "$_xcc"
+  _patch_count=$((_patch_count + 1))
+done < <(find "${PODS_DIR}/Target Support Files" -name "*.xcconfig" -print0 2>/dev/null)
+echo "✅ Injected CordovaStub into ${_patch_count} additional xcconfig(s)"
+
 # ── 2. DerivedData stub (belt-and-suspenders via PODS_CONFIGURATION_BUILD_DIR) ─
 # Xcode Cloud runs xcodebuild with -derivedDataPath /Volumes/workspace/DerivedData.
 # That directory is CREATED BY xcodebuild — it doesn't exist yet when this script

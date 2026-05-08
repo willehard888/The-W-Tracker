@@ -704,74 +704,56 @@ fi
 echo "🔧 Injecting Cordova framework search/link paths into Pods.xcodeproj…"
 _pods_proj="${PODS_DIR}/Pods.xcodeproj"
 if [[ -d "${_pods_proj}" ]]; then
-  /usr/bin/ruby <<RUBY || echo "⚠️  xcodeproj injection failed (non-fatal — source patch is primary fix)"
+  # Single-quoted heredoc => bash performs ZERO substitution on the body, so
+  # we don't have to escape $ or worry about backticks in comments. The Pods
+  # project path is passed via env so Ruby can read it as ENV['PODS_PROJ_PATH'].
+  PODS_PROJ_PATH="${_pods_proj}" /usr/bin/ruby <<'RUBY' || echo "⚠️  xcodeproj injection failed (non-fatal — source patch is primary fix)"
 require 'xcodeproj'
-project = Xcodeproj::Project.open("${_pods_proj}")
+project = Xcodeproj::Project.open(ENV.fetch('PODS_PROJ_PATH'))
 
-# CRITICAL link-time fix: Capacitor target links with `-framework Cordova`,
-# expecting Cordova.framework at \$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova/.
-# Build 747 still failed with `Framework 'Cordova' not found` even after we
-# stopped pre-seeding stubs — meaning xcconfig FRAMEWORK_SEARCH_PATHS isn't
-# propagating to the linker invocation either.
-#
-# Belt-and-suspenders solution: write an explicit -F flag straight into
-# OTHER_LDFLAGS on the Capacitor target's build configurations. OTHER_LDFLAGS
-# IS propagated to ld (it's how `-framework Cordova` gets there in the first
-# place), so adding `-F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova`
-# guarantees ld searches that directory.
+# Build 748 linker log diagnosis: Cordova.framework is built into
+#   $(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/Cordova.framework
+# during archive builds, NOT in $(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova
+# as CocoaPods xcconfig assumes. Hence the persistent
+#   ld: framework not found Cordova
+# even though FRAMEWORK_SEARCH_PATHS in xcconfig pointed at the wrong path.
 %w[Capacitor].each do |target_name|
   target = project.targets.find { |t| t.name == target_name }
   next unless target
   target.build_configurations.each do |cfg|
     bs = cfg.build_settings
 
-    # 1) FRAMEWORK_SEARCH_PATHS: ensure CapacitorCordova path is present
-    #    (idempotent; we don't add anything new since it's already in the
-    #    xcconfig — but if xcconfig isn't honoured, this adds at the
-    #    target-build-settings level which definitively IS honoured).
-    fsp = Array(bs['FRAMEWORK_SEARCH_PATHS'] || ['\$(inherited)'])
-    cordova_path = '"\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"'
+    fsp = Array(bs['FRAMEWORK_SEARCH_PATHS'] || ['$(inherited)'])
+    cordova_path = '"$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"'
     fsp << cordova_path unless fsp.any? { |p| p.include?('CapacitorCordova') }
     bs['FRAMEWORK_SEARCH_PATHS'] = fsp
 
-    # 2) OTHER_LDFLAGS: explicit -F to where Cordova.framework actually lives.
-    #
-    # DIAGNOSED FROM BUILD 748 LINKER LOG:
-    #   Ld /Volumes/workspace/DerivedData/Build/Intermediates.noindex/
-    #     ArchiveIntermediates/App/IntermediateBuildFilesPath/UninstalledProducts/
-    #     iphoneos/Cordova.framework/Cordova normal
-    #
-    # In Xcode 26 ARCHIVE mode, frameworks built by pod targets that have
-    # SKIP_INSTALL=YES land in \$(OBJROOT)/UninstalledProducts/\$(PLATFORM_NAME),
-    # NOT in \$(PODS_CONFIGURATION_BUILD_DIR)/<TargetName> as the xcconfig assumes.
-    # That's why FRAMEWORK_SEARCH_PATHS = "\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
-    # is silently ignored by ld — the path simply contains no framework.
-    #
-    # We add BOTH paths so it works whether the build is archive or non-archive.
-    ldflags = bs['OTHER_LDFLAGS'] || '\$(inherited)'
+    # ld must see -F at the actual location of Cordova.framework.
+    archive_F  = '-F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)'
+    nonarch_F  = '-F$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova'
+
+    ldflags = bs['OTHER_LDFLAGS'] || '$(inherited)'
     ldflags = ldflags.is_a?(Array) ? ldflags.join(' ') : ldflags
-    unless ldflags.include?('-F\$(OBJROOT)/UninstalledProducts')
-      ldflags = "#{ldflags} -F\$(OBJROOT)/UninstalledProducts/\$(PLATFORM_NAME) -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
+    unless ldflags.include?('-F$(OBJROOT)/UninstalledProducts')
+      ldflags = "#{ldflags} #{archive_F} #{nonarch_F}"
     end
     bs['OTHER_LDFLAGS'] = ldflags
 
-    # 3) Compile-time -F via OTHER_SWIFT_FLAGS / OTHER_CFLAGS for swift-frontend's
-    #    embedded Clang and CompileC tasks. Same dual-path approach.
-    osf = bs['OTHER_SWIFT_FLAGS'] || '\$(inherited)'
+    osf = bs['OTHER_SWIFT_FLAGS'] || '$(inherited)'
     osf = osf.is_a?(Array) ? osf.join(' ') : osf
-    unless osf.include?('-Xcc -F\$(OBJROOT)/UninstalledProducts')
-      osf = "#{osf} -Xcc -F\$(OBJROOT)/UninstalledProducts/\$(PLATFORM_NAME) -Xcc -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
+    unless osf.include?('-Xcc -F$(OBJROOT)/UninstalledProducts')
+      osf = "#{osf} -Xcc #{archive_F} -Xcc #{nonarch_F}"
     end
     bs['OTHER_SWIFT_FLAGS'] = osf
 
-    ocf = bs['OTHER_CFLAGS'] || '\$(inherited)'
+    ocf = bs['OTHER_CFLAGS'] || '$(inherited)'
     ocf = ocf.is_a?(Array) ? ocf.join(' ') : ocf
-    unless ocf.include?('-F\$(OBJROOT)/UninstalledProducts')
-      ocf = "#{ocf} -F\$(OBJROOT)/UninstalledProducts/\$(PLATFORM_NAME) -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
+    unless ocf.include?('-F$(OBJROOT)/UninstalledProducts')
+      ocf = "#{ocf} #{archive_F} #{nonarch_F}"
     end
     bs['OTHER_CFLAGS'] = ocf
   end
-  puts "  ✅ Patched target #{target_name} build settings (real CapacitorCordova path)"
+  puts "  ✅ Patched target #{target_name} with $(OBJROOT)/UninstalledProducts -F path"
 end
 project.save
 RUBY

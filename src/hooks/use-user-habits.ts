@@ -27,6 +27,8 @@ export const useUserHabits = () => {
   const habitsQuery = useQuery({
     queryKey: ["user-habits", user?.id],
     enabled: !!user?.id,
+    staleTime: 5 * 60_000,  // realtime sub handles live updates
+    gcTime:    15 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("user_habits")
@@ -64,6 +66,8 @@ export const useUserHabits = () => {
   const todayLogsQuery = useQuery({
     queryKey: ["user-habit-logs", user?.id, today],
     enabled: !!user?.id,
+    staleTime: 2 * 60_000,  // logs can change when user logs a habit
+    gcTime:    24 * 60 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("user_habit_logs")

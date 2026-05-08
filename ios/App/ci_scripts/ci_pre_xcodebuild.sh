@@ -701,37 +701,66 @@ fi
 # When xcconfig changes don't propagate, target-level build settings in
 # project.pbxproj DO. We use the xcodeproj ruby gem (bundled with CocoaPods,
 # already present after pod install) to edit Pods.xcodeproj.
-echo "🔧 Injecting OTHER_SWIFT_FLAGS / FRAMEWORK_SEARCH_PATHS into Pods.xcodeproj..."
+echo "🔧 Injecting Cordova framework search/link paths into Pods.xcodeproj…"
 _pods_proj="${PODS_DIR}/Pods.xcodeproj"
 if [[ -d "${_pods_proj}" ]]; then
   /usr/bin/ruby <<RUBY || echo "⚠️  xcodeproj injection failed (non-fatal — source patch is primary fix)"
 require 'xcodeproj'
 project = Xcodeproj::Project.open("${_pods_proj}")
-stub_dir = "${FIXED_STUB_DIR}"
+
+# CRITICAL link-time fix: Capacitor target links with `-framework Cordova`,
+# expecting Cordova.framework at \$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova/.
+# Build 747 still failed with `Framework 'Cordova' not found` even after we
+# stopped pre-seeding stubs — meaning xcconfig FRAMEWORK_SEARCH_PATHS isn't
+# propagating to the linker invocation either.
+#
+# Belt-and-suspenders solution: write an explicit -F flag straight into
+# OTHER_LDFLAGS on the Capacitor target's build configurations. OTHER_LDFLAGS
+# IS propagated to ld (it's how `-framework Cordova` gets there in the first
+# place), so adding `-F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova`
+# guarantees ld searches that directory.
 %w[Capacitor].each do |target_name|
   target = project.targets.find { |t| t.name == target_name }
   next unless target
   target.build_configurations.each do |cfg|
     bs = cfg.build_settings
+
+    # 1) FRAMEWORK_SEARCH_PATHS: ensure CapacitorCordova path is present
+    #    (idempotent; we don't add anything new since it's already in the
+    #    xcconfig — but if xcconfig isn't honoured, this adds at the
+    #    target-build-settings level which definitively IS honoured).
     fsp = Array(bs['FRAMEWORK_SEARCH_PATHS'] || ['\$(inherited)'])
-    fsp << "\"#{stub_dir}\"" unless fsp.any? { |p| p.include?('CordovaStub') }
+    cordova_path = '"\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"'
+    fsp << cordova_path unless fsp.any? { |p| p.include?('CapacitorCordova') }
     bs['FRAMEWORK_SEARCH_PATHS'] = fsp
 
+    # 2) OTHER_LDFLAGS: explicit -F to where Cordova.framework lives.
+    ldflags = bs['OTHER_LDFLAGS'] || '\$(inherited)'
+    ldflags = ldflags.is_a?(Array) ? ldflags.join(' ') : ldflags
+    unless ldflags.include?('-F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova')
+      ldflags = "#{ldflags} -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
+    end
+    bs['OTHER_LDFLAGS'] = ldflags
+
+    # 3) Compile-time -F via OTHER_SWIFT_FLAGS / OTHER_CFLAGS for swift-frontend's
+    #    embedded Clang and CompileC tasks. Adds the REAL Cordova path (where
+    #    CapacitorCordova actually builds Cordova.framework). NO MORE stub path —
+    #    that empty-binary stub was confusing the linker.
     osf = bs['OTHER_SWIFT_FLAGS'] || '\$(inherited)'
     osf = osf.is_a?(Array) ? osf.join(' ') : osf
-    unless osf.include?('CordovaStub')
-      osf = "#{osf} -Xcc -F#{stub_dir}"
+    unless osf.include?('-Xcc -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova')
+      osf = "#{osf} -Xcc -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
     end
     bs['OTHER_SWIFT_FLAGS'] = osf
 
     ocf = bs['OTHER_CFLAGS'] || '\$(inherited)'
     ocf = ocf.is_a?(Array) ? ocf.join(' ') : ocf
-    unless ocf.include?('CordovaStub')
-      ocf = "#{ocf} -F#{stub_dir}"
+    unless ocf.include?('-F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova')
+      ocf = "#{ocf} -F\$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
     end
     bs['OTHER_CFLAGS'] = ocf
   end
-  puts "  ✅ Patched target #{target_name} build settings"
+  puts "  ✅ Patched target #{target_name} build settings (real CapacitorCordova path)"
 end
 project.save
 RUBY

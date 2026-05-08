@@ -562,32 +562,43 @@ else
   exit 1
 fi
 
-# ── 3b. Restore @import Cordova in the .m file ────────────────────────────────
+# ── 3b. Make CDVConfigParser visible in CAPInstanceDescriptor.m ───────────────
 # Removing @import Cordova from the .h leaves CAPInstanceDescriptor.m with only
-# the @class forward declaration of CDVConfigParser, which doesn't expose
-# +alloc / -init. The .m IS compiled by a regular CompileC task (NOT by
-# swift-frontend's embedded Clang), and runs AFTER CapacitorCordova has built
-# — so a normal `@import Cordova;` here resolves cleanly via the standard
-# FRAMEWORK_SEARCH_PATHS.
+# the @class forward declaration, which doesn't expose +alloc / -init.
+#
+# Build 743 confirmed `@import Cordova;` ALSO fails inside the regular CompileC
+# task — Xcode 26 archive builds simply don't propagate FRAMEWORK_SEARCH_PATHS
+# to module resolution for these pod targets, regardless of which Clang
+# invocation we're talking about.
+#
+# Bulletproof fix: bypass the module system entirely. Use a relative-path
+# `#import "..."` to the real CDVConfigParser.h on disk. This is plain header
+# inclusion based on the source file's directory — needs neither
+# FRAMEWORK_SEARCH_PATHS nor HEADER_SEARCH_PATHS nor module resolution.
+# CDVConfigParser.h itself only imports <Foundation/Foundation.h>.
 CAP_IMPL="${ROOT_DIR}/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPInstanceDescriptor.m"
 if [[ -f "${CAP_IMPL}" ]]; then
-  if grep -q "// Cordova import injected by ci_pre_xcodebuild.sh" "${CAP_IMPL}" 2>/dev/null; then
+  if grep -q "// Cordova header injected by ci_pre_xcodebuild.sh" "${CAP_IMPL}" 2>/dev/null; then
     echo "ℹ️  CAPInstanceDescriptor.m already patched — skipping"
-  elif grep -q "^@import Cordova;" "${CAP_IMPL}" 2>/dev/null; then
-    echo "ℹ️  CAPInstanceDescriptor.m already has @import Cordova — skipping"
   else
-    # Insert before the first #import line
+    # Remove any prior `@import Cordova;` line we may have injected on a
+    # previous build (idempotent re-runs).
     /usr/bin/sed -i.bak \
+      -e '/^\/\/ Cordova import injected by ci_pre_xcodebuild\.sh/d' \
+      -e '/^@import Cordova;$/d' \
+      "${CAP_IMPL}"
+    # Inject a relative-path #import at the very top.
+    /usr/bin/sed -i.bak2 \
       -e '1i\
-// Cordova import injected by ci_pre_xcodebuild.sh — see CAPInstanceDescriptor.h patch\
-@import Cordova;\
+// Cordova header injected by ci_pre_xcodebuild.sh — see CAPInstanceDescriptor.h patch\
+#import "../../CapacitorCordova/CapacitorCordova/Classes/Public/CDVConfigParser.h"\
 ' \
       "${CAP_IMPL}"
-    rm -f "${CAP_IMPL}.bak"
-    if grep -q "^@import Cordova;" "${CAP_IMPL}"; then
-      echo "✅ Patched CAPInstanceDescriptor.m: prepended @import Cordova;"
+    rm -f "${CAP_IMPL}.bak" "${CAP_IMPL}.bak2"
+    if grep -q '#import "../../CapacitorCordova/CapacitorCordova/Classes/Public/CDVConfigParser.h"' "${CAP_IMPL}"; then
+      echo "✅ Patched CAPInstanceDescriptor.m with direct relative-path import of CDVConfigParser.h"
     else
-      echo "❌ sed patch did not insert @import Cordova into CAPInstanceDescriptor.m"
+      echo "❌ sed patch did not produce expected output in CAPInstanceDescriptor.m"
       head -5 "${CAP_IMPL}"
       exit 1
     fi
@@ -596,6 +607,13 @@ else
   echo "❌ CAPInstanceDescriptor.m not found at ${CAP_IMPL}"
   exit 1
 fi
+# Sanity-check that the target header actually exists at the expected relative path.
+_relative_target="${ROOT_DIR}/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVConfigParser.h"
+if [[ ! -f "${_relative_target}" ]]; then
+  echo "❌ CDVConfigParser.h not found at expected location: ${_relative_target}"
+  exit 1
+fi
+echo "✅ CDVConfigParser.h confirmed at ${_relative_target}"
 
 # ── 4. Inject build settings DIRECTLY into Pods.xcodeproj (overrides xcconfig) ─
 # When xcconfig changes don't propagate, target-level build settings in

@@ -25,6 +25,7 @@ import EveningReflectionCard from "@/components/coach/EveningReflectionCard";
 import PerformanceOSDashboard from "@/components/coach/PerformanceOSDashboard";
 import TrainerBrief from "@/components/coach/TrainerBrief";
 import WeekStrip from "@/components/coach/WeekStrip";
+import LifeOSCard from "@/components/coach/LifeOSCard";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -105,6 +106,11 @@ const CoachShell = ({ session, program, logs, currentWeek, todayDayIndex, refetc
       <div className="flex-1 overflow-y-auto px-4 pb-32">
         {/* The trainer speaks first */}
         <TrainerBrief onAsk={askCoach} />
+
+        {/* Life OS — structured 5-domain daily brief */}
+        <div className="mt-3">
+          <LifeOSCard />
+        </div>
 
         {/* Today's session — the prescription */}
         <TodaySessionCard

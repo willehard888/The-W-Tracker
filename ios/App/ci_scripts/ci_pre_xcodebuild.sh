@@ -616,34 +616,53 @@ fi
 echo "✅ CDVConfigParser.h confirmed at ${_relative_target}"
 
 # ── 3c. Make CDVScreenOrientationDelegate visible in the category header ──────
-# CAPBridgeViewController+CDVScreenOrientationDelegate.h declares the category
-# `CAPBridgeViewController (CDVScreenOrientationDelegate) <CDVScreenOrientationDelegate>`
-# but only imports <Capacitor/Capacitor-Swift.h>. The protocol declaration
-# CDVScreenOrientationDelegate previously came in transitively via
-# @import Cordova in CAPInstanceDescriptor.h — which we now strip. So this
-# header now needs its own explicit reference to the protocol.
+# CAPBridgeViewController+CDVScreenOrientationDelegate.h declares
+#   @interface CAPBridgeViewController (...) <CDVScreenOrientationDelegate>
+# but only imports <Capacitor/Capacitor-Swift.h>. The protocol previously came
+# in transitively via @import Cordova in CAPInstanceDescriptor.h — now stripped.
 #
-# Same bulletproof technique: relative-path #import to the real header on disk.
-# CDVScreenOrientationDelegate.h only imports <Foundation/Foundation.h>.
-# Only one consumer of this category header (the corresponding .m), so no
-# downstream impact.
+# WHY the relative-path #import (build 745) didn't work for this .h while it did
+# for the .m: this header is consumed via CocoaPods' public-headers symlink
+# directory (Pods/Headers/Public/Capacitor/...). When Clang resolves a relative
+# `#import "..."` from that symlinked location, the path no longer points to
+# CapacitorCordova/. The .m, by contrast, is compiled directly from its real
+# source path so its relative import works.
+#
+# Bulletproof fix for the .h: don't rely on path resolution at all. Inline
+# the protocol declaration. We guard with __has_include so the inline copy is
+# only used when the real Cordova header isn't reachable via the module system —
+# eliminating any redefinition-clash risk.
 CAP_CAT_HDR="${ROOT_DIR}/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPBridgeViewController+CDVScreenOrientationDelegate.h"
 if [[ -f "${CAP_CAT_HDR}" ]]; then
-  if grep -q "// CDVScreenOrientationDelegate header injected by ci_pre_xcodebuild.sh" "${CAP_CAT_HDR}" 2>/dev/null; then
+  if grep -q "// CDVScreenOrientationDelegate inline-protocol injected by ci_pre_xcodebuild.sh" "${CAP_CAT_HDR}" 2>/dev/null; then
     echo "ℹ️  CAPBridgeViewController+CDVScreenOrientationDelegate.h already patched — skipping"
   else
+    # First, strip any prior failed injection (the build-745 relative-path attempt).
     /usr/bin/sed -i.bak \
-      -e '1i\
-// CDVScreenOrientationDelegate header injected by ci_pre_xcodebuild.sh — see CAPInstanceDescriptor.h patch\
-#import "../../CapacitorCordova/CapacitorCordova/Classes/Public/CDVScreenOrientationDelegate.h"\
+      -e '/^\/\/ CDVScreenOrientationDelegate header injected by ci_pre_xcodebuild\.sh/d' \
+      -e '/^#import "\.\.\/\.\.\/CapacitorCordova/d' \
+      "${CAP_CAT_HDR}"
+    # Inject inline protocol declaration with __has_include fallback.
+    /usr/bin/sed -i.bak2 -e '1i\
+// CDVScreenOrientationDelegate inline-protocol injected by ci_pre_xcodebuild.sh\
+// Avoids reliance on FRAMEWORK_SEARCH_PATHS for module resolution at scan time.\
+#import <UIKit/UIKit.h>\
+#if __has_include(<Cordova/CDVScreenOrientationDelegate.h>)\
+  #import <Cordova/CDVScreenOrientationDelegate.h>\
+#else\
+@protocol CDVScreenOrientationDelegate <NSObject>\
+- (BOOL)shouldAutorotate;\
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations;\
+@end\
+#endif\
 ' \
       "${CAP_CAT_HDR}"
-    rm -f "${CAP_CAT_HDR}.bak"
-    if grep -q '#import "../../CapacitorCordova/CapacitorCordova/Classes/Public/CDVScreenOrientationDelegate.h"' "${CAP_CAT_HDR}"; then
-      echo "✅ Patched CAPBridgeViewController+CDVScreenOrientationDelegate.h with direct import"
+    rm -f "${CAP_CAT_HDR}.bak" "${CAP_CAT_HDR}.bak2"
+    if grep -q '@protocol CDVScreenOrientationDelegate <NSObject>' "${CAP_CAT_HDR}"; then
+      echo "✅ Patched CAPBridgeViewController+CDVScreenOrientationDelegate.h with inline protocol"
     else
       echo "❌ sed patch did not produce expected output"
-      head -5 "${CAP_CAT_HDR}"
+      head -15 "${CAP_CAT_HDR}"
       exit 1
     fi
   fi
@@ -651,12 +670,6 @@ else
   echo "❌ Category header not found at ${CAP_CAT_HDR}"
   exit 1
 fi
-_relative_target2="${ROOT_DIR}/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVScreenOrientationDelegate.h"
-if [[ ! -f "${_relative_target2}" ]]; then
-  echo "❌ CDVScreenOrientationDelegate.h not found at expected location: ${_relative_target2}"
-  exit 1
-fi
-echo "✅ CDVScreenOrientationDelegate.h confirmed at ${_relative_target2}"
 
 # ── 3d. Sweep for ANY other Cordova-symbol references in Capacitor headers ────
 # Catch-all: scan all Capacitor public headers / source files for unresolved

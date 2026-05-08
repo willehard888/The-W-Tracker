@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -163,37 +163,43 @@ const DailyCheckin = () => {
   } | null>(null);
   const moderation = useModeration();
 
-  const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory)!;
+  // Safe fallback to the first category ("none") if sportCategory is unrecognised —
+  // avoids a crash from the non-null assertion when the value drifts.
+  const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory) ?? SPORT_CATEGORIES[0];;
   const workout = sportCategory !== "none";
 
-  // Sleep quality logic
+  // Sleep quality logic — memoized so it only recalculates when sleep / recentSleep change.
   // - 7.5–9h is optimal
   // - 10–12h is good occasionally, but penalized if chronic (≥3 nights of 10h+ in last 7 days)
   // - 7h is sub-optimal (poor)
   // - <7h is poor / dangerous
-  const oversleepCount = (recentSleep || []).filter((h) => h >= 10).length;
-  const isChronicOversleep = oversleepCount >= 3;
+  const { isOptimalSleep, isChronicOversleep, sleepMultiplier, sleepPenaltyLabel } = useMemo(() => {
+    const oversleepCount = (recentSleep || []).filter((h) => h >= 10).length;
+    const chronic = oversleepCount >= 3;
 
-  const isOptimalSleep =
-    (sleep >= 7.5 && sleep <= 9) ||
-    (sleep >= 10 && sleep <= 12 && !isChronicOversleep);
+    const optimal =
+      (sleep >= 7.5 && sleep <= 9) ||
+      (sleep >= 10 && sleep <= 12 && !chronic);
 
-  let sleepMultiplier = 1.0;
-  if (sleep >= 7.5 && sleep <= 9) sleepMultiplier = 1.0;
-  else if (sleep >= 10 && sleep <= 12) sleepMultiplier = isChronicOversleep ? 0.6 : 0.95;
-  else if (sleep >= 7 && sleep < 7.5) sleepMultiplier = 0.8;
-  else if (sleep >= 6 && sleep < 7) sleepMultiplier = 0.65;
-  else if (sleep >= 5 && sleep < 6) sleepMultiplier = 0.5;
-  else sleepMultiplier = 0.4; // <5h
+    let multiplier = 1.0;
+    if (sleep >= 7.5 && sleep <= 9) multiplier = 1.0;
+    else if (sleep >= 10 && sleep <= 12) multiplier = chronic ? 0.6 : 0.95;
+    else if (sleep >= 7 && sleep < 7.5) multiplier = 0.8;
+    else if (sleep >= 6 && sleep < 7) multiplier = 0.65;
+    else if (sleep >= 5 && sleep < 6) multiplier = 0.5;
+    else multiplier = 0.4; // <5h
 
-  let sleepPenaltyLabel: string | null = null;
-  if (sleepMultiplier < 1) {
-    const pct = `${Math.round((1 - sleepMultiplier) * 100)}% XP penalty`;
-    if (isChronicOversleep && sleep >= 10) sleepPenaltyLabel = `Chronic oversleep — ${pct}`;
-    else if (sleep >= 7 && sleep < 7.5) sleepPenaltyLabel = `Sub-optimal sleep — ${pct}`;
-    else if (sleep < 7) sleepPenaltyLabel = `Poor sleep — ${pct}`;
-    else sleepPenaltyLabel = pct;
-  }
+    let penalty: string | null = null;
+    if (multiplier < 1) {
+      const pct = `${Math.round((1 - multiplier) * 100)}% XP penalty`;
+      if (chronic && sleep >= 10) penalty = `Chronic oversleep — ${pct}`;
+      else if (sleep >= 7 && sleep < 7.5) penalty = `Sub-optimal sleep — ${pct}`;
+      else if (sleep < 7) penalty = `Poor sleep — ${pct}`;
+      else penalty = pct;
+    }
+
+    return { isOptimalSleep: optimal, isChronicOversleep: chronic, sleepMultiplier: multiplier, sleepPenaltyLabel: penalty };
+  }, [sleep, recentSleep]);
 
   const proofBonus = isElite && proofFile ? 30 : 0;
   const rawXp = [

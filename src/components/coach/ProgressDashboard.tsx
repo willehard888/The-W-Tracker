@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import { Loader2, RefreshCw, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -59,7 +59,7 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
     load();
   }, [user]);
 
-  const fetchRead = async () => {
+  const fetchRead = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("coach-progress-read");
@@ -72,9 +72,9 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchRead(); /* on mount */ }, []); // eslint-disable-line
+  useEffect(() => { fetchRead(); }, [fetchRead]);
 
   return (
     <div className="space-y-4">

@@ -46,11 +46,25 @@ const formatCountdown = (endsAt?: string) => {
   return `${days}d ${hours}h ${minutes}m ${seconds}s`;
 };
 
+/**
+ * Isolated countdown timer — only this tiny component re-renders every second,
+ * not the entire Leaderboard page. Previously a global setInterval + setTick
+ * caused the whole page to re-render 60× per minute.
+ */
+const CountdownTimer = ({ endsAt }: { endsAt?: string }) => {
+  const [text, setText] = useState(() => formatCountdown(endsAt));
+  useEffect(() => {
+    setText(formatCountdown(endsAt));
+    const id = setInterval(() => setText(formatCountdown(endsAt)), 1000);
+    return () => clearInterval(id);
+  }, [endsAt]);
+  return <span>{text}</span>;
+};
+
 const Leaderboard = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"season" | "all_time">("season");
-  const [, setTick] = useState(0);
   const { scrollRef, pullDistance, isRefreshing, onTouchStart: pullStart, onTouchMove, onTouchEnd: pullEnd, PULL_THRESHOLD } = usePullRefresh([
     ["leaderboard-all-time"],
     ["leaderboard-season"],
@@ -73,10 +87,7 @@ const Leaderboard = () => {
   };
 
 
-  useEffect(() => {
-    const id = setInterval(() => setTick((v) => v + 1), 1000);
-    return () => clearInterval(id);
-  }, []);
+  // Countdown ticking moved to <CountdownTimer> — only that component re-renders.
 
   const isElite = profile?.is_elite;
 
@@ -209,7 +220,7 @@ const Leaderboard = () => {
   const hasRank = mode === "season" ? Boolean(rank) : Boolean(myRankData?.hasRank);
   const mySeasonWins = profile?.user_id ? championData?.counts?.[profile.user_id] || 0 : 0;
 
-  const countdownText = useMemo(() => formatCountdown(activeSeason?.ends_at), [activeSeason]);
+  // countdownText replaced by <CountdownTimer> component — see render below.
 
   // Access is gated globally by AccessGate (€4.99/mo membership or 7-day trial).
   // Leaderboard is open to every member with active access.
@@ -273,7 +284,7 @@ const Leaderboard = () => {
           <div className="text-right">
             <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-bold">Ends in</p>
             <p className="font-display font-black text-sm text-gold flex items-center justify-end gap-1 tabular-nums mt-0.5">
-              <Clock3 size={14} /> {countdownText}
+              <Clock3 size={14} /> <CountdownTimer endsAt={activeSeason?.ends_at} />
             </p>
           </div>
         </div>

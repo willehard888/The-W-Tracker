@@ -119,10 +119,11 @@ const UserProfile = () => {
     queryKey: ["user-featured-badge", profile?.featured_badge_id],
     enabled: !!profile?.featured_badge_id,
     queryFn: async () => {
+      if (!profile?.featured_badge_id) return null;
       const { data } = await supabase
         .from("badges")
         .select("name, icon, rarity")
-        .eq("id", profile!.featured_badge_id!)
+        .eq("id", profile.featured_badge_id)
         .maybeSingle();
       return data;
     },
@@ -133,10 +134,11 @@ const UserProfile = () => {
     queryKey: ["user-global-rank", userId, profile?.rank_score],
     enabled: !!userId && !!profile,
     queryFn: async () => {
+      if (!profile) return null;
       const { count: aheadCount } = await supabase
         .from("profiles")
         .select("user_id", { count: "exact", head: true })
-        .gt("rank_score", profile!.rank_score);
+        .gt("rank_score", profile.rank_score ?? 0);
       const { count: totalCount } = await supabase
         .from("profiles")
         .select("user_id", { count: "exact", head: true });

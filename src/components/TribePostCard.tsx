@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -382,7 +382,8 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
     onError: (e: any) => toast.error(e?.message || "Failed to delete"),
   });
 
-  const tree = buildCommentTree(comments);
+  // Memoize comment tree — avoids rebuilding on every render that doesn't change comments.
+  const tree = useMemo(() => buildCommentTree(comments), [comments]);
   const canDeleteAnyComment = isAdmin || isOwner;
   const totalSignals = (post.likes_count || 0) + (post.comments_count || 0) + (post.kudos_count || 0);
 

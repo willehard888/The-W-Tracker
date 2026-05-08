@@ -4,7 +4,7 @@ import StreakFlameInline from "@/components/StreakFlameInline";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo, useCallback } from "react";
 import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
@@ -317,6 +317,9 @@ const EliteFeed = () => {
       return !!data;
     },
     enabled: !!user,
+    // Admin status doesn't change during a session — cache aggressively.
+    staleTime: 10 * 60_000,
+    gcTime: 30 * 60_000,
   });
 
   const { data: posts, isLoading } = useQuery({
@@ -373,50 +376,35 @@ const EliteFeed = () => {
   });
 
   // Kudos: which posts the user has kudos'd
-  const { data: userKudosPosts } = useQuery({
-    queryKey: ["user-kudos-posts", user?.id],
+  // Combine 3 separate kudos/reactions queries into one parallel fetch to
+  // halve the number of round-trips on initial feed load.
+  const { data: userInteractions } = useQuery({
+    queryKey: ["feed-user-interactions", user?.id],
     queryFn: async () => {
-      if (!user) return [];
-      const { data } = await supabase
-        .from("kudos")
-        .select("post_id")
-        .eq("giver_id", user.id);
-      return data?.map((k: any) => k.post_id) || [];
-    },
-    enabled: !!user,
-  });
-
-  // Kudos: how many the user has given this month
-  const { data: kudosGivenThisMonth } = useQuery({
-    queryKey: ["kudos-given-month", user?.id],
-    queryFn: async () => {
-      if (!user) return 0;
+      if (!user) return { kudosPosts: [] as string[], kudosMonth: 0, reactionPosts: [] as string[] };
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      const { count } = await supabase
-        .from("kudos")
-        .select("id", { count: "exact", head: true })
-        .eq("giver_id", user.id)
-        .gte("created_at", startOfMonth);
-      return count || 0;
+
+      const [kudosAll, kudosMonth, reactionsRes] = await Promise.all([
+        supabase.from("kudos").select("post_id").eq("giver_id", user.id),
+        supabase.from("kudos").select("id", { count: "exact", head: true })
+          .eq("giver_id", user.id).gte("created_at", startOfMonth),
+        supabase.from("feed_reactions").select("post_id").eq("user_id", user.id),
+      ]);
+
+      return {
+        kudosPosts: kudosAll.data?.map((k: any) => k.post_id) ?? [],
+        kudosMonth: kudosMonth.count ?? 0,
+        reactionPosts: reactionsRes.data?.map((r) => r.post_id) ?? [],
+      };
     },
     enabled: !!user,
   });
 
-  const kudosRemaining = Math.max(0, 2 - (kudosGivenThisMonth || 0));
-
-  const { data: reactions } = useQuery({
-    queryKey: ["feed-reactions", user?.id],
-    queryFn: async () => {
-      if (!user) return [];
-      const { data } = await supabase
-        .from("feed_reactions")
-        .select("post_id")
-        .eq("user_id", user.id);
-      return data?.map((r) => r.post_id) || [];
-    },
-    enabled: !!user,
-  });
+  const userKudosPosts = userInteractions?.kudosPosts ?? [];
+  const kudosGivenThisMonth = userInteractions?.kudosMonth ?? 0;
+  const reactions = userInteractions?.reactionPosts ?? [];
+  const kudosRemaining = Math.max(0, 2 - kudosGivenThisMonth);
 
   const createPost = useMutation({
     mutationFn: async () => {
@@ -507,7 +495,7 @@ const EliteFeed = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed-reactions"] });
+      queryClient.invalidateQueries({ queryKey: ["feed-user-interactions"] });
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
     },
   });
@@ -530,8 +518,7 @@ const EliteFeed = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-kudos-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["kudos-given-month"] });
+      queryClient.invalidateQueries({ queryKey: ["feed-user-interactions"] });
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
       toast.success("Kudos! 🏆");
     },
@@ -613,6 +600,25 @@ const EliteFeed = () => {
     },
     onError: (e: any) => toast.error(e?.message || "Failed to delete"),
   });
+
+  // Memoize comment tree — avoids rebuilding the entire tree on every render.
+  // Rebuilt only when the comments data actually changes.
+  const commentTree = useMemo(() => buildCommentTree(comments), [comments]);
+
+  // Stable callbacks for CommentThread — prevents child re-renders from
+  // new inline arrow functions being created on each parent render.
+  const handleCommentReply = useCallback((id: string, username: string, snippet: string) => {
+    setReplyTo({ id, username, snippet });
+    setTimeout(() => commentInputRef.current?.focus(), 50);
+  }, []);
+
+  const handleCommentEdit = useCallback(async (id: string, content: string) => {
+    await editComment.mutateAsync({ id, content });
+  }, [editComment]);
+
+  const handleCommentDelete = useCallback(async (id: string) => {
+    await deleteComment.mutateAsync(id);
+  }, [deleteComment]);
 
   const reportPost = useMutation({
     mutationFn: async (postId: string) => {
@@ -1235,37 +1241,25 @@ const EliteFeed = () => {
                     </p>
                   </div>
 
-                  {(() => {
-                    const tree = buildCommentTree(comments);
-                    return (
-                      <div className="space-y-3 mb-3 max-h-80 overflow-y-auto pr-1">
-                        {tree.length === 0 && (
-                          <p className="text-xs text-muted-foreground/60 text-center py-3">
-                            No comments yet — start the conversation
-                          </p>
-                        )}
-                        {tree.map((node) => (
-                          <CommentThread
-                            key={node.id}
-                            node={node}
-                            currentUserId={user?.id}
-                            onReply={(id, username, snippet) => {
-                              setReplyTo({ id, username, snippet });
-                              setTimeout(() => commentInputRef.current?.focus(), 50);
-                            }}
-                            onEdit={async (id, content) => {
-                              await editComment.mutateAsync({ id, content });
-                            }}
-                            onDelete={async (id) => {
-                              await deleteComment.mutateAsync(id);
-                            }}
-                            editingId={editingCommentId}
-                            setEditingId={setEditingCommentId}
-                          />
-                        ))}
-                      </div>
-                    );
-                  })()}
+                  <div className="space-y-3 mb-3 max-h-80 overflow-y-auto pr-1">
+                    {commentTree.length === 0 && (
+                      <p className="text-xs text-muted-foreground/60 text-center py-3">
+                        No comments yet — start the conversation
+                      </p>
+                    )}
+                    {commentTree.map((node) => (
+                      <CommentThread
+                        key={node.id}
+                        node={node}
+                        currentUserId={user?.id}
+                        onReply={handleCommentReply}
+                        onEdit={handleCommentEdit}
+                        onDelete={handleCommentDelete}
+                        editingId={editingCommentId}
+                        setEditingId={setEditingCommentId}
+                      />
+                    ))}
+                  </div>
 
                   {/* Composer */}
                   {user && (

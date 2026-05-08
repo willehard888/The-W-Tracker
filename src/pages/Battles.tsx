@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Swords, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image, Vote, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -69,9 +69,14 @@ const Battles = () => {
     enabled: !!profile,
   });
 
-  const participantIds = battles
-    ? [...new Set(battles.flatMap((b: any) => [b.challenger_id, b.opponent_id]))]
-    : [];
+  // Memoized so a new array reference from `battles` doesn't retrigger the
+  // participants query when the IDs themselves haven't changed.
+  const participantIds = useMemo(
+    () => battles
+      ? [...new Set(battles.flatMap((b: any) => [b.challenger_id, b.opponent_id]))]
+      : [],
+    [battles],
+  );
 
   const { data: participants } = useQuery({
     queryKey: ["battle-participants", participantIds.join(",")],
@@ -87,6 +92,7 @@ const Battles = () => {
     },
     enabled: participantIds.length > 0,
     refetchInterval: 15000,
+    staleTime: 10_000,
   });
 
   const pendingBattles = battles?.filter((b: any) => b.status === "pending" && b.opponent_id === profile?.user_id) || [];

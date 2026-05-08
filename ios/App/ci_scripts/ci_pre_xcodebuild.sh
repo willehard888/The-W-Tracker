@@ -461,59 +461,61 @@ else
   exit 1
 fi
 
-# Patch Capacitor xcconfigs: add FIXED_STUB_DIR to FRAMEWORK_SEARCH_PATHS.
-# In xcconfig the LAST definition wins; we include $(inherited) to preserve
-# all existing paths, and explicitly list ${PODS_CONFIGURATION_BUILD_DIR}/CapacitorCordova
-# so both search locations are active.
+# ── 2a. Patch Capacitor xcconfigs via OTHER_SWIFT_FLAGS → -Xcc -F ──────────────
+# ROOT-CAUSE: Xcode 26 archive builds do NOT forward FRAMEWORK_SEARCH_PATHS to
+# swift-frontend's embedded Clang (confirmed from build logs: the only -F flag
+# in the swift-frontend invocation is the target's own CONFIGURATION_BUILD_DIR).
+# The only reliable way to inject a -F path into embedded Clang is via
+# OTHER_SWIFT_FLAGS = … -Xcc -F<path>.
+# In xcconfig the LAST definition of a key wins, so we append our override.
+# We re-include -D COCOAPODS so the value from the first line is not lost.
 for _xcc in \
   "${PODS_DIR}/Target Support Files/Capacitor/Capacitor.release.xcconfig" \
   "${PODS_DIR}/Target Support Files/Capacitor/Capacitor.debug.xcconfig"; do
   if [[ -f "$_xcc" ]]; then
-    # Guard: skip if we already patched this file (idempotent).
     if grep -q "CordovaStub" "$_xcc" 2>/dev/null; then
       echo "ℹ️  $(basename "$_xcc") already patched — skipping"
     else
-      printf '\n// Cordova stub — injected by ci_pre_xcodebuild.sh\nFRAMEWORK_SEARCH_PATHS = $(inherited) "%s" "${PODS_CONFIGURATION_BUILD_DIR}/CapacitorCordova"\n' \
+      printf '\n// Cordova stub — injected by ci_pre_xcodebuild.sh\n// FRAMEWORK_SEARCH_PATHS is NOT forwarded to swift-frontend in Xcode 26 archive\n// builds; -Xcc -F via OTHER_SWIFT_FLAGS is the correct mechanism.\nOTHER_SWIFT_FLAGS = $(inherited) -D COCOAPODS -Xcc -F%s\n' \
         "${FIXED_STUB_DIR}" >> "$_xcc"
-      echo "✅ Patched $(basename "$_xcc") with CordovaStub FRAMEWORK_SEARCH_PATHS"
+      echo "✅ Patched $(basename "$_xcc") with CordovaStub via OTHER_SWIFT_FLAGS -Xcc -F"
     fi
   else
     echo "⚠️  xcconfig not found: $_xcc"
   fi
 done
 
-# Patch ALL pod xcconfigs so every importing target (plugin targets like
-# LocalNotificationsPlugin, HapticsPlugin, etc.) can also resolve Cordova.framework
-# during Xcode 26's per-importer dependency scan.
-echo "🔨 Injecting CordovaStub into ALL pod xcconfigs…"
-_patch_count=0
-while IFS= read -r -d '' _xcc; do
-  # Skip if already patched (idempotent)
-  grep -q "CordovaStub" "$_xcc" 2>/dev/null && continue
-  printf '\n// Cordova stub — injected by ci_pre_xcodebuild.sh\nFRAMEWORK_SEARCH_PATHS = $(inherited) "%s"\n' \
-    "${FIXED_STUB_DIR}" >> "$_xcc"
-  _patch_count=$((_patch_count + 1))
-done < <(find "${PODS_DIR}/Target Support Files" -name "*.xcconfig" -print0 2>/dev/null)
-echo "✅ Injected CordovaStub into ${_patch_count} additional xcconfig(s)"
-
-# ── 2. DerivedData stub (belt-and-suspenders via PODS_CONFIGURATION_BUILD_DIR) ─
-# Xcode Cloud runs xcodebuild with -derivedDataPath /Volumes/workspace/DerivedData.
-# That directory is CREATED BY xcodebuild — it doesn't exist yet when this script
-# runs, so we can't verify it. We just pre-create the path; xcodebuild won't clean it.
+# ── 2b. Pre-create Cordova.framework stub at the ARCHIVE INTERMEDIATES path ────
+# During xcodebuild archive, PODS_CONFIGURATION_BUILD_DIR resolves to:
+#   DerivedData/Build/Intermediates.noindex/ArchiveIntermediates/App/BuildProductsPath/Release-iphoneos
+# (NOT Build/Products/Release-iphoneos — that is only for non-archive builds).
+# Capacitor.xcconfig has FRAMEWORK_SEARCH_PATHS = … "${PODS_CONFIGURATION_BUILD_DIR}/CapacitorCordova"
+# which is the directory the BUILT Cordova.framework would land in.
+# By pre-creating our stub there, Clang finds Cordova.framework the moment it looks
+# (even before CapacitorCordova has been compiled by xcodebuild).
+# xcodebuild's own CreateBuildDirectory step only creates the directory, it does NOT
+# clear it, so our pre-seeded framework survives into the actual compile phase.
 if [[ -d "/Volumes/workspace" ]]; then
-  DERIVED_PRODUCTS="/Volumes/workspace/DerivedData/Build/Products/Release-iphoneos"
-  echo "🌐 XC Cloud — also stubbing ${DERIVED_PRODUCTS}/CapacitorCordova/Cordova.framework"
+  # Xcode Cloud: derivedDataPath is always /Volumes/workspace/DerivedData
+  XC_DD="/Volumes/workspace/DerivedData"
+  # Cover both the archive-intermediates path (primary) and the products path (fallback)
+  ARCHIVE_PODS_CFG_BUILD_DIR="${XC_DD}/Build/Intermediates.noindex/ArchiveIntermediates/App/BuildProductsPath/Release-iphoneos"
+  PRODUCTS_PODS_CFG_BUILD_DIR="${XC_DD}/Build/Products/Release-iphoneos"
+  for _cap_cordova_dir in \
+    "${ARCHIVE_PODS_CFG_BUILD_DIR}/CapacitorCordova" \
+    "${PRODUCTS_PODS_CFG_BUILD_DIR}/CapacitorCordova"; do
+    _make_cordova_fw "${_cap_cordova_dir}/Cordova.framework"
+    echo "✅ Pre-seeded stub at ${_cap_cordova_dir}/Cordova.framework"
+  done
 else
+  # Local dev: derive from xcodebuild showBuildSettings
   _bdir=$(xcodebuild -workspace "${IOS_APP_DIR}/App.xcworkspace" \
     -scheme App -configuration Release \
     -showBuildSettings 2>/dev/null \
     | awk -F' = ' '/^[[:space:]]*BUILD_DIR[[:space:]]*=/{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
-  DERIVED_PRODUCTS="${_bdir}/Release-iphoneos"
-  echo "💻 Local — also stubbing ${DERIVED_PRODUCTS}/CapacitorCordova/Cordova.framework"
+  _cap_cordova_dir="${_bdir}/Release-iphoneos/CapacitorCordova"
+  _make_cordova_fw "${_cap_cordova_dir}/Cordova.framework"
+  echo "💻 Local — pre-seeded stub at ${_cap_cordova_dir}/Cordova.framework"
 fi
-
-DERIVED_FW="${DERIVED_PRODUCTS}/CapacitorCordova/Cordova.framework"
-_make_cordova_fw "${DERIVED_FW}"
-echo "✅ DerivedData stub at ${DERIVED_FW}"
 
 echo "✅ pre-xcodebuild setup complete"

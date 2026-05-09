@@ -697,6 +697,45 @@ if [[ -n "${_extra_cdv_refs}" ]]; then
   echo "${_extra_cdv_refs}" | sed 's/^/    - /'
 fi
 
+# ── 3.5. Build a SHARED-DEPS framework directory for plugins to -F into ──────
+#
+# Build 753 revealed the next layer of the problem:
+#   CapacitorHaptics.build/module.modulemap:9: error: header 'CapacitorHaptics-Swift.h' not found
+#   could not build Objective-C module 'CapacitorHaptics'  (in target 'CapacitorHaptics')
+#
+# Same self-referential pattern as build 752, but for plugin targets. Adding
+#   -F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)
+# to a plugin's compile flags exposes EVERY framework in that directory —
+# including the plugin's own partially-built framework. Clang sees the partial
+# framework and tries to resolve `import CapacitorHaptics` against it, but the
+# Swift header isn't generated yet (we're emitting it right now).
+#
+# Fix: create a dedicated directory ${PODS_DIR}/CapDepsFwks/ that contains only
+# the dependencies plugins need (Capacitor.framework, Cordova.framework) via
+# symlinks. Plugins -F into THIS directory only — they never see their own
+# framework that way.
+#
+# The symlink targets don't have to exist when the link is created — by the
+# time a plugin actually compiles, Capacitor target has already finished
+# (Podfile post_install enforces that ordering) and Capacitor.framework is real.
+echo "🔗 Creating dedicated CapDepsFwks/ symlink directory for plugin -F lookups…"
+CAP_DEPS_DIR="${PODS_DIR}/CapDepsFwks"
+mkdir -p "${CAP_DEPS_DIR}"
+if [[ -d "/Volumes/workspace" ]]; then
+  # Xcode Cloud archive: OBJROOT/UninstalledProducts is a fixed absolute path
+  _UNINSTALLED="/Volumes/workspace/DerivedData/Build/Intermediates.noindex/ArchiveIntermediates/App/IntermediateBuildFilesPath/UninstalledProducts/iphoneos"
+else
+  # Local dev: derive at script time
+  _bdir=$(xcodebuild -workspace "${IOS_APP_DIR}/App.xcworkspace" \
+    -scheme App -configuration Release \
+    -showBuildSettings 2>/dev/null \
+    | awk -F' = ' '/^[[:space:]]*OBJROOT[[:space:]]*=/{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
+  _UNINSTALLED="${_bdir}/UninstalledProducts/iphoneos"
+fi
+ln -sfn "${_UNINSTALLED}/Capacitor.framework" "${CAP_DEPS_DIR}/Capacitor.framework"
+ln -sfn "${_UNINSTALLED}/Cordova.framework"   "${CAP_DEPS_DIR}/Cordova.framework"
+echo "✅ CapDepsFwks/ → ${_UNINSTALLED}/{Capacitor,Cordova}.framework"
+
 # ── 4. Inject -F flags into pod xcconfigs (target-class-aware) ───────────────
 #
 # Why this section exists at all (recap from build 748–752 logs):
@@ -730,17 +769,20 @@ fi
 #      -F path at compile time (swift-frontend, embedded Clang, CompileC) AND
 #      at link time. Patch all three of LDFLAGS / SWIFT_FLAGS / CFLAGS.
 #
-# Idempotency: each xcconfig gets a `__OBJROOT_F_INJECTED__` marker line.
+# Idempotency: each xcconfig gets a `__CAPDEPSFWKS_F_INJECTED__` marker line.
 # Re-running on an already-patched file is a no-op.
-echo "🔧 Patching pod xcconfigs with $(OBJROOT)/UninstalledProducts -F (target-class-aware)…"
-_obj_F='-F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)'
-_marker='__OBJROOT_F_INJECTED__'
+echo "🔧 Patching pod xcconfigs to -F into Pods/CapDepsFwks (target-class-aware)…"
+# Plugins / Capacitor look in $(PODS_ROOT)/CapDepsFwks which contains symlinks
+# to ONLY Capacitor.framework + Cordova.framework. No plugin self-frameworks
+# in that directory ⇒ no self-referential module loop.
+_deps_F='-F$(PODS_ROOT)/CapDepsFwks'
+_marker='__CAPDEPSFWKS_F_INJECTED__'
 
 # Helper: append " -F<path>" to the existing OTHER_LDFLAGS line of an xcconfig.
 _append_ldflag_path() {
   local _file="$1"
   /usr/bin/sed -i.bak -E \
-    "s|^(OTHER_LDFLAGS = .*)\$|\\1 ${_obj_F}|" \
+    "s|^(OTHER_LDFLAGS = .*)\$|\\1 ${_deps_F}|" \
     "$_file"
   rm -f "${_file}.bak"
 }
@@ -751,17 +793,18 @@ _append_compile_flags() {
   local _file="$1"
   cat >> "$_file" <<'XCCONFIG'
 
-// Build 752 fix: resolve Capacitor.framework at compile time via the path
-// where it actually lives during archive. -D COCOAPODS re-emitted because
-// xcconfig last-definition-wins replaces the prior OTHER_SWIFT_FLAGS line.
-OTHER_SWIFT_FLAGS = $(inherited) -D COCOAPODS -F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME) -Xcc -F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)
-OTHER_CFLAGS = $(inherited) -F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)
+// Build 753 fix: resolve Capacitor.framework via Pods/CapDepsFwks (symlinks
+// to ONLY the deps we need, not every framework in OBJROOT/UninstalledProducts).
+// -D COCOAPODS re-emitted because xcconfig last-definition-wins replaces the
+// prior OTHER_SWIFT_FLAGS line.
+OTHER_SWIFT_FLAGS = $(inherited) -D COCOAPODS -F$(PODS_ROOT)/CapDepsFwks -Xcc -F$(PODS_ROOT)/CapDepsFwks
+OTHER_CFLAGS = $(inherited) -F$(PODS_ROOT)/CapDepsFwks
 XCCONFIG
 }
 
 # Helper: stamp the idempotency marker.
 _stamp_marker() {
-  echo "// __OBJROOT_F_INJECTED__" >> "$1"
+  echo "// __CAPDEPSFWKS_F_INJECTED__" >> "$1"
 }
 
 _patched_link_only=0

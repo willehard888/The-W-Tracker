@@ -697,68 +697,43 @@ if [[ -n "${_extra_cdv_refs}" ]]; then
   echo "${_extra_cdv_refs}" | sed 's/^/    - /'
 fi
 
-# ── 4. Inject build settings DIRECTLY into Pods.xcodeproj (overrides xcconfig) ─
-# When xcconfig changes don't propagate, target-level build settings in
-# project.pbxproj DO. We use the xcodeproj ruby gem (bundled with CocoaPods,
-# already present after pod install) to edit Pods.xcodeproj.
-echo "🔧 Injecting Cordova framework search/link paths into Pods.xcodeproj…"
-_pods_proj="${PODS_DIR}/Pods.xcodeproj"
-if [[ -d "${_pods_proj}" ]]; then
-  # Single-quoted heredoc => bash performs ZERO substitution on the body, so
-  # we don't have to escape $ or worry about backticks in comments. The Pods
-  # project path is passed via env so Ruby can read it as ENV['PODS_PROJ_PATH'].
-  PODS_PROJ_PATH="${_pods_proj}" /usr/bin/ruby <<'RUBY' || echo "⚠️  xcodeproj injection failed (non-fatal — source patch is primary fix)"
-require 'xcodeproj'
-project = Xcodeproj::Project.open(ENV.fetch('PODS_PROJ_PATH'))
+# ── 4. Inject -F flags via xcconfig file appends (no ruby/gems required) ─────
+# Build 750 ci_pre_xcodebuild.log: the Ruby xcodeproj approach failed because
+# Xcode Cloud's /usr/bin/ruby (system 2.6) doesn't have the xcodeproj gem:
+#   require: cannot load such file -- xcodeproj (LoadError)
+#
+# Plain xcconfig file appends DO work — that's how section 2a already injects
+# OTHER_SWIFT_FLAGS successfully. xcconfig last-definition-wins, and xcconfig
+# OTHER_LDFLAGS demonstrably reaches ld (it's how `-framework Cordova` got
+# there in the first place).
+#
+# Build 748 linker log proved Cordova.framework is built at
+#   \$(OBJROOT)/UninstalledProducts/\$(PLATFORM_NAME)/Cordova.framework
+# during archive — NOT in \$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova/.
+# So we append both candidate -F paths and let ld pick the one that exists.
+# We also re-emit the original -framework "Cordova" -framework "WebKit"
+# entries because the new line REPLACES the original OTHER_LDFLAGS.
+echo "🔧 Appending OTHER_LDFLAGS -F paths into Capacitor xcconfigs…"
+for _xcc in \
+  "${PODS_DIR}/Target Support Files/Capacitor/Capacitor.release.xcconfig" \
+  "${PODS_DIR}/Target Support Files/Capacitor/Capacitor.debug.xcconfig"; do
+  if [[ -f "$_xcc" ]]; then
+    if grep -q "UninstalledProducts" "$_xcc" 2>/dev/null; then
+      echo "ℹ️  $(basename "$_xcc") already has UninstalledProducts -F — skipping"
+    else
+      cat >> "$_xcc" <<'XCCONFIG'
 
-# Build 748 linker log diagnosis: Cordova.framework is built into
-#   $(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/Cordova.framework
-# during archive builds, NOT in $(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova
-# as CocoaPods xcconfig assumes. Hence the persistent
-#   ld: framework not found Cordova
-# even though FRAMEWORK_SEARCH_PATHS in xcconfig pointed at the wrong path.
-%w[Capacitor].each do |target_name|
-  target = project.targets.find { |t| t.name == target_name }
-  next unless target
-  target.build_configurations.each do |cfg|
-    bs = cfg.build_settings
-
-    fsp = Array(bs['FRAMEWORK_SEARCH_PATHS'] || ['$(inherited)'])
-    cordova_path = '"$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"'
-    fsp << cordova_path unless fsp.any? { |p| p.include?('CapacitorCordova') }
-    bs['FRAMEWORK_SEARCH_PATHS'] = fsp
-
-    # ld must see -F at the actual location of Cordova.framework.
-    archive_F  = '-F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)'
-    nonarch_F  = '-F$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova'
-
-    ldflags = bs['OTHER_LDFLAGS'] || '$(inherited)'
-    ldflags = ldflags.is_a?(Array) ? ldflags.join(' ') : ldflags
-    unless ldflags.include?('-F$(OBJROOT)/UninstalledProducts')
-      ldflags = "#{ldflags} #{archive_F} #{nonarch_F}"
-    end
-    bs['OTHER_LDFLAGS'] = ldflags
-
-    osf = bs['OTHER_SWIFT_FLAGS'] || '$(inherited)'
-    osf = osf.is_a?(Array) ? osf.join(' ') : osf
-    unless osf.include?('-Xcc -F$(OBJROOT)/UninstalledProducts')
-      osf = "#{osf} -Xcc #{archive_F} -Xcc #{nonarch_F}"
-    end
-    bs['OTHER_SWIFT_FLAGS'] = osf
-
-    ocf = bs['OTHER_CFLAGS'] || '$(inherited)'
-    ocf = ocf.is_a?(Array) ? ocf.join(' ') : ocf
-    unless ocf.include?('-F$(OBJROOT)/UninstalledProducts')
-      ocf = "#{ocf} #{archive_F} #{nonarch_F}"
-    end
-    bs['OTHER_CFLAGS'] = ocf
-  end
-  puts "  ✅ Patched target #{target_name} with $(OBJROOT)/UninstalledProducts -F path"
-end
-project.save
-RUBY
-else
-  echo "⚠️  Pods.xcodeproj not found at ${_pods_proj}"
-fi
+// Build 748+750 fix: ld can't find Cordova.framework because xcconfig
+// FRAMEWORK_SEARCH_PATHS points at $(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova
+// while archive builds actually place it at $(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME).
+// Last-definition-wins: re-include -framework Cordova/WebKit then add explicit -F paths.
+OTHER_LDFLAGS = $(inherited) -framework "Cordova" -framework "WebKit" -F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME) -F$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova
+XCCONFIG
+      echo "✅ Appended -F UninstalledProducts to $(basename "$_xcc")"
+    fi
+  else
+    echo "⚠️  xcconfig not found: $_xcc"
+  fi
+done
 
 echo "✅ pre-xcodebuild setup complete"

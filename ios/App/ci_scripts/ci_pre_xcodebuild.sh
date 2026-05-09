@@ -697,60 +697,115 @@ if [[ -n "${_extra_cdv_refs}" ]]; then
   echo "${_extra_cdv_refs}" | sed 's/^/    - /'
 fi
 
-# ── 4. Inject -F flags via xcconfig file appends (no ruby/gems required) ─────
-# Build 750 ci_pre_xcodebuild.log: the Ruby xcodeproj approach failed because
-# Xcode Cloud's /usr/bin/ruby (system 2.6) doesn't have the xcodeproj gem.
-# Plain xcconfig file edits work — that's how section 2a already injects
-# OTHER_SWIFT_FLAGS successfully.
+# ── 4. Inject -F flags into pod xcconfigs (target-class-aware) ───────────────
 #
-# Build 748 linker log proved Cordova.framework is built at
-#   $(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/Cordova.framework
-# during archive — NOT in $(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova/.
-# Same applies for Capacitor.framework (and every other pod with SKIP_INSTALL=YES).
+# Why this section exists at all (recap from build 748–752 logs):
 #
-# Build 751 confirmed: fixing only the Capacitor xcconfig made the Capacitor
-# target build cleanly, but plugin targets (CapacitorAppLauncher etc.) then
-# failed with `no such module 'Capacitor'` because THEIR xcconfigs have the
-# same wrong path assumption when looking up Capacitor.framework.
+#   In Xcode 26 archive mode, pod targets that have SKIP_INSTALL = YES
+#   (Capacitor, CapacitorCordova, every Capacitor* plugin, Revenuecat…)
+#   do NOT land in $(PODS_CONFIGURATION_BUILD_DIR)/<TargetName>/ as the
+#   CocoaPods-generated FRAMEWORK_SEARCH_PATHS assumes. They land at
+#   $(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/<Module>.framework
+#   instead. Worse, FRAMEWORK_SEARCH_PATHS in xcconfig is not forwarded to
+#   swift-frontend / ld in this configuration, so ALL search-path additions
+#   need to go through OTHER_LDFLAGS / OTHER_SWIFT_FLAGS / OTHER_CFLAGS.
 #
-# Strategy applied to ALL Capacitor* and RevenuecatPurchasesCapacitor xcconfigs:
-#  - sed-in-place: append " -F$(OBJROOT)/..." to the existing OTHER_LDFLAGS line
-#    (preserves the target-specific `-framework <X>` directives)
-#  - append a new OTHER_SWIFT_FLAGS line so swift-frontend's main -F finds
-#    Capacitor.framework / Cordova.framework, plus -Xcc -F for embedded Clang
-#  - append a new OTHER_CFLAGS line for CompileC tasks (.m / .mm files)
+# THREE classes of target, THREE patch strategies:
 #
-# Idempotency: a marker comment `__OBJROOT_F_INJECTED__` is added at the end;
-# if it's already there, the file is skipped.
-echo "🔧 Appending OBJROOT/UninstalledProducts -F to ALL Capacitor + Revenuecat xcconfigs…"
+#   A) Capacitor target itself ─ links AGAINST Cordova at archive time, so
+#      OTHER_LDFLAGS needs -F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME).
+#      But its own SOURCE compilation must NOT see its own Capacitor.framework
+#      via that -F path — at compile time the framework is partially built
+#      (Capacitor-Swift.h hasn't been emitted yet) and Clang would try to
+#      resolve `import Capacitor` against the half-finished framework and
+#      fail with `header 'Capacitor-Swift.h' not found` (build 752 regression).
+#      So we patch ONLY OTHER_LDFLAGS for Capacitor.{release,debug}.xcconfig.
+#
+#   B) CapacitorCordova target itself ─ leaf node. It builds Cordova.framework
+#      and depends on nothing in our pod graph. No patching needed. SKIP.
+#
+#   C) Every other pod (CapacitorApp, CapacitorAppLauncher, CapacitorBrowser,
+#      CapacitorHaptics, CapacitorLocalNotifications, CapacitorPushNotifications,
+#      RevenuecatPurchasesCapacitor) ─ depends on Capacitor.framework. Needs
+#      -F path at compile time (swift-frontend, embedded Clang, CompileC) AND
+#      at link time. Patch all three of LDFLAGS / SWIFT_FLAGS / CFLAGS.
+#
+# Idempotency: each xcconfig gets a `__OBJROOT_F_INJECTED__` marker line.
+# Re-running on an already-patched file is a no-op.
+echo "🔧 Patching pod xcconfigs with $(OBJROOT)/UninstalledProducts -F (target-class-aware)…"
 _obj_F='-F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)'
 _marker='__OBJROOT_F_INJECTED__'
-_patched_count=0
-while IFS= read -r -d '' _xcc; do
-  if grep -q "${_marker}" "$_xcc" 2>/dev/null; then
-    continue
-  fi
-  # 1) Append " -F<path>" to the existing OTHER_LDFLAGS line.
-  /usr/bin/sed -i.bak -E \
-    "s|^(OTHER_LDFLAGS = .*)$|\\1 ${_obj_F}|" \
-    "$_xcc"
-  rm -f "${_xcc}.bak"
-  # 2) Append new OTHER_SWIFT_FLAGS / OTHER_CFLAGS overrides + marker.
-  #    Last-definition-wins; we re-include -D COCOAPODS so it isn't lost.
-  cat >> "$_xcc" <<'XCCONFIG'
 
-// Build 751 fix: provide -F path to where Capacitor/Cordova frameworks
-// actually land during archive ($(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)).
-// Without this, plugin targets get "no such module 'Capacitor'" at compile time.
+# Helper: append " -F<path>" to the existing OTHER_LDFLAGS line of an xcconfig.
+_append_ldflag_path() {
+  local _file="$1"
+  /usr/bin/sed -i.bak -E \
+    "s|^(OTHER_LDFLAGS = .*)\$|\\1 ${_obj_F}|" \
+    "$_file"
+  rm -f "${_file}.bak"
+}
+
+# Helper: append new OTHER_SWIFT_FLAGS + OTHER_CFLAGS lines that bring the -F
+# path into compile-time module / header resolution (last-definition wins).
+_append_compile_flags() {
+  local _file="$1"
+  cat >> "$_file" <<'XCCONFIG'
+
+// Build 752 fix: resolve Capacitor.framework at compile time via the path
+// where it actually lives during archive. -D COCOAPODS re-emitted because
+// xcconfig last-definition-wins replaces the prior OTHER_SWIFT_FLAGS line.
 OTHER_SWIFT_FLAGS = $(inherited) -D COCOAPODS -F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME) -Xcc -F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)
 OTHER_CFLAGS = $(inherited) -F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)
-// __OBJROOT_F_INJECTED__
 XCCONFIG
-  _patched_count=$((_patched_count + 1))
-  echo "✅ Patched $(basename "$_xcc")"
+}
+
+# Helper: stamp the idempotency marker.
+_stamp_marker() {
+  echo "// __OBJROOT_F_INJECTED__" >> "$1"
+}
+
+_patched_link_only=0
+_patched_full=0
+_skipped=0
+
+while IFS= read -r -d '' _xcc; do
+  _name=$(basename "$_xcc")
+
+  # Already patched in a previous run?
+  if grep -q "${_marker}" "$_xcc" 2>/dev/null; then
+    _skipped=$((_skipped + 1))
+    continue
+  fi
+
+  case "$_name" in
+    # Class B: CapacitorCordova itself — the leaf framework. Skip.
+    CapacitorCordova.release.xcconfig | CapacitorCordova.debug.xcconfig)
+      _skipped=$((_skipped + 1))
+      continue
+      ;;
+    # Class A: Capacitor itself — patch ONLY the linker.
+    Capacitor.release.xcconfig | Capacitor.debug.xcconfig)
+      _append_ldflag_path "$_xcc"
+      _stamp_marker "$_xcc"
+      _patched_link_only=$((_patched_link_only + 1))
+      echo "✅ Patched LDFLAGS only for ${_name}"
+      ;;
+    # Class C: plugin or Revenuecat — patch linker AND compile flags.
+    Capacitor*.release.xcconfig | Capacitor*.debug.xcconfig | \
+    RevenuecatPurchasesCapacitor.release.xcconfig | RevenuecatPurchasesCapacitor.debug.xcconfig)
+      _append_ldflag_path "$_xcc"
+      _append_compile_flags "$_xcc"
+      _stamp_marker "$_xcc"
+      _patched_full=$((_patched_full + 1))
+      echo "✅ Patched LDFLAGS + SWIFT_FLAGS + CFLAGS for ${_name}"
+      ;;
+    *)
+      ;;
+  esac
 done < <(find "${PODS_DIR}/Target Support Files" \
   \( -name "Capacitor*.xcconfig" -o -name "RevenuecatPurchasesCapacitor*.xcconfig" \) \
   -print0 2>/dev/null)
-echo "✅ OBJROOT/UninstalledProducts -F appended to ${_patched_count} xcconfig(s)"
+
+echo "✅ xcconfig patches summary: ${_patched_link_only} link-only, ${_patched_full} full, ${_skipped} skipped"
 
 echo "✅ pre-xcodebuild setup complete"

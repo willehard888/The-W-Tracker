@@ -718,7 +718,7 @@ fi
 # The symlink targets don't have to exist when the link is created — by the
 # time a plugin actually compiles, Capacitor target has already finished
 # (Podfile post_install enforces that ordering) and Capacitor.framework is real.
-echo "🔗 Creating dedicated CapDepsFwks/ symlink directory for plugin -F lookups…"
+echo "🔗 Building per-target CapDepsFwks/<Target>/ symlink directories…"
 CAP_DEPS_DIR="${PODS_DIR}/CapDepsFwks"
 mkdir -p "${CAP_DEPS_DIR}"
 if [[ -d "/Volumes/workspace" ]]; then
@@ -732,9 +732,34 @@ else
     | awk -F' = ' '/^[[:space:]]*OBJROOT[[:space:]]*=/{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
   _UNINSTALLED="${_bdir}/UninstalledProducts/iphoneos"
 fi
-ln -sfn "${_UNINSTALLED}/Capacitor.framework" "${CAP_DEPS_DIR}/Capacitor.framework"
-ln -sfn "${_UNINSTALLED}/Cordova.framework"   "${CAP_DEPS_DIR}/Cordova.framework"
-echo "✅ CapDepsFwks/ → ${_UNINSTALLED}/{Capacitor,Cordova}.framework"
+
+# Per-target dependency map. Each target gets its OWN subdir containing only
+# its direct dependencies — never its own framework — so adding -F to that
+# subdir cannot trigger a self-referential module resolution loop.
+#
+# Format: "<TargetName>:<dep1> <dep2> …" (deps are space-separated framework
+# basenames, without .framework suffix).
+_dep_entries=(
+  "Capacitor:Cordova"
+  "CapacitorApp:Capacitor Cordova"
+  "CapacitorAppLauncher:Capacitor Cordova"
+  "CapacitorBrowser:Capacitor Cordova"
+  "CapacitorHaptics:Capacitor Cordova"
+  "CapacitorLocalNotifications:Capacitor Cordova"
+  "CapacitorPushNotifications:Capacitor Cordova"
+  "PurchasesHybridCommon:RevenueCat"
+  "RevenuecatPurchasesCapacitor:Capacitor Cordova RevenueCat PurchasesHybridCommon"
+)
+for _entry in "${_dep_entries[@]}"; do
+  _target="${_entry%%:*}"
+  _deps="${_entry#*:}"
+  _dir="${CAP_DEPS_DIR}/${_target}"
+  mkdir -p "${_dir}"
+  for _dep in ${_deps}; do
+    ln -sfn "${_UNINSTALLED}/${_dep}.framework" "${_dir}/${_dep}.framework"
+  done
+  echo "✅ CapDepsFwks/${_target}/ ← {${_deps// /, }}.framework"
+done
 
 # ── 4. Inject -F flags into pod xcconfigs (target-class-aware) ───────────────
 #
@@ -771,11 +796,13 @@ echo "✅ CapDepsFwks/ → ${_UNINSTALLED}/{Capacitor,Cordova}.framework"
 #
 # Idempotency: each xcconfig gets a `__CAPDEPSFWKS_F_INJECTED__` marker line.
 # Re-running on an already-patched file is a no-op.
-echo "🔧 Patching pod xcconfigs to -F into Pods/CapDepsFwks (target-class-aware)…"
-# Plugins / Capacitor look in $(PODS_ROOT)/CapDepsFwks which contains symlinks
-# to ONLY Capacitor.framework + Cordova.framework. No plugin self-frameworks
-# in that directory ⇒ no self-referential module loop.
-_deps_F='-F$(PODS_ROOT)/CapDepsFwks'
+echo "🔧 Patching pod xcconfigs to -F into per-target CapDepsFwks/$(TARGET_NAME)/…"
+# Each pod target gets a -F path to its OWN dedicated dep dir (per-target
+# subdir built in section 3.5). $(TARGET_NAME) is expanded by xcodebuild
+# at build time to the pod target's name. Each subdir contains symlinks to
+# ONLY that target's direct dependencies — never the target's own framework
+# — so self-referential module resolution loops are architecturally impossible.
+_deps_F='-F$(PODS_ROOT)/CapDepsFwks/$(TARGET_NAME)'
 _marker='__CAPDEPSFWKS_F_INJECTED__'
 
 # Helper: append " -F<path>" to the existing OTHER_LDFLAGS line of an xcconfig.
@@ -793,12 +820,13 @@ _append_compile_flags() {
   local _file="$1"
   cat >> "$_file" <<'XCCONFIG'
 
-// Build 753 fix: resolve Capacitor.framework via Pods/CapDepsFwks (symlinks
-// to ONLY the deps we need, not every framework in OBJROOT/UninstalledProducts).
-// -D COCOAPODS re-emitted because xcconfig last-definition-wins replaces the
-// prior OTHER_SWIFT_FLAGS line.
-OTHER_SWIFT_FLAGS = $(inherited) -D COCOAPODS -F$(PODS_ROOT)/CapDepsFwks -Xcc -F$(PODS_ROOT)/CapDepsFwks
-OTHER_CFLAGS = $(inherited) -F$(PODS_ROOT)/CapDepsFwks
+// Build 753+754 fix: resolve cross-target framework deps via
+// Pods/CapDepsFwks/$(TARGET_NAME)/ which contains symlinks to ONLY this
+// target's direct dependencies. Self-frameworks are never present there,
+// so no self-referential module loops. -D COCOAPODS re-emitted because
+// xcconfig last-definition-wins replaces the prior OTHER_SWIFT_FLAGS line.
+OTHER_SWIFT_FLAGS = $(inherited) -D COCOAPODS -F$(PODS_ROOT)/CapDepsFwks/$(TARGET_NAME) -Xcc -F$(PODS_ROOT)/CapDepsFwks/$(TARGET_NAME)
+OTHER_CFLAGS = $(inherited) -F$(PODS_ROOT)/CapDepsFwks/$(TARGET_NAME)
 XCCONFIG
 }
 
@@ -807,7 +835,6 @@ _stamp_marker() {
   echo "// __CAPDEPSFWKS_F_INJECTED__" >> "$1"
 }
 
-_patched_link_only=0
 _patched_full=0
 _skipped=0
 
@@ -821,34 +848,35 @@ while IFS= read -r -d '' _xcc; do
   fi
 
   case "$_name" in
-    # Class B: CapacitorCordova itself — the leaf framework. Skip.
-    CapacitorCordova.release.xcconfig | CapacitorCordova.debug.xcconfig)
+    # Leaf targets (build their framework from sources alone, no deps to find).
+    CapacitorCordova.release.xcconfig | CapacitorCordova.debug.xcconfig | \
+    RevenueCat.release.xcconfig       | RevenueCat.debug.xcconfig)
       _skipped=$((_skipped + 1))
       continue
       ;;
-    # Class A: Capacitor itself — patch ONLY the linker.
-    Capacitor.release.xcconfig | Capacitor.debug.xcconfig)
-      _append_ldflag_path "$_xcc"
-      _stamp_marker "$_xcc"
-      _patched_link_only=$((_patched_link_only + 1))
-      echo "✅ Patched LDFLAGS only for ${_name}"
-      ;;
-    # Class C: plugin or Revenuecat — patch linker AND compile flags.
+    # Targets that need to find dependency frameworks at compile + link time.
+    # Per-target subdir means -F never exposes self-framework, so FULL patch
+    # (LDFLAGS + SWIFT_FLAGS + CFLAGS) is safe for every entry.
+    Capacitor.release.xcconfig | Capacitor.debug.xcconfig | \
     Capacitor*.release.xcconfig | Capacitor*.debug.xcconfig | \
-    RevenuecatPurchasesCapacitor.release.xcconfig | RevenuecatPurchasesCapacitor.debug.xcconfig)
+    RevenuecatPurchasesCapacitor.release.xcconfig | RevenuecatPurchasesCapacitor.debug.xcconfig | \
+    PurchasesHybridCommon.release.xcconfig         | PurchasesHybridCommon.debug.xcconfig)
       _append_ldflag_path "$_xcc"
       _append_compile_flags "$_xcc"
       _stamp_marker "$_xcc"
       _patched_full=$((_patched_full + 1))
-      echo "✅ Patched LDFLAGS + SWIFT_FLAGS + CFLAGS for ${_name}"
+      echo "✅ Patched ${_name} → CapDepsFwks/\$(TARGET_NAME)/"
       ;;
     *)
       ;;
   esac
 done < <(find "${PODS_DIR}/Target Support Files" \
-  \( -name "Capacitor*.xcconfig" -o -name "RevenuecatPurchasesCapacitor*.xcconfig" \) \
+  \( -name "Capacitor*.xcconfig" \
+     -o -name "RevenuecatPurchasesCapacitor*.xcconfig" \
+     -o -name "PurchasesHybridCommon*.xcconfig" \
+     -o -name "RevenueCat*.xcconfig" \) \
   -print0 2>/dev/null)
 
-echo "✅ xcconfig patches summary: ${_patched_link_only} link-only, ${_patched_full} full, ${_skipped} skipped"
+echo "✅ xcconfig patches summary: ${_patched_full} patched, ${_skipped} skipped (leaf)"
 
 echo "✅ pre-xcodebuild setup complete"

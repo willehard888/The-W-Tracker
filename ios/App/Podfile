@@ -101,8 +101,13 @@ post_install do |installer|
         config.build_settings['SWIFT_VERSION'] = '5.0'
         config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
         config.build_settings['SWIFT_COMPILATION_MODE'] = 'singlefile'
-        extra = '-disable-availability-checking'
-        unless config.build_settings['OTHER_SWIFT_FLAGS'].to_s.include?(extra)
+        # Bare `-disable-availability-checking` is a swift-frontend flag, not
+        # a swift-driver flag. Passing it directly produces:
+        #   Save unknown driver flag -disable-availability-checking as additional swift-frontend flag
+        # which Xcode 26 escalates into [Swift Compiler Error] in xcresult.
+        # Wrap in `-Xfrontend` so the driver forwards it correctly.
+        extra = '-Xfrontend -disable-availability-checking'
+        unless config.build_settings['OTHER_SWIFT_FLAGS'].to_s.include?('-disable-availability-checking')
           config.build_settings['OTHER_SWIFT_FLAGS'] = "#{config.build_settings['OTHER_SWIFT_FLAGS']} #{extra}"
         end
       end

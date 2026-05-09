@@ -879,6 +879,104 @@ done < <(find "${PODS_DIR}/Target Support Files" \
 
 echo "✅ xcconfig patches summary: ${_patched_full} patched, ${_skipped} skipped (leaf)"
 
+# ── 4b. Wrap `-disable-availability-checking` in `-Xfrontend` (warning fix) ──
+# Bare `-disable-availability-checking` is a swift-frontend flag, not a
+# swift-driver flag. Passing it directly emits:
+#   Save unknown driver flag -disable-availability-checking as additional swift-frontend flag
+# which Xcode 26's xcresult escalates to a [Swift Compiler Error] (cosmetic
+# but ugly). Wrap in `-Xfrontend` so the driver forwards it correctly.
+# Podfile is already updated for future pod-installs; this sed-edit covers
+# any pbxproj already on disk from a previous pod install. Idempotent.
+echo "🔧 Wrapping bare -disable-availability-checking in -Xfrontend in Pods.xcodeproj…"
+PODS_PBXPROJ="${PODS_DIR}/Pods.xcodeproj/project.pbxproj"
+if [[ -f "${PODS_PBXPROJ}" ]]; then
+  # Replace ` -disable-availability-checking` only if not already preceded by -Xfrontend
+  /usr/bin/python3 - <<PY
+import re, sys
+p = "${PODS_PBXPROJ}"
+with open(p) as f:
+    s = f.read()
+# Match a bare " -disable-availability-checking" not preceded by "-Xfrontend ".
+new_s = re.sub(
+    r"(?<!-Xfrontend) -disable-availability-checking",
+    " -Xfrontend -disable-availability-checking",
+    s,
+)
+if new_s != s:
+    with open(p, "w") as f:
+        f.write(new_s)
+    print("✅ Patched bare -disable-availability-checking → -Xfrontend …")
+else:
+    print("ℹ️  Already wrapped (or absent) — no change")
+PY
+else
+  echo "⚠️  Pods.xcodeproj/project.pbxproj not found at ${PODS_PBXPROJ}"
+fi
+
+# ── 4c. Filter bogus Metal.xctoolchain absolute paths from LIBRARY_SEARCH_PATHS
+# Warning seen in builds:
+#   ld: warning: search path '/Users/local/Library/Developer/DVTDownloads/
+#     MetalToolchain/mounts/<UUID>/Metal.xctoolchain/usr/lib/swift/iphoneos' not found
+# The Metal toolchain mount uses a per-machine UUID that doesn't exist on the
+# Xcode Cloud worker by the time it runs the linker. Strip any absolute
+# Metal.xctoolchain path from LIBRARY_SEARCH_PATHS in Pods xcconfigs.
+echo "🔧 Filtering bogus Metal.xctoolchain paths from Pods xcconfigs…"
+_metal_filtered=0
+while IFS= read -r -d '' _xcc; do
+  if grep -q "Metal.xctoolchain" "$_xcc" 2>/dev/null; then
+    /usr/bin/sed -i.bak -E \
+      -e 's|"[^"]*Metal\.xctoolchain[^"]*"||g' \
+      -e 's|/[^[:space:]"]*Metal\.xctoolchain[^[:space:]"]*||g' \
+      "$_xcc"
+    rm -f "${_xcc}.bak"
+    _metal_filtered=$((_metal_filtered + 1))
+  fi
+done < <(find "${PODS_DIR}/Target Support Files" -name "*.xcconfig" -print0 2>/dev/null)
+echo "✅ Stripped Metal.xctoolchain refs from ${_metal_filtered} xcconfig(s)"
+
+# ── 4d. Mark [CP] Embed Pods Frameworks script phase as alwaysOutOfDate ──────
+# Warning:
+#   Run script build phase '[CP] Embed Pods Frameworks' will be run during
+#   every build because it does not specify any outputs.
+# The Podfile sets `:disable_input_output_paths => true`, so we explicitly
+# tell xcodebuild to always run this phase (silences the warning).
+# Edit App.xcodeproj/project.pbxproj — add `alwaysOutOfDate = 1;` to the
+# Embed Pods Frameworks PBXShellScriptBuildPhase section.
+echo "🔧 Setting alwaysOutOfDate on [CP] Embed Pods Frameworks script phase…"
+if [[ -f "${APP_PBXPROJ}" ]]; then
+  if grep -q '\[CP\] Embed Pods Frameworks' "${APP_PBXPROJ}" && \
+     ! grep -q 'alwaysOutOfDate.*\[CP\] Embed Pods Frameworks' "${APP_PBXPROJ}" 2>/dev/null; then
+    /usr/bin/python3 - <<PY
+import re
+p = "${APP_PBXPROJ}"
+with open(p) as f:
+    s = f.read()
+# Find the Embed Pods Frameworks PBXShellScriptBuildPhase block and add
+# alwaysOutOfDate = 1; right after the opening brace if not already present.
+def patch_block(m):
+    block = m.group(0)
+    if 'alwaysOutOfDate' in block:
+        return block
+    # Insert after the "isa = PBXShellScriptBuildPhase;" line
+    return re.sub(
+        r"(isa = PBXShellScriptBuildPhase;\n\t+)",
+        r"\1alwaysOutOfDate = 1;\n\t\t\t",
+        block, count=1)
+new_s = re.sub(
+    r"\{[^{}]*\[CP\] Embed Pods Frameworks[^{}]*\}",
+    patch_block, s, flags=re.DOTALL)
+if new_s != s:
+    with open(p, "w") as f:
+        f.write(new_s)
+    print("✅ Added alwaysOutOfDate = 1 to [CP] Embed Pods Frameworks phase")
+else:
+    print("ℹ️  Embed Pods Frameworks already has alwaysOutOfDate (or pattern not matched)")
+PY
+  else
+    echo "ℹ️  alwaysOutOfDate already set or [CP] Embed Pods Frameworks phase absent"
+  fi
+fi
+
 # ── 5. Disable user-script sandboxing for the App target ─────────────────────
 # Build 755 actual error (the dependency-scan messages were warnings; the real
 # failure was hidden in a sandbox-exec invocation):

@@ -942,6 +942,7 @@ echo "✅ Stripped Metal.xctoolchain refs from ${_metal_filtered} xcconfig(s)"
 # tell xcodebuild to always run this phase (silences the warning).
 # Edit App.xcodeproj/project.pbxproj — add `alwaysOutOfDate = 1;` to the
 # Embed Pods Frameworks PBXShellScriptBuildPhase section.
+APP_PBXPROJ="${IOS_APP_DIR}/App.xcodeproj/project.pbxproj"
 echo "🔧 Setting alwaysOutOfDate on [CP] Embed Pods Frameworks script phase…"
 if [[ -f "${APP_PBXPROJ}" ]]; then
   if grep -q '\[CP\] Embed Pods Frameworks' "${APP_PBXPROJ}" && \
@@ -996,7 +997,7 @@ fi
 # .pbxproj (per-configuration), so xcconfig overrides won't reach it —
 # we sed-edit project.pbxproj directly. Idempotent: if already NO, no-op.
 echo "🔧 Disabling ENABLE_USER_SCRIPT_SANDBOXING in App.xcodeproj…"
-APP_PBXPROJ="${IOS_APP_DIR}/App.xcodeproj/project.pbxproj"
+# APP_PBXPROJ already defined in section 4d.
 if [[ -f "${APP_PBXPROJ}" ]]; then
   if grep -q "ENABLE_USER_SCRIPT_SANDBOXING = YES;" "${APP_PBXPROJ}"; then
     /usr/bin/sed -i.bak \

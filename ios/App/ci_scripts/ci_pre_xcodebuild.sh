@@ -879,4 +879,38 @@ done < <(find "${PODS_DIR}/Target Support Files" \
 
 echo "✅ xcconfig patches summary: ${_patched_full} patched, ${_skipped} skipped (leaf)"
 
+# ── 5. Disable user-script sandboxing for the App target ─────────────────────
+# Build 755 actual error (the dependency-scan messages were warnings; the real
+# failure was hidden in a sandbox-exec invocation):
+#   /bin/sh: /Volumes/.../Pods-App-frameworks.sh: Operation not permitted
+#   Command PhaseScriptExecution failed with a nonzero exit code
+#
+# Xcode 26 enforces ENABLE_USER_SCRIPT_SANDBOXING by default; the resulting
+# sandbox profile only whitelists specific input/output files. CocoaPods'
+# `[CP] Embed Pods Frameworks` script phase runs Pods-App-frameworks.sh which
+# accesses paths NOT in the sandbox profile (the Podfile sets
+# `:disable_input_output_paths => true`, so the script's I/O is unconstrained
+# from CocoaPods' side but the sandbox doesn't know that). Result: the
+# sandbox refuses to execute the script.
+#
+# Standard Capacitor / CocoaPods workaround: turn off user-script sandboxing
+# for the App target. The setting is hard-coded as `YES` in the App's
+# .pbxproj (per-configuration), so xcconfig overrides won't reach it —
+# we sed-edit project.pbxproj directly. Idempotent: if already NO, no-op.
+echo "🔧 Disabling ENABLE_USER_SCRIPT_SANDBOXING in App.xcodeproj…"
+APP_PBXPROJ="${IOS_APP_DIR}/App.xcodeproj/project.pbxproj"
+if [[ -f "${APP_PBXPROJ}" ]]; then
+  if grep -q "ENABLE_USER_SCRIPT_SANDBOXING = YES;" "${APP_PBXPROJ}"; then
+    /usr/bin/sed -i.bak \
+      -e 's/ENABLE_USER_SCRIPT_SANDBOXING = YES;/ENABLE_USER_SCRIPT_SANDBOXING = NO;/g' \
+      "${APP_PBXPROJ}"
+    rm -f "${APP_PBXPROJ}.bak"
+    echo "✅ Flipped ENABLE_USER_SCRIPT_SANDBOXING from YES → NO"
+  else
+    echo "ℹ️  ENABLE_USER_SCRIPT_SANDBOXING already NO (or absent) — no change"
+  fi
+else
+  echo "⚠️  App.xcodeproj/project.pbxproj not found at ${APP_PBXPROJ}"
+fi
+
 echo "✅ pre-xcodebuild setup complete"

@@ -699,41 +699,58 @@ fi
 
 # ── 4. Inject -F flags via xcconfig file appends (no ruby/gems required) ─────
 # Build 750 ci_pre_xcodebuild.log: the Ruby xcodeproj approach failed because
-# Xcode Cloud's /usr/bin/ruby (system 2.6) doesn't have the xcodeproj gem:
-#   require: cannot load such file -- xcodeproj (LoadError)
-#
-# Plain xcconfig file appends DO work — that's how section 2a already injects
-# OTHER_SWIFT_FLAGS successfully. xcconfig last-definition-wins, and xcconfig
-# OTHER_LDFLAGS demonstrably reaches ld (it's how `-framework Cordova` got
-# there in the first place).
+# Xcode Cloud's /usr/bin/ruby (system 2.6) doesn't have the xcodeproj gem.
+# Plain xcconfig file edits work — that's how section 2a already injects
+# OTHER_SWIFT_FLAGS successfully.
 #
 # Build 748 linker log proved Cordova.framework is built at
-#   \$(OBJROOT)/UninstalledProducts/\$(PLATFORM_NAME)/Cordova.framework
-# during archive — NOT in \$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova/.
-# So we append both candidate -F paths and let ld pick the one that exists.
-# We also re-emit the original -framework "Cordova" -framework "WebKit"
-# entries because the new line REPLACES the original OTHER_LDFLAGS.
-echo "🔧 Appending OTHER_LDFLAGS -F paths into Capacitor xcconfigs…"
-for _xcc in \
-  "${PODS_DIR}/Target Support Files/Capacitor/Capacitor.release.xcconfig" \
-  "${PODS_DIR}/Target Support Files/Capacitor/Capacitor.debug.xcconfig"; do
-  if [[ -f "$_xcc" ]]; then
-    if grep -q "UninstalledProducts" "$_xcc" 2>/dev/null; then
-      echo "ℹ️  $(basename "$_xcc") already has UninstalledProducts -F — skipping"
-    else
-      cat >> "$_xcc" <<'XCCONFIG'
-
-// Build 748+750 fix: ld can't find Cordova.framework because xcconfig
-// FRAMEWORK_SEARCH_PATHS points at $(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova
-// while archive builds actually place it at $(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME).
-// Last-definition-wins: re-include -framework Cordova/WebKit then add explicit -F paths.
-OTHER_LDFLAGS = $(inherited) -framework "Cordova" -framework "WebKit" -F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME) -F$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova
-XCCONFIG
-      echo "✅ Appended -F UninstalledProducts to $(basename "$_xcc")"
-    fi
-  else
-    echo "⚠️  xcconfig not found: $_xcc"
+#   $(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/Cordova.framework
+# during archive — NOT in $(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova/.
+# Same applies for Capacitor.framework (and every other pod with SKIP_INSTALL=YES).
+#
+# Build 751 confirmed: fixing only the Capacitor xcconfig made the Capacitor
+# target build cleanly, but plugin targets (CapacitorAppLauncher etc.) then
+# failed with `no such module 'Capacitor'` because THEIR xcconfigs have the
+# same wrong path assumption when looking up Capacitor.framework.
+#
+# Strategy applied to ALL Capacitor* and RevenuecatPurchasesCapacitor xcconfigs:
+#  - sed-in-place: append " -F$(OBJROOT)/..." to the existing OTHER_LDFLAGS line
+#    (preserves the target-specific `-framework <X>` directives)
+#  - append a new OTHER_SWIFT_FLAGS line so swift-frontend's main -F finds
+#    Capacitor.framework / Cordova.framework, plus -Xcc -F for embedded Clang
+#  - append a new OTHER_CFLAGS line for CompileC tasks (.m / .mm files)
+#
+# Idempotency: a marker comment `__OBJROOT_F_INJECTED__` is added at the end;
+# if it's already there, the file is skipped.
+echo "🔧 Appending OBJROOT/UninstalledProducts -F to ALL Capacitor + Revenuecat xcconfigs…"
+_obj_F='-F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)'
+_marker='__OBJROOT_F_INJECTED__'
+_patched_count=0
+while IFS= read -r -d '' _xcc; do
+  if grep -q "${_marker}" "$_xcc" 2>/dev/null; then
+    continue
   fi
-done
+  # 1) Append " -F<path>" to the existing OTHER_LDFLAGS line.
+  /usr/bin/sed -i.bak -E \
+    "s|^(OTHER_LDFLAGS = .*)$|\\1 ${_obj_F}|" \
+    "$_xcc"
+  rm -f "${_xcc}.bak"
+  # 2) Append new OTHER_SWIFT_FLAGS / OTHER_CFLAGS overrides + marker.
+  #    Last-definition-wins; we re-include -D COCOAPODS so it isn't lost.
+  cat >> "$_xcc" <<'XCCONFIG'
+
+// Build 751 fix: provide -F path to where Capacitor/Cordova frameworks
+// actually land during archive ($(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)).
+// Without this, plugin targets get "no such module 'Capacitor'" at compile time.
+OTHER_SWIFT_FLAGS = $(inherited) -D COCOAPODS -F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME) -Xcc -F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)
+OTHER_CFLAGS = $(inherited) -F$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)
+// __OBJROOT_F_INJECTED__
+XCCONFIG
+  _patched_count=$((_patched_count + 1))
+  echo "✅ Patched $(basename "$_xcc")"
+done < <(find "${PODS_DIR}/Target Support Files" \
+  \( -name "Capacitor*.xcconfig" -o -name "RevenuecatPurchasesCapacitor*.xcconfig" \) \
+  -print0 2>/dev/null)
+echo "✅ OBJROOT/UninstalledProducts -F appended to ${_patched_count} xcconfig(s)"
 
 echo "✅ pre-xcodebuild setup complete"

@@ -1,23 +1,36 @@
 /**
  * Device performance class — single source of truth for FX gating.
  *
- *  - "low":  reduced-motion preference, low-core CPUs, low-RAM devices, or tiny
- *            screens.   Decorative FX should be skipped entirely.
- *  - "mid":  default mainstream phones / tablets.   Element counts halved.
- *  - "high": desktops or high-end tablets (8+ cores, DPR>=2, 6+ GB RAM).
- *            Full inferno.
+ *  - "low":  reduced-motion preference, ANY touch device (mobile/tablet),
+ *            low-core CPUs, low-RAM devices, or tiny screens. Decorative
+ *            FX should be skipped entirely.
+ *  - "mid":  desktop/laptop with average specs.
+ *  - "high": desktops with 8+ cores AND DPR >= 2 AND 6+ GB RAM. Full inferno.
  *
- * Detected once per page load and cached, so calling it from many components
- * does not re-run navigator queries.
+ * IMPORTANT — touch device = low.
  *
- * Mirrors the legacy `detectPerfClass` from StylizedStreakFlame.tsx so both
- * use exactly the same heuristic.
+ * iPhones (and most Android phones) report 6+ `hardwareConcurrency` but their
+ * GPUs throttle aggressively under battery, their browsers (mobile Safari
+ * especially) have a fraction of desktop Chrome's compositor budget, and
+ * users notice scroll-jank way more than they notice missing decorative
+ * sparks. Treating any `(pointer: coarse)` device as "low" by default makes
+ * the gating actually kick in for the people who feel the lag.
+ *
+ * Cached after first call so calling from many components is free.
  */
 export type PerfClass = "low" | "mid" | "high";
 
 const detect = (): PerfClass => {
   if (typeof window === "undefined") return "mid";
+  // Hard signals: user-requested reduced motion → low.
   if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return "low";
+  // Touch device → low. Catches every phone and most tablets, regardless of
+  // what `hardwareConcurrency` claims. iOS doesn't expose `deviceMemory`, so
+  // the old core/RAM heuristic was useless on iPhones — they classified as
+  // "mid" and got the full FX layer despite users complaining about lag.
+  if (window.matchMedia?.("(pointer: coarse)").matches) return "low";
+  if (window.innerWidth < 768) return "low";
+  // Desktop heuristic from here down.
   const cores = navigator.hardwareConcurrency ?? 4;
   const dpr = window.devicePixelRatio ?? 1;
   const mem = (navigator as { deviceMemory?: number }).deviceMemory ?? 4;

@@ -4635,3 +4635,37 @@ p, span.selectable, input, textarea, [contenteditable] {
 .streak-panel-root[data-fx-paused="true"] * {
   animation-play-state: paused !important;
 }
+
+/* ── GLOBAL LOW-PERF KILL-SWITCH.
+      `body[data-perf="low"]` is set once at startup by main.tsx based on
+      getPerfClass(). When set, every decorative-only animation utility
+      class is short-circuited — keyframes still exist in the stylesheet
+      (zero parse penalty for high-perf devices) but the browser allocates
+      ZERO compositor work for them. Single rule, app-wide effect.
+
+      This deliberately does NOT touch loaders/skeletons/spinners — those
+      are functional UI feedback, not decoration. */
+body[data-perf="low"] .animate-breathe-soft,
+body[data-perf="low"] .animate-scale-pulse,
+body[data-perf="low"] .status-amber-ring-breathe,
+body[data-perf="low"] .status-flame-flicker,
+body[data-perf="low"] .status-legend-conic-spin,
+body[data-perf="low"] .apex-aura-large,
+body[data-perf="low"] .breathing-glow,
+body[data-perf="low"] .reveal-on-scroll,
+body[data-perf="low"] .streak-fx-aurora,
+body[data-perf="low"] .flame-ground-cast,
+body[data-perf="low"] .flame-ember,
+body[data-perf="low"] .streak-fx-ember,
+body[data-perf="low"] .streak-fx-pulse-ring,
+body[data-perf="low"] .streak-fx-twinkle {
+  animation: none !important;
+}
+/* Reveal-on-scroll children should be visible immediately on low perf —
+   they normally start with opacity:0 / translate-y waiting for the
+   intersection observer. Force the visible state. */
+body[data-perf="low"] .reveal-on-scroll {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}

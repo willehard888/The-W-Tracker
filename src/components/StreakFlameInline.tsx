@@ -1,5 +1,9 @@
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { getPerfClass } from "@/lib/perf-class";
+
+// Detected once at module load — perf class is stable per session.
+const IS_LOW_PERF = typeof window !== "undefined" && getPerfClass() === "low";
 
 interface StreakFlameInlineProps {
   /** Streak in days — drives both size and visual intensity */
@@ -167,6 +171,52 @@ const StreakFlameInline = ({
   const breathAnim = isDiamond
     ? `, flame-breathe ${(speed * 5).toFixed(2)}s ease-in-out infinite`
     : "";
+
+  // ── LOW-PERF FAST PATH ────────────────────────────────────────────────
+  // On phones / reduced-motion users, skip all 10+ decorative animated
+  // spans (halo bloom, chiaroscuro, ground cast, ember rise, white core,
+  // inner fork, heart bloom, spark dot, second ember, hue cycle…) and
+  // render just the essentials: a static teardrop body + the count text.
+  // This component is mounted in StatusHeader (every page) and per-row in
+  // Leaderboard/EliteFeed/TribePostCard, so a 50-row list goes from
+  // ~250 always-running CSS animations down to zero.
+  if (IS_LOW_PERF) {
+    return (
+      <span
+        className={cn("inline-flex items-center gap-0.5 leading-none align-middle", className)}
+      >
+        <span
+          className="relative inline-block shrink-0"
+          style={{ width: flameSize, height: flameSize * 1.15 }}
+          aria-hidden
+        >
+          <span
+            className="absolute left-1/2 bottom-0"
+            style={{
+              width: flameSize,
+              height: flameSize * 1.1,
+              transform: "translateX(-50%)",
+              transformOrigin: "center bottom",
+              background: isHot
+                ? `radial-gradient(ellipse at 50% 80%, ${palette.core} 0%, ${palette.mid} 32%, ${palette.outer} 68%, transparent 95%)`
+                : "transparent",
+              border: isHot ? "none" : `1.5px solid ${palette.outer}`,
+              borderRadius: "50% 50% 50% 50% / 65% 65% 35% 35%",
+              clipPath: "polygon(50% 0%, 95% 35%, 100% 70%, 80% 100%, 20% 100%, 0% 70%, 5% 35%)",
+            }}
+          />
+        </span>
+        {showCount && (
+          <span
+            className={cn("font-black tabular-nums", countClassName)}
+            style={{ color: countClassName ? undefined : palette.text }}
+          >
+            {streak}{suffix}
+          </span>
+        )}
+      </span>
+    );
+  }
 
   return (
     <span

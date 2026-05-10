@@ -74,6 +74,7 @@ export const useAthleteProfile = () => {
   return {
     profile: query.data ?? null,
     isLoading: query.isLoading,
+    error: query.error as Error | null,
     refetch: query.refetch,
     upsert: upsert.mutateAsync,
     isSaving: upsert.isPending,

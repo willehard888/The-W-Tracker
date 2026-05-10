@@ -35,12 +35,40 @@ const STORAGE_KEY = "w_coach_messages_v1";
 const Coach = () => {
   const { session, isPremium, subscriptionLoading } = useAuth();
   const navigate = useNavigate();
-  const { isLoading, program, logs, currentWeek, todayDayIndex, refetch } = useCoachProgram();
-  const { profile: athlete, isLoading: athleteLoading, refetch: refetchAthlete } = useAthleteProfile();
+  const { isLoading, error: programError, program, logs, currentWeek, todayDayIndex, refetch } = useCoachProgram();
+  const { profile: athlete, isLoading: athleteLoading, error: athleteError, refetch: refetchAthlete } = useAthleteProfile();
 
   if (subscriptionLoading) return <PageSkeleton />;
   if (!isPremium) return <PremiumCoachUpsell />;
   if (isLoading || athleteLoading) return <PageSkeleton />;
+
+  // Surface real errors instead of looping skeletons. Most common cause:
+  // pending Supabase migration (e.g. coach_athlete_profile / coach_programs
+  // tables not yet created on the user's project). Show the actual message
+  // so the dev can diagnose, plus a retry that re-runs both queries.
+  if (athleteError || programError) {
+    const err = (athleteError ?? programError)!;
+    return (
+      <div className="flex flex-col h-full">
+        <MinimalTopBar onBack={() => navigate(-1)} navigate={navigate} />
+        <div className="flex-1 flex items-center justify-center px-6 text-center">
+          <div className="max-w-sm space-y-4">
+            <div className="text-3xl">⚠️</div>
+            <h2 className="text-lg font-display font-bold">W Coach failed to load</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed break-words">
+              {err.message || "Unknown error"}
+            </p>
+            <Button
+              onClick={() => { refetch(); refetchAthlete(); }}
+              className="w-full"
+            >
+              <RotateCw size={14} className="mr-2" /> Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!athlete?.onboarded) {
     return (

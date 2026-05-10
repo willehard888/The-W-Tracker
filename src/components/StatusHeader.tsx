@@ -9,6 +9,10 @@ import { cn } from "@/lib/utils";
 import { Crown, Clock, ChevronRight, Flame, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import BrandLogo from "@/components/BrandLogo";
+import { getPerfClass } from "@/lib/perf-class";
+
+const PERF_CLASS_AT_LOAD = typeof window !== "undefined" ? getPerfClass() : "mid";
+const IS_LOW_PERF = PERF_CLASS_AT_LOAD === "low";
 
 const PRESSURE_QUOTES = [
   "Grind never stops 🔥",
@@ -131,7 +135,10 @@ const StatusHeader = () => {
           isApex ? "via-[hsl(18_95%_58%)]/70" : "via-gold/55",
         )} />
 
-        {/* Bottom rim — only when user is hot (streak ≥ 7). Pulses with tier accent. */}
+        {/* Bottom rim — only when user is hot (streak ≥ 7). Pulses with tier accent.
+            On low-perf devices we keep the static line but skip the infinite
+            keyframe — the header is rendered on EVERY page so this saves
+            ~one always-running CSS animation across the whole app. */}
         {streak >= 7 && (
           <div
             aria-hidden
@@ -146,13 +153,14 @@ const StatusHeader = () => {
                   ? "hsl(42 78% 54% / 0.8)"
                   : "hsl(18 92% 56% / 0.7)"
               } 50%, transparent 100%)`,
-              animation: "flame-rim-pulse 4.5s ease-in-out infinite",
+              animation: IS_LOW_PERF ? undefined : "flame-rim-pulse 4.5s ease-in-out infinite",
             }}
           />
         )}
 
-        {/* Apex / Elite header — 2 rising amber embers along the bottom edge */}
-        {(isApex || tier === "elite") && (
+        {/* Apex / Elite header — 2 rising amber embers along the bottom edge.
+            Skipped entirely on low-perf — these are decorative-only. */}
+        {!IS_LOW_PERF && (isApex || tier === "elite") && (
           <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-8 overflow-hidden">
             {[
               { left: "30%", delay: "0s",   color: isApex ? "hsl(18 95% 58%)" : "hsl(var(--gold-light))" },

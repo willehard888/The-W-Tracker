@@ -2,6 +2,7 @@ import { Zap, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getEffectiveStreak, getStreakDeadlineState } from "@/lib/streak";
+import { getPerfClass } from "@/lib/perf-class";
 import StylizedStreakFlame from "./StylizedStreakFlame";
 
 interface CompactStreakPanelProps {
@@ -130,6 +131,32 @@ const CompactStreakPanel = ({
     : 100;
   const closeToMilestone = nextMilestone && segmentProgress >= 75;
 
+  /* ── Perf class — gates the cost of decorative FX ──────────────────── */
+  // LOW devices skip the expensive decorative layer entirely (sparks, falling
+  // embers, smoke, twinkles, aurora, conic ring). The hero flame still
+  // renders — it's the focal point — and it self-throttles when offscreen.
+  // MID devices get half-density. HIGH gets the full inferno.
+  const perf = useMemo(() => getPerfClass(), []);
+  const isLowPerf = perf === "low";
+  const fxScale = perf === "high" ? 1 : perf === "mid" ? 0.5 : 0;
+
+  /* ── Pause heavy CSS animations when the panel scrolls offscreen ───── */
+  // We don't unmount — that would re-trigger entrance animations and re-paint.
+  // Instead we toggle a data attribute, and a CSS rule (added below) sets
+  // animation-play-state: paused on every animated descendant.
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const [isVisible, setIsVisible] = useState(true);
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (entries) => setIsVisible(entries[0]?.isIntersecting ?? true),
+      { threshold: 0.05 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   /* ── Animated count-up + milestone shockwave detection ─────────────── */
   const [countDisplay, setCountDisplay] = useState(displayStreak);
   const [shockwave, setShockwave] = useState(false);
@@ -223,8 +250,11 @@ const CompactStreakPanel = ({
     ? `${accent.replace(")", " / 0.2)")}`
     : "hsl(var(--secondary))";
 
-  const emberCount = isLegendary ? 14 : isDiamond ? 11 : isBlazing ? 8 : isOnFire ? 6 : isWarm ? 4 : isHot ? 3 : 0;
-  const ringCount = isLegendary ? 3 : isDiamond ? 2 : isBlazing ? 2 : isHot ? 1 : 0;
+  // Element counts gated by perf class. fxScale = 0 → low (skipped), 0.5 → mid, 1 → high.
+  const _emberBase = isLegendary ? 14 : isDiamond ? 11 : isBlazing ? 8 : isOnFire ? 6 : isWarm ? 4 : isHot ? 3 : 0;
+  const _ringBase = isLegendary ? 3 : isDiamond ? 2 : isBlazing ? 2 : isHot ? 1 : 0;
+  const emberCount = Math.round(_emberBase * fxScale);
+  const ringCount = Math.round(_ringBase * fxScale);
   const emberColor = isLegendary
     ? "hsl(280 90% 75%)"
     : isDiamond
@@ -248,8 +278,10 @@ const CompactStreakPanel = ({
 
   return (
     <div
+      ref={panelRef}
+      data-fx-paused={!isVisible || undefined}
       className={cn(
-        "relative rounded-2xl p-4 pt-6 border flex flex-col justify-between gap-3 isolate",
+        "relative rounded-2xl p-4 pt-6 border flex flex-col justify-between gap-3 isolate streak-panel-root",
         isHot && "depth-realistic-warm",
         !isHot && "depth-realistic",
         className,
@@ -262,13 +294,17 @@ const CompactStreakPanel = ({
         boxShadow: isHot
           ? `inset 0 0 80px hsl(0 0% 0% / 0.85), 0 0 32px hsl(22 98% 55% / 0.35), 0 0 70px hsl(18 95% 50% / 0.18)`
           : "inset 0 0 40px hsl(0 0% 0% / 0.6)",
-        animation: isHot ? "burn-border-ignite 3s ease-in-out infinite" : undefined,
+        animation: isHot && !isLowPerf ? "burn-border-ignite 3s ease-in-out infinite" : undefined,
+        // Tells the browser it can skip layout/paint when offscreen — huge perf win.
+        contentVisibility: "auto",
+        containIntrinsicSize: `${panelMinH}px`,
       }}
     >
       {/* Floor warm glow removed for crisp look */}
 
       {/* ═══ THE SCREEN IS BURNING — cinematic fire FX layer ═══ */}
-      {isHot && (
+      {/* Skipped entirely on low-perf devices (reduced motion, low-RAM, low-core). */}
+      {isHot && !isLowPerf && (
         <>
           {/* Top burning edge — looks like the panel rim is on fire */}
           <span
@@ -307,7 +343,7 @@ const CompactStreakPanel = ({
             }}
           />
           {/* Sparks shooting up from the chamber and out into the panel */}
-          {Array.from({ length: isBlazing ? 14 : 9 }).map((_, i) => {
+          {Array.from({ length: Math.max(1, Math.round((isBlazing ? 14 : 9) * fxScale)) }).map((_, i) => {
             const left = 22 + ((i * 23) % 56);
             const dur = 1.6 + (i % 5) * 0.35;
             const delay = (i * 0.27) % 3;
@@ -365,7 +401,7 @@ const CompactStreakPanel = ({
             }}
           />
           {/* Falling embers — outside the chamber, rain down past the right side */}
-          {isBlazing && Array.from({ length: 6 }).map((_, i) => {
+          {isBlazing && Array.from({ length: Math.round(6 * fxScale) }).map((_, i) => {
             const right = 6 + (i * 11) % 30;
             const top = 20 + (i * 17) % 40;
             const dur = 2.4 + (i % 3) * 0.6;
@@ -396,8 +432,8 @@ const CompactStreakPanel = ({
         </>
       )}
 
-      {/* Aurora sweep (Legendary only — premium tier flex) */}
-      {isLegendary && (
+      {/* Aurora sweep (Legendary only — premium tier flex). Skipped on low-perf. */}
+      {isLegendary && !isLowPerf && (
         <div
           className="streak-fx-aurora absolute inset-y-0 w-1/2 pointer-events-none opacity-50"
           style={{
@@ -508,15 +544,17 @@ const CompactStreakPanel = ({
             />
           )}
 
-          {/* Glowing coals — tiny bright pinpoints inside the ember bed */}
-          {isHot &&
+          {/* Glowing coals — tiny bright pinpoints inside the ember bed.
+              On low-perf we still want SOME life in the ember bed, so we
+              keep 2 coals on mid and 0 on low. */}
+          {isHot && !isLowPerf &&
             [
               { left: "30%", size: 2.5, delay: "0s" },
               { left: "46%", size: 3, delay: "0.6s" },
               { left: "60%", size: 2, delay: "1.2s" },
               { left: "38%", size: 2, delay: "1.8s" },
               { left: "54%", size: 2.5, delay: "0.3s" },
-            ].map((c, i) => (
+            ].slice(0, Math.max(2, Math.round(5 * fxScale))).map((c, i) => (
               <span
                 key={`coal-${i}`}
                 aria-hidden
@@ -603,8 +641,8 @@ const CompactStreakPanel = ({
           {/* Pulse rings (outside clip) */}
           {isHot && <PulseRings color={accent} intensity={ringCount} />}
 
-          {/* Conic ring (Diamond+) */}
-          {isDiamond && (
+          {/* Conic ring (Diamond+). Skipped on low-perf — animated conic is GPU-expensive. */}
+          {isDiamond && !isLowPerf && (
             <span
               aria-hidden
               className="absolute -inset-[3px] rounded-xl pointer-events-none"

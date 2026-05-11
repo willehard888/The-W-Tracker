@@ -4624,3 +4624,54 @@ p, span.selectable, input, textarea, [contenteditable] {
   animation: scale-pulse 2.2s ease-in-out infinite;
   will-change: transform;
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+   PURE-CSS LOW-PERF KILL-SWITCH
+   ─────────────────────────────────────────────────────────────────────
+
+   This block is intentionally pure CSS — no JavaScript involvement, no
+   detector that could throw, no component-level changes. It uses two
+   built-in browser media queries to disable decorative-only animations:
+
+     1. (pointer: coarse) — true on every iPhone, iPad, Android phone.
+        These are the devices where the lag is felt; their GPUs throttle
+        aggressively under battery and mobile Safari has a fraction of
+        desktop Chrome's compositor budget.
+
+     2. (prefers-reduced-motion: reduce) — user-level accessibility opt-in.
+
+   ~14 decorative animation utility classes are listed below. Their
+   `@keyframes` definitions stay in the stylesheet (zero parse penalty on
+   desktop), but the browser allocates ZERO compositor work for them on
+   any matching device.
+
+   Functional UI feedback (loaders, spinners, skeletons, toasts) is
+   deliberately NOT included — those animations are part of the UX, not
+   decoration. */
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .animate-breathe-soft,
+  .animate-scale-pulse,
+  .status-amber-ring-breathe,
+  .status-flame-flicker,
+  .status-legend-conic-spin,
+  .apex-aura-large,
+  .breathing-glow,
+  .streak-fx-aurora,
+  .flame-ground-cast,
+  .flame-ember,
+  .streak-fx-ember,
+  .streak-fx-pulse-ring,
+  .streak-fx-twinkle {
+    animation: none !important;
+  }
+  /* Make reveal-on-scroll children visible instantly — they normally
+     start with opacity:0/translateY waiting for the IntersectionObserver
+     to add `.is-visible`. With animations disabled, we need to skip the
+     entrance transition entirely so content is visible from first paint. */
+  .reveal-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}

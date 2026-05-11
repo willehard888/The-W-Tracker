@@ -1,4 +1,5 @@
-import { lazy, Suspense, useState, useCallback } from "react";
+import { lazy, Suspense, useEffect, useState, useCallback } from "react";
+import { getPerfClass } from "@/lib/perf-class";
 import SplashScreen from "@/components/SplashScreen";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
@@ -145,6 +146,19 @@ const App = () => {
   const handleSplashComplete = useCallback(() => {
     sessionStorage.setItem("w_splash_shown", "1");
     setSplashDone(true);
+  }, []);
+
+  // Stamp `body[data-perf]` once after mount — a global CSS rule in index.css
+  // uses this attribute to short-circuit decorative animation utility classes
+  // on low-perf devices (phones, reduced-motion users). Runs inside a
+  // useEffect so any unexpected throw is caught by the parent ErrorBoundary
+  // and cannot prevent React from rendering.
+  useEffect(() => {
+    try {
+      document.body.dataset.perf = getPerfClass();
+    } catch {
+      // Harmless to skip; the perf gating just stays inactive.
+    }
   }, []);
 
   return (

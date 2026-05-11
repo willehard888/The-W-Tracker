@@ -129,7 +129,6 @@ export const useCoachProgram = () => {
 
   return {
     isLoading: programQuery.isLoading,
-    error: (programQuery.error ?? logsQuery.error) as Error | null,
     program,
     logs,
     currentWeek,

@@ -1,17 +1,9 @@
 import { Zap, Sparkles } from "lucide-react";
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getEffectiveStreak, getStreakDeadlineState } from "@/lib/streak";
 import { getPerfClass } from "@/lib/perf-class";
-import StreakFlameInline from "@/components/StreakFlameInline";
-
-// StylizedStreakFlame is a 2400-line component with continuous SVG turbulence
-// + RAF — easily the heaviest single piece on the home page. Lazy-load it so
-// the home chunk parses ~80 KB lighter, and use the lightweight
-// StreakFlameInline as both:
-//   - the Suspense fallback for mid/high devices (instant first paint)
-//   - the FINAL render for low-perf devices (never loads the heavy chunk)
-const StylizedStreakFlame = lazy(() => import("./StylizedStreakFlame"));
+import StylizedStreakFlame from "./StylizedStreakFlame";
 
 interface CompactStreakPanelProps {
   streak: number;
@@ -707,24 +699,12 @@ const CompactStreakPanel = ({
             </>
           )}
 
-          {/* Stylized progressive streak flame — escapes the panel for cinematic effect.
-              Low-perf devices get the lightweight CSS-gradient flame directly
-              (NEVER loads the 2400-line SVG-turbulence chunk). Mid/high get the
-              full inferno via lazy import + Suspense, with the lite flame as
-              an instant-paint fallback during chunk download. */}
+          {/* Stylized progressive streak flame — escapes the panel for cinematic effect */}
           <div
-            className="absolute left-1/2 bottom-[2px] z-[40] pointer-events-none flex items-end justify-center"
-            style={{ transform: "translateX(-50%)", overflow: "visible", width: 150, height: 150 }}
+            className="absolute left-1/2 bottom-[2px] z-[40] pointer-events-none"
+            style={{ transform: "translateX(-50%)", overflow: "visible" }}
           >
-            {isLowPerf ? (
-              <StreakFlameInline streak={displayStreak} size={120} showCount={false} />
-            ) : (
-              <Suspense
-                fallback={<StreakFlameInline streak={displayStreak} size={120} showCount={false} />}
-              >
-                <StylizedStreakFlame streak={displayStreak} size={150} />
-              </Suspense>
-            )}
+            <StylizedStreakFlame streak={displayStreak} size={150} />
           </div>
         </div>
 

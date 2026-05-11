@@ -40,6 +40,22 @@ const INJURIES = ["Lower back","Knee","Shoulder","Hip","Wrist","Elbow","Neck"];
 const SESSION_PRESETS = [20, 30, 45, 60, 90];
 const HORIZON_PRESETS = [4, 8, 12, 26, 52];
 
+// Mind & life step (migration 20260511181220).
+const HOBBIES = [
+  "Reading", "Music", "Gaming", "Outdoors",
+  "Cooking", "Creative work", "Family", "Social", "Sport",
+];
+const MENTAL_FOCUS: { id: string; label: string }[] = [
+  { id: "anxiety",  label: "Anxiety"   },
+  { id: "low_mood", label: "Low mood"  },
+  { id: "focus",    label: "Focus"     },
+  { id: "sleep",    label: "Sleep"     },
+  { id: "burnout",  label: "Burnout"   },
+  { id: "none",     label: "None"      },
+];
+const STRESS_EMOJI = ["😌", "🙂", "😐", "😬", "😫"];
+const MOOD_EMOJI   = ["😢", "😕", "😐", "🙂", "😄"];
+
 const loadDraft = (): any | null => {
   try {
     const raw = localStorage.getItem(DRAFT_KEY);
@@ -71,6 +87,12 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
       tone_pref: profile?.tone_pref ?? "calm_mentor",
       preferred_session_length_min: profile?.preferred_session_length_min ?? 45,
       i_am: profile?.i_am ?? "",
+      // Holistic (migration 20260511181220): mind / life context.
+      hobbies: profile?.hobbies ?? [],
+      life_context: profile?.life_context ?? "",
+      stress_baseline: profile?.stress_baseline ?? null,
+      mood_baseline: profile?.mood_baseline ?? null,
+      mental_health_focus: profile?.mental_health_focus ?? [],
     };
   });
 
@@ -141,7 +163,108 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
         </div>
       ),
     },
-    // 2 — schedule + horizon combined
+    // 2 — Mind & life (holistic well-being capture)
+    {
+      title: "Mind & life",
+      sub: "Helps the Coach see the whole you — physical, mental, emotional.",
+      content: (
+        <div className="space-y-5">
+          <Field label="What do you do for joy?">
+            <div className="flex flex-wrap gap-1.5">
+              {HOBBIES.map(h => (
+                <Chip
+                  key={h}
+                  small
+                  active={draft.hobbies.includes(h)}
+                  onClick={() => toggle("hobbies", h)}
+                >
+                  {h}
+                </Chip>
+              ))}
+            </div>
+          </Field>
+
+          <Field label="A line about your life right now">
+            <textarea
+              rows={2}
+              value={draft.life_context ?? ""}
+              onChange={e => set({ life_context: e.target.value.slice(0, 160) })}
+              placeholder="e.g. New baby, working remote, training around 6am only."
+              className="w-full resize-none rounded-2xl border border-border/50 bg-card/60 px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
+            />
+            <p className="text-[10px] text-muted-foreground/70 mt-1">{(draft.life_context ?? "").length}/160</p>
+          </Field>
+
+          <Field label="Stress lately">
+            <div className="flex justify-between gap-1.5">
+              {STRESS_EMOJI.map((emoji, i) => {
+                const value = i + 1;
+                const active = draft.stress_baseline === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => { hapticImpact("light"); set({ stress_baseline: value }); }}
+                    className={cn(
+                      "flex-1 h-12 rounded-xl text-xl border transition-all",
+                      active
+                        ? "bg-[hsl(var(--gold)/0.15)] border-[hsl(var(--gold)/0.55)]"
+                        : "border-border/40 bg-card/40",
+                    )}
+                    aria-label={`Stress level ${value} of 5`}
+                  >
+                    {emoji}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-muted-foreground/70 mt-1">Calm → overwhelmed</p>
+          </Field>
+
+          <Field label="Mood lately">
+            <div className="flex justify-between gap-1.5">
+              {MOOD_EMOJI.map((emoji, i) => {
+                const value = i + 1;
+                const active = draft.mood_baseline === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => { hapticImpact("light"); set({ mood_baseline: value }); }}
+                    className={cn(
+                      "flex-1 h-12 rounded-xl text-xl border transition-all",
+                      active
+                        ? "bg-[hsl(var(--gold)/0.15)] border-[hsl(var(--gold)/0.55)]"
+                        : "border-border/40 bg-card/40",
+                    )}
+                    aria-label={`Mood level ${value} of 5`}
+                  >
+                    {emoji}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-muted-foreground/70 mt-1">Down → energised</p>
+          </Field>
+
+          <Field label="Anything to focus on? Optional, private.">
+            <div className="flex flex-wrap gap-1.5">
+              {MENTAL_FOCUS.map(m => (
+                <Chip
+                  key={m.id}
+                  small
+                  active={draft.mental_health_focus.includes(m.id)}
+                  onClick={() => toggle("mental_health_focus", m.id)}
+                >
+                  {m.label}
+                </Chip>
+              ))}
+            </div>
+          </Field>
+        </div>
+      ),
+    },
+    // 3 — schedule + horizon combined
     {
       title: "Your week",
       sub: "Coach times missions to your real life.",
@@ -210,7 +333,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
         </div>
       ),
     },
-    // 3 — constraints (optional, can skip)
+    // 4 — constraints (optional, can skip)
     {
       title: "Anything to work around?",
       sub: "Optional. Tap what applies — or skip ahead.",
@@ -240,7 +363,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
         </div>
       ),
     },
-    // 4 — tone
+    // 5 — tone
     {
       title: "Coach voice",
       sub: "How should I talk to you? Change anytime.",
@@ -276,7 +399,9 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
 
   const last = step === STEPS.length - 1;
   const cur = STEPS[step];
-  const optional = step === 3; // constraints step
+  // Steps now: 0=goal, 1=body, 2=mind&life, 3=week, 4=constraints, 5=tone.
+  // "Constraints" remains the only Skip-able step (#4 after insertion).
+  const optional = step === 4;
 
   const next = async () => {
     if (last) {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, Loader2, User, Brain, X, Sparkles, BookOpen, RotateCw, Plus } from "lucide-react";
+import { Send, ArrowLeft, Loader2, User, Brain, X, Sparkles, BookOpen, RotateCw, Plus, Lock, Crown } from "lucide-react";
 import { matchFaq, COACH_FAQ, FaqEntry } from "@/lib/coach-faq";
 import FaqBrowser from "@/components/coach/FaqBrowser";
 import ReactMarkdown from "react-markdown";
@@ -11,7 +11,6 @@ import { hapticImpact } from "@/lib/haptics";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useCoachProgram } from "@/hooks/use-coach-program";
-import PremiumCoachUpsell from "@/components/coach/PremiumCoachUpsell";
 import ProgramOnboarding from "@/components/coach/ProgramOnboarding";
 import TodaySessionCard from "@/components/coach/TodaySessionCard";
 import ProgramWeekAccordion from "@/components/coach/ProgramWeekAccordion";
@@ -33,15 +32,20 @@ type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";
 
 const Coach = () => {
-  const { session, isPremium, subscriptionLoading } = useAuth();
+  // FIX (migration 20260511 commit): the page previously read `isPremium`
+  // and `subscriptionLoading` from useAuth(), but AuthContext exports
+  // `isElite` and `loading`. Reading missing fields meant `!isPremium` was
+  // always truthy and EVERY user saw the upsell — including paying Elite
+  // users. The correct names are used now.
+  const { session, isElite, loading } = useAuth();
   const navigate = useNavigate();
   const { isLoading, program, logs, currentWeek, todayDayIndex, refetch } = useCoachProgram();
   const { profile: athlete, isLoading: athleteLoading, refetch: refetchAthlete } = useAthleteProfile();
 
-  if (subscriptionLoading) return <PageSkeleton />;
-  if (!isPremium) return <PremiumCoachUpsell />;
+  if (loading) return <PageSkeleton />;
   if (isLoading || athleteLoading) return <PageSkeleton />;
 
+  // Everyone (free + Elite) onboards. The profile drives Life OS quality.
   if (!athlete?.onboarded) {
     return (
       <div className="flex flex-col h-full">
@@ -51,7 +55,10 @@ const Coach = () => {
     );
   }
 
-  if (!program) {
+  // Elite users without a generated program → kick off program-generation
+  // flow (Lovable AI call). Free users skip this step — they never see the
+  // 4-week training program; they see the Lite Coach shell instead.
+  if (isElite && !program) {
     return (
       <div className="flex flex-col h-full overflow-y-auto safe-top">
         <MinimalTopBar onBack={() => navigate(-1)} navigate={navigate} />
@@ -63,6 +70,7 @@ const Coach = () => {
   return (
     <CoachShell
       session={session}
+      isElite={isElite}
       program={program}
       logs={logs}
       currentWeek={currentWeek}
@@ -90,7 +98,7 @@ const MinimalTopBar = ({ onBack, navigate }: { onBack: () => void; navigate: any
   </div>
 );
 
-const CoachShell = ({ session, program, logs, currentWeek, todayDayIndex, refetch, navigate }: any) => {
+const CoachShell = ({ session, isElite, program, logs, currentWeek, todayDayIndex, refetch, navigate }: any) => {
   const [chatOpen, setChatOpen] = useState(false);
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
@@ -99,64 +107,110 @@ const CoachShell = ({ session, program, logs, currentWeek, todayDayIndex, refetc
     setChatOpen(true);
   };
 
+  // Free vs Elite layout split.
+  //   FREE: Life OS + Evening Reflection + Goal Tracker + Habits + inline upsell.
+  //   ELITE: everything (TrainerBrief, TodaySessionCard, WeekStrip, DailyMissions,
+  //          ProgramWeekAccordion, PerformanceOSDashboard, ProgressDashboard,
+  //          persistent chat composer + ChatSheet).
   return (
     <div className="flex flex-col h-full relative">
       <MinimalTopBar onBack={() => navigate(-1)} navigate={navigate} />
 
-      <div className="flex-1 overflow-y-auto px-4 pb-32">
-        {/* The trainer speaks first */}
-        <TrainerBrief onAsk={askCoach} />
+      <div className={cn("flex-1 overflow-y-auto px-4", isElite ? "pb-32" : "pb-8")}>
+        {/* TrainerBrief calls the coach-daily-brief edge function which is
+            Elite-gated server-side; hide for free users to avoid a 403. */}
+        {isElite && <TrainerBrief onAsk={askCoach} />}
 
-        {/* Life OS — structured 5-domain daily brief */}
-        <div className="mt-3">
+        {/* Life OS — structured 5-domain daily brief. Free for everyone. */}
+        <div className={isElite ? "mt-3" : ""}>
           <LifeOSCard />
         </div>
 
-        {/* Today's session — the prescription */}
-        <TodaySessionCard
-          program={program}
-          currentWeek={currentWeek}
-          todayDayIndex={todayDayIndex}
-          logs={logs}
-          onLogged={() => refetch()}
-        />
+        {/* Elite-only: today's prescription + week-at-a-glance + daily plan AI */}
+        {isElite && program && (
+          <>
+            <TodaySessionCard
+              program={program}
+              currentWeek={currentWeek}
+              todayDayIndex={todayDayIndex}
+              logs={logs}
+              onLogged={() => refetch()}
+            />
+            <div className="mt-4">
+              <WeekStrip
+                program={program}
+                currentWeek={currentWeek}
+                todayDayIndex={todayDayIndex}
+                logs={logs}
+              />
+            </div>
+          </>
+        )}
 
-        {/* Week at a glance */}
-        <div className="mt-4">
-          <WeekStrip
-            program={program}
-            currentWeek={currentWeek}
-            todayDayIndex={todayDayIndex}
-            logs={logs}
-          />
-        </div>
-
-        {/* Daily focus — single column, lighter chrome */}
+        {/* Daily focus — single column, lighter chrome.
+            EveningReflection + GoalTracker + Habits are free-friendly.
+            DailyMissionCard hits coach-daily-plan (Elite-only edge fn) — gate it. */}
         <SectionLabel>Daily focus</SectionLabel>
         <div className="space-y-2.5">
-          <DailyMissionCard />
+          {isElite && <DailyMissionCard />}
           <EveningReflectionCard />
           <GoalTrackerCard />
           <HabitsTab />
         </div>
 
-        {/* The plan, inline */}
-        <SectionLabel>Your plan</SectionLabel>
-        <ProgramWeekAccordion program={program} currentWeek={currentWeek} logs={logs} />
+        {/* Free users see an inline upsell card here in place of the
+            Elite-only Plan + Progress sections. Tapping it goes to /paywall. */}
+        {!isElite && (
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={() => navigate("/paywall")}
+              className="w-full text-left rounded-3xl border border-gold/40 bg-gradient-to-b from-gold/[0.06] to-card/95 p-5 shadow-[0_20px_56px_-28px_hsl(var(--gold)/0.5)] active:scale-[0.99] transition-transform"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_14px_hsl(42_78%_54%/0.4)]">
+                  <Crown size={15} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gold/80">
+                    W Coach · Premium
+                  </p>
+                  <p className="text-sm font-bold text-foreground">
+                    Unlock training program + live chat
+                  </p>
+                </div>
+                <Lock size={14} className="text-gold/70 shrink-0" aria-hidden />
+              </div>
+              <p className="text-[12px] text-muted-foreground/85 leading-relaxed">
+                Premium adds a personalised 4-week program, today's session
+                prescription, daily AI missions, and live coach chat. Your
+                profile and Life OS plan stay free.
+              </p>
+            </button>
+          </div>
+        )}
 
-        {/* Progress, inline */}
-        <SectionLabel>Progress</SectionLabel>
-        <div className="space-y-3">
-          <PerformanceOSDashboard />
-          <ProgressDashboard program={program} currentWeek={currentWeek} logs={logs} />
-        </div>
+        {/* Elite-only plan + progress sections */}
+        {isElite && program && (
+          <>
+            <SectionLabel>Your plan</SectionLabel>
+            <ProgramWeekAccordion program={program} currentWeek={currentWeek} logs={logs} />
+            <SectionLabel>Progress</SectionLabel>
+            <div className="space-y-3">
+              <PerformanceOSDashboard />
+              <ProgressDashboard program={program} currentWeek={currentWeek} logs={logs} />
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Persistent composer — the trainer is always one tap away */}
-      <PersistentComposer onOpen={(prompt) => { setPendingPrompt(prompt ?? null); setChatOpen(true); }} />
+      {/* Persistent chat composer — Elite only (ai-coach edge function is Elite-gated). */}
+      {isElite && (
+        <PersistentComposer onOpen={(prompt) => { setPendingPrompt(prompt ?? null); setChatOpen(true); }} />
+      )}
 
       <AnimatePresence>
-        {chatOpen && (
+        {isElite && chatOpen && (
           <ChatSheet
             session={session}
             program={program}

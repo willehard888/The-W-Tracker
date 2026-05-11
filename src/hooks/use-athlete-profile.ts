@@ -4,6 +4,24 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export type ToneId = "drill_sergeant" | "calm_mentor" | "scientist" | "hype";
 export type GoalId = "all" | "strength" | "hypertrophy" | "endurance" | "fat_loss" | "longevity" | "focus";
+/**
+ * Hobby tags exposed at onboarding. Free-form `string` typing so future
+ * additions don't require a TS change — the input is chip-based so the UI
+ * still constrains values to a curated set.
+ */
+export type HobbyId = string;
+/**
+ * Voluntary mental-health-focus tags. Used to weight the coach's "Mind"
+ * domain — never surfaced to other users and never used as a diagnosis.
+ */
+export type MentalFocusId =
+  | "anxiety"
+  | "low_mood"
+  | "focus"
+  | "sleep"
+  | "burnout"
+  | "none"
+  | string;
 
 export interface AthleteProfile {
   user_id: string;
@@ -29,6 +47,12 @@ export interface AthleteProfile {
   preferred_session_length_min: number;
   i_am: string | null;
   onboarded: boolean;
+  /** Holistic fields (migration 20260511181220) ─────────────────────────── */
+  hobbies: HobbyId[];
+  life_context: string | null;
+  stress_baseline: 1 | 2 | 3 | 4 | 5 | null;
+  mood_baseline: 1 | 2 | 3 | 4 | 5 | null;
+  mental_health_focus: MentalFocusId[];
   created_at: string;
   updated_at: string;
 }

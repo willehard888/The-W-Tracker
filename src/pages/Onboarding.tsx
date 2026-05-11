@@ -2,6 +2,16 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Flame, Trophy, Swords, Shield, ArrowRight, ChevronRight, Zap, Star, Target, Crown } from "lucide-react";
+import AthleteProfileOnboarding from "@/components/coach/AthleteProfileOnboarding";
+
+/**
+ * Phase persistence: once the user crosses from the 4 marketing slides into
+ * the profile-capture step, we remember it so a kill-and-relaunch puts them
+ * back on the profile step instead of replaying the slides. Cleared the
+ * moment the profile is saved (or the user explicitly Skips).
+ */
+const PHASE_KEY = "w_onboarding_phase";
+type Phase = "slides" | "profile";
 
 /* ── Animated illustration components ── */
 
@@ -201,14 +211,31 @@ const SLIDES = [
 /* ── Component ── */
 
 const Onboarding = () => {
+  const [phase, setPhase] = useState<Phase>(() => {
+    if (typeof window === "undefined") return "slides";
+    return localStorage.getItem(PHASE_KEY) === "profile" ? "profile" : "slides";
+  });
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<"next" | "prev">("next");
   const [animKey, setAnimKey] = useState(0);
   const navigate = useNavigate();
 
+  /**
+   * `finish()` is the only place that marks onboarding done. Called from:
+   *  - the "Skip" button (in either phase) — user explicitly opts out
+   *  - the profile-capture `onDone` callback — happy path
+   */
   const finish = () => {
-    localStorage.setItem("w_onboarding_done", "true");
+    try {
+      localStorage.setItem("w_onboarding_done", "true");
+      localStorage.removeItem(PHASE_KEY);
+    } catch {}
     navigate("/", { replace: true });
+  };
+
+  const goToProfilePhase = () => {
+    setPhase("profile");
+    try { localStorage.setItem(PHASE_KEY, "profile"); } catch {}
   };
 
   const goTo = (idx: number) => {
@@ -221,7 +248,8 @@ const Onboarding = () => {
     if (current < SLIDES.length - 1) {
       goTo(current + 1);
     } else {
-      finish();
+      // End of marketing slides → cross over to profile capture.
+      goToProfilePhase();
     }
   };
 
@@ -235,6 +263,29 @@ const Onboarding = () => {
     if (diff < -60 && current > 0) goTo(current - 1);
     setTouchStart(null);
   };
+
+  // ── Profile-capture phase ────────────────────────────────────────────
+  // After the last marketing slide, the user lands here. We render the
+  // existing AthleteProfileOnboarding component (used by /coach as well),
+  // and only mark onboarding done when its `onDone` fires.
+  if (phase === "profile") {
+    return (
+      <div className="min-h-screen gradient-dark flex flex-col safe-top safe-bottom">
+        <div className="w-full flex justify-end px-6 pt-4">
+          <button
+            onClick={finish}
+            className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1"
+            aria-label="Skip personalisation"
+          >
+            Skip
+          </button>
+        </div>
+        <div className="flex-1 flex flex-col pb-4">
+          <AthleteProfileOnboarding onDone={finish} />
+        </div>
+      </div>
+    );
+  }
 
   const slide = SLIDES[current];
   const Illustration = slide.Illustration;

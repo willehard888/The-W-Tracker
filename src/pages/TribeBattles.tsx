@@ -4,10 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, Loader2, Plus, Swords } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Swords, Clock, History } from "lucide-react";
 import { toast } from "sonner";
 import TribeBattleCard, { type TribeBattle } from "@/components/TribeBattleCard";
 import TribeChallengeModal from "@/components/TribeChallengeModal";
+import EmptyStateUI from "@/components/ui/empty-state";
 import {
   collectiveAccent,
   collectiveStreakTier,
@@ -187,7 +188,11 @@ const TribeBattles = () => {
 
         <TabsContent value="active" className="space-y-3">
           {active.length === 0 ? (
-            <EmptyState text="No live battles. Challenge another tribe to start one." />
+            <EmptyStateUI
+              icon={Swords}
+              title="No live battles"
+              description="Challenge another tribe to start a head-to-head streak war."
+            />
           ) : (
             active.map((b) => (
               <TribeBattleCard key={b.id} battle={b} myTribeId={id!} isOwner={isOwner} />
@@ -197,7 +202,11 @@ const TribeBattles = () => {
 
         <TabsContent value="pending" className="space-y-3">
           {pending.length === 0 ? (
-            <EmptyState text="No pending challenges." />
+            <EmptyStateUI
+              icon={Clock}
+              title="No pending challenges"
+              description="Incoming and outgoing challenge invites will land here."
+            />
           ) : (
             pending.map((b) => (
               <TribeBattleCard
@@ -215,7 +224,11 @@ const TribeBattles = () => {
 
         <TabsContent value="history" className="space-y-3">
           {history.length === 0 ? (
-            <EmptyState text="No past battles yet." />
+            <EmptyStateUI
+              icon={History}
+              title="No past battles"
+              description="Completed and forfeited battles will be archived here."
+            />
           ) : (
             history.map((b) => (
               <TribeBattleCard key={b.id} battle={b} myTribeId={id!} isOwner={isOwner} />
@@ -233,11 +246,5 @@ const TribeBattles = () => {
     </div>
   );
 };
-
-const EmptyState = ({ text }: { text: string }) => (
-  <div className="rounded-xl border border-dashed border-border/60 p-6 text-center text-xs text-muted-foreground">
-    {text}
-  </div>
-);
 
 export default TribeBattles;

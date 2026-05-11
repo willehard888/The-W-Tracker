@@ -8,6 +8,7 @@ import ImageLightbox from "@/components/ImageLightbox";
 import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
 import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock, Heart, MessageCircle, Award, Play, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import EmptyState from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -324,15 +325,13 @@ const PublicProfile = () => {
                 </span>
               </div>
             </div>
-            <div className="py-16 flex flex-col items-center text-center px-6">
-              <div className="h-14 w-14 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center mb-3">
-                <Camera size={22} className="text-muted-foreground/60" />
-              </div>
-              <p className="text-sm font-bold text-foreground">No posts yet</p>
-              <p className="text-[11px] text-muted-foreground mt-1 max-w-[220px]">
-                When @{profile.username} drops proof on the Elite Feed, it'll show here.
-              </p>
-            </div>
+            <EmptyState
+              icon={Camera}
+              title="No posts yet"
+              description={`When @${profile.username} drops proof on the Elite Feed, it'll show here.`}
+              className="mx-4 my-4"
+            />
+
           </div>
         )}
 

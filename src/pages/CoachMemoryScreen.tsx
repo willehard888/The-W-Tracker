@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, Brain, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import EmptyState from "@/components/ui/empty-state";
 import { useCoachMemory } from "@/hooks/use-coach-memory";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -64,10 +65,11 @@ const CoachMemoryScreen = () => {
         {isLoading ? (
           <p className="text-xs text-muted-foreground">Loading…</p>
         ) : memories.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border/40 px-4 py-8 text-center">
-            <p className="text-sm text-muted-foreground">No memories yet.</p>
-            <p className="text-[11px] text-muted-foreground/70 mt-1">Chat with the Coach — it learns automatically.</p>
-          </div>
+          <EmptyState
+            icon={Brain}
+            title="No memories yet"
+            description="Chat with the Coach — it learns about you automatically and stores the highlights here."
+          />
         ) : (
           <AnimatePresence initial={false}>
             {memories.map(m => (

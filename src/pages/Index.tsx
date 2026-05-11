@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Award } from "lucide-react";
 import BadgeCard from "@/components/BadgeCard";
 import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
@@ -6,6 +6,7 @@ import CommandDeck from "@/components/home/CommandDeck";
 import RankProgressHub from "@/components/home/RankProgressHub";
 import CoachStrip from "@/components/home/CoachStrip";
 import Reveal from "@/components/home/Reveal";
+import EmptyState from "@/components/ui/empty-state";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -238,13 +239,20 @@ const Index = () => {
       </Reveal>
 
       <Reveal className="mb-2" delay={320}>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display font-bold text-base tracking-tight">Recent Badges</h2>
+        <div className="flex items-end justify-between mb-3 px-0.5">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80 mb-1">
+              Achievements
+            </span>
+            <h2 className="font-display font-bold text-base tracking-tight leading-none">
+              Recent Badges
+            </h2>
+          </div>
           <button
             onClick={() => navigate("/profile")}
-            className="flex items-center gap-1 text-xs text-gold font-medium hover:underline"
+            className="flex items-center gap-0.5 text-xs text-gold font-semibold active:opacity-70 transition-opacity"
           >
-            View All <ChevronRight size={14} />
+            View all <ChevronRight size={13} />
           </button>
         </div>
         {userBadges && userBadges.length > 0 ? (
@@ -259,15 +267,27 @@ const Index = () => {
             ))}
           </div>
         ) : (
-          <div className="rounded-xl glass-card p-6 text-center">
-            <p className="text-sm text-muted-foreground">Complete check-ins to earn badges</p>
-          </div>
+          <EmptyState
+            icon={Award}
+            title="No badges yet"
+            description="Lock your day to start earning — first badge unlocks at a 3-day streak."
+            action={
+              canCheckin ? (
+                <button
+                  onClick={() => navigate("/checkin")}
+                  className="text-xs font-bold text-gold active:opacity-70 transition-opacity inline-flex items-center gap-1"
+                >
+                  Lock today <ChevronRight size={12} />
+                </button>
+              ) : null
+            }
+          />
         )}
       </Reveal>
 
-      {/* Tier message footer */}
-      <div className="mt-4 mb-2 text-center">
-        <p className="text-[10px] text-muted-foreground/40 font-semibold tracking-widest uppercase">
+      {/* Tier message footer — boosted contrast (was muted-foreground/40 → barely visible) */}
+      <div className="mt-6 mb-2 text-center">
+        <p className="text-[10px] text-muted-foreground/60 font-semibold tracking-[0.22em] uppercase">
           {tierConfig.message}
         </p>
       </div>

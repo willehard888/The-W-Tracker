@@ -13,8 +13,10 @@ import {
   Clock,
   Flame,
   ChevronRight,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import EmptyState from "@/components/ui/empty-state";
 import { useVaultArticles, type VaultArticle } from "@/hooks/use-vault-articles";
 import { useVaultProgress } from "@/hooks/use-vault-progress";
 import EvidenceChip from "@/components/vault/EvidenceChip";
@@ -334,7 +336,7 @@ const VaultCategoryBlock = ({
           )}
 
           {!isLoading && !error && articles.length === 0 && (
-            <p className="text-[11px] text-muted-foreground py-3 text-center">No articles yet.</p>
+            <EmptyState size="compact" icon={BookOpen} title="No articles yet" />
           )}
 
           {!isLoading &&

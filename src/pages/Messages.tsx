@@ -2,8 +2,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, UserCheck, UserPlus, Search, X } from "lucide-react";
+import { MessageCircle, UserCheck, UserPlus, Search, X, SearchX } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
+import EmptyState from "@/components/ui/empty-state";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -192,8 +193,13 @@ const Messages = () => {
       )}
 
       {searchQuery.trim().length >= 2 && searchResults && searchResults.length === 0 && (
-        <div className="text-center py-6 mb-4 animate-reveal">
-          <p className="text-xs text-muted-foreground/60">No users found</p>
+        <div className="mb-4 animate-reveal">
+          <EmptyState
+            size="compact"
+            icon={SearchX}
+            title="No users found"
+            description={`Nothing matched "${searchQuery.trim()}". Try a different handle.`}
+          />
         </div>
       )}
 
@@ -305,12 +311,12 @@ const Messages = () => {
       )}
 
       {!isLoading && (!conversations || conversations.length === 0) && (!friends || friends.length === 0) && (
-        <div className="text-center py-16 animate-reveal animate-reveal-delay-1">
-          <div className="h-16 w-16 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto mb-4">
-            <MessageCircle size={28} className="text-purple-400/40" />
-          </div>
-          <p className="text-sm font-semibold text-muted-foreground">No messages yet</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">Visit a user's profile to start a conversation</p>
+        <div className="animate-reveal animate-reveal-delay-1">
+          <EmptyState
+            icon={MessageCircle}
+            title="No messages yet"
+            description="Open someone's profile and tap Message to start a conversation."
+          />
         </div>
       )}
     </div>

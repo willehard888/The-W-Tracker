@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Crown, Medal, Award, Trophy, Loader2, Users, Lock, Zap } from "lucide-react";
 import RealisticFlame from "@/components/home/RealisticFlame";
+import EmptyState from "@/components/ui/empty-state";
 import {
   collectiveAccent,
   collectiveStreakTier,
@@ -130,9 +131,11 @@ const TribeLeaderboard = () => {
           <Loader2 size={20} className="animate-spin text-gold" />
         </div>
       ) : rows.length === 0 ? (
-        <div className="text-center py-12 text-sm text-muted-foreground">
-          No tribes yet. Be the first founder.
-        </div>
+        <EmptyState
+          icon={Users}
+          title="No tribes yet"
+          description="Be the first founder — start one and rally your circle."
+        />
       ) : (
         <>
           {/* Top 3 */}

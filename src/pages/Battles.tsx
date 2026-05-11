@@ -1,6 +1,7 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Swords, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image, Vote, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
+import EmptyState from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -883,9 +884,12 @@ const Battles = () => {
 
       {/* Empty state */}
       {!isLoading && (!battles || battles.length === 0) && !showCreate && (
-        <div className="animate-reveal animate-reveal-delay-2 rounded-xl border border-border bg-card p-8 text-center">
-          <Swords size={32} className="text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">No battles yet. Challenge someone above!</p>
+        <div className="animate-reveal animate-reveal-delay-2">
+          <EmptyState
+            icon={Swords}
+            title="No battles yet"
+            description="Challenge someone above your rank — winner takes the score, loser owes a workout."
+          />
         </div>
       )}
     </div>

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Users, Plus, Lock, Crown, Zap, Check, X, Sparkles, Mail, Trophy, ChevronRight, Pause, ShieldCheck } from "lucide-react";
+import EmptyState from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import TribeSearchBar from "@/components/TribeSearchBar";
@@ -455,11 +456,15 @@ const Tribes = () => {
           <TribeSkeleton />
         </div>
       ) : tribes.length === 0 ? (
-        <div className="text-center py-12 text-sm text-muted-foreground">
-          {tab === "browse"
-            ? "No public tribes yet. Be the first founder."
-            : "You haven't joined any tribes yet."}
-        </div>
+        <EmptyState
+          icon={Users}
+          title={tab === "browse" ? "No public tribes yet" : "No tribes joined"}
+          description={
+            tab === "browse"
+              ? "Be the first founder — start a tribe and rally your circle."
+              : "Browse the public directory or get invited to start grinding together."
+          }
+        />
       ) : (
         <div className="space-y-3">
           {/* Featured Tribe */}

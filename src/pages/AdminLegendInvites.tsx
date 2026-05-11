@@ -3,12 +3,13 @@ import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Crown, Loader2, Copy, CheckCircle2, Clock, Sparkles } from "lucide-react";
+import { Crown, Loader2, Copy, CheckCircle2, Clock, Sparkles, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import EmptyState from "@/components/ui/empty-state";
 
 type LegendInvite = {
   id: string;
@@ -222,7 +223,7 @@ export default function AdminLegendInvites() {
           );
         })}
         {!isLoading && invites && invites.length === 0 && (
-          <p className="text-center text-sm text-muted-foreground py-8">No invites yet.</p>
+          <EmptyState size="compact" icon={Mail} title="No invites yet" />
         )}
       </div>
     </div>

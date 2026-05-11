@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
+import EmptyState from "@/components/ui/empty-state";
 import HeadToHead from "@/components/HeadToHead";
 import ProfileActivityPulse from "@/components/ProfileActivityPulse";
 import FeaturedBadgeHero from "@/components/FeaturedBadgeHero";
@@ -645,7 +646,7 @@ const UserProfile = () => {
           Badges ({earnedBadges.length})
         </h2>
         {earnedBadges.length === 0 ? (
-          <p className="text-xs text-muted-foreground/60 text-center py-6">No badges earned yet</p>
+          <EmptyState size="compact" icon={Award} title="No badges earned yet" />
         ) : (
           <div className="grid grid-cols-3 gap-3">
             {earnedBadges.map((badge) => (

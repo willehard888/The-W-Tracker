@@ -2,6 +2,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
+import EmptyState from "@/components/ui/empty-state";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef, useMemo, useCallback } from "react";
@@ -980,13 +981,11 @@ const EliteFeed = () => {
           </div>
         )}
         {posts?.length === 0 && !isLoading && (
-          <div className="text-center py-16">
-            <div className="h-16 w-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
-              <Flame size={28} className="text-gold/40" />
-            </div>
-            <p className="text-sm font-semibold text-muted-foreground">No posts yet</p>
-            <p className="text-xs text-muted-foreground/60 mt-1">Be the first to share your W</p>
-          </div>
+          <EmptyState
+            icon={Flame}
+            title="No posts yet"
+            description="Be the first to share your W — the elite feed only counts proof."
+          />
         )}
 
         {posts?.map((post: any, index: number) => {

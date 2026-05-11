@@ -3,9 +3,6 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getTierConfig } from "@/lib/status-tiers";
 import { Crown, Shield, Sparkles, Flame, Zap, Star } from "lucide-react";
-import { getPerfClass } from "@/lib/perf-class";
-
-const IS_LOW_PERF = typeof window !== "undefined" && getPerfClass() === "low";
 
 interface StatusAvatarProps {
   src?: string | null;
@@ -68,15 +65,11 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
 
   return (
     <div ref={ref} className={cn("relative inline-flex items-center justify-center align-middle", className)}>
-      {/* Apex outer pulsing flame ring — animation skipped on low-perf;
-          static box-shadow stays for visual identity. */}
+      {/* Apex outer pulsing flame ring */}
       {isApex && (
         <div
           aria-hidden
-          className={cn(
-            "absolute inset-0 rounded-full pointer-events-none",
-            !IS_LOW_PERF && "status-amber-ring-breathe",
-          )}
+          className="absolute inset-0 rounded-full pointer-events-none status-amber-ring-breathe"
           style={{
             boxShadow:
               "0 0 0 2px hsl(18 95% 58% / 0.55), 0 0 16px 2px hsl(18 95% 58% / 0.5), 0 0 32px 4px hsl(var(--gold) / 0.35)",
@@ -84,10 +77,8 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
         />
       )}
 
-      {/* Apex — 2 orbiting embers (CSS-only rotation around the avatar).
-          Skipped entirely on low-perf — pure decoration with two
-          continuous animations. */}
-      {!IS_LOW_PERF && isApex && (size === "lg" || size === "xl" || size === "md") && (
+      {/* Apex — 2 orbiting embers (CSS-only rotation around the avatar) */}
+      {isApex && (size === "lg" || size === "xl" || size === "md") && (
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 status-legend-conic-spin"
@@ -103,14 +94,11 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
         </div>
       )}
 
-      {/* Elite — sykkivä kultareuna (sisäreuna). Static on low-perf. */}
+      {/* Elite — sykkivä kultareuna (sisäreuna) */}
       {tier === "elite" && (
         <div
           aria-hidden
-          className={cn(
-            "absolute inset-0 rounded-full pointer-events-none",
-            !IS_LOW_PERF && "status-amber-ring-breathe",
-          )}
+          className="absolute inset-0 rounded-full pointer-events-none status-amber-ring-breathe"
           style={{
             boxShadow: "0 0 0 1px hsl(var(--gold) / 0.55), 0 0 14px 1px hsl(var(--gold) / 0.4)",
           }}
@@ -177,24 +165,13 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
         </div>
       )}
 
-      {/* Apex top-right Zap accent — animations skipped on low-perf */}
+      {/* Apex top-right Zap accent — small, animated */}
       {isApex && (
         <div
           aria-hidden
-          className={cn(
-            "absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border border-background flex items-center justify-center shadow-[0_0_6px_hsl(18_95%_58%/0.8)]",
-            !IS_LOW_PERF && "status-amber-ring-breathe",
-          )}
+          className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border border-background flex items-center justify-center shadow-[0_0_6px_hsl(18_95%_58%/0.8)] status-amber-ring-breathe"
         >
-          <Zap
-            size={9}
-            className={cn(
-              "text-background",
-              !IS_LOW_PERF && "status-flame-flicker",
-            )}
-            strokeWidth={3}
-            fill="currentColor"
-          />
+          <Zap size={9} className="text-background status-flame-flicker" strokeWidth={3} fill="currentColor" />
         </div>
       )}
     </div>

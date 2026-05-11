@@ -8,23 +8,9 @@ import { toast } from "sonner";
 import { clearAppleAuthStarted, clearAppleUsernameSelectionPending } from "@/lib/apple-username";
 import { supabase } from "@/integrations/supabase/client";
 import { initNativeShell } from "@/lib/native-bootstrap";
-import { getPerfClass } from "@/lib/perf-class";
 
 // Fire-and-forget — runs before React mount, but doesn't block it.
 void initNativeShell();
-
-// Stamp the document body with the detected performance class. A handful of
-// global CSS rules in index.css (search: `body[data-perf="low"]`) use this to
-// disable decorative-only animation utility classes (animate-breathe-soft,
-// status-flame-flicker, animate-scale-pulse, etc.) without touching every
-// component individually. The data attribute is set ONCE at startup and the
-// browser short-circuits all the keyframe work for ~20+ utility classes
-// across the app.
-try {
-  document.body.dataset.perf = getPerfClass();
-} catch {
-  // body might not be ready in edge cases; harmless to skip.
-}
 
 let oauthHandled = false;
 // Timestamp of when oauthHandled was set, so we can expire it after a safe window.

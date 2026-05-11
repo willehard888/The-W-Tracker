@@ -23,6 +23,7 @@ import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
 import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
 import RoadToElite from "@/components/RoadToElite";
 import TierLadder from "@/components/TierLadder";
+import YourBlueprintCard from "@/components/coach/YourBlueprintCard";
 
 import StatusNameplate from "@/components/StatusNameplate";
 import LiveRivals from "@/components/LiveRivals";
@@ -663,6 +664,13 @@ const Profile = () => {
       <div className="flex flex-col gap-3 mb-6 animate-reveal animate-reveal-delay-2">
         <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
         <StatCard icon={Trophy} label="Kudos Received" value={kudosReceived || 0} variant="gold" />
+      </div>
+
+      {/* Your Blueprint — Coach's read of who you are. Renders null when
+          the user hasn't completed AthleteProfileOnboarding yet, so this
+          space stays clean for pre-onboarded users. */}
+      <div className="mb-6 animate-reveal animate-reveal-delay-2">
+        <YourBlueprintCard />
       </div>
 
       {/* Tier Ladder — full progression map */}

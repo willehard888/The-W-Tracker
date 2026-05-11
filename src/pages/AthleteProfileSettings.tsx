@@ -29,6 +29,23 @@ const GOALS: Record<string, string> = {
   focus: "Focus",
 };
 const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+// Mental-focus tag → human label, mirrors the onboarding step.
+const MENTAL_FOCUS_LABEL: Record<string, string> = {
+  anxiety: "Anxiety",
+  low_mood: "Low mood",
+  focus: "Focus",
+  sleep: "Sleep",
+  burnout: "Burnout",
+  none: "None",
+};
+// 1–5 emoji rows reused for the read-only stress / mood display.
+const STRESS_EMOJI = ["😌", "🙂", "😐", "😬", "😫"];
+const MOOD_EMOJI   = ["😢", "😕", "😐", "🙂", "😄"];
+
+const formatScale = (
+  value: number | null | undefined,
+  emojis: readonly string[],
+) => (value && value >= 1 && value <= 5 ? `${emojis[value - 1]} ${value}/5` : "—");
 
 const AthleteProfileSettings = () => {
   const navigate = useNavigate();
@@ -95,6 +112,26 @@ const AthleteProfileSettings = () => {
           <Row label="Injuries" value={profile.injuries.join(", ") || "None"} />
           <Row label="Diet" value={profile.dietary.join(", ") || "Omnivore"} />
           <Row label="Equipment" value={profile.equipment.join(", ") || "Bodyweight only"} />
+        </Section>
+
+        {/* Mind & life — holistic well-being fields (migration 20260511181220).
+            Rendered after Constraints so the visual rhythm stays
+            physical → schedule → constraints → mind → coach style. */}
+        <Section title="Mind & life">
+          <Row label="Hobbies" value={profile.hobbies.length > 0 ? profile.hobbies.join(", ") : "—"} />
+          <Row label="Stress" value={formatScale(profile.stress_baseline, STRESS_EMOJI)} />
+          <Row label="Mood"   value={formatScale(profile.mood_baseline, MOOD_EMOJI)} />
+          <Row
+            label="Focus areas"
+            value={
+              profile.mental_health_focus.length > 0
+                ? profile.mental_health_focus
+                    .map((m) => MENTAL_FOCUS_LABEL[m] ?? m)
+                    .join(", ")
+                : "—"
+            }
+          />
+          <Row label="Life context" value={profile.life_context || "—"} />
         </Section>
 
         <Section title="Coach style">

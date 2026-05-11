@@ -1,6 +1,7 @@
 import { Sparkles, FileText, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CoachNudgeCard from "@/components/CoachNudgeCard";
+import LifeOSCompactCard from "@/components/coach/LifeOSCompactCard";
 import { cn } from "@/lib/utils";
 
 interface LatestNudge {
@@ -33,6 +34,12 @@ const CoachStrip = ({ latestNudge, latestBriefing, className }: CoachStripProps)
         Your Coach
       </p>
       <div className="snap-x-strip flex gap-3 overflow-x-auto -mx-4 px-4 pb-1 snap-x snap-mandatory">
+        {/* Life OS — today's holistic 5-domain plan. Renders null when no
+            brief exists for today, so the strip falls back to the
+            "Ask your coach" tile leading. Static, cache-first; zero extra
+            AI invocations beyond the existing 23 h-cached daily generate. */}
+        <LifeOSCompactCard />
+
         {/* AI Coach */}
         <button
           type="button"

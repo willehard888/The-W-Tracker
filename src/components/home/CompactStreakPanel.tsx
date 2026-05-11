@@ -1,8 +1,6 @@
-import { Zap, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Zap, Sparkles, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getEffectiveStreak, getStreakDeadlineState } from "@/lib/streak";
-import StylizedStreakFlame from "./StylizedStreakFlame";
 
 interface CompactStreakPanelProps {
   streak: number;
@@ -12,12 +10,12 @@ interface CompactStreakPanelProps {
 }
 
 const MILESTONES = [
-  { days: 3, label: "3d", emoji: "🔥" },
-  { days: 7, label: "7d", emoji: "⚡" },
-  { days: 14, label: "14d", emoji: "💪" },
-  { days: 30, label: "30d", emoji: "👑" },
-  { days: 60, label: "60d", emoji: "💎" },
-  { days: 100, label: "100d", emoji: "🏆" },
+  { days: 3, label: "3d" },
+  { days: 7, label: "7d" },
+  { days: 14, label: "14d" },
+  { days: 30, label: "30d" },
+  { days: 60, label: "60d" },
+  { days: 100, label: "100d" },
 ];
 
 const getStreakTier = (streak: number) => {
@@ -30,79 +28,26 @@ const getStreakTier = (streak: number) => {
   return { name: "Start", index: -1 };
 };
 
-/* ─── Embers rising from the flame ────────────────────────────────────── */
-const Embers = ({ count, color }: { count: number; color: string }) => (
-  <>
-    {Array.from({ length: count }).map((_, i) => {
-      const delay = (i / count) * 2.4;
-      const duration = 1.8 + (i % 4) * 0.45;
-      const xDrift = (i % 2 === 0 ? -1 : 1) * (4 + (i * 3) % 14);
-      const left = 18 + ((i * 17) % 64);
-      const size = 2 + (i % 3);
-      return (
-        <span
-          key={i}
-          className="streak-fx-ember absolute rounded-full pointer-events-none"
-          style={{
-            width: size,
-            height: size,
-            left: `${left}%`,
-            bottom: 6,
-            background: color,
-            boxShadow: `0 0 ${size * 3}px ${color}`,
-            opacity: 0,
-            // @ts-expect-error CSS custom prop
-            "--ember-x": `${xDrift}px`,
-            animation: `streak-ember-rise ${duration}s ease-out infinite`,
-            animationDelay: `${delay}s`,
-          }}
-        />
-      );
-    })}
-  </>
-);
-
-/* ─── Pulse rings expanding from the flame box ────────────────────────── */
-const PulseRings = ({ color, intensity }: { color: string; intensity: number }) => (
-  <>
-    {Array.from({ length: intensity }).map((_, i) => (
-      <span
-        key={i}
-        className="streak-fx-pulse-ring absolute inset-0 rounded-xl pointer-events-none"
-        style={{
-          border: `2px solid ${color.replace(")", " / 0.55)")}`,
-          animation: `streak-pulse-ring ${2.4 + i * 0.6}s cubic-bezier(0,0,0.2,1) infinite`,
-          animationDelay: `${i * 0.8}s`,
-        }}
-      />
-    ))}
-  </>
-);
-
-/* ─── Sparkle twinkles around tier badge ──────────────────────────────── */
-const Twinkles = ({ color }: { color: string }) => (
-  <>
-    {[
-      { top: -2, left: -2, delay: 0 },
-      { top: -3, right: -3, delay: 0.6 },
-      { bottom: -2, left: -3, delay: 1.2 },
-      { bottom: -3, right: -2, delay: 1.8 },
-    ].map((pos, i) => (
-      <span
-        key={i}
-        className="streak-fx-twinkle absolute w-1 h-1 rounded-full pointer-events-none"
-        style={{
-          ...pos,
-          background: color,
-          boxShadow: `0 0 6px ${color}`,
-          animation: `streak-twinkle 2.4s ease-in-out infinite`,
-          animationDelay: `${pos.delay}s`,
-        }}
-      />
-    ))}
-  </>
-);
-
+/**
+ * CompactStreakPanel — the static, performance-first streak card on the home
+ * page.
+ *
+ * Previous versions rendered the 2,400-line SVG-turbulence flame engine
+ * (`StylizedStreakFlame`) plus dozens of layered ember / spark / smoke /
+ * pulse-ring animations. Even with perf-class gating that whole flame
+ * cinema is now stripped — the panel is purely static markup that still
+ * communicates everything the user actually needs:
+ *
+ *   • Current streak count + "days" suffix
+ *   • Tier badge (Ignited / Heating Up / On Fire / Champion / Diamond / Legendary)
+ *   • Personal best ("Best Nd" + a PB tag when current == best)
+ *   • Loss-aversion microcopy when there's something to protect
+ *   • Progress bar to the next milestone (static; pure CSS width)
+ *   • Deadline countdown when the streak is at risk
+ *
+ * No CSS animations, no JS RAF, no useEffect, no lazy import, no
+ * IntersectionObserver. The home page should land instantly.
+ */
 const CompactStreakPanel = ({
   streak,
   longestStreak,
@@ -112,7 +57,6 @@ const CompactStreakPanel = ({
   const displayStreak = getEffectiveStreak(streak, lastCheckinAt);
   const deadline = getStreakDeadlineState(streak, lastCheckinAt);
   const tier = getStreakTier(displayStreak);
-  
 
   const isHot = tier.index >= 0;
   const isWarm = tier.index >= 1;
@@ -128,47 +72,8 @@ const CompactStreakPanel = ({
   const segmentProgress = nextMilestone
     ? Math.min(100, ((displayStreak - prevDays) / (nextDays - prevDays)) * 100)
     : 100;
-  const closeToMilestone = nextMilestone && segmentProgress >= 75;
 
-  /* ── Animated count-up + milestone shockwave detection ─────────────── */
-  const [countDisplay, setCountDisplay] = useState(displayStreak);
-  const [shockwave, setShockwave] = useState(false);
-  const prevStreakRef = useRef(displayStreak);
-  const numberKey = useRef(0);
-
-  useEffect(() => {
-    const prev = prevStreakRef.current;
-    if (prev === displayStreak) return;
-
-    // Detect milestone crossing
-    const crossedMilestone = MILESTONES.some(
-      (m) => prev < m.days && displayStreak >= m.days,
-    );
-    if (crossedMilestone) {
-      setShockwave(true);
-      const t = setTimeout(() => setShockwave(false), 900);
-    }
-
-    // Count-up animation (300ms)
-    const start = performance.now();
-    const from = prev;
-    const to = displayStreak;
-    const duration = 600;
-    let raf = 0;
-    const step = (now: number) => {
-      const t = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
-      setCountDisplay(Math.round(from + (to - from) * eased));
-      if (t < 1) raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    numberKey.current += 1;
-    prevStreakRef.current = displayStreak;
-
-    return () => cancelAnimationFrame(raf);
-  }, [displayStreak]);
-
-  /* ── Tier-driven styling ───────────────────────────────────────────── */
+  // Tier accent (single source of truth for all of the gold/orange/diamond hues)
   const accent = isLegendary
     ? "hsl(280 80% 65%)"
     : isDiamond
@@ -183,241 +88,30 @@ const CompactStreakPanel = ({
     ? "hsl(14 90% 56%)"
     : "hsl(var(--muted-foreground))";
 
-  const numberClass = isLegendary
-    ? "streak-legendary-text"
-    : isDiamond
-    ? "streak-diamond-text"
-    : isBlazing
-    ? "streak-gold-text"
-    : isWarm
-    ? "streak-orange-text"
-    : isHot
-    ? "text-[hsl(var(--streak-orange))]"
-    : "text-foreground";
-
-  const flameDuration = isLegendary
-    ? "0.7s"
-    : isDiamond
-    ? "0.9s"
-    : isBlazing
-    ? "1.15s"
-    : isOnFire
-    ? "1.4s"
-    : isWarm
-    ? "1.8s"
-    : isHot
-    ? "2.2s"
-    : "0s";
-
-  const flameBg = isLegendary
-    ? "linear-gradient(135deg, hsl(280 70% 50%), hsl(42 78% 54%), hsl(350 80% 55%))"
-    : isDiamond
-    ? "linear-gradient(135deg, hsl(200 80% 50%), hsl(42 78% 54%))"
-    : isBlazing
-    ? "linear-gradient(135deg, hsl(42 60% 40%), hsl(42 90% 65%))"
-    : isOnFire
-    ? "linear-gradient(135deg, hsl(18 80% 45%), hsl(28 95% 65%))"
-    : isWarm
-    ? `linear-gradient(135deg, ${accent.replace(")", " / 0.7)")}, ${accent})`
-    : isHot
-    ? `${accent.replace(")", " / 0.2)")}`
-    : "hsl(var(--secondary))";
-
-  const emberCount = isLegendary ? 14 : isDiamond ? 11 : isBlazing ? 8 : isOnFire ? 6 : isWarm ? 4 : isHot ? 3 : 0;
-  const ringCount = isLegendary ? 3 : isDiamond ? 2 : isBlazing ? 2 : isHot ? 1 : 0;
-  const emberColor = isLegendary
-    ? "hsl(280 90% 75%)"
-    : isDiamond
-    ? "hsl(200 90% 75%)"
-    : isBlazing
-    ? "hsl(42 95% 70%)"
-    : "hsl(28 95% 65%)";
-
-  // Ember burst rays for milestone crossing — 8 directional sparks
-  const burstRays = useMemo(
-    () =>
-      Array.from({ length: 8 }).map((_, i) => ({
-        angle: (i / 8) * 360,
-        delay: (i % 4) * 0.04,
-      })),
-    [],
-  );
-
-  // Panel grows with streak so big flames never clip — base raised for 3-flame trio
-  const panelMinH = 280 + Math.min(80, Math.round(Math.pow(Math.min(displayStreak, 120), 0.6) * 7));
+  const accentDim = accent.replace(")", " / 0.18)");
+  const accentBorder = accent.replace(")", " / 0.55)");
 
   return (
     <div
       className={cn(
-        "relative rounded-2xl p-4 pt-6 border flex flex-col justify-between gap-3 isolate",
-        isHot && "depth-realistic-warm",
-        !isHot && "depth-realistic",
+        "relative rounded-2xl p-4 border flex flex-col justify-between gap-4 isolate",
+        isHot ? "depth-realistic-warm" : "depth-realistic",
         className,
       )}
       style={{
-        minHeight: `${panelMinH}px`,
         borderColor: isHot ? `${accent.replace(")", " / 0.35)")}` : "hsl(var(--border))",
-        // Pure deep black — keeps the flame as the only light source
         background: "radial-gradient(120% 100% at 50% 0%, hsl(0 0% 5%), hsl(0 0% 1.5%))",
         boxShadow: isHot
-          ? `inset 0 0 80px hsl(0 0% 0% / 0.85), 0 0 32px hsl(22 98% 55% / 0.35), 0 0 70px hsl(18 95% 50% / 0.18)`
+          ? "inset 0 0 60px hsl(0 0% 0% / 0.7)"
           : "inset 0 0 40px hsl(0 0% 0% / 0.6)",
-        animation: isHot ? "burn-border-ignite 3s ease-in-out infinite" : undefined,
       }}
     >
-      {/* Floor warm glow removed for crisp look */}
-
-      {/* ═══ THE SCREEN IS BURNING — cinematic fire FX layer ═══ */}
-      {isHot && (
-        <>
-          {/* Top burning edge — looks like the panel rim is on fire */}
-          <span
-            aria-hidden
-            className="absolute inset-x-0 top-0 h-3 pointer-events-none rounded-t-2xl"
-            style={{
-              background:
-                "linear-gradient(180deg, hsl(48 100% 75% / 0.95) 0%, hsl(28 95% 55% / 0.7) 35%, hsl(14 90% 45% / 0.4) 70%, transparent 100%)",
-              filter: "blur(2px)",
-              mixBlendMode: "screen",
-              animation: "burn-edge-flicker 1.4s ease-in-out infinite",
-              zIndex: 30,
-            }}
-          />
-          {/* Ambient flame light cast on the panel — orange wash */}
-          <span
-            aria-hidden
-            className="absolute inset-0 pointer-events-none rounded-2xl"
-            style={{
-              background: `radial-gradient(ellipse 70% 55% at 30% 70%, ${accent.replace(")", " / 0.18)")} 0%, transparent 65%)`,
-              mixBlendMode: "screen",
-              animation: "burn-ambient-pulse 2.4s ease-in-out infinite",
-              zIndex: 1,
-            }}
-          />
-          {/* Heat haze on bottom half — distorts the air */}
-          <span
-            aria-hidden
-            className="absolute inset-x-0 bottom-0 h-2/3 pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(0deg, hsl(22 95% 55% / 0.06) 0%, transparent 60%)",
-              mixBlendMode: "screen",
-              animation: "burn-heat-haze 1.8s ease-in-out infinite",
-              zIndex: 2,
-            }}
-          />
-          {/* Sparks shooting up from the chamber and out into the panel */}
-          {Array.from({ length: isBlazing ? 14 : 9 }).map((_, i) => {
-            const left = 22 + ((i * 23) % 56);
-            const dur = 1.6 + (i % 5) * 0.35;
-            const delay = (i * 0.27) % 3;
-            const drift = ((i % 2 === 0 ? 1 : -1) * (3 + (i * 4) % 16));
-            const size = 1.5 + (i % 3) * 0.6;
-            return (
-              <span
-                key={`sp-${i}`}
-                aria-hidden
-                className="absolute rounded-full pointer-events-none"
-                style={{
-                  left: `${left}%`,
-                  bottom: 60,
-                  width: size,
-                  height: size,
-                  background: i % 4 === 0 ? "hsl(48 100% 88%)" : accent,
-                  boxShadow: `0 0 ${size * 4}px ${accent}, 0 0 ${size * 9}px ${accent.replace(")", " / 0.55)")}`,
-                  // @ts-expect-error css var
-                  "--spark-x": `${drift}px`,
-                  animation: `burn-spark-rise ${dur}s ease-out infinite`,
-                  animationDelay: `${delay}s`,
-                  mixBlendMode: "screen",
-                  zIndex: 25,
-                }}
-              />
-            );
-          })}
-          {/* Smoke plume rising from the chamber top */}
-          <span
-            aria-hidden
-            className="absolute pointer-events-none rounded-full"
-            style={{
-              left: "27%",
-              top: 8,
-              width: 80,
-              height: 60,
-              background:
-                "radial-gradient(ellipse at center, hsl(0 0% 70% / 0.45) 0%, hsl(0 0% 50% / 0.25) 45%, transparent 75%)",
-              animation: "burn-smoke-drift 4.5s ease-out infinite",
-              zIndex: 28,
-            }}
-          />
-          <span
-            aria-hidden
-            className="absolute pointer-events-none rounded-full"
-            style={{
-              left: "27%",
-              top: 8,
-              width: 60,
-              height: 50,
-              background:
-                "radial-gradient(ellipse at center, hsl(0 0% 75% / 0.35) 0%, transparent 75%)",
-              animation: "burn-smoke-drift 5.2s ease-out 1.8s infinite",
-              zIndex: 28,
-            }}
-          />
-          {/* Falling embers — outside the chamber, rain down past the right side */}
-          {isBlazing && Array.from({ length: 6 }).map((_, i) => {
-            const right = 6 + (i * 11) % 30;
-            const top = 20 + (i * 17) % 40;
-            const dur = 2.4 + (i % 3) * 0.6;
-            const delay = (i * 0.7) % 4;
-            const size = 1.5 + (i % 2);
-            return (
-              <span
-                key={`em-${i}`}
-                aria-hidden
-                className="absolute rounded-full pointer-events-none"
-                style={{
-                  right: `${right}%`,
-                  top: `${top}%`,
-                  width: size,
-                  height: size,
-                  background: accent,
-                  boxShadow: `0 0 ${size * 3}px ${accent}`,
-                  // @ts-expect-error css var
-                  "--ember-x": `${(i % 2 === 0 ? -1 : 1) * 8}px`,
-                  animation: `burn-ember-fall ${dur}s ease-in infinite`,
-                  animationDelay: `${delay}s`,
-                  mixBlendMode: "screen",
-                  zIndex: 24,
-                }}
-              />
-            );
-          })}
-        </>
-      )}
-
-      {/* Aurora sweep (Legendary only — premium tier flex) */}
-      {isLegendary && (
-        <div
-          className="streak-fx-aurora absolute inset-y-0 w-1/2 pointer-events-none opacity-50"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, hsl(280 80% 70% / 0.14) 30%, hsl(42 95% 70% / 0.16) 50%, hsl(350 85% 65% / 0.14) 70%, transparent)",
-            animation: "streak-aurora-sweep 6s ease-in-out infinite",
-          }}
-        />
-      )}
-
       {/* Top: label + tier badge */}
       <div className="relative flex items-center justify-between z-10">
         <div className="flex items-center gap-2">
           <span
-            className="inline-block h-1.5 w-1.5 rounded-full"
-            style={{
-              background: accent,
-              boxShadow: isHot ? `0 0 8px ${accent}` : undefined,
-              animation: isHot ? "pulse 1.6s ease-in-out infinite" : undefined,
-            }}
+            className="inline-block h-1.5 w-1.5 rounded-full shrink-0"
+            style={{ background: accent }}
           />
           <p
             className="text-[10px] font-bold uppercase tracking-[0.22em]"
@@ -427,292 +121,70 @@ const CompactStreakPanel = ({
           </p>
         </div>
         {tier.index >= 1 && (
-          <div className="relative">
-            <span
-              className={cn(
-                "inline-flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md border relative",
-                isLegendary && "animate-[streak-badge-shimmer_2.8s_ease-in-out_infinite]",
-              )}
-              style={{
-                background: `${accent.replace(")", " / 0.18)")}`,
-                color: accent,
-                borderColor: `${accent.replace(")", " / 0.55)")}`,
-                boxShadow: isHot ? `0 0 10px ${accent.replace(")", " / 0.35)")}` : undefined,
-              }}
-            >
-              {isLegendary && <Sparkles size={9} />}
-              {tier.name}
-            </span>
-            {isDiamond && <Twinkles color={accent} />}
-          </div>
+          <span
+            className="inline-flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md border"
+            style={{
+              background: accentDim,
+              color: accent,
+              borderColor: accentBorder,
+            }}
+          >
+            {isLegendary && <Sparkles size={9} />}
+            {tier.name}
+          </span>
         )}
       </div>
 
-      {/* Hero: 3-flame fire-pit + number — flame trio is the FOCAL POINT */}
-      <div className="relative flex items-center gap-3.5 z-10">
+      {/* Hero: static flame icon + count */}
+      <div className="relative flex items-center gap-4 z-10">
+        {/* Static flame medallion (replaces 2400-line StylizedStreakFlame) */}
         <div
-          className="relative flex h-44 w-32 items-end justify-center rounded-2xl shrink-0 pb-1"
+          className="relative h-20 w-20 rounded-2xl shrink-0 flex items-center justify-center border"
           style={{
-            // Stone fire-pit: deep black chamber with warm ember glow at the very bottom
+            borderColor: isHot ? accentBorder : "hsl(var(--border))",
             background: isHot
-              ? `
-                radial-gradient(ellipse 85% 35% at 50% 102%, hsl(22 98% 55% / 0.95) 0%, hsl(20 95% 50% / 0.4) 28%, transparent 60%),
-                radial-gradient(ellipse at 50% 110%, hsl(18 75% 22%) 0%, hsl(16 35% 9%) 32%, hsl(0 0% 3%) 68%, hsl(0 0% 1%) 100%)
-              `
-              : "transparent",
-            color: isHot ? "white" : "hsl(var(--muted-foreground))",
-            boxShadow: isHot
-              ? `inset 0 2px 0 hsl(0 0% 100% / 0.08), inset 0 -10px 22px hsl(0 0% 0% / 0.7), inset 0 0 26px hsl(0 0% 0% / 0.55)`
-              : undefined,
-            overflow: "visible",
+              ? `radial-gradient(ellipse at 50% 65%, ${accent.replace(")", " / 0.22)")} 0%, hsl(0 0% 4%) 70%)`
+              : "linear-gradient(180deg, hsl(0 0% 8%), hsl(0 0% 4%))",
+            boxShadow: isHot ? `0 0 24px -8px ${accent.replace(")", " / 0.5)")}` : undefined,
           }}
         >
-          {/* Stone-textured chamber walls — subtle hatching */}
-          {isHot && (
-            <span
-              aria-hidden
-              className="absolute inset-0 pointer-events-none opacity-40"
-              style={{
-                background:
-                  "repeating-linear-gradient(90deg, transparent 0px, hsl(0 0% 100% / 0.025) 6px, transparent 12px), repeating-linear-gradient(0deg, transparent 0px, hsl(0 0% 0% / 0.18) 14px, transparent 28px)",
-                mixBlendMode: "overlay",
-              }}
-            />
-          )}
-
-          {/* Top vignette — chimney shadow */}
-          {isHot && (
-            <span
-              aria-hidden
-              className="absolute inset-x-0 top-0 h-5 pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(180deg, hsl(0 0% 0% / 0.55), transparent)",
-              }}
-            />
-          )}
-
-          {/* Realistic "fuel pool" pulse beneath flame — ember bed glow */}
-          {isHot && (
-            <span
-              aria-hidden
-              className="streak-fx-fuel absolute left-1/2 bottom-[3px] h-[10px] w-[64px] rounded-[50%] pointer-events-none"
-              style={{
-                background: `radial-gradient(ellipse at center, ${accent} 0%, ${accent.replace(")", " / 0.55)")} 40%, hsl(14 80% 28% / 0.5) 70%, transparent 100%)`,
-                transform: "translateX(-50%)",
-                filter: "blur(2.5px)",
-                animation: "streak-fuel-pulse 2.4s ease-in-out infinite",
-                mixBlendMode: "screen",
-                zIndex: 2,
-              }}
-            />
-          )}
-
-          {/* Glowing coals — tiny bright pinpoints inside the ember bed */}
-          {isHot &&
-            [
-              { left: "30%", size: 2.5, delay: "0s" },
-              { left: "46%", size: 3, delay: "0.6s" },
-              { left: "60%", size: 2, delay: "1.2s" },
-              { left: "38%", size: 2, delay: "1.8s" },
-              { left: "54%", size: 2.5, delay: "0.3s" },
-            ].map((c, i) => (
-              <span
-                key={`coal-${i}`}
-                aria-hidden
-                className="absolute bottom-[3px] rounded-full pointer-events-none"
-                style={{
-                  left: c.left,
-                  width: c.size,
-                  height: c.size,
-                  background: accent,
-                  boxShadow: `0 0 ${c.size * 3}px ${accent}, 0 0 ${c.size * 6}px ${accent.replace(")", " / 0.6)")}`,
-                  animation: `streak-fuel-pulse ${1.4 + i * 0.3}s ease-in-out infinite`,
-                  animationDelay: c.delay,
-                  zIndex: 3,
-                }}
-              />
-            ))}
-
-          {/* Charred log #1 — left-leaning */}
-          {isHot && (
-            <span
-              aria-hidden
-              className="absolute pointer-events-none"
-              style={{
-                left: "8px",
-                bottom: "5px",
-                width: "32px",
-                height: "7px",
-                borderRadius: "3.5px",
-                background:
-                  "linear-gradient(180deg, hsl(20 18% 14%) 0%, hsl(18 12% 8%) 60%, hsl(0 0% 3%) 100%)",
-                boxShadow: `inset 0 1px 0 hsl(0 0% 100% / 0.06), inset 0 -1px 0 hsl(0 0% 0% / 0.5), 0 -1px 5px ${accent.replace(")", " / 0.5)")}`,
-                transform: "rotate(-12deg)",
-                zIndex: 4,
-              }}
-            />
-          )}
-
-          {/* Charred log #2 — right-leaning, crossing log #1 */}
-          {isHot && (
-            <span
-              aria-hidden
-              className="absolute pointer-events-none"
-              style={{
-                right: "6px",
-                bottom: "4px",
-                width: "34px",
-                height: "7px",
-                borderRadius: "3.5px",
-                background:
-                  "linear-gradient(180deg, hsl(20 16% 13%) 0%, hsl(16 10% 7%) 60%, hsl(0 0% 2%) 100%)",
-                boxShadow: `inset 0 1px 0 hsl(0 0% 100% / 0.05), inset 0 -1px 0 hsl(0 0% 0% / 0.55), 0 -1px 6px ${accent.replace(")", " / 0.6)")}`,
-                transform: "rotate(10deg)",
-                zIndex: 4,
-              }}
-            />
-          )}
-
-          {/* Hot crack on log #2 — glowing fissure where wood is burning through */}
-          {isHot && (
-            <span
-              aria-hidden
-              className="absolute pointer-events-none"
-              style={{
-                right: "10px",
-                bottom: "6px",
-                width: "24px",
-                height: "1.5px",
-                background: `linear-gradient(90deg, transparent, ${accent}, transparent)`,
-                boxShadow: `0 0 6px ${accent}`,
-                transform: "rotate(10deg)",
-                filter: "blur(0.4px)",
-                animation: `streak-fuel-pulse ${isBlazing ? 1.8 : 2.4}s ease-in-out infinite`,
-                zIndex: 5,
-              }}
-            />
-          )}
-
-          {/* Inner overflow clip for embers (kept clipped so embers stay within stone walls) */}
-          <div className="absolute inset-0 rounded-xl overflow-hidden">
-            {isHot && <Embers count={emberCount} color={emberColor} />}
-            {/* Inner glow ring removed */}
-          </div>
-
-          {/* Pulse rings (outside clip) */}
-          {isHot && <PulseRings color={accent} intensity={ringCount} />}
-
-          {/* Conic ring (Diamond+) */}
-          {isDiamond && (
-            <span
-              aria-hidden
-              className="absolute -inset-[3px] rounded-xl pointer-events-none"
-              style={{
-                background: isLegendary
-                  ? "conic-gradient(from 0deg, hsl(280 80% 65%), hsl(42 95% 70%), hsl(350 85% 65%), hsl(200 85% 70%), hsl(280 80% 65%))"
-                  : "conic-gradient(from 0deg, hsl(200 85% 65%), hsl(42 90% 65%), hsl(200 85% 65%))",
-                animation: "streak-conic-spin 6s linear infinite",
-                opacity: 0.55,
-                WebkitMask:
-                  "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-                WebkitMaskComposite: "xor",
-                maskComposite: "exclude",
-                padding: 2,
-              }}
-            />
-          )}
-
-          {/* Double shockwave on milestone cross */}
-          {shockwave && (
-            <>
-              <span
-                aria-hidden
-                className="streak-fx-shockwave absolute inset-0 rounded-xl pointer-events-none"
-                style={{
-                  border: `4px solid ${accent}`,
-                  animation: "streak-shockwave 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-                }}
-              />
-              <span
-                aria-hidden
-                className="streak-fx-shockwave absolute inset-0 rounded-xl pointer-events-none"
-                style={{
-                  border: `2px solid ${accent}`,
-                  animation: "streak-shockwave-secondary 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards",
-                }}
-              />
-              {/* Ember burst rays — 8 directional sparks */}
-              {burstRays.map((ray, i) => (
-                <span
-                  key={`burst-${i}`}
-                  aria-hidden
-                  className="streak-fx-burst absolute top-1/2 left-1/2 w-1 h-3 rounded-full pointer-events-none"
-                  style={{
-                    background: `linear-gradient(180deg, ${accent}, transparent)`,
-                    boxShadow: `0 0 8px ${accent}`,
-                    // @ts-expect-error custom prop
-                    "--burst-angle": `${ray.angle}deg`,
-                    animation: "streak-ember-burst 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-                    animationDelay: `${ray.delay}s`,
-                  }}
-                />
-              ))}
-            </>
-          )}
-
-          {/* Stylized progressive streak flame — escapes the panel for cinematic effect */}
-          <div
-            className="absolute left-1/2 bottom-[2px] z-[40] pointer-events-none"
-            style={{ transform: "translateX(-50%)", overflow: "visible" }}
-          >
-            <StylizedStreakFlame streak={displayStreak} size={150} />
-          </div>
+          <Flame
+            size={36}
+            strokeWidth={1.5}
+            className="shrink-0"
+            style={{
+              color: isHot ? accent : "hsl(var(--muted-foreground))",
+              filter: isHot ? `drop-shadow(0 0 8px ${accent.replace(")", " / 0.55)")})` : undefined,
+            }}
+            fill={isHot ? accent : "transparent"}
+            fillOpacity={isHot ? 0.18 : 0}
+            aria-hidden
+          />
         </div>
 
         <div className="min-w-0 flex-1 relative z-[50]">
-          {/* Live "fire is burning" indicator */}
           {isHot && (
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span
-                aria-hidden
-                className="inline-block h-1.5 w-1.5 rounded-full"
-                style={{
-                  background: accent,
-                  boxShadow: `0 0 8px ${accent}, 0 0 16px ${accent.replace(")", " / 0.5)")}`,
-                  animation: "pulse 1.2s ease-in-out infinite",
-                }}
-              />
-              <span
-                className="text-[8px] font-black uppercase tracking-[0.24em] text-3d-fire-sm"
-                style={{ color: accent }}
-              >
-                Burning · {tier.name}
-              </span>
-            </div>
+            <p
+              className="text-[8.5px] font-black uppercase tracking-[0.24em] mb-1.5"
+              style={{ color: accent }}
+            >
+              Burning · {tier.name}
+            </p>
           )}
-          <div className="flex items-baseline gap-1.5 leading-none relative">
-            {/* Number halo removed */}
+          <div className="flex items-baseline gap-1.5 leading-none">
             <span
-              key={numberKey.current}
               className={cn(
                 "font-black font-display tabular-nums tracking-tighter leading-[0.85] inline-block",
-                isHot ? "text-fire-hot" : "text-3d-fire",
                 displayStreak >= 100 ? "text-[44px]" : "text-[54px]",
-                numberClass,
               )}
               style={{
-                filter: undefined,
-                animation: isHot
-                  ? "streak-number-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), text-fire-heat 3.2s ease-in-out infinite 0.7s, text-fire-shimmer 4.5s linear infinite 0.7s"
-                  : "streak-number-in 0.5s ease-out",
-                transformOrigin: "center bottom",
+                color: isHot ? "hsl(0 0% 98%)" : "hsl(var(--foreground))",
               }}
             >
-              {countDisplay}
+              {displayStreak}
             </span>
             <span
-              className="font-black font-display text-[11px] uppercase tracking-[0.22em] text-3d-fire-sm"
+              className="font-black font-display text-[11px] uppercase tracking-[0.22em]"
               style={{ color: isHot ? accent : "hsl(var(--muted-foreground) / 0.7)" }}
             >
               day{displayStreak === 1 ? "" : "s"}
@@ -726,39 +198,41 @@ const CompactStreakPanel = ({
             {displayStreak === longestStreak && displayStreak > 0 && (
               <span
                 className="text-[8.5px] font-black uppercase tracking-wider flex items-center gap-0.5 text-background"
-                style={{ backgroundColor: accent, padding: '1px 3px', borderRadius: '2px' }}
+                style={{ backgroundColor: accent, padding: "1px 3px", borderRadius: "2px" }}
               >
-                <Zap size={8} className="animate-pulse" /> PB
+                <Zap size={8} /> PB
               </span>
             )}
           </div>
-          {/* Loss-aversion microcopy — shown only when there's something to lose. */}
+          {/* Loss-aversion microcopy — kept; pure text. */}
           {displayStreak >= 3 && !deadline?.expired && (
             <p
               className="mt-1.5 text-[9px] font-black uppercase tracking-[0.18em] flex items-center gap-1 leading-none"
-              style={{
-                color: isHot ? accent : "hsl(var(--muted-foreground))",
-                textShadow: isHot ? `0 0 10px ${accent.replace(")", " / 0.45)")}` : undefined,
-              }}
+              style={{ color: isHot ? accent : "hsl(var(--muted-foreground))" }}
             >
-              <span aria-hidden className="inline-block h-1 w-1 rounded-full" style={{ background: accent, boxShadow: `0 0 6px ${accent}` }} />
+              <span
+                aria-hidden
+                className="inline-block h-1 w-1 rounded-full shrink-0"
+                style={{ background: accent }}
+              />
               {isLegendary ? "Don't let it die" : isDiamond ? "Protect the fire" : "Keep it alive"}
             </p>
           )}
         </div>
       </div>
 
-      {/* Footer: next milestone progress OR deadline warning */}
+      {/* Footer: next milestone progress OR deadline warning. Static bar — no
+          shine sweep, no pump animation. */}
       <div className="relative z-10">
         {deadline?.expired && displayStreak > 0 ? (
-          <p className="text-[10px] font-black text-destructive animate-pulse uppercase tracking-wider">
-            💀 At risk — check in NOW
+          <p className="text-[10px] font-black text-destructive uppercase tracking-wider">
+            ⚠ At risk — check in now
           </p>
         ) : deadline?.urgent && displayStreak > 0 ? (
           <div className="space-y-1">
             <div className="flex items-center justify-between text-[10px]">
               <span className="font-bold text-destructive uppercase tracking-wider">
-                ⚠️ {deadline.hours}h {deadline.mins}m left
+                ⚠ {deadline.hours}h {deadline.mins}m left
               </span>
               {nextMilestone && (
                 <span className="text-muted-foreground/80 tabular-nums font-bold">
@@ -766,13 +240,12 @@ const CompactStreakPanel = ({
                 </span>
               )}
             </div>
-            <div className="h-1.5 rounded-full bg-secondary/70 overflow-hidden surface-inset">
+            <div className="h-1.5 rounded-full bg-secondary/70 overflow-hidden">
               <div
                 className="h-full rounded-full"
                 style={{
                   width: `${Math.max(8, segmentProgress)}%`,
-                  background: `linear-gradient(90deg, ${accent}, ${accent.replace("60%", "75%")})`,
-                  boxShadow: `0 0 6px ${accent.replace(")", " / 0.5)")}`,
+                  background: accent,
                 }}
               />
             </div>
@@ -784,44 +257,17 @@ const CompactStreakPanel = ({
                 Next
               </span>
               <span className="font-black tabular-nums" style={{ color: accent }}>
-                {nextMilestone.days - displayStreak}d → {nextMilestone.emoji}{" "}
-                {nextMilestone.label}
+                {nextMilestone.days - displayStreak}d → {nextMilestone.label}
               </span>
             </div>
-            <div
-              className="h-1.5 rounded-full bg-secondary/70 overflow-hidden surface-inset relative"
-              style={{
-                boxShadow: isHot
-                  ? `0 0 6px ${accent.replace(")", " / 0.3)")}, inset 0 1px 2px hsl(0 0% 0% / 0.4)`
-                  : "inset 0 1px 2px hsl(0 0% 0% / 0.3)",
-              }}
-            >
+            <div className="h-1.5 rounded-full bg-secondary/70 overflow-hidden">
               <div
-                className="h-full rounded-full transition-all duration-1000 relative overflow-hidden"
+                className="h-full rounded-full"
                 style={{
                   width: `${Math.max(6, segmentProgress)}%`,
-                  background: isLegendary
-                    ? "linear-gradient(90deg, hsl(280 80% 60%), hsl(42 90% 65%), hsl(200 85% 65%))"
-                    : isDiamond
-                    ? "linear-gradient(90deg, hsl(200 85% 60%), hsl(42 90% 65%))"
-                    : `linear-gradient(90deg, ${accent}, ${accent.replace("60%", "75%")})`,
-                  // @ts-expect-error CSS custom prop
-                  "--bar-glow": `${accent.replace(")", " / 0.7)")}`,
-                  animation: closeToMilestone
-                    ? "streak-bar-pump 1.6s ease-in-out infinite"
-                    : undefined,
-                  boxShadow: `0 0 8px ${accent.replace(")", " / 0.55)")}`,
+                  background: accent,
                 }}
-              >
-                <div
-                  className="absolute inset-0 -translate-x-full"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.55), transparent)",
-                    animation: "shine 2.2s ease-in-out infinite",
-                  }}
-                />
-              </div>
+              />
             </div>
           </div>
         ) : (
@@ -829,7 +275,7 @@ const CompactStreakPanel = ({
             className="text-[10px] font-black uppercase tracking-wider text-center"
             style={{ color: accent }}
           >
-            🏆 All milestones reached
+            ★ All milestones reached
           </p>
         )}
       </div>

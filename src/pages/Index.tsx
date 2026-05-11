@@ -15,7 +15,6 @@ import { getTierConfig } from "@/lib/status-tiers";
 import { useTierRisk } from "@/hooks/use-tier-risk";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { useDailyPulse } from "@/hooks/use-daily-pulse";
-import { getPerfClass } from "@/lib/perf-class";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -136,50 +135,47 @@ const Index = () => {
   const isLegend = tier === "legend";
   const isApex = tier === "apex";
 
-  // Tier-reactive page-level aura — softer, wider falloff. Memoized so we
-  // don't recompute the gradient string on every render (paint-cost trigger).
-  const isLowPerf = useMemo(() => getPerfClass() === "low", []);
-  const pageAura = useMemo(() => {
-    if (isLegend)        return "radial-gradient(ellipse 90% 70% at center top, hsl(280 70% 60% / 0.11) 0%, hsl(42 78% 54% / 0.05) 45%, transparent 80%)";
-    if (isApex)          return "radial-gradient(ellipse 90% 70% at center top, hsl(18 95% 58% / 0.10) 0%, hsl(42 78% 54% / 0.04) 45%, transparent 80%)";
-    if (tier === "elite") return "radial-gradient(ellipse 90% 70% at center top, hsl(42 78% 54% / 0.10) 0%, hsl(180 70% 50% / 0.04) 45%, transparent 80%)";
-    return                "radial-gradient(ellipse 90% 70% at center top, hsl(42 78% 54% / 0.075) 0%, hsl(42 78% 54% / 0.025) 45%, transparent 80%)";
-  }, [tier, isLegend, isApex]);
-  const emberBand = useMemo(() => {
-    if (isApex)   return "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(18 95% 58% / 0.22) 0%, hsl(42 78% 54% / 0.10) 40%, transparent 75%)";
-    if (isLegend) return "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(280 70% 60% / 0.20) 0%, hsl(42 78% 54% / 0.10) 40%, transparent 75%)";
-    return                "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(18 92% 56% / 0.18) 0%, hsl(42 78% 54% / 0.08) 45%, transparent 80%)";
-  }, [isApex, isLegend]);
+  // Tier-reactive page-level aura — softer, wider falloff
+  const pageAura = isLegend
+    ? "radial-gradient(ellipse 90% 70% at center top, hsl(280 70% 60% / 0.11) 0%, hsl(42 78% 54% / 0.05) 45%, transparent 80%)"
+    : isApex
+    ? "radial-gradient(ellipse 90% 70% at center top, hsl(18 95% 58% / 0.10) 0%, hsl(42 78% 54% / 0.04) 45%, transparent 80%)"
+    : tier === "elite"
+    ? "radial-gradient(ellipse 90% 70% at center top, hsl(42 78% 54% / 0.10) 0%, hsl(180 70% 50% / 0.04) 45%, transparent 80%)"
+    : "radial-gradient(ellipse 90% 70% at center top, hsl(42 78% 54% / 0.075) 0%, hsl(42 78% 54% / 0.025) 45%, transparent 80%)";
 
   return (
     <div className="h-full pb-6 px-4 pt-5 safe-top relative overflow-y-auto overflow-x-hidden">
-      {/* Tier-reactive top aura — single layer; the ember band and shimmer
-          line below are decorative and skipped on low-perf devices to cut
-          paint cost during scroll. */}
+      {/* Tier-reactive top aura */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[760px] h-[460px] pointer-events-none z-0"
         style={{ background: pageAura }}
       />
 
       {/* Ember band — soft fire-in-the-distance warmth tied to user's streak */}
-      {!isLowPerf && profile.streak >= 3 && (
+      {profile.streak >= 3 && (
         <div
           aria-hidden
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[520px] h-[180px] pointer-events-none z-0 opacity-70"
-          style={{ background: emberBand }}
-        />
-      )}
-
-      {!isLowPerf && (
-        <div
-          className="absolute top-0 left-0 right-0 h-[1px] pointer-events-none z-10 opacity-25"
           style={{
             background:
-              "linear-gradient(90deg, transparent 10%, hsl(42 78% 54% / 0.6) 50%, transparent 90%)",
-            animation: "shimmer-slide 6s ease-in-out infinite",
+              isApex
+                ? "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(18 95% 58% / 0.22) 0%, hsl(42 78% 54% / 0.10) 40%, transparent 75%)"
+                : isLegend
+                ? "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(280 70% 60% / 0.20) 0%, hsl(42 78% 54% / 0.10) 40%, transparent 75%)"
+                : "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(18 92% 56% / 0.18) 0%, hsl(42 78% 54% / 0.08) 45%, transparent 80%)",
           }}
         />
       )}
+
+      <div
+        className="absolute top-0 left-0 right-0 h-[1px] pointer-events-none z-10 opacity-25"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent 10%, hsl(42 78% 54% / 0.6) 50%, transparent 90%)",
+          animation: "shimmer-slide 6s ease-in-out infinite",
+        }}
+      />
 
       {/* COMMAND DECK — Streak + Lock Your Day */}
       <div className="animate-reveal mb-4 relative z-10">

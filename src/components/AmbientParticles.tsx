@@ -109,26 +109,8 @@ const AmbientParticles = () => {
     // Throttle frame rate — 18fps mobile / low-end, 24fps desktop. Ambient drift doesn't need more.
     const FRAME_MS = 1000 / (isMobile || isLowEnd ? 18 : 24);
     let last = 0;
-    // Pause RAF entirely while the user is actively scrolling — canvas redraws
-    // contend with scroll for the GPU, which the user perceives as jank. We
-    // resume ~150 ms after the last scroll event (scroll-end heuristic).
-    let isScrolling = false;
-    let scrollEndTimer = 0;
-    const onScroll = () => {
-      isScrolling = true;
-      window.clearTimeout(scrollEndTimer);
-      scrollEndTimer = window.setTimeout(() => {
-        isScrolling = false;
-        // Restart RAF if we paused mid-scroll
-        if (running.current) raf.current = requestAnimationFrame(animate);
-      }, 150);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
     const animate = (now: number) => {
       if (!running.current) return;
-      // Skip the frame budget AND skip queueing the next frame while scrolling.
-      // The scroll-end timer above will re-queue when the user stops.
-      if (isScrolling) return;
       raf.current = requestAnimationFrame(animate);
       if (now - last < FRAME_MS) return;
       last = now;
@@ -162,8 +144,6 @@ const AmbientParticles = () => {
       cancelAnimationFrame(raf.current);
       cancelAnimationFrame(resizeRaf);
       window.removeEventListener("resize", onResize);
-      window.removeEventListener("scroll", onScroll, { capture: true } as any);
-      window.clearTimeout(scrollEndTimer);
       document.removeEventListener("visibilitychange", onVisibility);
       io.disconnect();
     };

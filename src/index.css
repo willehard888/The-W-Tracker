@@ -4624,14 +4624,3 @@ p, span.selectable, input, textarea, [contenteditable] {
   animation: scale-pulse 2.2s ease-in-out infinite;
   will-change: transform;
 }
-
-/* ── Pause every descendant animation when the streak panel scrolls offscreen.
-      An IntersectionObserver in CompactStreakPanel toggles
-      `data-fx-paused="true"`. The browser then halts every running CSS
-      animation under the panel until it re-enters the viewport. The inner
-      StylizedStreakFlame already self-throttles via its own observer; this
-      rule covers the dozens of CSS animations spawned by the panel wrapper. */
-.streak-panel-root[data-fx-paused="true"],
-.streak-panel-root[data-fx-paused="true"] * {
-  animation-play-state: paused !important;
-}

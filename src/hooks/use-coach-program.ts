@@ -129,6 +129,9 @@ export const useCoachProgram = () => {
 
   return {
     isLoading: programQuery.isLoading,
+    // Surface either query's error so Coach.tsx can show actionable UI
+    // (e.g. when the DB migration for coach_programs hasn't been applied).
+    error: (programQuery.error ?? logsQuery.error) as Error | null,
     program,
     logs,
     currentWeek,

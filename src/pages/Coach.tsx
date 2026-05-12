@@ -39,11 +39,58 @@ const Coach = () => {
   // users. The correct names are used now.
   const { session, isElite, loading } = useAuth();
   const navigate = useNavigate();
-  const { isLoading, program, logs, currentWeek, todayDayIndex, refetch } = useCoachProgram();
-  const { profile: athlete, isLoading: athleteLoading, refetch: refetchAthlete } = useAthleteProfile();
+  const {
+    isLoading,
+    error: programError,
+    program,
+    logs,
+    currentWeek,
+    todayDayIndex,
+    refetch,
+  } = useCoachProgram();
+  const {
+    profile: athlete,
+    isLoading: athleteLoading,
+    error: athleteError,
+    refetch: refetchAthlete,
+  } = useAthleteProfile();
 
   if (loading) return <PageSkeleton />;
   if (isLoading || athleteLoading) return <PageSkeleton />;
+
+  // Surface real backend errors instead of looping the skeleton or silently
+  // pushing users into the onboarding flow when the underlying table isn't
+  // present. Most common cause: the Supabase migrations for coach_athlete_profile
+  // / coach_programs haven't been applied to the user's project yet. Show the
+  // actual error message so the dev / user knows exactly what to fix.
+  if (athleteError || programError) {
+    const err = (athleteError ?? programError)!;
+    return (
+      <div className="flex flex-col h-full">
+        <MinimalTopBar onBack={() => navigate(-1)} navigate={navigate} />
+        <div className="flex-1 flex items-center justify-center px-6 text-center">
+          <div className="max-w-sm space-y-4">
+            <div className="text-3xl" aria-hidden>⚠️</div>
+            <h2 className="text-lg font-display font-bold">W Coach failed to load</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed break-words">
+              {err.message || "Unknown error"}
+            </p>
+            <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
+              If this mentions "relation does not exist", the Coach database
+              tables haven't been deployed yet. Apply the migrations under
+              <code className="px-1 mx-1 rounded bg-card/60 border border-border/40">
+                supabase/migrations/
+              </code>
+              and try again.
+            </p>
+            <Button onClick={() => { refetch(); refetchAthlete(); }} className="w-full">
+              <RotateCw size={14} className="mr-2" /> Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Everyone (free + Elite) onboards. The profile drives Life OS quality.
   if (!athlete?.onboarded) {

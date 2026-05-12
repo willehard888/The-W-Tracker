@@ -98,6 +98,10 @@ export const useAthleteProfile = () => {
   return {
     profile: query.data ?? null,
     isLoading: query.isLoading,
+    // Surface the query error so Coach.tsx can render a "DB missing" UI
+    // instead of looping the skeleton or silently dropping users into the
+    // onboarding flow when the underlying table isn't deployed.
+    error: query.error as Error | null,
     refetch: query.refetch,
     upsert: upsert.mutateAsync,
     isSaving: upsert.isPending,

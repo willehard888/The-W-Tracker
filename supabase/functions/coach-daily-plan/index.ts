@@ -5,6 +5,7 @@
 // DEFINER RPC `upsert_daily_plan`.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { buildPersonaBlock, buildHolisticContext } from "../_shared/coach-persona.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -117,11 +118,12 @@ const PROTOCOL_BY_ID: Record<string, typeof PROTOCOL_CATALOG[number]> = Object.f
   PROTOCOL_CATALOG.map((p) => [p.id, p]),
 );
 
-const TONE_TEMPLATES: Record<string, string> = {
-  drill_sergeant: "Blunt, direct, push hard. Short imperative sentences. No pleasantries.",
-  calm_mentor: "Steady, supportive, precise. Calm authority. No hype.",
-  scientist: "Cite mechanisms briefly. Numbers, percentages, dose-response.",
-  hype: "High energy. Wins, momentum, identity language. Still specific.",
+// Voice-only nuance — persona itself lives in ../_shared/coach-persona.ts.
+const TONE_VOICE: Record<string, string> = {
+  drill_sergeant: "Voice: clipped, imperative. No pleasantries, no hedging.",
+  calm_mentor: "Voice: steady, fuller sentences. Calm authority.",
+  scientist: "Voice: cite mechanism briefly. One percentage / dose anchor per mission.",
+  hype: "Voice: high energy, identity language. Still specific, never cheesy.",
 };
 
 const buildPrompt = (
@@ -151,13 +153,49 @@ const buildPrompt = (
 
   // Personalization block
   const tone = athlete?.tone_pref ?? "calm_mentor";
-  const toneRule = TONE_TEMPLATES[tone] ?? TONE_TEMPLATES.calm_mentor;
+  const toneRule = TONE_VOICE[tone] ?? TONE_VOICE.calm_mentor;
+  const focus = new Set<string>(((athlete?.mental_health_focus as string[]) ?? []).filter(Boolean));
   const noGo = new Set<string>([
     ...((athlete?.no_go_protocols as string[]) ?? []),
     ...skipStats.filter((s) => s.skips >= 5).map((s) => s.protocol_id),
   ]);
+  // Hard-block HIIT / cold-shock first-line when anxiety is flagged
+  if (focus.has("anxiety")) {
+    PROTOCOL_CATALOG
+      .filter((p) => /hiit|sprint|cold-?(shock|plunge|shower)/i.test(p.id) || /hiit|sprint/i.test(p.title))
+      .forEach((p) => noGo.add(p.id));
+  }
   const allowedCatalog = PROTOCOL_CATALOG.filter((p) => !noGo.has(p.id));
   const allowedIds = allowedCatalog.map((p) => p.id);
+
+  // Mental-health-focus driven mission count + composition rules.
+  const missionRules: string[] = [];
+  let missionCount = "4–5";
+  if (focus.has("burnout")) {
+    missionCount = "2 (not more)";
+    missionRules.push("BURNOUT MODE: total missions capped at 2. At least one MUST be domain=recovery or domain=mind. No 'edge' missions.");
+  }
+  if (focus.has("sleep")) {
+    missionRules.push("SLEEP PRIORITY: include exactly one sleep-protective evening anchor mission (wind-down ritual, screens-off cutoff, magnesium etc.). It is non-negotiable.");
+  }
+  if (focus.has("anxiety")) {
+    missionRules.push("ANXIETY MODE: lead with a parasympathetic / breath-paced mission. No HIIT or cold-shock as primary. Frame missions with zero ambiguity — exact when, where, how long.");
+  }
+  if (focus.has("low_mood")) {
+    missionRules.push("LOW MOOD: include one mission that creates a small, definite win in <15 min. Name a strength you see in their data when justifying it.");
+  }
+  if (focus.has("focus")) {
+    missionRules.push("FOCUS MODE: keep mission list lean. Single primary action, batched habits, no decision fatigue.");
+  }
+
+  // Hobby → mission framing hints
+  const hobbies = ((athlete?.hobbies as string[]) ?? []).filter(Boolean);
+  const hobbyHints: string[] = [];
+  if (hobbies.includes("reading")) hobbyHints.push("reading → frame the mind / wind-down mission as a 15-min reading block");
+  if (hobbies.includes("outdoors")) hobbyHints.push("outdoors → frame recovery as a walk outside, not indoor mobility");
+  if (hobbies.includes("music")) hobbyHints.push("music → pair the breath / wind-down mission with a slow-tempo playlist");
+  if (hobbies.includes("cooking")) hobbyHints.push("cooking → frame the fuel mission around prepping one specific meal");
+  if (hobbies.includes("creative work") || hobbies.includes("creative")) hobbyHints.push("creative → frame the focus mission as a 25-min creative flow block");
 
   const profileBlock = athlete
     ? `ATHLETE PROFILE
@@ -184,11 +222,18 @@ const buildPrompt = (
     .map((p) => `- [${p.evidence.toUpperCase()}] ${p.id} (${p.pillar}) — ${p.title} :: ${p.dose}`)
     .join("\n");
 
-  return `You are W Coach — an elite, data-driven personal trainer grounded in physiology, behavior science and the Wellness Framework v${FRAMEWORK_VERSION}.
+  const personaBlock = buildPersonaBlock(athlete ?? {}, undefined, { firstName: username });
+  const holisticBlock = buildHolisticContext(athlete ?? {});
 
-ATHLETE: ${username} · tier ${tier} · streak ${streak}d
-READINESS: ${readiness.score}/100 → adjustment "${adjustment}"
+  return `${personaBlock}
+
+You are also grounded in physiology, behaviour science, and the Wellness Framework v${FRAMEWORK_VERSION}.
+
+${holisticBlock}
+
+TODAY'S READINESS: ${readiness.score}/100 → adjustment "${adjustment}"
 Breakdown: avg sleep ${readiness.breakdown.avg_sleep_h}h, last RPE ${readiness.breakdown.last_rpe ?? "n/a"}, missed sessions ${readiness.breakdown.missed_7d}/7d.
+ATHLETE STATUS: ${username} · tier ${tier} · streak ${streak}d
 ${recent}
 ${sessionLine}
 
@@ -201,7 +246,7 @@ ${memBlock}
 PROTOCOL CATALOG (you MUST pick protocol_id ONLY from this list — no-go items already filtered out):
 ${catalogLines}
 
-Build 4–5 high-impact missions for the next 24 hours.
+Build ${missionCount} high-impact missions for the next 24 hours.
 
 HARD RULES:
 1. Every mission must reference a real \`protocol_id\` from the catalog above. Never invent ids.
@@ -211,17 +256,25 @@ HARD RULES:
 5. Tailor at least one mission to the athlete's primary_goal (${athlete?.primary_goal ?? "general"}).
 6. If a North Star goal is set, the primary mission MUST move the needle on it; reference it in the \`why\`.
 7. Exactly one mission with kind="primary" (movement unless adjustment="swap" → recovery).
-8. Always include one "recovery", one "focus", one "habit" mission.
-9. If readiness ≥ 70 add one "edge" stretch mission.
-10. \`why\` MUST reference this athlete's actual data, identity, or goal in ≤140 chars. Speak in the chosen TONE: ${tone}.
+8. Always include one "recovery", one "focus", one "habit" mission — UNLESS a mental-health rule below overrides count.
+9. If readiness ≥ 70 add one "edge" stretch mission — UNLESS burnout mode is active.
+10. \`why\` MUST reference this athlete's actual data, identity, hobby, life context, or goal in ≤140 chars.${
+    missionRules.length
+      ? `\n\nMENTAL-HEALTH-FOCUS OVERRIDES (apply on top of base rules):\n${missionRules.map((r, i) => `${i + 1}. ${r}`).join("\n")}`
+      : ""
+  }${
+    hobbyHints.length
+      ? `\n\nHOBBY-AWARE FRAMING (use where natural, don't force):\n${hobbyHints.map((h) => `- ${h}`).join("\n")}`
+      : ""
+  }
 
 XP guidance: primary 50–60 · recovery 25–35 · focus 20–30 · habit 15–20 · edge 20–30.
 
-Tone rule: ${toneRule}
+${toneRule}
 
 Also produce:
-- "headline" (≤60 chars) summarizing today's stance, in the chosen tone.
-- "rationale" (≤220 chars) — one paragraph explaining the plan, citing the strongest data signal driving it.
+- "headline" (≤60 chars) summarising today's stance.
+- "rationale" (≤220 chars) — one paragraph explaining the plan, citing the strongest data signal driving it AND naming one specific holistic field (life context, hobby, mood, or focus area) that shaped the call.
 
 Use the emit_daily_plan tool. Mission ids must be short kebab-case. Allowed protocol_ids: ${allowedIds.length} options.`;
 };

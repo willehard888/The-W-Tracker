@@ -41,6 +41,8 @@ const IosDebug = lazy(() => import("./pages/IosDebug"));
 const AppleAuthLaunch = lazy(() => import("./pages/AppleAuthLaunch"));
 const AppleUsername = lazy(() => import("./pages/AppleUsername"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
+const Coach = lazy(() => import("./pages/Coach"));
+const AthleteProfileSettings = lazy(() => import("./pages/AthleteProfileSettings"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -108,6 +110,8 @@ const AppRoutes = () => {
           <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
           <Route path="/battles" element={<ProtectedRoute><Battles /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/coach" element={<ProtectedRoute><Coach /></ProtectedRoute>} />
+          <Route path="/coach/profile" element={<ProtectedRoute><AthleteProfileSettings /></ProtectedRoute>} />
           <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
           <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
           <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />

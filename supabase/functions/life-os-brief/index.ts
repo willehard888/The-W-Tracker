@@ -10,6 +10,7 @@
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { buildPersonaBlock, buildHolisticContext } from "../_shared/coach-persona.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,12 +37,7 @@ interface LifeOSBrief {
   };
 }
 
-const TONE: Record<string, string> = {
-  drill_sergeant: "Tone: drill sergeant — clipped, demanding, no excuses, never cruel.",
-  calm_mentor:    "Tone: calm mentor — warm, measured, surgical. Like a wise senior coach.",
-  scientist:      "Tone: scientist — precise, evidence-flavoured, references numbers cleanly.",
-  hype:           "Tone: hype — punchy, alive, high-energy. Never cheesy.",
-};
+// Voice-only nuance — persona itself lives in ../_shared/coach-persona.ts.
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -92,7 +88,7 @@ Deno.serve(async (req) => {
         .select("username, streak, longest_streak, level, xp, status_tier")
         .eq("user_id", uid).maybeSingle(),
       sb.from("coach_athlete_profile" as any)
-        .select("primary_goal, secondary_goal, wake_time, sleep_time, dietary, injuries, tone_pref, sex, age, weight_kg, training_days_pref, preferred_session_length_min, i_am")
+        .select("*")
         .eq("user_id", uid).maybeSingle(),
       sb.from("daily_checkins")
         .select("checked_in_at, sleep_hours, workout, protein_intake, healthy_food, hydration_liters, cold_shower, meditation_am, no_phone_morning, xp_earned")
@@ -149,21 +145,27 @@ Deno.serve(async (req) => {
       planAdj     && `AI adjustment today: ${planAdj}`,
     ].filter(Boolean).join(" | ");
 
-    const toneInstr = TONE[athlete.tone_pref] ?? TONE.calm_mentor;
+    const personaBlock = buildPersonaBlock(athlete, undefined, {
+      firstName: athlete.i_am ?? profile.username ?? "the athlete",
+    });
+    const holisticBlock = buildHolisticContext(athlete);
+    const highChronicStress = (athlete.stress_baseline ?? 0) >= 4;
 
-    const systemPrompt = `You are an elite AI life-optimization coach embedded in a performance app called "The W".
-${toneInstr}
+    const systemPrompt = `${personaBlock}
 
-Your task: generate a concise, highly specific, actionable daily Life OS brief.
+${holisticBlock}
+
+Your task right now: generate today's Life OS brief — 5 domain cards (body / recovery / fuel / mind / adjustment) plus a single-line focus.
 
 STRICT RULES:
-• "focus"     — ≤7 words, today's single headline theme
-• "why"       — 1 sentence, the evidence-based rationale
-• "action"    — ≤10 words, imperative, specific and doable TODAY (not generic)
-• "detail"    — ≤18 words, explain the HOW or WHY briefly
-• "adjustment.label" — one of: push | hold | deload | swap
-• "adjustment.readiness" — integer 0–100 matching the data (use readiness score if available)
-• Never say "eat healthy", "sleep well", "stay motivated" — always name the exact action
+• "focus"     — ≤7 words, today's single headline theme. ${highChronicStress ? "Chronic stress is high (≥4/5) — the focus MUST be a 'subtract one thing' framing, not an 'add'." : "Frame it as a verb the user can act on."}
+• "why"       — 1 sentence, the evidence-based rationale, referencing one specific data point.
+• "action"    — ≤10 words, imperative, specific and doable TODAY. Never generic.
+• "detail"    — ≤18 words, explain the HOW or WHY briefly.
+• The "mind" card AND the "adjustment.detail" MUST reference at least one of: a mental-health focus area, a hobby, or the life_context string. Make it personal — never generic mindfulness clichés.
+• "adjustment.label" — one of: push | hold | deload | swap.
+• "adjustment.readiness" — integer 0–100 matching the data (use readiness score if available).
+• Never say "eat healthy", "sleep well", "stay motivated" — always name the exact action.
 • Output ONLY valid JSON. No markdown fences, no explanatory text.`;
 
     const userPrompt = `Athlete context:

@@ -1,6 +1,16 @@
-// AI Coach edge function — Elite-only, streaming chat using Lovable AI Gateway (GPT-5)
-// Now with 7-day stats memory + latest briefing insights injected into system prompt
+// AI Coach edge function — streaming chat using Lovable AI Gateway (GPT-5)
+// Persona: trainer + sport psychologist + somatic therapist + brutally-honest
+// friend. The user's holistic profile (hobbies, life context, stress / mood,
+// mental-health focus) is injected into every prompt so replies speak to
+// *this person*, not a generic athlete.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import {
+  buildPersonaBlock,
+  buildHolisticContext,
+  isVentingMessage,
+  VENT_DIRECTIVE,
+  type TodayMood,
+} from "../_shared/coach-persona.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -51,12 +61,7 @@ const summarize7d = (checkins: Checkin[]) => {
 Yesterday: sleep ${last.sleep_hours}h, ${last.workout ? "workout✓" : "no workout"}, ${last.cold_shower ? "cold✓" : "no cold"}, hydration ${last.hydration_liters}L.`;
 };
 
-const TONE_LINES: Record<string, string> = {
-  drill_sergeant: "Tone: drill sergeant — clipped, demanding, zero excuses, never cruel.",
-  calm_mentor: "Tone: calm mentor — measured, warm, surgical. Like a wise senior coach.",
-  scientist: "Tone: scientist — precise, evidence-flavoured, references numbers cleanly.",
-  hype: "Tone: high-energy hype — punchy, alive, charged. Never cheesy.",
-};
+// Voice nuance now lives inside buildPersonaBlock() in ../_shared/coach-persona.ts.
 
 const buildSystemPrompt = (
   profile: any,
@@ -68,13 +73,27 @@ const buildSystemPrompt = (
   reflections: any[],
   goals: any[],
   recentLogs: any[],
+  todayMood: TodayMood | undefined,
+  latestUserMessage: string,
 ) => {
   const tier = profile?.status_tier ?? "recruit";
   const streak = profile?.streak ?? 0;
   const longest = profile?.longest_streak ?? 0;
   const username = profile?.username ?? "operator";
   const firstName = (athlete?.i_am || username).split(" ")[0];
-  const tone = TONE_LINES[athlete?.tone_pref ?? "calm_mentor"] ?? TONE_LINES.calm_mentor;
+
+  // If the freshest reflection has data and the caller didn't supply
+  // an explicit pre-chat snapshot, fall back to it so the persona block
+  // is grounded in real signal rather than baseline only.
+  const fallbackReflection = reflections?.[0];
+  const mood: TodayMood = {
+    energy: todayMood?.energy ?? fallbackReflection?.energy_1to5 ?? null,
+    mood: todayMood?.mood ?? fallbackReflection?.mood_1to5 ?? null,
+  };
+
+  const personaBlock = buildPersonaBlock(athlete ?? {}, mood, { firstName });
+  const holisticBlock = buildHolisticContext(athlete ?? {}, mood);
+  const ventDirective = isVentingMessage(latestUserMessage) ? VENT_DIRECTIVE : "";
 
   const recentSummary = summarize7d(checkins7d);
 
@@ -122,40 +141,33 @@ const buildSystemPrompt = (
   const today = new Date();
   const dayName = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][today.getDay()];
 
-  return `You are W Coach — ${firstName}'s personal performance trainer inside the W app. You speak directly to them as their trainer. They pay for you. Earn that.
+  return `${personaBlock}
 
-${tone}
-Reply language: match the user's input. Default ${athlete?.language_pref ?? "en"}.
+${holisticBlock}
+
 Today is ${dayName}, ${today.toISOString().slice(0, 10)}.
 
-Athlete:
-- Name: ${firstName} (handle: ${username})
+Athlete file:
+- Handle: ${username} · first name: ${firstName}
 - Goal: ${athlete?.primary_goal ?? "general performance"}${athlete?.secondary_goal ? ` + ${athlete.secondary_goal}` : ""} (horizon ${athlete?.target_horizon_weeks ?? "?"} weeks)
-- Age/Sex: ${athlete?.age ?? "?"} / ${athlete?.sex ?? "?"} · Height ${athlete?.height_cm ?? "?"}cm · Weight ${athlete?.weight_kg ?? "?"}kg
+- Age / sex: ${athlete?.age ?? "?"} / ${athlete?.sex ?? "?"} · ${athlete?.height_cm ?? "?"}cm · ${athlete?.weight_kg ?? "?"}kg
 - Equipment: ${(athlete?.equipment ?? []).join(", ") || "unknown"}
 - Injuries: ${(athlete?.injuries ?? []).join(", ") || "none reported"}
 - Dietary: ${(athlete?.dietary ?? []).join(", ") || "none"}
-- No-go protocols: ${(athlete?.no_go_protocols ?? []).join(", ") || "none"}
+- No-go protocols (hard filter, never suggest): ${(athlete?.no_go_protocols ?? []).join(", ") || "none"}
 - Preferred session length: ${athlete?.preferred_session_length_min ?? 45} min
 - Tier: ${tier} · Streak ${streak}d (longest ${longest})
 
 Recent activity:
 ${recentSummary}${reflectionsBlock}${goalsBlock}${logsBlock}${insightsBlock}${briefBlock}${sessionBlock}
 
-Reasoning protocol (do silently, do NOT print these labels):
-1. Identify the single biggest gap or risk relevant to the user's question, grounded in the data above.
-2. Pick the cheapest intervention with the highest leverage in the next 24h.
-3. Reply.
-
-Style:
-- ≤6 sentences unless the user explicitly asks for depth.
-- Direct, knowledgeable, calm. No motivational clichés. No "as an AI".
-- Use markdown sparingly (bold for key numbers, short list when prescribing 2–3 steps).
+How to reply:
+- **Match length to the weight of what they asked.** A vent → mirror first, then ONE question or small move. Quick tactical Q → 2–3 sentences. Deep ask → go deep but structured.
+- **One concrete next move** at the end. Dated to today or tomorrow. Specific (movement, breath count, time on the calendar) — never "try to relax".
 - Reference at most ONE concrete stat from their data, only if it sharpens the answer.
-- If today has a prescribed session, keep advice consistent with it (or explicitly justify deviating).
-- End with ONE specific next action, dated to today or tomorrow.
-- Refuse medical/legal/financial advice that requires a licensed pro — give a framework and suggest seeing one.
-- Never break character. Never name your model or that you are AI.`;
+- Markdown sparingly: bold for key numbers, short list only when prescribing 2–3 steps.
+- If today has a prescribed session, stay consistent with it (or explicitly justify deviating).
+- Refuse medical / legal / financial advice that requires a licensed pro — give a framework and tell them to see one. Same for clinical mental-health (suicidal ideation, panic disorder, etc.) — name what you see, give one regulation tool, point at a professional.${ventDirective}`;
 };
 
 Deno.serve(async (req) => {
@@ -258,6 +270,16 @@ Deno.serve(async (req) => {
     const faqContext = body?.faq_context && typeof body.faq_context === "object"
       ? { question: String(body.faq_context.question ?? "").slice(0, 300), answer: String(body.faq_context.answer ?? "").slice(0, 2000) }
       : null;
+    // Pre-chat mood snapshot — optional; falls back to latest reflection in buildSystemPrompt.
+    const moodTodayRaw = body?.mood_today;
+    const moodToday: TodayMood | undefined = moodTodayRaw && typeof moodTodayRaw === "object"
+      ? {
+          energy: typeof moodTodayRaw.energy === "number" && moodTodayRaw.energy >= 1 && moodTodayRaw.energy <= 5
+            ? moodTodayRaw.energy : null,
+          mood: typeof moodTodayRaw.mood === "number" && moodTodayRaw.mood >= 1 && moodTodayRaw.mood <= 5
+            ? moodTodayRaw.mood : null,
+        }
+      : undefined;
     if (messages.length === 0) {
       return new Response(JSON.stringify({ error: "No messages" }), {
         status: 400,
@@ -293,6 +315,9 @@ Deno.serve(async (req) => {
       recentLogs = logs ?? [];
     }
 
+    // Pull the latest user message for vent-detection heuristic.
+    const latestUserMessage = [...trimmed].reverse().find((m) => m.role === "user")?.content ?? "";
+
     const systemPrompt = buildSystemPrompt(
       profile,
       athleteRes.data ?? null,
@@ -303,6 +328,8 @@ Deno.serve(async (req) => {
       reflectionsRes.data ?? [],
       goalsRes.data ?? [],
       recentLogs,
+      moodToday,
+      latestUserMessage,
     ) + (faqContext
       ? `\n\nThe user just read the Playbook answer to: "${faqContext.question}". Do NOT repeat that answer. Go deeper, address their follow-up directly, or apply it to their specific context.`
       : "");

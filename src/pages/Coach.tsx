@@ -25,7 +25,9 @@ import PerformanceOSDashboard from "@/components/coach/PerformanceOSDashboard";
 import TrainerBrief from "@/components/coach/TrainerBrief";
 import WeekStrip from "@/components/coach/WeekStrip";
 import LifeOSCard from "@/components/coach/LifeOSCard";
+import MoodSnapshot from "@/components/coach/MoodSnapshot";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
+import { useTodayReflection } from "@/hooks/use-coach-reflection";
 import { supabase } from "@/integrations/supabase/client";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -339,6 +341,16 @@ const ChatSheet = ({
   const sentInitialRef = useRef(false);
   const lastFaqRef = useRef<FaqEntry | null>(null);
 
+  // Pre-chat mood snapshot — surfaces above the composer when there's no
+  // reflection for today. Captured value rides on every outbound ai-coach
+  // call so the persona block adapts to *right now*, not just baseline.
+  const { reflection: todayReflection, isLoading: reflLoading } = useTodayReflection();
+  const hasTodayReflection = !!todayReflection;
+  const [moodSnapshot, setMoodSnapshot] = useState<{ energy: number; mood: number } | null>(null);
+  const [moodCardDismissed, setMoodCardDismissed] = useState(false);
+  const showMoodSnapshot =
+    !reflLoading && !hasTodayReflection && !moodCardDismissed && messages.length === 0;
+
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-40)));
@@ -400,6 +412,9 @@ const ChatSheet = ({
           faq_context: lastFaqRef.current
             ? { question: lastFaqRef.current.question, answer: lastFaqRef.current.answer_md }
             : null,
+          // Forward pre-chat mood snapshot (if captured this session).
+          // Edge function falls back to the latest coach_reflection row otherwise.
+          mood_today: moodSnapshot,
         }),
       });
       if (!resp.ok || !resp.body) {
@@ -528,6 +543,13 @@ const ChatSheet = ({
           <X size={18} />
         </Button>
       </div>
+
+      {showMoodSnapshot && (
+        <MoodSnapshot
+          onCaptured={(snap) => { setMoodSnapshot(snap); setMoodCardDismissed(true); }}
+          onSkip={() => setMoodCardDismissed(true)}
+        />
+      )}
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {messages.length === 0 && (

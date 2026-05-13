@@ -18,19 +18,24 @@ echo "ℹ️  Shell=$BASH_VERSION"
 # RevenueCat pod targets are then pinned in the Podfile post_install hook to
 # SWIFT_VERSION = 5.0 to dodge the Swift 6 constraint-solver crash on
 # Capacitor.swift. Drift in either direction MUST fail the build.
-REQUIRED_XCODE_MAJOR_MINOR="26.4"   # Xcode 26.4.x
-REQUIRED_SWIFT_MAJOR="6"            # swiftc reports Swift 6.x in Xcode 26.4
+# Xcode pin: accept the whole Xcode 26 family (26.4, 26.5, …). All 26.x
+# images ship Swift 6.x as host compiler, which is what our Capacitor and
+# RevenueCat pin (SWIFT_VERSION = 5.0) was validated against. A jump to
+# Xcode 27 would be a real toolchain bump and SHOULD fail the build —
+# update this regex deliberately at that point.
+REQUIRED_XCODE_MAJOR="26"
+REQUIRED_SWIFT_MAJOR="6"            # swiftc reports Swift 6.x in Xcode 26.x
 PINNED_PODS_SWIFT_VERSION="5.0"     # Capacitor + RevenueCat pod targets
 export PINNED_PODS_SWIFT_VERSION    # consumed by ci_pre_xcodebuild.sh
 
 if command -v xcodebuild &>/dev/null; then
   XCODE_VER_FULL=$(xcodebuild -version 2>/dev/null | head -1 | awk '{print $2}')
-  echo "ℹ️  Xcode ${XCODE_VER_FULL} (required: ${REQUIRED_XCODE_MAJOR_MINOR}.x)"
+  echo "ℹ️  Xcode ${XCODE_VER_FULL} (required: ${REQUIRED_XCODE_MAJOR}.x family)"
   case "$XCODE_VER_FULL" in
-    ${REQUIRED_XCODE_MAJOR_MINOR}*) echo "✅ Xcode version pin satisfied" ;;
+    ${REQUIRED_XCODE_MAJOR}.*) echo "✅ Xcode 26.x family pin satisfied" ;;
     *)
-      echo "❌ Xcode ${XCODE_VER_FULL} does not match required ${REQUIRED_XCODE_MAJOR_MINOR}.x"
-      echo "   Update the Xcode Cloud workflow image OR bump REQUIRED_XCODE_MAJOR_MINOR after re-validating Capacitor + Swift pins."
+      echo "❌ Xcode ${XCODE_VER_FULL} is outside the Xcode ${REQUIRED_XCODE_MAJOR}.x family."
+      echo "   Update REQUIRED_XCODE_MAJOR after re-validating Capacitor + Swift pins against the new toolchain."
       exit 1
       ;;
   esac

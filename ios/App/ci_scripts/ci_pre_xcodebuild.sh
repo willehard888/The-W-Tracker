@@ -17,7 +17,9 @@ echo "ℹ️  IOS_APP_DIR=$IOS_APP_DIR"
 # host versions. Re-check here so that even if Xcode Cloud restructures the
 # build pipeline (skipping post-clone, running pre-xcodebuild from a cached
 # image, etc.), we still fail fast on toolchain drift.
-REQUIRED_XCODE_MAJOR_MINOR="${REQUIRED_XCODE_MAJOR_MINOR:-26.4}"
+# Accept the Xcode 26.x family (26.4, 26.5, …). Bumping to 27 is a real
+# toolchain change and SHOULD fail this check on purpose.
+REQUIRED_XCODE_MAJOR="${REQUIRED_XCODE_MAJOR:-26}"
 REQUIRED_SWIFT_MAJOR="${REQUIRED_SWIFT_MAJOR:-6}"
 PINNED_PODS_SWIFT_VERSION="${PINNED_PODS_SWIFT_VERSION:-5.0}"
 export PINNED_PODS_SWIFT_VERSION
@@ -25,9 +27,9 @@ export PINNED_PODS_SWIFT_VERSION
 if command -v xcodebuild &>/dev/null; then
   XCODE_VER_FULL=$(xcodebuild -version 2>/dev/null | head -1 | awk '{print $2}')
   case "$XCODE_VER_FULL" in
-    ${REQUIRED_XCODE_MAJOR_MINOR}*) echo "✅ Xcode ${XCODE_VER_FULL} matches pin ${REQUIRED_XCODE_MAJOR_MINOR}.x" ;;
+    ${REQUIRED_XCODE_MAJOR}.*) echo "✅ Xcode ${XCODE_VER_FULL} inside the Xcode ${REQUIRED_XCODE_MAJOR}.x family" ;;
     *)
-      echo "❌ Xcode ${XCODE_VER_FULL} does not match required ${REQUIRED_XCODE_MAJOR_MINOR}.x"
+      echo "❌ Xcode ${XCODE_VER_FULL} is outside the Xcode ${REQUIRED_XCODE_MAJOR}.x family"
       exit 1
       ;;
   esac

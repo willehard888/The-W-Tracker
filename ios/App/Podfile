@@ -30,7 +30,12 @@ def capacitor_pods
   pod 'CapacitorAppLauncher', :path => '../../node_modules/@capacitor/app-launcher'
   pod 'CapacitorBrowser', :path => '../../node_modules/@capacitor/browser'
   pod 'CapacitorHaptics', :path => '../../node_modules/@capacitor/haptics'
-  pod 'CapacitorKeyboard', :path => '../../node_modules/@capacitor/keyboard'
+  # CapacitorKeyboard is the only @capacitor/* plugin with Objective-C source
+  # (`Keyboard.m`, `KeyboardPlugin.m`) using `#import <Capacitor/Capacitor.h>`.
+  # That clang-style framework import requires modular headers so CocoaPods
+  # wires up the HEADER_SEARCH_PATHS the .m files need. Other plugins are
+  # pure Swift and rely on the modulemap → safe to leave as default.
+  pod 'CapacitorKeyboard', :path => '../../node_modules/@capacitor/keyboard', :modular_headers => true
   pod 'CapacitorLocalNotifications', :path => '../../node_modules/@capacitor/local-notifications'
   pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'

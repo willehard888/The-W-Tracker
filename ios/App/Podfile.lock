@@ -10,16 +10,20 @@ PODS:
   - CapacitorCordova (8.2.0)
   - CapacitorHaptics (8.0.2):
     - Capacitor
+  - CapacitorKeyboard (8.0.3):
+    - Capacitor
   - CapacitorLocalNotifications (8.0.2):
     - Capacitor
   - CapacitorPushNotifications (8.0.2):
     - Capacitor
-  - PurchasesHybridCommon (17.52.0):
-    - RevenueCat (= 5.65.0)
-  - RevenueCat (5.65.0)
-  - RevenuecatPurchasesCapacitor (12.3.0):
+  - CapacitorStatusBar (8.0.2):
     - Capacitor
-    - PurchasesHybridCommon (= 17.52.0)
+  - PurchasesHybridCommon (17.55.1):
+    - RevenueCat (= 5.67.1)
+  - RevenueCat (5.67.1)
+  - RevenuecatPurchasesCapacitor (12.3.2):
+    - Capacitor
+    - PurchasesHybridCommon (= 17.55.1)
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
@@ -28,8 +32,10 @@ DEPENDENCIES:
   - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
+  - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
   - "CapacitorLocalNotifications (from `../../node_modules/@capacitor/local-notifications`)"
   - "CapacitorPushNotifications (from `../../node_modules/@capacitor/push-notifications`)"
+  - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "RevenuecatPurchasesCapacitor (from `../../node_modules/@revenuecat/purchases-capacitor`)"
 
 SPEC REPOS:
@@ -50,10 +56,14 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorHaptics:
     :path: "../../node_modules/@capacitor/haptics"
+  CapacitorKeyboard:
+    :path: "../../node_modules/@capacitor/keyboard"
   CapacitorLocalNotifications:
     :path: "../../node_modules/@capacitor/local-notifications"
   CapacitorPushNotifications:
     :path: "../../node_modules/@capacitor/push-notifications"
+  CapacitorStatusBar:
+    :path: "../../node_modules/@capacitor/status-bar"
   RevenuecatPurchasesCapacitor:
     :path: "../../node_modules/@revenuecat/purchases-capacitor"
 
@@ -64,12 +74,14 @@ SPEC CHECKSUMS:
   CapacitorBrowser: c987c73d09d8bd3b5ec13f06338b1e14d5d2be69
   CapacitorCordova: a9ac88d84a1f5280f33b349fe50fce1902683ac0
   CapacitorHaptics: 296f771ecd89c7a1bd92a7b6826a7d268e2e70f5
+  CapacitorKeyboard: 31c8285d92c9d1410071d52449f16d2c6673b6f4
   CapacitorLocalNotifications: 4db83a7f6bdd2f30dcedf5c6f92c415065467a24
   CapacitorPushNotifications: 5a1de4191a9fdbeacc84907313eede0bd59d2eb0
-  PurchasesHybridCommon: 27cca251e01998c53a6b31bf53baf09f84926609
-  RevenueCat: 9a37739bdf42af84dd87e023db340de7e0f9d874
-  RevenuecatPurchasesCapacitor: b9db3b4726f76f5b36b6fefad2044083b9e3ca48
+  CapacitorStatusBar: 01d5763b4ed720de5ce2edbc938de6a98f4c8f32
+  PurchasesHybridCommon: ecd9d7c586287625f1225b8de5e24c1021502270
+  RevenueCat: 9357239a9f0978285e68983637b8a602e65c94f0
+  RevenuecatPurchasesCapacitor: c299be01b1a5c1d5eb118c30eadc84160944ecf2
 
-PODFILE CHECKSUM: d4aa02cf9b1025683b84bcf2038f1463f83e82bd
+PODFILE CHECKSUM: 09c1440c9e22fd16da1e265df75285098a08d71b
 
 COCOAPODS: 1.16.2

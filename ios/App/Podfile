@@ -159,4 +159,27 @@ post_install do |installer|
     end
   end
 
+  # Step 3: Disable parallel target building in the Pods project itself.
+  # Build 787 still failed with "No such module 'Capacitor'" on
+  # CapacitorStatusBar even though the explicit PBXTargetDependency from
+  # CapacitorStatusBar → Capacitor was in place. Xcode 26's scheduler
+  # ignores PBXTargetDependency when resolving Swift modules and races
+  # plugin compiles against Capacitor's framework build.
+  #
+  # Disabling BuildIndependentTargetsInParallel on the Pods project forces
+  # Xcode to build targets serially in dependency order — Capacitor first,
+  # then every plugin in turn. Adds ~30 s to build time but eliminates the
+  # entire class of "module not found" races we've been chasing across
+  # builds 781–787. The App.xcodeproj has the same flag flipped (commit
+  # 16ba861).
+  if installer.pods_project.root_object.respond_to?(:attributes)
+    attrs = installer.pods_project.root_object.attributes || {}
+    if attrs['BuildIndependentTargetsInParallel'] != 'NO'
+      attrs['BuildIndependentTargetsInParallel'] = 'NO'
+      installer.pods_project.root_object.attributes = attrs
+      installer.pods_project.save
+      puts '✅ Disabled parallel target builds on Pods project'
+    end
+  end
+
 end

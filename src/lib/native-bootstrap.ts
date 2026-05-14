@@ -29,30 +29,30 @@ export const initNativeShell = async (): Promise<void> => {
     /* plugin missing on build — silently skip */
   }
 
-  try {
-    const { Keyboard, KeyboardResize } = await import("@capacitor/keyboard");
-    // We let CSS + per-input scrollIntoView handle the layout. Native resize
-    // jumps look very un-iOS — switching to `none` keeps the shell still and
-    // the BottomNav anchored.
-    await Keyboard.setResizeMode({ mode: KeyboardResize.None }).catch(() => {});
-    await Keyboard.setScroll({ isDisabled: true }).catch(() => {});
-
-    // Smooth scroll the focused input into view when the keyboard opens.
-    Keyboard.addListener("keyboardWillShow", () => {
-      const el = document.activeElement as HTMLElement | null;
+  // NOTE: We previously used @capacitor/keyboard to set resize=none + scroll
+  // off + smooth-scroll the focused input into view. The plugin's Objective-C
+  // sources (`Keyboard.m`, `KeyboardPlugin.m`) repeatedly broke Xcode Cloud
+  // builds 781–785 with `Module 'Capacitor' not found` because Xcode 26.5's
+  // parallel scheduler races Keyboard's clang compile against Capacitor's
+  // framework build. The polish gain wasn't worth a week of TestFlight
+  // outage — falling back to Capacitor's default keyboard handling is
+  // perfectly usable (slight layout adjustment when keyboard opens, but
+  // nothing broken). If we need the polish back later we can ship a tiny
+  // custom plugin or wait for upstream to switch keyboard to pure Swift.
+  //
+  // Lightweight fallback: focus → scrollIntoView ourselves on every input
+  // focus event. Works on every platform, no native plugin needed.
+  if (typeof document !== "undefined") {
+    document.addEventListener("focusin", (e) => {
+      const el = e.target as HTMLElement | null;
       if (!el) return;
       const tag = el.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable) {
-        // Slight delay so the keyboard frame is reported.
-        // `nearest` avoids large jumps in chat/checkin screens where the input
-        // is already mostly visible.
-        window.requestAnimationFrame(() => {
+        window.setTimeout(() => {
           el.scrollIntoView({ block: "nearest", behavior: "smooth" });
-        });
+        }, 250);
       }
     });
-  } catch {
-    /* plugin missing on build — silently skip */
   }
 
   // App lifecycle — when returning from background, nudge the page so any

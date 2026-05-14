@@ -358,49 +358,6 @@ PY
 
 echo "✅ Pods installed successfully"
 ls Pods/ | head -10
-
-# ---------------------------------------------------------------------------
-# Pre-build Capacitor.framework so CapacitorKeyboard's ObjC files can find
-# the `Capacitor` clang module at compile time.
-# ---------------------------------------------------------------------------
-# Build 784 still failed with:
-#   KeyboardPlugin.m:2:9: Module 'Capacitor' not found
-# even though our post_install hook adds an explicit PBXTargetDependency
-# from CapacitorKeyboard → Capacitor. Xcode 26.5's parallel scheduler
-# ignores PBXTargetDependency for clang-module resolution and kicks off
-# Keyboard's compile before Capacitor.framework's module map exists in
-# the framework search path.
-#
-# Pre-compiling Capacitor (and CapacitorCordova that it depends on) as a
-# standalone xcodebuild invocation here populates DerivedData with the
-# finished Capacitor.framework + Modules/module.modulemap before the
-# main `xcodebuild archive` step starts. By the time Xcode Cloud's
-# archive command runs, Capacitor's module is already on disk → Keyboard's
-# `@import Capacitor;` resolves.
-#
-# Non-fatal: if this fails (e.g. signing weirdness on prebuild), the main
-# archive step still runs and surfaces whatever error matters.
-echo "🔨 Pre-building Capacitor.framework so Keyboard's @import resolves..."
-# Xcode Cloud passes -derivedDataPath /Volumes/workspace/DerivedData to its
-# main archive call. We mirror that here so the pre-built Capacitor.framework
-# lands in the same DerivedData tree the archive step will read from. Falls
-# back to a workspace-local path when running locally.
-DERIVED_DATA_DIR="${DERIVED_DATA_DIR:-/Volumes/workspace/DerivedData}"
-if [[ ! -d "$(dirname "$DERIVED_DATA_DIR")" ]]; then
-  DERIVED_DATA_DIR="$IOS_APP_DIR/DerivedData"
-fi
-xcodebuild build \
-  -project Pods/Pods.xcodeproj \
-  -target Capacitor \
-  -configuration Release \
-  -sdk iphoneos \
-  -destination 'generic/platform=iOS' \
-  -derivedDataPath "$DERIVED_DATA_DIR" \
-  CODE_SIGNING_ALLOWED=NO \
-  COMPILER_INDEX_STORE_ENABLE=NO \
-  2>&1 | tail -10 \
-  || echo "⚠️ Capacitor pre-build had warnings — main archive will retry"
-
 cd "$ROOT_DIR"
 
 # ---------------------------------------------------------------------------

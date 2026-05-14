@@ -30,11 +30,10 @@ def capacitor_pods
   pod 'CapacitorAppLauncher', :path => '../../node_modules/@capacitor/app-launcher'
   pod 'CapacitorBrowser', :path => '../../node_modules/@capacitor/browser'
   pod 'CapacitorHaptics', :path => '../../node_modules/@capacitor/haptics'
-  # CapacitorKeyboard's `.m` files use `#import <Capacitor/Capacitor.h>` which
-  # the use_frameworks! + custom-modulemap setup can't satisfy at compile
-  # time. We patch the sources to `@import Capacitor;` in the post_install
-  # hook below — same code path as every Swift plugin uses already.
-  pod 'CapacitorKeyboard', :path => '../../node_modules/@capacitor/keyboard'
+  # @capacitor/keyboard removed — its Objective-C sources broke builds
+  # 781–785 with `Module 'Capacitor' not found` under Xcode 26.5 + Pods
+  # use_frameworks!. Native keyboard polish now handled by a plain DOM
+  # focusin scrollIntoView fallback in src/lib/native-bootstrap.ts.
   pod 'CapacitorLocalNotifications', :path => '../../node_modules/@capacitor/local-notifications'
   pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
@@ -157,38 +156,6 @@ post_install do |installer|
       next if target.dependencies.map(&:name).include?('Capacitor')
       target.add_dependency(cap_target)
       puts "✅ Added #{target.name} → Capacitor dependency"
-    end
-  end
-
-  # ---------------------------------------------------------------------------
-  # CapacitorKeyboard ObjC sources: rewrite filesystem header imports to clang
-  # module imports.
-  #
-  # Keyboard's `.m` files (KeyboardPlugin.m + Keyboard.m) use
-  #   #import <Capacitor/Capacitor.h>
-  #   #import <Capacitor/Capacitor-Swift.h>
-  #   #import <Capacitor/CAPBridgedPlugin.h>
-  #   #import <Capacitor/CAPBridgedJSTypes.h>
-  # Those require `Capacitor.framework/Headers/<Header>.h` to physically exist
-  # at compile time. With `use_frameworks!` + Capacitor's custom modulemap,
-  # the auto-generated Headers/ symlinks aren't always present when Keyboard
-  # compiles (Xcode 26 parallel build, even with the explicit target dep
-  # added above). Every other @capacitor/* plugin is pure Swift and uses
-  # `import Capacitor` which resolves through the module map directly — no
-  # physical headers needed. Patching the ObjC files to `@import Capacitor;`
-  # gets Keyboard onto the same code path.
-  #
-  # Idempotent: skip files that already contain `@import Capacitor;`.
-  keyboard_sources = Dir[File.expand_path('../../node_modules/@capacitor/keyboard/ios/Sources/KeyboardPlugin/*.m', __dir__)]
-  keyboard_sources.each do |path|
-    text = File.read(path)
-    next if text.include?('@import Capacitor;')
-    patched = text
-      .sub(/#import\s*<Capacitor\/Capacitor\.h>\s*\n/, "@import Capacitor;\n")
-      .gsub(/#import\s*<Capacitor\/[^>]+>\s*\n/, '')  # drop the rest — covered by module import
-    if patched != text
-      File.write(path, patched)
-      puts "🔧 Patched #{File.basename(path)} → @import Capacitor;"
     end
   end
 

@@ -35,7 +35,7 @@ export default defineConfig(({ mode }) => {
             motion: ["framer-motion"],
             icons: ["lucide-react"],
             supabase: ["@supabase/supabase-js"],
-            capacitor: ["@capacitor/core", "@capacitor/app", "@capacitor/keyboard", "@capacitor/status-bar", "@capacitor/haptics"],
+            capacitor: ["@capacitor/core", "@capacitor/app", "@capacitor/status-bar", "@capacitor/haptics"],
           },
         },
       },

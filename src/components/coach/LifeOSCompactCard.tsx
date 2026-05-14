@@ -45,14 +45,26 @@ interface LifeOSCompactCardProps {
 
 const LifeOSCompactCard = ({ className }: LifeOSCompactCardProps) => {
   const navigate = useNavigate();
-  const { brief, isLoading } = useLifeOSBrief();
+  const hookResult = useLifeOSBrief();
+  // Defensive: if the hook itself ever returns something unexpected
+  // (e.g. during a race condition mid-suspense), bail rather than
+  // letting an undefined access crash the home-page render tree.
+  const brief = hookResult?.brief ?? null;
+  const isLoading = hookResult?.isLoading ?? false;
 
   // No brief yet today (and we're not in the loading window) → render
   // nothing; `CoachStrip` shows its existing tiles instead.
   if (isLoading || !brief) return null;
 
-  const adj = brief.adjustment;
-  const adjTone = ADJ_TONE[adj?.label] ?? ADJ_TONE.hold;
+  // Every nested field can be missing if the row was written by an older
+  // edge-function version. Guard them all so a one-key gap never crashes
+  // the home-page render.
+  const adj = brief.adjustment ?? null;
+  const adjTone = (adj?.label && ADJ_TONE[adj.label]) || ADJ_TONE.hold;
+  const body = brief.body ?? { action: "", detail: "" };
+  const recovery = brief.recovery ?? { action: "", detail: "" };
+  const fuel = brief.fuel ?? { action: "", detail: "" };
+  const mind = brief.mind ?? { action: "", detail: "" };
 
   return (
     <button
@@ -98,10 +110,10 @@ const LifeOSCompactCard = ({ className }: LifeOSCompactCardProps) => {
       {/* 5-domain compact grid — icon + one-line action only.
           Detail copy lives in the full LifeOSCard (/coach). */}
       <div className="grid grid-cols-2 gap-1.5">
-        <Domain icon={<Dumbbell size={10} />} label="Body" action={brief.body.action} />
-        <Domain icon={<Moon     size={10} />} label="Recovery" action={brief.recovery.action} />
-        <Domain icon={<Flame    size={10} />} label="Fuel" action={brief.fuel.action} />
-        <Domain icon={<Brain    size={10} />} label="Mind" action={brief.mind.action} />
+        <Domain icon={<Dumbbell size={10} />} label="Body" action={body.action} />
+        <Domain icon={<Moon     size={10} />} label="Recovery" action={recovery.action} />
+        <Domain icon={<Flame    size={10} />} label="Fuel" action={fuel.action} />
+        <Domain icon={<Brain    size={10} />} label="Mind" action={mind.action} />
       </div>
 
       {/* Footer — readiness % from the adjustment object */}

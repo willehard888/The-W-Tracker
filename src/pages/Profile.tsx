@@ -24,6 +24,7 @@ import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
 import RoadToElite from "@/components/RoadToElite";
 import TierLadder from "@/components/TierLadder";
 import YourBlueprintCard from "@/components/coach/YourBlueprintCard";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 import StatusNameplate from "@/components/StatusNameplate";
 import LiveRivals from "@/components/LiveRivals";
@@ -668,9 +669,13 @@ const Profile = () => {
 
       {/* Your Blueprint — Coach's read of who you are. Renders null when
           the user hasn't completed AthleteProfileOnboarding yet, so this
-          space stays clean for pre-onboarded users. */}
+          space stays clean for pre-onboarded users.
+          Wrapped in an ErrorBoundary so a hook fault here can't crash
+          the rest of the Profile page. */}
       <div className="mb-6 animate-reveal animate-reveal-delay-2">
-        <YourBlueprintCard />
+        <ErrorBoundary fallback={<></>}>
+          <YourBlueprintCard />
+        </ErrorBoundary>
       </div>
 
       {/* Tier Ladder — full progression map */}

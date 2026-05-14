@@ -5,6 +5,7 @@ import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
 import RankProgressHub from "@/components/home/RankProgressHub";
 import CoachStrip from "@/components/home/CoachStrip";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Reveal from "@/components/home/Reveal";
 import EmptyState from "@/components/ui/empty-state";
 import { useNavigate } from "react-router-dom";
@@ -228,9 +229,13 @@ const Index = () => {
         />
       </Reveal>
 
-      {/* COACH STRIP */}
+      {/* COACH STRIP — wrapped in an ErrorBoundary so any single tile
+          (LifeOSCompactCard, briefing tile, nudge tile) failing renders
+          a no-op fallback instead of blowing up the entire home page. */}
       <Reveal className="mb-5 relative z-10" delay={160}>
-        <CoachStrip latestNudge={latestNudge ?? null} latestBriefing={latestBriefing ?? null} />
+        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
+          <CoachStrip latestNudge={latestNudge ?? null} latestBriefing={latestBriefing ?? null} />
+        </ErrorBoundary>
       </Reveal>
 
       {/* GROWTH ROW — Invite + Recent Badges */}

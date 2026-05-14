@@ -78,11 +78,20 @@ export const useDailyPlan = () => {
     },
   });
 
-  // Realtime subscription so mission completion / new plan updates instantly
+  // Realtime subscription so mission completion / new plan updates instantly.
+  // Channel name carries a per-mount UUID so React StrictMode's double-mount
+  // (and HMR re-mounts) doesn't return a cached already-subscribed channel
+  // on the second mount — which would make `.on()` throw "cannot add
+  // postgres_changes callbacks after subscribe()".
   useEffect(() => {
     if (!user?.id) return;
+    const channelKey = `daily-plan-${user.id}-${
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2)
+    }`;
     const ch = supabase
-      .channel(`daily-plan-${user.id}`)
+      .channel(channelKey)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "coach_daily_plans", filter: `user_id=eq.${user.id}` },

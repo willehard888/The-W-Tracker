@@ -43,8 +43,22 @@ export const useUserHabits = () => {
 
   useEffect(() => {
     if (!user?.id) return;
+    // Unique channel name per mount: under React StrictMode (and any HMR
+    // re-mount) the effect fires twice. If both mounts use the same channel
+    // name (e.g. `user-habits-${user.id}`), the second `.channel(name)` call
+    // returns the already-subscribed instance from the first mount before
+    // its `removeChannel` cleanup finishes — and `.on()` on an already-
+    // subscribed channel throws:
+    //   "cannot add `postgres_changes` callbacks for realtime:... after `subscribe()`"
+    // which crashes the Coach page render tree. Appending a per-mount
+    // random suffix gives each mount its own dedicated channel.
+    const channelKey = `user-habits-${user.id}-${
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2)
+    }`;
     const ch = supabase
-      .channel(`user-habits-${user.id}`)
+      .channel(channelKey)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "user_habits", filter: `user_id=eq.${user.id}` },

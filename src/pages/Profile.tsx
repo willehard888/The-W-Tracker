@@ -24,6 +24,8 @@ import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
 import RoadToElite from "@/components/RoadToElite";
 import TierLadder from "@/components/TierLadder";
 import YourBlueprintCard from "@/components/coach/YourBlueprintCard";
+import CoachLine from "@/components/coach/CoachLine";
+import { useCoachObservation } from "@/hooks/use-coach-observation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 import StatusNameplate from "@/components/StatusNameplate";
@@ -672,9 +674,19 @@ const Profile = () => {
           space stays clean for pre-onboarded users.
           Wrapped in an ErrorBoundary so a hook fault here can't crash
           the rest of the Profile page. */}
-      <div className="mb-6 animate-reveal animate-reveal-delay-2">
+      <div className="mb-3 animate-reveal animate-reveal-delay-2">
         <ErrorBoundary fallback={<></>}>
           <YourBlueprintCard />
+        </ErrorBoundary>
+      </div>
+
+      {/* Coach voice: one-line read of the week through Coach's eyes,
+          in the user's preferred tone. Pure derivation from existing
+          data — no extra AI call. Wrapped in ErrorBoundary so a hook
+          fault can never crash the profile page. */}
+      <div className="mb-6 animate-reveal animate-reveal-delay-2">
+        <ErrorBoundary fallback={<></>}>
+          <ProfileCoachLine />
         </ErrorBoundary>
       </div>
 
@@ -731,6 +743,13 @@ const Profile = () => {
       )}
     </div>
   );
+};
+
+/** Scoped Coach line on Profile — null when hook is loading or empty. */
+const ProfileCoachLine = () => {
+  const { text, isLoading } = useCoachObservation({ context: "profile" });
+  if (isLoading || !text) return null;
+  return <CoachLine text={text} />;
 };
 
 export default Profile;

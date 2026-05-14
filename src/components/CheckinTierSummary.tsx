@@ -4,6 +4,9 @@ import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
 import XpCounter from "@/components/XpCounter";
 import { Button } from "@/components/ui/button";
+import CoachLine from "@/components/coach/CoachLine";
+import { useCoachObservation } from "@/hooks/use-coach-observation";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface CheckinTierSummaryProps {
   tier: string;
@@ -300,6 +303,21 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
           </span>
         </motion.div>
 
+        {/* Coach reaction — one short line in the user's tone right above
+            the CTAs. Pure derivation from cached LifeOS brief data, no
+            extra AI call. Wrapped in ErrorBoundary so a hook fault can
+            never break the post-checkin celebration screen. */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.65 }}
+          className="mb-3"
+        >
+          <ErrorBoundary fallback={<></>}>
+            <PostCheckinCoachLine />
+          </ErrorBoundary>
+        </motion.div>
+
         {/* CTAs */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -331,6 +349,13 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
       </div>
     </div>
   );
+};
+
+/** Scoped Coach line for the post-checkin celebration screen. */
+const PostCheckinCoachLine = () => {
+  const { text, isLoading } = useCoachObservation({ context: "post-checkin" });
+  if (isLoading || !text) return null;
+  return <CoachLine text={text} tone="celebration" />;
 };
 
 export default CheckinTierSummary;

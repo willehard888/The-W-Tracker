@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, Loader2, User, Brain, X, Sparkles, BookOpen, RotateCw, Plus, Lock, Crown } from "lucide-react";
+import { Send, ArrowLeft, Loader2, User, Brain, X, Sparkles, BookOpen, RotateCw, Plus, Lock, Crown, MoreVertical } from "lucide-react";
 import { matchFaq, COACH_FAQ, FaqEntry } from "@/lib/coach-faq";
 import FaqBrowser from "@/components/coach/FaqBrowser";
 import ReactMarkdown from "react-markdown";
@@ -130,22 +130,58 @@ const Coach = () => {
   );
 };
 
-// ── Top bar — kept ultra-minimal so Coach feels native, not isolated ───────────
-const MinimalTopBar = ({ onBack, navigate }: { onBack: () => void; navigate: any }) => (
-  <div className="shrink-0 px-4 pt-3 pb-2 flex items-center justify-between">
-    <Button variant="ghost" size="icon-sm" onClick={onBack} aria-label="Back">
-      <ArrowLeft size={18} />
-    </Button>
-    <div className="flex items-center gap-1">
-      <Button variant="ghost" size="icon-sm" onClick={() => navigate("/coach/profile")} aria-label="Trainer profile">
-        <User size={16} />
+// ── Standard W page header (matches /profile, /leaderboard, /checkin) ──────────
+// Replaces the previous bespoke topbar with three competing icons. The user
+// fed back that opening /coach felt like switching apps; making the header
+// match every other W destination is half the fix. Trainer-profile + memory
+// links live one tap deeper inside a small dropdown menu rather than fighting
+// for header real-estate alongside the back arrow.
+const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  return (
+    <div className="shrink-0 px-4 pt-3 pb-2 flex items-center justify-between border-b border-border/30 relative">
+      <Button variant="ghost" size="icon-sm" onClick={onBack} aria-label="Back">
+        <ArrowLeft size={18} />
       </Button>
-      <Button variant="ghost" size="icon-sm" onClick={() => navigate("/coach/memory")} aria-label="Coach memory">
-        <Brain size={16} />
+      <h1 className="font-display text-base font-black tracking-tight">W Coach</h1>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        onClick={() => setMenuOpen((v) => !v)}
+        aria-label="Coach settings"
+      >
+        <MoreVertical size={16} />
       </Button>
+      {menuOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-30"
+            onClick={() => setMenuOpen(false)}
+            aria-hidden
+          />
+          <div className="absolute right-3 top-12 z-40 w-48 rounded-2xl border border-border/60 bg-card shadow-[0_18px_56px_-12px_hsl(var(--background)/0.8)] overflow-hidden">
+            <button
+              type="button"
+              onClick={() => { setMenuOpen(false); navigate("/coach/profile"); }}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 transition"
+            >
+              <User size={14} className="text-gold" />
+              <span>Trainer profile</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMenuOpen(false); navigate("/coach/memory"); }}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 transition border-t border-border/40"
+            >
+              <Brain size={14} className="text-gold" />
+              <span>Coach memory</span>
+            </button>
+          </div>
+        </>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 const CoachShell = ({ session, isElite, program, logs, currentWeek, todayDayIndex, refetch, navigate }: any) => {
   const [chatOpen, setChatOpen] = useState(false);
@@ -163,9 +199,9 @@ const CoachShell = ({ session, isElite, program, logs, currentWeek, todayDayInde
   //          persistent chat composer + ChatSheet).
   return (
     <div className="flex flex-col h-full relative">
-      <MinimalTopBar onBack={() => navigate(-1)} navigate={navigate} />
+      <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
 
-      <div className={cn("flex-1 overflow-y-auto px-4", isElite ? "pb-32" : "pb-8")}>
+      <div className="flex-1 overflow-y-auto px-4 pb-8">
         {/* TrainerBrief calls the coach-daily-brief edge function which is
             Elite-gated server-side; hide for free users to avoid a 403. */}
         {isElite && <TrainerBrief onAsk={askCoach} />}
@@ -251,12 +287,36 @@ const CoachShell = ({ session, isElite, program, logs, currentWeek, todayDayInde
             </div>
           </>
         )}
-      </div>
 
-      {/* Persistent chat composer — Elite only (ai-coach edge function is Elite-gated). */}
-      {isElite && (
-        <PersistentComposer onOpen={(prompt) => { setPendingPrompt(prompt ?? null); setChatOpen(true); }} />
-      )}
+        {/* Inline chat CTA — replaces the previous persistent composer that
+            was pinned above BottomNav. The persistent composer was the single
+            biggest "this is a sub-app" signal (no other W page has one).
+            Now chat is reached by intent: tap the card → ChatSheet slides up.
+            Elite-only because the ai-coach edge function is Elite-gated. */}
+        {isElite && (
+          <button
+            type="button"
+            onClick={() => { hapticImpact("light"); setChatOpen(true); }}
+            className="mt-6 w-full text-left rounded-3xl border border-gold/40 bg-gradient-to-b from-gold/[0.08] via-card/95 to-card p-5 shadow-[0_20px_56px_-28px_hsl(var(--gold)/0.5)] active:scale-[0.99] transition-transform"
+            aria-label="Open W Coach chat"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_18px_hsl(42_78%_54%/0.45)]">
+                <Sparkles size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">
+                  Ask your coach
+                </p>
+                <p className="text-sm font-bold text-foreground leading-tight">
+                  Training, sleep, mind — anything on your mind today.
+                </p>
+              </div>
+              <Send size={16} className="text-gold/70 shrink-0" />
+            </div>
+          </button>
+        )}
+      </div>
 
       <AnimatePresence>
         {isElite && chatOpen && (
@@ -278,44 +338,11 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   </p>
 );
 
-// ── Persistent composer pinned above BottomNav ────────────────────────────────
-const PersistentComposer = ({ onOpen }: { onOpen: (prompt?: string) => void }) => {
-  const [draft, setDraft] = useState("");
-  return (
-    <div
-      className="absolute left-0 right-0 bottom-0 z-20"
-      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-    >
-      <div
-        className="px-3 pt-2 pb-2"
-        style={{
-          background: "linear-gradient(180deg, transparent 0%, hsl(var(--background)/0.92) 30%, hsl(var(--background)) 100%)",
-        }}
-      >
-        <div className="flex items-center gap-2 rounded-full border border-gold/30 bg-card/85 backdrop-blur-xl pl-4 pr-1.5 py-1.5 shadow-[0_8px_24px_-12px_hsl(42_78%_54%/0.5)]">
-          <Sparkles size={14} className="text-gold shrink-0" />
-          <input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onFocus={(e) => { e.currentTarget.blur(); onOpen(draft || undefined); }}
-            placeholder="Ask your coach…"
-            className="flex-1 bg-transparent text-sm placeholder:text-muted-foreground/60 focus:outline-none min-w-0"
-          />
-          <button
-            type="button"
-            onClick={() => { hapticImpact("light"); onOpen(draft || undefined); setDraft(""); }}
-            aria-label="Open coach"
-            className="h-9 w-9 rounded-full bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] flex items-center justify-center shadow-[0_4px_12px_-2px_hsl(42_78%_54%/0.55)] active:scale-95 transition shrink-0"
-          >
-            <Send size={14} strokeWidth={2.6} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 // ── Chat sheet (slide-up over content) ────────────────────────────────────────
+// (PersistentComposer removed — it was a fixed input bar pinned above
+// BottomNav that gave /coach a sub-app feel no other W page has. Chat is
+// now reached via the inline "Ask your coach" card at the bottom of the
+// scroll, matching every other W destination's CTA pattern.)
 type ChatMsg = Msg & { faq_id?: string; failed?: boolean; isFaq?: boolean };
 
 const STALE_MS = 24 * 60 * 60 * 1000;
@@ -524,14 +551,37 @@ const ChatSheet = ({
   const quickAnswers = COACH_FAQ.slice(0, 6);
 
   return (
-    <motion.div
-      initial={{ y: "100%" }}
-      animate={{ y: 0 }}
-      exit={{ y: "100%" }}
-      transition={{ type: "spring", damping: 32, stiffness: 320 }}
-      className="absolute inset-0 z-40 bg-background flex flex-col"
-    >
-      <div className="shrink-0 px-3 pt-3 pb-2 flex items-center justify-between border-b border-border/30 bg-background/85 backdrop-blur-xl">
+    <>
+      {/* Backdrop — dimmed but not opaque so the user sees today's Coach
+          context (session card, missions) sitting BEHIND the chat. This
+          is the "you're still inside the same page" cue. */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="absolute inset-0 z-30 bg-black/55"
+        onClick={onClose}
+        aria-hidden
+      />
+
+      {/* Drawer — slides up to 85% of viewport, rounded top, drag handle.
+          Replaces the previous full-screen modal that hid all parent
+          context (one of the main reasons opening /coach felt like a
+          separate app). */}
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 32, stiffness: 320 }}
+        className="absolute inset-x-0 bottom-0 z-40 max-h-[85vh] flex flex-col bg-background rounded-t-3xl shadow-[0_-20px_60px_-12px_hsl(var(--background)/0.8)] border-t border-gold/25"
+      >
+        {/* Drag handle — visual idiom matching the W onboarding sheets. */}
+        <div className="shrink-0 flex items-center justify-center pt-2 pb-1">
+          <span className="h-1 w-9 rounded-full bg-foreground/20" aria-hidden />
+        </div>
+
+      <div className="shrink-0 px-3 pt-1 pb-2 flex items-center justify-between border-b border-border/30 bg-background/85 backdrop-blur-xl">
         <Button variant="ghost" size="icon-sm" onClick={newChat} aria-label="New chat" title="New chat">
           <Plus size={18} />
         </Button>
@@ -666,7 +716,8 @@ const ChatSheet = ({
           />
         )}
       </AnimatePresence>
-    </motion.div>
+      </motion.div>
+    </>
   );
 };
 

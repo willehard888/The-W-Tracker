@@ -1,5 +1,4 @@
-import { lazy, Suspense, useState, useCallback } from "react";
-import SplashScreen from "@/components/SplashScreen";
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -151,20 +150,17 @@ const AppRoutes = () => {
 };
 
 const App = () => {
-  const alreadyShown = sessionStorage.getItem("w_splash_shown") === "1";
-  const [splashDone, setSplashDone] = useState(alreadyShown);
-  const handleSplashComplete = useCallback(() => {
-    sessionStorage.setItem("w_splash_shown", "1");
-    setSplashDone(true);
-  }, []);
-
+  // SplashScreen previously rendered for ~1.5s on every cold start before
+  // the React tree appeared. The user asked to remove the app-open animation
+  // entirely — gone now. iOS native splash (LaunchScreen.storyboard) still
+  // covers the brief boot delay on the native shell; the web build just
+  // shows the page directly.
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          {!splashDone && <SplashScreen onComplete={handleSplashComplete} />}
           <BrowserRouter>
             <AuthProvider>
               <RevenueCatProvider>

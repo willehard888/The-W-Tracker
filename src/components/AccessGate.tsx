@@ -4,9 +4,20 @@ import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * Routes that are reachable WITHOUT a paid subscription.
- * Everything else is hard-gated behind the paywall — there is no free trial.
+ *
+ * After moving off Lovable + Vercel deploy we softened the hard paywall:
+ * a freshly logged-in user now lands on the home page (`/`), the profile,
+ * and other free surfaces. The paywall is still the gate that elevates
+ * them to Coach / battles / feed, but it no longer ambushes them on the
+ * very first authenticated render — that made the app feel like a
+ * sales page, not a product.
+ *
+ * Premium-only routes (Coach chat, programs, etc.) still enforce their
+ * own checks downstream (Coach.tsx renders an upsell card for non-Elite
+ * users; coach-* edge functions return 403 for non-Elite).
  */
 const ALLOWED_PATHS = new Set([
+  "/",
   "/paywall",
   "/onboarding",
   "/apple-username",
@@ -17,6 +28,10 @@ const ALLOWED_PATHS = new Set([
   "/reset-password",
   "/ios-debug",
   "/apple-auth-launch",
+  "/profile",
+  "/checkin",
+  "/leaderboard",
+  "/badges/compare",
 ]);
 
 const isAllowedPath = (pathname: string) =>

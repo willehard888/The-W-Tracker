@@ -159,27 +159,67 @@ post_install do |installer|
     end
   end
 
-  # Step 3: Disable parallel target building in the Pods project itself.
-  # Build 787 still failed with "No such module 'Capacitor'" on
-  # CapacitorStatusBar even though the explicit PBXTargetDependency from
-  # CapacitorStatusBar → Capacitor was in place. Xcode 26's scheduler
-  # ignores PBXTargetDependency when resolving Swift modules and races
-  # plugin compiles against Capacitor's framework build.
+  # Step 3: Wait-for-Capacitor pre-build script on every plugin target.
   #
-  # Disabling BuildIndependentTargetsInParallel on the Pods project forces
-  # Xcode to build targets serially in dependency order — Capacitor first,
-  # then every plugin in turn. Adds ~30 s to build time but eliminates the
-  # entire class of "module not found" races we've been chasing across
-  # builds 781–787. The App.xcodeproj has the same flag flipped (commit
-  # 16ba861).
-  if installer.pods_project.root_object.respond_to?(:attributes)
-    attrs = installer.pods_project.root_object.attributes || {}
-    if attrs['BuildIndependentTargetsInParallel'] != 'NO'
-      attrs['BuildIndependentTargetsInParallel'] = 'NO'
-      installer.pods_project.root_object.attributes = attrs
-      installer.pods_project.save
-      puts '✅ Disabled parallel target builds on Pods project'
-    end
+  # Build 790 still failed with "no such module 'Capacitor'" on
+  # CapacitorStatusBar.swift — even though:
+  #   - CocoaPods adds an implicit PBXTargetDependency plugin → Capacitor
+  #     (from `s.dependency 'Capacitor'` in each podspec)
+  #   - We add an explicit one in step 2 above as belt-and-suspenders
+  #   - App.xcodeproj + Pods.xcodeproj have BuildIndependentTargetsInParallel = NO
+  #
+  # xcodebuild CLI ignores the BuildIndependentTargetsInParallel flag and
+  # uses its own scheduler, which evaluates module dependencies at FILE
+  # level rather than target level. StatusBar.swift's compile task can
+  # start before Capacitor's swiftmodule-emit task has finished, and the
+  # `import Capacitor` line fails.
+  #
+  # Hard sync fix: every Capacitor plugin target gets a Run Script build
+  # phase inserted BEFORE its Compile Sources phase that blocks until
+  # Capacitor.framework's module map physically exists on disk. While the
+  # script sleeps, Xcode's scheduler is free to keep building Capacitor —
+  # then the file appears, the wait exits, and the plugin's compile
+  # proceeds.
+  CAPACITOR_PLUGIN_TARGETS = %w[
+    CapacitorApp
+    CapacitorAppLauncher
+    CapacitorBrowser
+    CapacitorHaptics
+    CapacitorLocalNotifications
+    CapacitorPushNotifications
+    CapacitorStatusBar
+    RevenuecatPurchasesCapacitor
+  ].freeze
+
+  wait_script = <<~BASH
+    # Auto-injected by Podfile post_install. Blocks the plugin's compile
+    # phase until Capacitor.framework/Modules/module.modulemap is on disk
+    # so Xcode's file-level scheduler can't race the Swift module emit.
+    MODULE_MAP="${PODS_CONFIGURATION_BUILD_DIR}/Capacitor/Capacitor.framework/Modules/module.modulemap"
+    DEADLINE=$((SECONDS + 600))
+    while [ ! -f "$MODULE_MAP" ]; do
+      if [ $SECONDS -ge $DEADLINE ]; then
+        echo "warning: Capacitor module map did not appear within 10 minutes — proceeding anyway" >&2
+        exit 0
+      fi
+      sleep 0.5
+    done
+  BASH
+
+  installer.pods_project.targets.each do |target|
+    next unless CAPACITOR_PLUGIN_TARGETS.include?(target.name)
+    existing = target.shell_script_build_phases.find { |p| p.name == '[CP-User] Wait for Capacitor module' }
+    next if existing
+    phase = target.new_shell_script_build_phase('[CP-User] Wait for Capacitor module')
+    phase.shell_script = wait_script
+    phase.always_out_of_date = '1'  # never skip via input/output caching
+    # Move the new phase to the very top of the build phases list so it
+    # runs before Compile Sources.
+    target.build_phases.unshift(phase)
+    target.build_phases.delete_at(target.build_phases.index(phase) + 1) if target.build_phases.count(phase) > 1
+    puts "⏳ Added wait-for-Capacitor pre-compile phase to #{target.name}"
   end
+
+  installer.pods_project.save
 
 end

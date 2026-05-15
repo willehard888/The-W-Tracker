@@ -1042,10 +1042,17 @@ if [[ ! -d "$(dirname "$DERIVED_DATA_DIR")" ]]; then
 fi
 echo "🔨 Pre-building Capacitor + CapacitorCordova into ${DERIVED_DATA_DIR}..."
 
-# Build CapacitorCordova first (Capacitor depends on it via post_install hook).
+# Build via WORKSPACE + SCHEME, not -target. `xcodebuild` rejects
+# `-target` when `-derivedDataPath` is set:
+#   "The flag -scheme, -testProductsPath, or -xctestrun is required"
+# (build 793 logs). CocoaPods auto-generates schemes for every pod in
+# the workspace, so we can address Capacitor + CapacitorCordova directly
+# via -scheme.
+
+# Build CapacitorCordova first (Capacitor depends on it).
 xcodebuild build \
-  -project "${IOS_APP_DIR}/Pods/Pods.xcodeproj" \
-  -target CapacitorCordova \
+  -workspace "${IOS_APP_DIR}/App.xcworkspace" \
+  -scheme CapacitorCordova \
   -configuration Release \
   -sdk iphoneos \
   -destination 'generic/platform=iOS' \
@@ -1056,8 +1063,8 @@ xcodebuild build \
   || echo "⚠️ CapacitorCordova pre-build had warnings — proceeding"
 
 xcodebuild build \
-  -project "${IOS_APP_DIR}/Pods/Pods.xcodeproj" \
-  -target Capacitor \
+  -workspace "${IOS_APP_DIR}/App.xcworkspace" \
+  -scheme Capacitor \
   -configuration Release \
   -sdk iphoneos \
   -destination 'generic/platform=iOS' \

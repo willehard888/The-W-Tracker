@@ -253,11 +253,23 @@ const TribeDetail = () => {
     }
   }, [fireReactor.events, profile?.user_id]);
 
-  // Realtime: refresh on new posts/comments/kudos/reactions in this tribe
+  // Realtime: refresh on new posts/comments/kudos/reactions in this tribe.
+  //
+  // Channel name carries a per-mount UUID so React StrictMode's
+  // double-mount (and HMR re-mounts) doesn't return a cached, already-
+  // subscribed channel on the second mount — which makes `.on()` throw
+  //   "cannot add `postgres_changes` callbacks for ... after `subscribe()`"
+  // and crashes the entire TribeDetail render tree. Same fix we shipped
+  // for `use-user-habits` + `use-daily-plan` in commit cb1bf49.
   useEffect(() => {
     if (!id) return;
+    const channelKey = `tribe-feed-${id}-${
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2)
+    }`;
     const channel = supabase
-      .channel(`tribe-feed-${id}`)
+      .channel(channelKey)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tribe_posts", filter: `tribe_id=eq.${id}` },

@@ -30,11 +30,21 @@ One-time setup (~5 min):
    the build command (`npm run build`), output (`dist/`), SPA rewrite,
    and security headers.
 4. Add environment variables (project → Settings → Environment
-   Variables). These are the values used by the browser bundle, NOT
-   secrets:
-   - `VITE_SUPABASE_URL` — `https://gcwuvijcuzhunkcauzom.supabase.co`
-   - `VITE_SUPABASE_PUBLISHABLE_KEY` — your anon key
-   - `VITE_SUPABASE_PROJECT_ID` — `gcwuvijcuzhunkcauzom`
+   Variables). These are baked into the browser bundle at build time
+   — they are public anon credentials, NOT service-role secrets.
+
+   **Production values (project ref `gcwuvijcuzhunkcauzom`):**
+   - `VITE_SUPABASE_URL` = `https://gcwuvijcuzhunkcauzom.supabase.co`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY` = (anon key from Supabase →
+     Project Settings → API → Project API keys → `anon` `public`)
+   - `VITE_SUPABASE_PROJECT_ID` = `gcwuvijcuzhunkcauzom`
+
+   **Why these differ from the local `.env`:**
+   The local `.env` points at a *different* Supabase project
+   (`zjdljojkgrpgxurugixf`) — likely your dev / preview database.
+   Production traffic must hit `gcwuvijcuzhunkcauzom` where the
+   edge functions, schema, and OPENROUTER_API_KEY secret live. Add
+   the production triple to Vercel; leave `.env` alone for local dev.
 5. **Deploy**. First build ~90 s; subsequent ones ~30 s.
 6. Vercel auto-deploys on every `git push` to `main`. Preview
    deployments are also created for branches / PRs.

@@ -71,6 +71,35 @@ const Paywall = () => {
     };
   }, [checkSubscription, isNative]);
 
+  // ─── Verify membership by polling checkSubscription ──────────
+  // NOTE: this useCallback MUST sit above the `if (isElite) return ...`
+  // early-return below. Previously it lived after the early return, which
+  // caused React's "Rendered fewer hooks than expected" error the moment a
+  // user's membership flipped on (the hook count differed across renders).
+  const pollVerification = useCallback(async (timeoutMs = 8000): Promise<boolean> => {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      try {
+        await checkSubscription();
+        // checkSubscription updates AuthContext; we read isElite via closure.
+        // Re-read from supabase as a safety net so we don't rely on async state.
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase
+            .from("profiles")
+            .select("is_elite, is_premium")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          if (data?.is_premium || data?.is_elite) return true;
+        }
+      } catch {
+        /* swallow & retry */
+      }
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    return false;
+  }, [checkSubscription]);
+
   // ─── Already a member ────────────────────────────────────────
   if (isElite) {
     return (
@@ -118,31 +147,6 @@ const Paywall = () => {
         day: "numeric", month: "short", year: "numeric",
       })
     : null;
-
-  // ─── Verify membership by polling checkSubscription ──────────
-  const pollVerification = useCallback(async (timeoutMs = 8000): Promise<boolean> => {
-    const start = Date.now();
-    while (Date.now() - start < timeoutMs) {
-      try {
-        await checkSubscription();
-        // checkSubscription updates AuthContext; we read isElite via closure.
-        // Re-read from supabase as a safety net so we don't rely on async state.
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data } = await supabase
-            .from("profiles")
-            .select("is_elite, is_premium")
-            .eq("user_id", user.id)
-            .maybeSingle();
-          if (data?.is_premium || data?.is_elite) return true;
-        }
-      } catch {
-        /* swallow & retry */
-      }
-      await new Promise((r) => setTimeout(r, 1000));
-    }
-    return false;
-  }, [checkSubscription]);
 
   // ─── Native purchase handler ─────────────────────────────────
   const handleNativePurchase = async (plan: "monthly" | "yearly") => {

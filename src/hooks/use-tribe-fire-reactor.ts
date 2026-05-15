@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { uniqueChannelName } from "@/lib/realtime";
 
 export interface FireEvent {
   id: string;
@@ -53,14 +54,8 @@ export function useTribeFireReactor(memberIds: string[]): ReactorState {
     }
 
     const idSet = new Set(memberIds);
-    // Per-mount UUID suffix beats StrictMode's double-mount collision.
-    // Date.now() alone wasn't strong enough — both mounts can fire in the
-    // same millisecond, returning the cached already-subscribed channel.
-    const mountId = typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const channel = supabase
-      .channel(`tribe-fire-${key.slice(0, 40)}-${mountId}`)
+      .channel(uniqueChannelName("tribe-fire", key.slice(0, 40)))
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "profiles" },

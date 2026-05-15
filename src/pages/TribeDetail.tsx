@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { uniqueChannelName } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -263,13 +264,8 @@ const TribeDetail = () => {
   // for `use-user-habits` + `use-daily-plan` in commit cb1bf49.
   useEffect(() => {
     if (!id) return;
-    const channelKey = `tribe-feed-${id}-${
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : Math.random().toString(36).slice(2)
-    }`;
     const channel = supabase
-      .channel(channelKey)
+      .channel(uniqueChannelName("tribe-feed", id))
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tribe_posts", filter: `tribe_id=eq.${id}` },

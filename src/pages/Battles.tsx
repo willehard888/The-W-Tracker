@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { uniqueChannelName } from "@/lib/realtime";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -171,7 +172,7 @@ const Battles = () => {
   useEffect(() => {
     if (!profile) return;
     const channel = supabase
-      .channel("battles-realtime")
+      .channel(uniqueChannelName("battles-realtime"))
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "battles" },

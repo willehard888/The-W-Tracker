@@ -100,6 +100,12 @@ const AppRoutes = () => {
       <div className="flex-1 overflow-y-auto">
         <Suspense fallback={<LazyFallback />}>
           <AccessGate>
+          {/* Route-level ErrorBoundary — keeps the app shell (StatusHeader +
+              BottomNav) visible if the current page crashes. The global
+              ErrorBoundary at the very root only kicks in for
+              shell-level failures. Page crashes get a contained recovery
+              UI here so the user can still navigate elsewhere. */}
+          <ErrorBoundary>
           <Routes>
           <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
@@ -134,6 +140,7 @@ const AppRoutes = () => {
           <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="*" element={<NotFound />} />
           </Routes>
+          </ErrorBoundary>
           </AccessGate>
         </Suspense>
       </div>

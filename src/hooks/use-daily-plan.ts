@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { uniqueChannelName } from "@/lib/realtime";
 
 export type MissionKind = "primary" | "recovery" | "focus" | "habit" | "edge";
 export type MissionPriority = "high" | "medium" | "low";
@@ -85,13 +86,8 @@ export const useDailyPlan = () => {
   // postgres_changes callbacks after subscribe()".
   useEffect(() => {
     if (!user?.id) return;
-    const channelKey = `daily-plan-${user.id}-${
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : Math.random().toString(36).slice(2)
-    }`;
     const ch = supabase
-      .channel(channelKey)
+      .channel(uniqueChannelName("daily-plan", user.id))
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "coach_daily_plans", filter: `user_id=eq.${user.id}` },

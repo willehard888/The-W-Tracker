@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { uniqueChannelName } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ShieldCheck, ShieldAlert, Loader2, CheckCircle2, XCircle } from "lucide-react";
@@ -42,7 +43,7 @@ export default function AdminModeration() {
   useEffect(() => {
     if (!isAdmin) return;
     const channel = supabase
-      .channel("moderation_queue_changes")
+      .channel(uniqueChannelName("moderation-queue-changes"))
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "moderation_queue" },

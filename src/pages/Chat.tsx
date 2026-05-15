@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { uniqueChannelName } from "@/lib/realtime";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, Send } from "lucide-react";
@@ -69,7 +70,7 @@ const Chat = () => {
   useEffect(() => {
     if (!user || !partnerId) return;
     const channel = supabase
-      .channel(`chat-${partnerId}`)
+      .channel(uniqueChannelName("chat", partnerId))
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "direct_messages" },

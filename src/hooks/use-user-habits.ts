@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { uniqueChannelName } from "@/lib/realtime";
 
 export interface UserHabit {
   id: string;
@@ -52,13 +53,8 @@ export const useUserHabits = () => {
     //   "cannot add `postgres_changes` callbacks for realtime:... after `subscribe()`"
     // which crashes the Coach page render tree. Appending a per-mount
     // random suffix gives each mount its own dedicated channel.
-    const channelKey = `user-habits-${user.id}-${
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : Math.random().toString(36).slice(2)
-    }`;
     const ch = supabase
-      .channel(channelKey)
+      .channel(uniqueChannelName("user-habits", user.id))
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "user_habits", filter: `user_id=eq.${user.id}` },

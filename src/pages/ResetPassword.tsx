@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { applySessionFromUrl } from "@/lib/oauth-session";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, Check } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
@@ -13,6 +14,7 @@ const ResetPassword = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,10 +23,24 @@ const ResetPassword = () => {
         setIsRecovery(true);
       }
     });
-    // Check hash for recovery token
+
+    // Consume the recovery tokens from the URL hash. The Supabase client is
+    // configured with `detectSessionInUrl: false` (see src/integrations/supabase/client.ts)
+    // so we have to apply the session manually. Without this, the auth update
+    // call below fails with "Auth session missing!" — which is exactly what
+    // a freshly-clicked reset link from email surfaced on the first try.
     if (window.location.hash.includes("type=recovery")) {
       setIsRecovery(true);
+      void applySessionFromUrl(window.location.href).then((ok) => {
+        setSessionReady(ok);
+        if (ok) {
+          // Clear the tokens from the URL bar so a refresh doesn't try to
+          // re-apply them and the user can't share the link by accident.
+          window.history.replaceState({}, "", window.location.pathname);
+        }
+      });
     }
+
     return () => subscription.unsubscribe();
   }, []);
 
@@ -38,6 +54,15 @@ const ResetPassword = () => {
     }
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      return;
+    }
+
+    if (!sessionReady) {
+      // Make the "Auth session missing!" failure mode self-explanatory
+      // instead of bouncing the user back with cryptic Supabase copy.
+      setError(
+        "Recovery link expired or already used. Request a new password reset email and click the most recent link.",
+      );
       return;
     }
 

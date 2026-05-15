@@ -208,15 +208,17 @@ post_install do |installer|
 
   installer.pods_project.targets.each do |target|
     next unless CAPACITOR_PLUGIN_TARGETS.include?(target.name)
-    existing = target.shell_script_build_phases.find { |p| p.name == '[CP-User] Wait for Capacitor module' }
-    next if existing
+    # Idempotency: skip if the phase is already there from a prior run.
+    if target.shell_script_build_phases.any? { |p| p.name == '[CP-User] Wait for Capacitor module' }
+      next
+    end
+    # `new_shell_script_build_phase` creates the phase AND appends it to
+    # the target's build_phases. To put it BEFORE Compile Sources we
+    # remove it from the tail and re-insert at index 0.
     phase = target.new_shell_script_build_phase('[CP-User] Wait for Capacitor module')
     phase.shell_script = wait_script
-    phase.always_out_of_date = '1'  # never skip via input/output caching
-    # Move the new phase to the very top of the build phases list so it
-    # runs before Compile Sources.
+    target.build_phases.delete(phase)
     target.build_phases.unshift(phase)
-    target.build_phases.delete_at(target.build_phases.index(phase) + 1) if target.build_phases.count(phase) > 1
     puts "⏳ Added wait-for-Capacitor pre-compile phase to #{target.name}"
   end
 

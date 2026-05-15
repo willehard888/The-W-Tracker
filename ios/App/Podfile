@@ -159,69 +159,16 @@ post_install do |installer|
     end
   end
 
-  # Step 3: Wait-for-Capacitor pre-build script on every plugin target.
+  # Note: We previously tried adding a wait-for-Capacitor Run Script build
+  # phase at the head of each plugin target (commits 26c6ff7, f3269ff).
+  # Xcode 26.5's file-level scheduler ran the script IN PARALLEL with the
+  # target's Compile Sources phase within the same target — the script
+  # started 0.2 ms before StatusBar.swift errored in build 792. So that
+  # approach can't serialise.
   #
-  # Build 790 still failed with "no such module 'Capacitor'" on
-  # CapacitorStatusBar.swift — even though:
-  #   - CocoaPods adds an implicit PBXTargetDependency plugin → Capacitor
-  #     (from `s.dependency 'Capacitor'` in each podspec)
-  #   - We add an explicit one in step 2 above as belt-and-suspenders
-  #   - App.xcodeproj + Pods.xcodeproj have BuildIndependentTargetsInParallel = NO
-  #
-  # xcodebuild CLI ignores the BuildIndependentTargetsInParallel flag and
-  # uses its own scheduler, which evaluates module dependencies at FILE
-  # level rather than target level. StatusBar.swift's compile task can
-  # start before Capacitor's swiftmodule-emit task has finished, and the
-  # `import Capacitor` line fails.
-  #
-  # Hard sync fix: every Capacitor plugin target gets a Run Script build
-  # phase inserted BEFORE its Compile Sources phase that blocks until
-  # Capacitor.framework's module map physically exists on disk. While the
-  # script sleeps, Xcode's scheduler is free to keep building Capacitor —
-  # then the file appears, the wait exits, and the plugin's compile
-  # proceeds.
-  CAPACITOR_PLUGIN_TARGETS = %w[
-    CapacitorApp
-    CapacitorAppLauncher
-    CapacitorBrowser
-    CapacitorHaptics
-    CapacitorLocalNotifications
-    CapacitorPushNotifications
-    CapacitorStatusBar
-    RevenuecatPurchasesCapacitor
-  ].freeze
-
-  wait_script = <<~BASH
-    # Auto-injected by Podfile post_install. Blocks the plugin's compile
-    # phase until Capacitor.framework/Modules/module.modulemap is on disk
-    # so Xcode's file-level scheduler can't race the Swift module emit.
-    MODULE_MAP="${PODS_CONFIGURATION_BUILD_DIR}/Capacitor/Capacitor.framework/Modules/module.modulemap"
-    DEADLINE=$((SECONDS + 600))
-    while [ ! -f "$MODULE_MAP" ]; do
-      if [ $SECONDS -ge $DEADLINE ]; then
-        echo "warning: Capacitor module map did not appear within 10 minutes — proceeding anyway" >&2
-        exit 0
-      fi
-      sleep 0.5
-    done
-  BASH
-
-  installer.pods_project.targets.each do |target|
-    next unless CAPACITOR_PLUGIN_TARGETS.include?(target.name)
-    # Idempotency: skip if the phase is already there from a prior run.
-    if target.shell_script_build_phases.any? { |p| p.name == '[CP-User] Wait for Capacitor module' }
-      next
-    end
-    # `new_shell_script_build_phase` creates the phase AND appends it to
-    # the target's build_phases. To put it BEFORE Compile Sources we
-    # remove it from the tail and re-insert at index 0.
-    phase = target.new_shell_script_build_phase('[CP-User] Wait for Capacitor module')
-    phase.shell_script = wait_script
-    target.build_phases.delete(phase)
-    target.build_phases.unshift(phase)
-    puts "⏳ Added wait-for-Capacitor pre-compile phase to #{target.name}"
-  end
-
-  installer.pods_project.save
+  # Replaced by an explicit pre-build of Capacitor + CapacitorCordova in
+  # ci_pre_xcodebuild.sh — that runs BEFORE xcodebuild archive begins and
+  # populates DerivedData with the finished frameworks so plugin compiles
+  # find the module from the cache.
 
 end

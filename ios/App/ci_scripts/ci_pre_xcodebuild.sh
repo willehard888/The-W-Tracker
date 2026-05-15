@@ -1076,12 +1076,32 @@ xcodebuild build \
 
 # Diagnostic: verify the artefacts the plugin compiles need are actually on disk.
 CAP_FW="${DERIVED_DATA_DIR}/Build/Products/Release-iphoneos/Capacitor/Capacitor.framework"
+CORDOVA_FW="${DERIVED_DATA_DIR}/Build/Products/Release-iphoneos/CapacitorCordova/CapacitorCordova.framework"
+echo "📍 Searching for built frameworks in $DERIVED_DATA_DIR..."
+find "$DERIVED_DATA_DIR" -name 'Capacitor.framework' -type d 2>/dev/null | head -5
+find "$DERIVED_DATA_DIR" -name 'CapacitorCordova.framework' -type d 2>/dev/null | head -5
+
+# Build 794 confirmed pre-build writes to `Build/Products/Release-iphoneos/`
+# but `xcodebuild archive` resolves PODS_CONFIGURATION_BUILD_DIR to
+# `Build/Intermediates.noindex/ArchiveIntermediates/App/BuildProductsPath/Release-iphoneos/`.
+# Different directory tree. Without a bridge, archive ignores the pre-built
+# artefacts and StatusBar.swift races Capacitor's swiftmodule emit anyway.
+#
+# Mirror pre-build outputs into the path archive actually reads from.
+# If archive later overwrites these during its own build, no harm done —
+# the goal is just to make sure the module exists when StatusBar's compile
+# task starts.
+ARCHIVE_PRODUCTS_DIR="${DERIVED_DATA_DIR}/Build/Intermediates.noindex/ArchiveIntermediates/App/BuildProductsPath/Release-iphoneos"
+mkdir -p "$ARCHIVE_PRODUCTS_DIR/Capacitor" "$ARCHIVE_PRODUCTS_DIR/CapacitorCordova"
 if [[ -d "$CAP_FW" ]]; then
-  echo "✅ Capacitor.framework present:"
-  ls -la "$CAP_FW/Modules" 2>/dev/null | head -10
-else
-  echo "⚠️ Capacitor.framework NOT at $CAP_FW — checking alternate paths"
-  find "$DERIVED_DATA_DIR" -name 'Capacitor.framework' -type d 2>/dev/null | head -5
+  echo "🪞 Mirroring Capacitor.framework → ArchiveIntermediates path"
+  cp -R "$CAP_FW" "$ARCHIVE_PRODUCTS_DIR/Capacitor/"
 fi
+if [[ -d "$CORDOVA_FW" ]]; then
+  echo "🪞 Mirroring CapacitorCordova.framework → ArchiveIntermediates path"
+  cp -R "$CORDOVA_FW" "$ARCHIVE_PRODUCTS_DIR/CapacitorCordova/"
+fi
+echo "📂 Contents of mirror target:"
+ls -la "$ARCHIVE_PRODUCTS_DIR" 2>/dev/null | head -10
 
 echo "✅ pre-xcodebuild setup complete"

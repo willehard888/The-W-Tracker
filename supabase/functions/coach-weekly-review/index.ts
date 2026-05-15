@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     }
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: authHeader } },
@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
     let next_week_focus = "Hold the line — stack one extra workout if energy stays >3.5.";
     let program_tweak: string | null = null;
 
-    if (LOVABLE_API_KEY) {
+    if (OPENROUTER_API_KEY) {
       try {
         const prompt = `Last 7 days for athlete (${athlete?.i_am ?? "no identity"}, goal: ${athlete?.primary_goal ?? "general"}, tone: ${athlete?.tone_pref ?? "calm_mentor"}).
 
@@ -126,9 +126,9 @@ COMPUTED PERFORMANCE SCORE: ${performance_score}/100
 
 Return a sharp meta-review. driver_of_week = the SINGLE biggest factor that moved the score this week (positive or negative). next_week_focus = ≤3 sentences of crisp prescription. program_tweak = ONE concrete adjustment if data warrants it (e.g. "Drop Friday VO₂ — RPE creeping above 9").`;
 
-        const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
-          headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+          headers: { Authorization: `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
           body: JSON.stringify({
             model: "google/gemini-2.5-flash",
             messages: [
@@ -164,7 +164,7 @@ Return a sharp meta-review. driver_of_week = the SINGLE biggest factor that move
       _frictions: frictions,
       _next_week_focus: next_week_focus,
       _program_tweak: program_tweak,
-      _generated_with: LOVABLE_API_KEY ? "google/gemini-2.5-flash" : "fallback",
+      _generated_with: OPENROUTER_API_KEY ? "google/gemini-2.5-flash" : "fallback",
     });
     if (rpcErr) {
       console.error("weekly rpc err", rpcErr);

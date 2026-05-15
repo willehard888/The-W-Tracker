@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const ANON       = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const AI_KEY     = Deno.env.get("LOVABLE_API_KEY");
+    const AI_KEY     = Deno.env.get("OPENROUTER_API_KEY");
     if (!AI_KEY) return json({ error: "AI gateway not configured" }, 500);
 
     const sb = createClient(SUPABASE_URL, ANON, {
@@ -186,7 +186,7 @@ Generate a Life OS brief in this exact JSON shape (no extra keys):
 }`;
 
     // ── AI call ──────────────────────────────────────────────────────────────
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization:  `Bearer ${AI_KEY}`,

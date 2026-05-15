@@ -37,10 +37,10 @@ Deno.serve(async (req) => {
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 
-  if (!LOVABLE_API_KEY) {
-    return new Response(JSON.stringify({ error: "LOVABLE_API_KEY not configured" }), {
+  if (!OPENROUTER_API_KEY) {
+    return new Response(JSON.stringify({ error: "OPENROUTER_API_KEY not configured" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -120,10 +120,10 @@ Yesterday (${(checkin.checked_in_at as string).slice(0, 10)}):
 - No phone (morning/evening): ${checkin.no_phone_morning ? "✓" : "✗"} / ${checkin.no_phone_evening ? "✓" : "✗"}
 ${checkin.journal_entry ? `- Journal: ${(checkin.journal_entry as string).slice(0, 300)}` : ""}`;
 
-      const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

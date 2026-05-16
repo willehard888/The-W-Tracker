@@ -501,7 +501,7 @@ const Battles = () => {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-muted-foreground">{opp.xp.toLocaleString()} XP</p>
+                      <p className="text-xs text-muted-foreground">{(opp.xp ?? 0).toLocaleString()} XP</p>
                       <p className="text-xs text-[hsl(var(--streak-orange))]">{opp.streak}d streak</p>
                     </div>
                   </div>

@@ -81,7 +81,7 @@ const PublicProfile = () => {
       const tier = getTierConfig(profile.status_tier || 'recruit');
       document.title = `@${profile.username} · ${tier.label} · Whealth Factory`;
       const desc = document.querySelector('meta[name="description"]');
-      const text = `${tier.emoji} ${tier.label} · Level ${profile.level} · ${profile.streak}d streak · ${profile.xp.toLocaleString()} XP`;
+      const text = `${tier.emoji} ${tier.label} · Level ${profile.level ?? 1} · ${profile.streak ?? 0}d streak · ${(profile.xp ?? 0).toLocaleString()} XP`;
       if (desc) desc.setAttribute('content', text);
       else {
         const m = document.createElement('meta');
@@ -150,9 +150,9 @@ const PublicProfile = () => {
           {/* Stats row — IG-style: count on top, label below */}
           <div className="flex-1 grid grid-cols-3 gap-1 text-center">
             {[
-              { label: "XP", value: profile.xp >= 1000 ? `${(profile.xp / 1000).toFixed(1)}k` : profile.xp.toString(), color: "text-gold" },
-              { label: "Streak", value: `${profile.streak}d`, color: "text-[hsl(18_95%_58%)]" },
-              { label: "Level", value: profile.level.toString(), color: "text-foreground" },
+              { label: "XP", value: (profile.xp ?? 0) >= 1000 ? `${((profile.xp ?? 0) / 1000).toFixed(1)}k` : (profile.xp ?? 0).toString(), color: "text-gold" },
+              { label: "Streak", value: `${profile.streak ?? 0}d`, color: "text-[hsl(18_95%_58%)]" },
+              { label: "Level", value: (profile.level ?? 1).toString(), color: "text-foreground" },
             ].map((s, i) => (
               <motion.div
                 key={s.label}

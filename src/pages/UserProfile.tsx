@@ -395,7 +395,7 @@ const UserProfile = () => {
             className="mt-6 flex flex-col items-center"
           >
             <p className="font-display font-black text-[64px] leading-none text-gold drop-shadow-[0_0_24px_hsl(42_78%_54%/0.55)] tabular-nums">
-              {profile.xp.toLocaleString().replace(/,/g, " ")}
+              {(profile.xp ?? 0).toLocaleString().replace(/,/g, " ")}
             </p>
             <p className="text-[10px] font-black tracking-[0.32em] text-gold/70 mt-2">TOTAL XP</p>
           </motion.div>

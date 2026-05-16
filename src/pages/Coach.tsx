@@ -69,7 +69,7 @@ const Coach = () => {
     const err = (athleteError ?? programError)!;
     return (
       <div className="flex flex-col h-full">
-        <MinimalTopBar onBack={() => navigate(-1)} navigate={navigate} />
+        <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
         <div className="flex-1 flex items-center justify-center px-6 text-center">
           <div className="max-w-sm space-y-4">
             <div className="text-3xl" aria-hidden>⚠️</div>
@@ -98,7 +98,7 @@ const Coach = () => {
   if (!athlete?.onboarded) {
     return (
       <div className="flex flex-col h-full">
-        <MinimalTopBar onBack={() => navigate(-1)} navigate={navigate} />
+        <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
         <AthleteProfileOnboarding onDone={() => refetchAthlete()} />
       </div>
     );
@@ -110,7 +110,7 @@ const Coach = () => {
   if (isElite && !program) {
     return (
       <div className="flex flex-col h-full overflow-y-auto safe-top">
-        <MinimalTopBar onBack={() => navigate(-1)} navigate={navigate} />
+        <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
         <ProgramOnboarding onGenerated={() => refetch()} />
       </div>
     );

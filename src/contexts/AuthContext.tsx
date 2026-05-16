@@ -10,6 +10,12 @@ interface AuthContextType {
   profile: any | null;
   loading: boolean;
   isElite: boolean;
+  /** Alias of isElite — some legacy call sites read `isPremium`. */
+  isPremium: boolean;
+  /** Always true for any logged-in user after the paywall removal. */
+  isApexSubscriber: boolean;
+  /** Mirrors `loading` so legacy `subscriptionLoading` reads keep working. */
+  subscriptionLoading: boolean;
   subscriptionEnd: string | null;
   checkSubscription: () => Promise<void>;
   signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
@@ -222,8 +228,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSubscriptionEnd(null);
   };
 
+  // PAYWALL REMOVED — every logged-in user is treated as Premium / Elite /
+  // Apex regardless of the underlying RevenueCat or DB subscription state.
+  // The real `isElite` state is still tracked internally for billing UI
+  // (e.g. "Manage subscription" on Paywall.tsx) and for clients that want
+  // to read it via the raw `profile` object, but every consumer of the
+  // membership flags from this context sees true.
+  //
+  // To re-introduce the paywall later, change `effectiveMembership` back to
+  // the underlying `isElite` state below — every consumer reads through
+  // this one source of truth so the toggle is a single line.
+  const effectiveMembership = user !== null;
+
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, isElite, subscriptionEnd, checkSubscription, signUp, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        profile,
+        loading,
+        isElite: effectiveMembership,
+        isPremium: effectiveMembership,
+        isApexSubscriber: effectiveMembership,
+        subscriptionLoading: loading,
+        subscriptionEnd,
+        checkSubscription,
+        signUp,
+        signIn,
+        signOut,
+        refreshProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

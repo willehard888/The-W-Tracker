@@ -228,17 +228,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSubscriptionEnd(null);
   };
 
-  // PAYWALL REMOVED — every logged-in user is treated as Premium / Elite /
-  // Apex regardless of the underlying RevenueCat or DB subscription state.
-  // The real `isElite` state is still tracked internally for billing UI
-  // (e.g. "Manage subscription" on Paywall.tsx) and for clients that want
-  // to read it via the raw `profile` object, but every consumer of the
-  // membership flags from this context sees true.
+  // PAYWALL REMOVED — every logged-in user with a loaded profile is treated
+  // as Premium / Elite / Apex regardless of the underlying RevenueCat or DB
+  // subscription state. The real `isElite` state is still tracked internally
+  // for billing UI (e.g. "Manage subscription" on Paywall.tsx) and is
+  // readable via the raw `profile` object, but every consumer of the
+  // membership flags from this context sees true once profile is loaded.
   //
-  // To re-introduce the paywall later, change `effectiveMembership` back to
-  // the underlying `isElite` state below — every consumer reads through
-  // this one source of truth so the toggle is a single line.
-  const effectiveMembership = user !== null;
+  // CRITICAL: we gate on `profile !== null` (not just `user !== null`)
+  // because components that read `isElite` often pair it with profile data
+  // reads (profile.xp, profile.username, etc.). If we said isElite=true
+  // while profile was still null they would crash trying to render premium
+  // content without the data backing it.
+  //
+  // To re-introduce the paywall later, change `effectiveMembership` back
+  // to the underlying `isElite` state — every consumer reads through this
+  // one source of truth so the toggle is a single line.
+  const effectiveMembership = user !== null && profile !== null;
 
   return (
     <AuthContext.Provider

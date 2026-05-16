@@ -445,12 +445,40 @@ const ChatSheet = ({
         }),
       });
       if (!resp.ok || !resp.body) {
+        // Try to parse the structured error payload from ai-coach so we can
+        // surface the *actual* upstream error (OpenRouter status + body)
+        // on-screen instead of the generic "Coach failed to respond" toast.
+        let detail = "";
+        try {
+          const errBody = await resp.clone().json() as {
+            error?: string;
+            upstream_status?: number;
+            upstream_body?: string;
+          };
+          detail = [
+            errBody.error,
+            errBody.upstream_status ? `OpenRouter ${errBody.upstream_status}` : null,
+            errBody.upstream_body ? errBody.upstream_body.slice(0, 200) : null,
+          ].filter(Boolean).join(" — ");
+        } catch {
+          /* fall through */
+        }
+        const summary = detail || `HTTP ${resp.status}`;
+
         if (resp.status === 429) toast.error("Coach is busy. Try again in a moment.");
-        else if (resp.status === 402) toast.error("AI credits exhausted.");
-        else toast.error("Coach failed to respond.");
+        else if (resp.status === 402) toast.error("OpenRouter credits exhausted. Top up at openrouter.ai/credits.");
+        else if (resp.status === 401) toast.error("OpenRouter API key invalid.");
+        else toast.error(`Coach failed to respond — ${summary}`);
+
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: "Coach lost connection. Tap to retry.", failed: true },
+          {
+            role: "assistant",
+            content: detail
+              ? `**Coach failed to respond.**\n\n\`\`\`\n${detail}\n\`\`\`\n\nTap to retry.`
+              : "Coach lost connection. Tap to retry.",
+            failed: true,
+          },
         ]);
         return;
       }

@@ -349,24 +349,27 @@ Deno.serve(async (req) => {
     });
 
     if (!upstream.ok) {
-      if (upstream.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
-      }
-      if (upstream.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI credits exhausted. Please contact support." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
-      }
-      const t = await upstream.text();
-      console.error("AI gateway error:", upstream.status, t);
-      return new Response(JSON.stringify({ error: "AI gateway error" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      // Surface the actual OpenRouter response body to the client so the
+      // user can diagnose without dashboard access. Generic "AI gateway
+      // error" copy hid the real cause through multiple debug rounds.
+      const upstreamBody = await upstream.text().catch(() => "<unreadable>");
+      console.error("OpenRouter error:", upstream.status, upstreamBody);
+
+      let friendly = "AI gateway error";
+      if (upstream.status === 429) friendly = "Rate limit exceeded. Try again in a moment.";
+      else if (upstream.status === 402) friendly = "OpenRouter credits exhausted. Top up at openrouter.ai/credits.";
+      else if (upstream.status === 401) friendly = "OpenRouter API key invalid. Reset OPENROUTER_API_KEY secret and redeploy.";
+      else if (upstream.status === 400) friendly = "OpenRouter rejected the request (model name or payload). See upstream below.";
+      else if (upstream.status === 404) friendly = "OpenRouter model not found. Check the model id in the edge function.";
+
+      return new Response(
+        JSON.stringify({
+          error: friendly,
+          upstream_status: upstream.status,
+          upstream_body: upstreamBody.slice(0, 1200),
+        }),
+        { status: upstream.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     return new Response(upstream.body, {

@@ -75,11 +75,30 @@ workflows:
 
       - name: Set up signing
         script: |
+          # Initialize a clean keychain for this build.
           keychain initialize
+
+          # Fetch (or create on the fly) a distribution certificate and
+          # an App Store provisioning profile for our bundle id. The
+          # `--create` flag tells Codemagic to register missing artefacts
+          # via the App Store Connect API integration named "codemagic"
+          # — which is the integration we connected in the Codemagic
+          # dashboard with our App Store Connect API key.
+          #
+          # Verbose output makes signing failures legible (build #2's
+          # error was opaque because we didn't see the fetch step output).
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --create
+            --create \
+            --verbose
+
+          # Import any newly fetched certificates into the build keychain.
           keychain add-certificates
+
+          # Apply the fetched provisioning profiles to the Xcode project.
+          # This step rewrites App.xcodeproj's signing settings so each
+          # target uses the right profile name (without it, xcodebuild
+          # errors with "App requires a provisioning profile").
           xcode-project use-profiles
 
       - name: xcodebuild archive (serial, -jobs 1)
@@ -87,6 +106,10 @@ workflows:
           # The single line that Xcode Cloud refused to give us:
           #   -jobs 1 forces xcodebuild to compile targets one at a
           #   time, eliminating the Swift-module race entirely.
+          #
+          # Codemagic injects the right CODE_SIGN_IDENTITY / PROVISIONING_PROFILE
+          # build settings automatically from `use-profiles` above; we just
+          # forward our jobs flag.
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \

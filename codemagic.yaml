@@ -21,15 +21,14 @@ workflows:
     max_build_duration: 60
 
     environment:
-      groups:
-        # Configure in Codemagic dashboard → Teams → W Tracker → Variables
-        # and add these as encrypted group "wtracker_ios":
-        #   APP_STORE_CONNECT_PRIVATE_KEY (.p8 file contents)
-        #   APP_STORE_CONNECT_KEY_IDENTIFIER
-        #   APP_STORE_CONNECT_ISSUER_ID
-        #   CERTIFICATE_PRIVATE_KEY (distribution cert .p12 contents)
-        #   APP_STORE_APP_ID            (App Store Connect app id, e.g. 6761115803)
-        - wtracker_ios
+      # NOTE: Codemagic removed "global variables and secrets" from
+      # personal accounts in 2026. Variables must now be added per-app
+      # under Applications → The-W-Tracker → Environment variables.
+      # Add these in the dashboard (NOT in a group):
+      #   CERTIFICATE_PRIVATE_KEY  (encrypted, .pem private key contents)
+      #   APP_STORE_APP_ID         (not encrypted, e.g. 6761115803)
+      # The App Store Connect API key itself lives in the
+      # `integrations: app_store_connect: codemagic` integration above.
       vars:
         BUNDLE_ID: "app.lovable.wtracker"
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
@@ -78,15 +77,22 @@ workflows:
           # Initialize a clean keychain for this build.
           keychain initialize
 
+          # Diagnostic: dump what already exists on the App Store
+          # Connect side so we can see whether fetch needs to create
+          # anything new.
+          echo "──── Existing distribution certificates ────"
+          app-store-connect list-certificates --type IOS_DISTRIBUTION || true
+          echo "──── Existing bundle ids ────"
+          app-store-connect list-bundle-ids --bundle-id-identifier "$BUNDLE_ID" || true
+          echo "──── Existing provisioning profiles ────"
+          app-store-connect list-profiles --profile-type IOS_APP_STORE \
+            --bundle-id-identifier "$BUNDLE_ID" || true
+
           # Fetch (or create on the fly) a distribution certificate and
-          # an App Store provisioning profile for our bundle id. The
-          # `--create` flag tells Codemagic to register missing artefacts
-          # via the App Store Connect API integration named "codemagic"
-          # — which is the integration we connected in the Codemagic
-          # dashboard with our App Store Connect API key.
-          #
-          # Verbose output makes signing failures legible (build #2's
-          # error was opaque because we didn't see the fetch step output).
+          # an App Store provisioning profile for our bundle id.
+          # --create handles missing cert + profile via the App Store
+          # Connect API integration named "codemagic" (configured in
+          # the Codemagic dashboard with our API key).
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create \
@@ -96,10 +102,16 @@ workflows:
           keychain add-certificates
 
           # Apply the fetched provisioning profiles to the Xcode project.
-          # This step rewrites App.xcodeproj's signing settings so each
-          # target uses the right profile name (without it, xcodebuild
-          # errors with "App requires a provisioning profile").
+          # Rewrites App.xcodeproj's signing settings so each target uses
+          # the right profile name (without it, xcodebuild errors with
+          # "App requires a provisioning profile").
           xcode-project use-profiles
+
+          # Diagnostic: confirm the project now has a profile reference.
+          echo "──── Final project signing settings ────"
+          xcodebuild -project ios/App/App.xcodeproj \
+            -showBuildSettings -target App -configuration Release 2>/dev/null \
+            | grep -E 'CODE_SIGN|PROVISIONING|DEVELOPMENT_TEAM' || true
 
       - name: xcodebuild archive (serial, -jobs 1)
         script: |

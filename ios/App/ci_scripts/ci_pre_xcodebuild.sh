@@ -1014,94 +1014,11 @@ else
   echo "⚠️  App.xcodeproj/project.pbxproj not found at ${APP_PBXPROJ}"
 fi
 
-# ---------------------------------------------------------------------------
-# Pre-build Capacitor + CapacitorCordova frameworks
-# ---------------------------------------------------------------------------
-# Builds 778–792 (across multiple variants) failed because Xcode 26.5's
-# CLI scheduler ignores PBXTargetDependency for Swift module resolution and
-# starts plugin Swift compiles before Capacitor.framework's swiftmodule has
-# been emitted. We tried: modular_headers, @import patches, dropping the
-# only ObjC plugin (keyboard), BuildIndependentTargetsInParallel = NO, and
-# wait-script build phases — none of them serialise the actual file-level
-# compile tasks. Wait-script runs IN PARALLEL with Compile Sources phase
-# within the same target on Xcode 26.5 (the script started 0.2 ms before
-# StatusBar.swift errored in build 792).
-#
-# Only deterministic fix: physically build Capacitor + CapacitorCordova
-# frameworks into the same DerivedData path the archive will use, BEFORE
-# xcodebuild archive starts. Once Capacitor.framework/Modules/module.modulemap
-# AND Capacitor.framework/Modules/Capacitor.swiftmodule/* exist on disk,
-# every plugin's `import Capacitor` resolves immediately — no race possible.
-#
-# Xcode Cloud archive command uses `-derivedDataPath /Volumes/workspace/DerivedData`
-# so we target that path. Local invocation falls back to a workspace-local
-# DerivedData under ios/App/.
-DERIVED_DATA_DIR="/Volumes/workspace/DerivedData"
-if [[ ! -d "$(dirname "$DERIVED_DATA_DIR")" ]]; then
-  DERIVED_DATA_DIR="${IOS_APP_DIR}/DerivedData"
-fi
-echo "🔨 Pre-building Capacitor + CapacitorCordova into ${DERIVED_DATA_DIR}..."
-
-# Build via WORKSPACE + SCHEME, not -target. `xcodebuild` rejects
-# `-target` when `-derivedDataPath` is set:
-#   "The flag -scheme, -testProductsPath, or -xctestrun is required"
-# (build 793 logs). CocoaPods auto-generates schemes for every pod in
-# the workspace, so we can address Capacitor + CapacitorCordova directly
-# via -scheme.
-
-# Build CapacitorCordova first (Capacitor depends on it).
-xcodebuild build \
-  -workspace "${IOS_APP_DIR}/App.xcworkspace" \
-  -scheme CapacitorCordova \
-  -configuration Release \
-  -sdk iphoneos \
-  -destination 'generic/platform=iOS' \
-  -derivedDataPath "$DERIVED_DATA_DIR" \
-  CODE_SIGNING_ALLOWED=NO \
-  COMPILER_INDEX_STORE_ENABLE=NO \
-  2>&1 | tail -8 \
-  || echo "⚠️ CapacitorCordova pre-build had warnings — proceeding"
-
-xcodebuild build \
-  -workspace "${IOS_APP_DIR}/App.xcworkspace" \
-  -scheme Capacitor \
-  -configuration Release \
-  -sdk iphoneos \
-  -destination 'generic/platform=iOS' \
-  -derivedDataPath "$DERIVED_DATA_DIR" \
-  CODE_SIGNING_ALLOWED=NO \
-  COMPILER_INDEX_STORE_ENABLE=NO \
-  2>&1 | tail -8 \
-  || echo "⚠️ Capacitor pre-build had warnings — main archive will retry"
-
-# Diagnostic: verify the artefacts the plugin compiles need are actually on disk.
-CAP_FW="${DERIVED_DATA_DIR}/Build/Products/Release-iphoneos/Capacitor/Capacitor.framework"
-CORDOVA_FW="${DERIVED_DATA_DIR}/Build/Products/Release-iphoneos/CapacitorCordova/CapacitorCordova.framework"
-echo "📍 Searching for built frameworks in $DERIVED_DATA_DIR..."
-find "$DERIVED_DATA_DIR" -name 'Capacitor.framework' -type d 2>/dev/null | head -5
-find "$DERIVED_DATA_DIR" -name 'CapacitorCordova.framework' -type d 2>/dev/null | head -5
-
-# Build 794 confirmed pre-build writes to `Build/Products/Release-iphoneos/`
-# but `xcodebuild archive` resolves PODS_CONFIGURATION_BUILD_DIR to
-# `Build/Intermediates.noindex/ArchiveIntermediates/App/BuildProductsPath/Release-iphoneos/`.
-# Different directory tree. Without a bridge, archive ignores the pre-built
-# artefacts and StatusBar.swift races Capacitor's swiftmodule emit anyway.
-#
-# Mirror pre-build outputs into the path archive actually reads from.
-# If archive later overwrites these during its own build, no harm done —
-# the goal is just to make sure the module exists when StatusBar's compile
-# task starts.
-ARCHIVE_PRODUCTS_DIR="${DERIVED_DATA_DIR}/Build/Intermediates.noindex/ArchiveIntermediates/App/BuildProductsPath/Release-iphoneos"
-mkdir -p "$ARCHIVE_PRODUCTS_DIR/Capacitor" "$ARCHIVE_PRODUCTS_DIR/CapacitorCordova"
-if [[ -d "$CAP_FW" ]]; then
-  echo "🪞 Mirroring Capacitor.framework → ArchiveIntermediates path"
-  cp -R "$CAP_FW" "$ARCHIVE_PRODUCTS_DIR/Capacitor/"
-fi
-if [[ -d "$CORDOVA_FW" ]]; then
-  echo "🪞 Mirroring CapacitorCordova.framework → ArchiveIntermediates path"
-  cp -R "$CORDOVA_FW" "$ARCHIVE_PRODUCTS_DIR/CapacitorCordova/"
-fi
-echo "📂 Contents of mirror target:"
-ls -la "$ARCHIVE_PRODUCTS_DIR" 2>/dev/null | head -10
+# Pre-build + mirror steps removed in 2026-05-17 — they didn't survive the
+# Xcode 26.5 module race (build 810 still failed despite the framework
+# being mirrored to ArchiveIntermediates). The Podfile now uses
+# `use_frameworks! :linkage => :static` which eliminates the race entirely
+# at the architectural level — no separate Capacitor.framework module to
+# build before plugins can compile.
 
 echo "✅ pre-xcodebuild setup complete"

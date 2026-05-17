@@ -2,22 +2,29 @@ require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '15.0'
 
-# Use dynamic frameworks, as the official Capacitor 8 iOS template does.
+# STATIC framework linkage — architectural fix for the Xcode 26.5 module race
+# that killed builds 778–810 with "no such module 'Capacitor'" on whichever
+# plugin Xcode happened to schedule first.
 #
-# We deliberately DO NOT pass `:modular_headers => true` on the Capacitor pods
-# below. Under Xcode 26.4.1 that flag forces CocoaPods to emit its own Clang
-# modulemaps for Capacitor/CapacitorCordova, which then conflict with the
-# framework modulemaps shipped inside the pod (`Capacitor.modulemap`,
-# `CapacitorCordova.modulemap`). The result is a SwiftCompile failure on
-#   CAPInstanceDescriptor.h:5 — `error: module 'Cordova' not found`
-# because `@import Cordova;` resolves against the CocoaPods-generated map
-# while the framework header is searched via FRAMEWORK_SEARCH_PATHS.
+# With `use_frameworks! :linkage => :dynamic` (the default), every pod compiles
+# into its own .framework with a separate Swift module. Plugin compiles need
+# to wait for Capacitor.framework's module map to land on disk before they can
+# resolve `import Capacitor`. Xcode 26's file-level parallel scheduler ignores
+# PBXTargetDependency, run-script wait phases, and pre-built artefacts —
+# nothing forces serialisation reliably.
 #
-# Leaving the default header mode (no `:modular_headers`) matches the template
-# that ships in `@capacitor/cli/assets/ios-pods-template.tar.gz` and lets the
-# pods' own `.modulemap` files (which *do* define module Cordova) drive the
-# import — which is how `@import Cordova;` is meant to resolve.
-use_frameworks!
+# `:linkage => :static` removes the race entirely. Each pod compiles into a
+# static archive that gets linked into Pods-App at the FINAL link stage. There
+# is no separate Capacitor.framework module to race against — Swift modules
+# are still emitted but the linker assembles everything together at the end.
+# Capacitor's official template moved to static in v6+; we held onto dynamic
+# longer than needed.
+#
+# Plugin runtime discovery still works under static linkage as long as the
+# Objective-C runtime keeps the registration symbols alive. The post_install
+# hook below adds `-ObjC` to OTHER_LDFLAGS on the App target so the linker
+# doesn't dead-strip Capacitor's CAP_PLUGIN class registrations.
+use_frameworks! :linkage => :static
 
 # workaround to avoid Xcode caching of Pods that requires
 # Product -> Clean Build Folder after new Cordova plugins installed
@@ -128,6 +135,29 @@ post_install do |installer|
       # is the correct path; `@import Cordova;` resolves via the framework's
       # own Modules/module.modulemap, where the umbrella header lives next to it.
     end
+  end
+
+  # ── Static-linkage adjustments for the App target ────────────────────────
+  # Under :linkage => :static, Capacitor's runtime plugin discovery (CAP_PLUGIN
+  # macro emits ObjC class registrations that the bridge enumerates at boot)
+  # only works if the linker keeps every ObjC class symbol — even ones the
+  # static analyser thinks are unused. `-ObjC` in OTHER_LDFLAGS forces the
+  # linker to load every ObjC .o, preserving the class registrations.
+  #
+  # The App target lives in App.xcodeproj (not Pods.xcodeproj), so we edit
+  # the user xcconfig files CocoaPods generates for it.
+  pods_app_configs = Dir[File.expand_path('Pods/Target Support Files/Pods-App/Pods-App.*.xcconfig', __dir__)]
+  pods_app_configs.each do |path|
+    content = File.read(path)
+    next if content.include?('-ObjC')
+    # Append -ObjC to any existing OTHER_LDFLAGS line, or add a fresh line.
+    if content =~ /^OTHER_LDFLAGS\s*=\s*(.*)$/
+      content = content.sub(/^OTHER_LDFLAGS\s*=\s*(.*)$/, "OTHER_LDFLAGS = \\1 -ObjC")
+    else
+      content += "\nOTHER_LDFLAGS = $(inherited) -ObjC\n"
+    end
+    File.write(path, content)
+    puts "🔗 Added -ObjC to #{File.basename(path)}"
   end
   # Xcode 26 parallel build fix: explicit Capacitor → CapacitorCordova dependency.
   # Without this, Xcode 26's parallel scheduler starts compiling both targets

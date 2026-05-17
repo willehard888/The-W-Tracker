@@ -108,6 +108,19 @@ post_install do |installer|
       config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
       config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
 
+      # Force serial Swift compilation per target. The Swift integrated
+      # driver schedules per-file compile tasks across targets in parallel
+      # — which is what races plugin compiles against Capacitor's
+      # swiftmodule emit. Switching to the legacy driver makes one swift
+      # process per target, enforcing target-level serialisation.
+      config.build_settings['SWIFT_USE_INTEGRATED_DRIVER'] = 'NO'
+      # Eager linking lets the linker start before all dependent compiles
+      # finish — useful for incremental dev builds, harmful for our race.
+      config.build_settings['EAGER_LINKING_ENABLE'] = 'NO'
+      # Stop the indexer from creating a parallel build arena that
+      # competes with the main one.
+      config.build_settings['INDEX_ENABLE_BUILD_ARENA'] = 'NO'
+
       # Targeted workaround for the Swift 6 constraint-solver crash on Capacitor.swift.
       if capacitor_swift_targets.include?(target.name)
         config.build_settings['SWIFT_VERSION'] = '5.0'

@@ -85,8 +85,9 @@ workflows:
           echo "──── Existing bundle ids ────"
           app-store-connect list-bundle-ids --bundle-id-identifier "$BUNDLE_ID" || true
           echo "──── Existing provisioning profiles ────"
-          app-store-connect list-profiles --profile-type IOS_APP_STORE \
-            --bundle-id-identifier "$BUNDLE_ID" || true
+          # NOTE: `list-profiles` does not exist on codemagic-cli-tools;
+          # the right invocation is the `profiles list` subcommand group.
+          app-store-connect profiles list --profile-type IOS_APP_STORE || true
 
           # Fetch (or create on the fly) a distribution certificate and
           # an App Store provisioning profile for our bundle id.

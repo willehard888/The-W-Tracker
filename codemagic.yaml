@@ -36,7 +36,10 @@ workflows:
         XCODE_SCHEME: "App"
       xcode: 26.5
       cocoapods: 1.16.2
-      node: 20
+      # Capacitor 8.x CLI requires Node ≥ 22 (build #1 on Codemagic
+      # failed at the `cap copy` step with "[fatal] The Capacitor CLI
+      # requires NodeJS >=22.0.0" when Node 20 was used).
+      node: 22
 
     triggering:
       events:

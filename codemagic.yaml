@@ -21,14 +21,14 @@ workflows:
     max_build_duration: 60
 
     environment:
-      # NOTE: Codemagic removed "global variables and secrets" from
-      # personal accounts in 2026. Variables must now be added per-app
-      # under Applications → The-W-Tracker → Environment variables.
-      # Add these in the dashboard (NOT in a group):
+      # Configure in Codemagic dashboard → Applications → The-W-Tracker →
+      # Environment variables → add to group "w":
       #   CERTIFICATE_PRIVATE_KEY  (encrypted, .pem private key contents)
       #   APP_STORE_APP_ID         (not encrypted, e.g. 6761115803)
       # The App Store Connect API key itself lives in the
-      # `integrations: app_store_connect: codemagic` integration above.
+      # `integrations: app_store_connect: codemagic` integration below.
+      groups:
+        - w
       vars:
         BUNDLE_ID: "app.lovable.wtracker"
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"

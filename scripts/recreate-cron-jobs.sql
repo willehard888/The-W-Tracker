@@ -1,0 +1,112 @@
+-- ───────────────────────────────────────────────────────────────────────
+-- recreate-cron-jobs.sql
+--
+-- Re-create the scheduled pg_cron jobs that Lovable Cloud's UI set up
+-- on the source project. Run this AFTER migrate-from-lovable.sh has
+-- moved the schema + data, AND after enabling the pg_cron extension on
+-- the destination project (Dashboard → Database → Extensions → enable
+-- "pg_cron" + "pg_net").
+--
+-- Before running, replace these placeholders globally in the file:
+--   NEW_REF         → your destination project ref (e.g. gcwuvijcuzhunkcauzom)
+--   SERVICE_ROLE_KEY → destination project's service_role key
+--                      (Settings → API → "service_role" "secret")
+--
+-- Then paste the whole file into Dashboard → SQL Editor → Run.
+-- pg_cron schedules survive across deploys and are idempotent: re-running
+-- with the same job name updates the schedule instead of duplicating.
+-- ───────────────────────────────────────────────────────────────────────
+
+-- Daily reminder (push notification) — 18:00 UTC every day
+SELECT cron.schedule(
+  'daily-reminder',
+  '0 18 * * *',
+  $$
+    SELECT net.http_post(
+      url     := 'https://NEW_REF.supabase.co/functions/v1/daily-reminder',
+      headers := jsonb_build_object(
+        'Authorization', 'Bearer SERVICE_ROLE_KEY',
+        'Content-Type', 'application/json'
+      )
+    );
+  $$
+);
+
+-- Sync streaks (recompute streak deadlines, decay missed days) — daily 03:00 UTC
+SELECT cron.schedule(
+  'sync-streaks',
+  '0 3 * * *',
+  $$
+    SELECT net.http_post(
+      url     := 'https://NEW_REF.supabase.co/functions/v1/sync-streaks',
+      headers := jsonb_build_object(
+        'Authorization', 'Bearer SERVICE_ROLE_KEY',
+        'Content-Type', 'application/json'
+      )
+    );
+  $$
+);
+
+-- Resolve battles (finalize finished battles, award winners) — every 15 minutes
+SELECT cron.schedule(
+  'resolve-battles',
+  '*/15 * * * *',
+  $$
+    SELECT net.http_post(
+      url     := 'https://NEW_REF.supabase.co/functions/v1/resolve-battles',
+      headers := jsonb_build_object(
+        'Authorization', 'Bearer SERVICE_ROLE_KEY',
+        'Content-Type', 'application/json'
+      )
+    );
+  $$
+);
+
+-- Coach morning nudge — 07:30 in the user's local TZ; cron fires hourly,
+-- the function self-filters which users to ping based on their tz/profile.
+SELECT cron.schedule(
+  'coach-morning-nudge',
+  '0 * * * *',
+  $$
+    SELECT net.http_post(
+      url     := 'https://NEW_REF.supabase.co/functions/v1/coach-morning-nudge',
+      headers := jsonb_build_object(
+        'Authorization', 'Bearer SERVICE_ROLE_KEY',
+        'Content-Type', 'application/json'
+      )
+    );
+  $$
+);
+
+-- Coach weekly review — Sundays 19:00 UTC
+SELECT cron.schedule(
+  'coach-weekly-review',
+  '0 19 * * 0',
+  $$
+    SELECT net.http_post(
+      url     := 'https://NEW_REF.supabase.co/functions/v1/coach-weekly-review',
+      headers := jsonb_build_object(
+        'Authorization', 'Bearer SERVICE_ROLE_KEY',
+        'Content-Type', 'application/json'
+      )
+    );
+  $$
+);
+
+-- Weekly briefing generate — Sundays 18:00 UTC
+SELECT cron.schedule(
+  'weekly-briefing-generate',
+  '0 18 * * 0',
+  $$
+    SELECT net.http_post(
+      url     := 'https://NEW_REF.supabase.co/functions/v1/weekly-briefing-generate',
+      headers := jsonb_build_object(
+        'Authorization', 'Bearer SERVICE_ROLE_KEY',
+        'Content-Type', 'application/json'
+      )
+    );
+  $$
+);
+
+-- Sanity check — list every job that's now scheduled.
+SELECT jobname, schedule FROM cron.job ORDER BY jobname;

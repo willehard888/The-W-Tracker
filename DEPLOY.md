@@ -51,6 +51,46 @@ One-time setup (~5 min):
 
 Custom domain: Vercel → Project Settings → Domains → add your domain.
 
+## 1a. Migration from Lovable-managed Supabase (one-time)
+
+If the project is currently behind a Lovable-managed Supabase project
+(typical for apps built on Lovable Cloud), you cannot transfer the
+project itself — Lovable doesn't expose that action. Instead, clone the
+schema + data + auth users into a project you own and cut over.
+
+A one-shot migration script lives at `scripts/migrate-from-lovable.sh`.
+It dumps the source via `pg_dump`, restores into your destination
+project, sets `OPENROUTER_API_KEY`, and deploys every edge function.
+
+```bash
+export SUPABASE_ACCESS_TOKEN='<your token from supabase.com/dashboard/account/tokens>'
+export SOURCE_REF='zjdljojkgrpgxurugixf'         # Lovable's project ref
+export SOURCE_DB_PW='...'                        # Lovable Cloud → Connectors → View Backend → Database → Reset password
+export DEST_REF='gcwuvijcuzhunkcauzom'           # your own project ref
+export DEST_DB_PW='...'                          # destination project's DB password
+export SOURCE_REGION='eu-central-1'              # both projects should match for latency
+export DEST_REGION='eu-central-1'
+export OPENROUTER_API_KEY='sk-or-v1-...'
+
+supabase login --token "$SUPABASE_ACCESS_TOKEN"
+bash scripts/migrate-from-lovable.sh
+```
+
+The script preserves all `public.*` rows (profiles, badges, tribes,
+daily check-ins, RLS policies, triggers, SECURITY DEFINER functions),
+`auth.users` (password hashes survive — users log in unchanged),
+`auth.identities` (Apple / Google OAuth links survive), and
+`storage.objects` metadata.
+
+After the script finishes, complete the manual steps it prints:
+- Re-create OAuth provider configs in the destination project's
+  Authentication → Providers (Apple Service ID redirect, Google client)
+- Copy storage bucket files: `supabase storage cp ...`
+- Re-create pg_cron jobs from `scripts/recreate-cron-jobs.sql`
+- Point Stripe + RevenueCat webhooks at the new project URL
+- Flip Vercel env vars (next section) + redeploy
+- Disable Lovable Cloud (keep paused 30 days as rollback safety)
+
 ## 2. AI gateway — OpenRouter
 
 The 12 Supabase Edge Functions that talk to an LLM (ai-coach,

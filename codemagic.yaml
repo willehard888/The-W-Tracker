@@ -1,0 +1,112 @@
+# Codemagic CI/CD config — iOS build pipeline
+#
+# Replaces Xcode Cloud for the W Tracker iOS build. Xcode Cloud's
+# scheduler aggressively parallelises pod target builds and ignores
+# PBXTargetDependency for Swift module resolution — that broke every
+# build from 778 onwards with "no such module 'Capacitor'" on
+# whichever plugin happened to start first. We tried 12 different
+# workarounds (modular_headers, @import patches, static linkage,
+# pre-built mirror, SWIFT_USE_INTEGRATED_DRIVER=NO …). None solved
+# it because Xcode Cloud refuses to honour `xcodebuild -jobs 1` from
+# CI config.
+#
+# Codemagic exposes the full xcodebuild command line — we can pass
+# -jobs 1 directly and force serial target builds. Slower (≈ +1 min
+# per archive) but DETERMINISTIC.
+
+workflows:
+  ios-testflight:
+    name: iOS → TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+
+    environment:
+      groups:
+        # Configure in Codemagic dashboard → Teams → W Tracker → Variables
+        # and add these as encrypted group "wtracker_ios":
+        #   APP_STORE_CONNECT_PRIVATE_KEY (.p8 file contents)
+        #   APP_STORE_CONNECT_KEY_IDENTIFIER
+        #   APP_STORE_CONNECT_ISSUER_ID
+        #   CERTIFICATE_PRIVATE_KEY (distribution cert .p12 contents)
+        #   APP_STORE_APP_ID            (App Store Connect app id, e.g. 6761115803)
+        - wtracker_ios
+      vars:
+        BUNDLE_ID: "app.lovable.wtracker"
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+      xcode: 26.5
+      cocoapods: 1.16.2
+      node: 20
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+
+    integrations:
+      app_store_connect: codemagic
+
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm ci --legacy-peer-deps --no-audit --no-fund
+
+      - name: Build web bundle for Capacitor
+        script: |
+          npm run build
+
+      - name: Sync Capacitor (web bundle → ios/App/App/public)
+        script: |
+          # `cap copy` only — `cap sync` would mutate CapApp-SPM/Package.swift
+          # in CI, which historically broke the dependency graph (see
+          # commit 2878ade for the full rationale).
+          npx cap copy ios
+
+      - name: Install pods
+        script: |
+          cd ios/App
+          pod install
+
+      - name: Set up signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+
+      - name: xcodebuild archive (serial, -jobs 1)
+        script: |
+          # The single line that Xcode Cloud refused to give us:
+          #   -jobs 1 forces xcodebuild to compile targets one at a
+          #   time, eliminating the Swift-module race entirely.
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
+            --config Release \
+            --archive-flags="-jobs 1 -derivedDataPath build/DerivedData"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+      - $HOME/Library/Logs/scan/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # No `beta_groups:` — internal team only by default. Add groups
+        # here once you're ready to expand external testing:
+        # beta_groups:
+        #   - "Friends & Family"
+      email:
+        recipients:
+          - rasmus.willehard@gmail.com
+        notify:
+          success: true
+          failure: true

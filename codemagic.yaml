@@ -77,6 +77,36 @@ workflows:
           rm -rf Pods
           pod install --repo-update
 
+      - name: Apply pre-xcodebuild patches (Capacitor + Xcode 26 fixes)
+        script: |
+          # ci_pre_xcodebuild.sh is the workhorse: it applies ~10 separate
+          # fixes that the Capacitor 8 + Xcode 26 + CocoaPods 1.16 combination
+          # demands but ships nowhere. It exists under ios/App/ci_scripts/
+          # because Xcode Cloud runs it automatically; Codemagic does not, so
+          # we invoke it explicitly here.
+          #
+          # What it does (see the script for full rationale per section):
+          #   1. Toolchain version re-verify (fail-fast on Xcode major drift)
+          #   2. Source-patch CAPInstanceDescriptor.h — drop `@import Cordova`
+          #      umbrella dep (THE root fix for our recurring
+          #      "module 'Cordova' not found" SwiftCompile failure)
+          #   3. Source-patch CAPInstanceDescriptor.m with a relative-path
+          #      #import of CDVConfigParser.h
+          #   4. Source-patch CAPBridgeViewController+CDVScreenOrientationDelegate.h
+          #      with an inline @protocol declaration
+          #   5. Build per-target CapDepsFwks/<Target>/ symlink dirs so plugin
+          #      compiles get -F paths to their direct deps WITHOUT exposing
+          #      their own framework (which would trigger a self-referential
+          #      module loop in Xcode 26's explicit-modules build system)
+          #   6. Patch every Capacitor* pod xcconfig with the right
+          #      OTHER_LDFLAGS / OTHER_SWIFT_FLAGS / OTHER_CFLAGS entries
+          #   7. Disable ENABLE_USER_SCRIPT_SANDBOXING on the App target
+          #      (Xcode 26 default; blocks Pods-App-frameworks.sh execution)
+          #   8. Strip bogus Metal.xctoolchain absolute paths
+          #   9. Wrap bare `-disable-availability-checking` in `-Xfrontend`
+          #  10. Set alwaysOutOfDate on [CP] Embed Pods Frameworks
+          bash ios/App/ci_scripts/ci_pre_xcodebuild.sh
+
       - name: Set up signing
         script: |
           # Initialize a clean keychain for this build.

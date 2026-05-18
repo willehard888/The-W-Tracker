@@ -32,7 +32,16 @@ install! 'cocoapods', :disable_input_output_paths => true
 
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
-  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  # `:modular_headers => true` is required for `@import Cordova` (used by
+  # Capacitor.h) to resolve under Xcode 26 + CocoaPods 1.16 + dynamic
+  # `use_frameworks!`. Without it the CapacitorCordova pod still produces a
+  # Cordova.framework, but its modulemap isn't registered as the module
+  # provider for the `Cordova` module name during the Capacitor target's
+  # swift-frontend compile — so `@import Cordova` errors out with
+  # "module 'Cordova' not found" even though the framework exists on disk.
+  # Forcing modular_headers makes CocoaPods emit an explicit module map
+  # entry that swift-frontend picks up via -fmodule-map-file.
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios', :modular_headers => true
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorAppLauncher', :path => '../../node_modules/@capacitor/app-launcher'
   pod 'CapacitorBrowser', :path => '../../node_modules/@capacitor/browser'

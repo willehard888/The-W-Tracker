@@ -2,29 +2,29 @@ require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '15.0'
 
-# STATIC framework linkage — architectural fix for the Xcode 26.5 module race
-# that killed builds 778–810 with "no such module 'Capacitor'" on whichever
-# plugin Xcode happened to schedule first.
+# DYNAMIC framework linkage — Capacitor's stock default.
 #
-# With `use_frameworks! :linkage => :dynamic` (the default), every pod compiles
-# into its own .framework with a separate Swift module. Plugin compiles need
-# to wait for Capacitor.framework's module map to land on disk before they can
-# resolve `import Capacitor`. Xcode 26's file-level parallel scheduler ignores
-# PBXTargetDependency, run-script wait phases, and pre-built artefacts —
-# nothing forces serialisation reliably.
+# Build history:
+#   - Pre-build-778 (Xcode Cloud, parallel scheduler) used dynamic linkage and
+#     worked fine until Xcode 26.5 shipped a more aggressive parallel scheduler
+#     that ignored PBXTargetDependency for Swift module resolution. Builds
+#     778-813 failed with "no such module 'Capacitor'" on whichever plugin
+#     Xcode happened to schedule first.
+#   - We then switched to `:linkage => :static` as an architectural workaround:
+#     static archives have no separate framework module to race against. That
+#     ran cleanly on the race front, but broke a different module-resolution
+#     path: `CapacitorCordova` pod sets its `module_name = "Cordova"` so
+#     consuming code can `@import Cordova`. Under static linkage there is no
+#     `Cordova.framework/Modules/module.modulemap` for the importer to find —
+#     so Capacitor's own Swift compile fails with "module 'Cordova' not found".
 #
-# `:linkage => :static` removes the race entirely. Each pod compiles into a
-# static archive that gets linked into Pods-App at the FINAL link stage. There
-# is no separate Capacitor.framework module to race against — Swift modules
-# are still emitted but the linker assembles everything together at the end.
-# Capacitor's official template moved to static in v6+; we held onto dynamic
-# longer than needed.
-#
-# Plugin runtime discovery still works under static linkage as long as the
-# Objective-C runtime keeps the registration symbols alive. The post_install
-# hook below adds `-ObjC` to OTHER_LDFLAGS on the App target so the linker
-# doesn't dead-strip Capacitor's CAP_PLUGIN class registrations.
-use_frameworks! :linkage => :static
+# Codemagic gives us the one tool Xcode Cloud refused: `-jobs 1` (set in
+# codemagic.yaml's `--archive-flags`). With xcodebuild forced to compile one
+# target at a time, the race that originally motivated static linkage cannot
+# happen — every prior target's swiftmodule is on disk before the next one
+# starts. So we can safely revert to dynamic linkage and keep `@import Cordova`
+# working via the regular framework module path.
+use_frameworks!
 
 # workaround to avoid Xcode caching of Pods that requires
 # Product -> Clean Build Folder after new Cordova plugins installed
@@ -150,28 +150,6 @@ post_install do |installer|
     end
   end
 
-  # ── Static-linkage adjustments for the App target ────────────────────────
-  # Under :linkage => :static, Capacitor's runtime plugin discovery (CAP_PLUGIN
-  # macro emits ObjC class registrations that the bridge enumerates at boot)
-  # only works if the linker keeps every ObjC class symbol — even ones the
-  # static analyser thinks are unused. `-ObjC` in OTHER_LDFLAGS forces the
-  # linker to load every ObjC .o, preserving the class registrations.
-  #
-  # The App target lives in App.xcodeproj (not Pods.xcodeproj), so we edit
-  # the user xcconfig files CocoaPods generates for it.
-  pods_app_configs = Dir[File.expand_path('Pods/Target Support Files/Pods-App/Pods-App.*.xcconfig', __dir__)]
-  pods_app_configs.each do |path|
-    content = File.read(path)
-    next if content.include?('-ObjC')
-    # Append -ObjC to any existing OTHER_LDFLAGS line, or add a fresh line.
-    if content =~ /^OTHER_LDFLAGS\s*=\s*(.*)$/
-      content = content.sub(/^OTHER_LDFLAGS\s*=\s*(.*)$/, "OTHER_LDFLAGS = \\1 -ObjC")
-    else
-      content += "\nOTHER_LDFLAGS = $(inherited) -ObjC\n"
-    end
-    File.write(path, content)
-    puts "🔗 Added -ObjC to #{File.basename(path)}"
-  end
   # Xcode 26 parallel build fix: explicit Capacitor → CapacitorCordova dependency.
   # Without this, Xcode 26's parallel scheduler starts compiling both targets
   # simultaneously. Capacitor tries @import Cordova before CapacitorCordova.framework

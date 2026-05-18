@@ -77,6 +77,28 @@ workflows:
           # Initialize a clean keychain for this build.
           keychain initialize
 
+          # Decode the base64-encoded distribution-cert private key.
+          #
+          # Why base64: Codemagic's Secure variable storage mangles
+          # newlines in multi-line PEM values, so the raw key arrives
+          # at fetch-signing-files as a single garbled line and the
+          # CLI rejects it with "Provided value '********' is not valid"
+          # (build 5 confirmed). Storing the key as a single-line
+          # base64 string sidesteps the newline issue entirely.
+          if [ -z "$CERTIFICATE_PRIVATE_KEY_B64" ]; then
+            echo "ERROR: CERTIFICATE_PRIVATE_KEY_B64 not set." >&2
+            echo "Add it to env group \"w\" in the Codemagic dashboard." >&2
+            exit 1
+          fi
+          echo "$CERTIFICATE_PRIVATE_KEY_B64" | base64 -d > /tmp/cert_key.pem
+          chmod 600 /tmp/cert_key.pem
+          # Sanity-check that the decoded value is a real PEM block.
+          head -1 /tmp/cert_key.pem | grep -q "BEGIN.*PRIVATE KEY" \
+            || { echo "ERROR: decoded key is not PEM."; exit 1; }
+          # Re-export as CERTIFICATE_PRIVATE_KEY so codemagic-cli-tools
+          # picks it up via its conventional env-var name.
+          export CERTIFICATE_PRIVATE_KEY="$(cat /tmp/cert_key.pem)"
+
           # Diagnostic: dump what already exists on the App Store
           # Connect side so we can see whether fetch needs to create
           # anything new.
@@ -85,17 +107,21 @@ workflows:
           echo "──── Existing bundle ids ────"
           app-store-connect list-bundle-ids --bundle-id-identifier "$BUNDLE_ID" || true
           echo "──── Existing provisioning profiles ────"
-          # NOTE: `list-profiles` does not exist on codemagic-cli-tools;
-          # the right invocation is the `profiles list` subcommand group.
-          app-store-connect profiles list --profile-type IOS_APP_STORE || true
+          # NOTE: `--profile-type` is not accepted by this CLI version's
+          # `profiles list`; list everything for the diagnostic.
+          app-store-connect profiles list || true
 
           # Fetch (or create on the fly) a distribution certificate and
           # an App Store provisioning profile for our bundle id.
           # --create handles missing cert + profile via the App Store
           # Connect API integration named "codemagic" (configured in
           # the Codemagic dashboard with our API key).
+          # --certificate-key passes the PEM explicitly via file ref;
+          # this is more reliable than env-var auto-discovery and means
+          # the failure mode for a missing key is loud + early.
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
+            --certificate-key=@file:/tmp/cert_key.pem \
             --create \
             --verbose
 

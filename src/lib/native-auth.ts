@@ -1,4 +1,5 @@
-import { Capacitor, registerPlugin } from "@capacitor/core";
+import { Capacitor } from "@capacitor/core";
+import { SignInWithApple, type SignInWithAppleResponse } from "@capacitor-community/apple-sign-in";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 import {
   clearAppleAuthStarted,
@@ -7,115 +8,59 @@ import {
 } from "@/lib/apple-username";
 import { supabase } from "@/integrations/supabase/client";
 
-const PRODUCTION_URL = "https://status-level-up.lovable.app";
-const WEB_OAUTH_CALLBACK = "/auth/callback";
-const APPLE_AUTH_LAUNCH = "/apple-auth-launch";
-const APP_SCHEME = "app.lovable.wtracker";
-const PUBLISHED_LAUNCH_ATTEMPT_KEY = "w_apple_launch_attempt";
+// ─────────────────────────────────────────────────────────────────────────────
+// Native Sign in with Apple via @capacitor-community/apple-sign-in (v7.x).
+//
+// Flow:
+//   1. Generate raw nonce (UUID) + SHA-256 hashed nonce.
+//   2. Call SignInWithApple.authorize({ ..., nonce: hashedNonce }) — opens
+//      Apple's native ASAuthorizationController sheet on iOS (Face ID inline).
+//   3. Apple returns an identityToken JWT bound to the hashed nonce.
+//   4. Hand identityToken + RAW nonce to supabase.auth.signInWithIdToken;
+//      Supabase hashes the raw nonce and verifies it matches the JWT.
+//
+// No Safari View Controller. No third-party redirect. No Lovable. The only
+// network call is between the iOS app and Apple → Supabase.
+//
+// Apple App Review (Guideline 4.8) requires native Sign in with Apple when
+// the app offers any third-party login. This implementation satisfies that.
+// ─────────────────────────────────────────────────────────────────────────────
 
-type NativeAppleSignInResult = {
-  identityToken: string;
-  authorizationCode?: string | null;
-  nonce?: string | null;
-  user?: string | null;
-  email?: string | null;
-  givenName?: string | null;
-  familyName?: string | null;
-};
+// Bundle ID on iOS = Apple Services clientId for native flow. (For web you'd
+// configure a Services ID in Apple Developer Portal and pass that string.)
+const APPLE_CLIENT_ID = "app.lovable.wtracker";
 
-type NativeAppleAuthPlugin = {
-  signIn(options?: { scopes?: string[] }): Promise<NativeAppleSignInResult>;
-};
+// Web fallback — when running in a browser (no Capacitor native context),
+// SignInWithApple uses Apple JS SDK and requires a real https redirect URI.
+// We send to a dedicated callback path served by the Vercel deploy.
+const WEB_REDIRECT_URI =
+  typeof window !== "undefined"
+    ? `${window.location.origin}/auth/callback`
+    : "https://wtracker.app/auth/callback";
 
-const NativeAppleAuth = registerPlugin<NativeAppleAuthPlugin>("NativeAppleAuth");
+// ────────────────────────────────────────────────────────────────────
+// Nonce helpers — raw uuid sent to Supabase, sha256(raw) sent to Apple.
+// ────────────────────────────────────────────────────────────────────
 
-function createCacheBuster() {
-  return `${Date.now()}`;
+function generateRawNonce(): string {
+  // crypto.randomUUID is available in modern Safari WKWebView (iOS 15+),
+  // which matches our deployment target.
+  return crypto.randomUUID();
 }
 
-function createAttemptId() {
-  return `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+async function sha256Hex(input: string): Promise<string> {
+  const buf = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(input),
+  );
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
-function getSearchParams() {
-  if (typeof window === "undefined") return new URLSearchParams();
-  return new URLSearchParams(window.location.search);
-}
-
-function getCurrentAttemptId() {
-  return getSearchParams().get("attempt");
-}
-
-function getStoredAttemptId() {
-  if (typeof window === "undefined") return null;
-  return window.sessionStorage.getItem(PUBLISHED_LAUNCH_ATTEMPT_KEY);
-}
-
-function markAttemptStarted(attemptId: string) {
-  if (typeof window === "undefined") return;
-  window.sessionStorage.setItem(PUBLISHED_LAUNCH_ATTEMPT_KEY, attemptId);
-}
-
-function clearStoredAttempt() {
-  if (typeof window === "undefined") return;
-  window.sessionStorage.removeItem(PUBLISHED_LAUNCH_ATTEMPT_KEY);
-}
-
-function shouldForceNativeHandoff(): boolean {
-  if (Capacitor.isNativePlatform()) return true;
-  if (typeof window === "undefined") return false;
-
-  const params = new URLSearchParams(window.location.search);
-  return params.get("native_handoff") === "1";
-}
-
-function shouldUsePublishedAuthPage(): boolean {
-  if (typeof window === "undefined") return false;
-  if (Capacitor.isNativePlatform()) return true;
-  return window.location.origin !== PRODUCTION_URL;
-}
-
-function getPublishedAuthUrl(): string {
-  const url = new URL(APPLE_AUTH_LAUNCH, PRODUCTION_URL);
-  url.searchParams.set("native_handoff", "1");
-  url.searchParams.set("app_scheme", APP_SCHEME);
-  url.searchParams.set("attempt", createAttemptId());
-  url.searchParams.set("cb", createCacheBuster());
-  return url.toString();
-}
-
-function redirectToPublishedAuthPage() {
-  const targetUrl = getPublishedAuthUrl();
-
-  try {
-    if (window.top && window.top !== window) {
-      window.top.location.href = targetUrl;
-      return;
-    }
-  } catch {
-    // Ignore cross-origin access issues and fall back to current window.
-  }
-
-  window.location.href = targetUrl;
-}
-
-function getAppleRedirectUri(): string {
-  const callbackUrl = new URL(WEB_OAUTH_CALLBACK, PRODUCTION_URL);
-  const attemptId = getCurrentAttemptId();
-
-  if (shouldForceNativeHandoff()) {
-    callbackUrl.searchParams.set("native_handoff", "1");
-    callbackUrl.searchParams.set("app_scheme", APP_SCHEME);
-  }
-
-  if (attemptId) {
-    callbackUrl.searchParams.set("attempt", attemptId);
-  }
-
-  callbackUrl.searchParams.set("cb", createCacheBuster());
-
-  return callbackUrl.toString();
-}
+// ────────────────────────────────────────────────────────────────────
+// Error helpers — translate Apple error codes into HIG-friendly text.
+// ────────────────────────────────────────────────────────────────────
 
 function errorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -131,110 +76,126 @@ function getFriendlyAppleError(err: unknown): Error {
   const message = errorMessage(err);
   const lower = message.toLowerCase();
 
+  // ASAuthorizationErrorCanceled = 1001
   if (
-    lower.includes("apple_cancelled") ||
-    lower.includes("canceled") ||
-    lower.includes("cancelled") ||
-    lower.includes("authorizationerror error 1001") ||
+    lower.includes("1001") ||
+    lower.includes("cancel") ||
     lower.includes("user canceled") ||
     lower.includes("user cancelled")
   ) {
     return new Error("APPLE_CANCELLED");
   }
-
+  // ASAuthorizationErrorInvalidResponse = 1003
+  if (lower.includes("1003") || lower.includes("invalid response")) {
+    return new Error("Apple sign-in returned an invalid response.");
+  }
+  // ASAuthorizationErrorNotHandled = 1004
+  if (lower.includes("1004") || lower.includes("not handled")) {
+    return new Error(
+      "iOS couldn't handle this Apple sign-in. Check that you're signed into Apple ID in Settings.",
+    );
+  }
+  // ASAuthorizationErrorFailed = 1000 (generic; usually capability/profile issue)
+  if (lower.includes("1000") || lower.includes("authorizationerror")) {
+    return new Error(
+      "Apple sign-in failed. Try again — if it keeps failing, sign out of Apple ID in Settings and back in.",
+    );
+  }
   if (
     lower.includes("network") ||
-    lower.includes("internet") ||
     lower.includes("offline") ||
     lower.includes("timed out")
   ) {
     return new Error("Connection error. Try again.");
   }
-
-  // Pass through informative messages from the native side (already HIG-friendly).
-  if (message && message !== "Apple sign-in failed. Please try again.") {
-    return new Error(message);
-  }
-
   return new Error("Sign in with Apple failed. Please try again.");
 }
 
-/**
- * Reset every piece of state that could prevent a fresh Apple sign-in.
- * Called BEFORE every attempt so logout → relogin always works.
- */
+// ────────────────────────────────────────────────────────────────────
+// State reset — called before every attempt so logout → relogin works.
+// ────────────────────────────────────────────────────────────────────
+
 function resetAppleAuthState() {
   clearAppleAuthStarted();
   clearAppleUsernameSelectionPending();
-  clearStoredAttempt();
 }
 
-async function signInWithAppleIdToken(identityToken: string, nonce?: string | null) {
-  return supabase.auth.signInWithIdToken({
-    provider: "apple",
-    token: identityToken,
-    nonce: nonce ?? undefined,
-  });
-}
+// ────────────────────────────────────────────────────────────────────
+// Core sign-in — same code path on iOS native + web.
+// ────────────────────────────────────────────────────────────────────
 
-async function nativeDirectAppleSignIn(options?: { hideEmail?: boolean }): Promise<{ error?: Error }> {
-  // Always start from a clean slate so a previous successful sign-in
-  // (or aborted one) cannot block the next attempt.
+async function performAppleSignIn(options?: {
+  hideEmail?: boolean;
+}): Promise<{ error?: Error }> {
   resetAppleAuthState();
 
   try {
-    const isPluginAvailable = Capacitor.isPluginAvailable("NativeAppleAuth");
-    if (!isPluginAvailable) {
-      // NativeAppleAuth pod isn't bundled in this build (TestFlight build 14+
-      // ships without the native ASAuthorizationController plugin). Fall back
-      // to the managed OAuth flow — opens Safari View Controller, completes
-      // the Apple OAuth dance against the published callback URL, and deep
-      // links the session back to the app via the `app://` URL scheme.
-      // Both flows end with the same Supabase session; only the UX differs
-      // (native sheet vs. Safari handoff).
-      pushIosDebugLog("AppleAuth", "NativeAppleAuth plugin not available — falling back to managed OAuth", {
-        platform: Capacitor.getPlatform(),
-      });
-      resetAppleAuthState();
-      return await startManagedAppleOAuth();
-    }
+    const rawNonce = generateRawNonce();
+    const hashedNonce = await sha256Hex(rawNonce);
+    const scopes = options?.hideEmail ? "name" : "email name";
 
-    // Apple's "Hide My Email" toggle is shown automatically when `email` is
-    // in `requestedScopes`. If the caller asks us to skip the email scope,
-    // Apple will sign the user in without revealing or relaying any email.
-    const scopes = options?.hideEmail ? ["fullName"] : ["fullName", "email"];
-    pushIosDebugLog("AppleAuth", "Calling native NativeAppleAuth.signIn", { scopes });
+    updateOauthDebug({
+      redirectUri: Capacitor.isNativePlatform() ? "(native)" : WEB_REDIRECT_URI,
+      sentState: hashedNonce,
+      error: null,
+      errorDescription: null,
+      sessionApplied: null,
+      handoffToApp: false,
+    });
 
-    const credentials = await NativeAppleAuth.signIn({ scopes });
+    pushIosDebugLog("AppleAuth", "Calling SignInWithApple.authorize", {
+      platform: Capacitor.getPlatform(),
+      scopes,
+      hasHashedNonce: hashedNonce.length === 64,
+    });
 
-    if (!credentials?.identityToken) {
-      pushIosDebugLog("AppleAuth", "Native plugin returned no identity token");
+    const response: SignInWithAppleResponse = await SignInWithApple.authorize({
+      clientId: APPLE_CLIENT_ID,
+      redirectURI: WEB_REDIRECT_URI,
+      scopes,
+      nonce: hashedNonce,
+      // state can be any string Apple echoes back; we re-use the nonce since
+      // we verify it server-side anyway via signInWithIdToken.
+      state: hashedNonce.slice(0, 32),
+    });
+
+    const identityToken = response?.response?.identityToken;
+
+    if (!identityToken) {
+      pushIosDebugLog("AppleAuth", "Apple returned no identityToken", response);
       return { error: new Error("Apple sign-in failed. Please try again.") };
     }
 
-    pushIosDebugLog("AppleAuth", "Native plugin succeeded, exchanging with Supabase", {
-      hasNonce: Boolean(credentials.nonce),
-      hasEmail: Boolean(credentials.email),
+    pushIosDebugLog("AppleAuth", "Apple returned identityToken — exchanging with Supabase", {
+      hasEmail: Boolean(response.response.email),
+      hasGivenName: Boolean(response.response.givenName),
     });
 
-    const { data, error } = await signInWithAppleIdToken(
-      credentials.identityToken,
-      credentials.nonce,
-    );
+    const { data, error } = await supabase.auth.signInWithIdToken({
+      provider: "apple",
+      token: identityToken,
+      // Supabase hashes this raw nonce internally and compares against the
+      // hashed nonce embedded in Apple's JWT — must be the RAW (pre-hash)
+      // value, not the hashed one we sent to Apple.
+      nonce: rawNonce,
+    });
 
     if (error) {
       pushIosDebugLog("AppleAuth", "Supabase signInWithIdToken failed", {
         message: error.message,
+        status: (error as { status?: number }).status,
       });
-      return { error: new Error("Apple sign-in failed. Please try again.") };
+      return { error: new Error(error.message) };
     }
 
     const provider = data.user?.app_metadata?.provider;
     const providers = Array.isArray(data.user?.app_metadata?.providers)
-      ? data.user?.app_metadata?.providers
+      ? (data.user?.app_metadata?.providers as string[])
       : [];
     const isAppleUser = provider === "apple" || providers.includes("apple");
-    const identities = Array.isArray(data.user?.identities) ? data.user.identities : [];
+    const identities = Array.isArray(data.user?.identities)
+      ? data.user.identities
+      : [];
     const hasNonAppleIdentity = identities.some(
       (identity) => identity.provider && identity.provider !== "apple",
     );
@@ -243,112 +204,48 @@ async function nativeDirectAppleSignIn(options?: { hideEmail?: boolean }): Promi
       markAppleAuthStarted();
     }
 
-    pushIosDebugLog("AppleAuth", "Native Apple sign-in completed", {
+    updateOauthDebug({ sessionApplied: true });
+    pushIosDebugLog("AppleAuth", "Apple sign-in completed", {
       userId: data.user?.id,
       isAppleUser,
     });
 
     return {};
   } catch (err) {
-    pushIosDebugLog("AppleAuth", "Native Apple sign-in threw", {
+    pushIosDebugLog("AppleAuth", "Apple sign-in threw", {
       message: errorMessage(err),
     });
+    updateOauthDebug({ error: errorMessage(err) });
     return { error: getFriendlyAppleError(err) };
   }
 }
 
-async function startManagedAppleOAuth(): Promise<{ error?: Error }> {
-  const { lovable } = await import("@/integrations/lovable/index");
-  const redirectUri = getAppleRedirectUri();
+// ────────────────────────────────────────────────────────────────────
+// Public API — preserves signatures used by existing callers
+// (AppleSignInButton, Auth.tsx, AppleAuthLaunch, OAuthCallback).
+// ────────────────────────────────────────────────────────────────────
 
-  updateOauthDebug({
-    redirectUri,
-    sentState: null,
-    error: null,
-    errorDescription: null,
-    sessionApplied: null,
-    deepLinkUrl: null,
-    handoffToApp: false,
-  });
-
-  console.log("[AppleAuth] Starting managed OAuth, redirect →", redirectUri);
-  pushIosDebugLog("AppleAuth", "Starting managed Apple OAuth flow", {
-    redirectUri,
-    appScheme: APP_SCHEME,
-    currentOrigin: typeof window !== "undefined" ? window.location.origin : null,
-    usingPublishedCallback: redirectUri.startsWith(`${PRODUCTION_URL}${WEB_OAUTH_CALLBACK}`),
-    forceNativeHandoff: shouldForceNativeHandoff(),
-  });
-
-  const result = await lovable.auth.signInWithOAuth("apple", {
-    redirect_uri: redirectUri,
-  });
-
-  if (result?.redirected) {
-    pushIosDebugLog("AppleAuth", "Managed Apple OAuth redirect started", {
-      redirected: true,
-      redirectUri,
-    });
-    return {};
-  }
-
-  if (result?.error) {
-    console.error("[AppleAuth] Managed OAuth returned error:", result.error);
-    const message = errorMessage(result.error);
-    updateOauthDebug({ error: message });
-    pushIosDebugLog("AppleAuth", "Managed Apple OAuth error", result.error);
-    return { error: result.error as Error };
-  }
-
-  pushIosDebugLog("AppleAuth", "Managed Apple OAuth finished without redirect", result);
-  return {};
+export async function nativeAppleSignIn(options?: {
+  hideEmail?: boolean;
+}): Promise<{ error?: Error }> {
+  return performAppleSignIn(options);
 }
 
+/**
+ * Legacy: was used by /apple-auth-launch route to bounce iOS off a published
+ * web page (to satisfy Apple's "redirect_uri must be an https domain" rule
+ * for managed OAuth). With the native ASAuthorizationController flow, no
+ * redirect is needed — call straight through.
+ */
 export async function startPublishedAppleSignIn(): Promise<{ error?: Error }> {
-  const attemptId = getCurrentAttemptId() ?? createAttemptId();
-  const alreadyStarted = getStoredAttemptId() === attemptId;
-
-  if (alreadyStarted) {
-    pushIosDebugLog("AppleAuth", "Skipped duplicate published Apple launch", {
-      attemptId,
-    });
-    return {};
-  }
-
-  markAttemptStarted(attemptId);
-  pushIosDebugLog("AppleAuth", "Starting published Apple launch", { attemptId });
-
-  return startManagedAppleOAuth();
+  return performAppleSignIn();
 }
 
+/**
+ * Legacy no-op kept for OAuthCallback.tsx compatibility. The native flow
+ * doesn't need a persisted attempt id because Apple's JWT contains the
+ * nonce — no separate state machine to clean up.
+ */
 export function clearPublishedAppleAttempt() {
-  clearStoredAttempt();
-}
-
-export async function nativeAppleSignIn(options?: { hideEmail?: boolean }): Promise<{ error?: Error }> {
-  try {
-    // 1. Native iOS / Android: always use the native Apple plugin so the user
-    //    sees Apple's own native sheet with Face ID / Touch ID — no browser.
-    if (Capacitor.isNativePlatform()) {
-      return await nativeDirectAppleSignIn(options);
-    }
-
-    // 2. Non-production preview: redirect to the published auth page so Apple
-    //    accepts the redirect_uri (Apple requires a registered domain).
-    if (shouldUsePublishedAuthPage()) {
-      resetAppleAuthState();
-      redirectToPublishedAuthPage();
-      return {};
-    }
-
-    // 3. Production web: start managed OAuth directly.
-    resetAppleAuthState();
-    return await startManagedAppleOAuth();
-  } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err));
-    console.error("[AppleAuth] Unexpected error:", error);
-    updateOauthDebug({ error: error.message });
-    pushIosDebugLog("AppleAuth", "Unexpected OAuth exception", { message: error.message });
-    return { error };
-  }
+  /* intentionally empty */
 }

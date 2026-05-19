@@ -729,18 +729,13 @@ const Profile = () => {
         </div>
       )}
 
-      {/* Membership CTA — for non-members only */}
-      {!profile.is_elite && (
-        <div className="mt-8 rounded-xl border border-gold/20 bg-card p-5 text-center animate-reveal animate-reveal-delay-4">
-          <h3 className="font-display font-bold text-base mb-1">Join the App</h3>
-          <p className="text-sm text-muted-foreground mb-3">
-            Membership unlocks every feature. Elite status is earned, not bought.
-          </p>
-          <Button variant="ember" size="lg" className="w-full" onClick={() => navigate("/paywall")}>
-            Become a Member — €4.99/mo
-          </Button>
-        </div>
-      )}
+      {/* Membership CTA removed — the paywall was dismantled in commit
+          {prior-paywall-removal-sha}: AccessGate became a pass-through and
+          AuthContext.isElite is true whenever user+profile are loaded. This
+          Profile.tsx block was missed in that sweep because it read the raw
+          profile.is_elite field directly instead of the context-overridden
+          isElite, so the CTA kept appearing for free users even though
+          there was nowhere paywalled to navigate to. */}
     </div>
   );
 };

@@ -786,6 +786,7 @@ _dep_entries=(
   # release/debug xcconfigs got no -F injection at all → import Capacitor
   # had nowhere to resolve.
   "CapacitorStatusBar:Capacitor Cordova"
+  "CapacitorCommunityAppleSignIn:Capacitor Cordova"
   "PurchasesHybridCommon:RevenueCat"
   "RevenuecatPurchasesCapacitor:Capacitor Cordova RevenueCat PurchasesHybridCommon"
 )

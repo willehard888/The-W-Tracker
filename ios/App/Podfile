@@ -53,6 +53,10 @@ def capacitor_pods
   pod 'CapacitorLocalNotifications', :path => '../../node_modules/@capacitor/local-notifications'
   pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
+  # Native Sign in with Apple — wraps ASAuthorizationController in a Capacitor
+  # plugin so SignInWithApple.authorize({ scopes, nonce, ... }) returns an
+  # identityToken JWT that we hand to supabase.auth.signInWithIdToken.
+  pod 'CapacitorCommunityAppleSignIn', :path => '../../node_modules/@capacitor-community/apple-sign-in'
   pod 'RevenuecatPurchasesCapacitor', :path => '../../node_modules/@revenuecat/purchases-capacitor'
 end
 

@@ -35,5 +35,17 @@
   },
   "server": {
     "androidScheme": "https"
-  }
+  },
+  "packageClassList": [
+    "AppPlugin",
+    "AppLauncherPlugin",
+    "CAPBrowserPlugin",
+    "HapticsPlugin",
+    "KeyboardPlugin",
+    "LocalNotificationsPlugin",
+    "PushNotificationsPlugin",
+    "StatusBarPlugin",
+    "PurchasesPlugin",
+    "SignInWithApple"
+  ]
 }

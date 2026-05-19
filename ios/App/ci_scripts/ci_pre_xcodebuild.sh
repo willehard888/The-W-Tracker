@@ -726,6 +726,14 @@ mkdir -p "${CAP_DEPS_DIR}"
 if [[ -d "/Volumes/workspace" ]]; then
   # Xcode Cloud archive: OBJROOT/UninstalledProducts is a fixed absolute path
   _UNINSTALLED="/Volumes/workspace/DerivedData/Build/Intermediates.noindex/ArchiveIntermediates/App/IntermediateBuildFilesPath/UninstalledProducts/iphoneos"
+elif [[ -n "${CM_DERIVED_DATA_PATH:-}" ]]; then
+  # Codemagic: codemagic.yaml exports CM_DERIVED_DATA_PATH to match the
+  # `-derivedDataPath` value it passes to xcodebuild archive. We must use
+  # the SAME path here — otherwise the CapDepsFwks/<Target>/ symlinks
+  # below point at a UninstalledProducts/ directory that xcodebuild never
+  # writes to, and `import Capacitor` in every plugin fails with
+  # "no such module 'Capacitor'" (build 9 regression).
+  _UNINSTALLED="${CM_DERIVED_DATA_PATH}/Build/Intermediates.noindex/ArchiveIntermediates/App/IntermediateBuildFilesPath/UninstalledProducts/iphoneos"
 else
   # Local dev: derive at script time
   _bdir=$(xcodebuild -workspace "${IOS_APP_DIR}/App.xcworkspace" \
@@ -734,6 +742,7 @@ else
     | awk -F' = ' '/^[[:space:]]*OBJROOT[[:space:]]*=/{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
   _UNINSTALLED="${_bdir}/UninstalledProducts/iphoneos"
 fi
+echo "ℹ️  Symlinks in CapDepsFwks/ will point at: ${_UNINSTALLED}"
 
 # Per-target dependency map. Each target gets its OWN subdir containing only
 # its direct dependencies — never its own framework — so adding -F to that

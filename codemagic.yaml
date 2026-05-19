@@ -79,6 +79,13 @@ workflows:
 
       - name: Apply pre-xcodebuild patches (Capacitor + Xcode 26 fixes)
         script: |
+          # Tell ci_pre_xcodebuild.sh where xcodebuild will write DerivedData
+          # (must match the --archive-flags `-derivedDataPath build/DerivedData`
+          # below). The script writes Pods/CapDepsFwks/<Target>/<Dep>.framework
+          # symlinks into this tree — if the path doesn't match, plugin compiles
+          # fail with "no such module 'Capacitor'" because the symlinks dangle.
+          export CM_DERIVED_DATA_PATH="$(pwd)/build/DerivedData"
+
           # ci_pre_xcodebuild.sh is the workhorse: it applies ~10 separate
           # fixes that the Capacitor 8 + Xcode 26 + CocoaPods 1.16 combination
           # demands but ships nowhere. It exists under ios/App/ci_scripts/

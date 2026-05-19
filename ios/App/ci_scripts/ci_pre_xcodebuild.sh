@@ -25,7 +25,11 @@ PINNED_PODS_SWIFT_VERSION="${PINNED_PODS_SWIFT_VERSION:-5.0}"
 export PINNED_PODS_SWIFT_VERSION
 
 if command -v xcodebuild &>/dev/null; then
-  XCODE_VER_FULL=$(xcodebuild -version 2>/dev/null | head -1 | awk '{print $2}')
+  # `... | head -1 | awk` is SIGPIPE-racy under `set -o pipefail`: xcodebuild
+  # prints multiple lines, head closes the pipe after the first, xcodebuild
+  # gets SIGPIPE on its next write, status 141 propagates. Use awk's NR==1
+  # to take the first line WITHOUT closing the input — awk reads to EOF.
+  XCODE_VER_FULL=$(xcodebuild -version 2>/dev/null | awk 'NR==1 {print $2}')
   case "$XCODE_VER_FULL" in
     ${REQUIRED_XCODE_MAJOR}.*) echo "✅ Xcode ${XCODE_VER_FULL} inside the Xcode ${REQUIRED_XCODE_MAJOR}.x family" ;;
     *)
@@ -35,7 +39,8 @@ if command -v xcodebuild &>/dev/null; then
   esac
 fi
 if command -v swift &>/dev/null; then
-  SWIFT_VER_FULL=$(swift --version 2>/dev/null | head -1 || echo "unknown")
+  # Same SIGPIPE-avoidance reasoning as above.
+  SWIFT_VER_FULL=$(swift --version 2>/dev/null | awk 'NR==1' || echo "unknown")
   if echo "$SWIFT_VER_FULL" | grep -qE "Swift version ${REQUIRED_SWIFT_MAJOR}\."; then
     echo "✅ Swift host compiler is Swift ${REQUIRED_SWIFT_MAJOR}.x as required"
   else
@@ -58,7 +63,7 @@ if [[ -d "$IOS_APP_DIR/Pods" ]]; then
   STRAY_MAPS=$(find "$IOS_APP_DIR/Pods/Headers" -type f -name '*.modulemap' 2>/dev/null | wc -l | tr -d ' ' || echo 0)
   if [[ "$STRAY_MAPS" != "0" ]]; then
     echo "⚠️  ${STRAY_MAPS} stray modulemap(s) under Pods/Headers — listing for diagnosis:"
-    find "$IOS_APP_DIR/Pods/Headers" -type f -name '*.modulemap' 2>/dev/null | head -20
+    find "$IOS_APP_DIR/Pods/Headers" -type f -name '*.modulemap' 2>/dev/null | awk 'NR<=20' || true
   fi
 fi
 
@@ -171,7 +176,7 @@ fi
 echo "✅ Podfile does not force modular_headers on Capacitor pods"
 
 echo "✅ Pods directory present at $IOS_APP_DIR/Pods"
-ls -la "$IOS_APP_DIR/Pods" | head -20
+ls -la "$IOS_APP_DIR/Pods" | awk 'NR<=20' || true
 
 echo "🧹 Verifying generated Pods configs do not reference missing MetalToolchain paths..."
 IOS_APP_DIR_FOR_PATCH="$IOS_APP_DIR" python3 - <<'PY'
@@ -459,7 +464,7 @@ if [[ -f "${FIXED_FW}/Modules/module.modulemap" && -f "${FIXED_FW}/Headers/Capac
   echo "✅ Fixed stub at ${FIXED_FW} (${HDR_COUNT} headers)"
 else
   echo "❌ Fixed stub creation failed"
-  ls -la "${FIXED_FW}/Headers/" 2>/dev/null | head -5
+  ls -la "${FIXED_FW}/Headers/" 2>/dev/null | awk 'NR<=5' || true
   exit 1
 fi
 
@@ -562,12 +567,12 @@ if [[ -f "${CAP_HDR}" ]]; then
       echo "✅ Patched CAPInstanceDescriptor.h: @import Cordova → @class CDVConfigParser"
     else
       echo "❌ sed patch did not produce expected output in CAPInstanceDescriptor.h"
-      grep -n "Cordova\|CDVConfigParser" "${CAP_HDR}" | head -5
+      grep -n "Cordova\|CDVConfigParser" "${CAP_HDR}" | awk 'NR<=5' || true
       exit 1
     fi
   else
     echo "⚠️  CAPInstanceDescriptor.h does not contain '@import Cordova;' — header may have changed"
-    grep -n "Cordova" "${CAP_HDR}" | head -5
+    grep -n "Cordova" "${CAP_HDR}" | awk 'NR<=5' || true
   fi
 else
   echo "❌ CAPInstanceDescriptor.h not found at ${CAP_HDR}"

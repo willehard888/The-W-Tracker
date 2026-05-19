@@ -452,10 +452,10 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
               />
             )}
 
-            {/* === The flame itself — rises from behind the logs, on top of the ember bed === */}
-            <div className="absolute inset-x-0 bottom-[6px] z-[6] flex items-end justify-center pointer-events-none">
-              <RealisticFlame tier={tier.index} accent={accent} size={54} />
-            </div>
+            {/* Flame removed per UX feedback — the streak number + tier ring +
+                progress bar already communicate the streak state without the
+                animated fire artwork, which read as a stale Lovable preview
+                gimmick on the home page. */}
 
             {/* Top-edge highlight — chrome rim */}
             {isHot && (

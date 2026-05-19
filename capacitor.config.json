@@ -4,7 +4,7 @@
   "webDir": "dist",
   "backgroundColor": "#0a0710",
   "ios": {
-    "contentInset": "always",
+    "contentInset": "never",
     "backgroundColor": "#0a0710",
     "limitsNavigationsToAppBoundDomains": false,
     "scrollEnabled": true,
@@ -34,8 +34,6 @@
     }
   },
   "server": {
-    "url": "https://status-level-up.lovable.app",
-    "hostname": "status-level-up.lovable.app",
     "androidScheme": "https"
   }
 }

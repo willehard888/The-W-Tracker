@@ -185,14 +185,18 @@ async function nativeDirectAppleSignIn(options?: { hideEmail?: boolean }): Promi
   try {
     const isPluginAvailable = Capacitor.isPluginAvailable("NativeAppleAuth");
     if (!isPluginAvailable) {
-      pushIosDebugLog("AppleAuth", "NativeAppleAuth plugin not available", {
+      // NativeAppleAuth pod isn't bundled in this build (TestFlight build 14+
+      // ships without the native ASAuthorizationController plugin). Fall back
+      // to the managed OAuth flow — opens Safari View Controller, completes
+      // the Apple OAuth dance against the published callback URL, and deep
+      // links the session back to the app via the `app://` URL scheme.
+      // Both flows end with the same Supabase session; only the UX differs
+      // (native sheet vs. Safari handoff).
+      pushIosDebugLog("AppleAuth", "NativeAppleAuth plugin not available — falling back to managed OAuth", {
         platform: Capacitor.getPlatform(),
       });
-      return {
-        error: new Error(
-          "Apple Sign In is not available in this build. Please update the app.",
-        ),
-      };
+      resetAppleAuthState();
+      return await startManagedAppleOAuth();
     }
 
     // Apple's "Hide My Email" toggle is shown automatically when `email` is

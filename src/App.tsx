@@ -42,6 +42,7 @@ const AppleUsername = lazy(() => import("./pages/AppleUsername"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Coach = lazy(() => import("./pages/Coach"));
 const AthleteProfileSettings = lazy(() => import("./pages/AthleteProfileSettings"));
+const Tribes = lazy(() => import("./pages/Tribes"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -117,6 +118,7 @@ const AppRoutes = () => {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/coach" element={<ProtectedRoute><Coach /></ProtectedRoute>} />
           <Route path="/coach/profile" element={<ProtectedRoute><AthleteProfileSettings /></ProtectedRoute>} />
+          <Route path="/tribes" element={<ProtectedRoute><Tribes /></ProtectedRoute>} />
           <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
           <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
           <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />

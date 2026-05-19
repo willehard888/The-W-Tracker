@@ -98,16 +98,77 @@ if [[ "${CONFIRM}" != "yes" ]]; then
   exit 1
 fi
 
-# `psql -1` runs the whole restore in a single transaction; if anything
-# errors out, the destination rolls back to its pre-migration state.
-# `-v ON_ERROR_STOP=1` makes psql exit non-zero on the first failure so
-# we don't silently complete a partial migration.
+# Step 2a: enable non-default extensions on destination BEFORE the dump
+# restore. Lovable's inventory confirmed the source uses pg_cron, pg_net,
+# pgcrypto, uuid-ossp (plus plpgsql, pg_stat_statements, supabase_vault
+# which Supabase auto-enables). Without these enabled first, the restore
+# will fail on the first CREATE EXTENSION line in the dump.
+echo "  ▸ Enabling required extensions on destination…"
+psql -v ON_ERROR_STOP=1 "${DEST_URL}" <<'SQL'
+CREATE EXTENSION IF NOT EXISTS "pg_cron";
+CREATE EXTENSION IF NOT EXISTS "pg_net";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+SQL
+echo "  ✅ Extensions enabled"
+echo ""
+
+# Step 2b: restore the dump. `--single-transaction` runs the whole restore
+# in a single transaction; if anything errors out, the destination rolls
+# back to its pre-migration state. `-v ON_ERROR_STOP=1` makes psql exit
+# non-zero on the first failure so we don't silently complete a partial
+# migration.
+echo "  ▸ Restoring dump…"
 psql \
   -v ON_ERROR_STOP=1 \
   --single-transaction \
   "${DEST_URL}" < "${DUMP_FILE}"
 
 echo "  ✅ Restore complete"
+echo ""
+
+# Step 2c: recreate storage RLS policies (the dump may have them, but
+# running this is idempotent and guarantees they exist).
+echo "  ▸ Recreating storage buckets + RLS policies…"
+psql -v ON_ERROR_STOP=1 "${DEST_URL}" \
+  -f "${ROOT_DIR}/scripts/recreate-storage-policies.sql"
+echo "  ✅ Storage policies in place"
+echo ""
+
+# Step 2d: recreate pg_cron jobs (cron schema is not transferred by
+# default pg_dump because it lives in the `cron` schema and Supabase's
+# permissions disallow it).
+if [ -f "${ROOT_DIR}/scripts/recreate-cron-jobs.sql" ]; then
+  echo "  ▸ Recreating pg_cron jobs…"
+  psql -v ON_ERROR_STOP=1 "${DEST_URL}" \
+    -f "${ROOT_DIR}/scripts/recreate-cron-jobs.sql"
+  echo "  ✅ Cron jobs scheduled"
+  echo ""
+fi
+
+# Step 2e: recreate realtime publication tables (the dump should carry
+# this but be defensive — re-add the four tables Lovable confirmed are
+# in supabase_realtime).
+echo "  ▸ Recreating supabase_realtime publication tables…"
+psql -v ON_ERROR_STOP=1 "${DEST_URL}" <<'SQL'
+DO $$
+BEGIN
+  -- Drop existing tables from the publication first to avoid duplicate errors
+  PERFORM 1 FROM pg_publication WHERE pubname = 'supabase_realtime';
+  IF FOUND THEN
+    BEGIN
+      ALTER PUBLICATION supabase_realtime DROP TABLE
+        public.battles, public.direct_messages, public.kudos, public.profiles;
+    EXCEPTION WHEN OTHERS THEN
+      -- Tables may not be in the publication yet — that's fine
+      NULL;
+    END;
+    ALTER PUBLICATION supabase_realtime ADD TABLE
+      public.battles, public.direct_messages, public.kudos, public.profiles;
+  END IF;
+END $$;
+SQL
+echo "  ✅ Realtime publication wired"
 echo ""
 
 # ──────────────────────────────────────────────────────────────────────────

@@ -724,25 +724,41 @@ echo "🔗 Building per-target CapDepsFwks/<Target>/ symlink directories…"
 CAP_DEPS_DIR="${PODS_DIR}/CapDepsFwks"
 mkdir -p "${CAP_DEPS_DIR}"
 if [[ -d "/Volumes/workspace" ]]; then
-  # Xcode Cloud archive: OBJROOT/UninstalledProducts is a fixed absolute path
-  _UNINSTALLED="/Volumes/workspace/DerivedData/Build/Intermediates.noindex/ArchiveIntermediates/App/IntermediateBuildFilesPath/UninstalledProducts/iphoneos"
+  # Xcode Cloud archive: SKIP_INSTALL=YES pods land in UninstalledProducts/.
+  _DEP_BASE="/Volumes/workspace/DerivedData/Build/Intermediates.noindex/ArchiveIntermediates/App/IntermediateBuildFilesPath/UninstalledProducts/iphoneos"
+  _DEP_LAYOUT="flat"   # UninstalledProducts has framework files at top level
 elif [[ -n "${CM_DERIVED_DATA_PATH:-}" ]]; then
-  # Codemagic: codemagic.yaml exports CM_DERIVED_DATA_PATH to match the
-  # `-derivedDataPath` value it passes to xcodebuild archive. We must use
-  # the SAME path here — otherwise the CapDepsFwks/<Target>/ symlinks
-  # below point at a UninstalledProducts/ directory that xcodebuild never
-  # writes to, and `import Capacitor` in every plugin fails with
-  # "no such module 'Capacitor'" (build 9 regression).
-  _UNINSTALLED="${CM_DERIVED_DATA_PATH}/Build/Intermediates.noindex/ArchiveIntermediates/App/IntermediateBuildFilesPath/UninstalledProducts/iphoneos"
+  # Codemagic with -derivedDataPath build/DerivedData -jobs 1: SKIP_INSTALL=YES
+  # pod targets DO NOT land in UninstalledProducts/iphoneos/. They land in
+  # BuildProductsPath/Release-iphoneos/<POD_TARGET_NAME>/<MODULE>.framework
+  # (CocoaPods xcconfig layout — per-pod subdirectory, framework filename
+  # is the pod's module_name not its pod name; CapacitorCordova builds
+  # Cordova.framework because its podspec sets module_name = 'Cordova').
+  #
+  # Build 10 confirmed UninstalledProducts/iphoneos/ is EMPTY at the time
+  # plugin targets compile — the symlinks dangled and every plugin failed
+  # with `import Capacitor → no such module 'Capacitor'`.
+  _DEP_BASE="${CM_DERIVED_DATA_PATH}/Build/Intermediates.noindex/ArchiveIntermediates/App/BuildProductsPath/Release-iphoneos"
+  _DEP_LAYOUT="per_pod"   # nested per-pod subdirectory
 else
   # Local dev: derive at script time
   _bdir=$(xcodebuild -workspace "${IOS_APP_DIR}/App.xcworkspace" \
     -scheme App -configuration Release \
     -showBuildSettings 2>/dev/null \
     | awk -F' = ' '/^[[:space:]]*OBJROOT[[:space:]]*=/{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
-  _UNINSTALLED="${_bdir}/UninstalledProducts/iphoneos"
+  _DEP_BASE="${_bdir}/UninstalledProducts/iphoneos"
+  _DEP_LAYOUT="flat"
 fi
-echo "ℹ️  Symlinks in CapDepsFwks/ will point at: ${_UNINSTALLED}"
+echo "ℹ️  Dep frameworks expected at: ${_DEP_BASE} (layout: ${_DEP_LAYOUT})"
+
+# Map of dep framework name → pod target name. Identity except when a pod
+# renames its module via podspec `s.module_name`.
+_pod_for_framework() {
+  case "$1" in
+    Cordova) echo CapacitorCordova ;;
+    *)       echo "$1" ;;
+  esac
+}
 
 # Per-target dependency map. Each target gets its OWN subdir containing only
 # its direct dependencies — never its own framework — so adding -F to that
@@ -767,7 +783,15 @@ for _entry in "${_dep_entries[@]}"; do
   _dir="${CAP_DEPS_DIR}/${_target}"
   mkdir -p "${_dir}"
   for _dep in ${_deps}; do
-    ln -sfn "${_UNINSTALLED}/${_dep}.framework" "${_dir}/${_dep}.framework"
+    if [[ "${_DEP_LAYOUT}" == "per_pod" ]]; then
+      # BuildProductsPath layout: <BASE>/<POD_NAME>/<FRAMEWORK>.framework
+      _pod=$(_pod_for_framework "${_dep}")
+      _src="${_DEP_BASE}/${_pod}/${_dep}.framework"
+    else
+      # UninstalledProducts layout: <BASE>/<FRAMEWORK>.framework
+      _src="${_DEP_BASE}/${_dep}.framework"
+    fi
+    ln -sfn "${_src}" "${_dir}/${_dep}.framework"
   done
   echo "✅ CapDepsFwks/${_target}/ ← {${_deps// /, }}.framework"
 done

@@ -779,6 +779,13 @@ _dep_entries=(
   "CapacitorHaptics:Capacitor Cordova"
   "CapacitorLocalNotifications:Capacitor Cordova"
   "CapacitorPushNotifications:Capacitor Cordova"
+  # CapacitorStatusBar was missing here pre-build-13 and was the sole cause
+  # of "no such module 'Capacitor'" survival into Codemagic builds 10-12:
+  # the xcconfig patcher's `_deps_for_target` returned empty, so the case
+  # branch silently skipped it (logged "⚠️  No dep entry for …") — its
+  # release/debug xcconfigs got no -F injection at all → import Capacitor
+  # had nowhere to resolve.
+  "CapacitorStatusBar:Capacitor Cordova"
   "PurchasesHybridCommon:RevenueCat"
   "RevenuecatPurchasesCapacitor:Capacitor Cordova RevenueCat PurchasesHybridCommon"
 )

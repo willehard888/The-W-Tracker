@@ -90,7 +90,7 @@ esac
 echo ""
 
 # ── Step 1: Extensions ────────────────────────────────────────────────────
-echo "▶ Step 1/5 — Enabling required extensions on destination"
+echo "▶ Step 1/6 — Enabling required extensions on destination"
 psql -v ON_ERROR_STOP=1 "$DEST_URL" <<'SQL'
 CREATE EXTENSION IF NOT EXISTS "pg_cron";
 CREATE EXTENSION IF NOT EXISTS "pg_net";
@@ -100,47 +100,57 @@ SQL
 echo "  ✅ Extensions enabled"
 echo ""
 
-# ── Step 2: Apply public-schema dump ──────────────────────────────────────
-echo "▶ Step 2/5 — Restoring public schema + data from pg_dump"
+# ── Step 2: Wipe public schema for a clean restore ───────────────────────
+# After the first run we end up with partial tables, half-applied policies,
+# and orphan triggers. Simplest way to reset is DROP SCHEMA public CASCADE.
+echo "▶ Step 2/6 — Wiping public schema for a clean restore"
+echo "  WARNING: this DROPs the entire public schema on destination."
+echo "  Press Ctrl-C in 10s to abort, otherwise migration proceeds…"
+sleep 10
+psql -v ON_ERROR_STOP=1 "$DEST_URL" <<'SQL'
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT ALL ON SCHEMA public TO postgres, service_role;
+SQL
+echo "  ✅ Public schema wiped"
+echo ""
+
+# ── Step 3: auth.users FIRST so the public restore's FKs find them ───────
+# The public-schema dump INSERTs reference auth.users.id; if auth.users is
+# empty, every *_user_id_fkey constraint fires. Also wipe any pre-existing
+# auth.users rows on the destination to avoid email-uniqueness collisions
+# (Supabase auto-creates an auth.users row for the project owner with a
+# different uuid than Lovable's).
+echo "▶ Step 3/6 — Restoring auth.users + auth.identities BEFORE public schema"
+echo "  File: $(basename "$AUTH_FILE")"
+echo "  ▸ Clearing existing auth.users rows on destination first…"
+psql -v ON_ERROR_STOP=1 "$DEST_URL" <<'SQL'
+-- auth.identities has ON DELETE CASCADE so it's wiped automatically.
+DELETE FROM auth.users;
+SQL
+echo "  ▸ Inserting Lovable's auth users + identities…"
+psql -v ON_ERROR_STOP=1 "$DEST_URL" < "$AUTH_FILE"
+USER_COUNT=$(psql -At "$DEST_URL" -c "SELECT count(*) FROM auth.users;" 2>&1 | head -1)
+IDENT_COUNT=$(psql -At "$DEST_URL" -c "SELECT count(*) FROM auth.identities;" 2>&1 | head -1)
+echo "  ✅ auth.users=${USER_COUNT}, auth.identities=${IDENT_COUNT}"
+echo ""
+
+# ── Step 4: NOW restore public schema (FKs find users) ───────────────────
+echo "▶ Step 4/6 — Restoring public schema + data from pg_dump"
 echo "  File: $(basename "$PGDUMP_FILE")"
 SIZE=$(wc -c < "$PGDUMP_FILE" | tr -d ' ')
 echo "  Size: ${SIZE} bytes"
-echo ""
-echo "  WARNING: this will DROP existing public-schema objects on dest."
-echo "  Press Ctrl-C in 10s to abort, otherwise migration proceeds…"
-sleep 10
-
-# The Lovable-generated pg_dump emits DROP POLICY statements BEFORE the
-# corresponding CREATE TABLE in the same file (an artefact of how it was
-# produced — not a normal pg_dump). On a fresh destination those DROP
-# POLICYs fail with "relation does not exist". We DON'T use ON_ERROR_STOP
-# for the dump pass because of this; we let psql continue past every
-# statement, and re-verify integrity in Step 5 by counting rows.
-#
-# The `|| true` swallows psql's non-zero exit so the script continues
-# to the verification step even if there were a few errors. Step 5 is
-# the source of truth for whether the restore actually worked.
+# Lovable's pg_dump emits DROP POLICY before CREATE TABLE; we tolerate
+# those "relation does not exist" errors. Step 6 row counts are the source
+# of truth for whether the restore actually loaded data.
 psql -v ON_ERROR_STOP=0 "$DEST_URL" < "$PGDUMP_FILE" || true
 echo ""
-echo "  ▸ Restore pass complete. Some 'relation does not exist' errors on"
-echo "    the early DROP POLICY statements are expected — what matters is"
-echo "    the row-count verification in Step 5 below."
-echo "  ✅ Public schema restored"
-echo ""
-
-# ── Step 3: Apply auth users + identities ─────────────────────────────────
-echo "▶ Step 3/5 — Restoring auth.users + auth.identities (with bcrypt hashes)"
-echo "  File: $(basename "$AUTH_FILE")"
-# auth schema needs INSERTs ran outside the public restore transaction
-# because RLS triggers on auth.users may reference public schema tables
-# that just got created.
-psql -v ON_ERROR_STOP=1 "$DEST_URL" < "$AUTH_FILE"
-USER_COUNT=$(psql -At "$DEST_URL" -c "SELECT count(*) FROM auth.users;" 2>&1 | head -1)
-echo "  ✅ auth.users now has ${USER_COUNT} rows"
+echo "  ▸ Restore pass complete. See Step 6 for verification."
 echo ""
 
 # ── Step 4: Storage policies + cron + realtime ────────────────────────────
-echo "▶ Step 4/5 — Storage policies, cron jobs, realtime publication"
+echo "▶ Step 5/6 — Storage policies, cron jobs, realtime publication"
 psql -v ON_ERROR_STOP=1 "$DEST_URL" \
   -f "${ROOT_DIR}/scripts/recreate-storage-policies.sql"
 echo "  ✅ Storage RLS policies applied"
@@ -171,7 +181,7 @@ echo "  ✅ Realtime publication wired (battles, direct_messages, kudos, profile
 echo ""
 
 # ── Step 5: Smoke test ─────────────────────────────────────────────────────
-echo "▶ Step 5/5 — Sanity counts on destination"
+echo "▶ Step 6/6 — Sanity counts on destination"
 psql "$DEST_URL" <<'SQL'
 SELECT 'auth.users'      AS what, count(*) FROM auth.users
 UNION ALL SELECT 'auth.identities',     count(*) FROM auth.identities

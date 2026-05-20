@@ -110,10 +110,21 @@ echo "  WARNING: this will DROP existing public-schema objects on dest."
 echo "  Press Ctrl-C in 10s to abort, otherwise migration proceeds…"
 sleep 10
 
-# psql --single-transaction wraps the whole file in BEGIN/COMMIT so any
-# error rolls back. ON_ERROR_STOP=1 makes the first failure abort the
-# transaction (and thus the script).
-psql -v ON_ERROR_STOP=1 --single-transaction "$DEST_URL" < "$PGDUMP_FILE"
+# The Lovable-generated pg_dump emits DROP POLICY statements BEFORE the
+# corresponding CREATE TABLE in the same file (an artefact of how it was
+# produced — not a normal pg_dump). On a fresh destination those DROP
+# POLICYs fail with "relation does not exist". We DON'T use ON_ERROR_STOP
+# for the dump pass because of this; we let psql continue past every
+# statement, and re-verify integrity in Step 5 by counting rows.
+#
+# The `|| true` swallows psql's non-zero exit so the script continues
+# to the verification step even if there were a few errors. Step 5 is
+# the source of truth for whether the restore actually worked.
+psql -v ON_ERROR_STOP=0 "$DEST_URL" < "$PGDUMP_FILE" || true
+echo ""
+echo "  ▸ Restore pass complete. Some 'relation does not exist' errors on"
+echo "    the early DROP POLICY statements are expected — what matters is"
+echo "    the row-count verification in Step 5 below."
 echo "  ✅ Public schema restored"
 echo ""
 

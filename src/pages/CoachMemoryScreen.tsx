@@ -52,7 +52,7 @@ const CoachMemoryScreen = () => {
               onClick={async () => {
                 try {
                   const id = await add(draft.trim());
-                  if (!id) toast("Already remembered");
+                  if (!id) toast.info("Already remembered");
                   else { toast.success("Locked in"); hapticImpact("light"); }
                   setDraft("");
                 } catch (e: any) { toast.error(e?.message ?? "Failed"); }

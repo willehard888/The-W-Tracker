@@ -335,7 +335,7 @@ const Tribes = () => {
                 <div className="flex gap-2 mt-3">
                   <Button
                     size="sm"
-                    variant="success"
+                    variant="ember"
                     onClick={() => handleInviteResponse(inv, true)}
                     disabled={respondingId === inv.id}
                     className="flex-1 h-8"
@@ -363,7 +363,7 @@ const Tribes = () => {
       {canCreate ? (
         <Button
           onClick={() => navigate("/tribes/new")}
-          variant="magma"
+          variant="ember"
           size="lg"
           className="w-full mb-4"
         >
@@ -382,7 +382,7 @@ const Tribes = () => {
               Earn it via top 10% rank, or unlock instantly with Apex.
             </p>
           </div>
-          <Button size="sm" variant="ember-outline" onClick={() => navigate("/paywall")} className="shrink-0">
+          <Button size="sm" variant="outline" onClick={() => navigate("/paywall")} className="shrink-0">
             Unlock
           </Button>
         </div>
@@ -689,7 +689,7 @@ const Tribes = () => {
                 {isPaused && joinedIds.has(t.id) && canCreate && (
                   <Button
                     size="sm"
-                    variant="magma"
+                    variant="ghost"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleClaim(t.id, t.name);

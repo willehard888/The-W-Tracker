@@ -186,6 +186,30 @@ echo ""
 echo "  ▸ Restore pass complete. See Step 6 for verification."
 echo ""
 
+# ── Step 4b: Re-grant public-schema privileges ────────────────────────────
+# DROP SCHEMA public CASCADE (Step 2) wiped the implicit GRANTs Supabase
+# maintains for anon/authenticated/service_role on the public schema, and
+# pg_dump --no-privileges intentionally skipped restoring them. Without
+# this every authenticated PostgREST query fails with
+# "permission denied for schema public" (broke the first-after-cutover
+# Apple Sign In in the field). Re-grant + set defaults so future tables
+# created via PostgREST or migrations inherit the right perms.
+echo "  ▸ Re-granting public-schema privileges to API roles…"
+psql -v ON_ERROR_STOP=1 "$DEST_URL" <<'SQL'
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES    IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL ROUTINES  IN SCHEMA public TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT ALL ON TABLES    TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT ALL ON ROUTINES  TO anon, authenticated, service_role;
+SQL
+echo "  ✅ Privileges granted"
+echo ""
+
 # ── Step 4: Storage policies + cron + realtime ────────────────────────────
 echo "▶ Step 5/6 — Storage policies, cron jobs, realtime publication"
 psql -v ON_ERROR_STOP=1 "$DEST_URL" \

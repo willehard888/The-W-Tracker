@@ -130,7 +130,44 @@ psql -v ON_ERROR_STOP=1 "$DEST_URL" <<'SQL'
 DELETE FROM auth.users;
 SQL
 echo "  ▸ Inserting Lovable's auth users + identities…"
-psql -v ON_ERROR_STOP=1 "$DEST_URL" < "$AUTH_FILE"
+# Newer Supabase Auth schemas (PG 17 + auth ≥ 2.180) declare
+# auth.identities.email as a GENERATED column computed from
+# identity_data->>'email'. Lovable's dump file still includes an explicit
+# `email` value in the INSERT, which PG rejects with:
+#   ERROR: cannot insert a non-DEFAULT value into column "email"
+# Preprocess to strip the email column from every auth.identities INSERT
+# (the value is recomputed from identity_data on insert). auth.users
+# INSERTs untouched.
+PREPROCESSED=$(mktemp -t lovable-auth)
+python3 - "$AUTH_FILE" > "$PREPROCESSED" <<'PY'
+import re, sys
+src = open(sys.argv[1]).read()
+# Match: INSERT INTO auth.identities (col1, col2, ..., email, id) VALUES (v1, v2, ..., '<email>', '<id>');
+# Replace column list `, email, id)` → `, id)`
+# Replace VALUES tail `, '<email>', '<uuid>');` → `, '<uuid>');`
+def fix(m):
+    line = m.group(0)
+    line = line.replace(", email, id)", ", id)", 1)
+    # Find the last two single-quoted values before the closing );
+    # Format: ..., 'email_value', 'uuid_value');
+    line = re.sub(r", '[^']*', '([0-9a-f-]{36})'\);\s*$",
+                  r", '\1');", line)
+    return line
+out = re.sub(r"^INSERT INTO auth\.identities[^\n]*$",
+             fix, src, flags=re.MULTILINE)
+sys.stdout.write(out)
+PY
+
+# Sanity-check that the preprocessing actually removed every ", email, id)"
+STILL_BROKEN=$(grep -c "INSERT INTO auth\.identities.*, email, id) VALUES" "$PREPROCESSED" || true)
+if [ "$STILL_BROKEN" != "0" ]; then
+  echo "    ❌ ${STILL_BROKEN} identities lines still reference email — preprocessing failed."
+  rm -f "$PREPROCESSED"
+  exit 1
+fi
+
+psql -v ON_ERROR_STOP=1 "$DEST_URL" < "$PREPROCESSED"
+rm -f "$PREPROCESSED"
 USER_COUNT=$(psql -At "$DEST_URL" -c "SELECT count(*) FROM auth.users;" 2>&1 | head -1)
 IDENT_COUNT=$(psql -At "$DEST_URL" -c "SELECT count(*) FROM auth.identities;" 2>&1 | head -1)
 echo "  ✅ auth.users=${USER_COUNT}, auth.identities=${IDENT_COUNT}"

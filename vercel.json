@@ -3,7 +3,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "installCommand": "npm ci",
+  "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],

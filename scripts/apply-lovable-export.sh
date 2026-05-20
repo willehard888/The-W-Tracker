@@ -32,14 +32,24 @@
 # ────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
-: "${DEST_REF:?DEST_REF is required (your own Supabase project ref)}"
-: "${DEST_DB_PW:?DEST_DB_PW is required (Settings → Database → Reset password)}"
-: "${DEST_REGION:?DEST_REGION is required (e.g. eu-west-1)}"
+: "${DEST_REF:?DEST_REF is required — your own Supabase project ref}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EXPORT_DIR="${ROOT_DIR}/migration/lovable-export"
 
-DEST_URL="postgresql://postgres.${DEST_REF}:${DEST_DB_PW}@aws-0-${DEST_REGION}.pooler.supabase.com:5432/postgres"
+# Two ways to configure the destination Postgres URL:
+#   a) Pass the whole thing via DEST_URL (preferred — works regardless of
+#      which pooler host/port your project lives on)
+#   b) Pass DEST_DB_PW + DEST_REGION and we'll construct it. The pooler
+#      prefix varies by region — newer eu-west-1 projects use `aws-1-` not
+#      `aws-0-`. If construction fails, paste the URL from
+#      Supabase → Connect → Session pooler into DEST_URL directly.
+if [ -z "${DEST_URL:-}" ]; then
+  : "${DEST_DB_PW:?DEST_DB_PW is required when DEST_URL is unset}"
+  : "${DEST_REGION:?DEST_REGION is required when DEST_URL is unset}"
+  : "${DEST_POOLER_PREFIX:=aws-1}"   # eu-west-1 today uses aws-1; older projects use aws-0
+  DEST_URL="postgresql://postgres.${DEST_REF}:${DEST_DB_PW}@${DEST_POOLER_PREFIX}-${DEST_REGION}.pooler.supabase.com:5432/postgres"
+fi
 
 # Files Lovable's chat agent generated
 PGDUMP_FILE="${EXPORT_DIR}/lovable-public-schema-data-pgdump.sql"

@@ -26,9 +26,9 @@
 set -euo pipefail
 
 : "${SOURCE_REF:?SOURCE_REF is required}"
-: "${SOURCE_ANON_KEY:?SOURCE_ANON_KEY is required (Lovable project Settings/API)}"
+: "${SOURCE_ANON_KEY:?SOURCE_ANON_KEY is required — from Lovable project Settings/API}"
 : "${DEST_REF:?DEST_REF is required}"
-: "${DEST_SERVICE_KEY:?DEST_SERVICE_KEY is required (destination project's service_role key)}"
+: "${DEST_SERVICE_KEY:?DEST_SERVICE_KEY is required — destination project service_role key}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORK_DIR="${ROOT_DIR}/migration/storage"
@@ -92,7 +92,7 @@ echo "📊 Local mirror sizes:"
 du -sh "${WORK_DIR}"/* 2>/dev/null || true
 echo
 
-echo "📤 Uploading to destination (${DEST_REF})…"
+printf '📤 Uploading to destination %s\n' "${DEST_REF}"
 upload_count=0
 fail_count=0
 for bucket in feed-images proof-photos; do
@@ -123,7 +123,7 @@ done
 echo
 echo "📦 Uploaded: ${upload_count}  Failed: ${fail_count}"
 if [ "$fail_count" -gt 0 ]; then
-  echo "❌ Some uploads failed — re-run script to retry (existing objects are skipped)."
+  printf '❌ Some uploads failed — re-run script to retry; existing objects are skipped.\n'
   exit 1
 fi
 echo "✅ Storage migration complete."

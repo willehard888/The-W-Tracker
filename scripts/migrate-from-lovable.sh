@@ -43,13 +43,13 @@
 # ───────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
-: "${SOURCE_REF:?SOURCE_REF is required (the Lovable project ref)}"
-: "${SOURCE_DB_PW:?SOURCE_DB_PW is required (Lovable Cloud → Database → Reset password)}"
-: "${DEST_REF:?DEST_REF is required (your own Supabase project ref)}"
-: "${DEST_DB_PW:?DEST_DB_PW is required (destination project's DB password)}"
-: "${SOURCE_REGION:?SOURCE_REGION is required (e.g. eu-central-1 — same as source project)}"
-: "${DEST_REGION:?DEST_REGION is required (e.g. eu-central-1 — same as destination project)}"
-: "${OPENROUTER_API_KEY:?OPENROUTER_API_KEY is required (sk-or-v1-...)}"
+: "${SOURCE_REF:?SOURCE_REF is required — the Lovable project ref}"
+: "${SOURCE_DB_PW:?SOURCE_DB_PW is required — Lovable Cloud → Database → Reset password}"
+: "${DEST_REF:?DEST_REF is required — your own Supabase project ref}"
+: "${DEST_DB_PW:?DEST_DB_PW is required — destination project DB password}"
+: "${SOURCE_REGION:?SOURCE_REGION is required — e.g. eu-central-1, same as source project}"
+: "${DEST_REGION:?DEST_REGION is required — e.g. eu-central-1, same as destination project}"
+: "${OPENROUTER_API_KEY:?OPENROUTER_API_KEY is required — sk-or-v1-...}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DUMP_FILE="${ROOT_DIR}/scripts/_lovable-dump.sql"
@@ -192,7 +192,7 @@ mapfile -t FUNCTIONS < <(
     -exec basename {} \; | sort
 )
 
-echo "  Functions to deploy (${#FUNCTIONS[@]}):"
+printf '  Functions to deploy: %s\n' "${#FUNCTIONS[@]}"
 printf '    • %s\n' "${FUNCTIONS[@]}"
 echo ""
 

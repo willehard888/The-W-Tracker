@@ -218,7 +218,15 @@ SET
   phone_change_token          = COALESCE(phone_change_token,          ''),
   email_change_token_current  = COALESCE(email_change_token_current,  ''),
   reauthentication_token      = COALESCE(reauthentication_token,      ''),
-  email_change_confirm_status = COALESCE(email_change_confirm_status, 0);
+  email_change_confirm_status = COALESCE(email_change_confirm_status, 0),
+  -- updated_at is critical: Supabase Auth's Go struct uses time.Time
+  -- (non-pointer) for this column, so a NULL value triggers
+  --   "sql: Scan error on column index 33, name updated_at:
+  --    unsupported Scan, storing driver.Value type <nil> into type *time.Time"
+  -- on every signInWithIdToken call. The Auth service returns this as a
+  -- 400 "Internal Server Error" with no specific user-facing message,
+  -- which is impossible to debug from the client side alone.
+  updated_at = COALESCE(updated_at, created_at, now());
 SQL
 echo "  ✅ auth.users columns backfilled"
 echo ""

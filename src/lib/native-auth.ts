@@ -133,9 +133,21 @@ async function performAppleSignIn(options?: {
     const rawNonce = generateRawNonce();
     const hashedNonce = await sha256Hex(rawNonce);
     const scopes = options?.hideEmail ? "name" : "email name";
+    const isNative = Capacitor.isNativePlatform();
+
+    // CRITICAL: the @capacitor-community/apple-sign-in plugin hashes the
+    // nonce ITSELF on iOS (SHA-256) before passing to ASAuthorizationController.
+    // On web it does NOT (it uses Apple JS SDK which expects pre-hashed).
+    // So we pass:
+    //   - iOS native: rawNonce  (plugin will sha256 it → Apple JWT has sha256(raw))
+    //   - Web:        hashedNonce (sent as-is → Apple JWT has sha256(raw))
+    // Either way, Apple's JWT has sha256(rawNonce) in its nonce claim, and
+    // we send rawNonce to Supabase. Supabase hashes it and matches the JWT.
+    // (Double-hashing on native was the cause of the 400 from /token.)
+    const nonceForPlugin = isNative ? rawNonce : hashedNonce;
 
     updateOauthDebug({
-      redirectUri: Capacitor.isNativePlatform() ? "(native)" : WEB_REDIRECT_URI,
+      redirectUri: isNative ? "(native)" : WEB_REDIRECT_URI,
       sentState: hashedNonce,
       error: null,
       errorDescription: null,
@@ -146,16 +158,17 @@ async function performAppleSignIn(options?: {
     pushIosDebugLog("AppleAuth", "Calling SignInWithApple.authorize", {
       platform: Capacitor.getPlatform(),
       scopes,
-      hasHashedNonce: hashedNonce.length === 64,
+      isNative,
+      noncePassedRaw: isNative,
     });
 
     const response: SignInWithAppleResponse = await SignInWithApple.authorize({
       clientId: APPLE_CLIENT_ID,
       redirectURI: WEB_REDIRECT_URI,
       scopes,
-      nonce: hashedNonce,
-      // state can be any string Apple echoes back; we re-use the nonce since
-      // we verify it server-side anyway via signInWithIdToken.
+      nonce: nonceForPlugin,
+      // state can be any string Apple echoes back. We use the hashed nonce
+      // so it's a non-correlatable opaque token to the user.
       state: hashedNonce.slice(0, 32),
     });
 

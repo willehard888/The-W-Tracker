@@ -146,6 +146,12 @@ const DailyCheckin = () => {
   const [journaling, setJournaling] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  // Wizard (B1 polish): 13 inputs split into 3 themed steps so the user
+  // gets a sense of progress and the form stops feeling like an
+  // endless wall. Step 1 = recovery, Step 2 = action, Step 3 = discipline
+  // + proof + honesty + submit. All input state lives at this scope
+  // so navigating Next/Back never loses values.
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
   const [honest, setHonest] = useState<boolean | null>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
@@ -473,6 +479,26 @@ const DailyCheckin = () => {
         onBack={() => navigate("/")}
       />
 
+      {/* Wizard progress indicator */}
+      <div className="mt-3 mb-4 flex items-center gap-2">
+        {[1, 2, 3].map((n) => (
+          <div
+            key={n}
+            className={cn(
+              "h-1.5 flex-1 rounded-full transition-colors duration-300",
+              step >= (n as 1 | 2 | 3) ? "bg-gold" : "bg-border",
+            )}
+          />
+        ))}
+        <span className="ml-2 text-[10px] font-bold tracking-wider uppercase text-muted-foreground tabular-nums">
+          {step} / 3
+        </span>
+      </div>
+
+      {/* ═══════════════════════════ STEP 1 — RECOVERY ═══════════════════════════ */}
+      {step === 1 && (<>
+      <p className="mb-3 text-[11px] font-black tracking-[0.18em] uppercase text-gold/80">Recovery</p>
+
       {/* Sleep */}
       <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border bg-card p-4 mb-3">
         <div className="flex items-center gap-3 mb-3">
@@ -506,6 +532,17 @@ const DailyCheckin = () => {
         </div>
         <input type="range" min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
       </div>
+
+      {/* Recovery toggles — meditation morning + evening */}
+      <div className="space-y-2.5 animate-reveal animate-reveal-delay-2 mb-3">
+        <ToggleItem icon={Brain} label="Morning Meditation" sublabel="Start the day focused" active={meditationAm} onToggle={() => setMeditationAm(!meditationAm)} bonus="+15 XP" />
+        <ToggleItem icon={Brain} label="Evening Meditation" sublabel="Reflect and wind down" active={meditationPm} onToggle={() => setMeditationPm(!meditationPm)} bonus="+15 XP" />
+      </div>
+      </>)}
+
+      {/* ═══════════════════════════ STEP 2 — ACTION ═══════════════════════════ */}
+      {step === 2 && (<>
+      <p className="mb-3 text-[11px] font-black tracking-[0.18em] uppercase text-gold/80">Action</p>
 
       {/* Sport Category Selector */}
       <div className="animate-reveal animate-reveal-delay-2 mb-2.5">
@@ -566,16 +603,23 @@ const DailyCheckin = () => {
         )}
       </div>
 
-      {/* Other Toggles */}
-      <div className="space-y-2.5 animate-reveal animate-reveal-delay-2">
+      {/* Action toggles */}
+      <div className="space-y-2.5 animate-reveal animate-reveal-delay-2 mb-3">
         <ToggleItem icon={Plus} label="Extra Workout" sublabel="Second session today" active={extraWorkout} onToggle={() => setExtraWorkout(!extraWorkout)} bonus="+25 XP" />
         <ToggleItem icon={Snowflake} label="Cold Shower" sublabel="Build mental toughness" active={coldShower} onToggle={() => setColdShower(!coldShower)} bonus="+30 XP" />
-        <ToggleItem icon={Apple} label="Healthy Food" sublabel="Clean meals all day" active={healthyFood} onToggle={() => setHealthyFood(!healthyFood)} bonus="+20 XP" />
-        <ToggleItem icon={Apple} label="Protein Intake" sublabel="Hit your protein target" active={protein} onToggle={() => setProtein(!protein)} bonus="+15 XP" />
-        <ToggleItem icon={Brain} label="Morning Meditation" sublabel="Start the day focused" active={meditationAm} onToggle={() => setMeditationAm(!meditationAm)} bonus="+15 XP" />
-        <ToggleItem icon={Brain} label="Evening Meditation" sublabel="Reflect and wind down" active={meditationPm} onToggle={() => setMeditationPm(!meditationPm)} bonus="+15 XP" />
         <ToggleItem icon={Smartphone} label="No Phone After Waking" sublabel="30 min screen-free" active={noPhoneAm} onToggle={() => setNoPhoneAm(!noPhoneAm)} bonus="+20 XP" />
         <ToggleItem icon={Smartphone} label="No Phone Before Sleep" sublabel="30 min screen-free" active={noPhonePm} onToggle={() => setNoPhonePm(!noPhonePm)} bonus="+20 XP" />
+      </div>
+      </>)}
+
+      {/* ═══════════════════════════ STEP 3 — DISCIPLINE + SUBMIT ═══════════════════════════ */}
+      {step === 3 && (<>
+      <p className="mb-3 text-[11px] font-black tracking-[0.18em] uppercase text-gold/80">Discipline</p>
+
+      {/* Discipline toggles */}
+      <div className="space-y-2.5 animate-reveal animate-reveal-delay-2 mb-3">
+        <ToggleItem icon={Apple} label="Healthy Food" sublabel="Clean meals all day" active={healthyFood} onToggle={() => setHealthyFood(!healthyFood)} bonus="+20 XP" />
+        <ToggleItem icon={Apple} label="Protein Intake" sublabel="Hit your protein target" active={protein} onToggle={() => setProtein(!protein)} bonus="+15 XP" />
         <ToggleItem icon={BookOpen} label="Read / Learn Something New" sublabel="Books, articles, courses" active={reading} onToggle={() => setReading(!reading)} bonus="+20 XP" />
         <ToggleItem icon={NotebookPen} label="Journaling" sublabel="Reflect on wins, lessons, next steps" active={journaling} onToggle={() => setJournaling(!journaling)} bonus="+15 XP" />
       </div>
@@ -706,12 +750,39 @@ const DailyCheckin = () => {
         </div>
       </div>
 
-      {/* Submit */}
+      {/* Submit — only on the last step */}
       <div className="mt-6 animate-reveal animate-reveal-delay-4">
         <Button variant="ember" size="xl" className="w-full" onClick={handleSubmit} disabled={submitting || honest !== true}>
           <Zap size={20} />
           {submitting ? "Submitting..." : `Submit Day — Earn ${totalXp} XP`}
         </Button>
+      </div>
+      </>)}
+
+      {/* ═══════════════════════════ WIZARD NAVIGATION ═══════════════════════════ */}
+      {/* Back / Next buttons. Step 3's primary action is Submit (above), so
+          Next is hidden there; Back is hidden on Step 1. */}
+      <div className="mt-4 flex gap-3">
+        {step > 1 && (
+          <Button
+            variant="outline"
+            size="lg"
+            className="flex-1"
+            onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
+          >
+            ← Back
+          </Button>
+        )}
+        {step < 3 && (
+          <Button
+            variant="ember"
+            size="lg"
+            className="flex-1"
+            onClick={() => setStep((s) => (s + 1) as 1 | 2 | 3)}
+          >
+            Next →
+          </Button>
+        )}
       </div>
     </div>
   );

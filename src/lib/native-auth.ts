@@ -189,28 +189,47 @@ async function performAppleSignIn(options?: {
     }
 
     // Decode the JWT.nonce claim so we can SEE what Apple actually stored.
-    // This is the smoking gun for nonce-mismatch debugging.
+    // base64url → base64 conversion + correct PKCS#7-style padding (the
+    // earlier attempt over-padded on length % 4 === 0 and under-padded on
+    // length % 4 === 1, producing atob exceptions that the catch swallowed).
     let jwtNonceClaim: string | null = null;
     let jwtAudience: string | null = null;
+    let jwtSub: string | null = null;
+    let decodeError: string | null = null;
     try {
-      const payloadB64 = identityToken.split(".")[1] ?? "";
-      const padded = payloadB64 + "==".slice(payloadB64.length % 4);
-      const decoded = JSON.parse(atob(padded.replace(/-/g, "+").replace(/_/g, "/")));
-      jwtNonceClaim = (decoded?.nonce as string | undefined) ?? null;
-      jwtAudience = (decoded?.aud as string | undefined) ?? null;
-    } catch {
-      // ignore — diagnostic only
+      const segments = identityToken.split(".");
+      if (segments.length !== 3) {
+        decodeError = `JWT has ${segments.length} segments, expected 3`;
+      } else {
+        const base64 = segments[1].replace(/-/g, "+").replace(/_/g, "/");
+        const padLen = (4 - (base64.length % 4)) % 4;
+        const padded = base64 + "=".repeat(padLen);
+        const json = atob(padded);
+        const decoded = JSON.parse(json);
+        jwtNonceClaim = (decoded?.nonce as string | undefined) ?? null;
+        jwtAudience = (decoded?.aud as string | undefined) ?? null;
+        jwtSub = (decoded?.sub as string | undefined) ?? null;
+      }
+    } catch (err) {
+      decodeError = errorMessage(err);
     }
+
+    const jwtNonceMatchesHashed = jwtNonceClaim === hashedNonce;
+    const sha256OfHashed = await sha256Hex(hashedNonce);
+    const jwtNonceMatchesDoubleHashed = jwtNonceClaim === sha256OfHashed;
 
     pushIosDebugLog("AppleAuth", "Apple returned identityToken — exchanging with Supabase", {
       hasEmail: Boolean(response.response.email),
       hasGivenName: Boolean(response.response.givenName),
+      identityTokenLength: identityToken.length,
+      decodeError,
       jwtNonceClaim,
       jwtAudience,
-      jwtNonceEqualsHashed: jwtNonceClaim === hashedNonce,
-      jwtNonceEqualsSha256Hashed: jwtNonceClaim !== null
-        ? jwtNonceClaim === (await sha256Hex(hashedNonce))
-        : null,
+      jwtSub: jwtSub ? jwtSub.slice(0, 24) + "…" : null,
+      ourHashedNoncePreview: hashedNonce.slice(0, 16) + "…",
+      // The "true" outcome here tells us the protocol:
+      jwtNonceMatchesHashed,           // → Apple stored our hashedNonce verbatim (Apple does NOT hash)
+      jwtNonceMatchesDoubleHashed,     // → Apple DID hash our hashedNonce (so we should have sent raw)
     });
 
     const { data, error } = await supabase.auth.signInWithIdToken({

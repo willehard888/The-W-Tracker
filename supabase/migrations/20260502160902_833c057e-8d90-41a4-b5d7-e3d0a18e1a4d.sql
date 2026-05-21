@@ -206,7 +206,7 @@ BEGIN
 
   SELECT count(*) INTO v_active_count FROM public.user_habits
    WHERE user_id = v_user AND archived_at IS NULL;
-  IF v_active_count >= 5 THEN
+  IF v_active_count >= 8 THEN
     RETURN jsonb_build_object('error', 'cap_reached');
   END IF;
 

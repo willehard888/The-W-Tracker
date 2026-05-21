@@ -40,7 +40,7 @@ const ProtocolSheet = ({ protocol, open, onOpenChange, why }: Props) => {
       toast.success("Added to your habits", { description: protocol.title });
     } catch (e: any) {
       const msg = e?.message ?? "Couldn't add habit.";
-      if (msg === "cap_reached") toast.error("Max 5 active habits — archive one first.");
+      if (msg === "cap_reached") toast.error("Max 8 active habits — archive one first.");
       else if (msg === "already_active") toast.info("Already in your habits.");
       else if (msg === "premium_required") toast.error("Premium required.");
       else toast.error(msg);

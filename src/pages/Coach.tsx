@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, Loader2, User, Brain, X, Sparkles, BookOpen, RotateCw, Plus, Lock, Crown, MoreVertical } from "lucide-react";
+import { Send, ArrowLeft, Loader2, X, BookOpen, RotateCw, Plus, Sparkles, MoreVertical, User, Brain } from "lucide-react";
 import { matchFaq, COACH_FAQ, FaqEntry } from "@/lib/coach-faq";
 import FaqBrowser from "@/components/coach/FaqBrowser";
 import ReactMarkdown from "react-markdown";
@@ -9,26 +9,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import ProgramOnboarding from "@/components/coach/ProgramOnboarding";
-import TodaySessionCard from "@/components/coach/TodaySessionCard";
-import ProgramWeekAccordion from "@/components/coach/ProgramWeekAccordion";
-import ProgressDashboard from "@/components/coach/ProgressDashboard";
 import { ProfileSkeleton as PageSkeleton } from "@/components/skeletons/PageSkeleton";
-import DailyMissionCard from "@/components/coach/DailyMissionCard";
-import HabitsTab from "@/components/coach/HabitsTab";
 import AthleteProfileOnboarding from "@/components/coach/AthleteProfileOnboarding";
-import GoalTrackerCard from "@/components/coach/GoalTrackerCard";
-import EveningReflectionCard from "@/components/coach/EveningReflectionCard";
-import PerformanceOSDashboard from "@/components/coach/PerformanceOSDashboard";
-import TrainerBrief from "@/components/coach/TrainerBrief";
-import WeekStrip from "@/components/coach/WeekStrip";
-import LifeOSCard from "@/components/coach/LifeOSCard";
 import MoodSnapshot from "@/components/coach/MoodSnapshot";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import { useTodayReflection } from "@/hooks/use-coach-reflection";
 import { supabase } from "@/integrations/supabase/client";
+import StateCard from "@/components/coach/v2/StateCard";
+import MoveCard from "@/components/coach/v2/MoveCard";
+import ProgramCard from "@/components/coach/v2/ProgramCard";
+import AskCoachPill from "@/components/coach/v2/AskCoachPill";
+import CoachFooterLinks from "@/components/coach/v2/CoachFooterLinks";
 
 type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";
@@ -121,10 +114,6 @@ const Coach = () => {
       session={session}
       isElite={isElite}
       program={program}
-      logs={logs}
-      currentWeek={currentWeek}
-      todayDayIndex={todayDayIndex}
-      refetch={refetch}
       navigate={navigate}
     />
   );
@@ -183,139 +172,26 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
   );
 };
 
-const CoachShell = ({ session, isElite, program, logs, currentWeek, todayDayIndex, refetch, navigate }: any) => {
+const CoachShell = ({ session, isElite, program, navigate }: any) => {
   const [chatOpen, setChatOpen] = useState(false);
-  const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
-  const askCoach = (q: string) => {
-    setPendingPrompt(q);
-    setChatOpen(true);
-  };
-
-  // Free vs Elite layout split.
-  //   FREE: Life OS + Evening Reflection + Goal Tracker + Habits + inline upsell.
-  //   ELITE: everything (TrainerBrief, TodaySessionCard, WeekStrip, DailyMissions,
-  //          ProgramWeekAccordion, PerformanceOSDashboard, ProgressDashboard,
-  //          persistent chat composer + ChatSheet).
+  // 3-card landing — Tila / Liike / Treeniohjelma — replaces the previous
+  // 10+ stacked cards. Everything else moves behind explicit drill-down
+  // links in the "More" footer. Chat = single inline pill (no fixed bar).
+  //
+  // Free vs Elite split happens INSIDE each card, not at this level.
+  // Both tiers see the same shell: predictable structure, fewer "is this
+  // for me?" moments.
   return (
     <div className="flex flex-col h-full relative">
       <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
 
-      <div className="flex-1 overflow-y-auto px-4 pb-8">
-        {/* TrainerBrief calls the coach-daily-brief edge function which is
-            Elite-gated server-side; hide for free users to avoid a 403. */}
-        {isElite && <TrainerBrief onAsk={askCoach} />}
-
-        {/* Life OS — structured 5-domain daily brief. Free for everyone. */}
-        <div className={isElite ? "mt-3" : ""}>
-          <LifeOSCard />
-        </div>
-
-        {/* Elite-only: today's prescription + week-at-a-glance + daily plan AI */}
-        {isElite && program && (
-          <>
-            <TodaySessionCard
-              program={program}
-              currentWeek={currentWeek}
-              todayDayIndex={todayDayIndex}
-              logs={logs}
-              onLogged={() => refetch()}
-            />
-            <div className="mt-4">
-              <WeekStrip
-                program={program}
-                currentWeek={currentWeek}
-                todayDayIndex={todayDayIndex}
-                logs={logs}
-              />
-            </div>
-          </>
-        )}
-
-        {/* Daily focus — single column, lighter chrome.
-            EveningReflection + GoalTracker + Habits are free-friendly.
-            DailyMissionCard hits coach-daily-plan (Elite-only edge fn) — gate it. */}
-        <SectionLabel>Daily focus</SectionLabel>
-        <div className="space-y-2.5">
-          {isElite && <DailyMissionCard />}
-          <EveningReflectionCard />
-          <GoalTrackerCard />
-          <HabitsTab />
-        </div>
-
-        {/* Free users see an inline upsell card here in place of the
-            Elite-only Plan + Progress sections. Tapping it goes to /paywall. */}
-        {!isElite && (
-          <div className="mt-6">
-            <button
-              type="button"
-              onClick={() => navigate("/paywall")}
-              className="w-full text-left rounded-3xl border border-gold/40 bg-gradient-to-b from-gold/[0.06] to-card/95 p-5 shadow-[0_20px_56px_-28px_hsl(var(--gold)/0.5)] active:scale-[0.99] transition-transform"
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_14px_hsl(42_78%_54%/0.4)]">
-                  <Crown size={15} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gold/80">
-                    W Coach · Premium
-                  </p>
-                  <p className="text-sm font-bold text-foreground">
-                    Unlock training program + live chat
-                  </p>
-                </div>
-                <Lock size={14} className="text-gold/70 shrink-0" aria-hidden />
-              </div>
-              <p className="text-[12px] text-muted-foreground/85 leading-relaxed">
-                Premium adds a personalised 4-week program, today's session
-                prescription, daily AI missions, and live coach chat. Your
-                profile and Life OS plan stay free.
-              </p>
-            </button>
-          </div>
-        )}
-
-        {/* Elite-only plan + progress sections */}
-        {isElite && program && (
-          <>
-            <SectionLabel>Your plan</SectionLabel>
-            <ProgramWeekAccordion program={program} currentWeek={currentWeek} logs={logs} />
-            <SectionLabel>Progress</SectionLabel>
-            <div className="space-y-3">
-              <PerformanceOSDashboard />
-              <ProgressDashboard program={program} currentWeek={currentWeek} logs={logs} />
-            </div>
-          </>
-        )}
-
-        {/* Inline chat CTA — replaces the previous persistent composer that
-            was pinned above BottomNav. The persistent composer was the single
-            biggest "this is a sub-app" signal (no other W page has one).
-            Now chat is reached by intent: tap the card → ChatSheet slides up.
-            Elite-only because the ai-coach edge function is Elite-gated. */}
-        {isElite && (
-          <button
-            type="button"
-            onClick={() => { hapticImpact("light"); setChatOpen(true); }}
-            className="mt-6 w-full text-left rounded-3xl border border-gold/40 bg-gradient-to-b from-gold/[0.08] via-card/95 to-card p-5 shadow-[0_20px_56px_-28px_hsl(var(--gold)/0.5)] active:scale-[0.99] transition-transform"
-            aria-label="Open W Coach chat"
-          >
-            <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_18px_hsl(42_78%_54%/0.45)]">
-                <Sparkles size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">
-                  Ask your coach
-                </p>
-                <p className="text-sm font-bold text-foreground leading-tight">
-                  Training, sleep, mind — anything on your mind today.
-                </p>
-              </div>
-              <Send size={16} className="text-gold/70 shrink-0" />
-            </div>
-          </button>
-        )}
+      <div className="flex-1 overflow-y-auto px-4 pt-3 pb-8 space-y-3">
+        <StateCard />
+        <MoveCard />
+        <ProgramCard />
+        <AskCoachPill onOpenChat={() => { hapticImpact("light"); setChatOpen(true); }} />
+        <CoachFooterLinks />
       </div>
 
       <AnimatePresence>
@@ -323,20 +199,14 @@ const CoachShell = ({ session, isElite, program, logs, currentWeek, todayDayInde
           <ChatSheet
             session={session}
             program={program}
-            initialPrompt={pendingPrompt}
-            onClose={() => { setChatOpen(false); setPendingPrompt(null); }}
+            initialPrompt={null}
+            onClose={() => setChatOpen(false)}
           />
         )}
       </AnimatePresence>
     </div>
   );
 };
-
-const SectionLabel = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/70 mt-6 mb-2 px-1">
-    {children}
-  </p>
-);
 
 // ── Chat sheet (slide-up over content) ────────────────────────────────────────
 // (PersistentComposer removed — it was a fixed input bar pinned above

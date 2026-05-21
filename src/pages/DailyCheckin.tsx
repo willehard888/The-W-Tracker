@@ -24,6 +24,8 @@ import { triggerGust } from "@/lib/wind";
 import { ELITE_XP_MULTIPLIER } from "@/lib/xp-constants";
 import CheckinTierHeader from "@/components/CheckinTierHeader";
 import CheckinTierSummary from "@/components/CheckinTierSummary";
+import { useUserHabits } from "@/hooks/use-user-habits";
+import { PROTOCOLS } from "@/lib/wellness-framework";
 
 interface ToggleItemProps {
   icon: React.ElementType;
@@ -152,6 +154,13 @@ const DailyCheckin = () => {
   // + proof + honesty + submit. All input state lives at this scope
   // so navigating Next/Back never loses values.
   const [step, setStep] = useState<1 | 2 | 3>(1);
+
+  // Custom habits integration: each user's chosen long-game habits
+  // (from /coach/habits) surface here as additional toggles in Step 3.
+  // Toggling stores in local state; on submit we call logHabit() for
+  // each one to update streaks + level via user_habits + user_habit_logs.
+  const { habits: customHabits, completedTodaySet, logHabit } = useUserHabits();
+  const [habitToggles, setHabitToggles] = useState<Record<string, boolean>>({});
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
   const [honest, setHonest] = useState<boolean | null>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
@@ -183,7 +192,7 @@ const DailyCheckin = () => {
   // - 10–12h is good occasionally, but penalized if chronic (≥3 nights of 10h+ in last 7 days)
   // - 7h is sub-optimal (poor)
   // - <7h is poor / dangerous
-  const { isOptimalSleep, isChronicOversleep, sleepMultiplier, sleepPenaltyLabel } = useMemo(() => {
+  const { isOptimalSleep, isChronicOversleep, oversleepCount, sleepMultiplier, sleepPenaltyLabel } = useMemo(() => {
     const oversleepCount = (recentSleep || []).filter((h) => h >= 10).length;
     const chronic = oversleepCount >= 3;
 
@@ -208,7 +217,7 @@ const DailyCheckin = () => {
       else penalty = pct;
     }
 
-    return { isOptimalSleep: optimal, isChronicOversleep: chronic, sleepMultiplier: multiplier, sleepPenaltyLabel: penalty };
+    return { isOptimalSleep: optimal, isChronicOversleep: chronic, oversleepCount, sleepMultiplier: multiplier, sleepPenaltyLabel: penalty };
   }, [sleep, recentSleep]);
 
   const proofBonus = isElite && proofFile ? 30 : 0;
@@ -389,6 +398,20 @@ const DailyCheckin = () => {
           }
         } catch {
           // non-critical — silent
+        }
+      }
+
+      // Log each toggled-on custom habit. Sequential (the list is ≤8) so
+      // per-habit XP + streak bumps settle before refreshProfile() below.
+      // Errors are swallowed per-habit so one bad row can't sink submit.
+      const toggledHabitIds = Object.entries(habitToggles)
+        .filter(([, v]) => v)
+        .map(([id]) => id);
+      for (const habitId of toggledHabitIds) {
+        try {
+          await logHabit(habitId);
+        } catch (err) {
+          console.error("logHabit failed", habitId, err);
         }
       }
 
@@ -622,6 +645,65 @@ const DailyCheckin = () => {
         <ToggleItem icon={Apple} label="Protein Intake" sublabel="Hit your protein target" active={protein} onToggle={() => setProtein(!protein)} bonus="+15 XP" />
         <ToggleItem icon={BookOpen} label="Read / Learn Something New" sublabel="Books, articles, courses" active={reading} onToggle={() => setReading(!reading)} bonus="+20 XP" />
         <ToggleItem icon={NotebookPen} label="Journaling" sublabel="Reflect on wins, lessons, next steps" active={journaling} onToggle={() => setJournaling(!journaling)} bonus="+15 XP" />
+      </div>
+
+      {/* Custom habits — long-game protocols each user picks in Coach.
+          Active habits surface here as additional toggles. Already-logged
+          today habits start checked + disabled. Submitting fires logHabit
+          per toggled habit so per-habit streaks + XP roll up alongside the
+          fixed 13-toggle set, instead of forcing a bounce to another page. */}
+      <div className="mt-4 animate-reveal animate-reveal-delay-2">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[11px] font-black tracking-[0.18em] uppercase text-gold/80">Your habits</p>
+          {customHabits.length > 0 && (
+            <button
+              onClick={() => navigate("/coach/habits")}
+              className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-gold transition-colors"
+            >
+              Edit
+            </button>
+          )}
+        </div>
+        {customHabits.length === 0 ? (
+          <button
+            onClick={() => navigate("/coach/habits")}
+            className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] text-left"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold">
+              <Plus size={20} />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-sm">Pick your habits</p>
+              <p className="text-xs text-muted-foreground">Build a custom set in Coach — they show up here every day.</p>
+            </div>
+          </button>
+        ) : (
+          <div className="space-y-2.5">
+            {customHabits.map((h) => {
+              const protocol = PROTOCOLS.find((p) => p.id === h.protocol_id);
+              const title = protocol?.title ?? h.protocol_id;
+              const alreadyLogged = completedTodaySet.has(h.id);
+              const checked = alreadyLogged || !!habitToggles[h.id];
+              return (
+                <ToggleItem
+                  key={h.id}
+                  icon={Zap}
+                  label={title}
+                  sublabel={
+                    alreadyLogged
+                      ? `Already logged today · ${h.current_streak}d streak`
+                      : `${h.current_streak}d streak · Lv ${h.level}`
+                  }
+                  active={checked}
+                  onToggle={() => {
+                    if (alreadyLogged) return;
+                    setHabitToggles((prev) => ({ ...prev, [h.id]: !prev[h.id] }));
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Daily Quests */}

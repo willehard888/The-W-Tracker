@@ -40,6 +40,11 @@ const Coach = lazy(() => import("@/pages/Coach"));
 const ProtocolLibrary = lazy(() => import("@/pages/ProtocolLibrary"));
 const CoachMemoryScreen = lazy(() => import("@/pages/CoachMemoryScreen"));
 const AthleteProfileSettings = lazy(() => import("@/pages/AthleteProfileSettings"));
+const CoachHabits = lazy(() => import("@/pages/CoachHabits"));
+const CoachReflect = lazy(() => import("@/pages/CoachReflect"));
+const CoachGoal = lazy(() => import("@/pages/CoachGoal"));
+const CoachProgress = lazy(() => import("@/pages/CoachProgress"));
+const CoachProgramDetail = lazy(() => import("@/pages/CoachProgramDetail"));
 const WeeklyBriefing = lazy(() => import("@/pages/WeeklyBriefing"));
 const AdminModeration = lazy(() => import("@/pages/AdminModeration"));
 const AdminLegendInvites = lazy(() => import("@/pages/AdminLegendInvites"));
@@ -172,6 +177,11 @@ const ModalStack = () => {
               <Route path="/coach/library" element={<ProtocolLibrary />} />
               <Route path="/coach/memory" element={<CoachMemoryScreen />} />
               <Route path="/coach/profile" element={<AthleteProfileSettings />} />
+              <Route path="/coach/habits" element={<CoachHabits />} />
+              <Route path="/coach/reflect" element={<CoachReflect />} />
+              <Route path="/coach/goal" element={<CoachGoal />} />
+              <Route path="/coach/progress" element={<CoachProgress />} />
+              <Route path="/coach/program" element={<CoachProgramDetail />} />
               <Route path="/referrals" element={<Referrals />} />
               <Route path="/vault" element={<Vault />} />
               <Route path="/admin/moderation" element={<AdminModeration />} />

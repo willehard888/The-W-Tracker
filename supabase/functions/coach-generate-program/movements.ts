@@ -160,6 +160,12 @@ const EQUIPMENT_SYNONYMS: Record<string, EquipmentTag[]> = {
   outdoor: ["outdoor"],
   gym: ["barbell", "dumbbells", "kettlebell", "machines", "cable", "bench", "pullup_bar", "rower", "bike"],
   "full-gym": ["barbell", "dumbbells", "kettlebell", "machines", "cable", "bench", "pullup_bar", "rower", "bike"],
+  // ── New onboarding presets (2026-05-21 simplification) ─────────────────
+  // These match the 4-preset chip UI in AthleteProfileOnboarding.tsx.
+  full_gym:     ["barbell", "dumbbells", "kettlebell", "machines", "cable", "bench", "pullup_bar", "rower", "bike"],
+  home_minimal: ["dumbbells", "bands", "pullup_bar"],
+  outdoor:      ["outdoor", "pullup_bar"],
+  combat_sport: ["bodyweight"], // bag/mat work — closest existing tag
 };
 
 const INJURY_SYNONYMS: Record<string, InjuryTag[]> = {

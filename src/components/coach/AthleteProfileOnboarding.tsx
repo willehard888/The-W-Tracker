@@ -33,7 +33,16 @@ const TONES: { id: ToneId; label: string; sub: string }[] = [
 const DAYS = ["M","T","W","T","F","S","S"];
 const DAY_INDEX = [1,2,3,4,5,6,0];
 
-const EQUIPMENT = ["Barbell","Dumbbells","Pull-up bar","Bands","Bike","Treadmill","Sauna","Cold plunge","Bodyweight only"];
+// 4 environment presets replace the previous 9-item granular list.
+// User feedback: "tee välinevalinnasta todella simppeli esim full gym jne."
+// The AI program generator expands these into fine-grained equipment lists
+// via expandEquipmentPresets() in src/lib/coach/equipment-presets.ts.
+const EQUIPMENT_PRESETS: { id: string; label: string; emoji: string; sub: string }[] = [
+  { id: "full_gym",      label: "Full gym",           emoji: "🏋️", sub: "Barbells, racks, machines" },
+  { id: "home_minimal",  label: "Home minimal",       emoji: "🏠", sub: "Bodyweight + dumbbells + bands" },
+  { id: "outdoor",       label: "Outdoor / running",  emoji: "🌳", sub: "Runs, hikes, calisthenics" },
+  { id: "combat_sport",  label: "Combat / sport gym", emoji: "🥊", sub: "Bags, mats, partner work" },
+];
 const DIET = ["Omnivore","Vegetarian","Vegan","Lactose-free","Gluten-free","Halal","Keto"];
 const INJURIES = ["Lower back","Knee","Shoulder","Hip","Wrist","Elbow","Neck"];
 
@@ -339,12 +348,29 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
       sub: "Optional. Tap what applies — or skip ahead.",
       content: (
         <div className="space-y-5">
-          <Field label="Equipment you have">
-            <div className="flex flex-wrap gap-1.5">
-              {EQUIPMENT.map(e => (
-                <Chip key={e} small active={draft.equipment.includes(e)} onClick={() => toggle("equipment", e)}>{e}</Chip>
+          <Field label="Where do you train?">
+            <div className="grid grid-cols-2 gap-2">
+              {EQUIPMENT_PRESETS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => { hapticImpact("light"); toggle("equipment", p.id); }}
+                  className={cn(
+                    "rounded-2xl border px-3 py-2.5 text-left transition-all active:scale-[0.97]",
+                    draft.equipment.includes(p.id)
+                      ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)]"
+                      : "border-border/40 bg-card/40 hover:bg-card/60",
+                  )}
+                >
+                  <div className="text-lg mb-0.5">{p.emoji}</div>
+                  <div className="text-[12px] font-bold leading-tight">{p.label}</div>
+                  <div className="text-[10px] text-muted-foreground leading-snug mt-0.5">{p.sub}</div>
+                </button>
               ))}
             </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              Pick any that apply — the program adapts to what you actually have.
+            </p>
           </Field>
           <Field label="Injuries / no-go zones">
             <div className="flex flex-wrap gap-1.5">

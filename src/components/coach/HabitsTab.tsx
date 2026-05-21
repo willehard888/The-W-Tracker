@@ -27,8 +27,9 @@ const HabitsTab = () => {
           </p>
         </div>
         <p className="text-[12px] text-muted-foreground leading-snug">
-          Pick up to 5 protocols you want to compound. Daily check-offs build streaks
-          and unlock 5 levels — Spark → Rhythm → Locked-in → Compound → Identity.
+          Pick up to 8 protocols you want to compound — ideally spread across
+          the 6 health pillars. Daily check-offs build streaks and unlock 5
+          levels: Spark → Rhythm → Locked-in → Compound → Identity.
         </p>
         <Button
           variant="ember-glass"
@@ -45,7 +46,7 @@ const HabitsTab = () => {
         <div className="rounded-2xl border border-dashed border-border/60 bg-card/40 p-6 text-center">
           <p className="text-[13px] font-bold mb-1">No active habits yet</p>
           <p className="text-[11px] text-muted-foreground mb-4">
-            Open the library and add up to 5 evidence-graded protocols.
+            Open the library and add up to 8 evidence-graded protocols.
           </p>
           <Button variant="gold" size="sm" onClick={() => navigate("/coach/library")}>
             <Plus size={13} /> Add your first habit

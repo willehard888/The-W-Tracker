@@ -186,22 +186,41 @@ echo ""
 echo "  ▸ Restore pass complete. See Step 6 for verification."
 echo ""
 
-# ── Step 4a: Backfill auth.users.instance_id ──────────────────────────────
-# Lovable's auth.users INSERTs don't include an instance_id column, so
-# every restored user lands with instance_id=NULL. Supabase Auth (GoTrue)
-# hard-codes its lookup as
-#   WHERE instance_id = '00000000-0000-0000-0000-000000000000' AND id = $1
-# (see github.com/supabase/auth FindUserByID), so NULL-instance users
-# return "User not found" on every signInWithIdToken call — silently
-# breaking Apple/Google sign-in for every migrated user. Backfill the
-# default instance UUID so the lookups succeed.
-echo "  ▸ Backfilling NULL instance_id on migrated auth.users…"
+# ── Step 4a: Backfill required-but-NULL auth.users columns ────────────────
+# Lovable's pg_dump INSERTs only the user-data columns and skips Supabase
+# Auth's internal control columns. The result is migrated users have NULL
+# values where Supabase Auth expects sentinel defaults. Symptoms when
+# unfixed: signInWithIdToken returns "User not found" 400; PostgREST
+# session JWTs are rejected because aud claim is missing; etc.
+#
+# Backfill ALL of these on every restored row:
+#   instance_id   → '00000000-...'  (GoTrue FindUserByID filters on this)
+#   aud           → 'authenticated' (PostgREST issues JWTs with this aud)
+#   role          → 'authenticated' (RLS policies often check this)
+#   is_*          → false (NULL booleans trip up some Go null-checks)
+#   *_token       → '' (varchar columns Supabase Auth scans for state)
+#   email_change_confirm_status → 0 (int default)
+echo "  ▸ Backfilling NULL columns on migrated auth.users…"
 psql -v ON_ERROR_STOP=1 "$DEST_URL" <<'SQL'
 UPDATE auth.users
-SET instance_id = '00000000-0000-0000-0000-000000000000'
-WHERE instance_id IS NULL;
+SET
+  instance_id    = COALESCE(instance_id,    '00000000-0000-0000-0000-000000000000'::uuid),
+  aud            = COALESCE(aud,            'authenticated'),
+  role           = COALESCE(role,           'authenticated'),
+  is_super_admin = COALESCE(is_super_admin, false),
+  is_sso_user    = COALESCE(is_sso_user,    false),
+  is_anonymous   = COALESCE(is_anonymous,   false),
+  confirmation_token          = COALESCE(confirmation_token,          ''),
+  recovery_token              = COALESCE(recovery_token,              ''),
+  email_change_token_new      = COALESCE(email_change_token_new,      ''),
+  email_change                = COALESCE(email_change,                ''),
+  phone_change                = COALESCE(phone_change,                ''),
+  phone_change_token          = COALESCE(phone_change_token,          ''),
+  email_change_token_current  = COALESCE(email_change_token_current,  ''),
+  reauthentication_token      = COALESCE(reauthentication_token,      ''),
+  email_change_confirm_status = COALESCE(email_change_confirm_status, 0);
 SQL
-echo "  ✅ instance_id backfilled"
+echo "  ✅ auth.users columns backfilled"
 echo ""
 
 # ── Step 4b: Re-grant public-schema privileges ────────────────────────────

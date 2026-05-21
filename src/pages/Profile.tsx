@@ -1,5 +1,6 @@
 
 import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy, CreditCard, Medal, Moon, Trash2 } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { isNativePlatform } from "@/lib/platform";
 import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
@@ -47,6 +48,11 @@ const Profile = () => {
     open: false,
     variant: "stats",
   });
+  // Tabbed Profile (B2 polish pass): three sections — Stats (default, the
+  // "is my work paying off?" view), Badges (the trophy case), Settings
+  // (sign-out + delete + subscription management). The hero card above
+  // stays always visible because it's the identity.
+  const [profileTab, setProfileTab] = useState<"stats" | "badges" | "settings">("stats");
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -458,9 +464,19 @@ const Profile = () => {
         <div className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
       </div>
 
+      <Tabs value={profileTab} onValueChange={(v) => setProfileTab(v as typeof profileTab)} className="w-full">
+        <TabsList className="w-full grid grid-cols-3 h-auto p-1 mb-4">
+          <TabsTrigger value="stats">Stats</TabsTrigger>
+          <TabsTrigger value="badges">Badges</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+
+        {/* ─────────────────────── STATS TAB ─────────────────────── */}
+        <TabsContent value="stats" className="space-y-3 mt-0">
+
       {/* Rank Position */}
       {rankData && (
-        <div className="animate-reveal animate-reveal-delay-1 mb-3">
+        <div className="animate-reveal animate-reveal-delay-1">
           <RankPressureCard
             tier={tier}
             rank={rankData.rank}
@@ -472,243 +488,40 @@ const Profile = () => {
         </div>
       )}
 
-      {/* Road to Elite — earned status progress (hidden once earned) */}
-      <div className="mb-3 animate-reveal animate-reveal-delay-1">
-        <RoadToElite />
-      </div>
-
       {/* Live Rivals — who's ahead, who's behind */}
-      <div className="mb-3 animate-reveal animate-reveal-delay-1">
+      <div className="animate-reveal animate-reveal-delay-1">
         <LiveRivals userId={profile.user_id} myScore={Number((profile as any).rank_score) || 0} />
       </div>
 
-      {/* Membership status (subscriber line — earned-tier crown lives in hero) */}
-      {isElite && (
-        <div className="mb-3 animate-reveal animate-reveal-delay-1 rounded-xl border border-border/60 bg-card/40 p-3 flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
-            <CreditCard size={14} className="text-emerald-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-bold tracking-wider uppercase text-emerald-400/90">
-              Membership active
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              Member since {profile.created_at ? format(new Date(profile.created_at), "MMM yyyy") : "—"}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Weekly Sleep Stats — prominent (moved under Position) */}
-      {weeklySleep && (
-        <div className="mb-3 animate-reveal animate-reveal-delay-1">
-          <div className={cn(
-            "rounded-2xl border-2 p-5 glass-3d depth-realistic",
-            weeklySleep.multiplier >= 1 ? "border-emerald-500/50 shadow-emerald-500/20" :
-            weeklySleep.multiplier >= 0.85 ? "border-yellow-500/50 shadow-yellow-500/20" :
-            "border-red-500/50 shadow-red-500/20"
-          )}>
-            <div className="flex items-center gap-2 mb-3">
-              <Moon size={22} className={cn(
-                weeklySleep.multiplier >= 1 ? "text-emerald-400" :
-                weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
-              )} />
-              <h2 className="font-display font-black text-lg tracking-tight">Weekly Sleep</h2>
-              <span className="ml-auto text-base font-bold tabular-nums">
-                {weeklySleep.avg}h avg ({weeklySleep.days} days)
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-base">
-              <span className="text-muted-foreground font-semibold">XP Multiplier</span>
-              <span className={cn(
-                "font-display font-black text-2xl",
-                weeklySleep.multiplier >= 1 ? "text-emerald-400" :
-                weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
-              )}>
-                {weeklySleep.multiplier >= 1 ? "100% ✓" : `${Math.round(weeklySleep.multiplier * 100)}% ⚠️`}
-              </span>
-            </div>
-            {weeklySleep.multiplier < 1 && (
-              <p className="text-xs text-muted-foreground mt-2">
-                {weeklySleep.isChronicOversleep
-                  ? `Chronic oversleep — ${weeklySleep.oversleepCount} nights of 10h+ this week. Aim for 7.5–9h.`
-                  : weeklySleep.avg < 7.5
-                  ? "Sleep 7.5–9 hours to earn full XP"
-                  : "Occasional long sleep is fine — keep most nights at 7.5–9h"}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Season Champion — moved under Position */}
-      {championHistory && championHistory.wins > 0 && (
-        <div className="mb-6 animate-reveal animate-reveal-delay-1">
-          <div className="rounded-2xl border-2 border-gold/50 p-5 glow-gold glass-3d depth-realistic shadow-gold/20">
-            <div className="flex items-center gap-2 mb-4">
-              <Medal size={24} className="text-gold drop-shadow-[0_0_8px_hsl(42_78%_54%/0.6)]" />
-              <h2 className="font-display font-black text-xl tracking-tight">Season Champion</h2>
-              <span className="ml-auto text-gold font-display font-black text-2xl">{championHistory.wins}x</span>
-            </div>
-            <div className="space-y-2">
-              {championHistory.seasons.map((s: any, i: number) => (
-                <div key={i} className="flex items-center justify-between text-base">
-                  <span className="text-muted-foreground font-medium">{s.name}</span>
-                  <span className="font-display font-bold tabular-nums text-foreground">{(s.points ?? 0).toLocaleString()} XP</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Actions */}
-      <div className="flex gap-2 mb-3 animate-reveal animate-reveal-delay-1">
-        <Button
-          variant="gold-outline"
-          size="sm"
-          className="flex-1"
-          onClick={() => setShareModal({ open: true, variant: "stats" })}
-        >
-          <Image size={14} />
-          Share Stats
-        </Button>
-        <Button
-          variant="gold-outline"
-          size="sm"
-          className="flex-1"
-          onClick={() => setShareModal({ open: true, variant: "streak" })}
-        >
-          <Flame size={14} />
-          Share Streak
-        </Button>
-      </div>
-      <div className="flex gap-2 mb-3 animate-reveal animate-reveal-delay-1">
-        <Button variant="gold-outline" size="sm" className="flex-1" onClick={() => navigate("/referrals")}>
-          <Users size={14} />
-          Invite Friends
-        </Button>
-        <Button variant="gold-outline" size="sm" className="flex-1" onClick={() => navigate("/badges/compare")}>
-          <GitCompare size={14} />
-          Compare Badges
-        </Button>
-      </div>
-      {isElite && (
-        <div className="flex gap-2 mb-3 animate-reveal animate-reveal-delay-1">
-          <Button
-            variant="gold-outline"
-            size="sm"
-            className="flex-1"
-            onClick={() => {
-              if (isNativePlatform()) {
-                // iOS: open App Store subscription management
-                window.open("https://apps.apple.com/account/subscriptions", "_blank");
-              } else {
-                // Web: open Stripe customer portal
-                supabase.functions.invoke("customer-portal").then(({ data, error }) => {
-                  if (data?.url) window.open(data.url, "_blank");
-                  else toast.error("Could not open subscription management");
-                });
-              }
-            }}
-          >
-            <CreditCard size={14} />
-            Manage Subscription
-          </Button>
-        </div>
-      )}
-      <div className="flex gap-2 mb-6 animate-reveal animate-reveal-delay-1">
-        <Button variant="secondary" size="sm" className="flex-1" onClick={signOut}>
-          <LogOut size={14} />
-          Sign Out
-        </Button>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="outline" size="sm" className="flex-1">
-              <Trash2 size={14} />
-              Delete Account
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This permanently removes your account and profile. If you have an active subscription, cancel it first from subscription management so billing stops correctly.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Keep Account</AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                onClick={async () => {
-                  setDeletingAccount(true);
-                  try {
-                    const { error } = await supabase.functions.invoke("delete-account");
-                    if (error) throw error;
-                    await signOut();
-                    toast.success("Account deleted");
-                    navigate("/landing", { replace: true });
-                  } catch {
-                    toast.error("Could not delete account");
-                  } finally {
-                    setDeletingAccount(false);
-                  }
-                }}
-                disabled={deletingAccount}
-              >
-                {deletingAccount ? "Deleting..." : "Delete Permanently"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-
-      {/* Stats */}
-      <div className="flex flex-col gap-3 mb-6 animate-reveal animate-reveal-delay-2">
+      {/* Stats — battles + kudos */}
+      <div className="flex flex-col gap-3 animate-reveal animate-reveal-delay-2">
         <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
         <StatCard icon={Trophy} label="Kudos Received" value={kudosReceived || 0} variant="gold" />
       </div>
 
       {/* Your Blueprint — Coach's read of who you are. Renders null when
-          the user hasn't completed AthleteProfileOnboarding yet, so this
-          space stays clean for pre-onboarded users.
-          Wrapped in an ErrorBoundary so a hook fault here can't crash
-          the rest of the Profile page. */}
-      <div className="mb-3 animate-reveal animate-reveal-delay-2">
+          the user hasn't completed AthleteProfileOnboarding yet. */}
+      <div className="animate-reveal animate-reveal-delay-2">
         <ErrorBoundary fallback={<></>}>
           <YourBlueprintCard />
         </ErrorBoundary>
       </div>
 
-      {/* Coach voice: one-line read of the week through Coach's eyes,
-          in the user's preferred tone. Pure derivation from existing
-          data — no extra AI call. Wrapped in ErrorBoundary so a hook
-          fault can never crash the profile page. */}
-      <div className="mb-6 animate-reveal animate-reveal-delay-2">
+      {/* Coach voice: one-line read of the week through Coach's eyes. */}
+      <div className="animate-reveal animate-reveal-delay-2">
         <ErrorBoundary fallback={<></>}>
           <ProfileCoachLine />
         </ErrorBoundary>
       </div>
 
       {/* Tier Ladder — full progression map */}
-      <div className="mb-6 animate-reveal animate-reveal-delay-3">
-        <TierLadder currentTier={profile.status_tier || "recruit"} isApexSubscriber={isApexSubscriber} />
-      </div>
-
       <div className="animate-reveal animate-reveal-delay-3">
-        <BadgeVault
-          allBadges={allBadges || []}
-          earnedBadgeIds={earnedBadgeIds || []}
-          progress={badgeProgress}
-          featuredBadgeId={profile.featured_badge_id}
-          onBadgeClick={(b) => setPreviewBadge(b)}
-          onSetFeatured={handleSetFeatured}
-        />
+        <TierLadder currentTier={profile.status_tier || "recruit"} isApexSubscriber={isApexSubscriber} />
       </div>
 
       {/* User Posts */}
       {userPosts && userPosts.length > 0 && (
-        <div className="mt-6 animate-reveal animate-reveal-delay-4">
+        <div className="animate-reveal animate-reveal-delay-4">
           <h2 className="font-display font-bold text-base mb-3 tracking-tight">Posts ({userPosts.length})</h2>
           <div className="space-y-3">
             {userPosts.map((post) => (
@@ -729,13 +542,206 @@ const Profile = () => {
         </div>
       )}
 
-      {/* Membership CTA removed — the paywall was dismantled in commit
-          {prior-paywall-removal-sha}: AccessGate became a pass-through and
-          AuthContext.isElite is true whenever user+profile are loaded. This
-          Profile.tsx block was missed in that sweep because it read the raw
-          profile.is_elite field directly instead of the context-overridden
-          isElite, so the CTA kept appearing for free users even though
-          there was nowhere paywalled to navigate to. */}
+        </TabsContent>
+
+        {/* ─────────────────────── BADGES TAB ─────────────────────── */}
+        <TabsContent value="badges" className="space-y-3 mt-0">
+          <div className="animate-reveal animate-reveal-delay-1">
+            <BadgeVault
+              allBadges={allBadges || []}
+              earnedBadgeIds={earnedBadgeIds || []}
+              progress={badgeProgress}
+              featuredBadgeId={profile.featured_badge_id}
+              onBadgeClick={(b) => setPreviewBadge(b)}
+              onSetFeatured={handleSetFeatured}
+            />
+          </div>
+        </TabsContent>
+
+        {/* ─────────────────────── SETTINGS TAB ─────────────────────── */}
+        <TabsContent value="settings" className="space-y-3 mt-0">
+
+          {/* Road to Elite — earned status progress (hidden once earned) */}
+          <div className="animate-reveal animate-reveal-delay-1">
+            <RoadToElite />
+          </div>
+
+          {/* Weekly Sleep stats — recovery context for the settings tab is helpful when reviewing membership */}
+          {weeklySleep && (
+            <div className="animate-reveal animate-reveal-delay-1">
+              <div className={cn(
+                "rounded-2xl border-2 p-5 glass-3d depth-realistic",
+                weeklySleep.multiplier >= 1 ? "border-emerald-500/50 shadow-emerald-500/20" :
+                weeklySleep.multiplier >= 0.85 ? "border-yellow-500/50 shadow-yellow-500/20" :
+                "border-red-500/50 shadow-red-500/20"
+              )}>
+                <div className="flex items-center gap-2 mb-3">
+                  <Moon size={22} className={cn(
+                    weeklySleep.multiplier >= 1 ? "text-emerald-400" :
+                    weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
+                  )} />
+                  <h2 className="font-display font-black text-lg tracking-tight">Weekly Sleep</h2>
+                  <span className="ml-auto text-base font-bold tabular-nums">
+                    {weeklySleep.avg}h avg ({weeklySleep.days} days)
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-base">
+                  <span className="text-muted-foreground font-semibold">XP Multiplier</span>
+                  <span className={cn(
+                    "font-display font-black text-2xl",
+                    weeklySleep.multiplier >= 1 ? "text-emerald-400" :
+                    weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
+                  )}>
+                    {weeklySleep.multiplier >= 1 ? "100% ✓" : `${Math.round(weeklySleep.multiplier * 100)}% ⚠️`}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Membership status (subscriber line — earned-tier crown lives in hero) */}
+          {isElite && (
+            <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border/60 bg-card/40 p-3 flex items-center gap-3">
+              <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <CreditCard size={14} className="text-emerald-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-bold tracking-wider uppercase text-emerald-400/90">
+                  Membership active
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  Member since {profile.created_at ? format(new Date(profile.created_at), "MMM yyyy") : "—"}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Season Champion — past wins */}
+          {championHistory && championHistory.wins > 0 && (
+            <div className="animate-reveal animate-reveal-delay-1">
+              <div className="rounded-2xl border-2 border-gold/50 p-5 glow-gold glass-3d depth-realistic shadow-gold/20">
+                <div className="flex items-center gap-2 mb-4">
+                  <Medal size={24} className="text-gold drop-shadow-[0_0_8px_hsl(42_78%_54%/0.6)]" />
+                  <h2 className="font-display font-black text-xl tracking-tight">Season Champion</h2>
+                  <span className="ml-auto text-gold font-display font-black text-2xl">{championHistory.wins}x</span>
+                </div>
+                <div className="space-y-2">
+                  {championHistory.seasons.map((s: any, i: number) => (
+                    <div key={i} className="flex items-center justify-between text-base">
+                      <span className="text-muted-foreground font-medium">{s.name}</span>
+                      <span className="font-display font-bold tabular-nums text-foreground">{(s.points ?? 0).toLocaleString()} XP</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Share + Invite + Compare buttons */}
+          <div className="flex gap-2 animate-reveal animate-reveal-delay-1">
+            <Button
+              variant="gold-outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => setShareModal({ open: true, variant: "stats" })}
+            >
+              <Image size={14} />
+              Share Stats
+            </Button>
+            <Button
+              variant="gold-outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => setShareModal({ open: true, variant: "streak" })}
+            >
+              <Flame size={14} />
+              Share Streak
+            </Button>
+          </div>
+          <div className="flex gap-2 animate-reveal animate-reveal-delay-1">
+            <Button variant="gold-outline" size="sm" className="flex-1" onClick={() => navigate("/referrals")}>
+              <Users size={14} />
+              Invite Friends
+            </Button>
+            <Button variant="gold-outline" size="sm" className="flex-1" onClick={() => navigate("/badges/compare")}>
+              <GitCompare size={14} />
+              Compare Badges
+            </Button>
+          </div>
+
+          {/* Manage Subscription (Elite only) */}
+          {isElite && (
+            <div className="flex gap-2 animate-reveal animate-reveal-delay-1">
+              <Button
+                variant="gold-outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => {
+                  if (isNativePlatform()) {
+                    window.open("https://apps.apple.com/account/subscriptions", "_blank");
+                  } else {
+                    supabase.functions.invoke("customer-portal").then(({ data, error }) => {
+                      if (data?.url) window.open(data.url, "_blank");
+                      else toast.error("Could not open subscription management");
+                    });
+                  }
+                }}
+              >
+                <CreditCard size={14} />
+                Manage Subscription
+              </Button>
+            </div>
+          )}
+
+          {/* Account actions */}
+          <div className="flex gap-2 pt-2 animate-reveal animate-reveal-delay-1">
+            <Button variant="secondary" size="sm" className="flex-1" onClick={signOut}>
+              <LogOut size={14} />
+              Sign Out
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="flex-1">
+                  <Trash2 size={14} />
+                  Delete Account
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This permanently removes your account and profile. If you have an active subscription, cancel it first from subscription management so billing stops correctly.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Keep Account</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={async () => {
+                      setDeletingAccount(true);
+                      try {
+                        const { error } = await supabase.functions.invoke("delete-account");
+                        if (error) throw error;
+                        await signOut();
+                        toast.success("Account deleted");
+                        navigate("/landing", { replace: true });
+                      } catch {
+                        toast.error("Could not delete account");
+                      } finally {
+                        setDeletingAccount(false);
+                      }
+                    }}
+                    disabled={deletingAccount}
+                  >
+                    {deletingAccount ? "Deleting..." : "Delete Permanently"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

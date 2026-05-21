@@ -186,6 +186,24 @@ echo ""
 echo "  ▸ Restore pass complete. See Step 6 for verification."
 echo ""
 
+# ── Step 4a: Backfill auth.users.instance_id ──────────────────────────────
+# Lovable's auth.users INSERTs don't include an instance_id column, so
+# every restored user lands with instance_id=NULL. Supabase Auth (GoTrue)
+# hard-codes its lookup as
+#   WHERE instance_id = '00000000-0000-0000-0000-000000000000' AND id = $1
+# (see github.com/supabase/auth FindUserByID), so NULL-instance users
+# return "User not found" on every signInWithIdToken call — silently
+# breaking Apple/Google sign-in for every migrated user. Backfill the
+# default instance UUID so the lookups succeed.
+echo "  ▸ Backfilling NULL instance_id on migrated auth.users…"
+psql -v ON_ERROR_STOP=1 "$DEST_URL" <<'SQL'
+UPDATE auth.users
+SET instance_id = '00000000-0000-0000-0000-000000000000'
+WHERE instance_id IS NULL;
+SQL
+echo "  ✅ instance_id backfilled"
+echo ""
+
 # ── Step 4b: Re-grant public-schema privileges ────────────────────────────
 # DROP SCHEMA public CASCADE (Step 2) wiped the implicit GRANTs Supabase
 # maintains for anon/authenticated/service_role on the public schema, and

@@ -135,16 +135,25 @@ async function performAppleSignIn(options?: {
     const scopes = options?.hideEmail ? "name" : "email name";
     const isNative = Capacitor.isNativePlatform();
 
-    // CRITICAL: the @capacitor-community/apple-sign-in plugin hashes the
-    // nonce ITSELF on iOS (SHA-256) before passing to ASAuthorizationController.
-    // On web it does NOT (it uses Apple JS SDK which expects pre-hashed).
-    // So we pass:
-    //   - iOS native: rawNonce  (plugin will sha256 it → Apple JWT has sha256(raw))
-    //   - Web:        hashedNonce (sent as-is → Apple JWT has sha256(raw))
-    // Either way, Apple's JWT has sha256(rawNonce) in its nonce claim, and
-    // we send rawNonce to Supabase. Supabase hashes it and matches the JWT.
-    // (Double-hashing on native was the cause of the 400 from /token.)
-    const nonceForPlugin = isNative ? rawNonce : hashedNonce;
+    // Apple Sign In nonce protocol (verified against plugin source +
+    // Apple's official sample code at developer.apple.com):
+    //
+    // The @capacitor-community/apple-sign-in iOS plugin (Plugin.swift line 18)
+    // passes `request.nonce = call.getString("nonce")` VERBATIM — no hashing.
+    // Apple's own sample (developer.apple.com/...sign_in_with_apple) calls
+    // `request.nonce = sha256(rawNonce)` and stores rawNonce client-side for
+    // later verification. So we must pre-hash before passing to the plugin.
+    //
+    // Then Apple's server stores OUR submitted nonce (which is sha256(raw))
+    // in the JWT verbatim. Supabase hashes the rawNonce we send and compares
+    // sha256(rawNonce) to JWT.nonce — they match because JWT.nonce IS
+    // sha256(rawNonce).
+    //
+    // For web, the @apple/sign-in-with-apple JS SDK behaves the same way:
+    // it does NOT hash; we send hashed → Apple stores hashed → matches.
+    //
+    // Same recipe on both platforms:
+    const nonceForApple = hashedNonce;
 
     updateOauthDebug({
       redirectUri: isNative ? "(native)" : WEB_REDIRECT_URI,
@@ -158,15 +167,15 @@ async function performAppleSignIn(options?: {
     pushIosDebugLog("AppleAuth", "Calling SignInWithApple.authorize", {
       platform: Capacitor.getPlatform(),
       scopes,
-      isNative,
-      noncePassedRaw: isNative,
+      rawNoncePreview: rawNonce.slice(0, 8) + "…",
+      hashedNoncePreview: hashedNonce.slice(0, 16) + "…",
     });
 
     const response: SignInWithAppleResponse = await SignInWithApple.authorize({
       clientId: APPLE_CLIENT_ID,
       redirectURI: WEB_REDIRECT_URI,
       scopes,
-      nonce: nonceForPlugin,
+      nonce: nonceForApple,
       // state can be any string Apple echoes back. We use the hashed nonce
       // so it's a non-correlatable opaque token to the user.
       state: hashedNonce.slice(0, 32),
@@ -179,17 +188,36 @@ async function performAppleSignIn(options?: {
       return { error: new Error("Apple sign-in failed. Please try again.") };
     }
 
+    // Decode the JWT.nonce claim so we can SEE what Apple actually stored.
+    // This is the smoking gun for nonce-mismatch debugging.
+    let jwtNonceClaim: string | null = null;
+    let jwtAudience: string | null = null;
+    try {
+      const payloadB64 = identityToken.split(".")[1] ?? "";
+      const padded = payloadB64 + "==".slice(payloadB64.length % 4);
+      const decoded = JSON.parse(atob(padded.replace(/-/g, "+").replace(/_/g, "/")));
+      jwtNonceClaim = (decoded?.nonce as string | undefined) ?? null;
+      jwtAudience = (decoded?.aud as string | undefined) ?? null;
+    } catch {
+      // ignore — diagnostic only
+    }
+
     pushIosDebugLog("AppleAuth", "Apple returned identityToken — exchanging with Supabase", {
       hasEmail: Boolean(response.response.email),
       hasGivenName: Boolean(response.response.givenName),
+      jwtNonceClaim,
+      jwtAudience,
+      jwtNonceEqualsHashed: jwtNonceClaim === hashedNonce,
+      jwtNonceEqualsSha256Hashed: jwtNonceClaim !== null
+        ? jwtNonceClaim === (await sha256Hex(hashedNonce))
+        : null,
     });
 
     const { data, error } = await supabase.auth.signInWithIdToken({
       provider: "apple",
       token: identityToken,
-      // Supabase hashes this raw nonce internally and compares against the
-      // hashed nonce embedded in Apple's JWT — must be the RAW (pre-hash)
-      // value, not the hashed one we sent to Apple.
+      // Supabase hashes this raw nonce and compares to JWT.nonce. We send
+      // the RAW nonce (not the hashed one).
       nonce: rawNonce,
     });
 

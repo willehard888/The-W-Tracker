@@ -73,7 +73,24 @@ export const useAthleteProfile = () => {
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
-      return (data ?? null) as unknown as AthleteProfile | null;
+      if (!data) return null;
+
+      // Normalize at the boundary — every consumer downstream assumes arrays
+      // exist and are iterable. The holistic migration (20260511181220) added
+      // hobbies / mental_health_focus etc. that may not exist on Lovable-
+      // imported rows, so we backfill empty arrays here rather than crashing
+      // at every .length / .map / .join callsite.
+      const raw = data as any;
+      const normalized: AthleteProfile = {
+        ...raw,
+        training_days_pref: Array.isArray(raw.training_days_pref) ? raw.training_days_pref : [],
+        injuries:            Array.isArray(raw.injuries)            ? raw.injuries            : [],
+        dietary:             Array.isArray(raw.dietary)             ? raw.dietary             : [],
+        equipment:           Array.isArray(raw.equipment)           ? raw.equipment           : [],
+        hobbies:             Array.isArray(raw.hobbies)             ? raw.hobbies             : [],
+        mental_health_focus: Array.isArray(raw.mental_health_focus) ? raw.mental_health_focus : [],
+      };
+      return normalized;
     },
   });
 

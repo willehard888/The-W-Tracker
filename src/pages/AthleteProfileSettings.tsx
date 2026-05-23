@@ -103,29 +103,30 @@ const AthleteProfileSettings = () => {
         <Section title="Schedule">
           <Row label="Wake" value={profile.wake_time?.slice(0,5) ?? "—"} />
           <Row label="Sleep" value={profile.sleep_time?.slice(0,5) ?? "—"} />
-          <Row label="Training days" value={profile.training_days_pref.map(d => DAY_NAMES[d]).join(", ") || "—"} />
-          <Row label="Session length" value={`${profile.preferred_session_length_min} min`} />
-          <Row label="Timezone" value={profile.timezone} />
+          <Row label="Training days" value={(profile.training_days_pref ?? []).map(d => DAY_NAMES[d]).join(", ") || "—"} />
+          <Row label="Session length" value={profile.preferred_session_length_min ? `${profile.preferred_session_length_min} min` : "—"} />
+          <Row label="Timezone" value={profile.timezone ?? "—"} />
         </Section>
 
         <Section title="Constraints">
-          <Row label="Injuries" value={profile.injuries.join(", ") || "None"} />
-          <Row label="Diet" value={profile.dietary.join(", ") || "Omnivore"} />
-          <Row label="Equipment" value={profile.equipment.join(", ") || "Bodyweight only"} />
+          <Row label="Injuries" value={(profile.injuries ?? []).join(", ") || "None"} />
+          <Row label="Diet" value={(profile.dietary ?? []).join(", ") || "Omnivore"} />
+          <Row label="Equipment" value={(profile.equipment ?? []).join(", ") || "Bodyweight only"} />
         </Section>
 
         {/* Mind & life — holistic well-being fields (migration 20260511181220).
-            Rendered after Constraints so the visual rhythm stays
-            physical → schedule → constraints → mind → coach style. */}
+            Null-safe access because columns may not exist on legacy rows
+            (the holistic migration wasn't always applied on Lovable-imported
+            profiles). Defaults render as "—" rather than crashing the page. */}
         <Section title="Mind & life">
-          <Row label="Hobbies" value={profile.hobbies.length > 0 ? profile.hobbies.join(", ") : "—"} />
-          <Row label="Stress" value={formatScale(profile.stress_baseline, STRESS_EMOJI)} />
-          <Row label="Mood"   value={formatScale(profile.mood_baseline, MOOD_EMOJI)} />
+          <Row label="Hobbies" value={(profile.hobbies ?? []).length > 0 ? (profile.hobbies ?? []).join(", ") : "—"} />
+          <Row label="Stress" value={formatScale(profile.stress_baseline ?? null, STRESS_EMOJI)} />
+          <Row label="Mood"   value={formatScale(profile.mood_baseline ?? null, MOOD_EMOJI)} />
           <Row
             label="Focus areas"
             value={
-              profile.mental_health_focus.length > 0
-                ? profile.mental_health_focus
+              (profile.mental_health_focus ?? []).length > 0
+                ? (profile.mental_health_focus ?? [])
                     .map((m) => MENTAL_FOCUS_LABEL[m] ?? m)
                     .join(", ")
                 : "—"
@@ -135,8 +136,8 @@ const AthleteProfileSettings = () => {
         </Section>
 
         <Section title="Coach style">
-          <Row label="Tone" value={TONES[profile.tone_pref]} />
-          <Row label="Language" value={profile.language_pref.toUpperCase()} />
+          <Row label="Tone" value={profile.tone_pref ? (TONES[profile.tone_pref] ?? "—") : "—"} />
+          <Row label="Language" value={profile.language_pref ? profile.language_pref.toUpperCase() : "—"} />
         </Section>
 
         <Button variant="ember" size="lg" className="w-full" onClick={() => setEditing(true)}>

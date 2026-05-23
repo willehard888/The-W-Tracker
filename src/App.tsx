@@ -42,6 +42,13 @@ const AppleUsername = lazy(() => import("./pages/AppleUsername"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Coach = lazy(() => import("./pages/Coach"));
 const AthleteProfileSettings = lazy(() => import("./pages/AthleteProfileSettings"));
+const CoachHabits = lazy(() => import("./pages/CoachHabits"));
+const CoachReflect = lazy(() => import("./pages/CoachReflect"));
+const CoachGoal = lazy(() => import("./pages/CoachGoal"));
+const CoachProgress = lazy(() => import("./pages/CoachProgress"));
+const CoachProgramDetail = lazy(() => import("./pages/CoachProgramDetail"));
+const CoachMemoryScreen = lazy(() => import("./pages/CoachMemoryScreen"));
+const ProtocolLibrary = lazy(() => import("./pages/ProtocolLibrary"));
 const Tribes = lazy(() => import("./pages/Tribes"));
 
 const queryClient = new QueryClient({
@@ -118,6 +125,13 @@ const AppRoutes = () => {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/coach" element={<ProtectedRoute><Coach /></ProtectedRoute>} />
           <Route path="/coach/profile" element={<ProtectedRoute><AthleteProfileSettings /></ProtectedRoute>} />
+          <Route path="/coach/habits" element={<ProtectedRoute><CoachHabits /></ProtectedRoute>} />
+          <Route path="/coach/reflect" element={<ProtectedRoute><CoachReflect /></ProtectedRoute>} />
+          <Route path="/coach/goal" element={<ProtectedRoute><CoachGoal /></ProtectedRoute>} />
+          <Route path="/coach/progress" element={<ProtectedRoute><CoachProgress /></ProtectedRoute>} />
+          <Route path="/coach/program" element={<ProtectedRoute><CoachProgramDetail /></ProtectedRoute>} />
+          <Route path="/coach/memory" element={<ProtectedRoute><CoachMemoryScreen /></ProtectedRoute>} />
+          <Route path="/coach/library" element={<ProtectedRoute><ProtocolLibrary /></ProtectedRoute>} />
           <Route path="/tribes" element={<ProtectedRoute><Tribes /></ProtectedRoute>} />
           <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
           <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />

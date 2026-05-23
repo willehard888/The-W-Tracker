@@ -7,7 +7,7 @@ import { useTodayReflection } from "@/hooks/use-coach-reflection";
 import { useRecentCheckins } from "@/hooks/use-recent-checkins";
 import { useUserHabits } from "@/hooks/use-user-habits";
 import { PILLARS } from "@/lib/wellness-framework";
-import { findWeakestPillar } from "@/lib/coach/pick-free-move";
+import { findWeakestPillarSmart } from "@/lib/coach/pick-free-move";
 
 /**
  * Card 1 — Tila (State).
@@ -29,8 +29,8 @@ const StateCard = () => {
   const signal = useMemo(() => {
     if (!recent || recent.length === 0) {
       return {
-        headline: "No data yet — log your first check-in",
-        detail: "Tap the check-in tab to start your streak.",
+        headline: "No check-ins yet — your first one starts the read",
+        detail: "Tap the Check-in tab below.",
         sleepAvg: null as number | null,
         hydrationAvg: null as number | null,
       };
@@ -39,6 +39,8 @@ const StateCard = () => {
     const hydroAvg = recent.reduce((s, r) => s + r.hydration_liters, 0) / recent.length;
     const meditationDays = recent.filter((r) => r.meditation_morning || r.meditation_evening).length;
 
+    // Headline picks the weakest signal so the user knows where to push.
+    // "Foundation looks clean" only fires if every input is in the green zone.
     let headline: string;
     if (sleepAvg < 7) {
       headline = `Slept ${sleepAvg.toFixed(1)}h avg — sleep is dragging recovery down`;
@@ -47,15 +49,27 @@ const StateCard = () => {
     } else if (meditationDays < 2) {
       headline = `Mindfulness barely registered this week — easy win`;
     } else {
-      headline = `${recent.length}-day streak running. Foundation looks clean.`;
+      headline = "Foundation looks clean. Stack the next lever.";
     }
     return { headline, detail: null, sleepAvg, hydrationAvg: hydroAvg };
   }, [recent]);
 
-  const weakestPillar = useMemo(
-    () => findWeakestPillar(habits.map((h) => h.protocol_id)),
-    [habits],
-  );
+  const weakestPillar = useMemo(() => {
+    // Build signals from recent check-ins so the picker uses real behaviour,
+    // not just "which pillar do you have fewest habits in." A first-time
+    // user with sub-7h sleep should see Sleep as weakest — not whatever the
+    // canonical-first pillar happens to be.
+    const signals = recent && recent.length > 0 ? {
+      sleepAvg: recent.reduce((s, r) => s + r.sleep_hours, 0) / recent.length,
+      hydrationAvg: recent.reduce((s, r) => s + r.hydration_liters, 0) / recent.length,
+      workoutDays: recent.filter((r) => r.workout).length,
+      meditationDays: recent.filter((r) => r.meditation_morning || r.meditation_evening).length,
+    } : undefined;
+    return findWeakestPillarSmart(
+      habits.map((h) => h.protocol_id),
+      signals,
+    );
+  }, [habits, recent]);
   const pillarMeta = PILLARS[weakestPillar];
 
   return (
@@ -105,7 +119,10 @@ const StateCard = () => {
         </div>
       )}
 
-      {/* Weakest pillar chip — tap to fill the gap */}
+      {/* Weakest pillar chip — tap to fill the gap.
+          Two-line layout: pillar name as the strong line, blurb as the
+          subtle context line below it. Avoids the truncated "Sleep —
+          Strongest single lever for e..." that looked broken. */}
       <button
         onClick={() => navigate(`/coach/library?pillar=${weakestPillar}`)}
         className={cn(
@@ -114,14 +131,17 @@ const StateCard = () => {
           "bg-card/40 hover:bg-card/70",
         )}
       >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span className="text-lg">{pillarMeta.emoji}</span>
-          <div className="text-left min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <span className="text-xl shrink-0">{pillarMeta.emoji}</span>
+          <div className="text-left min-w-0 flex-1">
+            <p className="text-[9.5px] font-black uppercase tracking-[0.18em] text-muted-foreground/85 mb-0.5">
               Weakest pillar
             </p>
-            <p className={cn("text-[13px] font-bold truncate", pillarMeta.tint.text)}>
-              {pillarMeta.name} — {pillarMeta.blurb}
+            <p className={cn("text-[13px] font-bold leading-tight", pillarMeta.tint.text)}>
+              {pillarMeta.name}
+            </p>
+            <p className="text-[10.5px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">
+              {pillarMeta.blurb}
             </p>
           </div>
         </div>

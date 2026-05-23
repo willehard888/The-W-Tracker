@@ -59,6 +59,33 @@ export function findWeakestPillar(
   return winner;
 }
 
+/** Recent check-in averages used to pick the weakest pillar from real data. */
+export interface CheckinSignals {
+  sleepAvg: number | null;        // 7d avg
+  hydrationAvg: number | null;    // 7d avg
+  workoutDays: number | null;     // 7d count
+  meditationDays: number | null;  // 7d count (morn or eve)
+}
+
+/**
+ * Smarter weakest-pillar picker — uses real signals first, falls back to
+ * the habit-count heuristic. Lets us tell a first-time user with sub-7h
+ * sleep that SLEEP is weakest, instead of arbitrarily defaulting to the
+ * canonical-first pillar.
+ */
+export function findWeakestPillarSmart(
+  activeProtocolIds: string[],
+  signals?: CheckinSignals,
+): PillarId {
+  if (signals) {
+    if (signals.sleepAvg !== null && signals.sleepAvg < 7) return "sleep";
+    if (signals.hydrationAvg !== null && signals.hydrationAvg < 2) return "nutrition";
+    if (signals.workoutDays !== null && signals.workoutDays < 3) return "movement";
+    if (signals.meditationDays !== null && signals.meditationDays < 2) return "stress";
+  }
+  return findWeakestPillar(activeProtocolIds);
+}
+
 const EVIDENCE_RANK: Record<EvidenceTier, number> = {
   strong: 0,
   promising: 1,

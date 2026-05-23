@@ -58,7 +58,7 @@ const ProtocolLibrary = () => {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="shrink-0 px-4 pt-3 pb-3 flex items-center justify-between border-b border-border/30 bg-background/70 backdrop-blur-xl">
+      <div className="shrink-0 px-4 pt-3 pb-3 flex items-center justify-between border-b border-border/30 bg-background">
         <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)} aria-label="Back">
           <ArrowLeft size={18} />
         </Button>

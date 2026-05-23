@@ -25,7 +25,29 @@ const ProtocolSheet = ({ protocol, open, onOpenChange, why }: Props) => {
   const { habits, addHabit } = useUserHabits();
   const [busy, setBusy] = useState(false);
 
-  if (!protocol) return null;
+  // Don't bail early if the parent passed null while the sheet is open —
+  // render a visible "loading / not found" fallback instead of an empty
+  // sheet (which on iOS Capacitor reads as a black page). Only return
+  // null when the sheet itself is closed.
+  if (!protocol) {
+    if (!open) return null;
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="bottom"
+          className="rounded-t-3xl border-t-2 max-h-[60vh] overflow-y-auto p-6"
+        >
+          <SheetHeader>
+            <SheetTitle className="font-display text-xl font-black">Protocol unavailable</SheetTitle>
+          </SheetHeader>
+          <p className="text-sm text-muted-foreground mt-2">
+            This protocol is no longer in the library. It may have been
+            removed or renamed. Tap close and browse the current library.
+          </p>
+        </SheetContent>
+      </Sheet>
+    );
+  }
   const pillar = PILLARS[protocol.pillar];
   const evMeta = EVIDENCE_META[protocol.evidence];
   const alreadyAdded = habits.some((h) => h.protocol_id === protocol.id);

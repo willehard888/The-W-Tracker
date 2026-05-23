@@ -1,0 +1,109 @@
+import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  isHealthKitAvailable,
+  requestHealthKitPermissions,
+  readTodaySnapshot,
+  type DaySnapshot,
+} from "@/lib/health/healthkit";
+
+/**
+ * useHealthKit — single React entry point for HealthKit syncing.
+ *
+ * Lifecycle:
+ *  1. On mount, probe `isHealthKitAvailable()` to know if we should even
+ *     surface a "connect" CTA.
+ *  2. When the user opts in (via `connect()`), request permissions, sync
+ *     today, and persist a snapshot via the `upsert_health_snapshot` RPC.
+ *  3. `syncToday()` can be called any time (after a check-in submit, on
+ *     manual refresh, on app foreground) to refresh.
+ *
+ * Web / Android / missing plugin → `available = false` and all calls
+ * resolve to no-ops, so consumer UI gracefully renders the "not
+ * available on this platform" state.
+ */
+export const useHealthKit = () => {
+  const { user } = useAuth();
+  const [available, setAvailable] = useState<boolean | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [lastSnapshot, setLastSnapshot] = useState<DaySnapshot | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    isHealthKitAvailable().then(setAvailable);
+  }, []);
+
+  const persistSnapshot = useCallback(async (snap: DaySnapshot) => {
+    if (!user?.id) return;
+    const { error: rpcErr } = await supabase.rpc("upsert_health_snapshot" as any, {
+      _date: snap.date,
+      _steps: snap.steps,
+      _workout_minutes: snap.workout_minutes,
+      _workout_count: snap.workout_count,
+      _sleep_hours: snap.sleep_hours,
+      _active_kcal: snap.active_kcal,
+      _source: "healthkit",
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
+  }, [user?.id]);
+
+  /** Read HealthKit + upsert today's row. Safe to call repeatedly. */
+  const syncToday = useCallback(async (): Promise<DaySnapshot | null> => {
+    if (!available) return null;
+    setSyncing(true);
+    setError(null);
+    try {
+      const snap = await readTodaySnapshot();
+      if (snap) {
+        await persistSnapshot(snap);
+        setLastSnapshot(snap);
+      }
+      return snap;
+    } catch (e: any) {
+      setError(e?.message ?? "Sync failed");
+      return null;
+    } finally {
+      setSyncing(false);
+    }
+  }, [available, persistSnapshot]);
+
+  /** Request permission then run a first sync. Returns true if granted. */
+  const connect = useCallback(async (): Promise<boolean> => {
+    setError(null);
+    const perm = await requestHealthKitPermissions();
+    if (!perm.granted) {
+      setError(perm.error ?? "denied");
+      return false;
+    }
+    await syncToday();
+    return true;
+  }, [syncToday]);
+
+  /** Server-side verification of a check-in against today's snapshot. */
+  const verifyCheckin = useCallback(async (checkinId: string) => {
+    const { data, error: rpcErr } = await supabase.rpc("verify_checkin" as any, {
+      _checkin_id: checkinId,
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
+    return data as {
+      ok: boolean;
+      verified?: boolean;
+      reason?: string;
+      matches?: number;
+      claims?: number;
+      signals?: Record<string, any>;
+    };
+  }, []);
+
+  return {
+    /** null while probing, true if plugin + iOS, false otherwise. */
+    available,
+    syncing,
+    lastSnapshot,
+    error,
+    connect,
+    syncToday,
+    verifyCheckin,
+  };
+};

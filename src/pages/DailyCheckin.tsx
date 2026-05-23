@@ -26,6 +26,7 @@ import CheckinTierHeader from "@/components/CheckinTierHeader";
 import CheckinTierSummary from "@/components/CheckinTierSummary";
 import { useUserHabits } from "@/hooks/use-user-habits";
 import { PROTOCOLS } from "@/lib/wellness-framework";
+import { useHealthKit } from "@/hooks/use-healthkit";
 
 interface ToggleItemProps {
   icon: React.ElementType;
@@ -161,6 +162,11 @@ const DailyCheckin = () => {
   // each one to update streaks + level via user_habits + user_habit_logs.
   const { habits: customHabits, completedTodaySet, logHabit } = useUserHabits();
   const [habitToggles, setHabitToggles] = useState<Record<string, boolean>>({});
+
+  // Apple HealthKit — runs a sync after submit, then verifies the
+  // check-in against HealthKit data. Verified check-ins earn the
+  // "Verified Performer" badge. No-op on web / Android / pre-install.
+  const healthKit = useHealthKit();
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
   const [honest, setHonest] = useState<boolean | null>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
@@ -287,26 +293,51 @@ const DailyCheckin = () => {
         proof_photo_url = urlData.publicUrl;
       }
 
-      // Insert check-in
-      await supabase.from("daily_checkins").insert({
-        user_id: user.id,
-        checked_in_at: checkinTimestamp,
-        sleep_hours: sleep,
-        workout,
-        extra_workout: extraWorkout,
-        cold_shower: coldShower,
-        healthy_food: healthyFood,
-        protein_intake: protein,
-        meditation_morning: meditationAm,
-        meditation_evening: meditationPm,
-        hydration_liters: hydration,
-        no_phone_morning: noPhoneAm,
-        no_phone_evening: noPhonePm,
-        reading,
-        xp_earned: totalXp,
-        proof_photo_url,
-        journal_entry: journaling ? "logged" : null,
-      });
+      // Insert check-in — capture id so we can verify against HealthKit
+      // after the insert lands.
+      const { data: insertedCheckin } = await supabase
+        .from("daily_checkins")
+        .insert({
+          user_id: user.id,
+          checked_in_at: checkinTimestamp,
+          sleep_hours: sleep,
+          workout,
+          extra_workout: extraWorkout,
+          cold_shower: coldShower,
+          healthy_food: healthyFood,
+          protein_intake: protein,
+          meditation_morning: meditationAm,
+          meditation_evening: meditationPm,
+          hydration_liters: hydration,
+          no_phone_morning: noPhoneAm,
+          no_phone_evening: noPhonePm,
+          reading,
+          xp_earned: totalXp,
+          proof_photo_url,
+          journal_entry: journaling ? "logged" : null,
+        })
+        .select("id")
+        .single();
+      const newCheckinId = insertedCheckin?.id as string | undefined;
+
+      // HealthKit verification — fire-and-forget so a slow / failing sync
+      // never blocks the celebration screen. Verified status is read back
+      // on the next visit to the summary / profile.
+      if (newCheckinId && healthKit.available) {
+        healthKit.syncToday().then(async () => {
+          try {
+            const result = await healthKit.verifyCheckin(newCheckinId);
+            if (result.verified) {
+              toast.success("Verified Performer ✓", {
+                description: "HealthKit confirmed your workout + sleep.",
+                duration: 4500,
+              });
+            }
+          } catch (err) {
+            console.warn("verify_checkin failed", err);
+          }
+        }).catch((err) => console.warn("HK sync failed", err));
+      }
 
       // Update profile XP and streak
       const { data: profile } = await supabase

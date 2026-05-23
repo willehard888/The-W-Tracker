@@ -137,6 +137,13 @@ const buildPrompt = (
   goal: any,
   memories: { fact: string }[],
   skipStats: { protocol_id: string; skips: number }[],
+  habitContext: Array<{
+    protocol_id: string;
+    streak: number;
+    level: number;
+    logs_7d: number;
+    last_logged: string | null;
+  }>,
 ) => {
   const username = profile?.username ?? "operator";
   const tier = profile?.status_tier ?? "recruit";
@@ -218,6 +225,28 @@ const buildPrompt = (
     ? `WHAT YOU KNOW ABOUT THIS ATHLETE:\n${memories.slice(0, 10).map((m) => `- ${m.fact}`).join("\n")}`
     : "WHAT YOU KNOW: nothing yet.";
 
+  // ── Adopted habits block — the system layer the user is compounding ──
+  // The model uses this to: (a) reinforce active habits, (b) flag stale
+  // ones that have decayed, (c) avoid suggesting new habits the user
+  // already runs. Each mission should map to an adopted habit when
+  // possible — that's how the long-game and the daily plan stay aligned.
+  const habitsBlock = habitContext.length === 0
+    ? `ADOPTED HABITS: none yet. The user hasn't chosen any long-game protocols. You MAY suggest 1 new habit as a "primary" mission and frame it as the start of a streak.`
+    : `ADOPTED HABITS (the user's chosen long-game stack — anchor missions here):
+${habitContext.map((h) => {
+  const p = PROTOCOL_CATALOG.find((x) => x.id === h.protocol_id);
+  const title = p?.title ?? h.protocol_id;
+  const stale = h.logs_7d === 0 ? " [STALE — 0 logs this week, gently re-engage]"
+              : h.logs_7d >= 5 ? " [HOT — running consistently]"
+              : "";
+  return `- ${title} (id: ${h.protocol_id}, Lv${h.level}, ${h.streak}d streak, ${h.logs_7d}/7 days)${stale}`;
+}).join("\n")}
+
+HABIT-MISSION ALIGNMENT RULES:
+- Every "habit" type mission MUST reference one of the user's adopted habits by id.
+- If a habit is STALE, your mission can be the lightest possible version of it (e.g., "today just put on the workout clothes" for a stale movement habit).
+- Do NOT propose a new habit if the user already has 6+ adopted habits — focus on compounding what they have.`;
+
   const catalogLines = allowedCatalog
     .map((p) => `- [${p.evidence.toUpperCase()}] ${p.id} (${p.pillar}) — ${p.title} :: ${p.dose}`)
     .join("\n");
@@ -242,6 +271,8 @@ ${profileBlock}
 ${goalBlock}
 
 ${memBlock}
+
+${habitsBlock}
 
 PROTOCOL CATALOG (you MUST pick protocol_id ONLY from this list — no-go items already filtered out):
 ${catalogLines}
@@ -442,7 +473,7 @@ Deno.serve(async (req) => {
 
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const [profileRes, checkinsRes, programRes, athleteRes, goalRes, memoryRes, skipRes] = await Promise.all([
+    const [profileRes, checkinsRes, programRes, athleteRes, goalRes, memoryRes, skipRes, habitsRes, habitLogsRes] = await Promise.all([
       supabase
         .from("profiles")
         .select("username, status_tier, streak, longest_streak, xp, level")
@@ -485,6 +516,22 @@ Deno.serve(async (req) => {
         .eq("user_id", userId)
         .eq("signal_type", "skipped_protocol")
         .gte("created_at", thirtyDaysAgo),
+      // User's adopted habits — the long-game protocols they've committed to.
+      // We surface these in the prompt so missions cluster around what the
+      // user has actually chosen to compound, instead of suggesting random
+      // protocols every day.
+      supabase
+        .from("user_habits")
+        .select("id, protocol_id, current_streak, best_streak, level, last_logged_on")
+        .eq("user_id", userId)
+        .is("archived_at", null),
+      // Last 7d of habit logs so we can see what they've actually been doing
+      // (not just adopted but ignoring). Lets the plan flag stale habits.
+      supabase
+        .from("user_habit_logs")
+        .select("habit_id, logged_on")
+        .eq("user_id", userId)
+        .gte("logged_on", sevenDaysAgo.slice(0, 10)),
     ]);
 
     const profile = profileRes.data;
@@ -500,6 +547,32 @@ Deno.serve(async (req) => {
       skipMap.set(r.protocol_id, (skipMap.get(r.protocol_id) ?? 0) + 1);
     }
     const skipStats = [...skipMap.entries()].map(([protocol_id, skips]) => ({ protocol_id, skips }));
+
+    // ── Adopted habits + recent compliance ─────────────────────────────
+    type UserHabitRow = {
+      id: string;
+      protocol_id: string;
+      current_streak: number;
+      best_streak: number;
+      level: number;
+      last_logged_on: string | null;
+    };
+    type HabitLogRow = { habit_id: string; logged_on: string };
+    const userHabits = ((habitsRes as any)?.data ?? []) as UserHabitRow[];
+    const habitLogs = ((habitLogsRes as any)?.data ?? []) as HabitLogRow[];
+    const logsByHabit = new Map<string, number>();
+    for (const l of habitLogs) {
+      logsByHabit.set(l.habit_id, (logsByHabit.get(l.habit_id) ?? 0) + 1);
+    }
+    // Enriched view: per-habit logs in last 7d so the model can spot
+    // ones the user adopted but is ignoring ("stale habits").
+    const habitContext = userHabits.map((h) => ({
+      protocol_id: h.protocol_id,
+      streak: h.current_streak,
+      level: h.level,
+      logs_7d: logsByHabit.get(h.id) ?? 0,
+      last_logged: h.last_logged_on,
+    }));
 
     // Recent program logs (for missed sessions + last RPE)
     let lastRpe: number | null = null;
@@ -545,7 +618,7 @@ Deno.serve(async (req) => {
 
     if (OPENROUTER_API_KEY) {
       try {
-        const prompt = buildPrompt(profile, program, todayDay, checkins, readiness, adjustment, athlete, goal, memories, skipStats);
+        const prompt = buildPrompt(profile, program, todayDay, checkins, readiness, adjustment, athlete, goal, memories, skipStats, habitContext);
         const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           headers: {

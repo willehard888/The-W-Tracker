@@ -22,6 +22,7 @@ import MoveCard from "@/components/coach/v2/MoveCard";
 import ProgramCard from "@/components/coach/v2/ProgramCard";
 import AskCoachPill from "@/components/coach/v2/AskCoachPill";
 import CoachFooterLinks from "@/components/coach/v2/CoachFooterLinks";
+import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
 
 type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";
@@ -190,6 +191,7 @@ const CoachShell = ({ session, isElite, program, navigate }: any) => {
         <StateCard />
         <MoveCard />
         <ProgramCard />
+        <HealthKitConnectCard />
         <AskCoachPill onOpenChat={() => { hapticImpact("light"); setChatOpen(true); }} />
         <CoachFooterLinks />
       </div>

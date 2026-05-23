@@ -29,7 +29,9 @@ const ProtocolSheet = ({ protocol, open, onOpenChange, why }: Props) => {
   const pillar = PILLARS[protocol.pillar];
   const evMeta = EVIDENCE_META[protocol.evidence];
   const alreadyAdded = habits.some((h) => h.protocol_id === protocol.id);
-  const atCap = habits.length >= 5;
+  // Cap raised 5 → 8 in migration 20260521120000. Mismatch here blocked
+  // habit addition: the button disabled at 5, but the RPC accepts up to 8.
+  const atCap = habits.length >= 8;
 
   const onAdd = async () => {
     hapticImpact("medium");
@@ -38,6 +40,9 @@ const ProtocolSheet = ({ protocol, open, onOpenChange, why }: Props) => {
       await addHabit(protocol.id);
       hapticNotification("success");
       toast.success("Added to your habits", { description: protocol.title });
+      // Auto-close so the user is bounced back to the list and sees the
+      // habit appear instead of having to dismiss the sheet manually.
+      onOpenChange(false);
     } catch (e: any) {
       const msg = e?.message ?? "Couldn't add habit.";
       if (msg === "cap_reached") toast.error("Max 8 active habits — archive one first.");
@@ -145,7 +150,7 @@ const ProtocolSheet = ({ protocol, open, onOpenChange, why }: Props) => {
                 onClick={onAdd}
                 className="w-full font-black"
               >
-                <Plus size={14} /> {atCap ? "Habit cap reached (5)" : "Add to my habits"}
+                <Plus size={14} /> {atCap ? "Habit cap reached (8)" : "Add to my habits"}
               </Button>
             )}
             <p className="text-[10px] text-muted-foreground/70 text-center mt-2 italic">

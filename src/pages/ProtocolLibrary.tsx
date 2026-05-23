@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,10 +19,25 @@ const PILLAR_ORDER: PillarId[] = ["sleep", "movement", "nutrition", "stress", "r
 
 const ProtocolLibrary = () => {
   const navigate = useNavigate();
-  const [pillar, setPillar] = useState<PillarId | "all">("all");
+  const [searchParams] = useSearchParams();
+
+  // Honor ?pillar=<id> from deep-link callers (StateCard "Fill →" chip
+  // jumps here pre-filtered). Falls back to "all" if absent or invalid.
+  const initialPillar: PillarId | "all" = (() => {
+    const p = searchParams.get("pillar");
+    if (p && PILLAR_ORDER.includes(p as PillarId)) return p as PillarId;
+    return "all";
+  })();
+  const [pillar, setPillar] = useState<PillarId | "all">(initialPillar);
   const [strongOnly, setStrongOnly] = useState(false);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Protocol | null>(null);
+
+  // Sync if URL changes while mounted (deep-link from other Coach card).
+  useEffect(() => {
+    const p = searchParams.get("pillar");
+    if (p && PILLAR_ORDER.includes(p as PillarId)) setPillar(p as PillarId);
+  }, [searchParams]);
 
   const filtered = useMemo(() => {
     return PROTOCOLS.filter((p) => {

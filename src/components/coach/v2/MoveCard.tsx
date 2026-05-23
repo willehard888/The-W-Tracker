@@ -105,7 +105,7 @@ const MoveCard = () => {
 
         {habits.length === 0 ? (
           <button
-            onClick={() => navigate("/coach/habits")}
+            onClick={() => navigate("/coach/library")}
             className="w-full flex items-center gap-2.5 rounded-xl border border-dashed border-gold/30 px-3 py-2.5 hover:bg-gold/[0.04] transition-colors text-left"
           >
             <div className="h-7 w-7 rounded-lg bg-gold/10 flex items-center justify-center shrink-0">
@@ -114,7 +114,7 @@ const MoveCard = () => {
             <div className="flex-1 min-w-0">
               <p className="text-[12px] font-bold">Pick your first habit</p>
               <p className="text-[10px] text-muted-foreground">
-                Compound a protocol every day — streaks + levels.
+                Browse the protocol library — tap one to add it.
               </p>
             </div>
           </button>

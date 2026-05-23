@@ -1,16 +1,38 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Sparkles, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useUserHabits } from "@/hooks/use-user-habits";
-import { getProtocol, type Protocol, HABIT_LEVELS } from "@/lib/wellness-framework";
+import {
+  getProtocol,
+  type Protocol,
+  HABIT_LEVELS,
+  PILLARS,
+  type PillarId,
+} from "@/lib/wellness-framework";
 import HabitCard from "./HabitCard";
 import ProtocolSheet from "./ProtocolSheet";
+
+const PILLAR_ORDER: PillarId[] = ["sleep", "movement", "nutrition", "stress", "recovery", "connection"];
 
 const HabitsTab = () => {
   const navigate = useNavigate();
   const { habits, isLoading, completedTodaySet, logHabit, archiveHabit } = useUserHabits();
   const [openProtocol, setOpenProtocol] = useState<Protocol | null>(null);
+
+  // Which of the 6 pillars does the user have at least one active habit in?
+  // Surfaces blind spots ("you have nothing for Connection") so the user
+  // can build a stack that actually covers the full framework — not 5
+  // movement habits and zero connection.
+  const pillarCoverage = useMemo(() => {
+    const covered = new Set<PillarId>();
+    for (const h of habits) {
+      const p = getProtocol(h.protocol_id);
+      if (p) covered.add(p.pillar);
+    }
+    return covered;
+  }, [habits]);
 
   if (isLoading) {
     return <div className="rounded-2xl border border-border/40 bg-card/40 h-44 animate-pulse" />;
@@ -39,6 +61,53 @@ const HabitsTab = () => {
         >
           <BookOpen size={13} /> Browse protocol library
         </Button>
+      </div>
+
+      {/* Pillar coverage map — six dots, lit = at least one habit, dim =
+          blind spot. Tap a dim pillar to jump straight into the library
+          filtered to that pillar. */}
+      <div className="rounded-2xl border border-border/50 bg-card/40 p-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground">
+            Pillar coverage
+          </p>
+          <p className="text-[10px] font-bold text-gold tabular-nums">
+            {pillarCoverage.size}/{PILLAR_ORDER.length}
+          </p>
+        </div>
+        <div className="grid grid-cols-6 gap-2">
+          {PILLAR_ORDER.map((id) => {
+            const meta = PILLARS[id];
+            const covered = pillarCoverage.has(id);
+            return (
+              <button
+                key={id}
+                onClick={() => navigate(`/coach/library?pillar=${id}`)}
+                className={cn(
+                  "flex flex-col items-center gap-1 rounded-xl border p-2 transition-all active:scale-[0.95]",
+                  covered
+                    ? cn("bg-gold/5", meta.tint.border)
+                    : "border-dashed border-border/60 opacity-50 hover:opacity-90",
+                )}
+                aria-label={`${meta.name} — ${covered ? "covered" : "no habit, tap to add"}`}
+              >
+                <span className="text-lg leading-none">{meta.emoji}</span>
+                <span className={cn(
+                  "text-[8px] font-black uppercase tracking-wider truncate w-full text-center",
+                  covered ? meta.tint.text : "text-muted-foreground",
+                )}>
+                  {meta.name.split(" ")[0]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {pillarCoverage.size < PILLAR_ORDER.length && habits.length > 0 && (
+          <p className="text-[10px] text-muted-foreground mt-3 leading-snug">
+            Tap a dimmed pillar to fill the gap. Real growth comes from
+            spreading effort across all six.
+          </p>
+        )}
       </div>
 
       {/* Active habits */}

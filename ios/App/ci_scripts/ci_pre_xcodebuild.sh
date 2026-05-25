@@ -789,6 +789,10 @@ _dep_entries=(
   "CapacitorCommunityAppleSignIn:Capacitor Cordova"
   "PurchasesHybridCommon:RevenueCat"
   "RevenuecatPurchasesCapacitor:Capacitor Cordova RevenueCat PurchasesHybridCommon"
+  # capacitor-health (added 2026-05-25) — same flat deps as other plugins.
+  # Missing entry caused build 798 to fail with:
+  #   HealthPlugin.swift:2:8: error: no such module 'Capacitor'
+  "CapacitorHealth:Capacitor Cordova"
 )
 for _entry in "${_dep_entries[@]}"; do
   _target="${_entry%%:*}"

@@ -34,11 +34,21 @@ import LiveRivals from "@/components/LiveRivals";
 import ApexBadge from "@/components/ApexBadge";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { format } from "date-fns";
+import { usePullRefresh } from "@/hooks/use-pull-refresh";
+import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 
 const Profile = () => {
   const { profile, signOut, isElite, isApexSubscriber } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  // Pull-to-refresh — invalidates profile-page queries
+  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([
+    ["my-badges"],
+    ["user-posts"],
+    ["my-rank"],
+    ["tier-risk"],
+    ["user-vault"],
+  ]);
   const [previewBadge, setPreviewBadge] = useState<any>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
@@ -307,7 +317,14 @@ const Profile = () => {
     : "radial-gradient(ellipse at center, hsl(42 78% 54% / 0.35), transparent 70%)";
 
   return (
-    <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
+    <div
+      ref={scrollRef}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      className="min-h-screen pb-4 px-4 pt-6 safe-top"
+    >
+      <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
       <BadgeUnlockModal badge={previewBadge} onClose={() => setPreviewBadge(null)} />
       <StoryShareModal
         open={shareModal.open}

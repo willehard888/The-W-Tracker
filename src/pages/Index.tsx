@@ -19,10 +19,22 @@ import { getTierConfig } from "@/lib/status-tiers";
 import { useTierRisk } from "@/hooks/use-tier-risk";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { useDailyPulse } from "@/hooks/use-daily-pulse";
+import { usePullRefresh } from "@/hooks/use-pull-refresh";
+import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 
 const Index = () => {
   const navigate = useNavigate();
   const { profile, isElite } = useAuth();
+  // Pull-to-refresh — invalidates the page's main queries when the user
+  // pulls down past the threshold. Matches Leaderboard / Feed / Messages.
+  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([
+    ["latest-coach-nudge"],
+    ["latest-briefing"],
+    ["my-rank"],
+    ["tier-risk"],
+    ["daily-pulse"],
+    ["recent-badges"],
+  ]);
 
   const { data: latestNudge } = useQuery({
     queryKey: ["latest-coach-nudge", profile?.user_id],
@@ -149,7 +161,14 @@ const Index = () => {
     : "radial-gradient(ellipse 90% 70% at center top, hsl(42 78% 54% / 0.075) 0%, hsl(42 78% 54% / 0.025) 45%, transparent 80%)";
 
   return (
-    <div className="h-full pb-6 px-4 pt-5 safe-top relative overflow-y-auto overflow-x-hidden">
+    <div
+      ref={scrollRef}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      className="h-full pb-6 px-4 pt-5 safe-top relative overflow-y-auto overflow-x-hidden"
+    >
+      <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
       {/* Tier-reactive top aura */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[760px] h-[460px] pointer-events-none z-0"

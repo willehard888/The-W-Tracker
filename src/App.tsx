@@ -68,6 +68,17 @@ const queryClient = new QueryClient({
   },
 });
 
+import RouteFallback from "@/components/RouteFallback";
+import { AnimatePresence, motion } from "framer-motion";
+import { useLocation } from "react-router-dom";
+
+// Tab routes don't slide — they cross-fade (subtle, doesn't pick a side).
+// Detail / modal routes slide from right like an iOS native push.
+const TAB_PATHS = new Set([
+  "/", "/checkin", "/feed", "/tribes",
+  "/messages", "/leaderboard", "/battles", "/profile",
+]);
+
 const LazyFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
     <div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" />
@@ -99,13 +110,37 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppRoutes = () => {
   const { user } = useAuth();
+  const location = useLocation();
   usePushNotifications();
+
+  // iOS-style page transitions:
+  //  - Tab pages cross-fade (subtle, neutral direction)
+  //  - Detail pages slide from the right like a native push
+  // Spring curve matches iOS UINavigationController push animation.
+  const isTab = TAB_PATHS.has(location.pathname);
+  const variants = isTab
+    ? {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit:    { opacity: 0 },
+        transition: { duration: 0.18, ease: [0.32, 0.72, 0, 1] as const },
+      }
+    : {
+        initial: { x: 28, opacity: 0 },
+        animate: { x: 0, opacity: 1 },
+        exit:    { x: -28, opacity: 0 },
+        transition: { duration: 0.26, ease: [0.32, 0.72, 0, 1] as const },
+      };
 
   return (
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
       <div className="flex-1 overflow-y-auto">
-        <Suspense fallback={<LazyFallback />}>
+        {/* RouteFallback renders a layout-matched skeleton for the destination
+            route (HomeSkeleton on /, FeedSkeleton on /feed, etc.) so the lazy-
+            load → real-content swap has zero visual jank. LazyFallback (a
+            spinner) is kept only as the AccessGate gate while auth resolves. */}
+        <Suspense fallback={<RouteFallback />}>
           <AccessGate>
           {/* Route-level ErrorBoundary — keeps the app shell (StatusHeader +
               BottomNav) visible if the current page crashes. The global
@@ -113,7 +148,17 @@ const AppRoutes = () => {
               shell-level failures. Page crashes get a contained recovery
               UI here so the user can still navigate elsewhere. */}
           <ErrorBoundary>
-          <Routes>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={location.pathname}
+              initial={variants.initial}
+              animate={variants.animate}
+              exit={variants.exit}
+              transition={variants.transition}
+              className="h-full"
+              style={{ willChange: "transform, opacity" }}
+            >
+              <Routes location={location}>
           <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
           <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
@@ -154,7 +199,9 @@ const AppRoutes = () => {
           <Route path="/oauth/callback" element={<OAuthCallback />} />
           <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="*" element={<NotFound />} />
-          </Routes>
+              </Routes>
+            </motion.div>
+          </AnimatePresence>
           </ErrorBoundary>
           </AccessGate>
         </Suspense>

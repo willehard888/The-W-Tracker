@@ -32,32 +32,17 @@ install! 'cocoapods', :disable_input_output_paths => true
 
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
-  # DO NOT add `:modular_headers => true` here.
-  # Under Xcode 26 it makes the breakage WORSE: CocoaPods-generated modulemaps
-  # shadow the framework modulemap shipped inside the pod, and SwiftCompile then
-  # fails with "module 'Cordova' not found" because the importer is pointed at
-  # the wrong umbrella header. The real fix lives in ci_pre_xcodebuild.sh — it
-  # source-patches CAPInstanceDescriptor.h to drop the @import Cordova umbrella
-  # dep and relies on Cordova.framework's own modulemap for the .m/.swift
-  # consumers via FRAMEWORK_SEARCH_PATHS. The pre-build script even contains
-  # a sanity gate that exits 1 if this flag re-appears.
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCommunityAppleSignIn', :path => '../../node_modules/@capacitor-community/apple-sign-in'
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorAppLauncher', :path => '../../node_modules/@capacitor/app-launcher'
   pod 'CapacitorBrowser', :path => '../../node_modules/@capacitor/browser'
   pod 'CapacitorHaptics', :path => '../../node_modules/@capacitor/haptics'
-  # @capacitor/keyboard removed — its Objective-C sources broke builds
-  # 781–785 with `Module 'Capacitor' not found` under Xcode 26.5 + Pods
-  # use_frameworks!. Native keyboard polish now handled by a plain DOM
-  # focusin scrollIntoView fallback in src/lib/native-bootstrap.ts.
   pod 'CapacitorLocalNotifications', :path => '../../node_modules/@capacitor/local-notifications'
   pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
-  # Native Sign in with Apple — wraps ASAuthorizationController in a Capacitor
-  # plugin so SignInWithApple.authorize({ scopes, nonce, ... }) returns an
-  # identityToken JWT that we hand to supabase.auth.signInWithIdToken.
-  pod 'CapacitorCommunityAppleSignIn', :path => '../../node_modules/@capacitor-community/apple-sign-in'
   pod 'RevenuecatPurchasesCapacitor', :path => '../../node_modules/@revenuecat/purchases-capacitor'
+  pod 'CapacitorHealth', :path => '../../node_modules/capacitor-health'
 end
 
 target 'App' do

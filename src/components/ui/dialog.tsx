@@ -19,7 +19,10 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/[0.72] backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      // No backdrop-blur — iOS Capacitor WKWebView occasionally composites
+      // backdrop-filter as solid black, swallowing the dialog content.
+      // Solid bg-black/72 is the safe alternative.
+      "fixed inset-0 z-50 bg-black/[0.72] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className,
     )}
     {...props}

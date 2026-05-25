@@ -20,7 +20,10 @@ const DrawerOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Overlay
     ref={ref}
-    className={cn("fixed inset-0 z-50 bg-black/[0.72] backdrop-blur-md", className)}
+    // No backdrop-blur — iOS Capacitor WKWebView occasionally composites
+    // backdrop-filter as solid black, producing "black screen" UX bugs.
+    // Solid bg-black/72 reads as the same depth without the risk.
+    className={cn("fixed inset-0 z-50 bg-black/[0.72]", className)}
     {...props}
   />
 ));

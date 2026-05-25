@@ -16,7 +16,10 @@ import TopInvitersWidget from "@/components/TopInvitersWidget";
 import TopTribesWidget from "@/components/TopTribesWidget";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { useMyRank } from "@/hooks/use-my-rank";
-import { useHorizontalSwipe } from "@/hooks/use-horizontal-swipe";
+// Horizontal-swipe gesture removed (2026-05-25) — the gesture was triggering
+// on vertical scrolls + accidental side-swipes and made the page feel like it
+// was sliding off-screen. Mode switching is now tap-only via the segmented
+// toggle in the header.
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type LeaderRow = {
@@ -72,19 +75,9 @@ const Leaderboard = () => {
     ["leaderboard-champions"],
   ]);
 
-  const { onTouchStart: swipeStart, onTouchEnd: swipeEnd } = useHorizontalSwipe({
-    onSwipeLeft: () => setMode((m) => (m === "season" ? "all_time" : m)),
-    onSwipeRight: () => setMode((m) => (m === "all_time" ? "season" : m)),
-  });
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    pullStart(e);
-    swipeStart(e);
-  };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    pullEnd();
-    swipeEnd(e);
-  };
+  // Touch handlers — only pull-to-refresh now (swipe-to-switch-mode removed).
+  const onTouchStart = (e: React.TouchEvent) => { pullStart(e); };
+  const onTouchEnd = (_e: React.TouchEvent) => { pullEnd(); };
 
 
   // Countdown ticking moved to <CountdownTimer> — only that component re-renders.

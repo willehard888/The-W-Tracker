@@ -203,11 +203,53 @@
     }
   }
 
+  /* === Premium tap feedback — universal ============================
+     Every <button> gets a subtle scale-down on press unless it has
+     opted out via `.no-tap-scale`. iOS native apps feel responsive
+     because every tappable element confirms the touch visually within
+     16ms. Matches Apple HIG spring curve.
+
+     Excludes Radix primitives (data-*) where Radix manages its own
+     pressed states, and BottomNav (uses framer-motion's spring).
+  ====================================================================== */
+  button:not(.no-tap-scale):not([data-state]):not([role="tab"]):not([role="menuitem"]) {
+    transition:
+      transform 110ms cubic-bezier(0.32, 0.72, 0, 1),
+      opacity   140ms cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
+  }
+  button:not(.no-tap-scale):not([data-state]):not([role="tab"]):not([role="menuitem"]):active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* Every <a> that looks like a tappable card gets the same feel. */
+  a.tap-card:active {
+    transform: scale(0.98);
+    transition: transform 110ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  /* Apple HIG: 44pt minimum tap target. Apply to inline-ish buttons
+     that aren't full-width primary actions. Defensive — won't shrink
+     anything already larger. */
+  button:not([class*="h-"]):not([class*="size-"]):not([data-state]) {
+    min-height: 36px;
+  }
+  button[class*="size-icon-sm"],
+  button[class*="size-sm"] {
+    min-width: 36px;
+  }
+
   /* === Native shell tweaks (Capacitor iOS / Android) === */
   body.is-native {
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior: none;
+  }
+  body.is-native button,
+  body.is-native a {
+    -webkit-tap-highlight-color: transparent;
+    /* Stops iOS double-tap-zoom which feels janky on tightly-packed UI */
+    touch-action: manipulation;
   }
   body.is-ios {
     -webkit-font-smoothing: antialiased;

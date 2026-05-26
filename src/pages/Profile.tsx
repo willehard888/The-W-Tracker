@@ -1,5 +1,5 @@
 
-import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy, CreditCard, Medal, Moon, Trash2 } from "lucide-react";
+import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy, CreditCard, Medal, Moon, Trash2, MoreVertical, Settings as SettingsIcon } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { isNativePlatform } from "@/lib/platform";
 import StatCard from "@/components/StatCard";
@@ -63,6 +63,10 @@ const Profile = () => {
   // (sign-out + delete + subscription management). The hero card above
   // stays always visible because it's the identity.
   const [profileTab, setProfileTab] = useState<"stats" | "badges" | "settings">("stats");
+  // Always-visible "..." menu — user feedback: logout buttons "disappeared"
+  // because they're inside the Settings tab. This menu makes them reachable
+  // in one tap from any tab.
+  const [quickMenuOpen, setQuickMenuOpen] = useState(false);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -325,6 +329,72 @@ const Profile = () => {
       className="min-h-screen pb-4 px-4 pt-6 safe-top"
     >
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
+
+      {/* Always-visible quick menu — Sign Out + Delete Account are also in
+          the Settings tab, but users frequently miss them. This kebab menu
+          surfaces them in one tap from any tab. */}
+      <div className="relative flex justify-end mb-2">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Account menu"
+          onClick={() => setQuickMenuOpen((v) => !v)}
+        >
+          <MoreVertical size={18} />
+        </Button>
+        {quickMenuOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-30"
+              onClick={() => setQuickMenuOpen(false)}
+              aria-hidden
+            />
+            <div className="absolute right-0 top-10 z-40 w-52 rounded-2xl border border-border/60 bg-card shadow-[0_18px_56px_-12px_hsl(var(--background)/0.8)] overflow-hidden">
+              <button
+                type="button"
+                onClick={() => { setQuickMenuOpen(false); setProfileTab("settings"); }}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 transition"
+              >
+                <SettingsIcon size={14} className="text-gold" />
+                <span>Open Settings</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setQuickMenuOpen(false); signOut(); }}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 transition border-t border-border/40"
+              >
+                <LogOut size={14} className="text-gold" />
+                <span>Sign Out</span>
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setQuickMenuOpen(false);
+                  if (!confirm("Permanently delete your account? This cannot be undone.")) return;
+                  setDeletingAccount(true);
+                  try {
+                    const { error } = await supabase.functions.invoke("delete-account");
+                    if (error) throw error;
+                    await signOut();
+                    toast.success("Account deleted");
+                    navigate("/landing", { replace: true });
+                  } catch {
+                    toast.error("Could not delete account");
+                  } finally {
+                    setDeletingAccount(false);
+                  }
+                }}
+                disabled={deletingAccount}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm text-destructive hover:bg-destructive/10 active:bg-destructive/20 transition border-t border-border/40 disabled:opacity-50"
+              >
+                <Trash2 size={14} />
+                <span>{deletingAccount ? "Deleting…" : "Delete Account"}</span>
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
       <BadgeUnlockModal badge={previewBadge} onClose={() => setPreviewBadge(null)} />
       <StoryShareModal
         open={shareModal.open}

@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { usePullRefresh } from "@/hooks/use-pull-refresh";
-import PullRefreshIndicator from "@/components/PullRefreshIndicator";
+// Pull-to-refresh removed temporarily — touch handlers on the page wrapper
+// were intercepting inner taps on tribe cards. Re-add once we have a more
+// isolated touch-area implementation.
 import { Users, Plus, Lock, Crown, Zap, Check, X, Sparkles, Mail, Trophy, ChevronRight, Pause, ShieldCheck } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
 import { toast } from "sonner";
@@ -60,12 +61,6 @@ TribeSkeleton.displayName = "TribeSkeleton";
 const Tribes = () => {
   const { profile, isApexSubscriber } = useAuth();
   const navigate = useNavigate();
-  // Pull-to-refresh
-  const { scrollRef: ptrRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([
-    ["my-tribes"],
-    ["discover-tribes"],
-    ["tribe-flames"],
-  ]);
   const [tribes, setTribes] = useState<Tribe[]>([]);
   const [memberPreviews, setMemberPreviews] = useState<Record<string, { user_id: string; avatar_url: string | null; username: string }[]>>({});
   const [ownedIds, setOwnedIds] = useState<Set<string>>(new Set());
@@ -301,14 +296,7 @@ const Tribes = () => {
   const restList = featured ? tribes.filter((t) => t.id !== featured.id) : tribes;
 
   return (
-    <div
-      ref={ptrRef}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-      className="min-h-full pb-8 px-4 pt-4 safe-top relative"
-    >
-      <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
+    <div className="min-h-full pb-8 px-4 pt-4 safe-top relative">
       {/* Ambient fire field — drifts behind the whole page, intensifies with
           the user's combined tribe heat. Cold (<30) = invisible. */}
       {ambientHeat >= 30 && (

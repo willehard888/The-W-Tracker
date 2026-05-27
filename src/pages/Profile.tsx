@@ -34,21 +34,14 @@ import LiveRivals from "@/components/LiveRivals";
 import ApexBadge from "@/components/ApexBadge";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { format } from "date-fns";
-import { usePullRefresh } from "@/hooks/use-pull-refresh";
-import PullRefreshIndicator from "@/components/PullRefreshIndicator";
+// Pull-to-refresh removed temporarily — touch handlers on the page wrapper
+// were intercepting inner taps (e.g., logout button, share, badges). Will
+// re-add once the touch-area is properly isolated.
 
 const Profile = () => {
   const { profile, signOut, isElite, isApexSubscriber } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  // Pull-to-refresh — invalidates profile-page queries
-  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([
-    ["my-badges"],
-    ["user-posts"],
-    ["my-rank"],
-    ["tier-risk"],
-    ["user-vault"],
-  ]);
   const [previewBadge, setPreviewBadge] = useState<any>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
@@ -321,15 +314,7 @@ const Profile = () => {
     : "radial-gradient(ellipse at center, hsl(42 78% 54% / 0.35), transparent 70%)";
 
   return (
-    <div
-      ref={scrollRef}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-      className="min-h-screen pb-4 px-4 pt-6 safe-top"
-    >
-      <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
-
+    <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
       {/* Always-visible quick menu — Sign Out + Delete Account are also in
           the Settings tab, but users frequently miss them. This kebab menu
           surfaces them in one tap from any tab. */}

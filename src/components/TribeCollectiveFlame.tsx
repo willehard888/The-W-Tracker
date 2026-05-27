@@ -1,4 +1,8 @@
-import RealisticFlame from "@/components/home/RealisticFlame";
+// Tribe-specific lightweight flame (CSS-only, no RAF). Cuts ~95% of
+// the per-frame cost vs RealisticFlame — Tribes pages were laggy
+// because the previous component spawned a RAF loop + 3 SVG turbulence
+// filters per card.
+import TribeFireLite from "@/components/TribeFireLite";
 import EmberRiseLayer from "@/components/EmberRiseLayer";
 import type { FireEvent } from "@/hooks/use-tribe-fire-reactor";
 import { cn } from "@/lib/utils";
@@ -211,7 +215,7 @@ const TribeCollectiveFlame = ({
                     : undefined
                 }
               >
-                <RealisticFlame tier={tier} accent={accent} size={size} intensify={10} />
+                <TribeFireLite tier={tier} accent={accent} size={size} />
               </div>
             )}
             {/* Realtime ember-rise + "+N" overlay — extends well beyond flame container */}

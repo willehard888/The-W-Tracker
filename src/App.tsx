@@ -50,6 +50,11 @@ const CoachProgramDetail = lazy(() => import("./pages/CoachProgramDetail"));
 const CoachMemoryScreen = lazy(() => import("./pages/CoachMemoryScreen"));
 const ProtocolLibrary = lazy(() => import("./pages/ProtocolLibrary"));
 const Tribes = lazy(() => import("./pages/Tribes"));
+const TribeNew = lazy(() => import("./pages/TribeNew"));
+const TribeDetail = lazy(() => import("./pages/TribeDetail"));
+const TribeBattles = lazy(() => import("./pages/TribeBattles"));
+const TribeLeaderboard = lazy(() => import("./pages/TribeLeaderboard"));
+const Vault = lazy(() => import("./pages/Vault"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -150,6 +155,11 @@ const AppRoutes = () => {
           <Route path="/coach/memory" element={<ProtectedRoute><CoachMemoryScreen /></ProtectedRoute>} />
           <Route path="/coach/library" element={<ProtectedRoute><ProtocolLibrary /></ProtectedRoute>} />
           <Route path="/tribes" element={<ProtectedRoute><Tribes /></ProtectedRoute>} />
+          <Route path="/tribes/new" element={<ProtectedRoute><TribeNew /></ProtectedRoute>} />
+          <Route path="/tribes/leaderboard" element={<ProtectedRoute><TribeLeaderboard /></ProtectedRoute>} />
+          <Route path="/tribes/:id" element={<ProtectedRoute><TribeDetail /></ProtectedRoute>} />
+          <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />
+          <Route path="/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
           <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
           <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
           <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />

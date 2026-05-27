@@ -1,6 +1,7 @@
-import { Zap, Sparkles, Flame } from "lucide-react";
+import { Zap, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getEffectiveStreak, getStreakDeadlineState } from "@/lib/streak";
+import TribeFireLite from "@/components/TribeFireLite";
 
 interface CompactStreakPanelProps {
   streak: number;
@@ -137,9 +138,11 @@ const CompactStreakPanel = ({
 
       {/* Hero: static flame icon + count */}
       <div className="relative flex items-center gap-4 z-10">
-        {/* Static flame medallion (replaces 2400-line StylizedStreakFlame) */}
+        {/* Live flame medallion — TribeFireLite (CSS-only, no RAF) brings
+            real motion to the home streak without the JS-thread cost of the
+            old StylizedStreakFlame. Tier is derived from the active streak. */}
         <div
-          className="relative h-20 w-20 rounded-2xl shrink-0 flex items-center justify-center border"
+          className="relative h-20 w-20 rounded-2xl shrink-0 flex items-center justify-center border overflow-hidden"
           style={{
             borderColor: isHot ? accentBorder : "hsl(var(--border))",
             background: isHot
@@ -148,18 +151,15 @@ const CompactStreakPanel = ({
             boxShadow: isHot ? `0 0 24px -8px ${accent.replace(")", " / 0.5)")}` : undefined,
           }}
         >
-          <Flame
-            size={36}
-            strokeWidth={1.5}
-            className="shrink-0"
-            style={{
-              color: isHot ? accent : "hsl(var(--muted-foreground))",
-              filter: isHot ? `drop-shadow(0 0 8px ${accent.replace(")", " / 0.55)")})` : undefined,
-            }}
-            fill={isHot ? accent : "transparent"}
-            fillOpacity={isHot ? 0.18 : 0}
-            aria-hidden
-          />
+          {isHot ? (
+            <TribeFireLite
+              tier={Math.min(6, Math.floor(displayStreak / 10))}
+              accent={accent}
+              size={72}
+            />
+          ) : (
+            <span className="text-3xl opacity-40 leading-none" aria-hidden>🕯️</span>
+          )}
         </div>
 
         <div className="min-w-0 flex-1 relative z-[50]">

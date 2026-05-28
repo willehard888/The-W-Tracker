@@ -53,7 +53,6 @@ export const useVaultArticles = (categoryId?: string) => {
         console.error("[vault] fetch error", error);
         throw error;
       }
-      console.log("[vault] fetched", categoryId ?? "all", data?.length ?? 0);
       return (data ?? []) as VaultArticle[];
     },
   });

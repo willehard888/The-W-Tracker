@@ -45,6 +45,25 @@ const Profile = () => {
   const [previewBadge, setPreviewBadge] = useState<any>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  // Real account-deletion action — gated behind the AlertDialog flow so
+  // a single accidental tap can never wipe the user's data.
+  const performAccountDeletion = async () => {
+    setDeleteDialogOpen(false);
+    setDeletingAccount(true);
+    try {
+      const { error } = await supabase.functions.invoke("delete-account");
+      if (error) throw error;
+      await signOut();
+      toast.success("Account deleted");
+      navigate("/landing", { replace: true });
+    } catch {
+      toast.error("Could not delete account");
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const syncedBadgesForUserRef = useRef<string | null>(null);
   const [shareModal, setShareModal] = useState<{ open: boolean; variant: "stats" | "streak" | "badge"; badgeData?: any }>({
@@ -353,21 +372,11 @@ const Profile = () => {
               </button>
               <button
                 type="button"
-                onClick={async () => {
+                onClick={() => {
                   setQuickMenuOpen(false);
-                  if (!confirm("Permanently delete your account? This cannot be undone.")) return;
-                  setDeletingAccount(true);
-                  try {
-                    const { error } = await supabase.functions.invoke("delete-account");
-                    if (error) throw error;
-                    await signOut();
-                    toast.success("Account deleted");
-                    navigate("/landing", { replace: true });
-                  } catch {
-                    toast.error("Could not delete account");
-                  } finally {
-                    setDeletingAccount(false);
-                  }
+                  // Defer to next tick so the menu closes cleanly before
+                  // the destructive dialog opens — feels less abrupt.
+                  setTimeout(() => setDeleteDialogOpen(true), 80);
                 }}
                 disabled={deletingAccount}
                 className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm text-destructive hover:bg-destructive/10 active:bg-destructive/20 transition border-t border-border/40 disabled:opacity-50"
@@ -803,6 +812,34 @@ const Profile = () => {
                         setDeletingAccount(false);
                       }
                     }}
+                    disabled={deletingAccount}
+                  >
+                    {deletingAccount ? "Deleting..." : "Delete Permanently"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Controlled delete-confirm — triggered by the kebab menu's
+                "Delete Account" item. The Settings-tab button uses the
+                uncontrolled AlertDialog above. Both routes converge on
+                performAccountDeletion(). */}
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This permanently removes your account, profile, posts,
+                    check-ins, and habit data. If you have an active
+                    subscription, cancel it first from subscription management
+                    so billing stops correctly.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Keep Account</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={performAccountDeletion}
                     disabled={deletingAccount}
                   >
                     {deletingAccount ? "Deleting..." : "Delete Permanently"}

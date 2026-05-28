@@ -4717,3 +4717,55 @@ p, span.selectable, input, textarea, [contenteditable] {
     animation: none !important;
   }
 }
+
+/* ============================================================
+   PREMIUM POLISH — final pass utilities
+   Added 2026-05-26 by Coach rebuild Phase polish.
+   All scoped under @layer utilities or specific selectors so they
+   don't fight existing component-level styles.
+   ============================================================ */
+@layer utilities {
+  /* Page-header bar — sub-page top bars (CoachHabits, CoachReflect, etc).
+     Adds depth: subtle vertical gradient + hairline shadow under the bar
+     so the header reads as lifted, not as flat content. */
+  .page-header-premium {
+    background: linear-gradient(180deg, hsl(var(--card) / 0.85) 0%, hsl(var(--card) / 0.55) 100%);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.04),
+      0 2px 10px -4px hsl(0 0% 0% / 0.45);
+    position: relative;
+  }
+  .page-header-premium::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(var(--gold) / 0.18) 50%, transparent);
+    pointer-events: none;
+  }
+
+  /* Premium input focus — adds a soft inner glow + thicker outer bloom
+     for tactile depth. Apple-style. Falls back gracefully when the
+     browser doesn't support :focus-visible. */
+  input:focus-visible,
+  textarea:focus-visible {
+    box-shadow:
+      0 0 0 2px hsl(var(--gold) / 0.55),
+      0 0 14px hsl(var(--gold) / 0.16),
+      inset 0 0 6px hsl(var(--gold) / 0.08);
+    outline: none;
+    transition: box-shadow 160ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  /* Premium scrollbar — bump idle opacity so users on long lists can SEE
+     they can scroll. Previous 0.5 alpha was invisible against
+     dark obsidian on iOS — confused new users on Leaderboard / Tribes. */
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      hsl(var(--gold-soft) / 0.65),
+      hsl(var(--gold-dark) / 0.7)
+    ) !important;
+  }
+}
+

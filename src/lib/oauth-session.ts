@@ -27,20 +27,14 @@ export async function applySessionFromUrl(
     const url = input instanceof URL ? input : new URL(input, window.location.origin);
     const { accessToken, refreshToken } = extractTokens(url);
 
-    if (!accessToken || !refreshToken) {
-      console.log("[OAuth] No tokens found in URL");
-      return false;
-    }
+    if (!accessToken || !refreshToken) return false;
 
-    console.log("[OAuth] Applying session from URL tokens");
     const { error } = await supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
     });
 
     if (error) throw error;
-
-    console.log("[OAuth] Session applied successfully");
     return true;
   } catch (err) {
     console.error("[OAuth] Failed to apply session:", err);

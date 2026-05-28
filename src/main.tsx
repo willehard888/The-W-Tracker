@@ -71,7 +71,6 @@ async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
 
   oauthHandled = true;
   oauthHandledAt = Date.now();
-  console.log(`[DeepLink] Processing ${source} OAuth callback`);
 
   try {
     const parsed = new URL(url, window.location.origin);

@@ -62,7 +62,10 @@ interface DailyQuestsProps {
 }
 
 const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
-  const dailyQuests = useMemo(() => getDailyQuests(), []);
+  // Re-seed quests when the local calendar date changes. Without this,
+  // an app left open over midnight kept showing yesterday's quest list.
+  const todayKey = new Date().toDateString();
+  const dailyQuests = useMemo(() => getDailyQuests(), [todayKey]);
 
   const questStatuses = useMemo(() => {
     return dailyQuests.map((quest) => ({

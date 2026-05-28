@@ -35,7 +35,7 @@ const CoachProgress = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="shrink-0 px-4 pt-3 pb-2 flex items-center gap-2 border-b border-border/30">
+      <div className="shrink-0 page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
         <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)}>
           <ArrowLeft size={18} />
         </Button>

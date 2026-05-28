@@ -2,7 +2,7 @@ import { Swords, Crown, Clock, Trophy, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import RealisticFlame from "@/components/home/RealisticFlame";
+import TribeFireLite from "@/components/TribeFireLite";
 import { collectiveTierName, collectiveStreakTier, collectiveAccent } from "@/lib/tribe-streak";
 
 export interface TribeBattle {
@@ -117,7 +117,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
             <div className="flex items-center gap-2">
               <div className="shrink-0 w-10 h-12 flex items-end justify-center">
                 {tier >= 0 ? (
-                  <RealisticFlame tier={tier} accent={accent} size={40} />
+                  <TribeFireLite tier={tier} accent={accent} size={40} />
                 ) : (
                   <span className="text-lg opacity-40">🕯️</span>
                 )}

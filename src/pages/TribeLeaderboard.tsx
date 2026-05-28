@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Crown, Medal, Award, Trophy, Loader2, Users, Lock, Zap } from "lucide-react";
-import RealisticFlame from "@/components/home/RealisticFlame";
+import TribeFireLite from "@/components/TribeFireLite";
 import EmptyState from "@/components/ui/empty-state";
 import {
   collectiveAccent,
@@ -188,7 +188,7 @@ const TribeLeaderboard = () => {
                           }}
                         >
                           <div className="absolute inset-0 flex items-end justify-center pointer-events-none">
-                            <RealisticFlame
+                            <TribeFireLite
                               tier={isFirst ? Math.max(flameTier, 4) : flameTier}
                               accent={flameAccent}
                               size={flameSize}

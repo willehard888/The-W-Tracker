@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import TribeSearchBar from "@/components/TribeSearchBar";
 import StreakFlameInline from "@/components/StreakFlameInline";
-import RealisticFlame from "@/components/home/RealisticFlame";
+import TribeFireLite from "@/components/TribeFireLite";
 import TribeFireHero from "@/components/TribeFireHero";
 import TribeAmbientFireField from "@/components/TribeAmbientFireField";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
@@ -493,7 +493,7 @@ const Tribes = () => {
                       />
                     )}
                     {(collectiveStreaks.get(featured.id) ?? 0) >= 30 ? (
-                      <RealisticFlame
+                      <TribeFireLite
                         tier={collectiveStreakTier(collectiveStreaks.get(featured.id) ?? 0)}
                         accent={collectiveAccent(collectiveStreaks.get(featured.id) ?? 0)}
                         size={64}
@@ -636,7 +636,7 @@ const Tribes = () => {
                           : undefined
                       }
                     >
-                      <RealisticFlame tier={cTier} accent={cAccent} size={Math.min(56, 36 + cTier * 6)} />
+                      <TribeFireLite tier={cTier} accent={cAccent} size={Math.min(56, 36 + cTier * 6)} />
                     </div>
                   ) : !t.cover_url ? (
                     <span className="text-2xl opacity-50 leading-none">{isPaused ? "⏸️" : "🕯️"}</span>

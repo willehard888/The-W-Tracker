@@ -15,7 +15,7 @@ import {
   fetchTribeCollectiveStreak,
   fetchTribeCollectiveStreaks,
 } from "@/lib/tribe-streak";
-import RealisticFlame from "@/components/home/RealisticFlame";
+import TribeFireLite from "@/components/TribeFireLite";
 
 const TribeBattles = () => {
   const { id } = useParams<{ id: string }>();
@@ -146,7 +146,7 @@ const TribeBattles = () => {
           >
             {/* Giant ambient flame anchored bottom-left */}
             <div className="absolute -left-2 bottom-0 pointer-events-none flex items-end justify-center w-32 h-full">
-              <RealisticFlame
+              <TribeFireLite
                 tier={Math.max(heroTier, 3)}
                 accent={heroAccent}
                 size={120}

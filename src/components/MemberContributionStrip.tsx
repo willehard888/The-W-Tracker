@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Crown } from "lucide-react";
-import RealisticFlame from "@/components/home/RealisticFlame";
+import TribeFireLite from "@/components/TribeFireLite";
 import { collectiveAccent, collectiveStreakTier } from "@/lib/tribe-streak";
 import { cn } from "@/lib/utils";
 
@@ -112,7 +112,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
                     className="absolute -top-3 left-1/2 -translate-x-1/2 pointer-events-none"
                     style={{ width: flameSize, height: flameSize }}
                   >
-                    <RealisticFlame tier={Math.max(0, tier)} accent={accent} size={flameSize} />
+                    <TribeFireLite tier={Math.max(0, tier)} accent={accent} size={flameSize} />
                   </div>
                 ) : streak > 0 ? (
                   <div className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-background/90 border border-border/60 flex items-center justify-center">

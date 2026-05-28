@@ -55,6 +55,10 @@ const TribeDetail = lazy(() => import("./pages/TribeDetail"));
 const TribeBattles = lazy(() => import("./pages/TribeBattles"));
 const TribeLeaderboard = lazy(() => import("./pages/TribeLeaderboard"));
 const Vault = lazy(() => import("./pages/Vault"));
+const WeeklyBriefing = lazy(() => import("./pages/WeeklyBriefing"));
+const AdminModeration = lazy(() => import("./pages/AdminModeration"));
+const AdminLegendInvites = lazy(() => import("./pages/AdminLegendInvites"));
+const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -104,6 +108,37 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+/**
+ * ─────────────────────────────────────────────────────────────────────────
+ * ROUTING — THE ONLY ROUTER
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * App.tsx's <Routes> is the SINGLE source of truth for navigation.
+ * Two previous router files (ModalStack.tsx, TabHost.tsx) were deleted
+ * in commit fix-routing-audit because:
+ *   - they were never imported anywhere (dead code)
+ *   - they registered routes that App.tsx didn't, creating ghost routes
+ *     that 404'd at runtime (`/briefing/:id`, `/tribes/new`, all
+ *     `/coach/*` sub-routes)
+ *   - they invited the dangerous mistake "I'll just add my new route in
+ *     ModalStack" → silent NotFound for users
+ *
+ * Rules for adding a route:
+ *   1. Lazy-import the page at the top of this file
+ *   2. Add a <Route path="..." element={<ProtectedRoute>...</ProtectedRoute>}/>
+ *      below — order doesn't matter except the `*` catchall MUST stay last
+ *   3. If the route is public (no auth required), wrap with just the
+ *      element, not ProtectedRoute (see /u/:username for example)
+ *   4. Add the new route's PATH to the navigate() call site at the same
+ *      time — don't ship one without the other
+ *
+ * Audit command — verify every navigate() destination has a Route:
+ *   grep -rohE 'navigate\(["\x27]/[^"\x27]+' src --include="*.tsx" --include="*.ts" \
+ *     | sed -E 's/navigate\(["\x27]//' | sed -E 's|/:[^/]+|/:id|g' | sort -u
+ *
+ * Then cross-reference against:
+ *   grep -oE 'path="/[^"]+"' src/App.tsx | sort -u
+ */
 const AppRoutes = () => {
   const { user } = useAuth();
   usePushNotifications();
@@ -160,6 +195,10 @@ const AppRoutes = () => {
           <Route path="/tribes/:id" element={<ProtectedRoute><TribeDetail /></ProtectedRoute>} />
           <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />
           <Route path="/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
+          <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
+          <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
+          <Route path="/admin/legend-invites" element={<ProtectedRoute><AdminLegendInvites /></ProtectedRoute>} />
+          <Route path="/button-gallery" element={<ProtectedRoute><ButtonGallery /></ProtectedRoute>} />
           <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
           <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
           <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />

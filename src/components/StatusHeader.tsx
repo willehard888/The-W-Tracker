@@ -1,8 +1,11 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrialAccess } from "@/hooks/use-trial-access";
+import { getEffectiveStreak } from "@/lib/streak";
 import { getTierConfig, getNextTier, TIER_ORDER } from "@/lib/status-tiers";
 import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
@@ -54,6 +57,27 @@ const StatusHeader = () => {
     return PRESSURE_QUOTES[Math.abs(hash) % PRESSURE_QUOTES.length];
   }, []);
 
+  // Last check-in drives the EFFECTIVE streak so the header resets the moment
+  // a calendar day is missed — not only after a late check-in. Same query key
+  // as Index so React Query dedupes it (no extra request).
+  const { data: lastCheckin } = useQuery({
+    queryKey: ["last-checkin", profile?.user_id],
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    queryFn: async () => {
+      if (!profile) return null;
+      const { data } = await supabase
+        .from("daily_checkins")
+        .select("checked_in_at")
+        .eq("user_id", profile.user_id)
+        .order("checked_in_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!profile?.user_id,
+  });
+
   if (!user || !profile) return null;
   if (HIDDEN_ROUTES.has(location.pathname)) return null;
   if (
@@ -67,7 +91,7 @@ const StatusHeader = () => {
   const tier = profile.status_tier || "recruit";
   const config = getTierConfig(tier);
   const next = getNextTier(tier);
-  const streak = profile.streak || 0;
+  const streak = getEffectiveStreak(profile.streak || 0, lastCheckin?.checked_in_at);
   const isApex = tier === "apex";
   const isApexSubscriber = (profile as any).is_apex_subscriber === true;
 

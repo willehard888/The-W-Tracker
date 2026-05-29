@@ -209,11 +209,14 @@ const DailyCheckin = () => {
 
     const optimal =
       (sleep >= 7.5 && sleep <= 9) ||
-      (sleep >= 10 && sleep <= 12 && !chronic);
+      (sleep > 9 && sleep <= 12 && !chronic);
 
     let multiplier = 1.0;
     if (sleep >= 7.5 && sleep <= 9) multiplier = 1.0;
-    else if (sleep >= 10 && sleep <= 12) multiplier = chronic ? 0.6 : 0.95;
+    // Slightly-long sleep (9–12h): near-optimal occasionally, penalized only
+    // when chronic. The `> 9` lower bound closes the old 9–10h gap that used
+    // to fall through to the <5h branch and slap a 60% penalty on a 9.5h night.
+    else if (sleep > 9 && sleep <= 12) multiplier = chronic ? 0.6 : 0.95;
     else if (sleep >= 7 && sleep < 7.5) multiplier = 0.8;
     else if (sleep >= 6 && sleep < 7) multiplier = 0.65;
     else if (sleep >= 5 && sleep < 6) multiplier = 0.5;
@@ -222,7 +225,7 @@ const DailyCheckin = () => {
     let penalty: string | null = null;
     if (multiplier < 1) {
       const pct = `${Math.round((1 - multiplier) * 100)}% XP penalty`;
-      if (chronic && sleep >= 10) penalty = `Chronic oversleep — ${pct}`;
+      if (chronic && sleep > 9) penalty = `Chronic oversleep — ${pct}`;
       else if (sleep >= 7 && sleep < 7.5) penalty = `Sub-optimal sleep — ${pct}`;
       else if (sleep < 7) penalty = `Poor sleep — ${pct}`;
       else penalty = pct;
@@ -569,7 +572,7 @@ const DailyCheckin = () => {
             "ml-auto text-2xl font-bold font-display tabular-nums",
             isOptimalSleep ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground"
           )}>
-            {sleep}h {sleep >= 7.5 && sleep <= 9 ? "🚀" : (sleep >= 10 && sleep <= 12 && !isChronicOversleep) ? "✨" : sleep >= 7 && sleep < 7.5 ? "😐" : sleep <= 5 ? "💀" : sleep >= 10 ? "😴" : "⚠️"}
+            {sleep}h {sleep >= 7.5 && sleep <= 9 ? "🚀" : (sleep > 9 && sleep <= 12 && !isChronicOversleep) ? "✨" : sleep >= 7 && sleep < 7.5 ? "😐" : sleep <= 5 ? "💀" : sleep > 9 ? "😴" : "⚠️"}
           </span>
         </div>
         <input type="range" min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />

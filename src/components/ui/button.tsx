@@ -5,9 +5,35 @@ import { Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
-import magmaTexture from "@/assets/btn-magma-texture.jpg";
-import goldTexture from "@/assets/btn-gold-texture.jpg";
-import lavaTexture from "@/assets/btn-lava-texture.png";
+
+// ─────────────────────────────────────────────────────────────────────
+// PRIMARY EMBER — the single, clean orange-amber CTA look used across the
+// whole app (the "Start Your Journey" style). One vertical gradient
+// (light amber crown → saturated orange foot), crisp dark text, a soft
+// engraved bezel + warm outer glow. GPU-friendly: no texture images, no
+// per-frame animation — just a gradient + box-shadow. Shared by every
+// filled primary variant so all CTAs match.
+// ─────────────────────────────────────────────────────────────────────
+const PRIMARY_EMBER = [
+  "text-[hsl(24_80%_12%)] font-extrabold tracking-[-0.005em]",
+  "[text-shadow:0_1px_0_hsl(42_100%_90%/0.45)]",
+  "overflow-hidden isolate",
+  // BASE: clean vertical amber→orange gradient (matches the reference CTA)
+  "[background:linear-gradient(180deg,hsl(40_96%_72%)_0%,hsl(33_95%_63%)_38%,hsl(25_93%_55%)_72%,hsl(20_90%_48%)_100%)]",
+  // Engraved bezel: bright top highlight, warm dark foot, soft warm outer glow
+  "shadow-[inset_0_1px_0_hsl(46_100%_94%/0.6),inset_0_-1px_0_hsl(20_80%_28%/0.45),0_1px_2px_hsl(20_60%_14%/0.32),0_8px_20px_-6px_hsl(24_90%_48%/0.45),0_16px_32px_-16px_hsl(22_88%_46%/0.5)]",
+  // ::before — soft crown highlight on top + warm bloom at the foot
+  "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
+  "before:[background:radial-gradient(120%_70%_at_50%_-18%,hsl(46_100%_95%/0.5)_0%,hsl(42_100%_88%/0.15)_34%,transparent_64%),radial-gradient(120%_60%_at_50%_120%,hsl(20_100%_55%/0.25)_0%,transparent_62%)]",
+  // Hover: a touch brighter + warmer + slightly deeper glow
+  "hover:brightness-[1.05] hover:saturate-[1.04]",
+  "hover:shadow-[inset_0_1px_0_hsl(46_100%_94%/0.7),inset_0_-1px_0_hsl(20_80%_28%/0.5),0_2px_4px_hsl(20_60%_14%/0.38),0_12px_28px_-6px_hsl(24_90%_48%/0.55),0_22px_44px_-16px_hsl(22_88%_46%/0.6)]",
+  // Pressed: muted + sunken
+  "active:brightness-[0.97]",
+  "active:before:opacity-60",
+  "active:shadow-[inset_0_1px_3px_hsl(20_78%_14%/0.5),inset_0_-1px_0_hsl(46_100%_88%/0.18),0_1px_1px_hsl(0_0%_0%/0.25)]",
+  "disabled:grayscale-[0.3] disabled:before:hidden",
+].join(" ");
 
 const buttonVariants = cva(
   [
@@ -30,38 +56,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Primary — CLEAN gold bar. Polished + GPU-friendly:
-        //   1. Single rich vertical gradient (champagne top → warm amber foot)
-        //   2. Subtle horizontal satin band (kept gentle so text stays crisp)
-        //   3. Crisp engraved bezel (top highlight + dark hairline + warm bottom)
-        //   4. Lightweight ::before crown highlight + warm bottom inner glow
-        //   5. Hover-only diagonal shimmer (transform sweep — no repaint cost)
-        default: [
-          "text-[hsl(28_92%_10%)] font-extrabold tracking-[-0.005em]",
-          "[text-shadow:0_1px_0_hsl(50_100%_96%/0.7)]",
-          "overflow-hidden isolate",
-          // BASE: rich 6-stop gold + soft satin band (low opacity = legible text)
-          "[background:linear-gradient(180deg,hsl(50_100%_98%/0)_0%,hsl(50_100%_99%/0.14)_44%,hsl(50_100%_99%/0.2)_50%,hsl(50_100%_99%/0.14)_56%,hsl(50_100%_98%/0)_70%),linear-gradient(180deg,hsl(52_100%_90%)_0%,hsl(48_100%_80%)_18%,hsl(46_100%_68%)_44%,hsl(42_100%_58%)_72%,hsl(38_96%_48%)_92%,hsl(34_92%_40%)_100%)]",
-          // Engraved bezel — clean and warm
-          "shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.55),inset_0_1px_0_hsl(50_100%_99%/0.95),inset_0_-1px_0_hsl(30_82%_22%/0.55),inset_0_-6px_14px_-8px_hsl(30_82%_28%/0.45),0_1px_2px_hsl(30_60%_14%/0.35),0_8px_18px_-3px_hsl(40_92%_52%/0.45),0_18px_34px_-14px_hsl(38_88%_48%/0.5)]",
-          // ::before — top crown highlight + soft warm bottom glow
-          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
-          "before:[background:radial-gradient(120%_70%_at_50%_-20%,hsl(50_100%_99%/0.55)_0%,hsl(50_100%_96%/0.18)_32%,transparent_62%),radial-gradient(120%_60%_at_50%_120%,hsl(38_100%_60%/0.28)_0%,transparent_60%)]",
-          // ::after — narrow diagonal shimmer (translate3d sweep stays on GPU)
-          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
-          "after:[background:linear-gradient(110deg,transparent_30%,hsl(50_100%_99%/0.45)_50%,transparent_70%)]",
-          "after:opacity-70 after:transition-transform after:duration-[750ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
-          "hover:after:[transform:translate3d(260%,0,0)]",
-          // Hover: a touch brighter + warmer
-          "hover:brightness-[1.05] hover:saturate-[1.06]",
-          "hover:[animation:fire-breathe-glow_3.6s_ease-in-out_infinite]",
-          "hover:shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.6),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_-1px_0_hsl(30_82%_22%/0.6),inset_0_-6px_16px_-8px_hsl(30_82%_28%/0.5),0_2px_3px_hsl(30_60%_14%/0.4),0_12px_22px_-3px_hsl(40_92%_52%/0.55),0_24px_46px_-14px_hsl(38_88%_48%/0.6)]",
-          // Pressed: muted + sunken
-          "active:brightness-[0.96]",
-          "active:before:opacity-50 active:after:opacity-30",
-          "active:shadow-[inset_0_0_0_0.5px_hsl(24_85%_14%/0.7),inset_0_2px_4px_hsl(24_75%_16%/0.5),inset_0_-1px_0_hsl(50_100%_90%/0.2),0_1px_1px_hsl(0_0%_0%/0.3)]",
-          "disabled:grayscale-[0.4] disabled:after:hidden disabled:before:hidden",
-        ].join(" "),
+        // Primary — the clean orange-amber CTA (shared PRIMARY_EMBER look).
+        default: PRIMARY_EMBER,
 
         // Obsidian — dark metal escape hatch when gold is too loud (rare).
         obsidian: [
@@ -132,26 +128,8 @@ const buttonVariants = cva(
         // Link — gold-soft → gold
         link: "text-[hsl(var(--gold-soft))] underline-offset-4 hover:text-[hsl(var(--gold))] hover:underline",
 
-        // Gold — alias of default (legible bright metallic gold)
-        gold: [
-          "text-[hsl(28_92%_10%)] font-extrabold tracking-[-0.005em]",
-          "[text-shadow:0_1px_0_hsl(50_100%_96%/0.7)]",
-          "overflow-hidden isolate",
-          "[background:linear-gradient(180deg,hsl(50_100%_98%/0)_0%,hsl(50_100%_99%/0.14)_44%,hsl(50_100%_99%/0.2)_50%,hsl(50_100%_99%/0.14)_56%,hsl(50_100%_98%/0)_70%),linear-gradient(180deg,hsl(52_100%_90%)_0%,hsl(48_100%_80%)_18%,hsl(46_100%_68%)_44%,hsl(42_100%_58%)_72%,hsl(38_96%_48%)_92%,hsl(34_92%_40%)_100%)]",
-          "shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.55),inset_0_1px_0_hsl(50_100%_99%/0.95),inset_0_-1px_0_hsl(30_82%_22%/0.55),inset_0_-6px_14px_-8px_hsl(30_82%_28%/0.45),0_1px_2px_hsl(30_60%_14%/0.35),0_8px_18px_-3px_hsl(40_92%_52%/0.45),0_18px_34px_-14px_hsl(38_88%_48%/0.5)]",
-          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
-          "before:[background:radial-gradient(120%_70%_at_50%_-20%,hsl(50_100%_99%/0.55)_0%,hsl(50_100%_96%/0.18)_32%,transparent_62%),radial-gradient(120%_60%_at_50%_120%,hsl(38_100%_60%/0.28)_0%,transparent_60%)]",
-          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
-          "after:[background:linear-gradient(110deg,transparent_30%,hsl(50_100%_99%/0.45)_50%,transparent_70%)]",
-          "after:opacity-70 after:transition-transform after:duration-[750ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
-          "hover:after:[transform:translate3d(260%,0,0)]",
-          "hover:brightness-[1.05] hover:saturate-[1.06]",
-          "hover:shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.6),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_-1px_0_hsl(30_82%_22%/0.6),inset_0_-6px_16px_-8px_hsl(30_82%_28%/0.5),0_2px_3px_hsl(30_60%_14%/0.4),0_12px_22px_-3px_hsl(40_92%_52%/0.55),0_24px_46px_-14px_hsl(38_88%_48%/0.6)]",
-          "active:brightness-[0.96]",
-          "active:before:opacity-50 active:after:opacity-30",
-          "active:shadow-[inset_0_0_0_0.5px_hsl(24_85%_14%/0.7),inset_0_2px_4px_hsl(24_75%_16%/0.5),inset_0_-1px_0_hsl(50_100%_90%/0.2),0_1px_1px_hsl(0_0%_0%/0.3)]",
-          "disabled:grayscale-[0.4] disabled:after:hidden disabled:before:hidden",
-        ].join(" "),
+        // Gold — alias of the primary ember CTA
+        gold: PRIMARY_EMBER,
 
         // Gold outline — hairline gold-soft, fills on hover
         "gold-outline": [
@@ -218,40 +196,8 @@ const buttonVariants = cva(
           "active:bg-[hsl(var(--destructive)/0.08)]",
         ].join(" "),
 
-        // Ember — THE tribes/fire signature CTA. Premium molten metal:
-        //   1. 3-layer background: vertical heat streaks + top satin band + ember body
-        //   2. Layered shadows: coal bezel + inner heat-bed + outer flame glow + soft pulsing halo
-        //   3. ::before — golden crown top + hot heat-bloom bottom
-        //   4. ::after — diagonal heat shimmer sweep on hover
-        //   5. Living halo via `ember-halo-pulse` (slow, premium, GPU-only)
-        //   6. Press: sunken into coals + halo briefly damped
-        ember: [
-          "text-[hsl(28_92%_8%)] font-extrabold tracking-[-0.005em]",
-          "[text-shadow:0_1px_0_hsl(40_100%_88%/0.6),0_0_8px_hsl(48_100%_92%/0.25)]",
-          "overflow-hidden isolate",
-          // BASE: vertical heat streaks + top satin band + ember body
-          "[background:repeating-linear-gradient(90deg,transparent_0,transparent_8%,hsl(48_100%_94%/0.05)_8.4%,transparent_8.8%),linear-gradient(180deg,hsl(48_100%_92%/0)_0%,hsl(48_100%_96%/0.22)_46%,hsl(48_100%_96%/0.28)_50%,hsl(48_100%_96%/0.22)_54%,hsl(48_100%_92%/0)_70%),linear-gradient(180deg,hsl(48_100%_75%)_0%,hsl(38_100%_64%)_16%,hsl(26_100%_58%)_38%,hsl(18_98%_54%)_64%,hsl(14_92%_44%)_88%,hsl(10_85%_30%)_100%)]",
-          // ::before — golden crown + bottom heat-bloom
-          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
-          "before:[background:radial-gradient(120%_75%_at_50%_-22%,hsl(48_100%_98%/0.7)_0%,hsl(46_100%_90%/0.22)_30%,transparent_62%),radial-gradient(140%_90%_at_50%_125%,hsl(20_100%_62%/0.6)_0%,hsl(14_92%_46%/0.28)_38%,transparent_72%)]",
-          // ::after — diagonal heat shimmer (sweeps on hover, GPU translate)
-          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
-          "after:[background:linear-gradient(110deg,transparent_28%,hsl(48_100%_98%/0.55)_50%,transparent_72%)]",
-          "after:opacity-80 after:transition-transform after:duration-[900ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
-          "hover:after:[transform:translate3d(280%,0,0)]",
-          // Living halo — slow premium pulse via keyframe (defined in index.css)
-          "ember-halo",
-          "[animation:ember-halo-pulse_3.6s_ease-in-out_infinite]",
-          // Hover: brighter coals + faster halo
-          "hover:brightness-[1.08] hover:saturate-[1.10]",
-          "hover:[animation-duration:2.2s]",
-          // Pressed: sunken into coals
-          "active:brightness-[0.94] active:saturate-[0.95]",
-          "active:before:opacity-50 active:after:opacity-25",
-          "active:[animation:none]",
-          "active:shadow-[inset_0_0_0_0.5px_hsl(10_85%_8%/0.8),inset_0_2px_5px_hsl(10_82%_10%/0.6),inset_0_-1px_0_hsl(46_100%_82%/0.18),inset_0_-6px_14px_-8px_hsl(18_95%_50%/0.5),0_1px_1px_hsl(0_0%_0%/0.4)]",
-          "disabled:grayscale-[0.5] disabled:after:hidden disabled:before:hidden disabled:[animation:none]",
-        ].join(" "),
+        // Ember — the tribes/fire signature CTA. Now the shared primary look.
+        ember: PRIMARY_EMBER,
 
         // Ember outline — premium hairline ember for secondary tribe actions
         "ember-outline": [
@@ -276,45 +222,8 @@ const buttonVariants = cva(
           "active:shadow-[inset_0_2px_4px_hsl(10_82%_10%/0.5)]",
         ].join(" "),
 
-        // Coal / Hiillos — THE next-level evolution of the gold/amber CTA.
-        // A glowing coal: deep anthracite body that the heat burns through from beneath.
-        //   • Deep coal body (so the inner heat has darkness to glow against)
-        //   • Inner radial heat-bed (red-orange) burning through from below
-        //   • Golden top crown — keeps the regal/identity association of gold
-        //   • Cracking surface texture: faint horizontal ember fissures
-        //   • Living halo: slow gold→ember pulse, premium and alive
-        //   • Press: coal "settles", heat dampens, fissures dim
-        // Use this where you previously used `gold` for high-value identity actions
-        // (Login / Continue / Accept / Save Changes / Save Image / Earn Status).
-        coal: [
-          "text-[hsl(46_100%_88%)] font-extrabold tracking-[-0.005em]",
-          "[text-shadow:0_1px_0_hsl(20_60%_8%/0.85),0_0_10px_hsl(28_100%_56%/0.4)]",
-          "overflow-hidden isolate",
-          // BASE: horizontal ember fissures + warm satin band + deep coal body
-          "[background:repeating-linear-gradient(180deg,transparent_0,transparent_22%,hsl(20_95%_50%/0.10)_23%,transparent_24%,transparent_46%,hsl(28_95%_55%/0.07)_47%,transparent_48%),linear-gradient(180deg,hsl(46_100%_92%/0)_0%,hsl(40_100%_88%/0.12)_46%,hsl(40_100%_88%/0.16)_50%,hsl(40_100%_88%/0.12)_54%,hsl(46_100%_92%/0)_70%),radial-gradient(140%_100%_at_50%_120%,hsl(18_98%_42%)_0%,hsl(14_88%_24%)_38%,hsl(18_55%_12%)_72%,hsl(20_45%_8%)_100%)]",
-          // Coal bezel: deep dark rim + warm inner heat + soft golden crown highlight
-          "shadow-[inset_0_0_0_0.5px_hsl(20_70%_6%/0.9),inset_0_1px_0_hsl(46_100%_92%/0.55),inset_0_-1px_0_hsl(20_85%_6%/0.85),inset_0_8px_18px_-10px_hsl(40_100%_70%/0.25),inset_0_-12px_28px_-8px_hsl(18_95%_42%/0.55),0_1px_2px_hsl(0_0%_0%/0.5),0_8px_20px_-3px_hsl(18_95%_38%/0.4),0_18px_36px_-14px_hsl(28_85%_36%/0.5)]",
-          // ::before — golden top crown + intense bottom heat-bed (the burning core)
-          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
-          "before:[background:radial-gradient(120%_60%_at_50%_-25%,hsl(48_100%_92%/0.55)_0%,hsl(42_100%_70%/0.18)_30%,transparent_60%),radial-gradient(160%_110%_at_50%_135%,hsl(20_100%_56%/0.7)_0%,hsl(14_92%_38%/0.32)_35%,transparent_70%)]",
-          // ::after — diagonal gold→ember heat shimmer on hover
-          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
-          "after:[background:linear-gradient(110deg,transparent_28%,hsl(48_100%_92%/0.45)_50%,transparent_72%)]",
-          "after:opacity-80 after:transition-transform after:duration-[900ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
-          "hover:after:[transform:translate3d(280%,0,0)]",
-          // Living halo — slow premium pulse via keyframe (defined in index.css)
-          "coal-halo",
-          "[animation:coal-halo-pulse_4s_ease-in-out_infinite]",
-          // Hover: hotter core + faster halo
-          "hover:brightness-[1.08] hover:saturate-[1.10]",
-          "hover:[animation-duration:2.6s]",
-          // Pressed: coal settles, heat dampens
-          "active:brightness-[0.94] active:saturate-[0.95]",
-          "active:before:opacity-50 active:after:opacity-25",
-          "active:[animation:none]",
-          "active:shadow-[inset_0_0_0_0.5px_hsl(20_70%_4%/0.95),inset_0_2px_5px_hsl(20_75%_6%/0.7),inset_0_-1px_0_hsl(40_100%_80%/0.18),inset_0_-8px_18px_-10px_hsl(18_95%_42%/0.5),0_1px_1px_hsl(0_0%_0%/0.5)]",
-          "disabled:grayscale-[0.5] disabled:after:hidden disabled:before:hidden disabled:[animation:none]",
-        ].join(" "),
+        // Coal / Hiillos — high-value identity CTA. Now the shared primary look.
+        coal: PRIMARY_EMBER,
 
         // Gold-soft — explicit premium gold-glass for cancel/compare/message style actions.
         // Stronger gold crown than `secondary` — pick this when you want clearer "luxury cancel".
@@ -385,121 +294,11 @@ const buttonVariants = cva(
           "active:shadow-[inset_0_2px_4px_hsl(20_85%_6%/0.7)]",
         ].join(" "),
 
-        // ─────────────────────────────────────────────────────────────────────
-        // MAGMA — real lava-cracked rock CTA. Photographic texture + animated
-        // heat shift through the cracks. The pinnacle "fire" CTA in the app.
-        //   • Real molten-rock texture base (animated background-position drift)
-        //   • Glowing crack overlay via mix-blend so cracks pulse with light
-        //   • Top dark vignette keeps text legible against bright lava
-        //   • Hover: heat intensifies (saturation + brightness + faster drift)
-        //   • Press: lava cools (settles), animations pause
-        // Use sparingly — this is the "ignite" / "go nuclear" button.
-        // ─────────────────────────────────────────────────────────────────────
-        magma: [
-          "text-[hsl(48_100%_94%)] font-extrabold tracking-[-0.005em] uppercase text-xs",
-          "[text-shadow:0_1px_0_hsl(20_90%_6%/0.95),0_0_10px_hsl(28_100%_56%/0.6),0_2px_8px_hsl(14_92%_30%/0.85)]",
-          "overflow-hidden isolate",
-          // BASE: real lava texture (drifts slowly), warmed via overlay
-          "[background-image:url(var(--magma-bg)),linear-gradient(180deg,hsl(14_92%_46%/0.25)_0%,hsl(20_85%_18%/0.45)_100%)]",
-          "[background-size:200%_200%,100%_100%] [background-position:0%_50%,0_0]",
-          "[background-blend-mode:overlay,normal]",
-          // Coal bezel — keeps the molten contained and tactile
-          "shadow-[inset_0_0_0_0.5px_hsl(20_70%_4%/0.95),inset_0_1px_0_hsl(48_100%_92%/0.45),inset_0_-1px_0_hsl(20_85%_6%/0.9),inset_0_-12px_28px_-10px_hsl(18_98%_48%/0.55),0_1px_2px_hsl(0_0%_0%/0.55),0_8px_22px_-3px_hsl(18_95%_42%/0.55),0_18px_42px_-12px_hsl(14_92%_38%/0.65)]",
-          // ::before — top dark vignette for text legibility + bottom heat bloom
-          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
-          "before:[background:radial-gradient(120%_55%_at_50%_-15%,hsl(20_80%_4%/0.55)_0%,transparent_55%),radial-gradient(140%_100%_at_50%_125%,hsl(20_100%_56%/0.45)_0%,transparent_70%)]",
-          // ::after — diagonal heat sweep on hover
-          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
-          "after:[background:linear-gradient(110deg,transparent_28%,hsl(48_100%_96%/0.45)_50%,transparent_72%)]",
-          "after:opacity-70 after:transition-transform after:duration-[900ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
-          "hover:after:[transform:translate3d(280%,0,0)]",
-          // Living: slow background drift + halo pulse
-          "[animation:magma-drift_18s_linear_infinite,ember-halo-pulse_3.6s_ease-in-out_infinite]",
-          // Hover: hotter
-          "hover:brightness-[1.10] hover:saturate-[1.18]",
-          "hover:[animation-duration:10s,2.2s]",
-          // Press: lava cools, animations stop
-          "active:brightness-[0.92] active:saturate-[0.92]",
-          "active:before:opacity-50 active:after:opacity-25",
-          "active:[animation:none]",
-          "active:shadow-[inset_0_0_0_0.5px_hsl(20_70%_3%/0.95),inset_0_2px_6px_hsl(20_75%_5%/0.75),inset_0_-1px_0_hsl(40_100%_82%/0.18),inset_0_-8px_18px_-10px_hsl(18_95%_42%/0.5),0_1px_1px_hsl(0_0%_0%/0.5)]",
-          "disabled:grayscale-[0.6] disabled:after:hidden disabled:before:hidden disabled:[animation:none]",
-        ].join(" "),
-
-        // ─────────────────────────────────────────────────────────────────────
-        // BULLION — real polished gold-bar CTA. Photographic 999.9 fine gold.
-        //   • Real polished gold texture base (subtle vertical drift = light moves)
-        //   • Top mirror-shine highlight band
-        //   • Engraved bezel keeps the bar feeling tactile
-        //   • Hover: brighter shine + faster sheen sweep
-        // Use for premium identity actions (Upgrade, Claim, Save Status, Receipt).
-        // ─────────────────────────────────────────────────────────────────────
-        bullion: [
-          "text-[hsl(28_92%_8%)] font-extrabold tracking-[-0.005em] uppercase text-xs",
-          "[text-shadow:0_1px_0_hsl(50_100%_98%/0.85),0_0_4px_hsl(50_100%_94%/0.4)]",
-          "overflow-hidden isolate",
-          // BASE: real polished gold texture + warm gradient overlay
-          "[background-image:url(var(--bullion-bg)),linear-gradient(180deg,hsl(50_100%_88%/0.4)_0%,hsl(38_96%_52%/0.5)_100%)]",
-          "[background-size:170%_170%,100%_100%] [background-position:50%_30%,0_0]",
-          "[background-blend-mode:overlay,normal]",
-          // Engraved bullion bezel
-          "shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.65),inset_0_1px_0_hsl(50_100%_99%/1),inset_0_-1px_0_hsl(30_82%_22%/0.65),inset_0_-8px_16px_-10px_hsl(30_82%_28%/0.5),0_1px_2px_hsl(30_60%_14%/0.4),0_8px_20px_-3px_hsl(40_92%_52%/0.5),0_20px_38px_-14px_hsl(38_88%_48%/0.55)]",
-          // ::before — soft mirror-shine band on top + warm bottom glow
-          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
-          "before:[background:linear-gradient(180deg,hsl(50_100%_99%/0.55)_0%,hsl(50_100%_99%/0.18)_18%,transparent_42%),radial-gradient(140%_70%_at_50%_125%,hsl(38_100%_60%/0.32)_0%,transparent_65%)]",
-          // ::after — diagonal mirror-sheen sweep
-          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
-          "after:[background:linear-gradient(110deg,transparent_30%,hsl(50_100%_99%/0.55)_50%,transparent_70%)]",
-          "after:opacity-70 after:transition-transform after:duration-[850ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
-          "hover:after:[transform:translate3d(260%,0,0)]",
-          // Living: slow vertical light drift on the polished surface
-          "[animation:bullion-shine-drift_14s_ease-in-out_infinite]",
-          // Hover: brighter + slightly more saturated
-          "hover:brightness-[1.06] hover:saturate-[1.08]",
-          "hover:[animation-duration:8s]",
-          // Press: muted, settles
-          "active:brightness-[0.95]",
-          "active:before:opacity-55 active:after:opacity-30",
-          "active:[animation:none]",
-          "active:shadow-[inset_0_0_0_0.5px_hsl(24_85%_14%/0.7),inset_0_2px_4px_hsl(24_75%_16%/0.5),inset_0_-1px_0_hsl(50_100%_90%/0.2),0_1px_1px_hsl(0_0%_0%/0.3)]",
-          "disabled:grayscale-[0.4] disabled:after:hidden disabled:before:hidden disabled:[animation:none]",
-        ].join(" "),
-
-        // ─────────────────────────────────────────────────────────────────────
-        // AURUM — gold → lava morph. The crown-jewel CTA.
-        // Idle: a polished molten-gold bar (warm, calm, premium).
-        // Hover: real lava texture ignites underneath via a dedicated <span>
-        //        overlay (more reliable than ::before for url(var()) chains).
-        // Press: lava cools, settles back into the bar.
-        // The component injects a `<span class="aurum-lava-layer">` child below
-        // the text — see Button render branch.
-        // ─────────────────────────────────────────────────────────────────────
-        aurum: [
-          "text-[hsl(28_92%_8%)] font-extrabold tracking-[-0.005em]",
-          "[text-shadow:0_1px_0_hsl(50_100%_96%/0.7)]",
-          "overflow-hidden isolate",
-          // BASE: same polished gold bar as `gold` (so idle reads as luxury, not aggression)
-          "[background:linear-gradient(180deg,hsl(50_100%_98%/0)_0%,hsl(50_100%_99%/0.14)_44%,hsl(50_100%_99%/0.2)_50%,hsl(50_100%_99%/0.14)_56%,hsl(50_100%_98%/0)_70%),linear-gradient(180deg,hsl(52_100%_90%)_0%,hsl(48_100%_80%)_18%,hsl(46_100%_68%)_44%,hsl(42_100%_58%)_72%,hsl(38_96%_48%)_92%,hsl(34_92%_40%)_100%)]",
-          // Engraved gold bezel — gives the bar weight and tactility
-          "shadow-[inset_0_0_0_0.5px_hsl(30_78%_18%/0.55),inset_0_1px_0_hsl(50_100%_99%/0.95),inset_0_-1px_0_hsl(30_82%_22%/0.55),inset_0_-6px_14px_-8px_hsl(30_82%_28%/0.45),0_1px_2px_hsl(30_60%_14%/0.35),0_8px_18px_-3px_hsl(40_92%_52%/0.45),0_18px_34px_-14px_hsl(38_88%_48%/0.5)]",
-          // ::after — diagonal mirror sheen sweep on hover
-          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[3]",
-          "after:[background:linear-gradient(110deg,transparent_30%,hsl(48_100%_98%/0.55)_50%,transparent_70%)]",
-          "after:opacity-70 after:transition-transform after:duration-[850ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
-          "hover:after:[transform:translate3d(280%,0,0)]",
-          // Living gold halo — slow, premium pulse at idle
-          "[animation:fire-breathe-glow_4.8s_ease-in-out_infinite]",
-          // ── HOVER — gold ignites: brighter + more saturated + ember halo ──
-          "hover:brightness-[1.08] hover:saturate-[1.12]",
-          "hover:[animation:aurum-halo-pulse_2.4s_ease-in-out_infinite]",
-          "hover:shadow-[inset_0_0_0_0.5px_hsl(20_85%_10%/0.7),inset_0_1px_0_hsl(50_100%_99%/0.95),inset_0_-1px_0_hsl(20_85%_8%/0.6),inset_0_-8px_18px_-8px_hsl(18_95%_42%/0.55),0_2px_3px_hsl(20_70%_8%/0.45),0_14px_28px_-3px_hsl(20_98%_46%/0.55),0_28px_52px_-14px_hsl(14_92%_38%/0.6)]",
-          // ── PRESS — lava cools, settles back ──
-          "active:brightness-[0.95]",
-          "active:after:opacity-25",
-          "active:[animation:none]",
-          "active:shadow-[inset_0_0_0_0.5px_hsl(24_85%_14%/0.7),inset_0_2px_4px_hsl(24_75%_16%/0.5),inset_0_-1px_0_hsl(50_100%_90%/0.2),0_1px_1px_hsl(0_0%_0%/0.3)]",
-          "disabled:grayscale-[0.45] disabled:after:hidden disabled:[animation:none]",
-        ].join(" "),
+        // MAGMA / BULLION / AURUM — legacy "premium fire" CTAs, now unified
+        // with the shared PRIMARY_EMBER look so every primary button matches.
+        magma: PRIMARY_EMBER,
+        bullion: PRIMARY_EMBER,
+        aurum: PRIMARY_EMBER,
       },
       size: {
         default: "h-10 min-h-10 px-4 py-2 rounded-md",
@@ -551,24 +350,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       [onClick, loading],
     );
 
-    // Inject texture URLs as CSS vars for variants that consume them.
-    const textureStyle = React.useMemo<React.CSSProperties | undefined>(() => {
-      if (variant === "magma") {
-        return { ["--magma-bg" as string]: `url(${magmaTexture})` };
-      }
-      if (variant === "bullion") {
-        return { ["--bullion-bg" as string]: `url(${goldTexture})` };
-      }
-      return undefined;
-    }, [variant]);
-
-    // Variants that get the molten lava-drip overlay (default/gold/aurum all share it now)
-    const isLavaDrip = variant === "aurum" || variant === "default" || variant === "gold" || variant == null;
-
-    const mergedStyle = textureStyle
-      ? { ...textureStyle, ...((props as React.HTMLAttributes<HTMLElement>).style ?? {}) }
-      : (props as React.HTMLAttributes<HTMLElement>).style;
-
     // When asChild, Slot requires a single child — preserve children as-is.
     if (asChild) {
       return (
@@ -577,7 +358,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ref={ref}
           onClick={handleClick}
           {...props}
-          style={mergedStyle}
         >
           {children}
         </Comp>
@@ -592,28 +372,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         aria-busy={loading || undefined}
         {...props}
-        style={mergedStyle}
       >
-        {/* Lava-drip stack — three layers compose realistic molten flow.
-            Applied to default/gold/aurum so the entire app inherits it. */}
-        {isLavaDrip && (
-          <>
-            <span
-              aria-hidden
-              className="aurum-lava-layer absolute inset-0 rounded-[inherit] pointer-events-none z-[1] bg-cover bg-center"
-              style={{ backgroundImage: `url(${lavaTexture})` }}
-            />
-            <span
-              aria-hidden
-              className="aurum-lava-layer--fast absolute inset-0 rounded-[inherit] pointer-events-none z-[1] bg-cover bg-center"
-              style={{ backgroundImage: `url(${lavaTexture})` }}
-            />
-            <span
-              aria-hidden
-              className="aurum-lava-glow absolute inset-0 rounded-[inherit] pointer-events-none z-[2]"
-            />
-          </>
-        )}
         {loading && (
           <span className="absolute inset-0 flex items-center justify-center z-[4]">
             <Loader2 className="animate-spin" />

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
@@ -42,6 +42,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Guards against concurrent fetchProfile calls for the same user.
   const fetchingProfileFor = useRef<string | null>(null);
+  // Shared in-flight promise so concurrent callers (getSession +
+  // onAuthStateChange both firing on boot) await the SAME fetch instead of
+  // one returning instantly and settling `loading` before profile is set.
+  const profilePromiseRef = useRef<Promise<void> | null>(null);
 
   const buildFallbackUsername = (authUser: User) => {
     const rawUsername = String(
@@ -81,51 +85,62 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return isAppleUser && (!username || username === fallbackUsername);
   };
 
-  const fetchProfile = async (authUser: User) => {
-    // Deduplicate concurrent calls for the same user.
-    if (fetchingProfileFor.current === authUser.id) return;
+  const fetchProfile = (authUser: User): Promise<void> => {
+    // Deduplicate concurrent calls for the same user — return the SAME
+    // in-flight promise so every caller awaits the actual completion.
+    if (fetchingProfileFor.current === authUser.id && profilePromiseRef.current) {
+      return profilePromiseRef.current;
+    }
     fetchingProfileFor.current = authUser.id;
 
-    try {
-      let { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", authUser.id)
-        .maybeSingle();
-
-      if (!data) {
-        await ensureProfile(authUser);
-
-        const retry = await supabase
+    const run = (async () => {
+      try {
+        let { data } = await supabase
           .from("profiles")
           .select("*")
           .eq("user_id", authUser.id)
           .maybeSingle();
 
-        data = retry.data ?? null;
-      }
+        if (!data) {
+          await ensureProfile(authUser);
 
-      setProfile(data);
-      setIsElite(Boolean(data?.is_elite));
+          const retry = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("user_id", authUser.id)
+            .maybeSingle();
 
-      if (shouldForceAppleUsernameSetup(authUser, data)) {
-        if (!data?.username || data.username === buildFallbackUsername(authUser)) {
-          clearAppleAuthStarted();
-          markAppleUsernameSelectionPending();
-          return;
+          data = retry.data ?? null;
         }
+
+        setProfile(data);
+        setIsElite(Boolean(data?.is_elite));
+
+        if (shouldForceAppleUsernameSetup(authUser, data)) {
+          if (!data?.username || data.username === buildFallbackUsername(authUser)) {
+            clearAppleAuthStarted();
+            markAppleUsernameSelectionPending();
+            return;
+          }
+        }
+
+        clearAppleAuthStarted();
+        clearAppleUsernameSelectionPending();
+      } finally {
+        fetchingProfileFor.current = null;
+        profilePromiseRef.current = null;
       }
+    })();
 
-      clearAppleAuthStarted();
-      clearAppleUsernameSelectionPending();
-    } finally {
-      fetchingProfileFor.current = null;
-    }
+    profilePromiseRef.current = run;
+    return run;
   };
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (user) await fetchProfile(user);
-  };
+    // fetchProfile relies only on stable refs/setters; safe to omit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const checkSubscription = useCallback(async () => {
     if (isNativePlatform()) {
@@ -156,40 +171,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   useEffect(() => {
-    // getSession resolves synchronously from storage most of the time.
-    // onAuthStateChange also fires with the initial session.
-    // We call fetchProfile from onAuthStateChange only and let getSession
-    // just set the sync state so loading turns off fast.
-    let initialised = false;
+    let active = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!initialised) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) fetchProfile(session.user);
-        setLoading(false);
-        initialised = true;
+    // Apply a session and settle `loading` ONLY after the profile fetch has
+    // resolved. Otherwise consumers briefly see loading=false with a null
+    // profile, which makes `effectiveMembership` (user && profile) flash false
+    // and flickers premium UI as locked on every cold start.
+    const applySession = async (session: Session | null) => {
+      if (!active) return;
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        await fetchProfile(session.user);
+      } else {
+        setProfile(null);
+        setIsElite(false);
+        setSubscriptionEnd(null);
       }
-    });
+      if (active) setLoading(false);
+    };
 
+    // Subscribe FIRST so no auth event between subscribe and getSession is
+    // missed. Defer the async work out of the callback (Supabase guidance:
+    // never await Supabase calls directly inside onAuthStateChange).
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          // defer to avoid calling Supabase inside the onAuthStateChange callback
-          setTimeout(() => fetchProfile(session.user), 0);
-        } else {
-          setProfile(null);
-          setIsElite(false);
-          setSubscriptionEnd(null);
-        }
-        setLoading(false);
-        initialised = true;
+      (_event, session) => {
+        setTimeout(() => { void applySession(session); }, 0);
       },
     );
 
-    return () => subscription.unsubscribe();
+    // Then hydrate the persisted session for the first paint.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      void applySession(session);
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Check subscription on login and periodically (every 5 minutes).
@@ -202,7 +221,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => clearInterval(interval);
   }, [user, checkSubscription]);
 
-  const signUp = async (email: string, password: string, username: string) => {
+  const signUp = useCallback(async (email: string, password: string, username: string) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -212,21 +231,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       },
     });
     return { error };
-  };
+  }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     clearAppleAuthStarted();
     clearAppleUsernameSelectionPending();
     setProfile(null);
     setIsElite(false);
     setSubscriptionEnd(null);
-  };
+  }, []);
 
   // PAYWALL REMOVED — every logged-in user with a loaded profile is treated
   // as Premium / Elite / Apex regardless of the underlying RevenueCat or DB
@@ -246,26 +265,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // one source of truth so the toggle is a single line.
   const effectiveMembership = user !== null && profile !== null;
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        profile,
-        loading,
-        isElite: effectiveMembership,
-        isPremium: effectiveMembership,
-        isApexSubscriber: effectiveMembership,
-        subscriptionLoading: loading,
-        subscriptionEnd,
-        checkSubscription,
-        signUp,
-        signIn,
-        signOut,
-        refreshProfile,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user,
+      session,
+      profile,
+      loading,
+      isElite: effectiveMembership,
+      isPremium: effectiveMembership,
+      isApexSubscriber: effectiveMembership,
+      subscriptionLoading: loading,
+      subscriptionEnd,
+      checkSubscription,
+      signUp,
+      signIn,
+      signOut,
+      refreshProfile,
+    }),
+    [
+      user,
+      session,
+      profile,
+      loading,
+      effectiveMembership,
+      subscriptionEnd,
+      checkSubscription,
+      signUp,
+      signIn,
+      signOut,
+      refreshProfile,
+    ],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -122,12 +122,17 @@ const DailyCheckin = () => {
     enabled: !!user,
   });
 
-  const canCheckin = !lastCheckin || (Date.now() - new Date(lastCheckin.checked_in_at).getTime() > 24 * 60 * 60 * 1000);
+  // Calendar-day window (T2): one check-in per LOCAL day, matching the
+  // server-side guard in record_checkin. toDateString() is local-time, so
+  // this naturally respects the user's timezone with no drift.
+  const canCheckin = !lastCheckin ||
+    new Date(lastCheckin.checked_in_at).toDateString() !== new Date().toDateString();
 
   const getTimeUntilCheckin = () => {
-    if (!lastCheckin || canCheckin) return null;
-    const nextTime = new Date(lastCheckin.checked_in_at).getTime() + 24 * 60 * 60 * 1000;
-    const diff = nextTime - Date.now();
+    if (canCheckin) return null;
+    const tomorrow = new Date();
+    tomorrow.setHours(24, 0, 0, 0); // next local midnight
+    const diff = tomorrow.getTime() - Date.now();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${mins}m`;
@@ -293,32 +298,57 @@ const DailyCheckin = () => {
         proof_photo_url = urlData.publicUrl;
       }
 
-      // Insert check-in — capture id so we can verify against HealthKit
-      // after the insert lands.
-      const { data: insertedCheckin } = await supabase
-        .from("daily_checkins")
-        .insert({
-          user_id: user.id,
-          checked_in_at: checkinTimestamp,
-          sleep_hours: sleep,
-          workout,
-          extra_workout: extraWorkout,
-          cold_shower: coldShower,
-          healthy_food: healthyFood,
-          protein_intake: protein,
-          meditation_morning: meditationAm,
-          meditation_evening: meditationPm,
-          hydration_liters: hydration,
-          no_phone_morning: noPhoneAm,
-          no_phone_evening: noPhonePm,
-          reading,
-          xp_earned: totalXp,
-          proof_photo_url,
-          journal_entry: journaling ? "logged" : null,
-        })
-        .select("id")
-        .single();
-      const newCheckinId = insertedCheckin?.id as string | undefined;
+      // Server-owned check-in (R1/T1/T2): one atomic RPC inserts the
+      // daily_checkins row, enforces ONE check-in per local calendar day,
+      // computes the streak server-side, and writes xp/level/streak. The
+      // client can no longer spoof these — profile columns are DB-locked.
+      const tzOffsetMinutes = new Date().getTimezoneOffset();
+      const { data: result, error: rpcError } = await supabase.rpc("record_checkin", {
+        p_sleep_hours: sleep,
+        p_workout: workout,
+        p_extra_workout: extraWorkout,
+        p_cold_shower: coldShower,
+        p_healthy_food: healthyFood,
+        p_protein_intake: protein,
+        p_meditation_morning: meditationAm,
+        p_meditation_evening: meditationPm,
+        p_hydration_liters: hydration,
+        p_no_phone_morning: noPhoneAm,
+        p_no_phone_evening: noPhonePm,
+        p_reading: reading,
+        p_xp_earned: totalXp,
+        p_proof_photo_url: proof_photo_url,
+        p_journal_entry: journaling ? "logged" : null,
+        p_tz_offset_minutes: tzOffsetMinutes,
+      });
+
+      // R3: surface failures instead of silently losing the check-in. We keep
+      // the wizard state on error so the user can retry with one tap.
+      if (rpcError) {
+        if (rpcError.message?.includes("ALREADY_CHECKED_IN_TODAY")) {
+          toast.error("You've already checked in today. Come back tomorrow 💪");
+          queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
+        } else {
+          toast.error("Couldn't save your check-in — check your connection and try again.", {
+            duration: 5000,
+          });
+        }
+        hapticNotification("error");
+        setSubmitting(false);
+        return;
+      }
+
+      const r = result as {
+        checkin_id: string;
+        xp_earned: number;
+        new_xp: number;
+        old_level: number;
+        new_level: number;
+        old_streak: number;
+        new_streak: number;
+        streak_broken: boolean;
+      };
+      const newCheckinId = r.checkin_id;
 
       // HealthKit verification — fire-and-forget so a slow / failing sync
       // never blocks the celebration screen. Verified status is read back
@@ -326,8 +356,8 @@ const DailyCheckin = () => {
       if (newCheckinId && healthKit.available) {
         healthKit.syncToday().then(async () => {
           try {
-            const result = await healthKit.verifyCheckin(newCheckinId);
-            if (result.verified) {
+            const vr = await healthKit.verifyCheckin(newCheckinId);
+            if (vr.verified) {
               toast.success("Verified Performer ✓", {
                 description: "HealthKit confirmed your workout + sleep.",
                 duration: 4500,
@@ -339,97 +369,68 @@ const DailyCheckin = () => {
         }).catch((err) => console.warn("HK sync failed", err));
       }
 
-      // Update profile XP and streak
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
+      // Streak-broken warning
+      if (r.streak_broken && r.old_streak > 0) {
+        toast.error(`💀 Streak lost! Your ${r.old_streak}-day streak was reset.`, {
+          duration: 5000,
+        });
+      }
 
-      if (profile) {
-        const newXp = profile.xp + totalXp;
-        const newLevel = Math.floor(newXp / 500) + 1;
+      // Detect level-up
+      if (r.new_level > r.old_level) {
+        setNewLevelReached(r.new_level);
+        setShowLevelUp(true);
+      }
 
-        // Streak logic: reset to 1 if last checkin was more than 48h ago (missed a day)
-        const lastCheckinTime = lastCheckin ? new Date(lastCheckin.checked_in_at).getTime() : 0;
-        const hoursSinceLastCheckin = lastCheckinTime ? (Date.now() - lastCheckinTime) / (1000 * 60 * 60) : 999;
-        const streakBroken = hoursSinceLastCheckin > 48;
-        const newStreak = streakBroken ? 1 : profile.streak + 1;
-        const longestStreak = Math.max(profile.longest_streak, newStreak);
+      await syncStreakWarningNotification({
+        lastCheckinAt: checkinTimestamp,
+        streak: r.new_streak,
+      });
 
-        // Streak broken warning
-        if (streakBroken && profile.streak > 0) {
-          toast.error(`💀 Streak lost! Your ${profile.streak}-day streak was reset.`, {
-            duration: 5000,
+      // Auto-update status tier based on percentile
+      await supabase.rpc("update_status_tier", { target_user_id: user.id });
+
+      // Capture summary for the post-submit recap card
+      const xpIntoLevel = r.new_xp - (r.new_level - 1) * 500;
+      setSummary({
+        xpEarned: r.xp_earned,
+        newTotalXp: r.new_xp,
+        oldLevel: r.old_level,
+        newLevel: r.new_level,
+        xpToNextLevel: 500 - xpIntoLevel,
+        levelProgressPct: Math.round((xpIntoLevel / 500) * 100),
+        newStreak: r.new_streak,
+        streakBroken: r.streak_broken && r.old_streak > 0,
+        completedCount,
+        maxCount,
+      });
+
+      // Check and award ALL applicable badges (streak, XP, level, checkins, workouts, etc.)
+      const newBadge = await checkAndAwardBadges(user.id);
+      if (newBadge?.isNew) {
+        setUnlockedBadge(newBadge.badge);
+      }
+
+      // "Your tribes felt it 🔥" — fire a celebratory toast if user belongs
+      // to ≥1 tribe. The realtime reactor on every tribe page picks up this
+      // streak bump and pulses the collective flame for every other member.
+      try {
+        const { count: tribeCount } = await supabase
+          .from("tribe_members" as any)
+          .select("tribe_id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("status", "active");
+        if ((tribeCount ?? 0) > 0) {
+          const flameMsg = (tribeCount ?? 0) === 1
+            ? "Your tribe felt it 🔥"
+            : `Your ${tribeCount} tribes felt it 🔥`;
+          toast.success(flameMsg, {
+            description: `+1 day → collective fire just grew`,
+            duration: 4500,
           });
         }
-
-        // Detect level-up
-        if (newLevel > profile.level) {
-          setNewLevelReached(newLevel);
-          setShowLevelUp(true);
-        }
-
-        await supabase
-          .from("profiles")
-          .update({
-            xp: newXp,
-            level: newLevel,
-            streak: newStreak,
-            longest_streak: longestStreak,
-          })
-          .eq("user_id", user.id);
-
-        await syncStreakWarningNotification({
-          lastCheckinAt: checkinTimestamp,
-          streak: newStreak,
-        });
-
-        // Auto-update status tier based on percentile
-        await supabase.rpc("update_status_tier", { target_user_id: user.id });
-
-        // Capture summary for the post-submit recap card
-        const xpIntoLevel = newXp - (newLevel - 1) * 500;
-        setSummary({
-          xpEarned: totalXp,
-          newTotalXp: newXp,
-          oldLevel: profile.level,
-          newLevel,
-          xpToNextLevel: 500 - xpIntoLevel,
-          levelProgressPct: Math.round((xpIntoLevel / 500) * 100),
-          newStreak,
-          streakBroken: streakBroken && profile.streak > 0,
-          completedCount,
-          maxCount,
-        });
-
-        // Check and award ALL applicable badges (streak, XP, level, checkins, workouts, etc.)
-        const newBadge = await checkAndAwardBadges(user.id);
-        if (newBadge?.isNew) {
-          setUnlockedBadge(newBadge.badge);
-        }
-
-        // "Your tribes felt it 🔥" — fire a celebratory toast if user belongs
-        // to ≥1 tribe. The realtime reactor on every tribe page picks up this
-        // streak bump and pulses the collective flame for every other member.
-        try {
-          const { count: tribeCount } = await supabase
-            .from("tribe_members" as any)
-            .select("tribe_id", { count: "exact", head: true })
-            .eq("user_id", user.id)
-            .eq("status", "active");
-          if ((tribeCount ?? 0) > 0) {
-            const flameMsg = (tribeCount ?? 0) === 1
-              ? "Your tribe felt it 🔥"
-              : `Your ${tribeCount} tribes felt it 🔥`;
-            toast.success(flameMsg, {
-              description: `+1 day → collective fire just grew`,
-              duration: 4500,
-            });
-          }
-        } catch {
-          // non-critical — silent
-        }
+      } catch {
+        // non-critical — silent
       }
 
       // Log each toggled-on custom habit. Sequential (the list is ≤8) so
@@ -468,12 +469,15 @@ const DailyCheckin = () => {
       setSubmitted(true);
     } catch (err) {
       console.error(err);
+      toast.error("Something went wrong saving your check-in. Please try again.", {
+        duration: 5000,
+      });
       hapticNotification("error");
     }
     setSubmitting(false);
   };
 
-  // 24h lock screen
+  // Daily lock screen
   if (!canCheckin && !submitted) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center pb-4">
@@ -482,7 +486,7 @@ const DailyCheckin = () => {
             <Moon size={36} className="text-muted-foreground" />
           </div>
           <h1 className="font-display text-2xl font-black tracking-tight mb-2">Already Logged Today</h1>
-          <p className="text-muted-foreground text-sm mb-2">You can only check in once every 24 hours.</p>
+          <p className="text-muted-foreground text-sm mb-2">You can only check in once per day.</p>
           <p className="text-gold font-display text-lg font-bold mb-8">
             Next check-in in {getTimeUntilCheckin()}
           </p>

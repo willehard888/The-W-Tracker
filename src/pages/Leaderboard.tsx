@@ -408,6 +408,11 @@ const Leaderboard = () => {
               <button
                 key={user.user_id}
                 onClick={() => navigate(`/user/${user.user_id}`)}
+                style={
+                  // Skip paint/layout for off-screen rows beyond the first
+                  // screenful — cheap virtualization, no container rewrite.
+                  i < 8 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 68px" }
+                }
                 className={cn(
                   "w-full flex items-center gap-3 rounded-xl border p-3.5 text-left transition-all active:scale-[0.99]",
                   isMe

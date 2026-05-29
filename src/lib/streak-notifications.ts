@@ -3,13 +3,27 @@ import { LocalNotifications } from "@capacitor/local-notifications";
 import { pushIosDebugLog } from "@/lib/ios-debug";
 
 const STREAK_WARNING_NOTIFICATION_ID = 48003;
-const STREAK_WINDOW_MS = 48 * 60 * 60 * 1000;
-const STREAK_WARNING_OFFSET_MS = 3 * 60 * 60 * 1000;
+// Local wall-clock hour to nudge on a day the streak is at risk. Evening so the
+// user still has time to act before the local calendar day ends.
+const REMINDER_HOUR = 20; // 8pm device-local
 const FALLBACK_TRIGGER_DELAY_MS = 60 * 1000;
 
 interface SyncStreakWarningArgs {
   lastCheckinAt?: string | null;
   streak?: number | null;
+}
+
+/** Local Y-M-D string for a given instant (device timezone). */
+function localDateKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** A Date at local `hour:00` offset by `dayOffset` calendar days from today. */
+function localTimeOnDay(dayOffset: number, hour: number): Date {
+  const d = new Date();
+  d.setDate(d.getDate() + dayOffset);
+  d.setHours(hour, 0, 0, 0);
+  return d;
 }
 
 export async function requestStreakNotificationPermission() {
@@ -42,19 +56,34 @@ export async function syncStreakWarningNotification({ lastCheckinAt, streak }: S
     return;
   }
 
-  const lastCheckinMs = new Date(lastCheckinAt).getTime();
-  if (Number.isNaN(lastCheckinMs)) return;
+  const lastCheckin = new Date(lastCheckinAt);
+  if (Number.isNaN(lastCheckin.getTime())) return;
 
-  const deadlineMs = lastCheckinMs + STREAK_WINDOW_MS;
-  const now = Date.now();
+  const now = new Date();
+  // Calendar-day model (matches the check-in window): the streak survives as
+  // long as the user checks in once per LOCAL calendar day. We compute the
+  // reminder in device-local time so it's correct in any timezone the user
+  // travels to, and re-syncs on each app open / check-in.
+  const checkedInToday = localDateKey(lastCheckin) === localDateKey(now);
 
-  if (deadlineMs <= now) {
-    await clearStreakWarningNotification();
-    return;
+  // If they already checked in today, the next at-risk day is tomorrow;
+  // otherwise the streak breaks at local midnight tonight.
+  let triggerAt = checkedInToday
+    ? localTimeOnDay(1, REMINDER_HOUR)
+    : localTimeOnDay(0, REMINDER_HOUR);
+
+  // Not checked in today and the reminder hour has already passed → fire soon,
+  // but only if there's still time before the local day ends (midnight).
+  if (triggerAt.getTime() <= now.getTime()) {
+    const endOfTodayMs = localTimeOnDay(1, 0).getTime(); // local midnight tonight
+    const soon = now.getTime() + FALLBACK_TRIGGER_DELAY_MS;
+    if (soon >= endOfTodayMs) {
+      // No realistic time left to act tonight — don't nag at midnight.
+      await clearStreakWarningNotification();
+      return;
+    }
+    triggerAt = new Date(soon);
   }
-
-  const preferredTriggerMs = deadlineMs - STREAK_WARNING_OFFSET_MS;
-  const triggerMs = preferredTriggerMs > now ? preferredTriggerMs : now + FALLBACK_TRIGGER_DELAY_MS;
 
   await LocalNotifications.cancel({
     notifications: [{ id: STREAK_WARNING_NOTIFICATION_ID }],
@@ -64,10 +93,10 @@ export async function syncStreakWarningNotification({ lastCheckinAt, streak }: S
     notifications: [
       {
         id: STREAK_WARNING_NOTIFICATION_ID,
-        title: "Streak in danger",
-        body: "Less than 3 hours left before your streak breaks. Check in now.",
+        title: `Keep your ${streak}-day streak`,
+        body: "Check in before the day ends to keep your streak alive.",
         schedule: {
-          at: new Date(triggerMs),
+          at: triggerAt,
           allowWhileIdle: true,
         },
         extra: {
@@ -81,7 +110,7 @@ export async function syncStreakWarningNotification({ lastCheckinAt, streak }: S
   pushIosDebugLog("StreakNotification", "Scheduled streak warning", {
     streak,
     lastCheckinAt,
-    triggerAt: new Date(triggerMs).toISOString(),
-    deadlineAt: new Date(deadlineMs).toISOString(),
+    checkedInToday,
+    triggerAt: triggerAt.toISOString(),
   });
 }

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { uniqueChannelName } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -84,21 +85,14 @@ const TribeDetail = () => {
   const [manageOpen, setManageOpen] = useState(false);
   const [collectiveStreak, setCollectiveStreak] = useState(0);
 
-  // Admin check
-  const { data: isAdmin } = useQuery({
-    queryKey: ["user-role-admin", user?.id],
-    queryFn: async () => {
-      if (!user) return false;
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      return !!data;
-    },
-    enabled: !!user,
-  });
+  // Set of post IDs currently rendered in this tribe. Child realtime tables
+  // (comments / reactions / kudos) key on post_id, NOT tribe_id, so a
+  // Postgres-changes filter can't scope them to this tribe — we guard in JS
+  // by checking the payload's post_id against this set before refetching.
+  const postIdsRef = useRef<Set<string>>(new Set());
+
+  // Admin check (shared cache across the app)
+  const isAdmin = useIsAdmin(user?.id);
 
   // Kudos given this month — shared budget across feeds (uses tribe_post_kudos)
   const { data: kudosGivenThisMonth, refetch: refetchKudos } = useQuery({
@@ -212,10 +206,21 @@ const TribeDetail = () => {
     setLoading(false);
   };
 
+  // Keep a live ref to the latest `load` so the realtime effect (which only
+  // depends on `id`) always calls the current closure without resubscribing.
+  const loadRef = useRef(load);
+  loadRef.current = load;
+
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, profile?.user_id]);
+
+  // Keep postIdsRef in sync with the rendered posts so realtime child-table
+  // events can be scoped to this tribe.
+  useEffect(() => {
+    postIdsRef.current = new Set(posts.map((p) => p.id));
+  }, [posts]);
 
   // Realtime fire reactor — flame jumps every time a member's streak ticks up
   const memberIds = members.map((m) => m.user_id);
@@ -264,30 +269,51 @@ const TribeDetail = () => {
   // for `use-user-habits` + `use-daily-plan` in commit cb1bf49.
   useEffect(() => {
     if (!id) return;
+
+    // Debounce: a burst of events (e.g. a post + its first reaction) should
+    // trigger a single refetch, not one per row.
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleLoad = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        timer = null;
+        loadRef.current();
+      }, 600);
+    };
+
+    // Child tables key on post_id, not tribe_id. Only refetch when the changed
+    // row belongs to a post currently shown in THIS tribe — otherwise every
+    // comment/reaction/kudos across the whole app would wake this screen.
+    const belongsToTribe = (payload: any) => {
+      const postId = payload?.new?.post_id ?? payload?.old?.post_id;
+      return !!postId && postIdsRef.current.has(postId);
+    };
+
     const channel = supabase
       .channel(uniqueChannelName("tribe-feed", id))
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tribe_posts", filter: `tribe_id=eq.${id}` },
-        () => load(),
+        () => scheduleLoad(),
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tribe_post_comments" },
-        () => load(),
+        (payload) => { if (belongsToTribe(payload)) scheduleLoad(); },
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tribe_post_reactions" },
-        () => load(),
+        (payload) => { if (belongsToTribe(payload)) scheduleLoad(); },
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tribe_post_kudos" },
-        () => load(),
+        (payload) => { if (belongsToTribe(payload)) scheduleLoad(); },
       )
       .subscribe();
     return () => {
+      if (timer) clearTimeout(timer);
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

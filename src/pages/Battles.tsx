@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uniqueChannelName } from "@/lib/realtime";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -41,21 +42,8 @@ const Battles = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeProofBattleId, setActiveProofBattleId] = useState<string | null>(null);
 
-  // Check if current user is admin
-  const { data: isAdmin } = useQuery({
-    queryKey: ["user-role-admin-battles", profile?.user_id],
-    queryFn: async () => {
-      if (!profile) return false;
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", profile.user_id)
-        .eq("role", "admin")
-        .maybeSingle();
-      return !!data;
-    },
-    enabled: !!profile,
-  });
+  // Check if current user is admin (shared cache across the app)
+  const isAdmin = useIsAdmin(profile?.user_id);
 
   const { data: battles, isLoading } = useQuery({
     queryKey: ["battles", profile?.user_id],

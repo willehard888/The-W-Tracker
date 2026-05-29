@@ -51,6 +51,18 @@ const Coach = () => {
     refetch: refetchAthlete,
   } = useAthleteProfile();
 
+  // C3: a user who declines the athlete-profile form must NOT be re-walled on
+  // every Coach visit. Persist the skip so they land in the Coach shell (Lite
+  // experience) thereafter; they can still complete the profile later for a
+  // richer plan. Cleared automatically once they actually onboard.
+  const [onboardSkipped, setOnboardSkipped] = useState(() => {
+    try { return localStorage.getItem("w_coach_onboard_skipped") === "1"; } catch { return false; }
+  });
+  const skipOnboarding = () => {
+    try { localStorage.setItem("w_coach_onboard_skipped", "1"); } catch {}
+    setOnboardSkipped(true);
+  };
+
   if (loading) return <PageSkeleton />;
   if (isLoading || athleteLoading) return <PageSkeleton />;
 
@@ -88,11 +100,22 @@ const Coach = () => {
     );
   }
 
-  // Everyone (free + Elite) onboards. The profile drives Life OS quality.
-  if (!athlete?.onboarded) {
+  // The profile drives plan quality, so we prompt for it — but it's optional.
+  // If the user hasn't onboarded AND hasn't already skipped, show the form with
+  // an explicit "Skip for now" escape so they're never trapped at the wall.
+  if (!athlete?.onboarded && !onboardSkipped) {
     return (
       <div className="flex flex-col h-full">
         <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
+        <div className="w-full flex justify-end px-6 pt-2">
+          <button
+            onClick={skipOnboarding}
+            className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1"
+            aria-label="Skip personalisation for now"
+          >
+            Skip for now
+          </button>
+        </div>
         <AthleteProfileOnboarding onDone={() => refetchAthlete()} />
       </div>
     );
@@ -175,6 +198,7 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
 
 const CoachShell = ({ session, isElite, program, navigate }: any) => {
   const [chatOpen, setChatOpen] = useState(false);
+  const [faqOpen, setFaqOpen] = useState(false);
 
   // 3-card landing — Tila / Liike / Treeniohjelma — replaces the previous
   // 10+ stacked cards. Everything else moves behind explicit drill-down
@@ -192,7 +216,10 @@ const CoachShell = ({ session, isElite, program, navigate }: any) => {
         <MoveCard />
         <ProgramCard />
         <HealthKitConnectCard />
-        <AskCoachPill onOpenChat={() => { hapticImpact("light"); setChatOpen(true); }} />
+        <AskCoachPill
+          onOpenChat={() => { hapticImpact("light"); setChatOpen(true); }}
+          onBrowseFaq={() => { hapticImpact("light"); setFaqOpen(true); }}
+        />
         <CoachFooterLinks />
       </div>
 
@@ -206,8 +233,60 @@ const CoachShell = ({ session, isElite, program, navigate }: any) => {
           />
         )}
       </AnimatePresence>
+
+      {/* Free tier: playbook FAQ gives instant value, then upsells live chat. */}
+      <AnimatePresence>
+        {!isElite && faqOpen && (
+          <FreeCoachUpsell navigate={navigate} onClose={() => setFaqOpen(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
+};
+
+// ── Free Coach upsell (playbook FAQ + live-chat upsell) ────────────────────────
+// Free users tap "Ask Coach" → land here. They browse the curated playbook for
+// instant answers (real value, no network call), and each answer ends with a
+// soft upsell to unlock live, data-aware coaching. Value first, then the ask.
+const FreeCoachUpsell = ({ navigate, onClose }: { navigate: any; onClose: () => void }) => {
+  const [selected, setSelected] = useState<FaqEntry | null>(null);
+
+  if (selected) {
+    return (
+      <div className="absolute inset-0 z-50 bg-background flex flex-col">
+        <div className="shrink-0 px-3 pt-3 pb-2 flex items-center gap-2 border-b border-border/30">
+          <button
+            onClick={() => { hapticImpact("light"); setSelected(null); }}
+            className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-card/60"
+            aria-label="Back to playbook"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <p className="font-display text-sm font-black tracking-tight truncate">{selected.question}</p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          <div className="prose prose-invert prose-sm max-w-none text-sm leading-relaxed">
+            <ReactMarkdown>{selected.answer_md}</ReactMarkdown>
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/[0.08] to-card p-4">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-1">
+              Want this tailored to you?
+            </p>
+            <p className="text-[13px] font-medium text-foreground/90 leading-snug mb-3">
+              Live W Coach reads your check-ins, sleep and training to answer in your context — not generic tips.
+            </p>
+            <Button variant="gold" size="lg" className="w-full font-black" onClick={() => navigate("/paywall")}>
+              <Sparkles size={16} strokeWidth={2.6} /> Unlock live coaching
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return <FaqBrowser onClose={onClose} onSelect={setSelected} />;
 };
 
 // ── Chat sheet (slide-up over content) ────────────────────────────────────────

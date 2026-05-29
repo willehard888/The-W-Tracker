@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -58,165 +59,184 @@ const TribeSkeleton = forwardRef<HTMLDivElement>((_, ref) => (
 ));
 TribeSkeleton.displayName = "TribeSkeleton";
 
+interface TribesPageData {
+  tribes: Tribe[];
+  ownedIds: Set<string>;
+  joinedIds: Set<string>;
+  memberPreviews: Record<string, { user_id: string; avatar_url: string | null; username: string }[]>;
+  userToTribes: Map<string, string[]>;
+  collectiveStreaks: Map<string, number>;
+}
+
+const EMPTY_PAGE: TribesPageData = {
+  tribes: [],
+  ownedIds: new Set(),
+  joinedIds: new Set(),
+  memberPreviews: {},
+  userToTribes: new Map(),
+  collectiveStreaks: new Map(),
+};
+
 const Tribes = () => {
   const { profile, isApexSubscriber } = useAuth();
   const navigate = useNavigate();
-  const [tribes, setTribes] = useState<Tribe[]>([]);
-  const [memberPreviews, setMemberPreviews] = useState<Record<string, { user_id: string; avatar_url: string | null; username: string }[]>>({});
-  const [ownedIds, setOwnedIds] = useState<Set<string>>(new Set());
-  const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
+  const queryClient = useQueryClient();
+
+  // Ephemeral animation state — seeded from the query, then mutated live by the
+  // realtime fire reactor (so it can't live inside TanStack Query).
   const [collectiveStreaks, setCollectiveStreaks] = useState<Map<string, number>>(new Map());
-  // Map of userId → set of tribeIds they belong to (used to forward fire events
-  // to the right per-row mini-flame).
-  const [userToTribes, setUserToTribes] = useState<Map<string, string[]>>(new Map());
   const [rowPulse, setRowPulse] = useState<Map<string, number>>(new Map());
-  const [invites, setInvites] = useState<Invite[]>([]);
   const [respondingId, setRespondingId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"browse" | "mine">("browse");
 
   const tier = profile?.status_tier;
   const canCreate =
     isApexSubscriber || tier === "apex" || tier === "legend";
 
-  const loadInvites = async () => {
-    if (!profile?.user_id) return;
-    const { data } = await supabase
-      .from("tribe_invites" as any)
-      .select("id, tribe_id, inviter_id, created_at")
-      .eq("invitee_id", profile.user_id)
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
-    const rows = (data as any) ?? [];
-    if (rows.length === 0) {
-      setInvites([]);
-      return;
-    }
-    const tribeIds = rows.map((r: any) => r.tribe_id);
-    const inviterIds = rows.map((r: any) => r.inviter_id);
-    const [tRes, uRes] = await Promise.all([
-      supabase.from("tribes" as any).select("id, name, description, member_count, visibility").in("id", tribeIds),
-      supabase.from("profiles").select("user_id, username").in("user_id", inviterIds),
-    ]);
-    const tMap = new Map(((tRes as any).data ?? []).map((t: any) => [t.id, t]));
-    const uMap = new Map(((uRes as any).data ?? []).map((u: any) => [u.user_id, u]));
-    setInvites(
-      rows.map((r: any) => ({
-        ...r,
-        tribe: tMap.get(r.tribe_id) ?? null,
-        inviter: uMap.get(r.inviter_id) ?? null,
-      })),
-    );
-  };
+  // ── Tribe list (browse / mine) ───────────────────────────────────────────
+  const tribesQuery = useQuery<TribesPageData>({
+    queryKey: ["tribes-page", tab, profile?.user_id],
+    enabled: !!profile?.user_id,
+    queryFn: async () => {
+      let list: Tribe[] = [];
 
-  const load = async () => {
-    setLoading(true);
-    let list: Tribe[] = [];
-
-    if (tab === "browse") {
-      // All tribes are private. We list every tribe so people can discover
-      // and *request* to join — gating happens via approval, not visibility.
-      const { data } = await supabase
-        .from("tribes" as any)
-        .select("*")
-        .order("member_count", { ascending: false })
-        .limit(50);
-      list = (data as any) ?? [];
-    } else {
-      const { data: memberships } = await supabase
-        .from("tribe_members" as any)
-        .select("tribe_id")
-        .eq("user_id", profile?.user_id ?? "")
-        .eq("status", "active");
-      const ids = ((memberships as any) ?? []).map((m: any) => m.tribe_id);
-      if (ids.length === 0) {
-        list = [];
-      } else {
+      if (tab === "browse") {
+        // All tribes are private. We list every tribe so people can discover
+        // and *request* to join — gating happens via approval, not visibility.
         const { data } = await supabase
           .from("tribes" as any)
           .select("*")
-          .in("id", ids);
+          .order("member_count", { ascending: false })
+          .limit(50);
         list = (data as any) ?? [];
-      }
-    }
-
-    setTribes(list);
-
-    // Mark owned + joined
-    if (profile?.user_id && list.length > 0) {
-      const ids = list.map((t) => t.id);
-      const { data: mems } = await supabase
-        .from("tribe_members" as any)
-        .select("tribe_id, role, status")
-        .eq("user_id", profile.user_id)
-        .in("tribe_id", ids);
-      const owned = new Set<string>();
-      const joined = new Set<string>();
-      ((mems as any) ?? []).forEach((m: any) => {
-        if (m.status === "active") joined.add(m.tribe_id);
-        if (m.role === "owner") owned.add(m.tribe_id);
-      });
-      setOwnedIds(owned);
-      setJoinedIds(joined);
-
-      // Member avatar previews — top 4 per tribe, plus all-member map for reactor
-      const { data: previews } = await supabase
-        .from("tribe_members" as any)
-        .select("tribe_id, user_id")
-        .in("tribe_id", ids)
-        .eq("status", "active")
-        .limit(ids.length * 40);
-      const userIds: string[] = Array.from(new Set(((previews as any) ?? []).map((p: any) => p.user_id as string)));
-      const { data: profs } = userIds.length
-        ? await supabase
-            .from("profiles")
-            .select("user_id, username, avatar_url")
-            .in("user_id", userIds)
-        : { data: [] as any[] };
-      const profMap = new Map(((profs as any) ?? []).map((p: any) => [p.user_id, p]));
-      const map: Record<string, { user_id: string; avatar_url: string | null; username: string }[]> = {};
-      const u2t = new Map<string, string[]>();
-      ((previews as any) ?? []).forEach((row: any) => {
-        const arr = map[row.tribe_id] ?? (map[row.tribe_id] = []);
-        if (arr.length < 4) {
-          const p = profMap.get(row.user_id);
-          if (p) arr.push(p as any);
+      } else {
+        const { data: memberships } = await supabase
+          .from("tribe_members" as any)
+          .select("tribe_id")
+          .eq("user_id", profile?.user_id ?? "")
+          .eq("status", "active");
+        const ids = ((memberships as any) ?? []).map((m: any) => m.tribe_id);
+        if (ids.length === 0) {
+          list = [];
+        } else {
+          const { data } = await supabase
+            .from("tribes" as any)
+            .select("*")
+            .in("id", ids);
+          list = (data as any) ?? [];
         }
-        const tArr = u2t.get(row.user_id) ?? [];
-        tArr.push(row.tribe_id);
-        u2t.set(row.user_id, tArr);
-      });
-      setMemberPreviews(map);
-      setUserToTribes(u2t);
-    } else {
-      setOwnedIds(new Set());
-      setJoinedIds(new Set());
-      setMemberPreviews({});
-      setUserToTribes(new Map());
-    }
-
-    // Collective streak per tribe — drives the inline flame on each row
-    if (list.length > 0) {
-      try {
-        const totals = await fetchTribeCollectiveStreaks(list.map((t) => t.id));
-        setCollectiveStreaks(totals);
-      } catch {
-        setCollectiveStreaks(new Map());
       }
-    } else {
-      setCollectiveStreaks(new Map());
-    }
 
-    setLoading(false);
-  };
+      const ownedIds = new Set<string>();
+      const joinedIds = new Set<string>();
+      let memberPreviews: TribesPageData["memberPreviews"] = {};
+      let userToTribes = new Map<string, string[]>();
 
+      // Mark owned + joined
+      if (profile?.user_id && list.length > 0) {
+        const ids = list.map((t) => t.id);
+        const { data: mems } = await supabase
+          .from("tribe_members" as any)
+          .select("tribe_id, role, status")
+          .eq("user_id", profile.user_id)
+          .in("tribe_id", ids);
+        ((mems as any) ?? []).forEach((m: any) => {
+          if (m.status === "active") joinedIds.add(m.tribe_id);
+          if (m.role === "owner") ownedIds.add(m.tribe_id);
+        });
+
+        // Member avatar previews — top 4 per tribe, plus all-member map for reactor
+        const { data: previews } = await supabase
+          .from("tribe_members" as any)
+          .select("tribe_id, user_id")
+          .in("tribe_id", ids)
+          .eq("status", "active")
+          .limit(ids.length * 40);
+        const userIds: string[] = Array.from(new Set(((previews as any) ?? []).map((p: any) => p.user_id as string)));
+        const { data: profs } = userIds.length
+          ? await supabase
+              .from("profiles")
+              .select("user_id, username, avatar_url")
+              .in("user_id", userIds)
+          : { data: [] as any[] };
+        const profMap = new Map(((profs as any) ?? []).map((p: any) => [p.user_id, p]));
+        const map: TribesPageData["memberPreviews"] = {};
+        const u2t = new Map<string, string[]>();
+        ((previews as any) ?? []).forEach((row: any) => {
+          const arr = map[row.tribe_id] ?? (map[row.tribe_id] = []);
+          if (arr.length < 4) {
+            const p = profMap.get(row.user_id);
+            if (p) arr.push(p as any);
+          }
+          const tArr = u2t.get(row.user_id) ?? [];
+          tArr.push(row.tribe_id);
+          u2t.set(row.user_id, tArr);
+        });
+        memberPreviews = map;
+        userToTribes = u2t;
+      }
+
+      // Collective streak per tribe — drives the inline flame on each row
+      let collectiveStreaks = new Map<string, number>();
+      if (list.length > 0) {
+        try {
+          collectiveStreaks = await fetchTribeCollectiveStreaks(list.map((t) => t.id));
+        } catch {
+          collectiveStreaks = new Map();
+        }
+      }
+
+      return { tribes: list, ownedIds, joinedIds, memberPreviews, userToTribes, collectiveStreaks };
+    },
+  });
+
+  const data = tribesQuery.data ?? EMPTY_PAGE;
+  const tribes = data.tribes;
+  const ownedIds = data.ownedIds;
+  const joinedIds = data.joinedIds;
+  const memberPreviews = data.memberPreviews;
+  const userToTribes = data.userToTribes;
+  const loading = !!profile?.user_id && tribesQuery.isLoading;
+
+  // Seed the live collective-streak map whenever fresh server data arrives.
   useEffect(() => {
-    if (profile?.user_id) {
-      load();
-      loadInvites();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, profile?.user_id]);
+    setCollectiveStreaks(data.collectiveStreaks);
+  }, [data.collectiveStreaks]);
+
+  // ── Pending invites ──────────────────────────────────────────────────────
+  const invitesQuery = useQuery<Invite[]>({
+    queryKey: ["tribe-invites", profile?.user_id],
+    enabled: !!profile?.user_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tribe_invites" as any)
+        .select("id, tribe_id, inviter_id, created_at")
+        .eq("invitee_id", profile!.user_id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+      const rows = (data as any) ?? [];
+      if (rows.length === 0) return [];
+      const tribeIds = rows.map((r: any) => r.tribe_id);
+      const inviterIds = rows.map((r: any) => r.inviter_id);
+      const [tRes, uRes] = await Promise.all([
+        supabase.from("tribes" as any).select("id, name, description, member_count, visibility").in("id", tribeIds),
+        supabase.from("profiles").select("user_id, username").in("user_id", inviterIds),
+      ]);
+      const tMap = new Map(((tRes as any).data ?? []).map((t: any) => [t.id, t]));
+      const uMap = new Map(((uRes as any).data ?? []).map((u: any) => [u.user_id, u]));
+      return rows.map((r: any) => ({
+        ...r,
+        tribe: tMap.get(r.tribe_id) ?? null,
+        inviter: uMap.get(r.inviter_id) ?? null,
+      })) as Invite[];
+    },
+  });
+
+  const invites = invitesQuery.data ?? [];
+
+  // Refresh helpers used by the mutation handlers below.
+  const reloadTribes = () => queryClient.invalidateQueries({ queryKey: ["tribes-page"] });
+  const reloadInvites = () => queryClient.invalidateQueries({ queryKey: ["tribe-invites"] });
 
   // Realtime fire reactor — every check-in by any member of any visible tribe
   // bumps that tribe's row mini-flame and increments its collective streak.
@@ -260,7 +280,7 @@ const Tribes = () => {
     if (data === "pending") toast.success("Request sent — awaiting approval");
     else if (data === "already_member") toast.info("Already a member");
     else toast.success("Joined the tribe!");
-    load();
+    reloadTribes();
   };
 
   const handleClaim = async (id: string, name: string) => {
@@ -272,7 +292,7 @@ const Tribes = () => {
       return;
     }
     toast.success(`You now lead ${name} — fire revived 🔥`);
-    load();
+    reloadTribes();
   };
 
   const handleInviteResponse = async (invite: Invite, accept: boolean) => {
@@ -287,8 +307,8 @@ const Tribes = () => {
       return;
     }
     toast.success(accept ? `Joined ${invite.tribe?.name ?? "tribe"}!` : "Invite declined");
-    loadInvites();
-    load();
+    reloadInvites();
+    reloadTribes();
     if (accept && invite.tribe_id) navigate(`/tribes/${invite.tribe_id}`);
   };
 
@@ -430,7 +450,7 @@ const Tribes = () => {
       {/* Browse-only: search + leaderboard CTA */}
       {tab === "browse" && (
         <>
-          <TribeSearchBar onChanged={load} />
+          <TribeSearchBar onChanged={reloadTribes} />
           <button
             onClick={() => navigate("/tribes/leaderboard")}
             className="w-full mb-4 rounded-xl p-3 border border-gold/40 bg-gradient-to-r from-gold/10 via-card/70 to-[hsl(18_95%_58%)]/10 flex items-center gap-3 text-left transition-transform active:scale-[0.99] shadow-[0_0_14px_hsl(42_78%_54%/0.25)]"
@@ -466,6 +486,21 @@ const Tribes = () => {
             tab === "browse"
               ? "Be the first founder — start a tribe and rally your circle."
               : "Browse the public directory or get invited to start grinding together."
+          }
+          action={
+            tab === "mine" ? (
+              <Button size="sm" variant="ember" onClick={() => setTab("browse")}>
+                <ChevronRight size={14} /> Browse tribes
+              </Button>
+            ) : canCreate ? (
+              <Button size="sm" variant="ember" onClick={() => navigate("/tribes/new")}>
+                <Plus size={14} /> Create a Tribe
+              </Button>
+            ) : (
+              <Button size="sm" variant="outline" onClick={() => navigate("/paywall")}>
+                <Lock size={14} /> Unlock with Apex
+              </Button>
+            )
           }
         />
       ) : (

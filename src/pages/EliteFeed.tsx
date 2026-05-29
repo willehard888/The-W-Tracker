@@ -5,6 +5,7 @@ import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import EmptyState from "@/components/ui/empty-state";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useState, useRef, useMemo, useCallback } from "react";
 import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
@@ -304,24 +305,8 @@ const EliteFeed = () => {
   const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["elite-feed"]]);
   const moderation = useModeration();
 
-  // Check if current user is admin
-  const { data: isAdmin } = useQuery({
-    queryKey: ["user-role-admin", user?.id],
-    queryFn: async () => {
-      if (!user) return false;
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      return !!data;
-    },
-    enabled: !!user,
-    // Admin status doesn't change during a session — cache aggressively.
-    staleTime: 10 * 60_000,
-    gcTime: 30 * 60_000,
-  });
+  // Check if current user is admin (shared cache across the app)
+  const isAdmin = useIsAdmin(user?.id);
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ["feed-posts", showReported],
@@ -491,6 +476,18 @@ const EliteFeed = () => {
     },
   });
 
+  // Query keys these mutations optimistically patch. Posts is keyed by
+  // `showReported`, interactions by user id — keep them in sync here.
+  const postsKey = ["feed-posts", showReported] as const;
+  const interactionsKey = ["feed-user-interactions", user?.id] as const;
+
+  // Mutate the cached post array in place (immutably) for instant count UI.
+  const patchPostInCache = (postId: string, patch: (p: any) => any) => {
+    queryClient.setQueryData<any[]>(postsKey, (old) =>
+      old?.map((p) => (p.id === postId ? patch(p) : p)),
+    );
+  };
+
   const toggleReaction = useMutation({
     mutationFn: async (postId: string) => {
       if (!user) return;
@@ -502,7 +499,34 @@ const EliteFeed = () => {
         await supabase.from("feed_reactions").insert({ post_id: postId, user_id: user.id });
       }
     },
-    onSuccess: () => {
+    onMutate: async (postId: string) => {
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: interactionsKey }),
+        queryClient.cancelQueries({ queryKey: postsKey }),
+      ]);
+      const prevInteractions = queryClient.getQueryData<any>(interactionsKey);
+      const prevPosts = queryClient.getQueryData<any[]>(postsKey);
+      const wasLiked = reactions?.has(postId);
+
+      queryClient.setQueryData<any>(interactionsKey, (old: any) => {
+        if (!old) return old;
+        const set = new Set<string>(old.reactionPosts ?? []);
+        if (wasLiked) set.delete(postId);
+        else set.add(postId);
+        return { ...old, reactionPosts: [...set] };
+      });
+      patchPostInCache(postId, (p) => ({
+        ...p,
+        likes_count: Math.max(0, (p.likes_count || 0) + (wasLiked ? -1 : 1)),
+      }));
+
+      return { prevInteractions, prevPosts };
+    },
+    onError: (_err, _postId, context) => {
+      if (context?.prevInteractions !== undefined) queryClient.setQueryData(interactionsKey, context.prevInteractions);
+      if (context?.prevPosts !== undefined) queryClient.setQueryData(postsKey, context.prevPosts);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["feed-user-interactions"] });
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
     },
@@ -511,10 +535,10 @@ const EliteFeed = () => {
   const giveKudos = useMutation({
     mutationFn: async ({ postId, receiverId }: { postId: string; receiverId: string }) => {
       if (!user || !canPost) return;
-      if (kudosRemaining <= 0) {
+      const alreadyGiven = userKudosPosts?.has(postId);
+      if (!alreadyGiven && kudosRemaining <= 0) {
         throw new Error("Monthly kudos used up");
       }
-      const alreadyGiven = userKudosPosts?.has(postId);
       if (alreadyGiven) {
         await supabase.from("kudos").delete().eq("post_id", postId).eq("giver_id", user.id);
       } else {
@@ -525,13 +549,46 @@ const EliteFeed = () => {
         } as any);
       }
     },
+    onMutate: async ({ postId }: { postId: string; receiverId: string }) => {
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: interactionsKey }),
+        queryClient.cancelQueries({ queryKey: postsKey }),
+      ]);
+      const prevInteractions = queryClient.getQueryData<any>(interactionsKey);
+      const prevPosts = queryClient.getQueryData<any[]>(postsKey);
+      const alreadyGiven = userKudosPosts?.has(postId);
+      // Don't optimistically apply a give that will be rejected for quota.
+      if (!alreadyGiven && kudosRemaining <= 0) return { prevInteractions, prevPosts };
+
+      queryClient.setQueryData<any>(interactionsKey, (old: any) => {
+        if (!old) return old;
+        const set = new Set<string>(old.kudosPosts ?? []);
+        if (alreadyGiven) set.delete(postId);
+        else set.add(postId);
+        return {
+          ...old,
+          kudosPosts: [...set],
+          kudosMonth: Math.max(0, (old.kudosMonth || 0) + (alreadyGiven ? -1 : 1)),
+        };
+      });
+      patchPostInCache(postId, (p) => ({
+        ...p,
+        kudos_count: Math.max(0, (p.kudos_count || 0) + (alreadyGiven ? -1 : 1)),
+      }));
+
+      return { prevInteractions, prevPosts };
+    },
+    onError: (error: any, _vars, context) => {
+      if (context?.prevInteractions !== undefined) queryClient.setQueryData(interactionsKey, context.prevInteractions);
+      if (context?.prevPosts !== undefined) queryClient.setQueryData(postsKey, context.prevPosts);
+      toast.error(error?.message || "Kudos failed");
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed-user-interactions"] });
-      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
       toast.success("Kudos! 🏆");
     },
-    onError: (error: any) => {
-      toast.error(error?.message || "Kudos failed");
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed-user-interactions"] });
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
     },
   });
 
@@ -566,9 +623,24 @@ const EliteFeed = () => {
         parent_id: replyTo?.id ?? null,
       });
     },
+    onMutate: async () => {
+      if (!showComments) return {};
+      const postId = showComments;
+      await queryClient.cancelQueries({ queryKey: postsKey });
+      const prevPosts = queryClient.getQueryData<any[]>(postsKey);
+      // Instant reply-count bump; full comment list refetches on settle.
+      patchPostInCache(postId, (p) => ({ ...p, comments_count: (p.comments_count || 0) + 1 }));
+      return { prevPosts };
+    },
+    onError: (_err, _vars, context: any) => {
+      if (context?.prevPosts !== undefined) queryClient.setQueryData(postsKey, context.prevPosts);
+      toast.error("Failed to post comment. Try again.");
+    },
     onSuccess: () => {
       setCommentText("");
       setReplyTo(null);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["feed-comments"] });
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
     },
@@ -1002,7 +1074,14 @@ const EliteFeed = () => {
                 "hover:shadow-[0_8px_32px_hsl(0_0%_0%/0.35),0_4px_12px_hsl(var(--gold)/0.06)]",
                 post.reported ? "border-destructive/30 bg-destructive/[0.02]" : liked ? "border-gold/20" : "border-border"
               )}
-              style={{ animationDelay: `${index * 60}ms` }}
+              style={{
+                animationDelay: `${index * 60}ms`,
+                // Skip layout/paint for off-screen posts (cheap virtualization
+                // without restructuring the scroll container). First few stay
+                // eager so the initial paint isn't blank.
+                contentVisibility: index < 4 ? undefined : "auto",
+                containIntrinsicSize: index < 4 ? undefined : "auto 480px",
+              }}
             >
               {/* Reported banner */}
               {post.reported && isAdmin && (

@@ -61,7 +61,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
             <Button
               variant="ember"
               size="xl"
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate("/auth?mode=signup")}
               className="w-full group text-base"
             >
               Start Your Journey
@@ -70,7 +70,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
                 className="transition-transform group-hover:translate-x-1"
               />
             </Button>
-            <Button variant="gold-outline" size="lg" onClick={() => navigate("/auth")} className="text-sm">
+            <Button variant="gold-outline" size="lg" onClick={() => navigate("/auth?mode=login")} className="text-sm">
               I already have an account
             </Button>
           </div>

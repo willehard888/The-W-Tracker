@@ -23,8 +23,7 @@ const Paywall = () => {
   const {
     purchasePremiumPlan, restorePurchases,
     rcLoading, rcReady,
-    premiumPriceLabel, premiumYearlyPriceLabel,
-    apexPriceLabel, apexYearlyPriceLabel,
+    monthlyPriceLabel, yearlyPriceLabel, yearlyAvailable,
   } = useRevenueCat();
   const navigate = useNavigate();
   const isNative = isNativePlatform();
@@ -35,11 +34,12 @@ const Paywall = () => {
 
   const wasMemberRef = useRef(isElite);
 
-  // Live prices — prefer Premium product price, fallback to Apex (same €17.99)
-  const monthlyLabel =
-    (isNative && (premiumPriceLabel ?? apexPriceLabel)) || PREMIUM_MONTHLY_FALLBACK;
-  const yearlyLabel =
-    (isNative && (premiumYearlyPriceLabel ?? apexYearlyPriceLabel)) || PREMIUM_YEARLY_FALLBACK;
+  // Live prices from the store (native); web uses the configured fallbacks.
+  const monthlyLabel = (isNative && monthlyPriceLabel) || PREMIUM_MONTHLY_FALLBACK;
+  const yearlyLabel = (isNative && yearlyPriceLabel) || PREMIUM_YEARLY_FALLBACK;
+  // On native, only offer the yearly toggle if the store actually has an
+  // annual package — otherwise we'd advertise a plan we can't fulfill.
+  const showYearly = !isNative || yearlyAvailable;
 
   // Welcome toast on transition into membership (once per session)
   useEffect(() => {
@@ -258,6 +258,7 @@ const Paywall = () => {
           <PremiumHero
             monthlyPriceLabel={monthlyLabel}
             yearlyPriceLabel={yearlyLabel}
+            yearlyAvailable={showYearly}
             status={status}
             errorMessage={errorMessage}
             onDismissError={() => {
@@ -281,12 +282,6 @@ const Paywall = () => {
 
       {/* Restore */}
       <div className="text-center mt-6 animate-reveal animate-reveal-delay-3">
-        <button
-          onClick={() => navigate("/ios-debug")}
-          className="mr-3 text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2"
-        >
-          iOS Debug
-        </button>
         <button
           onClick={handleRestore}
           className="text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2"

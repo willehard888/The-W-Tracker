@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Zap, Check, ArrowRight, Plus, Sparkles } from "lucide-react";
+import { Zap, Check, ArrowRight, Plus, Sparkles, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,6 +38,49 @@ const MoveCard = () => {
     [habits],
   );
 
+  // ── Accountability loop ──────────────────────────────────────────────
+  // The Coach closes the loop on what the user committed to. Two cases, in
+  // priority order:
+  //  1. Streak at risk: a live streak (≥2d) logged yesterday but not yet today
+  //     → "don't break the chain" nudge.
+  //  2. Lapsed: a habit that once hit a real streak (best ≥3) but slipped
+  //     → "restart the chain" nudge.
+  // One nudge max, the highest-leverage one, with a one-tap log.
+  const accountability = useMemo(() => {
+    const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const now = new Date();
+    const yesterday = fmt(new Date(now.getTime() - 86_400_000));
+    const pending = habits.filter((h) => !completedTodaySet.has(h.id));
+
+    const atRisk = pending
+      .filter((h) => h.last_logged_on === yesterday && h.current_streak >= 2)
+      .sort((a, b) => b.current_streak - a.current_streak)[0];
+    if (atRisk) {
+      const title = PROTOCOLS.find((p) => p.id === atRisk.protocol_id)?.title ?? atRisk.protocol_id;
+      return {
+        habit: atRisk,
+        kind: "risk" as const,
+        title,
+        message: `${atRisk.current_streak}-day streak on ${title} — log today so you don't break the chain.`,
+      };
+    }
+
+    const lapsed = pending
+      .filter((h) => h.last_logged_on && h.last_logged_on < yesterday && h.best_streak >= 3)
+      .sort((a, b) => b.best_streak - a.best_streak)[0];
+    if (lapsed) {
+      const title = PROTOCOLS.find((p) => p.id === lapsed.protocol_id)?.title ?? lapsed.protocol_id;
+      return {
+        habit: lapsed,
+        kind: "lapsed" as const,
+        title,
+        message: `You hit ${lapsed.best_streak} days on ${title} before. Restart the chain today.`,
+      };
+    }
+
+    return null;
+  }, [habits, completedTodaySet]);
+
   const logHabitWithToast = async (id: string) => {
     try {
       hapticImpact("light");
@@ -58,6 +101,45 @@ const MoveCard = () => {
           Liike — today's move
         </p>
       </div>
+
+      {/* Accountability nudge — the Coach follows up on a streak at risk or a
+          lapsed habit, with a one-tap log to close the loop immediately. */}
+      {accountability && (
+        <button
+          type="button"
+          onClick={() => logHabitWithToast(accountability.habit.id)}
+          className={cn(
+            "w-full text-left rounded-2xl border p-3.5 mb-3 active:scale-[0.99] transition-colors",
+            accountability.kind === "risk"
+              ? "border-[hsl(var(--streak-orange))]/45 bg-[hsl(var(--streak-orange))]/[0.08] hover:bg-[hsl(var(--streak-orange))]/[0.12]"
+              : "border-gold/35 bg-gold/[0.05] hover:bg-gold/[0.08]",
+          )}
+        >
+          <div className="flex items-center gap-2.5">
+            <div className={cn(
+              "h-9 w-9 rounded-xl flex items-center justify-center shrink-0",
+              accountability.kind === "risk" ? "bg-[hsl(var(--streak-orange))]/20" : "bg-gold/15",
+            )}>
+              <Flame
+                size={16}
+                className={accountability.kind === "risk" ? "text-[hsl(var(--streak-orange))]" : "text-gold"}
+                strokeWidth={2.6}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-0.5">
+                {accountability.kind === "risk" ? "Keep your streak" : "Restart your streak"}
+              </p>
+              <p className="text-[12.5px] font-semibold leading-snug text-foreground">
+                {accountability.message}
+              </p>
+            </div>
+            <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-gold">
+              Log <Check size={11} />
+            </span>
+          </div>
+        </button>
+      )}
 
       {/* Suggested protocol — picked from PROTOCOLS by pillar + time of day */}
       {picked && (

@@ -9,8 +9,10 @@ import { nativeAppleSignIn } from "@/lib/native-auth";
 import BrandLogo from "@/components/BrandLogo";
 import AppleSignInButton from "@/components/AppleSignInButton";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { isNativePlatform } from "@/lib/platform";
 
 const Auth = () => {
+  const isNative = isNativePlatform();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,19 +22,33 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  // On native iOS, Apple Sign-In is the primary one-tap path. The email/password
+  // form is collapsed behind an explicit "Continue with email" toggle so we don't
+  // wall first-time users behind a verification flow. On web (no native Apple
+  // sheet) email stays the default and is shown immediately.
+  const [showEmailForm, setShowEmailForm] = useState(!isNative);
 
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get("ref");
   const appleSignInRequested = searchParams.get("apple_sign_in") === "1";
+  const modeParam = searchParams.get("mode");
 
   const invitedBy = searchParams.get("from");
+
+  // Start in signup mode when requested via ?mode=signup
+  useEffect(() => {
+    if (modeParam === "signup") setMode("signup");
+    else if (modeParam === "login") setMode("login");
+  }, [modeParam]);
 
   // Auto-switch to signup if referral link + persist code for post-auth claim
   useEffect(() => {
     if (refCode) {
       setMode("signup");
+      // Referral signups need the username + trial-info form visible.
+      setShowEmailForm(true);
       try {
         localStorage.setItem("pending_referral_code", refCode);
       } catch {}
@@ -151,6 +167,25 @@ const Auth = () => {
           </p>
         </div>
 
+        {/* Apple Sign-In first on native — fastest one-tap path, no email wall. */}
+        {isNative && (
+          <div className="mb-4">
+            <AppleSignInButton externalLoading={appleLoading} />
+          </div>
+        )}
+
+        {/* On native, email is a secondary collapsed option. */}
+        {isNative && !showEmailForm && (
+          <button
+            type="button"
+            onClick={() => setShowEmailForm(true)}
+            className="w-full text-center text-sm text-muted-foreground hover:text-gold transition-colors py-2"
+          >
+            Continue with <span className="text-gold font-semibold">email</span> instead
+          </button>
+        )}
+
+        {showEmailForm && (
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "signup" && (
             <div className="animate-reveal">
@@ -233,28 +268,26 @@ const Auth = () => {
             <ArrowRight size={18} />
           </Button>
         </form>
+        )}
 
-        {/* Divider */}
-        <div className="flex items-center gap-3 my-6">
-          <div className="flex-1 h-px bg-border" />
-          <span className="text-xs text-muted-foreground uppercase tracking-wider">or</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-
-        {/* Social Sign In — Apple shows its native "Share My Email / Hide My Email"
-            toggle in the system sheet automatically because we request the email scope. */}
-        <div>
-          <AppleSignInButton externalLoading={appleLoading} />
-        </div>
+        {/* On web, Apple sits below the email form behind an "or" divider.
+            Apple shows its native "Share My Email / Hide My Email" toggle in the
+            system sheet automatically because we request the email scope. */}
+        {!isNative && (
+          <>
+            <div className="flex items-center gap-3 my-6">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground uppercase tracking-wider">or</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+            <div>
+              <AppleSignInButton externalLoading={appleLoading} />
+            </div>
+          </>
+        )}
 
         <div className="mt-4 text-center space-y-3">
-          <button
-            onClick={() => navigate("/ios-debug")}
-            className="text-xs text-muted-foreground hover:text-gold transition-colors"
-          >
-            Open iOS Debug
-          </button>
-          {mode === "login" && (
+          {mode === "login" && showEmailForm && (
             <button
               onClick={async () => {
                 if (!email) { toast.error("Enter your email first"); return; }
@@ -270,7 +303,7 @@ const Auth = () => {
             </button>
           )}
           <button
-            onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }}
+            onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setShowEmailForm(true); }}
             className="text-sm text-muted-foreground hover:text-gold transition-colors"
           >
             {mode === "login" ? "Don't have an account? " : "Already have an account? "}

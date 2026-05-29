@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
   useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 import { useAuth } from "./AuthContext";
@@ -25,9 +26,18 @@ interface RevenueCatContextType {
   rcLoading: boolean;
   rcReady: boolean;
   monthlyPriceLabel: string | null;
+  yearlyPriceLabel: string | null;
+  /** True only when the store actually has an annual package available. */
+  yearlyAvailable: boolean;
   packages: any[];
   purchase: (pkg: any) => Promise<void>;
   purchaseProduct: (productId: string) => Promise<void>;
+  /**
+   * Purchase the Premium plan for the requested billing cadence.
+   * Honors an annual offering package when one exists; otherwise falls back
+   * to the directly-configured monthly product.
+   */
+  purchasePremiumPlan: (plan: "monthly" | "yearly") => Promise<void>;
   restorePurchases: () => Promise<void>;
 }
 
@@ -43,6 +53,40 @@ export const useRevenueCat = () => {
 };
 
 // ─── Helpers ────────────────────────────────────────────
+
+const ELITE_CACHE_PREFIX = "rc_elite_v1_";
+
+/** Last-known entitlement state, per user, to avoid a paywall flash on cold
+ *  start before the live RevenueCat check resolves. */
+function readEliteCache(userId: string): boolean {
+  try {
+    return localStorage.getItem(ELITE_CACHE_PREFIX + userId) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeEliteCache(userId: string, elite: boolean): void {
+  try {
+    localStorage.setItem(ELITE_CACHE_PREFIX + userId, elite ? "1" : "0");
+  } catch {
+    /* storage unavailable — non-fatal */
+  }
+}
+
+/** Run an async op with a few backoff retries (transient store/network blips). */
+async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
+  let lastErr: unknown;
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      lastErr = e;
+      if (i < attempts) await new Promise((r) => setTimeout(r, i * 800));
+    }
+  }
+  throw lastErr;
+}
 
 /** Check whether a customerInfo has our entitlement active. */
 function hasElite(info: any): boolean {
@@ -85,6 +129,29 @@ function isMonthly(value: any): boolean {
   return isKnownMonthlyId(productId(storeProduct(value)));
 }
 
+/** True when a package looks like an annual/yearly subscription. */
+function isAnnualPackage(pkg: any): boolean {
+  const type = (pkg?.packageType ?? "").toString().toUpperCase();
+  const id = (pkg?.identifier ?? "").toString().toLowerCase();
+  const pid = (productId(storeProduct(pkg)) ?? "").toLowerCase();
+  return (
+    type === "ANNUAL" ||
+    id.includes("annual") || id.includes("year") || id === "$rc_annual" ||
+    pid.includes("annual") || pid.includes("year")
+  );
+}
+
+/** True when a package looks like a monthly subscription. */
+function isMonthlyPackage(pkg: any): boolean {
+  const type = (pkg?.packageType ?? "").toString().toUpperCase();
+  const id = (pkg?.identifier ?? "").toString().toLowerCase();
+  return (
+    type === "MONTHLY" ||
+    id.includes("monthly") || id.includes("month") || id === "$rc_monthly" ||
+    isMonthly(pkg)
+  );
+}
+
 /** True when user cancelled (not a real error). */
 function isCancellation(e: any): boolean {
   return e?.code === "1" || e?.code === 1 || !!e?.userCancelled;
@@ -109,6 +176,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const [rcLoading, setRcLoading] = useState(true);
   const [rcReady, setRcReady] = useState(false);
   const [monthlyPriceLabel, setMonthlyPriceLabel] = useState<string | null>(null);
+  const [yearlyPriceLabel, setYearlyPriceLabel] = useState<string | null>(null);
 
   /** Sync elite status to database with simple retry. */
   const syncElite = useCallback(
@@ -134,12 +202,13 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     async (info: any) => {
       const elite = hasElite(info);
       setRcElite(elite);
+      if (user) writeEliteCache(user.id, elite);
       updateRevenueCatDebug({
         entitlement: elite ? ENTITLEMENT : null,
       });
       await syncElite(elite);
     },
-    [syncElite],
+    [syncElite, user],
   );
 
   /** Fetch the monthly product directly and set the price label. */
@@ -195,6 +264,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       setRcElite(false);
       setPackages([]);
       setMonthlyPriceLabel(null);
+      setYearlyPriceLabel(null);
       setRcLoading(false);
       setRcReady(false);
       updateRevenueCatDebug({
@@ -203,6 +273,10 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       });
       return;
     }
+
+    // Optimistically hydrate from the last-known entitlement so a returning
+    // subscriber doesn't see a paywall flash before the live check resolves.
+    setRcElite(readEliteCache(user.id));
 
     if (!isNativePlatform()) {
       setRcLoading(false);
@@ -213,8 +287,10 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
 
     (async () => {
       try {
-        // 1. Configure SDK
-        await CapPurchases.configure({ apiKey: RC_API_KEY_APPLE, appUserID: user.id });
+        // 1. Configure SDK (retry transient failures)
+        await withRetry(() =>
+          CapPurchases.configure({ apiKey: RC_API_KEY_APPLE, appUserID: user.id }),
+        );
         if (cancelled) return;
         setRcReady(true);
         updateRevenueCatDebug({
@@ -229,8 +305,8 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
           productIds: PRODUCT_IDS,
         });
 
-        // 2. Check entitlements
-        const { customerInfo } = await CapPurchases.getCustomerInfo();
+        // 2. Check entitlements (retry transient failures)
+        const { customerInfo } = await withRetry(() => CapPurchases.getCustomerInfo());
         if (cancelled) return;
         await applyElite(customerInfo);
 
@@ -249,11 +325,17 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
 
             const monthly =
               current.availablePackages.find((pkg: any) => productId(storeProduct(pkg)) === PRIMARY_PRODUCT_ID) ??
-              current.availablePackages.find(isMonthly);
+              current.availablePackages.find(isMonthlyPackage);
             if (monthly) {
               const label = priceLabel(storeProduct(monthly));
               if (label) setMonthlyPriceLabel(label);
               updateRevenueCatDebug({ monthlyPriceLabel: label });
+            }
+
+            const annual = current.availablePackages.find(isAnnualPackage);
+            if (annual) {
+              const yLabel = priceLabel(storeProduct(annual));
+              if (yLabel) setYearlyPriceLabel(yLabel);
             }
 
             updateRevenueCatDebug({
@@ -295,6 +377,26 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
 
     return () => { cancelled = true; };
   }, [user, applyElite, loadMonthlyPrice]);
+
+  // ─── Re-check entitlements when the app returns from background ──────
+  // A subscription can be purchased, renewed, expired, or refunded while the
+  // app is suspended. native-bootstrap dispatches `native:resume` on resume;
+  // we re-pull customerInfo so gating reflects reality without a relaunch.
+  useEffect(() => {
+    if (!user || !isNativePlatform()) return;
+    const onResume = () => {
+      void (async () => {
+        try {
+          const { customerInfo } = await withRetry(() => CapPurchases.getCustomerInfo());
+          await applyElite(customerInfo);
+        } catch (e) {
+          console.warn("[RC] Resume entitlement re-check failed:", e);
+        }
+      })();
+    };
+    window.addEventListener("native:resume", onResume);
+    return () => window.removeEventListener("native:resume", onResume);
+  }, [user, applyElite]);
 
   // ─── Purchase via package ───────────────────────────
   const purchase = useCallback(
@@ -380,6 +482,31 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     [applyElite],
   );
 
+  // ─── Purchase by billing cadence ────────────────────
+  // Prefer an offering package matching the requested plan (so an annual
+  // package, if configured, is honored). Falls back to the directly-
+  // configured monthly product when no matching package exists.
+  const purchasePremiumPlan = useCallback(
+    async (plan: "monthly" | "yearly") => {
+      const pkg =
+        plan === "yearly"
+          ? packages.find(isAnnualPackage)
+          : (packages.find(isMonthlyPackage) ??
+             packages.find((p) => productId(storeProduct(p)) === PRIMARY_PRODUCT_ID));
+      if (pkg) {
+        await purchase(pkg);
+        return;
+      }
+      // No matching package — only the monthly product is configured directly.
+      // Guard against silently charging monthly for a "yearly" tap.
+      if (plan === "yearly") {
+        throw new Error("Yearly plan isn't available right now. Please choose monthly.");
+      }
+      await purchaseProduct(PRIMARY_PRODUCT_ID);
+    },
+    [packages, purchase, purchaseProduct],
+  );
+
   // ─── Restore ────────────────────────────────────────
   const restorePurchases = useCallback(async () => {
     try {
@@ -396,19 +523,36 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [applyElite]);
 
+  const value = useMemo<RevenueCatContextType>(
+    () => ({
+      rcElite,
+      rcLoading,
+      rcReady,
+      monthlyPriceLabel,
+      yearlyPriceLabel,
+      yearlyAvailable: yearlyPriceLabel !== null,
+      packages,
+      purchase,
+      purchaseProduct,
+      purchasePremiumPlan,
+      restorePurchases,
+    }),
+    [
+      rcElite,
+      rcLoading,
+      rcReady,
+      monthlyPriceLabel,
+      yearlyPriceLabel,
+      packages,
+      purchase,
+      purchaseProduct,
+      purchasePremiumPlan,
+      restorePurchases,
+    ],
+  );
+
   return (
-    <RevenueCatContext.Provider
-      value={{
-        rcElite,
-        rcLoading,
-        rcReady,
-        monthlyPriceLabel,
-        packages,
-        purchase,
-        purchaseProduct,
-        restorePurchases,
-      }}
-    >
+    <RevenueCatContext.Provider value={value}>
       {children}
     </RevenueCatContext.Provider>
   );

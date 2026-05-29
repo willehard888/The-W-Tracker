@@ -12,7 +12,6 @@ import {
   ShieldCheck,
   Lock,
   Crown,
-  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -28,6 +27,8 @@ interface PremiumHeroProps {
   onCta: (plan: BillingPlan) => void;
   onDismissError?: () => void;
   yearlyDiscountPct?: number;
+  /** When false, the yearly toggle is hidden and only monthly is offered. */
+  yearlyAvailable?: boolean;
 }
 
 const PILLARS = [
@@ -69,6 +70,15 @@ const TRUST_POINTS = [
   "New content drops weekly",
 ] as const;
 
+// Honest, typical standalone market prices for the categories this membership
+// covers — used as a price anchor, not a fabricated testimonial.
+const VALUE_STACK = [
+  { label: "Recipes & meal planning", price: "~10 €/mo" },
+  { label: "Training programs", price: "~13 €/mo" },
+  { label: "Recovery & sleep", price: "~9 €/mo" },
+  { label: "Mind & stress tools", price: "~12 €/mo" },
+] as const;
+
 const PremiumHero = ({
   monthlyPriceLabel,
   yearlyPriceLabel,
@@ -78,9 +88,11 @@ const PremiumHero = ({
   onCta,
   onDismissError,
   yearlyDiscountPct = 20,
+  yearlyAvailable = true,
 }: PremiumHeroProps) => {
-  const [plan, setPlan] = useState<BillingPlan>("yearly");
-  const isYearly = plan === "yearly";
+  const [plan, setPlan] = useState<BillingPlan>(yearlyAvailable ? "yearly" : "monthly");
+  // If the store can't fulfill a yearly plan, never let the toggle sit on it.
+  const isYearly = yearlyAvailable && plan === "yearly";
   const activePrice = isYearly ? yearlyPriceLabel : monthlyPriceLabel;
   const cadence = isYearly ? "/yr" : "/mo";
 
@@ -176,7 +188,8 @@ const PremiumHero = ({
           <span className="text-foreground font-semibold">recover deep</span> — without 5 different apps.
         </p>
 
-        {/* Billing toggle */}
+        {/* Billing toggle — only when an annual plan can actually be sold */}
+        {yearlyAvailable && (
         <div className="flex justify-center mb-5">
           <div
             role="tablist"
@@ -224,6 +237,7 @@ const PremiumHero = ({
             </button>
           </div>
         </div>
+        )}
 
         {/* Price */}
         <div className="text-center mb-5">
@@ -240,9 +254,13 @@ const PremiumHero = ({
               </span>{" "}
               · <span className="text-gold font-bold">Save {yearlyDiscountPct}%</span> · ~2 months free
             </p>
-          ) : (
+          ) : yearlyAvailable ? (
             <p className="text-[10px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
               Switch to yearly anytime · Save {yearlyDiscountPct}%
+            </p>
+          ) : (
+            <p className="text-[10px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
+              Full access · Cancel anytime
             </p>
           )}
         </div>
@@ -339,26 +357,23 @@ const PremiumHero = ({
           ))}
         </div>
 
-        {/* Social proof / quote */}
+        {/* Value anchor — what one membership replaces (honest market prices) */}
         <div className="mt-4 rounded-xl border border-gold/20 bg-background/40 p-3 backdrop-blur-sm">
-          <div className="flex items-center gap-1 mb-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star
-                key={i}
-                size={11}
-                className="text-gold"
-                fill="currentColor"
-                strokeWidth={0}
-              />
-            ))}
-            <span className="ml-1 text-[10px] font-bold tracking-wider uppercase text-muted-foreground">
-              Built for the obsessed
-            </span>
-          </div>
-          <p className="text-[11.5px] leading-snug text-foreground/85 italic">
-            "Stopped juggling 4 apps. Recipes, training, recovery, mind work — all in one place. Streak's at 87 days."
+          <p className="text-[10px] font-black tracking-[0.18em] uppercase text-gold mb-2">
+            Replaces a stack of apps
           </p>
-          <p className="text-[10px] text-muted-foreground mt-1">— early Premium member</p>
+          <div className="space-y-1">
+            {VALUE_STACK.map(({ label, price }) => (
+              <div key={label} className="flex items-center justify-between text-[11.5px]">
+                <span className="text-foreground/80">{label}</span>
+                <span className="text-muted-foreground/80 line-through">{price}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 pt-2 border-t border-gold/15 flex items-center justify-between">
+            <span className="text-[11px] font-bold text-foreground">All-in-one, one price</span>
+            <span className="text-[12px] font-black text-gold">{activePrice}{cadence}</span>
+          </div>
         </div>
 
         {/* Lock-in micro-row */}

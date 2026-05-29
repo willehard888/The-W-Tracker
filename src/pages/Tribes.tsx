@@ -489,6 +489,8 @@ const Tribes = () => {
                       <img
                         src={featured.cover_url}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         className="absolute inset-0 h-full w-full object-cover opacity-70"
                       />
                     )}
@@ -619,6 +621,8 @@ const Tribes = () => {
                     <img
                       src={t.cover_url}
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                       className="absolute inset-0 h-full w-full object-cover opacity-75"
                     />
                   )}

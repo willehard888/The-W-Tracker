@@ -205,6 +205,8 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
                     <img
                       src={r.post.image_url}
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                       className="rounded-md max-h-32 w-full object-cover border border-border/40"
                     />
                   )}

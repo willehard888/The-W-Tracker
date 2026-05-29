@@ -136,6 +136,8 @@ export default function AdminModeration() {
                 <img
                   src={item.image_url}
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                   className="h-20 w-20 rounded-lg object-cover border border-border/50 shrink-0"
                 />
               ) : (

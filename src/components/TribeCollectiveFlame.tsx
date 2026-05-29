@@ -293,7 +293,7 @@ const TribeCollectiveFlame = ({
             {isCold ? (
               <div className="text-4xl opacity-40 leading-none">🕯️</div>
             ) : (
-              <RealisticFlame tier={tier} accent={accent} size={size} intensify={10} />
+              <TribeFireLite tier={tier} accent={accent} size={size} />
             )}
           </div>
 

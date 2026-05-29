@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import BrandLogo from "./BrandLogo";
-import RealisticFlame from "./home/RealisticFlame";
+import TribeFireLite from "./TribeFireLite";
 
 /**
  * SplashScreen — cinematic ignition sequence.
@@ -229,7 +229,7 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
                 transformOrigin: "center bottom",
               }}
             >
-              <RealisticFlame tier={5} accent="hsl(42 95% 60%)" size={120} />
+              <TribeFireLite tier={5} accent="hsl(42 95% 60%)" size={120} />
             </div>
           </div>
 

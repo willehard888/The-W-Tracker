@@ -561,6 +561,7 @@ const TribeDetail = () => {
               <img
                 src={tribe.cover_url}
                 alt=""
+                decoding="async"
                 className="absolute inset-0 h-full w-full object-cover opacity-35"
                 style={{ transform: `translateY(${parallax * 0.5}px) scale(1.05)` }}
               />

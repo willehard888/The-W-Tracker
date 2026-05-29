@@ -428,6 +428,7 @@ const Profile = () => {
               <img
                 src={profile.avatar_url}
                 alt={profile.username}
+                decoding="async"
                 className="relative h-32 w-32 rounded-full object-cover ring-2 ring-gold ring-offset-4 ring-offset-background"
               />
             ) : (

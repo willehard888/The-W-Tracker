@@ -112,7 +112,7 @@ const CommandDeck = ({
                 >
                   {canCheckin ? "🔒 Lock Your Day" : "✓ Day Locked"}
                 </p>
-                <p className="font-display font-black text-2xl leading-[1.05] tracking-tight">
+                <p className="font-display font-black text-xl leading-[1.1] tracking-tight text-balance">
                   {canCheckin ? "Daily Check-In" : "Come back tomorrow"}
                 </p>
                 <p className="text-[12px] text-muted-foreground mt-1 line-clamp-2">

@@ -9,6 +9,7 @@ import BadgeShowcase from "@/components/BadgeShowcase";
 import StatusBadge from "@/components/StatusBadge";
 import RankPressureCard from "@/components/RankPressureCard";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -46,6 +47,10 @@ const Profile = () => {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // Type-to-confirm guard: the final delete button stays disabled until the
+  // user types their exact username. A single accidental tap can no longer
+  // wipe an account — this is what let a test account get destroyed before.
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   // Real account-deletion action — gated behind the AlertDialog flow so
   // a single accidental tap can never wipe the user's data.
@@ -781,51 +786,27 @@ const Profile = () => {
               <LogOut size={14} />
               Sign Out
             </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Trash2 size={14} />
-                  Delete Account
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This permanently removes your account and profile. If you have an active subscription, cancel it first from subscription management so billing stops correctly.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Keep Account</AlertDialogCancel>
-                  <AlertDialogAction
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    onClick={async () => {
-                      setDeletingAccount(true);
-                      try {
-                        const { error } = await supabase.functions.invoke("delete-account");
-                        if (error) throw error;
-                        await signOut();
-                        toast.success("Account deleted");
-                        navigate("/landing", { replace: true });
-                      } catch {
-                        toast.error("Could not delete account");
-                      } finally {
-                        setDeletingAccount(false);
-                      }
-                    }}
-                    disabled={deletingAccount}
-                  >
-                    {deletingAccount ? "Deleting..." : "Delete Permanently"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {/* Both delete entry points (this Settings button + the kebab
+                menu item) converge on the single hardened, type-to-confirm
+                dialog below. No direct one-tap delete path exists anymore. */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => { setDeleteConfirmText(""); setDeleteDialogOpen(true); }}
+            >
+              <Trash2 size={14} />
+              Delete Account
+            </Button>
 
             {/* Controlled delete-confirm — triggered by the kebab menu's
                 "Delete Account" item. The Settings-tab button uses the
                 uncontrolled AlertDialog above. Both routes converge on
                 performAccountDeletion(). */}
-            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialog
+              open={deleteDialogOpen}
+              onOpenChange={(open) => { setDeleteDialogOpen(open); if (!open) setDeleteConfirmText(""); }}
+            >
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete your account?</AlertDialogTitle>
@@ -836,12 +817,32 @@ const Profile = () => {
                     so billing stops correctly.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+                <div className="space-y-2 py-1">
+                  <p className="text-xs text-muted-foreground">
+                    Type your username{" "}
+                    <span className="font-bold text-foreground">{profile?.username}</span>{" "}
+                    to confirm.
+                  </p>
+                  <Input
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder={profile?.username ?? "username"}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                  />
+                </div>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Keep Account</AlertDialogCancel>
                   <AlertDialogAction
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     onClick={performAccountDeletion}
-                    disabled={deletingAccount}
+                    disabled={
+                      deletingAccount ||
+                      !profile?.username ||
+                      deleteConfirmText.trim() !== profile.username
+                    }
                   >
                     {deletingAccount ? "Deleting..." : "Delete Permanently"}
                   </AlertDialogAction>

@@ -46,6 +46,54 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── Recoverable snapshot BEFORE destroying anything ────────────────
+    // Captures the high-value, hard-to-reconstruct data into an archive
+    // table that survives the cascade. If the archive write fails we ABORT
+    // the deletion — better to leave the account intact than to destroy it
+    // with no recovery path. (This is what was missing when a real account
+    // got permanently wiped.)
+    try {
+      const [profileRow, checkins, badges, roles, posts, referrals] = await Promise.all([
+        serviceClient.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
+        serviceClient.from("daily_checkins").select("*").eq("user_id", user.id),
+        serviceClient.from("user_badges").select("*").eq("user_id", user.id),
+        serviceClient.from("user_roles").select("*").eq("user_id", user.id),
+        serviceClient.from("feed_posts").select("*").eq("user_id", user.id),
+        serviceClient.from("referrals").select("*").eq("referrer_id", user.id),
+      ]);
+
+      const { error: archiveError } = await serviceClient
+        .from("deleted_account_archives")
+        .insert({
+          user_id: user.id,
+          email: user.email ?? null,
+          username: (profileRow.data as { username?: string } | null)?.username ?? null,
+          payload: {
+            profile: profileRow.data ?? null,
+            daily_checkins: checkins.data ?? [],
+            user_badges: badges.data ?? [],
+            user_roles: roles.data ?? [],
+            feed_posts: posts.data ?? [],
+            referrals: referrals.data ?? [],
+            archived_by: "delete-account",
+          },
+        });
+
+      if (archiveError) {
+        console.error("delete-account archive failed, aborting:", archiveError);
+        return new Response(
+          JSON.stringify({ error: "Could not safely archive account before deletion. Aborted — your data is intact. Please try again later." }),
+          { status: 500, headers: jsonHeaders },
+        );
+      }
+    } catch (archiveErr) {
+      console.error("delete-account archive threw, aborting:", archiveErr);
+      return new Response(
+        JSON.stringify({ error: "Could not safely archive account before deletion. Aborted — your data is intact." }),
+        { status: 500, headers: jsonHeaders },
+      );
+    }
+
     await serviceClient.from("battle_votes").delete().eq("voter_id", user.id);
     await serviceClient.from("daily_checkins").delete().eq("user_id", user.id);
     await serviceClient.from("direct_messages").delete().eq("sender_id", user.id);

@@ -88,20 +88,20 @@ const CommandDeck = ({
             <div className="flex items-start gap-3">
               <div
                 className={cn(
-                  "h-12 w-12 rounded-xl flex items-center justify-center shrink-0 relative",
+                  "h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 relative",
                   canCheckin
-                    ? "gradient-gold text-primary-foreground shadow-[0_0_24px_hsl(42_78%_54%/0.55)]"
+                    ? "gradient-gold text-primary-foreground shadow-[0_0_28px_hsl(42_78%_54%/0.6)]"
                     : "bg-secondary text-muted-foreground",
                 )}
               >
                 {canCheckin && (
                   <span
                     aria-hidden
-                    className="absolute inset-0 rounded-xl bg-gold/40 animate-ping opacity-50"
+                    className="absolute inset-0 rounded-2xl bg-gold/40 animate-ping opacity-50"
                     style={{ animationDuration: "2s" }}
                   />
                 )}
-                <Flame size={22} strokeWidth={2.6} className="relative" />
+                <Flame size={26} strokeWidth={2.6} className="relative" />
               </div>
               <div className="min-w-0 flex-1">
                 <p
@@ -112,10 +112,10 @@ const CommandDeck = ({
                 >
                   {canCheckin ? "🔒 Lock Your Day" : "✓ Day Locked"}
                 </p>
-                <p className="font-display font-black text-lg leading-tight tracking-tight">
+                <p className="font-display font-black text-2xl leading-[1.05] tracking-tight">
                   {canCheckin ? "Daily Check-In" : "Come back tomorrow"}
                 </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                <p className="text-[12px] text-muted-foreground mt-1 line-clamp-2">
                   {canCheckin
                     ? streak > 0
                       ? `Defend your ${streak}-day streak.`
@@ -125,22 +125,26 @@ const CommandDeck = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-gold/15">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
-                {canCheckin ? "Today's reward" : "Locked"}
-              </p>
-              <div className="flex items-center gap-1">
-                {canCheckin ? (
-                  <p className="text-xs font-black text-gold tabular-nums">+50 XP base</p>
-                ) : (
-                  <p className="text-xs font-black text-muted-foreground tabular-nums">+50 XP</p>
-                )}
-                <ChevronRight
-                  size={16}
-                  className={canCheckin ? "text-gold animate-pulse" : "text-muted-foreground/40"}
-                />
+            {canCheckin ? (
+              // Full-width primary action bar — unmistakable now that this is
+              // the only check-in entry point (the bottom-nav tab was removed).
+              <div className="flex items-center justify-between gap-2 rounded-xl px-4 py-3 gradient-gold text-primary-foreground shadow-[0_8px_22px_-8px_hsl(42_78%_54%/0.75)] group-active:brightness-95">
+                <span className="font-black text-sm uppercase tracking-wide inline-flex items-center gap-1.5">
+                  <Flame size={15} strokeWidth={2.9} /> Check in now
+                </span>
+                <span className="inline-flex items-center gap-1 font-black text-sm tabular-nums">
+                  +50 XP
+                  <ChevronRight size={17} className="transition-transform group-active:translate-x-0.5" />
+                </span>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+                  Locked
+                </p>
+                <p className="text-xs font-black text-muted-foreground tabular-nums">+50 XP</p>
+              </div>
+            )}
           </div>
         </button>
       </div>

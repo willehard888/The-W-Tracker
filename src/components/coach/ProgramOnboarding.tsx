@@ -61,7 +61,17 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
           block_notes: draft.notes,
         },
       });
-      if (error) throw error;
+      if (error) {
+        // supabase-js collapses any non-2xx into a generic "non-2xx status
+        // code" message and hides the response body — dig out the real reason
+        // the edge function returned (e.g. "Premium membership required").
+        let reason = error.message;
+        const ctx = (error as any).context;
+        if (ctx && typeof ctx.json === "function") {
+          try { const body = await ctx.json(); if (body?.error) reason = body.error; } catch { /* keep generic */ }
+        }
+        throw new Error(reason);
+      }
       if ((data as any)?.error) throw new Error((data as any).error);
       try { localStorage.removeItem(DRAFT_KEY); } catch {}
       hapticNotification("success");
@@ -69,7 +79,16 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
       onGenerated();
     } catch (e: any) {
       hapticNotification("error");
-      toast.error(e?.message ?? "Couldn't generate program. Try again.");
+      const msg: string = e?.message ?? "";
+      // Program generation is a Premium feature — route there instead of
+      // showing a dead-end error toast.
+      if (/premium/i.test(msg)) {
+        toast.error("Personal program building is a Premium feature.", {
+          action: { label: "Unlock", onClick: () => navigate("/paywall") },
+        });
+      } else {
+        toast.error(msg || "Couldn't generate program. Try again.");
+      }
     } finally {
       setGenerating(false);
     }

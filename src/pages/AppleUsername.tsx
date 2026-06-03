@@ -25,24 +25,65 @@ const AppleUsername = () => {
     }
   }, [loading, user, navigate]);
 
+  // Prefill a suggestion from the REAL name Apple gave us on first sign-in
+  // (captured into sessionStorage / user metadata), not the auto-generated
+  // relay-email fallback. Cleaned to the allowed charset.
   useEffect(() => {
-    if (!profile?.username) return;
-    setUsername((current) => current || profile.username);
-  }, [profile?.username]);
+    setUsername((current) => {
+      if (current) return current;
+      let seed = "";
+      try { seed = sessionStorage.getItem("w_apple_name_suggestion") || ""; } catch { /* ignore */ }
+      if (!seed) {
+        const meta = (user?.user_metadata ?? {}) as Record<string, unknown>;
+        seed = (meta.given_name as string) ||
+          (meta.full_name ? String(meta.full_name).split(" ")[0] : "");
+      }
+      const cleaned = seed.toLowerCase().replace(/[^a-z0-9_]+/g, "").slice(0, 20);
+      return cleaned.length >= 3 ? cleaned : current;
+    });
+  }, [user]);
+
+  // Live username availability check (debounced) — surface "taken" before the
+  // user submits instead of bouncing them off an RPC unique-violation error.
+  const [availability, setAvailability] = useState<"idle" | "checking" | "available" | "taken">("idle");
+  useEffect(() => {
+    if (!username || !USERNAME_REGEX.test(username)) {
+      setAvailability("idle");
+      return;
+    }
+    let active = true;
+    setAvailability("checking");
+    const t = setTimeout(async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("username", username)
+        .maybeSingle();
+      if (!active) return;
+      const taken = Boolean(data) && data?.user_id !== user?.id;
+      setAvailability(taken ? "taken" : "available");
+    }, 400);
+    return () => { active = false; clearTimeout(t); };
+  }, [username, user?.id]);
 
   const validationMessage = useMemo(() => {
     if (!username) return "";
     if (!USERNAME_REGEX.test(username)) {
       return "Use 3–20 characters: a-z, 0-9 and _";
     }
+    if (availability === "taken") return "That username is taken — try another.";
     return "";
-  }, [username]);
+  }, [username, availability]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!user) return;
     if (!USERNAME_REGEX.test(username)) {
       toast.error("Invalid username");
+      return;
+    }
+    if (availability === "taken") {
+      toast.error("That username is taken — try another.");
       return;
     }
 
@@ -53,10 +94,14 @@ const AppleUsername = () => {
 
     if (error) {
       setSaving(false);
-      toast.error(error.message || "Failed to save username");
+      // Race: someone grabbed it between the check and submit.
+      const taken = /duplicate|unique|already/i.test(error.message || "");
+      if (taken) setAvailability("taken");
+      toast.error(taken ? "That username is taken — try another." : (error.message || "Failed to save username"));
       return;
     }
 
+    try { sessionStorage.removeItem("w_apple_name_suggestion"); } catch { /* ignore */ }
     clearAppleUsernameSelectionPending();
     await refreshProfile();
     toast.success("Username saved");
@@ -93,10 +138,22 @@ const AppleUsername = () => {
               />
             </div>
             <p className="text-xs text-muted-foreground">This will appear as @{username || "your_name"} in the app.</p>
-            {validationMessage ? <p className="text-xs text-destructive">{validationMessage}</p> : null}
+            {validationMessage ? (
+              <p className="text-xs text-destructive">{validationMessage}</p>
+            ) : availability === "checking" ? (
+              <p className="text-xs text-muted-foreground">Checking availability…</p>
+            ) : availability === "available" ? (
+              <p className="text-xs text-emerald-400">@{username} is available ✓</p>
+            ) : null}
           </div>
 
-          <Button type="submit" variant="coal" size="xl" className="w-full" disabled={saving || !!validationMessage || username.length < 3}>
+          <Button
+            type="submit"
+            variant="coal"
+            size="xl"
+            className="w-full"
+            disabled={saving || !!validationMessage || username.length < 3 || availability === "checking" || availability === "taken"}
+          >
             {saving ? "Saving..." : "Continue to app"}
           </Button>
         </form>

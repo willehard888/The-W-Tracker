@@ -73,12 +73,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const isAppleUserProfile = (authUser: User) => {
+    const provider = authUser.app_metadata?.provider;
+    const providers = Array.isArray(authUser.app_metadata?.providers) ? authUser.app_metadata.providers : [];
+    return provider === "apple" || providers.includes("apple");
+  };
+
   const shouldForceAppleUsernameSetup = (authUser: User, nextProfile: any | null) => {
     if (!isAppleAuthStarted()) return false;
 
-    const provider = authUser.app_metadata?.provider;
-    const providers = Array.isArray(authUser.app_metadata?.providers) ? authUser.app_metadata.providers : [];
-    const isAppleUser = provider === "apple" || providers.includes("apple");
+    const isAppleUser = isAppleUserProfile(authUser);
     const username = nextProfile?.username?.trim?.() || "";
     const fallbackUsername = buildFallbackUsername(authUser);
 
@@ -125,7 +129,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         clearAppleAuthStarted();
-        clearAppleUsernameSelectionPending();
+        // Only dismiss the username picker once the user actually has a CHOSEN
+        // (non-fallback) username. Without this guard, a follow-up auth event
+        // fired right after Apple sign-in — e.g. the updateUser() that persists
+        // Apple's name to metadata — would re-run this fetch with the started
+        // flag already cleared, fall through here, and silently cancel a picker
+        // we just queued, dumping the user in with an auto-generated name.
+        const hasChosenUsername =
+          !!data?.username && data.username !== buildFallbackUsername(authUser);
+        if (hasChosenUsername || !isAppleUserProfile(authUser)) {
+          clearAppleUsernameSelectionPending();
+        }
       } finally {
         fetchingProfileFor.current = null;
         profilePromiseRef.current = null;

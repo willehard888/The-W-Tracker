@@ -232,6 +232,31 @@ async function performAppleSignIn(options?: {
       jwtNonceMatchesDoubleHashed,     // → Apple DID hash our hashedNonce (so we should have sent raw)
     });
 
+    // Apple ONLY returns the user's name + email on the very FIRST
+    // authorization for this Apple ID. It is never sent again. Capture it
+    // NOW (before anything can fail) and stash a username seed so the
+    // username picker can suggest a real name instead of a relay-email blob.
+    const givenName = response.response?.givenName?.trim() || "";
+    const familyName = response.response?.familyName?.trim() || "";
+    const appleEmail = response.response?.email?.trim() || "";
+    const fullName = [givenName, familyName].filter(Boolean).join(" ");
+    if (givenName || fullName) {
+      try {
+        sessionStorage.setItem("w_apple_name_suggestion", givenName || fullName);
+      } catch {
+        /* sessionStorage unavailable — non-fatal */
+      }
+    }
+
+    // Mark the Apple flow as in-progress BEFORE the token exchange. The
+    // exchange synchronously emits a SIGNED_IN event that triggers the
+    // AuthContext profile fetch; if we set this flag only AFTER the exchange
+    // returns, that fetch can race ahead, miss the flag, and silently assign
+    // an auto-generated username instead of routing to the picker. Setting it
+    // first closes that race. (Returning users with a real username are not
+    // re-prompted — the picker gate also checks username != fallback.)
+    markAppleAuthStarted();
+
     const { data, error } = await supabase.auth.signInWithIdToken({
       provider: "apple",
       token: identityToken,
@@ -241,6 +266,7 @@ async function performAppleSignIn(options?: {
     });
 
     if (error) {
+      clearAppleAuthStarted();
       pushIosDebugLog("AppleAuth", "Supabase signInWithIdToken failed", {
         message: error.message,
         status: (error as { status?: number }).status,
@@ -253,21 +279,32 @@ async function performAppleSignIn(options?: {
       ? (data.user?.app_metadata?.providers as string[])
       : [];
     const isAppleUser = provider === "apple" || providers.includes("apple");
-    const identities = Array.isArray(data.user?.identities)
-      ? data.user.identities
-      : [];
-    const hasNonAppleIdentity = identities.some(
-      (identity) => identity.provider && identity.provider !== "apple",
-    );
 
-    if (isAppleUser && !hasNonAppleIdentity) {
-      markAppleAuthStarted();
+    // Persist Apple's first-auth name/email to the auth user's metadata so
+    // it survives across sessions and devices (sessionStorage is per-session).
+    // Best-effort: never block sign-in on it.
+    if (fullName || appleEmail) {
+      try {
+        await supabase.auth.updateUser({
+          data: {
+            ...(fullName ? { full_name: fullName } : {}),
+            ...(givenName ? { given_name: givenName } : {}),
+            ...(appleEmail ? { apple_email: appleEmail } : {}),
+          },
+        });
+      } catch (metaErr) {
+        pushIosDebugLog("AppleAuth", "updateUser(metadata) failed (non-fatal)", {
+          message: errorMessage(metaErr),
+        });
+      }
     }
 
     updateOauthDebug({ sessionApplied: true });
     pushIosDebugLog("AppleAuth", "Apple sign-in completed", {
       userId: data.user?.id,
       isAppleUser,
+      capturedName: Boolean(fullName),
+      capturedEmail: Boolean(appleEmail),
     });
 
     return {};

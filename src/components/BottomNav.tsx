@@ -1,4 +1,4 @@
-import { Home, Target, Trophy, User, Swords, Flame, MessageCircle, Users } from "lucide-react";
+import { Home, Trophy, User, Swords, Flame, MessageCircle, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { memo, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
@@ -7,7 +7,6 @@ import { hapticImpact } from "@/lib/haptics";
 
 const tabs = [
   { icon: Home, label: "Home", path: "/", color: "gold" },
-  { icon: Target, label: "Check-in", path: "/checkin", color: "ember" },
   { icon: Flame, label: "Feed", path: "/feed", color: "lava" },
   { icon: Users, label: "Tribes", path: "/tribes", color: "apex" },
   { icon: MessageCircle, label: "DMs", path: "/messages", color: "gold" },

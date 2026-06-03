@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import StatusBadge from "@/components/StatusBadge";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
 import TopTribesWidget from "@/components/TopTribesWidget";
+import MoreSection from "@/components/ui/more-section";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { useMyRank } from "@/hooks/use-my-rank";
 // Horizontal-swipe gesture removed (2026-05-25) — the gesture was triggering
@@ -465,13 +466,12 @@ const Leaderboard = () => {
         </div>
       </div>
 
-      <div className="mt-6 animate-reveal animate-reveal-delay-3">
+      {/* Secondary boards — different purposes (tribes, invites) collapsed so
+          Ranks stays focused on the one question: where do I rank? */}
+      <MoreSection label="More boards" className="mt-4">
         <TopTribesWidget />
-      </div>
-
-      <div className="mt-6 animate-reveal animate-reveal-delay-3">
         <TopInvitersWidget />
-      </div>
+      </MoreSection>
 
       {championData?.recent?.length ? (
         <div className="mt-6 rounded-xl border border-border glass-3d p-4 animate-reveal animate-reveal-delay-3">

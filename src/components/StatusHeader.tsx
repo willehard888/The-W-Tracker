@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import StreakFlameInline from "@/components/StreakFlameInline";
+import TierUsername from "@/components/TierUsername";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -228,11 +229,15 @@ const StatusHeader = () => {
             onClick={() => navigate("/leaderboard")}
             className="flex-1 min-w-0 text-left active:opacity-80 transition-opacity"
           >
-            {/* Row 1: name + streak */}
+            {/* Row 1: name + streak — username glows gold at Elite, animated
+                molten gold at Apex (tier styling via TierUsername). */}
             <div className="flex items-center gap-2">
-              <p className="text-base font-black truncate leading-none">
-                @{profile.username}
-              </p>
+              <TierUsername
+                as="p"
+                username={profile.username}
+                tier={tier}
+                className="text-base font-black truncate leading-none"
+              />
               {streak > 0 && (
                 <StreakFlameInline streak={streak} suffix="" className="leading-none text-xs" />
               )}

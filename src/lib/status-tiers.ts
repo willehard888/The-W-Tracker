@@ -10,6 +10,15 @@ export interface TierRequirements {
   percentile: number;
   activeDays: number;
   streak: number;
+  /**
+   * When true, the tier is earned by EITHER the rank percentile OR the
+   * (activeDays + streak) grind path — matching the server's
+   * `percentile >= X OR (streak AND activeDays)` rule. This is what makes
+   * Elite reachable by a solo user with a long streak, without ever placing
+   * in a rank percentile (which is impossible in a tiny user base). When
+   * false/omitted, all listed thresholds are required together (AND).
+   */
+  orPath?: boolean;
 }
 
 export interface TierConfig {
@@ -119,7 +128,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     auraSize: 'small',
     badgeVariant: "purple",
     rank: 3,
-    requirements: { percentile: 70, activeDays: 15, streak: 14 },
+    requirements: { percentile: 70, activeDays: 15, streak: 14, orPath: true },
     unlocks: ["Purple glow aura", "Profile spotlight"],
   },
   elite: {
@@ -137,7 +146,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     auraSize: 'medium',
     badgeVariant: "gold",
     rank: 4,
-    requirements: { percentile: 80, activeDays: 20, streak: 21 },
+    requirements: { percentile: 80, activeDays: 20, streak: 30, orPath: true },
     unlocks: ["Elite Feed posting", "Crown aura", "Elite badge"],
   },
   apex: {
@@ -210,8 +219,11 @@ export const getTierUsernameClass = (tier: string): string => {
       // Brighter, more saturated rainbow with stronger glow + animated shimmer — unmistakably Legend
       return "text-transparent bg-clip-text bg-[linear-gradient(100deg,hsl(280_95%_78%)_0%,hsl(320_90%_72%)_25%,hsl(42_100%_65%)_50%,hsl(350_95%_70%)_75%,hsl(280_95%_78%)_100%)] [background-size:200%_100%] [animation:shimmer-slide_5s_linear_infinite] drop-shadow-[0_2px_24px_hsl(280_85%_65%/0.65)]";
     case "apex":
-      return "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(18_100%_65%)] via-[hsl(42_100%_65%)] to-[hsl(18_100%_65%)] drop-shadow-[0_2px_18px_hsl(18_95%_58%/0.55)]";
+      // Glowing molten gold — animated shimmer sweep + strong halo. Distinct
+      // from Elite's static gold: Apex visibly *glows*.
+      return "text-transparent bg-clip-text bg-[linear-gradient(100deg,hsl(42_100%_72%)_0%,hsl(36_100%_58%)_35%,hsl(48_100%_74%)_50%,hsl(36_100%_58%)_65%,hsl(42_100%_72%)_100%)] [background-size:200%_100%] [animation:shimmer-slide_4s_linear_infinite] drop-shadow-[0_2px_22px_hsl(42_100%_60%/0.7)]";
     case "elite":
+      // Solid gold gradient — the golden username earned at Elite.
       return "text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark drop-shadow-[0_2px_16px_hsl(var(--gold)/0.5)]";
     case "high_performer":
       return "text-[hsl(280_85%_72%)] drop-shadow-[0_2px_14px_hsl(var(--purple)/0.5)]";

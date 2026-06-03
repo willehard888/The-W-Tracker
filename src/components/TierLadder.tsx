@@ -342,6 +342,11 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
 
                 <div className="relative px-5 pb-5 space-y-4 overflow-y-auto flex-1 min-h-0">
                   <div>
+                    {/* Legend is invite-only — the rank/streak "requirements"
+                        are unreachable and misleading, so hide them and show
+                        only the Founders Circle banner below. */}
+                    {!isLegend && (
+                      <>
                     <p className="text-[10px] uppercase tracking-[0.22em] font-black text-muted-foreground mb-2 flex items-center gap-1.5">
                       <TrendingUp size={11} /> Requirements
                     </p>
@@ -352,6 +357,16 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                           <span className="text-[12px] font-semibold flex-1">
                             Top <span className={cn("font-black tabular-nums", cfg.textClass)}>{(100 - cfg.requirements.percentile).toFixed(cfg.requirements.percentile >= 99 ? 1 : 0)}%</span> in rank score
                           </span>
+                        </div>
+                      )}
+                      {/* OR-path tiers (High Performer, Elite) are earned by
+                          rank OR the grind path — surface that so the rank
+                          requirement doesn't read as mandatory. */}
+                      {cfg.requirements.orPath && cfg.requirements.percentile > 0 && (cfg.requirements.activeDays > 0 || cfg.requirements.streak > 0) && (
+                        <div className="flex items-center gap-2 py-0.5">
+                          <span className="h-px flex-1 bg-border/50" />
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">or</span>
+                          <span className="h-px flex-1 bg-border/50" />
                         </div>
                       )}
                       {cfg.requirements.activeDays > 0 && (
@@ -376,6 +391,8 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                         </div>
                       )}
                     </div>
+                      </>
+                    )}
 
                     {isLegend && (
                       <div className="mt-2.5 flex items-center gap-2 px-3 py-2 rounded-lg border border-gold/45 bg-gradient-to-r from-[hsl(280_70%_55%)]/15 via-gold/10 to-[hsl(350_80%_55%)]/15 shadow-[0_0_18px_hsl(var(--gold)/0.20)]">

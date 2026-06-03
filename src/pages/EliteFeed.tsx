@@ -1022,7 +1022,7 @@ const EliteFeed = () => {
           </div>
           <p className="text-sm font-bold">Posting is for the Elite tier</p>
           <p className="text-xs text-muted-foreground mt-1 mb-4 max-w-xs mx-auto">
-            Earn the Elite status — top 5% rank, 14 active days in 30, and a 30-day streak — to post here.
+            Earn Elite status to post — hit a 30-day streak with 20 active days in the last 30, or place in the top 20% by rank.
           </p>
           <Button variant="ember" size="sm" className="rounded-full" onClick={() => navigate("/profile")}>
             <Crown size={14} />

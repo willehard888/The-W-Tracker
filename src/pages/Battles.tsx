@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import MyTribeBattles from "@/components/MyTribeBattles";
+import MoreSection from "@/components/ui/more-section";
 
 const BATTLE_TYPES = [
   { id: "xp", label: "Total XP", emoji: "⚡", icon: Zap, description: "Most XP earned wins", color: "text-gold" },
@@ -459,10 +460,11 @@ const Battles = () => {
         </div>
       )}
 
-      {/* Tribe Battles overview */}
-      <div className="animate-reveal animate-reveal-delay-1 mb-6">
+      {/* Tribe battles are a different scope — tucked into "More" so the page
+          stays focused on the user's own challenges. */}
+      <MoreSection label="Tribe battles" className="mb-4">
         <MyTribeBattles />
-      </div>
+      </MoreSection>
 
       {/* Incoming Challenges */}
       {pendingBattles.length > 0 && (

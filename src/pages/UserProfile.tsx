@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Crown, TrendingUp, Share2, Trophy, Camera, Play } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
 import StatusAvatar from "@/components/StatusAvatar";
+import StreakFlameInline from "@/components/StreakFlameInline";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
 import StreakDisplay from "@/components/StreakDisplay";
@@ -310,19 +311,32 @@ const UserProfile = () => {
             </div>
           )}
 
-          {/* Username — colored by status tier */}
-          <motion.h1
+          {/* Username — colored by status tier — with the live streak flame
+              right after it, mirroring the top header. */}
+          <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className={cn(
-              "font-display text-[34px] leading-none font-black tracking-tight",
-              getTierUsernameClass(profile.status_tier || 'recruit'),
-            )}
+            className="flex items-center justify-center gap-2 flex-wrap"
           >
-            @{profile.username}
-            {isOwnProfile && <span className="text-xs text-gold/70 ml-1.5 font-semibold align-middle">(you)</span>}
-          </motion.h1>
+            <h1
+              className={cn(
+                "font-display text-[34px] leading-none font-black tracking-tight",
+                getTierUsernameClass(profile.status_tier || 'recruit'),
+              )}
+            >
+              @{profile.username}
+              {isOwnProfile && <span className="text-xs text-gold/70 ml-1.5 font-semibold align-middle">(you)</span>}
+            </h1>
+            {(profile.streak ?? 0) > 0 && (
+              <StreakFlameInline
+                streak={profile.streak}
+                suffix="d"
+                className="text-lg align-middle"
+                countClassName="font-black text-foreground/90"
+              />
+            )}
+          </motion.div>
           {profile.display_name && (
             <p className="text-sm text-muted-foreground mt-1.5">{profile.display_name}</p>
           )}

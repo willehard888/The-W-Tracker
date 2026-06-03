@@ -34,12 +34,12 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
 
   return (
     <section className={cn("rounded-xl border border-border bg-card p-4", className)}>
-      <header className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Trophy size={16} className="text-gold" />
-          <h2 className="font-display font-bold text-sm tracking-tight">Top Inviters This Month</h2>
+      <header className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <Trophy size={16} className="text-gold shrink-0" />
+          <h2 className="font-display font-bold text-sm tracking-tight truncate">Top Inviters This Month</h2>
         </div>
-        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+        <span className="shrink-0 whitespace-nowrap text-[10px] text-muted-foreground uppercase tracking-wider">
           Resets 1st
         </span>
       </header>

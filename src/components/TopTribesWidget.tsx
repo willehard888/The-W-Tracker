@@ -42,17 +42,17 @@ const TopTribesWidget = () => {
 
   return (
     <div className="rounded-2xl border border-[hsl(18_95%_58%)]/30 bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.06] via-card to-card p-4 animate-reveal animate-reveal-delay-3">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Crown size={15} className="text-[hsl(18_95%_58%)]" />
-          <h2 className="font-display font-bold text-base tracking-tight">Top Tribes</h2>
-          <span className="text-[9px] uppercase tracking-widest font-black text-muted-foreground px-1.5 py-0.5 rounded-full border border-border/60 bg-secondary/50">
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <Crown size={15} className="text-[hsl(18_95%_58%)] shrink-0" />
+          <h2 className="font-display font-bold text-base tracking-tight truncate">Top Tribes</h2>
+          <span className="shrink-0 text-[9px] uppercase tracking-widest font-black text-muted-foreground px-1.5 py-0.5 rounded-full border border-border/60 bg-secondary/50">
             Weekly
           </span>
         </div>
         <button
           onClick={() => navigate("/tribes/leaderboard")}
-          className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-[hsl(18_95%_58%)] inline-flex items-center gap-0.5"
+          className="shrink-0 whitespace-nowrap text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-[hsl(18_95%_58%)] inline-flex items-center gap-0.5"
         >
           Full board <ChevronRight size={10} />
         </button>

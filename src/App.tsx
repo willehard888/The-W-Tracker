@@ -1,8 +1,8 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -143,6 +143,16 @@ const AppRoutes = () => {
   const { user } = useAuth();
   usePushNotifications();
 
+  // Every page lands at the top. The main scroll container persists across
+  // route changes (it lives outside <Routes>), so without this its scroll
+  // position would carry over when navigating between tabs — making a new
+  // page open already scrolled down. Reset it on every pathname change.
+  const location = useLocation();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.pathname]);
+
   // Page-transition wrap was REMOVED — keying a motion.div on
   // location.pathname caused React to unmount + remount the entire
   // page tree on every navigation, which:
@@ -157,7 +167,7 @@ const AppRoutes = () => {
   return (
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
-      <div className="flex-1 overflow-y-auto">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden">
         {/* RouteFallback renders a layout-matched skeleton for the destination
             route (HomeSkeleton on /, FeedSkeleton on /feed, etc.) so the lazy-
             load → real-content swap has zero visual jank. LazyFallback (a

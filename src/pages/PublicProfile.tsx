@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import StatusAvatar from "@/components/StatusAvatar";
 import ApexBadge from "@/components/ApexBadge";
 import StatusNameplate from "@/components/StatusNameplate";
+import StreakFlameInline from "@/components/StreakFlameInline";
 import ImageLightbox from "@/components/ImageLightbox";
 import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
 import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock, Heart, MessageCircle, Award, Play, Camera } from "lucide-react";
@@ -173,17 +174,29 @@ const PublicProfile = () => {
 
         {/* Username + display name + tier */}
         <div className="mb-3">
-          <motion.h1
+          <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.18 }}
-            className={cn(
-              "font-display text-xl leading-tight font-black tracking-tight",
-              getTierUsernameClass(profile.status_tier || 'recruit'),
-            )}
+            className="flex items-center justify-center gap-2 flex-wrap"
           >
-            @{profile.username}
-          </motion.h1>
+            <h1
+              className={cn(
+                "font-display text-xl leading-tight font-black tracking-tight",
+                getTierUsernameClass(profile.status_tier || 'recruit'),
+              )}
+            >
+              @{profile.username}
+            </h1>
+            {(profile.streak ?? 0) > 0 && (
+              <StreakFlameInline
+                streak={profile.streak}
+                suffix="d"
+                className="align-middle"
+                countClassName="font-black text-foreground/90"
+              />
+            )}
+          </motion.div>
           {profile.display_name && (
             <p className="text-sm text-foreground/85 font-semibold mt-0.5">{profile.display_name}</p>
           )}

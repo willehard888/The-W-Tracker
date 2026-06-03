@@ -10,6 +10,7 @@ import { useCoachObservation } from "@/hooks/use-coach-observation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Reveal from "@/components/home/Reveal";
 import EmptyState from "@/components/ui/empty-state";
+import MoreSection from "@/components/ui/more-section";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -243,6 +244,10 @@ const Index = () => {
         </ErrorBoundary>
       </Reveal>
 
+      {/* SECONDARY — collapsed by default so Home opens focused on its one
+          job (check in) + rank + a single coach line. Everything below is one
+          tap away under "More", per the moderate-declutter design pass. */}
+      <MoreSection label="More" className="relative z-10 mt-1 mb-2">
       {/* COACH STRIP — wrapped in an ErrorBoundary so any single tile
           (LifeOSCompactCard, briefing tile, nudge tile) failing renders
           a no-op fallback instead of blowing up the entire home page. */}
@@ -303,6 +308,7 @@ const Index = () => {
           />
         )}
       </Reveal>
+      </MoreSection>
 
       {/* Tier message footer — boosted contrast (was muted-foreground/40 → barely visible) */}
       <div className="mt-6 mb-2 text-center">

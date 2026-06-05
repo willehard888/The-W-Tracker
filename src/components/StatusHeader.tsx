@@ -248,13 +248,13 @@ const StatusHeader = () => {
               <div className="flex items-center gap-1.5 min-w-0">
                 <span
                   className={cn(
-                    "text-[10px] uppercase tracking-[0.16em] font-black leading-none",
+                    "shrink-0 whitespace-nowrap text-[10px] uppercase tracking-[0.16em] font-black leading-none",
                     config.textClass,
                   )}
                 >
                   {config.label}
                 </span>
-                <span className="text-[10px] text-muted-foreground/70 leading-none">
+                <span className="truncate text-[10px] text-muted-foreground/70 leading-none">
                   · {config.percentile}
                 </span>
               </div>
@@ -280,7 +280,7 @@ const StatusHeader = () => {
                       }
                     }}
                     className={cn(
-                      "inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black leading-none whitespace-nowrap px-2 py-1 rounded-full border transition-all active:scale-95 cursor-pointer",
+                      "shrink-0 inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black leading-none whitespace-nowrap px-2 py-1 rounded-full border transition-all active:scale-95 cursor-pointer",
                       isLegendTarget
                         ? "text-gold border-gold/55 bg-gradient-to-r from-[hsl(280_70%_55%)]/15 via-gold/12 to-[hsl(350_80%_55%)]/15 hover:border-gold shadow-[0_0_8px_hsl(var(--gold)/0.30)]"
                         : "text-[hsl(18_95%_62%)] border-[hsl(18_95%_58%)]/50 bg-[hsl(18_95%_58%)]/10 hover:border-[hsl(18_95%_58%)] shadow-[0_0_6px_hsl(18_95%_58%/0.20)]",

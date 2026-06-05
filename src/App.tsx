@@ -63,7 +63,11 @@ const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 30_000,
+      // Tiered freshness: 2 min default so back-navigation within a session
+      // reuses cache instead of refetching. Volatile/realtime-backed queries
+      // override with a shorter staleTime; static catalogs use a longer one.
+      staleTime: 120_000,
+      gcTime: 30 * 60_000,
       retry: (failureCount, error: any) => {
         // Don't retry on 4xx (auth/not-found errors)
         if (error?.status >= 400 && error?.status < 500) return false;

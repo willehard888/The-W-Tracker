@@ -4,7 +4,7 @@ import StreakFlameInline from "@/components/StreakFlameInline";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import EmptyState from "@/components/ui/empty-state";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useState, useRef, useMemo, useCallback } from "react";
 import { useModeration } from "@/hooks/use-moderation";
@@ -310,6 +310,7 @@ const EliteFeed = () => {
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ["feed-posts", showReported],
+    placeholderData: keepPreviousData,
     queryFn: async () => {
       let query = supabase
         .from("feed_posts")

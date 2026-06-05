@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -97,6 +97,9 @@ const Tribes = () => {
   const tribesQuery = useQuery<TribesPageData>({
     queryKey: ["tribes-page", tab, profile?.user_id],
     enabled: !!profile?.user_id,
+    // Keep the current list on screen while the new tab/user loads — no blank
+    // flash on tab switch (stale-while-revalidate).
+    placeholderData: keepPreviousData,
     queryFn: async () => {
       let list: Tribe[] = [];
 

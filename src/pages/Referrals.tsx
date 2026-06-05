@@ -79,7 +79,7 @@ const Referrals = () => {
     { count: 3, title: "1 Month Free", reward: "30 days of membership credits", emoji: "🎟️", unlocked: referralCount >= 3 },
     { count: 5, title: "2 Months Free", reward: "60 days credits · Brand Ambassador badge", emoji: "🥈", unlocked: referralCount >= 5 },
     { count: 10, title: "Apex Instant", reward: "30 days Apex tier · Inner Circle badge · Tribe creation", emoji: "⚡", unlocked: referralCount >= 10, premium: "apex" },
-    { count: 25, title: "Lifetime Membership", reward: "Forever member credits · Kingmaker badge", emoji: "👑", unlocked: referralCount >= 25 },
+    { count: 25, title: "1 Year Free", reward: "365 days of membership credits · Kingmaker badge", emoji: "👑", unlocked: referralCount >= 25 },
     { count: 50, title: "Founders Circle", reward: "Permanent Legend pin · Lifetime Apex · Founders badge", emoji: "🔱", unlocked: referralCount >= 50 || legendPinned, premium: "legend" },
   ];
 

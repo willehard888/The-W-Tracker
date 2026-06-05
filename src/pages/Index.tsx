@@ -14,7 +14,7 @@ import MoreSection from "@/components/ui/more-section";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getTierConfig } from "@/lib/status-tiers";
 import { useTierRisk } from "@/hooks/use-tier-risk";
@@ -24,6 +24,23 @@ import { useDailyPulse } from "@/hooks/use-daily-pulse";
 
 const Index = () => {
   const navigate = useNavigate();
+
+  // Prefetch the most-likely next screens once Home is idle, so the first tap
+  // on Feed / Check-in opens instantly (no lazy-chunk wait). Touch devices
+  // have no hover, so BottomNav's hover-prefetch never fires — this covers it.
+  useEffect(() => {
+    const prefetch = () => {
+      import("@/pages/EliteFeed");
+      import("@/pages/DailyCheckin");
+    };
+    const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+    if (ric) {
+      const id = ric(prefetch, { timeout: 2500 });
+      return () => (window as unknown as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(id);
+    }
+    const t = setTimeout(prefetch, 1500);
+    return () => clearTimeout(t);
+  }, []);
   const { profile, isElite } = useAuth();
 
   const { data: latestNudge } = useQuery({

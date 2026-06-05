@@ -16,6 +16,13 @@ interface StatusAvatarProps {
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   showBadge?: boolean;
   className?: string;
+  /**
+   * Run the decorative tier animations (pulsing rings, orbiting embers,
+   * flicker). Default true. Pass `false` inside dense lists (leaderboard,
+   * feed, tribe rows) where dozens of simultaneously-animated avatars drop
+   * scroll frames — the static gradient ring + badge still convey tier.
+   */
+  animated?: boolean;
 }
 
 const tierIcons: Record<string, any> = {
@@ -44,6 +51,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
   size = "md",
   showBadge = true,
   className,
+  animated = true,
 }, ref) => {
   const config = getTierConfig(tier);
   const Icon = tierIcons[tier] || Shield;
@@ -71,7 +79,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
   return (
     <div ref={ref} className={cn("relative inline-flex items-center justify-center align-middle", className)}>
       {/* Apex outer pulsing flame ring */}
-      {isApex && (
+      {isApex && animated && (
         <div
           aria-hidden
           className="absolute inset-0 rounded-full pointer-events-none status-amber-ring-breathe"
@@ -83,7 +91,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
       )}
 
       {/* Apex — 2 orbiting embers (CSS-only rotation around the avatar) */}
-      {isApex && (size === "lg" || size === "xl" || size === "md") && (
+      {isApex && animated && (size === "lg" || size === "xl" || size === "md") && (
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 status-legend-conic-spin"
@@ -100,7 +108,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
       )}
 
       {/* Elite — sykkivä kultareuna (sisäreuna) */}
-      {tier === "elite" && (
+      {tier === "elite" && animated && (
         <div
           aria-hidden
           className="absolute inset-0 rounded-full pointer-events-none status-amber-ring-breathe"
@@ -116,7 +124,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
           sizes.ring,
           ringStyle,
           isHighTier && "shadow-[0_0_12px_-2px_currentColor]",
-          isApex && "apex-aura-large",
+          isApex && animated && "apex-aura-large",
           // High Performer — first hint of warmth
           tier === "high_performer" && "shadow-[0_4px_12px_hsl(42_78%_54%/0.18)]",
         )}
@@ -163,7 +171,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
               ["recruit", "normal"].includes(tier)
                 ? "text-muted-foreground"
                 : "text-background",
-              isApex && "status-flame-flicker",
+              isApex && animated && "status-flame-flicker",
             )}
             strokeWidth={2.5}
           />
@@ -171,7 +179,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
       )}
 
       {/* Apex top-right Zap accent — small, animated */}
-      {isApex && (
+      {isApex && animated && (
         <div
           aria-hidden
           className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border border-background flex items-center justify-center shadow-[0_0_6px_hsl(18_95%_58%/0.8)] status-amber-ring-breathe"

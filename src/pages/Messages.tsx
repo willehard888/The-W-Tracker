@@ -175,7 +175,7 @@ const Messages = () => {
                 onClick={() => { setSearchQuery(""); navigate(`/chat/${u.user_id}`); }}
                 className="w-full flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-all active:scale-[0.98] card-depth"
               >
-                <StatusAvatar src={u.avatar_url} name={u.username} tier={(u as any).status_tier || 'recruit'} size="sm" />
+                <StatusAvatar src={u.avatar_url} name={u.username} tier={(u as any).status_tier || 'recruit'} size="sm" animated={false} />
                 <div className="flex-1 min-w-0">
                   <TierUsername
                     as="p"
@@ -212,7 +212,7 @@ const Messages = () => {
           <div className="space-y-2">
             {pendingRequests.map((req: any) => (
               <div key={req.id} className="flex items-center gap-3 rounded-xl border border-[hsl(var(--teal))]/20 bg-[hsl(var(--teal))]/5 p-3 card-depth">
-                <StatusAvatar src={req.profile?.avatar_url} name={req.profile?.username} tier={req.profile?.status_tier || 'recruit'} size="sm" />
+                <StatusAvatar src={req.profile?.avatar_url} name={req.profile?.username} tier={req.profile?.status_tier || 'recruit'} size="sm" animated={false} />
                 <div className="flex-1 min-w-0">
                   <TierUsername
                     as="p"
@@ -265,7 +265,7 @@ const Messages = () => {
                 onClick={() => navigate(`/chat/${friend.user_id}`)}
                 className="w-full flex items-center gap-3 rounded-xl border border-[hsl(var(--teal))]/15 bg-card p-4 text-left transition-all active:scale-[0.98] card-depth"
               >
-                <StatusAvatar src={friend.avatar_url} name={friend.username} tier={(friend as any).status_tier || 'recruit'} size="sm" />
+                <StatusAvatar src={friend.avatar_url} name={friend.username} tier={(friend as any).status_tier || 'recruit'} size="sm" animated={false} />
                 <div className="flex-1 min-w-0">
                   <TierUsername
                     as="p"
@@ -335,7 +335,7 @@ const ConversationRow = ({ conv, userId, navigate, isFriend }: { conv: any; user
           : "border-border bg-card"
     )}
   >
-    <StatusAvatar src={conv.profile?.avatar_url} name={conv.profile?.username} tier={conv.profile?.status_tier || 'recruit'} size="sm" />
+    <StatusAvatar src={conv.profile?.avatar_url} name={conv.profile?.username} tier={conv.profile?.status_tier || 'recruit'} size="sm" animated={false} />
     <div className="flex-1 min-w-0">
       <div className="flex items-center justify-between">
         <TierUsername

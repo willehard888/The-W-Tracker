@@ -431,7 +431,7 @@ const Leaderboard = () => {
                 )}>
                   {displayRank}
                 </div>
-                <StatusAvatar src={user.avatar_url} name={user.username} tier={user.status_tier || 'recruit'} size="sm" />
+                <StatusAvatar src={user.avatar_url} name={user.username} tier={user.status_tier || 'recruit'} size="sm" animated={false} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate flex items-center gap-1.5">
                     <TierUsername username={user.username} tier={user.status_tier || "recruit"} />

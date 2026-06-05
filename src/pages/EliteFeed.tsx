@@ -1110,7 +1110,7 @@ const EliteFeed = () => {
 
               {/* Post Header */}
               <div className="flex items-center gap-3 p-4 pb-0">
-                <StatusAvatar src={post.profile?.avatar_url} name={post.profile?.username} tier={post.profile?.status_tier || 'recruit'} size="sm" />
+                <StatusAvatar src={post.profile?.avatar_url} name={post.profile?.username} tier={post.profile?.status_tier || 'recruit'} size="sm" animated={false} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <button

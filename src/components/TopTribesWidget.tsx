@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Crown, Medal, Award, Users, Zap, ChevronRight, Loader2 } from "lucide-react";
 
 interface Row {
@@ -14,8 +15,15 @@ interface Row {
 
 const TopTribesWidget = () => {
   const navigate = useNavigate();
+  const { profile, isApexSubscriber } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Founding a tribe is Elite+ only — don't dangle a "Found a tribe" CTA at
+  // users who can't (it read as if tribes were open to everyone).
+  const tier = profile?.status_tier;
+  const canCreate =
+    isApexSubscriber || tier === "elite" || tier === "apex" || tier === "legend";
 
   useEffect(() => {
     const load = async () => {
@@ -64,12 +72,14 @@ const TopTribesWidget = () => {
         </div>
       ) : rows.length === 0 ? (
         <div className="text-center py-3">
-          <p className="text-xs text-muted-foreground mb-2">No tribes ranked yet — be the first founder.</p>
+          <p className="text-xs text-muted-foreground mb-2">
+            {canCreate ? "No tribes ranked yet — be the first founder." : "No tribes ranked yet."}
+          </p>
           <button
-            onClick={() => navigate("/tribes/new")}
+            onClick={() => navigate(canCreate ? "/tribes/new" : "/tribes")}
             className="text-[11px] font-black uppercase tracking-widest text-[hsl(18_95%_58%)] inline-flex items-center gap-1"
           >
-            Found a tribe <ChevronRight size={12} />
+            {canCreate ? "Found a tribe" : "Browse tribes"} <ChevronRight size={12} />
           </button>
         </div>
       ) : (

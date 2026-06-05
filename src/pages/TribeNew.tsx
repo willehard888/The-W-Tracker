@@ -23,7 +23,7 @@ const TribeNew = () => {
 
   const tier = profile?.status_tier;
   const canCreate =
-    isApexSubscriber || tier === "apex" || tier === "legend";
+    isApexSubscriber || tier === "elite" || tier === "apex" || tier === "legend";
 
   // Debounced name availability check
   useEffect(() => {
@@ -54,12 +54,13 @@ const TribeNew = () => {
       <div className="min-h-full px-4 pt-6 safe-top text-center">
         <Lock size={32} className="mx-auto mb-3 text-[hsl(18_95%_58%)]" />
         <h1 className="font-display font-black text-xl mb-2">
-          Apex tier required
+          Elite tier required
         </h1>
         <p className="text-sm text-muted-foreground mb-6">
-          Tribes are founded by the top 10%. Earn Apex or unlock it instantly.
+          Tribes are founded by Elite+. Hit a 30-day streak (or top 20% rank) to
+          earn it — or go Apex instantly.
         </p>
-        <Button onClick={() => navigate("/paywall")}>Unlock Apex</Button>
+        <Button onClick={() => navigate("/paywall")}>Go Apex</Button>
       </div>
     );
   }

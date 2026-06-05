@@ -225,6 +225,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  // Real-time status: when the server updates THIS user's profile (status_tier,
+  // xp, streak, level after a check-in or tier recompute), reflect it instantly
+  // everywhere — header, gates, gold name — with no manual refresh. Falls back
+  // silently if `profiles` isn't in the realtime publication.
+  useEffect(() => {
+    const uid = user?.id;
+    if (!uid) return;
+    const channel = supabase
+      .channel(`profile-rt:${uid}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "profiles", filter: `user_id=eq.${uid}` },
+        (payload) => {
+          const next = payload.new as Record<string, unknown>;
+          setProfile((prev: any) => (prev ? { ...prev, ...next } : next));
+          if ("is_elite" in next) setIsElite(Boolean(next.is_elite));
+        },
+      )
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [user?.id]);
+
   // Check subscription on login and periodically (every 5 minutes).
   // The immediate call on login is intentional — it syncs is_elite fast.
   // The interval is kept long to avoid hammering the edge function.

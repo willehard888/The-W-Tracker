@@ -91,7 +91,7 @@ const Tribes = () => {
 
   const tier = profile?.status_tier;
   const canCreate =
-    isApexSubscriber || tier === "apex" || tier === "legend";
+    isApexSubscriber || tier === "elite" || tier === "apex" || tier === "legend";
 
   // ── Tribe list (browse / mine) ───────────────────────────────────────────
   const tribesQuery = useQuery<TribesPageData>({
@@ -402,10 +402,10 @@ const Tribes = () => {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-black text-[hsl(18_95%_58%)] tracking-wide">
-              Reach Apex to lead your own tribe
+              Reach Elite to lead your own tribe
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              Earn it via top 10% rank, or unlock instantly with Apex.
+              Hit a 30-day streak (or top 20% rank) to unlock — or go Apex instantly.
             </p>
           </div>
           <Button size="sm" variant="outline" onClick={() => navigate("/paywall")} className="shrink-0">

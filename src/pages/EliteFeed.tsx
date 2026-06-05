@@ -19,6 +19,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
 import ImageLightbox from "@/components/ImageLightbox";
+import AppImage from "@/components/ui/app-image";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -1206,11 +1207,11 @@ const EliteFeed = () => {
                       className="block w-full text-left active:opacity-90 transition-opacity"
                       aria-label="Open image preview"
                     >
-                      <img
+                      <AppImage
                         src={post.image_url}
+                        width={760}
                         alt={post.content || "Post image"}
                         className="w-full max-h-96 object-cover transition-transform duration-500 group-hover:scale-[1.01]"
-                        loading="lazy"
                       />
                       {/* Subtle gradient + tier ribbon */}
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />

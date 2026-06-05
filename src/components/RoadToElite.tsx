@@ -117,7 +117,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
             />
           </div>
           <p className="text-[10px] text-muted-foreground mt-1">
-            {r.metCount}/3 requirements met • Earn Elite, don't buy it
+            {r.metCount}/2 paths met • Earn Elite, don't buy it
           </p>
         </div>
       </div>

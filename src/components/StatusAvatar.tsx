@@ -2,7 +2,12 @@ import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getTierConfig } from "@/lib/status-tiers";
+import { avatarUrl } from "@/lib/img";
 import { Crown, Shield, Sparkles, Flame, Zap, Star } from "lucide-react";
+
+// CSS px per size — drives the Supabase image transform so we fetch a
+// right-sized avatar instead of the multi-MB original.
+const pxMap = { xs: 28, sm: 36, md: 48, lg: 64, xl: 96 } as const;
 
 interface StatusAvatarProps {
   src?: string | null;
@@ -131,7 +136,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
         }
       >
         <Avatar className={cn(sizes.avatar, "ring-2 ring-background block")}>
-          {src && <AvatarImage src={src} alt={name || ""} />}
+          {src && <AvatarImage src={avatarUrl(src, pxMap[size])} alt={name || ""} />}
           <AvatarFallback className="text-xs font-bold bg-secondary">
             {initials}
           </AvatarFallback>

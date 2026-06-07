@@ -26,8 +26,9 @@ const TabsTrigger = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <TabsPrimitive.Trigger
     ref={ref}
+    style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-1.5 text-[12px] font-semibold tracking-[-0.003em]",
+      "relative z-10 inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-1.5 text-[12px] font-semibold tracking-[-0.003em] cursor-pointer select-none",
       "transition-[background,box-shadow,color] duration-200 [transition-timing-function:var(--ease-soft)]",
       // Active — gold metal pill (matches Button gold recipe)
       "data-[state=active]:text-[hsl(var(--primary-foreground))]",

@@ -221,7 +221,7 @@ const Vault = () => {
 
       <div className="mt-8 text-center">
         <p className="text-[10px] tracking-widest uppercase text-muted-foreground/70">
-          Premium member · €17.99/mo or yearly
+          Premium member · €4,99/mo
         </p>
       </div>
 

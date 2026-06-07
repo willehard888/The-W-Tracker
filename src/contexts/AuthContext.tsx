@@ -299,7 +299,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // To re-introduce the paywall later, change `effectiveMembership` back
   // to the underlying `isElite` state — every consumer reads through this
   // one source of truth so the toggle is a single line.
-  const effectiveMembership = user !== null && profile !== null;
+  // Real membership = an active paid entitlement (isElite, set from RevenueCat /
+  // profile.is_elite by checkSubscription + the realtime sub), OR referral free
+  // credits, OR an apex subscriber, OR a pinned Legend (Founders Circle).
+  // This is what gates the whole app behind the 4.99 €/mo subscription.
+  const _p = profile as
+    | { membership_credits_until?: string | null; is_apex_subscriber?: boolean; legend_pinned?: boolean }
+    | null;
+  const creditsActive =
+    !!_p?.membership_credits_until && new Date(_p.membership_credits_until).getTime() > Date.now();
+  const effectiveMembership =
+    profile !== null &&
+    (isElite || creditsActive || _p?.is_apex_subscriber === true || _p?.legend_pinned === true);
 
   const value = useMemo<AuthContextType>(
     () => ({
@@ -309,7 +320,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       loading,
       isElite: effectiveMembership,
       isPremium: effectiveMembership,
-      isApexSubscriber: effectiveMembership,
+      isApexSubscriber: _p?.is_apex_subscriber === true,
       subscriptionLoading: loading,
       subscriptionEnd,
       checkSubscription,

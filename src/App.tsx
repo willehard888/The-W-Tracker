@@ -7,7 +7,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { useTrialAccess } from "@/hooks/use-trial-access";
 import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
 import AmbientParticles from "@/components/AmbientParticles";
 import BottomNav from "@/components/BottomNav";
@@ -103,11 +102,7 @@ const ACCESS_EXEMPT = new Set([
 ]);
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, isPremium, profile } = useAuth();
-  const trial = useTrialAccess();
-  // Referral free-membership credits also grant access (not just paid subs).
-  const creditsUntil = (profile as any)?.membership_credits_until;
-  const creditsActive = !!creditsUntil && new Date(creditsUntil).getTime() > Date.now();
+  const { user, loading, isPremium } = useAuth();
   if (loading) return <LazyFallback />;
   if (!user) return <Navigate to="/landing" replace />;
 
@@ -126,16 +121,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // Hard paywall: once the 14-day free trial ends, every app function requires
-  // an active subscription. Subscribers (isPremium) and users still in trial
-  // (trial.hasAccess) pass; everyone else is sent to the paywall.
-  if (
-    !trial.loading &&
-    !trial.hasAccess &&
-    !isPremium &&
-    !creditsActive &&
-    !ACCESS_EXEMPT.has(path)
-  ) {
+  // Hard paywall: every app function requires an active subscription. The
+  // 14-day free trial is Apple's introductory offer — the user confirms payment
+  // on the paywall, gets 14 days free, then auto-renews at 4.99 €/mo unless
+  // they cancel. isPremium reflects the real entitlement (paid / in Apple trial /
+  // referral credits / Founders). Exempt paths let them reach the paywall, finish
+  // onboarding and read legal pages.
+  if (!isPremium && !ACCESS_EXEMPT.has(path)) {
     return <Navigate to="/paywall" replace />;
   }
 

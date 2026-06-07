@@ -35,32 +35,32 @@ const PILLARS = [
   {
     icon: Utensils,
     title: "Fuel",
-    text: "Real-food recipes & easy meals — high-protein, fast, no fluff.",
+    text: "Real-food recipes, macros & meal-prep templates — fast, high-protein.",
   },
   {
     icon: Dumbbell,
     title: "Train",
-    text: "Programs you'll actually finish — strength, conditioning, mobility.",
+    text: "Strength & conditioning programs — exact sets, reps and progression.",
   },
   {
     icon: Moon,
     title: "Recover",
-    text: "Sleep protocols, breathwork, mobility — bounce back faster.",
+    text: "Sleep protocols, recovery stacks & deload guides — bounce back faster.",
   },
   {
     icon: Brain,
     title: "Regulate",
-    text: "EFT, EMDR-style & somatic tools for stress and stuck patterns.",
+    text: "Breathwork & CBT tools for stress, focus and emotional control.",
   },
   {
     icon: Sparkles,
     title: "Reset",
-    text: "Guided hypnosis & nervous-system downshifts. Calm, on demand.",
+    text: "NSDR, breathwork & nervous-system downshifts. Calm, on demand.",
   },
   {
     icon: Trophy,
     title: "Compete",
-    text: "Full app: check-ins, streaks, battles, leaderboard, AI Coach.",
+    text: "The full app: check-ins, streaks, battles, leaderboard, AI Coach.",
   },
 ] as const;
 

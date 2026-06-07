@@ -50,12 +50,12 @@ const PILLARS = [
   {
     icon: Brain,
     title: "Regulate",
-    text: "Breathwork & CBT tools for stress, focus and emotional control.",
+    text: "Breathwork, CBT, EFT tapping & bilateral tools for stress.",
   },
   {
     icon: Sparkles,
     title: "Reset",
-    text: "NSDR, breathwork & nervous-system downshifts. Calm, on demand.",
+    text: "Self-hypnosis, NSDR & nervous-system downshifts. Calm, on demand.",
   },
   {
     icon: Trophy,

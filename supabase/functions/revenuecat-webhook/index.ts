@@ -5,12 +5,17 @@ const jsonHeaders = { "Content-Type": "application/json" };
 
 // Premium replaces Apex purchase. Apex IDs kept as legacy fallback.
 const PREMIUM_PRODUCT_IDS = [
+  // Current product (4.99 €/mo, App Store Connect / RevenueCat)
+  "WhealthFactory499", "com.app.WhealthFactory499",
+  // Legacy
   "premiummonthly1799", "com.app.premiummonthly1799",
   "premiumyearly17299", "com.app.premiumyearly17299",
 ];
 const APEX_PRODUCT_IDS = ["Apex888", "com.app.Apex888", "apexmonthly1599", "com.app.apexmonthly1599", "apexyearly17299", "com.app.apexyearly17299"];
 const APEX_ENTITLEMENT = "apex_subscriber";
-const PREMIUM_ENTITLEMENT = "premium";
+// Must match the RevenueCat entitlement the client checks (RevenueCatContext
+// ENTITLEMENT = "The W Tracker Pro"). "premium" kept as a legacy alias.
+const PREMIUM_ENTITLEMENT = "The W Tracker Pro";
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
@@ -52,6 +57,7 @@ Deno.serve(async (req) => {
     const isPremiumProduct =
       (productId && PREMIUM_PRODUCT_IDS.includes(productId)) ||
       entitlementIds.includes(PREMIUM_ENTITLEMENT) ||
+      entitlementIds.includes("premium") || // legacy alias
       // Legacy Apex purchases also grant Premium content access.
       isApexProduct;
 

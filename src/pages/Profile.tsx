@@ -606,6 +606,44 @@ const Profile = () => {
         <TierLadder currentTier={profile.status_tier || "recruit"} isApexSubscriber={isApexSubscriber} />
       </div>
 
+      {/* Road to Elite — earned-status progress (moved here from Settings) */}
+      <div className="animate-reveal animate-reveal-delay-3">
+        <RoadToElite />
+      </div>
+
+      {/* Weekly Sleep — recovery context / XP multiplier (moved here from Settings) */}
+      {weeklySleep && (
+        <div className="animate-reveal animate-reveal-delay-3">
+          <div className={cn(
+            "rounded-2xl border-2 p-5 glass-3d depth-realistic",
+            weeklySleep.multiplier >= 1 ? "border-emerald-500/50 shadow-emerald-500/20" :
+            weeklySleep.multiplier >= 0.85 ? "border-yellow-500/50 shadow-yellow-500/20" :
+            "border-red-500/50 shadow-red-500/20"
+          )}>
+            <div className="flex items-center gap-2 mb-3">
+              <Moon size={22} className={cn(
+                weeklySleep.multiplier >= 1 ? "text-emerald-400" :
+                weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
+              )} />
+              <h2 className="font-display font-black text-lg tracking-tight">Weekly Sleep</h2>
+              <span className="ml-auto text-base font-bold tabular-nums">
+                {weeklySleep.avg}h avg ({weeklySleep.days} days)
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-base">
+              <span className="text-muted-foreground font-semibold">XP Multiplier</span>
+              <span className={cn(
+                "font-display font-black text-2xl",
+                weeklySleep.multiplier >= 1 ? "text-emerald-400" :
+                weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
+              )}>
+                {weeklySleep.multiplier >= 1 ? "100% ✓" : `${Math.round(weeklySleep.multiplier * 100)}% ⚠️`}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* User Posts */}
       {userPosts && userPosts.length > 0 && (
         <div className="animate-reveal animate-reveal-delay-4">
@@ -647,44 +685,6 @@ const Profile = () => {
 
         {/* ─────────────────────── SETTINGS TAB ─────────────────────── */}
         <TabsContent value="settings" className="space-y-3 mt-0">
-
-          {/* Road to Elite — earned status progress (hidden once earned) */}
-          <div className="animate-reveal animate-reveal-delay-1">
-            <RoadToElite />
-          </div>
-
-          {/* Weekly Sleep stats — recovery context for the settings tab is helpful when reviewing membership */}
-          {weeklySleep && (
-            <div className="animate-reveal animate-reveal-delay-1">
-              <div className={cn(
-                "rounded-2xl border-2 p-5 glass-3d depth-realistic",
-                weeklySleep.multiplier >= 1 ? "border-emerald-500/50 shadow-emerald-500/20" :
-                weeklySleep.multiplier >= 0.85 ? "border-yellow-500/50 shadow-yellow-500/20" :
-                "border-red-500/50 shadow-red-500/20"
-              )}>
-                <div className="flex items-center gap-2 mb-3">
-                  <Moon size={22} className={cn(
-                    weeklySleep.multiplier >= 1 ? "text-emerald-400" :
-                    weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
-                  )} />
-                  <h2 className="font-display font-black text-lg tracking-tight">Weekly Sleep</h2>
-                  <span className="ml-auto text-base font-bold tabular-nums">
-                    {weeklySleep.avg}h avg ({weeklySleep.days} days)
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-base">
-                  <span className="text-muted-foreground font-semibold">XP Multiplier</span>
-                  <span className={cn(
-                    "font-display font-black text-2xl",
-                    weeklySleep.multiplier >= 1 ? "text-emerald-400" :
-                    weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
-                  )}>
-                    {weeklySleep.multiplier >= 1 ? "100% ✓" : `${Math.round(weeklySleep.multiplier * 100)}% ⚠️`}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Membership status (subscriber line — earned-tier crown lives in hero) */}
           {isElite && (

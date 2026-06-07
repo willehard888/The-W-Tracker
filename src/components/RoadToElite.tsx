@@ -1,6 +1,5 @@
-import { Crown, TrendingUp, CalendarCheck, Flame, Check, Zap, ChevronRight } from "lucide-react";
+import { Crown, TrendingUp, CalendarCheck, Flame, Check } from "lucide-react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useRoadToElite, ELITE_REQUIREMENTS } from "@/hooks/use-road-to-elite";
 
@@ -83,7 +82,6 @@ const RequirementRow = ({
  */
 const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
   const r = useRoadToElite();
-  const navigate = useNavigate();
 
   if (r.loading || !r.hasData) return null;
   if (r.isElite) return null; // already Elite — no need to show
@@ -201,37 +199,6 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
             Reach <span className="text-gold/90 font-semibold">top 20%</span> or prove consistency with <span className="text-gold/90 font-semibold">20 active days + 21 streak</span>.
           </p>
         </div>
-
-        {/* Premium shortcut — Vault unlock */}
-        <button
-          onClick={() => navigate("/paywall")}
-          className="mt-3 w-full group relative overflow-hidden rounded-xl p-[1.5px] active:scale-[0.985] transition-transform [animation:ember-halo-pulse_3.6s_ease-in-out_infinite]"
-          style={{
-            background: "linear-gradient(180deg, hsl(48 100%75% / 0.85) 0%, hsl(42 95% 55%) 35%, hsl(38 90% 45%) 80%, hsl(34 85% 30%) 100%)",
-          }}
-        >
-          <div className="rounded-[10px] bg-background/0 backdrop-blur-0 p-3 flex items-center gap-3 relative isolate overflow-hidden"
-            style={{
-              background: "linear-gradient(180deg, hsl(42 92% 8% / 0.55) 0%, hsl(38 70% 10% / 0.65) 100%)",
-            }}
-          >
-            <div aria-hidden className="absolute inset-0 pointer-events-none"
-              style={{ background: "radial-gradient(140% 90% at 50% 130%, hsl(42 100% 62% / 0.45) 0%, transparent 65%)" }}
-            />
-            <div className="relative h-9 w-9 rounded-lg bg-gradient-to-br from-[hsl(48_100%_75%)] via-[hsl(42_95%_55%)] to-[hsl(38_90%_45%)] flex items-center justify-center shrink-0 shadow-[0_0_14px_hsl(42_85%_55%/0.7),inset_0_1px_0_hsl(48_100%_94%/0.6),inset_0_-1px_0_hsl(34_82%_18%/0.8)]">
-              <Zap size={16} className="text-[hsl(38_92%_8%)]" strokeWidth={2.8} />
-            </div>
-            <div className="flex-1 min-w-0 text-left relative">
-              <p className="text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(48_100%_88%)] via-[hsl(42_100%_70%)] to-[hsl(48_100%_88%)] bg-clip-text text-transparent leading-tight">
-                Unlock the Vault — Premium
-              </p>
-              <p className="text-[10px] text-[hsl(48_60%_75%)]/85 mt-0.5">
-                Recipes · Training · Recovery · €17.99/mo
-              </p>
-            </div>
-            <ChevronRight size={16} className="text-[hsl(48_100%_82%)] shrink-0 group-active:translate-x-0.5 transition-transform relative" />
-          </div>
-        </button>
       </div>
     </div>
   );

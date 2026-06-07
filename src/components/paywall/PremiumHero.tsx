@@ -90,7 +90,9 @@ const PremiumHero = ({
   yearlyDiscountPct = 20,
   yearlyAvailable = true,
 }: PremiumHeroProps) => {
-  const [plan, setPlan] = useState<BillingPlan>(yearlyAvailable ? "yearly" : "monthly");
+  // Monthly-first: the product is 4.99 €/mo with a 14-day free trial. Yearly
+  // (if a yearly product exists) is an optional savings toggle, not the default.
+  const [plan, setPlan] = useState<BillingPlan>("monthly");
   // If the store can't fulfill a yearly plan, never let the toggle sit on it.
   const isYearly = yearlyAvailable && plan === "yearly";
   const activePrice = isYearly ? yearlyPriceLabel : monthlyPriceLabel;

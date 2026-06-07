@@ -272,8 +272,7 @@ const Paywall = () => {
           <div className="mt-3 rounded-xl border border-gold/15 bg-gold/[0.03] p-3.5 text-center">
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               <span className="text-gold font-semibold">Apex status</span> (top
-              10% by rank, activity & streak) can't be bought — only earned.
-              <br className="hidden sm:block" />
+              10% by rank, activity & streak) can't be bought — only earned.{" "}
               Premium unlocks <span className="text-foreground font-semibold">The Vault</span> and the full app.
             </p>
           </div>

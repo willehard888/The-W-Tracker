@@ -46,7 +46,7 @@ const Paywall = () => {
     if (isElite && !wasMemberRef.current) {
       if (!sessionStorage.getItem("w_welcome_toast_shown")) {
         sessionStorage.setItem("w_welcome_toast_shown", "1");
-        toast.success("Welcome to Premium. The Vault is unlocked.");
+        toast.success("Welcome to Premium. Full access unlocked.");
       }
     }
     wasMemberRef.current = isElite;
@@ -55,7 +55,7 @@ const Paywall = () => {
   // Once Premium is active, leave the paywall behind
   useEffect(() => {
     if (!isPremium) return;
-    navigate("/vault", { replace: true });
+    navigate("/", { replace: true });
   }, [isPremium, navigate]);
 
   // Web: re-check on focus / visibility
@@ -109,7 +109,7 @@ const Paywall = () => {
         </div>
         <h1 className="font-display text-2xl font-black mb-2">You're Premium.</h1>
         <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-          The Vault is unlocked. New drops every week — your price stays locked.
+          Full access unlocked. New content every week — your price stays locked.
         </p>
         <div className="flex gap-2 mt-2 flex-wrap justify-center">
           <Button variant="gold-outline" onClick={() => navigate("/profile")}>
@@ -132,8 +132,8 @@ const Paywall = () => {
           >
             <ShieldCheck size={14} /> Manage subscription
           </Button>
-          <Button variant="ember" onClick={() => navigate("/vault")}>
-            <Crown size={14} /> Open the Vault
+          <Button variant="ember" onClick={() => navigate("/")}>
+            <Crown size={14} /> Enter app
           </Button>
         </div>
       </div>
@@ -165,7 +165,7 @@ const Paywall = () => {
       const ok = await pollVerification(8000);
       if (ok) {
         hapticNotification("success");
-        // Effect above will navigate to /vault when isPremium flips true
+        // Effect above will navigate home when isPremium flips true
       } else {
         setStatus("error");
         setErrorMessage(
@@ -273,7 +273,7 @@ const Paywall = () => {
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               <span className="text-gold font-semibold">Apex status</span> (top
               10% by rank, activity & streak) can't be bought — only earned.{" "}
-              Premium unlocks <span className="text-foreground font-semibold">The Vault</span> and the full app.
+              Premium unlocks <span className="text-foreground font-semibold">the full app</span>.
             </p>
           </div>
         </div>

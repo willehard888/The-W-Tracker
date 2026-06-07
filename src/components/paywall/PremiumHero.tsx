@@ -174,7 +174,7 @@ const PremiumHero = ({
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/70 backdrop-blur border border-gold/40 shadow-[0_0_16px_hsl(var(--gold)/0.4)]">
             <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
             <span className="text-[10px] font-black tracking-[0.22em] uppercase text-gold">
-              The Vault · Premium Membership
+              Whealth Factory · Premium Subscription
             </span>
           </div>
         </div>

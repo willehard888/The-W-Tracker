@@ -13,8 +13,8 @@ import BrandLogo from "@/components/BrandLogo";
 import PremiumHero from "@/components/paywall/PremiumHero";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
-const PREMIUM_YEARLY_FALLBACK = "172,99 €";
-const PREMIUM_MONTHLY_FALLBACK = "17,99 €";
+const PREMIUM_YEARLY_FALLBACK = "47,99 €";
+const PREMIUM_MONTHLY_FALLBACK = "4,99 €";
 
 type PurchaseStatus = "idle" | "purchasing" | "verifying" | "error";
 

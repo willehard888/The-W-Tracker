@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
-export const TRIAL_DURATION_DAYS = 7;
+export const TRIAL_DURATION_DAYS = 14;
 const TRIAL_DURATION_MS = TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000;
 
 interface TrialAccess {
-  /** True if user has Elite OR is within the 9-day trial */
+  /** True if user is subscribed OR is within the 14-day free trial */
   hasAccess: boolean;
   /** True only when on free trial (not Elite) */
   isInTrial: boolean;

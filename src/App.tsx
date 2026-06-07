@@ -7,6 +7,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { useTrialAccess } from "@/hooks/use-trial-access";
 import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
 import AmbientParticles from "@/components/AmbientParticles";
 import BottomNav from "@/components/BottomNav";
@@ -89,8 +90,24 @@ const LazyFallback = () => (
   </div>
 );
 
+// Paths reachable WITHOUT an active subscription/trial — the paywall itself,
+// onboarding, the Apple username picker, and legal pages — so a gated user can
+// still subscribe, finish setup and read terms.
+const ACCESS_EXEMPT = new Set([
+  "/paywall",
+  "/onboarding",
+  "/apple-username",
+  "/privacy",
+  "/terms",
+  "/reset-password",
+]);
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, isPremium, profile } = useAuth();
+  const trial = useTrialAccess();
+  // Referral free-membership credits also grant access (not just paid subs).
+  const creditsUntil = (profile as any)?.membership_credits_until;
+  const creditsActive = !!creditsUntil && new Date(creditsUntil).getTime() > Date.now();
   if (loading) return <LazyFallback />;
   if (!user) return <Navigate to="/landing" replace />;
 
@@ -107,6 +124,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     path !== "/apple-username"
   ) {
     return <Navigate to="/onboarding" replace />;
+  }
+
+  // Hard paywall: once the 14-day free trial ends, every app function requires
+  // an active subscription. Subscribers (isPremium) and users still in trial
+  // (trial.hasAccess) pass; everyone else is sent to the paywall.
+  if (
+    !trial.loading &&
+    !trial.hasAccess &&
+    !isPremium &&
+    !creditsActive &&
+    !ACCESS_EXEMPT.has(path)
+  ) {
+    return <Navigate to="/paywall" replace />;
   }
 
   return <>{children}</>;

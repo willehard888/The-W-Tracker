@@ -92,9 +92,13 @@ Deno.serve(async (req) => {
       "PRODUCT_CHANGE",
     ];
 
+    // NOTE: BILLING_ISSUE is intentionally NOT here. With a billing grace period
+    // enabled, a failed charge must NOT revoke access — the entitlement stays
+    // active while Apple retries. Revoking on BILLING_ISSUE would defeat the
+    // grace period. Access is only revoked on EXPIRATION (fires after the grace
+    // period ends without a successful renewal).
     const revokeEvents = [
       "EXPIRATION",
-      "BILLING_ISSUE",
       "SUBSCRIPTION_PAUSED",
     ];
 

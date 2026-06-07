@@ -322,8 +322,11 @@ const StatusHeader = () => {
           ) : isElite ? (
             <div className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/55 animate-breathe-soft">
               <Crown size={11} className="relative z-10 text-primary-foreground status-flame-flicker" />
+              {/* Membership indicator — NOT the earned "Elite" rank tier (that's
+                  shown in the tier row above). Buying a subscription must never
+                  read as having earned the Elite status. */}
               <span className="relative z-10 text-[10px] font-bold text-primary-foreground uppercase tracking-wider">
-                Elite
+                Premium
               </span>
             </div>
           ) : isInTrial ? (

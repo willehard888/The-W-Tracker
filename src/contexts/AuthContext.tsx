@@ -195,14 +195,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!active) return;
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchProfile(session.user);
-      } else {
-        setProfile(null);
-        setIsElite(false);
-        setSubscriptionEnd(null);
+      try {
+        if (session?.user) {
+          // Never let a hung network request keep the splash up forever.
+          // fetchProfile keeps running in the background and updates the
+          // profile when it eventually resolves; the race only unblocks the UI.
+          await Promise.race([
+            fetchProfile(session.user),
+            new Promise((resolve) => setTimeout(resolve, 8000)),
+          ]);
+        } else {
+          setProfile(null);
+          setIsElite(false);
+          setSubscriptionEnd(null);
+        }
+      } catch (e) {
+        // CRITICAL: never let a profile-fetch failure leave loading=true
+        // forever — that strands the app on a blank splash (white/black screen
+        // of death). Log it and fall through so the UI still renders; the user
+        // lands on the app shell / paywall / login instead of an empty screen.
+        console.error("[Auth] applySession failed — proceeding so the app can render:", e);
+      } finally {
+        if (active) setLoading(false);
       }
-      if (active) setLoading(false);
     };
 
     // Subscribe FIRST so no auth event between subscribe and getSession is

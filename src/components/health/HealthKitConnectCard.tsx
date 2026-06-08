@@ -63,7 +63,7 @@ const HealthKitConnectCard = () => {
           Verify your check-ins automatically
         </p>
         <p className="text-[11px] text-muted-foreground leading-snug mb-3">
-          Connect HealthKit — we'll cross-check your sleep + workouts against
+          Connect HealthKit — we'll cross-check your workouts and steps against
           actual Apple Health data. Verified check-ins earn the
           "Verified Performer" badge.
         </p>

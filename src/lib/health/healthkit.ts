@@ -112,7 +112,9 @@ export async function readTodaySnapshot(): Promise<DaySnapshot | null> {
     }),
   );
   const stepsSample = (stepsRes as any)?.aggregatedData?.[0];
-  const steps = stepsSample?.value != null ? Math.round(Number(stepsSample.value)) : null;
+  const stepsRaw = stepsSample?.value != null ? Number(stepsSample.value) : null;
+  // Clamp out negatives / NaN / Infinity so malformed HK reads never reach the server.
+  const steps = stepsRaw != null && Number.isFinite(stepsRaw) ? Math.max(0, Math.round(stepsRaw)) : null;
 
   // Active calories — same shape.
   const kcalRes = await safeCall(() =>
@@ -124,7 +126,8 @@ export async function readTodaySnapshot(): Promise<DaySnapshot | null> {
     }),
   );
   const kcalSample = (kcalRes as any)?.aggregatedData?.[0];
-  const active_kcal = kcalSample?.value != null ? Math.round(Number(kcalSample.value)) : null;
+  const kcalRaw = kcalSample?.value != null ? Number(kcalSample.value) : null;
+  const active_kcal = kcalRaw != null && Number.isFinite(kcalRaw) ? Math.max(0, Math.round(kcalRaw)) : null;
 
   // Workouts — list, then aggregate to count + total minutes.
   const wkRes = await safeCall(() =>

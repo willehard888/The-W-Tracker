@@ -306,7 +306,7 @@ const DailyCheckin = () => {
       // computes the streak server-side, and writes xp/level/streak. The
       // client can no longer spoof these — profile columns are DB-locked.
       const tzOffsetMinutes = new Date().getTimezoneOffset();
-      const { data: result, error: rpcError } = await supabase.rpc("record_checkin", {
+      const rpcArgs = {
         p_sleep_hours: sleep,
         p_workout: workout,
         p_extra_workout: extraWorkout,
@@ -323,7 +323,29 @@ const DailyCheckin = () => {
         p_proof_photo_url: proof_photo_url,
         p_journal_entry: journaling ? "logged" : null,
         p_tz_offset_minutes: tzOffsetMinutes,
-      });
+      };
+
+      // Transient mobile-network blips and access-token refresh races
+      // occasionally fail the first call ("check your connection"). Retry a
+      // couple of times with backoff, refreshing the session in between, before
+      // giving up. record_checkin is idempotent per local calendar day
+      // (ALREADY_CHECKED_IN_TODAY), so a retry after a lost response can never
+      // create a duplicate check-in.
+      let result: unknown = null;
+      let rpcError: { message?: string } | null = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const resp = await supabase.rpc("record_checkin", rpcArgs);
+        result = resp.data;
+        rpcError = resp.error;
+        if (!rpcError) break;
+        // A real "already done today" is terminal — don't retry it.
+        if (rpcError.message?.includes("ALREADY_CHECKED_IN_TODAY")) break;
+        if (attempt < 2) {
+          await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+          // getSession() refreshes the access token if it expired mid-flight.
+          await supabase.auth.getSession().catch(() => {});
+        }
+      }
 
       // R3: surface failures instead of silently losing the check-in. We keep
       // the wizard state on error so the user can retry with one tap.
@@ -332,8 +354,10 @@ const DailyCheckin = () => {
           toast.error("You've already checked in today. Come back tomorrow 💪");
           queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
         } else {
+          console.error("record_checkin failed after retries:", rpcError);
           toast.error("Couldn't save your check-in — check your connection and try again.", {
-            duration: 5000,
+            description: rpcError.message ? `Details: ${rpcError.message}` : undefined,
+            duration: 6000,
           });
         }
         hapticNotification("error");

@@ -27,7 +27,10 @@ dist-ssr
 # Supabase CLI cache
 supabase/.temp/
 
-# Local env (Supabase URL + publishable/anon key — public, but keep out of git)
-.env
+# NOTE: .env IS committed on purpose — it only holds the PUBLIC Supabase URL +
+# publishable/anon key (which ship in the client bundle anyway), and the
+# Codemagic iOS build reads it at `npm run build` time. Removing it from git
+# broke the iOS build (createClient(undefined) → blank screen). Local-only
+# override files stay ignored:
 .env.local
 .env.*.local

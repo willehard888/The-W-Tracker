@@ -48,6 +48,23 @@ Deno.serve(async (req) => {
 
     const serviceClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // IDOR guard: only allow notifying a user the caller has an actual
+    // conversation with. Without this, any authenticated user could push
+    // arbitrary text to any other user_id they enumerate (harassment/spam).
+    // A DM row from the caller to the receiver must already exist.
+    const { count: convoCount, error: convoErr } = await serviceClient
+      .from("direct_messages")
+      .select("id", { count: "exact", head: true })
+      .eq("sender_id", user.id)
+      .eq("receiver_id", receiver_id);
+
+    if (convoErr || !convoCount || convoCount === 0) {
+      return new Response(
+        JSON.stringify({ error: "Not authorized to notify this user" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // Look up sender username from DB instead of trusting request body
     const { data: senderProfile } = await serviceClient
       .from("profiles")

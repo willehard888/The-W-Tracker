@@ -26,3 +26,8 @@ dist-ssr
 
 # Supabase CLI cache
 supabase/.temp/
+
+# Local env (Supabase URL + publishable/anon key — public, but keep out of git)
+.env
+.env.local
+.env.*.local

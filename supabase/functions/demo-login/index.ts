@@ -1,8 +1,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const DEMO_EMAIL = "demo@thewtracker.com";
-const DEMO_PASSWORD = "DemoAccount2025!";
-const DEMO_USERNAME = "demo_user";
+// Credentials are NEVER hardcoded — they come from environment secrets so they
+// don't live in version control. The whole endpoint is disabled unless
+// DEMO_LOGIN_ENABLED=true, so a hard-paywall production build can't be bypassed
+// through a shared demo account.
+const DEMO_EMAIL = Deno.env.get("DEMO_EMAIL") ?? "demo@thewtracker.com";
+const DEMO_PASSWORD = Deno.env.get("DEMO_PASSWORD") ?? "";
+const DEMO_USERNAME = Deno.env.get("DEMO_USERNAME") ?? "demo_user";
+const DEMO_ENABLED = Deno.env.get("DEMO_LOGIN_ENABLED") === "true";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,6 +17,14 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Disabled by default. Requires both the feature flag and a configured password.
+  if (!DEMO_ENABLED || !DEMO_PASSWORD) {
+    return new Response(JSON.stringify({ error: "Demo login is disabled" }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {

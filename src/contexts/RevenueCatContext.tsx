@@ -17,8 +17,14 @@ import { toast } from "sonner";
 // ─── Constants ──────────────────────────────────────────
 const RC_API_KEY_APPLE = "appl_qgpDFJEtyXTeNTJZxBoHzxzgiTr";
 const ENTITLEMENT = "The W Tracker Pro";
-const PRODUCT_IDS = ["elitemonthly499", "com.app.elitemonthly499"] as const;
-const PRIMARY_PRODUCT_ID = "elitemonthly499";
+// Must match the App Store Connect product + the revenuecat-webhook
+// PREMIUM_PRODUCT_IDS. WhealthFactory499 is the current product (4,99 €/mo);
+// the elite* ids are kept as fallbacks so older store configs still resolve.
+const PRODUCT_IDS = [
+  "WhealthFactory499", "com.app.WhealthFactory499",
+  "elitemonthly499", "com.app.elitemonthly499",
+] as const;
+const PRIMARY_PRODUCT_ID = "WhealthFactory499";
 
 // ─── Types ──────────────────────────────────────────────
 interface RevenueCatContextType {

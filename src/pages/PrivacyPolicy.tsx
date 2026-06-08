@@ -11,7 +11,7 @@ const PrivacyPolicy = () => {
       </button>
 
       <h1 className="font-display text-2xl font-bold mb-6">Privacy Policy</h1>
-      <p className="text-xs text-muted-foreground mb-6">Last updated: March 23, 2026</p>
+      <p className="text-xs text-muted-foreground mb-6">Last updated: June 8, 2026</p>
 
       <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
         <section>
@@ -35,22 +35,27 @@ const PrivacyPolicy = () => {
         </section>
 
         <section>
-          <h2 className="font-semibold text-foreground mb-2">5. Subscriptions & Payments</h2>
-          <p>Elite subscriptions are processed through Apple's App Store (for iOS) or Stripe (for web). We do not store your payment card information directly. Subscription management is handled through the respective platform.</p>
+          <h2 className="font-semibold text-foreground mb-2">5. Apple Health (HealthKit)</h2>
+          <p>If you choose to connect Apple Health, the app reads your workouts, steps, and active energy from HealthKit solely to verify your daily check-ins (earning the "Verified Performer" badge). Only aggregate daily values (e.g. total steps, workout count and minutes) and a verification result are stored on our secure servers — raw HealthKit samples such as heart-rate streams or GPS workout routes are never accessed, stored, or transmitted. We never use Health data for advertising or marketing, and we never sell it or share it with third parties. Connecting Apple Health is entirely optional, and you can revoke access at any time in iOS Settings → Privacy &amp; Security → Health.</p>
         </section>
 
         <section>
-          <h2 className="font-semibold text-foreground mb-2">6. Your Rights</h2>
+          <h2 className="font-semibold text-foreground mb-2">6. Subscriptions & Payments</h2>
+          <p>Premium subscriptions are processed through Apple's App Store (for iOS) or Stripe (for web). We do not store your payment card information directly. Subscription management is handled through the respective platform.</p>
+        </section>
+
+        <section>
+          <h2 className="font-semibold text-foreground mb-2">7. Your Rights</h2>
           <p>You may request access to, correction of, or deletion of your personal data at any time by contacting us. You can delete your account from your profile settings.</p>
         </section>
 
         <section>
-          <h2 className="font-semibold text-foreground mb-2">7. Children's Privacy</h2>
+          <h2 className="font-semibold text-foreground mb-2">8. Children's Privacy</h2>
           <p>Our app is not intended for children under 13. We do not knowingly collect personal information from children under 13.</p>
         </section>
 
         <section>
-          <h2 className="font-semibold text-foreground mb-2">8. Contact Us</h2>
+          <h2 className="font-semibold text-foreground mb-2">9. Contact Us</h2>
           <p>If you have questions about this Privacy Policy, please contact us at support@wtracker.app.</p>
         </section>
       </div>

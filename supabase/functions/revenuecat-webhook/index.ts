@@ -29,7 +29,18 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     const webhookSecret = Deno.env.get("REVENUECAT_WEBHOOK_SECRET");
 
-    if (webhookSecret && authHeader !== `Bearer ${webhookSecret}`) {
+    // Fail CLOSED: without a configured secret we cannot trust any payload.
+    // A missing secret previously meant "skip auth", which let anyone forge
+    // events and grant themselves Premium/Apex. Reject until it is set.
+    if (!webhookSecret) {
+      console.error("REVENUECAT_WEBHOOK_SECRET is not configured — rejecting webhook");
+      return new Response(JSON.stringify({ error: "Server misconfigured" }), {
+        status: 500,
+        headers: jsonHeaders,
+      });
+    }
+
+    if (authHeader !== `Bearer ${webhookSecret}`) {
       console.error("Unauthorized webhook request");
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,

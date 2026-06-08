@@ -1,4 +1,4 @@
-project_id = "zjdljojkgrpgxurugixf"
+project_id = "gcwuvijcuzhunkcauzom"
 
 [functions.og-image]
 verify_jwt = false
@@ -8,3 +8,16 @@ verify_jwt = false
 
 [functions.moderate-content]
 verify_jwt = true
+
+# Webhooks are called by external services with their own secret header,
+# NOT a Supabase JWT — the gateway must not require a JWT or it rejects them.
+[functions.revenuecat-webhook]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+# Public sign-in endpoint (no JWT yet at call time). Hardened in-code:
+# disabled unless DEMO_LOGIN_ENABLED=true and a DEMO_PASSWORD is configured.
+[functions.demo-login]
+verify_jwt = false

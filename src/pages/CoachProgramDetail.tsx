@@ -45,7 +45,7 @@ const CoachProgramDetail = () => {
         </div>
       </div>
 
-      <div className="px-4 pt-4 pb-8 space-y-4">
+      <div className="px-4 pt-4 pb-28 space-y-4">
         {isLoading && <PageSkeleton />}
 
         {/* Free user, no program — upsell */}

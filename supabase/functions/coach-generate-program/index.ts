@@ -392,7 +392,6 @@ alternative for every working block. Address the athlete in their preferred voic
           messages,
           tools: [TOOL],
           tool_choice: { type: "function", function: { name: "emit_program" } },
-          reasoning: { effort: "high" },
         }),
       });
       if (!aiResp.ok) {

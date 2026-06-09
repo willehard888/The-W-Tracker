@@ -219,8 +219,55 @@ const Index = () => {
         </Reveal>
       )}
 
-      {/* RANK + PROGRESS HUB — identity strip + Pressure/Rivals/Level/Elite/Quests */}
+      {/* THE VAULT — premium content library, raised to the primary slot */}
       <Reveal className="mb-4 relative z-10" delay={80}>
+        <button
+          type="button"
+          onClick={() => navigate("/vault")}
+          className="w-full text-left rounded-2xl border border-gold/35 bg-gradient-to-br from-gold/[0.08] via-card/95 to-card p-4 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.45)] active:scale-[0.99] transition-transform"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_18px_hsl(42_78%_54%/0.4)]">
+              <Crown size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">
+                The Vault · Premium
+              </p>
+              <p className="text-[13px] font-bold text-foreground leading-tight">
+                Recipes, training programs, recovery, sleep &amp; mind tools
+              </p>
+            </div>
+            <ChevronRight size={16} className="text-gold shrink-0" />
+          </div>
+        </button>
+      </Reveal>
+
+      {/* AI COACH — raised to the primary slot (nudges + briefing → /coach) */}
+      <Reveal className="mb-4 relative z-10" delay={120}>
+        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
+          <CoachStrip latestNudge={latestNudge ?? null} latestBriefing={latestBriefing ?? null} />
+        </ErrorBoundary>
+      </Reveal>
+
+      {/* COACH VOICE LINE — single short line in the user's tone, drawn
+          from today's Life OS focus. Pinned right above CoachStrip so the
+          first AI signal the user sees is *their* coach speaking, not a
+          generic CTA. Wrapped in ErrorBoundary so a hook fault can't crash
+          the home page. */}
+      <Reveal className="mb-3 relative z-10" delay={140}>
+        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
+          <HomeCoachLine onTap={() => navigate("/coach")} />
+        </ErrorBoundary>
+      </Reveal>
+
+      {/* SECONDARY — collapsed by default so Home opens focused on its one
+          job (check in) + rank + a single coach line. Everything below is one
+          tap away under "More", per the moderate-declutter design pass. */}
+      <MoreSection label="More" className="relative z-10 mt-1 mb-2">
+      {/* RANK + PROGRESS HUB — moved here into More (was the primary slot).
+          Pressure / Rivals / Level / Elite / Quests one tap away. */}
+      <Reveal className="mb-5 relative z-10" delay={150}>
         <RankProgressHub
           username={profile.username}
           tier={tier}
@@ -248,54 +295,6 @@ const Index = () => {
           xpToNext={xpToNext}
           canCheckin={canCheckin}
         />
-      </Reveal>
-
-      {/* COACH VOICE LINE — single short line in the user's tone, drawn
-          from today's Life OS focus. Pinned right above CoachStrip so the
-          first AI signal the user sees is *their* coach speaking, not a
-          generic CTA. Wrapped in ErrorBoundary so a hook fault can't crash
-          the home page. */}
-      <Reveal className="mb-3 relative z-10" delay={140}>
-        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
-          <HomeCoachLine onTap={() => navigate("/coach")} />
-        </ErrorBoundary>
-      </Reveal>
-
-      {/* SECONDARY — collapsed by default so Home opens focused on its one
-          job (check in) + rank + a single coach line. Everything below is one
-          tap away under "More", per the moderate-declutter design pass. */}
-      <MoreSection label="More" className="relative z-10 mt-1 mb-2">
-      {/* THE VAULT — premium content library (recipes, training programs,
-          recovery, sleep, mind). Primary entry point now lives here in More. */}
-      <Reveal className="mb-5 relative z-10" delay={150}>
-        <button
-          type="button"
-          onClick={() => navigate("/vault")}
-          className="w-full text-left rounded-2xl border border-gold/35 bg-gradient-to-br from-gold/[0.08] via-card/95 to-card p-4 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.45)] active:scale-[0.99] transition-transform"
-        >
-          <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_18px_hsl(42_78%_54%/0.4)]">
-              <Crown size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">
-                The Vault · Premium
-              </p>
-              <p className="text-[13px] font-bold text-foreground leading-tight">
-                Recipes, training programs, recovery, sleep &amp; mind tools
-              </p>
-            </div>
-            <ChevronRight size={16} className="text-gold shrink-0" />
-          </div>
-        </button>
-      </Reveal>
-      {/* COACH STRIP — wrapped in an ErrorBoundary so any single tile
-          (LifeOSCompactCard, briefing tile, nudge tile) failing renders
-          a no-op fallback instead of blowing up the entire home page. */}
-      <Reveal className="mb-5 relative z-10" delay={160}>
-        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
-          <CoachStrip latestNudge={latestNudge ?? null} latestBriefing={latestBriefing ?? null} />
-        </ErrorBoundary>
       </Reveal>
 
       {/* GROWTH ROW — Invite + Recent Badges */}

@@ -437,6 +437,25 @@ alternative for every working block. Address the athlete in their preferred voic
     catch (resp) { return resp as Response; }
     if (result.parsed) {
       parsed = result.parsed;
+      // gpt-4o-mini sometimes omits the (schema-required) nutrition/recovery
+      // objects. Backfill sensible defaults so the "Week details" panel always
+      // has content instead of being an empty/dead control.
+      for (const w of (parsed?.plan?.weeks ?? [])) {
+        if (!w.nutrition) {
+          w.nutrition = {
+            protein_g_per_kg: 1.8,
+            daily_kcal_band: "Eat at maintenance; slight surplus on training days",
+            notes: "Prioritize whole foods, 4–5 protein feedings, hydrate well.",
+          };
+        }
+        if (!w.recovery) {
+          w.recovery = {
+            sleep_target_h: 8,
+            mobility_min: 10,
+            breathwork: "5 min slow nasal breathing post-session",
+          };
+        }
+      }
       const violations = validateProgram(result.parsed.plan, {
         trainDayNames,
         sessionMinCap: session_min,

@@ -9,4 +9,4 @@ UPDATE public.badges
 SET name        = 'One of the Winners',
     description = 'Premium member — you went all in. One of the winners backing the mission.',
     icon        = '🏆'
-WHERE badge_id = 'elite_member';
+WHERE requirement_type = 'elite_member';

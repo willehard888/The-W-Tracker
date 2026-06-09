@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
 import { toast } from "sonner";
 import { useCoachProgram } from "@/hooks/use-coach-program";
-import ProgramOnboarding from "@/components/coach/ProgramOnboarding";
 import { ProfileSkeleton as PageSkeleton } from "@/components/skeletons/PageSkeleton";
 import AthleteProfileOnboarding from "@/components/coach/AthleteProfileOnboarding";
 import MoodSnapshot from "@/components/coach/MoodSnapshot";
@@ -121,18 +120,12 @@ const Coach = () => {
     );
   }
 
-  // Elite users without a generated program → kick off program-generation
-  // flow (Lovable AI call). Free users skip this step — they never see the
-  // 4-week training program; they see the Lite Coach shell instead.
-  if (isElite && !program) {
-    return (
-      <div className="flex flex-col h-full overflow-y-auto safe-top">
-        <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
-        <ProgramOnboarding onGenerated={() => refetch()} />
-      </div>
-    );
-  }
-
+  // NOTE: we used to hard-redirect Elite users without a program straight to
+  // ProgramOnboarding here. That hid the whole Coach shell — including the
+  // "Ask Coach" chat — behind a program that requires an AI call to create, so
+  // if generation failed the user was stranded with no chat. The shell now
+  // always renders; ProgramCard surfaces the "Build my program" CTA inline
+  // (→ /coach/program → ProgramOnboarding) for users without one yet.
   return (
     <CoachShell
       session={session}

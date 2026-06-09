@@ -77,7 +77,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
     : `Day ${summary.newStreak} of your chain. Keep building.`;
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center px-5 py-8 text-center relative overflow-hidden safe-top">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center px-5 py-5 text-center relative overflow-hidden safe-top">
       {/* Tier-specific radial glow */}
       <div className={cn("absolute inset-0 pointer-events-none bg-gradient-to-br", bg)} />
       <div
@@ -121,17 +121,17 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 280, damping: 18, delay: 0.15 }}
           className={cn(
-            "h-24 w-24 rounded-full flex items-center justify-center mx-auto mb-4 relative",
+            "h-[72px] w-[72px] rounded-full flex items-center justify-center mx-auto mb-3 relative",
             accent.iconBg,
             accent.glow,
           )}
         >
           {leveledUp ? (
-            <Trophy size={42} strokeWidth={2.4} />
+            <Trophy size={34} strokeWidth={2.4} />
           ) : cfg.rank >= 5 ? (
-            <Flame size={42} strokeWidth={2.4} fill="currentColor" />
+            <Flame size={34} strokeWidth={2.4} fill="currentColor" />
           ) : (
-            <Zap size={42} strokeWidth={2.4} fill="currentColor" />
+            <Zap size={34} strokeWidth={2.4} fill="currentColor" />
           )}
         </motion.div>
 
@@ -140,7 +140,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="font-display text-[28px] font-black tracking-tight uppercase leading-none mb-1"
+          className="font-display text-[26px] font-black tracking-tight uppercase leading-none mb-1"
         >
           {headline}
         </motion.h1>
@@ -148,7 +148,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.35 }}
-          className="text-xs text-muted-foreground font-bold mb-5"
+          className="text-xs text-muted-foreground font-bold mb-4"
         >
           {subline}
         </motion.p>
@@ -159,7 +159,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4 }}
           className={cn(
-            "rounded-2xl border-2 p-5 mb-3 inner-light relative overflow-hidden",
+            "rounded-2xl border-2 p-4 mb-3 inner-light relative overflow-hidden",
             cfg.rank >= 5
               ? "border-gold/50 bg-gradient-to-br from-[hsl(18_95%_58%)]/10 via-gold/8 to-transparent"
               : cfg.rank === 4
@@ -290,7 +290,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
           className={cn(
-            "rounded-xl border bg-card/60 p-3 mb-5 flex items-center justify-between",
+            "rounded-xl border bg-card/60 p-3 mb-4 flex items-center justify-between",
             cfg.rank >= 5 ? "border-gold/30" : "border-border",
           )}
         >

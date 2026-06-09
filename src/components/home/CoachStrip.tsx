@@ -2,6 +2,7 @@ import { Sparkles, FileText, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CoachNudgeCard from "@/components/CoachNudgeCard";
 import LifeOSCompactCard from "@/components/coach/LifeOSCompactCard";
+import { useCoachObservation } from "@/hooks/use-coach-observation";
 import { cn } from "@/lib/utils";
 
 interface LatestNudge {
@@ -24,15 +25,15 @@ interface CoachStripProps {
 
 const CoachStrip = ({ latestNudge, latestBriefing, className }: CoachStripProps) => {
   const navigate = useNavigate();
+  // Live coach line surfaced INSIDE the AI Coach card so the card feels alive
+  // instead of repeating a generic subtitle + a separate standalone line.
+  const { text: coachLine } = useCoachObservation({ context: "home" });
 
   const cardBase =
     "snap-start shrink-0 w-[80%] sm:w-[60%] md:w-[44%] rounded-2xl glass-card-gold p-4 text-left active:scale-[0.99] transition-transform overflow-hidden relative";
 
   return (
     <div className={cn("relative", className)}>
-      <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80 mb-2 px-1">
-        Your Coach
-      </p>
       <div className="snap-x-strip flex gap-3 overflow-x-auto -mx-4 px-4 pb-1 snap-x snap-mandatory">
         {/* Life OS — today's holistic 5-domain plan. Renders null when no
             brief exists for today, so the strip falls back to the
@@ -65,8 +66,8 @@ const CoachStrip = ({ latestNudge, latestBriefing, className }: CoachStripProps)
                 </span>
               </div>
               <p className="font-bold text-sm leading-tight">Ask your coach anything</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
-                Training, sleep, discipline.
+              <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 italic">
+                {coachLine?.trim() || "Training, sleep & discipline — calibrated to you."}
               </p>
             </div>
             <ChevronRight size={18} className="text-gold/70 shrink-0" />

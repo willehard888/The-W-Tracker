@@ -5,8 +5,6 @@ import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
 import RankProgressHub from "@/components/home/RankProgressHub";
 import CoachStrip from "@/components/home/CoachStrip";
-import CoachLine from "@/components/coach/CoachLine";
-import { useCoachObservation } from "@/hooks/use-coach-observation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Reveal from "@/components/home/Reveal";
 import EmptyState from "@/components/ui/empty-state";
@@ -250,17 +248,6 @@ const Index = () => {
         </ErrorBoundary>
       </Reveal>
 
-      {/* COACH VOICE LINE — single short line in the user's tone, drawn
-          from today's Life OS focus. Pinned right above CoachStrip so the
-          first AI signal the user sees is *their* coach speaking, not a
-          generic CTA. Wrapped in ErrorBoundary so a hook fault can't crash
-          the home page. */}
-      <Reveal className="mb-3 relative z-10" delay={140}>
-        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
-          <HomeCoachLine onTap={() => navigate("/coach")} />
-        </ErrorBoundary>
-      </Reveal>
-
       {/* SECONDARY — collapsed by default so Home opens focused on its one
           job (check in) + rank + a single coach line. Everything below is one
           tap away under "More", per the moderate-declutter design pass. */}
@@ -358,17 +345,6 @@ const Index = () => {
       </div>
     </div>
   );
-};
-
-/**
- * HomeCoachLine — mounts the Coach observation hook + renders a CoachLine.
- * Lives as a subcomponent so the hook call is scoped (a hook fault here
- * only blows up its own ErrorBoundary, not the whole Index render).
- */
-const HomeCoachLine = ({ onTap }: { onTap: () => void }) => {
-  const { text, isLoading } = useCoachObservation({ context: "home" });
-  if (isLoading || !text) return null;
-  return <CoachLine text={text} onClick={onTap} />;
 };
 
 export default Index;

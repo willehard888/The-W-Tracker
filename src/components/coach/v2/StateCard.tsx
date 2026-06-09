@@ -77,7 +77,7 @@ const StateCard = () => {
       <div className="flex items-center gap-2 mb-3">
         <Activity size={12} className="text-gold" />
         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
-          Tila — your read
+          Your read
         </p>
         {profile?.streak && profile.streak > 0 ? (
           <span className="ml-auto text-[10px] font-bold text-gold tabular-nums">

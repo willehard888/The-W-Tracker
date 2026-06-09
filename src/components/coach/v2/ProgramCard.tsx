@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 
 /**
- * Card 3 — Treeniohjelma (Program).
+ * Card 3 — Training program (Program).
  *
  * Free: "Build your 4-week training program" CTA → /paywall
  * Elite (no program yet): "Generate program" CTA → /coach/program (which
@@ -41,7 +41,7 @@ const ProgramCard = () => {
         <div className="flex items-center gap-2 mb-2">
           <Dumbbell size={12} className="text-gold" />
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
-            Treeniohjelma
+            Training program
           </p>
           <Crown size={11} className="ml-auto text-gold/70" />
         </div>
@@ -66,7 +66,7 @@ const ProgramCard = () => {
         <div className="flex items-center gap-2 mb-3">
           <Dumbbell size={12} className="text-gold" />
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
-            Treeniohjelma
+            Training program
           </p>
         </div>
         <p className="text-[14px] font-bold leading-snug mb-1">
@@ -97,7 +97,7 @@ const ProgramCard = () => {
       <div className="flex items-center gap-2 mb-2">
         <Dumbbell size={12} className="text-gold" />
         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
-          Treeniohjelma · Week {currentWeek}
+          Training program · Week {currentWeek}
         </p>
       </div>
 

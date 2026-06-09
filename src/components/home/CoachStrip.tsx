@@ -1,9 +1,6 @@
-import { Sparkles, FileText, ChevronRight } from "lucide-react";
+import { Sparkles, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import CoachNudgeCard from "@/components/CoachNudgeCard";
-import LifeOSCompactCard from "@/components/coach/LifeOSCompactCard";
 import { useCoachObservation } from "@/hooks/use-coach-observation";
-import { cn } from "@/lib/utils";
 
 interface LatestNudge {
   id: string;
@@ -18,98 +15,55 @@ interface LatestBriefing {
 }
 
 interface CoachStripProps {
+  // Kept for call-site compatibility; the home card is now a single clean
+  // full-width entry (nudges/briefings live inside /coach).
   latestNudge?: LatestNudge | null;
   latestBriefing?: LatestBriefing | null;
   className?: string;
 }
 
-const CoachStrip = ({ latestNudge, latestBriefing, className }: CoachStripProps) => {
+/**
+ * Home AI Coach entry — a single full-width card that visually matches the
+ * other home cards (Vault, Invite). Shows the live coach line as the subtitle
+ * and taps through to the full Coach.
+ */
+const CoachStrip = (_props: CoachStripProps) => {
   const navigate = useNavigate();
-  // Live coach line surfaced INSIDE the AI Coach card so the card feels alive
-  // instead of repeating a generic subtitle + a separate standalone line.
   const { text: coachLine } = useCoachObservation({ context: "home" });
 
-  const cardBase =
-    "snap-start shrink-0 w-[80%] sm:w-[60%] md:w-[44%] rounded-2xl glass-card-gold p-4 text-left active:scale-[0.99] transition-transform overflow-hidden relative";
-
   return (
-    <div className={cn("relative", className)}>
-      <div className="snap-x-strip flex gap-3 overflow-x-auto -mx-4 px-4 pb-1 snap-x snap-mandatory">
-        {/* Life OS — today's holistic 5-domain plan. Renders null when no
-            brief exists for today, so the strip falls back to the
-            "Ask your coach" tile leading. Static, cache-first; zero extra
-            AI invocations beyond the existing 23 h-cached daily generate. */}
-        <LifeOSCompactCard />
-
-        {/* AI Coach */}
-        <button
-          type="button"
-          onClick={() => navigate("/coach")}
-          className={cardBase}
-          style={{
-            border: "1px solid hsl(42 78% 54% / 0.35)",
-            background:
-              "radial-gradient(120% 80% at 0% 0%, hsl(42 78% 54% / 0.18), transparent 60%), hsl(255 14% 7%)",
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl gradient-gold flex items-center justify-center shrink-0 shadow-[0_0_20px_hsl(42_78%_54%/0.5)]">
-              <Sparkles size={20} className="text-primary-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <p className="text-[10px] uppercase tracking-widest text-gold font-black">
-                  AI Coach
-                </p>
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold font-bold border border-gold/30">
-                  GPT-5
-                </span>
-              </div>
-              <p className="font-bold text-sm leading-tight">Ask your coach anything</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 italic">
-                {coachLine?.trim() || "Training, sleep & discipline — calibrated to you."}
-              </p>
-            </div>
-            <ChevronRight size={18} className="text-gold/70 shrink-0" />
+    <button
+      onClick={() => navigate("/coach")}
+      className="w-full rounded-2xl glass-card-gold p-4 text-left active:scale-[0.99] transition-transform border border-gold/30 relative overflow-hidden"
+    >
+      <div
+        className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, hsl(42 78% 54% / 0.18) 0%, transparent 70%)",
+        }}
+      />
+      <div className="relative flex items-center gap-3">
+        <div className="h-10 w-10 rounded-xl gradient-gold flex items-center justify-center shrink-0 glow-gold">
+          <Sparkles size={18} className="text-primary-foreground" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <p className="text-[10px] uppercase tracking-widest text-gold/80 font-bold">
+              AI Coach
+            </p>
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold font-bold border border-gold/30">
+              GPT-5
+            </span>
           </div>
-        </button>
-
-        {/* Latest Nudge (Elite, unseen) */}
-        {latestNudge && (
-          <div className={cardBase}>
-            <CoachNudgeCard
-              nudgeId={latestNudge.id}
-              headline={latestNudge.headline}
-              content={latestNudge.content}
-            />
-          </div>
-        )}
-
-        {/* Latest Briefing */}
-        {latestBriefing && (
-          <button
-            type="button"
-            onClick={() => navigate(`/briefing/${latestBriefing.id}`)}
-            className={cn(cardBase, "border border-gold/25")}
-          >
-            <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-lg gradient-gold flex items-center justify-center shrink-0">
-                <FileText size={16} className="text-primary-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] uppercase tracking-widest text-gold/80 font-bold mb-0.5">
-                  {latestBriefing.viewed_at ? "Weekly Briefing" : "New Weekly Briefing"}
-                </p>
-                <p className="font-bold text-sm leading-tight line-clamp-2">
-                  {latestBriefing.headline}
-                </p>
-              </div>
-              <ChevronRight size={18} className="text-gold/60 shrink-0 mt-1" />
-            </div>
-          </button>
-        )}
+          <p className="font-bold text-sm leading-tight">Ask your coach anything</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-2 italic">
+            {coachLine?.trim() || "Training, sleep, mind — anything on your mind."}
+          </p>
+        </div>
+        <ChevronRight size={18} className="text-gold/60 shrink-0" />
       </div>
-    </div>
+    </button>
   );
 };
 

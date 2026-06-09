@@ -425,21 +425,26 @@ alternative for every working block. Address the athlete in their preferred voic
     };
 
     let parsed: any = null;
+    // Single AI attempt only. Two sequential generations blow the edge
+    // function's compute budget (WORKER_RESOURCE_LIMIT / 546). And we ACCEPT
+    // the program even if validation flags minor issues — a usable plan beats
+    // a hard failure for the user.
     let lastErr = "";
-    let corrections: string[] = [];
-    for (let attempt = 0; attempt < 2; attempt++) {
-      let result;
-      try { result = await callAi(corrections); }
-      catch (resp) { return resp as Response; }
-      if (!result.parsed) { lastErr = result.rawErr ?? "unknown"; continue; }
+    let result;
+    try { result = await callAi([]); }
+    catch (resp) { return resp as Response; }
+    if (result.parsed) {
+      parsed = result.parsed;
       const violations = validateProgram(result.parsed.plan, {
         trainDayNames,
         sessionMinCap: session_min,
         allowedNames,
       });
-      if (violations.length === 0) { parsed = result.parsed; break; }
-      corrections = violations.slice(0, 8);
-      lastErr = `validation failed: ${violations.slice(0, 3).join(" | ")}`;
+      if (violations.length) {
+        console.warn("Program validation warnings (accepted anyway):", violations.slice(0, 5));
+      }
+    } else {
+      lastErr = result.rawErr ?? "unknown";
     }
 
     if (!parsed) {

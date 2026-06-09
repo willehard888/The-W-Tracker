@@ -34,6 +34,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
   const navigate = useNavigate();
   const { profile } = useAthleteProfile();
   const [generating, setGenerating] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
   const [draft, setDraft] = useState<any>(() => loadDraft() ?? { bodyFocus: [] as string[], notes: "" });
 
   useEffect(() => { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch {} }, [draft]);
@@ -53,6 +54,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 
   const generate = async () => {
     setGenerating(true);
+    setLastError(null);
     hapticImpact("medium");
     try {
       const { data, error } = await supabase.functions.invoke("coach-generate-program", {
@@ -96,6 +98,8 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
           action: { label: "Unlock", onClick: () => navigate("/paywall") },
         });
       } else {
+        // Keep the exact reason on-screen (toasts vanish) so it's easy to read.
+        setLastError(msg || "Couldn't generate program. Try again.");
         toast.error(msg || "Couldn't generate program. Try again.");
       }
     } finally {
@@ -171,6 +175,17 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
           <p className="text-[10px] text-muted-foreground/70 mt-1 text-right">{(draft.notes ?? "").length}/200</p>
         </Field>
       </div>
+
+      {lastError && (
+        <div className="mt-5 rounded-2xl border border-destructive/50 bg-destructive/10 p-3.5">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-destructive mb-1">
+            Generation failed — exact reason
+          </p>
+          <p className="text-[12px] text-foreground/90 leading-snug break-words font-mono">
+            {lastError}
+          </p>
+        </div>
+      )}
 
       <Button variant="ember" size="lg" className="w-full mt-6" onClick={generate}>
         <Zap size={16} /> Design my block

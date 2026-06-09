@@ -388,7 +388,7 @@ alternative for every working block. Address the athlete in their preferred voic
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "openai/gpt-5",
+          model: "openai/gpt-5-mini",
           messages,
           tools: [TOOL],
           tool_choice: { type: "function", function: { name: "emit_program" } },

@@ -127,7 +127,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-5 pt-2 pb-8">
+    <div className="px-1 pt-2 pb-8">
       <div className="flex items-center gap-2 mb-1">
         <Sparkles size={14} className="text-gold" />
         <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gold">Coach briefing</p>

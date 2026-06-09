@@ -72,44 +72,26 @@ const TOOL = {
                       additionalProperties: false,
                       properties: {
                         day: { type: "string", description: "Mon/Tue/Wed/Thu/Fri/Sat/Sun" },
-                        focus: { type: "string", description: "Session focus or 'Rest'" },
+                        focus: { type: "string", description: "Session focus (e.g. 'Push', 'Lower') or 'Rest'" },
                         duration_min: { type: "integer" },
-                        warmup: {
-                          type: "string",
-                          description: "3–5 min specific warm-up. Empty string for rest days.",
-                        },
-                        cooldown: {
-                          type: "string",
-                          description: "2–5 min cooldown / mobility. Empty string for rest days.",
-                        },
                         blocks: {
                           type: "array",
+                          description: "4–6 working exercises on a training day. [] on rest days.",
                           items: {
                             type: "object",
                             additionalProperties: false,
                             properties: {
                               name: { type: "string" },
                               sets: { type: "integer" },
-                              reps: { type: "string" },
+                              reps: { type: "string", description: "Rep target, e.g. '8-12' or '10'." },
                               rpe: { type: "number" },
-                              rest_sec: { type: "integer", description: "Rest between sets in seconds." },
-                              tempo: {
-                                type: "string",
-                                description: "Eccentric-pause-concentric-pause, e.g. '3-1-1-0'. Empty if not relevant.",
-                              },
-                              alt: {
-                                type: "string",
-                                description:
-                                  "One swap option that respects the user's equipment + injuries. Empty string if not needed.",
-                              },
-                              notes: { type: "string" },
                             },
-                            required: ["name", "sets", "reps", "rest_sec", "tempo", "alt", "notes"],
+                            required: ["name", "sets", "reps", "rpe"],
                           },
                         },
-                        conditioning: { type: "string" },
+                        conditioning: { type: "string", description: "Optional finisher/cardio. Empty string if none." },
                       },
-                      required: ["day", "focus", "duration_min", "warmup", "cooldown", "blocks"],
+                      required: ["day", "focus", "duration_min", "blocks"],
                     },
                   },
                   nutrition: {
@@ -300,36 +282,39 @@ Deno.serve(async (req) => {
     const trainDayNames: string[] = (profile.training_days_pref ?? [1, 2, 4, 5]).map((n: number) => DAY_NAMES[n]);
 
     // ── Prompts ──────────────────────────────────────────────────────────────
-    const systemPrompt = `You are W Coach — a senior strength & conditioning coach with 20 years of experience.
-You design programs that real coaches would sign off on. Every prescription is specific, not generic.
+    const systemPrompt = `You are W Coach — a senior strength & conditioning coach with 20 years of experience, expert in hypertrophy, strength, and sport-specific programming. Every prescription is specific and evidence-based — something a pro coach would sign off on.
 
 VOICE: ${toneRule}
 
-HARD CONSTRAINTS (violating any of these is a failure):
-- Schedule training sessions ONLY on these weekdays: ${train_days}. Every other day must be focus="Rest", duration_min=0, blocks=[].
-- duration_min must be ≤ ${session_min} on every training day.
-- You may ONLY pick movement "name" values from the allowed catalog below — exact spelling. Never invent movements.
-- Same primary (first-block) movement cannot appear on two consecutive training days within a week.
-- Never prescribe contraindicated movements; the catalog already excludes them. For each working block also provide a sensible "alt" from the same allowed catalog.
+NON-NEGOTIABLE COMPLETENESS (violating any = failure):
+- EVERY one of the 4 weeks MUST contain ALL 7 day objects, Mon→Sun, in order.
+- Training sessions ONLY on: ${train_days}. Every OTHER weekday MUST be focus="Rest", duration_min=0, blocks=[].
+- Each TRAINING day MUST have 4–6 working exercises in "blocks" — never 1–3, never shortcut.
+- duration_min ≤ ${session_min} on every training day.
+- Pick "name" ONLY from the allowed catalog below — exact spelling. Never invent movements. Don't repeat the same primary (first) lift on two consecutive training days in a week.
 
-PROGRAM DESIGN RULES:
-- Periodization model for this goal: ${periodization}
-- Pattern coverage per training week: include at minimum squat, hinge, a horizontal push, a horizontal pull, a vertical push OR vertical pull, and one core/anti pattern. Add lunge/carry/rotation when ≥4 days/wk.
-- Week 4: deload (volume −40%, RPE −1) ONLY if recent avg RPE > 8 OR avg sleep < 6.5 OR avg energy ≤ 2. Otherwise week 4 = consolidation/test week with ONE PR or AMRAP opportunity on the main lift.
-- Conditioning across the 4 weeks should rotate styles (e.g. Z2, threshold, VO2, finisher complex, mobility flow) — do not prescribe the same style every week.
-- Every working set: prescribe sets, reps, RPE (6–9), rest_sec, and tempo (use "" if tempo isn't meaningful, e.g. running).
-- Per-exercise progression: for the 1–2 main lifts of each session, write the next-week progression in "notes" using a concrete delta (e.g. "+2.5 kg top set", "+1 rep across all sets", "−10s rest", "RPE +0.5").
-- Per-day warmup: 3–5 min including (a) a general RAMP (raise/activate/mobilize/potentiate) and (b) 2–3 ramp sets of the day's main lift at 40/60/80%.
-- Per-day cooldown: 2–5 min mobility specific to what was trained.
-- Per-week progression_note: explicitly describe WHAT changed vs prior week (load %, sets, density, intent) and WHY in 1–2 sentences.
-- ai_summary: 3–4 sentences in the athlete's preferred voice, naming their goal AND one real datapoint from the data block.
-- coach_signature: one short closing sentence in the same voice (≤90 chars).
-- weekly_check_targets must be realistic given days_per_week and current trailing averages.
+HYPERTROPHY-FIRST GYM DESIGN (this athlete trains for long-term muscle growth):
+- Periodization for the goal: ${periodization}
+- Lead each session with 1–2 heavy compounds, then 3–4 accessories. Across the week cover squat, hinge, horizontal & vertical push/pull, plus direct arm + core work.
+- Rep ranges: compounds 5–10, accessories 8–15. RPE 7–9 (1–3 reps in reserve); push accessories close to failure.
+- PROGRESSIVE OVERLOAD week to week: add load, reps, or sets each week (e.g. wk2 +1 set or +1–2 reps, wk3 +load/RPE). Week 4 = deload (volume −40%, RPE −1) ONLY if recent avg RPE > 8 OR avg sleep < 6.5 OR avg energy ≤ 2; otherwise a light test/AMRAP week.
+- Bias volume toward the athlete's stated body emphasis when given.
 
-ALLOWED MOVEMENT CATALOG (name → typical reps, rest, tempo):
+SPORT / GOAL SPECIFICITY:
+- Tailor exercise selection AND conditioning to the primary goal/sport: endurance → aerobic + tempo + supporting strength; combat/sport → power, unilateral, anti-rotation core; fat-loss → keep strength stimulus + add conditioning; longevity → joint-friendly, Zone 2.
+- Rotate conditioning style across the 4 weeks (Z2, threshold, VO2, finisher).
+
+OTHER FIELDS:
+- progression_note: 1–2 sentences on WHAT changed vs prior week and WHY.
+- ai_summary: 3–4 sentences in the athlete's voice, naming the goal + one real datapoint.
+- coach_signature: ≤90 chars, same voice.
+- nutrition + recovery: realistic values for EVERY week (protein g/kg, kcal band + notes; sleep h, mobility min, breathwork).
+- weekly_check_targets: realistic for days/week + trailing averages.
+
+ALLOWED MOVEMENT CATALOG:
 ${catalogText}
 
-EMIT VIA THE emit_program TOOL. Never reply in plain text.`;
+EMIT VIA THE emit_program TOOL. Output ALL 4 weeks × 7 days fully. Never reply in plain text.`;
 
     const userPrompt = `ATHLETE
 - Identity: ${profile.i_am || "n/a"}
@@ -365,9 +350,9 @@ LAST 14 DAYS (reflections, n=${r})
 - Avg mood: ${avgMood}/5
 - Recurring frictions: ${frictions.length ? frictions.join(" | ") : "none reported"}
 
-DESIGN A 4-WEEK BLOCK that progressively pushes this athlete toward their goal, respects every hard constraint,
-explains the progression each week, and includes warm-up, cooldown, rest, tempo, and an injury/equipment-aware
-alternative for every working block. Address the athlete in their preferred voice.`;
+DESIGN A COMPLETE 4-WEEK BLOCK: all 4 weeks, ALL 7 days in each week, with ${days_per_week} training days/week and
+4–6 exercises on every training day — optimized for long-term muscle growth and this athlete's goal/sport. Progress
+the overload every week and explain it. Address the athlete in their preferred voice.`;
 
     // ── Generate (with one auto-retry on validation failure) ─────────────────
     const callAi = async (corrections: string[]): Promise<{ parsed: any; rawErr?: string }> => {

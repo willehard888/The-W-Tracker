@@ -32,8 +32,8 @@ const CoachProgramDetail = () => {
   } = useCoachProgram();
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="shrink-0 page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
+    <div className="flex flex-col">
+      <div className="page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
         <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)}>
           <ArrowLeft size={18} />
         </Button>
@@ -45,7 +45,7 @@ const CoachProgramDetail = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-8 space-y-4">
+      <div className="px-4 pt-4 pb-8 space-y-4">
         {isLoading && <PageSkeleton />}
 
         {/* Free user, no program — upsell */}

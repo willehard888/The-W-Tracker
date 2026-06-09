@@ -385,7 +385,7 @@ alternative for every working block. Address the athlete in their preferred voic
       // hanging until the platform/gateway kills it (which surfaces as an
       // opaque "non-2xx" with no body on the client).
       const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 75_000);
+      const timer = setTimeout(() => ctrl.abort(), 120_000);
       let aiResp: Response;
       try {
         aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -396,9 +396,11 @@ alternative for every working block. Address the athlete in their preferred voic
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "openai/gpt-5-mini",
+            // gpt-4o-mini: fast, strong at structured JSON, and far less likely
+            // to truncate a full 4-week program than the slower reasoning model.
+            model: "openai/gpt-4o-mini",
             messages,
-            max_tokens: 8000,
+            max_tokens: 16000,
             tools: [TOOL],
             tool_choice: { type: "function", function: { name: "emit_program" } },
           }),

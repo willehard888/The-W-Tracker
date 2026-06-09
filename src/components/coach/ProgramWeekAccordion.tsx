@@ -134,14 +134,16 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                   );
                 })}
 
-                <button
-                  type="button"
-                  onClick={() => setShowWeekDetails(v => !v)}
-                  className="w-full text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 inline-flex items-center justify-center gap-1 py-1.5"
-                >
-                  Week details
-                  <ChevronDown size={11} className={cn("transition-transform", showWeekDetails && "rotate-180")} />
-                </button>
+                {(week.nutrition || week.recovery) && (
+                  <button
+                    type="button"
+                    onClick={() => setShowWeekDetails(v => !v)}
+                    className="w-full text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 inline-flex items-center justify-center gap-1 py-1.5"
+                  >
+                    Week details
+                    <ChevronDown size={11} className={cn("transition-transform", showWeekDetails && "rotate-180")} />
+                  </button>
+                )}
                 {showWeekDetails && (week.nutrition || week.recovery) && (
                   <div className="grid grid-cols-2 gap-2">
                     {week.nutrition && (

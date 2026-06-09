@@ -63,14 +63,23 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
       });
       if (error) {
         // supabase-js collapses any non-2xx into a generic "non-2xx status
-        // code" message and hides the response body — dig out the real reason
-        // the edge function returned (e.g. "Premium membership required").
+        // code" message and hides the response body — dig out the real reason.
+        // Read the body as TEXT first (a gateway timeout returns non-JSON, so
+        // .json() throws and we'd otherwise lose the real cause), then try to
+        // parse it. Prefix the HTTP status so 504 (timeout) is unmistakable.
         let reason = error.message;
         const ctx = (error as any).context;
-        if (ctx && typeof ctx.json === "function") {
-          try { const body = await ctx.json(); if (body?.error) reason = body.error; } catch { /* keep generic */ }
+        if (ctx && typeof ctx.text === "function") {
+          try {
+            const raw = (await ctx.text())?.trim();
+            if (raw) {
+              try { reason = JSON.parse(raw)?.error || raw; }
+              catch { reason = raw.slice(0, 200); }
+            }
+          } catch { /* keep generic */ }
         }
-        throw new Error(reason);
+        const status = ctx?.status ? `[${ctx.status}] ` : "";
+        throw new Error(`${status}${reason}`);
       }
       if ((data as any)?.error) throw new Error((data as any).error);
       try { localStorage.removeItem(DRAFT_KEY); } catch {}

@@ -381,19 +381,36 @@ alternative for every working block. Address the athlete in their preferred voic
           content: `Your previous draft failed validation. Fix exactly these issues and resubmit via emit_program:\n- ${corrections.join("\n- ")}`,
         });
       }
-      const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "openai/gpt-5-mini",
-          messages,
-          tools: [TOOL],
-          tool_choice: { type: "function", function: { name: "emit_program" } },
-        }),
-      });
+      // Hard timeout so a slow generation returns a clear error instead of
+      // hanging until the platform/gateway kills it (which surfaces as an
+      // opaque "non-2xx" with no body on the client).
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 75_000);
+      let aiResp: Response;
+      try {
+        aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          signal: ctrl.signal,
+          headers: {
+            Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "openai/gpt-5-mini",
+            messages,
+            max_tokens: 8000,
+            tools: [TOOL],
+            tool_choice: { type: "function", function: { name: "emit_program" } },
+          }),
+        });
+      } catch (err) {
+        clearTimeout(timer);
+        if ((err as any)?.name === "AbortError") {
+          return { parsed: null, rawErr: "AI timed out (>75s). Try again — generation can be heavy." };
+        }
+        throw err;
+      }
+      clearTimeout(timer);
       if (!aiResp.ok) {
         if (aiResp.status === 429) throw new Response(JSON.stringify({ error: "Rate limited. Try again shortly." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         if (aiResp.status === 402) throw new Response(JSON.stringify({ error: "AI credits exhausted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });

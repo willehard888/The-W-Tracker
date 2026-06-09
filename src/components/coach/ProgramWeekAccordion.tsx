@@ -35,7 +35,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
         </div>
       )}
 
-      {program.plan_json.weeks.map((week) => {
+      {(program.plan_json.weeks ?? []).map((week) => {
         const open = openWeek === week.week;
         const isCurrent = week.week === currentWeek;
         return (
@@ -71,8 +71,8 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                     {week.progression_note}
                   </p>
                 )}
-                {week.days.map((day, di) => {
-                  const isRest = day.focus.toLowerCase() === "rest";
+                {(week.days ?? []).map((day, di) => {
+                  const isRest = (day.focus ?? "").toLowerCase() === "rest";
                   const isLogged = logs.some((l) => l.week === week.week && l.day_index === di && l.completed);
                   const dayKey = `${week.week}-${di}`;
                   const dayOpen = openDay === dayKey;
@@ -103,7 +103,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                             </p>
                             {!isRest && (
                               <p className="text-[10px] text-muted-foreground">
-                                {day.duration_min} min · {day.blocks.length} block{day.blocks.length !== 1 && "s"}
+                                {day.duration_min} min · {day.blocks?.length ?? 0} block{(day.blocks?.length ?? 0) !== 1 && "s"}
                               </p>
                             )}
                           </div>
@@ -114,7 +114,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                       </button>
                       {!isRest && dayOpen && (
                         <ul className="px-3 pb-2.5 space-y-1">
-                          {day.blocks.map((b, i) => (
+                          {(day.blocks ?? []).map((b, i) => (
                             <li key={i} className="flex items-baseline justify-between gap-2 text-[12px] py-1 border-b border-border/20 last:border-b-0">
                               <span className="font-bold truncate">{b.name}</span>
                               <span className="text-[10.5px] font-black text-gold whitespace-nowrap">
@@ -142,21 +142,30 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                   Week details
                   <ChevronDown size={11} className={cn("transition-transform", showWeekDetails && "rotate-180")} />
                 </button>
-                {showWeekDetails && (
+                {showWeekDetails && (week.nutrition || week.recovery) && (
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="rounded-xl border border-border/40 bg-background/30 p-3">
-                      <p className="text-[9.5px] font-black uppercase tracking-widest text-gold mb-1">Nutrition</p>
-                      <p className="text-[11.5px] leading-snug text-foreground/85">
-                        Protein <b>{week.nutrition.protein_g_per_kg} g/kg</b> · {week.nutrition.daily_kcal_band}.
-                        {week.nutrition.notes && <> {week.nutrition.notes}</>}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-border/40 bg-background/30 p-3">
-                      <p className="text-[9.5px] font-black uppercase tracking-widest text-gold mb-1">Recovery</p>
-                      <p className="text-[11.5px] leading-snug text-foreground/85">
-                        Sleep <b>{week.recovery.sleep_target_h} h</b> · mobility {week.recovery.mobility_min} min · {week.recovery.breathwork}.
-                      </p>
-                    </div>
+                    {week.nutrition && (
+                      <div className="rounded-xl border border-border/40 bg-background/30 p-3">
+                        <p className="text-[9.5px] font-black uppercase tracking-widest text-gold mb-1">Nutrition</p>
+                        <p className="text-[11.5px] leading-snug text-foreground/85">
+                          {week.nutrition.protein_g_per_kg != null && (
+                            <>Protein <b>{week.nutrition.protein_g_per_kg} g/kg</b>{week.nutrition.daily_kcal_band ? " · " : ". "}</>
+                          )}
+                          {week.nutrition.daily_kcal_band ? <>{week.nutrition.daily_kcal_band}. </> : null}
+                          {week.nutrition.notes && <>{week.nutrition.notes}</>}
+                        </p>
+                      </div>
+                    )}
+                    {week.recovery && (
+                      <div className="rounded-xl border border-border/40 bg-background/30 p-3">
+                        <p className="text-[9.5px] font-black uppercase tracking-widest text-gold mb-1">Recovery</p>
+                        <p className="text-[11.5px] leading-snug text-foreground/85">
+                          {week.recovery.sleep_target_h != null && <>Sleep <b>{week.recovery.sleep_target_h} h</b> · </>}
+                          {week.recovery.mobility_min != null && <>mobility {week.recovery.mobility_min} min · </>}
+                          {week.recovery.breathwork && <>{week.recovery.breathwork}.</>}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

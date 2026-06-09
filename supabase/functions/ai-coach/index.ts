@@ -341,7 +341,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5",
+        model: "openai/gpt-5-mini",
         stream: true,
         messages: [{ role: "system", content: systemPrompt }, ...trimmed],
         reasoning: { effort: goDeep ? "high" : "medium" },

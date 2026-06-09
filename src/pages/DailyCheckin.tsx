@@ -24,7 +24,6 @@ import { triggerGust } from "@/lib/wind";
 import { ELITE_XP_MULTIPLIER } from "@/lib/xp-constants";
 import CheckinTierHeader from "@/components/CheckinTierHeader";
 import CheckinTierSummary from "@/components/CheckinTierSummary";
-import { useUserHabits } from "@/hooks/use-user-habits";
 import { PROTOCOLS } from "@/lib/wellness-framework";
 import { useHealthKit } from "@/hooks/use-healthkit";
 
@@ -161,12 +160,6 @@ const DailyCheckin = () => {
   // so navigating Next/Back never loses values.
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
-  // Custom habits integration: each user's chosen long-game habits
-  // (from /coach/habits) surface here as additional toggles in Step 3.
-  // Toggling stores in local state; on submit we call logHabit() for
-  // each one to update streaks + level via user_habits + user_habit_logs.
-  const { habits: customHabits, completedTodaySet, logHabit } = useUserHabits();
-  const [habitToggles, setHabitToggles] = useState<Record<string, boolean>>({});
 
   // Apple HealthKit — runs a sync after submit, then verifies the
   // check-in against HealthKit data. Verified check-ins earn the
@@ -460,20 +453,6 @@ const DailyCheckin = () => {
         // non-critical — silent
       }
 
-      // Log each toggled-on custom habit. Sequential (the list is ≤8) so
-      // per-habit XP + streak bumps settle before refreshProfile() below.
-      // Errors are swallowed per-habit so one bad row can't sink submit.
-      const toggledHabitIds = Object.entries(habitToggles)
-        .filter(([, v]) => v)
-        .map(([id]) => id);
-      for (const habitId of toggledHabitIds) {
-        try {
-          await logHabit(habitId);
-        } catch (err) {
-          console.error("logHabit failed", habitId, err);
-        }
-      }
-
       // Elite: auto-post proof photo to feed
       if (isElite && proof_photo_url) {
         const sportLabel = selectedSport.id !== "none" ? `${selectedSport.emoji} ${selectedSport.label}` : null;
@@ -707,65 +686,6 @@ const DailyCheckin = () => {
         <ToggleItem icon={Apple} label="Protein Intake" sublabel="Hit your protein target" active={protein} onToggle={() => setProtein(!protein)} bonus="+15 XP" />
         <ToggleItem icon={BookOpen} label="Read / Learn Something New" sublabel="Books, articles, courses" active={reading} onToggle={() => setReading(!reading)} bonus="+20 XP" />
         <ToggleItem icon={NotebookPen} label="Journaling" sublabel="Reflect on wins, lessons, next steps" active={journaling} onToggle={() => setJournaling(!journaling)} bonus="+15 XP" />
-      </div>
-
-      {/* Custom habits — long-game protocols each user picks in Coach.
-          Active habits surface here as additional toggles. Already-logged
-          today habits start checked + disabled. Submitting fires logHabit
-          per toggled habit so per-habit streaks + XP roll up alongside the
-          fixed 13-toggle set, instead of forcing a bounce to another page. */}
-      <div className="mt-4 animate-reveal animate-reveal-delay-2">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-[11px] font-black tracking-[0.18em] uppercase text-gold/80">Your habits</p>
-          {customHabits.length > 0 && (
-            <button
-              onClick={() => navigate("/coach/habits")}
-              className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-gold transition-colors"
-            >
-              Edit
-            </button>
-          )}
-        </div>
-        {customHabits.length === 0 ? (
-          <button
-            onClick={() => navigate("/coach/habits")}
-            className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] text-left"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold">
-              <Plus size={20} />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-sm">Pick your habits</p>
-              <p className="text-xs text-muted-foreground">Build a custom set in Coach — they show up here every day.</p>
-            </div>
-          </button>
-        ) : (
-          <div className="space-y-2.5">
-            {customHabits.map((h) => {
-              const protocol = PROTOCOLS.find((p) => p.id === h.protocol_id);
-              const title = protocol?.title ?? h.protocol_id;
-              const alreadyLogged = completedTodaySet.has(h.id);
-              const checked = alreadyLogged || !!habitToggles[h.id];
-              return (
-                <ToggleItem
-                  key={h.id}
-                  icon={Zap}
-                  label={title}
-                  sublabel={
-                    alreadyLogged
-                      ? `Already logged today · ${h.current_streak}d streak`
-                      : `${h.current_streak}d streak · Lv ${h.level}`
-                  }
-                  active={checked}
-                  onToggle={() => {
-                    if (alreadyLogged) return;
-                    setHabitToggles((prev) => ({ ...prev, [h.id]: !prev[h.id] }));
-                  }}
-                />
-              );
-            })}
-          </div>
-        )}
       </div>
 
       {/* Daily Quests */}

@@ -1,10 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Plus, Check, ShieldAlert, BookOpen, Sparkles, Clock, X } from "lucide-react";
-import { toast } from "sonner";
-import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { Check, ShieldAlert, BookOpen, Sparkles, Clock, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   PILLARS,
@@ -12,7 +9,6 @@ import {
   type Protocol,
 } from "@/lib/wellness-framework";
 import EvidenceChip from "./EvidenceChip";
-import { useUserHabits } from "@/hooks/use-user-habits";
 
 interface Props {
   protocol: Protocol | null;
@@ -38,9 +34,6 @@ interface Props {
  *   there's no risk of "transparent over nothing = looks black."
  */
 const ProtocolSheet = ({ protocol, open, onOpenChange, why }: Props) => {
-  const { habits, addHabit } = useUserHabits();
-  const [busy, setBusy] = useState(false);
-
   // Lock body scroll while open — otherwise the page underneath
   // scrolls when the drawer scrolls, which on iOS feels wrong.
   useEffect(() => {
@@ -52,31 +45,6 @@ const ProtocolSheet = ({ protocol, open, onOpenChange, why }: Props) => {
 
   // Server-side / SSR guard for the portal.
   if (typeof document === "undefined") return null;
-
-  const alreadyAdded = protocol
-    ? habits.some((h) => h.protocol_id === protocol.id)
-    : false;
-  const atCap = habits.length >= 8;
-
-  const onAdd = async () => {
-    if (!protocol) return;
-    hapticImpact("medium");
-    setBusy(true);
-    try {
-      await addHabit(protocol.id);
-      hapticNotification("success");
-      toast.success("Added to your habits", { description: protocol.title });
-      onOpenChange(false);
-    } catch (e: any) {
-      const msg = e?.message ?? "Couldn't add habit.";
-      if (msg === "cap_reached") toast.error("Max 8 active habits — archive one first.");
-      else if (msg === "already_active") toast.info("Already in your habits.");
-      else if (msg === "premium_required") toast.error("Premium required.");
-      else toast.error(msg);
-    } finally {
-      setBusy(false);
-    }
-  };
 
   return createPortal(
     <AnimatePresence>
@@ -125,14 +93,7 @@ const ProtocolSheet = ({ protocol, open, onOpenChange, why }: Props) => {
                 </p>
               </div>
             ) : (
-              <ProtocolBody
-                protocol={protocol}
-                why={why}
-                alreadyAdded={alreadyAdded}
-                atCap={atCap}
-                busy={busy}
-                onAdd={onAdd}
-              />
+              <ProtocolBody protocol={protocol} why={why} />
             )}
           </motion.div>
         </>
@@ -143,14 +104,10 @@ const ProtocolSheet = ({ protocol, open, onOpenChange, why }: Props) => {
 };
 
 const ProtocolBody = ({
-  protocol, why, alreadyAdded, atCap, busy, onAdd,
+  protocol, why,
 }: {
   protocol: Protocol;
   why?: string | null;
-  alreadyAdded: boolean;
-  atCap: boolean;
-  busy: boolean;
-  onAdd: () => void;
 }) => {
   const pillar = PILLARS[protocol.pillar];
   const evMeta = EVIDENCE_META[protocol.evidence];
@@ -227,23 +184,11 @@ const ProtocolBody = ({
         )}
 
         <div className="pt-2">
-          {alreadyAdded ? (
-            <Button variant="ember-glass" size="lg" disabled className="w-full">
-              <Check size={14} /> In your habits
-            </Button>
-          ) : (
-            <Button
-              variant="gold"
-              size="lg"
-              loading={busy}
-              disabled={atCap}
-              onClick={onAdd}
-              className="w-full font-black"
-            >
-              <Plus size={14} /> {atCap ? "Habit cap reached (8)" : "Add to my habits"}
-            </Button>
-          )}
-          <p className="text-[10px] text-muted-foreground/70 text-center mt-2 italic">
+          <p className="text-[11px] text-muted-foreground/80 text-center leading-snug">
+            Apply it in real life, then log the result in your daily{" "}
+            <span className="text-gold/80 font-semibold">check-in</span>.
+          </p>
+          <p className="text-[10px] text-muted-foreground/70 text-center mt-1.5 italic">
             Educational guidance — not medical advice.
           </p>
         </div>

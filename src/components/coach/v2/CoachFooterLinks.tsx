@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import {
-  Brain, Target, Moon, BarChart3, BookOpen, Sparkles, ChevronRight, User,
+  Brain, Target, Moon, BarChart3, BookOpen, ChevronRight, User,
 } from "lucide-react";
 
 /**
@@ -12,7 +12,6 @@ import {
 const CoachFooterLinks = () => {
   const navigate = useNavigate();
   const links = [
-    { icon: Sparkles, label: "Habits", path: "/coach/habits" },
     { icon: Target, label: "Long-term goal", path: "/coach/goal" },
     { icon: Moon, label: "Evening reflection", path: "/coach/reflect" },
     { icon: BarChart3, label: "Weekly review", path: "/coach/progress" },

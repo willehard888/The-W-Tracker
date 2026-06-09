@@ -205,14 +205,16 @@ const CoachShell = ({ session, isElite, program, navigate }: any) => {
       <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
 
       <div className="flex-1 overflow-y-auto px-4 pt-3 pb-8 space-y-3">
-        <StateCard />
-        <MoveCard />
-        <ProgramCard />
-        <HealthKitConnectCard />
+        {/* Chat first — it's the core of the Coach, so it leads instead of
+            being buried at the bottom of the scroll. */}
         <AskCoachPill
           onOpenChat={() => { hapticImpact("light"); setChatOpen(true); }}
           onBrowseFaq={() => { hapticImpact("light"); setFaqOpen(true); }}
         />
+        <StateCard />
+        <MoveCard />
+        <ProgramCard />
+        <HealthKitConnectCard />
         <CoachFooterLinks />
       </div>
 

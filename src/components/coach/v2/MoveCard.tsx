@@ -30,7 +30,7 @@ const MoveCard = () => {
       <div className="flex items-center gap-2 mb-3">
         <Zap size={12} className="text-gold" />
         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
-          Liike — today's move
+          Today's move
         </p>
       </div>
 

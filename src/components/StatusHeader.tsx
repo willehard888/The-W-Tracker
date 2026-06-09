@@ -138,6 +138,11 @@ const StatusHeader = () => {
       ? "bg-[hsl(var(--teal))]"
       : "bg-muted-foreground/40";
 
+  // Full identity strip (avatar, tier, progress, Premium/Legend) only on Home
+  // and the Leaderboard. Every other tab gets just the brand strip.
+  const showIdentity =
+    location.pathname === "/" || location.pathname === "/leaderboard";
+
   return (
     <header className="sticky top-0 z-40 safe-top">
       <div className="relative surface-glass hairline-bottom border-x-0 border-t-0 border-b-0 rounded-none">
@@ -210,7 +215,9 @@ const StatusHeader = () => {
           </span>
         </button>
 
-        {/* Single status row: avatar + identity + tier progress + pill */}
+        {/* Single status row: avatar + identity + tier progress + pill.
+            Shown only on Home + Leaderboard; other tabs keep just the brand. */}
+        {showIdentity && (
         <div className="flex items-center gap-3 px-3 pb-2.5">
           <button
             onClick={() => navigate("/profile")}
@@ -346,6 +353,7 @@ const StatusHeader = () => {
             </button>
           ) : null}
         </div>
+        )}
       </div>
     </header>
   );

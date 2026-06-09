@@ -248,6 +248,11 @@ const Index = () => {
         </ErrorBoundary>
       </Reveal>
 
+      {/* EARN FREE MEMBERSHIP — referral CTA, surfaced in the primary flow */}
+      <Reveal className="mb-4 relative z-10" delay={160}>
+        <InviteCTA referralCount={profile.referral_count || 0} />
+      </Reveal>
+
       {/* SECONDARY — collapsed by default so Home opens focused on its one
           job (check in) + rank + a single coach line. Everything below is one
           tap away under "More", per the moderate-declutter design pass. */}
@@ -284,11 +289,7 @@ const Index = () => {
         />
       </Reveal>
 
-      {/* GROWTH ROW — Invite + Recent Badges */}
-      <Reveal className="mb-4" delay={240}>
-        <InviteCTA referralCount={profile.referral_count || 0} />
-      </Reveal>
-
+      {/* Recent Badges */}
       <Reveal className="mb-2" delay={320}>
         <div className="flex items-end justify-between mb-3 px-0.5">
           <div className="flex flex-col">

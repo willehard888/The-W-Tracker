@@ -1,4 +1,4 @@
-import { Home, Trophy, User, Users, Sparkles } from "lucide-react";
+import { Home, Trophy, User, Users, Flame } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { memo, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
@@ -11,9 +11,9 @@ import { hapticImpact } from "@/lib/haptics";
 // (their routes still exist and are reachable from in-context links).
 const tabs = [
   { icon: Home, label: "Home", path: "/", color: "gold" },
+  { icon: Flame, label: "Feed", path: "/feed", color: "lava" },
   { icon: Users, label: "Tribe", path: "/tribes", color: "apex" },
   { icon: Trophy, label: "Ranks", path: "/leaderboard", color: "gold" },
-  { icon: Sparkles, label: "Coach", path: "/coach", color: "gold" },
   { icon: User, label: "Profile", path: "/profile", color: "gold" },
 ] as const;
 
@@ -35,9 +35,9 @@ const HIDDEN_PATHS = new Set(["/landing", "/auth", "/onboarding", "/paywall"]);
 // Käytetään jo olemassa olevia App.tsx:n lazy-importteja vastaavia dynamic importteja.
 const PREFETCH: Record<string, () => Promise<unknown>> = {
   "/checkin": () => import("@/pages/DailyCheckin"),
+  "/feed": () => import("@/pages/EliteFeed"),
   "/tribes": () => import("@/pages/Tribes"),
   "/leaderboard": () => import("@/pages/Leaderboard"),
-  "/coach": () => import("@/pages/Coach"),
   "/profile": () => import("@/pages/Profile"),
 };
 const prefetched = new Set<string>();

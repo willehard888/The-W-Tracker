@@ -405,11 +405,11 @@ const Tribes = () => {
               Reach Elite to lead your own tribe
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              Hit a 30-day streak (or top 20% rank) to unlock — or go Apex instantly.
+              Hit top 20% rank — or 20 active days with a 21-day streak. Earned, not bought.
             </p>
           </div>
-          <Button size="sm" variant="outline" onClick={() => navigate("/paywall")} className="shrink-0">
-            Unlock
+          <Button size="sm" variant="outline" onClick={() => navigate("/profile")} className="shrink-0">
+            Progress
           </Button>
         </div>
       )}
@@ -500,8 +500,8 @@ const Tribes = () => {
                 <Plus size={14} /> Create a Tribe
               </Button>
             ) : (
-              <Button size="sm" variant="outline" onClick={() => navigate("/paywall")}>
-                <Lock size={14} /> Unlock with Apex
+              <Button size="sm" variant="outline" onClick={() => navigate("/profile")}>
+                <Lock size={14} /> Road to Elite
               </Button>
             )
           }

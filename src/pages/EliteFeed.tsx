@@ -399,7 +399,10 @@ const EliteFeed = () => {
     () => new Set(userInteractions?.reactionPosts ?? []),
     [userInteractions?.reactionPosts],
   );
-  const kudosRemaining = Math.max(0, 2 - kudosGivenThisMonth);
+  // Kudos = the premium, scarce recognition (fire/Heart is the unlimited like).
+  // 2/month was too tight to feel alive; 10 keeps it meaningful but usable.
+  const KUDOS_PER_MONTH = 10;
+  const kudosRemaining = Math.max(0, KUDOS_PER_MONTH - kudosGivenThisMonth);
 
   const createPost = useMutation({
     mutationFn: async () => {
@@ -818,11 +821,46 @@ const EliteFeed = () => {
     setVideoPreview(URL.createObjectURL(file));
   };
 
-  // Posting requires *earned* Elite status (status_tier elite/apex/legend),
-  // not just an active subscription. Reading is open to any member.
+  // B) Verified — which post authors have HealthKit-confirmed check-ins.
+  //    (daily_checkins RLS blocks reading others' rows, so a SECURITY DEFINER
+  //    RPC returns just the verified subset of the visible authors.)
+  const verifiedAuthorIds = useMemo(
+    () => Array.from(new Set((posts ?? []).map((p: any) => p.user_id))),
+    [posts],
+  );
+  const { data: verifiedSet } = useQuery({
+    queryKey: ["feed-verified-authors", verifiedAuthorIds],
+    enabled: verifiedAuthorIds.length > 0,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("verified_authors", { p_ids: verifiedAuthorIds });
+      if (error) return new Set<string>();
+      return new Set((data as string[]) ?? []);
+    },
+  });
+
+  // A) Social proof — how many showed up in the last 24h. Loss-aversion +
+  //    momentum ("everyone's moving, add yours").
+  const { data: todayWins } = useQuery({
+    queryKey: ["feed-today-wins"],
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from("daily_checkins")
+        .select("id", { count: "exact", head: true })
+        .gte("checked_in_at", since);
+      return count ?? 0;
+    },
+  });
+
+  // The app is a hard paywall — every member pays to be here, so every member
+  // can post. (We used to gate posting to *earned* Elite, which silenced almost
+  // everyone and left the community feed dead.) The author's tier still renders
+  // on each post, so status is visible without locking people out of the loop.
   const userTier = profile?.status_tier || 'recruit';
   const tierRank = getTierConfig(userTier).rank;
-  const canPost = tierRank >= 4; // elite, apex, legend
+  const canPost = !!user;
   const unresolvedReportsCount = reports?.length || 0;
   const canView = true; // any member that passes AccessGate can read the feed
 
@@ -943,7 +981,21 @@ const EliteFeed = () => {
         </div>
       )}
 
-      {/* Create Post (Elite Only) */}
+      {/* A) Today's wins — social proof banner */}
+      {(todayWins ?? 0) > 0 && (
+        <div className="animate-reveal mb-4 rounded-2xl border border-[hsl(var(--streak-orange))]/30 bg-gradient-to-r from-[hsl(var(--streak-orange))]/[0.08] to-transparent px-4 py-3 flex items-center gap-3">
+          <div className="h-9 w-9 rounded-xl bg-[hsl(var(--streak-orange))]/15 flex items-center justify-center shrink-0">
+            <Flame size={16} className="text-[hsl(var(--streak-orange))]" fill="currentColor" />
+          </div>
+          <p className="text-[13px] font-bold leading-snug text-foreground/90">
+            <span className="text-[hsl(var(--streak-orange))] font-black tabular-nums">{todayWins}</span>{" "}
+            {todayWins === 1 ? "operator has" : "operators"} showed up in the last 24h.
+            <span className="text-muted-foreground font-medium"> Add yours.</span>
+          </p>
+        </div>
+      )}
+
+      {/* Create Post */}
       {canPost && (
         <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-gold/20 bg-card p-4 mb-6 shadow-[0_2px_16px_hsl(var(--gold)/0.06)]">
           <div className="flex gap-3">
@@ -1127,6 +1179,11 @@ const EliteFeed = () => {
                     {post.profile?.status_tier === "elite" && (
                       <Crown size={12} className="text-gold shrink-0" />
                     )}
+                    {verifiedSet?.has(post.user_id) && (
+                      <span title="HealthKit-verified" className="inline-flex items-center gap-0.5 shrink-0">
+                        <ShieldCheck size={12} className="text-[hsl(var(--xp-green))]" />
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                     <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
@@ -1271,7 +1328,7 @@ const EliteFeed = () => {
                   <button
                     onClick={() => {
                       if (!hasGivenKudos && kudosRemaining <= 0) {
-                        toast.error("You've used both kudos this month");
+                        toast.error("You've used all your kudos this month");
                         return;
                       }
                       hapticImpact("medium");
@@ -1287,7 +1344,7 @@ const EliteFeed = () => {
                           ? "text-muted-foreground hover:bg-purple/10 hover:text-purple"
                           : "text-muted-foreground/40 cursor-not-allowed"
                     )}
-                    title={`${kudosRemaining}/2 kudos remaining this month`}
+                    title={`${kudosRemaining}/${KUDOS_PER_MONTH} kudos remaining this month`}
                   >
                     <Award
                       size={15}

@@ -1,4 +1,4 @@
-import { ImgHTMLAttributes, useState } from "react";
+import { ImgHTMLAttributes, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { transformImage } from "@/lib/img";
 
@@ -16,9 +16,10 @@ interface AppImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "src">
  * - lazy-loads + async-decodes (off-screen images don't block scroll)
  * - right-sizes via Supabase transform (no multi-MB original for a thumb)
  * - fades in on load (no hard cut / flicker)
- * - optional aspect-ratio box reserves space (no layout shift / jump)
- *
- * Pass the ORIGINAL url to a lightbox separately — this only sizes the thumb.
+ * - FALLS BACK to the original object URL if the transform fails (a failed
+ *   transform — e.g. HEIC or a non-transformable bucket — must not leave a
+ *   permanently-invisible "black box"). If that also fails, we still un-hide
+ *   the element so the broken-image state is visible, not a silent void.
  */
 export const AppImage = ({
   src,
@@ -30,15 +31,38 @@ export const AppImage = ({
   style,
   ...rest
 }: AppImageProps) => {
+  const transformed = transformImage(src, { width, quality, resize: "cover" });
+  const original = src || undefined;
+
   const [loaded, setLoaded] = useState(false);
-  const finalSrc = transformImage(src, { width, quality, resize: "cover" });
+  // "transform" → optimized URL; "original" → fell back; "failed" → both failed.
+  const [stage, setStage] = useState<"transform" | "original" | "failed">("transform");
+
+  // Reset when the source changes (virtualized list recycling).
+  useEffect(() => {
+    setLoaded(false);
+    setStage("transform");
+  }, [src]);
+
+  const currentSrc = stage === "transform" ? (transformed || original) : original;
+
+  const handleError = () => {
+    if (stage === "transform" && original && original !== transformed) {
+      setStage("original"); // retry with the un-transformed original
+    } else {
+      setStage("failed");
+      setLoaded(true); // un-hide so it's not a silent black box
+    }
+  };
+
   return (
     <img
-      src={finalSrc || undefined}
+      src={currentSrc || undefined}
       alt={alt}
       loading="lazy"
       decoding="async"
       onLoad={() => setLoaded(true)}
+      onError={handleError}
       className={cn("transition-opacity duration-300", loaded ? "opacity-100" : "opacity-0", className)}
       style={{ aspectRatio, ...style }}
       {...rest}

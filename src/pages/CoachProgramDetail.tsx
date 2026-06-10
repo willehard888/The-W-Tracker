@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Dumbbell, Sparkles, Crown } from "lucide-react";
+import { ArrowLeft, Dumbbell, Sparkles, Crown, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WeekStrip from "@/components/coach/WeekStrip";
 import ProgramWeekAccordion from "@/components/coach/ProgramWeekAccordion";
@@ -22,6 +23,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const CoachProgramDetail = () => {
   const navigate = useNavigate();
   const { isElite } = useAuth();
+  const [showRegen, setShowRegen] = useState(false);
   const {
     isLoading,
     program,
@@ -111,6 +113,22 @@ const CoachProgramDetail = () => {
               currentWeek={currentWeek}
               logs={logs}
             />
+
+            {/* Regenerate — build a fresh 4-week block (supersedes the current). */}
+            {isElite && !showRegen && (
+              <button
+                type="button"
+                onClick={() => setShowRegen(true)}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-gold/30 bg-card/40 px-4 py-3 text-[12px] font-black uppercase tracking-widest text-gold/90 active:scale-[0.99] transition-transform"
+              >
+                <RefreshCw size={13} /> Generate a new block
+              </button>
+            )}
+            {isElite && showRegen && (
+              <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.05] to-card p-1">
+                <ProgramOnboarding onGenerated={() => { setShowRegen(false); refetch(); }} />
+              </div>
+            )}
           </>
         )}
       </div>

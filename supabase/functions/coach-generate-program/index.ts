@@ -381,9 +381,10 @@ the overload every week and explain it. Address the athlete in their preferred v
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            // gpt-4o-mini: fast, strong at structured JSON, and far less likely
-            // to truncate a full 4-week program than the slower reasoning model.
-            model: "openai/gpt-4o-mini",
+            // gpt-5-mini follows the schema (all 7 days/week, min exercises)
+            // far better than 4o-mini. Now that the schema is slim, its output
+            // fits well under the token budget without truncating.
+            model: "openai/gpt-5-mini",
             messages,
             max_tokens: 16000,
             tools: [TOOL],

@@ -3,6 +3,7 @@ import BadgeCard from "@/components/BadgeCard";
 import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
+import PodCard from "@/components/home/PodCard";
 import RankProgressHub from "@/components/home/RankProgressHub";
 import CoachStrip from "@/components/home/CoachStrip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -216,6 +217,15 @@ const Index = () => {
           <TierRiskBanner risk={tierRisk} />
         </Reveal>
       )}
+
+      {/* ACCOUNTABILITY POD — your 3-5 who see your daily check-in. Pinned right
+          under the check-in deck so "did my pod show up / did I?" is the second
+          thing you see. The core retention loop. */}
+      <Reveal className="mb-4 relative z-10" delay={60}>
+        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
+          <PodCard />
+        </ErrorBoundary>
+      </Reveal>
 
       {/* THE VAULT — premium content library, raised to the primary slot */}
       <Reveal className="mb-4 relative z-10" delay={80}>

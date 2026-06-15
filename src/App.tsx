@@ -55,6 +55,7 @@ const TribeDetail = lazy(() => import("./pages/TribeDetail"));
 const TribeBattles = lazy(() => import("./pages/TribeBattles"));
 const TribeLeaderboard = lazy(() => import("./pages/TribeLeaderboard"));
 const Vault = lazy(() => import("./pages/Vault"));
+const Recipes = lazy(() => import("./pages/Recipes"));
 const WeeklyBriefing = lazy(() => import("./pages/WeeklyBriefing"));
 const AdminModeration = lazy(() => import("./pages/AdminModeration"));
 const AdminLegendInvites = lazy(() => import("./pages/AdminLegendInvites"));
@@ -231,6 +232,7 @@ const AppRoutes = () => {
           <Route path="/tribes/:id" element={<ProtectedRoute><TribeDetail /></ProtectedRoute>} />
           <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />
           <Route path="/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
+          <Route path="/recipes" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
           <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
           <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
           <Route path="/admin/legend-invites" element={<ProtectedRoute><AdminLegendInvites /></ProtectedRoute>} />

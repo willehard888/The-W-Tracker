@@ -1,4 +1,4 @@
-import { ChevronRight, Award, Crown } from "lucide-react";
+import { ChevronRight, Award, Crown, Utensils } from "lucide-react";
 import BadgeCard from "@/components/BadgeCard";
 import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
@@ -244,6 +244,30 @@ const Index = () => {
               </p>
               <p className="text-[13px] font-bold text-foreground leading-tight">
                 Recipes, training programs, recovery, sleep &amp; mind tools
+              </p>
+            </div>
+            <ChevronRight size={16} className="text-gold shrink-0" />
+          </div>
+        </button>
+      </Reveal>
+
+      {/* MEAL-PREP RECIPES — structured, scalable, batch-cook recipes */}
+      <Reveal className="mb-4 relative z-10" delay={100}>
+        <button
+          type="button"
+          onClick={() => navigate("/recipes")}
+          className="w-full text-left rounded-2xl border border-gold/35 bg-gradient-to-br from-gold/[0.08] via-card/95 to-card p-4 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.45)] active:scale-[0.99] transition-transform"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_18px_hsl(42_78%_54%/0.4)]">
+              <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">
+                Meal-prep recipes
+              </p>
+              <p className="text-[13px] font-bold text-foreground leading-tight">
+                High-protein bowls that scale to a full week of meals
               </p>
             </div>
             <ChevronRight size={16} className="text-gold shrink-0" />

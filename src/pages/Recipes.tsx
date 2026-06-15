@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Clock, Snowflake, Refrigerator,
-  ChevronRight, Utensils, Layers, Leaf, Maximize2, X,
+  ChevronRight, Utensils, Layers, Leaf, Maximize2,
 } from "lucide-react";
+import PosterZoom from "@/components/recipes/PosterZoom";
 import { Button } from "@/components/ui/button";
 import { RECIPES, type Recipe } from "@/data/recipes";
 import { cn } from "@/lib/utils";
@@ -175,26 +176,10 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
         </div>
       </div>
 
-      {/* Full-screen poster zoom — read the small poster text comfortably.
-          The poster is shown wider than the screen inside a pannable/scrollable
-          surface so every line is legible. */}
+      {/* Full-screen poster zoom — pinch / double-tap / +- buttons to read the
+          small poster text; close is always reachable. */}
       {zoomed && (
-        <div className="fixed inset-0 z-[130] bg-black/95">
-          <button
-            onClick={() => setZoomed(false)}
-            aria-label="Close"
-            className="absolute top-4 right-4 z-10 h-10 w-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white active:scale-95"
-          >
-            <X size={20} />
-          </button>
-          <div className="h-full w-full overflow-auto overscroll-contain flex items-start justify-center p-3">
-            <img
-              src={posterUrl}
-              alt={recipe.title}
-              className="w-[170%] max-w-none rounded-xl"
-            />
-          </div>
-        </div>
+        <PosterZoom url={posterUrl} alt={recipe.title} onClose={() => setZoomed(false)} />
       )}
     </div>
   );

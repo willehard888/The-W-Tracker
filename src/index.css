@@ -45,9 +45,12 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 258 14% 16%;
-    --border-strong: 258 14% 22%;
-    --input: 258 14% 16%;
+    /* Crisper hairlines for the precision look — borders read as deliberate
+       1px lines (Linear/Stripe) rather than fuzzy edges that vanish into the
+       card. */
+    --border: 258 13% 19%;
+    --border-strong: 258 13% 27%;
+    --input: 258 13% 19%;
     --ring: 42 78% 54%;
 
     --radius: 0.75rem;
@@ -111,43 +114,27 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-feature-settings: "ss01", "ss02";
+    font-feature-settings: "ss01", "ss02", "cv01", "cv03";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    letter-spacing: -0.005em;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.006em;
+    /* PRECISION & RESTRAINT — a calm, near-black canvas so content edges,
+       hairlines and type read razor-sharp. One soft gold key light at the top,
+       a faint ember floor, and a gentle vignette. (Was 8 stacked glows that
+       hazed the whole frame; cleaner now reads markedly more expensive.) */
     background-image:
-      /* Premium gold key light — luxury obsidian + warm gold ambient */
-      radial-gradient(ellipse 95% 75% at 12% 0%, hsl(42 90% 58% / 0.13) 0%, transparent 55%),
-      radial-gradient(ellipse 110% 65% at 50% -20%, hsl(42 85% 56% / 0.12) 0%, transparent 50%),
-      radial-gradient(ellipse 80% 50% at 50% -10%, hsl(42 90% 60% / 0.08) 0%, transparent 55%),
-      radial-gradient(ellipse 50% 40% at 10% 60%, hsl(42 70% 48% / 0.06) 0%, transparent 50%),
-      /* Lava floor — warm bottom-edge ember pool, ties UI to the fire theme */
-      radial-gradient(ellipse 90% 55% at 50% 108%, hsl(18 95% 50% / 0.14) 0%, transparent 55%),
-      radial-gradient(ellipse 70% 50% at 85% 100%, hsl(42 90% 58% / 0.10) 0%, transparent 55%),
-      radial-gradient(ellipse 40% 30% at 90% 20%, hsl(42 80% 60% / 0.06) 0%, transparent 50%),
-      /* Side rim lights — sells edge-of-frame depth */
-      linear-gradient(90deg, hsl(42 90% 50% / 0.05) 0%, transparent 8%, transparent 92%, hsl(42 90% 50% / 0.05) 100%),
-      /* Edge vignette for cinematic depth — deeper now */
-      radial-gradient(ellipse 110% 95% at 50% 50%, transparent 50%, hsl(258 25% 1% / 0.7) 100%);
+      radial-gradient(ellipse 105% 70% at 50% -12%, hsl(42 85% 56% / 0.07) 0%, transparent 58%),
+      radial-gradient(ellipse 90% 55% at 50% 110%, hsl(18 95% 50% / 0.055) 0%, transparent 58%),
+      radial-gradient(ellipse 120% 100% at 50% 50%, transparent 58%, hsl(258 28% 1% / 0.55) 100%);
     background-attachment: fixed;
   }
 
-  /* Film grain overlay for cinematic realism — subdued */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.009;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-repeat: repeat;
-    background-size: 320px 320px;
-    animation: grain-shift 6s steps(4) infinite;
-    mix-blend-mode: soft-light;
-  }
+  /* Film grain REMOVED for the precision look — noise is the enemy of "sharp".
+     A clean canvas reads crisper and more expensive (and saves a repaint). */
+  body::before { content: none; }
 
-  /* Cinematic vignette — softer */
+  /* Cinematic vignette — single, gentle. Just enough to frame, not to haze. */
   body::after {
     content: '';
     position: fixed;
@@ -155,9 +142,9 @@
     pointer-events: none;
     z-index: 9998;
     background: radial-gradient(
-      ellipse 75% 70% at 50% 50%,
-      transparent 45%,
-      hsl(260 18% 2% / 0.32) 115%
+      ellipse 80% 72% at 50% 50%,
+      transparent 55%,
+      hsl(260 18% 2% / 0.20) 115%
     );
   }
 
@@ -2487,9 +2474,11 @@
   }
 }
 
-/* Premium typography refinement */
+/* Premium typography refinement — tighter optical tracking on display type
+   reads sharper and more "designed" at large sizes (precision direction). */
 .font-display {
-  letter-spacing: -0.015em;
+  letter-spacing: -0.022em;
+  font-feature-settings: "ss01", "ss02";
 }
 
 /* Premium text gradient */

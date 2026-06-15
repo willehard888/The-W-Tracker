@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Clock, Snowflake, Refrigerator,
-  ChevronRight, Utensils, Layers, Leaf,
+  ChevronRight, Utensils, Layers, Leaf, Maximize2, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RECIPES, type Recipe } from "@/data/recipes";
@@ -49,6 +49,8 @@ const fmtQty = (qty: number | undefined, batch: number) => {
 
 const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }) => {
   const [batch, setBatch] = useState(1);
+  const [zoomed, setZoomed] = useState(false);
+  const posterUrl = `${RECIPE_IMG_BASE}${recipe.id}.png`;
 
   return (
     <div className="flex flex-col">
@@ -59,25 +61,30 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
         <h1 className="font-display text-base font-black tracking-tight truncate">{recipe.title}</h1>
       </div>
 
-      <div className="px-4 pt-4 pb-28 space-y-4">
-        {/* The poster IS the recipe — show it full & readable (2:3 = exact fit). */}
-        {/* Everything the poster already covers (ingredients, method, nutrition, */}
-        {/* badges) is NOT re-rendered below; only meal-prep extras are added. */}
-        <div className="rounded-3xl overflow-hidden border border-gold/25 relative aspect-[2/3] bg-gradient-to-br from-gold/25 via-card to-card">
+      <div className="px-4 pt-4 pb-28 space-y-3">
+        {/* The poster IS the recipe. Clean, flat frame; tap to read it large. */}
+        <button
+          type="button"
+          onClick={() => setZoomed(true)}
+          className="block w-full rounded-2xl overflow-hidden border border-border/60 relative aspect-[2/3] bg-card active:scale-[0.99] transition-transform"
+        >
           {/* Fallback (shown only if the poster image is missing) */}
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
-            <Utensils size={34} className="text-gold" />
+            <Utensils size={32} className="text-gold" />
             <h2 className="font-display text-2xl font-black tracking-tight leading-tight text-foreground">{recipe.title}</h2>
             <p className="text-[12px] text-muted-foreground leading-snug">{recipe.blurb}</p>
           </div>
           <RecipeImage id={recipe.id} className="absolute inset-0 h-full w-full object-cover" />
-        </div>
+          <span className="absolute bottom-2.5 right-2.5 inline-flex items-center gap-1 rounded-md bg-black/45 backdrop-blur-sm px-2 py-1 text-[9.5px] font-semibold tracking-wide text-white/85">
+            <Maximize2 size={10} /> Enlarge
+          </span>
+        </button>
 
         {/* MEAL PREP — batch scaler (the one thing the poster can't do) */}
-        <div className="rounded-2xl border border-gold/30 bg-gold/[0.05] p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Layers size={13} className="text-gold" />
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">Meal prep — cook in batch</p>
+        <div className="rounded-2xl border border-border/60 bg-card/40 p-4">
+          <div className="flex items-center gap-2 mb-2.5">
+            <Layers size={12} className="text-gold" />
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70">Meal prep — cook in batch</p>
           </div>
           <div className="flex gap-1.5">
             {BATCH_OPTIONS.map((b) => (
@@ -85,50 +92,45 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
                 key={b}
                 onClick={() => { hapticSelection(); setBatch(b); }}
                 className={cn(
-                  "flex-1 rounded-xl py-2.5 text-[13px] font-black tabular-nums transition-all active:scale-[0.97]",
+                  "flex-1 rounded-lg py-2.5 text-[13px] font-black tabular-nums transition-all active:scale-[0.97] border",
                   batch === b
-                    ? "bg-gold text-primary-foreground shadow-[0_2px_10px_hsl(42_78%_50%/0.4)]"
-                    : "bg-card/60 border border-border/50 text-foreground/70",
+                    ? "bg-gold text-primary-foreground border-transparent"
+                    : "bg-secondary/40 border-border/50 text-foreground/60",
                 )}
               >
                 {b}×
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-muted-foreground mt-2">
+          <p className="text-[11px] text-muted-foreground mt-2.5 leading-snug">
             {batch === 1
-              ? "Single serving — quantities are in the recipe above. Tap 2×–5× for a batch shopping list."
+              ? "Single serving — full quantities are on the poster. Tap 2×–5× for a batch shopping list."
               : `Shopping list scaled for ${batch} meals — cook once, eat all week.`}
           </p>
         </div>
 
         {/* Scaled shopping list — only when batching (poster covers the 1× case) */}
         {batch > 1 && (
-          <div className="rounded-2xl border border-gold/20 bg-[hsl(255_14%_7%)] p-4">
-            <div className="flex items-center gap-1.5 mb-3">
-              <Leaf size={14} className="text-gold" />
-              <p className="font-display text-base font-black uppercase tracking-wide text-gold">Shopping list</p>
+          <div className="rounded-2xl border border-border/60 bg-card/40 p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Leaf size={13} className="text-gold" />
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70">Shopping list</p>
               <span className="ml-auto text-[11px] font-black text-gold tabular-nums">{batch}×</span>
             </div>
-            <div className="space-y-3.5">
+            <div className="space-y-3">
               {recipe.groups.map((g) => (
                 <div key={g.title}>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="h-6 w-6 rounded-full border border-gold/40 bg-gold/10 flex items-center justify-center shrink-0">
-                      <Leaf size={11} className="text-gold" />
-                    </span>
-                    <p className="text-[11px] font-black uppercase tracking-wider text-foreground">{g.title}</p>
-                  </div>
-                  <ul className="space-y-1 pl-8">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-foreground/60 mb-1.5">{g.title}</p>
+                  <ul className="space-y-1">
                     {g.items.map((it, i) => (
                       <li key={i} className="flex items-baseline gap-2 text-[12.5px]">
-                        <span className="h-1 w-1 rounded-full bg-gold/60 shrink-0 mt-1.5" />
+                        <span className="h-1 w-1 rounded-full bg-gold/50 shrink-0 mt-1.5" />
                         <span className="text-foreground/85">
                           {it.qty != null && (
                             <b className="text-gold tabular-nums">{fmtQty(it.qty, batch)}{it.unit ? ` ${it.unit}` : ""} </b>
                           )}
                           {it.item}
-                          {it.note && <span className="text-muted-foreground/70"> ({it.note})</span>}
+                          {it.note && <span className="text-muted-foreground/60"> ({it.note})</span>}
                         </span>
                       </li>
                     ))}
@@ -139,20 +141,20 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
           </div>
         )}
 
-        {/* Storage / reheat panel — meal-prep value the poster doesn't have */}
-        <div className="rounded-2xl border border-[hsl(210_90%_56%)]/25 bg-[hsl(210_90%_56%)]/[0.05] p-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[hsl(210_90%_60%)] mb-3">Storage & reheat</p>
+        {/* Storage / reheat — same calm palette (no competing accent colour) */}
+        <div className="rounded-2xl border border-border/60 bg-card/40 p-4">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70 mb-3">Storage & reheat</p>
           <div className="flex gap-2 mb-3">
-            <div className="flex-1 rounded-xl bg-card/50 border border-border/40 p-2.5 flex items-center gap-2">
-              <Refrigerator size={15} className="text-[hsl(210_90%_60%)] shrink-0" />
+            <div className="flex-1 rounded-lg bg-secondary/30 border border-border/50 p-2.5 flex items-center gap-2">
+              <Refrigerator size={15} className="text-gold/80 shrink-0" />
               <div>
                 <p className="text-[14px] font-black tabular-nums leading-none">{recipe.mealPrep.fridgeDays}d</p>
                 <p className="text-[8.5px] uppercase tracking-wider text-muted-foreground mt-0.5">Fridge</p>
               </div>
             </div>
             {recipe.mealPrep.freezerWeeks != null && (
-              <div className="flex-1 rounded-xl bg-card/50 border border-border/40 p-2.5 flex items-center gap-2">
-                <Snowflake size={15} className="text-[hsl(210_90%_60%)] shrink-0" />
+              <div className="flex-1 rounded-lg bg-secondary/30 border border-border/50 p-2.5 flex items-center gap-2">
+                <Snowflake size={15} className="text-gold/80 shrink-0" />
                 <div>
                   <p className="text-[14px] font-black tabular-nums leading-none">{recipe.mealPrep.freezerWeeks}wk</p>
                   <p className="text-[8.5px] uppercase tracking-wider text-muted-foreground mt-0.5">Freezer</p>
@@ -161,17 +163,39 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
             )}
           </div>
           <p className="text-[12px] text-foreground/85 leading-snug mb-2">
-            <span className="font-bold text-[hsl(210_90%_60%)]">Reheat:</span> {recipe.mealPrep.reheat}
+            <span className="font-bold text-gold">Reheat:</span> {recipe.mealPrep.reheat}
           </p>
           <ul className="space-y-1">
             {recipe.mealPrep.tips.map((t, i) => (
               <li key={i} className="text-[11.5px] text-muted-foreground leading-snug flex gap-1.5">
-                <span className="text-[hsl(210_90%_60%)]/70 shrink-0">•</span> {t}
+                <span className="text-gold/50 shrink-0">•</span> {t}
               </li>
             ))}
           </ul>
         </div>
       </div>
+
+      {/* Full-screen poster zoom — read the small poster text comfortably.
+          The poster is shown wider than the screen inside a pannable/scrollable
+          surface so every line is legible. */}
+      {zoomed && (
+        <div className="fixed inset-0 z-[130] bg-black/95">
+          <button
+            onClick={() => setZoomed(false)}
+            aria-label="Close"
+            className="absolute top-4 right-4 z-10 h-10 w-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white active:scale-95"
+          >
+            <X size={20} />
+          </button>
+          <div className="h-full w-full overflow-auto overscroll-contain flex items-start justify-center p-3">
+            <img
+              src={posterUrl}
+              alt={recipe.title}
+              className="w-[170%] max-w-none rounded-xl"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

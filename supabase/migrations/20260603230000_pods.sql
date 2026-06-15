@@ -84,39 +84,39 @@ DECLARE
   v_pod uuid;
   v_offset interval;
   v_local_today date;
+  v_pod_json json;
+  v_members json;
 BEGIN
   IF uid IS NULL THEN RETURN NULL; END IF;
   SELECT pod_id INTO v_pod FROM pod_members WHERE user_id = uid LIMIT 1;
   IF v_pod IS NULL THEN RETURN NULL; END IF;
   v_offset := make_interval(mins => COALESCE(p_tz_offset_minutes, 0));
   v_local_today := (now() - v_offset)::date;
-  RETURN json_build_object(
-    'pod', (SELECT json_build_object('id', id, 'name', name, 'invite_code', invite_code, 'owner_id', owner_id)
-            FROM pods WHERE id = v_pod),
-    'members', COALESCE((
-      SELECT json_agg(m ORDER BY (m->>'username'))
-      FROM (
-        SELECT json_build_object(
-          'user_id', pr.user_id,
-          'username', pr.username,
-          'avatar_url', pr.avatar_url,
-          'status_tier', pr.status_tier,
-          'streak', pr.streak,
-          'checked_in_today', EXISTS (
-            SELECT 1 FROM daily_checkins dc
-            WHERE dc.user_id = pr.user_id
-              AND (dc.checked_in_at - v_offset)::date = v_local_today
-          )
-        ) AS m
-        FROM pod_members pm
-        JOIN profiles pr ON pr.user_id = pm.user_id
-        WHERE pm.pod_id = v_pod
-      ) s
-    ), '[]'::json)
-  );
+
+  SELECT json_build_object('id', id, 'name', name, 'invite_code', invite_code, 'owner_id', owner_id)
+    INTO v_pod_json FROM pods WHERE id = v_pod;
+
+  SELECT COALESCE(json_agg(json_build_object(
+      'user_id', pr.user_id,
+      'username', pr.username,
+      'avatar_url', pr.avatar_url,
+      'status_tier', pr.status_tier,
+      'streak', pr.streak,
+      'checked_in_today', EXISTS (
+        SELECT 1 FROM daily_checkins dc
+        WHERE dc.user_id = pr.user_id
+          AND (dc.checked_in_at - v_offset)::date = v_local_today
+      )
+    )), '[]'::json)
+    INTO v_members
+    FROM pod_members pm
+    JOIN profiles pr ON pr.user_id = pm.user_id
+    WHERE pm.pod_id = v_pod;
+
+  RETURN json_build_object('pod', v_pod_json, 'members', v_members);
 END; $$;
 
-GRANT EXECUTE ON FUNCTION public.create_pod(text)        TO authenticated;
-GRANT EXECUTE ON FUNCTION public.join_pod(text)          TO authenticated;
-GRANT EXECUTE ON FUNCTION public.leave_pod()             TO authenticated;
-GRANT EXECUTE ON FUNCTION public.pod_today(int)          TO authenticated;
+GRANT EXECUTE ON FUNCTION public.create_pod(text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.join_pod(text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.leave_pod() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.pod_today(int) TO authenticated;

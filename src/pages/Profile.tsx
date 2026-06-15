@@ -482,9 +482,10 @@ const Profile = () => {
           <div className="mt-5 w-full">
             <StatusNameplate
               tier={tier}
-              rank={rankData?.rank}
+              rank={rankData?.rank ?? undefined}
               totalUsers={rankData?.totalUsers}
               percentile={rankData?.percentile}
+              ranked={rankData?.hasRank ?? false}
               size="lg"
             />
           </div>

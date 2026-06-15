@@ -2,13 +2,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Flame, Zap, Award, Shield, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Crown, TrendingUp, Share2, Trophy, Camera, Play } from "lucide-react";
+import { Flame, Zap, Award, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Crown, TrendingUp, Share2, Trophy, Camera, Play } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
 import StatusAvatar from "@/components/StatusAvatar";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { Button } from "@/components/ui/button";
-import StatCard from "@/components/StatCard";
-import StreakDisplay from "@/components/StreakDisplay";
 import BadgeCard from "@/components/BadgeCard";
 import EmptyState from "@/components/ui/empty-state";
 import HeadToHead from "@/components/HeadToHead";
@@ -22,6 +20,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
+
+// Shared action-button styling for the profile header.
+const PRIMARY_BTN = "inline-flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-[12.5px] font-black tracking-tight transition-all active:scale-[0.98]";
+const BTN_GOLD = "bg-gold text-primary-foreground shadow-[0_3px_12px_-2px_hsl(42_78%_50%/0.45)]";
+const SECONDARY_BTN = "text-gold border border-gold/30 bg-gold/[0.06] hover:bg-gold/10";
 
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -137,17 +140,21 @@ const UserProfile = () => {
     enabled: !!userId && !!profile,
     queryFn: async () => {
       if (!profile) return null;
-      const { count: aheadCount } = await supabase
-        .from("profiles")
-        .select("user_id", { count: "exact", head: true })
-        .gt("rank_score", profile.rank_score ?? 0);
+      const rs = Number(profile.rank_score) || 0;
       const { count: totalCount } = await supabase
         .from("profiles")
         .select("user_id", { count: "exact", head: true });
-      return {
-        rank: (aheadCount || 0) + 1,
-        total: totalCount || 0,
-      };
+      const total = totalCount || 0;
+      // Score 0 = hasn't earned a rank yet → unranked (avoids misleading
+      // "#4 / 3 · Top 100%" for brand-new recruits).
+      if (rs <= 0) return { rank: null as number | null, total, ranked: false };
+      const { count: aheadCount } = await supabase
+        .from("profiles")
+        .select("user_id", { count: "exact", head: true })
+        .gt("rank_score", rs);
+      // Clamp so visibility/RLS skew can never make rank exceed the population.
+      const rank = total > 0 ? Math.min((aheadCount || 0) + 1, total) : (aheadCount || 0) + 1;
+      return { rank, total, ranked: true };
     },
     staleTime: 60_000,
   });
@@ -182,12 +189,15 @@ const UserProfile = () => {
         await supabase.from("friendships").delete().eq("id", friendship.id);
         toast(action === "cancel" ? "Request cancelled" : "Friend removed");
       }
-      queryClient.invalidateQueries({ queryKey: ["friendship"] });
-      queryClient.invalidateQueries({ queryKey: ["friends"] });
+      ["friendship", "friends", "friends-list", "friend-requests",
+       "sent-friend-requests", "friend-request-count"].forEach((k) =>
+        queryClient.invalidateQueries({ queryKey: [k] }));
     } catch {
       toast.error("Something went wrong");
     }
   };
+
+  const areFriends = friendship?.status === "accepted";
 
   if (isLoading) {
     return (
@@ -345,8 +355,9 @@ const UserProfile = () => {
           <div className="mt-5">
             <StatusNameplate
               tier={profile.status_tier || 'recruit'}
-              rank={globalRank?.rank}
+              rank={globalRank?.rank ?? undefined}
               totalUsers={globalRank?.total}
+              ranked={globalRank?.ranked ?? false}
               size="md"
             />
           </div>
@@ -431,7 +442,7 @@ const UserProfile = () => {
           )}
 
           {/* Global rank position */}
-          {globalRank && globalRank.total > 0 && (
+          {globalRank?.ranked && globalRank.rank != null && globalRank.total > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
@@ -459,46 +470,75 @@ const UserProfile = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="mb-4 mt-4 space-y-2"
+            className="mb-5 mt-4"
           >
-            <div className="flex gap-2">
-              {!friendship ? (
-                <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("send")}>
-                  <UserPlus size={14} /> Add Friend
-                </Button>
-              ) : friendship.status === "pending" && friendship.requester_id === myProfile?.user_id ? (
-                <Button variant="secondary" size="sm" className="rounded-full opacity-70" onClick={() => handleFriendAction("cancel")}>
-                  <Clock size={14} /> Pending
-                </Button>
-              ) : friendship.status === "pending" && friendship.addressee_id === myProfile?.user_id ? (
-                <div className="flex gap-1.5">
-                  <Button variant="coal" size="sm" className="rounded-full" onClick={() => handleFriendAction("accept")}>
-                    <UserCheck size={14} /> Accept
-                  </Button>
-                  <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("decline")}>
-                    <UserX size={14} />
-                  </Button>
-                </div>
-              ) : friendship.status === "accepted" ? (
-                <Button variant="secondary" size="sm" className="rounded-full border-[hsl(var(--teal))]/30 text-[hsl(var(--teal))]" onClick={() => handleFriendAction("remove")}>
-                  <UserCheck size={14} /> Friends
-                </Button>
-              ) : (
-                <Button variant="secondary" size="sm" className="rounded-full" onClick={() => handleFriendAction("send")}>
-                  <UserPlus size={14} /> Add Friend
-                </Button>
-              )}
-              <Button variant="coal" size="sm" className="flex-1 rounded-full" onClick={() => setShowBattleModal(true)}>
-                <Swords size={14} /> Challenge
-              </Button>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="gold-soft" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/chat/${userId}`)}>
-                <MessageCircle size={14} /> Message
-              </Button>
-              <Button variant="gold-soft" size="sm" className="flex-1 rounded-full" onClick={() => navigate(`/badges/compare?user=${profile.username}`)}>
-                <GitCompare size={14} /> Compare
-              </Button>
+            <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-2.5 space-y-2">
+              {/* Primary row — connect + battle */}
+              <div className="grid grid-cols-2 gap-2">
+                {/* Friend status (adapts) */}
+                {(() => {
+                  const incoming = friendship?.status === "pending" && friendship.addressee_id === myProfile?.user_id;
+                  const sent = friendship?.status === "pending" && friendship.requester_id === myProfile?.user_id;
+                  if (areFriends) {
+                    return (
+                      <button onClick={() => handleFriendAction("remove")} className={cn(PRIMARY_BTN, "text-[hsl(var(--teal))] border border-[hsl(var(--teal))]/35 bg-[hsl(var(--teal))]/[0.07]")}>
+                        <UserCheck size={15} /> Friends
+                      </button>
+                    );
+                  }
+                  if (incoming) {
+                    return (
+                      <div className="flex gap-1.5">
+                        <button onClick={() => handleFriendAction("accept")} className={cn(PRIMARY_BTN, "flex-1", BTN_GOLD)}>
+                          <UserCheck size={15} /> Accept
+                        </button>
+                        <button onClick={() => handleFriendAction("decline")} className={cn(PRIMARY_BTN, "px-3 text-muted-foreground border border-border/60 bg-card/40")} aria-label="Decline">
+                          <UserX size={15} />
+                        </button>
+                      </div>
+                    );
+                  }
+                  if (sent) {
+                    return (
+                      <button onClick={() => handleFriendAction("cancel")} className={cn(PRIMARY_BTN, "text-muted-foreground border border-border/50 bg-card/30")}>
+                        <Clock size={14} /> Pending
+                      </button>
+                    );
+                  }
+                  return (
+                    <button onClick={() => handleFriendAction("send")} className={cn(PRIMARY_BTN, BTN_GOLD)}>
+                      <UserPlus size={15} /> Add friend
+                    </button>
+                  );
+                })()}
+
+                {/* Challenge — battle is friends-only */}
+                <button
+                  onClick={() =>
+                    areFriends
+                      ? setShowBattleModal(true)
+                      : toast(`Add @${profile.username} as a friend to battle them`)
+                  }
+                  className={cn(
+                    PRIMARY_BTN,
+                    areFriends
+                      ? "text-white bg-gradient-to-r from-[hsl(22_90%_52%)] to-[hsl(12_88%_46%)] shadow-[0_3px_14px_-2px_hsl(18_90%_50%/0.5)]"
+                      : "text-muted-foreground/70 border border-border/60 bg-card/30",
+                  )}
+                >
+                  <Swords size={15} /> Challenge
+                </button>
+              </div>
+
+              {/* Secondary row — message + compare */}
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => navigate(`/chat/${userId}`)} className={cn(PRIMARY_BTN, SECONDARY_BTN)}>
+                  <MessageCircle size={15} /> Message
+                </button>
+                <button onClick={() => navigate(`/badges/compare?user=${profile.username}`)} className={cn(PRIMARY_BTN, SECONDARY_BTN)}>
+                  <GitCompare size={15} /> Compare
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -518,16 +558,23 @@ const UserProfile = () => {
               if (!myProfile) return;
               setCreating(true);
               try {
-                await supabase.from("battles").insert({
-                  challenger_id: myProfile.user_id,
-                  opponent_id: userId!,
-                  battle_type: battleType,
-                  duration_days: duration,
+                const { error } = await (supabase.rpc as any)("create_battle", {
+                  p_opponent: userId!,
+                  p_battle_type: battleType,
+                  p_duration_days: duration,
                 });
+                if (error) throw error;
                 toast.success(`Challenge sent to @${profile.username}! ⚔️`);
                 setShowBattleModal(false);
-              } catch {
-                toast.error("Failed to send challenge");
+              } catch (e: any) {
+                const key = e?.message?.match(/not_friends|self_battle|battle_exists|unauthorized/)?.[0];
+                const msg = ({
+                  not_friends: "You can only battle friends. Add them first.",
+                  self_battle: "Can't challenge yourself!",
+                  battle_exists: "You already have a battle going with them.",
+                  unauthorized: "Please sign in.",
+                } as Record<string, string>)[key] ?? "Failed to send challenge";
+                toast.error(msg);
               }
               setCreating(false);
             }}
@@ -620,18 +667,6 @@ const UserProfile = () => {
             }}
           />
         )}
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
-          className="grid grid-cols-2 gap-3 mb-6 mt-2"
-        >
-          <StatCard icon={Zap} label="Total XP" value={profile.xp.toLocaleString()} variant="gold" />
-          <StreakDisplay streak={profile.streak} longestStreak={profile.longest_streak} lastCheckinAt={null} />
-          <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
-          <StatCard icon={Shield} label="Badges" value={earnedBadgeIds?.length || 0} variant="purple" />
-        </motion.div>
 
       {/* Champion History */}
       {championHistory && championHistory.wins > 0 && (

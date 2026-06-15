@@ -1,20 +1,18 @@
 import { useNavigate } from "react-router-dom";
-import { Dumbbell, ArrowRight, Crown } from "lucide-react";
+import { Dumbbell, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 
 /**
- * Card 3 — Training program (Program).
+ * Card 3 — Training program (Program). Available to every member (the app is
+ * fully paywalled, so there's no secondary gate).
  *
- * Free: "Build your 4-week training program" CTA → /paywall
- * Elite (no program yet): "Generate program" CTA → /coach/program (which
- *   triggers ProgramOnboarding internally on visit)
- * Elite (has program): one-line "Day 3 · Push (45 min)" + tap to /coach/program
+ * No program yet: "Generate program" CTA → /coach/program (triggers
+ *   ProgramOnboarding internally on visit)
+ * Has program: one-line "Day 3 · Push (45 min)" + tap to /coach/program
  */
 const ProgramCard = () => {
   const navigate = useNavigate();
-  const { isElite } = useAuth();
   const { program, currentWeek, todayDayIndex } = useCoachProgram();
 
   const todaySession = (() => {
@@ -30,36 +28,7 @@ const ProgramCard = () => {
     };
   })();
 
-  // Free tier: upsell CTA
-  if (!isElite) {
-    return (
-      <button
-        type="button"
-        onClick={() => navigate("/paywall")}
-        className="w-full text-left rounded-3xl border border-gold/35 bg-gradient-to-b from-gold/[0.06] via-card/95 to-card p-5 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.45)] active:scale-[0.99] transition-transform"
-      >
-        <div className="flex items-center gap-2 mb-2">
-          <Dumbbell size={12} className="text-gold" />
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
-            Training program
-          </p>
-          <Crown size={11} className="ml-auto text-gold/70" />
-        </div>
-        <p className="text-[14px] font-bold leading-snug mb-1">
-          Build your 4-week training program
-        </p>
-        <p className="text-[11px] text-muted-foreground leading-snug">
-          Periodised by an AI coach against your goal, equipment, and time —
-          Premium perk.
-        </p>
-        <div className="mt-3 inline-flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-wider text-gold">
-          Unlock <ArrowRight size={10} />
-        </div>
-      </button>
-    );
-  }
-
-  // Elite: no program yet
+  // No program yet
   if (!program) {
     return (
       <div className="rounded-3xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] via-card/95 to-card p-5 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.45)]">

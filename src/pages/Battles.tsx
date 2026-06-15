@@ -9,9 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { uniqueChannelName } from "@/lib/realtime";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-is-admin";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import FriendPickerSheet from "@/components/social/FriendPickerSheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +35,8 @@ const Battles = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
-  const [opponentUsername, setOpponentUsername] = useState("");
+  const [opponent, setOpponent] = useState<{ user_id: string; username: string } | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [duration, setDuration] = useState(7);
   const [battleType, setBattleType] = useState("xp");
   const [creating, setCreating] = useState(false);
@@ -232,43 +233,31 @@ const Battles = () => {
   };
 
   const handleCreate = async () => {
-    if (!profile || !opponentUsername.trim()) return;
+    if (!profile || !opponent) return;
     setCreating(true);
     try {
-      const { data: opponent, error: findErr } = await supabase
-        .from("profiles")
-        .select("user_id, username")
-        .eq("username", opponentUsername.trim().toLowerCase())
-        .single();
-
-      if (findErr || !opponent) {
-        toast.error("User not found", { description: "Check the username and try again." });
-        setCreating(false);
-        return;
-      }
-      if (opponent.user_id === profile.user_id) {
-        toast.error("Can't challenge yourself!");
-        setCreating(false);
-        return;
-      }
-
-      const { error } = await supabase.from("battles").insert({
-        challenger_id: profile.user_id,
-        opponent_id: opponent.user_id,
-        duration_days: duration,
-        battle_type: battleType,
+      const { error } = await (supabase.rpc as any)("create_battle", {
+        p_opponent: opponent.user_id,
+        p_battle_type: battleType,
+        p_duration_days: duration,
       });
       if (error) throw error;
 
       const typeLabel = BATTLE_TYPES.find(t => t.id === battleType)?.label || battleType;
       toast.success("Battle challenge sent!", { description: `${typeLabel} battle vs @${opponent.username}` });
       setShowCreate(false);
-      setOpponentUsername("");
+      setOpponent(null);
       setBattleType("xp");
       queryClient.invalidateQueries({ queryKey: ["battles"] });
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to create battle");
+    } catch (err: any) {
+      const key = err?.message?.match(/not_friends|self_battle|battle_exists|unauthorized/)?.[0];
+      const msg = ({
+        not_friends: "You can only battle friends. Add them first.",
+        self_battle: "Can't challenge yourself!",
+        battle_exists: "You already have a battle going with them.",
+        unauthorized: "Please sign in.",
+      } as Record<string, string>)[key] ?? "Failed to create battle";
+      toast.error(msg);
     }
     setCreating(false);
   };
@@ -374,7 +363,7 @@ const Battles = () => {
           </div>
           <h2 className="font-display font-bold text-lg mb-1">1v1 Discipline Battle</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Challenge anyone to XP, cold showers, workouts & more.
+            Challenge a friend to XP, cold showers, workouts & more.
           </p>
           <Button variant="ember" size="lg" className="w-full max-w-xs" onClick={() => setShowCreate(true)}>
             <Swords size={18} />
@@ -383,21 +372,31 @@ const Battles = () => {
         </div>
       ) : (
         <div className="animate-reveal rounded-xl border border-gold/30 p-5 mb-6 glass-3d depth-realistic">
-          <h3 className="font-display font-bold text-sm mb-4">Challenge an opponent</h3>
+          <h3 className="font-display font-bold text-sm mb-4">Challenge a friend</h3>
 
           <div className="space-y-4">
-            {/* Opponent */}
+            {/* Opponent — picked from friends */}
             <div>
-              <label className="text-xs text-muted-foreground font-medium mb-1 block">Opponent Username</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
-                <Input
-                  value={opponentUsername}
-                  onChange={(e) => setOpponentUsername(e.target.value)}
-                  placeholder="username"
-                  className="pl-7 bg-secondary border-border"
-                />
-              </div>
+              <label className="text-xs text-muted-foreground font-medium mb-1 block">Opponent</label>
+              {opponent ? (
+                <button
+                  onClick={() => setPickerOpen(true)}
+                  className="w-full flex items-center gap-3 rounded-xl border border-gold/30 bg-gold/5 p-2.5 text-left active:scale-[0.99] transition-transform"
+                >
+                  <div className="h-9 w-9 rounded-full gradient-gold flex items-center justify-center text-sm font-black text-primary-foreground shrink-0">
+                    {opponent.username?.charAt(0)?.toUpperCase()}
+                  </div>
+                  <span className="flex-1 min-w-0 font-bold text-sm truncate">@{opponent.username}</span>
+                  <span className="text-[11px] font-bold text-gold shrink-0">Change</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setPickerOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-gold/40 bg-card/40 py-3 text-[13px] font-bold text-gold active:scale-[0.99] transition-transform"
+                >
+                  <UserPlus size={15} /> Choose a friend
+                </button>
+              )}
             </div>
 
             {/* Battle Type */}
@@ -450,11 +449,11 @@ const Battles = () => {
             </div>
 
             <div className="flex gap-2 pt-1">
-              <Button variant="ember" className="flex-1" onClick={handleCreate} disabled={creating || !opponentUsername.trim()}>
+              <Button variant="ember" className="flex-1" onClick={handleCreate} disabled={creating || !opponent}>
                 <Swords size={16} />
                 {creating ? "Sending..." : "Send Challenge"}
               </Button>
-              <Button variant="secondary" onClick={() => { setShowCreate(false); setBattleType("xp"); }}>Cancel</Button>
+              <Button variant="secondary" onClick={() => { setShowCreate(false); setBattleType("xp"); setOpponent(null); }}>Cancel</Button>
             </div>
           </div>
         </div>
@@ -879,10 +878,18 @@ const Battles = () => {
           <EmptyState
             icon={Swords}
             title="No battles yet"
-            description="Challenge someone above your rank — winner takes the score, loser owes a workout."
+            description="Challenge a friend — winner takes the score, loser owes a workout."
           />
         </div>
       )}
+
+      <FriendPickerSheet
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        title="Choose your opponent"
+        subtitle="Battle one of your friends."
+        onPick={(f) => { setOpponent({ user_id: f.user_id, username: f.username }); setPickerOpen(false); }}
+      />
     </div>
   );
 };

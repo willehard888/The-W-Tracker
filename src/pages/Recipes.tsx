@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Clock, Flame, Beef, Snowflake, Refrigerator,
-  ChevronRight, Utensils, Layers, Dumbbell, Wheat, Droplet, Leaf,
+  ArrowLeft, Clock, Snowflake, Refrigerator,
+  ChevronRight, Utensils, Layers, Leaf,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RECIPES, type Recipe } from "@/data/recipes";
@@ -49,7 +49,6 @@ const fmtQty = (qty: number | undefined, batch: number) => {
 
 const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }) => {
   const [batch, setBatch] = useState(1);
-  const n = recipe.nutrition;
 
   return (
     <div className="flex flex-col">
@@ -61,50 +60,20 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
       </div>
 
       <div className="px-4 pt-4 pb-28 space-y-4">
-        {/* Hero — poster image header (gradient fallback), title overlaid */}
-        <div className="rounded-3xl overflow-hidden border border-gold/25">
-          <div className="relative aspect-[16/10] bg-gradient-to-br from-gold/25 via-card to-card">
-            <RecipeImage id={recipe.id} className="absolute inset-0 h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-4">
-              <div className="flex flex-wrap gap-1.5 mb-1.5">
-                {recipe.tags.map((t) => (
-                  <span key={t} className="text-[9px] font-black uppercase tracking-[0.18em] text-gold bg-black/40 backdrop-blur-sm border border-gold/30 rounded-full px-2 py-0.5">
-                    {t}
-                  </span>
-                ))}
-              </div>
-              <h2 className="font-display text-2xl font-black tracking-tight leading-tight text-white drop-shadow">{recipe.title}</h2>
-            </div>
+        {/* The poster IS the recipe — show it full & readable (2:3 = exact fit). */}
+        {/* Everything the poster already covers (ingredients, method, nutrition, */}
+        {/* badges) is NOT re-rendered below; only meal-prep extras are added. */}
+        <div className="rounded-3xl overflow-hidden border border-gold/25 relative aspect-[2/3] bg-gradient-to-br from-gold/25 via-card to-card">
+          {/* Fallback (shown only if the poster image is missing) */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
+            <Utensils size={34} className="text-gold" />
+            <h2 className="font-display text-2xl font-black tracking-tight leading-tight text-foreground">{recipe.title}</h2>
+            <p className="text-[12px] text-muted-foreground leading-snug">{recipe.blurb}</p>
           </div>
-          <div className="bg-card p-4">
-            <p className="text-[12.5px] text-muted-foreground leading-snug">{recipe.blurb}</p>
-            <div className="flex items-center gap-4 mt-3 text-[11px] text-muted-foreground font-semibold">
-              <span className="inline-flex items-center gap-1"><Clock size={12} className="text-gold" /> {recipe.prepMin}m prep</span>
-              <span className="inline-flex items-center gap-1"><Utensils size={12} className="text-gold" /> {recipe.cookMin}m cook</span>
-            </div>
-          </div>
+          <RecipeImage id={recipe.id} className="absolute inset-0 h-full w-full object-cover" />
         </div>
 
-        {/* Stat badges — High protein · Whole foods · Prep · Cook */}
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { icon: Dumbbell, top: "High", bot: "Protein" },
-            { icon: Wheat, top: "Whole", bot: "Foods" },
-            { icon: Clock, top: "Prep", bot: `${recipe.prepMin} min` },
-            { icon: Utensils, top: "Cook", bot: `${recipe.cookMin} min` },
-          ].map((b, i) => (
-            <div key={i} className="rounded-2xl border border-gold/20 bg-card/40 px-1 py-3 flex flex-col items-center gap-1.5 text-center">
-              <b.icon size={17} className="text-gold" />
-              <div className="leading-tight">
-                <p className="text-[8.5px] font-black uppercase tracking-wider text-foreground">{b.top}</p>
-                <p className="text-[8.5px] font-black uppercase tracking-wider text-muted-foreground">{b.bot}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* MEAL PREP — batch scaler */}
+        {/* MEAL PREP — batch scaler (the one thing the poster can't do) */}
         <div className="rounded-2xl border border-gold/30 bg-gold/[0.05] p-4">
           <div className="flex items-center gap-2 mb-2">
             <Layers size={13} className="text-gold" />
@@ -127,93 +96,50 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
             ))}
           </div>
           <p className="text-[11px] text-muted-foreground mt-2">
-            {batch === 1 ? "1 meal." : `Ingredients below scaled for ${batch} meals — cook once, eat all week.`}
+            {batch === 1
+              ? "Single serving — quantities are in the recipe above. Tap 2×–5× for a batch shopping list."
+              : `Shopping list scaled for ${batch} meals — cook once, eat all week.`}
           </p>
         </div>
 
-        {/* Ingredients — dark poster panel, gold heading + group icons */}
-        <div className="rounded-2xl border border-gold/20 bg-[hsl(255_14%_7%)] p-4">
-          <div className="flex items-center gap-1.5 mb-3">
-            <Leaf size={14} className="text-gold" />
-            <p className="font-display text-base font-black uppercase tracking-wide text-gold">Ingredients</p>
-            {batch > 1 && <span className="ml-auto text-[11px] font-black text-gold tabular-nums">{batch}×</span>}
-          </div>
-          <div className="space-y-3.5">
-            {recipe.groups.map((g) => (
-              <div key={g.title}>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="h-6 w-6 rounded-full border border-gold/40 bg-gold/10 flex items-center justify-center shrink-0">
-                    <Leaf size={11} className="text-gold" />
-                  </span>
-                  <p className="text-[11px] font-black uppercase tracking-wider text-foreground">{g.title}</p>
+        {/* Scaled shopping list — only when batching (poster covers the 1× case) */}
+        {batch > 1 && (
+          <div className="rounded-2xl border border-gold/20 bg-[hsl(255_14%_7%)] p-4">
+            <div className="flex items-center gap-1.5 mb-3">
+              <Leaf size={14} className="text-gold" />
+              <p className="font-display text-base font-black uppercase tracking-wide text-gold">Shopping list</p>
+              <span className="ml-auto text-[11px] font-black text-gold tabular-nums">{batch}×</span>
+            </div>
+            <div className="space-y-3.5">
+              {recipe.groups.map((g) => (
+                <div key={g.title}>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="h-6 w-6 rounded-full border border-gold/40 bg-gold/10 flex items-center justify-center shrink-0">
+                      <Leaf size={11} className="text-gold" />
+                    </span>
+                    <p className="text-[11px] font-black uppercase tracking-wider text-foreground">{g.title}</p>
+                  </div>
+                  <ul className="space-y-1 pl-8">
+                    {g.items.map((it, i) => (
+                      <li key={i} className="flex items-baseline gap-2 text-[12.5px]">
+                        <span className="h-1 w-1 rounded-full bg-gold/60 shrink-0 mt-1.5" />
+                        <span className="text-foreground/85">
+                          {it.qty != null && (
+                            <b className="text-gold tabular-nums">{fmtQty(it.qty, batch)}{it.unit ? ` ${it.unit}` : ""} </b>
+                          )}
+                          {it.item}
+                          {it.note && <span className="text-muted-foreground/70"> ({it.note})</span>}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <ul className="space-y-1 pl-8">
-                  {g.items.map((it, i) => (
-                    <li key={i} className="flex items-baseline gap-2 text-[12.5px]">
-                      <span className="h-1 w-1 rounded-full bg-gold/60 shrink-0 mt-1.5" />
-                      <span className="text-foreground/85">
-                        {it.qty != null && (
-                          <b className="text-gold tabular-nums">{fmtQty(it.qty, batch)}{it.unit ? ` ${it.unit}` : ""} </b>
-                        )}
-                        {it.item}
-                        {it.note && <span className="text-muted-foreground/70"> ({it.note})</span>}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Method */}
-        <div>
-          <div className="flex items-center gap-1.5 mb-2 px-1">
-            <p className="font-display text-base font-black uppercase tracking-wide text-gold">How to make</p>
-            <Leaf size={14} className="text-gold" />
-          </div>
-          <div className="space-y-3">
-            {recipe.method.map((m, mi) => (
-              <div key={mi} className="rounded-2xl border border-border/40 bg-card/40 p-3.5">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="h-5 w-5 rounded-full bg-gold/15 border border-gold/30 text-gold flex items-center justify-center text-[10px] font-black shrink-0">{mi + 1}</span>
-                  <p className="text-[12px] font-black uppercase tracking-wide text-foreground">{m.title}</p>
-                </div>
-                <ol className="space-y-1 pl-1">
-                  {m.steps.map((s, si) => (
-                    <li key={si} className="text-[12.5px] text-foreground/80 leading-snug flex gap-1.5">
-                      <span className="text-gold/60 font-bold tabular-nums shrink-0">{si + 1}.</span> {s}
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Nutrition Facts — poster card */}
-        <div className="rounded-2xl border border-gold/25 bg-[hsl(255_14%_7%)] overflow-hidden">
-          <div className="text-center py-3 border-b border-gold/15">
-            <p className="font-display text-lg font-black uppercase tracking-wide text-gold leading-none">Nutrition Facts</p>
-            <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground mt-1">Per serving</p>
-          </div>
-          <div className="divide-y divide-border/30">
-            {[
-              { icon: Flame, label: "Calories", value: `${n.calories} kcal` },
-              { icon: Beef, label: "Protein", value: `${n.protein} g` },
-              { icon: Wheat, label: "Carbs", value: `${n.carbs} g` },
-              { icon: Droplet, label: "Fat", value: `${n.fat} g` },
-            ].map((r, i) => (
-              <div key={i} className="flex items-center gap-3 px-4 py-2.5">
-                <r.icon size={14} className="text-gold shrink-0" />
-                <span className="text-[12px] font-bold uppercase tracking-wide text-foreground/85 flex-1">{r.label}</span>
-                <span className="font-display text-[15px] font-black tabular-nums text-gold">{r.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Storage / reheat panel */}
+        {/* Storage / reheat panel — meal-prep value the poster doesn't have */}
         <div className="rounded-2xl border border-[hsl(210_90%_56%)]/25 bg-[hsl(210_90%_56%)]/[0.05] p-4">
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[hsl(210_90%_60%)] mb-3">Storage & reheat</p>
           <div className="flex gap-2 mb-3">
@@ -280,9 +206,20 @@ const Recipes = () => {
             className="w-full text-left rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.05] via-card/95 to-card p-4 active:scale-[0.99] transition-transform"
           >
             <div className="flex items-start gap-3">
+              {/* Thumbnail: crop tight to just the food bowl, which sits in the
+                  top-right of every poster (~x48-97% · y4-37%). background-size +
+                  background-position pans/zooms to it reliably. Gold gradient +
+                  icon show through if the poster image is missing. */}
               <div className="h-14 w-14 rounded-xl overflow-hidden bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 relative">
                 <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />
-                <RecipeImage id={r.id} className="absolute inset-0 h-full w-full object-cover" />
+                <div
+                  className="absolute inset-0 bg-no-repeat"
+                  style={{
+                    backgroundImage: `url(${RECIPE_IMG_BASE}${r.id}.png)`,
+                    backgroundSize: "204%",
+                    backgroundPosition: "95% 6%",
+                  }}
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-display text-[15px] font-black leading-tight">{r.title}</p>

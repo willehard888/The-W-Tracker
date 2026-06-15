@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Clock, Flame, Beef, Snowflake, Refrigerator,
-  ChevronRight, Utensils, Layers,
+  ChevronRight, Utensils, Layers, Dumbbell, Wheat, Droplet, Leaf,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RECIPES, type Recipe } from "@/data/recipes";
@@ -86,21 +86,23 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
           </div>
         </div>
 
-        {/* Nutrition (per serving) */}
+        {/* Stat badges — High protein · Whole foods · Prep · Cook */}
         <div className="grid grid-cols-4 gap-2">
           {[
-            { icon: Flame, label: "Kcal", value: n.calories },
-            { icon: Beef, label: "Protein", value: `${n.protein}g` },
-            { icon: Layers, label: "Carbs", value: `${n.carbs}g` },
-            { icon: Flame, label: "Fat", value: `${n.fat}g` },
-          ].map((s, i) => (
-            <div key={i} className="rounded-xl border border-border/40 bg-card/40 px-2 py-2.5 text-center">
-              <p className="font-display text-[15px] font-black tabular-nums text-gold leading-none">{s.value}</p>
-              <p className="text-[8.5px] font-black uppercase tracking-wider text-muted-foreground mt-1">{s.label}</p>
+            { icon: Dumbbell, top: "High", bot: "Protein" },
+            { icon: Wheat, top: "Whole", bot: "Foods" },
+            { icon: Clock, top: "Prep", bot: `${recipe.prepMin} min` },
+            { icon: Utensils, top: "Cook", bot: `${recipe.cookMin} min` },
+          ].map((b, i) => (
+            <div key={i} className="rounded-2xl border border-gold/20 bg-card/40 px-1 py-3 flex flex-col items-center gap-1.5 text-center">
+              <b.icon size={17} className="text-gold" />
+              <div className="leading-tight">
+                <p className="text-[8.5px] font-black uppercase tracking-wider text-foreground">{b.top}</p>
+                <p className="text-[8.5px] font-black uppercase tracking-wider text-muted-foreground">{b.bot}</p>
+              </div>
             </div>
           ))}
         </div>
-        <p className="text-[10px] text-muted-foreground/70 text-center -mt-2">Per serving</p>
 
         {/* MEAL PREP — batch scaler */}
         <div className="rounded-2xl border border-gold/30 bg-gold/[0.05] p-4">
@@ -129,16 +131,23 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
           </p>
         </div>
 
-        {/* Ingredients (scaled) */}
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-2 px-1">
-            Ingredients{batch > 1 && <span className="text-muted-foreground"> · {batch}×</span>}
-          </p>
-          <div className="space-y-3">
+        {/* Ingredients — dark poster panel, gold heading + group icons */}
+        <div className="rounded-2xl border border-gold/20 bg-[hsl(255_14%_7%)] p-4">
+          <div className="flex items-center gap-1.5 mb-3">
+            <Leaf size={14} className="text-gold" />
+            <p className="font-display text-base font-black uppercase tracking-wide text-gold">Ingredients</p>
+            {batch > 1 && <span className="ml-auto text-[11px] font-black text-gold tabular-nums">{batch}×</span>}
+          </div>
+          <div className="space-y-3.5">
             {recipe.groups.map((g) => (
-              <div key={g.title} className="rounded-2xl border border-border/40 bg-card/40 p-3.5">
-                <p className="text-[11px] font-black text-foreground mb-2">{g.title}</p>
-                <ul className="space-y-1.5">
+              <div key={g.title}>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="h-6 w-6 rounded-full border border-gold/40 bg-gold/10 flex items-center justify-center shrink-0">
+                    <Leaf size={11} className="text-gold" />
+                  </span>
+                  <p className="text-[11px] font-black uppercase tracking-wider text-foreground">{g.title}</p>
+                </div>
+                <ul className="space-y-1 pl-8">
                   {g.items.map((it, i) => (
                     <li key={i} className="flex items-baseline gap-2 text-[12.5px]">
                       <span className="h-1 w-1 rounded-full bg-gold/60 shrink-0 mt-1.5" />
@@ -159,7 +168,10 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
 
         {/* Method */}
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-2 px-1">How to make</p>
+          <div className="flex items-center gap-1.5 mb-2 px-1">
+            <p className="font-display text-base font-black uppercase tracking-wide text-gold">How to make</p>
+            <Leaf size={14} className="text-gold" />
+          </div>
           <div className="space-y-3">
             {recipe.method.map((m, mi) => (
               <div key={mi} className="rounded-2xl border border-border/40 bg-card/40 p-3.5">
@@ -174,6 +186,28 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
                     </li>
                   ))}
                 </ol>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Nutrition Facts — poster card */}
+        <div className="rounded-2xl border border-gold/25 bg-[hsl(255_14%_7%)] overflow-hidden">
+          <div className="text-center py-3 border-b border-gold/15">
+            <p className="font-display text-lg font-black uppercase tracking-wide text-gold leading-none">Nutrition Facts</p>
+            <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground mt-1">Per serving</p>
+          </div>
+          <div className="divide-y divide-border/30">
+            {[
+              { icon: Flame, label: "Calories", value: `${n.calories} kcal` },
+              { icon: Beef, label: "Protein", value: `${n.protein} g` },
+              { icon: Wheat, label: "Carbs", value: `${n.carbs} g` },
+              { icon: Droplet, label: "Fat", value: `${n.fat} g` },
+            ].map((r, i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                <r.icon size={14} className="text-gold shrink-0" />
+                <span className="text-[12px] font-bold uppercase tracking-wide text-foreground/85 flex-1">{r.label}</span>
+                <span className="font-display text-[15px] font-black tabular-nums text-gold">{r.value}</span>
               </div>
             ))}
           </div>

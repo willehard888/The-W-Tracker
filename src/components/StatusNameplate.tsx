@@ -6,9 +6,11 @@ import { getTierConfig, type StatusTier } from "@/lib/status-tiers";
 interface StatusNameplateProps {
   tier: string;
   /** Optional: shows "#N · top X%" when provided */
-  rank?: number;
+  rank?: number | null;
   totalUsers?: number;
   percentile?: number;
+  /** False when the user hasn't earned a rank yet (score 0). Shows "Unranked". */
+  ranked?: boolean;
   /** Slightly more compact variant for public/user profile */
   size?: "md" | "lg";
   className?: string;
@@ -35,6 +37,7 @@ const StatusNameplate = ({
   rank,
   totalUsers,
   percentile,
+  ranked = true,
   size = "lg",
   className,
 }: StatusNameplateProps) => {
@@ -114,7 +117,9 @@ const StatusNameplate = ({
   // matches the rest of the UI. For mid/low tiers we can use the live percentile
   // when available, but never round down to 0%.
   const useConfigLabel = isLegend || isApex || isElite;
-  const percentLabel = useConfigLabel
+  const percentLabel = !ranked
+    ? "Unranked"
+    : useConfigLabel
     ? cfg.percentile
     : percentile !== undefined
     ? (() => {
@@ -123,6 +128,17 @@ const StatusNameplate = ({
         return `Top ${Math.round(top)}%`;
       })()
     : cfg.percentile;
+
+  // Only show "#N / total" when the data is sane: ranked, present, and the
+  // rank cannot exceed the population (guards against RLS-visibility skew that
+  // produced impossible labels like "#4 / 3").
+  const showRank =
+    ranked &&
+    rank != null &&
+    totalUsers !== undefined &&
+    totalUsers > 0 &&
+    rank >= 1 &&
+    rank <= totalUsers;
 
   return (
     <motion.div
@@ -371,12 +387,12 @@ const StatusNameplate = ({
           >
             {percentLabel}
           </span>
-          {rank !== undefined && totalUsers !== undefined && totalUsers > 0 && (
+          {showRank && (
             <span className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/80">
-              #{rank.toLocaleString()}
+              #{rank!.toLocaleString()}
               <span className="text-muted-foreground/50 font-bold">
                 {" / "}
-                {totalUsers.toLocaleString()}
+                {totalUsers!.toLocaleString()}
               </span>
             </span>
           )}

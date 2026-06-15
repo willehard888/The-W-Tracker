@@ -1,6 +1,15 @@
 import { Sparkles, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCoachObservation } from "@/hooks/use-coach-observation";
+import { useCoachBrief } from "@/hooks/use-coach-brief";
+
+// First readable sentence of the AI brief, markdown stripped, for the inline line.
+const briefLine = (md?: string | null): string | null => {
+  if (!md) return null;
+  const clean = md.replace(/[*_#>`]/g, "").replace(/—\s*W Coach\.?$/i, "").trim();
+  const firstSentence = clean.split(/(?<=[.!?])\s/)[0] ?? clean;
+  return firstSentence.slice(0, 170).trim() || null;
+};
 
 interface LatestNudge {
   id: string;
@@ -30,6 +39,9 @@ interface CoachStripProps {
 const CoachStrip = (_props: CoachStripProps) => {
   const navigate = useNavigate();
   const { text: coachLine } = useCoachObservation({ context: "home" });
+  const { brief } = useCoachBrief();
+  // Prefer the real AI brief voice; fall back to the deterministic line.
+  const line = briefLine(brief?.brief_md) || coachLine?.trim() || "Training, sleep, mind — anything on your mind.";
 
   return (
     <button
@@ -58,7 +70,7 @@ const CoachStrip = (_props: CoachStripProps) => {
           </div>
           <p className="font-bold text-sm leading-tight">Ask your coach anything</p>
           <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-2 italic">
-            {coachLine?.trim() || "Training, sleep, mind — anything on your mind."}
+            {line}
           </p>
         </div>
         <ChevronRight size={18} className="text-gold/60 shrink-0" />

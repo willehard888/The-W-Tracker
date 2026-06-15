@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import StateCard from "@/components/coach/v2/StateCard";
 import MoveCard from "@/components/coach/v2/MoveCard";
 import ProgramCard from "@/components/coach/v2/ProgramCard";
+import CoachBriefHero from "@/components/coach/v2/CoachBriefHero";
 import AskCoachPill from "@/components/coach/v2/AskCoachPill";
 import CoachFooterLinks from "@/components/coach/v2/CoachFooterLinks";
 import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
@@ -32,7 +33,7 @@ const Coach = () => {
   // `isElite` and `loading`. Reading missing fields meant `!isPremium` was
   // always truthy and EVERY user saw the upsell — including paying Elite
   // users. The correct names are used now.
-  const { session, isElite, loading } = useAuth();
+  const { session, loading } = useAuth();
   const navigate = useNavigate();
   const {
     isLoading,
@@ -129,7 +130,6 @@ const Coach = () => {
   return (
     <CoachShell
       session={session}
-      isElite={isElite}
       program={program}
       navigate={navigate}
     />
@@ -189,28 +189,28 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
   );
 };
 
-const CoachShell = ({ session, isElite, program, navigate }: any) => {
+const CoachShell = ({ session, program, navigate }: any) => {
   const [chatOpen, setChatOpen] = useState(false);
-  const [faqOpen, setFaqOpen] = useState(false);
+  const [chatPrompt, setChatPrompt] = useState<string | null>(null);
 
-  // 3-card landing — Tila / Liike / Treeniohjelma — replaces the previous
-  // 10+ stacked cards. Everything else moves behind explicit drill-down
-  // links in the "More" footer. Chat = single inline pill (no fixed bar).
-  //
-  // Free vs Elite split happens INSIDE each card, not at this level.
-  // Both tiers see the same shell: predictable structure, fewer "is this
-  // for me?" moments.
+  // AI-first landing. W Coach SPEAKS FIRST (CoachBriefHero) — a proactive,
+  // data-aware brief — then offers the live chat and the supporting cards.
+  // The whole app is paywalled, so the AI coach is available to every member;
+  // there's no secondary Elite gate on the conversation any more.
+  const openChat = (prompt?: string) => {
+    hapticImpact("light");
+    setChatPrompt(prompt ?? null);
+    setChatOpen(true);
+  };
+
   return (
     <div className="flex flex-col h-full relative">
       <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
 
       <div className="flex-1 overflow-y-auto px-4 pt-3 pb-8 space-y-3">
-        {/* Chat first — it's the core of the Coach, so it leads instead of
-            being buried at the bottom of the scroll. */}
-        <AskCoachPill
-          onOpenChat={() => { hapticImpact("light"); setChatOpen(true); }}
-          onBrowseFaq={() => { hapticImpact("light"); setFaqOpen(true); }}
-        />
+        {/* The AI leads — proactive daily brief, the centre of the experience. */}
+        <CoachBriefHero onOpenChat={() => openChat()} onAsk={(q) => openChat(q)} />
+        <AskCoachPill onOpenChat={() => openChat()} onBrowseFaq={() => openChat()} />
         <StateCard />
         <MoveCard />
         <ProgramCard />
@@ -219,20 +219,13 @@ const CoachShell = ({ session, isElite, program, navigate }: any) => {
       </div>
 
       <AnimatePresence>
-        {isElite && chatOpen && (
+        {chatOpen && (
           <ChatSheet
             session={session}
             program={program}
-            initialPrompt={null}
-            onClose={() => setChatOpen(false)}
+            initialPrompt={chatPrompt}
+            onClose={() => { setChatOpen(false); setChatPrompt(null); }}
           />
-        )}
-      </AnimatePresence>
-
-      {/* Free tier: playbook FAQ gives instant value, then upsells live chat. */}
-      <AnimatePresence>
-        {!isElite && faqOpen && (
-          <FreeCoachUpsell navigate={navigate} onClose={() => setFaqOpen(false)} />
         )}
       </AnimatePresence>
     </div>

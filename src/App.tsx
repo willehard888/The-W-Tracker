@@ -31,6 +31,7 @@ const Paywall = lazy(() => import("./pages/Paywall"));
 const BadgeCompare = lazy(() => import("./pages/BadgeCompare"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const Messages = lazy(() => import("./pages/Messages"));
+const Friends = lazy(() => import("./pages/Friends"));
 const Chat = lazy(() => import("./pages/Chat"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
@@ -243,6 +244,7 @@ const AppRoutes = () => {
           <Route path="/badges/compare" element={<ProtectedRoute><BadgeCompare /></ProtectedRoute>} />
           <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+          <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
           <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
           <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />

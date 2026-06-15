@@ -4,7 +4,6 @@ import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
 import PodCard from "@/components/home/PodCard";
-import RankProgressHub from "@/components/home/RankProgressHub";
 import CoachStrip from "@/components/home/CoachStrip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Reveal from "@/components/home/Reveal";
@@ -259,8 +258,18 @@ const Index = () => {
           className="w-full text-left rounded-2xl border border-gold/35 bg-gradient-to-br from-gold/[0.08] via-card/95 to-card p-4 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.45)] active:scale-[0.99] transition-transform"
         >
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_18px_hsl(42_78%_54%/0.4)]">
+            <div className="h-11 w-11 rounded-xl overflow-hidden bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_18px_hsl(42_78%_54%/0.4)] relative">
               <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
+              {/* Crop to just the food bowl (top-right of the poster). */}
+              <div
+                className="absolute inset-0 bg-no-repeat"
+                style={{
+                  backgroundImage:
+                    "url(https://gcwuvijcuzhunkcauzom.supabase.co/storage/v1/object/public/recipe-images/greek-chicken-bowl.png)",
+                  backgroundSize: "204%",
+                  backgroundPosition: "95% 6%",
+                }}
+              />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">
@@ -291,38 +300,6 @@ const Index = () => {
           job (check in) + rank + a single coach line. Everything below is one
           tap away under "More", per the moderate-declutter design pass. */}
       <MoreSection label="More" className="relative z-10 mt-1 mb-2">
-      {/* RANK + PROGRESS HUB — moved here into More (was the primary slot).
-          Pressure / Rivals / Level / Elite / Quests one tap away. */}
-      <Reveal className="mb-5 relative z-10" delay={150}>
-        <RankProgressHub
-          username={profile.username}
-          tier={tier}
-          userId={profile.user_id}
-          rank={rankData?.rank ?? null}
-          totalUsers={rankData?.totalUsers ?? 0}
-          percentile={rankData?.percentile ?? 0}
-          hasRank={rankData?.hasRank ?? false}
-          rankScore={Number((profile as any).rank_score) || 0}
-          daysAtTier={
-            (profile as any).rank_score_updated_at
-              ? Math.max(
-                  1,
-                  Math.floor(
-                    (Date.now() -
-                      new Date((profile as any).rank_score_updated_at).getTime()) /
-                      (1000 * 60 * 60 * 24),
-                  ),
-                )
-              : undefined
-          }
-          rankDelta={pulse.loading ? 0 : pulse.rankDelta}
-          level={profile.level}
-          xp={profile.xp}
-          xpToNext={xpToNext}
-          canCheckin={canCheckin}
-        />
-      </Reveal>
-
       {/* Recent Badges */}
       <Reveal className="mb-2" delay={320}>
         <div className="flex items-end justify-between mb-3 px-0.5">

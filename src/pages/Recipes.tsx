@@ -17,16 +17,24 @@ const BATCH_OPTIONS = [1, 2, 3, 4, 5] as const;
 const RECIPE_IMG_BASE =
   "https://gcwuvijcuzhunkcauzom.supabase.co/storage/v1/object/public/recipe-images/";
 
+// Try common extensions in order so whatever format the poster is uploaded as
+// (named by slug) just works: greek-chicken-bowl.jpg / .png / .jpeg / .webp.
+const IMG_EXTS = ["jpg", "png", "jpeg", "webp"] as const;
+
 const RecipeImage = ({ id, className }: { id: string; className?: string }) => {
-  const [ok, setOk] = useState(true);
-  if (!ok) return null;
+  const [extIdx, setExtIdx] = useState(0);
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
   return (
     <img
-      src={`${RECIPE_IMG_BASE}${id}.jpg`}
+      src={`${RECIPE_IMG_BASE}${id}.${IMG_EXTS[extIdx]}`}
       alt=""
       loading="lazy"
       decoding="async"
-      onError={() => setOk(false)}
+      onError={() => {
+        if (extIdx < IMG_EXTS.length - 1) setExtIdx(extIdx + 1);
+        else setFailed(true);
+      }}
       className={className}
     />
   );

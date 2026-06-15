@@ -11,6 +11,27 @@ import { hapticImpact, hapticSelection } from "@/lib/haptics";
 
 const BATCH_OPTIONS = [1, 2, 3, 4, 5] as const;
 
+// Poster images live in a public Storage bucket, named by recipe id (slug):
+// e.g. recipe-images/greek-chicken-bowl.jpg. Upload the 5 posters there and
+// they appear as headers automatically; until then a gold gradient shows.
+const RECIPE_IMG_BASE =
+  "https://gcwuvijcuzhunkcauzom.supabase.co/storage/v1/object/public/recipe-images/";
+
+const RecipeImage = ({ id, className }: { id: string; className?: string }) => {
+  const [ok, setOk] = useState(true);
+  if (!ok) return null;
+  return (
+    <img
+      src={`${RECIPE_IMG_BASE}${id}.jpg`}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      onError={() => setOk(false)}
+      className={className}
+    />
+  );
+};
+
 // Scale a base (1-serving) quantity by the batch size and format cleanly.
 const fmtQty = (qty: number | undefined, batch: number) => {
   if (qty == null) return "";
@@ -32,20 +53,28 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
       </div>
 
       <div className="px-4 pt-4 pb-28 space-y-4">
-        {/* Hero */}
-        <div className="rounded-3xl border border-gold/25 bg-gradient-to-b from-gold/[0.08] via-card/95 to-card p-5">
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {recipe.tags.map((t) => (
-              <span key={t} className="text-[9px] font-black uppercase tracking-[0.18em] text-gold/85 bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5">
-                {t}
-              </span>
-            ))}
+        {/* Hero — poster image header (gradient fallback), title overlaid */}
+        <div className="rounded-3xl overflow-hidden border border-gold/25">
+          <div className="relative aspect-[16/10] bg-gradient-to-br from-gold/25 via-card to-card">
+            <RecipeImage id={recipe.id} className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <div className="flex flex-wrap gap-1.5 mb-1.5">
+                {recipe.tags.map((t) => (
+                  <span key={t} className="text-[9px] font-black uppercase tracking-[0.18em] text-gold bg-black/40 backdrop-blur-sm border border-gold/30 rounded-full px-2 py-0.5">
+                    {t}
+                  </span>
+                ))}
+              </div>
+              <h2 className="font-display text-2xl font-black tracking-tight leading-tight text-white drop-shadow">{recipe.title}</h2>
+            </div>
           </div>
-          <h2 className="font-display text-2xl font-black tracking-tight leading-tight">{recipe.title}</h2>
-          <p className="text-[12.5px] text-muted-foreground leading-snug mt-1.5">{recipe.blurb}</p>
-          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted-foreground font-semibold">
-            <span className="inline-flex items-center gap-1"><Clock size={12} className="text-gold" /> {recipe.prepMin}m prep</span>
-            <span className="inline-flex items-center gap-1"><Utensils size={12} className="text-gold" /> {recipe.cookMin}m cook</span>
+          <div className="bg-card p-4">
+            <p className="text-[12.5px] text-muted-foreground leading-snug">{recipe.blurb}</p>
+            <div className="flex items-center gap-4 mt-3 text-[11px] text-muted-foreground font-semibold">
+              <span className="inline-flex items-center gap-1"><Clock size={12} className="text-gold" /> {recipe.prepMin}m prep</span>
+              <span className="inline-flex items-center gap-1"><Utensils size={12} className="text-gold" /> {recipe.cookMin}m cook</span>
+            </div>
           </div>
         </div>
 
@@ -209,8 +238,9 @@ const Recipes = () => {
             className="w-full text-left rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.05] via-card/95 to-card p-4 active:scale-[0.99] transition-transform"
           >
             <div className="flex items-start gap-3">
-              <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0">
+              <div className="h-14 w-14 rounded-xl overflow-hidden bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 relative">
                 <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />
+                <RecipeImage id={r.id} className="absolute inset-0 h-full w-full object-cover" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-display text-[15px] font-black leading-tight">{r.title}</p>

@@ -243,6 +243,7 @@ const VaultCategoryBlock = ({
   onOpenArticle: (a: VaultArticle) => void;
 }) => {
   const Icon = category.icon;
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   // Fetch all articles once (cached) and filter locally — avoids per-category refetches
   // and ensures content is ready the moment the user expands a category.
@@ -321,6 +322,27 @@ const VaultCategoryBlock = ({
 
       {expanded && (
         <div className="relative px-4 pb-4 pt-1 space-y-2 border-t border-border/30">
+          {/* Recipes category → the full meal-prep recipe collection (poster
+              style + batch scaler). Leads the section above the articles. */}
+          {category.id === "recipes" && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); navigate("/recipes"); }}
+              className="w-full text-left rounded-xl border border-gold/35 bg-gradient-to-br from-gold/[0.1] via-card/90 to-card p-3.5 active:scale-[0.99] transition-transform"
+            >
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0">
+                  <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.5} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gold/85 mb-0.5">Meal-prep recipes</p>
+                  <p className="text-[12.5px] font-bold leading-tight">5 high-protein bowls · scale 1×–5× · storage & reheat</p>
+                </div>
+                <ChevronRight size={16} className="text-gold shrink-0" />
+              </div>
+            </button>
+          )}
+
           {isLoading && (
             <div className="space-y-2">
               {[0, 1, 2, 3].map((i) => (

@@ -51,7 +51,7 @@ const TribeNew = () => {
 
   if (!canCreate) {
     return (
-      <div className="min-h-full px-4 pt-6 safe-top text-center">
+      <div className="min-h-full px-4 pt-6 text-center">
         <Lock size={32} className="mx-auto mb-3 text-[hsl(18_95%_58%)]" />
         <h1 className="font-display font-black text-xl mb-2">
           Elite tier required
@@ -92,7 +92,7 @@ const TribeNew = () => {
   };
 
   return (
-    <div className="min-h-full pb-8 px-4 pt-4 safe-top">
+    <div className="min-h-full pb-8 px-4 pt-4">
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-1 text-xs text-muted-foreground mb-4"

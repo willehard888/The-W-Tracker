@@ -78,7 +78,7 @@ const TribeLeaderboard = () => {
     n >= 1000 ? `${(n / 1000).toFixed(n >= 10_000 ? 0 : 1)}k` : `${n}`;
 
   return (
-    <div className="min-h-full pb-32 px-4 pt-4 safe-top">
+    <div className="min-h-full pb-32 px-4 pt-4">
       <button
         onClick={() => navigate("/tribes")}
         className="flex items-center gap-1 text-xs text-muted-foreground mb-4"

@@ -147,15 +147,14 @@ const StatusHeader = () => {
 
   return (
     <header className="sticky top-0 z-40 safe-top">
-      <div className="relative surface-glass hairline-bottom border-x-0 border-t-0 border-b-0 rounded-none">
-        {/* Soft tier accent — single layer, low intensity */}
-        <div
-          aria-hidden
-          className={cn(
-            "absolute inset-0 pointer-events-none bg-gradient-to-b opacity-50",
-            tierGlow,
-          )}
-        />
+      {/* Header now matches the body colour exactly — same near-black canvas,
+          just a subtle backdrop blur so scrolled content reads cleanly under
+          it. No glass tint, no tier colour wash (those made the top bar look
+          like a different shade than the page). */}
+      <div className="relative bg-[hsl(var(--background)/0.82)] backdrop-blur-xl hairline-bottom border-x-0 border-t-0 border-b-0 rounded-none">
+        {/* Tier colour wash REMOVED — kept transparent so the bar is one tone
+            with the body (was a teal/amber tint that read as "different
+            colour" at the top of the screen). */}
 
         {/* Top hairline shimmer — flame-tinted for Apex */}
         <div className={cn(

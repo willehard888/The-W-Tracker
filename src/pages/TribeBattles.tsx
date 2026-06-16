@@ -123,7 +123,7 @@ const TribeBattles = () => {
   }
 
   return (
-    <div className="min-h-full pb-8 px-4 pt-4 safe-top">
+    <div className="min-h-full pb-8 px-4 pt-4">
       <button
         onClick={() => navigate(`/tribes/${id}`)}
         className="flex items-center gap-1 text-xs text-muted-foreground mb-4"

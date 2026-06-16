@@ -95,7 +95,7 @@ export default function AdminModeration() {
   };
 
   return (
-    <div className="min-h-screen pb-8 px-4 pt-6 safe-top">
+    <div className="min-h-screen pb-8 px-4 pt-6">
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <ShieldCheck className="h-5 w-5 text-gold" />

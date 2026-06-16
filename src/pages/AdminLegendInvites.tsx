@@ -99,7 +99,7 @@ export default function AdminLegendInvites() {
   };
 
   return (
-    <div className="min-h-screen pb-12 px-4 pt-6 safe-top">
+    <div className="min-h-screen pb-12 px-4 pt-6">
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <Crown className="h-5 w-5 text-gold" fill="currentColor" />

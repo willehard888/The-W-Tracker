@@ -22,6 +22,7 @@ import { useVaultProgress } from "@/hooks/use-vault-progress";
 import EvidenceChip from "@/components/vault/EvidenceChip";
 import VaultArticleSheet from "@/components/vault/VaultArticleSheet";
 import CourseProgressRing from "@/components/vault/CourseProgressRing";
+import VaultCover from "@/components/vault/VaultCover";
 import { hapticImpact } from "@/lib/haptics";
 
 interface VaultCategory {
@@ -226,48 +227,36 @@ const VaultCategoryBlock = ({
           hapticImpact("light");
           setExpanded((v) => !v);
         }}
-        className="relative w-full p-4 text-left"
+        className="relative block w-full text-left active:scale-[0.995] transition-transform"
       >
-        <div className="flex items-start gap-3.5">
-          <div
-            className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0 border"
-            style={{
-              background: `${category.accent}14`,
-              borderColor: `${category.accent}33`,
-            }}
-          >
-            <Icon size={20} style={{ color: category.accent }} strokeWidth={2.4} />
+        {/* Premium cover banner — hand-crafted SVG art per category */}
+        <div className="relative aspect-[16/7] overflow-hidden">
+          <VaultCover id={category.id} accent={category.accent} />
+          <div className="absolute top-3 right-3 z-10">
+            <CourseProgressRing done={doneCount} total={articles.length} color={category.accent} />
           </div>
-
-          <div className="min-w-0 flex-1">
-            <p
-              className="text-[10px] font-black tracking-[0.18em] uppercase mb-1"
-              style={{ color: category.accent }}
-            >
-              {category.tagline}
-            </p>
-            <p className="font-display text-base font-black leading-tight tracking-tight mb-1">
+          <div className="absolute inset-x-0 bottom-0 z-10 p-4">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Icon size={13} style={{ color: category.accent }} strokeWidth={2.6} />
+              <p className="text-[9.5px] font-black tracking-[0.2em] uppercase" style={{ color: category.accent }}>
+                {category.tagline}
+              </p>
+            </div>
+            <p className="font-display text-[19px] font-black leading-none tracking-tight text-white drop-shadow-[0_2px_8px_hsl(0_0%_0%/0.6)]">
               {category.title}
             </p>
-            <p className="text-[12px] text-muted-foreground leading-snug">
-              {category.description}
-            </p>
           </div>
+        </div>
 
-          <div className="flex flex-col items-center gap-1 shrink-0">
-            <CourseProgressRing
-              done={doneCount}
-              total={articles.length}
-              color={category.accent}
-            />
-            <ChevronRight
-              size={14}
-              className={cn(
-                "text-muted-foreground transition-transform",
-                expanded && "rotate-90",
-              )}
-            />
-          </div>
+        {/* Description + expand caret */}
+        <div className="flex items-center gap-2 px-4 py-3">
+          <p className="text-[11.5px] text-muted-foreground leading-snug flex-1">
+            {category.description}
+          </p>
+          <ChevronRight
+            size={15}
+            className={cn("text-muted-foreground shrink-0 transition-transform", expanded && "rotate-90")}
+          />
         </div>
       </button>
 

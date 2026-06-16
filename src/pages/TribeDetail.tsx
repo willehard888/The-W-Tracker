@@ -471,7 +471,7 @@ const TribeDetail = () => {
     : null;
 
   return (
-    <div ref={scrollRef} className="pb-8 px-4 pt-4 safe-top relative">
+    <div ref={scrollRef} className="pb-8 px-4 pt-4 relative">
       {/* Subtle page tint toward the tribe's tier color */}
       {pageTint && (
         <div

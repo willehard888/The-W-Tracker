@@ -338,7 +338,7 @@ const Profile = () => {
     : "radial-gradient(ellipse at center, hsl(42 78% 54% / 0.35), transparent 70%)";
 
   return (
-    <div className="min-h-screen pb-4 px-4 pt-6 safe-top">
+    <div className="min-h-screen pb-4 px-4 pt-6">
       {/* Always-visible quick menu — Sign Out + Delete Account are also in
           the Settings tab, but users frequently miss them. This kebab menu
           surfaces them in one tap from any tab. */}

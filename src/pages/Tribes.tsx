@@ -319,7 +319,7 @@ const Tribes = () => {
   const restList = featured ? tribes.filter((t) => t.id !== featured.id) : tribes;
 
   return (
-    <div className="min-h-full pb-8 px-4 pt-4 safe-top relative">
+    <div className="min-h-full pb-8 px-4 pt-4 relative">
       {/* Ambient fire field — drifts behind the whole page, intensifies with
           the user's combined tribe heat. Cold (<30) = invisible. */}
       {ambientHeat >= 30 && (

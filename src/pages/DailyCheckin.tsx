@@ -523,7 +523,7 @@ const DailyCheckin = () => {
   }
 
   return (
-    <div className="min-h-screen pb-4 px-4 pt-0 safe-top">
+    <div className="min-h-screen pb-4 px-4 pt-0">
       <ModerationGate
         state={moderation.state}
         message={moderation.message}

@@ -161,7 +161,7 @@ const WeeklyBriefing = () => {
   const stats = briefing.stats_snapshot ?? {};
 
   return (
-    <div className="h-full overflow-y-auto pb-8 px-4 pt-4 safe-top relative">
+    <div className="h-full overflow-y-auto pb-8 px-4 pt-4 relative">
       {/* Ambient gold glow */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] pointer-events-none z-0"

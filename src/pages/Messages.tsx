@@ -136,7 +136,7 @@ const Messages = () => {
   );
 
   return (
-    <div ref={scrollRef} className="min-h-screen pb-4 px-4 pt-6 safe-top" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+    <div ref={scrollRef} className="min-h-screen pb-4 px-4 pt-6" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
       
       <div className="animate-reveal mb-6">

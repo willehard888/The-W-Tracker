@@ -99,7 +99,7 @@ const Vault = () => {
     (profile as any)?.username || (profile as any)?.display_name || null;
 
   return (
-    <div className="min-h-screen pb-12 px-4 pt-4 safe-top">
+    <div className="min-h-screen pb-12 px-4 pt-3">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 animate-reveal">
         <button
@@ -117,90 +117,55 @@ const Vault = () => {
         </div>
       </div>
 
-      {/* Hero */}
-      <div className="relative mb-6 animate-reveal animate-reveal-delay-1 overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-b from-gold/[0.14] via-card/95 to-card shadow-[0_30px_80px_-20px_hsl(var(--gold)/0.45),0_0_60px_hsl(var(--gold)/0.18),inset_0_1px_0_hsl(var(--gold)/0.55)]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 -top-4 h-48"
-          style={{
-            background:
-              "radial-gradient(ellipse 65% 85% at 50% 100%, hsl(var(--gold) / 0.5) 0%, hsl(var(--gold) / 0.18) 40%, transparent 75%)",
-          }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
-          style={{
-            backgroundImage: "radial-gradient(hsl(var(--gold)) 1px, transparent 1px)",
-            backgroundSize: "3px 3px",
-          }}
-        />
+      {/* Hero — clean & precise (calm canvas, one gold accent, sharp type) */}
+      <div className="relative mb-5 animate-reveal animate-reveal-delay-1 rounded-2xl border border-border/60 bg-card/40 px-5 pt-7 pb-5 text-center">
+        <div className="mx-auto mb-3 h-14 w-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold-dark))] shadow-[0_6px_20px_-6px_hsl(var(--gold)/0.5)]">
+          <Sparkles size={26} className="text-background" strokeWidth={2.4} />
+        </div>
 
-        <div className="relative px-5 pt-7 pb-5 text-center">
-          <div className="mx-auto mb-3 relative w-fit">
-            <div
-              aria-hidden
-              className="absolute inset-0 rounded-2xl blur-xl opacity-80"
-              style={{
-                background:
-                  "radial-gradient(circle, hsl(var(--gold)/0.55) 0%, transparent 70%)",
-              }}
-            />
-            <div className="relative h-16 w-16 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold-dark))] shadow-[0_8px_24px_hsl(var(--gold)/0.45),inset_0_1px_0_hsl(0_0%_100%/0.4)]">
-              <Sparkles size={30} className="text-background" strokeWidth={2.4} />
-            </div>
-          </div>
-
-          {firstName && (
-            <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold mb-1">
-              Welcome in, {firstName}
-            </p>
-          )}
-          <h1 className="font-display text-[34px] leading-[0.95] font-black tracking-tight mb-2">
-            The{" "}
-            <span className="bg-gradient-to-b from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold))] bg-clip-text text-transparent drop-shadow-[0_0_18px_hsl(var(--gold)/0.5)]">
-              Vault
-            </span>
-          </h1>
-          <p className="text-[12.5px] text-muted-foreground max-w-[310px] mx-auto leading-relaxed">
-            A curated, evidence-led library of protocols across nutrition, training,
-            recovery and nervous-system regulation — every article cited.
+        {firstName && (
+          <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold/80 mb-1.5">
+            Welcome in, {firstName}
           </p>
+        )}
+        <h1 className="font-display text-[32px] leading-[0.95] font-black tracking-tight mb-2">
+          The <span className="text-gradient-gold">Vault</span>
+        </h1>
+        <p className="text-[12.5px] text-muted-foreground max-w-[300px] mx-auto leading-relaxed">
+          A curated, evidence-led library of protocols across nutrition, training,
+          recovery and nervous-system regulation — every article cited.
+        </p>
 
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            {[
-              { label: "Articles", value: "20" },
-              { label: "Categories", value: "5" },
-              { label: "Citations", value: "60+" },
-            ].map((s) => (
-              <div
-                key={s.label}
-                className="rounded-xl bg-background/50 border border-gold/20 px-2 py-2"
-              >
-                <p className="font-display text-base font-black text-gold leading-none">
-                  {s.value}
-                </p>
-                <p className="text-[9px] tracking-widest uppercase text-muted-foreground mt-1">
-                  {s.label}
-                </p>
-              </div>
-            ))}
-          </div>
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          {[
+            { label: "Articles", value: "20" },
+            { label: "Categories", value: "5" },
+            { label: "Citations", value: "60+" },
+          ].map((s) => (
+            <div key={s.label} className="rounded-xl bg-secondary/30 border border-border/50 px-2 py-2">
+              <p className="font-display text-base font-black text-gold leading-none tabular-nums">
+                {s.value}
+              </p>
+              <p className="text-[9px] tracking-widest uppercase text-muted-foreground mt-1">
+                {s.label}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Banner */}
-      <div className="mb-5 rounded-2xl border border-gold/25 bg-gradient-to-r from-gold/10 via-card/80 to-card px-4 py-3 animate-reveal animate-reveal-delay-2 flex items-start gap-3">
-        <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-gold/15 border border-gold/40">
-          <Flame size={16} className="text-gold" strokeWidth={2.6} />
+      {/* Banner — calm, single hairline */}
+      <div className="mb-5 rounded-2xl border border-border/60 bg-card/40 px-4 py-3 animate-reveal animate-reveal-delay-2 flex items-start gap-3">
+        <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-gold/10 border border-gold/30">
+          <Flame size={15} className="text-gold" strokeWidth={2.4} />
         </div>
         <div className="min-w-0">
-          <p className="text-[11px] font-black tracking-wider uppercase text-gold mb-0.5">
+          <p className="text-[10px] font-black tracking-[0.2em] uppercase text-gold/85 mb-0.5">
             Founding-member library
           </p>
-          <p className="text-[12px] text-foreground/85 leading-snug">
+          <p className="text-[12px] text-muted-foreground leading-snug">
             New protocols ship regularly. Every article is graded by evidence tier
-            (strong / promising / speculative) and references the underlying research.
+            and references the underlying research.
           </p>
         </div>
       </div>
@@ -254,20 +219,7 @@ const VaultCategoryBlock = ({
   const doneCount = articles.filter((a) => completedIds.has(a.id)).length;
 
   return (
-    <div
-      className="relative w-full text-left rounded-2xl overflow-hidden border border-border/70 bg-card/80 transition-all duration-200"
-      style={{
-        background: `linear-gradient(135deg, ${category.accent}15, hsl(var(--card)) 65%)`,
-      }}
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-10 -right-10 w-32 h-32 rounded-full blur-2xl opacity-50"
-        style={{
-          background: `radial-gradient(circle, ${category.accent}55 0%, transparent 70%)`,
-        }}
-      />
-
+    <div className="relative w-full text-left rounded-2xl overflow-hidden border border-border/60 bg-card/40 transition-colors duration-200">
       <button
         type="button"
         onClick={() => {
@@ -278,14 +230,13 @@ const VaultCategoryBlock = ({
       >
         <div className="flex items-start gap-3.5">
           <div
-            className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border"
+            className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0 border"
             style={{
-              background: `linear-gradient(135deg, ${category.accent}33, ${category.accent}10)`,
-              borderColor: `${category.accent}55`,
-              boxShadow: `0 0 18px ${category.accent}30`,
+              background: `${category.accent}14`,
+              borderColor: `${category.accent}33`,
             }}
           >
-            <Icon size={22} style={{ color: category.accent }} strokeWidth={2.4} />
+            <Icon size={20} style={{ color: category.accent }} strokeWidth={2.4} />
           </div>
 
           <div className="min-w-0 flex-1">

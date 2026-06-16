@@ -9,11 +9,14 @@ import { getTierConfig } from "@/lib/status-tiers";
 interface StoryShareModalProps {
   open: boolean;
   onClose: () => void;
-  variant?: "stats" | "badge" | "streak";
+  variant?: "stats" | "badge" | "streak" | "referral";
   badgeData?: { name: string; icon: string; rarity: string };
+  /** Referral variant: the inviter's code + full link. */
+  referralCode?: string;
+  referralLink?: string;
 }
 
-const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryShareModalProps) => {
+const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referralCode, referralLink }: StoryShareModalProps) => {
   const { profile } = useAuth();
   const cardRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
@@ -222,6 +225,42 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
         ctx.fillStyle = "rgba(255,255,255,0.2)";
         ctx.font = "600 9px 'Inter', system-ui, sans-serif";
         ctx.fillText("BADGE UNLOCKED", card.offsetWidth / 2, cardH - 30);
+
+      } else if (variant === "referral") {
+        const cx = card.offsetWidth / 2;
+        const centerY = cardH / 2;
+        const code = (referralCode || profile.username).toUpperCase();
+
+        ctx.fillStyle = "#f0ece4";
+        ctx.font = "800 30px 'Space Grotesk', system-ui, sans-serif";
+        ctx.fillText("Train with me.", cx, centerY - 96);
+
+        ctx.fillStyle = "rgba(255,255,255,0.55)";
+        ctx.font = "600 13px 'Inter', system-ui, sans-serif";
+        ctx.fillText(`@${profile.username} on Whealth Factory`, cx, centerY - 72);
+
+        // Invite-code box
+        const boxW = card.offsetWidth - 96, boxH = 60, boxX = 48, boxY = centerY - 48;
+        ctx.fillStyle = "rgba(202, 158, 62, 0.10)";
+        ctx.beginPath(); ctx.roundRect(boxX, boxY, boxW, boxH, 12); ctx.fill();
+        ctx.strokeStyle = "rgba(202, 158, 62, 0.5)"; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.fillStyle = "rgba(202,158,62,0.65)";
+        ctx.font = "700 9px 'Inter', system-ui, sans-serif";
+        ctx.fillText("YOUR INVITE CODE", cx, boxY + 20);
+        ctx.fillStyle = "rgba(202, 158, 62, 1)";
+        ctx.font = "900 22px 'Space Grotesk', system-ui, sans-serif";
+        ctx.fillText(code, cx, boxY + 46);
+
+        ctx.fillStyle = "#f0ece4";
+        ctx.font = "800 15px 'Space Grotesk', system-ui, sans-serif";
+        ctx.fillText("14-day free trial", cx, centerY + 46);
+        ctx.fillStyle = "rgba(255,255,255,0.45)";
+        ctx.font = "500 11px 'Inter', system-ui, sans-serif";
+        ctx.fillText("AI coach · daily check-ins · the full system", cx, centerY + 66);
+
+        ctx.fillStyle = "rgba(202,158,62,0.5)";
+        ctx.font = "700 10px 'Inter', system-ui, sans-serif";
+        ctx.fillText("USE MY CODE AT SIGN-UP", cx, cardH - 30);
       }
 
       canvas.toBlob((blob) => {
@@ -247,12 +286,14 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
       try {
         await navigator.share({
           title: "Whealth Factory",
-          text: variant === "streak"
+          text: variant === "referral"
+            ? `I run my discipline on Whealth Factory — daily check-ins, AI coach, the whole system. Here's a 14-day free trial: ${referralLink || window.location.origin}`
+            : variant === "streak"
             ? `🔥 ${profile.streak}-day streak on Whealth Factory. ${profile.streak >= 30 ? "Most fail before this." : "Beat my streak!"}`
             : variant === "badge" && badgeData
             ? `Just unlocked ${badgeData.name} ${badgeData.icon} (${badgeData.rarity.toUpperCase()}) on Whealth Factory!`
             : `${profile.xp.toLocaleString()} XP • Level ${profile.level} • ${tierConfig.emoji} ${tierConfig.label} on Whealth Factory. The grind doesn't stop.`,
-          url: window.location.origin,
+          url: variant === "referral" ? (referralLink || window.location.origin) : window.location.origin,
         });
       } catch {}
     } else {
@@ -373,9 +414,30 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData }: StoryS
               </>
             )}
 
-            <p className="absolute bottom-4 text-muted-foreground/20 font-semibold tracking-[0.3em] text-xl">
-              DISCIPLINE IS THE NEW FLEX
-            </p>
+            {variant === "referral" && (
+              <>
+                <p className="font-extrabold text-foreground text-2xl">Train with me.</p>
+                <p className="text-muted-foreground/60 text-xs mb-5">@{profile.username} on Whealth Factory</p>
+                <div className="w-full rounded-xl border border-gold/40 bg-gold/[0.08] px-4 py-3 mb-5">
+                  <p className="text-[9px] font-bold tracking-[0.2em] text-gold/60 mb-1">YOUR INVITE CODE</p>
+                  <p className="font-display font-black text-gold text-xl tracking-wide break-all leading-none">
+                    {(referralCode || profile.username).toUpperCase()}
+                  </p>
+                </div>
+                <p className="font-black text-foreground text-base">14-day free trial</p>
+                <p className="text-muted-foreground/50 text-[11px] mt-1">AI coach · daily check-ins · the full system</p>
+              </>
+            )}
+
+            {variant === "referral" ? (
+              <p className="absolute bottom-4 text-gold/40 font-bold tracking-[0.2em] text-[10px]">
+                USE MY CODE AT SIGN-UP
+              </p>
+            ) : (
+              <p className="absolute bottom-4 text-muted-foreground/20 font-semibold tracking-[0.3em] text-xl">
+                DISCIPLINE IS THE NEW FLEX
+              </p>
+            )}
           </div>
         </div>
 

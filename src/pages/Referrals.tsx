@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Check, Gift, Users, Share2, Trophy, ChevronLeft, Zap, Crown, Sparkles, Lock } from "lucide-react";
+import { Copy, Check, Users, Share2, Trophy, ChevronLeft, Zap, Crown, Sparkles, Lock, Image as ImageIcon, CreditCard, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import BrandLogo from "@/components/BrandLogo";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
+import StoryShareModal from "@/components/StoryShareModal";
 import { useReferralStats } from "@/hooks/use-referral-stats";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ const Referrals = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+  const [shareCardOpen, setShareCardOpen] = useState(false);
   const { data: stats } = useReferralStats(profile?.user_id);
 
   const { data: referrals } = useQuery({
@@ -61,7 +63,7 @@ const Referrals = () => {
       try {
         await navigator.share({
           title: "Join Whealth Factory",
-          text: `Join Whealth Factory and level up your discipline. Use my referral link to get started!`,
+          text: `I run my discipline on Whealth Factory — daily check-ins, AI coach, the whole system. Here's a 14-day free trial:`,
           url: referralLink,
         });
       } catch {}
@@ -69,6 +71,8 @@ const Referrals = () => {
       handleCopy();
     }
   };
+
+  const referralCode = profile.referral_code || profile.username;
 
   const referralCount = stats?.convertedCount ?? profile.referral_count ?? 0;
   const daysAsApex = stats?.daysAsApex ?? 0;
@@ -108,33 +112,34 @@ const Referrals = () => {
         </div>
       </div>
 
-      {/* Share Card */}
-      <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-gold/20 bg-card p-6 text-center mb-4">
-        <div className="h-16 w-16 rounded-full gradient-gold flex items-center justify-center glow-gold mx-auto mb-4">
-          <Gift size={28} className="text-primary-foreground" />
-        </div>
-        <h2 className="font-display font-bold text-lg mb-1">Spread the Discipline</h2>
-        <p className="text-sm text-muted-foreground mb-5">
-          Invite friends and unlock XP, Apex Instant and permanent Legend status.
+      {/* Hero invite — code + link + two primary share actions (precision) */}
+      <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-border/60 bg-card/40 p-5 mb-4">
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80 mb-1">Your invite</p>
+        <p className="text-[13px] text-muted-foreground leading-snug mb-4">
+          Your friends get a <span className="text-foreground font-semibold">14-day free trial</span>. You earn free months, Apex and Legend status.
         </p>
 
-        {/* Referral Link */}
-        <div className="flex items-center gap-2 bg-secondary rounded-lg p-3 mb-4">
-          <p className="flex-1 text-xs text-muted-foreground truncate text-left font-mono">
-            {referralLink}
-          </p>
-          <button
-            onClick={handleCopy}
-            className="shrink-0 p-2 rounded-lg bg-gold/10 text-gold hover:bg-gold/20 transition-colors active:scale-95"
-          >
-            {copied ? <Check size={16} /> : <Copy size={16} />}
-          </button>
-        </div>
+        {/* Big tappable code */}
+        <button
+          onClick={handleCopy}
+          className="w-full rounded-xl border border-gold/30 bg-gold/[0.06] px-4 py-3 mb-2 flex items-center gap-3 active:scale-[0.99] transition-transform"
+        >
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gold/60 mb-0.5">Invite code</p>
+            <p className="font-display text-xl font-black text-gold tracking-wide truncate leading-none">{referralCode}</p>
+          </div>
+          <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold text-gold">
+            {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? "Copied" : "Copy"}
+          </span>
+        </button>
+        <p className="text-[10px] text-muted-foreground/60 font-mono truncate mb-4">{referralLink}</p>
 
-        <div className="flex gap-2">
-          <Button variant="ember" size="lg" className="flex-1" onClick={handleNativeShare}>
-            <Share2 size={16} />
-            Share Link
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="ember" size="lg" onClick={handleNativeShare}>
+            <Share2 size={16} /> Share link
+          </Button>
+          <Button variant="gold-soft" size="lg" onClick={() => setShareCardOpen(true)}>
+            <ImageIcon size={16} /> Share card
           </Button>
         </div>
       </div>
@@ -305,12 +310,32 @@ const Referrals = () => {
         </div>
       )}
 
+      {/* How it works — 3 steps (trust + clarity) */}
+      <div className="animate-reveal animate-reveal-delay-3 mb-6">
+        <h2 className="font-display font-bold text-sm tracking-tight mb-3">How it works</h2>
+        <div className="grid grid-cols-3 gap-2.5">
+          {[
+            { icon: Share2, t: "Share", d: "Send your code or card" },
+            { icon: CreditCard, t: "They subscribe", d: "Friend starts a paid plan" },
+            { icon: Gift, t: "You earn", d: "Free months · Apex · Legend" },
+          ].map((s, i) => (
+            <div key={i} className="rounded-2xl border border-border/60 bg-card/40 p-3 text-center">
+              <div className="mx-auto mb-2 h-9 w-9 rounded-xl bg-gold/10 border border-gold/25 flex items-center justify-center">
+                <s.icon size={16} className="text-gold" />
+              </div>
+              <p className="text-[11px] font-black tracking-tight leading-tight">{s.t}</p>
+              <p className="text-[9.5px] text-muted-foreground leading-snug mt-0.5">{s.d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Rewards Tiers */}
       <div className="animate-reveal animate-reveal-delay-3">
         <div className="flex items-end justify-between mb-3">
-          <h2 className="font-display font-bold text-sm tracking-tight">Referral Rewards</h2>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
-            Paid conversions only
+          <h2 className="font-display font-bold text-sm tracking-tight">Reward ladder</h2>
+          <p className="text-[10px] text-gold/70 uppercase tracking-wider font-bold">
+            Unlocks on subscribe
           </p>
         </div>
         <div className="space-y-2.5">
@@ -472,6 +497,13 @@ const Referrals = () => {
           </div>
         </div>
       )}
+      <StoryShareModal
+        open={shareCardOpen}
+        onClose={() => setShareCardOpen(false)}
+        variant="referral"
+        referralCode={referralCode}
+        referralLink={referralLink}
+      />
     </div>
   );
 };

@@ -12,6 +12,12 @@ import { hapticImpact, hapticSelection } from "@/lib/haptics";
 
 const BATCH_OPTIONS = [1, 2, 3, 4, 5] as const;
 
+// Recipe list sections — savoury mains first, then breakfast & sweet.
+const SECTIONS = [
+  { key: "main", label: "Mains" },
+  { key: "sweet", label: "Breakfast & sweet" },
+] as const;
+
 // Poster images live in a public Storage bucket, named by recipe id (slug):
 // e.g. recipe-images/greek-chicken-bowl.jpg. Upload the 5 posters there and
 // they appear as headers automatically; until then a gold gradient shows.
@@ -202,47 +208,62 @@ const Recipes = () => {
         <h1 className="font-display text-base font-black tracking-tight">Meal-prep recipes</h1>
       </div>
 
-      <div className="px-4 pt-4 pb-28 space-y-3">
+      <div className="px-4 pt-4 pb-28 space-y-6">
         <p className="text-[12px] text-muted-foreground leading-snug px-1">
           Real-food, high-protein recipes built to batch. Tap any recipe, pick how many meals,
           and the ingredients scale automatically.
         </p>
 
-        {RECIPES.map((r) => (
-          <button
-            key={r.id}
-            onClick={() => { hapticImpact("light"); setSelected(r); }}
-            className="w-full text-left rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.05] via-card/95 to-card p-4 active:scale-[0.99] transition-transform"
-          >
-            <div className="flex items-start gap-3">
-              {/* Thumbnail: crop tight to just the food bowl, which sits in the
-                  top-right of every poster (~x48-97% · y4-37%). background-size +
-                  background-position pans/zooms to it reliably. Gold gradient +
-                  icon show through if the poster image is missing. */}
-              <div className="h-14 w-14 rounded-xl overflow-hidden bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 relative">
-                <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />
-                <div
-                  className="absolute inset-0 bg-no-repeat"
-                  style={{
-                    backgroundImage: `url(${RECIPE_IMG_BASE}${r.id}.png)`,
-                    backgroundSize: "204%",
-                    backgroundPosition: "95% 6%",
-                  }}
-                />
+        {SECTIONS.map((sec) => {
+          const items = RECIPES.filter((r) =>
+            sec.key === "sweet" ? r.category === "sweet" : r.category !== "sweet",
+          );
+          if (items.length === 0) return null;
+          return (
+            <div key={sec.key}>
+              <div className="flex items-baseline gap-2 mb-2.5 px-1">
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80">{sec.label}</p>
+                <span className="text-[10px] font-bold text-muted-foreground/50 tabular-nums">{items.length}</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-display text-[15px] font-black leading-tight">{r.title}</p>
-                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{r.subtitle}</p>
-                <div className="flex items-center gap-3 mt-2 text-[10px] font-bold text-muted-foreground">
-                  <span className="text-gold tabular-nums">{r.nutrition.calories} kcal</span>
-                  <span className="tabular-nums">{r.nutrition.protein}g protein</span>
-                  <span className="inline-flex items-center gap-0.5"><Clock size={10} /> {r.prepMin + r.cookMin}m</span>
-                </div>
+              <div className="space-y-3">
+                {items.map((r) => (
+                  <button
+                    key={r.id}
+                    onClick={() => { hapticImpact("light"); setSelected(r); }}
+                    className="w-full text-left rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.05] via-card/95 to-card p-4 active:scale-[0.99] transition-transform"
+                  >
+                    <div className="flex items-start gap-3">
+                      {/* Thumbnail: crop to the food (centre of the dish, below the
+                          top-right badge). background-size + position pans/zooms
+                          reliably; gold gradient + icon show if the image is missing. */}
+                      <div className="h-14 w-14 rounded-xl overflow-hidden bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 relative">
+                        <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />
+                        <div
+                          className="absolute inset-0 bg-no-repeat"
+                          style={{
+                            backgroundImage: `url(${RECIPE_IMG_BASE}${r.id}.png)`,
+                            backgroundSize: "230%",
+                            backgroundPosition: "85% 16%",
+                          }}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-display text-[15px] font-black leading-tight">{r.title}</p>
+                        <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{r.subtitle}</p>
+                        <div className="flex items-center gap-3 mt-2 text-[10px] font-bold text-muted-foreground">
+                          <span className="text-gold tabular-nums">{r.nutrition.calories} kcal</span>
+                          <span className="tabular-nums">{r.nutrition.protein}g protein</span>
+                          <span className="inline-flex items-center gap-0.5"><Clock size={10} /> {r.prepMin + r.cookMin}m</span>
+                        </div>
+                      </div>
+                      <ChevronRight size={16} className="text-gold/60 shrink-0 mt-1" />
+                    </div>
+                  </button>
+                ))}
               </div>
-              <ChevronRight size={16} className="text-gold/60 shrink-0 mt-1" />
             </div>
-          </button>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

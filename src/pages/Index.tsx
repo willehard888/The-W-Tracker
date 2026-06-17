@@ -266,8 +266,8 @@ const Index = () => {
                 style={{
                   backgroundImage:
                     "url(https://gcwuvijcuzhunkcauzom.supabase.co/storage/v1/object/public/recipe-images/greek-chicken-bowl.png)",
-                  backgroundSize: "204%",
-                  backgroundPosition: "95% 6%",
+                  backgroundSize: "230%",
+                  backgroundPosition: "85% 16%",
                 }}
               />
             </div>

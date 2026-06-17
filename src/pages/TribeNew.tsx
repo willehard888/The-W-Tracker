@@ -58,22 +58,32 @@ const TribeNew = () => {
       return;
     }
     setSubmitting(true);
-    const { data, error } = await supabase.rpc("create_tribe" as any, {
-      p_name: trimmed,
-      p_description: description.trim() || null,
-      p_visibility: visibility,
-      p_cover_url: null,
-    });
-    setSubmitting(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      const { data, error } = await supabase.rpc("create_tribe" as any, {
+        p_name: trimmed,
+        p_description: description.trim() || null,
+        p_visibility: visibility,
+        p_cover_url: null,
+      });
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      // Best-effort activity tag — never block navigation on it.
+      if (activity && data) {
+        try {
+          await supabase.rpc("set_tribe_activity" as any, { p_tribe: data, p_activity: activity });
+        } catch {
+          /* ignore — tribe is created either way */
+        }
+      }
+      toast.success("Tribe created!");
+      navigate(`/tribes/${data}`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to create tribe");
+    } finally {
+      setSubmitting(false);
     }
-    if (activity) {
-      await supabase.rpc("set_tribe_activity" as any, { p_tribe: data, p_activity: activity }).catch(() => {});
-    }
-    toast.success("Tribe created!");
-    navigate(`/tribes/${data}`);
   };
 
   return (

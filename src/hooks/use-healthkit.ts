@@ -31,7 +31,17 @@ export const useHealthKit = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    isHealthKitAvailable().then(setAvailable);
+    let alive = true;
+    // Probe availability, but never let a hung/failing native bridge call
+    // leave `available` stuck at null — fall back to "unavailable" so the UI
+    // resolves instead of hiding the card forever.
+    Promise.race([
+      isHealthKitAvailable(),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000)),
+    ])
+      .then((v) => { if (alive) setAvailable(v); })
+      .catch(() => { if (alive) setAvailable(false); });
+    return () => { alive = false; };
   }, []);
 
   const persistSnapshot = useCallback(async (snap: DaySnapshot) => {

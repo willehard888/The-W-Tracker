@@ -106,6 +106,7 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
                     tier={inv.status_tier || "recruit"}
                     size="sm"
                     showBadge={false}
+                    animated={false}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate">

@@ -20,6 +20,8 @@ import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
 import ImageLightbox from "@/components/ImageLightbox";
 import AppImage from "@/components/ui/app-image";
+import FeedPostCard from "@/components/feed/FeedPostCard";
+import { buildCommentTree } from "@/lib/comment-tree";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -49,238 +51,9 @@ const MAX_VIDEO_SIZE_MB = 50;
 const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
 const isVideoUrl = (url: string) => SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.toLowerCase().includes(ext));
 
-// Build a nested comment tree from a flat list using parent_id.
-// Top-level comments have parent_id = null. Replies are nested under their parent.
-type CommentNode = any & { children: CommentNode[]; depth: number };
-const MAX_VISUAL_DEPTH = 4; // cap visual indentation to keep mobile readable
-const buildCommentTree = (flat: any[] | undefined): CommentNode[] => {
-  if (!flat || flat.length === 0) return [];
-  const map = new Map<string, CommentNode>();
-  flat.forEach((c) => map.set(c.id, { ...c, children: [], depth: 0 }));
-  const roots: CommentNode[] = [];
-  map.forEach((node) => {
-    if (node.parent_id && map.has(node.parent_id)) {
-      const parent = map.get(node.parent_id)!;
-      node.depth = Math.min(parent.depth + 1, MAX_VISUAL_DEPTH);
-      parent.children.push(node);
-    } else {
-      roots.push(node);
-    }
-  });
-  // Sort children by oldest-first within each branch
-  const sortRec = (nodes: CommentNode[]) => {
-    nodes.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-    nodes.forEach((n) => sortRec(n.children));
-  };
-  sortRec(roots);
-  return roots;
-};
-
-interface CommentThreadProps {
-  node: CommentNode;
-  currentUserId?: string;
-  onReply: (id: string, username: string, snippet: string) => void;
-  onEdit: (id: string, content: string) => Promise<void> | void;
-  onDelete: (id: string) => Promise<void> | void;
-  editingId: string | null;
-  setEditingId: (id: string | null) => void;
-}
-
-const isEdited = (node: CommentNode) => {
-  if (!node.updated_at || !node.created_at) return false;
-  return new Date(node.updated_at).getTime() - new Date(node.created_at).getTime() > 1500;
-};
-
-const CommentThread = ({
-  node,
-  currentUserId,
-  onReply,
-  onEdit,
-  onDelete,
-  editingId,
-  setEditingId,
-}: CommentThreadProps) => {
-  const username = node.profile?.username || "anon";
-  const isReply = node.depth > 0;
-  const isOwn = currentUserId && node.user_id === currentUserId;
-  const isEditing = editingId === node.id;
-  const [draft, setDraft] = useState(node.content || "");
-  const [saving, setSaving] = useState(false);
-
-  const cancelEdit = () => {
-    setDraft(node.content || "");
-    setEditingId(null);
-  };
-
-  const saveEdit = async () => {
-    const trimmed = draft.trim();
-    if (!trimmed || trimmed === (node.content || "").trim()) {
-      cancelEdit();
-      return;
-    }
-    setSaving(true);
-    try {
-      await onEdit(node.id, trimmed);
-      setEditingId(null);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="animate-fade-in">
-      <div className="flex gap-2.5 relative">
-        {/* Vertical thread line for replies */}
-        {isReply && (
-          <span
-            aria-hidden="true"
-            className="absolute -left-3 top-0 bottom-0 w-px bg-gradient-to-b from-gold/30 via-gold/15 to-transparent"
-          />
-        )}
-        <div className="h-7 w-7 rounded-full gradient-gold flex items-center justify-center text-[10px] font-black text-primary-foreground shrink-0 mt-0.5">
-          {username.charAt(0)?.toUpperCase() || "?"}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div
-            className={cn(
-              "border rounded-2xl rounded-tl-sm px-3 py-2 max-w-full",
-              isEditing ? "block" : "inline-block",
-              isReply
-                ? "bg-card border-gold/25 shadow-[0_0_0_1px_hsl(var(--gold)/0.05)]"
-                : "bg-card border-border/40",
-              isEditing && "border-gold/60 shadow-[0_0_0_1px_hsl(var(--gold)/0.2)]",
-            )}
-          >
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold text-gold">@{username}</span>
-              {isEdited(node) && !isEditing && (
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-gold/70 italic">
-                  · edited
-                </span>
-              )}
-            </div>
-            {isEditing ? (
-              <div className="mt-1.5 flex flex-col gap-2 min-w-[200px]">
-                <textarea
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value.slice(0, 300))}
-                  rows={2}
-                  autoFocus
-                  className="w-full bg-background/50 border border-gold/30 focus:border-gold rounded-lg px-2 py-1.5 text-xs text-foreground/90 outline-none resize-none focus:ring-2 focus:ring-gold/30"
-                  onKeyDown={(e) => {
-                    if (e.key === "Escape") {
-                      e.preventDefault();
-                      cancelEdit();
-                    }
-                  }}
-                />
-                <div className="flex items-center justify-end gap-1.5">
-                  <button
-                    type="button"
-                    onClick={cancelEdit}
-                    disabled={saving}
-                    className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground px-2 py-1 rounded-md transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { hapticImpact("light"); saveEdit(); }}
-                    disabled={saving || !draft.trim()}
-                    className="text-[10px] font-black uppercase tracking-wider gradient-gold text-primary-foreground px-3 py-1 rounded-md disabled:opacity-50"
-                  >
-                    {saving ? "Saving…" : "Save"}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <p className="text-xs text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
-                {node.content}
-              </p>
-            )}
-          </div>
-          {!isEditing && (
-            <div className="flex items-center gap-2 mt-0.5 ml-3 flex-wrap">
-              <p className="text-[9px] text-muted-foreground/50">
-                {formatDistanceToNow(new Date(node.created_at), { addSuffix: true })}
-              </p>
-              {currentUserId && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    hapticSelection();
-                    onReply(node.id, username, node.content || "");
-                  }}
-                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
-                >
-                  <Reply size={10} />
-                  Reply
-                </button>
-              )}
-              {isOwn && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      hapticSelection();
-                      setDraft(node.content || "");
-                      setEditingId(node.id);
-                    }}
-                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (confirm("Delete this comment? Replies will also be removed.")) {
-                        hapticImpact("medium");
-                        onDelete(node.id);
-                      }
-                    }}
-                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-destructive transition-colors"
-                  >
-                    Delete
-                  </button>
-                </>
-              )}
-              {node.children.length > 0 && (
-                <span className="text-[9px] text-muted-foreground/40 tabular-nums">
-                  · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Recursive children */}
-      {node.children.length > 0 && (
-        <div
-          className={cn(
-            "mt-2.5 space-y-2.5 relative",
-            // Indent up to MAX_VISUAL_DEPTH; cap to keep mobile readable
-            node.depth < MAX_VISUAL_DEPTH ? "ml-6 pl-3 border-l border-gold/15" : "ml-3 pl-3 border-l border-dashed border-gold/20",
-          )}
-        >
-          {node.children.map((child: CommentNode) => (
-            <CommentThread
-              key={child.id}
-              node={child}
-              currentUserId={currentUserId}
-              onReply={onReply}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              editingId={editingId}
-              setEditingId={setEditingId}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
+// Stable empty reference so closed posts always receive the same `commentTree`
+// prop — keeps FeedPostCard's memo intact (a fresh [] would re-render every card).
+const EMPTY_TREE: any[] = [];
 
 const EliteFeed = () => {
   const { user, profile, isElite } = useAuth();
@@ -864,6 +637,29 @@ const EliteFeed = () => {
   const unresolvedReportsCount = reports?.length || 0;
   const canView = true; // any member that passes AccessGate can read the feed
 
+  // Stable per-post action handlers (TanStack `.mutate` is referentially stable)
+  // so FeedPostCard's memo holds — closed posts don't re-render on every keystroke
+  // in another post's composer.
+  const onNavigateUser = useCallback((id: string) => navigate(`/user/${id}`), [navigate]);
+  const onToggleReaction = useCallback((id: string) => toggleReaction.mutate(id), [toggleReaction.mutate]);
+  const onToggleComments = useCallback((id: string) => {
+    hapticSelection();
+    setReplyTo(null);
+    setShowComments((prev) => (prev === id ? null : id));
+  }, []);
+  const onGiveKudos = useCallback(
+    (id: string, rid: string) => giveKudos.mutate({ postId: id, receiverId: rid }),
+    [giveKudos.mutate],
+  );
+  const onDeletePost = useCallback((id: string) => deletePost.mutate(id), [deletePost.mutate]);
+  const onReportPost = useCallback((id: string) => reportPost.mutate(id), [reportPost.mutate]);
+  const onAdminDelete = useCallback((id: string) => adminDeletePost.mutate(id), [adminDeletePost.mutate]);
+  const onUnreport = useCallback((id: string) => unreportPost.mutate(id), [unreportPost.mutate]);
+  const onOpenLightbox = useCallback((p: any) => { hapticSelection(); setLightboxPost(p); }, []);
+  const onSubmitComment = useCallback(() => { hapticImpact("light"); addComment.mutate(); }, [addComment.mutate]);
+  const composerInitial = profile?.username?.charAt(0)?.toUpperCase() || "?";
+  const giveKudosPending = giveKudos.isPending;
+
   return (
     <div
       ref={scrollRef}
@@ -1115,379 +911,48 @@ const EliteFeed = () => {
         )}
 
         {posts?.map((post: any, index: number) => {
-          const isOwn = post.user_id === user?.id;
-          const tierStyle = TIER_STYLES[post.profile?.status_tier] || TIER_STYLES.normal;
-          const liked = reactions?.has(post.id);
-          const hasGivenKudos = userKudosPosts?.has(post.id);
-
+          const isOpen = showComments === post.id;
           return (
-            <div
+            <FeedPostCard
               key={post.id}
-              className={cn(
-                "rounded-2xl border bg-card overflow-hidden transition-all card-depth",
-                "hover:shadow-[0_8px_32px_hsl(0_0%_0%/0.35),0_4px_12px_hsl(var(--gold)/0.06)]",
-                post.reported ? "border-destructive/30 bg-destructive/[0.02]" : liked ? "border-gold/20" : "border-border"
-              )}
-              style={{
-                animationDelay: `${index * 60}ms`,
-                // Skip layout/paint for off-screen posts (cheap virtualization
-                // without restructuring the scroll container). First few stay
-                // eager so the initial paint isn't blank.
-                contentVisibility: index < 4 ? undefined : "auto",
-                containIntrinsicSize: index < 4 ? undefined : "auto 480px",
-              }}
-            >
-              {/* Reported banner */}
-              {post.reported && isAdmin && (
-                <div className="flex items-center justify-between px-4 py-2 bg-destructive/10 border-b border-destructive/20">
-                  <div className="flex items-center gap-1.5">
-                    <AlertTriangle size={12} className="text-destructive" />
-                    <span className="text-[10px] font-bold text-destructive uppercase tracking-wider">Reported</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => unreportPost.mutate(post.id)}
-                      className="px-2 py-1 rounded text-[10px] font-bold bg-[hsl(var(--xp-green))]/15 text-[hsl(var(--xp-green))] hover:bg-[hsl(var(--xp-green))]/25 transition-colors"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => adminDeletePost.mutate(post.id)}
-                      className="px-2 py-1 rounded text-[10px] font-bold bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Post Header */}
-              <div className="flex items-center gap-3 p-4 pb-0">
-                <StatusAvatar src={post.profile?.avatar_url} name={post.profile?.username} tier={post.profile?.status_tier || 'recruit'} size="sm" animated={false} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => navigate(`/user/${post.user_id}`)}
-                      className="text-sm font-bold truncate hover:underline"
-                    >
-                      <TierUsername
-                        username={post.profile?.username}
-                        tier={post.profile?.status_tier || "recruit"}
-                      />
-                      {isOwn && <span className="ml-1 text-[10px] text-gold/70 font-medium">(you)</span>}
-                    </button>
-                    {post.profile?.status_tier === "elite" && (
-                      <Crown size={12} className="text-gold shrink-0" />
-                    )}
-                    {verifiedSet?.has(post.user_id) && (
-                      <span title="HealthKit-verified" className="inline-flex items-center gap-0.5 shrink-0">
-                        <ShieldCheck size={12} className="text-[hsl(var(--xp-green))]" />
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                    <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
-                    {post.profile?.level > 0 && (
-                      <>
-                        <span>•</span>
-                        <span className="font-semibold">Lv.{post.profile.level}</span>
-                      </>
-                    )}
-                    {post.profile?.streak > 0 && (
-                      <>
-                        <span>•</span>
-                        <StreakFlameInline streak={post.profile.streak} suffix="d" className="text-[10px]" />
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Post menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/60 hover:text-muted-foreground">
-                      <MoreHorizontal size={16} />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="min-w-[160px]">
-                    {isOwn && (
-                      <DropdownMenuItem
-                        onClick={() => deletePost.mutate(post.id)}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <Trash2 size={14} className="mr-2" />
-                        Delete post
-                      </DropdownMenuItem>
-                    )}
-                    {!isOwn && (
-                      <DropdownMenuItem
-                        onClick={() => reportPost.mutate(post.id)}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <AlertTriangle size={14} className="mr-2" />
-                        Report post
-                      </DropdownMenuItem>
-                    )}
-                    {/* Admin actions */}
-                    {isAdmin && !isOwn && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => adminDeletePost.mutate(post.id)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <ShieldCheck size={14} className="mr-2" />
-                          Admin: Remove
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              {/* Content */}
-              {post.content && (
-                <p className="px-4 pt-3 text-sm leading-relaxed overflow-wrap-break-word">{post.content}</p>
-              )}
-
-              {/* Image — tap to open premium lightbox */}
-              {post.image_url && (
-                <div className="mt-3 mx-4 rounded-xl overflow-hidden relative group">
-                  {isUnsupportedHeic(post.image_url) ? (
-                    <div className="rounded-xl border border-border bg-muted/40 p-4 text-xs text-muted-foreground">
-                      This image format is not supported in all devices. Please upload JPG, PNG or WEBP.
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => { hapticSelection(); setLightboxPost(post); }}
-                      className="block w-full text-left active:opacity-90 transition-opacity"
-                      aria-label="Open image preview"
-                    >
-                      <AppImage
-                        src={post.image_url}
-                        width={760}
-                        alt={post.content || "Post image"}
-                        className="w-full max-h-96 object-cover transition-transform duration-500 group-hover:scale-[1.01]"
-                      />
-                      {/* Subtle gradient + tier ribbon */}
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
-                      {post.profile?.status_tier === "elite" && (
-                        <div className="pointer-events-none absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm border border-gold/40">
-                          <Crown size={10} className="text-gold" />
-                          <span className="text-[9px] font-black tracking-wider text-gold uppercase">Elite</span>
-                        </div>
-                      )}
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Video */}
-              {(post as any).video_url && (
-                <div className="mt-3 mx-4 rounded-xl overflow-hidden">
-                  <LazyVideoPlayer src={(post as any).video_url} />
-                </div>
-              )}
-
-              {/* Actions — themed for ranking system */}
-              <div className="flex items-center gap-1 px-3 py-2.5 mt-1 border-t border-border/40">
-                <button
-                  onClick={() => toggleReaction.mutate(post.id)}
-                  aria-label={liked ? "Remove fire" : "Give fire"}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
-                    liked
-                      ? "bg-streak-orange/15 text-streak-orange"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  )}
-                >
-                  {liked ? (
-                    <Flame size={15} fill="currentColor" className="animate-scale-in" />
-                  ) : (
-                    <Heart size={15} />
-                  )}
-                  <span className="tabular-nums">{post.likes_count > 0 ? post.likes_count : ""}</span>
-                </button>
-                <button
-                  onClick={() => { hapticSelection(); setReplyTo(null); setShowComments(showComments === post.id ? null : post.id); }}
-                  aria-label="Toggle comments"
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
-                    showComments === post.id
-                      ? "bg-gold/10 text-gold"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  )}
-                >
-                  <MessageCircle size={15} fill={showComments === post.id ? "currentColor" : "none"} />
-                  <span className="tabular-nums">{post.comments_count > 0 ? post.comments_count : ""}</span>
-                </button>
-
-                {/* Kudos button — only for non-own posts, members with earned Elite status */}
-                {!isOwn && canPost && (
-                  <button
-                    onClick={() => {
-                      if (!hasGivenKudos && kudosRemaining <= 0) {
-                        toast.error("You've used all your kudos this month");
-                        return;
-                      }
-                      hapticImpact("medium");
-                      giveKudos.mutate({ postId: post.id, receiverId: post.user_id });
-                    }}
-                    disabled={giveKudos.isPending}
-                    aria-label={hasGivenKudos ? "Remove kudos" : "Give kudos"}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
-                      hasGivenKudos
-                        ? "bg-purple/15 text-purple ring-1 ring-purple/30"
-                        : kudosRemaining > 0
-                          ? "text-muted-foreground hover:bg-purple/10 hover:text-purple"
-                          : "text-muted-foreground/40 cursor-not-allowed"
-                    )}
-                    title={`${kudosRemaining}/${KUDOS_PER_MONTH} kudos remaining this month`}
-                  >
-                    <Award
-                      size={15}
-                      fill={hasGivenKudos ? "currentColor" : "none"}
-                      className={cn(hasGivenKudos && "animate-scale-in")}
-                    />
-                    <span className="tabular-nums">{(post.kudos_count || 0) > 0 ? post.kudos_count : ""}</span>
-                  </button>
-                )}
-
-                {/* Show kudos count for own posts */}
-                {isOwn && (post.kudos_count || 0) > 0 && (
-                  <div className="flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold text-purple bg-purple/10">
-                    <Award size={15} fill="currentColor" />
-                    <span className="tabular-nums">{post.kudos_count}</span>
-                  </div>
-                )}
-
-                {/* Engagement summary on the right */}
-                <div className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider">
-                  {(post.likes_count || 0) + (post.comments_count || 0) + (post.kudos_count || 0) === 0 ? (
-                    <span>Be first</span>
-                  ) : (
-                    <span>{(post.likes_count || 0) + (post.comments_count || 0) + (post.kudos_count || 0)} signals</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Comments Section */}
-              {showComments === post.id && (
-                <div className="border-t border-border/50 px-4 py-3 bg-secondary/20">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
-                      Discussion
-                    </p>
-                    <p className="text-[10px] text-muted-foreground/60 tabular-nums">
-                      {post.comments_count || 0} {post.comments_count === 1 ? "reply" : "replies"}
-                    </p>
-                  </div>
-
-                  <div className="space-y-3 mb-3 max-h-80 overflow-y-auto pr-1">
-                    {commentTree.length === 0 && (
-                      <p className="text-xs text-muted-foreground/60 text-center py-3">
-                        No comments yet — start the conversation
-                      </p>
-                    )}
-                    {commentTree.map((node) => (
-                      <CommentThread
-                        key={node.id}
-                        node={node}
-                        currentUserId={user?.id}
-                        onReply={handleCommentReply}
-                        onEdit={handleCommentEdit}
-                        onDelete={handleCommentDelete}
-                        editingId={editingCommentId}
-                        setEditingId={setEditingCommentId}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Composer */}
-                  {user && (
-                    <div className="pt-2 border-t border-border/30">
-                      {/* Reply quote preview */}
-                      {replyTo && (
-                        <div className="mb-2 flex items-stretch gap-2 rounded-xl border border-gold/30 bg-gold/[0.06] p-2 animate-fade-in">
-                          <div className="w-0.5 rounded-full bg-gold shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1 text-[10px] font-bold text-gold uppercase tracking-wider">
-                              <Reply size={10} />
-                              Replying to @{replyTo.username}
-                            </div>
-                            <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 break-words">
-                              {replyTo.snippet || "(no text)"}
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => { hapticSelection(); setReplyTo(null); }}
-                            aria-label="Cancel reply"
-                            className="self-start h-6 w-6 rounded-full bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors shrink-0"
-                          >
-                            <X size={12} />
-                          </button>
-                        </div>
-                      )}
-
-                      <div className="flex items-end gap-2">
-                        <div className="h-8 w-8 rounded-full gradient-gold flex items-center justify-center text-[10px] font-black text-primary-foreground shrink-0">
-                          {profile?.username?.charAt(0)?.toUpperCase() || "?"}
-                        </div>
-                        <div className="flex-1 min-w-0 relative">
-                          <input
-                            ref={commentInputRef}
-                            value={commentText}
-                            onChange={(e) => setCommentText(e.target.value)}
-                            placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Add a comment..."}
-                            maxLength={300}
-                            className={cn(
-                              "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 transition-all",
-                              replyTo
-                                ? "border-gold/40 focus:ring-gold/50 focus:border-gold/60"
-                                : "border-border focus:ring-gold/40 focus:border-gold/40",
-                            )}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" && commentText.trim()) {
-                                hapticImpact("light");
-                                addComment.mutate();
-                              } else if (e.key === "Escape" && replyTo) {
-                                setReplyTo(null);
-                              }
-                            }}
-                          />
-                          {commentText.length > 0 && (
-                            <span
-                              className={cn(
-                                "absolute right-12 top-1/2 -translate-y-1/2 text-[9px] font-semibold tabular-nums",
-                                commentText.length > 270 ? "text-destructive" : "text-muted-foreground/50"
-                              )}
-                            >
-                              {300 - commentText.length}
-                            </span>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => { hapticImpact("light"); addComment.mutate(); }}
-                          disabled={!commentText.trim() || addComment.isPending}
-                          aria-label={replyTo ? "Send reply" : "Send comment"}
-                          className={cn(
-                            "h-9 w-9 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0",
-                            commentText.trim()
-                              ? "gradient-gold text-primary-foreground glow-gold"
-                              : "bg-secondary text-muted-foreground/40 cursor-not-allowed"
-                          )}
-                        >
-                          <Send size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+              post={post}
+              index={index}
+              currentUserId={user?.id}
+              isAdmin={!!isAdmin}
+              canPost={canPost}
+              liked={!!reactions?.has(post.id)}
+              hasGivenKudos={!!userKudosPosts?.has(post.id)}
+              verified={!!verifiedSet?.has(post.user_id)}
+              kudosRemaining={kudosRemaining}
+              kudosPerMonth={KUDOS_PER_MONTH}
+              isCommentsOpen={isOpen}
+              // Per-open-post composer props are gated to stable defaults when
+              // closed, so a keystroke in the open post doesn't re-render the rest.
+              commentTree={isOpen ? commentTree : EMPTY_TREE}
+              editingCommentId={isOpen ? editingCommentId : null}
+              setEditingCommentId={setEditingCommentId}
+              replyTo={isOpen ? replyTo : null}
+              setReplyTo={setReplyTo}
+              commentText={isOpen ? commentText : ""}
+              setCommentText={setCommentText}
+              commentInputRef={commentInputRef}
+              composerInitial={composerInitial}
+              onReply={handleCommentReply}
+              onEdit={handleCommentEdit}
+              onDelete={handleCommentDelete}
+              onSubmitComment={onSubmitComment}
+              addCommentPending={isOpen ? addComment.isPending : false}
+              onNavigateUser={onNavigateUser}
+              onToggleReaction={onToggleReaction}
+              onToggleComments={onToggleComments}
+              onGiveKudos={onGiveKudos}
+              onDeletePost={onDeletePost}
+              onReportPost={onReportPost}
+              onAdminDelete={onAdminDelete}
+              onUnreport={onUnreport}
+              onOpenLightbox={onOpenLightbox}
+              giveKudosPending={giveKudosPending}
+            />
           );
         })}
       </div>

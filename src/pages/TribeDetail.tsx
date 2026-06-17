@@ -33,6 +33,9 @@ import TribePendingRequestsDialog from "@/components/TribePendingRequestsDialog"
 import TribeReportsDialog from "@/components/TribeReportsDialog";
 import TribeManageDialog from "@/components/TribeManageDialog";
 import TribeEvents from "@/components/tribe/TribeEvents";
+import TribeMembersRow from "@/components/tribe/TribeMembersRow";
+import TribeComposer from "@/components/tribe/TribeComposer";
+import TribeHeader from "@/components/tribe/TribeHeader";
 import TribePostCard, { type TribePostCardPost } from "@/components/TribePostCard";
 import { useModeration } from "@/hooks/use-moderation";
 import TierUsername from "@/components/TierUsername";
@@ -580,251 +583,43 @@ const TribeDetail = () => {
       )}
 
       {/* Cinematic Apex header */}
-      <div className="relative rounded-2xl mb-4 p-[2px] apex-conic-border overflow-hidden">
-        <div className="relative rounded-2xl p-5 overflow-hidden bg-gradient-to-br from-[hsl(18_95%_58%)]/15 via-card/85 to-[hsl(var(--gold))]/10 apex-aura-large apex-spotlight apex-embers apex-shimmer-sweep apex-portal-glow">
-          {/* Cover photo background — owner-uploaded, dimmed for legibility */}
-          {tribe.cover_url && (
-            <div className="absolute inset-0 pointer-events-none">
-              <img
-                src={tribe.cover_url}
-                alt=""
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-cover opacity-35"
-                style={{ transform: `translateY(${parallax * 0.5}px) scale(1.05)` }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/55 to-background/85" />
-            </div>
-          )}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-60"
-            style={{
-              transform: `translateY(${parallax}px)`,
-              background: "radial-gradient(ellipse at top, hsl(18 95% 58% / 0.18), transparent 70%)",
-            }}
-          />
-          <div className="relative z-10">
-            <div className="flex items-start gap-3">
-              <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-[hsl(18_95%_58%)]/35 via-gold/20 to-[hsl(18_95%_58%)]/25 border border-[hsl(18_95%_58%)]/55 flex items-center justify-center shrink-0 shadow-[0_0_22px_hsl(18_95%_58%/0.5)]">
-                <Crown size={26} className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_8px_hsl(18_95%_58%/0.9)]" strokeWidth={2.4} />
-                <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border-2 border-background flex items-center justify-center shadow-[0_0_10px_hsl(18_95%_58%/0.9)] animate-pulse">
-                  <Zap size={10} className="text-background" strokeWidth={3.2} fill="currentColor" />
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/40 backdrop-blur-sm border border-[hsl(18_95%_58%)]/50 mb-1.5">
-                  <span className="text-[9px] font-black tracking-widest uppercase bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
-                    {tribe.is_paused ? "Paused Tribe" : "Apex Tribe"}
-                  </span>
-                </div>
-                {/* TRIBE NAME — biggest text on the page, gradient, unmissable */}
-                <h1
-                  className="font-display font-black text-3xl leading-[1.05] tracking-tight bg-gradient-to-br from-foreground via-[hsl(42_78%_75%)] to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_2px_14px_hsl(18_95%_58%/0.45)] break-words"
-                  style={tribe.is_paused ? { filter: "grayscale(0.5)", opacity: 0.85 } : undefined}
-                >
-                  {tribe.name}
-                </h1>
-                {(() => {
-                  const founder = members.find((m) => m.role === "owner");
-                  if (!founder) return null;
-                  return (
-                    <button
-                      onClick={() => navigate(`/user/${founder.user_id}`)}
-                      className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-gold/20 to-[hsl(18_95%_58%)]/15 border border-gold/45 hover:from-gold/25 transition-colors"
-                    >
-                      <Crown size={9} className="text-gold" strokeWidth={2.8} fill="currentColor" />
-                      <span className="text-[9px] font-black tracking-widest uppercase text-gold">Founder</span>
-                      <TierUsername
-                        username={founder.username}
-                        tier={founder.status_tier || "recruit"}
-                        className="text-[10px] font-bold truncate max-w-[120px]"
-                      />
-                    </button>
-                  );
-                })()}
-                {tribe.description && (
-                  <p className="text-xs text-foreground/75 mt-1 leading-snug">{tribe.description}</p>
-                )}
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[hsl(18_95%_58%)]/12 border border-[hsl(18_95%_58%)]/30">
-                    <Users size={10} className="text-[hsl(18_95%_58%)]" />
-                    <span className="text-[10px] font-bold tabular-nums text-[hsl(18_95%_58%)]">
-                      {tribe.member_count} member{tribe.member_count === 1 ? "" : "s"}
-                    </span>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Paused banner — owner lost Apex; offer Apex member to claim */}
-            {tribe.is_paused && (
-              <div className="mt-4 rounded-xl border border-muted-foreground/30 bg-gradient-to-br from-secondary/30 via-card/70 to-secondary/20 p-3">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-muted-foreground/15 border border-muted-foreground/40">
-                    <Crown size={12} className="text-muted-foreground" />
-                  </span>
-                  <p className="text-[11px] font-black tracking-widest uppercase text-muted-foreground">
-                    Tribe paused
-                  </p>
-                </div>
-                <p className="text-[12px] text-foreground/80 leading-snug">
-                  The founder is no longer Apex. The fire is on hold until a new <span className="font-black text-[hsl(18_95%_58%)]">Apex member</span> takes over leadership.
-                </p>
-                {isMember &&
-                  ((profile as any)?.is_apex_subscriber === true ||
-                    profile?.status_tier === "apex" ||
-                    profile?.status_tier === "legend") && (
-                    <Button
-                      size="sm"
-                      variant="magma"
-                      className="mt-3 w-full"
-                      onClick={async () => {
-                        const { error } = await supabase.rpc("claim_paused_tribe" as any, { p_tribe_id: id });
-                        if (error) { toast.error(error.message); return; }
-                        toast.success(`You now lead ${tribe.name} — fire revived 🔥`);
-                        load();
-                      }}
-                    >
-                      <Crown size={13} /> Claim leadership & revive
-                    </Button>
-                  )}
-              </div>
-            )}
-
-            <button
-              onClick={() => navigate(`/tribes/${id}/battles`)}
-              className="mt-4 w-full rounded-xl border border-[hsl(18_95%_58%)]/45 bg-gradient-to-r from-[hsl(18_95%_58%)]/[0.10] to-gold/[0.06] hover:from-[hsl(18_95%_58%)]/15 hover:to-gold/10 transition-all p-2.5 flex items-center gap-2.5 text-left"
-            >
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold flex items-center justify-center shrink-0 shadow-[0_0_10px_hsl(18_95%_58%/0.5)]">
-                <Swords size={14} className="text-background" strokeWidth={2.6} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] uppercase tracking-widest font-black bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
-                  Tribe Battles
-                </p>
-                <p className="text-[10px] text-muted-foreground truncate">
-                  Challenge another tribe to a collective XP battle
-                </p>
-              </div>
-              <ArrowLeft size={14} className="text-muted-foreground rotate-180" />
-            </button>
-
-            {isOwner && pendingCount > 0 && (
-              <button
-                onClick={() => setPendingOpen(true)}
-                className="mt-3 w-full rounded-xl border border-gold/45 bg-gradient-to-r from-gold/15 to-[hsl(18_95%_58%)]/10 hover:from-gold/20 transition-all p-2.5 flex items-center gap-2.5 text-left"
-              >
-                <div className="h-8 w-8 rounded-lg bg-gold/25 border border-gold/40 flex items-center justify-center shrink-0">
-                  <UserCheck size={14} className="text-gold" strokeWidth={2.6} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] uppercase tracking-widest font-black text-gold">Pending requests</p>
-                  <p className="text-[10px] text-muted-foreground truncate">
-                    {pendingCount} {pendingCount === 1 ? "person wants" : "people want"} to join
-                  </p>
-                </div>
-                <span className="text-xs font-black tabular-nums text-gold">{pendingCount}</span>
-              </button>
-            )}
-
-            {isOwner && reportedCount > 0 && (
-              <button
-                onClick={() => setReportsOpen(true)}
-                className="mt-3 w-full rounded-xl border border-destructive/45 bg-gradient-to-r from-destructive/15 to-destructive/5 hover:from-destructive/20 transition-all p-2.5 flex items-center gap-2.5 text-left"
-              >
-                <div className="h-8 w-8 rounded-lg bg-destructive/25 border border-destructive/40 flex items-center justify-center shrink-0">
-                  <ShieldAlert size={14} className="text-destructive" strokeWidth={2.6} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] uppercase tracking-widest font-black text-destructive">Reported posts</p>
-                  <p className="text-[10px] text-muted-foreground truncate">
-                    {reportedCount} {reportedCount === 1 ? "post needs" : "posts need"} your review
-                  </p>
-                </div>
-                <span className="text-xs font-black tabular-nums text-destructive">{reportedCount}</span>
-              </button>
-            )}
-
-            <div className="flex gap-2 mt-3">
-              {!isMember ? (
-                <Button onClick={handleJoin} size="sm" variant="ember" className="flex-1">
-                  Join Tribe
-                </Button>
-              ) : isOwner ? (
-                <>
-                  <Button onClick={() => setManageOpen(true)} size="sm" variant="gold-outline"
-                    className="flex-1">
-                    <Settings size={14} /> Manage
-                  </Button>
-                  <Button onClick={() => setInviteOpen(true)} size="sm" variant="ember-outline"
-                    className="flex-1">
-                    <UserPlus size={14} /> Invite
-                  </Button>
-                  <Button onClick={handleDelete} variant="destructive" size="sm" className="px-3">
-                    <Trash2 size={14} />
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button onClick={() => setInviteOpen(true)} size="sm" variant="ember-outline"
-                    className="flex-1">
-                    <UserPlus size={14} /> Invite
-                  </Button>
-                  <Button onClick={handleLeave} variant="ember-outline" size="sm" className="flex-1 opacity-80 hover:opacity-100">
-                    <LogOut size={14} /> Leave
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      <TribeHeader
+        tribe={tribe}
+        parallax={parallax}
+        members={members}
+        isMember={isMember}
+        isOwner={isOwner}
+        canClaim={
+          isMember &&
+          ((profile as any)?.is_apex_subscriber === true ||
+            profile?.status_tier === "apex" ||
+            profile?.status_tier === "legend")
+        }
+        pendingCount={pendingCount}
+        reportedCount={reportedCount}
+        onNavigateUser={(uid) => navigate(`/user/${uid}`)}
+        onNavigateBattles={() => navigate(`/tribes/${id}/battles`)}
+        onClaim={async () => {
+          const { error } = await supabase.rpc("claim_paused_tribe" as any, { p_tribe_id: id });
+          if (error) { toast.error(error.message); return; }
+          toast.success(`You now lead ${tribe.name} — fire revived 🔥`);
+          load();
+        }}
+        onOpenPending={() => setPendingOpen(true)}
+        onOpenReports={() => setReportsOpen(true)}
+        onJoin={handleJoin}
+        onManage={() => setManageOpen(true)}
+        onInvite={() => setInviteOpen(true)}
+        onDelete={handleDelete}
+        onLeave={handleLeave}
+      />
 
 
 
       {/* (Hero flame moved to top of page) */}
 
       {/* Members row */}
-      {members.length > 0 && (
-        <div className="mb-4">
-          <h2 className="text-[10px] font-black tracking-widest uppercase text-muted-foreground mb-2">
-            Members · {members.length}
-          </h2>
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar">
-            {members.map((m) => (
-              <button key={m.user_id} onClick={() => navigate(`/user/${m.user_id}`)}
-                className="flex flex-col items-center gap-1 shrink-0 w-14">
-                <div className={`relative h-12 w-12 rounded-full border-2 ${m.role === "owner" ? "border-gold shadow-[0_0_12px_hsl(42_78%_54%/0.6)]" : "border-[hsl(18_95%_58%)]/30"} bg-secondary overflow-hidden`}>
-                  {m.avatar_url ? (
-                    <img loading="lazy" decoding="async" src={m.avatar_url} alt={m.username} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
-                      {m.username.slice(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                  {m.role === "owner" && (
-                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-1 py-px rounded-sm bg-gradient-to-r from-gold to-[hsl(18_95%_58%)] shadow-[0_0_6px_hsl(42_78%_54%/0.7)] flex items-center gap-0.5">
-                      <Crown size={6} className="text-background" strokeWidth={3} fill="currentColor" />
-                      <span className="text-[6px] font-black tracking-wider uppercase text-background leading-none">Founder</span>
-                    </div>
-                  )}
-                  {m.role === "admin" && (
-                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1 py-px rounded-sm bg-[hsl(18_95%_58%)]/90">
-                      <Shield size={6} className="text-background" />
-                    </div>
-                  )}
-                </div>
-                <TierUsername
-                  username={m.username}
-                  tier={m.status_tier || "recruit"}
-                  showAt={false}
-                  className={`text-[9px] truncate w-full text-center ${m.role === "owner" ? "font-black" : ""}`}
-                />
-              </button>
-            ))}
-          </div>
-          <div className="apex-divider mt-3" />
-        </div>
-      )}
+      <TribeMembersRow members={members} onMemberClick={(uid) => navigate(`/user/${uid}`)} />
 
       {/* Meetups & events — the show-up-together loop */}
       {id && (
@@ -833,85 +628,22 @@ const TribeDetail = () => {
 
       {/* Composer with media */}
       {isMember && (
-        <div className="mb-4 rounded-2xl p-3 border border-[hsl(18_95%_58%)]/25 bg-card/70">
-          <Textarea
-            value={composer}
-            onChange={(e) => setComposer(e.target.value)}
-            placeholder="Share with your tribe…"
-            rows={3}
-            maxLength={500}
-            className="border-0 bg-transparent focus-visible:ring-0 resize-none"
-          />
-
-          {/* Image preview */}
-          {imagePreview && (
-            <div className="relative mt-2 rounded-xl overflow-hidden">
-              <img loading="lazy" decoding="async" src={imagePreview} alt="Preview" className="w-full max-h-56 object-cover" />
-              <button onClick={() => { setImageFile(null); setImagePreview(null); }}
-                className="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80">
-                <X size={14} />
-              </button>
-            </div>
-          )}
-
-          {/* Video preview */}
-          {videoPreview && (
-            <div className="relative mt-2 rounded-xl overflow-hidden bg-black">
-              <video src={videoPreview} controls className="w-full max-h-56 object-contain" />
-              <button onClick={() => { setVideoFile(null); setVideoPreview(null); }}
-                className="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80">
-                <X size={14} />
-              </button>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-1">
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-                hidden
-                onChange={handleImageSelect}
-              />
-              <input
-                ref={videoInputRef}
-                type="file"
-                accept="video/mp4,video/webm,video/quicktime"
-                hidden
-                onChange={handleVideoSelect}
-              />
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={posting || !!videoFile}
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-[hsl(18_95%_58%)] hover:bg-[hsl(18_95%_58%)]/10 transition-colors disabled:opacity-40"
-                aria-label="Add image"
-              >
-                <ImageIcon size={16} />
-              </button>
-              <button
-                type="button"
-                onClick={() => videoInputRef.current?.click()}
-                disabled={posting || !!imageFile}
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-[hsl(18_95%_58%)] hover:bg-[hsl(18_95%_58%)]/10 transition-colors disabled:opacity-40"
-                aria-label="Add video"
-              >
-                <VideoIcon size={16} />
-              </button>
-              <span className="text-[10px] text-muted-foreground ml-1">{composer.length}/500</span>
-            </div>
-            <Button
-              onClick={handlePost}
-              size="sm"
-              disabled={posting || (!composer.trim() && !imageFile && !videoFile)}
-              className="bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-bold"
-            >
-              {posting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-              Post
-            </Button>
-          </div>
-        </div>
+        <TribeComposer
+          value={composer}
+          onChange={setComposer}
+          imagePreview={imagePreview}
+          videoPreview={videoPreview}
+          onClearImage={() => { setImageFile(null); setImagePreview(null); }}
+          onClearVideo={() => { setVideoFile(null); setVideoPreview(null); }}
+          fileRef={fileRef}
+          videoInputRef={videoInputRef}
+          onImageSelect={handleImageSelect}
+          onVideoSelect={handleVideoSelect}
+          posting={posting}
+          hasImage={!!imageFile}
+          hasVideo={!!videoFile}
+          onPost={handlePost}
+        />
       )}
 
       {/* Posts */}

@@ -3,6 +3,8 @@ import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitComp
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { isNativePlatform } from "@/lib/platform";
 import StatCard from "@/components/StatCard";
+import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
+import ProfileHero from "@/components/profile/ProfileHero";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeVault from "@/components/BadgeVault";
 import BadgeShowcase from "@/components/BadgeShowcase";
@@ -405,152 +407,23 @@ const Profile = () => {
       
 
       {/* Profile Header — cinematic hero card, themed by tier */}
-      <div className={cn(
-        "animate-reveal relative mb-6 overflow-hidden rounded-3xl border p-6 pt-10 pb-7",
-        heroBgClass,
-      )}>
-        {/* Top vignette glow */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[160%] h-64 blur-3xl opacity-70"
-          style={{ background: heroTopGlowStyle }}
-        />
-        {/* Top accent line */}
-        <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
-
-        <div className="relative flex flex-col items-center text-center">
-          {/* Avatar — large, gold ring, soft glow, camera/crown badge */}
-          <div className="relative mb-5">
-            <input
-              ref={avatarInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleAvatarUpload}
-            />
-            <div className="absolute inset-0 -m-3 rounded-full bg-gold/35 blur-2xl" aria-hidden />
-            {profile.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt={profile.username}
-                decoding="async"
-                className="relative h-32 w-32 rounded-full object-cover ring-2 ring-gold ring-offset-4 ring-offset-background"
-              />
-            ) : (
-              <div className="relative h-32 w-32 rounded-full gradient-gold flex items-center justify-center text-5xl font-black font-display text-primary-foreground ring-2 ring-gold ring-offset-4 ring-offset-background">
-                {profile.username?.charAt(0)?.toUpperCase()}
-              </div>
-            )}
-            {isElite ? (
-              <button
-                onClick={() => avatarInputRef.current?.click()}
-                disabled={uploadingAvatar}
-                className="absolute -bottom-1 -right-1 h-10 w-10 rounded-full bg-background border border-gold/40 flex items-center justify-center transition-all hover:bg-gold/10 active:scale-95 shadow-lg shadow-gold/20"
-              >
-                {uploadingAvatar ? (
-                  <span className="text-[10px] text-gold animate-pulse">...</span>
-                ) : (
-                  <Camera size={16} className="text-gold" />
-                )}
-              </button>
-            ) : (
-              <div className="absolute -bottom-1 -right-1 h-10 w-10 rounded-full bg-background border border-gold/40 flex items-center justify-center shadow-lg shadow-gold/20">
-                <Crown size={18} className="text-gold" />
-              </div>
-            )}
-          </div>
-
-          {/* PREMIUM ribbon — only for Founding Apex subscribers */}
-          {isApexSubscriber && (
-            <div className="mt-4 mb-1 flex justify-center">
-              <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm text-[10px] font-black uppercase tracking-[0.22em] bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold shadow-[0_0_14px_hsl(var(--gold)/0.55)]">
-                <Crown size={11} strokeWidth={3} />
-                Premium · Day-One
-              </span>
-            </div>
-          )}
-
-          {/* Username — colored by status tier */}
-          <h1 className={cn(
-            "font-display text-[34px] leading-none font-black tracking-tight",
-            getTierUsernameClass(profile.status_tier || 'recruit'),
-          )}>
-            @{profile.username}
-          </h1>
-
-          {/* MASSIVE status nameplate — the loudest element on the page */}
-          <div className="mt-5 w-full">
-            <StatusNameplate
-              tier={tier}
-              rank={rankData?.rank ?? undefined}
-              totalUsers={rankData?.totalUsers}
-              percentile={rankData?.percentile}
-              ranked={rankData?.hasRank ?? false}
-              size="lg"
-            />
-          </div>
-
-          {/* Status pills — Apex/Legend supersede Elite (no duplicate badges) */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
-            {profile.status_tier === 'apex' ? (
-              <ApexBadge isFounding={isApexSubscriber} size="md" />
-            ) : profile.status_tier === 'legend' ? (
-              <ApexBadge tier="legend" size="md" />
-            ) : isElite ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
-                <Crown size={12} className="text-gold" />
-                <span className="text-[11px] font-black text-gold tracking-wider uppercase">Elite</span>
-              </span>
-            ) : null}
-            <span className="inline-flex items-center px-3 py-1.5 rounded-full">
-              <span className="text-[11px] font-black tracking-wider text-muted-foreground/80 uppercase">
-                Level {profile.level}
-              </span>
-            </span>
-            {championHistory && championHistory.wins > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
-                <Trophy size={12} className="text-gold" />
-                <span className="text-[11px] font-black text-gold tracking-wider uppercase">Season Champion</span>
-              </span>
-            )}
-          </div>
-
-          {/* Hero XP — massive */}
-          <div className="mt-6 flex flex-col items-center">
-            <p className="font-display font-black text-[64px] leading-none text-gold drop-shadow-[0_0_24px_hsl(42_78%_54%/0.55)] tabular-nums">
-              {(profile.xp ?? 0).toLocaleString().replace(/,/g, " ")}
-            </p>
-            <p className="text-[10px] font-black tracking-[0.32em] text-gold/70 mt-2">TOTAL XP</p>
-          </div>
-
-          {/* Tier message — italic, subtle */}
-          <p className="text-sm text-muted-foreground/70 font-medium italic mt-5 max-w-[280px]">
-            {tierConfig.message}
-          </p>
-
-          {/* Featured badge title (kept, subtle, only if set) */}
-          {featuredBadge && (
-            <span className="mt-4 flex items-center gap-1.5 bg-gold/10 px-2.5 py-1 rounded-full border border-gold/30">
-              <span className="text-sm">{featuredBadge.icon}</span>
-              <span className="font-bold text-gold text-[10px] tracking-wider uppercase">{featuredBadge.name}</span>
-            </span>
-          )}
-
-          {/* Badge row — circular icons, like the reference */}
-          {earnedBadges && earnedBadges.length > 0 && (
-            <div className="mt-7 w-full">
-              <BadgeShowcase
-                badges={earnedBadges}
-                totalEarned={earnedBadges.length}
-                onBadgeClick={(b) => setPreviewBadge(b)}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Bottom accent line */}
-        <div className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
-      </div>
+      <ProfileHero
+        profile={profile}
+        isElite={isElite}
+        isApexSubscriber={isApexSubscriber}
+        uploadingAvatar={uploadingAvatar}
+        avatarInputRef={avatarInputRef}
+        onAvatarUpload={handleAvatarUpload}
+        heroBgClass={heroBgClass}
+        heroTopGlowStyle={heroTopGlowStyle}
+        tier={tier}
+        rankData={rankData}
+        championHistory={championHistory}
+        tierMessage={tierConfig.message}
+        featuredBadge={featuredBadge}
+        earnedBadges={earnedBadges}
+        onPreviewBadge={setPreviewBadge}
+      />
 
       <Tabs value={profileTab} onValueChange={(v) => setProfileTab(v as typeof profileTab)} className="w-full">
         <TabsList className="w-full grid grid-cols-3 h-auto p-1 mb-4">
@@ -615,33 +488,7 @@ const Profile = () => {
       {/* Weekly Sleep — recovery context / XP multiplier (moved here from Settings) */}
       {weeklySleep && (
         <div className="animate-reveal animate-reveal-delay-3">
-          <div className={cn(
-            "rounded-2xl border-2 p-5 glass-3d depth-realistic",
-            weeklySleep.multiplier >= 1 ? "border-emerald-500/50 shadow-emerald-500/20" :
-            weeklySleep.multiplier >= 0.85 ? "border-yellow-500/50 shadow-yellow-500/20" :
-            "border-red-500/50 shadow-red-500/20"
-          )}>
-            <div className="flex items-center gap-2 mb-3">
-              <Moon size={22} className={cn(
-                weeklySleep.multiplier >= 1 ? "text-emerald-400" :
-                weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
-              )} />
-              <h2 className="font-display font-black text-lg tracking-tight">Weekly Sleep</h2>
-              <span className="ml-auto text-base font-bold tabular-nums">
-                {weeklySleep.avg}h avg ({weeklySleep.days} days)
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-base">
-              <span className="text-muted-foreground font-semibold">XP Multiplier</span>
-              <span className={cn(
-                "font-display font-black text-2xl",
-                weeklySleep.multiplier >= 1 ? "text-emerald-400" :
-                weeklySleep.multiplier >= 0.85 ? "text-yellow-400" : "text-red-400"
-              )}>
-                {weeklySleep.multiplier >= 1 ? "100% ✓" : `${Math.round(weeklySleep.multiplier * 100)}% ⚠️`}
-              </span>
-            </div>
-          </div>
+          <WeeklySleepCard data={weeklySleep} />
         </div>
       )}
 

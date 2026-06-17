@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2, Users, Lock, Globe, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import TribeFlame from "@/components/tribe/TribeFlame";
 
 const TRIBE_ACTIVITIES = ["Run", "Gym", "Yoga", "Ride", "Swim", "Hike", "Combat", "Walk", "Other"];
 
@@ -76,19 +77,48 @@ const TribeNew = () => {
   };
 
   return (
-    <div className="min-h-full pb-8 px-4 pt-4">
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-1 text-xs text-muted-foreground mb-4"
-      >
-        <ArrowLeft size={14} /> Back
-      </button>
+    <div className="min-h-full pb-10 px-4 pt-3">
+      <div className="flex items-center gap-2 mb-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="h-9 w-9 rounded-full bg-card/70 border border-border/60 flex items-center justify-center text-muted-foreground active:scale-95 transition-transform"
+          aria-label="Back"
+        >
+          <ArrowLeft size={16} />
+        </button>
+        <h1 className="font-display text-base font-black tracking-tight">Create a Tribe</h1>
+      </div>
 
-      <h1 className="font-display text-2xl font-black mb-1">Create a Tribe</h1>
-      <p className="text-xs text-muted-foreground mb-6">
-        Open to everyone — start a tribe, pick what you do, and rally your people.
-        Members fuel the shared flame with their streaks and meetups.
-      </p>
+      {/* Live preview — the tribe takes shape as you type */}
+      <div className="relative rounded-3xl border border-gold/30 bg-gradient-to-b from-gold/[0.09] via-card/95 to-card overflow-hidden mb-5 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.5)]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{ background: "radial-gradient(ellipse 70% 60% at 50% 0%, hsl(42 78% 54% / 0.12) 0%, transparent 65%)" }}
+        />
+        <div className="relative flex flex-col items-center text-center px-5 pt-5 pb-5">
+          <TribeFlame size={96} intensity={0.7} hue={28} className="mb-1" />
+          <p className={cn(
+            "font-display text-xl font-black tracking-tight leading-tight",
+            name.trim() ? "text-foreground" : "text-muted-foreground/50",
+          )}>
+            {name.trim() || "Your tribe"}
+          </p>
+          <div className="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
+            {activity && (
+              <span className="text-[9px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5">
+                {activity}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-muted-foreground bg-secondary/40 border border-border/50 rounded-full px-2 py-0.5">
+              {visibility === "public" ? <><Globe size={9} /> Open</> : <><Lock size={9} /> Approval</>}
+            </span>
+          </div>
+          {description.trim() && (
+            <p className="text-[11px] text-muted-foreground leading-snug mt-2 max-w-[260px] line-clamp-2">{description.trim()}</p>
+          )}
+        </div>
+      </div>
 
       <div className="space-y-4">
         <div>

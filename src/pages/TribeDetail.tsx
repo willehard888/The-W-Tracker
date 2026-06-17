@@ -32,6 +32,7 @@ import TribeInviteModal from "@/components/TribeInviteModal";
 import TribePendingRequestsDialog from "@/components/TribePendingRequestsDialog";
 import TribeReportsDialog from "@/components/TribeReportsDialog";
 import TribeManageDialog from "@/components/TribeManageDialog";
+import TribeEvents from "@/components/tribe/TribeEvents";
 import TribePostCard, { type TribePostCardPost } from "@/components/TribePostCard";
 import { useModeration } from "@/hooks/use-moderation";
 import TierUsername from "@/components/TierUsername";
@@ -823,6 +824,11 @@ const TribeDetail = () => {
           </div>
           <div className="apex-divider mt-3" />
         </div>
+      )}
+
+      {/* Meetups & events — the show-up-together loop */}
+      {id && (
+        <TribeEvents tribeId={id} isMember={isMember} currentUserId={profile?.user_id} />
       )}
 
       {/* Composer with media */}

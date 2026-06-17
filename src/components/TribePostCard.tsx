@@ -23,29 +23,8 @@ import {
 
 const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
 
-type CommentNode = any & { children: CommentNode[]; depth: number };
-const MAX_VISUAL_DEPTH = 4;
-const buildCommentTree = (flat: any[] | undefined): CommentNode[] => {
-  if (!flat || flat.length === 0) return [];
-  const map = new Map<string, CommentNode>();
-  flat.forEach((c) => map.set(c.id, { ...c, children: [], depth: 0 }));
-  const roots: CommentNode[] = [];
-  map.forEach((node) => {
-    if (node.parent_id && map.has(node.parent_id)) {
-      const parent = map.get(node.parent_id)!;
-      node.depth = Math.min(parent.depth + 1, MAX_VISUAL_DEPTH);
-      parent.children.push(node);
-    } else {
-      roots.push(node);
-    }
-  });
-  const sortRec = (nodes: CommentNode[]) => {
-    nodes.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-    nodes.forEach((n) => sortRec(n.children));
-  };
-  sortRec(roots);
-  return roots;
-};
+// Comment-tree helpers are shared with EliteFeed — see src/lib/comment-tree.ts.
+import { buildCommentTree, MAX_VISUAL_DEPTH, type CommentNode } from "@/lib/comment-tree";
 
 const isEdited = (node: CommentNode) => {
   if (!node.updated_at || !node.created_at) return false;
@@ -416,6 +395,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             name={post.author?.username}
             tier={(post.author?.status_tier as any) || "recruit"}
             size="sm"
+            animated={false}
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">

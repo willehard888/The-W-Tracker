@@ -59,71 +59,20 @@ const buttonVariants = cva(
         // Primary — the clean orange-amber CTA (shared PRIMARY_EMBER look).
         default: PRIMARY_EMBER,
 
-        // Obsidian — dark metal escape hatch when gold is too loud (rare).
-        obsidian: [
-          "text-primary-foreground",
-          "[background:linear-gradient(180deg,hsl(258_16%_14%)_0%,hsl(258_18%_8%)_100%)]",
-          "shadow-[inset_0_0.5px_0_hsl(0_0%_100%/0.14),inset_0_1.5px_0_hsl(0_0%_100%/0.04),inset_0_0_18px_hsl(0_0%_0%/0.25),inset_0_-1px_0_hsl(0_0%_0%/0.45),0_1px_1px_hsl(0_0%_0%/0.35),0_6px_14px_-4px_hsl(0_0%_0%/0.45)]",
-          "hover:[background:linear-gradient(180deg,hsl(258_16%_16%)_0%,hsl(258_18%_10%)_100%)]",
-          "hover:shadow-[inset_0_0.5px_0_hsl(0_0%_100%/0.18),inset_0_1.5px_0_hsl(0_0%_100%/0.05),inset_0_0_20px_hsl(0_0%_0%/0.22),inset_0_-1px_0_hsl(0_0%_0%/0.5),0_2px_2px_hsl(0_0%_0%/0.4),0_10px_22px_-6px_hsl(0_0%_0%/0.55)]",
-          "active:[background:linear-gradient(0deg,hsl(258_16%_14%)_0%,hsl(258_18%_8%)_100%)]",
-          "active:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.6),inset_0_0_18px_hsl(0_0%_0%/0.3),0_1px_1px_hsl(0_0%_0%/0.3)]",
-        ].join(" "),
+        // Obsidian — flat dark surface.
+        obsidian: "bg-[hsl(258_16%_13%)] text-primary-foreground border border-border/60 hover:bg-[hsl(258_16%_16%)]",
 
-        // Destructive — red metal with vignette
-        destructive: [
-          "text-destructive-foreground",
-          "[background:linear-gradient(180deg,hsl(0_70%_32%)_0%,hsl(0_75%_22%)_100%)]",
-          "shadow-[inset_0_0.5px_0_hsl(0_90%_85%/0.35),inset_0_1.5px_0_hsl(0_90%_85%/0.08),inset_0_0_18px_hsl(0_60%_8%/0.3),inset_0_-1px_0_hsl(0_60%_10%/0.55),0_1px_1px_hsl(0_60%_10%/0.5),0_6px_14px_-4px_hsl(0_70%_30%/0.45)]",
-          "hover:[background:linear-gradient(180deg,hsl(0_72%_36%)_0%,hsl(0_78%_25%)_100%)]",
-          "hover:shadow-[inset_0_0.5px_0_hsl(0_90%_85%/0.4),inset_0_1.5px_0_hsl(0_90%_85%/0.1),inset_0_0_20px_hsl(0_60%_8%/0.25),inset_0_-1px_0_hsl(0_60%_10%/0.6),0_2px_2px_hsl(0_60%_10%/0.55),0_10px_22px_-6px_hsl(0_70%_32%/0.55)]",
-          "active:shadow-[inset_0_1px_2px_hsl(0_60%_10%/0.65),inset_0_0_18px_hsl(0_60%_8%/0.35),0_1px_1px_hsl(0_0%_0%/0.3)]",
-        ].join(" "),
+        // Destructive — flat solid red.
+        destructive: "bg-destructive text-destructive-foreground hover:brightness-110",
 
-        // Outline — premium ember-tinted glass with warm hairline border.
-        // Inherited by every existing `variant="outline"` callsite — entire app warms up automatically.
-        outline: [
-          "relative text-foreground overflow-hidden isolate",
-          "[background:linear-gradient(180deg,hsl(42_60%_46%/0.05)_0%,hsl(258_16%_6%)_100%)]",
-          "border border-transparent",
-          "[border-image:linear-gradient(180deg,hsl(var(--gold-soft)/0.55),hsl(18_95%_42%/0.32))_1]",
-          "shadow-[inset_0_1px_0_hsl(var(--gold)/0.10),inset_0_-1px_0_hsl(20_85%_8%/0.45),0_1px_2px_hsl(0_0%_0%/0.3)]",
-          // Hover: ember hairline + diagonal heat shimmer (GPU translate sweep)
-          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
-          "after:[background:linear-gradient(110deg,transparent_30%,hsl(var(--gold-light)/0.18)_50%,transparent_70%)]",
-          "after:opacity-0 after:transition-[transform,opacity] after:duration-[700ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
-          "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
-          "hover:text-[hsl(var(--gold-light))]",
-          "hover:[border-image:linear-gradient(180deg,hsl(var(--gold)/0.85),hsl(18_95%_50%/0.55))_1]",
-          "hover:[background:linear-gradient(180deg,hsl(42_60%_46%/0.10)_0%,hsl(258_16%_8%)_100%)]",
-          "hover:shadow-[inset_0_1px_0_hsl(var(--gold)/0.18),inset_0_-1px_0_hsl(20_85%_8%/0.5),0_2px_4px_hsl(0_0%_0%/0.3),0_6px_18px_-6px_hsl(var(--gold)/0.25)]",
-          "active:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.45)]",
-        ].join(" "),
+        // Outline — clean hairline, transparent (flat).
+        outline: "border border-border bg-transparent text-foreground hover:bg-secondary/40 hover:border-[hsl(var(--border-strong))]",
 
-        // Secondary — premium gold-glass panel.
-        // Inherited by ~175 existing `variant="secondary"` callsites — entire app auto-warms.
-        secondary: [
-          "relative text-secondary-foreground overflow-hidden isolate",
-          "[background:linear-gradient(180deg,hsl(258_16%_11%)_0%,hsl(258_16%_7%)_100%)]",
-          // Top gold hairline + bottom warm coal hairline + faint inner gold radiance
-          "shadow-[inset_0_1px_0_hsl(var(--gold)/0.16),inset_0_-1px_0_hsl(20_85%_6%/0.55),inset_0_-14px_30px_-18px_hsl(var(--gold-soft)/0.22),0_1px_2px_hsl(0_0%_0%/0.3)]",
-          "border border-[hsl(var(--gold)/0.12)]",
-          "hover:[background:linear-gradient(180deg,hsl(258_16%_13%)_0%,hsl(258_16%_8%)_100%)]",
-          "hover:border-[hsl(var(--gold)/0.32)]",
-          "hover:text-[hsl(var(--gold-light))]",
-          "hover:shadow-[inset_0_1px_0_hsl(var(--gold)/0.24),inset_0_-1px_0_hsl(20_85%_6%/0.6),inset_0_-14px_32px_-18px_hsl(var(--gold-soft)/0.32),0_3px_10px_-2px_hsl(0_0%_0%/0.4),0_8px_22px_-8px_hsl(var(--gold)/0.22)]",
-          "active:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.5)]",
-          "focus-visible:[animation:button-warm-rim-breathe_4s_ease-in-out_infinite]",
-        ].join(" "),
+        // Secondary — flat translucent surface (Whoop/Apple-style, no glass/glint).
+        secondary: "bg-secondary text-secondary-foreground border border-border/60 hover:bg-secondary/80",
 
-        // Ghost — transparent with gold lift on hover
-        ghost: [
-          "text-foreground",
-          "hover:bg-[hsl(var(--gold)/0.06)]",
-          "hover:text-[hsl(var(--gold-light))]",
-          "hover:shadow-[inset_0_1px_0_hsl(var(--gold)/0.12),inset_0_-1px_0_hsl(var(--gold-soft)/0.35)]",
-          "active:bg-[hsl(var(--gold)/0.10)]",
-        ].join(" "),
+        // Ghost — transparent, subtle neutral hover.
+        ghost: "text-foreground hover:bg-secondary/60",
 
         // Link — gold-soft → gold
         link: "text-[hsl(var(--gold-soft))] underline-offset-4 hover:text-[hsl(var(--gold))] hover:underline",
@@ -131,70 +80,23 @@ const buttonVariants = cva(
         // Gold — alias of the primary ember CTA
         gold: PRIMARY_EMBER,
 
-        // Gold outline — hairline gold-soft, fills on hover
-        "gold-outline": [
-          "text-[hsl(var(--gold))] font-semibold",
-          "border border-[hsl(var(--gold-soft)/0.5)]",
-          "bg-[hsl(var(--gold)/0.04)]",
-          "shadow-[inset_0_1px_0_hsl(var(--gold)/0.08)]",
-          "hover:bg-[hsl(var(--gold)/0.12)] hover:border-[hsl(var(--gold)/0.7)]",
-          "hover:shadow-[inset_0_1px_0_hsl(var(--gold)/0.18),0_4px_12px_-4px_hsl(var(--gold)/0.25)]",
-          "active:bg-[hsl(var(--gold)/0.08)]",
-        ].join(" "),
+        // Gold outline — clean gold hairline, fills lightly on hover.
+        "gold-outline": "border border-[hsl(var(--gold)/0.4)] text-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.04)] font-semibold hover:bg-[hsl(var(--gold)/0.1)] hover:border-[hsl(var(--gold)/0.6)]",
 
-        // Glass — surface-glass + saturate filter
-        glass: [
-          "text-foreground",
-          "backdrop-blur-xl backdrop-saturate-150",
-          "[background:linear-gradient(180deg,hsl(0_0%_100%/0.06)_0%,hsl(0_0%_100%/0.02)_100%)]",
-          "border border-white/10",
-          "shadow-[inset_0_1px_0_hsl(0_0%_100%/0.1),0_2px_8px_-2px_hsl(0_0%_0%/0.4),0_8px_24px_-8px_hsl(0_0%_0%/0.5)]",
-          "hover:[background:linear-gradient(180deg,hsl(0_0%_100%/0.09)_0%,hsl(0_0%_100%/0.03)_100%)]",
-          "hover:border-white/15",
-          "active:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.4)]",
-        ].join(" "),
+        // Glass — restrained frosted surface (no heavy glow).
+        glass: "text-foreground bg-white/[0.04] border border-white/10 backdrop-blur-md hover:bg-white/[0.07]",
 
-        // Tier — uses --tier-color / --tier-color-deep CSS vars; defaults to gold
-        tier: [
-          "text-primary-foreground font-bold tracking-[-0.005em]",
-          "[--tier-color:var(--gold)] [--tier-color-deep:var(--gold-dark)]",
-          "[background:linear-gradient(180deg,hsl(var(--tier-color)/0.95)_0%,hsl(var(--tier-color)/0.75)_45%,hsl(var(--tier-color-deep)/0.85)_100%)]",
-          "shadow-[inset_0_0.5px_0_hsl(0_0%_100%/0.55),inset_0_1.5px_0_hsl(0_0%_100%/0.12),inset_0_-8px_18px_-8px_hsl(var(--tier-color-deep)/0.55),inset_0_-1px_0_hsl(0_0%_0%/0.45),0_1px_1px_hsl(0_0%_0%/0.4),0_8px_20px_-6px_hsl(var(--tier-color)/0.45)]",
-          "hover:brightness-[1.06]",
-          "hover:shadow-[inset_0_0.5px_0_hsl(0_0%_100%/0.65),inset_0_1.5px_0_hsl(0_0%_100%/0.15),inset_0_-8px_20px_-8px_hsl(var(--tier-color-deep)/0.6),inset_0_-1px_0_hsl(0_0%_0%/0.45),0_2px_2px_hsl(0_0%_0%/0.45),0_12px_28px_-8px_hsl(var(--tier-color)/0.55)]",
-          "active:shadow-[inset_0_2px_4px_hsl(0_0%_0%/0.55),inset_0_-6px_14px_-6px_hsl(var(--tier-color-deep)/0.5),0_1px_1px_hsl(0_0%_0%/0.25)]",
-        ].join(" "),
+        // Tier — flat gold fill (uses --tier-color var; defaults to gold).
+        tier: "text-primary-foreground font-bold [--tier-color:var(--gold)] [background:hsl(var(--tier-color))] hover:brightness-105",
 
-        // Success — green metal
-        success: [
-          "text-primary-foreground font-semibold",
-          "[background:linear-gradient(180deg,hsl(140_55%_38%)_0%,hsl(140_60%_26%)_100%)]",
-          "shadow-[inset_0_0.5px_0_hsl(140_80%_85%/0.35),inset_0_1.5px_0_hsl(140_80%_85%/0.08),inset_0_-8px_16px_-8px_hsl(140_70%_15%/0.5),inset_0_-1px_0_hsl(140_60%_10%/0.55),0_1px_1px_hsl(140_60%_10%/0.45),0_6px_14px_-4px_hsl(140_60%_28%/0.45)]",
-          "hover:brightness-[1.05]",
-          "hover:shadow-[inset_0_0.5px_0_hsl(140_80%_85%/0.4),inset_0_1.5px_0_hsl(140_80%_85%/0.1),inset_0_-8px_18px_-8px_hsl(140_70%_15%/0.55),inset_0_-1px_0_hsl(140_60%_10%/0.6),0_2px_2px_hsl(140_60%_10%/0.5),0_10px_22px_-6px_hsl(140_60%_28%/0.55)]",
-          "active:shadow-[inset_0_2px_4px_hsl(140_60%_10%/0.6),inset_0_-6px_12px_-6px_hsl(140_70%_12%/0.45),0_1px_1px_hsl(0_0%_0%/0.25)]",
-        ].join(" "),
+        // Success — flat green.
+        success: "text-white font-semibold bg-[hsl(140_52%_36%)] hover:brightness-105",
 
-        // Warning — amber metal for risky actions
-        warning: [
-          "text-primary-foreground font-semibold",
-          "[background:linear-gradient(180deg,hsl(38_90%_52%)_0%,hsl(38_80%_38%)_100%)]",
-          "shadow-[inset_0_0.5px_0_hsl(38_100%_88%/0.45),inset_0_1.5px_0_hsl(38_100%_88%/0.1),inset_0_-8px_16px_-8px_hsl(28_85%_22%/0.5),inset_0_-1px_0_hsl(28_60%_14%/0.55),0_1px_1px_hsl(28_60%_14%/0.45),0_6px_14px_-4px_hsl(38_70%_36%/0.45)]",
-          "hover:brightness-[1.05]",
-          "hover:shadow-[inset_0_0.5px_0_hsl(38_100%_88%/0.55),inset_0_1.5px_0_hsl(38_100%_88%/0.12),inset_0_-8px_18px_-8px_hsl(28_85%_22%/0.55),inset_0_-1px_0_hsl(28_60%_14%/0.6),0_2px_2px_hsl(28_60%_14%/0.5),0_10px_22px_-6px_hsl(38_70%_36%/0.55)]",
-          "active:shadow-[inset_0_2px_4px_hsl(28_60%_14%/0.6),inset_0_-6px_12px_-6px_hsl(28_85%_18%/0.45),0_1px_1px_hsl(0_0%_0%/0.25)]",
-        ].join(" "),
+        // Warning — flat amber.
+        warning: "text-[hsl(24_80%_12%)] font-semibold bg-[hsl(38_86%_52%)] hover:brightness-105",
 
-        // Danger outline — hairline destructive, transparent base
-        "danger-outline": [
-          "text-[hsl(var(--destructive))] font-semibold",
-          "border border-[hsl(var(--destructive)/0.5)]",
-          "bg-[hsl(var(--destructive)/0.04)]",
-          "shadow-[inset_0_1px_0_hsl(var(--destructive)/0.08)]",
-          "hover:bg-[hsl(var(--destructive)/0.12)] hover:border-[hsl(var(--destructive)/0.7)]",
-          "hover:shadow-[inset_0_1px_0_hsl(var(--destructive)/0.18),0_4px_12px_-4px_hsl(var(--destructive)/0.25)]",
-          "active:bg-[hsl(var(--destructive)/0.08)]",
-        ].join(" "),
+        // Danger outline — clean destructive hairline, transparent base.
+        "danger-outline": "border border-[hsl(var(--destructive)/0.5)] text-[hsl(var(--destructive))] bg-[hsl(var(--destructive)/0.04)] font-semibold hover:bg-[hsl(var(--destructive)/0.1)] hover:border-[hsl(var(--destructive)/0.7)]",
 
         // Ember — the tribes/fire signature CTA. Now the shared primary look.
         ember: PRIMARY_EMBER,

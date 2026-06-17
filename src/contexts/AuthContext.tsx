@@ -230,9 +230,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 
     // Then hydrate the persisted session for the first paint.
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      void applySession(session);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        void applySession(session);
+      })
+      .catch((e) => {
+        // Cold-start network failure: don't leave an unhandled rejection or a
+        // stuck splash — render the app shell. onAuthStateChange will still
+        // deliver the real session if/when it arrives.
+        console.error("[Auth] getSession failed on cold start — rendering shell:", e);
+        void applySession(null);
+      });
 
     return () => {
       active = false;

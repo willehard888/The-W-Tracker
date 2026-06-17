@@ -78,9 +78,9 @@ const TribeFireLite = ({ tier, accent, size = 200, className }: Props) => {
         className="absolute inset-x-0 bottom-0 pointer-events-none"
         style={{
           height: size * 0.6,
-          background: `radial-gradient(ellipse 80% 60% at 50% 100%, ${accent.replace(")", " / 0.45)")} 0%, ${accent.replace(")", " / 0.15)")} 35%, transparent 70%)`,
-          filter: "blur(8px)",
-          opacity: 0.6 + tierBoost * 0.4,
+          background: `radial-gradient(ellipse 80% 60% at 50% 100%, ${accent.replace(")", " / 0.28)")} 0%, ${accent.replace(")", " / 0.09)")} 38%, transparent 72%)`,
+          filter: "blur(10px)",
+          opacity: 0.45 + tierBoost * 0.3,
         }}
       />
 
@@ -99,22 +99,22 @@ const TribeFireLite = ({ tier, accent, size = 200, className }: Props) => {
         <defs>
           {/* Per-flame vertical gradients — deep red base → hot tip */}
           <linearGradient id="tfl-back" x1="50%" y1="100%" x2="50%" y2="0%">
-            <stop offset="0%"  stopColor="hsl(8 90% 38%)" stopOpacity="0.92" />
-            <stop offset="40%" stopColor={innerHot} stopOpacity="0.85" />
-            <stop offset="80%" stopColor={innerWarm} stopOpacity="0.75" />
-            <stop offset="100%" stopColor="hsl(42 100% 70%)" stopOpacity="0.6" />
+            <stop offset="0%"  stopColor="hsl(10 76% 36%)" stopOpacity="0.85" />
+            <stop offset="40%" stopColor={innerHot} stopOpacity="0.78" />
+            <stop offset="80%" stopColor={innerWarm} stopOpacity="0.68" />
+            <stop offset="100%" stopColor="hsl(42 82% 66%)" stopOpacity="0.5" />
           </linearGradient>
           <linearGradient id="tfl-mid" x1="50%" y1="100%" x2="50%" y2="0%">
-            <stop offset="0%"  stopColor="hsl(6 95% 42%)" stopOpacity="1" />
-            <stop offset="35%" stopColor={innerHot} stopOpacity="0.95" />
-            <stop offset="75%" stopColor="hsl(42 100% 68%)" stopOpacity="0.92" />
-            <stop offset="100%" stopColor="hsl(54 100% 88%)" stopOpacity="0.7" />
+            <stop offset="0%"  stopColor="hsl(8 80% 40%)" stopOpacity="0.95" />
+            <stop offset="35%" stopColor={innerHot} stopOpacity="0.9" />
+            <stop offset="75%" stopColor="hsl(42 84% 62%)" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="hsl(50 82% 82%)" stopOpacity="0.62" />
           </linearGradient>
           <linearGradient id="tfl-front" x1="50%" y1="100%" x2="50%" y2="0%">
-            <stop offset="0%"  stopColor="hsl(8 100% 48%)" stopOpacity="1" />
-            <stop offset="30%" stopColor="hsl(28 100% 58%)" stopOpacity="1" />
-            <stop offset="65%" stopColor="hsl(48 100% 72%)" stopOpacity="0.96" />
-            <stop offset="100%" stopColor="hsl(58 100% 92%)" stopOpacity="0.8" />
+            <stop offset="0%"  stopColor="hsl(10 84% 46%)" stopOpacity="0.96" />
+            <stop offset="30%" stopColor="hsl(28 86% 54%)" stopOpacity="0.96" />
+            <stop offset="65%" stopColor="hsl(46 86% 66%)" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="hsl(54 82% 86%)" stopOpacity="0.7" />
           </linearGradient>
           {/* Ember gradient — bright warm core */}
           <radialGradient id="tfl-ember">
@@ -162,21 +162,20 @@ const TribeFireLite = ({ tier, accent, size = 200, className }: Props) => {
       {/* Scoped keyframes — only this component pays for them */}
       <style>{`
         @keyframes tfl-sway-back {
-          0%, 100% { transform: rotate(-1.5deg) scaleY(0.98); }
-          50%      { transform: rotate(1.5deg)  scaleY(1.02); }
+          0%, 100% { transform: rotate(-0.8deg) scaleY(0.99); }
+          50%      { transform: rotate(0.8deg)  scaleY(1.01); }
         }
         @keyframes tfl-sway-mid {
-          0%, 100% { transform: rotate(2deg) scaleY(1); }
-          50%      { transform: rotate(-2deg) scaleY(0.97); }
+          0%, 100% { transform: rotate(1deg) scaleY(1); }
+          50%      { transform: rotate(-1deg) scaleY(0.985); }
         }
         @keyframes tfl-sway-front {
-          0%, 100% { transform: rotate(-2.5deg) scaleY(1.02); }
-          50%      { transform: rotate(2.5deg)  scaleY(0.96); }
+          0%, 100% { transform: rotate(-1.2deg) scaleY(1.01); }
+          50%      { transform: rotate(1.2deg)  scaleY(0.985); }
         }
         @keyframes tfl-flicker {
           0%, 100% { opacity: 1; }
-          40%      { opacity: 0.85; }
-          70%      { opacity: 0.95; }
+          50%      { opacity: 0.92; }
         }
         @keyframes tfl-ember-rise {
           0%   { transform: translate(0, 0) scale(0.6); opacity: 0; }

@@ -22,7 +22,7 @@ interface TribeFlameProps {
 const TribeFlame = ({ size = 220, intensity = 1, hue = 28, className }: TribeFlameProps) => {
   const w = size * 0.78;
   const i = Math.max(0, Math.min(1, intensity));
-  const emberCount = 6;
+  const emberCount = 4;
 
   return (
     <div
@@ -34,10 +34,10 @@ const TribeFlame = ({ size = 220, intensity = 1, hue = 28, className }: TribeFla
       <div
         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
         style={{
-          width: w * 2.1,
-          height: size * 1.9,
-          background: `radial-gradient(ellipse 50% 55% at 50% 58%, hsl(${hue} 95% 55% / ${0.34 * i}) 0%, hsl(${hue + 14} 95% 55% / ${0.12 * i}) 38%, transparent 72%)`,
-          filter: "blur(6px)",
+          width: w * 1.85,
+          height: size * 1.7,
+          background: `radial-gradient(ellipse 50% 55% at 50% 58%, hsl(${hue} 82% 52% / ${0.2 * i}) 0%, hsl(${hue + 14} 82% 52% / ${0.07 * i}) 40%, transparent 72%)`,
+          filter: "blur(8px)",
         }}
       />
 
@@ -47,7 +47,7 @@ const TribeFlame = ({ size = 220, intensity = 1, hue = 28, className }: TribeFla
         style={{
           width: w * 0.92,
           height: size * 0.12,
-          background: `radial-gradient(ellipse at center, hsl(${hue + 8} 100% 62% / ${0.55 * i}) 0%, hsl(${hue - 6} 95% 48% / ${0.25 * i}) 45%, transparent 75%)`,
+          background: `radial-gradient(ellipse at center, hsl(${hue + 8} 88% 58% / ${0.36 * i}) 0%, hsl(${hue - 6} 82% 46% / ${0.16 * i}) 45%, transparent 75%)`,
           filter: "blur(3px)",
           animation: "tribeflame-pool 3.6s ease-in-out infinite",
         }}
@@ -61,10 +61,10 @@ const TribeFlame = ({ size = 220, intensity = 1, hue = 28, className }: TribeFla
       >
         <defs>
           <linearGradient id={`tf-body-${hue}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor={`hsl(48 100% 90%)`} />
-            <stop offset="0.22" stopColor={`hsl(${hue + 16} 98% 64%)`} />
-            <stop offset="0.58" stopColor={`hsl(${hue} 96% 53%)`} />
-            <stop offset="1" stopColor={`hsl(${hue - 16} 88% 40%)`} />
+            <stop offset="0" stopColor={`hsl(46 92% 86%)`} />
+            <stop offset="0.22" stopColor={`hsl(${hue + 16} 86% 60%)`} />
+            <stop offset="0.58" stopColor={`hsl(${hue} 84% 50%)`} />
+            <stop offset="1" stopColor={`hsl(${hue - 16} 78% 38%)`} />
           </linearGradient>
           <linearGradient id={`tf-core-${hue}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="hsl(50 100% 97%)" />
@@ -99,7 +99,7 @@ const TribeFlame = ({ size = 220, intensity = 1, hue = 28, className }: TribeFla
             opacity={0.85 * (0.6 + 0.4 * i)}
           />
           {/* Hot white tip */}
-          <ellipse cx="61" cy="118" rx="9" ry="20" fill="hsl(50 100% 96%)" filter="url(#tf-soft)" opacity={0.5 * i} />
+          <ellipse cx="61" cy="118" rx="9" ry="20" fill="hsl(48 94% 94%)" filter="url(#tf-soft)" opacity={0.32 * i} />
         </g>
       </svg>
 
@@ -118,8 +118,8 @@ const TribeFlame = ({ size = 220, intensity = 1, hue = 28, className }: TribeFla
               bottom: "16%",
               width: dot,
               height: dot,
-              background: `hsl(${hue + 14} 100% 68%)`,
-              boxShadow: `0 0 6px hsl(${hue + 10} 100% 60%), 0 0 12px hsl(${hue} 100% 55% / 0.6)`,
+              background: `hsl(${hue + 14} 85% 64%)`,
+              boxShadow: `0 0 4px hsl(${hue + 10} 80% 56% / 0.7)`,
               opacity: 0,
               animation: `tribeflame-ember ${dur}s ease-in ${delay}s infinite`,
             }}

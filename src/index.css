@@ -3482,11 +3482,8 @@
 
 /* Flame flicker — Apex/Elite icon lepattaa */
 @keyframes status-flame-flicker {
-  0%, 100% { transform: scale(1)    translateY(0); opacity: 1; }
-  18%      { transform: scale(1.04) translateY(-0.4px); opacity: 0.92; }
-  36%      { transform: scale(0.97) translateY(0.2px);  opacity: 1; }
-  55%      { transform: scale(1.03) translateY(-0.3px); opacity: 0.95; }
-  74%      { transform: scale(0.98) translateY(0.1px);  opacity: 1; }
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.86; }
 }
 
 /* Coal pulse — bottom amber radial-gradient hehkuu sisään */
@@ -3517,9 +3514,8 @@
   pointer-events: none;
 }
 .status-flame-flicker {
-  animation: status-flame-flicker 2.4s ease-in-out infinite;
-  transform-origin: center bottom;
-  will-change: transform, opacity;
+  animation: status-flame-flicker 4.2s ease-in-out infinite;
+  will-change: opacity;
 }
 .status-coal-pulse {
   animation: status-coal-pulse 6s ease-in-out infinite;

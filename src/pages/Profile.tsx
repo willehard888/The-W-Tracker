@@ -768,10 +768,13 @@ const Profile = () => {
                   if (isNativePlatform()) {
                     window.open("https://apps.apple.com/account/subscriptions", "_blank");
                   } else {
-                    supabase.functions.invoke("customer-portal").then(({ data, error }) => {
-                      if (data?.url) window.open(data.url, "_blank");
-                      else toast.error("Could not open subscription management");
-                    });
+                    supabase.functions
+                      .invoke("customer-portal")
+                      .then(({ data, error }) => {
+                        if (!error && data?.url) window.open(data.url, "_blank");
+                        else toast.error("Could not open subscription management");
+                      })
+                      .catch(() => toast.error("Could not open subscription management"));
                   }
                 }}
               >

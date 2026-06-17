@@ -51,6 +51,7 @@ const CoachProgramDetail = lazy(() => import("./pages/CoachProgramDetail"));
 const CoachMemoryScreen = lazy(() => import("./pages/CoachMemoryScreen"));
 const ProtocolLibrary = lazy(() => import("./pages/ProtocolLibrary"));
 const Tribes = lazy(() => import("./pages/Tribes"));
+const Squad = lazy(() => import("./pages/Squad"));
 const TribeNew = lazy(() => import("./pages/TribeNew"));
 const TribeDetail = lazy(() => import("./pages/TribeDetail"));
 const TribeBattles = lazy(() => import("./pages/TribeBattles"));
@@ -227,6 +228,7 @@ const AppRoutes = () => {
           <Route path="/coach/program" element={<ProtectedRoute><CoachProgramDetail /></ProtectedRoute>} />
           <Route path="/coach/memory" element={<ProtectedRoute><CoachMemoryScreen /></ProtectedRoute>} />
           <Route path="/coach/library" element={<ProtectedRoute><ProtocolLibrary /></ProtectedRoute>} />
+          <Route path="/squad" element={<ProtectedRoute><Squad /></ProtectedRoute>} />
           <Route path="/tribes" element={<ProtectedRoute><Tribes /></ProtectedRoute>} />
           <Route path="/tribes/new" element={<ProtectedRoute><TribeNew /></ProtectedRoute>} />
           <Route path="/tribes/leaderboard" element={<ProtectedRoute><TribeLeaderboard /></ProtectedRoute>} />

@@ -2518,6 +2518,21 @@
   100% { opacity: 0; transform: translateY(-44px) scale(0.8); }
 }
 
+/* TribeFlame — premium fire animation */
+@keyframes tribeflame-sway {
+  0%, 100% { transform: rotate(-1.6deg) scaleY(0.99); }
+  50%      { transform: rotate(1.6deg) scaleY(1.05); }
+}
+@keyframes tribeflame-pool {
+  0%, 100% { opacity: 0.85; transform: translateX(-50%) scaleX(0.95); }
+  50%      { opacity: 1;    transform: translateX(-50%) scaleX(1.08); }
+}
+@keyframes tribeflame-ember {
+  0%   { opacity: 0; transform: translateY(0) scale(0.7); }
+  18%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--ember-drift, 6px), -64px) scale(1.15); }
+}
+
 @keyframes level-up-flash {
   0% { opacity: 0; transform: scale(0.8); }
   20% { opacity: 1; transform: scale(1.05); }

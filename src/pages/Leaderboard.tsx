@@ -1,5 +1,5 @@
 
-import { Trophy, Lock, Crown, TrendingUp, Clock3, Medal } from "lucide-react";
+import { Trophy, Lock, Crown, TrendingUp, Clock3, Medal, Swords } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
@@ -272,6 +272,21 @@ const Leaderboard = () => {
           Season & all time rankings — climb or fall.
         </p>
       </div>
+
+      {/* 1v1 Battles — friend challenges live under Ranks (no orphan route) */}
+      <button
+        onClick={() => navigate("/battles")}
+        className="animate-reveal mb-5 w-full text-left rounded-2xl border border-border/60 bg-card/40 p-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform"
+      >
+        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[hsl(22_90%_52%)] to-[hsl(12_88%_46%)] flex items-center justify-center shrink-0">
+          <Swords size={18} className="text-white" strokeWidth={2.4} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(18_95%_62%)] mb-0.5">1v1 Battles</p>
+          <p className="text-[12.5px] font-bold leading-tight">Challenge a friend — winner takes the score</p>
+        </div>
+        <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+      </button>
 
       {/* Season banner */}
       <div className="animate-reveal animate-reveal-delay-1 relative overflow-hidden rounded-2xl border border-gold/40 glass-3d p-4 mb-4 glow-gold-sm">

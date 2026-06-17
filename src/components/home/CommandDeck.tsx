@@ -1,7 +1,6 @@
 import { Flame, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import CompactStreakPanel from "@/components/home/CompactStreakPanel";
 
 interface CommandDeckProps {
   streak: number;
@@ -13,10 +12,13 @@ interface CommandDeckProps {
   className?: string;
 }
 
+/**
+ * The single daily action — a clean, premium check-in card. The streak panel
+ * was removed; the streak now lives as a small flame chip (same flicker as the
+ * header) so the card stays simple and the one job is unmistakable.
+ */
 const CommandDeck = ({
   streak,
-  longestStreak,
-  lastCheckinAt,
   canCheckin,
   timeUntilCheckin,
   tier,
@@ -26,8 +28,7 @@ const CommandDeck = ({
   const isLegend = tier === "legend";
   const isApex = tier === "apex";
 
-  // Tier-tinted accent for the CTA frame
-  const ctaGradient = canCheckin
+  const border = canCheckin
     ? isLegend
       ? "linear-gradient(135deg, hsl(280 70% 60%), hsl(42 78% 54%), hsl(350 80% 60%), hsl(280 70% 60%))"
       : isApex
@@ -37,117 +38,99 @@ const CommandDeck = ({
 
   return (
     <div
-      className={cn(
-        "rounded-3xl p-[1.5px] overflow-hidden relative",
-        canCheckin && "breathing-glow",
-        className,
-      )}
+      className={cn("rounded-3xl p-[1.5px] overflow-hidden relative", canCheckin && "breathing-glow", className)}
       style={{
-        // Use longhand `backgroundImage` so it doesn't conflict with
-        // `backgroundSize` on rerender (React shorthand-collision warning).
-        backgroundImage: ctaGradient,
+        backgroundImage: border,
         backgroundSize: "200% 200%",
         animation: canCheckin ? "shimmer-slide 5s ease-in-out infinite" : undefined,
       }}
     >
-      <div className="rounded-3xl bg-gradient-to-br from-card via-card to-card/85 p-2.5 sm:p-3 grid gap-2.5 sm:gap-3 sm:grid-cols-2 depth-realistic">
-        {/* Streak compact */}
-        <CompactStreakPanel
-          streak={streak}
-          longestStreak={longestStreak}
-          lastCheckinAt={lastCheckinAt}
-        />
-
-        {/* Lock Your Day CTA */}
-        <button
-          type="button"
-          onClick={() => canCheckin && navigate("/checkin")}
-          disabled={!canCheckin}
-          className={cn(
-            "group relative w-full text-left rounded-2xl p-4 overflow-hidden transition-all duration-200 active:scale-[0.985]",
-            canCheckin ? "border depth-realistic-warm" : "opacity-70 border depth-realistic",
-          )}
-          style={{
-            background: canCheckin
-              ? "radial-gradient(120% 90% at 0% 0%, hsl(42 78% 54% / 0.18), transparent 60%), linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 5%))"
-              : "linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 6%))",
-            borderColor: canCheckin ? "hsl(42 78% 54% / 0.45)" : "hsl(var(--border))",
-          }}
-        >
-          {/* Ambient glow */}
+      <button
+        type="button"
+        onClick={() => canCheckin && navigate("/checkin")}
+        disabled={!canCheckin}
+        className={cn(
+          "group relative w-full text-left rounded-3xl p-4 overflow-hidden transition-all duration-200 active:scale-[0.99]",
+          !canCheckin && "opacity-80",
+        )}
+        style={{
+          background: canCheckin
+            ? "radial-gradient(130% 90% at 0% 0%, hsl(42 78% 54% / 0.16), transparent 60%), linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 5%))"
+            : "linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 6%))",
+        }}
+      >
+        {/* Ambient corner glow */}
+        {canCheckin && (
           <div
+            aria-hidden
             className="absolute -top-16 -right-12 w-44 h-44 rounded-full pointer-events-none"
-            style={{
-              background: canCheckin
-                ? "radial-gradient(circle, hsl(42 78% 54% / 0.32) 0%, transparent 65%)"
-                : "transparent",
-            }}
+            style={{ background: "radial-gradient(circle, hsl(42 78% 54% / 0.30) 0%, transparent 65%)" }}
           />
+        )}
 
-          <div className="relative flex flex-col h-full justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <div
-                className={cn(
-                  "h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 relative",
-                  canCheckin
-                    ? "gradient-gold text-primary-foreground shadow-[0_0_28px_hsl(42_78%_54%/0.6)]"
-                    : "bg-secondary text-muted-foreground",
-                )}
-              >
-                {canCheckin && (
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 rounded-2xl bg-gold/40 animate-ping opacity-50"
-                    style={{ animationDuration: "2s" }}
-                  />
-                )}
-                <Flame size={26} strokeWidth={2.6} className="relative" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p
-                  className={cn(
-                    "text-[10px] font-black uppercase tracking-[0.22em] mb-0.5",
-                    canCheckin ? "text-gold" : "text-muted-foreground",
-                  )}
-                >
-                  {canCheckin ? "🔒 Lock Your Day" : "✓ Day Locked"}
-                </p>
-                <p className="font-display font-black text-xl leading-[1.1] tracking-tight text-balance">
-                  {canCheckin ? "Daily Check-In" : "Come back tomorrow"}
-                </p>
-                <p className="text-[12px] text-muted-foreground mt-1 line-clamp-2">
-                  {canCheckin
-                    ? streak > 0
-                      ? `Defend your ${streak}-day streak.`
-                      : "Start your streak. Earn XP. Climb."
-                    : `Next in ${timeUntilCheckin}`}
-                </p>
-              </div>
+        <div className="relative">
+          {/* Top row — flame icon + streak chip */}
+          <div className="flex items-center gap-3">
+            <div
+              className={cn(
+                "h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 relative",
+                canCheckin
+                  ? "gradient-gold text-primary-foreground shadow-[0_0_24px_hsl(42_78%_54%/0.55)]"
+                  : "bg-secondary text-muted-foreground",
+              )}
+            >
+              {canCheckin && (
+                <span
+                  aria-hidden
+                  className="absolute inset-0 rounded-2xl bg-gold/40 animate-ping opacity-40"
+                  style={{ animationDuration: "2.4s" }}
+                />
+              )}
+              <Flame size={24} strokeWidth={2.6} className={cn("relative", canCheckin && "status-flame-flicker")} />
             </div>
 
-            {canCheckin ? (
-              // Full-width primary action bar — unmistakable now that this is
-              // the only check-in entry point (the bottom-nav tab was removed).
-              <div className="flex items-center justify-between gap-2 rounded-xl px-4 py-3 gradient-gold text-primary-foreground shadow-[0_8px_22px_-8px_hsl(42_78%_54%/0.75)] group-active:brightness-95">
-                <span className="font-black text-sm uppercase tracking-wide inline-flex items-center gap-1.5">
-                  <Flame size={15} strokeWidth={2.9} /> Check in now
-                </span>
-                <span className="inline-flex items-center gap-1 font-black text-sm tabular-nums">
-                  +50 XP
-                  <ChevronRight size={17} className="transition-transform group-active:translate-x-0.5" />
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
-                  Locked
-                </p>
-                <p className="text-xs font-black text-muted-foreground tabular-nums">+50 XP</p>
+            <div className="min-w-0 flex-1">
+              <p className={cn("text-[10px] font-black uppercase tracking-[0.22em] mb-0.5", canCheckin ? "text-gold" : "text-muted-foreground")}>
+                {canCheckin ? "Lock your day" : "Day locked"}
+              </p>
+              <p className="font-display font-black text-[19px] leading-none tracking-tight">
+                {canCheckin ? "Daily Check-In" : "Come back tomorrow"}
+              </p>
+              <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
+                {canCheckin
+                  ? streak > 0 ? `Defend your ${streak}-day streak.` : "Start your streak. Earn XP. Climb."
+                  : `Next in ${timeUntilCheckin}`}
+              </p>
+            </div>
+
+            {/* Streak chip — header-style flame flicker */}
+            {streak > 0 && (
+              <div className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[hsl(18_95%_58%/0.12)] border border-[hsl(18_95%_58%)]/30 px-2.5 py-1">
+                <Flame size={13} className="text-[hsl(18_95%_58%)] status-flame-flicker" strokeWidth={2.8} />
+                <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(22_95%_66%)]">{streak}</span>
               </div>
             )}
           </div>
-        </button>
-      </div>
+
+          {/* Primary action bar */}
+          {canCheckin ? (
+            <div className="mt-3.5 flex items-center justify-between gap-2 rounded-xl px-4 py-3 gradient-gold text-primary-foreground shadow-[0_8px_22px_-8px_hsl(42_78%_54%/0.7)] group-active:brightness-95">
+              <span className="font-black text-sm uppercase tracking-wide inline-flex items-center gap-1.5">
+                <Flame size={15} strokeWidth={2.9} /> Check in now
+              </span>
+              <span className="inline-flex items-center gap-1 font-black text-sm tabular-nums">
+                +50 XP
+                <ChevronRight size={17} className="transition-transform group-active:translate-x-0.5" />
+              </span>
+            </div>
+          ) : (
+            <div className="mt-3.5 flex items-center justify-between rounded-xl px-4 py-2.5 border border-border/40">
+              <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Locked</p>
+              <p className="text-xs font-black text-muted-foreground tabular-nums">+50 XP</p>
+            </div>
+          )}
+        </div>
+      </button>
     </div>
   );
 };

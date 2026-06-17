@@ -226,15 +226,68 @@ const Index = () => {
         </ErrorBoundary>
       </Reveal>
 
-      {/* THE VAULT — premium content library, raised to the primary slot */}
+      {/* AI COACH — the brain of the app. Elevated right under the daily loop
+          so the coach is present every day (it frames today + answers
+          anything). Content (Vault, recipes) now lives one tap away under More
+          and inside Coach, keeping Today focused on the one job. */}
       <Reveal className="mb-4 relative z-10" delay={80}>
+        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
+          <CoachStrip latestNudge={latestNudge ?? null} latestBriefing={latestBriefing ?? null} />
+        </ErrorBoundary>
+      </Reveal>
+
+      {/* MEAL-PREP RECIPES — raised to a primary slot, prominent with a big
+          food image so it pulls the eye. */}
+      <Reveal className="mb-4 relative z-10" delay={100}>
+        <button
+          type="button"
+          onClick={() => navigate("/recipes")}
+          className="w-full text-left rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/[0.10] via-card/95 to-card p-3.5 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.5)] active:scale-[0.99] transition-transform"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="h-16 w-16 rounded-2xl overflow-hidden shrink-0 relative border border-gold/30 bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center">
+              <Utensils size={22} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />
+              <div
+                className="absolute inset-0 bg-no-repeat"
+                style={{
+                  backgroundImage:
+                    "url(https://gcwuvijcuzhunkcauzom.supabase.co/storage/v1/object/public/recipe-images/greek-chicken-bowl.png)",
+                  backgroundSize: "230%",
+                  backgroundPosition: "85% 16%",
+                }}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
+                  Meal-prep recipes
+                </p>
+                <span className="text-[9px] font-black text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-0.5 tabular-nums">
+                  15
+                </span>
+              </div>
+              <p className="text-[13.5px] font-bold text-foreground leading-tight">
+                High-protein bowls &amp; plates that scale to a full week
+              </p>
+            </div>
+            <ChevronRight size={18} className="text-gold shrink-0" />
+          </div>
+        </button>
+      </Reveal>
+
+      {/* SECONDARY — Today stays focused on the one job (check in) + the AI
+          move + the pod, plus recipes. Everything else (vault, invite, badges)
+          is one tap away under "More". */}
+      <MoreSection label="More" className="relative z-10 mt-1 mb-2">
+      {/* THE VAULT — premium content library */}
+      <Reveal className="mb-4 relative z-10" delay={40}>
         <button
           type="button"
           onClick={() => navigate("/vault")}
-          className="w-full text-left rounded-2xl border border-gold/35 bg-gradient-to-br from-gold/[0.08] via-card/95 to-card p-4 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.45)] active:scale-[0.99] transition-transform"
+          className="w-full text-left rounded-2xl border border-border/60 bg-card/40 p-4 active:scale-[0.99] transition-transform"
         >
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_18px_hsl(42_78%_54%/0.4)]">
+            <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0">
               <Crown size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
             </div>
             <div className="flex-1 min-w-0">
@@ -250,56 +303,10 @@ const Index = () => {
         </button>
       </Reveal>
 
-      {/* MEAL-PREP RECIPES — structured, scalable, batch-cook recipes */}
-      <Reveal className="mb-4 relative z-10" delay={100}>
-        <button
-          type="button"
-          onClick={() => navigate("/recipes")}
-          className="w-full text-left rounded-2xl border border-gold/35 bg-gradient-to-br from-gold/[0.08] via-card/95 to-card p-4 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.45)] active:scale-[0.99] transition-transform"
-        >
-          <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl overflow-hidden bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_18px_hsl(42_78%_54%/0.4)] relative">
-              <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
-              {/* Crop to just the food bowl (top-right of the poster). */}
-              <div
-                className="absolute inset-0 bg-no-repeat"
-                style={{
-                  backgroundImage:
-                    "url(https://gcwuvijcuzhunkcauzom.supabase.co/storage/v1/object/public/recipe-images/greek-chicken-bowl.png)",
-                  backgroundSize: "230%",
-                  backgroundPosition: "85% 16%",
-                }}
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">
-                Meal-prep recipes
-              </p>
-              <p className="text-[13px] font-bold text-foreground leading-tight">
-                High-protein bowls that scale to a full week of meals
-              </p>
-            </div>
-            <ChevronRight size={16} className="text-gold shrink-0" />
-          </div>
-        </button>
-      </Reveal>
-
-      {/* AI COACH — raised to the primary slot (nudges + briefing → /coach) */}
-      <Reveal className="mb-4 relative z-10" delay={120}>
-        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
-          <CoachStrip latestNudge={latestNudge ?? null} latestBriefing={latestBriefing ?? null} />
-        </ErrorBoundary>
-      </Reveal>
-
-      {/* EARN FREE MEMBERSHIP — referral CTA, surfaced in the primary flow */}
-      <Reveal className="mb-4 relative z-10" delay={160}>
+      {/* EARN FREE MEMBERSHIP — referral CTA */}
+      <Reveal className="mb-4 relative z-10" delay={80}>
         <InviteCTA referralCount={profile.referral_count || 0} />
       </Reveal>
-
-      {/* SECONDARY — collapsed by default so Home opens focused on its one
-          job (check in) + rank + a single coach line. Everything below is one
-          tap away under "More", per the moderate-declutter design pass. */}
-      <MoreSection label="More" className="relative z-10 mt-1 mb-2">
       {/* Recent Badges */}
       <Reveal className="mb-2" delay={320}>
         <div className="flex items-end justify-between mb-3 px-0.5">

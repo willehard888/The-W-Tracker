@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchUserTotalTribeHeat, collectiveStreakTier, collectiveTierName, collectiveAccent } from "@/lib/tribe-streak";
-// Lightweight tribe-specific flame — pure CSS keyframes, no RAF loop,
-// no device listeners. Cuts ~95% of frame cost vs the original
-// StylizedStreakFlame which made the whole app stutter on mobile.
-import TribeFireLite from "@/components/TribeFireLite";
+// Premium signature flame — organic SVG turbulence + bloom + embers, one
+// animated <feTurbulence> (compositor-friendly, no RAF/particle loop).
+import TribeFlame from "@/components/tribe/TribeFlame";
 import { cn } from "@/lib/utils";
 import { Flame, Sparkles, Users } from "lucide-react";
 
@@ -151,7 +150,11 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
           {isCold ? (
             <div className="text-7xl opacity-40 leading-none animate-pulse">🕯️</div>
           ) : (
-            <TribeFireLite tier={tier} accent={accent} size={size} />
+            <TribeFlame
+              size={size}
+              intensity={Math.min(1, 0.55 + tier * 0.09)}
+              hue={tier >= 6 ? 190 : tier >= 4 ? 14 : tier >= 2 ? 18 : 28}
+            />
           )}
         </div>
 

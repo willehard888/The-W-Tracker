@@ -1,18 +1,17 @@
-import { Home, Trophy, User, Users, Flame } from "lucide-react";
+import { Home, Trophy, User, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { memo, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 
-// One focused loop: show up (Home) → belong (Tribe) → see where you stand
-// (Ranks) → get coached (Coach) → identity (Profile). Feed / DMs / Battles
-// were removed from the primary nav to keep the app a movement, not a toolbox
-// (their routes still exist and are reachable from in-context links).
+// Four focused tabs: show up (Today) → belong (Squad: feed/tribes/friends) →
+// see where you stand (Ranks) → identity (Profile). Coach (the brain) is
+// reached from the Today coach card; Battles/Messages live inside
+// Ranks/Squad — no orphan routes, no crowded nav.
 const tabs = [
-  { icon: Home, label: "Home", path: "/", color: "gold" },
-  { icon: Flame, label: "Feed", path: "/feed", color: "lava" },
-  { icon: Users, label: "Tribe", path: "/tribes", color: "apex" },
+  { icon: Home, label: "Today", path: "/", color: "gold" },
+  { icon: Users, label: "Squad", path: "/squad", color: "apex" },
   { icon: Trophy, label: "Ranks", path: "/leaderboard", color: "gold" },
   { icon: User, label: "Profile", path: "/profile", color: "gold" },
 ] as const;
@@ -35,11 +34,12 @@ const HIDDEN_PATHS = new Set(["/landing", "/auth", "/onboarding", "/paywall"]);
 // Käytetään jo olemassa olevia App.tsx:n lazy-importteja vastaavia dynamic importteja.
 const PREFETCH: Record<string, () => Promise<unknown>> = {
   "/checkin": () => import("@/pages/DailyCheckin"),
-  "/feed": () => import("@/pages/EliteFeed"),
-  "/tribes": () => import("@/pages/Tribes"),
+  "/coach": () => import("@/pages/Coach"),
+  "/squad": () => import("@/pages/Squad"),
   "/leaderboard": () => import("@/pages/Leaderboard"),
   "/profile": () => import("@/pages/Profile"),
 };
+// Note: /coach kept in prefetch — it's reached from the Today coach card.
 const prefetched = new Set<string>();
 const prefetchRoute = (path: string) => {
   if (prefetched.has(path)) return;

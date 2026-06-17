@@ -10,10 +10,9 @@ import { getEffectiveStreak } from "@/lib/streak";
 import { getTierConfig, getNextTier, TIER_ORDER } from "@/lib/status-tiers";
 import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
-import { Crown, Clock, ChevronRight, Flame, Zap, Users } from "lucide-react";
+import { Crown, Clock, ChevronRight, Flame, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import BrandLogo from "@/components/BrandLogo";
-import { usePendingFriendCount } from "@/hooks/use-friends";
 
 const PRESSURE_QUOTES = [
   "Grind never stops 🔥",
@@ -49,7 +48,6 @@ const HIDDEN_ROUTES = new Set([
 const StatusHeader = () => {
   const { user, profile, isElite } = useAuth();
   const { isInTrial, daysRemaining, hoursRemaining } = useTrialAccess();
-  const { data: pendingFriends = 0 } = usePendingFriendCount();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -216,22 +214,6 @@ const StatusHeader = () => {
           </span>
         </button>
 
-        {/* Friends — only on the full-identity headers (Home + Ranks), with a
-            request badge. Other tabs keep just the brand strip. */}
-        {showIdentity && (
-          <button
-            onClick={() => navigate("/friends")}
-            className="absolute right-3 top-2 h-9 w-9 rounded-full bg-secondary/70 border border-border flex items-center justify-center text-foreground/90 active:scale-95 transition-transform"
-            aria-label="Friends"
-          >
-            <Users size={17} />
-            {pendingFriends > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[hsl(18_95%_58%)] text-[9px] font-black text-white flex items-center justify-center leading-none">
-                {pendingFriends > 9 ? "9+" : pendingFriends}
-              </span>
-            )}
-          </button>
-        )}
 
         {/* Single status row: avatar + identity + tier progress + pill.
             Shown only on Home + Leaderboard; other tabs keep just the brand. */}

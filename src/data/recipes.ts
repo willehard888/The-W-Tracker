@@ -21,8 +21,12 @@ export interface MethodStep {
   steps: string[];
 }
 
+export type RecipeCategory = "main" | "sweet";
+
 export interface Recipe {
   id: string;
+  /** "main" = savoury mains; "sweet" = breakfast & sweet. Defaults to "main". */
+  category?: RecipeCategory;
   title: string;
   subtitle: string;
   blurb: string;
@@ -556,6 +560,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "banana-protein-pancakes",
+    category: "sweet",
     title: "Banana Protein Pancakes",
     subtitle: "Banana · egg · Greek yogurt",
     blurb: "Fluffy, naturally sweet pancakes made with just banana and egg, topped with creamy Greek yogurt, fresh berries and a drizzle of honey. Simple ingredients, high protein.",
@@ -606,6 +611,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "apple-pie-protein-bowl",
+    category: "sweet",
     title: "Apple Pie Protein Bowl",
     subtitle: "Greek yogurt · cinnamon apple · granola",
     blurb: "A high-protein twist on apple pie: creamy Greek yogurt, cinnamon apples with a touch of sweetness and a little crunchy granola. Simple ingredients, no cook.",
@@ -928,6 +934,133 @@ export const RECIPES: Recipe[] = [
         "Batch the beef and potatoes — they reheat perfectly all week.",
         "Keep lettuce, tomato and sauce separate so nothing wilts.",
         "Burger sauce keeps 4–5 days; make a big jar.",
+      ],
+    },
+  },
+  {
+    id: "berry-cheesecake-bowl",
+    category: "sweet",
+    title: "Berry Cheesecake Bowl",
+    subtitle: "Greek yogurt · cottage cheese · berries",
+    blurb: "All the flavour of cheesecake in a high-protein, better-for-you bowl. Creamy, fruity and satisfying — perfect for breakfast, dessert or anytime you crave something sweet.",
+    tags: ["High protein", "Gluten option"],
+    prepMin: 10,
+    cookMin: 0,
+    nutrition: { calories: 380, protein: 32, carbs: 36, fat: 11 },
+    groups: [
+      { title: "Cheesecake base", items: [
+        { qty: 170, unit: "g", item: "plain Greek yogurt (2%)" },
+        { qty: 100, unit: "g", item: "low-fat cottage cheese" },
+        { qty: 0.5, unit: "tsp", item: "vanilla extract" },
+        { item: "zest of 1/2 lemon" },
+      ]},
+      { title: "Mixed berries", items: [
+        { qty: 100, unit: "g", item: "strawberries (sliced)" },
+        { qty: 50, unit: "g", item: "blueberries" },
+      ]},
+      { title: "Topping", items: [
+        { qty: 10, unit: "g", item: "honey", note: "≈ 1 tsp" },
+        { qty: 15, unit: "g", item: "low-sugar granola" },
+      ]},
+    ],
+    method: [
+      { title: "Make the cheesecake base", steps: [
+        "In a bowl, combine Greek yogurt, cottage cheese, vanilla extract and lemon zest.",
+        "Mix until smooth and creamy.",
+      ]},
+      { title: "Prepare the berries", steps: [
+        "Slice the strawberries and add them to a bowl with the blueberries.",
+        "If you like, gently toss with 1/2 tsp of honey.",
+      ]},
+      { title: "Assemble the bowl", steps: [
+        "Spoon the cheesecake mixture into a serving bowl.",
+        "Top with the berries, a drizzle of honey and granola.",
+      ]},
+      { title: "Finish & enjoy", steps: [
+        "Add a little extra lemon zest on top for a fresh flavour boost. Enjoy immediately.",
+      ]},
+    ],
+    mealPrep: {
+      fridgeDays: 2,
+      reheat: "No reheat — best cold. Keep granola separate so it stays crunchy.",
+      tips: [
+        "Pre-mix the cheesecake base in jars for the week; it keeps 2–3 days.",
+        "Add granola and berries only when serving so nothing goes soggy.",
+        "Blend the base for an extra-smooth, dessert-like texture.",
+      ],
+    },
+  },
+  {
+    id: "grilled-chicken-caesar-salad",
+    title: "Grilled Chicken Caesar Salad",
+    subtitle: "Chicken · romaine · yogurt Caesar",
+    blurb: "A classic Caesar, made better: juicy grilled chicken, crisp romaine, homemade yogurt Caesar dressing, whole grain croutons and parmesan. High-protein and satisfying.",
+    tags: ["High protein", "Whole foods"],
+    prepMin: 15,
+    cookMin: 15,
+    nutrition: { calories: 620, protein: 55, carbs: 34, fat: 23 },
+    groups: [
+      { title: "Grilled chicken", items: [
+        { qty: 180, unit: "g", item: "chicken breast" },
+        { qty: 0.5, unit: "tsp", item: "olive oil" },
+        { qty: 0.5, unit: "tsp", item: "garlic powder" },
+        { qty: 0.5, unit: "tsp", item: "paprika" },
+        { item: "salt & black pepper", note: "to taste" },
+      ]},
+      { title: "Caesar dressing", items: [
+        { qty: 60, unit: "g", item: "plain Greek yogurt (2%)" },
+        { qty: 1, unit: "tsp", item: "Dijon mustard" },
+        { qty: 1, unit: "tsp", item: "lemon juice" },
+        { qty: 1, unit: "clove", item: "garlic (minced)" },
+        { qty: 10, unit: "g", item: "parmesan (grated)" },
+        { item: "salt & black pepper", note: "to taste" },
+      ]},
+      { title: "Salad", items: [
+        { qty: 120, unit: "g", item: "romaine lettuce (chopped)" },
+        { qty: 60, unit: "g", item: "cherry tomatoes (halved)" },
+      ]},
+      { title: "Whole grain croutons", items: [
+        { qty: 20, unit: "g", item: "whole grain bread (cubed)" },
+        { qty: 0.5, unit: "tsp", item: "olive oil" },
+        { qty: 0.5, unit: "tsp", item: "garlic powder" },
+        { item: "salt & black pepper", note: "to taste" },
+      ]},
+      { title: "Toppings", items: [
+        { qty: 15, unit: "g", item: "parmesan (shaved)" },
+        { item: "extra black pepper" },
+      ]},
+    ],
+    method: [
+      { title: "Make the Caesar dressing", steps: [
+        "Whisk together Greek yogurt, Dijon mustard, lemon juice, garlic, parmesan, salt and pepper until smooth.",
+        "Set aside.",
+      ]},
+      { title: "Make the croutons", steps: [
+        "Preheat oven to 200°C (400°F).",
+        "Toss bread cubes with olive oil, garlic powder, salt and pepper.",
+        "Spread on a baking sheet and bake 8–10 min until golden and crispy. Set aside.",
+      ]},
+      { title: "Grill the chicken", steps: [
+        "Rub chicken with olive oil, garlic powder, paprika, salt and pepper.",
+        "Grill over medium-high heat 6–7 min per side until cooked through.",
+        "Let rest a few minutes, then slice.",
+      ]},
+      { title: "Prepare the salad", steps: [
+        "In a large bowl, add romaine and cherry tomatoes.",
+        "Drizzle with the dressing and toss to coat.",
+      ]},
+      { title: "Assemble & enjoy", steps: [
+        "Top with sliced chicken, croutons and parmesan shavings.",
+        "Finish with extra black pepper and serve immediately.",
+      ]},
+    ],
+    mealPrep: {
+      fridgeDays: 3,
+      reheat: "Best fresh. Warm chicken ~60s; keep dressing, croutons & romaine separate.",
+      tips: [
+        "Batch-grill the chicken and bake croutons; both keep all week.",
+        "Store dressing in a jar and romaine dry — toss only when serving so it stays crisp.",
+        "Croutons go soft once dressed — add them at the very end.",
       ],
     },
   },

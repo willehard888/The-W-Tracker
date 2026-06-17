@@ -91,8 +91,8 @@ const Tribes = () => {
   const [activityFilter, setActivityFilter] = useState<string | null>(null);
 
   const tier = profile?.status_tier;
-  const canCreate =
-    isApexSubscriber || tier === "elite" || tier === "apex" || tier === "legend";
+  // Tribes/clubs are open to everyone now — no tier gate.
+  const canCreate = true;
 
   // ── Tribe list (browse / mine) ───────────────────────────────────────────
   const tribesQuery = useQuery<TribesPageData>({
@@ -438,21 +438,12 @@ const Tribes = () => {
         ))}
       </div>
 
-      {/* Membership cap explainer — clear rule, always visible */}
+      {/* Open to all — clubs are free to create and join */}
       <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg border border-border/50 bg-secondary/20">
         <Users size={11} className="text-muted-foreground shrink-0" />
         <p className="text-[11px] text-muted-foreground leading-tight">
-          {canCreate ? (
-            <>
-              <span className="font-black text-foreground">Apex</span> — belong to up to{" "}
-              <span className="font-black text-[hsl(18_95%_58%)]">3 tribes</span>, lead up to 3
-            </>
-          ) : (
-            <>
-              You can belong to <span className="font-black text-foreground">1 tribe</span> at a time.{" "}
-              <span className="text-[hsl(18_95%_58%)] font-bold">Apex unlocks 3.</span>
-            </>
-          )}
+          <span className="font-black text-foreground">Open to everyone</span> — create your own and
+          join up to <span className="font-black text-[hsl(18_95%_58%)]">25 tribes</span>.
         </p>
       </div>
 

@@ -1,32 +1,26 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, Users, Lock, Check, X } from "lucide-react";
+import { ArrowLeft, Loader2, Users, Lock, Globe, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const TRIBE_ACTIVITIES = ["Run", "Gym", "Yoga", "Ride", "Swim", "Hike", "Combat", "Walk", "Other"];
 
 const TribeNew = () => {
-  const { profile, isApexSubscriber } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [activity, setActivity] = useState("");
   const [description, setDescription] = useState("");
-  // All tribes are private — approval-based join only.
-  const visibility = "private" as const;
+  // Open to everyone: public = anyone joins instantly, private = approve.
+  const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [submitting, setSubmitting] = useState(false);
   const [nameStatus, setNameStatus] = useState<
     "idle" | "checking" | "available" | "taken" | "invalid"
   >("idle");
-
-  const tier = profile?.status_tier;
-  const canCreate =
-    isApexSubscriber || tier === "elite" || tier === "apex" || tier === "legend";
 
   // Debounced name availability check
   useEffect(() => {
@@ -51,22 +45,6 @@ const TribeNew = () => {
     }, 400);
     return () => clearTimeout(t);
   }, [name]);
-
-  if (!canCreate) {
-    return (
-      <div className="min-h-full px-4 pt-6 text-center">
-        <Lock size={32} className="mx-auto mb-3 text-[hsl(18_95%_58%)]" />
-        <h1 className="font-display font-black text-xl mb-2">
-          Elite tier required
-        </h1>
-        <p className="text-sm text-muted-foreground mb-6">
-          Tribes are founded by Elite+. Hit a 30-day streak (or top 20% rank) to
-          earn it — or go Apex instantly.
-        </p>
-        <Button onClick={() => navigate("/paywall")}>Go Apex</Button>
-      </div>
-    );
-  }
 
   const handleCreate = async () => {
     const trimmed = name.trim();
@@ -108,7 +86,8 @@ const TribeNew = () => {
 
       <h1 className="font-display text-2xl font-black mb-1">Create a Tribe</h1>
       <p className="text-xs text-muted-foreground mb-6">
-        Up to 3 tribes per Apex founder. Names must be unique. Every tribe is private — members fuel the shared flame with their streaks.
+        Open to everyone — start a tribe, pick what you do, and rally your people.
+        Members fuel the shared flame with their streaks and meetups.
       </p>
 
       <div className="space-y-4">
@@ -196,18 +175,27 @@ const TribeNew = () => {
 
         <div>
           <label className="text-[11px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
-            Privacy
+            Who can join
           </label>
-          <div className="rounded-xl border border-gold/40 bg-gold/8 p-3 flex items-start gap-3">
-            <div className="h-8 w-8 rounded-lg bg-gold/15 border border-gold/35 flex items-center justify-center shrink-0">
-              <Lock size={14} className="text-gold" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-black text-gold">Private by design</p>
-              <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
-                Every tribe is invite-only. New members must be approved by the founder. Your tribe's collective streak grows the flame everyone sees.
-              </p>
-            </div>
+          <div className="grid grid-cols-2 gap-2">
+            {([
+              { v: "public", icon: Globe, t: "Open", d: "Anyone can join instantly" },
+              { v: "private", icon: Lock, t: "Approval", d: "You approve each member" },
+            ] as const).map((o) => (
+              <button
+                key={o.v}
+                type="button"
+                onClick={() => setVisibility(o.v)}
+                className={cn(
+                  "rounded-xl border p-3 text-left transition-all active:scale-[0.98]",
+                  visibility === o.v ? "border-gold/50 bg-gold/[0.07]" : "border-border/60 bg-card/40",
+                )}
+              >
+                <o.icon size={15} className={visibility === o.v ? "text-gold" : "text-muted-foreground"} />
+                <p className={cn("text-[12.5px] font-black mt-1.5", visibility === o.v ? "text-gold" : "text-foreground")}>{o.t}</p>
+                <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">{o.d}</p>
+              </button>
+            ))}
           </div>
         </div>
 

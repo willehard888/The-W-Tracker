@@ -391,12 +391,11 @@ const Tribes = () => {
         </div>
       )}
 
-      {/* Create CTA */}
+      {/* Create CTA — single, refined (the empty state no longer duplicates it) */}
       {canCreate ? (
         <Button
           onClick={() => navigate("/tribes/new")}
           variant="ember"
-          size="lg"
           className="w-full mb-4"
         >
           <Plus size={16} /> Create a Tribe
@@ -429,7 +428,7 @@ const Tribes = () => {
             className={cn(
               "flex-1 text-xs font-black py-2 rounded-lg uppercase tracking-wider transition-all",
               tab === t
-                ? "bg-gradient-to-b from-gold/90 to-gold-dark text-primary-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.4),0_2px_8px_hsl(42_78%_50%/0.35)]"
+                ? "bg-gold text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -453,17 +452,17 @@ const Tribes = () => {
           <TribeSearchBar onChanged={reloadTribes} />
           <button
             onClick={() => navigate("/tribes/leaderboard")}
-            className="w-full mb-4 rounded-xl p-3 border border-gold/40 bg-gradient-to-r from-gold/10 via-card/70 to-[hsl(18_95%_58%)]/10 flex items-center gap-3 text-left transition-transform active:scale-[0.99] shadow-[0_0_14px_hsl(42_78%_54%/0.25)]"
+            className="w-full mb-4 rounded-xl p-3 border border-border/60 bg-card/40 flex items-center gap-3 text-left transition-transform active:scale-[0.99]"
           >
-            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-gold to-[hsl(18_95%_58%)] flex items-center justify-center shrink-0">
-              <Trophy size={16} className="text-background" strokeWidth={2.6} />
+            <div className="h-9 w-9 rounded-lg bg-gold/12 border border-gold/25 flex items-center justify-center shrink-0">
+              <Trophy size={16} className="text-gold" strokeWidth={2.6} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-widest font-black bg-gradient-to-r from-gold to-[hsl(18_95%_58%)] bg-clip-text text-transparent">
+              <p className="text-[10px] uppercase tracking-widest font-black text-gold/85">
                 Tribe Leaderboard
               </p>
               <p className="text-[11px] text-muted-foreground truncate">
-                See which tribes earn the most XP this week
+                Which tribes earn the most XP this week
               </p>
             </div>
             <ChevronRight size={14} className="text-muted-foreground shrink-0" />
@@ -515,15 +514,7 @@ const Tribes = () => {
               <Button size="sm" variant="ember" onClick={() => setTab("browse")}>
                 <ChevronRight size={14} /> Browse tribes
               </Button>
-            ) : canCreate ? (
-              <Button size="sm" variant="ember" onClick={() => navigate("/tribes/new")}>
-                <Plus size={14} /> Create a Tribe
-              </Button>
-            ) : (
-              <Button size="sm" variant="outline" onClick={() => navigate("/profile")}>
-                <Lock size={14} /> Road to Elite
-              </Button>
-            )
+            ) : undefined
           }
         />
       ) : (

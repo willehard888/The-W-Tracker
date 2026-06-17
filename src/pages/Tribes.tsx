@@ -88,6 +88,7 @@ const Tribes = () => {
   const [rowPulse, setRowPulse] = useState<Map<string, number>>(new Map());
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [tab, setTab] = useState<"browse" | "mine">("browse");
+  const [activityFilter, setActivityFilter] = useState<string | null>(null);
 
   const tier = profile?.status_tier;
   const canCreate =
@@ -315,8 +316,13 @@ const Tribes = () => {
     if (accept && invite.tribe_id) navigate(`/tribes/${invite.tribe_id}`);
   };
 
-  const featured = tribes.find((t) => !joinedIds.has(t.id) && t.member_count > 0 && !t.is_paused);
-  const restList = featured ? tribes.filter((t) => t.id !== featured.id) : tribes;
+  const featuredRaw = tribes.find((t) => !joinedIds.has(t.id) && t.member_count > 0 && !t.is_paused);
+  // Hide the featured card while an activity filter is active so the grid is pure.
+  const featured = activityFilter ? null : featuredRaw;
+  const restBase = featured ? tribes.filter((t) => t.id !== featured.id) : tribes;
+  const restList = activityFilter
+    ? restBase.filter((t) => (t as any).primary_activity === activityFilter)
+    : restBase;
 
   return (
     <div className="min-h-full pb-8 px-4 pt-4 relative">
@@ -471,6 +477,29 @@ const Tribes = () => {
             </div>
             <ChevronRight size={14} className="text-muted-foreground shrink-0" />
           </button>
+
+          {/* Browse by activity */}
+          <div className="mb-4 -mx-4 px-4 overflow-x-auto no-scrollbar">
+            <div className="flex gap-1.5 w-max">
+              {[null, "Run", "Gym", "Yoga", "Ride", "Swim", "Hike", "Combat", "Walk", "Other"].map((a) => {
+                const active = activityFilter === a;
+                return (
+                  <button
+                    key={a ?? "all"}
+                    onClick={() => setActivityFilter(a)}
+                    className={cn(
+                      "shrink-0 rounded-full px-3 py-1.5 text-[11px] font-black border transition-all active:scale-95",
+                      active
+                        ? "bg-gold text-primary-foreground border-transparent"
+                        : "bg-secondary/40 border-border/50 text-muted-foreground",
+                    )}
+                  >
+                    {a ?? "All"}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </>
       )}
 
@@ -696,8 +725,13 @@ const Tribes = () => {
                   >
                     {t.name}
                   </p>
+                  {(t as any).primary_activity && (
+                    <span className="inline-flex items-center mt-1 px-1.5 py-0.5 rounded-md bg-gold/10 border border-gold/30 text-[9px] font-black uppercase tracking-wider text-gold">
+                      {(t as any).primary_activity}
+                    </span>
+                  )}
                   {t.description && (
-                    <p className="text-[11px] text-muted-foreground/90 line-clamp-2 mt-0.5 leading-snug">
+                    <p className="text-[11px] text-muted-foreground/90 line-clamp-2 mt-1 leading-snug">
                       {t.description}
                     </p>
                   )}

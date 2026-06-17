@@ -9,10 +9,13 @@ import { ArrowLeft, Loader2, Users, Lock, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+const TRIBE_ACTIVITIES = ["Run", "Gym", "Yoga", "Ride", "Swim", "Hike", "Combat", "Walk", "Other"];
+
 const TribeNew = () => {
   const { profile, isApexSubscriber } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState("");
+  const [activity, setActivity] = useState("");
   const [description, setDescription] = useState("");
   // All tribes are private — approval-based join only.
   const visibility = "private" as const;
@@ -87,6 +90,9 @@ const TribeNew = () => {
       toast.error(error.message);
       return;
     }
+    if (activity) {
+      await supabase.rpc("set_tribe_activity" as any, { p_tribe: data, p_activity: activity }).catch(() => {});
+    }
     toast.success("Tribe created!");
     navigate(`/tribes/${data}`);
   };
@@ -146,6 +152,30 @@ const TribeNew = () => {
               <p className="text-[10px] font-bold text-muted-foreground">3–40 chars</p>
             )}
           </div>
+        </div>
+
+        <div>
+          <label className="text-[11px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
+            Activity
+          </label>
+          <div className="flex flex-wrap gap-1.5">
+            {TRIBE_ACTIVITIES.map((a) => (
+              <button
+                key={a}
+                type="button"
+                onClick={() => setActivity(a === activity ? "" : a)}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-[11px] font-bold border transition-all active:scale-95",
+                  activity === a
+                    ? "bg-gold text-primary-foreground border-transparent"
+                    : "bg-secondary/40 border-border/50 text-muted-foreground",
+                )}
+              >
+                {a}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-1.5">Helps people discover your tribe by what you do.</p>
         </div>
 
         <div>

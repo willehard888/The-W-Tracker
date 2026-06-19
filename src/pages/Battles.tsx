@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { downscaleImage } from "@/lib/downscale-image";
 import { uniqueChannelName } from "@/lib/realtime";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-is-admin";
@@ -290,9 +291,10 @@ const Battles = () => {
 
     setUploadingProof(battleId);
     try {
-      const ext = file.name.split(".").pop();
+      const upload = await downscaleImage(file, { maxDim: 1280, quality: 0.8 });
+      const ext = upload.name.split(".").pop();
       const path = `${profile.user_id}/battle-${battleId}-${Date.now()}.${ext}`;
-      const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, file);
+      const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, upload, { contentType: upload.type });
       if (uploadErr) throw uploadErr;
 
       const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);

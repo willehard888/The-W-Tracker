@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { downscaleImage } from "@/lib/downscale-image";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import { checkAndAwardBadges } from "@/lib/badge-awards";
@@ -283,11 +284,13 @@ const DailyCheckin = () => {
           return;
         }
 
-        const ext = proofFile.name.split(".").pop();
+        const upload = await downscaleImage(proofFile, { maxDim: 1280, quality: 0.8 });
+        const ext = upload.name.split(".").pop();
         const path = `${user.id}/${Date.now()}.${ext}`;
-        const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, proofFile, {
+        const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, upload, {
           cacheControl: "3600",
           upsert: false,
+          contentType: upload.type,
         });
         if (uploadErr) throw new Error(`Photo upload failed: ${uploadErr.message}`);
         const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);

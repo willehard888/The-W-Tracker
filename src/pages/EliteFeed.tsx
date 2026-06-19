@@ -22,6 +22,7 @@ import ImageLightbox from "@/components/ImageLightbox";
 import AppImage from "@/components/ui/app-image";
 import FeedPostCard from "@/components/feed/FeedPostCard";
 import { buildCommentTree } from "@/lib/comment-tree";
+import { downscaleImage } from "@/lib/downscale-image";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -206,11 +207,13 @@ const EliteFeed = () => {
       }
 
       if (imageFile) {
-        const fileExt = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        // Shrink before upload so we don't store/serve multi-MB originals.
+        const upload = await downscaleImage(imageFile, { maxDim: 1280, quality: 0.8 });
+        const fileExt = upload.name.split(".").pop()?.toLowerCase() || "jpg";
         const safeExt = ["jpeg", "jpg", "png", "webp", "heic", "heif"].includes(fileExt) ? fileExt : "jpg";
         const path = `${user.id}/${Date.now()}.${safeExt}`;
-        const contentType = imageFile.type || `image/${safeExt === "jpg" ? "jpeg" : safeExt}`;
-        const { error: uploadErr } = await supabase.storage.from("feed-images").upload(path, imageFile, {
+        const contentType = upload.type || `image/${safeExt === "jpg" ? "jpeg" : safeExt}`;
+        const { error: uploadErr } = await supabase.storage.from("feed-images").upload(path, upload, {
           cacheControl: "3600",
           upsert: false,
           contentType,

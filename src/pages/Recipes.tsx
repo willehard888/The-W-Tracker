@@ -5,6 +5,7 @@ import {
   ChevronRight, Utensils, Layers, Leaf, Maximize2,
 } from "lucide-react";
 import PosterZoom from "@/components/recipes/PosterZoom";
+import { recipeThumb, recipePoster } from "@/lib/recipe-images";
 import { Button } from "@/components/ui/button";
 import { RECIPES, type Recipe } from "@/data/recipes";
 import { cn } from "@/lib/utils";
@@ -18,30 +19,21 @@ const SECTIONS = [
   { key: "sweet", label: "Breakfast & sweet" },
 ] as const;
 
-// Poster images live in a public Storage bucket, named by recipe id (slug):
-// e.g. recipe-images/greek-chicken-bowl.jpg. Upload the 5 posters there and
-// they appear as headers automatically; until then a gold gradient shows.
-const RECIPE_IMG_BASE =
-  "https://gcwuvijcuzhunkcauzom.supabase.co/storage/v1/object/public/recipe-images/";
-
-// Try common extensions in order so whatever format the poster is uploaded as
-// (named by slug) just works: greek-chicken-bowl.jpg / .png / .jpeg / .webp.
-const IMG_EXTS = ["jpg", "png", "jpeg", "webp"] as const;
+// Recipe images are bundled + pre-optimized locally — see src/lib/recipe-images.ts.
+// (Supabase image transforms aren't enabled on this plan, so the storage
+// originals were ~2MB PNGs; the bundled JPEGs load ~30× faster from the CDN.)
 
 const RecipeImage = ({ id, className }: { id: string; className?: string }) => {
-  const [extIdx, setExtIdx] = useState(0);
+  const src = recipePoster(id);
   const [failed, setFailed] = useState(false);
-  if (failed) return null;
+  if (!src || failed) return null;
   return (
     <img
-      src={`${RECIPE_IMG_BASE}${id}.${IMG_EXTS[extIdx]}`}
+      src={src}
       alt=""
       loading="lazy"
       decoding="async"
-      onError={() => {
-        if (extIdx < IMG_EXTS.length - 1) setExtIdx(extIdx + 1);
-        else setFailed(true);
-      }}
+      onError={() => setFailed(true)}
       className={className}
     />
   );
@@ -57,7 +49,7 @@ const fmtQty = (qty: number | undefined, batch: number) => {
 const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }) => {
   const [batch, setBatch] = useState(1);
   const [zoomed, setZoomed] = useState(false);
-  const posterUrl = `${RECIPE_IMG_BASE}${recipe.id}.png`;
+  const posterUrl = recipePoster(recipe.id) ?? "";
 
   return (
     <div className="flex flex-col">
@@ -241,7 +233,7 @@ const Recipes = () => {
                         <div
                           className="absolute inset-0 bg-no-repeat"
                           style={{
-                            backgroundImage: `url(${RECIPE_IMG_BASE}${r.id}.png)`,
+                            backgroundImage: `url(${recipeThumb(r.id)})`,
                             backgroundSize: "230%",
                             backgroundPosition: "85% 16%",
                           }}

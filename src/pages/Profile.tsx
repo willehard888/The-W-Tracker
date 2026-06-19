@@ -5,6 +5,7 @@ import { isNativePlatform } from "@/lib/platform";
 import StatCard from "@/components/StatCard";
 import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
 import ProfileHero from "@/components/profile/ProfileHero";
+import { downscaleImage } from "@/lib/downscale-image";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeVault from "@/components/BadgeVault";
 import BadgeShowcase from "@/components/BadgeShowcase";
@@ -92,9 +93,11 @@ const Profile = () => {
     if (!file || !profile) return;
     setUploadingAvatar(true);
     try {
-      const ext = file.name.split(".").pop();
+      // Shrink before upload — avatars render ≤128px, no need to store a multi-MB original.
+      const optimized = await downscaleImage(file, { maxDim: 512, quality: 0.82, skipUnder: 60_000 });
+      const ext = optimized.name.split(".").pop();
       const path = `avatars/${profile.user_id}-${Date.now()}.${ext}`;
-      const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, file);
+      const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, optimized, { contentType: optimized.type });
       if (uploadErr) throw uploadErr;
       const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
       await supabase.rpc("update_own_profile", { new_avatar_url: urlData.publicUrl });

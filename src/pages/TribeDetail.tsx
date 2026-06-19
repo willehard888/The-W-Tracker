@@ -36,6 +36,7 @@ import TribeEvents from "@/components/tribe/TribeEvents";
 import TribeMembersRow from "@/components/tribe/TribeMembersRow";
 import TribeComposer from "@/components/tribe/TribeComposer";
 import TribeHeader from "@/components/tribe/TribeHeader";
+import { downscaleImage } from "@/lib/downscale-image";
 import TribePostCard, { type TribePostCardPost } from "@/components/TribePostCard";
 import { useModeration } from "@/hooks/use-moderation";
 import TierUsername from "@/components/TierUsername";
@@ -387,11 +388,13 @@ const TribeDetail = () => {
       }
 
       if (imageFile) {
-        const ext = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        // Shrink before upload so we don't store/serve multi-MB originals.
+        const upload = await downscaleImage(imageFile, { maxDim: 1280, quality: 0.8 });
+        const ext = upload.name.split(".").pop()?.toLowerCase() || "jpg";
         const safeExt = ["jpeg", "jpg", "png", "webp", "heic", "heif"].includes(ext) ? ext : "jpg";
         const path = `${user.id}/tribes/${Date.now()}.${safeExt}`;
-        const contentType = imageFile.type || `image/${safeExt === "jpg" ? "jpeg" : safeExt}`;
-        const { error: upErr } = await supabase.storage.from("feed-images").upload(path, imageFile, {
+        const contentType = upload.type || `image/${safeExt === "jpg" ? "jpeg" : safeExt}`;
+        const { error: upErr } = await supabase.storage.from("feed-images").upload(path, upload, {
           cacheControl: "3600", upsert: false, contentType,
         });
         if (upErr) throw new Error(`Image upload failed: ${upErr.message}`);

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { downscaleImage } from "@/lib/downscale-image";
 import { toast } from "sonner";
 import { Crown, Loader2, Settings, Shield, ShieldOff, UserMinus, Lock, Image as ImageIcon, Trash2, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -114,11 +115,12 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
         if (outcome.blocked) {
           throw new Error(outcome.friendlyMessage ?? "Image rejected by content policy");
         }
-        const ext = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        const upload = await downscaleImage(coverFile, { maxDim: 1280, quality: 0.8 });
+        const ext = upload.name.split(".").pop()?.toLowerCase() || "jpg";
         const safeExt = ["jpeg", "jpg", "png", "webp"].includes(ext) ? ext : "jpg";
         const path = `${user.id}/tribe-covers/${tribeId}-${Date.now()}.${safeExt}`;
-        const contentType = coverFile.type || `image/${safeExt === "jpg" ? "jpeg" : safeExt}`;
-        const { error: upErr } = await supabase.storage.from("feed-images").upload(path, coverFile, {
+        const contentType = upload.type || `image/${safeExt === "jpg" ? "jpeg" : safeExt}`;
+        const { error: upErr } = await supabase.storage.from("feed-images").upload(path, upload, {
           cacheControl: "3600",
           upsert: false,
           contentType,

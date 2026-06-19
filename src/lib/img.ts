@@ -23,20 +23,21 @@ interface ImgOpts {
 const dpr = (): number =>
   typeof window !== "undefined" ? Math.min(Math.round(window.devicePixelRatio || 1), 3) : 2;
 
-export function transformImage(url: string | null | undefined, opts: ImgOpts): string {
-  if (!url || typeof url !== "string") return "";
-  if (!url.includes(OBJECT_SEG)) return url; // not a transformable Supabase object
-  if (url.includes("?")) return url;          // already has params — don't double up
-
-  const scale = dpr();
-  const params = new URLSearchParams();
-  params.set("width", String(Math.round(opts.width * scale)));
-  if (opts.height) params.set("height", String(Math.round(opts.height * scale)));
-  params.set("quality", String(opts.quality ?? 70));
-  params.set("resize", opts.resize ?? "cover");
-
-  return url.replace(OBJECT_SEG, RENDER_SEG) + "?" + params.toString();
+export function transformImage(url: string | null | undefined, _opts: ImgOpts): string {
+  // NOTE: Supabase image transforms (the render/image endpoint) are NOT enabled
+  // on this project's plan — they return 403 "FeatureNotEnabled". The previous
+  // implementation rewrote URLs to that endpoint, so every AppImage paid a
+  // failed round-trip (403) before falling back to the full original. Until the
+  // plan enables transforms, return the original URL directly so images load on
+  // the first request. (Re-enable the rewrite below once transforms are on.)
+  return url || "";
 }
+
+// Kept for when transforms get enabled (Pro plan + image transformation add-on):
+//   const scale = dpr();
+//   const params = new URLSearchParams({ width: String(Math.round(opts.width * scale)), ... });
+//   return url.replace(OBJECT_SEG, RENDER_SEG) + "?" + params.toString();
+void OBJECT_SEG; void RENDER_SEG; void dpr;
 
 /** Square, retina-aware avatar URL sized to the rendered px. */
 export function avatarUrl(url: string | null | undefined, px: number): string {

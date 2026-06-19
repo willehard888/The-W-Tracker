@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getTierConfig } from "@/lib/status-tiers";
+import { recipeThumb } from "@/lib/recipe-images";
 import { useTierRisk } from "@/hooks/use-tier-risk";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { useDailyPulse } from "@/hooks/use-daily-pulse";
@@ -250,8 +251,7 @@ const Index = () => {
               <div
                 className="absolute inset-0 bg-no-repeat"
                 style={{
-                  backgroundImage:
-                    "url(https://gcwuvijcuzhunkcauzom.supabase.co/storage/v1/object/public/recipe-images/greek-chicken-bowl.png)",
+                  backgroundImage: `url(${recipeThumb("greek-chicken-bowl")})`,
                   backgroundSize: "230%",
                   backgroundPosition: "85% 16%",
                 }}

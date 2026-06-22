@@ -45,7 +45,7 @@ import MemberContributionStrip from "@/components/MemberContributionStrip";
 import FeedTheFireCTA from "@/components/FeedTheFireCTA";
 import TribeAmbientFireField from "@/components/TribeAmbientFireField";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
-import { hapticImpact } from "@/lib/haptics";
+import { hapticImpact, hapticSelection, hapticNotification } from "@/lib/haptics";
 import { fetchTribeCollectiveStreak, collectiveAccent, collectiveStreakTier, collectiveTierName } from "@/lib/tribe-streak";
 
 interface Member {
@@ -79,6 +79,7 @@ const TribeDetail = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [posting, setPosting] = useState(false);
+  const [uploadPhase, setUploadPhase] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMember, setIsMember] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
@@ -352,6 +353,7 @@ const TribeDetail = () => {
     const isImage = file.type.startsWith("image/") || SUPPORTED_IMAGE_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
     if (!isImage) { toast.error("Please select an image."); e.target.value = ""; return; }
     if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) { toast.error(`Max ${MAX_IMAGE_SIZE_MB}MB.`); e.target.value = ""; return; }
+    hapticSelection();
     setVideoFile(null); setVideoPreview(null);
     setImageFile(file);
     const reader = new FileReader();
@@ -365,6 +367,7 @@ const TribeDetail = () => {
     const isVideo = file.type.startsWith("video/") || SUPPORTED_VIDEO_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(ext));
     if (!isVideo) { toast.error("Please select a video."); e.target.value = ""; return; }
     if (file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) { toast.error(`Max ${MAX_VIDEO_SIZE_MB}MB.`); e.target.value = ""; return; }
+    hapticSelection();
     setImageFile(null); setImagePreview(null);
     setVideoFile(file);
     setVideoPreview(URL.createObjectURL(file));
@@ -389,11 +392,13 @@ const TribeDetail = () => {
 
       if (imageFile) {
         // Shrink before upload so we don't store/serve multi-MB originals.
+        setUploadPhase("Optimizing…");
         const upload = await downscaleImage(imageFile, { maxDim: 1280, quality: 0.8 });
         const ext = upload.name.split(".").pop()?.toLowerCase() || "jpg";
         const safeExt = ["jpeg", "jpg", "png", "webp", "heic", "heif"].includes(ext) ? ext : "jpg";
         const path = `${user.id}/tribes/${Date.now()}.${safeExt}`;
         const contentType = upload.type || `image/${safeExt === "jpg" ? "jpeg" : safeExt}`;
+        setUploadPhase("Uploading…");
         const { error: upErr } = await supabase.storage.from("feed-images").upload(path, upload, {
           cacheControl: "3600", upsert: false, contentType,
         });
@@ -402,6 +407,7 @@ const TribeDetail = () => {
       }
 
       if (videoFile) {
+        setUploadPhase("Uploading…");
         const ext = videoFile.name.split(".").pop()?.toLowerCase() || "mp4";
         const path = `${user.id}/tribes/${Date.now()}.${ext}`;
         const { error: upErr } = await supabase.storage.from("feed-images").upload(path, videoFile, {
@@ -423,12 +429,14 @@ const TribeDetail = () => {
       setComposer("");
       setImageFile(null); setImagePreview(null);
       setVideoFile(null); setVideoPreview(null);
+      hapticNotification("success");
       toast.success("Posted! 🔥");
       load();
     } catch (e: any) {
       toast.error(e?.message || "Failed to post");
     } finally {
       setPosting(false);
+      setUploadPhase(null);
     }
   };
 
@@ -646,6 +654,7 @@ const TribeDetail = () => {
           hasImage={!!imageFile}
           hasVideo={!!videoFile}
           onPost={handlePost}
+          progressLabel={uploadPhase}
         />
       )}
 

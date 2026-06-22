@@ -1,6 +1,7 @@
-import { Image as ImageIcon, Video as VideoIcon, Send, Loader2, X } from "lucide-react";
+import { Image as ImageIcon, Video as VideoIcon, Send, Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import MediaPreview from "@/components/media/MediaPreview";
 
 export interface TribeComposerProps {
   value: string;
@@ -17,6 +18,7 @@ export interface TribeComposerProps {
   hasImage: boolean;
   hasVideo: boolean;
   onPost: () => void;
+  progressLabel?: string | null;
 }
 
 /**
@@ -38,6 +40,7 @@ const TribeComposer = ({
   hasImage,
   hasVideo,
   onPost,
+  progressLabel,
 }: TribeComposerProps) => (
   <div className="mb-4 rounded-2xl p-3 border border-[hsl(18_95%_58%)]/25 bg-card/70">
     <Textarea
@@ -51,24 +54,12 @@ const TribeComposer = ({
 
     {/* Image preview */}
     {imagePreview && (
-      <div className="relative mt-2 rounded-xl overflow-hidden">
-        <img loading="lazy" decoding="async" src={imagePreview} alt="Preview" className="w-full max-h-56 object-cover" />
-        <button onClick={onClearImage}
-          className="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80">
-          <X size={14} />
-        </button>
-      </div>
+      <MediaPreview imageSrc={imagePreview} progressLabel={progressLabel} onClear={onClearImage} />
     )}
 
     {/* Video preview */}
     {videoPreview && (
-      <div className="relative mt-2 rounded-xl overflow-hidden bg-black">
-        <video src={videoPreview} controls className="w-full max-h-56 object-contain" />
-        <button onClick={onClearVideo}
-          className="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80">
-          <X size={14} />
-        </button>
-      </div>
+      <MediaPreview videoSrc={videoPreview} progressLabel={progressLabel} onClear={onClearVideo} />
     )}
 
     <div className="flex items-center justify-between mt-2">

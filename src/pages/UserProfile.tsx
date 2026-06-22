@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Flame, Zap, Award, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Crown, TrendingUp, Share2, Trophy, Camera, Play } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
+import AppImage from "@/components/ui/app-image";
 import StatusAvatar from "@/components/StatusAvatar";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { Button } from "@/components/ui/button";
@@ -624,10 +625,10 @@ const UserProfile = () => {
                         </span>
                       </>
                     ) : (
-                      <img
+                      <AppImage
                         src={src}
+                        width={320}
                         alt={`@${profile.username} post`}
-                        loading="lazy"
                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     )}

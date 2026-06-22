@@ -10,8 +10,7 @@ import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
 import StreakFlameInline from "@/components/StreakFlameInline";
-import AppImage from "@/components/ui/app-image";
-import LazyVideoPlayer from "@/components/LazyVideoPlayer";
+import PostMedia from "@/components/feed/PostMedia";
 import CommentThread from "@/components/feed/CommentThread";
 import type { CommentNode } from "@/lib/comment-tree";
 import {
@@ -244,43 +243,16 @@ const FeedPostCard = memo(function FeedPostCard({
 
       {/* Image — tap to open premium lightbox */}
       {post.image_url && (
-        <div className="mt-3 mx-4 rounded-xl overflow-hidden relative group">
-          {isUnsupportedHeic(post.image_url) ? (
-            <div className="rounded-xl border border-border bg-muted/40 p-4 text-xs text-muted-foreground">
-              This image format is not supported in all devices. Please upload JPG, PNG or WEBP.
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onOpenLightbox(post)}
-              className="block w-full text-left active:opacity-90 transition-opacity"
-              aria-label="Open image preview"
-            >
-              <AppImage
-                src={post.image_url}
-                width={760}
-                alt={post.content || "Post image"}
-                className="w-full max-h-96 object-cover transition-transform duration-500 group-hover:scale-[1.01]"
-              />
-              {/* Subtle gradient + tier ribbon */}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
-              {post.profile?.status_tier === "elite" && (
-                <div className="pointer-events-none absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm border border-gold/40">
-                  <Crown size={10} className="text-gold" />
-                  <span className="text-[9px] font-black tracking-wider text-gold uppercase">Elite</span>
-                </div>
-              )}
-            </button>
-          )}
-        </div>
+        <PostMedia
+          imageUrl={post.image_url}
+          alt={post.content || "Post image"}
+          tier={post.profile?.status_tier}
+          onOpenImage={() => onOpenLightbox(post)}
+        />
       )}
 
       {/* Video */}
-      {(post as any).video_url && (
-        <div className="mt-3 mx-4 rounded-xl overflow-hidden">
-          <LazyVideoPlayer src={(post as any).video_url} />
-        </div>
-      )}
+      {(post as any).video_url && <PostMedia videoUrl={(post as any).video_url} />}
 
       {/* Actions — themed for ranking system */}
       <div className="flex items-center gap-1 px-3 py-2.5 mt-1 border-t border-border/40">

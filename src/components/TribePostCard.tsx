@@ -229,7 +229,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
     queryKey: ["tribe-post-comments", post.id],
     queryFn: async () => {
       const { data } = await supabase
-        .from("tribe_post_comments" as any)
+        .from("tribe_post_comments")
         .select("*")
         .eq("post_id", post.id)
         .order("created_at", { ascending: true });
@@ -248,7 +248,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
   const addComment = useMutation({
     mutationFn: async () => {
       if (!user || !commentText.trim()) return;
-      const { error } = await supabase.from("tribe_post_comments" as any).insert({
+      const { error } = await supabase.from("tribe_post_comments").insert({
         post_id: post.id,
         user_id: user.id,
         content: commentText.trim(),
@@ -269,7 +269,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
     mutationFn: async ({ id, content }: { id: string; content: string }) => {
       if (!user) throw new Error("Not signed in");
       const { error } = await supabase
-        .from("tribe_post_comments" as any)
+        .from("tribe_post_comments")
         .update({ content, updated_at: new Date().toISOString() })
         .eq("id", id)
         .eq("user_id", user.id);
@@ -285,7 +285,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
   const deleteComment = useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error("Not signed in");
-      const { error } = await supabase.from("tribe_post_comments" as any).delete().eq("id", id);
+      const { error } = await supabase.from("tribe_post_comments").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -301,10 +301,10 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
       if (!user) return;
       hapticImpact(post.liked ? "light" : "medium");
       if (post.liked) {
-        await supabase.from("tribe_post_reactions" as any).delete()
+        await supabase.from("tribe_post_reactions").delete()
           .eq("post_id", post.id).eq("user_id", user.id);
       } else {
-        await supabase.from("tribe_post_reactions" as any).insert({
+        await supabase.from("tribe_post_reactions").insert({
           post_id: post.id, user_id: user.id,
         });
       }
@@ -316,12 +316,12 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
     mutationFn: async () => {
       if (!user) return;
       if (post.kudosed) {
-        const { error } = await supabase.from("tribe_post_kudos" as any).delete()
+        const { error } = await supabase.from("tribe_post_kudos").delete()
           .eq("post_id", post.id).eq("giver_id", user.id);
         if (error) throw error;
       } else {
         if (kudosRemaining <= 0) throw new Error("Monthly kudos used up");
-        const { error } = await supabase.from("tribe_post_kudos" as any).insert({
+        const { error } = await supabase.from("tribe_post_kudos").insert({
           post_id: post.id, giver_id: user.id, receiver_id: post.user_id,
         });
         if (error) throw error;
@@ -337,10 +337,10 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
   const reportPost = useMutation({
     mutationFn: async () => {
       if (!user) return;
-      await supabase.from("tribe_post_reports" as any).insert({
+      await supabase.from("tribe_post_reports").insert({
         post_id: post.id, reporter_id: user.id, reason: "Reported by user",
       });
-      await supabase.from("tribe_posts" as any).update({ reported: true }).eq("id", post.id);
+      await supabase.from("tribe_posts").update({ reported: true }).eq("id", post.id);
     },
     onSuccess: () => {
       toast.success("Post reported", { description: "Tribe owner will review it." });
@@ -351,7 +351,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
 
   const deletePost = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("tribe_posts" as any).delete().eq("id", post.id);
+      const { error } = await supabase.from("tribe_posts").delete().eq("id", post.id);
       if (error) throw error;
     },
     onSuccess: () => {

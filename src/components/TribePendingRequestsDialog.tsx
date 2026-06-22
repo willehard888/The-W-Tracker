@@ -30,7 +30,7 @@ const TribePendingRequestsDialog = ({ tribeId, open, onOpenChange, onChanged }: 
   const load = async () => {
     setLoading(true);
     const { data: rows } = await supabase
-      .from("tribe_members" as any)
+      .from("tribe_members")
       .select("user_id, joined_at")
       .eq("tribe_id", tribeId)
       .eq("status", "pending")

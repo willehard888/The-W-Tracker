@@ -44,7 +44,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
 
     // Get all post ids in this tribe first (RLS allows owner to view reports for their posts)
     const { data: tribePosts } = await supabase
-      .from("tribe_posts" as any)
+      .from("tribe_posts")
       .select("id")
       .eq("tribe_id", tribeId);
     const postIds = ((tribePosts as any) ?? []).map((p: any) => p.id);
@@ -55,7 +55,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
     }
 
     const { data: rawReports } = await supabase
-      .from("tribe_post_reports" as any)
+      .from("tribe_post_reports")
       .select("*")
       .in("post_id", postIds)
       .eq("resolved", false)
@@ -73,7 +73,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
     const reportedPostIds = Array.from(new Set(list.map((r) => r.post_id)));
 
     const [postsRes, reportersRes] = await Promise.all([
-      supabase.from("tribe_posts" as any)
+      supabase.from("tribe_posts")
         .select("id, content, image_url, video_url, user_id")
         .in("id", reportedPostIds),
       supabase.from("profiles")
@@ -116,7 +116,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
     // and clear the post.reported flag so the badge disappears on the post card.
     if (r.post?.id) {
       await supabase
-        .from("tribe_posts" as any)
+        .from("tribe_posts")
         .update({ reported: false })
         .eq("id", r.post.id);
     }
@@ -131,7 +131,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
     if (!confirm("Delete this post? This cannot be undone.")) return;
     setBusyId(r.id);
     const { error } = await supabase
-      .from("tribe_posts" as any)
+      .from("tribe_posts")
       .delete()
       .eq("id", r.post.id);
     if (error) {

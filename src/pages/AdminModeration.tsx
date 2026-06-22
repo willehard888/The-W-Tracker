@@ -29,7 +29,7 @@ export default function AdminModeration() {
     enabled: !!isAdmin,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("moderation_queue" as any)
+        .from("moderation_queue")
         .select("*")
         .eq("status", "pending")
         .order("created_at", { ascending: false })
@@ -70,7 +70,7 @@ export default function AdminModeration() {
   ) => {
     if (!user) return;
     const { error } = await supabase
-      .from("moderation_queue" as any)
+      .from("moderation_queue")
       .update({
         status: decision,
         reviewed_by: user.id,

@@ -29,7 +29,7 @@ export const useCoachGoals = () => {
     gcTime:    30 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("coach_goals" as any)
+        .from("coach_goals")
         .select("*")
         .eq("user_id", user!.id)
         .order("status", { ascending: true })
@@ -61,7 +61,7 @@ export const useCoachGoals = () => {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("coach_goals" as any).delete().eq("id", id);
+      const { error } = await supabase.from("coach_goals").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["coach-goals", user?.id] }),

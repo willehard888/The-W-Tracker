@@ -108,7 +108,7 @@ const TribeDetail = () => {
       if (!user) return 0;
       const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
       const { count } = await supabase
-        .from("tribe_post_kudos" as any)
+        .from("tribe_post_kudos")
         .select("id", { count: "exact", head: true })
         .eq("giver_id", user.id)
         .gte("created_at", startOfMonth);
@@ -129,10 +129,10 @@ const TribeDetail = () => {
     setLoading(true);
 
     const [tRes, mRes, pRes, allMRes] = await Promise.all([
-      supabase.from("tribes" as any).select("*").eq("id", id).maybeSingle(),
-      supabase.from("tribe_members" as any).select("role, status").eq("tribe_id", id).eq("user_id", profile.user_id).maybeSingle(),
-      supabase.from("tribe_posts" as any).select("*").eq("tribe_id", id).order("created_at", { ascending: false }).limit(50),
-      supabase.from("tribe_members" as any).select("user_id, role").eq("tribe_id", id).eq("status", "active").limit(40),
+      supabase.from("tribes").select("*").eq("id", id).maybeSingle(),
+      supabase.from("tribe_members").select("role, status").eq("tribe_id", id).eq("user_id", profile.user_id).maybeSingle(),
+      supabase.from("tribe_posts").select("*").eq("tribe_id", id).order("created_at", { ascending: false }).limit(50),
+      supabase.from("tribe_members").select("user_id, role").eq("tribe_id", id).eq("status", "active").limit(40),
     ]);
 
     setTribe((tRes as any).data);
@@ -165,10 +165,10 @@ const TribeDetail = () => {
         ? supabase.from("profiles").select("user_id, username, avatar_url, status_tier, level, streak").in("user_id", authorIds)
         : Promise.resolve({ data: [] as any[] } as any),
       postIds.length && profile?.user_id
-        ? supabase.from("tribe_post_reactions" as any).select("post_id").eq("user_id", profile.user_id).in("post_id", postIds)
+        ? supabase.from("tribe_post_reactions").select("post_id").eq("user_id", profile.user_id).in("post_id", postIds)
         : Promise.resolve({ data: [] as any[] } as any),
       postIds.length && profile?.user_id
-        ? supabase.from("tribe_post_kudos" as any).select("post_id").eq("giver_id", profile.user_id).in("post_id", postIds)
+        ? supabase.from("tribe_post_kudos").select("post_id").eq("giver_id", profile.user_id).in("post_id", postIds)
         : Promise.resolve({ data: [] as any[] } as any),
     ]);
     const aMap = new Map(((authorRes as any).data ?? []).map((a: any) => [a.user_id, a]));
@@ -185,14 +185,14 @@ const TribeDetail = () => {
 
     if (m?.role === "owner") {
       const { count } = await supabase
-        .from("tribe_members" as any)
+        .from("tribe_members")
         .select("user_id", { count: "exact", head: true })
         .eq("tribe_id", id)
         .eq("status", "pending");
       setPendingCount(count ?? 0);
 
       const { count: rCount } = await supabase
-        .from("tribe_posts" as any)
+        .from("tribe_posts")
         .select("id", { count: "exact", head: true })
         .eq("tribe_id", id)
         .eq("reported", true);
@@ -418,7 +418,7 @@ const TribeDetail = () => {
         video_url = supabase.storage.from("feed-images").getPublicUrl(path).data.publicUrl;
       }
 
-      const { error } = await supabase.from("tribe_posts" as any).insert({
+      const { error } = await supabase.from("tribe_posts").insert({
         tribe_id: id,
         user_id: user.id,
         content: text || null,

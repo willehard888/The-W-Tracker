@@ -22,7 +22,7 @@ export const useCoachMemory = () => {
     gcTime:    15 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("coach_chat_memory" as any)
+        .from("coach_chat_memory")
         .select("*")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });

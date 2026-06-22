@@ -68,7 +68,7 @@ export const useAthleteProfile = () => {
     gcTime:    30 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("coach_athlete_profile" as any)
+        .from("coach_athlete_profile")
         .select("*")
         .eq("user_id", user!.id)
         .maybeSingle();

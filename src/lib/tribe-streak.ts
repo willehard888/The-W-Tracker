@@ -51,7 +51,7 @@ export const isFirestorm = (total: number) => collectiveStreakTier(total) >= 6;
  */
 export const fetchTribeCollectiveStreak = async (tribeId: string): Promise<number> => {
   const { data: members } = await supabase
-    .from("tribe_members" as any)
+    .from("tribe_members")
     .select("user_id")
     .eq("tribe_id", tribeId)
     .eq("status", "active");
@@ -77,7 +77,7 @@ export const fetchTribeCollectiveStreak = async (tribeId: string): Promise<numbe
 export const fetchUserTotalTribeHeat = async (userId: string): Promise<number> => {
   // 1. tribes the user is an active member of
   const { data: myMemberships } = await supabase
-    .from("tribe_members" as any)
+    .from("tribe_members")
     .select("tribe_id")
     .eq("user_id", userId)
     .eq("status", "active");
@@ -86,7 +86,7 @@ export const fetchUserTotalTribeHeat = async (userId: string): Promise<number> =
 
   // 2. all active members across those tribes
   const { data: allMembers } = await supabase
-    .from("tribe_members" as any)
+    .from("tribe_members")
     .select("user_id")
     .in("tribe_id", tribeIds)
     .eq("status", "active");
@@ -120,7 +120,7 @@ export const fetchTribeCollectiveStreaks = async (
   tribeIds.forEach((id) => out.set(id, 0));
 
   const { data: members } = await supabase
-    .from("tribe_members" as any)
+    .from("tribe_members")
     .select("tribe_id, user_id")
     .in("tribe_id", tribeIds)
     .eq("status", "active");

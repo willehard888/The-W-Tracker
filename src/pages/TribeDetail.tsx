@@ -117,6 +117,19 @@ const TribeDetail = () => {
     enabled: !!user,
   });
 
+  // Tribe-level verified discipline — which members are HealthKit-verified.
+  // Reuses the verified_authors RPC; keyed by member ids (TanStack compares by value).
+  const { data: verifiedMemberIds } = useQuery({
+    queryKey: ["tribe-verified-members", members.map((m) => m.user_id)],
+    enabled: members.length > 0,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("verified_authors", { p_ids: members.map((m) => m.user_id) });
+      if (error) return new Set<string>();
+      return new Set((data as string[]) ?? []);
+    },
+  });
+
   const kudosRemaining = Math.max(0, 2 - (kudosGivenThisMonth || 0));
   const canKudos = !!profile && (
     (profile as any).is_apex_subscriber === true ||
@@ -631,7 +644,7 @@ const TribeDetail = () => {
       {/* (Hero flame moved to top of page) */}
 
       {/* Members row */}
-      <TribeMembersRow members={members} onMemberClick={(uid) => navigate(`/user/${uid}`)} />
+      <TribeMembersRow members={members} onMemberClick={(uid) => navigate(`/user/${uid}`)} verifiedIds={verifiedMemberIds} />
 
       {/* Meetups & events — the show-up-together loop */}
       {id && (

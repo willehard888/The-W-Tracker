@@ -1,4 +1,4 @@
-import { Crown, Shield } from "lucide-react";
+import { Crown, Shield, ShieldCheck } from "lucide-react";
 import TierUsername from "@/components/TierUsername";
 import { avatarUrl } from "@/lib/img";
 
@@ -12,21 +12,31 @@ export interface TribeMember {
 
 /**
  * Horizontal members strip for a tribe (owner/admin badges, tap to open profile).
- * Extracted verbatim from TribeDetail.tsx.
+ * `verifiedIds` = members with HealthKit-verified discipline → shown as a count
+ * in the header + a green check on their avatar (the verified-discipline wedge,
+ * extended to the tribe level).
  */
 const TribeMembersRow = ({
   members,
   onMemberClick,
+  verifiedIds,
 }: {
   members: TribeMember[];
   onMemberClick: (userId: string) => void;
+  verifiedIds?: Set<string>;
 }) => {
   if (members.length === 0) return null;
+  const verifiedCount = verifiedIds ? members.filter((m) => verifiedIds.has(m.user_id)).length : 0;
 
   return (
     <div className="mb-4">
-      <h2 className="text-[10px] font-black tracking-widest uppercase text-muted-foreground mb-2">
-        Members · {members.length}
+      <h2 className="text-[10px] font-black tracking-widest uppercase text-muted-foreground mb-2 flex items-center gap-1.5">
+        <span>Members · {members.length}</span>
+        {verifiedCount > 0 && (
+          <span className="inline-flex items-center gap-0.5 text-[hsl(var(--xp-green))]">
+            <ShieldCheck size={11} /> {verifiedCount} verified
+          </span>
+        )}
       </h2>
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar">
         {members.map((m) => (
@@ -38,6 +48,11 @@ const TribeMembersRow = ({
               ) : (
                 <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
                   {m.username.slice(0, 2).toUpperCase()}
+                </div>
+              )}
+              {verifiedIds?.has(m.user_id) && (
+                <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-background border border-[hsl(var(--xp-green))]/50 flex items-center justify-center">
+                  <ShieldCheck size={9} className="text-[hsl(var(--xp-green))]" />
                 </div>
               )}
               {m.role === "owner" && (

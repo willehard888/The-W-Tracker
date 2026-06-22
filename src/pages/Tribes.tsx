@@ -734,7 +734,7 @@ const Tribes = () => {
                           background: cAccent.replace(")", " / 0.10)"),
                         }}
                       >
-                        🔥 {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
+                        <Flame size={10} fill="currentColor" /> {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
                       </span>
                     ) : (
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded-md border border-border text-[10px] font-black text-muted-foreground">

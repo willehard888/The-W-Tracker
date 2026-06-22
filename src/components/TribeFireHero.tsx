@@ -148,7 +148,11 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
           style={{ width: size, height: size * 1.2 }}
         >
           {isCold ? (
-            <div className="text-7xl opacity-40 leading-none animate-pulse">🕯️</div>
+            <div className="flex items-center justify-center h-full">
+              <div className="h-20 w-20 rounded-full border border-border/60 bg-secondary/30 flex items-center justify-center">
+                <Flame size={30} className="text-muted-foreground/40" strokeWidth={1.6} />
+              </div>
+            </div>
           ) : (
             <TribeFlame
               size={size}

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 // Pull-to-refresh removed temporarily — touch handlers on the page wrapper
 // were intercepting inner taps on tribe cards. Re-add once we have a more
 // isolated touch-area implementation.
-import { Users, Plus, Lock, Crown, Zap, Check, X, Sparkles, Mail, Trophy, ChevronRight, Pause, ShieldCheck } from "lucide-react";
+import { Users, Plus, Lock, Crown, Zap, Check, X, Sparkles, Mail, Trophy, ChevronRight, Pause, ShieldCheck, Flame } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -693,7 +693,9 @@ const Tribes = () => {
                       <TribeFireLite tier={cTier} accent={cAccent} size={Math.min(56, 36 + cTier * 6)} />
                     </div>
                   ) : !t.cover_url ? (
-                    <span className="text-2xl opacity-50 leading-none">{isPaused ? "⏸️" : "🕯️"}</span>
+                    isPaused
+                      ? <Pause size={18} className="text-muted-foreground/50" />
+                      : <Flame size={18} className="text-muted-foreground/40" strokeWidth={1.6} />
                   ) : null}
                 </div>
                 <div className="flex-1 min-w-0">

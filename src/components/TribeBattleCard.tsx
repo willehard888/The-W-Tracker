@@ -119,7 +119,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
                 {tier >= 0 ? (
                   <TribeFireLite tier={tier} accent={accent} size={40} />
                 ) : (
-                  <span className="text-lg opacity-40">🕯️</span>
+                  <Flame size={16} className="text-muted-foreground/40" strokeWidth={1.6} />
                 )}
               </div>
               <div className="min-w-0 flex-1">

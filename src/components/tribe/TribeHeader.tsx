@@ -58,7 +58,7 @@ const TribeHeader = ({
 
   return (
     <div className="relative rounded-2xl mb-4 p-[2px] apex-conic-border overflow-hidden">
-      <div className="relative rounded-2xl p-5 overflow-hidden bg-gradient-to-br from-[hsl(18_95%_58%)]/15 via-card/85 to-[hsl(var(--gold))]/10 apex-aura-large apex-spotlight apex-embers apex-shimmer-sweep apex-portal-glow">
+      <div className="relative rounded-2xl p-5 overflow-hidden bg-gradient-to-br from-[hsl(18_95%_58%)]/15 via-card/85 to-[hsl(var(--gold))]/10 apex-spotlight">
         {/* Cover photo background — owner-uploaded, dimmed for legibility */}
         {tribe.cover_url && (
           <div className="absolute inset-0 pointer-events-none">
@@ -82,9 +82,9 @@ const TribeHeader = ({
         />
         <div className="relative z-10">
           <div className="flex items-start gap-3">
-            <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-[hsl(18_95%_58%)]/35 via-gold/20 to-[hsl(18_95%_58%)]/25 border border-[hsl(18_95%_58%)]/55 flex items-center justify-center shrink-0 shadow-[0_0_22px_hsl(18_95%_58%/0.5)]">
-              <Crown size={26} className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_8px_hsl(18_95%_58%/0.9)]" strokeWidth={2.4} />
-              <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border-2 border-background flex items-center justify-center shadow-[0_0_10px_hsl(18_95%_58%/0.9)] animate-pulse">
+            <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-[hsl(18_95%_58%)]/30 via-gold/15 to-[hsl(18_95%_58%)]/20 border border-[hsl(18_95%_58%)]/45 flex items-center justify-center shrink-0 shadow-[0_0_14px_hsl(18_95%_58%/0.3)]">
+              <Crown size={26} className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_4px_hsl(18_95%_58%/0.4)]" strokeWidth={2.4} />
+              <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border-2 border-background flex items-center justify-center shadow-[0_0_6px_hsl(18_95%_58%/0.4)]">
                 <Zap size={10} className="text-background" strokeWidth={3.2} fill="currentColor" />
               </div>
             </div>
@@ -96,7 +96,7 @@ const TribeHeader = ({
               </div>
               {/* TRIBE NAME — biggest text on the page, gradient, unmissable */}
               <h1
-                className="font-display font-black text-3xl leading-[1.05] tracking-tight bg-gradient-to-br from-foreground via-[hsl(42_78%_75%)] to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_2px_14px_hsl(18_95%_58%/0.45)] break-words"
+                className="font-display font-black text-3xl leading-[1.05] tracking-tight bg-gradient-to-br from-foreground via-[hsl(42_78%_75%)] to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_1px_8px_hsl(18_95%_58%/0.28)] break-words"
                 style={tribe.is_paused ? { filter: "grayscale(0.5)", opacity: 0.85 } : undefined}
               >
                 {tribe.name}

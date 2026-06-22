@@ -1,5 +1,32 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// Activity-based battle types we can cross-check against Apple HealthKit.
+const VERIFIABLE_TYPES = ["xp", "workout", "streak"];
+
+// Returns true if the user has real HealthKit activity in the battle window,
+// null for types HealthKit can't confirm (cold_shower/meditation/hydration).
+async function winnerActivityVerified(
+  supabase: any,
+  userId: string,
+  startMs: number,
+  endMs: number,
+  battleType: string,
+): Promise<boolean | null> {
+  if (!VERIFIABLE_TYPES.includes(battleType)) return null;
+  const startDate = new Date(startMs).toISOString().slice(0, 10);
+  const endDate = new Date(endMs).toISOString().slice(0, 10);
+  const { data } = await supabase
+    .from("health_sync_snapshots")
+    .select("steps, workout_minutes, workout_count")
+    .eq("user_id", userId)
+    .gte("snapshot_date", startDate)
+    .lte("snapshot_date", endDate);
+  if (!data || data.length === 0) return false;
+  return data.some(
+    (s: any) => (s.workout_count ?? 0) >= 1 || (s.workout_minutes ?? 0) >= 15 || (s.steps ?? 0) >= 8000,
+  );
+}
+
 Deno.serve(async () => {
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -49,7 +76,16 @@ Deno.serve(async () => {
     if (cProof && oProof && cScore === oScore) {
       await supabase.from("battles").update({ status: "voting", ended_at: new Date().toISOString() }).eq("id", battle.id);
     } else {
-      await supabase.from("battles").update({ status: "completed", ended_at: new Date().toISOString(), winner_id: winnerId }).eq("id", battle.id);
+      const winnerVerified = winnerId
+        ? await winnerActivityVerified(supabase, winnerId, new Date(battle.started_at).getTime(), endDate, battle.battle_type)
+        : null;
+      await supabase.from("battles").update({
+        status: "completed",
+        ended_at: new Date().toISOString(),
+        winner_id: winnerId,
+        winner_verified: winnerVerified,
+        verification_notes: { battle_type: battle.battle_type, winner_verified: winnerVerified },
+      }).eq("id", battle.id);
       if (winnerId) await supabase.rpc("update_status_tier", { target_user_id: winnerId });
     }
     resolved++;
@@ -81,7 +117,15 @@ Deno.serve(async () => {
     else if (opponentVotes > challengerVotes) winnerId = battle.opponent_id;
     // else still tie → no winner
 
-    await supabase.from("battles").update({ status: "completed", winner_id: winnerId }).eq("id", battle.id);
+    const winnerVerified = winnerId
+      ? await winnerActivityVerified(supabase, winnerId, new Date(battle.started_at).getTime(), endedAt, battle.battle_type)
+      : null;
+    await supabase.from("battles").update({
+      status: "completed",
+      winner_id: winnerId,
+      winner_verified: winnerVerified,
+      verification_notes: { battle_type: battle.battle_type, winner_verified: winnerVerified, resolved_by: "vote" },
+    }).eq("id", battle.id);
     if (winnerId) await supabase.rpc("update_status_tier", { target_user_id: winnerId });
     resolved++;
   }

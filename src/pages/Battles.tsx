@@ -841,7 +841,14 @@ const Battles = () => {
                     {won ? <Trophy size={18} /> : <Swords size={18} />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm">vs @{opp.username}</p>
+                    <p className="font-semibold text-sm flex items-center gap-1.5">
+                      vs @{opp.username}
+                      {won && battle.winner_verified === true && (
+                        <span title="HealthKit-verified win" className="inline-flex items-center gap-0.5 text-[9px] font-black uppercase tracking-wider text-[hsl(var(--xp-green))]">
+                          <ShieldCheck size={11} /> Verified
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-muted-foreground">{typeInfo.emoji} {battle.duration_days}d {typeInfo.label}</p>
                   </div>
                   <div className="flex items-center gap-2">

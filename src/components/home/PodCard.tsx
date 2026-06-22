@@ -6,7 +6,7 @@ import { usePod, usePodInvites, usePodActions } from "@/hooks/use-pod";
 import { useFriends } from "@/hooks/use-friends";
 import FriendPickerSheet from "@/components/social/FriendPickerSheet";
 import { cn } from "@/lib/utils";
-import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
 import { avatarUrl } from "@/lib/img";
 
 const ERR: Record<string, string> = {
@@ -88,7 +88,7 @@ const PodCard = () => {
                 <button
                   disabled={busy}
                   onClick={() => run(() => acceptInvite(iv.pod_id), "Joined the pod! 🤝")}
-                  className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-gold px-3 py-1.5 text-[11px] font-black text-primary-foreground disabled:opacity-60"
+                  className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-gold px-3 py-1.5 text-[11px] font-black text-primary-foreground disabled:opacity-60 active:scale-[0.97] transition-transform"
                 >
                   <Check size={12} /> Join
                 </button>
@@ -125,7 +125,7 @@ const PodCard = () => {
             <button
               disabled={busy}
               onClick={() => run(() => createPod(name), "Pod created — now invite friends.")}
-              className="shrink-0 rounded-xl bg-gold px-4 py-2.5 text-[12px] font-black text-primary-foreground disabled:opacity-60"
+              className="shrink-0 rounded-xl bg-gold px-4 py-2.5 text-[12px] font-black text-primary-foreground disabled:opacity-60 active:scale-[0.97] transition-transform"
             >
               {busy ? "…" : "Create"}
             </button>
@@ -198,7 +198,7 @@ const PodCard = () => {
           </div>
         ))}
         {total < 5 && (
-          <button onClick={() => setPicker(true)} className="flex flex-col items-center gap-1">
+          <button onClick={() => { hapticSelection(); setPicker(true); }} className="flex flex-col items-center gap-1 active:scale-95 transition-transform">
             <span className="h-11 w-11 rounded-full border-2 border-dashed border-gold/40 flex items-center justify-center text-gold">
               <UserPlus size={15} />
             </span>

@@ -1,5 +1,5 @@
 
-import { Trophy, Lock, Crown, TrendingUp, Clock3, Medal, Swords } from "lucide-react";
+import { Trophy, Lock, Crown, TrendingUp, Clock3, Medal, Swords, ShieldCheck } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
@@ -218,6 +218,20 @@ const Leaderboard = () => {
   const currentLeaders = mode === "season" ? seasonData?.top || [] : allTimeLeaders || [];
   const totalUsersForMode = mode === "season" ? seasonData?.full.length || 1 : totalCount || 1;
   const rank = mode === "season" ? seasonData?.myRank || null : myRankData?.rank || null;
+
+  // HealthKit-verified leaders — unfakeable discipline shown as status on the
+  // board. Reuses the same `verified_authors` RPC the feed uses.
+  const verifiedIds = useMemo(() => currentLeaders.map((u) => u.user_id), [currentLeaders]);
+  const { data: verifiedSet } = useQuery({
+    queryKey: ["leaderboard-verified", verifiedIds],
+    enabled: verifiedIds.length > 0,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("verified_authors", { p_ids: verifiedIds });
+      if (error) return new Set<string>();
+      return new Set((data as string[]) ?? []);
+    },
+  });
   const percentile = mode === "season"
     ? (rank ? Math.max(1, Math.round(((totalUsersForMode - rank) / totalUsersForMode) * 100)) : 0)
     : (myRankData?.percentile ?? 0);
@@ -450,6 +464,9 @@ const Leaderboard = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate flex items-center gap-1.5">
                     <TierUsername username={user.username} tier={user.status_tier || "recruit"} />
+                    {verifiedSet?.has(user.user_id) && (
+                      <ShieldCheck size={12} className="text-[hsl(var(--xp-green))] shrink-0" aria-label="HealthKit-verified" />
+                    )}
                     {isMe && <span className="text-[9px] text-gold/70 font-medium">(you)</span>}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">

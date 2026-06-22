@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { downscaleImage } from "@/lib/downscale-image";
 import MediaPreview from "@/components/media/MediaPreview";
+import { track, FUNNEL } from "@/lib/analytics";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import { checkAndAwardBadges } from "@/lib/badge-awards";
@@ -382,6 +383,7 @@ const DailyCheckin = () => {
           try {
             const vr = await healthKit.verifyCheckin(newCheckinId);
             if (vr.verified) {
+              void track(FUNNEL.checkinVerified); // funnel step 3 — the North Star
               toast.success("Verified Performer ✓", {
                 description: "HealthKit confirmed your workout + sleep.",
                 duration: 4500,

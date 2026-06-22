@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, useCallback, us
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
+import { track, FUNNEL } from "@/lib/analytics";
 import { clearAppleAuthStarted, clearAppleUsernameSelectionPending, isAppleAuthStarted, markAppleUsernameSelectionPending } from "@/lib/apple-username";
 
 interface AuthContextType {
@@ -107,6 +108,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (!data) {
           await ensureProfile(authUser);
+          // Funnel step 1 — a brand-new profile was just created.
+          void track(FUNNEL.signup, undefined, authUser.id);
 
           const retry = await supabase
             .from("profiles")

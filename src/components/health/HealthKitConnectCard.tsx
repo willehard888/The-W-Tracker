@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useHealthKit } from "@/hooks/use-healthkit";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { track, FUNNEL } from "@/lib/analytics";
 
 /**
  * "Connect Apple Health" CTA — for Coach landing or Profile Settings tab.
@@ -42,6 +43,7 @@ const HealthKitConnectCard = () => {
   const handleConnect = async () => {
     const ok = await connect();
     if (ok) {
+      void track(FUNNEL.healthkitConnected); // funnel step 2
       toast.success("Apple Health connected", {
         description: "Future check-ins will be automatically verified.",
       });

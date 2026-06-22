@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Calendar, MapPin, Users, Plus, X, Trash2, Check, Clock } from "lucide-react";
-import { format } from "date-fns";
+import { Calendar, MapPin, Users, Plus, X, Trash2, Check, Clock, Flame } from "lucide-react";
+import { format, isToday, isTomorrow } from "date-fns";
 import { toast } from "sonner";
 import { useTribeEvents, useTribeEventActions, type TribeEvent, type RsvpStatus } from "@/hooks/use-tribe-events";
 import { cn } from "@/lib/utils";
@@ -69,30 +69,54 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
           </p>
         </div>
       ) : (
-        <div className="space-y-2.5">
-          {events!.map((ev) => {
+        <div className="space-y-3">
+          {events!.map((ev, i) => {
             const start = new Date(ev.starts_at);
             const full = ev.capacity != null && ev.going_count >= ev.capacity && ev.my_status !== "going";
+            const isNext = i === 0;
+            const rel = isToday(start) ? "Today" : isTomorrow(start) ? "Tomorrow" : null;
+            const pct = ev.capacity ? Math.min(100, (ev.going_count / ev.capacity) * 100) : 0;
             return (
-              <div key={ev.id} className="rounded-2xl border border-border/60 bg-card/40 p-3.5">
-                <div className="flex items-start gap-3">
-                  {/* Date tile */}
-                  <div className="shrink-0 w-12 rounded-xl bg-gold/10 border border-gold/25 flex flex-col items-center justify-center py-1.5">
-                    <span className="text-[9px] font-black uppercase tracking-wider text-gold/80 leading-none">{format(start, "MMM")}</span>
-                    <span className="font-display font-black text-lg leading-none text-gold tabular-nums">{format(start, "d")}</span>
+              <div key={ev.id} className={cn(
+                "relative rounded-2xl overflow-hidden border bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.05] via-card/70 to-card",
+                isNext ? "border-[hsl(18_95%_58%)]/40 shadow-[0_10px_34px_-18px_hsl(18_95%_58%/0.6)]" : "border-border/60",
+              )}>
+                {/* Ember left accent */}
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[hsl(18_95%_58%)] to-gold" />
+                <div className="p-3.5 pl-4">
+                  {isNext && (
+                    <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 rounded-full bg-[hsl(18_95%_58%)]/15 border border-[hsl(18_95%_58%)]/35">
+                      <Flame size={9} className="text-[hsl(18_95%_58%)]" fill="currentColor" />
+                      <span className="text-[8.5px] font-black uppercase tracking-widest text-[hsl(18_95%_58%)]">Next up</span>
+                    </div>
+                  )}
+                  <div className="flex items-start gap-3">
+                  {/* Premium date tile */}
+                  <div className="shrink-0 w-14 rounded-xl bg-gradient-to-b from-gold/20 to-gold/[0.04] border border-gold/30 flex flex-col items-center justify-center py-2 shadow-[0_4px_14px_-8px_hsl(var(--gold)/0.6)]">
+                    <span className="text-[8.5px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "EEE")}</span>
+                    <span className="font-display font-black text-2xl leading-none text-gold tabular-nums my-0.5">{format(start, "d")}</span>
+                    <span className="text-[8.5px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "MMM")}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {ev.activity && (
                         <span className="text-[8.5px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded px-1.5 py-0.5">{ev.activity}</span>
                       )}
-                      <p className="font-display font-black text-[14px] tracking-tight truncate">{ev.title}</p>
+                      {rel && (
+                        <span className="text-[8.5px] font-black uppercase tracking-wider text-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%)]/10 border border-[hsl(18_95%_58%)]/25 rounded px-1.5 py-0.5">{rel}</span>
+                      )}
                     </div>
+                    <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{ev.title}</p>
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground">
                       <span className="inline-flex items-center gap-1"><Clock size={11} /> {format(start, "EEE HH:mm")} · {ev.duration_min}m</span>
                       {ev.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={11} /> {ev.place}</span>}
                       <span className="inline-flex items-center gap-1"><Users size={11} /> {ev.going_count}{ev.capacity ? `/${ev.capacity}` : ""} going</span>
                     </div>
+                    {ev.capacity != null && (
+                      <div className="mt-2 h-1.5 rounded-full bg-secondary/60 overflow-hidden">
+                        <div className="h-full rounded-full bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold transition-all duration-500" style={{ width: `${pct}%` }} />
+                      </div>
+                    )}
                     {ev.description && <p className="text-[11.5px] text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
 
                     {isMember && (
@@ -129,6 +153,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
                         )}
                       </div>
                     )}
+                  </div>
                   </div>
                 </div>
               </div>

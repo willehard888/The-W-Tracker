@@ -1,16 +1,24 @@
 import { useState, useRef, useEffect } from "react";
 import { Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { hapticSelection } from "@/lib/haptics";
 
 interface LazyVideoPlayerProps {
   src: string;
   className?: string;
 }
 
+const fmtDuration = (s: number) => {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${String(sec).padStart(2, "0")}`;
+};
+
 const LazyVideoPlayer = ({ src, className }: LazyVideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [thumbnailError, setThumbnailError] = useState(false);
+  const [duration, setDuration] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -57,6 +65,9 @@ const LazyVideoPlayer = ({ src, className }: LazyVideoPlayerProps) => {
     };
 
     video.addEventListener("seeked", handleSeeked, { once: true });
+    video.addEventListener("loadedmetadata", () => {
+      if (isFinite(video.duration) && video.duration > 0) setDuration(video.duration);
+    }, { once: true });
     video.addEventListener("loadeddata", () => {
       video.currentTime = 0.5;
     }, { once: true });
@@ -73,12 +84,13 @@ const LazyVideoPlayer = ({ src, className }: LazyVideoPlayerProps) => {
 
   if (isPlaying) {
     return (
-      <div ref={containerRef} className={cn("relative", className)}>
+      <div ref={containerRef} className={cn("relative bg-black rounded-xl overflow-hidden animate-fade-in", className)}>
         <video
           src={src}
-          className="w-full max-h-96 rounded-xl"
+          className="w-full max-h-96 object-contain bg-black"
           controls
           autoPlay
+          playsInline
           preload="auto"
         />
       </div>
@@ -86,13 +98,12 @@ const LazyVideoPlayer = ({ src, className }: LazyVideoPlayerProps) => {
   }
 
   return (
-    <div
-      ref={containerRef}
-      className={cn(
-        "relative cursor-pointer group",
-        className
-      )}
-      onClick={() => setIsPlaying(true)}
+    <button
+      ref={containerRef as any}
+      type="button"
+      aria-label="Play video"
+      className={cn("relative block w-full cursor-pointer group active:scale-[0.99] transition-transform", className)}
+      onClick={() => { hapticSelection(); setIsPlaying(true); }}
     >
       {/* Thumbnail or placeholder */}
       {thumbnail ? (
@@ -102,25 +113,25 @@ const LazyVideoPlayer = ({ src, className }: LazyVideoPlayerProps) => {
           className="w-full max-h-96 object-cover rounded-xl"
         />
       ) : (
-        <div className="w-full aspect-video max-h-96 rounded-xl bg-secondary/60 flex items-center justify-center">
+        <div className="w-full aspect-video max-h-96 rounded-xl bg-gradient-to-br from-secondary/70 to-secondary/30 flex items-center justify-center">
           {isVisible && !thumbnailError && (
             <div className="h-5 w-5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
           )}
         </div>
       )}
 
-      {/* Play button overlay */}
-      <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/20 group-hover:bg-black/30 transition-colors">
-        <div className="h-14 w-14 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-          <Play size={24} className="text-white ml-1" fill="white" />
+      {/* Play button overlay — larger, springy, Apple-grade */}
+      <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-gradient-to-t from-black/35 via-transparent to-black/10">
+        <div className="h-16 w-16 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-[0_8px_28px_-6px_hsl(0_0%_0%/0.6)] transition-transform duration-200 group-active:scale-90 group-hover:scale-105">
+          <Play size={26} className="text-black ml-0.5" fill="currentColor" />
         </div>
       </div>
 
-      {/* Video badge */}
-      <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-sm text-[10px] font-bold text-white uppercase tracking-wider">
-        Video
+      {/* Duration badge (bottom-right, like Apple/Instagram) */}
+      <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-md bg-black/65 backdrop-blur-sm text-[10px] font-bold text-white tabular-nums tracking-wide">
+        {duration != null ? fmtDuration(duration) : "Video"}
       </div>
-    </div>
+    </button>
   );
 };
 

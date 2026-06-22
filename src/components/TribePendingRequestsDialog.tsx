@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { avatarUrl } from "@/lib/img";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Check, X, Loader2, UserCheck } from "lucide-react";
@@ -105,7 +106,7 @@ const TribePendingRequestsDialog = ({ tribeId, open, onOpenChange, onChanged }: 
               >
                 <div className="h-10 w-10 rounded-full bg-secondary border border-border overflow-hidden shrink-0">
                   {p.avatar_url ? (
-                    <img loading="lazy" decoding="async" src={p.avatar_url} alt={p.username} className="h-full w-full object-cover" />
+                    <img loading="lazy" decoding="async" src={avatarUrl(p.avatar_url, 48)} alt={p.username} className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
                       {p.username.slice(0, 2).toUpperCase()}

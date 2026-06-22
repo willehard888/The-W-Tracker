@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { avatarUrl } from "@/lib/img";
 import { downscaleImage } from "@/lib/downscale-image";
 import { toast } from "sonner";
 import { Crown, Loader2, Settings, Shield, ShieldOff, UserMinus, Lock, Image as ImageIcon, Trash2, Upload } from "lucide-react";
@@ -301,7 +302,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                   <div key={m.user_id} className="flex items-center gap-2 rounded-lg border border-border bg-card/40 p-2">
                     <div className="h-8 w-8 rounded-full bg-secondary overflow-hidden shrink-0">
                       {m.avatar_url ? (
-                        <img loading="lazy" decoding="async" src={m.avatar_url} alt={m.username} className="h-full w-full object-cover" />
+                        <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 48)} alt={m.username} className="h-full w-full object-cover" />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
                           {m.username.slice(0, 2).toUpperCase()}

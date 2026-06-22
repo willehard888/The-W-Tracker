@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { avatarUrl } from "@/lib/img";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -189,7 +190,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
                   <div className="flex items-center gap-2 mb-1.5">
                     <div className="h-6 w-6 rounded-full bg-secondary overflow-hidden shrink-0">
                       {r.post.author?.avatar_url ? (
-                        <img loading="lazy" decoding="async" src={r.post.author.avatar_url} alt="" className="h-full w-full object-cover" />
+                        <img loading="lazy" decoding="async" src={avatarUrl(r.post.author.avatar_url, 40)} alt="" className="h-full w-full object-cover" />
                       ) : null}
                     </div>
                     <span className="text-xs font-semibold truncate">

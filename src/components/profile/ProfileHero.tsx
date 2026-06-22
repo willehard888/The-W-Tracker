@@ -4,6 +4,7 @@ import { getTierUsernameClass } from "@/lib/status-tiers";
 import StatusNameplate from "@/components/StatusNameplate";
 import ApexBadge from "@/components/ApexBadge";
 import BadgeShowcase from "@/components/BadgeShowcase";
+import { avatarUrl } from "@/lib/img";
 
 interface RankData {
   rank?: number | null;
@@ -79,7 +80,7 @@ const ProfileHero = ({
           <div className="absolute inset-0 -m-3 rounded-full bg-gold/15 blur-2xl" aria-hidden />
           {profile.avatar_url ? (
             <img
-              src={profile.avatar_url}
+              src={avatarUrl(profile.avatar_url, 128)}
               alt={profile.username}
               decoding="async"
               className="relative h-32 w-32 rounded-full object-cover ring-2 ring-gold ring-offset-4 ring-offset-background"

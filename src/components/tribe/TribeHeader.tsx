@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TierUsername from "@/components/TierUsername";
+import { transformImage } from "@/lib/img";
 import type { TribeMember } from "@/components/tribe/TribeMembersRow";
 
 export interface TribeHeaderProps {
@@ -62,9 +63,10 @@ const TribeHeader = ({
         {tribe.cover_url && (
           <div className="absolute inset-0 pointer-events-none">
             <img
-              src={tribe.cover_url}
+              src={transformImage(tribe.cover_url, { width: 640, quality: 68 })}
               alt=""
               decoding="async"
+              loading="lazy"
               className="absolute inset-0 h-full w-full object-cover opacity-35"
               style={{ transform: `translateY(${parallax * 0.5}px) scale(1.05)` }}
             />

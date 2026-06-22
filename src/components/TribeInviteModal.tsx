@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { avatarUrl } from "@/lib/img";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -135,7 +136,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
               >
                 <div className="h-8 w-8 rounded-full bg-secondary border border-border overflow-hidden shrink-0">
                   {u.avatar_url ? (
-                    <img loading="lazy" decoding="async" src={u.avatar_url} alt={u.username} className="h-full w-full object-cover" />
+                    <img loading="lazy" decoding="async" src={avatarUrl(u.avatar_url, 48)} alt={u.username} className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
                       {u.username.slice(0, 2).toUpperCase()}

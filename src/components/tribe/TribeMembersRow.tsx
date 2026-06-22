@@ -1,5 +1,6 @@
 import { Crown, Shield } from "lucide-react";
 import TierUsername from "@/components/TierUsername";
+import { avatarUrl } from "@/lib/img";
 
 export interface TribeMember {
   user_id: string;
@@ -33,7 +34,7 @@ const TribeMembersRow = ({
             className="flex flex-col items-center gap-1 shrink-0 w-14">
             <div className={`relative h-12 w-12 rounded-full border-2 ${m.role === "owner" ? "border-gold shadow-[0_0_12px_hsl(42_78%_54%/0.6)]" : "border-[hsl(18_95%_58%)]/30"} bg-secondary overflow-hidden`}>
               {m.avatar_url ? (
-                <img loading="lazy" decoding="async" src={m.avatar_url} alt={m.username} className="h-full w-full object-cover" />
+                <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 48)} alt={m.username} className="h-full w-full object-cover" />
               ) : (
                 <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
                   {m.username.slice(0, 2).toUpperCase()}

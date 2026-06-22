@@ -7,6 +7,7 @@ import { useFriends } from "@/hooks/use-friends";
 import FriendPickerSheet from "@/components/social/FriendPickerSheet";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { avatarUrl } from "@/lib/img";
 
 const ERR: Record<string, string> = {
   already_in_pod: "You're already in a pod. Leave it first.",
@@ -181,7 +182,7 @@ const PodCard = () => {
               )}
             >
               {m.avatar_url ? (
-                <img src={m.avatar_url} alt="" className="h-full w-full object-cover" />
+                <img src={avatarUrl(m.avatar_url, 48)} alt="" loading="lazy" className="h-full w-full object-cover" />
               ) : (
                 (m.username?.charAt(0) || "?").toUpperCase()
               )}

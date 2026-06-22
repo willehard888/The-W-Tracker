@@ -11,6 +11,7 @@ import { Users, Plus, Lock, Crown, Zap, Check, X, Sparkles, Mail, Trophy, Chevro
 import EmptyState from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { avatarUrl, transformImage } from "@/lib/img";
 import TribeSearchBar from "@/components/TribeSearchBar";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import TribeFireLite from "@/components/TribeFireLite";
@@ -536,7 +537,7 @@ const Tribes = () => {
                   <div className="relative h-20 w-20 rounded-2xl bg-gradient-to-br from-[hsl(18_95%_58%)]/35 via-gold/20 to-[hsl(18_95%_58%)]/25 border border-[hsl(18_95%_58%)]/55 flex items-center justify-center shrink-0 shadow-[0_0_28px_hsl(18_95%_58%/0.55)] overflow-hidden">
                     {featured.cover_url && (
                       <img
-                        src={featured.cover_url}
+                        src={transformImage(featured.cover_url, { width: 800, quality: 70 })}
                         alt=""
                         loading="lazy"
                         decoding="async"
@@ -587,7 +588,7 @@ const Tribes = () => {
                               className="h-6 w-6 rounded-full bg-secondary border-2 border-background overflow-hidden"
                             >
                               {p.avatar_url ? (
-                                <img loading="lazy" decoding="async" src={p.avatar_url} alt={p.username} className="h-full w-full object-cover" />
+                                <img loading="lazy" decoding="async" src={avatarUrl(p.avatar_url, 40)} alt={p.username} className="h-full w-full object-cover" />
                               ) : (
                                 <div className="h-full w-full flex items-center justify-center text-[8px] font-black text-muted-foreground">
                                   {p.username.slice(0, 2).toUpperCase()}
@@ -668,7 +669,7 @@ const Tribes = () => {
                 >
                   {t.cover_url && (
                     <img
-                      src={t.cover_url}
+                      src={transformImage(t.cover_url, { width: 640, quality: 68 })}
                       alt=""
                       loading="lazy"
                       decoding="async"

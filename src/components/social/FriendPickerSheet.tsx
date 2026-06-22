@@ -3,6 +3,7 @@ import { X, Search, Flame, ChevronRight, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useFriends, type Friend } from "@/hooks/use-friends";
 import { cn } from "@/lib/utils";
+import { avatarUrl } from "@/lib/img";
 
 interface Props {
   open: boolean;
@@ -96,7 +97,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
               >
                 <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-gold/40 to-card flex items-center justify-center text-[13px] font-black text-gold shrink-0">
                   {f.avatar_url ? (
-                    <img src={f.avatar_url} alt="" className="h-full w-full object-cover" />
+                    <img src={avatarUrl(f.avatar_url, 40)} alt="" loading="lazy" className="h-full w-full object-cover" />
                   ) : (
                     (f.username?.charAt(0) || "?").toUpperCase()
                   )}

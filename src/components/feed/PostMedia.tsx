@@ -50,38 +50,28 @@ const PostMedia = ({ imageUrl, videoUrl, alt = "", tier, onOpenImage, className 
     );
   }
 
+  // Show the FULL image at its natural aspect — no crop/zoom, and no tap-to-open
+  // fullscreen zoom. Just the photo in a clean framed container.
   return (
-    <button
-      type="button"
-      onClick={onOpenImage}
-      aria-label="Open image"
+    <div
       className={cn(
-        "group mt-3 mx-4 block w-full overflow-hidden rounded-2xl border border-border/60 bg-secondary/40 active:scale-[0.99] transition-transform",
+        "relative mt-3 mx-4 overflow-hidden rounded-2xl border border-border/60 bg-secondary/40",
         className,
       )}
     >
-      <div className="relative w-full aspect-[4/5]">
-        {/* Calm skeleton — covered once the image fades in over it (no pop-in). */}
-        <div
-          aria-hidden
-          className="absolute inset-0 animate-pulse bg-gradient-to-br from-secondary/70 to-secondary/30"
-        />
-        <AppImage
-          src={imageUrl}
-          width={760}
-          alt={alt}
-          className="absolute inset-0 h-full w-full object-cover transition-[transform,opacity] duration-500 group-active:scale-[1.01]"
-        />
-        {/* Legibility gradient at the bottom edge */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
-        {ribbon && (
-          <div className={cn("pointer-events-none absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm border", ribbon.border)}>
-            <ribbon.icon size={10} className={ribbon.color} {...(ribbon.label === "Apex" ? { fill: "currentColor" } : {})} />
-            <span className={cn("text-[9px] font-black tracking-wider uppercase", ribbon.color)}>{ribbon.label}</span>
-          </div>
-        )}
-      </div>
-    </button>
+      <AppImage
+        src={imageUrl}
+        width={760}
+        alt={alt}
+        className="w-full h-auto"
+      />
+      {ribbon && (
+        <div className={cn("pointer-events-none absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm border", ribbon.border)}>
+          <ribbon.icon size={10} className={ribbon.color} {...(ribbon.label === "Apex" ? { fill: "currentColor" } : {})} />
+          <span className={cn("text-[9px] font-black tracking-wider uppercase", ribbon.color)}>{ribbon.label}</span>
+        </div>
+      )}
+    </div>
   );
 };
 

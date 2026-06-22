@@ -23,7 +23,8 @@ import AppImage from "@/components/ui/app-image";
 import FeedPostCard from "@/components/feed/FeedPostCard";
 import { buildCommentTree } from "@/lib/comment-tree";
 import { downscaleImage } from "@/lib/downscale-image";
-import { hapticImpact, hapticSelection } from "@/lib/haptics";
+import { hapticImpact, hapticSelection, hapticNotification } from "@/lib/haptics";
+import MediaPreview from "@/components/media/MediaPreview";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -72,6 +73,7 @@ const EliteFeed = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [uploadPhase, setUploadPhase] = useState<string | null>(null);
   const [showReported, setShowReported] = useState(false);
   const [showReportsPanel, setShowReportsPanel] = useState(false);
   const [lightboxPost, setLightboxPost] = useState<any | null>(null);
@@ -208,11 +210,13 @@ const EliteFeed = () => {
 
       if (imageFile) {
         // Shrink before upload so we don't store/serve multi-MB originals.
+        setUploadPhase("Optimizing…");
         const upload = await downscaleImage(imageFile, { maxDim: 1280, quality: 0.8 });
         const fileExt = upload.name.split(".").pop()?.toLowerCase() || "jpg";
         const safeExt = ["jpeg", "jpg", "png", "webp", "heic", "heif"].includes(fileExt) ? fileExt : "jpg";
         const path = `${user.id}/${Date.now()}.${safeExt}`;
         const contentType = upload.type || `image/${safeExt === "jpg" ? "jpeg" : safeExt}`;
+        setUploadPhase("Uploading…");
         const { error: uploadErr } = await supabase.storage.from("feed-images").upload(path, upload, {
           cacheControl: "3600",
           upsert: false,
@@ -224,6 +228,7 @@ const EliteFeed = () => {
       }
 
       if (videoFile) {
+        setUploadPhase("Uploading…");
         const fileExt = videoFile.name.split(".").pop()?.toLowerCase() || "mp4";
         const path = `${user.id}/${Date.now()}.${fileExt}`;
         const { error: uploadErr } = await supabase.storage.from("feed-images").upload(path, videoFile, {
@@ -249,9 +254,11 @@ const EliteFeed = () => {
       setImagePreview(null);
       setVideoFile(null);
       setVideoPreview(null);
+      hapticNotification("success");
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
       toast.success("Posted! 🔥");
     },
+    onSettled: () => setUploadPhase(null),
     onError: (error: any) => {
       toast.error(error?.message || "Failed to create post. Try again.");
     },
@@ -566,6 +573,7 @@ const EliteFeed = () => {
       e.target.value = "";
       return;
     }
+    hapticSelection();
     setVideoFile(null);
     setVideoPreview(null);
     setImageFile(file);
@@ -591,6 +599,7 @@ const EliteFeed = () => {
       e.target.value = "";
       return;
     }
+    hapticSelection();
     setImageFile(null);
     setImagePreview(null);
     setVideoFile(file);
@@ -812,27 +821,21 @@ const EliteFeed = () => {
           </div>
 
           {imagePreview && (
-            <div className="relative mt-3 rounded-xl overflow-hidden">
-              <img loading="lazy" decoding="async" src={imagePreview} alt="Preview" className="w-full max-h-48 object-cover rounded-xl" />
-              <button
-                onClick={() => { setImageFile(null); setImagePreview(null); }}
-                className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80 transition-colors"
-              >
-                ✕
-              </button>
-            </div>
+            <MediaPreview
+              imageSrc={imagePreview}
+              sizeBytes={imageFile?.size}
+              progressLabel={uploadPhase}
+              onClear={() => { setImageFile(null); setImagePreview(null); }}
+            />
           )}
 
           {videoPreview && (
-            <div className="relative mt-3 rounded-xl overflow-hidden">
-              <video src={videoPreview} className="w-full max-h-48 rounded-xl" controls />
-              <button
-                onClick={() => { setVideoFile(null); setVideoPreview(null); }}
-                className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80 transition-colors"
-              >
-                ✕
-              </button>
-            </div>
+            <MediaPreview
+              videoSrc={videoPreview}
+              sizeBytes={videoFile?.size}
+              progressLabel={uploadPhase}
+              onClear={() => { setVideoFile(null); setVideoPreview(null); }}
+            />
           )}
 
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">

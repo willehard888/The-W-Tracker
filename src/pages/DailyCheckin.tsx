@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { downscaleImage } from "@/lib/downscale-image";
+import MediaPreview from "@/components/media/MediaPreview";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import { checkAndAwardBadges } from "@/lib/badge-awards";
@@ -733,6 +734,7 @@ const DailyCheckin = () => {
                   e.target.value = "";
                   return;
                 }
+                hapticSelection();
                 setProofFile(file);
                 const reader = new FileReader();
                 reader.onload = () => setProofPreview(reader.result as string);
@@ -740,15 +742,11 @@ const DailyCheckin = () => {
               }} />
             </label>
             {proofPreview && (
-              <div className="relative mt-2 rounded-xl overflow-hidden">
-                <img loading="lazy" decoding="async" src={proofPreview} alt="Proof" className="w-full max-h-40 object-cover rounded-xl" />
-                <button
-                  onClick={() => { setProofFile(null); setProofPreview(null); }}
-                  className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80 transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
+              <MediaPreview
+                imageSrc={proofPreview}
+                sizeBytes={proofFile?.size}
+                onClear={() => { setProofFile(null); setProofPreview(null); }}
+              />
             )}
           </div>
         ) : (

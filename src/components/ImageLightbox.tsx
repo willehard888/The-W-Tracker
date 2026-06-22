@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { X, Heart, MessageCircle, Award } from "lucide-react";
-import { cn } from "@/lib/utils";
 import StatusAvatar from "@/components/StatusAvatar";
+import ZoomableImage from "@/components/ui/ZoomableImage";
 import type { StatusTier } from "@/lib/status-tiers";
 
 interface ImageLightboxProps {
@@ -21,11 +21,11 @@ interface ImageLightboxProps {
 }
 
 /**
- * Premium full-screen image preview for the Elite Feed.
- * - Tap backdrop to dismiss
- * - Locks body scroll while open
- * - Esc to close (desktop)
- * - Surfaces author tier + key engagement metrics in a glass overlay
+ * Apple-Photos-grade full-screen image preview.
+ * - Pinch / double-tap to zoom, pan when zoomed (via ZoomableImage)
+ * - Swipe down to dismiss; backdrop + chrome fade with the drag
+ * - Esc / X to close; body scroll locked while open
+ * - Surfaces author tier + engagement metrics in a glass overlay
  */
 const ImageLightbox = ({
   open,
@@ -41,39 +41,30 @@ const ImageLightbox = ({
   caption,
   onClose,
 }: ImageLightboxProps) => {
-  const [loaded, setLoaded] = useState(false);
+  const [dismiss, setDismiss] = useState(0); // 0→1 while swiping down
 
-  useEffect(() => {
-    if (!open) return;
-    setLoaded(false);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open, onClose]);
+  // Reset the swipe-dismiss progress each time the viewer (re)opens.
+  useEffect(() => { if (open) setDismiss(0); }, [open]);
 
   if (!open || !imageUrl) return null;
 
   const showMetric = (n?: number) => typeof n === "number" && n > 0;
+  const chromeOpacity = Math.max(0, 1 - dismiss * 1.4);
 
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Image preview"
-      className="fixed inset-0 z-[100] flex flex-col bg-background/98 animate-fade-in"
-      onClick={onClose}
+      className="fixed inset-0 z-[100] flex flex-col animate-fade-in"
+      style={{ backgroundColor: `hsl(var(--background) / ${0.98 * (1 - dismiss * 0.6)})` }}
     >
       {/* Top bar — author + close */}
       <div
-        className="flex items-center gap-3 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 shrink-0"
-        onClick={(e) => e.stopPropagation()}
+        className="relative z-10 flex items-center gap-3 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 shrink-0"
+        style={{ opacity: chromeOpacity }}
       >
-        <StatusAvatar src={avatarUrl ?? undefined} name={username} tier={tier} size="sm" />
+        <StatusAvatar src={avatarUrl ?? undefined} name={username} tier={tier} size="sm" animated={false} />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-foreground truncate">@{username || "unknown"}</p>
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
@@ -95,31 +86,21 @@ const ImageLightbox = ({
         </button>
       </div>
 
-      {/* Image stage */}
-      <div className="flex-1 flex items-center justify-center px-3 min-h-0" onClick={(e) => e.stopPropagation()}>
-        <div className="relative max-h-full max-w-full">
-          {!loaded && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-8 w-8 rounded-full border-2 border-gold/20 border-t-gold animate-spin" />
-            </div>
-          )}
-          <img
-            src={imageUrl}
-            alt={caption || "Post image"}
-            onLoad={() => setLoaded(true)}
-            className={cn(
-              "max-h-[calc(100dvh-180px)] max-w-full w-auto h-auto object-contain rounded-xl shadow-[0_24px_64px_-12px_hsl(0_0%_0%/0.7)]",
-              "transition-opacity duration-300",
-              loaded ? "opacity-100" : "opacity-0"
-            )}
-          />
-        </div>
+      {/* Image stage — pinch/double-tap zoom, swipe-down to dismiss */}
+      <div className="relative flex-1 min-h-0">
+        <ZoomableImage
+          url={imageUrl}
+          alt={caption || "Post image"}
+          onClose={onClose}
+          onDismissProgress={setDismiss}
+          imgClassName="max-h-[calc(100dvh-180px)] max-w-full w-auto h-auto object-contain rounded-xl shadow-[0_24px_64px_-12px_hsl(0_0%_0%/0.7)]"
+        />
       </div>
 
       {/* Bottom glass card — caption + metrics */}
       <div
-        className="shrink-0 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]"
-        onClick={(e) => e.stopPropagation()}
+        className="relative z-10 shrink-0 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]"
+        style={{ opacity: chromeOpacity }}
       >
         <div className="rounded-2xl border border-gold/15 bg-card/95 p-3 shadow-[0_4px_24px_hsl(0_0%_0%/0.4)]">
           {caption && (

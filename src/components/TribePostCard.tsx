@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
-import LazyVideoPlayer from "@/components/LazyVideoPlayer";
+import PostMedia from "@/components/feed/PostMedia";
 import ImageLightbox from "@/components/ImageLightbox";
 import {
   Flame, Heart, MessageCircle, Award, MoreHorizontal,
@@ -465,37 +465,16 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
 
         {/* Image */}
         {post.image_url && (
-          <div className="mt-3 mx-4 rounded-xl overflow-hidden relative group">
-            {isUnsupportedHeic(post.image_url) ? (
-              <div className="rounded-xl border border-border bg-muted/40 p-4 text-xs text-muted-foreground">
-                This image format is not supported. Upload JPG, PNG or WEBP.
-              </div>
-            ) : (
-              <button type="button"
-                onClick={() => { hapticSelection(); setLightboxOpen(true); }}
-                className="block w-full text-left active:opacity-90 transition-opacity"
-                aria-label="Open image preview">
-                <img src={post.image_url} alt={post.content || "Tribe post"}
-                  className="w-full max-h-96 object-cover transition-transform duration-500 group-hover:scale-[1.01]"
-                  loading="lazy" />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
-                {isApexAuthor && (
-                  <div className="pointer-events-none absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/55 backdrop-blur-sm border border-[hsl(18_95%_58%)]/50">
-                    <Zap size={10} className="text-[hsl(18_95%_58%)]" fill="currentColor" />
-                    <span className="text-[9px] font-black tracking-wider text-[hsl(18_95%_58%)] uppercase">Apex</span>
-                  </div>
-                )}
-              </button>
-            )}
-          </div>
+          <PostMedia
+            imageUrl={post.image_url}
+            alt={post.content || "Tribe post"}
+            tier={(post.author?.status_tier as any) || undefined}
+            onOpenImage={() => { hapticSelection(); setLightboxOpen(true); }}
+          />
         )}
 
         {/* Video */}
-        {post.video_url && (
-          <div className="mt-3 mx-4 rounded-xl overflow-hidden">
-            <LazyVideoPlayer src={post.video_url} />
-          </div>
-        )}
+        {post.video_url && <PostMedia videoUrl={post.video_url} />}
 
         {/* Actions */}
         <div className="flex items-center gap-1 px-3 py-2.5 mt-1 border-t border-border/40">

@@ -10,10 +10,59 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.5"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          created_at: string
+          event: string
+          id: string
+          props: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: string
+          props?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: string
+          props?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           category: string
@@ -99,7 +148,9 @@ export type Database = {
           opponent_start_xp: number
           started_at: string | null
           status: Database["public"]["Enums"]["battle_status"]
+          verification_notes: Json | null
           winner_id: string | null
+          winner_verified: boolean | null
         }
         Insert: {
           battle_type?: string
@@ -117,7 +168,9 @@ export type Database = {
           opponent_start_xp?: number
           started_at?: string | null
           status?: Database["public"]["Enums"]["battle_status"]
+          verification_notes?: Json | null
           winner_id?: string | null
+          winner_verified?: boolean | null
         }
         Update: {
           battle_type?: string
@@ -135,7 +188,9 @@ export type Database = {
           opponent_start_xp?: number
           started_at?: string | null
           status?: Database["public"]["Enums"]["battle_status"]
+          verification_notes?: Json | null
           winner_id?: string | null
+          winner_verified?: boolean | null
         }
         Relationships: []
       }
@@ -148,9 +203,13 @@ export type Database = {
           dietary: string[]
           equipment: string[]
           height_cm: number | null
+          hobbies: string[]
           i_am: string | null
           injuries: string[]
           language_pref: string
+          life_context: string | null
+          mental_health_focus: string[]
+          mood_baseline: number | null
           no_go_protocols: string[]
           onboarded: boolean
           preferred_session_length_min: number
@@ -158,6 +217,7 @@ export type Database = {
           secondary_goal: string | null
           sex: string | null
           sleep_time: string
+          stress_baseline: number | null
           target_horizon_weeks: number | null
           timezone: string
           tone_pref: string
@@ -175,9 +235,13 @@ export type Database = {
           dietary?: string[]
           equipment?: string[]
           height_cm?: number | null
+          hobbies?: string[]
           i_am?: string | null
           injuries?: string[]
           language_pref?: string
+          life_context?: string | null
+          mental_health_focus?: string[]
+          mood_baseline?: number | null
           no_go_protocols?: string[]
           onboarded?: boolean
           preferred_session_length_min?: number
@@ -185,6 +249,7 @@ export type Database = {
           secondary_goal?: string | null
           sex?: string | null
           sleep_time?: string
+          stress_baseline?: number | null
           target_horizon_weeks?: number | null
           timezone?: string
           tone_pref?: string
@@ -202,9 +267,13 @@ export type Database = {
           dietary?: string[]
           equipment?: string[]
           height_cm?: number | null
+          hobbies?: string[]
           i_am?: string | null
           injuries?: string[]
           language_pref?: string
+          life_context?: string | null
+          mental_health_focus?: string[]
+          mood_baseline?: number | null
           no_go_protocols?: string[]
           onboarded?: boolean
           preferred_session_length_min?: number
@@ -212,6 +281,7 @@ export type Database = {
           secondary_goal?: string | null
           sex?: string | null
           sleep_time?: string
+          stress_baseline?: number | null
           target_horizon_weeks?: number | null
           timezone?: string
           tone_pref?: string
@@ -750,6 +820,8 @@ export type Database = {
           reading: boolean
           sleep_hours: number
           user_id: string
+          verified_at: string | null
+          verified_signals: Json | null
           workout: boolean
           xp_earned: number
         }
@@ -771,6 +843,8 @@ export type Database = {
           reading?: boolean
           sleep_hours?: number
           user_id: string
+          verified_at?: string | null
+          verified_signals?: Json | null
           workout?: boolean
           xp_earned?: number
         }
@@ -792,8 +866,37 @@ export type Database = {
           reading?: boolean
           sleep_hours?: number
           user_id?: string
+          verified_at?: string | null
+          verified_signals?: Json | null
           workout?: boolean
           xp_earned?: number
+        }
+        Relationships: []
+      }
+      deleted_account_archives: {
+        Row: {
+          archived_at: string
+          email: string | null
+          id: string
+          payload: Json
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          archived_at?: string
+          email?: string | null
+          id?: string
+          payload: Json
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          archived_at?: string
+          email?: string | null
+          id?: string
+          payload?: Json
+          user_id?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -967,6 +1070,51 @@ export type Database = {
           requester_id?: string
           status?: Database["public"]["Enums"]["friendship_status"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      health_sync_snapshots: {
+        Row: {
+          active_kcal: number | null
+          created_at: string
+          id: string
+          last_synced_at: string
+          sleep_hours: number | null
+          snapshot_date: string
+          source: string
+          steps: number | null
+          updated_at: string
+          user_id: string
+          workout_count: number | null
+          workout_minutes: number | null
+        }
+        Insert: {
+          active_kcal?: number | null
+          created_at?: string
+          id?: string
+          last_synced_at?: string
+          sleep_hours?: number | null
+          snapshot_date: string
+          source?: string
+          steps?: number | null
+          updated_at?: string
+          user_id: string
+          workout_count?: number | null
+          workout_minutes?: number | null
+        }
+        Update: {
+          active_kcal?: number | null
+          created_at?: string
+          id?: string
+          last_synced_at?: string
+          sleep_hours?: number | null
+          snapshot_date?: string
+          source?: string
+          steps?: number | null
+          updated_at?: string
+          user_id?: string
+          workout_count?: number | null
+          workout_minutes?: number | null
         }
         Relationships: []
       }
@@ -1213,6 +1361,88 @@ export type Database = {
           status?: string
           text_content?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      pod_invites: {
+        Row: {
+          created_at: string
+          id: string
+          invitee_id: string
+          inviter_id: string
+          pod_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invitee_id: string
+          inviter_id: string
+          pod_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invitee_id?: string
+          inviter_id?: string
+          pod_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pod_invites_pod_id_fkey"
+            columns: ["pod_id"]
+            isOneToOne: false
+            referencedRelation: "pods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pod_members: {
+        Row: {
+          joined_at: string
+          pod_id: string
+          user_id: string
+        }
+        Insert: {
+          joined_at?: string
+          pod_id: string
+          user_id: string
+        }
+        Update: {
+          joined_at?: string
+          pod_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pod_members_pod_id_fkey"
+            columns: ["pod_id"]
+            isOneToOne: false
+            referencedRelation: "pods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pods: {
+        Row: {
+          created_at: string
+          id: string
+          invite_code: string | null
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invite_code?: string | null
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invite_code?: string | null
+          name?: string
+          owner_id?: string
         }
         Relationships: []
       }
@@ -1473,6 +1703,85 @@ export type Database = {
           {
             foreignKeyName: "tribe_battles_opponent_tribe_id_fkey"
             columns: ["opponent_tribe_id"]
+            isOneToOne: false
+            referencedRelation: "tribes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tribe_event_rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tribe_event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "tribe_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tribe_events: {
+        Row: {
+          activity: string | null
+          capacity: number | null
+          created_at: string
+          description: string | null
+          duration_min: number
+          host_id: string
+          id: string
+          place: string | null
+          starts_at: string
+          title: string
+          tribe_id: string
+        }
+        Insert: {
+          activity?: string | null
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          duration_min?: number
+          host_id: string
+          id?: string
+          place?: string | null
+          starts_at: string
+          title: string
+          tribe_id: string
+        }
+        Update: {
+          activity?: string | null
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          duration_min?: number
+          host_id?: string
+          id?: string
+          place?: string | null
+          starts_at?: string
+          title?: string
+          tribe_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tribe_events_tribe_id_fkey"
+            columns: ["tribe_id"]
             isOneToOne: false
             referencedRelation: "tribes"
             referencedColumns: ["id"]
@@ -1753,11 +2062,13 @@ export type Database = {
           description: string | null
           id: string
           is_paused: boolean
+          member_cap: number
           member_count: number
           name: string
           owner_id: string
           paused_at: string | null
           paused_reason: string | null
+          primary_activity: string | null
           slug: string
           updated_at: string
           visibility: string
@@ -1768,11 +2079,13 @@ export type Database = {
           description?: string | null
           id?: string
           is_paused?: boolean
+          member_cap?: number
           member_count?: number
           name: string
           owner_id: string
           paused_at?: string | null
           paused_reason?: string | null
+          primary_activity?: string | null
           slug: string
           updated_at?: string
           visibility?: string
@@ -1783,11 +2096,13 @@ export type Database = {
           description?: string | null
           id?: string
           is_paused?: boolean
+          member_cap?: number
           member_count?: number
           name?: string
           owner_id?: string
           paused_at?: string | null
           paused_reason?: string | null
+          primary_activity?: string | null
           slug?: string
           updated_at?: string
           visibility?: string
@@ -2075,6 +2390,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_pod_invite: { Args: { p_pod: string }; Returns: Json }
       add_chat_memory: {
         Args: { _confidence?: number; _fact: string; _source?: string }
         Returns: string
@@ -2085,6 +2401,7 @@ export type Database = {
         Args: { p_accept: boolean; p_tribe_id: string; p_user_id: string }
         Returns: undefined
       }
+      are_friends: { Args: { a: string; b: string }; Returns: boolean }
       auto_resolve_expired_tribe_battles: { Args: never; Returns: undefined }
       award_badge_if_earned: {
         Args: { p_badge_id: string; p_user_id: string }
@@ -2098,10 +2415,19 @@ export type Database = {
         Args: { _mission_id: string; _plan_id: string }
         Returns: Json
       }
+      create_battle: {
+        Args: {
+          p_battle_type: string
+          p_duration_days: number
+          p_opponent: string
+        }
+        Returns: Json
+      }
       create_legend_invite: {
         Args: { p_code?: string; p_expires_at?: string; p_note?: string }
         Returns: Json
       }
+      create_pod: { Args: { p_name: string }; Returns: Json }
       create_tribe: {
         Args: {
           p_cover_url?: string
@@ -2119,8 +2445,23 @@ export type Database = {
         }
         Returns: string
       }
+      create_tribe_event: {
+        Args: {
+          p_activity: string
+          p_capacity: number
+          p_description: string
+          p_duration_min: number
+          p_place: string
+          p_starts_at: string
+          p_title: string
+          p_tribe: string
+        }
+        Returns: string
+      }
+      decline_pod_invite: { Args: { p_pod: string }; Returns: undefined }
       delete_chat_memory: { Args: { _id: string }; Returns: boolean }
       delete_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
+      delete_tribe_event: { Args: { p_event: string }; Returns: undefined }
       ensure_active_leaderboard_season: {
         Args: never
         Returns: {
@@ -2208,10 +2549,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      invite_to_pod: { Args: { p_invitee: string }; Returns: undefined }
       invite_to_tribe: {
         Args: { p_invitee_id: string; p_tribe_id: string }
         Returns: string
       }
+      is_pod_member: { Args: { p_pod: string }; Returns: boolean }
       is_tribe_admin: {
         Args: { _tribe_id: string; _user_id: string }
         Returns: boolean
@@ -2225,8 +2568,15 @@ export type Database = {
         Returns: boolean
       }
       is_valid_tribe_owner: { Args: { _user_id: string }; Returns: boolean }
+      join_pod: { Args: { p_code: string }; Returns: Json }
       join_tribe: { Args: { p_tribe_id: string }; Returns: string }
+      leave_pod: { Args: never; Returns: undefined }
       leave_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
+      list_friend_requests: { Args: never; Returns: Json }
+      list_friends: { Args: never; Returns: Json }
+      list_pod_invites: { Args: never; Returns: Json }
+      list_sent_friend_requests: { Args: never; Returns: Json }
+      list_tribe_events: { Args: { p_tribe: string }; Returns: Json }
       log_habit: { Args: { _date?: string; _habit_id: string }; Returns: Json }
       log_preference_signal: {
         Args: {
@@ -2236,6 +2586,29 @@ export type Database = {
           _value?: string
         }
         Returns: string
+      }
+      pending_friend_request_count: { Args: never; Returns: number }
+      pod_today: { Args: { p_tz_offset_minutes?: number }; Returns: Json }
+      record_checkin: {
+        Args: {
+          p_cold_shower: boolean
+          p_extra_workout: boolean
+          p_healthy_food: boolean
+          p_hydration_liters: number
+          p_journal_entry?: string
+          p_meditation_evening: boolean
+          p_meditation_morning: boolean
+          p_no_phone_evening: boolean
+          p_no_phone_morning: boolean
+          p_proof_photo_url?: string
+          p_protein_intake: boolean
+          p_reading: boolean
+          p_sleep_hours: number
+          p_tz_offset_minutes?: number
+          p_workout: boolean
+          p_xp_earned: number
+        }
+        Returns: Json
       }
       redeem_legend_invite: { Args: { p_code: string }; Returns: Json }
       remove_tribe_member: {
@@ -2260,6 +2633,10 @@ export type Database = {
       }
       revoke_tribe_invite: { Args: { p_invite_id: string }; Returns: undefined }
       reward_referral_conversion: { Args: { p_user: string }; Returns: Json }
+      rsvp_tribe_event: {
+        Args: { p_event: string; p_status: string }
+        Returns: undefined
+      }
       search_tribes: {
         Args: { p_limit?: number; p_query: string }
         Returns: {
@@ -2276,6 +2653,10 @@ export type Database = {
       }
       set_elite_status: {
         Args: { elite: boolean; target_user_id: string }
+        Returns: undefined
+      }
+      set_tribe_activity: {
+        Args: { p_activity: string; p_tribe: string }
         Returns: undefined
       }
       set_tribe_member_role: {
@@ -2347,9 +2728,13 @@ export type Database = {
           dietary: string[]
           equipment: string[]
           height_cm: number | null
+          hobbies: string[]
           i_am: string | null
           injuries: string[]
           language_pref: string
+          life_context: string | null
+          mental_health_focus: string[]
+          mood_baseline: number | null
           no_go_protocols: string[]
           onboarded: boolean
           preferred_session_length_min: number
@@ -2357,6 +2742,7 @@ export type Database = {
           secondary_goal: string | null
           sex: string | null
           sleep_time: string
+          stress_baseline: number | null
           target_horizon_weeks: number | null
           timezone: string
           tone_pref: string
@@ -2440,6 +2826,18 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      upsert_health_snapshot: {
+        Args: {
+          _active_kcal?: number
+          _date: string
+          _sleep_hours?: number
+          _source?: string
+          _steps?: number
+          _workout_count?: number
+          _workout_minutes?: number
+        }
+        Returns: Json
+      }
       upsert_performance_snapshot: {
         Args: {
           _components: Json
@@ -2473,6 +2871,12 @@ export type Database = {
         }
         Returns: string
       }
+      user_verified_performer_stats: {
+        Args: { _user_id: string }
+        Returns: Json
+      }
+      verified_authors: { Args: { p_ids: string[] }; Returns: string[] }
+      verify_checkin: { Args: { _checkin_id: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
@@ -2621,6 +3025,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],

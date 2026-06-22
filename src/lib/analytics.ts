@@ -25,7 +25,7 @@ export async function track(
       uid = session?.user?.id;
     }
     if (!uid) return;
-    await supabase.from("analytics_events" as any).insert({
+    await supabase.from("analytics_events").insert({
       user_id: uid,
       event,
       props: props ?? null,

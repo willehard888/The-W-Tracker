@@ -1,4 +1,4 @@
-import { Crown, Camera, Trophy } from "lucide-react";
+import { Crown, Camera, Trophy, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierUsernameClass } from "@/lib/status-tiers";
 import StatusNameplate from "@/components/StatusNameplate";
@@ -29,6 +29,7 @@ export interface ProfileHeroProps {
   featuredBadge: any | null;
   earnedBadges: any[] | undefined;
   onPreviewBadge: (badge: any) => void;
+  verified?: boolean;
 }
 
 /**
@@ -52,6 +53,7 @@ const ProfileHero = ({
   featuredBadge,
   earnedBadges,
   onPreviewBadge,
+  verified,
 }: ProfileHeroProps) => {
   return (
     <div className={cn(
@@ -160,6 +162,12 @@ const ProfileHero = ({
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
               <Trophy size={12} className="text-gold" />
               <span className="text-[11px] font-black text-gold tracking-wider uppercase">Season Champion</span>
+            </span>
+          )}
+          {verified && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[hsl(var(--xp-green))]/45 bg-[hsl(var(--xp-green))]/10">
+              <ShieldCheck size={12} className="text-[hsl(var(--xp-green))]" />
+              <span className="text-[11px] font-black text-[hsl(var(--xp-green))] tracking-wider uppercase">Verified</span>
             </span>
           )}
         </div>

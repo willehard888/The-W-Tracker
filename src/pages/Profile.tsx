@@ -28,6 +28,7 @@ import { formatDistanceToNow, subDays } from "date-fns";
 import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
 import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
 import RoadToElite from "@/components/RoadToElite";
+import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
 import TierLadder from "@/components/TierLadder";
 import YourBlueprintCard from "@/components/coach/YourBlueprintCard";
 import CoachLine from "@/components/coach/CoachLine";
@@ -299,6 +300,18 @@ const Profile = () => {
 
   const earnedBadges = (allBadges || []).filter((b) => earnedBadgeIds?.includes(b.id));
 
+  // HealthKit "Verified Performer" status — unfakeable discipline, shown as a
+  // badge on the hero. Same RPC the connect card + leaderboard use.
+  const { data: verifiedStats } = useQuery({
+    queryKey: ["profile-verified-stats", profile?.user_id],
+    enabled: !!profile?.user_id,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("user_verified_performer_stats" as any, { _user_id: profile!.user_id });
+      return data as { is_verified_performer?: boolean } | null;
+    },
+  });
+
   const featuredBadge = useMemo(() => {
     if (!profile?.featured_badge_id || !allBadges) return null;
     return allBadges.find((b) => b.id === profile.featured_badge_id) || null;
@@ -427,6 +440,7 @@ const Profile = () => {
         featuredBadge={featuredBadge}
         earnedBadges={earnedBadges}
         onPreviewBadge={setPreviewBadge}
+        verified={!!verifiedStats?.is_verified_performer}
       />
 
       <Tabs value={profileTab} onValueChange={(v) => setProfileTab(v as typeof profileTab)} className="w-full">
@@ -487,6 +501,12 @@ const Profile = () => {
       {/* Road to Elite — earned-status progress (moved here from Settings) */}
       <div className="animate-reveal animate-reveal-delay-3">
         <RoadToElite />
+      </div>
+
+      {/* Verified Performer — connect HealthKit to earn unfakeable status.
+          Self-hides on non-iOS / when probing (component handles it). */}
+      <div className="animate-reveal animate-reveal-delay-3">
+        <HealthKitConnectCard />
       </div>
 
       {/* Weekly Sleep — recovery context / XP multiplier (moved here from Settings) */}

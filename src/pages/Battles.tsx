@@ -21,6 +21,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import MyTribeBattles from "@/components/MyTribeBattles";
 import MoreSection from "@/components/ui/more-section";
+import BattleIncomingCard from "@/components/battles/BattleIncomingCard";
+import BattleActiveCard from "@/components/battles/BattleActiveCard";
+import BattlePendingCard from "@/components/battles/BattlePendingCard";
+import BattleVoteCard from "@/components/battles/BattleVoteCard";
+import BattleHistoryCard from "@/components/battles/BattleHistoryCard";
 
 const BATTLE_TYPES = [
   { id: "xp", label: "Total XP", emoji: "⚡", icon: Zap, description: "Most XP earned wins", color: "text-gold" },
@@ -475,38 +480,15 @@ const Battles = () => {
             Incoming Challenges
           </h2>
           <div className="space-y-2">
-            {pendingBattles.map((battle: any) => {
-              const opp = getOpponent(battle);
-              const typeInfo = getBattleTypeInfo(battle.battle_type);
-              return (
-                <div key={battle.id} className="rounded-xl border border-gold/20 p-4 glass-3d depth-realistic">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="h-10 w-10 rounded-full gradient-gold flex items-center justify-center text-sm font-black text-primary-foreground">
-                      {opp.username?.charAt(0)?.toUpperCase()}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-sm">@{opp.username}</p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <span>{typeInfo.emoji}</span>
-                        {battle.duration_days}d {typeInfo.label} battle
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground">{(opp.xp ?? 0).toLocaleString()} XP</p>
-                      <p className="text-xs text-[hsl(var(--streak-orange))]">{opp.streak}d streak</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="ember" size="sm" className="flex-1" onClick={() => handleRespond(battle.id, true)}>
-                      <CheckCircle size={14} /> Accept
-                    </Button>
-                    <Button variant="secondary" size="sm" className="flex-1" onClick={() => handleRespond(battle.id, false)}>
-                      <XCircle size={14} /> Decline
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
+            {pendingBattles.map((battle: any) => (
+              <BattleIncomingCard
+                key={battle.id}
+                battle={battle}
+                opp={getOpponent(battle)}
+                typeInfo={getBattleTypeInfo(battle.battle_type)}
+                onRespond={handleRespond}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -522,7 +504,6 @@ const Battles = () => {
             {activeBattles.map((battle: any) => {
               const opp = getOpponent(battle);
               const typeInfo = getBattleTypeInfo(battle.battle_type);
-              const TypeIcon = typeInfo.icon;
               const isXpBattle = battle.battle_type === "xp";
               const challengerScore = isXpBattle
                 ? Math.max(0, (participants?.[battle.challenger_id]?.xp ?? 0) - (battle.challenger_start_xp ?? 0))
@@ -536,148 +517,25 @@ const Battles = () => {
               const startDate = battle.started_at ? new Date(battle.started_at) : new Date();
               const endDate = new Date(startDate.getTime() + battle.duration_days * 24 * 60 * 60 * 1000);
               const daysLeft = Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
-              const myProof = getMyProof(battle);
-              const oppProof = getOppProof(battle);
-
               return (
-                <div key={battle.id} className="rounded-xl border border-gold/20 overflow-hidden glass-3d depth-realistic">
-                  {/* Header */}
-                  <div className="flex items-center justify-between p-4 pb-2">
-                    <div className="flex items-center gap-2">
-                      <TypeIcon size={14} className={typeInfo.color} />
-                      <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(var(--gold))" }}>
-                        {typeInfo.emoji} {typeInfo.label} Battle
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[hsl(var(--streak-orange))]/10 border border-[hsl(var(--streak-orange))]/20">
-                        <Clock size={10} className="text-[hsl(var(--streak-orange))]" />
-                        <span className="text-[10px] font-bold text-[hsl(var(--streak-orange))]">{daysLeft}d left</span>
-                      </div>
-                      {isAdmin && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/60 hover:text-muted-foreground">
-                              <MoreHorizontal size={14} />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="min-w-[160px]">
-                            <DropdownMenuItem onClick={() => adminCancelBattle(battle.id)} className="text-[hsl(var(--streak-orange))]">
-                              <ShieldCheck size={14} className="mr-2" />
-                              Cancel battle
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => adminDeleteBattle(battle.id)} className="text-destructive focus:text-destructive">
-                              <Trash2 size={14} className="mr-2" />
-                              Delete battle
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* VS Display */}
-                  <div className="flex items-center gap-3 px-4 py-3">
-                    <div className="flex-1 text-center">
-                      <div className="h-12 w-12 rounded-full gradient-gold flex items-center justify-center text-lg font-black text-primary-foreground mx-auto mb-1">
-                        {profile.username?.charAt(0)?.toUpperCase()}
-                      </div>
-                      <p className="text-xs font-bold truncate text-gold">@{profile.username} <span className="text-[10px] text-gold/70 font-medium">(you)</span></p>
-                      <p className={cn("text-lg font-black font-display tabular-nums", amWinning ? "text-gold" : "text-muted-foreground")}>
-                        {myScore}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">{typeInfo.label}</p>
-                    </div>
-
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-xl font-black text-muted-foreground/40">VS</span>
-                    </div>
-
-                    <div className="flex-1 text-center">
-                      <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center text-lg font-black text-muted-foreground mx-auto mb-1">
-                        {opp.username?.charAt(0)?.toUpperCase()}
-                      </div>
-                      <p className="text-xs font-bold truncate">@{opp.username}</p>
-                      <p className={cn("text-lg font-black font-display tabular-nums", !amWinning ? "text-gold" : "text-muted-foreground")}>
-                        {oppScore}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">{typeInfo.label}</p>
-                    </div>
-                  </div>
-
-                  <div className={cn(
-                    "text-center text-xs font-bold py-1.5 mx-4",
-                    "rounded-lg",
-                    amWinning ? "bg-gold/10 text-gold" : "bg-destructive/10 text-destructive"
-                  )}>
-                    {amWinning ? "You're winning 🔥" : "You're behind — grind harder"}
-                  </div>
-
-                  {/* Proof Section — REQUIRED */}
-                  <div className="p-4 pt-3 border-t border-border mt-3">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
-                      <Camera size={10} /> Proof Photos <span className="text-destructive ml-1">(required)</span>
-                    </p>
-
-                    {!myProof && (
-                      <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-2.5 mb-3 flex items-center gap-2">
-                        <Camera size={14} className="text-destructive shrink-0" />
-                        <p className="text-[11px] text-destructive font-semibold">
-                          Upload your proof to validate this battle. No proof = automatic forfeit.
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      {/* My proof */}
-                      <div className="flex-1">
-                        {myProof ? (
-                          <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
-                            <img loading="lazy" decoding="async" src={myProof} alt="My proof" className="w-full h-full object-cover" />
-                            <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
-                              <span className="text-[9px] font-bold text-white">You ✅</span>
-                            </div>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setActiveProofBattleId(battle.id);
-                              fileInputRef.current?.click();
-                            }}
-                            disabled={uploadingProof === battle.id}
-                            className="w-full aspect-square rounded-lg border-2 border-dashed border-destructive/40 bg-destructive/5 flex flex-col items-center justify-center gap-1 transition-all hover:bg-destructive/10 active:scale-95 animate-pulse"
-                          >
-                            {uploadingProof === battle.id ? (
-                              <span className="text-[10px] text-muted-foreground animate-pulse">Uploading...</span>
-                            ) : (
-                              <>
-                                <Camera size={20} className="text-destructive" />
-                                <span className="text-[9px] font-bold text-destructive">UPLOAD NOW</span>
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Opponent proof */}
-                      <div className="flex-1">
-                        {oppProof ? (
-                          <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
-                            <img loading="lazy" decoding="async" src={oppProof} alt="Opponent proof" className="w-full h-full object-cover" />
-                            <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
-                              <span className="text-[9px] font-bold text-white">@{opp.username} ✅</span>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="w-full aspect-square rounded-lg border border-border bg-secondary/50 flex flex-col items-center justify-center gap-1">
-                            <Image size={16} className="text-muted-foreground/40" />
-                            <span className="text-[9px] text-muted-foreground">No proof yet</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <BattleActiveCard
+                  key={battle.id}
+                  battle={battle}
+                  opp={opp}
+                  typeInfo={typeInfo}
+                  profileUsername={profile.username}
+                  myScore={myScore}
+                  oppScore={oppScore}
+                  amWinning={amWinning}
+                  daysLeft={daysLeft}
+                  myProof={getMyProof(battle)}
+                  oppProof={getOppProof(battle)}
+                  isAdmin={!!isAdmin}
+                  isUploading={uploadingProof === battle.id}
+                  onRequestUpload={(id) => { setActiveProofBattleId(id); fileInputRef.current?.click(); }}
+                  onAdminCancel={adminCancelBattle}
+                  onAdminDelete={adminDeleteBattle}
+                />
               );
             })}
           </div>
@@ -692,24 +550,14 @@ const Battles = () => {
             Awaiting Response
           </h2>
           <div className="space-y-2">
-            {myPending.map((battle: any) => {
-              const opp = getOpponent(battle);
-              const typeInfo = getBattleTypeInfo(battle.battle_type);
-              return (
-                <div key={battle.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
-                  <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-sm font-black text-muted-foreground">
-                    {opp.username?.charAt(0)?.toUpperCase()}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm">@{opp.username}</p>
-                    <p className="text-xs text-muted-foreground">{typeInfo.emoji} {battle.duration_days}d {typeInfo.label}</p>
-                  </div>
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1 rounded-full bg-secondary">
-                    Pending
-                  </span>
-                </div>
-              );
-            })}
+            {myPending.map((battle: any) => (
+              <BattlePendingCard
+                key={battle.id}
+                battle={battle}
+                opponentName={getOpponent(battle).username}
+                typeInfo={getBattleTypeInfo(battle.battle_type)}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -723,102 +571,16 @@ const Battles = () => {
           </h2>
           <p className="text-[10px] text-muted-foreground mb-3">These battles ended in a tie. Cast your vote to decide the winner!</p>
           <div className="space-y-3">
-            {communityVotingBattles.map((battle: any) => {
-              const typeInfo = getBattleTypeInfo(battle.battle_type);
-              const myVote = myVotes?.[battle.id];
-              const counts = voteCounts?.[battle.id] || {};
-              const challengerVotes = counts[battle.challenger_id] || 0;
-              const opponentVotes = counts[battle.opponent_id] || 0;
-              const totalVotes = challengerVotes + opponentVotes;
-
-              return (
-                <div key={battle.id} className="rounded-xl border border-purple-500/20 overflow-hidden glass-3d depth-realistic">
-                  <div className="flex items-center justify-between px-4 pt-3 pb-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1">
-                      {typeInfo.emoji} {typeInfo.label} Battle — TIE
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>
-                  </div>
-
-                  {/* Proof photos side by side */}
-                  <div className="flex gap-2 px-4 py-3">
-                    <div className="flex-1 text-center">
-                      <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary mb-2">
-                        {battle.challenger_proof_url ? (
-                          <img loading="lazy" decoding="async" src={battle.challenger_proof_url} alt="Challenger proof" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
-                            <Image size={24} />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs font-bold truncate mb-1">@{battle.challengerProfile?.username || "?"}</p>
-                      <button
-                        onClick={() => handleVote(battle.id, battle.challenger_id)}
-                        disabled={!!myVote}
-                        className={cn(
-                          "w-full py-2 rounded-lg text-xs font-bold transition-all active:scale-95 border",
-                          myVote === battle.challenger_id
-                            ? "bg-purple-500/20 border-purple-500/40 text-purple-400"
-                            : myVote
-                              ? "bg-secondary/50 border-border text-muted-foreground cursor-not-allowed"
-                              : "bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20"
-                        )}
-                      >
-                        {myVote === battle.challenger_id ? `Voted ✓ (${challengerVotes})` : myVote ? `${challengerVotes}` : `Vote (${challengerVotes})`}
-                      </button>
-                    </div>
-
-                    <div className="flex flex-col items-center justify-center px-1">
-                      <span className="text-lg font-black text-muted-foreground/30">VS</span>
-                    </div>
-
-                    <div className="flex-1 text-center">
-                      <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary mb-2">
-                        {battle.opponent_proof_url ? (
-                          <img loading="lazy" decoding="async" src={battle.opponent_proof_url} alt="Opponent proof" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
-                            <Image size={24} />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs font-bold truncate mb-1">@{battle.opponentProfile?.username || "?"}</p>
-                      <button
-                        onClick={() => handleVote(battle.id, battle.opponent_id)}
-                        disabled={!!myVote}
-                        className={cn(
-                          "w-full py-2 rounded-lg text-xs font-bold transition-all active:scale-95 border",
-                          myVote === battle.opponent_id
-                            ? "bg-purple-500/20 border-purple-500/40 text-purple-400"
-                            : myVote
-                              ? "bg-secondary/50 border-border text-muted-foreground cursor-not-allowed"
-                              : "bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20"
-                        )}
-                      >
-                        {myVote === battle.opponent_id ? `Voted ✓ (${opponentVotes})` : myVote ? `${opponentVotes}` : `Vote (${opponentVotes})`}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Vote bar */}
-                  {totalVotes > 0 && (
-                    <div className="px-4 pb-3">
-                      <div className="h-2 rounded-full bg-secondary overflow-hidden flex">
-                        <div
-                          className="h-full bg-purple-500 transition-all duration-500"
-                          style={{ width: `${(challengerVotes / totalVotes) * 100}%` }}
-                        />
-                        <div
-                          className="h-full bg-gold transition-all duration-500"
-                          style={{ width: `${(opponentVotes / totalVotes) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {communityVotingBattles.map((battle: any) => (
+              <BattleVoteCard
+                key={battle.id}
+                battle={battle}
+                typeInfo={getBattleTypeInfo(battle.battle_type)}
+                myVote={myVotes?.[battle.id]}
+                counts={voteCounts?.[battle.id] || {}}
+                onVote={handleVote}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -828,55 +590,17 @@ const Battles = () => {
         <div className="animate-reveal animate-reveal-delay-3">
           <h2 className="font-display font-bold text-sm mb-3 tracking-tight">Battle History</h2>
           <div className="space-y-2">
-            {completedBattles.map((battle: any) => {
-              const opp = getOpponent(battle);
-              const won = battle.winner_id === profile.user_id;
-              const typeInfo = getBattleTypeInfo(battle.battle_type);
-              return (
-                <div key={battle.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
-                  <div className={cn(
-                    "h-10 w-10 rounded-lg flex items-center justify-center",
-                    won ? "bg-gold/15 text-gold" : "bg-destructive/15 text-destructive"
-                  )}>
-                    {won ? <Trophy size={18} /> : <Swords size={18} />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm flex items-center gap-1.5">
-                      vs @{opp.username}
-                      {won && battle.winner_verified === true && (
-                        <span title="HealthKit-verified win" className="inline-flex items-center gap-0.5 text-[9px] font-black uppercase tracking-wider text-[hsl(var(--xp-green))]">
-                          <ShieldCheck size={11} /> Verified
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{typeInfo.emoji} {battle.duration_days}d {typeInfo.label}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className={cn(
-                      "text-sm font-bold font-display",
-                      won ? "text-gold" : "text-destructive"
-                    )}>
-                      {won ? "Victory 🏆" : "Defeat"}
-                    </div>
-                    {isAdmin && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="p-1 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/40 hover:text-muted-foreground">
-                            <MoreHorizontal size={14} />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => adminDeleteBattle(battle.id)} className="text-destructive focus:text-destructive">
-                            <Trash2 size={14} className="mr-2" />
-                            Delete battle
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {completedBattles.map((battle: any) => (
+              <BattleHistoryCard
+                key={battle.id}
+                battle={battle}
+                opponentName={getOpponent(battle).username}
+                typeInfo={getBattleTypeInfo(battle.battle_type)}
+                currentUserId={profile.user_id}
+                isAdmin={!!isAdmin}
+                onAdminDelete={adminDeleteBattle}
+              />
+            ))}
           </div>
         </div>
       )}

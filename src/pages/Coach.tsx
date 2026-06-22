@@ -169,7 +169,7 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
             <button
               type="button"
               onClick={() => { setMenuOpen(false); navigate("/coach/profile"); }}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 transition"
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 active:scale-[0.98] transition"
             >
               <User size={14} className="text-gold" />
               <span>Trainer profile</span>
@@ -177,7 +177,7 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
             <button
               type="button"
               onClick={() => { setMenuOpen(false); navigate("/coach/memory"); }}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 transition border-t border-border/40"
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 active:scale-[0.98] transition border-t border-border/40"
             >
               <Brain size={14} className="text-gold" />
               <span>Coach memory</span>

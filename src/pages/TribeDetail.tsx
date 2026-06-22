@@ -34,6 +34,7 @@ import TribeReportsDialog from "@/components/TribeReportsDialog";
 import TribeManageDialog from "@/components/TribeManageDialog";
 import TribeEvents from "@/components/tribe/TribeEvents";
 import TribeMembersRow from "@/components/tribe/TribeMembersRow";
+import EmptyState from "@/components/ui/empty-state";
 import TribeComposer from "@/components/tribe/TribeComposer";
 import TribeHeader from "@/components/tribe/TribeHeader";
 import { downscaleImage } from "@/lib/downscale-image";
@@ -546,7 +547,7 @@ const TribeDetail = () => {
         </div>
       )}
 
-      <button onClick={() => navigate("/tribes")} className="flex items-center gap-1 text-xs text-muted-foreground mb-4 relative">
+      <button onClick={() => { hapticSelection(); navigate("/tribes"); }} className="flex items-center gap-1 text-xs text-muted-foreground mb-4 relative active:scale-95 transition-transform">
         <ArrowLeft size={14} /> Tribes
       </button>
 
@@ -661,15 +662,11 @@ const TribeDetail = () => {
       {/* Posts */}
       <div className="space-y-3">
         {posts.length === 0 ? (
-          <div className="rounded-2xl p-8 text-center border border-[hsl(18_95%_58%)]/30 bg-gradient-to-br from-[hsl(18_95%_58%)]/8 via-card/50 to-gold/5 shadow-[0_0_24px_hsl(18_95%_58%/0.2)]">
-            <Flame size={28} className="mx-auto mb-2 text-[hsl(18_95%_58%)] drop-shadow-[0_0_8px_hsl(18_95%_58%/0.7)]" />
-            <p className="font-display font-black text-sm bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
-              Be the first to ignite this tribe
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Share something the tribe needs to hear.
-            </p>
-          </div>
+          <EmptyState
+            icon={Flame}
+            title="Be the first to ignite this tribe"
+            description="Share something the tribe needs to hear."
+          />
         ) : (
           posts.map((p) => (
             <TribePostCard

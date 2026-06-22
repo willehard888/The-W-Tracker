@@ -6,6 +6,7 @@ import StatCard from "@/components/StatCard";
 import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
 import ProfileHero from "@/components/profile/ProfileHero";
 import { downscaleImage } from "@/lib/downscale-image";
+import { hapticSelection } from "@/lib/haptics";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeVault from "@/components/BadgeVault";
 import BadgeShowcase from "@/components/BadgeShowcase";
@@ -366,16 +367,16 @@ const Profile = () => {
             <div className="absolute right-0 top-10 z-40 w-52 rounded-2xl border border-border/60 bg-card shadow-[0_18px_56px_-12px_hsl(var(--background)/0.8)] overflow-hidden">
               <button
                 type="button"
-                onClick={() => { setQuickMenuOpen(false); setProfileTab("settings"); }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 transition"
+                onClick={() => { hapticSelection(); setQuickMenuOpen(false); setProfileTab("settings"); }}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 active:scale-[0.98] transition"
               >
                 <SettingsIcon size={14} className="text-gold" />
                 <span>Open Settings</span>
               </button>
               <button
                 type="button"
-                onClick={() => { setQuickMenuOpen(false); signOut(); }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 transition border-t border-border/40"
+                onClick={() => { hapticSelection(); setQuickMenuOpen(false); signOut(); }}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 active:scale-[0.98] transition border-t border-border/40"
               >
                 <LogOut size={14} className="text-gold" />
                 <span>Sign Out</span>
@@ -389,7 +390,7 @@ const Profile = () => {
                   setTimeout(() => setDeleteDialogOpen(true), 80);
                 }}
                 disabled={deletingAccount}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm text-destructive hover:bg-destructive/10 active:bg-destructive/20 transition border-t border-border/40 disabled:opacity-50"
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm text-destructive hover:bg-destructive/10 active:bg-destructive/20 active:scale-[0.98] transition border-t border-border/40 disabled:opacity-50"
               >
                 <Trash2 size={14} />
                 <span>{deletingAccount ? "Deleting…" : "Delete Account"}</span>

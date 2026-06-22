@@ -38,7 +38,7 @@ const Squad = () => {
           ))}
         </div>
         <button
-          onClick={() => navigate("/friends")}
+          onClick={() => { hapticSelection(); navigate("/friends"); }}
           aria-label="Friends"
           className="h-9 w-9 rounded-full bg-secondary/70 border border-border flex items-center justify-center text-foreground/90 shrink-0 active:scale-95 transition-transform"
         >

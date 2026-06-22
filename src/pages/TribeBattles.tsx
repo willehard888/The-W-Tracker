@@ -43,9 +43,9 @@ const TribeBattles = () => {
     }
 
     const [tRes, bRes] = await Promise.all([
-      supabase.from("tribes" as any).select("id, name, owner_id").eq("id", id).maybeSingle(),
+      supabase.from("tribes").select("id, name, owner_id").eq("id", id).maybeSingle(),
       supabase
-        .from("tribe_battles" as any)
+        .from("tribe_battles")
         .select("*")
         .or(`challenger_tribe_id.eq.${id},opponent_tribe_id.eq.${id}`)
         .order("created_at", { ascending: false })
@@ -63,7 +63,7 @@ const TribeBattles = () => {
     if (tribeIds.length > 0) {
       const [{ data: tribesData }, streaksMap] = await Promise.all([
         supabase
-          .from("tribes" as any)
+          .from("tribes")
           .select("id, name, member_count")
           .in("id", tribeIds),
         fetchTribeCollectiveStreaks(tribeIds),

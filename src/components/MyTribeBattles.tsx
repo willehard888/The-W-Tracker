@@ -45,7 +45,7 @@ const MyTribeBattles = () => {
 
     // Find tribes the user belongs to
     const { data: mems } = await supabase
-      .from("tribe_members" as any)
+      .from("tribe_members")
       .select("tribe_id")
       .eq("user_id", profile.user_id)
       .eq("status", "active");
@@ -59,7 +59,7 @@ const MyTribeBattles = () => {
     }
 
     const { data: tribesData } = await supabase
-      .from("tribes" as any)
+      .from("tribes")
       .select("id, name")
       .in("id", tribeIds);
     setTribes(((tribesData as any) ?? []) as MyTribe[]);
@@ -70,7 +70,7 @@ const MyTribeBattles = () => {
       .join(",");
 
     const { data: battleData } = await supabase
-      .from("tribe_battles" as any)
+      .from("tribe_battles")
       .select(
         "id, status, challenger_tribe_id, opponent_tribe_id, challenger_score, opponent_score, duration_days, started_at, ended_at, winner_tribe_id, created_at",
       )
@@ -84,7 +84,7 @@ const MyTribeBattles = () => {
     );
     if (allTribeIds.length > 0) {
       const { data: nameRows } = await supabase
-        .from("tribes" as any)
+        .from("tribes")
         .select("id, name")
         .in("id", allTribeIds);
       const nameMap = new Map<string, string>(

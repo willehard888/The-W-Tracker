@@ -442,7 +442,7 @@ const DailyCheckin = () => {
       // streak bump and pulses the collective flame for every other member.
       try {
         const { count: tribeCount } = await supabase
-          .from("tribe_members" as any)
+          .from("tribe_members")
           .select("tribe_id", { count: "exact", head: true })
           .eq("user_id", user.id)
           .eq("status", "active");

@@ -35,11 +35,11 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
     (async () => {
       const [m, i] = await Promise.all([
         supabase
-          .from("tribe_members" as any)
+          .from("tribe_members")
           .select("user_id")
           .eq("tribe_id", tribeId),
         supabase
-          .from("tribe_invites" as any)
+          .from("tribe_invites")
           .select("invitee_id")
           .eq("tribe_id", tribeId)
           .eq("status", "pending"),

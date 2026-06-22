@@ -54,7 +54,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
       }
       setSearching(true);
       const { data } = await supabase
-        .from("tribes" as any)
+        .from("tribes")
         .select("id, name, member_count, visibility")
         .ilike("name", `%${q}%`)
         .neq("id", challengerTribeId)

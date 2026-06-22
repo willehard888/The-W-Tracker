@@ -37,7 +37,7 @@ const TribeNew = () => {
     setNameStatus("checking");
     const t = setTimeout(async () => {
       const { data } = await supabase
-        .from("tribes" as any)
+        .from("tribes")
         .select("id")
         .ilike("name", trimmed)
         .limit(1);

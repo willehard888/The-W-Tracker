@@ -56,7 +56,7 @@ const TribeLeaderboard = () => {
       }
       if (profile?.user_id) {
         const { data: mems } = await supabase
-          .from("tribe_members" as any)
+          .from("tribe_members")
           .select("tribe_id")
           .eq("user_id", profile.user_id)
           .eq("status", "active");

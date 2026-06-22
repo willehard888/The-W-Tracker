@@ -109,14 +109,14 @@ const Tribes = () => {
         // All tribes are private. We list every tribe so people can discover
         // and *request* to join — gating happens via approval, not visibility.
         const { data } = await supabase
-          .from("tribes" as any)
+          .from("tribes")
           .select("*")
           .order("member_count", { ascending: false })
           .limit(50);
         list = (data as any) ?? [];
       } else {
         const { data: memberships } = await supabase
-          .from("tribe_members" as any)
+          .from("tribe_members")
           .select("tribe_id")
           .eq("user_id", profile?.user_id ?? "")
           .eq("status", "active");
@@ -125,7 +125,7 @@ const Tribes = () => {
           list = [];
         } else {
           const { data } = await supabase
-            .from("tribes" as any)
+            .from("tribes")
             .select("*")
             .in("id", ids);
           list = (data as any) ?? [];
@@ -141,7 +141,7 @@ const Tribes = () => {
       if (profile?.user_id && list.length > 0) {
         const ids = list.map((t) => t.id);
         const { data: mems } = await supabase
-          .from("tribe_members" as any)
+          .from("tribe_members")
           .select("tribe_id, role, status")
           .eq("user_id", profile.user_id)
           .in("tribe_id", ids);
@@ -152,7 +152,7 @@ const Tribes = () => {
 
         // Member avatar previews — top 4 per tribe, plus all-member map for reactor
         const { data: previews } = await supabase
-          .from("tribe_members" as any)
+          .from("tribe_members")
           .select("tribe_id, user_id")
           .in("tribe_id", ids)
           .eq("status", "active")
@@ -214,7 +214,7 @@ const Tribes = () => {
     enabled: !!profile?.user_id,
     queryFn: async () => {
       const { data } = await supabase
-        .from("tribe_invites" as any)
+        .from("tribe_invites")
         .select("id, tribe_id, inviter_id, created_at")
         .eq("invitee_id", profile!.user_id)
         .eq("status", "pending")
@@ -224,7 +224,7 @@ const Tribes = () => {
       const tribeIds = rows.map((r: any) => r.tribe_id);
       const inviterIds = rows.map((r: any) => r.inviter_id);
       const [tRes, uRes] = await Promise.all([
-        supabase.from("tribes" as any).select("id, name, description, member_count, visibility").in("id", tribeIds),
+        supabase.from("tribes").select("id, name, description, member_count, visibility").in("id", tribeIds),
         supabase.from("profiles").select("user_id, username").in("user_id", inviterIds),
       ]);
       const tMap = new Map(((tRes as any).data ?? []).map((t: any) => [t.id, t]));

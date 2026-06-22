@@ -46,7 +46,7 @@ export default function AdminLegendInvites() {
     enabled: !!isAdmin,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("legend_invites" as any)
+        .from("legend_invites")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(200);

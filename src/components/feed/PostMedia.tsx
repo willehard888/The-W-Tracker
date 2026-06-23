@@ -59,11 +59,13 @@ const PostMedia = ({ imageUrl, videoUrl, alt = "", tier, onOpenImage, className 
         className,
       )}
     >
+      {/* Full image at natural aspect, but capped so extreme-tall portraits
+          don't take over the whole feed — only those get a gentle center-crop. */}
       <AppImage
         src={imageUrl}
         width={760}
         alt={alt}
-        className="w-full h-auto"
+        className="w-full h-auto max-h-[68vh] object-cover"
       />
       {ribbon && (
         <div className={cn("pointer-events-none absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm border", ribbon.border)}>

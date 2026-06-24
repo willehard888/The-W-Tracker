@@ -8,8 +8,7 @@ import { ArrowLeft, Loader2, Users, Lock, Globe, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import TribeFlame from "@/components/tribe/TribeFlame";
-
-const TRIBE_ACTIVITIES = ["Run", "Gym", "Yoga", "Ride", "Swim", "Hike", "Combat", "Walk", "Other"];
+import { TRIBE_ACTIVITY_GROUPS } from "@/lib/tribe-activities";
 
 const TribeNew = () => {
   const navigate = useNavigate();
@@ -175,26 +174,36 @@ const TribeNew = () => {
 
         <div>
           <label className="text-[11px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
-            Activity
+            What's it about
           </label>
-          <div className="flex flex-wrap gap-1.5">
-            {TRIBE_ACTIVITIES.map((a) => (
-              <button
-                key={a}
-                type="button"
-                onClick={() => setActivity(a === activity ? "" : a)}
-                className={cn(
-                  "rounded-full px-3 py-1.5 text-[11px] font-bold border transition-all active:scale-95",
-                  activity === a
-                    ? "bg-gold text-primary-foreground border-transparent"
-                    : "bg-secondary/40 border-border/50 text-muted-foreground",
-                )}
-              >
-                {a}
-              </button>
+          <div className="space-y-3">
+            {TRIBE_ACTIVITY_GROUPS.map((group) => (
+              <div key={group.label}>
+                <p className="text-[9px] font-black tracking-widest uppercase text-muted-foreground/60 mb-1.5">
+                  {group.label}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {group.items.map(({ name, icon: Icon }) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => setActivity(name === activity ? "" : name)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border transition-all active:scale-95",
+                        activity === name
+                          ? "bg-gold text-primary-foreground border-transparent"
+                          : "bg-secondary/40 border-border/50 text-muted-foreground",
+                      )}
+                    >
+                      <Icon size={12} strokeWidth={2.4} />
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
-          <p className="text-[10px] text-muted-foreground mt-1.5">Helps people discover your tribe by what you do.</p>
+          <p className="text-[10px] text-muted-foreground mt-2">From training to meditation, workshops to book clubs — helps people discover your tribe.</p>
         </div>
 
         <div>

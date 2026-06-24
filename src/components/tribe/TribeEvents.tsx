@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useTribeEvents, useTribeEventActions, type TribeEvent, type RsvpStatus } from "@/hooks/use-tribe-events";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { TRIBE_ACTIVITY_GROUPS, activityIcon } from "@/lib/tribe-activities";
 
 const ERR: Record<string, string> = {
   not_member: "Join the tribe to do that.",
@@ -15,8 +16,6 @@ const ERR: Record<string, string> = {
 };
 const errMsg = (e: any) =>
   ERR[e?.message?.match(/not_member|event_full|title_required|unauthorized|forbidden/)?.[0] ?? ""] ?? e?.message ?? "Something went wrong";
-
-const ACTIVITIES = ["Run", "Gym", "Yoga", "Ride", "Swim", "Hike", "Combat", "Walk", "Other"];
 
 /** Tribe events / meetups — schedule, RSVP, show up. */
 const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; isMember: boolean; currentUserId?: string }) => {
@@ -99,9 +98,14 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      {ev.activity && (
-                        <span className="text-[8.5px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded px-1.5 py-0.5">{ev.activity}</span>
-                      )}
+                      {ev.activity && (() => {
+                        const ActIcon = activityIcon(ev.activity);
+                        return (
+                          <span className="inline-flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded px-1.5 py-0.5">
+                            <ActIcon size={9} strokeWidth={2.6} /> {ev.activity}
+                          </span>
+                        );
+                      })()}
                       {rel && (
                         <span className="text-[8.5px] font-black uppercase tracking-wider text-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%)]/10 border border-[hsl(18_95%_58%)]/25 rounded px-1.5 py-0.5">{rel}</span>
                       )}
@@ -234,14 +238,21 @@ const CreateEventSheet = ({ onClose, onCreate }: {
           <button onClick={onClose} className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground"><X size={16} /></button>
         </div>
         <div className="space-y-2.5">
-          <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} placeholder="Title — e.g. Saturday long run" className={field} />
-          <div className="flex flex-wrap gap-1.5">
-            {ACTIVITIES.map((a) => (
-              <button key={a} onClick={() => setActivity(a === activity ? "" : a)}
-                className={cn("rounded-full px-3 py-1.5 text-[11px] font-bold border transition-all active:scale-95",
-                  activity === a ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground")}>
-                {a}
-              </button>
+          <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} placeholder="Title — e.g. Saturday run · Morning meditation · React workshop" className={field} />
+          <div className="space-y-2">
+            {TRIBE_ACTIVITY_GROUPS.map((group) => (
+              <div key={group.label}>
+                <p className="text-[8.5px] font-black tracking-widest uppercase text-muted-foreground/55 mb-1">{group.label}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {group.items.map(({ name, icon: Icon }) => (
+                    <button key={name} onClick={() => setActivity(name === activity ? "" : name)}
+                      className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border transition-all active:scale-95",
+                        activity === name ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground")}>
+                      <Icon size={12} strokeWidth={2.4} /> {name}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
           <input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} className={field} />

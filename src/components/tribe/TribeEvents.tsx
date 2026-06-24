@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, MapPin, Users, Plus, X, Trash2, Check, Clock, Flame } from "lucide-react";
+import { Calendar, MapPin, Users, Plus, X, Trash2, Check, Clock, Flame, Video } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { toast } from "sonner";
 import { useTribeEvents, useTribeEventActions, type TribeEvent, type RsvpStatus } from "@/hooks/use-tribe-events";
@@ -110,6 +110,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground">
                       <span className="inline-flex items-center gap-1"><Clock size={11} /> {format(start, "EEE HH:mm")} · {ev.duration_min}m</span>
                       {ev.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={11} /> {ev.place}</span>}
+                      {ev.meeting_url && <span className="inline-flex items-center gap-1 text-[hsl(18_95%_58%)] font-bold"><Video size={11} /> Online</span>}
                       <span className="inline-flex items-center gap-1"><Users size={11} /> {ev.going_count}{ev.capacity ? `/${ev.capacity}` : ""} going</span>
                     </div>
                     {ev.capacity != null && (
@@ -121,6 +122,17 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
 
                     {isMember && (
                       <div className="mt-2.5 flex items-center gap-1.5">
+                        {ev.meeting_url && (
+                          <a
+                            href={ev.meeting_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => hapticImpact("light")}
+                            className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[11px] font-black bg-[hsl(18_95%_58%)] text-background active:scale-95 transition-transform"
+                          >
+                            <Video size={12} /> Join
+                          </a>
+                        )}
                         <button
                           disabled={busy === ev.id || full}
                           onClick={() => onRsvp(ev, "going")}
@@ -181,11 +193,13 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
 
 const CreateEventSheet = ({ onClose, onCreate }: {
   onClose: () => void;
-  onCreate: (e: { title: string; activity?: string; description?: string; place?: string; starts_at: string; duration_min?: number; capacity?: number | null }) => Promise<void>;
+  onCreate: (e: { title: string; activity?: string; description?: string; place?: string; meeting_url?: string | null; starts_at: string; duration_min?: number; capacity?: number | null }) => Promise<void>;
 }) => {
   const [title, setTitle] = useState("");
   const [activity, setActivity] = useState("");
+  const [mode, setMode] = useState<"in_person" | "online">("in_person");
   const [place, setPlace] = useState("");
+  const [meetingUrl, setMeetingUrl] = useState("");
   const [when, setWhen] = useState("");
   const [duration, setDuration] = useState(60);
   const [capacity, setCapacity] = useState("");
@@ -195,9 +209,14 @@ const CreateEventSheet = ({ onClose, onCreate }: {
   const submit = async () => {
     if (title.trim().length < 2) { toast.error("Give it a title."); return; }
     if (!when) { toast.error("Pick a date & time."); return; }
+    if (mode === "online" && meetingUrl.trim() && !/^https?:\/\//i.test(meetingUrl.trim())) {
+      toast.error("Paste a full link (https://…)"); return;
+    }
     setBusy(true);
     await onCreate({
-      title, activity: activity || undefined, description: desc || undefined, place: place || undefined,
+      title, activity: activity || undefined, description: desc || undefined,
+      place: mode === "in_person" ? (place || undefined) : undefined,
+      meeting_url: mode === "online" ? (meetingUrl.trim() || null) : null,
       starts_at: new Date(when).toISOString(),
       duration_min: duration, capacity: capacity ? parseInt(capacity, 10) : null,
     });
@@ -226,7 +245,27 @@ const CreateEventSheet = ({ onClose, onCreate }: {
             ))}
           </div>
           <input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} className={field} />
-          <input value={place} onChange={(e) => setPlace(e.target.value)} maxLength={80} placeholder="Place — e.g. Central Park, main gate" className={field} />
+          {/* In person / Online */}
+          <div className="grid grid-cols-2 gap-2">
+            {([["in_person", "In person", MapPin], ["online", "Online", Video]] as const).map(([m, label, Icon]) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMode(m)}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 rounded-xl border py-2.5 text-[12px] font-bold transition-all active:scale-[0.98]",
+                  mode === m ? "border-gold/50 bg-gold/10 text-gold" : "border-border/50 bg-background/40 text-muted-foreground",
+                )}
+              >
+                <Icon size={14} /> {label}
+              </button>
+            ))}
+          </div>
+          {mode === "in_person" ? (
+            <input value={place} onChange={(e) => setPlace(e.target.value)} maxLength={80} placeholder="Place — e.g. Central Park, main gate" className={field} />
+          ) : (
+            <input value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} inputMode="url" autoCapitalize="none" autoCorrect="off" placeholder="Paste link — Google Meet, Teams, Zoom…" className={field} />
+          )}
           <div className="flex gap-2">
             <div className="flex-1">
               <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Duration (min)</label>

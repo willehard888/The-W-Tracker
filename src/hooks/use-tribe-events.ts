@@ -10,6 +10,7 @@ export interface TribeEvent {
   activity: string | null;
   description: string | null;
   place: string | null;
+  meeting_url: string | null;
   starts_at: string;
   duration_min: number;
   capacity: number | null;
@@ -42,6 +43,7 @@ export const useTribeEventActions = (tribeId?: string) => {
 
   const createEvent = useCallback(async (e: {
     title: string; activity?: string; description?: string; place?: string;
+    meeting_url?: string | null;
     starts_at: string; duration_min?: number; capacity?: number | null;
   }) => {
     const { error } = await rpc("create_tribe_event", {
@@ -53,6 +55,7 @@ export const useTribeEventActions = (tribeId?: string) => {
       p_starts_at: e.starts_at,
       p_duration_min: e.duration_min ?? 60,
       p_capacity: e.capacity ?? null,
+      p_meeting_url: e.meeting_url ?? null,
     });
     if (error) throw error;
     invalidate();

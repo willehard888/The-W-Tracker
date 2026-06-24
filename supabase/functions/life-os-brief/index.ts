@@ -11,6 +11,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { buildPersonaBlock, buildHolisticContext } from "../_shared/coach-persona.ts";
+import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -168,12 +169,16 @@ STRICT RULES:
 • Never say "eat healthy", "sleep well", "stay motivated" — always name the exact action.
 • Output ONLY valid JSON. No markdown fences, no explanatory text.`;
 
+    // Cross-domain situation (tribe, battles, rank) — best-effort, fail-open.
+    const situation = await gatherSituation(sb, uid, { streak: profile.streak ?? null }).catch(() => null);
+    const situationBlock = situation ? buildSituationBlock(situation) : "";
+
     const userPrompt = `Athlete context:
 ${athleteCtx}
 
 Recent performance data:
 ${dataCtx}
-
+${situationBlock ? `\n${situationBlock}\n` : ""}
 Generate a Life OS brief in this exact JSON shape (no extra keys):
 {
   "focus": "",

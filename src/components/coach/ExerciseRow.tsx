@@ -1,0 +1,202 @@
+import { useEffect, useState } from "react";
+import { ChevronDown, Dumbbell, Check, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { toast } from "sonner";
+import { useExerciseLibrary, resolveExercise } from "@/lib/exercise-library";
+import { useExerciseHistory, useDayLogs, useLogSet } from "@/hooks/use-workout-log";
+
+export interface ProgramBlock {
+  slug?: string | null;
+  name: string;
+  sets: number;
+  reps: string | number;
+  rpe?: number | null;
+  notes?: string | null;
+  alt?: string | null;
+  rest_sec?: number | null;
+  tempo?: string | null;
+}
+
+interface Props {
+  block: ProgramBlock;
+  programId: string;
+  week: number;
+  dayIndex: number;
+  /** When false, logging inputs are hidden (e.g. browsing a future week). */
+  loggable?: boolean;
+}
+
+const daysAgo = (iso: string) => {
+  const d = Math.round((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  return d <= 0 ? "today" : d === 1 ? "1d ago" : `${d}d ago`;
+};
+
+/**
+ * One exercise in a session: photo + name + target, expandable to step-by-step
+ * instructions and an inline "log your set" row (weight × reps). The logged
+ * result is what the AI coach reads to progress the next block.
+ */
+const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Props) => {
+  const libReady = useExerciseLibrary();
+  const ex = libReady ? resolveExercise(block.slug, block.name) : null;
+  const [open, setOpen] = useState(false);
+
+  const dayLogs = useDayLogs(loggable ? programId : undefined, week, dayIndex);
+  const existing = block.slug ? dayLogs.data?.[block.slug] : undefined;
+  const history = useExerciseHistory(open ? (block.slug ?? null) : null);
+  const logSet = useLogSet();
+
+  const [weight, setWeight] = useState("");
+  const [reps, setReps] = useState("");
+  useEffect(() => {
+    if (existing) {
+      setWeight(existing.weight != null ? String(existing.weight) : "");
+      setReps(existing.reps != null ? String(existing.reps) : "");
+    }
+  }, [existing?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // The most recent PRIOR log for this exercise (skip today's own slot).
+  const last = (history.data ?? []).find((h) => h.id !== existing?.id && h.weight != null);
+
+  const thumb = ex?.images?.[0];
+  const hasMore = !!(ex || block.notes || block.alt || block.rest_sec || block.tempo);
+
+  const save = async () => {
+    const w = weight.trim() === "" ? null : Number(weight);
+    const r = reps.trim() === "" ? null : parseInt(reps, 10);
+    if (w == null && r == null) { toast.error("Add a weight or reps first."); return; }
+    hapticImpact("light");
+    try {
+      await logSet.mutateAsync({
+        programId, week, day: dayIndex, slug: block.slug ?? null,
+        name: block.name, weight: w, reps: r, rpe: block.rpe ?? null,
+      });
+      hapticNotification("success");
+      toast.success(`${block.name}: logged`);
+    } catch {
+      toast.error("Couldn't save — check connection.");
+    }
+  };
+
+  const logged = !!existing && (existing.weight != null || existing.reps != null);
+
+  return (
+    <li className="border-b border-border/30 last:border-b-0 pb-1.5 last:pb-0">
+      <button
+        type="button"
+        onClick={() => hasMore && (hapticImpact("light"), setOpen((v) => !v))}
+        className="w-full flex items-center gap-2.5 py-1.5 text-left"
+      >
+        <div className="shrink-0 h-10 w-10 rounded-lg overflow-hidden bg-secondary/50 border border-border/40 flex items-center justify-center">
+          {thumb ? (
+            <img src={thumb} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+          ) : (
+            <Dumbbell size={15} className="text-muted-foreground/60" />
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="font-bold text-sm text-foreground block truncate">{block.name}</span>
+          {logged && (
+            <span className="text-[10.5px] font-bold text-[hsl(152_68%_46%)] inline-flex items-center gap-1">
+              <Check size={10} /> {existing!.weight != null ? `${existing!.weight}kg` : ""}{existing!.weight != null && existing!.reps != null ? " × " : ""}{existing!.reps != null ? `${existing!.reps}` : ""} logged
+            </span>
+          )}
+        </div>
+        <span className="text-[11px] font-black tracking-wider text-gold whitespace-nowrap inline-flex items-center gap-1">
+          {block.sets}×{block.reps}{block.rpe ? ` · RPE ${block.rpe}` : ""}
+          {hasMore && (
+            <ChevronDown size={11} className={cn("text-muted-foreground/70 transition-transform", open && "rotate-180")} />
+          )}
+        </span>
+      </button>
+
+      {open && (
+        <div className="pl-0 pb-2 space-y-2.5">
+          {ex?.images?.[0] && (
+            <div className="rounded-xl overflow-hidden border border-border/40 bg-secondary/30">
+              <img
+                src={ex.images[ex.images.length - 1]}
+                alt={block.name}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-auto max-h-56 object-contain bg-black/20"
+              />
+            </div>
+          )}
+
+          {ex && (ex.primary.length > 0 || ex.equipment) && (
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">
+              {[ex.primary.join(", "), ex.equipment].filter(Boolean).join(" · ")}
+            </p>
+          )}
+
+          {ex?.instructions?.length ? (
+            <ol className="space-y-1 list-none">
+              {ex.instructions.map((step, i) => (
+                <li key={i} className="flex gap-2 text-[11.5px] text-foreground/80 leading-snug">
+                  <span className="shrink-0 h-4 w-4 rounded-full bg-gold/15 text-gold text-[9px] font-black flex items-center justify-center mt-px">{i + 1}</span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          ) : null}
+
+          {(block.rest_sec || block.tempo) && (
+            <p className="text-[10.5px] text-muted-foreground/80">
+              {block.rest_sec ? `Rest ${block.rest_sec}s` : ""}{block.rest_sec && block.tempo ? " · " : ""}{block.tempo ? `Tempo ${block.tempo}` : ""}
+            </p>
+          )}
+          {block.notes && <p className="text-[11px] text-muted-foreground leading-snug">{block.notes}</p>}
+          {block.alt && (
+            <p className="text-[11px] text-muted-foreground/85">
+              <span className="text-gold/85 font-black uppercase tracking-widest text-[9px] mr-1">Swap</span>{block.alt}
+            </p>
+          )}
+
+          {/* Log your set — weight × reps. The AI reads this to progress you. */}
+          {loggable && (
+            <div className="rounded-xl bg-background/50 border border-border/50 p-2.5">
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-[9.5px] font-black uppercase tracking-widest text-gold">Log your result</p>
+                {last && (
+                  <p className="text-[9.5px] text-muted-foreground">
+                    Last: {last.weight != null ? `${last.weight}kg` : ""}{last.weight != null && last.reps != null ? " × " : ""}{last.reps != null ? `${last.reps}` : ""} · {daysAgo(last.logged_on)}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <input
+                    type="number" inputMode="decimal" value={weight} placeholder="kg"
+                    onChange={(e) => setWeight(e.target.value)}
+                    className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-[13px] text-center outline-none focus:border-gold/50"
+                  />
+                </div>
+                <span className="text-muted-foreground text-xs font-black">×</span>
+                <div className="flex-1">
+                  <input
+                    type="number" inputMode="numeric" value={reps} placeholder="reps"
+                    onChange={(e) => setReps(e.target.value)}
+                    className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-[13px] text-center outline-none focus:border-gold/50"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={save}
+                  disabled={logSet.isPending}
+                  className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-gold px-3 py-2 text-[12px] font-black text-primary-foreground disabled:opacity-60 active:scale-95 transition-transform"
+                >
+                  {logSet.isPending ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+                  {logged ? "Update" : "Save"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </li>
+  );
+};
+
+export default ExerciseRow;

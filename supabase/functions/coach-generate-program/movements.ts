@@ -258,7 +258,9 @@ export const validateProgram = (
   opts: {
     trainDayNames: string[];
     sessionMinCap: number;
-    allowedNames: Set<string>;
+    allowedNames?: Set<string>;
+    /** When provided, blocks are validated by `slug` against this set. */
+    allowedSlugs?: Set<string>;
   },
 ): string[] => {
   const v: string[] = [];
@@ -297,14 +299,18 @@ export const validateProgram = (
         v.push(`Week ${wk.week} ${day.day}: training day must have blocks.`);
       }
       for (const b of blocks) {
-        if (!b?.name || !opts.allowedNames.has(String(b.name))) {
+        if (opts.allowedSlugs) {
+          if (!b?.slug || !opts.allowedSlugs.has(String(b.slug))) {
+            v.push(`Week ${wk.week} ${day.day}: "${b?.name ?? b?.slug ?? "?"}" is not in the allowed exercise catalog (set a valid slug).`);
+          }
+        } else if (!b?.name || !opts.allowedNames?.has(String(b.name))) {
           v.push(`Week ${wk.week} ${day.day}: "${b?.name ?? "?"}" is not in the allowed movement list.`);
         }
-        if (typeof b?.sets !== "number" || typeof b?.rest_sec !== "number" || !b?.reps) {
-          v.push(`Week ${wk.week} ${day.day} "${b?.name}": missing sets/reps/rest_sec.`);
+        if (typeof b?.sets !== "number" || !b?.reps) {
+          v.push(`Week ${wk.week} ${day.day} "${b?.name}": missing sets/reps.`);
         }
       }
-      mainPerDay.push(blocks[0]?.name ? String(blocks[0].name) : "");
+      mainPerDay.push(blocks[0]?.slug ? String(blocks[0].slug) : (blocks[0]?.name ? String(blocks[0].name) : ""));
     }
     // No-repeat rule: same primary movement on consecutive training days
     for (let i = 1; i < mainPerDay.length; i++) {

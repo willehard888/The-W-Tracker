@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import ExerciseRow from "@/components/coach/ExerciseRow";
 
 interface Props {
   program: CoachProgram;
@@ -19,7 +20,6 @@ interface Props {
 const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged }: Props) => {
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
-  const [openBlock, setOpenBlock] = useState<number | null>(null);
   const [openWarmup, setOpenWarmup] = useState(false);
   const [openCooldown, setOpenCooldown] = useState(false);
 
@@ -90,50 +90,15 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
             )}
 
             <ul className="space-y-1.5 py-1">
-              {day.blocks.map((b, i) => {
-                const hasMore = !!(b.notes || b.alt || b.rest_sec || b.tempo);
-                const open = openBlock === i;
-                return (
-                  <li key={i} className="border-b border-border/30 last:border-b-0 pb-1.5 last:pb-0">
-                    <button
-                      type="button"
-                      onClick={() => hasMore && (hapticImpact("light"), setOpenBlock(open ? null : i))}
-                      className="w-full flex items-baseline justify-between gap-2 py-1 text-left"
-                    >
-                      <span className="font-bold text-sm text-foreground truncate">{b.name}</span>
-                      <span className="text-[11px] font-black tracking-wider text-gold whitespace-nowrap inline-flex items-center gap-1">
-                        {b.sets}×{b.reps}{b.rpe ? ` · RPE ${b.rpe}` : ""}
-                        {hasMore && (
-                          <ChevronDown
-                            size={11}
-                            className={cn("text-muted-foreground/70 transition-transform", open && "rotate-180")}
-                          />
-                        )}
-                      </span>
-                    </button>
-                    {open && (
-                      <div className="pl-0 pb-1 space-y-0.5">
-                        {(b.rest_sec || b.tempo) && (
-                          <p className="text-[10.5px] text-muted-foreground/80">
-                            {b.rest_sec ? `Rest ${b.rest_sec}s` : ""}
-                            {b.rest_sec && b.tempo ? " · " : ""}
-                            {b.tempo ? `Tempo ${b.tempo}` : ""}
-                          </p>
-                        )}
-                        {b.notes && (
-                          <p className="text-[11px] text-muted-foreground leading-snug">{b.notes}</p>
-                        )}
-                        {b.alt && (
-                          <p className="text-[11px] text-muted-foreground/85">
-                            <span className="text-gold/85 font-black uppercase tracking-widest text-[9px] mr-1">Swap</span>
-                            {b.alt}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
+              {day.blocks.map((b, i) => (
+                <ExerciseRow
+                  key={i}
+                  block={b as any}
+                  programId={program.id}
+                  week={currentWeek}
+                  dayIndex={todayDayIndex}
+                />
+              ))}
               {day.conditioning && (
                 <li className="pt-1">
                   <p className="text-[9.5px] font-black uppercase tracking-widest text-gold mb-0.5">Conditioning</p>

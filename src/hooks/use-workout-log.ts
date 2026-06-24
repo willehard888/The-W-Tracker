@@ -14,10 +14,7 @@ export interface WorkoutSetLog {
   logged_on: string;
 }
 
-// Table/RPC land in the generated types after the migration is applied + types
-// regenerated; cast until then (matches the app's existing pattern).
-const rpc = supabase.rpc.bind(supabase) as any;
-const tbl = () => (supabase.from as any)("workout_set_logs");
+const tbl = () => supabase.from("workout_set_logs");
 
 /** Last N logs for one exercise — powers the "last time" hint + progression. */
 export const useExerciseHistory = (slug?: string | null) =>
@@ -72,7 +69,7 @@ export const useLogSet = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (p: LogSetInput) => {
-      const { error } = await rpc("log_workout_set", {
+      const { error } = await supabase.rpc("log_workout_set", {
         p_program: p.programId ?? null,
         p_week: p.week ?? null,
         p_day: p.day ?? null,

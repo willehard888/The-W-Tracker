@@ -18,6 +18,19 @@ export interface TribeEvent {
   host_username: string | null;
   going_count: number;
   my_status: RsvpStatus | null;
+  /** Series grouping — null for one-off events. */
+  series_id: string | null;
+  session_index: number | null;
+  series_title: string | null;
+}
+
+/** One session inside a multi-part series (course / workshop run / program). */
+export interface SeriesSessionInput {
+  starts_at: string;
+  duration_min?: number;
+  place?: string | null;
+  meeting_url?: string | null;
+  title?: string | null;
 }
 
 const rpc = supabase.rpc.bind(supabase) as any;
@@ -61,6 +74,33 @@ export const useTribeEventActions = (tribeId?: string) => {
     invalidate();
   }, [tribeId, invalidate]);
 
+  const createSeries = useCallback(async (s: {
+    title: string; activity?: string; description?: string;
+    sessions: SeriesSessionInput[];
+  }) => {
+    const { error } = await rpc("create_tribe_event_series", {
+      p_tribe: tribeId,
+      p_title: s.title,
+      p_activity: s.activity ?? null,
+      p_description: s.description ?? null,
+      p_sessions: s.sessions.map((x) => ({
+        starts_at: x.starts_at,
+        duration_min: x.duration_min ?? 60,
+        place: x.place ?? null,
+        meeting_url: x.meeting_url ?? null,
+        title: x.title ?? null,
+      })),
+    });
+    if (error) throw error;
+    invalidate();
+  }, [tribeId, invalidate]);
+
+  const deleteSeries = useCallback(async (seriesId: string) => {
+    const { error } = await rpc("delete_tribe_event_series", { p_series: seriesId });
+    if (error) throw error;
+    invalidate();
+  }, [invalidate]);
+
   const rsvp = useCallback(async (eventId: string, status: RsvpStatus) => {
     const { error } = await rpc("rsvp_tribe_event", { p_event: eventId, p_status: status });
     if (error) throw error;
@@ -73,5 +113,5 @@ export const useTribeEventActions = (tribeId?: string) => {
     invalidate();
   }, [invalidate]);
 
-  return { createEvent, rsvp, deleteEvent, invalidate };
+  return { createEvent, createSeries, deleteSeries, rsvp, deleteEvent, invalidate };
 };

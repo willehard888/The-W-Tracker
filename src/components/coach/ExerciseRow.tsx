@@ -3,7 +3,7 @@ import { ChevronDown, Dumbbell, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { toast } from "sonner";
-import { useExerciseLibrary, resolveExercise } from "@/lib/exercise-library";
+import { useExerciseLibrary, resolveExercise, exerciseImg } from "@/lib/exercise-library";
 import { useExerciseHistory, useDayLogs, useLogSet } from "@/hooks/use-workout-log";
 import Sparkline from "@/components/coach/Sparkline";
 
@@ -73,7 +73,8 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
     if (r != null) setReps(String(r));
   };
 
-  const thumb = ex?.images?.[0];
+  const rawThumb = ex?.images?.[0];
+  const thumb = exerciseImg(rawThumb, 96);
   const hasMore = !!(ex || block.notes || block.alt || block.rest_sec || block.tempo);
 
   const save = async () => {
@@ -104,7 +105,17 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
       >
         <div className="shrink-0 h-10 w-10 rounded-lg overflow-hidden bg-secondary/50 border border-border/40 flex items-center justify-center">
           {thumb ? (
-            <img src={thumb} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+            <img
+              src={thumb}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                const img = e.currentTarget;
+                if (!img.dataset.fb && rawThumb) { img.dataset.fb = "1"; img.src = rawThumb; }
+              }}
+            />
           ) : (
             <Dumbbell size={15} className="text-muted-foreground/60" />
           )}
@@ -130,11 +141,16 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           {ex?.images?.[0] && (
             <div className="rounded-xl overflow-hidden border border-border/40 bg-secondary/30">
               <img
-                src={ex.images[ex.images.length - 1]}
+                src={exerciseImg(ex.images[ex.images.length - 1], 640)}
                 alt={block.name}
                 loading="lazy"
                 decoding="async"
                 className="w-full h-auto max-h-56 object-contain bg-black/20"
+                onError={(e) => {
+                  const img = e.currentTarget;
+                  const raw = ex!.images[ex!.images.length - 1];
+                  if (!img.dataset.fb && raw) { img.dataset.fb = "1"; img.src = raw; }
+                }}
               />
             </div>
           )}

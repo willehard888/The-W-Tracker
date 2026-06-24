@@ -1738,6 +1738,44 @@ export type Database = {
           },
         ]
       }
+      tribe_event_series: {
+        Row: {
+          activity: string | null
+          created_at: string
+          description: string | null
+          host_id: string
+          id: string
+          title: string
+          tribe_id: string
+        }
+        Insert: {
+          activity?: string | null
+          created_at?: string
+          description?: string | null
+          host_id: string
+          id?: string
+          title: string
+          tribe_id: string
+        }
+        Update: {
+          activity?: string | null
+          created_at?: string
+          description?: string | null
+          host_id?: string
+          id?: string
+          title?: string
+          tribe_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tribe_event_series_tribe_id_fkey"
+            columns: ["tribe_id"]
+            isOneToOne: false
+            referencedRelation: "tribes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tribe_events: {
         Row: {
           activity: string | null
@@ -1747,7 +1785,10 @@ export type Database = {
           duration_min: number
           host_id: string
           id: string
+          meeting_url: string | null
           place: string | null
+          series_id: string | null
+          session_index: number | null
           starts_at: string
           title: string
           tribe_id: string
@@ -1760,7 +1801,10 @@ export type Database = {
           duration_min?: number
           host_id: string
           id?: string
+          meeting_url?: string | null
           place?: string | null
+          series_id?: string | null
+          session_index?: number | null
           starts_at: string
           title: string
           tribe_id: string
@@ -1773,12 +1817,22 @@ export type Database = {
           duration_min?: number
           host_id?: string
           id?: string
+          meeting_url?: string | null
           place?: string | null
+          series_id?: string | null
+          session_index?: number | null
           starts_at?: string
           title?: string
           tribe_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tribe_events_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "tribe_event_series"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tribe_events_tribe_id_fkey"
             columns: ["tribe_id"]
@@ -2451,8 +2505,19 @@ export type Database = {
           p_capacity: number
           p_description: string
           p_duration_min: number
+          p_meeting_url?: string
           p_place: string
           p_starts_at: string
+          p_title: string
+          p_tribe: string
+        }
+        Returns: string
+      }
+      create_tribe_event_series: {
+        Args: {
+          p_activity: string
+          p_description: string
+          p_sessions: Json
           p_title: string
           p_tribe: string
         }
@@ -2462,6 +2527,10 @@ export type Database = {
       delete_chat_memory: { Args: { _id: string }; Returns: boolean }
       delete_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
       delete_tribe_event: { Args: { p_event: string }; Returns: undefined }
+      delete_tribe_event_series: {
+        Args: { p_series: string }
+        Returns: undefined
+      }
       ensure_active_leaderboard_season: {
         Args: never
         Returns: {

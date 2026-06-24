@@ -33,17 +33,15 @@ export interface SeriesSessionInput {
   title?: string | null;
 }
 
-const rpc = supabase.rpc.bind(supabase) as any;
-
 export const useTribeEvents = (tribeId?: string) => {
   return useQuery<TribeEvent[]>({
     queryKey: ["tribe-events", tribeId],
     enabled: !!tribeId,
     staleTime: 30_000,
     queryFn: async () => {
-      const { data, error } = await rpc("list_tribe_events", { p_tribe: tribeId });
+      const { data, error } = await supabase.rpc("list_tribe_events", { p_tribe: tribeId! });
       if (error) throw error;
-      return (data as TribeEvent[]) ?? [];
+      return (data as unknown as TribeEvent[]) ?? [];
     },
   });
 };
@@ -59,8 +57,8 @@ export const useTribeEventActions = (tribeId?: string) => {
     meeting_url?: string | null;
     starts_at: string; duration_min?: number; capacity?: number | null;
   }) => {
-    const { error } = await rpc("create_tribe_event", {
-      p_tribe: tribeId,
+    const { error } = await supabase.rpc("create_tribe_event", {
+      p_tribe: tribeId!,
       p_title: e.title,
       p_activity: e.activity ?? null,
       p_description: e.description ?? null,
@@ -78,8 +76,8 @@ export const useTribeEventActions = (tribeId?: string) => {
     title: string; activity?: string; description?: string;
     sessions: SeriesSessionInput[];
   }) => {
-    const { error } = await rpc("create_tribe_event_series", {
-      p_tribe: tribeId,
+    const { error } = await supabase.rpc("create_tribe_event_series", {
+      p_tribe: tribeId!,
       p_title: s.title,
       p_activity: s.activity ?? null,
       p_description: s.description ?? null,
@@ -96,19 +94,19 @@ export const useTribeEventActions = (tribeId?: string) => {
   }, [tribeId, invalidate]);
 
   const deleteSeries = useCallback(async (seriesId: string) => {
-    const { error } = await rpc("delete_tribe_event_series", { p_series: seriesId });
+    const { error } = await supabase.rpc("delete_tribe_event_series", { p_series: seriesId });
     if (error) throw error;
     invalidate();
   }, [invalidate]);
 
   const rsvp = useCallback(async (eventId: string, status: RsvpStatus) => {
-    const { error } = await rpc("rsvp_tribe_event", { p_event: eventId, p_status: status });
+    const { error } = await supabase.rpc("rsvp_tribe_event", { p_event: eventId, p_status: status });
     if (error) throw error;
     invalidate();
   }, [invalidate]);
 
   const deleteEvent = useCallback(async (eventId: string) => {
-    const { error } = await rpc("delete_tribe_event", { p_event: eventId });
+    const { error } = await supabase.rpc("delete_tribe_event", { p_event: eventId });
     if (error) throw error;
     invalidate();
   }, [invalidate]);

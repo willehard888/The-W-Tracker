@@ -381,6 +381,8 @@ const ChatSheet = ({
           // Forward pre-chat mood snapshot (if captured this session).
           // Edge function falls back to the latest coach_reflection row otherwise.
           mood_today: moodSnapshot,
+          // Local tz offset so the coach can judge timing (streak at risk tonight, etc).
+          tz_offset: new Date().getTimezoneOffset(),
         }),
       });
       if (!resp.ok || !resp.body) {

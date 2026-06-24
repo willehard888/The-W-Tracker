@@ -11,6 +11,7 @@ import {
   VENT_DIRECTIVE,
   type TodayMood,
 } from "../_shared/coach-persona.ts";
+import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -75,6 +76,7 @@ const buildSystemPrompt = (
   recentLogs: any[],
   todayMood: TodayMood | undefined,
   latestUserMessage: string,
+  situationBlock: string,
 ) => {
   const tier = profile?.status_tier ?? "recruit";
   const streak = profile?.streak ?? 0;
@@ -160,7 +162,7 @@ Athlete file:
 
 Recent activity:
 ${recentSummary}${reflectionsBlock}${goalsBlock}${logsBlock}${insightsBlock}${briefBlock}${sessionBlock}
-
+${situationBlock ? `\n${situationBlock}\n` : ""}
 How to reply:
 - **Match length to the weight of what they asked.** A vent → mirror first, then ONE question or small move. Quick tactical Q → 2–3 sentences. Deep ask → go deep but structured.
 - **One concrete next move** at the end. Dated to today or tomorrow. Specific (movement, breath count, time on the calendar) — never "try to relax".
@@ -318,6 +320,14 @@ Deno.serve(async (req) => {
     // Pull the latest user message for vent-detection heuristic.
     const latestUserMessage = [...trimmed].reverse().find((m) => m.role === "user")?.content ?? "";
 
+    // Cross-domain situation (tribe, battles, rank, check-in timing) — best-effort.
+    const tzOffset = typeof body?.tz_offset === "number" ? body.tz_offset : undefined;
+    const situation = await gatherSituation(supabase, userId, {
+      tzOffsetMinutes: tzOffset,
+      streak: profile?.streak ?? null,
+    }).catch(() => null);
+    const situationBlock = situation ? buildSituationBlock(situation) : "";
+
     const systemPrompt = buildSystemPrompt(
       profile,
       athleteRes.data ?? null,
@@ -330,6 +340,7 @@ Deno.serve(async (req) => {
       recentLogs,
       moodToday,
       latestUserMessage,
+      situationBlock,
     ) + (faqContext
       ? `\n\nThe user just read the Playbook answer to: "${faqContext.question}". Do NOT repeat that answer. Go deeper, address their follow-up directly, or apply it to their specific context.`
       : "");

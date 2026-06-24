@@ -26,6 +26,27 @@ export const resolveExercise = (
   return s ? cache.getExercise(s) : null;
 };
 
+export interface ExerciseEntry extends LibraryExercise {
+  slug: string;
+}
+
+/** All library exercises as an array (empty until the module is loaded). */
+export const getAllExercises = (): ExerciseEntry[] =>
+  cache ? Object.entries(cache.EXERCISES).map(([slug, ex]) => ({ slug, ...ex })) : [];
+
+/**
+ * Fast, resized WebP for an exercise image. The source images are full-size
+ * JPGs on a public CDN — loading 4–6 of them per session is the main reason the
+ * program felt slow. We route them through the weserv image proxy to get a
+ * small WebP at the exact display width (a ~96px thumb drops from ~100KB to a
+ * few KB). Falls back to the original URL on <img onError>.
+ */
+export const exerciseImg = (url?: string | null, width = 96): string | undefined => {
+  if (!url) return undefined;
+  const stripped = url.replace(/^https?:\/\//, "");
+  return `https://images.weserv.nl/?url=${encodeURIComponent(stripped)}&w=${width}&output=webp&q=72`;
+};
+
 /** React hook: ensures the library is loaded; re-renders when ready. */
 export const useExerciseLibrary = () => {
   const [ready, setReady] = useState(!!cache);

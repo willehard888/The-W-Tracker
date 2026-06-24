@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Dumbbell, Sparkles, Crown, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import ProgramOnboarding from "@/components/coach/ProgramOnboarding";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { ProfileSkeleton as PageSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { loadExerciseLibrary } from "@/lib/exercise-library";
 
 /**
  * /coach/program — full training program detail.
@@ -32,6 +33,10 @@ const CoachProgramDetail = () => {
     logs,
     refetch,
   } = useCoachProgram();
+
+  // Warm the exercise library in parallel with the program fetch, so rows + their
+  // photos resolve immediately instead of after a 600KB chunk loads on first row.
+  useEffect(() => { loadExerciseLibrary(); }, []);
 
   return (
     <div className="flex flex-col">

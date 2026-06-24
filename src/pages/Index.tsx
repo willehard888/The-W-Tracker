@@ -1,4 +1,4 @@
-import { ChevronRight, Award, Crown, Utensils } from "lucide-react";
+import { ChevronRight, Award, Crown, Utensils, Dumbbell } from "lucide-react";
 import BadgeCard from "@/components/BadgeCard";
 import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
@@ -16,6 +16,7 @@ import { useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getTierConfig } from "@/lib/status-tiers";
 import { recipeThumb } from "@/lib/recipe-images";
+import { exerciseImg } from "@/lib/exercise-library";
 import { useTierRisk } from "@/hooks/use-tier-risk";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { useDailyPulse } from "@/hooks/use-daily-pulse";
@@ -268,6 +269,43 @@ const Index = () => {
               </div>
               <p className="text-[13.5px] font-bold text-foreground leading-tight">
                 High-protein bowls &amp; plates that scale to a full week
+              </p>
+            </div>
+            <ChevronRight size={18} className="text-gold shrink-0" />
+          </div>
+        </button>
+      </Reveal>
+
+      {/* EXERCISE LIBRARY — illustrated gym moves + step-by-step instructions,
+          surfaced like recipes. */}
+      <Reveal className="mb-4 relative z-10" delay={120}>
+        <button
+          type="button"
+          onClick={() => navigate("/exercises")}
+          className="w-full text-left rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/[0.10] via-card/95 to-card p-3.5 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.5)] active:scale-[0.99] transition-transform"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="h-16 w-16 rounded-2xl overflow-hidden shrink-0 relative border border-gold/30 bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center">
+              <Dumbbell size={22} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />
+              <img
+                src={exerciseImg("https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Bench_Press_-_Medium_Grip/0.jpg", 160)}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
+                  Exercise library
+                </p>
+                <span className="text-[9px] font-black text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-0.5 tabular-nums">
+                  500+
+                </span>
+              </div>
+              <p className="text-[13.5px] font-bold text-foreground leading-tight">
+                Every lift with photos &amp; step-by-step form cues
               </p>
             </div>
             <ChevronRight size={18} className="text-gold shrink-0" />

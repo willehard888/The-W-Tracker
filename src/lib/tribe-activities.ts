@@ -82,3 +82,54 @@ const ICON_BY_NAME: Record<string, LucideIcon> = Object.fromEntries(
 /** Resolve an activity name to its icon, falling back to a neutral sparkle. */
 export const activityIcon = (name?: string | null): LucideIcon =>
   (name ? ICON_BY_NAME[name] : undefined) ?? Sparkles;
+
+/**
+ * Smart defaults per activity, so hosting the right kind of session is one tap.
+ * Picking "Workshop" assumes Online + 90 min; "Meditation" → Online + 30 min;
+ * a "Hike" → in person + 2 h. These only pre-fill — the host can still override
+ * mode/duration, and a manual change is never clobbered by a later pick.
+ */
+export interface ActivityDefaults {
+  /** Suggested meeting mode. */
+  mode: "in_person" | "online";
+  /** Suggested duration in minutes. */
+  duration: number;
+  /** Title placeholder tuned to the activity. */
+  titleHint: string;
+}
+
+const DEFAULTS: Record<string, ActivityDefaults> = {
+  // Fitness & Movement — physical, in person, ~1 h.
+  Run: { mode: "in_person", duration: 60, titleHint: "Saturday long run" },
+  Gym: { mode: "in_person", duration: 60, titleHint: "Leg day session" },
+  Yoga: { mode: "in_person", duration: 60, titleHint: "Flow & stretch" },
+  Ride: { mode: "in_person", duration: 90, titleHint: "Sunday group ride" },
+  Swim: { mode: "in_person", duration: 45, titleHint: "Open-water swim" },
+  Hike: { mode: "in_person", duration: 120, titleHint: "Summit hike" },
+  Combat: { mode: "in_person", duration: 60, titleHint: "Sparring session" },
+  Walk: { mode: "in_person", duration: 45, titleHint: "Morning power walk" },
+  // Mind & Wellness — mostly remote-friendly, shorter.
+  Meditation: { mode: "online", duration: 30, titleHint: "Morning meditation" },
+  Breathwork: { mode: "online", duration: 30, titleHint: "Breathwork circle" },
+  "Cold & Sauna": { mode: "in_person", duration: 45, titleHint: "Cold plunge & sauna" },
+  Nutrition: { mode: "online", duration: 45, titleHint: "Meal-prep clinic" },
+  // Learn & Grow — remote, longer formats.
+  Workshop: { mode: "online", duration: 90, titleHint: "Hands-on workshop" },
+  Seminar: { mode: "online", duration: 60, titleHint: "Guest seminar" },
+  Course: { mode: "online", duration: 60, titleHint: "Live course session" },
+  "Book Club": { mode: "in_person", duration: 90, titleHint: "Chapter discussion" },
+  Skills: { mode: "online", duration: 60, titleHint: "Skill-share session" },
+  // Community.
+  Meetup: { mode: "in_person", duration: 60, titleHint: "Community meetup" },
+  Accountability: { mode: "online", duration: 30, titleHint: "Weekly check-in" },
+};
+
+const FALLBACK_DEFAULTS: ActivityDefaults = {
+  mode: "in_person",
+  duration: 60,
+  titleHint: "Saturday run · Morning meditation · React workshop",
+};
+
+/** Smart defaults for an activity (mode, duration, title hint). */
+export const activityDefaults = (name?: string | null): ActivityDefaults =>
+  (name ? DEFAULTS[name] : undefined) ?? FALLBACK_DEFAULTS;

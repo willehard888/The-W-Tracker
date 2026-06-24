@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useTribeEvents, useTribeEventActions, type TribeEvent, type RsvpStatus } from "@/hooks/use-tribe-events";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
-import { TRIBE_ACTIVITY_GROUPS, activityIcon } from "@/lib/tribe-activities";
+import { TRIBE_ACTIVITY_GROUPS, activityIcon, activityDefaults } from "@/lib/tribe-activities";
 
 const ERR: Record<string, string> = {
   not_member: "Join the tribe to do that.",
@@ -209,6 +209,21 @@ const CreateEventSheet = ({ onClose, onCreate }: {
   const [capacity, setCapacity] = useState("");
   const [desc, setDesc] = useState("");
   const [busy, setBusy] = useState(false);
+  // Track manual overrides so smart defaults never clobber a host's own choice.
+  const [modeTouched, setModeTouched] = useState(false);
+  const [durationTouched, setDurationTouched] = useState(false);
+
+  // Picking an activity pre-fills mode + duration to fit it (Workshop → Online
+  // 90m, Meditation → Online 30m, Hike → in-person 2h…), unless the host already
+  // set those by hand. Tapping the same chip again clears the activity.
+  const pickActivity = (name: string) => {
+    if (name === activity) { setActivity(""); return; }
+    setActivity(name);
+    const d = activityDefaults(name);
+    if (!modeTouched) setMode(d.mode);
+    if (!durationTouched) setDuration(d.duration);
+  };
+  const titlePlaceholder = `Title — e.g. ${activityDefaults(activity).titleHint}`;
 
   const submit = async () => {
     if (title.trim().length < 2) { toast.error("Give it a title."); return; }
@@ -238,14 +253,14 @@ const CreateEventSheet = ({ onClose, onCreate }: {
           <button onClick={onClose} className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground"><X size={16} /></button>
         </div>
         <div className="space-y-2.5">
-          <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} placeholder="Title — e.g. Saturday run · Morning meditation · React workshop" className={field} />
+          <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} placeholder={titlePlaceholder} className={field} />
           <div className="space-y-2">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
                 <p className="text-[8.5px] font-black tracking-widest uppercase text-muted-foreground/55 mb-1">{group.label}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {group.items.map(({ name, icon: Icon }) => (
-                    <button key={name} onClick={() => setActivity(name === activity ? "" : name)}
+                    <button key={name} onClick={() => pickActivity(name)}
                       className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border transition-all active:scale-95",
                         activity === name ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground")}>
                       <Icon size={12} strokeWidth={2.4} /> {name}
@@ -262,7 +277,7 @@ const CreateEventSheet = ({ onClose, onCreate }: {
               <button
                 key={m}
                 type="button"
-                onClick={() => setMode(m)}
+                onClick={() => { setMode(m); setModeTouched(true); }}
                 className={cn(
                   "flex items-center justify-center gap-1.5 rounded-xl border py-2.5 text-[12px] font-bold transition-all active:scale-[0.98]",
                   mode === m ? "border-gold/50 bg-gold/10 text-gold" : "border-border/50 bg-background/40 text-muted-foreground",
@@ -280,7 +295,7 @@ const CreateEventSheet = ({ onClose, onCreate }: {
           <div className="flex gap-2">
             <div className="flex-1">
               <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Duration (min)</label>
-              <input type="number" value={duration} min={10} step={5} onChange={(e) => setDuration(parseInt(e.target.value || "60", 10))} className={field} />
+              <input type="number" value={duration} min={10} step={5} onChange={(e) => { setDuration(parseInt(e.target.value || "60", 10)); setDurationTouched(true); }} className={field} />
             </div>
             <div className="flex-1">
               <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Capacity (opt.)</label>

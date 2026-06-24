@@ -1,6 +1,7 @@
 // Coach Morning Nudge — runs daily 07:00 UTC via pg_cron
 // Generates short proactive AI message for each Elite user with a checkin yesterday
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -120,6 +121,11 @@ Yesterday (${(checkin.checked_in_at as string).slice(0, 10)}):
 - No phone (morning/evening): ${checkin.no_phone_morning ? "✓" : "✗"} / ${checkin.no_phone_evening ? "✓" : "✗"}
 ${checkin.journal_entry ? `- Journal: ${(checkin.journal_entry as string).slice(0, 300)}` : ""}`;
 
+      // Cross-domain situation (tribe event today, live battle, rank) — best-effort.
+      const situation = await gatherSituation(supabase, profile.user_id, { streak: profile.streak ?? null }).catch(() => null);
+      const situationBlock = situation ? buildSituationBlock(situation) : "";
+      const fullContext = situationBlock ? `${userContext}\n\n${situationBlock}` : userContext;
+
       const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -135,11 +141,12 @@ ${checkin.journal_entry ? `- Journal: ${(checkin.journal_entry as string).slice(
 Rules:
 - Reply in user's language (detect from journal; default English).
 - Direct, no clichés. Reference yesterday's data specifically.
+- If a "wider situation" block is present (tribe event today, live battle, leaderboard rank, streak at risk), you MAY hook the nudge to the most motivating one — rally before a tribe event, fire them up to win a battle, protect a streak. Pick at most one; never list them.
 - Prescribe ONE concrete action for today (sets/reps/minutes/specific habit).
 - Max 2 sentences. No greetings.
 - Never mention you are an AI.`,
             },
-            { role: "user", content: userContext },
+            { role: "user", content: fullContext },
           ],
           tools: [nudgeTool],
           tool_choice: { type: "function", function: { name: "emit_nudge" } },

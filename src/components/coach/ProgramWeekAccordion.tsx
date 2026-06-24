@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { CoachProgram, ProgramLog } from "@/hooks/use-coach-program";
 import { cn } from "@/lib/utils";
+import ExerciseRow from "@/components/coach/ExerciseRow";
 
 interface Props {
   program: CoachProgram;
@@ -115,12 +116,14 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                       {!isRest && dayOpen && (
                         <ul className="px-3 pb-2.5 space-y-1">
                           {(day.blocks ?? []).map((b, i) => (
-                            <li key={i} className="flex items-baseline justify-between gap-2 text-[12px] py-1 border-b border-border/20 last:border-b-0">
-                              <span className="font-bold truncate">{b.name}</span>
-                              <span className="text-[10.5px] font-black text-gold whitespace-nowrap">
-                                {b.sets}×{b.reps}{b.rpe ? ` · RPE ${b.rpe}` : ""}
-                              </span>
-                            </li>
+                            <ExerciseRow
+                              key={i}
+                              block={b as any}
+                              programId={program.id}
+                              week={week.week}
+                              dayIndex={di}
+                              loggable={week.week <= currentWeek}
+                            />
                           ))}
                           {day.conditioning && (
                             <li className="text-[11px] text-foreground/80 pt-1">

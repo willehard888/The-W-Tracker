@@ -328,6 +328,30 @@ Deno.serve(async (req) => {
     }).catch(() => null);
     const situationBlock = situation ? buildSituationBlock(situation) : "";
 
+    // Recent logged lifts (weight × reps) → so the coach tracks progression and
+    // prescribes the next load. Best-effort; empty before the table exists.
+    let workoutLogBlock = "";
+    try {
+      const { data: wlogs } = await supabase.rpc("recent_workout_logs", { p_limit: 40 });
+      if (Array.isArray(wlogs) && wlogs.length) {
+        const seen = new Set<string>();
+        const lines: string[] = [];
+        for (const l of wlogs as any[]) {
+          const key = l.exercise_slug || l.exercise_name;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          if (l.weight == null && l.reps == null) continue;
+          lines.push(
+            `- ${l.exercise_name}: ${l.weight != null ? `${l.weight}kg` : ""}${l.weight != null && l.reps != null ? " × " : ""}${l.reps != null ? l.reps : ""}${l.rpe ? ` @RPE${l.rpe}` : ""} (${String(l.logged_on)})`,
+          );
+          if (lines.length >= 12) break;
+        }
+        if (lines.length) {
+          workoutLogBlock = `\n\nLogged lifts (most recent per exercise — read these to track progression and prescribe the next load/reps):\n${lines.join("\n")}`;
+        }
+      }
+    } catch { /* table not present yet — ignore */ }
+
     const systemPrompt = buildSystemPrompt(
       profile,
       athleteRes.data ?? null,
@@ -341,7 +365,7 @@ Deno.serve(async (req) => {
       moodToday,
       latestUserMessage,
       situationBlock,
-    ) + (faqContext
+    ) + workoutLogBlock + (faqContext
       ? `\n\nThe user just read the Playbook answer to: "${faqContext.question}". Do NOT repeat that answer. Go deeper, address their follow-up directly, or apply it to their specific context.`
       : "");
 

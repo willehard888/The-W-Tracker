@@ -1,13 +1,8 @@
 // coach-generate-program — Premium-only. Designs a fully personalized 4-week program
 // using the user's athlete profile, last 30d check-ins, last 14d reflections and active goals.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import {
-  buildAllowedMovementCatalog,
-  filterMovements,
-  normalizeEquipment,
-  normalizeInjuries,
-  validateProgram,
-} from "./movements.ts";
+import { validateProgram } from "./movements.ts";
+import { filterCatalog } from "../_shared/exercise-catalog.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -81,12 +76,13 @@ const TOOL = {
                             type: "object",
                             additionalProperties: false,
                             properties: {
-                              name: { type: "string" },
+                              slug: { type: "string", description: "EXACT slug copied from the exercise catalog. Required — links to the photo + instructions." },
+                              name: { type: "string", description: "EXACT display name from the catalog for that slug." },
                               sets: { type: "integer" },
                               reps: { type: "string", description: "Rep target, e.g. '8-12' or '10'." },
                               rpe: { type: "number" },
                             },
-                            required: ["name", "sets", "reps", "rpe"],
+                            required: ["slug", "name", "sets", "reps", "rpe"],
                           },
                         },
                         conditioning: { type: "string", description: "Optional finisher/cardio. Empty string if none." },
@@ -207,6 +203,27 @@ Deno.serve(async (req) => {
         .eq("status", "active"),
     ]);
 
+    // Recent logged lifts → progress the new block from the athlete's real numbers.
+    let liftLogBlock = "";
+    try {
+      const { data: wlogs } = await supabase.rpc("recent_workout_logs", { p_limit: 60 });
+      if (Array.isArray(wlogs) && wlogs.length) {
+        const seen = new Set<string>();
+        const lines: string[] = [];
+        for (const l of wlogs as any[]) {
+          const key = l.exercise_slug || l.exercise_name;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          if (l.weight == null && l.reps == null) continue;
+          lines.push(`- ${l.exercise_name}: ${l.weight != null ? `${l.weight}kg` : ""}${l.weight != null && l.reps != null ? " × " : ""}${l.reps != null ? l.reps : ""}${l.rpe ? ` @RPE${l.rpe}` : ""}`);
+          if (lines.length >= 15) break;
+        }
+        if (lines.length) {
+          liftLogBlock = `\n\nRECENT LOGGED LIFTS (the athlete's real numbers — progress from THESE: where they hit the top of a rep range at RPE ≤8, add load or reps; keep the lifts they're already progressing on rather than swapping for novelty):\n${lines.join("\n")}`;
+        }
+      }
+    } catch { /* table not present yet — ignore */ }
+
     const profile: any = profileRes.data;
     if (!profile?.onboarded) {
       return new Response(JSON.stringify({ error: "Complete athlete profile first" }), {
@@ -273,12 +290,14 @@ Deno.serve(async (req) => {
     const periodization = GOAL_PERIODIZATION[goal] ?? GOAL_PERIODIZATION.all;
     const toneRule = TONE_INSTRUCTIONS[tone] ?? TONE_INSTRUCTIONS.calm_mentor;
 
-    // Movement catalog grounded to this athlete
-    const eqSet = normalizeEquipment(equipment_arr);
-    const injSet = normalizeInjuries(injuries);
-    const allowedMovements = filterMovements(eqSet, injSet);
-    const allowedNames = new Set(allowedMovements.map((m) => m.name));
-    const catalogText = buildAllowedMovementCatalog(allowedMovements);
+    // Exercise catalog grounded to this athlete's equipment. Every exercise the
+    // AI picks maps to a real library entry (photo + step-by-step instructions)
+    // on the client, so programs are illustrated and self-explanatory.
+    const catalogItems = filterCatalog(equipment_arr, 200);
+    const allowedSlugs = new Set(catalogItems.map((c) => c.slug));
+    const catalogText = catalogItems
+      .map((e) => `- ${e.slug} | ${e.name} | ${e.equipment} | ${e.primary}`)
+      .join("\n");
     const trainDayNames: string[] = (profile.training_days_pref ?? [1, 2, 4, 5]).map((n: number) => DAY_NAMES[n]);
 
     // ── Prompts ──────────────────────────────────────────────────────────────
@@ -291,7 +310,7 @@ NON-NEGOTIABLE COMPLETENESS (violating any = failure):
 - Training sessions ONLY on: ${train_days}. Every OTHER weekday MUST be focus="Rest", duration_min=0, blocks=[].
 - Each TRAINING day MUST have 4–6 working exercises in "blocks" — never 1–3, never shortcut.
 - duration_min ≤ ${session_min} on every training day.
-- Pick "name" ONLY from the allowed catalog below — exact spelling. Never invent movements. Don't repeat the same primary (first) lift on two consecutive training days in a week.
+- Pick EVERY exercise ONLY from the catalog below. For each block, copy the catalog's slug into "slug" and its name into "name" — both EXACT, character for character. Never invent exercises or slugs. Don't repeat the same primary (first) lift on two consecutive training days in a week.
 
 HYPERTROPHY-FIRST GYM DESIGN (this athlete trains for long-term muscle growth):
 - Periodization for the goal: ${periodization}
@@ -311,10 +330,10 @@ OTHER FIELDS:
 - nutrition + recovery: realistic values for EVERY week (protein g/kg, kcal band + notes; sleep h, mobility min, breathwork).
 - weekly_check_targets: realistic for days/week + trailing averages.
 
-ALLOWED MOVEMENT CATALOG:
+EXERCISE CATALOG (format: slug | name | equipment | primary muscle — choose ONLY from here):
 ${catalogText}
 
-EMIT VIA THE emit_program TOOL. Output ALL 4 weeks × 7 days fully. Never reply in plain text.`;
+EMIT VIA THE emit_program TOOL. Output ALL 4 weeks × 7 days fully. Each block needs slug + name (both from the catalog) + sets + reps + rpe. Never reply in plain text.`;
 
     const userPrompt = `ATHLETE
 - Identity: ${profile.i_am || "n/a"}
@@ -348,7 +367,7 @@ LAST 14 DAYS (reflections, n=${r})
 - Avg energy: ${avgEnergy}/5
 - Avg sleep quality: ${avgSleepQ}/5
 - Avg mood: ${avgMood}/5
-- Recurring frictions: ${frictions.length ? frictions.join(" | ") : "none reported"}
+- Recurring frictions: ${frictions.length ? frictions.join(" | ") : "none reported"}${liftLogBlock}
 
 DESIGN A COMPLETE 4-WEEK BLOCK: all 4 weeks, ALL 7 days in each week, with ${days_per_week} training days/week and
 4–6 exercises on every training day — optimized for long-term muscle growth and this athlete's goal/sport. Progress
@@ -445,7 +464,7 @@ the overload every week and explain it. Address the athlete in their preferred v
       const violations = validateProgram(result.parsed.plan, {
         trainDayNames,
         sessionMinCap: session_min,
-        allowedNames,
+        allowedSlugs,
       });
       if (violations.length) {
         console.warn("Program validation warnings (accepted anyway):", violations.slice(0, 5));

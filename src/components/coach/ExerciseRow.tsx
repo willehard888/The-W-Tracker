@@ -5,6 +5,7 @@ import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { toast } from "sonner";
 import { useExerciseLibrary, resolveExercise } from "@/lib/exercise-library";
 import { useExerciseHistory, useDayLogs, useLogSet } from "@/hooks/use-workout-log";
+import Sparkline from "@/components/coach/Sparkline";
 
 export interface ProgramBlock {
   slug?: string | null;
@@ -58,6 +59,19 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
 
   // The most recent PRIOR log for this exercise (skip today's own slot).
   const last = (history.data ?? []).find((h) => h.id !== existing?.id && h.weight != null);
+
+  // Weight progression series, chronological (oldest → newest), for the chart.
+  const weightSeries = (history.data ?? [])
+    .filter((h) => h.weight != null)
+    .map((h) => Number(h.weight))
+    .reverse();
+  const trend = weightSeries.length >= 2 ? weightSeries[weightSeries.length - 1] - weightSeries[0] : 0;
+
+  const fill = (w: number | null, r: number | null) => {
+    hapticImpact("light");
+    if (w != null) setWeight(String(w));
+    if (r != null) setReps(String(r));
+  };
 
   const thumb = ex?.images?.[0];
   const hasMore = !!(ex || block.notes || block.alt || block.rest_sec || block.tempo);
@@ -154,6 +168,22 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
             </p>
           )}
 
+          {/* Progression chart — weight over time from logged sets. */}
+          {weightSeries.length >= 2 && (
+            <div className="rounded-xl bg-background/40 border border-border/40 p-2.5">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[9.5px] font-black uppercase tracking-widest text-muted-foreground/70">Progression</p>
+                <p className={cn(
+                  "text-[10px] font-black tabular-nums",
+                  trend > 0 ? "text-[hsl(152_68%_46%)]" : trend < 0 ? "text-destructive" : "text-muted-foreground",
+                )}>
+                  {trend > 0 ? "+" : ""}{trend !== 0 ? `${Math.round(trend * 10) / 10}kg` : "flat"} · {weightSeries.length} logs
+                </p>
+              </div>
+              <Sparkline values={weightSeries} className="w-full h-8" />
+            </div>
+          )}
+
           {/* Log your set — weight × reps. The AI reads this to progress you. */}
           {loggable && (
             <div className="rounded-xl bg-background/50 border border-border/50 p-2.5">
@@ -165,6 +195,25 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
                   </p>
                 )}
               </div>
+              {/* Quick-fill from last session — tap to prefill, tweak if needed. */}
+              {last?.weight != null && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {[
+                    { label: `Same · ${last.weight}kg`, w: Number(last.weight) },
+                    { label: "+2.5 kg", w: Number(last.weight) + 2.5 },
+                    { label: "+5 kg", w: Number(last.weight) + 5 },
+                  ].map((c) => (
+                    <button
+                      key={c.label}
+                      type="button"
+                      onClick={() => fill(c.w, last.reps ?? null)}
+                      className="rounded-full bg-gold/12 border border-gold/30 px-2.5 py-1 text-[10.5px] font-bold text-gold active:scale-95 transition-transform"
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <div className="flex-1">
                   <input

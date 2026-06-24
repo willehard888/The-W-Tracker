@@ -29,7 +29,10 @@ PINNED_PODS_SWIFT_VERSION="5.0"     # Capacitor + RevenueCat pod targets
 export PINNED_PODS_SWIFT_VERSION    # consumed by ci_pre_xcodebuild.sh
 
 if command -v xcodebuild &>/dev/null; then
-  XCODE_VER_FULL=$(xcodebuild -version 2>/dev/null | head -1 | awk '{print $2}')
+  # NOTE: awk reads ALL input and prints line 1 — do NOT pipe through `head`.
+  # `head` closes the pipe early, which sends SIGPIPE to xcodebuild; under
+  # `set -o pipefail` that surfaces as exit 141 and kills the whole script.
+  XCODE_VER_FULL=$(xcodebuild -version 2>/dev/null | awk 'NR==1{print $2}')
   echo "ℹ️  Xcode ${XCODE_VER_FULL} (required: ${REQUIRED_XCODE_MAJOR}.x family)"
   case "$XCODE_VER_FULL" in
     ${REQUIRED_XCODE_MAJOR}.*) echo "✅ Xcode 26.x family pin satisfied" ;;
@@ -44,7 +47,8 @@ else
 fi
 
 if command -v swift &>/dev/null; then
-  SWIFT_VER_FULL=$(swift --version 2>/dev/null | head -1 || echo "unknown")
+  # awk (reads to EOF) instead of `head` to avoid SIGPIPE under pipefail.
+  SWIFT_VER_FULL=$(swift --version 2>/dev/null | awk 'NR==1{print}' || echo "unknown")
   echo "ℹ️  ${SWIFT_VER_FULL}"
   if echo "$SWIFT_VER_FULL" | grep -qE "Swift version ${REQUIRED_SWIFT_MAJOR}\."; then
     echo "✅ Swift toolchain pin satisfied (Swift ${REQUIRED_SWIFT_MAJOR}.x host compiler)"
@@ -357,7 +361,7 @@ if release_cfg.is_file():
 PY
 
 echo "✅ Pods installed successfully"
-ls Pods/ | head -10
+ls Pods/ 2>/dev/null | awk 'NR<=10' || true
 cd "$ROOT_DIR"
 
 # ---------------------------------------------------------------------------

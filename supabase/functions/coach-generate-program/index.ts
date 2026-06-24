@@ -296,7 +296,7 @@ Deno.serve(async (req) => {
     const catalogItems = filterCatalog(equipment_arr, 200);
     const allowedSlugs = new Set(catalogItems.map((c) => c.slug));
     const catalogText = catalogItems
-      .map((e) => `- ${e.slug} | ${e.name} | ${e.equipment} | ${e.primary}`)
+      .map((e) => `- ${e.slug} | ${e.name} | ${e.equipment} | ${e.mechanic} | ${e.primary}`)
       .join("\n");
     const trainDayNames: string[] = (profile.training_days_pref ?? [1, 2, 4, 5]).map((n: number) => DAY_NAMES[n]);
 
@@ -312,9 +312,11 @@ NON-NEGOTIABLE COMPLETENESS (violating any = failure):
 - duration_min ≤ ${session_min} on every training day.
 - Pick EVERY exercise ONLY from the catalog below. For each block, copy the catalog's slug into "slug" and its name into "name" — both EXACT, character for character. Never invent exercises or slugs. Don't repeat the same primary (first) lift on two consecutive training days in a week.
 
-HYPERTROPHY-FIRST GYM DESIGN (this athlete trains for long-term muscle growth):
+HYPERTROPHY-FIRST GYM DESIGN (this athlete trains for real muscle growth):
 - Periodization for the goal: ${periodization}
-- Lead each session with 1–2 heavy compounds, then 3–4 accessories. Across the week cover squat, hinge, horizontal & vertical push/pull, plus direct arm + core work.
+- COMPOUND-DOMINANT. The catalog tags each exercise compound or isolation. Lead EVERY training session with 1–2 heavy COMPOUND (multi-joint) lifts, and at least 60% of each session's working exercises MUST be compound. These big multi-joint lifts are the primary mass drivers — barbell/dumbbell squats, hinges/deadlifts, presses (bench/overhead), rows, pull-ups, dips, lunges. Prefer free-weight barbell/dumbbell compounds over machines.
+- Use isolation only as 2–3 targeted accessories AFTER the compounds (curls, raises, extensions, calf/abs) to finish lagging muscles — never as the backbone of a session.
+- Across the week cover squat, hinge, horizontal & vertical push/pull, plus direct arm + core work.
 - Rep ranges: compounds 5–10, accessories 8–15. RPE 7–9 (1–3 reps in reserve); push accessories close to failure.
 - PROGRESSIVE OVERLOAD week to week: add load, reps, or sets each week (e.g. wk2 +1 set or +1–2 reps, wk3 +load/RPE). Week 4 = deload (volume −40%, RPE −1) ONLY if recent avg RPE > 8 OR avg sleep < 6.5 OR avg energy ≤ 2; otherwise a light test/AMRAP week.
 - Bias volume toward the athlete's stated body emphasis when given.
@@ -330,7 +332,7 @@ OTHER FIELDS:
 - nutrition + recovery: realistic values for EVERY week (protein g/kg, kcal band + notes; sleep h, mobility min, breathwork).
 - weekly_check_targets: realistic for days/week + trailing averages.
 
-EXERCISE CATALOG (format: slug | name | equipment | primary muscle — choose ONLY from here):
+EXERCISE CATALOG (format: slug | name | equipment | mechanic | primary muscle — choose ONLY from here; prefer mechanic=compound):
 ${catalogText}
 
 EMIT VIA THE emit_program TOOL. Output ALL 4 weeks × 7 days fully. Each block needs slug + name (both from the catalog) + sets + reps + rpe. Never reply in plain text.`;

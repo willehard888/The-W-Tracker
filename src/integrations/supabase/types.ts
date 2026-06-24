@@ -2439,6 +2439,62 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_set_logs: {
+        Row: {
+          created_at: string
+          day_index: number | null
+          exercise_name: string
+          exercise_slug: string | null
+          id: string
+          logged_on: string
+          program_id: string | null
+          reps: number | null
+          rpe: number | null
+          updated_at: string
+          user_id: string
+          week: number | null
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string
+          day_index?: number | null
+          exercise_name: string
+          exercise_slug?: string | null
+          id?: string
+          logged_on?: string
+          program_id?: string | null
+          reps?: number | null
+          rpe?: number | null
+          updated_at?: string
+          user_id: string
+          week?: number | null
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string
+          day_index?: number | null
+          exercise_name?: string
+          exercise_slug?: string | null
+          id?: string
+          logged_on?: string
+          program_id?: string | null
+          reps?: number | null
+          rpe?: number | null
+          updated_at?: string
+          user_id?: string
+          week?: number | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_set_logs_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "coach_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -2656,8 +2712,45 @@ export type Database = {
         }
         Returns: string
       }
+      log_workout_set: {
+        Args: {
+          p_day: number
+          p_name: string
+          p_program: string
+          p_reps: number
+          p_rpe?: number
+          p_slug: string
+          p_week: number
+          p_weight: number
+        }
+        Returns: string
+      }
       pending_friend_request_count: { Args: never; Returns: number }
       pod_today: { Args: { p_tz_offset_minutes?: number }; Returns: Json }
+      recent_workout_logs: {
+        Args: { p_limit?: number }
+        Returns: {
+          created_at: string
+          day_index: number | null
+          exercise_name: string
+          exercise_slug: string | null
+          id: string
+          logged_on: string
+          program_id: string | null
+          reps: number | null
+          rpe: number | null
+          updated_at: string
+          user_id: string
+          week: number | null
+          weight: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "workout_set_logs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       record_checkin: {
         Args: {
           p_cold_shower: boolean

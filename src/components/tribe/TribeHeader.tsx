@@ -94,13 +94,8 @@ const TribeHeader = ({
                   {tribe.is_paused ? "Paused Tribe" : "Apex Tribe"}
                 </span>
               </div>
-              {/* TRIBE NAME — biggest text on the page, gradient, unmissable */}
-              <h1
-                className="font-display font-black text-3xl leading-[1.05] tracking-tight bg-gradient-to-br from-foreground via-[hsl(42_78%_75%)] to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_1px_8px_hsl(18_95%_58%/0.28)] break-words"
-                style={tribe.is_paused ? { filter: "grayscale(0.5)", opacity: 0.85 } : undefined}
-              >
-                {tribe.name}
-              </h1>
+              {/* Name + member count live in the flame hero above — this card is
+                  the tribe's details + actions (kept clear, no duplication). */}
               {founder && (
                 <button
                   onClick={() => onNavigateUser(founder.user_id)}
@@ -118,14 +113,6 @@ const TribeHeader = ({
               {tribe.description && (
                 <p className="text-xs text-foreground/75 mt-1 leading-snug">{tribe.description}</p>
               )}
-              <div className="flex items-center gap-2 mt-2">
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[hsl(18_95%_58%)]/12 border border-[hsl(18_95%_58%)]/30">
-                  <Users size={10} className="text-[hsl(18_95%_58%)]" />
-                  <span className="text-[10px] font-bold tabular-nums text-[hsl(18_95%_58%)]">
-                    {tribe.member_count} member{tribe.member_count === 1 ? "" : "s"}
-                  </span>
-                </span>
-              </div>
             </div>
           </div>
 

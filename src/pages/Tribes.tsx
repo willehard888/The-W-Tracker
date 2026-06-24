@@ -18,6 +18,7 @@ import TribeFireLite from "@/components/TribeFireLite";
 import TribeFireHero from "@/components/TribeFireHero";
 import TribeAmbientFireField from "@/components/TribeAmbientFireField";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
+import { TRIBE_ACTIVITIES, activityIcon } from "@/lib/tribe-activities";
 import { fetchTribeCollectiveStreaks, collectiveStreakTier, collectiveTierName, collectiveAccent } from "@/lib/tribe-streak";
 
 interface Tribe {
@@ -472,19 +473,21 @@ const Tribes = () => {
           {/* Browse by activity */}
           <div className="mb-4 -mx-4 px-4 overflow-x-auto no-scrollbar">
             <div className="flex gap-1.5 w-max">
-              {[null, "Run", "Gym", "Yoga", "Ride", "Swim", "Hike", "Combat", "Walk", "Other"].map((a) => {
+              {[null, ...TRIBE_ACTIVITIES].map((a) => {
                 const active = activityFilter === a;
+                const Icon = a ? activityIcon(a) : null;
                 return (
                   <button
                     key={a ?? "all"}
                     onClick={() => setActivityFilter(a)}
                     className={cn(
-                      "shrink-0 rounded-full px-3 py-1.5 text-[11px] font-black border transition-all active:scale-95",
+                      "shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-black border transition-all active:scale-95",
                       active
                         ? "bg-gold text-primary-foreground border-transparent"
                         : "bg-secondary/40 border-border/50 text-muted-foreground",
                     )}
                   >
+                    {Icon && <Icon size={12} strokeWidth={2.6} />}
                     {a ?? "All"}
                   </button>
                 );
@@ -710,11 +713,14 @@ const Tribes = () => {
                   >
                     {t.name}
                   </p>
-                  {(t as any).primary_activity && (
-                    <span className="inline-flex items-center mt-1 px-1.5 py-0.5 rounded-md bg-gold/10 border border-gold/30 text-[9px] font-black uppercase tracking-wider text-gold">
-                      {(t as any).primary_activity}
-                    </span>
-                  )}
+                  {(t as any).primary_activity && (() => {
+                    const ActIcon = activityIcon((t as any).primary_activity);
+                    return (
+                      <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded-md bg-gold/10 border border-gold/30 text-[9px] font-black uppercase tracking-wider text-gold">
+                        <ActIcon size={9} strokeWidth={2.6} /> {(t as any).primary_activity}
+                      </span>
+                    );
+                  })()}
                   {t.description && (
                     <p className="text-[11px] text-muted-foreground/90 line-clamp-2 mt-1 leading-snug">
                       {t.description}

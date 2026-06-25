@@ -19,10 +19,14 @@ export interface DownscaleOpts {
 export async function downscaleImage(file: File, opts: DownscaleOpts = {}): Promise<File> {
   const { maxDim = 1280, quality = 0.8, skipUnder = 200_000 } = opts;
   try {
-    if (!file.type.startsWith("image/")) return file;
-    // HEIC/HEIF can't be reliably decoded by the canvas in WKWebView — leave it.
-    if (/heic|heif/i.test(file.type)) return file;
-    if (file.size <= skipUnder) return file;
+    // HEIC/HEIF (the iPhone default) must be CONVERTED to JPEG — browsers/WebViews
+    // won't render a .heic <img>, so an un-converted HEIC posts as a broken image.
+    // iOS WKWebView CAN decode HEIC into a canvas, so the re-encode below works on
+    // device; if a non-Apple browser can't decode it, we fail open (return original).
+    const isHeic = /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name);
+    if (!file.type.startsWith("image/") && !isHeic) return file;
+    // HEIC always needs conversion regardless of size; other formats can skip if tiny.
+    if (!isHeic && file.size <= skipUnder) return file;
 
     // Decode — prefer createImageBitmap, fall back to <img>.
     let width = 0;
@@ -76,8 +80,10 @@ export async function downscaleImage(file: File, opts: DownscaleOpts = {}): Prom
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, "image/jpeg", quality),
     );
-    // If re-encoding didn't actually shrink it, keep the original.
-    if (!blob || blob.size >= file.size) return file;
+    if (!blob) return file;
+    // For HEIC we MUST return the JPEG even if it's larger — the original can't be
+    // displayed. For normal formats, keep the original if re-encoding didn't shrink.
+    if (!isHeic && blob.size >= file.size) return file;
 
     const name = file.name.replace(/\.[^.]+$/, "") + ".jpg";
     return new File([blob], name, { type: "image/jpeg", lastModified: Date.now() });

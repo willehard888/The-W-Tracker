@@ -2,6 +2,7 @@
 // from the W Coach. Cached per user per day in coach_daily_briefs.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
+import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -97,6 +98,10 @@ Deno.serve(async (req) => {
     const situation = await gatherSituation(sb, uid, { streak: profile.streak ?? null }).catch(() => null);
     const situationBlock = situation ? buildSituationBlock(situation) : "";
 
+    // Strength progression — so the morning brief can drive a specific lift.
+    const progression = await gatherProgression(sb, uid).catch(() => []);
+    const progressionBlock = buildProgressionBlock(progression);
+
     const systemPrompt = `You are W Coach — the user's personal performance trainer inside the W app. You speak DIRECTLY to them, like a world-class private coach who knows their week, their body, and their goal.
 
 ${tone}
@@ -112,7 +117,7 @@ Athlete:
 
 Today's prescribed session: ${sessionLine}
 Recent: avg sleep ${avgSleep ?? "?"}h (last night ${lastSleep ?? "?"}h), ${workouts7}/7 workouts.
-${situationBlock ? `\n${situationBlock}\n` : ""}
+${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}
 Write the daily brief — 2-3 sentences, second person, signed off as "— W Coach".
 Reference ONE concrete recent stat and ONE adjustment to today's session if warranted.
 End with a single clear action for the next 24h.

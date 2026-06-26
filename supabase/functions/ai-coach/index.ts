@@ -12,6 +12,7 @@ import {
   type TodayMood,
 } from "../_shared/coach-persona.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
+import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -328,29 +329,11 @@ Deno.serve(async (req) => {
     }).catch(() => null);
     const situationBlock = situation ? buildSituationBlock(situation) : "";
 
-    // Recent logged lifts (weight × reps) → so the coach tracks progression and
-    // prescribes the next load. Best-effort; empty before the table exists.
-    let workoutLogBlock = "";
-    try {
-      const { data: wlogs } = await supabase.rpc("recent_workout_logs", { p_limit: 40 });
-      if (Array.isArray(wlogs) && wlogs.length) {
-        const seen = new Set<string>();
-        const lines: string[] = [];
-        for (const l of wlogs as any[]) {
-          const key = l.exercise_slug || l.exercise_name;
-          if (seen.has(key)) continue;
-          seen.add(key);
-          if (l.weight == null && l.reps == null) continue;
-          lines.push(
-            `- ${l.exercise_name}: ${l.weight != null ? `${l.weight}kg` : ""}${l.weight != null && l.reps != null ? " × " : ""}${l.reps != null ? l.reps : ""}${l.rpe ? ` @RPE${l.rpe}` : ""} (${String(l.logged_on)})`,
-          );
-          if (lines.length >= 12) break;
-        }
-        if (lines.length) {
-          workoutLogBlock = `\n\nLogged lifts (most recent per exercise — read these to track progression and prescribe the next load/reps):\n${lines.join("\n")}`;
-        }
-      }
-    } catch { /* table not present yet — ignore */ }
+    // Progression digest (per-lift trajectory, PRs, stalls) → so the coach tracks
+    // progress like a real coach and drives the next target. Best-effort.
+    const progression = await gatherProgression(supabase, userId).catch(() => []);
+    const progressionBlock = buildProgressionBlock(progression);
+    const workoutLogBlock = progressionBlock ? `\n\n${progressionBlock}` : "";
 
     const systemPrompt = buildSystemPrompt(
       profile,

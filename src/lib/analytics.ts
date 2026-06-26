@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { captureEvent } from "@/lib/observability";
 
 /**
  * Minimal, fail-open product analytics. Writes one row per event to the
@@ -17,6 +18,8 @@ export async function track(
   props?: Record<string, unknown>,
   userId?: string,
 ): Promise<void> {
+  // Mirror to PostHog (no-op until configured) for funnels + retention cohorts.
+  captureEvent(event, props);
   try {
     let uid = userId;
     if (!uid) {

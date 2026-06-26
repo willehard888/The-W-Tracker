@@ -3,6 +3,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import { track, FUNNEL } from "@/lib/analytics";
+import { identifyUser, resetIdentity } from "@/lib/observability";
 import { clearAppleAuthStarted, clearAppleUsernameSelectionPending, isAppleAuthStarted, markAppleUsernameSelectionPending } from "@/lib/apple-username";
 
 interface AuthContextType {
@@ -198,6 +199,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!active) return;
       setSession(session);
       setUser(session?.user ?? null);
+      // Tie analytics + error reports to the user (no-op until observability configured).
+      if (session?.user) identifyUser(session.user.id);
+      else resetIdentity();
       try {
         if (session?.user) {
           // Never let a hung network request keep the splash up forever.

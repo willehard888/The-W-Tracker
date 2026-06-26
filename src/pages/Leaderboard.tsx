@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import StatusBadge from "@/components/StatusBadge";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
 import TopTribesWidget from "@/components/TopTribesWidget";
@@ -76,9 +76,29 @@ const Leaderboard = () => {
     ["leaderboard-champions"],
   ]);
 
-  // Touch handlers — only pull-to-refresh now (swipe-to-switch-mode removed).
-  const onTouchStart = (e: React.TouchEvent) => { pullStart(e); };
-  const onTouchEnd = (_e: React.TouchEvent) => { pullEnd(); };
+  // Touch handlers — pull-to-refresh + horizontal swipe to switch Season/All-time.
+  // The old swipe was removed for firing on vertical scroll; this version only
+  // acts on a CLEARLY horizontal flick (big horizontal delta, dominant over the
+  // vertical delta) so it never fights the scroll or pull-to-refresh.
+  const swipe = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    swipe.current = t ? { x: t.clientX, y: t.clientY } : null;
+    pullStart(e);
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    pullEnd();
+    const start = swipe.current;
+    swipe.current = null;
+    const t = e.changedTouches[0];
+    if (!start || !t) return;
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) >= 70 && Math.abs(dx) > Math.abs(dy) * 2) {
+      if (dx < 0) setMode("all_time");   // swipe left → All time
+      else setMode("season");            // swipe right → Season
+    }
+  };
 
 
   // Countdown ticking moved to <CountdownTimer> — only that component re-renders.

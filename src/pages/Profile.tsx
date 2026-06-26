@@ -4,6 +4,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { isNativePlatform } from "@/lib/platform";
 import StatCard from "@/components/StatCard";
 import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
+import ProgressionSummaryCard from "@/components/profile/ProgressionSummaryCard";
 import ProfileHero from "@/components/profile/ProfileHero";
 import { downscaleImage } from "@/lib/downscale-image";
 import { hapticSelection } from "@/lib/haptics";
@@ -470,6 +471,11 @@ const Profile = () => {
       {/* Live Rivals — who's ahead, who's behind */}
       <div className="animate-reveal animate-reveal-delay-1">
         <LiveRivals userId={profile.user_id} myScore={Number((profile as any).rank_score) || 0} />
+      </div>
+
+      {/* Strength progression — PRs + climbing lifts this week */}
+      <div className="animate-reveal animate-reveal-delay-2">
+        <ProgressionSummaryCard />
       </div>
 
       {/* Stats — battles + kudos */}

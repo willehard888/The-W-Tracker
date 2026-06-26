@@ -114,3 +114,44 @@ export async function syncStreakWarningNotification({ lastCheckinAt, streak }: S
     triggerAt: triggerAt.toISOString(),
   });
 }
+
+// ── Lapsed re-engagement ────────────────────────────────────────────────────
+// Win back users who drift off. We schedule device-local "we miss you" nudges a
+// few days out and RESCHEDULE them on every app open — so they only ever fire if
+// the user hasn't returned. No backend, no push token, works offline.
+const LAPSED_3D_ID = 48010;
+const LAPSED_7D_ID = 48011;
+const LAPSED_HOUR = 18; // 6pm device-local
+
+/**
+ * Push the win-back nudges out to +3d / +7d. Call on every app foreground; if
+ * the user keeps opening the app, the timers keep sliding and never fire.
+ */
+export async function scheduleLapsedReengagement() {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    await LocalNotifications.cancel({ notifications: [{ id: LAPSED_3D_ID }, { id: LAPSED_7D_ID }] });
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          id: LAPSED_3D_ID,
+          title: "Your discipline misses you 💪",
+          body: "Your streak and rank are waiting. One check-in restarts the momentum.",
+          schedule: { at: localTimeOnDay(3, LAPSED_HOUR), allowWhileIdle: true },
+          extra: { route: "/", type: "lapsed-3d" },
+        },
+        {
+          id: LAPSED_7D_ID,
+          title: "A week off — let's go again",
+          body: "The best time to restart is now. Check in and rebuild the streak.",
+          schedule: { at: localTimeOnDay(7, LAPSED_HOUR), allowWhileIdle: true },
+          extra: { route: "/", type: "lapsed-7d" },
+        },
+      ],
+    });
+  } catch (error) {
+    pushIosDebugLog("LapsedReengagement", "Failed to schedule", {
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
+}

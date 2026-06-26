@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
+import { scheduleLapsedReengagement } from "@/lib/streak-notifications";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -174,6 +175,17 @@ const AppRoutes = () => {
   const { user } = useAuth();
   usePushNotifications();
   useOfflineCheckinSync();
+
+  // Lapsed re-engagement: (re)schedule device-local win-back nudges on every
+  // foreground while signed in. They keep sliding out as long as the user keeps
+  // returning, so they only fire if someone actually drifts away.
+  useEffect(() => {
+    if (!user) return;
+    scheduleLapsedReengagement();
+    const onVis = () => { if (document.visibilityState === "visible") scheduleLapsedReengagement(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [user]);
 
   // Every page lands at the top. The main scroll container persists across
   // route changes (it lives outside <Routes>), so without this its scroll

@@ -8,9 +8,12 @@ import { toast } from "sonner";
 import { clearAppleAuthStarted, clearAppleUsernameSelectionPending } from "@/lib/apple-username";
 import { supabase } from "@/integrations/supabase/client";
 import { initNativeShell } from "@/lib/native-bootstrap";
+import { initObservability } from "@/lib/observability";
 
 // Fire-and-forget — runs before React mount, but doesn't block it.
 void initNativeShell();
+// Error monitoring + product analytics (no-op until the env keys are set).
+void initObservability();
 
 let oauthHandled = false;
 // Timestamp of when oauthHandled was set, so we can expire it after a safe window.

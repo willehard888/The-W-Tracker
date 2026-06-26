@@ -12,25 +12,54 @@ const EQUIP_ALIAS: Record<string, string[]> = {
   cable: ["cable","cables"], bands: ["bands","resistance bands"], bodyweight: ["bodyweight"], "body only": ["bodyweight"],
 };
 
+/** Loaded / external-resistance equipment — the default for a gym program. */
+const WEIGHTED = new Set(["barbell", "dumbbell", "machine", "cable", "kettlebells"]);
+
 /**
- * Filter the catalog to the athlete's equipment (bodyweight always allowed).
- * Compound (multi-joint) lifts are sorted FIRST and over-represented in the cap,
- * so the model leads with mass-builders and treats isolation as accessories.
+ * Filter the catalog for a GYM program: LOADED movements (barbell, dumbbell,
+ * machine, cable, kettlebell) are the default and dominate the pool, compounds
+ * first. Bodyweight is intentionally a small minority — and only bodyweight
+ * COMPOUND staples (pull-ups, dips, chin-ups…), never the backbone — because the
+ * athlete trains with external load and progresses by ADDING weight.
+ * Falls back to bodyweight only when no weighted equipment is available at all.
  */
 export function filterCatalog(equipment: string[] | null | undefined, cap = 200): CatalogItem[] {
-  const have = new Set<string>(["bodyweight"]);
+  const have = new Set<string>();
   for (const raw of equipment ?? []) {
     const key = String(raw).toLowerCase().trim();
     (EQUIP_ALIAS[key] ?? [key]).forEach((v) => have.add(v));
   }
-  const fullGym = !equipment || equipment.length === 0;
-  const items = EXERCISE_CATALOG.filter((e) => fullGym || have.has(e.equipment));
-  const pool = items.length ? items : EXERCISE_CATALOG;
-  const compounds = pool.filter((e) => e.mechanic === "compound");
-  const isolation = pool.filter((e) => e.mechanic !== "compound");
-  // Reserve ~65% of the cap for compounds.
-  const compoundCap = Math.round(cap * 0.65);
-  return [...compounds.slice(0, compoundCap), ...isolation.slice(0, Math.max(0, cap - compoundCap))];
+  const hasWeighted = [...have].some((e) => WEIGHTED.has(e));
+  // No equipment listed → assume a fully-equipped gym (loaded movements available).
+  const assumeFullGym = !equipment || equipment.length === 0;
+
+  const equipOk = (e: CatalogItem) =>
+    assumeFullGym ? true : have.has(e.equipment);
+
+  const pool = EXERCISE_CATALOG.filter(equipOk);
+  const weighted = pool.filter((e) => WEIGHTED.has(e.equipment));
+  const bodyweight = pool.filter((e) => !WEIGHTED.has(e.equipment));
+
+  // Gym path: weighted dominates (~85% of the cap, compounds first); bodyweight
+  // limited to ~15% and to compound staples only.
+  if (weighted.length) {
+    const bwCap = Math.round(cap * 0.15);
+    const wCap = cap - bwCap;
+    const wCompoundCap = Math.round(wCap * 0.6);
+    const wCompound = weighted.filter((e) => e.mechanic === "compound");
+    const wIso = weighted.filter((e) => e.mechanic !== "compound");
+    const bwCompound = bodyweight.filter((e) => e.mechanic === "compound");
+    return [
+      ...wCompound.slice(0, wCompoundCap),
+      ...wIso.slice(0, Math.max(0, wCap - wCompoundCap)),
+      ...bwCompound.slice(0, bwCap),
+    ];
+  }
+
+  // No weighted equipment at all → bodyweight program, compounds first.
+  const bwCompound = bodyweight.filter((e) => e.mechanic === "compound");
+  const bwIso = bodyweight.filter((e) => e.mechanic !== "compound");
+  return [...bwCompound, ...bwIso].slice(0, cap);
 }
 
 /** Compact catalog list for the prompt: `slug | name | equipment | mechanic | primary`. */

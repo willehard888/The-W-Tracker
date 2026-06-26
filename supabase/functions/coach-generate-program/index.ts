@@ -314,8 +314,9 @@ NON-NEGOTIABLE COMPLETENESS (violating any = failure):
 
 HYPERTROPHY-FIRST GYM DESIGN (this athlete trains for real muscle growth):
 - Periodization for the goal: ${periodization}
-- COMPOUND-DOMINANT. The catalog tags each exercise compound or isolation. Lead EVERY training session with 1–2 heavy COMPOUND (multi-joint) lifts, and at least 60% of each session's working exercises MUST be compound. These big multi-joint lifts are the primary mass drivers — barbell/dumbbell squats, hinges/deadlifts, presses (bench/overhead), rows, pull-ups, dips, lunges. Prefer free-weight barbell/dumbbell compounds over machines.
-- Use isolation only as 2–3 targeted accessories AFTER the compounds (curls, raises, extensions, calf/abs) to finish lagging muscles — never as the backbone of a session.
+- LOADED / GYM BY DEFAULT. This is a gym program with external load. Default to WEIGHTED movements — barbell, dumbbell, machine, cable, kettlebell — because the athlete progresses by ADDING WEIGHT. Do NOT build the program out of bodyweight exercises. Bodyweight is allowed ONLY for a few movements that are genuinely best unloaded (pull-ups, chin-ups, dips, hanging leg raises, planks) — at most 1 per session — and even those should be weighted (e.g. weighted pull-ups/dips) when the athlete is strong enough. Every other exercise must use external load.
+- COMPOUND-DOMINANT. The catalog tags each exercise compound or isolation. Lead EVERY training session with 1–2 heavy LOADED COMPOUND lifts (barbell/dumbbell squats, hinges/deadlifts, bench/overhead press, rows), and at least 60% of each session's working exercises MUST be compound. Prefer free-weight barbell/dumbbell compounds over machines.
+- Use isolation only as 2–3 targeted, LOADED accessories AFTER the compounds (dumbbell/cable curls, raises, extensions, machine calf/abs) to finish lagging muscles — never as the backbone of a session.
 - Across the week cover squat, hinge, horizontal & vertical push/pull, plus direct arm + core work.
 - Rep ranges: compounds 5–10, accessories 8–15. RPE 7–9 (1–3 reps in reserve); push accessories close to failure.
 - PROGRESSIVE OVERLOAD week to week: add load, reps, or sets each week (e.g. wk2 +1 set or +1–2 reps, wk3 +load/RPE). Week 4 = deload (volume −40%, RPE −1) ONLY if recent avg RPE > 8 OR avg sleep < 6.5 OR avg energy ≤ 2; otherwise a light test/AMRAP week.

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendApnsBatch } from "../_shared/apns.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,19 +50,27 @@ Deno.serve(async (req) => {
 
     console.log(`Sending reminders to ${tokensToNotify.length} users (${tokens.length} total tokens, ${checkedInUserIds.size} already checked in)`);
 
-    // Note: Actual push delivery requires FCM (Android) / APNs (iOS) server keys
-    // For now, log the tokens that need notifications
-    // In production, integrate with FCM HTTP v1 API or APNs
-    const results = tokensToNotify.map((t: any) => ({
-      user_id: t.user_id,
-      platform: t.platform,
-      status: "queued",
-    }));
+    // Actually deliver via APNs (iOS). sendApnsBatch filters to platform==='ios'.
+    const pushResults = await sendApnsBatch(tokensToNotify as any, {
+      title: "Don't break the chain 🔥",
+      body: "You haven't checked in yet today — lock it in before midnight.",
+      data: { route: "/" },
+    });
+    const sent = pushResults.filter((r) => r.status === 200).length;
+    const dead = pushResults
+      .filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered")
+      .map((r) => r.token);
+    if (dead.length > 0) {
+      await supabase.from("push_tokens").delete().in("token", dead);
+    }
+    console.log(`Daily reminder push: sent=${sent}/${pushResults.length}, cleaned=${dead.length}`);
 
     return new Response(
       JSON.stringify({
-        message: `Queued ${results.length} reminders`,
-        results,
+        message: `Sent ${sent} reminders`,
+        attempted: pushResults.length,
+        sent,
+        cleaned: dead.length,
       }),
       {
         status: 200,

@@ -2,6 +2,7 @@
 // Generates short proactive AI message for each Elite user with a checkin yesterday
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
+import { sendApnsBatch } from "../_shared/apns.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -195,9 +196,19 @@ Rules:
         .eq("user_id", profile.user_id);
 
       if (tokens && tokens.length > 0) {
-        console.log(
-          `Nudge push for ${profile.user_id}: title="Coach: ${parsed.headline}", body="${parsed.content.slice(0, 80)}", route=/coach, tokens=${tokens.length}`,
-        );
+        const pushResults = await sendApnsBatch(tokens, {
+          title: `Coach: ${parsed.headline}`,
+          body: parsed.content,
+          data: { route: "/coach" },
+        });
+        const sent = pushResults.filter((r) => r.status === 200).length;
+        const dead = pushResults
+          .filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered")
+          .map((r) => r.token);
+        if (dead.length > 0) {
+          await supabase.from("push_tokens").delete().in("token", dead);
+        }
+        console.log(`Nudge push for ${profile.user_id}: sent=${sent}/${pushResults.length}, cleaned=${dead.length}`);
       }
     } catch (e) {
       console.error(`Unexpected error for ${profile.user_id}:`, e);

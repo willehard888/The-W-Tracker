@@ -56,9 +56,15 @@ workflows:
         script: |
           npm ci --legacy-peer-deps --no-audit --no-fund
 
-      - name: Build web bundle for Capacitor
+      - name: Quality gates (typecheck + tests)
         script: |
-          npm run build
+          # Fail the build BEFORE the expensive archive if types or tests break,
+          # so regressions (incl. an entitlement/signing mismatch surfaced at
+          # type level) never reach TestFlight. Lint is intentionally NOT gated
+          # yet — there's a large `as any` backlog (see type-tightening task);
+          # add `npm run lint` here once that's cleared.
+          npx tsc --noEmit
+          npm run test
 
       - name: Sync Capacitor (web bundle → ios/App/App/public)
         script: |

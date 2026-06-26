@@ -29,6 +29,7 @@ import CheckinTierHeader from "@/components/CheckinTierHeader";
 import CheckinTierSummary from "@/components/CheckinTierSummary";
 import { PROTOCOLS } from "@/lib/wellness-framework";
 import { useHealthKit } from "@/hooks/use-healthkit";
+import { queueCheckin, isNetworkError } from "@/lib/offline-checkin";
 
 interface ToggleItemProps {
   icon: React.ElementType;
@@ -351,14 +352,24 @@ const DailyCheckin = () => {
         if (rpcError.message?.includes("ALREADY_CHECKED_IN_TODAY")) {
           toast.error("You've already checked in today. Come back tomorrow 💪");
           queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
+          hapticNotification("error");
+        } else if (isNetworkError(rpcError)) {
+          // Offline — don't lose it. Queue and replay automatically on reconnect
+          // (record_checkin is idempotent per local day, so no double-log).
+          queueCheckin(rpcArgs);
+          hapticNotification("success");
+          toast.success("Saved offline 📶", {
+            description: "No connection right now — we'll log this check-in automatically when you're back online.",
+            duration: 6000,
+          });
         } else {
           console.error("record_checkin failed after retries:", rpcError);
           toast.error("Couldn't save your check-in — check your connection and try again.", {
             description: rpcError.message ? `Details: ${rpcError.message}` : undefined,
             duration: 6000,
           });
+          hapticNotification("error");
         }
-        hapticNotification("error");
         setSubmitting(false);
         return;
       }

@@ -10,6 +10,7 @@ import BrandLogo from "@/components/BrandLogo";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
 import StoryShareModal from "@/components/StoryShareModal";
 import { useReferralStats } from "@/hooks/use-referral-stats";
+import { useMyReferrals } from "@/hooks/use-my-referrals";
 import { cn } from "@/lib/utils";
 
 type Reward = {
@@ -91,6 +92,8 @@ const Referrals = () => {
   const nextProgress = nextReward ? Math.min(100, Math.round((referralCount / nextReward.count) * 100)) : 100;
   const remainingToNext = nextReward ? Math.max(0, nextReward.count - referralCount) : 0;
   const nextIsPremium = nextReward?.premium;
+
+  const { data: recruits } = useMyReferrals();
 
   // SVG conic progress ring
   const ringSize = 132;
@@ -299,6 +302,50 @@ const Referrals = () => {
           </p>
         </div>
       </div>
+
+      {/* "You're 1 away" banner — the highest-intent moment to share */}
+      {nextReward && remainingToNext === 1 && (
+        <button
+          onClick={() => setShareCardOpen(true)}
+          className="animate-reveal w-full text-left mb-4 rounded-xl border border-gold/45 bg-gradient-to-r from-gold/[0.12] via-gold/[0.05] to-transparent p-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform"
+        >
+          <span className="text-2xl shrink-0">{nextReward.emoji}</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-black text-foreground leading-tight">
+              You're <span className="text-gold">1 recruit away</span> from {nextReward.title}!
+            </p>
+            <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{nextReward.reward} — tap to share your code.</p>
+          </div>
+          <Share2 size={16} className="text-gold shrink-0" />
+        </button>
+      )}
+
+      {/* Recent recruits — social proof + who hasn't converted yet */}
+      {(recruits?.length ?? 0) > 0 && (
+        <div className="animate-reveal mb-6">
+          <h2 className="font-display font-bold text-sm tracking-tight mb-3">Your recruits</h2>
+          <div className="space-y-1.5">
+            {recruits!.map((r, i) => (
+              <div key={i} className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/50 p-2.5">
+                <div className="h-9 w-9 rounded-full overflow-hidden bg-gradient-to-br from-gold/40 to-card flex items-center justify-center font-black text-gold shrink-0 text-xs">
+                  {r.avatar_url ? <img src={r.avatar_url} alt="" className="h-full w-full object-cover" /> : (r.referred_username?.charAt(0) || "?").toUpperCase()}
+                </div>
+                <p className="flex-1 min-w-0 text-[13px] font-bold truncate">@{r.referred_username}</p>
+                {r.converted ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[hsl(152_68%_46%)]">
+                    <Check size={12} /> Premium
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Joined</span>
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-2 px-1">
+            Rewards unlock when a recruit goes Premium — nudge the "Joined" ones to keep going.
+          </p>
+        </div>
+      )}
 
       {/* Lifetime club banner */}
       {referralCount >= 25 && referralCount < 50 && !legendPinned && (

@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   useFriends, useFriendRequests, useSentFriendRequests, useFriendActions,
 } from "@/hooks/use-friends";
+import { useSuggestedFriends } from "@/hooks/use-suggested-friends";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
@@ -39,6 +40,7 @@ const Friends = () => {
   const { data: requests } = useFriendRequests();
   const { data: sent } = useSentFriendRequests();
   const { sendRequest, acceptRequest, declineRequest, removeFriend } = useFriendActions();
+  const { data: suggestions } = useSuggestedFriends();
 
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
@@ -147,6 +149,47 @@ const Friends = () => {
             </div>
           )}
         </div>
+
+        {/* People you may know — members of your tribes you're not connected to */}
+        {!searching2 && (suggestions?.length ?? 0) > 0 && (
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-2 px-1">
+              People you may know
+            </p>
+            <div className="space-y-1.5">
+              {suggestions!.map((s) => {
+                const isSent = sentIds.has(s.user_id);
+                const incomingFid = incomingById.get(s.user_id);
+                return (
+                  <div key={s.user_id} className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/50 p-2.5">
+                    <button onClick={() => navigate(`/user/${s.user_id}`)} className="shrink-0">
+                      <Avatar url={s.avatar_url} name={s.username} size={40} />
+                    </button>
+                    <button onClick={() => navigate(`/user/${s.user_id}`)} className="flex-1 min-w-0 text-left">
+                      <p className="text-[13px] font-bold truncate">@{s.username}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {s.mutual_tribes} shared tribe{s.mutual_tribes === 1 ? "" : "s"} · Lv {s.level ?? 1}
+                      </p>
+                    </button>
+                    {incomingFid ? (
+                      <Button size="sm" variant="ember" disabled={busy === s.user_id}
+                        onClick={() => guard(s.user_id, () => acceptRequest(incomingFid), "Friend added! 🎉")}>
+                        <Check size={13} /> Accept
+                      </Button>
+                    ) : isSent ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground px-2"><Clock size={12} /> Pending</span>
+                    ) : (
+                      <Button size="sm" variant="ember" disabled={busy === s.user_id}
+                        onClick={() => guard(s.user_id, () => sendRequest(s.user_id), "Friend request sent 🤝")}>
+                        <UserPlus size={13} /> Add
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Incoming requests */}
         {(requests?.length ?? 0) > 0 && (

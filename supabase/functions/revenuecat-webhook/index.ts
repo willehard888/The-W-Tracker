@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendApnsBatch } from "../_shared/apns.ts";
 
 // Webhooks are server-to-server — no CORS headers needed.
 const jsonHeaders = { "Content-Type": "application/json" };
@@ -179,6 +180,32 @@ Deno.serve(async (req) => {
           console.warn("reward_referral_conversion error:", rewardError);
         } else {
           console.log("Referral conversion result:", rewardData);
+          // Close the loop — tell the referrer their recruit converted (+ how close
+          // they are to the next reward). Best-effort.
+          const referrerId = (rewardData as any)?.referrer_id;
+          if ((rewardData as any)?.success && referrerId) {
+            try {
+              const { data: who } = await supabase
+                .from("profiles").select("username").eq("user_id", appUserId).maybeSingle();
+              const paid = Number((rewardData as any)?.paid_count ?? 0);
+              const TIERS = [1, 3, 5, 10, 25];
+              const next = TIERS.find((t) => t > paid);
+              const progress = next ? ` You're ${next - paid} away from your next reward.` : "";
+              const { data: tokens } = await supabase
+                .from("push_tokens").select("token, platform").eq("user_id", referrerId);
+              if (tokens && tokens.length > 0) {
+                const results = await sendApnsBatch(tokens as any, {
+                  title: "Your recruit went Premium 💎",
+                  body: `@${(who as any)?.username ?? "A friend"} converted — you earned a reward!${progress}`,
+                  data: { route: "/referrals" },
+                });
+                const dead = results.filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered").map((r) => r.token);
+                if (dead.length) await supabase.from("push_tokens").delete().in("token", dead);
+              }
+            } catch (e) {
+              console.error("referral conversion notify failed:", e);
+            }
+          }
         }
       }
     }

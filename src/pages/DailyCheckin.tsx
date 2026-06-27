@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   Moon, Dumbbell, Snowflake, Apple, Droplets, BookOpen,
   Brain, Smartphone, Camera, Zap, Plus,
-  TrendingUp, AlertTriangle, Trophy, Crown, ChevronDown, NotebookPen,
+  TrendingUp, AlertTriangle, Trophy, Crown, ChevronDown, NotebookPen, Check,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,6 +30,7 @@ import CheckinTierSummary from "@/components/CheckinTierSummary";
 import { PROTOCOLS } from "@/lib/wellness-framework";
 import { useHealthKit } from "@/hooks/use-healthkit";
 import { queueCheckin, isNetworkError } from "@/lib/offline-checkin";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface ToggleItemProps {
   icon: React.ElementType;
@@ -386,48 +387,16 @@ const DailyCheckin = () => {
       };
       const newCheckinId = r.checkin_id;
 
-      // HealthKit verification — fire-and-forget so a slow / failing sync
-      // never blocks the celebration screen. Verified status is read back
-      // on the next visit to the summary / profile.
-      if (newCheckinId && healthKit.available) {
-        healthKit.syncToday().then(async () => {
-          try {
-            const vr = await healthKit.verifyCheckin(newCheckinId);
-            if (vr.verified) {
-              void track(FUNNEL.checkinVerified); // funnel step 3 — the North Star
-              toast.success("Verified Performer ✓", {
-                description: "HealthKit confirmed your workout + sleep.",
-                duration: 4500,
-              });
-            }
-          } catch (err) {
-            console.warn("verify_checkin failed", err);
-          }
-        }).catch((err) => console.warn("HK sync failed", err));
-      }
-
-      // Streak-broken warning
-      if (r.streak_broken && r.old_streak > 0) {
-        toast.error(`💀 Streak lost! Your ${r.old_streak}-day streak was reset.`, {
-          duration: 5000,
-        });
-      }
-
-      // Detect level-up
+      // Detect level-up + streak-broken (cheap, pure state — safe).
       if (r.new_level > r.old_level) {
         setNewLevelReached(r.new_level);
         setShowLevelUp(true);
       }
+      if (r.streak_broken && r.old_streak > 0) {
+        toast.error(`💀 Streak lost! Your ${r.old_streak}-day streak was reset.`, { duration: 5000 });
+      }
 
-      await syncStreakWarningNotification({
-        lastCheckinAt: checkinTimestamp,
-        streak: r.new_streak,
-      });
-
-      // Auto-update status tier based on percentile
-      await supabase.rpc("update_status_tier", { target_user_id: user.id });
-
-      // Capture summary for the post-submit recap card
+      // Capture summary for the post-submit recap card.
       const xpIntoLevel = r.new_xp - (r.new_level - 1) * 500;
       setSummary({
         xpEarned: r.xp_earned,
@@ -442,54 +411,66 @@ const DailyCheckin = () => {
         maxCount,
       });
 
-      // Check and award ALL applicable badges (streak, XP, level, checkins, workouts, etc.)
-      const newBadge = await checkAndAwardBadges(user.id);
-      if (newBadge?.isNew) {
-        setUnlockedBadge(newBadge.badge);
-      }
-
-      // "Your tribes felt it 🔥" — fire a celebratory toast if user belongs
-      // to ≥1 tribe. The realtime reactor on every tribe page picks up this
-      // streak bump and pulses the collective flame for every other member.
-      try {
-        const { count: tribeCount } = await supabase
-          .from("tribe_members")
-          .select("tribe_id", { count: "exact", head: true })
-          .eq("user_id", user.id)
-          .eq("status", "active");
-        if ((tribeCount ?? 0) > 0) {
-          const flameMsg = (tribeCount ?? 0) === 1
-            ? "Your tribe felt it 🔥"
-            : `Your ${tribeCount} tribes felt it 🔥`;
-          toast.success(flameMsg, {
-            description: `+1 day → collective fire just grew`,
-            duration: 4500,
-          });
-        }
-      } catch {
-        // non-critical — silent
-      }
-
-      // Elite: auto-post proof photo to feed
-      if (isElite && proof_photo_url) {
-        const sportLabel = selectedSport.id !== "none" ? `${selectedSport.emoji} ${selectedSport.label}` : null;
-        const content = sportLabel
-          ? `Daily check-in ✅ ${sportLabel} — ${totalXp} XP earned 🔥`
-          : `Daily check-in ✅ — ${totalXp} XP earned 🔥`;
-        await supabase.from("feed_posts").insert({
-          user_id: user.id,
-          content,
-          image_url: proof_photo_url,
-        });
-      }
-
-      await refreshProfile();
-      queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
-      queryClient.invalidateQueries({ queryKey: ["user-badges"] });
-      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
-      hapticNotification("success");
-      triggerGust(0.95);
+      // ── The check-in is SAVED. Show the celebration NOW. ──────────────────
+      // Critical reliability rule: once record_checkin succeeds, NOTHING below
+      // may turn it into an error or block/crash the screen. Previously every
+      // bonus (tier update, badges, feed post, notifications) ran inside the
+      // submit try — so a single failing await jumped to the catch and showed
+      // "something went wrong" on a check-in that had actually saved (and could
+      // crash the celebration). They're now detached + individually isolated.
       setSubmitted(true);
+      setSubmitting(false);
+      try { hapticNotification("success"); triggerGust(0.95); } catch { /* cosmetic */ }
+
+      // HealthKit verification — fire-and-forget.
+      if (newCheckinId && healthKit.available) {
+        healthKit.syncToday().then(async () => {
+          try {
+            const vr = await healthKit.verifyCheckin(newCheckinId);
+            if (vr.verified) {
+              void track(FUNNEL.checkinVerified);
+              toast.success("Verified Performer ✓", { description: "HealthKit confirmed your workout + sleep.", duration: 4500 });
+            }
+          } catch (err) { console.warn("verify_checkin failed", err); }
+        }).catch((err) => console.warn("HK sync failed", err));
+      }
+
+      // Bonus side-effects — each isolated; a failure can never break the
+      // check-in or the celebration. UI catches up via query invalidation.
+      void (async () => {
+        try { await syncStreakWarningNotification({ lastCheckinAt: checkinTimestamp, streak: r.new_streak }); } catch (e) { console.warn("streak notif", e); }
+        try { await supabase.rpc("update_status_tier", { target_user_id: user.id }); } catch (e) { console.warn("tier update", e); }
+        try {
+          const newBadge = await checkAndAwardBadges(user.id);
+          if (newBadge?.isNew) setUnlockedBadge(newBadge.badge);
+        } catch (e) { console.warn("badge award", e); }
+        try {
+          const { count: tribeCount } = await supabase
+            .from("tribe_members")
+            .select("tribe_id", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("status", "active");
+          if ((tribeCount ?? 0) > 0) {
+            const flameMsg = (tribeCount ?? 0) === 1 ? "Your tribe felt it 🔥" : `Your ${tribeCount} tribes felt it 🔥`;
+            toast.success(flameMsg, { description: `+1 day → collective fire just grew`, duration: 4500 });
+          }
+        } catch { /* non-critical */ }
+        try {
+          if (isElite && proof_photo_url) {
+            const sportLabel = selectedSport.id !== "none" ? `${selectedSport.emoji} ${selectedSport.label}` : null;
+            const content = sportLabel
+              ? `Daily check-in ✅ ${sportLabel} — ${totalXp} XP earned 🔥`
+              : `Daily check-in ✅ — ${totalXp} XP earned 🔥`;
+            await supabase.from("feed_posts").insert({ user_id: user.id, content, image_url: proof_photo_url });
+          }
+        } catch (e) { console.warn("feed post", e); }
+        try { await refreshProfile(); } catch (e) { console.warn("refresh profile", e); }
+        queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
+        queryClient.invalidateQueries({ queryKey: ["user-badges"] });
+        queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+      })();
+
+      return;
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong saving your check-in. Please try again.", {
@@ -522,8 +503,21 @@ const DailyCheckin = () => {
   }
 
   if (submitted) {
+    // Wrapped so a crash in any celebration component degrades to a simple
+    // "checked in" confirmation instead of throwing the user out of the app.
     return (
-      <>
+      <ErrorBoundary
+        fallback={
+          <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+            <div className="h-20 w-20 rounded-full bg-[hsl(152_68%_46%)]/15 flex items-center justify-center mx-auto mb-5">
+              <Check size={40} className="text-[hsl(152_68%_46%)]" />
+            </div>
+            <h1 className="font-display text-2xl font-black tracking-tight mb-2">Checked in ✓</h1>
+            <p className="text-muted-foreground text-sm mb-8">Your day is locked in. Nice work.</p>
+            <Button variant="gold" size="lg" onClick={() => navigate("/")}>Back to Dashboard</Button>
+          </div>
+        }
+      >
         {showLevelUp && <LevelUpCelebration newLevel={newLevelReached} onComplete={() => setShowLevelUp(false)} />}
         <BadgeUnlockModal badge={unlockedBadge} onClose={() => setUnlockedBadge(null)} />
         <ConfettiBurst active={submitted} />
@@ -535,7 +529,7 @@ const DailyCheckin = () => {
             onDashboard={() => navigate("/")}
           />
         )}
-      </>
+      </ErrorBoundary>
     );
   }
 

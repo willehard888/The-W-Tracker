@@ -61,6 +61,20 @@ const RecoveryCard = () => {
   const status = underRecovered ? "Under-recovered" : "Recovered";
   const active = new Set(last!.factors ?? []);
 
+  // Deterministic causal one-liner (mirrors the coach's edge reasoning) so the
+  // "why" is visible in-card without an AI call. User tags override the guess.
+  const priorDeep = (nights ?? []).slice(1, 15).map((n) => n.sleep_deep_min).filter((v): v is number => v != null);
+  const baseDeep = median(priorDeep);
+  const rhrUp = rhrDelta != null && rhrDelta >= 5;
+  const deepLow = baseDeep != null && deep > 0 && deep < baseDeep * 0.7;
+  const tags = last!.factors ?? [];
+  const cause =
+    tags.length ? `Tagged ${tags.join(", ")} — likely the cause.`
+    : rhrUp && (deepLow || awake >= 45) ? "Elevated resting HR + disrupted deep sleep — often alcohol, a late heavy meal, or high stress. Tag it below or ask the coach."
+    : rhrUp ? "Resting HR up vs your baseline — under-recovery or a hard day."
+    : deepLow ? "Less deep sleep than usual — protect tonight's wind-down."
+    : "Recovery looks solid. Keep the routine.";
+
   const toggleFactor = (f: string) => {
     hapticSelection();
     const next = new Set(active);
@@ -119,6 +133,9 @@ const RecoveryCard = () => {
           </div>
         )}
       </div>
+
+      {/* Causal read — the "why", stated plainly */}
+      <p className="text-[12px] text-foreground/85 leading-snug mb-3">{cause}</p>
 
       {/* What happened last night? — ground truth for the coach's causal read */}
       <p className="text-[9.5px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1.5">What happened last night?</p>

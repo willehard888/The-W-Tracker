@@ -10,6 +10,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       position="top-center"
+      // Push toasts below the iOS status bar / notch / Dynamic Island — without
+      // this, top-center toasts render under the safe area and get clipped.
+      offset="calc(env(safe-area-inset-top, 0px) + 10px)"
+      mobileOffset="calc(env(safe-area-inset-top, 0px) + 10px)"
       className="toaster group"
       toastOptions={{
         classNames: {

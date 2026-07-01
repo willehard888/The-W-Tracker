@@ -17,10 +17,7 @@ import TopTribesWidget from "@/components/TopTribesWidget";
 import MoreSection from "@/components/ui/more-section";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { useMyRank } from "@/hooks/use-my-rank";
-// Horizontal-swipe gesture removed (2026-05-25) — the gesture was triggering
-// on vertical scrolls + accidental side-swipes and made the page feel like it
-// was sliding off-screen. Mode switching is now tap-only via the segmented
-// toggle in the header.
+import { hapticSelection } from "@/lib/haptics";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type LeaderRow = {
@@ -69,7 +66,7 @@ const Leaderboard = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"season" | "all_time">("season");
-  const { scrollRef, pullDistance, isRefreshing, onTouchStart: pullStart, onTouchMove, onTouchEnd: pullEnd, PULL_THRESHOLD } = usePullRefresh([
+  const { scrollRef, pullDistance, isRefreshing, onTouchStart: pullStart, onTouchMove: pullMove, onTouchEnd: pullEnd, PULL_THRESHOLD } = usePullRefresh([
     ["leaderboard-all-time"],
     ["leaderboard-season"],
     ["active-season"],
@@ -77,27 +74,35 @@ const Leaderboard = () => {
   ]);
 
   // Touch handlers — pull-to-refresh + horizontal swipe to switch Season/All-time.
-  // The old swipe was removed for firing on vertical scroll; this version only
-  // acts on a CLEARLY horizontal flick (big horizontal delta, dominant over the
-  // vertical delta) so it never fights the scroll or pull-to-refresh.
+  // Detection runs during touchMOVE (fires mid-gesture) rather than on touchEnd,
+  // because on iOS a swipe with any vertical drift ends as `touchcancel` (not
+  // touchend), so an end-delta check silently never runs. We trigger as soon as
+  // the gesture is clearly horizontal — dominant over vertical, so it never
+  // fights the vertical scroll or pull-to-refresh.
   const swipe = useRef<{ x: number; y: number } | null>(null);
+  const swipeFired = useRef(false);
   const onTouchStart = (e: React.TouchEvent) => {
     const t = e.touches[0];
     swipe.current = t ? { x: t.clientX, y: t.clientY } : null;
+    swipeFired.current = false;
     pullStart(e);
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    pullMove(e);
+    const s = swipe.current;
+    const t = e.touches[0];
+    if (!s || !t || swipeFired.current) return;
+    const dx = t.clientX - s.x;
+    const dy = t.clientY - s.y;
+    if (Math.abs(dx) >= 48 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      swipeFired.current = true;
+      setMode(dx < 0 ? "all_time" : "season"); // left → All time, right → Season
+      hapticSelection();
+    }
   };
   const onTouchEnd = (e: React.TouchEvent) => {
     pullEnd();
-    const start = swipe.current;
     swipe.current = null;
-    const t = e.changedTouches[0];
-    if (!start || !t) return;
-    const dx = t.clientX - start.x;
-    const dy = t.clientY - start.y;
-    if (Math.abs(dx) >= 70 && Math.abs(dx) > Math.abs(dy) * 2) {
-      if (dx < 0) setMode("all_time");   // swipe left → All time
-      else setMode("season");            // swipe right → Season
-    }
   };
 
 

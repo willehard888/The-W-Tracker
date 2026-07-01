@@ -2,7 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { HeartPulse, Moon, Wind, ChevronRight } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { cn } from "@/lib/utils";
-import { useRecentNights, useNightSync } from "@/hooks/use-night-metrics";
+import { useRecentNights, useNightSync, useSetNightFactors, NIGHT_FACTORS } from "@/hooks/use-night-metrics";
+import { hapticSelection } from "@/lib/haptics";
 
 const median = (xs: number[]) => {
   const a = xs.filter((v) => v != null).sort((x, y) => x - y);
@@ -14,18 +15,19 @@ const hm = (min?: number | null) => (min == null ? "—" : `${Math.floor(min / 6
 
 /**
  * Last night's recovery — sleep stages, resting HR vs the athlete's own baseline,
- * respiratory rate. A concrete read, with "Ask coach why" for the causal deep-dive
- * (the coach now has these signals). Hidden on web / when no data yet.
+ * respiratory rate — plus quick "what happened?" tags (alcohol / late meal / …)
+ * that give the coach ground truth. "Ask coach why" opens the causal deep-dive.
+ * Hidden on web / when no data yet.
  */
 const RecoveryCard = () => {
   const navigate = useNavigate();
   useNightSync(); // pull last night from HealthKit on mount (iOS only)
   const { data: nights, isLoading } = useRecentNights(30);
+  const setFactors = useSetNightFactors();
 
   const last = nights?.[0];
   const hasData = !!last && (last.resting_hr != null || last.sleep_total_min != null);
 
-  // Nothing yet: on iOS, invite connecting; on web, render nothing.
   if (!hasData) {
     if (isLoading || Capacitor.getPlatform() !== "ios") return null;
     return (
@@ -57,13 +59,19 @@ const RecoveryCard = () => {
 
   const underRecovered = (rhrDelta != null && rhrDelta >= 5) || awake > 60;
   const status = underRecovered ? "Under-recovered" : "Recovered";
+  const active = new Set(last!.factors ?? []);
+
+  const toggleFactor = (f: string) => {
+    hapticSelection();
+    const next = new Set(active);
+    next.has(f) ? next.delete(f) : next.add(f);
+    setFactors.mutate({ nightDate: last!.night_date, factors: [...next] });
+  };
 
   return (
-    <button
-      type="button"
-      onClick={() => navigate("/coach")}
+    <div
       className={cn(
-        "w-full text-left rounded-2xl border p-4 active:scale-[0.99] transition-transform",
+        "rounded-2xl border p-4",
         underRecovered ? "border-[hsl(18_95%_58%)]/40 bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.07] via-card/95 to-card"
           : "border-[hsl(152_68%_46%)]/35 bg-gradient-to-br from-[hsl(152_68%_46%)]/[0.06] via-card/95 to-card",
       )}
@@ -74,7 +82,6 @@ const RecoveryCard = () => {
         <span className={cn("ml-auto text-[10px] font-black uppercase tracking-wider", underRecovered ? "text-[hsl(18_95%_58%)]" : "text-[hsl(152_68%_46%)]")}>{status}</span>
       </div>
 
-      {/* Sleep stage bar */}
       {last!.sleep_total_min != null && (
         <>
           <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-secondary/50 mb-1.5">
@@ -91,8 +98,7 @@ const RecoveryCard = () => {
         </>
       )}
 
-      {/* Metrics */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 mb-3">
         {last!.resting_hr != null && (
           <div className="flex items-center gap-1.5">
             <HeartPulse size={13} className="text-muted-foreground/70" />
@@ -112,11 +118,37 @@ const RecoveryCard = () => {
             <span className="text-[10px] text-muted-foreground">br/min</span>
           </div>
         )}
-        <span className="ml-auto inline-flex items-center gap-0.5 text-[10px] font-black uppercase tracking-widest text-gold/80">
-          Ask coach why <ChevronRight size={12} />
-        </span>
       </div>
-    </button>
+
+      {/* What happened last night? — ground truth for the coach's causal read */}
+      <p className="text-[9.5px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1.5">What happened last night?</p>
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        {NIGHT_FACTORS.map((f) => {
+          const on = active.has(f);
+          return (
+            <button
+              key={f}
+              type="button"
+              onClick={() => toggleFactor(f)}
+              className={cn(
+                "rounded-full px-2.5 py-1 text-[10.5px] font-bold border transition-all active:scale-95 capitalize",
+                on ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
+              )}
+            >
+              {f}
+            </button>
+          );
+        })}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => navigate("/coach")}
+        className="w-full inline-flex items-center justify-center gap-1 rounded-xl bg-secondary/40 border border-border/50 py-2 text-[11px] font-black uppercase tracking-widest text-gold/90 active:scale-[0.99] transition-transform"
+      >
+        Ask coach why <ChevronRight size={13} />
+      </button>
+    </div>
   );
 };
 

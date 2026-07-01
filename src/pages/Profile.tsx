@@ -5,6 +5,7 @@ import { isNativePlatform } from "@/lib/platform";
 import StatCard from "@/components/StatCard";
 import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
 import ProgressionSummaryCard from "@/components/profile/ProgressionSummaryCard";
+import RecoveryCard from "@/components/profile/RecoveryCard";
 import ProfileHero from "@/components/profile/ProfileHero";
 import { downscaleImage } from "@/lib/downscale-image";
 import { hapticSelection } from "@/lib/haptics";
@@ -476,6 +477,11 @@ const Profile = () => {
       {/* Strength progression — PRs + climbing lifts this week */}
       <div className="animate-reveal animate-reveal-delay-2">
         <ProgressionSummaryCard />
+      </div>
+
+      {/* Recovery — last night's sleep + heart rate, causal "why" via coach */}
+      <div className="animate-reveal animate-reveal-delay-2">
+        <RecoveryCard />
       </div>
 
       {/* Stats — battles + kudos */}

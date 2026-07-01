@@ -12,6 +12,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { buildPersonaBlock, buildHolisticContext } from "../_shared/coach-persona.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
+import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -172,13 +173,16 @@ STRICT RULES:
     // Cross-domain situation (tribe, battles, rank) — best-effort, fail-open.
     const situation = await gatherSituation(sb, uid, { streak: profile.streak ?? null }).catch(() => null);
     const situationBlock = situation ? buildSituationBlock(situation) : "";
+    // Last night's recovery (resting HR, sleep stages) → causal "why".
+    const nightSignals = await gatherNightSignals(sb, uid).catch(() => ({ hasData: false }));
+    const causalBlock = buildCausalBlock(nightSignals as any);
 
     const userPrompt = `Athlete context:
 ${athleteCtx}
 
 Recent performance data:
 ${dataCtx}
-${situationBlock ? `\n${situationBlock}\n` : ""}
+${situationBlock ? `\n${situationBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}
 Generate a Life OS brief in this exact JSON shape (no extra keys):
 {
   "focus": "",

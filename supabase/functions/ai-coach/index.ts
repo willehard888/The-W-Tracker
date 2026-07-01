@@ -13,6 +13,7 @@ import {
 } from "../_shared/coach-persona.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
+import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -333,7 +334,10 @@ Deno.serve(async (req) => {
     // progress like a real coach and drives the next target. Best-effort.
     const progression = await gatherProgression(supabase, userId).catch(() => []);
     const progressionBlock = buildProgressionBlock(progression);
-    const workoutLogBlock = progressionBlock ? `\n\n${progressionBlock}` : "";
+    // Last night's recovery signals → causal reasoning ("why did I sleep badly").
+    const nightSignals = await gatherNightSignals(supabase, userId).catch(() => ({ hasData: false }));
+    const causalBlock = buildCausalBlock(nightSignals as any);
+    const workoutLogBlock = [progressionBlock, causalBlock].filter(Boolean).map((b) => `\n\n${b}`).join("");
 
     const systemPrompt = buildSystemPrompt(
       profile,

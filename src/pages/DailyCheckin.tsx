@@ -92,8 +92,13 @@ const DailyCheckin = () => {
 
   const { data: lastCheckin } = useQuery({
     queryKey: ["last-checkin", user?.id],
-    staleTime: 5 * 60_000,   // 24h check-in window — 5 min stale is fine
+    // The check-in window is per LOCAL calendar day. Always refetch when the
+    // page mounts or the app is re-focused, so opening the app on a NEW day
+    // reliably unlocks the check-in (a stale cache must never keep it locked).
+    staleTime: 0,
     gcTime:    30 * 60_000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       if (!user) return null;
       const { data } = await supabase
@@ -102,7 +107,7 @@ const DailyCheckin = () => {
         .eq("user_id", user.id)
         .order("checked_in_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
       return data;
     },
     enabled: !!user,

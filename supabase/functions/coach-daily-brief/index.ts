@@ -3,6 +3,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
+import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -101,6 +102,9 @@ Deno.serve(async (req) => {
     // Strength progression — so the morning brief can drive a specific lift.
     const progression = await gatherProgression(sb, uid).catch(() => []);
     const progressionBlock = buildProgressionBlock(progression);
+    // Last night's recovery — so the brief can explain WHY they feel how they feel.
+    const nightSignals = await gatherNightSignals(sb, uid).catch(() => ({ hasData: false }));
+    const causalBlock = buildCausalBlock(nightSignals as any);
 
     const systemPrompt = `You are W Coach — the user's personal performance trainer inside the W app. You speak DIRECTLY to them, like a world-class private coach who knows their week, their body, and their goal.
 
@@ -117,7 +121,7 @@ Athlete:
 
 Today's prescribed session: ${sessionLine}
 Recent: avg sleep ${avgSleep ?? "?"}h (last night ${lastSleep ?? "?"}h), ${workouts7}/7 workouts.
-${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}
+${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}
 Write the daily brief — 2-3 sentences, second person, signed off as "— W Coach".
 Reference ONE concrete recent stat and ONE adjustment to today's session if warranted.
 End with a single clear action for the next 24h.

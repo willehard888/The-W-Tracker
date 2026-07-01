@@ -6,6 +6,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { buildPersonaBlock, buildHolisticContext } from "../_shared/coach-persona.ts";
+import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -618,7 +619,11 @@ Deno.serve(async (req) => {
 
     if (OPENROUTER_API_KEY) {
       try {
-        const prompt = buildPrompt(profile, program, todayDay, checkins, readiness, adjustment, athlete, goal, memories, skipStats, habitContext);
+        // Last night's recovery signals → let the plan account for under-recovery.
+        const nightSignals = await gatherNightSignals(supabase, userId).catch(() => ({ hasData: false }));
+        const causalBlock = buildCausalBlock(nightSignals as any);
+        const prompt = buildPrompt(profile, program, todayDay, checkins, readiness, adjustment, athlete, goal, memories, skipStats, habitContext)
+          + (causalBlock ? `\n\n${causalBlock}\n\nIf recovery is clearly suppressed vs baseline, bias today toward recovery/lighter load and say why in the rationale.` : "");
         const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           headers: {

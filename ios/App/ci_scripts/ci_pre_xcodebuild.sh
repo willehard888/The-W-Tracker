@@ -348,7 +348,7 @@ from pathlib import Path
 root = Path(os.environ['IOS_APP_DIR_FOR_PATCH'])
 pinned_swift = os.environ['PINNED_PODS_SWIFT_VERSION']
 # Pods whose Swift targets hit the Xcode 26.4.1 constraint-solver crash.
-swift_pinned_pods = ['Capacitor', 'RevenuecatPurchasesCapacitor', 'PerfoodCapacitorHealthkit']
+swift_pinned_pods = ['Capacitor', 'RevenuecatPurchasesCapacitor']
 configs = ['release', 'debug']
 
 required_settings = {

@@ -41,10 +41,7 @@ def capacitor_pods
   pod 'CapacitorLocalNotifications', :path => '../../node_modules/@capacitor/local-notifications'
   pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
-  # NOTE: PerfoodCapacitorHealthkit temporarily removed — it failed to compile
-  # under the Xcode 26 native setup (archive exit 65). The night-metrics JS/edge
-  # code degrades to a no-op without it. Re-add with proper Swift-5 pinning (see
-  # post_install capacitor_swift_targets) as a focused, build-iterated effort.
+  pod 'PerfoodCapacitorHealthkit', :path => '../../node_modules/@perfood/capacitor-healthkit'
   pod 'RevenuecatPurchasesCapacitor', :path => '../../node_modules/@revenuecat/purchases-capacitor'
   pod 'CapacitorHealth', :path => '../../node_modules/capacitor-health'
 end
@@ -63,7 +60,7 @@ post_install do |installer|
   # ConstraintSystem::addFix → abort()) while type-checking Capacitor.swift.
   # Confirmed via swift-frontend .ips crash report. Pinning Capacitor's Swift
   # target to Swift 5 + -Onone routes around the broken constraint solver.
-  capacitor_swift_targets = %w[Capacitor RevenuecatPurchasesCapacitor]
+  capacitor_swift_targets = %w[Capacitor RevenuecatPurchasesCapacitor PerfoodCapacitorHealthkit]
 
   # Cordova module visibility:
   # `@import Cordova;` (in CAPInstanceDescriptor.h) MUST resolve via the

@@ -29,6 +29,8 @@ export interface DaySnapshot {
   /** capacitor-health doesn't expose sleep — kept null until plugin upgrade. */
   sleep_hours: number | null;
   active_kcal: number | null;
+  /** Total mindful-session minutes today (HKCategoryTypeIdentifierMindfulSession). */
+  mindful_minutes: number | null;
 }
 
 /**
@@ -71,6 +73,7 @@ export async function requestHealthKitPermissions(): Promise<{ granted: boolean;
         "READ_STEPS",
         "READ_WORKOUTS",
         "READ_ACTIVE_CALORIES",
+        "READ_MINDFULNESS",
       ],
     });
     return { granted: true };
@@ -145,6 +148,20 @@ export async function readTodaySnapshot(): Promise<DaySnapshot | null> {
   const totalSeconds = workouts.reduce((s, w) => s + (Number(w.duration) || 0), 0);
   const workout_minutes = totalSeconds > 0 ? Math.round(totalSeconds / 60) : null;
 
+  // Mindful minutes — aggregated MindfulSession duration (seconds → minutes).
+  const mindRes = await safeCall(() =>
+    plugin.queryAggregated({
+      startDate: startISO,
+      endDate: endISO,
+      dataType: "mindfulness",
+      bucket: "day",
+    }),
+  );
+  const mindSeconds = (mindRes as any)?.aggregatedData?.reduce(
+    (s: number, d: any) => s + (Number(d?.value) || 0), 0) ?? 0;
+  const mindful_minutes = mindSeconds > 0 && Number.isFinite(mindSeconds)
+    ? Math.max(0, Math.round(mindSeconds / 60)) : null;
+
   return {
     date: dateStr,
     steps,
@@ -152,5 +169,6 @@ export async function readTodaySnapshot(): Promise<DaySnapshot | null> {
     workout_count,
     sleep_hours: null, // capacitor-health doesn't support sleep yet
     active_kcal,
+    mindful_minutes,
   };
 }

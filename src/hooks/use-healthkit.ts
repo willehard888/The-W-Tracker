@@ -54,6 +54,7 @@ export const useHealthKit = () => {
       _sleep_hours: snap.sleep_hours,
       _active_kcal: snap.active_kcal,
       _source: "healthkit",
+      _mindful_minutes: snap.mindful_minutes,
     });
     if (rpcErr) throw new Error(rpcErr.message);
   }, [user?.id]);

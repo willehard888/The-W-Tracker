@@ -3,12 +3,22 @@ import Capacitor
 import HealthKit
 
 /// Reads last night's recovery metrics from HealthKit (sleep stages, resting HR,
-/// respiratory rate, overnight HR, SpO2) for the Causal Health engine. Pure
-/// Swift + modern CAPBridgedPlugin registration (auto-discovered), so it avoids
-/// the mixed Swift/ObjC module problem that broke the third-party plugin.
-@objc(HealthNightPlugin)
-public class HealthNightPlugin: CAPPlugin, CAPBridgedPlugin {
-    public let identifier = "HealthNightPlugin"
+/// respiratory rate, overnight HR, SpO2) for the Causal Health engine.
+///
+/// This is compiled DIRECTLY INTO THE APP TARGET and registered in code from
+/// `MainViewController.capacitorDidLoad()` (via `bridge.registerPluginInstance`),
+/// NOT as a separate CocoaPods pod and NOT via `capacitor.config.json`.
+/// Rationale:
+///   1. Under Xcode 26.5 a stand-alone Swift pod cannot resolve `import Capacitor`
+///      during its own module emit ("no such module 'Capacitor'" — this broke both
+///      @perfood and the earlier HealthNight pod). The App target already links +
+///      imports Capacitor (see AppDelegate.swift), so the module resolves cleanly.
+///   2. CI runs `npx cap copy ios`, which regenerates `packageClassList` from npm
+///      plugins every build — so config-based auto-registration would silently drop
+///      a local class. Explicit `registerPluginInstance` is immune to that.
+@objc(HealthNight)
+public class HealthNight: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "HealthNight"
     public let jsName = "HealthNight"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "requestAuthorization", returnType: CAPPluginReturnPromise),

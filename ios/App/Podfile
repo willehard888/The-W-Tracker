@@ -41,9 +41,12 @@ def capacitor_pods
   pod 'CapacitorLocalNotifications', :path => '../../node_modules/@capacitor/local-notifications'
   pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
-  # Custom pure-Swift HealthKit night-metrics plugin (replaces @perfood, which
-  # was old-style ObjC → mixed module → "no such module Capacitor" under Xcode 26).
-  pod 'HealthNight', :path => '../local-plugins/HealthNight'
+  # NOTE: The HealthKit night-metrics plugin (HealthNight) is intentionally NOT a
+  # pod. A stand-alone Swift pod cannot resolve `import Capacitor` during its own
+  # module emit under Xcode 26.5 ("no such module 'Capacitor'") — this broke both
+  # @perfood AND a custom HealthNight pod. It now lives in the App target
+  # (ios/App/App/HealthNight.swift, registered via capacitor.config.json
+  # packageClassList), where `import Capacitor` resolves exactly like AppDelegate.swift.
   pod 'RevenuecatPurchasesCapacitor', :path => '../../node_modules/@revenuecat/purchases-capacitor'
   pod 'CapacitorHealth', :path => '../../node_modules/capacitor-health'
 end
@@ -62,7 +65,7 @@ post_install do |installer|
   # ConstraintSystem::addFix → abort()) while type-checking Capacitor.swift.
   # Confirmed via swift-frontend .ips crash report. Pinning Capacitor's Swift
   # target to Swift 5 + -Onone routes around the broken constraint solver.
-  capacitor_swift_targets = %w[Capacitor RevenuecatPurchasesCapacitor HealthNight]
+  capacitor_swift_targets = %w[Capacitor RevenuecatPurchasesCapacitor]
 
   # Cordova module visibility:
   # `@import Cordova;` (in CAPInstanceDescriptor.h) MUST resolve via the

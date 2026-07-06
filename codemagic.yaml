@@ -66,8 +66,16 @@ workflows:
           npx tsc --noEmit
           npm run test
 
-      - name: Sync Capacitor (web bundle → ios/App/App/public)
+      - name: Build web bundle + sync Capacitor (→ ios/App/App/public)
         script: |
+          # Build the Vite web bundle into dist/ FIRST — `cap copy` copies dist/
+          # into ios/App/App/public and writes config.xml. Without this, cap copy
+          # has nothing to copy and the archive fails at CpResource with
+          # "public / config.xml … no such file". (This `npm run build` was
+          # accidentally dropped in 9f73054 when the quality-gates step replaced
+          # the old "Build web bundle" step; the regression stayed hidden while
+          # every build was still failing earlier at the Swift-module stage.)
+          npm run build
           # `cap copy` only — `cap sync` would mutate CapApp-SPM/Package.swift
           # in CI, which historically broke the dependency graph (see
           # commit 2878ade for the full rationale).

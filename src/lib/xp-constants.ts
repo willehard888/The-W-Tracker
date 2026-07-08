@@ -3,10 +3,7 @@
  * Single source of truth for scoring adjustments.
  */
 
-// Elite subscribers receive a modest XP boost on daily check-ins.
-// Reduced from 2× to 1.25× to keep the leaderboard fair —
-// Elite status should be EARNED via consistency, not bought outright.
-export const ELITE_XP_MULTIPLIER = 1.25;
-
-// Human-readable label for UI surfaces.
-export const ELITE_XP_BOOST_LABEL = "+25%";
+// NOTE: There is intentionally NO membership XP multiplier. All app users are
+// paid members, so XP must not depend on membership — and "Elite" is an EARNED
+// status tier (profile.status_tier), never a paid boost. Scoring is identical
+// for everyone; status is earned purely through consistency.

@@ -581,6 +581,7 @@ const DailyCheckin = () => {
       />
       <CheckinTierHeader
         tier={profile?.status_tier ?? "recruit"}
+        division={(profile as any)?.tier_division ?? 0}
         username={profile?.username}
         streak={profile?.streak ?? 0}
         totalXp={totalXp}

@@ -154,11 +154,12 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
   const { weekStartISO, weekEndISO, start, end } = getWeekRange();
 
-  // Fetch all Elite users
+  // Fetch all paid members (weekly briefing is a paid-membership feature —
+  // gated on is_premium, NOT the earned "elite" status tier).
   const { data: eliteUsers, error: usersErr } = await supabase
     .from("profiles")
     .select("user_id, username, status_tier, level, xp, streak, longest_streak")
-    .eq("is_elite", true);
+    .eq("is_premium", true);
 
   if (usersErr) {
     console.error("Failed to fetch elite users:", usersErr);

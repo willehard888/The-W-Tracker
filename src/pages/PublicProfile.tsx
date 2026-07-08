@@ -226,7 +226,7 @@ const PublicProfile = () => {
             <ApexBadge isFounding={isApexSubscriber} size="sm" />
           ) : profile.status_tier === 'legend' ? (
             <ApexBadge tier="legend" size="sm" />
-          ) : profile.is_elite ? (
+          ) : profile.status_tier === 'elite' ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gold/45 bg-gold/5">
               <Crown size={10} className="text-gold" />
               <span className="text-[10px] font-black text-gold tracking-wider uppercase">Elite</span>

@@ -69,7 +69,8 @@ Deno.serve(async (req) => {
   }
 
   const t = TIER_LABEL[data.status_tier ?? "recruit"] || TIER_LABEL.recruit;
-  const elite = data.is_elite ? "👑 Elite · " : "";
+  // EARNED elite crown, not the paid flag.
+  const elite = ["elite", "apex", "legend"].includes(data.status_tier ?? "") ? "👑 " : "";
   const title = `@${data.username} · ${t.label} · The W Tracker`;
   const desc = `${elite}${t.emoji} ${t.label} · Level ${data.level} · ${data.streak}d streak · ${(data.xp ?? 0).toLocaleString()} XP · ${t.pct}`;
   const image = `${FN_BASE}/og-image?u=${encodeURIComponent(data.username)}&v=${data.xp}`;

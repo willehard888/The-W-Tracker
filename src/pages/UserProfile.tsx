@@ -223,7 +223,7 @@ const UserProfile = () => {
   const tier = getTierConfig(profile.status_tier || 'recruit');
   const isLegend = profile.status_tier === 'legend';
   const isApex = profile.status_tier === 'apex';
-  const isElite = profile.status_tier === 'elite' || profile.is_elite;
+  const isElite = profile.status_tier === 'elite'; // EARNED tier only, never the paid flag
   const isHigh = profile.status_tier === 'high_performer';
   const isApexSubscriber = Boolean((profile as any).is_apex_subscriber);
   const isLegendPinned = Boolean((profile as any).legend_pinned);
@@ -374,7 +374,7 @@ const UserProfile = () => {
               <ApexBadge isFounding={isApexSubscriber} size="md" />
             ) : isLegend ? (
               <ApexBadge tier="legend" size="md" />
-            ) : profile.is_elite ? (
+            ) : isElite ? (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
                 <Crown size={12} className="text-gold" />
                 <span className="text-[11px] font-black text-gold tracking-wider uppercase">Elite</span>

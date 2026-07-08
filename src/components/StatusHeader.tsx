@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import { getEffectiveStreak } from "@/lib/streak";
-import { getTierConfig, getNextTier, TIER_ORDER } from "@/lib/status-tiers";
+import { getTierConfig, getNextTier, TIER_ORDER, formatTier } from "@/lib/status-tiers";
 import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
 import { Crown, Clock, ChevronRight, Flame, Zap } from "lucide-react";
@@ -90,6 +90,7 @@ const StatusHeader = () => {
     return null;
 
   const tier = profile.status_tier || "recruit";
+  const division = (profile as any).tier_division ?? 0;
   const config = getTierConfig(tier);
   const next = getNextTier(tier);
   const streak = getEffectiveStreak(profile.streak || 0, lastCheckin?.checked_in_at);
@@ -259,16 +260,18 @@ const StatusHeader = () => {
                     config.textClass,
                   )}
                 >
-                  {config.label}
+                  {formatTier(tier, division)}
                 </span>
                 <span className="truncate text-[10px] text-muted-foreground/70 leading-none">
                   · {config.percentile}
                 </span>
               </div>
               {tier !== "legend" && (() => {
-                // Apex users → Legend requirements (invite-only Founders Circle)
-                // Everyone else with a next tier → Apex paywall (skip the grind)
-                const target = tier === "apex" ? "/profile?tier=legend" : "/paywall";
+                // Status is EARNED — never bought. This chip shows HOW TO EARN the
+                // next tier (its requirements), it must not route to the paywall.
+                const nextIdx = TIER_ORDER.indexOf(tier as any) + 1;
+                const nextKey = nextIdx > 0 && nextIdx < TIER_ORDER.length ? TIER_ORDER[nextIdx] : "legend";
+                const target = `/profile?tier=${nextKey}`;
                 const label = next ? next.label : "Legend";
                 const isLegendTarget = tier === "apex";
                 return (
@@ -292,7 +295,7 @@ const StatusHeader = () => {
                         ? "text-gold border-gold/55 bg-gradient-to-r from-[hsl(280_70%_55%)]/15 via-gold/12 to-[hsl(350_80%_55%)]/15 hover:border-gold shadow-[0_0_8px_hsl(var(--gold)/0.30)]"
                         : "text-[hsl(18_95%_62%)] border-[hsl(18_95%_58%)]/50 bg-[hsl(18_95%_58%)]/10 hover:border-[hsl(18_95%_58%)] shadow-[0_0_6px_hsl(18_95%_58%/0.20)]",
                     )}
-                    aria-label={isLegendTarget ? `View ${label} requirements` : "Skip the grind — Become Apex"}
+                    aria-label={`How to reach ${label}`}
                   >
                     → {label}
                     <ChevronRight size={9} />
@@ -323,7 +326,7 @@ const StatusHeader = () => {
                 fill="currentColor"
               />
               <span className="relative z-10 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
-                {isApexSubscriber ? "Apex⚡" : "Apex"}
+                Apex
               </span>
             </div>
           ) : isElite ? (

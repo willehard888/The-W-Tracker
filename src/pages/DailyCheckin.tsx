@@ -446,12 +446,24 @@ const DailyCheckin = () => {
       const r = result as {
         checkin_id: string; xp_earned: number; new_xp: number; old_level: number;
         new_level: number; old_streak: number; new_streak: number; streak_broken: boolean;
+        shield_used?: number; shield_earned?: boolean; shields_remaining?: number;
       };
       const newCheckinId = r.checkin_id;
 
       if (r.new_level > r.old_level) { setNewLevelReached(r.new_level); setShowLevelUp(true); }
-      if (r.streak_broken && r.old_streak > 0) {
+      if ((r.shield_used ?? 0) > 0) {
+        toast(`🛡️ Streak shield used — your ${r.new_streak}-day streak is safe.`, {
+          description: `${r.shields_remaining ?? 0} shield${(r.shields_remaining ?? 0) === 1 ? "" : "s"} left.`,
+          duration: 5000,
+        });
+      } else if (r.streak_broken && r.old_streak > 0) {
         toast.error(`💀 Streak lost! Your ${r.old_streak}-day streak was reset.`, { duration: 5000 });
+      }
+      if (r.shield_earned) {
+        toast(`🛡️ Streak shield earned! (${r.shields_remaining ?? 0}/3)`, {
+          description: "A missed day will cost a shield instead of your streak.",
+          duration: 5000,
+        });
       }
 
       const xpIntoLevel = r.new_xp - (r.new_level - 1) * 500;

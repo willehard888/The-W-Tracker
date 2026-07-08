@@ -46,7 +46,7 @@ export const useHealthKit = () => {
 
   const persistSnapshot = useCallback(async (snap: DaySnapshot) => {
     if (!user?.id) return;
-    const { error: rpcErr } = await supabase.rpc("upsert_health_snapshot" as any, {
+    const { error: rpcErr } = await supabase.rpc("upsert_health_snapshot", {
       _date: snap.date,
       _steps: snap.steps,
       _workout_minutes: snap.workout_minutes,
@@ -93,7 +93,7 @@ export const useHealthKit = () => {
 
   /** Server-side verification of a check-in against today's snapshot. */
   const verifyCheckin = useCallback(async (checkinId: string) => {
-    const { data, error: rpcErr } = await supabase.rpc("verify_checkin" as any, {
+    const { data, error: rpcErr } = await supabase.rpc("verify_checkin", {
       _checkin_id: checkinId,
     });
     if (rpcErr) throw new Error(rpcErr.message);

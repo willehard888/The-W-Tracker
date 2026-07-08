@@ -408,7 +408,7 @@ const DailyCheckin = () => {
       let result: unknown = null;
       let rpcError: { message?: string } | null = null;
       for (let attempt = 0; attempt < 3; attempt++) {
-        const resp = await supabase.rpc("record_checkin", rpcArgs as any);
+        const resp = await supabase.rpc("record_checkin", rpcArgs);
         result = resp.data;
         rpcError = resp.error;
         if (!rpcError) break;

@@ -807,6 +807,7 @@ export type Database = {
           cold_shower: boolean
           created_at: string
           extra_workout: boolean
+          habits: Json
           healthy_food: boolean
           hydration_liters: number
           id: string
@@ -821,6 +822,7 @@ export type Database = {
           sleep_hours: number
           user_id: string
           verified_at: string | null
+          verified_bonus_xp: number
           verified_signals: Json | null
           workout: boolean
           xp_earned: number
@@ -830,6 +832,7 @@ export type Database = {
           cold_shower?: boolean
           created_at?: string
           extra_workout?: boolean
+          habits?: Json
           healthy_food?: boolean
           hydration_liters?: number
           id?: string
@@ -844,6 +847,7 @@ export type Database = {
           sleep_hours?: number
           user_id: string
           verified_at?: string | null
+          verified_bonus_xp?: number
           verified_signals?: Json | null
           workout?: boolean
           xp_earned?: number
@@ -853,6 +857,7 @@ export type Database = {
           cold_shower?: boolean
           created_at?: string
           extra_workout?: boolean
+          habits?: Json
           healthy_food?: boolean
           hydration_liters?: number
           id?: string
@@ -867,6 +872,7 @@ export type Database = {
           sleep_hours?: number
           user_id?: string
           verified_at?: string | null
+          verified_bonus_xp?: number
           verified_signals?: Json | null
           workout?: boolean
           xp_earned?: number
@@ -1073,12 +1079,82 @@ export type Database = {
         }
         Relationships: []
       }
+      health_night_metrics: {
+        Row: {
+          avg_hr: number | null
+          awake_min: number | null
+          created_at: string
+          factors: string[] | null
+          hrv_sdnn: number | null
+          id: string
+          min_hr: number | null
+          night_date: string
+          respiratory_rate: number | null
+          resting_hr: number | null
+          sleep_core_min: number | null
+          sleep_deep_min: number | null
+          sleep_end: string | null
+          sleep_rem_min: number | null
+          sleep_start: string | null
+          sleep_total_min: number | null
+          source: string
+          spo2: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_hr?: number | null
+          awake_min?: number | null
+          created_at?: string
+          factors?: string[] | null
+          hrv_sdnn?: number | null
+          id?: string
+          min_hr?: number | null
+          night_date: string
+          respiratory_rate?: number | null
+          resting_hr?: number | null
+          sleep_core_min?: number | null
+          sleep_deep_min?: number | null
+          sleep_end?: string | null
+          sleep_rem_min?: number | null
+          sleep_start?: string | null
+          sleep_total_min?: number | null
+          source?: string
+          spo2?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_hr?: number | null
+          awake_min?: number | null
+          created_at?: string
+          factors?: string[] | null
+          hrv_sdnn?: number | null
+          id?: string
+          min_hr?: number | null
+          night_date?: string
+          respiratory_rate?: number | null
+          resting_hr?: number | null
+          sleep_core_min?: number | null
+          sleep_deep_min?: number | null
+          sleep_end?: string | null
+          sleep_rem_min?: number | null
+          sleep_start?: string | null
+          sleep_total_min?: number | null
+          source?: string
+          spo2?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       health_sync_snapshots: {
         Row: {
           active_kcal: number | null
           created_at: string
           id: string
           last_synced_at: string
+          mindful_minutes: number | null
           sleep_hours: number | null
           snapshot_date: string
           source: string
@@ -1093,6 +1169,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_synced_at?: string
+          mindful_minutes?: number | null
           sleep_hours?: number | null
           snapshot_date: string
           source?: string
@@ -1107,6 +1184,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_synced_at?: string
+          mindful_minutes?: number | null
           sleep_hours?: number | null
           snapshot_date?: string
           source?: string
@@ -1451,6 +1529,7 @@ export type Database = {
           apex_credits_until: string | null
           apex_subscription_started_at: string | null
           avatar_url: string | null
+          checkin_habits: string[] | null
           created_at: string
           display_name: string | null
           featured_badge_id: string | null
@@ -1471,6 +1550,8 @@ export type Database = {
           referred_by: string | null
           status_tier: Database["public"]["Enums"]["status_tier"]
           streak: number
+          streak_shields: number
+          tier_division: number
           trial_started_at: string
           trust_multiplier: number
           updated_at: string
@@ -1482,6 +1563,7 @@ export type Database = {
           apex_credits_until?: string | null
           apex_subscription_started_at?: string | null
           avatar_url?: string | null
+          checkin_habits?: string[] | null
           created_at?: string
           display_name?: string | null
           featured_badge_id?: string | null
@@ -1502,6 +1584,8 @@ export type Database = {
           referred_by?: string | null
           status_tier?: Database["public"]["Enums"]["status_tier"]
           streak?: number
+          streak_shields?: number
+          tier_division?: number
           trial_started_at?: string
           trust_multiplier?: number
           updated_at?: string
@@ -1513,6 +1597,7 @@ export type Database = {
           apex_credits_until?: string | null
           apex_subscription_started_at?: string | null
           avatar_url?: string | null
+          checkin_habits?: string[] | null
           created_at?: string
           display_name?: string | null
           featured_badge_id?: string | null
@@ -1533,6 +1618,8 @@ export type Database = {
           referred_by?: string | null
           status_tier?: Database["public"]["Enums"]["status_tier"]
           streak?: number
+          streak_shields?: number
+          tier_division?: number
           trial_started_at?: string
           trust_multiplier?: number
           updated_at?: string
@@ -2699,6 +2786,16 @@ export type Database = {
       leave_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
       list_friend_requests: { Args: never; Returns: Json }
       list_friends: { Args: never; Returns: Json }
+      list_my_referrals: {
+        Args: { p_limit?: number }
+        Returns: {
+          avatar_url: string
+          converted: boolean
+          converted_at: string
+          created_at: string
+          referred_username: string
+        }[]
+      }
       list_pod_invites: { Args: never; Returns: Json }
       list_sent_friend_requests: { Args: never; Returns: Json }
       list_tribe_events: { Args: { p_tribe: string }; Returns: Json }
@@ -2726,7 +2823,49 @@ export type Database = {
         Returns: string
       }
       pending_friend_request_count: { Args: never; Returns: number }
+      people_you_may_know: {
+        Args: { p_limit?: number }
+        Returns: {
+          avatar_url: string
+          level: number
+          mutual_tribes: number
+          status_tier: Database["public"]["Enums"]["status_tier"]
+          user_id: string
+          username: string
+        }[]
+      }
       pod_today: { Args: { p_tz_offset_minutes?: number }; Returns: Json }
+      recent_night_metrics: {
+        Args: { p_days?: number }
+        Returns: {
+          avg_hr: number | null
+          awake_min: number | null
+          created_at: string
+          factors: string[] | null
+          hrv_sdnn: number | null
+          id: string
+          min_hr: number | null
+          night_date: string
+          respiratory_rate: number | null
+          resting_hr: number | null
+          sleep_core_min: number | null
+          sleep_deep_min: number | null
+          sleep_end: string | null
+          sleep_rem_min: number | null
+          sleep_start: string | null
+          sleep_total_min: number | null
+          source: string
+          spo2: number | null
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "health_night_metrics"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       recent_workout_logs: {
         Args: { p_limit?: number }
         Returns: {
@@ -2755,6 +2894,7 @@ export type Database = {
         Args: {
           p_cold_shower: boolean
           p_extra_workout: boolean
+          p_habits?: Json
           p_healthy_food: boolean
           p_hydration_liters: number
           p_journal_entry?: string
@@ -2813,8 +2953,13 @@ export type Database = {
           visibility: string
         }[]
       }
+      set_checkin_habits: { Args: { p_keys: string[] }; Returns: Json }
       set_elite_status: {
         Args: { elite: boolean; target_user_id: string }
+        Returns: undefined
+      }
+      set_night_factors: {
+        Args: { p_factors: string[]; p_night_date: string }
         Returns: undefined
       }
       set_tribe_activity: {
@@ -2988,17 +3133,50 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      upsert_health_snapshot: {
+      upsert_health_snapshot:
+        | {
+            Args: {
+              _active_kcal?: number
+              _date: string
+              _sleep_hours?: number
+              _source?: string
+              _steps?: number
+              _workout_count?: number
+              _workout_minutes?: number
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _active_kcal?: number
+              _date: string
+              _mindful_minutes?: number
+              _sleep_hours?: number
+              _source?: string
+              _steps?: number
+              _workout_count?: number
+              _workout_minutes?: number
+            }
+            Returns: Json
+          }
+      upsert_night_metrics: {
         Args: {
-          _active_kcal?: number
-          _date: string
-          _sleep_hours?: number
-          _source?: string
-          _steps?: number
-          _workout_count?: number
-          _workout_minutes?: number
+          p_avg_hr?: number
+          p_awake_min?: number
+          p_hrv_sdnn?: number
+          p_min_hr?: number
+          p_night_date: string
+          p_respiratory_rate?: number
+          p_resting_hr?: number
+          p_sleep_core_min?: number
+          p_sleep_deep_min?: number
+          p_sleep_end?: string
+          p_sleep_rem_min?: number
+          p_sleep_start?: string
+          p_sleep_total_min?: number
+          p_spo2?: number
         }
-        Returns: Json
+        Returns: undefined
       }
       upsert_performance_snapshot: {
         Args: {

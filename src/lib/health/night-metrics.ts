@@ -73,7 +73,7 @@ export async function syncNightMetrics(): Promise<boolean> {
       payload.p_avg_hr != null || payload.p_respiratory_rate != null;
     if (!hasData) return false;
 
-    const { error } = await (supabase.rpc as any)("upsert_night_metrics", payload);
+    const { error } = await supabase.rpc("upsert_night_metrics", payload);
     if (error) { console.warn("upsert_night_metrics failed", error); return false; }
     return true;
   } catch (e) {

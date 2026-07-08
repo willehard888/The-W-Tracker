@@ -3,15 +3,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Crown, Sparkles, Share2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getTierConfig, TIER_ORDER, StatusTier } from "@/lib/status-tiers";
+import {
+  getTierConfig, formatTier, ladderRankValue, tierFromLadder, divisionFromLadder,
+} from "@/lib/status-tiers";
 import { useAuth } from "@/contexts/AuthContext";
 import StoryShareModal from "@/components/StoryShareModal";
 import ConfettiBurst from "@/components/ConfettiBurst";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
-const STORAGE_KEY = "w_last_tier_seen";
-
-const tierRank = (t: string) => TIER_ORDER.indexOf(t as StatusTier);
+// Stores the highest ladder RUNG (tier×division) the user has seen, so each new
+// high-water rung celebrates exactly once — no spam if the division dips + rises.
+const STORAGE_KEY = "w_last_rung_seen";
 
 const TierPromotionCelebration = () => {
   const { profile, user } = useAuth();
@@ -21,29 +23,31 @@ const TierPromotionCelebration = () => {
 
   useEffect(() => {
     if (!profile?.status_tier || !user?.id) return;
-    const currentTier = profile.status_tier;
-    const stored = localStorage.getItem(`${STORAGE_KEY}_${user.id}`);
+    const division = (profile as any).tier_division ?? 0;
+    const current = ladderRankValue(profile.status_tier, division);
+    const key = `${STORAGE_KEY}_${user.id}`;
+    const storedRaw = localStorage.getItem(key);
 
-    // First time we see this user — just store, don't celebrate
-    if (!stored) {
-      localStorage.setItem(`${STORAGE_KEY}_${user.id}`, currentTier);
+    // First time we see this user — just store, don't celebrate.
+    if (storedRaw === null) {
+      localStorage.setItem(key, String(current));
       return;
     }
+    const stored = Number(storedRaw);
 
-    // Promotion detected
-    if (stored !== currentTier && tierRank(currentTier) > tierRank(stored)) {
-      setPreviousTier(stored);
+    // New high-water rung → celebrate a promotion (tier OR division bump).
+    if (Number.isFinite(stored) && current > stored) {
+      setPreviousTier(formatTier(tierFromLadder(stored), divisionFromLadder(stored)));
       setShowCelebration(true);
       hapticNotification("success");
-      localStorage.setItem(`${STORAGE_KEY}_${user.id}`, currentTier);
-    } else if (stored !== currentTier) {
-      // Demotion or sideways — silently update
-      localStorage.setItem(`${STORAGE_KEY}_${user.id}`, currentTier);
+      localStorage.setItem(key, String(current));
     }
-  }, [profile?.status_tier, user?.id]);
+    // On a dip we keep the max (no punish, no re-celebrate) — do nothing.
+  }, [profile?.status_tier, (profile as any)?.tier_division, user?.id]);
 
   if (!profile) return null;
   const tier = profile.status_tier || 'recruit';
+  const division = (profile as any).tier_division ?? 0;
   const config = getTierConfig(tier);
   const isLegend = tier === 'legend';
   const isApex = tier === 'apex';
@@ -111,7 +115,7 @@ const TierPromotionCelebration = () => {
                   transition={{ delay: 0.4 }}
                   className="flex items-center justify-center gap-2 mb-2 text-xs text-muted-foreground"
                 >
-                  <span className="line-through opacity-50">{getTierConfig(previousTier).label}</span>
+                  <span className="line-through opacity-50">{previousTier}</span>
                   <span>→</span>
                 </motion.div>
               )}
@@ -125,7 +129,7 @@ const TierPromotionCelebration = () => {
                   config.textClass,
                 )}
               >
-                {config.label}
+                {formatTier(tier, division)}
               </motion.h1>
 
               <motion.p

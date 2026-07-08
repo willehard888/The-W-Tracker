@@ -218,6 +218,18 @@ export const formatTierShort = (tier: string, division?: number | null): string 
   return roman ? `${short} ${roman}` : short;
 };
 
+/**
+ * Single monotonic rank value across tier × division, so a promotion detector can
+ * compare rungs (Elite II > Elite III > High Performer I). rank = tierIndex*4 + division.
+ * Decode back with `tierFromLadder` / `divisionFromLadder`.
+ */
+export const ladderRankValue = (tier: string, division?: number | null): number => {
+  const idx = Math.max(0, TIER_ORDER.indexOf(tier as StatusTier));
+  return idx * 4 + (division ?? 0);
+};
+export const tierFromLadder = (v: number): StatusTier => TIER_ORDER[Math.min(TIER_ORDER.length - 1, Math.floor(v / 4))];
+export const divisionFromLadder = (v: number): number => v % 4;
+
 export const TIER_ORDER: StatusTier[] = ['recruit', 'operator', 'performer', 'high_performer', 'elite', 'apex', 'legend'];
 
 export const getNextTier = (current: string): TierConfig | null => {

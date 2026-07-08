@@ -249,6 +249,14 @@ const StatusHeader = () => {
               {streak > 0 && (
                 <StreakFlameInline streak={streak} suffix="" className="leading-none text-xs" />
               )}
+              {((profile as any).streak_shields ?? 0) > 0 && (
+                <span
+                  className="shrink-0 inline-flex items-center gap-0.5 text-[10px] font-bold text-teal leading-none"
+                  title={`${(profile as any).streak_shields} streak shield${(profile as any).streak_shields === 1 ? "" : "s"} — a missed day costs a shield, not your streak`}
+                >
+                  🛡️{(profile as any).streak_shields}
+                </span>
+              )}
             </div>
 
             {/* Row 2: tier label + next-tier CTA */}

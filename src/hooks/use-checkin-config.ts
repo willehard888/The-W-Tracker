@@ -34,7 +34,7 @@ export const useCheckinConfig = () => {
 
   const mutation = useMutation({
     mutationFn: async (keys: string[]) => {
-      const { error } = await (supabase.rpc as any)("set_checkin_habits", { p_keys: keys });
+      const { error } = await supabase.rpc("set_checkin_habits", { p_keys: keys });
       if (error) throw new Error(error.message);
       return keys;
     },

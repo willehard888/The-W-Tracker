@@ -1,9 +1,11 @@
 import { cn } from "@/lib/utils";
-import { getTierConfig } from "@/lib/status-tiers";
+import { getTierConfig, formatTier } from "@/lib/status-tiers";
 import { Crown, Shield, Sparkles, Flame, Zap, Star } from "lucide-react";
 
 interface StatusBadgeProps {
   tier: string;
+  /** Division within the tier (0=none, 1=III..3=I). Shows "Elite II" when set. */
+  division?: number | null;
   size?: "sm" | "md" | "lg";
   showAura?: boolean;
   className?: string;
@@ -20,7 +22,7 @@ const tierIcons: Record<string, any> = {
   legend: Sparkles,
 };
 
-const StatusBadge = ({ tier, size = "md", showAura = true, className }: StatusBadgeProps) => {
+const StatusBadge = ({ tier, division = 0, size = "md", showAura = true, className }: StatusBadgeProps) => {
   const config = getTierConfig(tier);
   const Icon = tierIcons[tier] || Shield;
   
@@ -96,7 +98,7 @@ const StatusBadge = ({ tier, size = "md", showAura = true, className }: StatusBa
             ['recruit', 'normal'].includes(tier) && "text-muted-foreground",
           )}
         >
-          {config.label}
+          {formatTier(tier, division)}
         </span>
       </div>
     </div>

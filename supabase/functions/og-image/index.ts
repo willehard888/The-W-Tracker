@@ -135,7 +135,8 @@ Deno.serve(async (req) => {
     level: data.level ?? 1,
     streak: data.streak ?? 0,
     tier: data.status_tier ?? "recruit",
-    isElite: !!data.is_elite,
+    // EARNED elite crown on the share card — not the paid flag.
+    isElite: ["elite", "apex", "legend"].includes(data.status_tier ?? ""),
   });
 
   return new Response(svg, { headers });

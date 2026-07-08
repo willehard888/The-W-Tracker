@@ -129,7 +129,8 @@ const Chat = () => {
   };
 
   const partnerTier = (partner as any)?.status_tier || "recruit";
-  const partnerIsElite = (partner as any)?.is_elite;
+  // EARNED elite crown, not the paid flag.
+  const partnerIsElite = ["elite", "apex", "legend"].includes(partnerTier);
 
   return (
     <div className="flex flex-col h-full bg-background">

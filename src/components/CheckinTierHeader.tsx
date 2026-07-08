@@ -1,10 +1,11 @@
 import { ChevronLeft, Zap, Flame, Target, AlertTriangle, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getTierConfig, type StatusTier } from "@/lib/status-tiers";
+import { getTierConfig, formatTierShort, type StatusTier } from "@/lib/status-tiers";
 import { motion } from "framer-motion";
 
 interface CheckinTierHeaderProps {
   tier: string;
+  division?: number | null;
   username?: string | null;
   streak: number;
   totalXp: number;
@@ -21,6 +22,7 @@ interface CheckinTierHeaderProps {
  */
 const CheckinTierHeader = ({
   tier,
+  division = 0,
   username,
   streak,
   totalXp,
@@ -126,7 +128,7 @@ const CheckinTierHeader = ({
               )}
             >
               {cfg.rank >= 5 && <Flame size={9} strokeWidth={3} fill="currentColor" />}
-              {cfg.shortLabel}
+              {formatTierShort(tier, division)}
             </span>
             {username && (
               <span className="text-[11px] font-bold text-foreground/80 truncate">

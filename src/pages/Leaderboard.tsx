@@ -108,7 +108,7 @@ const Leaderboard = () => {
 
   // Countdown ticking moved to <CountdownTimer> — only that component re-renders.
 
-  const isElite = profile?.is_elite;
+  const isElite = profile?.status_tier === 'elite'; // EARNED tier, not the paid flag
 
   const { data: allTimeLeaders } = useQuery({
     queryKey: ["leaderboard-all-time"],
@@ -378,7 +378,7 @@ const Leaderboard = () => {
               </div>
             </div>
             <div className="flex flex-col items-end gap-1">
-              <StatusBadge tier={profile.status_tier || 'recruit'} size="sm" showAura={false} />
+              <StatusBadge tier={profile.status_tier || 'recruit'} division={(profile as any).tier_division ?? 0} size="sm" showAura={false} />
               <TrendingUp size={16} className="text-gold" />
             </div>
           </div>

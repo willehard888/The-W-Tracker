@@ -192,6 +192,32 @@ export const getTierConfig = (tier: string): TierConfig => {
   return TIER_CONFIG[tier as StatusTier] || TIER_CONFIG.recruit;
 };
 
+// ── Divisions (Phase 2) ───────────────────────────────────────────────────────
+// tier_division: 0 = none (recruit/legend, singular); 1 = III (bottom of tier),
+// 2 = II, 3 = I (top of tier, closest to promotion). Higher number = higher rung.
+const DIVISION_ROMAN: Record<number, string> = { 3: "I", 2: "II", 1: "III" };
+
+/** "II" / "III" / "I" for a division 1..3; "" for 0 or singular tiers. */
+export const divisionRoman = (division?: number | null): string =>
+  division && DIVISION_ROMAN[division] ? DIVISION_ROMAN[division] : "";
+
+/** Tiers that carry III/II/I divisions (recruit + legend are singular). */
+const DIVISIONED = new Set<StatusTier>(["operator", "performer", "high_performer", "elite", "apex"]);
+
+/** "Elite II" (or just "Legend" / "Recruit" for singular tiers). */
+export const formatTier = (tier: string, division?: number | null): string => {
+  const label = getTierConfig(tier).label;
+  const roman = DIVISIONED.has(tier as StatusTier) ? divisionRoman(division) : "";
+  return roman ? `${label} ${roman}` : label;
+};
+
+/** "ELT II" — compact form for tight chips. */
+export const formatTierShort = (tier: string, division?: number | null): string => {
+  const short = getTierConfig(tier).shortLabel;
+  const roman = DIVISIONED.has(tier as StatusTier) ? divisionRoman(division) : "";
+  return roman ? `${short} ${roman}` : short;
+};
+
 export const TIER_ORDER: StatusTier[] = ['recruit', 'operator', 'performer', 'high_performer', 'elite', 'apex', 'legend'];
 
 export const getNextTier = (current: string): TierConfig | null => {

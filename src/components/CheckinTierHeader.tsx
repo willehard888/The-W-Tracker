@@ -8,7 +8,6 @@ interface CheckinTierHeaderProps {
   username?: string | null;
   streak: number;
   totalXp: number;
-  isElite: boolean;
   completedCount: number;
   maxCount: number;
   onBack: () => void;
@@ -25,7 +24,6 @@ const CheckinTierHeader = ({
   username,
   streak,
   totalXp,
-  isElite,
   completedCount,
   maxCount,
   onBack,
@@ -157,11 +155,6 @@ const CheckinTierHeader = ({
               : "border-gold/40 bg-gold/10",
           )}
         >
-          {isElite && (
-            <span className="text-[9px] font-black text-gold uppercase tracking-wider">
-              {cfg.rank >= 5 ? "+25%" : "+25%"}
-            </span>
-          )}
           <Zap
             size={13}
             className={cn("text-gold", cfg.rank >= 5 && "status-flame-flicker")}

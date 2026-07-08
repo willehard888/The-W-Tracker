@@ -33,10 +33,26 @@ export interface CheckinHabit {
 /** Bonus XP granted when a habit is HealthKit-verified. */
 export const VERIFIED_BONUS_XP = 10;
 
+/**
+ * Always-present core habits: sleep, workout, water, meditation. These drive the
+ * primary, mostly HealthKit-verifiable score and cannot be removed.
+ */
+export const CORE_KEYS = ["sleep", "workout", "hydration", "meditation"];
+
+/**
+ * Anti-cheat cap: the maximum XP a user's *self-chosen* (non-core) habits can add
+ * to a single check-in. Stacking many optional habits can't inflate the score —
+ * the total optional contribution is bounded, and the server enforces a matching
+ * ceiling (see record_checkin). Core habits are unaffected.
+ */
+export const OPTIONAL_XP_CAP = 40;
+
 export const CHECKIN_HABITS: CheckinHabit[] = [
-  // ── Core (always) ─────────────────────────────────────────────────────────
+  // ── Core (always present, not removable) — sleep, workout, water, meditation ─
   { key: "sleep", label: "Sleep 7–9h", emoji: "🌙", pillar: "sleep", xp: 25, verify: "sleep", core: true, note: "The #1 driver of recovery, mood and performance." },
   { key: "workout", label: "Workout", emoji: "🏋️", pillar: "movement", xp: 30, verify: "workout", core: true, note: "Auto-verified from Apple Health when you train." },
+  { key: "hydration", label: "3L+ water", emoji: "💧", pillar: "nutrition", xp: 20, core: true, note: "Even mild dehydration tanks focus + output." },
+  { key: "meditation", label: "Meditation", emoji: "🧘", pillar: "mind", xp: 15, column: "meditation_morning", verify: "mindfulness", core: true, note: "Auto-verified from Apple Health mindful minutes." },
 
   // ── Movement (new) ────────────────────────────────────────────────────────
   { key: "steps_8k", label: "8,000+ steps", emoji: "🚶", pillar: "movement", xp: 20, verify: "steps", note: "Daily steps strongly predict longevity." },
@@ -48,14 +64,12 @@ export const CHECKIN_HABITS: CheckinHabit[] = [
   // ── Nutrition ─────────────────────────────────────────────────────────────
   { key: "healthy_food", label: "Whole-food meals", emoji: "🥗", pillar: "nutrition", xp: 20, column: "healthy_food" },
   { key: "protein", label: "Protein target", emoji: "🥩", pillar: "nutrition", xp: 15, column: "protein_intake" },
-  { key: "hydration", label: "3L+ water", emoji: "💧", pillar: "nutrition", xp: 20, note: "Even mild dehydration tanks focus + output." },
   { key: "no_alcohol", label: "No alcohol", emoji: "🚫🍺", pillar: "nutrition", xp: 20, note: "Wrecks deep sleep + recovery — Health confirms it in your heart rate." },
   { key: "no_sugar", label: "No added sugar", emoji: "🍭", pillar: "nutrition", xp: 15 },
   { key: "caffeine_cutoff", label: "Caffeine before 2pm", emoji: "☕", pillar: "nutrition", xp: 10, note: "Protects tonight's deep sleep." },
   { key: "creatine", label: "Creatine", emoji: "💊", pillar: "nutrition", xp: 5 },
 
   // ── Mind ──────────────────────────────────────────────────────────────────
-  { key: "meditation_am", label: "Morning meditation", emoji: "🧘", pillar: "mind", xp: 15, column: "meditation_morning", verify: "mindfulness" },
   { key: "meditation_pm", label: "Evening meditation", emoji: "🌆", pillar: "mind", xp: 15, column: "meditation_evening", verify: "mindfulness" },
   { key: "breathwork", label: "Breathwork / NSDR", emoji: "🌬️", pillar: "mind", xp: 15, verify: "mindfulness" },
   { key: "no_phone_am", label: "No phone (morning)", emoji: "📵", pillar: "mind", xp: 20, column: "no_phone_morning" },
@@ -77,10 +91,13 @@ export const CHECKIN_HABIT_BY_KEY: Record<string, CheckinHabit> = Object.fromEnt
   CHECKIN_HABITS.map((h) => [h.key, h]),
 );
 
-/** Default set for users who haven't customized — mirrors the classic check-in. */
+/**
+ * Default OPTIONAL habits for users who haven't customized (core is always added
+ * on top). Mirrors the classic check-in minus the four core habits.
+ */
 export const DEFAULT_CHECKIN_KEYS = [
-  "sleep", "workout", "extra_workout", "cold_shower", "healthy_food", "protein",
-  "meditation_am", "meditation_pm", "hydration", "no_phone_am", "no_phone_pm", "reading",
+  "extra_workout", "cold_shower", "healthy_food", "protein",
+  "meditation_pm", "no_phone_am", "no_phone_pm", "reading",
 ];
 
 export const PILLAR_LABEL: Record<CheckinPillar, string> = {

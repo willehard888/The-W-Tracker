@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Moon, Dumbbell, Droplets, Camera, Zap,
-  TrendingUp, AlertTriangle, Trophy, Crown, ChevronDown, Check,
+  TrendingUp, AlertTriangle, Trophy, ChevronDown, Check,
   SlidersHorizontal, ShieldCheck, Sparkles,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -24,7 +24,6 @@ import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
 import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
 import { triggerGust } from "@/lib/wind";
-import { ELITE_XP_MULTIPLIER } from "@/lib/xp-constants";
 import CheckinTierHeader from "@/components/CheckinTierHeader";
 import CheckinTierSummary from "@/components/CheckinTierSummary";
 import { useHealthKit } from "@/hooks/use-healthkit";
@@ -33,7 +32,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useCheckinConfig } from "@/hooks/use-checkin-config";
 import CheckinHabitPicker from "@/components/checkin/CheckinHabitPicker";
 import {
-  resolveCheckinHabits, PILLAR_LABEL, type CheckinPillar, type CheckinHabit,
+  resolveCheckinHabits, PILLAR_LABEL, OPTIONAL_XP_CAP, type CheckinPillar, type CheckinHabit,
   type VerifySignal,
 } from "@/lib/checkin-habits";
 
@@ -91,7 +90,7 @@ const HabitToggle = ({
 
 const DailyCheckin = () => {
   const navigate = useNavigate();
-  const { user, profile, refreshProfile, isElite } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const queryClient = useQueryClient();
 
   // The user's personalized habit selection (or the classic default set).
@@ -136,8 +135,42 @@ const DailyCheckin = () => {
     enabled: !!user,
   });
 
+  // Reactive local-day tracking. The check-in window is per LOCAL calendar day,
+  // but `new Date()` is only read at render — so if the webview stays alive across
+  // midnight (or the app resumes on a new day) with no re-render, the lock would
+  // wrongly persist and the check-in never re-opens. Track today's local date in
+  // state and re-sync it on tick / tab focus / native resume so the screen unlocks
+  // the moment the day rolls over.
+  const [todayStr, setTodayStr] = useState(() => new Date().toDateString());
+  useEffect(() => {
+    let cancelled = false;
+    const sync = () => setTodayStr((prev) => {
+      const d = new Date().toDateString();
+      return prev === d ? prev : d;
+    });
+    const interval = setInterval(sync, 30_000); // catch midnight within ~30s
+    window.addEventListener("focus", sync);
+    document.addEventListener("visibilitychange", sync);
+    let removeResume: (() => void) | undefined;
+    // Capacitor fires "resume" when the native app returns to the foreground —
+    // the reliable signal on iOS, where window focus/visibility can be flaky.
+    import("@capacitor/app")
+      .then(({ App: CapApp }) => {
+        if (cancelled) return;
+        CapApp.addListener("resume", sync).then((h) => { removeResume = () => h.remove(); });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      window.removeEventListener("focus", sync);
+      document.removeEventListener("visibilitychange", sync);
+      removeResume?.();
+    };
+  }, []);
+
   const canCheckin = !lastCheckin ||
-    new Date(lastCheckin.checked_in_at).toDateString() !== new Date().toDateString();
+    new Date(lastCheckin.checked_in_at).toDateString() !== todayStr;
 
   const getTimeUntilCheckin = () => {
     if (canCheckin) return null;
@@ -158,6 +191,16 @@ const DailyCheckin = () => {
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // When the local day rolls over, clear yesterday's celebration + refetch the
+  // last check-in so a mounted screen resets to a fresh check-in for the new day.
+  const prevDayRef = useRef(todayStr);
+  useEffect(() => {
+    if (prevDayRef.current === todayStr) return;
+    prevDayRef.current = todayStr;
+    setSubmitted(false);
+    queryClient.invalidateQueries({ queryKey: ["last-checkin", user?.id] });
+  }, [todayStr, queryClient, user?.id]);
 
   const healthKit = useHealthKit();
   // Apple Health auto-detected signals for today (workout / steps / sleep / mindful).
@@ -259,10 +302,23 @@ const DailyCheckin = () => {
     return habitDone(h) ? h.xp : 0;
   };
 
-  const proofBonus = isElite && proofFile ? 30 : 0;
-  const rawXp = chosenHabits.reduce((sum, h) => sum + habitXp(h), 0) + proofBonus;
+  // Proof photo is available to everyone (all app users are paid members) and
+  // earns the same bonus for all.
+  const proofBonus = proofFile ? 30 : 0;
+  // Anti-cheat scoring: core habits (sleep, workout, water, meditation) earn their
+  // full value; self-chosen habits together add at most OPTIONAL_XP_CAP, so stacking
+  // many optional habits can't inflate the score. The server enforces the same cap.
+  // XP is identical for everyone — it does NOT depend on membership. "Elite" is an
+  // EARNED status tier (profile.status_tier), not a paid tier, so it grants no XP edge.
+  let coreXp = 0, optionalXpRaw = 0;
+  for (const h of chosenHabits) {
+    const xp = habitXp(h);
+    if (h.core) coreXp += xp; else optionalXpRaw += xp;
+  }
+  const optionalXp = Math.min(optionalXpRaw, OPTIONAL_XP_CAP);
+  const rawXp = coreXp + optionalXp + proofBonus;
   const baseXp = Math.round(rawXp * sleepMultiplier);
-  const totalXp = Math.round(isElite ? baseXp * ELITE_XP_MULTIPLIER : baseXp) + questBonusXp;
+  const totalXp = baseXp + questBonusXp;
 
   const completedCount = chosenHabits.filter(habitDone).length;
   const maxCount = chosenHabits.length;
@@ -301,7 +357,7 @@ const DailyCheckin = () => {
       const checkinTimestamp = new Date().toISOString();
 
       let proof_photo_url: string | null = null;
-      if (proofFile && isElite) {
+      if (proofFile) {
         const outcome = await moderation.moderateImage({ file: proofFile, kind: "proof" });
         if (outcome.blocked) {
           toast.error(outcome.friendlyMessage ?? "Proof rejected");
@@ -336,7 +392,7 @@ const DailyCheckin = () => {
         p_cold_shower: done("cold_shower"),
         p_healthy_food: done("healthy_food"),
         p_protein_intake: done("protein"),
-        p_meditation_morning: done("meditation_am"),
+        p_meditation_morning: done("meditation"),
         p_meditation_evening: done("meditation_pm"),
         p_hydration_liters: hydration,
         p_no_phone_morning: done("no_phone_am"),
@@ -445,7 +501,7 @@ const DailyCheckin = () => {
           }
         } catch { /* non-critical */ }
         try {
-          if (isElite && proof_photo_url) {
+          if (proof_photo_url) {
             const sportLabel = selectedSport.id !== "none" ? `${selectedSport.emoji} ${selectedSport.label}` : null;
             const content = sportLabel
               ? `Daily check-in ✅ ${sportLabel} — ${totalXp} XP earned 🔥`
@@ -528,7 +584,6 @@ const DailyCheckin = () => {
         username={profile?.username}
         streak={profile?.streak ?? 0}
         totalXp={totalXp}
-        isElite={isElite}
         completedCount={completedCount}
         maxCount={maxCount}
         onBack={() => navigate("/")}
@@ -686,7 +741,7 @@ const DailyCheckin = () => {
             coldShower: done("cold_shower"),
             healthyFood: done("healthy_food"),
             protein: done("protein"),
-            meditationAm: done("meditation_am"),
+            meditationAm: done("meditation"),
             meditationPm: done("meditation_pm"),
             hydration,
             noPhoneAm: done("no_phone_am"),
@@ -698,46 +753,33 @@ const DailyCheckin = () => {
         />
       </div>
 
-      {/* Proof Photo — Elite only */}
+      {/* Proof Photo — available to everyone (all app users are paid) */}
       <div className="mb-4">
-        {isElite ? (
-          <div>
-            <label className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] cursor-pointer">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold"><Camera size={20} /></div>
-              <div className="text-left flex-1">
-                <p className="font-semibold text-sm">Upload Proof Photo</p>
-                <p className="text-xs text-muted-foreground">Elite perk — earns <span className="text-gold font-bold">+30 bonus XP</span></p>
-              </div>
-              {proofFile && <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+30 XP</span>}
-              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const fileAge = Date.now() - file.lastModified;
-                if (fileAge > 5 * 60 * 1000) {
-                  toast.error("Please take a fresh photo right now. Gallery photos are not allowed.");
-                  e.target.value = "";
-                  return;
-                }
-                hapticSelection();
-                setProofFile(file);
-                const reader = new FileReader();
-                reader.onload = () => setProofPreview(reader.result as string);
-                reader.readAsDataURL(file);
-              }} />
-            </label>
-            {proofPreview && (
-              <MediaPreview imageSrc={proofPreview} sizeBytes={proofFile?.size} onClear={() => { setProofFile(null); setProofPreview(null); }} />
-            )}
+        <label className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] cursor-pointer">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold"><Camera size={20} /></div>
+          <div className="text-left flex-1">
+            <p className="font-semibold text-sm">Upload Proof Photo</p>
+            <p className="text-xs text-muted-foreground">Earns <span className="text-gold font-bold">+30 bonus XP</span></p>
           </div>
-        ) : (
-          <div className="flex items-center gap-3 w-full rounded-xl border border-dashed border-border p-4 opacity-50">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Camera size={20} /></div>
-            <div className="text-left">
-              <p className="font-semibold text-sm">Upload Proof Photo</p>
-              <p className="text-xs text-muted-foreground">Elite feature — unlock to use</p>
-            </div>
-            <Crown size={16} className="ml-auto text-gold" />
-          </div>
+          {proofFile && <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+30 XP</span>}
+          <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const fileAge = Date.now() - file.lastModified;
+            if (fileAge > 5 * 60 * 1000) {
+              toast.error("Please take a fresh photo right now. Gallery photos are not allowed.");
+              e.target.value = "";
+              return;
+            }
+            hapticSelection();
+            setProofFile(file);
+            const reader = new FileReader();
+            reader.onload = () => setProofPreview(reader.result as string);
+            reader.readAsDataURL(file);
+          }} />
+        </label>
+        {proofPreview && (
+          <MediaPreview imageSrc={proofPreview} sizeBytes={proofFile?.size} onClear={() => { setProofFile(null); setProofPreview(null); }} />
         )}
       </div>
 

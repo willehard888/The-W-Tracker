@@ -91,6 +91,8 @@ DECLARE
   v_profile public.profiles;
   v_checkin_id uuid;
   v_xp_to_add integer;
+  v_xp_ceiling integer;
+  v_base integer;
   v_new_xp integer;
   v_new_level integer;
   v_new_streak integer;
@@ -113,7 +115,31 @@ BEGIN
     RAISE EXCEPTION 'ALREADY_CHECKED_IN_TODAY';
   END IF;
 
-  v_xp_to_add := GREATEST(0, LEAST(COALESCE(p_xp_earned, 0), 2000));
+  SELECT * INTO v_profile FROM public.profiles WHERE user_id = uid;
+
+  -- ── Anti-cheat XP ceiling ────────────────────────────────────────────────
+  -- The client computes XP, but the server clamps it to what the SUBMITTED
+  -- habits could legitimately earn — not a flat 2000. This bounds daily XP so
+  -- personalized/self-chosen habits can never inflate or break the scoring.
+  -- XP does NOT depend on membership (all app users are paid); "elite" is an
+  -- EARNED status tier, not a paid tier — so the ceiling is identical for everyone.
+  --   Core habits: sleep 25, workout 35 (max sport), water 20, meditation 15.
+  --   Optional habits: capped at 40 total (matches client OPTIONAL_XP_CAP).
+  --   Proof photo 30 + daily-quest allowance 60 + a small margin.
+  v_base := 0;
+  IF p_sleep_hours IS NOT NULL AND p_sleep_hours >= 7 AND p_sleep_hours <= 12 THEN
+    v_base := v_base + 25;
+  END IF;
+  IF p_workout THEN v_base := v_base + 35; END IF;
+  IF COALESCE(p_hydration_liters, 0) >= 3 THEN v_base := v_base + 20; END IF;
+  IF p_meditation_morning = true OR p_meditation_evening = true THEN v_base := v_base + 15; END IF;
+  v_base := v_base + 40;  -- optional-habit allowance (client-capped)
+  IF p_proof_photo_url IS NOT NULL THEN v_base := v_base + 30; END IF;  -- proof-photo bonus
+
+  v_xp_ceiling := v_base + 60   -- daily-quest bonus allowance
+                        + 10;   -- small safety margin
+
+  v_xp_to_add := GREATEST(0, LEAST(COALESCE(p_xp_earned, 0), v_xp_ceiling));
 
   INSERT INTO public.daily_checkins (
     user_id, checked_in_at, sleep_hours, workout, extra_workout, cold_shower,
@@ -127,8 +153,6 @@ BEGIN
     v_xp_to_add, p_proof_photo_url, p_journal_entry, COALESCE(p_habits, '{}'::jsonb)
   )
   RETURNING id INTO v_checkin_id;
-
-  SELECT * INTO v_profile FROM public.profiles WHERE user_id = uid;
 
   IF v_prev IS NULL THEN
     v_new_streak := 1;

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
 import {
-  CHECKIN_HABITS, PILLAR_LABEL, type CheckinPillar, type CheckinHabit,
+  CHECKIN_HABITS, PILLAR_LABEL, OPTIONAL_XP_CAP, type CheckinPillar, type CheckinHabit,
 } from "@/lib/checkin-habits";
 
 interface Props {
@@ -74,8 +74,9 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving }
             Build your check-in
           </SheetTitle>
           <SheetDescription className="text-sm">
-            Pick the habits that matter to <span className="text-gold font-semibold">you</span>.
-            Sleep &amp; Workout are always in. {selectedCount} selected.
+            Sleep, workout, water &amp; meditation are always in. Add the habits that
+            matter to <span className="text-gold font-semibold">you</span> — they give a
+            capped bonus (max +{OPTIONAL_XP_CAP} XP/day). {selectedCount} selected.
           </SheetDescription>
         </SheetHeader>
 

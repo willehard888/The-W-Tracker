@@ -6,7 +6,7 @@ import ApexBadge from "@/components/ApexBadge";
 import StatusNameplate from "@/components/StatusNameplate";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import ImageLightbox from "@/components/ImageLightbox";
-import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
+import { getTierConfig, getTierUsernameClass, formatTier } from "@/lib/status-tiers";
 import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock, Heart, MessageCircle, Award, Play, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
@@ -26,7 +26,7 @@ const PublicProfile = () => {
       if (!username) return null;
       const { data } = await supabase
         .from("profiles")
-        .select("user_id, username, display_name, avatar_url, status_tier, level, xp, streak, longest_streak, is_elite, is_apex_subscriber, legend_pinned")
+        .select("user_id, username, display_name, avatar_url, status_tier, tier_division, level, xp, streak, longest_streak, is_elite, is_apex_subscriber, legend_pinned")
         .ilike("username", username)
         .maybeSingle();
       return data;
@@ -229,7 +229,7 @@ const PublicProfile = () => {
           ) : profile.status_tier === 'elite' ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gold/45 bg-gold/5">
               <Crown size={10} className="text-gold" />
-              <span className="text-[10px] font-black text-gold tracking-wider uppercase">Elite</span>
+              <span className="text-[10px] font-black text-gold tracking-wider uppercase">{formatTier('elite', (profile as any).tier_division ?? 0)}</span>
             </span>
           ) : null}
           {championHistory && championHistory.wins > 0 && (

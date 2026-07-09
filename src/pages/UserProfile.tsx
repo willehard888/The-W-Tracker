@@ -15,7 +15,7 @@ import ProfileActivityPulse from "@/components/ProfileActivityPulse";
 import FeaturedBadgeHero from "@/components/FeaturedBadgeHero";
 import ApexBadge from "@/components/ApexBadge";
 import StatusNameplate from "@/components/StatusNameplate";
-import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
+import { getTierConfig, getTierUsernameClass, formatTier, divisionRoman } from "@/lib/status-tiers";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -225,6 +225,7 @@ const UserProfile = () => {
   const isApex = profile.status_tier === 'apex';
   const isElite = profile.status_tier === 'elite'; // EARNED tier only, never the paid flag
   const isHigh = profile.status_tier === 'high_performer';
+  const division = (profile as any).tier_division ?? 0;
   const isApexSubscriber = Boolean((profile as any).is_apex_subscriber);
   const isLegendPinned = Boolean((profile as any).legend_pinned);
 
@@ -377,7 +378,7 @@ const UserProfile = () => {
             ) : isElite ? (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
                 <Crown size={12} className="text-gold" />
-                <span className="text-[11px] font-black text-gold tracking-wider uppercase">Elite</span>
+                <span className="text-[11px] font-black text-gold tracking-wider uppercase">{formatTier('elite', division)}</span>
               </span>
             ) : null}
             <span className="inline-flex items-center px-3 py-1.5 rounded-full">

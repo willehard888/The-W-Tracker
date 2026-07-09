@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Moon, Dumbbell, Droplets, Camera, Zap,
-  TrendingUp, AlertTriangle, Trophy, ChevronDown, Check,
+  ChevronDown, Check, Plus,
   SlidersHorizontal, ShieldCheck, Sparkles,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -94,9 +94,20 @@ const DailyCheckin = () => {
   const queryClient = useQueryClient();
 
   // The user's personalized habit selection (or the classic default set).
-  const { keys: habitKeys, save: saveHabits, saving: savingHabits } = useCheckinConfig();
+  const { keys: habitKeys, isCustomized, save: saveHabits, saving: savingHabits } = useCheckinConfig();
   const chosenHabits = useMemo(() => resolveCheckinHabits(habitKeys), [habitKeys]);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  // First-run habit onboarding: prompt once to pick habits (non-blocking).
+  const onboardKey = user?.id ? `w_checkin_onboarded_${user.id}` : "w_checkin_onboarded";
+  const [onboardDismissed, setOnboardDismissed] = useState<boolean>(
+    () => { try { return !!localStorage.getItem(onboardKey); } catch { return false; } },
+  );
+  const showOnboard = !isCustomized && !onboardDismissed;
+  const dismissOnboard = () => {
+    try { localStorage.setItem(onboardKey, "1"); } catch { /* private mode */ }
+    setOnboardDismissed(true);
+  };
 
   const { data: lastCheckin } = useQuery({
     queryKey: ["last-checkin", user?.id],
@@ -322,15 +333,6 @@ const DailyCheckin = () => {
 
   const completedCount = chosenHabits.filter(habitDone).length;
   const maxCount = chosenHabits.length;
-  const perfPercent = maxCount ? Math.round((completedCount / maxCount) * 100) : 0;
-
-  const getPerfLabel = () => {
-    if (perfPercent >= 70) return { text: "Perfect Day 🔥", color: "text-gold", icon: Trophy, bg: "bg-gold/10 border-gold/30" };
-    if (perfPercent >= 50) return { text: "Strong Execution 💪", color: "text-emerald-400", icon: TrendingUp, bg: "bg-emerald-500/10 border-emerald-500/30" };
-    if (perfPercent >= 30) return { text: "Decent Day — Push Harder", color: "text-amber-400", icon: TrendingUp, bg: "bg-amber-500/10 border-amber-500/30" };
-    return { text: "Low Output — Step Up", color: "text-destructive", icon: AlertTriangle, bg: "bg-destructive/10 border-destructive/30" };
-  };
-  const perf = getPerfLabel();
 
   // Habits grouped by pillar, excluding the ones with custom widgets
   // (sleep / workout / hydration render as sliders + sport picker).
@@ -610,14 +612,34 @@ const DailyCheckin = () => {
         saving={savingHabits}
       />
 
-      {/* Edit-habits CTA */}
-      <div className="mt-3 mb-4 flex items-center justify-between gap-2">
-        <p className="text-[11px] font-black tracking-[0.16em] uppercase text-gold/80">Your daily standard</p>
+      {/* First-run onboarding — make personalization obvious (non-blocking). */}
+      {showOnboard && (
+        <div className="mt-3 mb-4 rounded-2xl border border-gold/35 bg-gradient-to-b from-gold/10 to-gold/[0.03] p-4 text-center animate-reveal">
+          <p className="text-2xl mb-1">✨</p>
+          <p className="font-display text-lg font-black tracking-tight">Make it yours</p>
+          <p className="text-xs text-muted-foreground mt-1 mb-3 max-w-[280px] mx-auto">
+            Pick the habits you'll actually track every day. Sleep, workout, water &amp; meditation
+            stay in — add whatever matters to you.
+          </p>
+          <Button variant="gold" size="lg" className="w-full" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
+            <SlidersHorizontal size={16} /> Choose my habits
+          </Button>
+          <button onClick={dismissOnboard} className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 hover:text-foreground transition-colors py-1">
+            Use the defaults for now
+          </button>
+        </div>
+      )}
+
+      {/* Habits header + prominent Customize button */}
+      <div className="mt-3 mb-3">
+        <p className="text-[11px] font-black tracking-[0.16em] uppercase text-gold/80 mb-2">
+          Your habits · tap what you did today
+        </p>
         <button
           onClick={() => { hapticSelection(); setPickerOpen(true); }}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-gold transition-colors rounded-lg border border-border px-2.5 py-1.5 active:scale-95"
+          className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-gold/30 bg-gold/5 px-4 py-2.5 text-sm font-bold text-gold transition-all active:scale-[0.98] hover:bg-gold/10"
         >
-          <SlidersHorizontal size={13} /> Edit habits
+          <SlidersHorizontal size={15} /> Customize habits
         </button>
       </div>
 
@@ -744,101 +766,89 @@ const DailyCheckin = () => {
         );
       })}
 
-      {/* Daily Quests */}
-      <div className="mt-2 mb-4">
-        <DailyQuests
-          checkinData={{
-            sleep,
-            sportCategory,
-            extraWorkout: done("extra_workout"),
-            coldShower: done("cold_shower"),
-            healthyFood: done("healthy_food"),
-            protein: done("protein"),
-            meditationAm: done("meditation"),
-            meditationPm: done("meditation_pm"),
-            hydration,
-            noPhoneAm: done("no_phone_am"),
-            noPhonePm: done("no_phone_pm"),
-            reading: done("reading"),
-            completedCount,
-          }}
-          onBonusXpChange={setQuestBonusXp}
-        />
+      {/* Extras — collapsed to keep the daily flow short. Quests stay MOUNTED
+          (hidden when closed) so their bonus XP keeps counting toward the total. */}
+      <div className="mt-1 mb-4">
+        <button
+          onClick={() => { hapticSelection(); setMoreOpen((o) => !o); }}
+          className="w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 text-left active:scale-[0.99]"
+        >
+          <span className="text-sm font-semibold flex items-center gap-2">
+            <Plus size={16} className="text-gold" />
+            Bonus quests &amp; proof photo
+            {questBonusXp > 0 && <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+{questBonusXp} XP</span>}
+          </span>
+          <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", moreOpen && "rotate-180")} />
+        </button>
+
+        <div className={cn("mt-3 space-y-4", !moreOpen && "hidden")}>
+          <DailyQuests
+            checkinData={{
+              sleep,
+              sportCategory,
+              extraWorkout: done("extra_workout"),
+              coldShower: done("cold_shower"),
+              healthyFood: done("healthy_food"),
+              protein: done("protein"),
+              meditationAm: done("meditation"),
+              meditationPm: done("meditation_pm"),
+              hydration,
+              noPhoneAm: done("no_phone_am"),
+              noPhonePm: done("no_phone_pm"),
+              reading: done("reading"),
+              completedCount,
+            }}
+            onBonusXpChange={setQuestBonusXp}
+          />
+
+          {/* Proof photo — available to everyone (all app users are paid) */}
+          <div>
+            <label className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] cursor-pointer">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold"><Camera size={20} /></div>
+              <div className="text-left flex-1">
+                <p className="font-semibold text-sm">Upload Proof Photo</p>
+                <p className="text-xs text-muted-foreground">Earns <span className="text-gold font-bold">+30 bonus XP</span></p>
+              </div>
+              {proofFile && <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+30 XP</span>}
+              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const fileAge = Date.now() - file.lastModified;
+                if (fileAge > 5 * 60 * 1000) {
+                  toast.error("Please take a fresh photo right now. Gallery photos are not allowed.");
+                  e.target.value = "";
+                  return;
+                }
+                hapticSelection();
+                setProofFile(file);
+                const reader = new FileReader();
+                reader.onload = () => setProofPreview(reader.result as string);
+                reader.readAsDataURL(file);
+              }} />
+            </label>
+            {proofPreview && (
+              <MediaPreview imageSrc={proofPreview} sizeBytes={proofFile?.size} onClear={() => { setProofFile(null); setProofPreview(null); }} />
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Proof Photo — available to everyone (all app users are paid) */}
-      <div className="mb-4">
-        <label className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] cursor-pointer">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold"><Camera size={20} /></div>
-          <div className="text-left flex-1">
-            <p className="font-semibold text-sm">Upload Proof Photo</p>
-            <p className="text-xs text-muted-foreground">Earns <span className="text-gold font-bold">+30 bonus XP</span></p>
-          </div>
-          {proofFile && <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+30 XP</span>}
-          <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-            const fileAge = Date.now() - file.lastModified;
-            if (fileAge > 5 * 60 * 1000) {
-              toast.error("Please take a fresh photo right now. Gallery photos are not allowed.");
-              e.target.value = "";
-              return;
-            }
-            hapticSelection();
-            setProofFile(file);
-            const reader = new FileReader();
-            reader.onload = () => setProofPreview(reader.result as string);
-            reader.readAsDataURL(file);
-          }} />
-        </label>
-        {proofPreview && (
-          <MediaPreview imageSrc={proofPreview} sizeBytes={proofFile?.size} onClear={() => { setProofFile(null); setProofPreview(null); }} />
+      {/* Honesty — one lightweight, one-tap checkbox (keeps the discipline ethos). */}
+      <button
+        onClick={() => { hapticSelection(); setHonest(honest === true ? false : true); }}
+        className={cn(
+          "w-full flex items-center gap-3 rounded-xl border p-3.5 mb-4 text-left active:scale-[0.99]",
+          honest === true ? "border-gold/40 bg-gold/5" : "border-border bg-card",
         )}
-      </div>
-
-      {/* Performance score */}
-      <div className="mb-4">
-        <div className={cn("rounded-xl border p-4 transition-all duration-300", perf.bg)}>
-          <div className="flex items-center gap-3 mb-2">
-            <perf.icon size={20} className={perf.color} />
-            <p className={cn("font-display font-bold text-sm", perf.color)}>{perf.text}</p>
-            <span className={cn("ml-auto font-display font-black text-lg tabular-nums", perf.color)}>{perfPercent}%</span>
-          </div>
-          <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
-            <div
-              className={cn("h-full rounded-full transition-all duration-500",
-                perfPercent === 100 ? "bg-gold" : perfPercent >= 80 ? "bg-teal" : perfPercent >= 50 ? "bg-amber" : "bg-destructive")}
-              style={{ width: `${perfPercent}%` }}
-            />
-          </div>
-          <p className="text-[10px] text-muted-foreground mt-2">{completedCount}/{maxCount} habits completed</p>
+      >
+        <div className={cn(
+          "h-5 w-5 rounded-md border-2 shrink-0 flex items-center justify-center transition-colors",
+          honest === true ? "border-gold bg-gold" : "border-muted-foreground/40",
+        )}>
+          {honest === true && <Check size={13} className="text-primary-foreground" strokeWidth={3} />}
         </div>
-      </div>
-
-      {/* Honesty check */}
-      <div className="mb-4">
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="font-semibold text-sm mb-3">Were you honest? 🤝</p>
-          <p className="text-xs text-muted-foreground mb-3">Answer truthfully — you can't grind with lies.</p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setHonest(true)}
-              className={cn(
-                "flex-1 rounded-xl border p-3 text-sm font-bold transition-all active:scale-[0.97]",
-                honest === true ? "border-gold/40 bg-gold/10 text-gold" : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80",
-              )}
-            >Yes ✅</button>
-            <button
-              onClick={() => setHonest(false)}
-              className={cn(
-                "flex-1 rounded-xl border p-3 text-sm font-bold transition-all active:scale-[0.97]",
-                honest === false ? "border-destructive/40 bg-destructive/10 text-destructive" : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80",
-              )}
-            >No ❌</button>
-          </div>
-          {honest === false && <p className="text-xs text-destructive mt-2">Be honest with yourself. Go back and fix your answers.</p>}
-        </div>
-      </div>
+        <span className="text-sm font-medium">I answered honestly 🤝</span>
+      </button>
 
       {/* Submit */}
       <div className="mt-6">

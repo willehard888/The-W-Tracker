@@ -20,15 +20,16 @@ export const useCheckinConfig = () => {
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,
     enabled: !!user,
-    queryFn: async (): Promise<string[]> => {
-      if (!user) return DEFAULT_CHECKIN_KEYS;
+    queryFn: async (): Promise<{ keys: string[]; customized: boolean }> => {
+      if (!user) return { keys: DEFAULT_CHECKIN_KEYS, customized: false };
       const { data } = await supabase
         .from("profiles")
         .select("checkin_habits")
         .eq("user_id", user.id)
         .maybeSingle();
-      const keys = (data as any)?.checkin_habits as string[] | null | undefined;
-      return keys && keys.length ? keys : DEFAULT_CHECKIN_KEYS;
+      const saved = (data as any)?.checkin_habits as string[] | null | undefined;
+      const customized = !!(saved && saved.length);
+      return { keys: customized ? saved! : DEFAULT_CHECKIN_KEYS, customized };
     },
   });
 
@@ -39,14 +40,16 @@ export const useCheckinConfig = () => {
       return keys;
     },
     onSuccess: (keys) => {
-      queryClient.setQueryData(["checkin-config", user?.id], keys);
+      queryClient.setQueryData(["checkin-config", user?.id], { keys, customized: true });
     },
   });
 
   const save = useCallback((keys: string[]) => mutation.mutateAsync(keys), [mutation]);
 
   return {
-    keys: query.data ?? DEFAULT_CHECKIN_KEYS,
+    keys: query.data?.keys ?? DEFAULT_CHECKIN_KEYS,
+    /** True once the user has explicitly saved a custom habit set. */
+    isCustomized: query.data?.customized ?? false,
     isLoading: query.isLoading,
     save,
     saving: mutation.isPending,

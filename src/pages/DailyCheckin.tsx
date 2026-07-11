@@ -62,28 +62,38 @@ const HabitToggle = ({
   <button
     onClick={() => { hapticSelection(); onToggle(); }}
     className={cn(
-      "flex items-center gap-3 w-full rounded-xl border p-3.5 transition-all duration-200 text-left active:scale-[0.98]",
-      active ? "border-gold/40 bg-gold/5" : "border-border bg-card hover:bg-secondary/50",
+      "group relative flex items-center gap-3 w-full rounded-2xl border p-3 text-left transition-all duration-200 active:scale-[0.985]",
+      active
+        ? "border-gold/45 bg-gradient-to-r from-gold/[0.12] to-gold/[0.04] shadow-[0_0_0_1px_hsl(var(--gold)/0.15),0_4px_14px_-6px_hsl(var(--gold)/0.35)]"
+        : "border-border bg-card hover:bg-secondary/50",
     )}
   >
-    <span className="text-xl w-8 text-center shrink-0">{habit.emoji}</span>
+    {/* Emoji tile */}
+    <span className={cn(
+      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[22px] transition-colors",
+      active ? "bg-gold/15" : "bg-secondary",
+    )}>
+      {habit.emoji}
+    </span>
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-1.5 flex-wrap">
-        <p className={cn("font-semibold text-[15px]", active && "text-gold")}>{habit.label}</p>
+        <p className={cn("font-bold text-[15px] leading-tight", active ? "text-gold" : "text-foreground")}>{habit.label}</p>
         {detected && (
-          <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full">
+          <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/12 px-1.5 py-0.5 rounded-full">
             <ShieldCheck size={10} /> Detected
           </span>
         )}
       </div>
-      {habit.note && <p className="text-[11px] text-muted-foreground leading-snug line-clamp-1">{habit.note}</p>}
+      <p className="text-[11px] text-muted-foreground leading-snug line-clamp-1 mt-0.5">
+        {active ? `+${habit.xp} XP` : (habit.note || `+${habit.xp} XP`)}
+      </p>
     </div>
-    {active && <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full shrink-0">+{habit.xp}</span>}
+    {/* Check pill */}
     <div className={cn(
-      "h-5 w-5 rounded-full border-2 transition-all duration-200 shrink-0 flex items-center justify-center",
-      active ? "border-gold bg-gold" : "border-muted-foreground/30",
+      "h-6 w-6 rounded-full border-2 transition-all duration-200 shrink-0 flex items-center justify-center",
+      active ? "border-gold bg-gold shadow-[0_0_10px_-1px_hsl(var(--gold)/0.6)]" : "border-muted-foreground/30 group-active:border-muted-foreground/50",
     )}>
-      {active && <Check size={12} className="text-primary-foreground" strokeWidth={3} />}
+      {active && <Check size={14} className="text-primary-foreground" strokeWidth={3} />}
     </div>
   </button>
 );
@@ -631,15 +641,15 @@ const DailyCheckin = () => {
       )}
 
       {/* Habits header + prominent Customize button */}
-      <div className="mt-3 mb-3">
-        <p className="text-[11px] font-black tracking-[0.16em] uppercase text-gold/80 mb-2">
-          Your habits · tap what you did today
+      <div className="mt-3 mb-3 flex items-center justify-between gap-3">
+        <p className="text-[11px] font-black tracking-[0.16em] uppercase text-gold/80">
+          Your habits · tap what you did
         </p>
         <button
           onClick={() => { hapticSelection(); setPickerOpen(true); }}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-gold/30 bg-gold/5 px-4 py-2.5 text-sm font-bold text-gold transition-all active:scale-[0.98] hover:bg-gold/10"
+          className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-gradient-to-r from-gold/15 to-gold/[0.06] px-3.5 py-2 text-xs font-black uppercase tracking-wide text-gold transition-all active:scale-[0.96] hover:from-gold/20 shadow-[0_2px_10px_-3px_hsl(var(--gold)/0.4)]"
         >
-          <SlidersHorizontal size={15} /> Customize habits
+          <SlidersHorizontal size={14} /> Customize
         </button>
       </div>
 

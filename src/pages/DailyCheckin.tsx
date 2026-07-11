@@ -669,9 +669,17 @@ const DailyCheckin = () => {
       )}
 
       {/* ── Sleep (core) ── */}
-      <div className="rounded-xl border border-border bg-card p-4 mb-3">
+      <div className={cn(
+        "rounded-2xl border p-4 mb-3 transition-all duration-200",
+        isOptimalSleep
+          ? "border-gold/45 bg-gradient-to-r from-gold/[0.10] to-gold/[0.03] shadow-[0_0_0_1px_hsl(var(--gold)/0.12),0_4px_14px_-6px_hsl(var(--gold)/0.3)]"
+          : "border-border bg-card",
+      )}>
         <div className="flex items-center gap-3 mb-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Moon size={20} /></div>
+          <div className={cn(
+            "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
+            isOptimalSleep ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground",
+          )}><Moon size={20} /></div>
           <div>
             <p className="font-semibold text-sm flex items-center gap-1.5">
               Sleep {detected.sleep && <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck size={10} /> Health</span>}
@@ -697,12 +705,14 @@ const DailyCheckin = () => {
         <button
           onClick={() => setSportOpen(!sportOpen)}
           className={cn(
-            "flex items-center gap-3 w-full rounded-xl border p-4 transition-all duration-200 text-left active:scale-[0.97]",
-            workout ? "border-gold/40 bg-gold/5" : "border-border bg-card hover:bg-secondary/50",
+            "flex items-center gap-3 w-full rounded-2xl border p-3.5 transition-all duration-200 text-left active:scale-[0.98]",
+            workout
+              ? "border-gold/45 bg-gradient-to-r from-gold/[0.12] to-gold/[0.04] shadow-[0_0_0_1px_hsl(var(--gold)/0.15),0_4px_14px_-6px_hsl(var(--gold)/0.35)]"
+              : "border-border bg-card hover:bg-secondary/50",
           )}
         >
           <div className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-lg shrink-0 transition-colors",
+            "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
             workout ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground",
           )}>
             <Dumbbell size={20} />
@@ -720,7 +730,7 @@ const DailyCheckin = () => {
           <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", sportOpen && "rotate-180")} />
         </button>
         {sportOpen && (
-          <div className="mt-1 rounded-xl border border-border bg-card overflow-hidden">
+          <div className="mt-1.5 rounded-2xl border border-border bg-card overflow-hidden">
             {SPORT_CATEGORIES.filter((s) => s.id !== "none").map((sport) => (
               <button
                 key={sport.id}
@@ -750,9 +760,17 @@ const DailyCheckin = () => {
 
       {/* ── Hydration (optional core metric) ── */}
       {hasHydration && (
-        <div className="rounded-xl border border-border bg-card p-4 mb-3">
+        <div className={cn(
+          "rounded-2xl border p-4 mb-3 transition-all duration-200",
+          hydration >= 3
+            ? "border-gold/45 bg-gradient-to-r from-gold/[0.10] to-gold/[0.03] shadow-[0_0_0_1px_hsl(var(--gold)/0.12),0_4px_14px_-6px_hsl(var(--gold)/0.3)]"
+            : "border-border bg-card",
+        )}>
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal/10 text-teal"><Droplets size={20} /></div>
+            <div className={cn(
+              "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
+              hydration >= 3 ? "bg-gold/15 text-gold" : "bg-teal/10 text-teal",
+            )}><Droplets size={20} /></div>
             <div><p className="font-semibold text-sm">Hydration</p><p className="text-xs text-muted-foreground">Target: 3L+</p></div>
             <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
           </div>
@@ -843,22 +861,43 @@ const DailyCheckin = () => {
         </div>
       </div>
 
-      {/* Honesty — one lightweight, one-tap checkbox (keeps the discipline ethos). */}
-      <button
-        onClick={() => { hapticSelection(); setHonest(honest === true ? false : true); }}
-        className={cn(
-          "w-full flex items-center gap-3 rounded-xl border p-3.5 mb-4 text-left active:scale-[0.99]",
-          honest === true ? "border-gold/40 bg-gold/5" : "border-border bg-card",
-        )}
-      >
-        <div className={cn(
-          "h-5 w-5 rounded-md border-2 shrink-0 flex items-center justify-center transition-colors",
-          honest === true ? "border-gold bg-gold" : "border-muted-foreground/40",
-        )}>
-          {honest === true && <Check size={13} className="text-primary-foreground" strokeWidth={3} />}
+      {/* Honesty — the discipline wedge. "You can't grind with lies." */}
+      <div className={cn(
+        "mb-4 rounded-2xl border p-4 transition-all duration-200",
+        honest === true
+          ? "border-gold/45 bg-gradient-to-b from-gold/[0.08] to-transparent"
+          : honest === false
+          ? "border-destructive/40 bg-destructive/5"
+          : "border-border bg-card",
+      )}>
+        <p className="font-bold text-[15px] flex items-center gap-1.5">Were you honest? <span>🤝</span></p>
+        <p className="text-xs text-muted-foreground mt-1 mb-3">
+          Answer truthfully — <span className="text-foreground/80 font-semibold">you can't grind with lies.</span>
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => { hapticSelection(); setHonest(true); }}
+            className={cn(
+              "flex-1 rounded-xl border p-3 text-sm font-black transition-all active:scale-[0.97]",
+              honest === true
+                ? "border-gold/50 bg-gold/12 text-gold shadow-[0_0_14px_-4px_hsl(var(--gold)/0.5)]"
+                : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80",
+            )}
+          >Yes ✅</button>
+          <button
+            onClick={() => { hapticSelection(); setHonest(false); }}
+            className={cn(
+              "flex-1 rounded-xl border p-3 text-sm font-black transition-all active:scale-[0.97]",
+              honest === false
+                ? "border-destructive/50 bg-destructive/12 text-destructive"
+                : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80",
+            )}
+          >No ❌</button>
         </div>
-        <span className="text-sm font-medium">I answered honestly 🤝</span>
-      </button>
+        {honest === false && (
+          <p className="text-xs text-destructive mt-2.5 font-medium">Be honest with yourself. Go back and fix your answers.</p>
+        )}
+      </div>
 
       {/* Submit */}
       <div className="mt-6">

@@ -12,6 +12,7 @@ import { isNativePlatform } from "@/lib/platform";
 import BrandLogo from "@/components/BrandLogo";
 import PremiumHero from "@/components/paywall/PremiumHero";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { track, FUNNEL } from "@/lib/analytics";
 
 const PREMIUM_YEARLY_FALLBACK = "47,99 €";
 const PREMIUM_MONTHLY_FALLBACK = "4,99 €";
@@ -40,6 +41,12 @@ const Paywall = () => {
   // On native, only offer the yearly toggle if the store actually has an
   // annual package — otherwise we'd advertise a plan we can't fulfill.
   const showYearly = !isNative || yearlyAvailable;
+
+  // Top of the monetization funnel — record paywall exposure once per mount.
+  useEffect(() => {
+    track(FUNNEL.paywallViewed, { native: isNative });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Welcome toast on transition into membership (once per session)
   useEffect(() => {
@@ -158,12 +165,14 @@ const Paywall = () => {
     setErrorMessage(null);
     hapticImpact("medium");
     setStatus("purchasing");
+    track(FUNNEL.purchaseStarted, { plan, platform: "native" });
 
     try {
       await purchasePremiumPlan(plan);
       setStatus("verifying");
       const ok = await pollVerification(8000);
       if (ok) {
+        track(FUNNEL.purchaseCompleted, { plan, platform: "native" });
         hapticNotification("success");
         // Effect above will navigate home when isPremium flips true
       } else {
@@ -176,9 +185,11 @@ const Paywall = () => {
     } catch (e: any) {
       // User cancellation — silently return to idle
       if (e?.userCancelled || e?.code === "1" || e?.code === 1) {
+        track(FUNNEL.purchaseCancelled, { plan, platform: "native" });
         setStatus("idle");
         return;
       }
+      track(FUNNEL.purchaseFailed, { plan, platform: "native", reason: e?.message?.toString().slice(0, 120) });
       hapticNotification("error");
       setStatus("error");
       setErrorMessage(
@@ -191,6 +202,7 @@ const Paywall = () => {
   const handleWebPurchase = async (plan: "monthly" | "yearly") => {
     setErrorMessage(null);
     setStatus("purchasing");
+    track(FUNNEL.purchaseStarted, { plan, platform: "web" });
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { tier: "elite", plan }, // server treats elite as Premium
@@ -200,10 +212,13 @@ const Paywall = () => {
       window.open(data.url, "_blank");
       setStatus("verifying");
       const ok = await pollVerification(180_000);
-      if (!ok) {
+      if (ok) {
+        track(FUNNEL.purchaseCompleted, { plan, platform: "web" });
+      } else {
         setStatus("idle");
       }
     } catch (e: any) {
+      track(FUNNEL.purchaseFailed, { plan, platform: "web", reason: e?.message?.toString().slice(0, 120) });
       setStatus("error");
       setErrorMessage(e?.message || "Could not start checkout.");
     }
@@ -215,6 +230,7 @@ const Paywall = () => {
     try {
       await restorePurchases();
       await checkSubscription();
+      track(FUNNEL.purchaseRestored);
       toast.success("Purchases restored.");
       hapticNotification("success");
     } catch {

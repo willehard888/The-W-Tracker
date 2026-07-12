@@ -39,8 +39,21 @@ export async function track(
 }
 
 // Funnel event names (keep stable; the dashboard queries depend on them).
+// Activation funnel: signup → healthkit_connected → checkin_completed →
+//                    checkin_verified → streak_milestone
+// Monetization funnel: paywall_viewed → purchase_started →
+//                    (purchase_completed | purchase_cancelled | purchase_failed)
 export const FUNNEL = {
   signup: "signup",
   healthkitConnected: "healthkit_connected",
+  checkinCompleted: "checkin_completed",
   checkinVerified: "checkin_verified",
+  streakMilestone: "streak_milestone",
+  // Monetization
+  paywallViewed: "paywall_viewed",
+  purchaseStarted: "purchase_started",
+  purchaseCompleted: "purchase_completed",
+  purchaseCancelled: "purchase_cancelled",
+  purchaseFailed: "purchase_failed",
+  purchaseRestored: "purchase_restored",
 } as const;

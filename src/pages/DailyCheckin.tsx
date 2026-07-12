@@ -536,6 +536,14 @@ const DailyCheckin = () => {
       setSubmitting(false);
       try { hapticNotification("success"); triggerGust(0.95); } catch { /* cosmetic */ }
 
+      // Activation funnel: every completed check-in, plus streak milestones.
+      void track(FUNNEL.checkinCompleted, {
+        xp: r.xp_earned, streak: r.new_streak, completed: completedCount, max: maxCount,
+      });
+      if ([7, 30, 100, 365].includes(r.new_streak)) {
+        void track(FUNNEL.streakMilestone, { streak: r.new_streak });
+      }
+
       // HealthKit verification — fire-and-forget. Awards the bonus XP + badge.
       if (newCheckinId && healthKit.available) {
         healthKit.syncToday().then(async (snap) => {

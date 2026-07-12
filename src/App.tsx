@@ -2,6 +2,8 @@ import { lazy, Suspense, useEffect, useRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
+import { useActivityHeartbeat } from "@/hooks/use-activity-heartbeat";
+import PushPrimingSheet from "@/components/notifications/PushPrimingSheet";
 import { scheduleLapsedReengagement } from "@/lib/streak-notifications";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
@@ -175,8 +177,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
  */
 const AppRoutes = () => {
   const { user } = useAuth();
-  usePushNotifications();
+  const { needsPriming, enablePush, dismissPriming } = usePushNotifications();
   useOfflineCheckinSync();
+  useActivityHeartbeat();
 
   // Lapsed re-engagement: (re)schedule device-local win-back nudges on every
   // foreground while signed in. They keep sliding out as long as the user keeps
@@ -287,6 +290,7 @@ const AppRoutes = () => {
       </div>
       <BottomNav />
       {user && <TierPromotionCelebration />}
+      <PushPrimingSheet open={needsPriming} onEnable={enablePush} onDismiss={dismissPriming} />
     </div>
   );
 };

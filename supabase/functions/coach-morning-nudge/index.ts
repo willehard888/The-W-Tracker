@@ -10,6 +10,26 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Deliver the morning nudge at 07:00 in the user's local time. Cron fires this
+// hourly; we skip any user for whom it isn't 07:00 locally right now. NULL tz
+// (hasn't opened the updated app yet) falls back to UTC so they still get one.
+const NUDGE_LOCAL_HOUR = 7;
+
+function localHour(tz: string | null): number {
+  try {
+    return Number(
+      new Intl.DateTimeFormat("en-US", {
+        timeZone: tz || "UTC",
+        hour: "numeric",
+        hour12: false,
+      }).format(new Date()),
+    ) % 24;
+  } catch {
+    // Bad/unknown tz string → treat as UTC.
+    return new Date().getUTCHours();
+  }
+}
+
 const nudgeTool = {
   type: "function",
   function: {
@@ -61,7 +81,7 @@ Deno.serve(async (req) => {
 
   const { data: eliteUsers, error: usersErr } = await supabase
     .from("profiles")
-    .select("user_id, username, status_tier, level, streak")
+    .select("user_id, username, status_tier, level, streak, timezone")
     .eq("is_elite", true);
 
   if (usersErr) {
@@ -74,6 +94,11 @@ Deno.serve(async (req) => {
   const results = { processed: 0, skipped: 0, errors: 0, generated: 0 };
 
   for (const profile of eliteUsers ?? []) {
+    // Only nudge users for whom it's ~07:00 local right now.
+    if (localHour((profile as any).timezone ?? null) !== NUDGE_LOCAL_HOUR) {
+      results.skipped++;
+      continue;
+    }
     results.processed++;
 
     try {

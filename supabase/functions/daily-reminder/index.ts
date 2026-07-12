@@ -6,6 +6,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Send the streak reminder at 20:00 in the user's OWN local time. The cron
+// fires this hourly; users_due_for_streak_reminder returns only the users for
+// whom it's currently 20:00 local, have a live streak, and haven't checked in
+// on their local calendar day — so each user is nudged exactly once, in their
+// evening, with time to still check in before their local midnight.
+const REMINDER_LOCAL_HOUR = 20;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -17,38 +24,35 @@ Deno.serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Get today's date range
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayEnd = new Date();
-    todayEnd.setHours(23, 59, 59, 999);
+    // DB decides who's due right now (DST-correct, set-based).
+    const { data: dueUsers, error: dueError } = await supabase
+      .rpc("users_due_for_streak_reminder", { p_target_hour: REMINDER_LOCAL_HOUR });
+    if (dueError) throw dueError;
 
-    // Get all push tokens
-    const { data: tokens, error: tokensError } = await supabase
-      .from("push_tokens")
-      .select("user_id, token, platform");
-
-    if (tokensError) throw tokensError;
-    if (!tokens || tokens.length === 0) {
-      return new Response(JSON.stringify({ message: "No tokens to notify" }), {
+    const dueUserIds = (dueUsers || []).map((u: any) => u.user_id);
+    if (dueUserIds.length === 0) {
+      return new Response(JSON.stringify({ message: "No users due this hour" }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Get users who already checked in today
-    const { data: checkins } = await supabase
-      .from("daily_checkins")
-      .select("user_id")
-      .gte("checked_in_at", todayStart.toISOString())
-      .lte("checked_in_at", todayEnd.toISOString());
+    // Fetch the push tokens for just those users.
+    const { data: tokens, error: tokensError } = await supabase
+      .from("push_tokens")
+      .select("user_id, token, platform")
+      .in("user_id", dueUserIds);
 
-    const checkedInUserIds = new Set((checkins || []).map((c: any) => c.user_id));
+    if (tokensError) throw tokensError;
+    const tokensToNotify = tokens || [];
+    if (tokensToNotify.length === 0) {
+      return new Response(JSON.stringify({ message: "No tokens for due users" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    // Filter tokens for users who haven't checked in
-    const tokensToNotify = tokens.filter((t: any) => !checkedInUserIds.has(t.user_id));
-
-    console.log(`Sending reminders to ${tokensToNotify.length} users (${tokens.length} total tokens, ${checkedInUserIds.size} already checked in)`);
+    console.log(`Sending local-evening reminders to ${tokensToNotify.length} tokens across ${dueUserIds.length} due users`);
 
     // Actually deliver via APNs (iOS). sendApnsBatch filters to platform==='ios'.
     const pushResults = await sendApnsBatch(tokensToNotify as any, {

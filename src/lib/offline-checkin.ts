@@ -43,12 +43,15 @@ export const isNetworkError = (err: { message?: string } | null): boolean => {
 
 export type FlushResult = "synced" | "already" | "none" | "failed";
 
-/** Replay a queued check-in. Drops a stale (previous-day) queue without replaying. */
+/** Replay a queued check-in. Drops only a truly stale (>36h) queue. */
 export async function flushPendingCheckin(supabase: SupabaseClient): Promise<FlushResult> {
   const p = getPendingCheckin();
   if (!p) return "none";
-  // Never log yesterday's queued check-in as today's — drop it.
-  if (p.localDate !== localDateStr()) { clearPendingCheckin(); return "none"; }
+  // Previously we dropped any queue whose localDate != today — which silently
+  // lost a check-in made at 23:58 and replayed at 00:02. Now we replay recent
+  // queues (they log for the current local day; record_checkin's one-per-day
+  // guard prevents duplicates) and drop only genuinely abandoned ones (>36h).
+  if (Date.now() - p.queuedAt > 36 * 60 * 60 * 1000) { clearPendingCheckin(); return "none"; }
 
   const { error } = await supabase.rpc("record_checkin" as never, p.args as never);
   if (!error) { clearPendingCheckin(); return "synced"; }

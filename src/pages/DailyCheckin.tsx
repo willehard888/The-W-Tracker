@@ -419,38 +419,84 @@ const DailyCheckin = () => {
 
       let result: unknown = null;
       let rpcError: { message?: string } | null = null;
+      let hadNetworkError = false;
       for (let attempt = 0; attempt < 3; attempt++) {
         const resp = await supabase.rpc("record_checkin", rpcArgs);
         result = resp.data;
         rpcError = resp.error;
         if (!rpcError) break;
         if (rpcError.message?.includes("ALREADY_CHECKED_IN_TODAY")) break;
+        if (isNetworkError(rpcError)) hadNetworkError = true;
         if (attempt < 2) {
           await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
           await supabase.auth.getSession().catch(() => {});
         }
       }
 
+      // Reconstruct the success screen from the DB when the RPC's own response
+      // can't be trusted (a prior attempt committed then the response dropped).
+      const showFromDb = async () => {
+        try {
+          const [{ data: lastCk }, { data: prof }] = await Promise.all([
+            supabase.from("daily_checkins").select("xp_earned").eq("user_id", user.id)
+              .order("checked_in_at", { ascending: false }).limit(1).maybeSingle(),
+            supabase.from("profiles").select("xp, level, streak").eq("user_id", user.id).maybeSingle(),
+          ]);
+          const xp = (prof as any)?.xp ?? 0; const lvl = (prof as any)?.level ?? 1;
+          const xpIntoLevel = xp - (lvl - 1) * 500;
+          setSummary({
+            xpEarned: (lastCk as any)?.xp_earned ?? 0, newTotalXp: xp, oldLevel: lvl, newLevel: lvl,
+            xpToNextLevel: 500 - xpIntoLevel, levelProgressPct: Math.round((xpIntoLevel / 500) * 100),
+            newStreak: (prof as any)?.streak ?? 0, streakBroken: false, completedCount, maxCount,
+          });
+        } catch { /* summary is best-effort */ }
+        setSubmitted(true);
+        setSubmitting(false);
+        try { hapticNotification("success"); triggerGust(0.95); } catch { /* cosmetic */ }
+        queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
+        try { await refreshProfile(); } catch { /* non-critical */ }
+      };
+
       if (rpcError) {
         if (rpcError.message?.includes("ALREADY_CHECKED_IN_TODAY")) {
-          toast.error("You've already checked in today. Come back tomorrow 💪");
-          queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
-          hapticNotification("error");
-        } else if (isNetworkError(rpcError)) {
+          if (hadNetworkError) {
+            // A prior attempt committed, then its response was lost — the check-in
+            // DID save. Show success, not a false "already checked in" error.
+            await showFromDb();
+          } else {
+            toast.error("You've already checked in today. Come back tomorrow 💪");
+            queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
+            hapticNotification("error");
+            setSubmitting(false);
+          }
+          return;
+        }
+        if (isNetworkError(rpcError)) {
           queueCheckin(rpcArgs as any);
-          hapticNotification("success");
           toast.success("Saved offline 📶", {
             description: "No connection right now — we'll log this check-in automatically when you're back online.",
             duration: 6000,
           });
-        } else {
-          console.error("record_checkin failed after retries:", rpcError);
-          toast.error("Couldn't save your check-in — check your connection and try again.", {
-            description: rpcError.message ? `Details: ${rpcError.message}` : undefined,
-            duration: 6000,
+          // Lock the form so it reads as done (optimistic summary; the real values
+          // land on reconnect via the offline replay).
+          const xp = (profile as any)?.xp ?? 0; const lvl = (profile as any)?.level ?? 1;
+          const xpIntoLevel = xp - (lvl - 1) * 500;
+          setSummary({
+            xpEarned: totalXp, newTotalXp: xp + totalXp, oldLevel: lvl, newLevel: lvl,
+            xpToNextLevel: 500 - xpIntoLevel, levelProgressPct: Math.round((xpIntoLevel / 500) * 100),
+            newStreak: (profile?.streak ?? 0) + 1, streakBroken: false, completedCount, maxCount,
           });
-          hapticNotification("error");
+          setSubmitted(true);
+          setSubmitting(false);
+          try { hapticNotification("success"); } catch { /* cosmetic */ }
+          return;
         }
+        console.error("record_checkin failed after retries:", rpcError);
+        toast.error("Couldn't save your check-in — check your connection and try again.", {
+          description: rpcError.message ? `Details: ${rpcError.message}` : undefined,
+          duration: 6000,
+        });
+        hapticNotification("error");
         setSubmitting(false);
         return;
       }
@@ -492,9 +538,10 @@ const DailyCheckin = () => {
 
       // HealthKit verification — fire-and-forget. Awards the bonus XP + badge.
       if (newCheckinId && healthKit.available) {
-        healthKit.syncToday().then(async () => {
+        healthKit.syncToday().then(async (snap) => {
           try {
-            const vr = await healthKit.verifyCheckin(newCheckinId);
+            // Pass the LOCAL snapshot date so verify matches the row we just stored.
+            const vr = await healthKit.verifyCheckin(newCheckinId, snap?.date);
             if (vr.verified) {
               void track(FUNNEL.checkinVerified);
               const n = Object.keys(vr.signals ?? {}).filter((k) => (vr.signals as any)[k]?.matched).length;

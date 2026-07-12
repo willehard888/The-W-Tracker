@@ -91,10 +91,16 @@ export const useHealthKit = () => {
     return true;
   }, [syncToday]);
 
-  /** Server-side verification of a check-in against today's snapshot. */
-  const verifyCheckin = useCallback(async (checkinId: string) => {
+  /**
+   * Server-side verification of a check-in against the HealthKit snapshot.
+   * Pass the LOCAL snapshot date (snap.date) so verify matches the row that
+   * upsert_health_snapshot stored under the user's local calendar day — avoids
+   * the tz off-by-one that silently broke verification for most timezones.
+   */
+  const verifyCheckin = useCallback(async (checkinId: string, snapshotDate?: string | null) => {
     const { data, error: rpcErr } = await supabase.rpc("verify_checkin", {
       _checkin_id: checkinId,
+      _snapshot_date: snapshotDate ?? null,
     });
     if (rpcErr) throw new Error(rpcErr.message);
     return data as {

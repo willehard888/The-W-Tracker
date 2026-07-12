@@ -7,6 +7,7 @@ import {
   readTodaySnapshot,
   type DaySnapshot,
 } from "@/lib/health/healthkit";
+import { readLastNightSleepHours } from "@/lib/health/night-metrics";
 
 /**
  * useHealthKit — single React entry point for HealthKit syncing.
@@ -67,6 +68,13 @@ export const useHealthKit = () => {
     try {
       const snap = await readTodaySnapshot();
       if (snap) {
+        // capacitor-health can't read sleep, so fold in last night's sleep from
+        // the HealthNight plugin — otherwise sleep_hours is always null and the
+        // check-in's sleep can never be HealthKit-verified.
+        if (snap.sleep_hours == null) {
+          const sleepH = await readLastNightSleepHours();
+          if (sleepH != null) snap.sleep_hours = sleepH;
+        }
         await persistSnapshot(snap);
         setLastSnapshot(snap);
       }

@@ -54,14 +54,18 @@ Deno.serve(async (req) => {
 
       // Seed some demo data
       if (newUser?.user) {
-        await adminClient.from("profiles").update({
+        // "rising" was never a valid status_tier enum value, so this whole
+        // update silently failed and the demo user got no seed data. Use a real
+        // tier; the batch recompute will keep it honest afterward.
+        const { error: seedErr } = await adminClient.from("profiles").update({
           xp: 2450,
           level: 8,
           streak: 12,
           longest_streak: 23,
           display_name: "Demo User",
-          status_tier: "rising",
+          status_tier: "operator",
         }).eq("user_id", newUser.user.id);
+        if (seedErr) console.error("Failed to seed demo profile:", seedErr);
       }
     }
 

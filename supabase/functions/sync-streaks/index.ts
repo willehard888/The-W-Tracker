@@ -8,6 +8,26 @@ const corsHeaders = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+// Accept the internal caller: an exact match on the env service key, OR any JWT
+// whose role claim is service_role. verify_jwt (default true for this function)
+// means Supabase already validated the signature, so trusting the decoded role
+// is safe — and it tolerates key rotation / stray whitespace that would break an
+// exact string compare.
+function isServiceRole(token: string, envKey: string): boolean {
+  if (!token) return false;
+  if (envKey && token === envKey) return true;
+  try {
+    const seg = token.split(".")[1];
+    if (!seg) return false;
+    const b64 = seg.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64.length % 4 ? b64 + "=".repeat(4 - (b64.length % 4)) : b64;
+    const payload = JSON.parse(atob(padded));
+    return payload?.role === "service_role";
+  } catch {
+    return false;
+  }
+}
+
 const json = (body: Record<string, unknown>, status = 200) =>
   new Response(JSON.stringify(body), {
     status,

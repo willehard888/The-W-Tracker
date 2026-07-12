@@ -107,6 +107,10 @@ const ACCESS_EXEMPT = new Set([
   "/reset-password",
 ]);
 
+// Master switch for the hard paywall gate in ProtectedRoute. Currently OFF —
+// every signed-in user gets full access. Set to true to re-enable the paywall.
+const PAYWALL_ENABLED = false;
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading, isPremium } = useAuth();
   if (loading) return <LazyFallback />;
@@ -127,13 +131,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // Hard paywall: every app function requires an active subscription. The
-  // 14-day free trial is Apple's introductory offer — the user confirms payment
-  // on the paywall, gets 14 days free, then auto-renews at 4.99 €/mo unless
-  // they cancel. isPremium reflects the real entitlement (paid / in Apple trial /
-  // referral credits / Founders). Exempt paths let them reach the paywall, finish
-  // onboarding and read legal pages.
-  if (!isPremium && !ACCESS_EXEMPT.has(path)) {
+  // ⚠️ Hard paywall TEMPORARILY DISABLED — flip PAYWALL_ENABLED back to true to
+  // re-enable it. When on, non-entitled users are sent to /paywall (isPremium =
+  // paid / Apple trial / referral credits / Founders; ACCESS_EXEMPT lets them
+  // still reach the paywall, onboarding and legal pages).
+  if (PAYWALL_ENABLED && !isPremium && !ACCESS_EXEMPT.has(path)) {
     return <Navigate to="/paywall" replace />;
   }
 

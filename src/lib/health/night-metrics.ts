@@ -44,6 +44,26 @@ export async function requestNightAuth(): Promise<boolean> {
   }
 }
 
+/**
+ * Last night's total sleep in hours, for the daily HealthKit snapshot.
+ * capacitor-health can't read sleep, so `health_sync_snapshots.sleep_hours`
+ * was always null — this bridges the HealthNight plugin's sleep total in so
+ * check-in verification and the coach see real (not just self-reported) sleep.
+ * Fail-open → null.
+ */
+export async function readLastNightSleepHours(): Promise<number | null> {
+  if (!isIos()) return null;
+  try {
+    await HealthNight.requestAuthorization().catch(() => {});
+    const r = await HealthNight.queryNight();
+    if (!r || r.available === false || r.sleep_total_min == null) return null;
+    const hours = r.sleep_total_min / 60;
+    return Number.isFinite(hours) && hours > 0 ? Math.round(hours * 10) / 10 : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Read last night + upsert. Returns true if anything was written. Fail-open. */
 export async function syncNightMetrics(): Promise<boolean> {
   if (!isIos()) return false;

@@ -1,5 +1,29 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+// Internal-only caller: cron invokes with the service-role key. Accept an exact
+// env match OR any JWT whose role claim is service_role (verify_jwt defaults to
+// true for this function, so Supabase already validated the signature). Without
+// this, ANY authenticated member could force-resolve battles — deciding winners
+// and awarding status tiers.
+function isServiceRole(token: string, envKey: string): boolean {
+  if (!token) return false;
+  if (envKey && token === envKey) return true;
+  try {
+    const seg = token.split(".")[1];
+    if (!seg) return false;
+    const b64 = seg.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64.length % 4 ? b64 + "=".repeat(4 - (b64.length % 4)) : b64;
+    return JSON.parse(atob(padded))?.role === "service_role";
+  } catch {
+    return false;
+  }
+}
+
 // Activity-based battle types we can cross-check against Apple HealthKit.
 const VERIFIABLE_TYPES = ["xp", "workout", "streak"];
 
@@ -27,11 +51,19 @@ async function winnerActivityVerified(
   );
 }
 
-Deno.serve(async () => {
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-  );
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+  if (!isServiceRole(token, serviceKey)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
 
   let resolved = 0;
 

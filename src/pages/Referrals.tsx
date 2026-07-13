@@ -11,6 +11,7 @@ import TopInvitersWidget from "@/components/TopInvitersWidget";
 import StoryShareModal from "@/components/StoryShareModal";
 import { useReferralStats } from "@/hooks/use-referral-stats";
 import { useMyReferrals } from "@/hooks/use-my-referrals";
+import { track, FUNNEL } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 type Reward = {
@@ -53,6 +54,7 @@ const Referrals = () => {
       await navigator.clipboard.writeText(referralLink);
       setCopied(true);
       toast.success("Link copied!");
+      void track(FUNNEL.inviteShared, { method: "copy" });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error("Failed to copy");
@@ -67,6 +69,7 @@ const Referrals = () => {
           text: `I run my discipline on Whealth Factory — daily check-ins, AI coach, the whole system. Here's a 14-day free trial:`,
           url: referralLink,
         });
+        void track(FUNNEL.inviteShared, { method: "native" });
       } catch {}
     } else {
       handleCopy();

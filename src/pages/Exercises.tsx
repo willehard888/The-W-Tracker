@@ -186,7 +186,7 @@ const Exercises = () => {
                 <button
                   key={ex.slug}
                   onClick={() => { hapticImpact("light"); setSelected(ex); }}
-                  className="w-full text-left rounded-2xl border border-gold/20 bg-gradient-to-b from-gold/[0.04] via-card/95 to-card p-3 active:scale-[0.99] transition-transform"
+                  className="cv-row w-full text-left rounded-2xl border border-gold/20 bg-gradient-to-b from-gold/[0.04] via-card/95 to-card p-3 active:scale-[0.99] transition-transform"
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-14 w-14 rounded-xl overflow-hidden bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0">

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { getTierConfig } from "@/lib/status-tiers";
+import { track, FUNNEL } from "@/lib/analytics";
 
 interface StoryShareModalProps {
   open: boolean;
@@ -295,6 +296,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
             : `${profile.xp.toLocaleString()} XP • Level ${profile.level} • ${tierConfig.emoji} ${tierConfig.label} on Whealth Factory. The grind doesn't stop.`,
           url: variant === "referral" ? (referralLink || window.location.origin) : window.location.origin,
         });
+        void track(FUNNEL.inviteShared, { method: "native", surface: "story", variant });
       } catch {}
     } else {
       handleDownload();

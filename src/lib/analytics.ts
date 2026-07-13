@@ -56,4 +56,6 @@ export const FUNNEL = {
   purchaseCancelled: "purchase_cancelled",
   purchaseFailed: "purchase_failed",
   purchaseRestored: "purchase_restored",
+  // Virality — feeds admin_virality() / k-factor
+  inviteShared: "invite_shared",
 } as const;

@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       analytics_events: {
@@ -1537,6 +1512,7 @@ export type Database = {
           is_apex_subscriber: boolean
           is_elite: boolean
           is_premium: boolean
+          last_active_at: string | null
           last_rank_snapshot: Json | null
           legend_pinned: boolean
           level: number
@@ -1552,11 +1528,13 @@ export type Database = {
           streak: number
           streak_shields: number
           tier_division: number
+          timezone: string | null
           trial_started_at: string
           trust_multiplier: number
           updated_at: string
           user_id: string
           username: string
+          utc_offset_minutes: number | null
           xp: number
         }
         Insert: {
@@ -1571,6 +1549,7 @@ export type Database = {
           is_apex_subscriber?: boolean
           is_elite?: boolean
           is_premium?: boolean
+          last_active_at?: string | null
           last_rank_snapshot?: Json | null
           legend_pinned?: boolean
           level?: number
@@ -1586,11 +1565,13 @@ export type Database = {
           streak?: number
           streak_shields?: number
           tier_division?: number
+          timezone?: string | null
           trial_started_at?: string
           trust_multiplier?: number
           updated_at?: string
           user_id: string
           username: string
+          utc_offset_minutes?: number | null
           xp?: number
         }
         Update: {
@@ -1605,6 +1586,7 @@ export type Database = {
           is_apex_subscriber?: boolean
           is_elite?: boolean
           is_premium?: boolean
+          last_active_at?: string | null
           last_rank_snapshot?: Json | null
           legend_pinned?: boolean
           level?: number
@@ -1620,11 +1602,13 @@ export type Database = {
           streak?: number
           streak_shields?: number
           tier_division?: number
+          timezone?: string | null
           trial_started_at?: string
           trust_multiplier?: number
           updated_at?: string
           user_id?: string
           username?: string
+          utc_offset_minutes?: number | null
           xp?: number
         }
         Relationships: [
@@ -2975,6 +2959,10 @@ export type Database = {
         Returns: undefined
       }
       sync_tribe_pause_state: { Args: never; Returns: undefined }
+      touch_activity: {
+        Args: { p_timezone?: string; p_utc_offset_minutes?: number }
+        Returns: undefined
+      }
       update_all_status_tiers: { Args: never; Returns: undefined }
       update_goal_progress: {
         Args: { _goal_id: string; _new_value: number }
@@ -3215,8 +3203,23 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Json
       }
+      users_due_for_streak_reminder: {
+        Args: { p_target_hour: number }
+        Returns: {
+          user_id: string
+        }[]
+      }
+      users_lapsed: {
+        Args: { p_days_ago: number }
+        Returns: {
+          user_id: string
+        }[]
+      }
       verified_authors: { Args: { p_ids: string[] }; Returns: string[] }
-      verify_checkin: { Args: { _checkin_id: string }; Returns: Json }
+      verify_checkin: {
+        Args: { _checkin_id: string; _snapshot_date?: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
@@ -3365,9 +3368,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],

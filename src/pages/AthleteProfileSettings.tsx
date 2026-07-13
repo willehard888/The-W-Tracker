@@ -58,7 +58,7 @@ const AthleteProfileSettings = () => {
     return (
       <div className="flex flex-col h-full">
         <div className="shrink-0 px-4 pt-3 pb-2 flex items-center gap-2 border-b border-border/30">
-          <Button variant="ghost" size="icon-sm" onClick={() => editing ? setEditing(false) : navigate(-1)}>
+          <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => editing ? setEditing(false) : navigate(-1)}>
             <ArrowLeft size={18} />
           </Button>
           <h1 className="font-display text-base font-black">Athlete profile</h1>
@@ -71,7 +71,7 @@ const AthleteProfileSettings = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="shrink-0 px-4 pt-3 pb-2 flex items-center justify-between border-b border-border/30">
-        <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => navigate(-1)}>
           <ArrowLeft size={18} />
         </Button>
         <h1 className="font-display text-base font-black">Athlete profile</h1>

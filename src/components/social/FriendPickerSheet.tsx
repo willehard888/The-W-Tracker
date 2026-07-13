@@ -46,8 +46,9 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
             {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{subtitle}</p>}
           </div>
           <button
+            aria-label="Close"
             onClick={() => onOpenChange(false)}
-            className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground shrink-0"
+            className="h-8 w-8 min-h-11 min-w-11 rounded-full bg-secondary flex items-center justify-center text-muted-foreground shrink-0"
           >
             <X size={16} />
           </button>

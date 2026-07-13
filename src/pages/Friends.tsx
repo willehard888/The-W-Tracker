@@ -213,8 +213,9 @@ const Friends = () => {
                   </Button>
                   <button
                     disabled={busy === r.friendship_id}
+                    aria-label="Decline request"
                     onClick={() => guard(r.friendship_id, () => declineRequest(r.friendship_id))}
-                    className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground shrink-0"
+                    className="h-8 w-8 min-h-11 min-w-11 rounded-full bg-secondary flex items-center justify-center text-muted-foreground shrink-0"
                   >
                     <X size={15} />
                   </button>

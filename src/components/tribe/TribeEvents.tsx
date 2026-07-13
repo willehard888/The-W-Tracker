@@ -431,7 +431,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
       <div className="relative z-10 mx-auto w-full max-w-md rounded-t-3xl border-t border-gold/25 bg-card max-h-[88vh] overflow-y-auto p-4 pb-8 animate-in slide-in-from-bottom duration-200">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-display text-base font-black tracking-tight">Host a meetup</h2>
-          <button onClick={onClose} className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground"><X size={16} /></button>
+          <button aria-label="Close" onClick={onClose} className="h-8 w-8 min-h-11 min-w-11 rounded-full bg-secondary flex items-center justify-center text-muted-foreground"><X size={16} /></button>
         </div>
 
         {/* Single event vs multi-session series */}

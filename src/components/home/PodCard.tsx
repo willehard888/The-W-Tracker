@@ -94,8 +94,9 @@ const PodCard = () => {
                 </button>
                 <button
                   disabled={busy}
+                  aria-label="Decline invite"
                   onClick={() => run(() => declineInvite(iv.pod_id))}
-                  className="shrink-0 h-7 w-7 rounded-full bg-secondary flex items-center justify-center text-muted-foreground"
+                  className="shrink-0 h-7 w-7 min-h-11 min-w-11 rounded-full bg-secondary flex items-center justify-center text-muted-foreground"
                 >
                   <X size={13} />
                 </button>

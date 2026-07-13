@@ -202,6 +202,12 @@ Deno.serve(async (req) => {
                 const dead = results.filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered").map((r) => r.token);
                 if (dead.length) await supabase.from("push_tokens").delete().in("token", dead);
               }
+              // Track for the virality funnel (service role bypasses RLS).
+              await supabase.from("analytics_events").insert({
+                user_id: referrerId,
+                event: "referral_converted",
+                props: { referred_id: appUserId, paid_count: paid },
+              });
             } catch (e) {
               console.error("referral conversion notify failed:", e);
             }

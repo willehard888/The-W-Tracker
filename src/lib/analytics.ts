@@ -58,4 +58,8 @@ export const FUNNEL = {
   purchaseRestored: "purchase_restored",
   // Virality — feeds admin_virality() / k-factor
   inviteShared: "invite_shared",
+  // Server-fired (notify-referral fn / revenuecat-webhook) — the viral loop:
+  //   invite_shared → referral_joined → referral_converted
+  referralJoined: "referral_joined",
+  referralConverted: "referral_converted",
 } as const;

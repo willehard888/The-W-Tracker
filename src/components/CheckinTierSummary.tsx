@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import CoachLine from "@/components/coach/CoachLine";
 import { useCoachObservation } from "@/hooks/use-coach-observation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import AnimatedNumber from "@/components/AnimatedNumber";
 
 interface CheckinTierSummaryProps {
   tier: string;
@@ -212,9 +213,11 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
                 </motion.span>
               )}
             </div>
-            <p className={cn("font-display text-3xl font-black tabular-nums leading-none", leveledUp ? "text-gold" : "text-foreground")}>
-              {summary.newLevel}
-            </p>
+            <AnimatedNumber
+              value={summary.newLevel}
+              duration={700}
+              className={cn("font-display text-3xl font-black leading-none block", leveledUp ? "text-gold" : "text-foreground")}
+            />
             <div className="mt-2 h-1.5 w-full rounded-full bg-secondary overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
@@ -269,7 +272,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
                   : "text-streak-orange",
               )}
             >
-              {summary.newStreak}
+              <AnimatedNumber value={summary.newStreak} duration={800} />
               <span className="text-base font-bold opacity-60">d</span>
             </p>
             <p className="text-[9px] text-muted-foreground mt-2 font-bold uppercase tracking-wider">

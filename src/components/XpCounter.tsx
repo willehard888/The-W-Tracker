@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface XpCounterProps {
@@ -8,11 +9,13 @@ interface XpCounterProps {
 }
 
 const XpCounter = ({ value, className, duration = 1200 }: XpCounterProps) => {
+  const reduce = useReducedMotion();
   const [display, setDisplay] = useState(0);
   const startRef = useRef<number>(0);
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
+    if (reduce) { setDisplay(value); return; }
     if (value === 0) {setDisplay(0);return;}
     const start = performance.now();
     startRef.current = display;

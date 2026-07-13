@@ -18,7 +18,7 @@ const CoachReflect = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="shrink-0 page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => navigate(-1)}>
           <ArrowLeft size={18} />
         </Button>
         <div className="flex items-center gap-2">

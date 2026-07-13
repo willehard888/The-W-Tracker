@@ -24,7 +24,7 @@ const CoachMemoryScreen = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="shrink-0 page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => navigate(-1)}>
           <ArrowLeft size={18} />
         </Button>
         <div className="flex items-center gap-2">
@@ -48,7 +48,7 @@ const CoachMemoryScreen = () => {
           <div className="flex gap-2">
             <Input value={draft} onChange={e => setDraft(e.target.value.slice(0, 200))}
               placeholder="e.g. I race a 10k in October" />
-            <Button variant="ember" size="icon-sm" disabled={!draft.trim()}
+            <Button variant="ember" size="icon-sm" aria-label="Add fact" disabled={!draft.trim()}
               onClick={async () => {
                 try {
                   const id = await add(draft.trim());

@@ -47,7 +47,7 @@ const BattleActiveCard = ({
           {isAdmin && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/60 hover:text-muted-foreground">
+                <button aria-label="Battle options" className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/60 hover:text-muted-foreground">
                   <MoreHorizontal size={14} />
                 </button>
               </DropdownMenuTrigger>

@@ -124,7 +124,7 @@ const Exercises = () => {
   return (
     <div className="flex flex-col">
       <div className="page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => navigate(-1)}>
           <ArrowLeft size={18} />
         </Button>
         <div className="flex items-center gap-2">
@@ -146,7 +146,7 @@ const Exercises = () => {
             className="w-full rounded-xl border border-border/50 bg-background/50 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50"
           />
           {query && (
-            <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <button aria-label="Clear search" onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
               <X size={15} />
             </button>
           )}

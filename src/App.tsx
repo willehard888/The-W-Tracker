@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef } from "react";
+import { MotionConfig } from "framer-motion";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
@@ -303,6 +304,11 @@ const App = () => {
   // shows the page directly.
   return (
     <ErrorBoundary>
+      {/* reducedMotion="user" → every framer-motion animation honors the OS
+          "Reduce Motion" setting (accessibility + battery) without touching
+          each component. CSS animations are gated separately via the
+          prefers-reduced-motion @media blocks in index.css. */}
+      <MotionConfig reducedMotion="user">
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
@@ -319,6 +325,7 @@ const App = () => {
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>
+      </MotionConfig>
     </ErrorBoundary>
   );
 };

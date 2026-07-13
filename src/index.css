@@ -981,14 +981,24 @@
     animation: spin-slow 8s linear infinite;
   }
 
+  /* Native, zero-JS list virtualization: the browser skips layout + paint for
+     rows outside the viewport, reserving `contain-intrinsic-size` so the
+     scrollbar stays stable. Used for long uniform lists (e.g. exercises). */
+  .cv-row {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 76px;
+  }
+
   .glass-card {
+    /* PERF: dropped live backdrop-filter blur(20px) — over the app's uniformly
+       dark canvas an opaque gradient is visually identical, but avoids the
+       compositor re-sampling the page beneath every card on each scroll frame
+       (real jank on older iPhones). Same tradeoff already made for surface-glass. */
     background: linear-gradient(
       135deg,
-      hsl(var(--card) / 0.8) 0%,
-      hsl(var(--card) / 0.5) 100%
+      hsl(var(--card) / 0.97) 0%,
+      hsl(var(--card) / 0.9) 100%
     );
-    backdrop-filter: blur(20px) saturate(1.4);
-    -webkit-backdrop-filter: blur(20px) saturate(1.4);
     border: 1px solid hsl(0 0% 100% / 0.06);
     border-top: 1px solid hsl(0 0% 100% / 0.1);
     transform-style: preserve-3d;
@@ -1020,14 +1030,13 @@
   }
 
   .glass-card-gold {
+    /* PERF: opaque instead of live backdrop-filter (see .glass-card). */
     background: linear-gradient(
       145deg,
-      hsl(42 78% 54% / 0.06) 0%,
-      hsl(var(--card) / 0.7) 30%,
-      hsl(var(--card) / 0.5) 100%
+      hsl(42 78% 54% / 0.10) 0%,
+      hsl(var(--card) / 0.94) 30%,
+      hsl(var(--card) / 0.9) 100%
     );
-    backdrop-filter: blur(24px) saturate(1.5);
-    -webkit-backdrop-filter: blur(24px) saturate(1.5);
     border: 1px solid hsl(42 78% 54% / 0.15);
     border-top: 1px solid hsl(42 78% 54% / 0.25);
     transform-style: preserve-3d;
@@ -3032,12 +3041,10 @@
       transparent 22%,
       transparent 78%,
       hsl(42 80% 55% / 0.06) 100%),
-    /* Body — deep cinematic glass */
+    /* Body — deep cinematic glass. PERF: opaque, no live backdrop-filter. */
     linear-gradient(135deg,
-      hsl(258 16% 10% / 0.88) 0%,
-      hsl(258 16% 6% / 0.94) 100%);
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
+      hsl(258 16% 10% / 0.97) 0%,
+      hsl(258 16% 6% / 0.99) 100%);
   box-shadow:
     /* Hairline contact shadow */
     0 1px 0 hsl(0 0% 0% / 0.65),

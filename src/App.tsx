@@ -305,10 +305,12 @@ const App = () => {
   return (
     <ErrorBoundary>
       {/* reducedMotion="user" → every framer-motion animation honors the OS
-          "Reduce Motion" setting (accessibility + battery) without touching
-          each component. CSS animations are gated separately via the
-          prefers-reduced-motion @media blocks in index.css. */}
-      <MotionConfig reducedMotion="user">
+          "Reduce Motion" setting. The default `transition` gives everything a
+          single, physical spring signature (smooth, near-critically-damped —
+          matches the CSS --ease-spring token) so motion reads as one designed
+          system instead of framer's stock tween. Components with their own
+          transition still override. */}
+      <MotionConfig reducedMotion="user" transition={{ type: "spring", stiffness: 320, damping: 30 }}>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />

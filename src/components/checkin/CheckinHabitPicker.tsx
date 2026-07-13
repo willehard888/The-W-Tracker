@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Lock, ShieldCheck, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -75,7 +76,12 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving }
   const coreCount = CHECKIN_HABITS.filter((h) => h.core).length;
   const optionalCount = CHECKIN_HABITS.filter((h) => !h.core && draft.has(h.key)).length;
 
-  return (
+  // Portal to <body> so the fixed overlay is viewport-relative. Rendered inline
+  // in the page tree, an ancestor's transform / will-change (e.g. the global
+  // button `will-change: transform`, animate-reveal) creates a containing block
+  // that traps `position: fixed` inside the content area — which clipped the
+  // header under the app bar and hid the Save button behind the bottom nav.
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -187,7 +193,8 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving }
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 };
 

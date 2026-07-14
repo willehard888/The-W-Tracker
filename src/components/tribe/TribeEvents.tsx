@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Calendar, MapPin, Users, Plus, X, Trash2, Check, Clock, Flame, Video, Layers, ChevronDown } from "lucide-react";
+import { Portal } from "@/components/ui/Portal";
 import { format, isToday, isTomorrow } from "date-fns";
 import { toast } from "sonner";
 import { useTribeEvents, useTribeEventActions, type TribeEvent, type RsvpStatus } from "@/hooks/use-tribe-events";
@@ -426,6 +427,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
   const sessionCount = sessions.filter((s) => s.trim()).length;
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-[120] flex flex-col justify-end">
       <button aria-label="Close" onClick={onClose} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div className="relative z-10 mx-auto w-full max-w-md rounded-t-3xl border-t border-gold/25 bg-card max-h-[88vh] overflow-y-auto p-4 pb-8 animate-in slide-in-from-bottom duration-200">
@@ -538,6 +540,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
         </div>
       </div>
     </div>
+    </Portal>
   );
 };
 

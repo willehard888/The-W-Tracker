@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Portal } from "@/components/ui/Portal";
 import { cn } from "@/lib/utils";
 
 interface BadgeUnlockModalProps {
@@ -64,6 +65,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
   const isEpicPlus = badge.rarity === "epic" || isLegendary;
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-[100] flex items-center justify-center" onClick={onClose}>
       {/* Backdrop */}
       <div
@@ -215,6 +217,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
         </p>
       </div>
     </div>
+    </Portal>
   );
 };
 

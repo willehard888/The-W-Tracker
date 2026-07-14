@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { Portal } from "@/components/ui/Portal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -756,6 +757,7 @@ const BattleChallengeModal = ({
   duration: number; setDuration: (v: number) => void;
   creating: boolean; onClose: () => void; onChallenge: () => void;
 }) => (
+  <Portal>
   <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
     <div
       className="w-full max-w-md bg-card border-t border-border rounded-t-3xl p-6 animate-reveal"
@@ -812,6 +814,7 @@ const BattleChallengeModal = ({
       </Button>
     </div>
   </div>
+  </Portal>
 );
 
 export default UserProfile;

@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { Portal } from "@/components/ui/Portal";
 import { X, Minus, Plus } from "lucide-react";
 import ZoomableImage, { type ZoomableImageHandle } from "@/components/ui/ZoomableImage";
 
@@ -12,6 +13,7 @@ const PosterZoom = ({ url, alt, onClose }: { url: string; alt: string; onClose: 
   const btn = "h-11 w-11 rounded-full bg-white/12 border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform";
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-[140] bg-black">
       {/* Close — fixed, top layer, ALWAYS reachable */}
       <button
@@ -31,6 +33,7 @@ const PosterZoom = ({ url, alt, onClose }: { url: string; alt: string; onClose: 
 
       <ZoomableImage ref={z} url={url} alt={alt} onClose={onClose} imgClassName="w-full max-w-none" />
     </div>
+    </Portal>
   );
 };
 

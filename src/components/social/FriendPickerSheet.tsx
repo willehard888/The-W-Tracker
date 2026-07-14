@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Portal } from "@/components/ui/Portal";
 import { X, Search, Flame, ChevronRight, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useFriends, type Friend } from "@/hooks/use-friends";
@@ -33,6 +34,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
   if (!open) return null;
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-[120] flex flex-col justify-end">
       <button
         aria-label="Close"
@@ -125,6 +127,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
         </div>
       </div>
     </div>
+    </Portal>
   );
 };
 

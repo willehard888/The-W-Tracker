@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Portal } from "@/components/ui/Portal";
 import { supabase } from "@/integrations/supabase/client";
 import { uniqueChannelName } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
@@ -522,6 +523,7 @@ const TribeDetail = () => {
 
       {/* Tier-up celebration — full-screen flash when crossing a threshold */}
       {tierUp && (
+        <Portal>
         <div
           key={tierUp.key}
           aria-hidden
@@ -558,6 +560,7 @@ const TribeDetail = () => {
             </p>
           </div>
         </div>
+        </Portal>
       )}
 
       <button onClick={() => { hapticSelection(); navigate("/tribes"); }} className="flex items-center gap-1 text-xs text-muted-foreground mb-4 relative active:scale-95 transition-transform">

@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Lock, Check, ChevronRight, Crown, TrendingUp, Sparkles, Zap, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Portal } from "@/components/ui/Portal";
 import { TIER_CONFIG, TIER_ORDER, getTierConfig, type StatusTier } from "@/lib/status-tiers";
 import { RedeemLegendInviteDialog } from "@/components/RedeemLegendInviteDialog";
 interface TierLadderProps {
@@ -276,7 +277,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
           : "radial-gradient(ellipse at top, hsl(var(--muted) / 0.25), transparent 70%)";
 
         return (
-          <>
+          <Portal>
             <div
               className="fixed inset-0 z-40 bg-black/[0.78] backdrop-blur-md"
               onClick={() => setOpenTier(null)}
@@ -449,7 +450,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                 <div className="pointer-events-none absolute inset-x-8 bottom-0 h-px bg-gradient-to-r from-transparent via-foreground/15 to-transparent" />
               </div>
             </div>
-          </>
+          </Portal>
         );
       })()}
     </div>

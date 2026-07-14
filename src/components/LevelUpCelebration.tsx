@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Portal } from "@/components/ui/Portal";
 import { cn } from "@/lib/utils";
 
 interface LevelUpCelebrationProps {
@@ -17,6 +18,7 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
   }, [onComplete]);
 
   return (
+    <Portal>
     <div className={cn(
       "fixed inset-0 z-[100] flex items-center justify-center transition-all duration-500",
       phase === "enter" ? "opacity-0" : phase === "exit" ? "opacity-0 scale-110" : "opacity-100"
@@ -97,6 +99,7 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
         </p>
       </div>
     </div>
+    </Portal>
   );
 };
 

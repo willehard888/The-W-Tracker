@@ -1,4 +1,5 @@
 import { Bell, Flame, Trophy, X } from "lucide-react";
+import { Portal } from "@/components/ui/Portal";
 import { Button } from "@/components/ui/button";
 import { hapticSelection } from "@/lib/haptics";
 
@@ -18,6 +19,7 @@ export default function PushPrimingSheet({ open, onEnable, onDismiss }: PushPrim
   if (!open) return null;
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-[100] flex items-end justify-center">
       {/* Scrim */}
       <button
@@ -82,5 +84,6 @@ export default function PushPrimingSheet({ open, onEnable, onDismiss }: PushPrim
         </button>
       </div>
     </div>
+    </Portal>
   );
 }

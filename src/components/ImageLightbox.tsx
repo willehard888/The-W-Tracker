@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Portal } from "@/components/ui/Portal";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { X, Heart, MessageCircle, Award } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
@@ -52,6 +53,7 @@ const ImageLightbox = ({
   const chromeOpacity = Math.max(0, 1 - dismiss * 1.4);
 
   return (
+    <Portal>
     <div
       role="dialog"
       aria-modal="true"
@@ -133,6 +135,7 @@ const ImageLightbox = ({
         </div>
       </div>
     </div>
+    </Portal>
   );
 };
 

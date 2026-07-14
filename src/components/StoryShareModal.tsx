@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { Portal } from "@/components/ui/Portal";
 import { Download, Share2, X, Flame, Zap, Trophy, Crown, Sparkles, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -309,6 +310,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
     tier === 'elite' ? "border-gold/30" : "border-gold/15";
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center px-4 pb-6 sm:pb-0" onClick={onClose}>
       <div className="absolute inset-0 bg-background/95" />
 
@@ -456,6 +458,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
         </div>
       </div>
     </div>
+    </Portal>
   );
 };
 

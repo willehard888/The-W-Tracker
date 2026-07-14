@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Portal } from "@/components/ui/Portal";
 import type { ModerationState } from "@/hooks/use-moderation";
 
 interface Props {
@@ -36,6 +37,7 @@ export default function ModerationGate({
     state === "error";
 
   return (
+    <Portal>
     <AnimatePresence>
       {visible && (
         <motion.div
@@ -107,5 +109,6 @@ export default function ModerationGate({
         </motion.div>
       )}
     </AnimatePresence>
+    </Portal>
   );
 }

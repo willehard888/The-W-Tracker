@@ -34,12 +34,12 @@ Vault path resolution: `--vault=` flag › `VAULT_PATH` env › `config.ts` defa
   (Deno), SQL migrations, `git` — is filesystem-parsed. Never import a Deno/React module.
 - `git log` needs full history → run locally, not in a shallow CI clone.
 
-## Optional: auto-sync on relevant commits (opt-in, not installed)
-Add to `.git/hooks/post-commit` (make executable) to re-sync only when domain sources change:
+## Auto-sync on relevant commits (versioned hook)
+A ready hook lives at `scripts/obsidian/hooks/post-commit`. It re-syncs (in the
+background, so commits stay fast) only when a source the generator reads actually
+changed. Install once, from the repo root:
 ```sh
-#!/bin/sh
-if git diff --name-only HEAD~1 HEAD | grep -qE 'src/lib/(wellness-framework|checkin-habits|status-tiers)|supabase/(migrations|functions)'; then
-  npm run obsidian:sync >/dev/null 2>&1 || true
-fi
+ln -sf ../../scripts/obsidian/hooks/post-commit .git/hooks/post-commit
 ```
-(CI can't help — the vault is a local directory, not in the checkout.)
+Output goes to `.git/founderos-sync.log`. CLI commits only — some GUI git clients
+lack `npm` on PATH. (CI can't help — the vault is a local directory, not in the checkout.)

@@ -1,0 +1,17 @@
+#!/bin/sh
+# FounderOS — auto-sync the Obsidian vault when domain/decision sources change.
+# Runs in the background so it never slows a commit. Logs to .git/founderos-sync.log.
+#
+# Install (from repo root):
+#   ln -sf ../../scripts/obsidian/hooks/post-commit .git/hooks/post-commit
+# (or copy it there and `chmod +x`). CLI commits only — GUI clients may lack npm on PATH.
+
+root="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+
+# Only when the sources that feed the generator actually changed in this commit.
+changed="$(git diff --name-only HEAD~1 HEAD 2>/dev/null)" || exit 0
+printf '%s\n' "$changed" | grep -qE \
+  'src/lib/(wellness-framework|checkin-habits|status-tiers)|supabase/(migrations|functions)' || exit 0
+
+( cd "$root" && npm run obsidian:sync >"$root/.git/founderos-sync.log" 2>&1 & )
+exit 0

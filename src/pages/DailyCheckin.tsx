@@ -30,6 +30,7 @@ import { useHealthKit } from "@/hooks/use-healthkit";
 import { queueCheckin, isNetworkError } from "@/lib/offline-checkin";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useCheckinConfig } from "@/hooks/use-checkin-config";
+import { useCheckinDay } from "@/hooks/use-checkin-day";
 import CheckinHabitPicker from "@/components/checkin/CheckinHabitPicker";
 import {
   resolveCheckinHabits, PILLAR_LABEL, OPTIONAL_XP_CAP, type CheckinPillar, type CheckinHabit,
@@ -156,52 +157,9 @@ const DailyCheckin = () => {
     enabled: !!user,
   });
 
-  // Reactive local-day tracking. The check-in window is per LOCAL calendar day,
-  // but `new Date()` is only read at render — so if the webview stays alive across
-  // midnight (or the app resumes on a new day) with no re-render, the lock would
-  // wrongly persist and the check-in never re-opens. Track today's local date in
-  // state and re-sync it on tick / tab focus / native resume so the screen unlocks
-  // the moment the day rolls over.
-  const [todayStr, setTodayStr] = useState(() => new Date().toDateString());
-  useEffect(() => {
-    let cancelled = false;
-    const sync = () => setTodayStr((prev) => {
-      const d = new Date().toDateString();
-      return prev === d ? prev : d;
-    });
-    const interval = setInterval(sync, 30_000); // catch midnight within ~30s
-    window.addEventListener("focus", sync);
-    document.addEventListener("visibilitychange", sync);
-    let removeResume: (() => void) | undefined;
-    // Capacitor fires "resume" when the native app returns to the foreground —
-    // the reliable signal on iOS, where window focus/visibility can be flaky.
-    import("@capacitor/app")
-      .then(({ App: CapApp }) => {
-        if (cancelled) return;
-        CapApp.addListener("resume", sync).then((h) => { removeResume = () => h.remove(); });
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-      window.removeEventListener("focus", sync);
-      document.removeEventListener("visibilitychange", sync);
-      removeResume?.();
-    };
-  }, []);
-
-  const canCheckin = !lastCheckin ||
-    new Date(lastCheckin.checked_in_at).toDateString() !== todayStr;
-
-  const getTimeUntilCheckin = () => {
-    if (canCheckin) return null;
-    const tomorrow = new Date();
-    tomorrow.setHours(24, 0, 0, 0);
-    const diff = tomorrow.getTime() - Date.now();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${hours}h ${mins}m`;
-  };
+  // Local-day window + midnight rollover, shared with the home screen so the
+  // two can't disagree about when the check-in reopens.
+  const { todayStr, canCheckin, timeUntilCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
 
   // ── Core state ──────────────────────────────────────────────────────────
   const [sleep, setSleep] = useState(8);
@@ -613,7 +571,7 @@ const DailyCheckin = () => {
           </div>
           <h1 className="font-display text-2xl font-black tracking-tight mb-2">Already Logged Today</h1>
           <p className="text-muted-foreground text-sm mb-2">You can only check in once per day.</p>
-          <p className="text-gold font-display text-lg font-bold mb-8">Next check-in in {getTimeUntilCheckin()}</p>
+          <p className="text-gold font-display text-lg font-bold mb-8">Next check-in in {timeUntilCheckin}</p>
           <Button variant="gold-outline" size="lg" onClick={() => navigate("/")}>Back to Dashboard</Button>
         </div>
       </div>

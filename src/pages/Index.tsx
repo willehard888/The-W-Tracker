@@ -12,12 +12,13 @@ import MoreSection from "@/components/ui/more-section";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useEffect } from "react";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getTierConfig } from "@/lib/status-tiers";
 import { recipeThumb } from "@/lib/recipe-images";
 import { exerciseImg } from "@/lib/exercise-library";
 import { useTierRisk } from "@/hooks/use-tier-risk";
+import { useCheckinDay } from "@/hooks/use-checkin-day";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { useDailyPulse } from "@/hooks/use-daily-pulse";
 // Pull-to-refresh removed temporarily — was intercepting inner taps.
@@ -101,7 +102,7 @@ const Index = () => {
 
   const { data: lastCheckin } = useQuery({
     queryKey: ["last-checkin", profile?.user_id],
-    staleTime: 5 * 60_000,   // canCheckin window is 24h — 5 min stale is fine
+    staleTime: 5 * 60_000,   // window is the local calendar day — 5 min stale is fine
     gcTime:    30 * 60_000,
     queryFn: async () => {
       if (!profile) return null;
@@ -134,21 +135,9 @@ const Index = () => {
   );
 
   // ── Checkin-derived values (hooks must be before any early return) ────────
-  const canCheckin = useMemo(
-    () =>
-      !lastCheckin ||
-      Date.now() - new Date(lastCheckin.checked_in_at).getTime() > 24 * 60 * 60 * 1000,
-    [lastCheckin],
-  );
-
-  const timeUntilCheckin = useMemo(() => {
-    if (!lastCheckin || canCheckin) return null;
-    const nextTime = new Date(lastCheckin.checked_in_at).getTime() + 24 * 60 * 60 * 1000;
-    const diff = nextTime - Date.now();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${hours}h ${mins}m`;
-  }, [lastCheckin, canCheckin]);
+  // Shared with DailyCheckin — the window is the LOCAL CALENDAR DAY, so the
+  // card unlocks at midnight (not 24h after the last check-in).
+  const { canCheckin, timeUntilCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
 
   if (!profile) return null;
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, Eye, EyeOff, Flame } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Flame, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { nativeAppleSignIn } from "@/lib/native-auth";
@@ -206,13 +206,21 @@ const Auth = () => {
               <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
                 <Flame size={10} className="text-gold" /> Locked permanently once set
               </p>
-              {refCode && (
+              {refCode ? (
                 <div className="mt-2 rounded-lg border border-gold/30 bg-gold/5 px-3 py-2">
                   <p className="text-[11px] text-gold font-bold">
                     {invitedBy ? `@${invitedBy} invited you` : "You were invited"} → 14-day free trial
                   </p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
                     Normally 7 days. Your referrer earns +50 XP when you verify.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-2 rounded-lg border border-gold/25 bg-gold/[0.04] px-3 py-2 flex items-center gap-2">
+                  <Crown size={13} className="text-gold shrink-0" />
+                  <p className="text-[10.5px] text-foreground/85 leading-snug">
+                    <span className="text-gold font-bold">14-day free trial</span> — full access to
+                    coach, training, recipes &amp; recovery. Cancel anytime.
                   </p>
                 </div>
               )}

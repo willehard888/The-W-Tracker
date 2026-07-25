@@ -100,7 +100,10 @@ const StatusHeader = () => {
   // Tier progress: position within full hierarchy (0..1)
   const tierProgress = (TIER_ORDER.indexOf(tier as any) + 1) / TIER_ORDER.length;
 
-  const trialUrgent = isInTrial && !isElite && daysRemaining <= 2;
+  // The trial is a GIFT (full access), not a countdown to doom — and since the
+  // hard paywall is off, "expiry" isn't a hard cliff. Only flag the very last
+  // day as time-sensitive; otherwise present it as the premium state it is.
+  const trialUrgent = isInTrial && !isElite && daysRemaining <= 1;
   const trialLabel =
     daysRemaining > 1
       ? `${daysRemaining}d`
@@ -350,16 +353,17 @@ const StatusHeader = () => {
           ) : isInTrial ? (
             <button
               onClick={() => navigate("/paywall")}
+              aria-label="Free trial — full access. Tap to see membership."
               className={cn(
                 "shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors active:scale-[0.96]",
                 trialUrgent
-                  ? "bg-destructive/15 border-destructive/50 text-destructive animate-scale-pulse"
-                  : "bg-secondary/70 border-border text-foreground",
+                  ? "bg-destructive/12 border-destructive/45 text-destructive"
+                  : "bg-gold/10 border-gold/35 text-gold",
               )}
             >
-              <Clock size={11} />
+              {trialUrgent ? <Clock size={11} /> : <Crown size={11} />}
               <span className="text-[10px] font-bold uppercase tracking-wider">
-                {trialLabel}
+                {trialUrgent ? `Ends in ${trialLabel}` : `Full access · ${trialLabel}`}
               </span>
             </button>
           ) : null}

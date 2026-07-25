@@ -183,7 +183,7 @@ const PremiumHero = ({
         <h2 className="font-display text-center text-[36px] leading-[0.95] font-black tracking-tight mb-3 bg-gradient-to-b from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold))] bg-clip-text text-transparent drop-shadow-[0_0_18px_hsl(var(--gold)/0.5)]">
           Your edge,<br />unlocked.
         </h2>
-        <p className="text-center text-[12.5px] text-muted-foreground mb-5 max-w-[300px] mx-auto leading-relaxed">
+        <p className="text-center text-[12px] text-muted-foreground mb-5 max-w-[300px] mx-auto leading-relaxed">
           One membership. Everything you need to{" "}
           <span className="text-foreground font-semibold">train hard</span>,{" "}
           <span className="text-foreground font-semibold">eat clean</span> and{" "}
@@ -228,7 +228,7 @@ const PremiumHero = ({
               Yearly
               <span
                 className={cn(
-                  "px-1.5 py-0.5 rounded-full text-[8.5px] font-black tracking-wider",
+                  "px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-wider",
                   isYearly
                     ? "bg-background/25 text-background"
                     : "bg-gold/15 text-gold border border-gold/30",
@@ -250,7 +250,7 @@ const PremiumHero = ({
             </span>
           </p>
           {isYearly ? (
-            <p className="text-[10.5px] text-muted-foreground/90 mt-2 tracking-wide">
+            <p className="text-[10px] text-muted-foreground/90 mt-2 tracking-wide">
               <span className="line-through opacity-60">
                 {monthlyPriceLabel}/mo × 12
               </span>{" "}
@@ -342,7 +342,7 @@ const PremiumHero = ({
           {ctaLabel}
         </Button>
 
-        <p className="text-[10.5px] text-muted-foreground/85 text-center mt-2.5 tracking-wide">
+        <p className="text-[10px] text-muted-foreground/85 text-center mt-2.5 tracking-wide">
           {footnote}
         </p>
 
@@ -366,7 +366,7 @@ const PremiumHero = ({
           </p>
           <div className="space-y-1">
             {VALUE_STACK.map(({ label, price }) => (
-              <div key={label} className="flex items-center justify-between text-[11.5px]">
+              <div key={label} className="flex items-center justify-between text-[11px]">
                 <span className="text-foreground/80">{label}</span>
                 <span className="text-muted-foreground/80 line-through">{price}</span>
               </div>

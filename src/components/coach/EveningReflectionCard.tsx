@@ -106,7 +106,7 @@ const EveningReflectionCard = () => {
         <div className="flex items-center gap-3 min-w-0">
           <div className={cn(
             "h-9 w-9 rounded-xl flex items-center justify-center shrink-0",
-            done ? "bg-gradient-to-br from-emerald-500/30 to-emerald-700/20 text-emerald-300" : "bg-card/60 text-gold",
+            done ? "bg-gradient-to-br from-xp-green/30 to-xp-green/20 text-xp-green" : "bg-card/60 text-gold",
           )}>
             {done ? <Check size={16} /> : <Moon size={16} />}
           </div>

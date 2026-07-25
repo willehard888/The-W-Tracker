@@ -42,21 +42,21 @@ const ProfileActivityPulse = ({ userId }: ProfileActivityPulseProps) => {
   return (
     <div className={cn(
       "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border backdrop-blur-sm",
-      isActive && "border-emerald-500/40 bg-emerald-500/5",
+      isActive && "border-xp-green/40 bg-xp-green/5",
       !isActive && isWarm && "border-amber-500/30 bg-amber-500/5",
       !isWarm && "border-border/50 bg-secondary/30",
     )}>
       {isActive ? (
         <span className="relative flex h-1.5 w-1.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-xp-green opacity-75" />
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-xp-green" />
         </span>
       ) : (
         <Activity size={9} className={cn(isWarm ? "text-amber-400" : "text-muted-foreground/60")} />
       )}
       <span className={cn(
         "text-[10px] font-bold tracking-wide",
-        isActive && "text-emerald-400",
+        isActive && "text-xp-green",
         !isActive && isWarm && "text-amber-400",
         !isWarm && "text-muted-foreground",
       )}>

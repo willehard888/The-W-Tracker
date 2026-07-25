@@ -583,8 +583,8 @@ const DailyCheckin = () => {
       <ErrorBoundary
         fallback={
           <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-            <div className="h-20 w-20 rounded-full bg-[hsl(152_68%_46%)]/15 flex items-center justify-center mx-auto mb-5">
-              <Check size={40} className="text-[hsl(152_68%_46%)]" />
+            <div className="h-20 w-20 rounded-full bg-xp-green/15 flex items-center justify-center mx-auto mb-5">
+              <Check size={40} className="text-xp-green" />
             </div>
             <h1 className="font-display text-2xl font-black tracking-tight mb-2">Checked in ✓</h1>
             <p className="text-muted-foreground text-sm mb-8">Your day is locked in. Nice work.</p>

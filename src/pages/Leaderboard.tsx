@@ -323,7 +323,7 @@ const Leaderboard = () => {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(18_95%_62%)] mb-0.5">1v1 Battles</p>
-          <p className="text-[12.5px] font-bold leading-tight">Challenge a friend — winner takes the score</p>
+          <p className="text-[12px] font-bold leading-tight">Challenge a friend — winner takes the score</p>
         </div>
         <ChevronRight size={16} className="text-muted-foreground shrink-0" />
       </button>

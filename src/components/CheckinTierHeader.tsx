@@ -216,7 +216,7 @@ const CheckinTierHeader = ({
                 perfPercent >= 80
                   ? "text-gold"
                   : perfPercent >= 50
-                  ? "text-emerald-400"
+                  ? "text-xp-green"
                   : perfPercent >= 25
                   ? "text-amber"
                   : "text-destructive",

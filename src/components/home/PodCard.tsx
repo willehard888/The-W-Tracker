@@ -80,7 +80,7 @@ const PodCard = () => {
             {inviteList.map((iv) => (
               <div key={iv.pod_id} className="flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/[0.05] p-2.5">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12.5px] font-bold truncate">{iv.pod_name}</p>
+                  <p className="text-[12px] font-bold truncate">{iv.pod_name}</p>
                   <p className="text-[10px] text-muted-foreground truncate">
                     @{iv.inviter_username} invited you · {iv.member_count}/5
                   </p>
@@ -193,7 +193,7 @@ const PodCard = () => {
                 </span>
               )}
             </div>
-            <span className="text-[8.5px] text-muted-foreground truncate max-w-[44px]">
+            <span className="text-[9px] text-muted-foreground truncate max-w-[44px]">
               {m.user_id === user?.id ? "You" : m.username}
             </span>
           </div>
@@ -203,12 +203,12 @@ const PodCard = () => {
             <span className="h-11 w-11 rounded-full border-2 border-dashed border-gold/40 flex items-center justify-center text-gold">
               <UserPlus size={15} />
             </span>
-            <span className="text-[8.5px] text-gold/80">Invite</span>
+            <span className="text-[9px] text-gold/80">Invite</span>
           </button>
         )}
       </div>
 
-      <p className={cn("text-[12.5px] font-bold leading-snug", youMissing ? "text-[hsl(var(--streak-orange))]" : "text-foreground/85")}>
+      <p className={cn("text-[12px] font-bold leading-snug", youMissing ? "text-[hsl(var(--streak-orange))]" : "text-foreground/85")}>
         {youMissing && <Flame size={12} className="inline mr-1 -mt-0.5 text-[hsl(var(--streak-orange))]" />}
         {line}
       </p>

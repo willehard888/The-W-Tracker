@@ -335,7 +335,7 @@ const Referrals = () => {
                 </div>
                 <p className="flex-1 min-w-0 text-[13px] font-bold truncate">@{r.referred_username}</p>
                 {r.converted ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[hsl(152_68%_46%)]">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-xp-green">
                     <Check size={12} /> Premium
                   </span>
                 ) : (
@@ -374,7 +374,7 @@ const Referrals = () => {
                 <s.icon size={16} className="text-gold" />
               </div>
               <p className="text-[11px] font-black tracking-tight leading-tight">{s.t}</p>
-              <p className="text-[9.5px] text-muted-foreground leading-snug mt-0.5">{s.d}</p>
+              <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">{s.d}</p>
             </div>
           ))}
         </div>
@@ -470,7 +470,7 @@ const Referrals = () => {
                       {!r.unlocked && (isApex || isLegend) && (
                         <span
                           className={cn(
-                            "text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border",
+                            "text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border",
                             isLegend ? "border-[hsl(280_70%_60%/0.5)] bg-[hsl(280_70%_30%/0.4)] text-[hsl(280_75%_85%)]" : "border-[hsl(18_95%_62%/0.5)] bg-[hsl(18_95%_30%/0.4)] text-[hsl(18_95%_80%)]"
                           )}
                         >

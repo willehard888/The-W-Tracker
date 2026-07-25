@@ -122,7 +122,7 @@ const GoalTrackerCard = () => {
         </div>
         <span className={cn(
           "text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full",
-          onPace ? "bg-emerald-500/15 text-emerald-300" : "bg-rose-500/15 text-rose-300"
+          onPace ? "bg-xp-green/15 text-xp-green" : "bg-rose-500/15 text-rose-300"
         )}>
           {onPace ? "On pace" : "Off pace"}
         </span>

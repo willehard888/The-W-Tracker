@@ -143,7 +143,7 @@ const AppleUsername = () => {
             ) : availability === "checking" ? (
               <p className="text-xs text-muted-foreground">Checking availability…</p>
             ) : availability === "available" ? (
-              <p className="text-xs text-emerald-400">@{username} is available ✓</p>
+              <p className="text-xs text-xp-green">@{username} is available ✓</p>
             ) : null}
           </div>
 

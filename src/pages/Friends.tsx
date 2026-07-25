@@ -250,7 +250,7 @@ const Friends = () => {
                     <Avatar url={f.avatar_url} name={f.username} />
                   </button>
                   <button onClick={() => navigate(`/user/${f.user_id}`)} className="flex-1 min-w-0 text-left">
-                    <p className="text-[13.5px] font-bold truncate">@{f.username}</p>
+                    <p className="text-[13px] font-bold truncate">@{f.username}</p>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-2">
                       <span>Lv {f.level ?? 1}</span>
                       {(f.streak ?? 0) > 0 && (

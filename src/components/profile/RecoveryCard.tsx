@@ -40,7 +40,7 @@ const RecoveryCard = () => {
           <HeartPulse size={13} className="text-[hsl(18_95%_58%)]" />
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">Recovery</p>
         </div>
-        <p className="text-[12.5px] text-muted-foreground leading-snug">
+        <p className="text-[12px] text-muted-foreground leading-snug">
           Allow Apple Health (sleep, heart rate) to see last night's recovery and let the coach explain why you slept the way you did.
         </p>
       </button>
@@ -87,13 +87,13 @@ const RecoveryCard = () => {
       className={cn(
         "rounded-2xl border p-4",
         underRecovered ? "border-[hsl(18_95%_58%)]/40 bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.07] via-card/95 to-card"
-          : "border-[hsl(152_68%_46%)]/35 bg-gradient-to-br from-[hsl(152_68%_46%)]/[0.06] via-card/95 to-card",
+          : "border-xp-green/35 bg-gradient-to-br from-xp-green/[0.06] via-card/95 to-card",
       )}
     >
       <div className="flex items-center gap-2 mb-2.5">
-        <HeartPulse size={13} className={underRecovered ? "text-[hsl(18_95%_58%)]" : "text-[hsl(152_68%_46%)]"} />
+        <HeartPulse size={13} className={underRecovered ? "text-[hsl(18_95%_58%)]" : "text-xp-green"} />
         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">Recovery · last night</p>
-        <span className={cn("ml-auto text-[10px] font-black uppercase tracking-wider", underRecovered ? "text-[hsl(18_95%_58%)]" : "text-[hsl(152_68%_46%)]")}>{status}</span>
+        <span className={cn("ml-auto text-[10px] font-black uppercase tracking-wider", underRecovered ? "text-[hsl(18_95%_58%)]" : "text-xp-green")}>{status}</span>
       </div>
 
       {last!.sleep_total_min != null && (
@@ -119,7 +119,7 @@ const RecoveryCard = () => {
             <span className="text-[13px] font-black tabular-nums">{Math.round(last!.resting_hr)}</span>
             <span className="text-[10px] text-muted-foreground">rhr</span>
             {rhrDelta != null && Math.abs(rhrDelta) >= 1 && (
-              <span className={cn("text-[10px] font-black tabular-nums", rhrDelta > 0 ? "text-[hsl(18_95%_58%)]" : "text-[hsl(152_68%_46%)]")}>
+              <span className={cn("text-[10px] font-black tabular-nums", rhrDelta > 0 ? "text-[hsl(18_95%_58%)]" : "text-xp-green")}>
                 {rhrDelta > 0 ? "+" : ""}{Math.round(rhrDelta)}
               </span>
             )}
@@ -138,7 +138,7 @@ const RecoveryCard = () => {
       <p className="text-[12px] text-foreground/85 leading-snug mb-3">{cause}</p>
 
       {/* What happened last night? — ground truth for the coach's causal read */}
-      <p className="text-[9.5px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1.5">What happened last night?</p>
+      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1.5">What happened last night?</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {NIGHT_FACTORS.map((f) => {
           const on = active.has(f);
@@ -148,7 +148,7 @@ const RecoveryCard = () => {
               type="button"
               onClick={() => toggleFactor(f)}
               className={cn(
-                "rounded-full px-2.5 py-1 text-[10.5px] font-bold border transition-all active:scale-95 capitalize",
+                "rounded-full px-2.5 py-1 text-[10px] font-bold border transition-all active:scale-95 capitalize",
                 on ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
               )}
             >

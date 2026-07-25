@@ -84,10 +84,10 @@ const HealthKitConnectCard = () => {
 
   // Connected — show verification stats
   return (
-    <div className="rounded-2xl border border-emerald-400/30 bg-gradient-to-b from-emerald-400/[0.06] to-card p-4">
+    <div className="rounded-2xl border border-xp-green/30 bg-gradient-to-b from-xp-green/[0.06] to-card p-4">
       <div className="flex items-center gap-2 mb-2">
-        <ShieldCheck size={14} className="text-emerald-400" />
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300">
+        <ShieldCheck size={14} className="text-xp-green" />
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-xp-green">
           {stats?.is_verified_performer ? "Verified Performer ✓" : "Apple Health · Connected"}
         </p>
       </div>
@@ -124,7 +124,7 @@ const Tile = ({ label, value, sub }: { label: string; value: string; sub: string
     <p className="text-base font-display font-black text-foreground tabular-nums leading-none mb-1">
       {value}
     </p>
-    <p className="text-[9.5px] text-muted-foreground leading-snug">{sub}</p>
+    <p className="text-[10px] text-muted-foreground leading-snug">{sub}</p>
   </div>
 );
 

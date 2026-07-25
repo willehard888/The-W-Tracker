@@ -24,7 +24,7 @@ import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 
 // Shared action-button styling for the profile header.
-const PRIMARY_BTN = "inline-flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-[12.5px] font-black tracking-tight transition-all active:scale-[0.98]";
+const PRIMARY_BTN = "inline-flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-[12px] font-black tracking-tight transition-all active:scale-[0.98]";
 const BTN_GOLD = "bg-gold text-primary-foreground shadow-[0_3px_12px_-2px_hsl(42_78%_50%/0.45)]";
 const SECONDARY_BTN = "text-gold border border-gold/30 bg-gold/[0.06] hover:bg-gold/10";
 

@@ -101,7 +101,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
               ))}
               {day.conditioning && (
                 <li className="pt-1">
-                  <p className="text-[9.5px] font-black uppercase tracking-widest text-gold mb-0.5">Conditioning</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gold mb-0.5">Conditioning</p>
                   <p className="text-[12px] text-foreground/85">{day.conditioning}</p>
                 </li>
               )}
@@ -156,11 +156,11 @@ const CollapseRow = ({
     )}
   >
     <span className={cn(
-      "text-[9.5px] font-black uppercase tracking-widest mt-0.5 shrink-0",
+      "text-[10px] font-black uppercase tracking-widest mt-0.5 shrink-0",
       muted ? "text-muted-foreground" : "text-gold",
     )}>{label}</span>
     <span className={cn(
-      "text-[11.5px] leading-snug flex-1",
+      "text-[11px] leading-snug flex-1",
       open ? "text-foreground/90" : "text-foreground/70 truncate",
     )}>
       {preview}

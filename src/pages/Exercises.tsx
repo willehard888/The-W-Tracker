@@ -72,7 +72,7 @@ const ExerciseDetail = ({ ex, onBack }: { ex: ExerciseEntry; onBack: () => void 
       <h1 className="font-display text-xl font-black tracking-tight leading-tight">{ex.name}</h1>
       <div className="flex flex-wrap gap-1.5 mt-2">
         {[ex.equipment, ex.level, ex.mechanic].filter(Boolean).map((t) => (
-          <span key={t as string} className="text-[9.5px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5">
+          <span key={t as string} className="text-[10px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5">
             {t}
           </span>
         ))}

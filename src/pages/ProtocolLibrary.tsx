@@ -200,7 +200,7 @@ const ProtocolLibrary = () => {
               >
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <div className="flex items-center gap-1.5">
-                    <span className={cn("text-[9.5px] font-black uppercase tracking-[0.22em]", meta.tint.text)}>
+                    <span className={cn("text-[10px] font-black uppercase tracking-[0.22em]", meta.tint.text)}>
                       {meta.emoji} {meta.name}
                     </span>
                     <EvidenceChip evidence={p.evidence} />

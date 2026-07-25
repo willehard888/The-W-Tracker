@@ -167,7 +167,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                     isCurrent
                       ? style.accent
                       : isUnlocked
-                      ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
+                      ? "bg-xp-green/15 text-xp-green border border-xp-green/25"
                       : cn("bg-background/40 border border-gold/25", cfg.textClass),
                     cfg.rank === 5 && !isCurrent && !isUnlocked && "border-[hsl(18_95%_58%)]/55 shadow-[0_0_10px_hsl(18_95%_58%/0.35)]",
                     cfg.rank === 6 && !isCurrent && !isUnlocked && "border-[hsl(280_70%_60%)]/55 shadow-[0_0_12px_hsl(280_70%_60%/0.45)]",
@@ -198,7 +198,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       {cfg.label}
                     </p>
                     {isCurrent && (
-                      <span className="relative text-[8.5px] uppercase tracking-[0.2em] font-black text-background bg-gradient-to-r from-gold to-gold-light px-1.5 py-[2px] rounded-sm shadow-[0_0_8px_hsl(var(--gold)/0.5)]">
+                      <span className="relative text-[9px] uppercase tracking-[0.2em] font-black text-background bg-gradient-to-r from-gold to-gold-light px-1.5 py-[2px] rounded-sm shadow-[0_0_8px_hsl(var(--gold)/0.5)]">
                         Current
                         <span
                           aria-hidden
@@ -235,7 +235,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       </span>
                     ) : (
                       <span className={cn(
-                        "inline-flex items-center gap-1 text-[9.5px] uppercase tracking-wider font-black px-2 py-1 rounded-md",
+                        "inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded-md",
                         cfg.rank >= 4
                           ? "text-gold border border-gold/55 bg-gradient-to-r from-gold/15 to-gold/5 shadow-[0_0_8px_hsl(var(--gold)/0.35)]"
                           : "text-foreground/80 border border-border/60 bg-background/30",
@@ -326,7 +326,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       </p>
                     </div>
                     {unlocked ? (
-                      <span className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-[9px] font-black uppercase tracking-wider">
+                      <span className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-xp-green/15 border border-xp-green/40 text-xp-green text-[9px] font-black uppercase tracking-wider">
                         <Check size={10} strokeWidth={3.5} /> Held
                       </span>
                     ) : (
@@ -354,7 +354,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                     <div className="space-y-1.5">
                       {cfg.requirements.percentile > 0 && (
                         <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-background/40 border border-border/50">
-                          <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", unlocked ? "bg-emerald-400" : "bg-foreground/40")} />
+                          <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", unlocked ? "bg-xp-green" : "bg-foreground/40")} />
                           <span className="text-[12px] font-semibold flex-1">
                             Top <span className={cn("font-black tabular-nums", cfg.textClass)}>{(100 - cfg.requirements.percentile).toFixed(cfg.requirements.percentile >= 99 ? 1 : 0)}%</span> in rank score
                           </span>
@@ -372,7 +372,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       )}
                       {cfg.requirements.activeDays > 0 && (
                         <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-background/40 border border-border/50">
-                          <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", unlocked ? "bg-emerald-400" : "bg-foreground/40")} />
+                          <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", unlocked ? "bg-xp-green" : "bg-foreground/40")} />
                           <span className="text-[12px] font-semibold flex-1">
                             <span className={cn("font-black tabular-nums", cfg.textClass)}>{cfg.requirements.activeDays}</span> active days in last 30
                           </span>
@@ -380,7 +380,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       )}
                       {cfg.requirements.streak > 0 && (
                         <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-background/40 border border-border/50">
-                          <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", unlocked ? "bg-emerald-400" : "bg-foreground/40")} />
+                          <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", unlocked ? "bg-xp-green" : "bg-foreground/40")} />
                           <span className="text-[12px] font-semibold flex-1">
                             <span className={cn("font-black tabular-nums", cfg.textClass)}>{cfg.requirements.streak}-day</span> current streak
                           </span>
@@ -424,7 +424,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                   </div>
 
                   {unlocked ? (
-                    <div className="rounded-lg p-3 text-center text-[12px] font-black bg-emerald-500/12 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider flex items-center justify-center gap-2">
+                    <div className="rounded-lg p-3 text-center text-[12px] font-black bg-xp-green/12 text-xp-green border border-xp-green/30 uppercase tracking-wider flex items-center justify-center gap-2">
                       <Check size={13} strokeWidth={3.5} /> Achieved
                     </div>
                   ) : isLegend ? (

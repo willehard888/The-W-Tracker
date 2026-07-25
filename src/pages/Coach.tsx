@@ -635,7 +635,7 @@ const ChatSheet = ({
                 <button
                   type="button"
                   onClick={goDeeper}
-                  className="mt-1.5 ml-1 inline-flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-wider text-gold/85 hover:text-gold transition"
+                  className="mt-1.5 ml-1 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-gold/85 hover:text-gold transition"
                 >
                   <Sparkles size={10} /> Go deeper
                 </button>

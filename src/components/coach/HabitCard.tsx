@@ -77,7 +77,7 @@ const HabitCard = ({ habit, doneToday, onLog, onArchive, onOpen }: Props) => {
             className={cn(
               "shrink-0 h-11 w-11 rounded-full border-2 flex items-center justify-center transition-all",
               doneToday
-                ? "bg-emerald-500/25 border-emerald-400/60 text-emerald-300"
+                ? "bg-xp-green/25 border-xp-green/60 text-xp-green"
                 : "bg-background/70 border-border/60 hover:border-gold/60 hover:bg-gold/10 active:scale-95",
             )}
           >
@@ -98,7 +98,7 @@ const HabitCard = ({ habit, doneToday, onLog, onArchive, onOpen }: Props) => {
             <p className={cn("font-bold text-[14px] leading-tight", doneToday && "line-through opacity-70")}>
               {protocol.title}
             </p>
-            <p className="text-[10.5px] text-muted-foreground mt-0.5 truncate">
+            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
               {protocol.dose.summary}
             </p>
           </button>

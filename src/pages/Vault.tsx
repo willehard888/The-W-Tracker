@@ -42,7 +42,7 @@ const CATEGORIES: VaultCategory[] = [
     description:
       "Macro-balanced, evidence-led nutrition: protein dosing, workout fueling, the Mediterranean pattern, and caffeine timing — drawn from peer-reviewed sports nutrition, not diet trends.",
     icon: Utensils,
-    accent: "hsl(142 70% 50%)",
+    accent: "hsl(152 68% 50%)",
   },
   {
     id: "training",
@@ -132,7 +132,7 @@ const Vault = () => {
         <h1 className="font-display text-[32px] leading-[0.95] font-black tracking-tight mb-2">
           The <span className="text-gradient-gold">Vault</span>
         </h1>
-        <p className="text-[12.5px] text-muted-foreground max-w-[300px] mx-auto leading-relaxed">
+        <p className="text-[12px] text-muted-foreground max-w-[300px] mx-auto leading-relaxed">
           A curated, evidence-led library of protocols across nutrition, training,
           recovery and nervous-system regulation — every article cited.
         </p>
@@ -238,7 +238,7 @@ const VaultCategoryBlock = ({
           <div className="absolute inset-x-0 bottom-0 z-10 p-4">
             <div className="flex items-center gap-1.5 mb-1">
               <Icon size={13} style={{ color: category.accent }} strokeWidth={2.6} />
-              <p className="text-[9.5px] font-black tracking-[0.2em] uppercase" style={{ color: category.accent }}>
+              <p className="text-[10px] font-black tracking-[0.2em] uppercase" style={{ color: category.accent }}>
                 {category.tagline}
               </p>
             </div>
@@ -250,7 +250,7 @@ const VaultCategoryBlock = ({
 
         {/* Description + expand caret */}
         <div className="flex items-center gap-2 px-4 py-3">
-          <p className="text-[11.5px] text-muted-foreground leading-snug flex-1">
+          <p className="text-[11px] text-muted-foreground leading-snug flex-1">
             {category.description}
           </p>
           <ChevronRight
@@ -276,7 +276,7 @@ const VaultCategoryBlock = ({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gold/85 mb-0.5">Meal-prep recipes</p>
-                  <p className="text-[12.5px] font-bold leading-tight">5 high-protein bowls · scale 1×–5× · storage & reheat</p>
+                  <p className="text-[12px] font-bold leading-tight">5 high-protein bowls · scale 1×–5× · storage & reheat</p>
                 </div>
                 <ChevronRight size={16} className="text-gold shrink-0" />
               </div>
@@ -333,7 +333,7 @@ const VaultCategoryBlock = ({
                             L{a.lesson_number}
                           </span>
                         )}
-                        <p className="font-display text-[13.5px] font-black tracking-tight leading-tight">
+                        <p className="font-display text-[13px] font-black tracking-tight leading-tight">
                           {a.title}
                         </p>
                       </div>
@@ -344,13 +344,13 @@ const VaultCategoryBlock = ({
                       )}
                       <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
                         <EvidenceChip tier={a.evidence_tier} />
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[8.5px] font-black tracking-[0.16em] uppercase text-muted-foreground">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[9px] font-black tracking-[0.16em] uppercase text-muted-foreground">
                           <Clock size={8} strokeWidth={3} />
                           {a.read_time_min} min
                         </span>
                         {done && (
                           <span
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8.5px] font-black tracking-[0.16em] uppercase"
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-[0.16em] uppercase"
                             style={{
                               background: `${category.accent}22`,
                               color: category.accent,

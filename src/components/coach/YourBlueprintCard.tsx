@@ -133,9 +133,9 @@ const Row = ({
   <div className="rounded-2xl border border-border/40 bg-card/60 px-3 py-2 min-w-0">
     <div className="flex items-center gap-1 text-muted-foreground/70 mb-0.5">
       <span className="text-gold/80 shrink-0">{icon}</span>
-      <p className="text-[8.5px] font-black uppercase tracking-[0.2em]">{label}</p>
+      <p className="text-[9px] font-black uppercase tracking-[0.2em]">{label}</p>
     </div>
-    <p className="text-[12.5px] font-bold text-foreground/95 leading-tight truncate">{value}</p>
+    <p className="text-[12px] font-bold text-foreground/95 leading-tight truncate">{value}</p>
   </div>
 );
 

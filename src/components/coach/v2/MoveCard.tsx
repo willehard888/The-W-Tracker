@@ -53,16 +53,16 @@ const MoveCard = () => {
           <p className="text-[11px] text-muted-foreground leading-snug">
             {picked.protocol.dose.summary}
           </p>
-          <p className="text-[10.5px] text-gold/85 leading-snug mt-2 italic">
+          <p className="text-[10px] text-gold/85 leading-snug mt-2 italic">
             {picked.reason}
           </p>
-          <div className="mt-3 inline-flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-wider text-gold">
+          <div className="mt-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-gold">
             Read & apply <ArrowRight size={10} />
           </div>
         </button>
       )}
 
-      <p className="mt-3 text-[10.5px] text-muted-foreground leading-snug">
+      <p className="mt-3 text-[10px] text-muted-foreground leading-snug">
         Log what you actually did in your daily <span className="text-gold/80 font-semibold">check-in</span> — that's where streaks and XP come from.
       </p>
 

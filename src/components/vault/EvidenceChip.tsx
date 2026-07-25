@@ -7,7 +7,7 @@ const TIER_META: Record<Tier, { label: string; Icon: typeof ShieldCheck; classes
   strong: {
     label: "Strong evidence",
     Icon: ShieldCheck,
-    classes: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300",
+    classes: "border-xp-green/40 bg-xp-green/10 text-xp-green",
   },
   promising: {
     label: "Promising",
@@ -29,7 +29,7 @@ const EvidenceChip = ({ tier, size = "sm" }: { tier: Tier; size?: "sm" | "md" })
       className={cn(
         "inline-flex items-center gap-1 rounded-full border font-black tracking-[0.16em] uppercase",
         m.classes,
-        size === "sm" ? "px-1.5 py-0.5 text-[8.5px]" : "px-2 py-1 text-[10px]",
+        size === "sm" ? "px-1.5 py-0.5 text-[9px]" : "px-2 py-1 text-[10px]",
       )}
     >
       <Icon size={size === "sm" ? 8 : 10} strokeWidth={3} />

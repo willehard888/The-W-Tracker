@@ -21,7 +21,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
       {program.ai_summary && (
         <div className="rounded-2xl border border-gold/20 bg-card/60 p-3.5">
           <p className="text-[10px] font-black tracking-[0.2em] uppercase text-gold mb-1">Overview</p>
-          <p className={cn("text-[12.5px] text-foreground/85 leading-snug", !showSummary && "line-clamp-2")}>
+          <p className={cn("text-[12px] text-foreground/85 leading-snug", !showSummary && "line-clamp-2")}>
             {program.ai_summary}
           </p>
           {program.ai_summary.length > 120 && (
@@ -127,7 +127,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                           ))}
                           {day.conditioning && (
                             <li className="text-[11px] text-foreground/80 pt-1">
-                              <span className="text-[9.5px] font-black uppercase tracking-widest text-gold mr-1.5">Conditioning</span>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-gold mr-1.5">Conditioning</span>
                               {day.conditioning}
                             </li>
                           )}
@@ -151,8 +151,8 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                   <div className="grid grid-cols-2 gap-2">
                     {week.nutrition && (
                       <div className="rounded-xl border border-border/40 bg-background/30 p-3">
-                        <p className="text-[9.5px] font-black uppercase tracking-widest text-gold mb-1">Nutrition</p>
-                        <p className="text-[11.5px] leading-snug text-foreground/85">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gold mb-1">Nutrition</p>
+                        <p className="text-[11px] leading-snug text-foreground/85">
                           {week.nutrition.protein_g_per_kg != null && (
                             <>Protein <b>{week.nutrition.protein_g_per_kg} g/kg</b>{week.nutrition.daily_kcal_band ? " · " : ". "}</>
                           )}
@@ -163,8 +163,8 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                     )}
                     {week.recovery && (
                       <div className="rounded-xl border border-border/40 bg-background/30 p-3">
-                        <p className="text-[9.5px] font-black uppercase tracking-widest text-gold mb-1">Recovery</p>
-                        <p className="text-[11.5px] leading-snug text-foreground/85">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gold mb-1">Recovery</p>
+                        <p className="text-[11px] leading-snug text-foreground/85">
                           {week.recovery.sleep_target_h != null && <>Sleep <b>{week.recovery.sleep_target_h} h</b> · </>}
                           {week.recovery.mobility_min != null && <>mobility {week.recovery.mobility_min} min · </>}
                           {week.recovery.breathwork && <>{week.recovery.breathwork}.</>}

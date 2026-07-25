@@ -1,4 +1,4 @@
-import { ChevronRight, Award, Crown, Utensils, Dumbbell } from "lucide-react";
+import { ChevronRight, Award, Crown, Utensils, Dumbbell, ArrowUp } from "lucide-react";
 import BadgeCard from "@/components/BadgeCard";
 import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
@@ -189,6 +189,37 @@ const Index = () => {
         }}
       />
 
+      {/* STATUS STRIP — earned tier + rank + today's climb. The daily "worth it"
+          flex, and it renders the rank delta (pulse) that was computed-but-dropped. */}
+      <div className="animate-reveal mb-3 relative z-10">
+        <button
+          onClick={() => navigate("/leaderboard")}
+          className="w-full flex items-center gap-3 rounded-2xl border border-border/60 bg-card/50 px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform"
+        >
+          <span className="text-xl leading-none shrink-0">{tierConfig.emoji}</span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-black leading-tight truncate">
+              {tierConfig.label}
+              {(rankData?.rank ?? 0) > 0 && (
+                <span className="text-muted-foreground font-semibold"> · #{rankData!.rank}</span>
+              )}
+            </p>
+            <p className="text-[10.5px] text-muted-foreground leading-tight">
+              {(rankData?.rank ?? 0) > 0
+                ? `of ${(rankData?.totalUsers ?? 0).toLocaleString()} · Lv ${profile.level}`
+                : "Your climb starts today"}
+            </p>
+          </div>
+          {pulse.hasSnapshot && pulse.rankDelta > 0 ? (
+            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 text-[10px] font-black text-teal">
+              <ArrowUp size={11} strokeWidth={3} /> {pulse.rankDelta} today
+            </span>
+          ) : (
+            <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+          )}
+        </button>
+      </div>
+
       {/* COMMAND DECK — Streak + Lock Your Day */}
       <div className="animate-reveal mb-4 relative z-10">
         <CommandDeck
@@ -233,7 +264,7 @@ const Index = () => {
         <button
           type="button"
           onClick={() => navigate("/recipes")}
-          className="w-full text-left rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/[0.10] via-card/95 to-card p-3.5 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.5)] active:scale-[0.99] transition-transform"
+          className="w-full text-left rounded-2xl border border-border/60 bg-card/60 p-3.5 active:scale-[0.99] transition-transform hover:bg-card/80"
         >
           <div className="flex items-center gap-3.5">
             <div className="h-16 w-16 rounded-2xl overflow-hidden shrink-0 relative border border-gold/30 bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center">
@@ -271,7 +302,7 @@ const Index = () => {
         <button
           type="button"
           onClick={() => navigate("/exercises")}
-          className="w-full text-left rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/[0.10] via-card/95 to-card p-3.5 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.5)] active:scale-[0.99] transition-transform"
+          className="w-full text-left rounded-2xl border border-border/60 bg-card/60 p-3.5 active:scale-[0.99] transition-transform hover:bg-card/80"
         >
           <div className="flex items-center gap-3.5">
             <div className="h-16 w-16 rounded-2xl overflow-hidden shrink-0 relative border border-gold/30 bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center">

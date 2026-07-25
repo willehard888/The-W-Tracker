@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
+import AnimatedNumber from "@/components/AnimatedNumber";
 
 interface StatCardProps {
   icon: LucideIcon;
@@ -75,7 +76,7 @@ const StatCard = ({ icon: Icon, label, value, sublabel, variant = "default", cla
           variant === "rose" && "text-[hsl(var(--rose))]",
           variant === "purple" && "text-[hsl(var(--purple))]"
         )}>
-          {value}
+          {typeof value === "number" ? <AnimatedNumber value={value} duration={900} /> : value}
         </p>
       </div>
     </div>);

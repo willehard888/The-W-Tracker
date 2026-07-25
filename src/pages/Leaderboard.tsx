@@ -19,6 +19,7 @@ import StreakFlameInline from "@/components/StreakFlameInline";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { hapticSelection } from "@/lib/haptics";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import AnimatedNumber from "@/components/AnimatedNumber";
 
 type LeaderRow = {
   username: string;
@@ -361,7 +362,7 @@ const Leaderboard = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-gold text-primary-foreground font-display font-black text-base shadow-lg shadow-gold/30">
-                  {hasRank ? `#${rank}` : "—"}
+                  {hasRank ? <span className="tabular-nums">#<AnimatedNumber value={rank} duration={800} /></span> : "—"}
               </div>
               <div>
                 <p className="font-display font-bold text-base tracking-tight">Your Position</p>

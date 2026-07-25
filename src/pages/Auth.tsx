@@ -212,7 +212,7 @@ const Auth = () => {
                     {invitedBy ? `@${invitedBy} invited you` : "You were invited"} → 14-day free trial
                   </p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
-                    Normally 7 days. Your referrer earns +50 XP when you verify.
+                    Full access, cancel anytime. Your referrer earns +50 XP when you verify.
                   </p>
                 </div>
               ) : (

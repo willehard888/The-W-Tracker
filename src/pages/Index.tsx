@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import ConfettiBurst from "@/components/ConfettiBurst";
+import { Portal } from "@/components/ui/Portal";
 import { supabase } from "@/integrations/supabase/client";
 import { getTierConfig } from "@/lib/status-tiers";
 import { recipeThumb } from "@/lib/recipe-images";
@@ -131,9 +132,9 @@ const Index = () => {
   // Live rank delta for HeroHeader pulse line
   const pulse = useDailyPulse(
     profile?.user_id || "",
-    rankData?.rank ?? 0,
+    rankData?.rank,            // undefined until loaded — do NOT coerce to 0 (poisons the snapshot)
     Number((profile as any)?.rank_score) || 0,
-    rankData?.totalUsers ?? 0,
+    rankData?.totalUsers,
   );
 
   // ── Checkin-derived values (hooks must be before any early return) ────────
@@ -154,7 +155,7 @@ const Index = () => {
       365: "A full year. You've become undeniable.",
     };
     if (!(s in MESSAGES)) return;
-    const key = `streak_milestone_seen_${s}`;
+    const key = `streak_milestone_seen_${profile?.user_id}_${s}`;
     if (localStorage.getItem(key)) return;
     localStorage.setItem(key, "1");
     setMilestoneConfetti(true);
@@ -182,7 +183,13 @@ const Index = () => {
 
   return (
     <div className="h-full pb-6 px-4 pt-3 relative overflow-y-auto overflow-x-hidden">
-      <ConfettiBurst active={milestoneConfetti} />
+      {milestoneConfetti && (
+        <Portal>
+          <div className="fixed inset-0 pointer-events-none z-[200]">
+            <ConfettiBurst active={milestoneConfetti} />
+          </div>
+        </Portal>
+      )}
       {/* Tier-reactive top aura */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[760px] h-[460px] pointer-events-none z-0"

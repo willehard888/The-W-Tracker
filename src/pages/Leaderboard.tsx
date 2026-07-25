@@ -362,7 +362,7 @@ const Leaderboard = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-gold text-primary-foreground font-display font-black text-base shadow-lg shadow-gold/30">
-                  {hasRank ? <span className="tabular-nums">#<AnimatedNumber value={rank} duration={800} /></span> : "—"}
+                  {hasRank ? <span className="tabular-nums">#<AnimatedNumber value={rank ?? 0} duration={800} /></span> : "—"}
               </div>
               <div>
                 <p className="font-display font-bold text-base tracking-tight">Your Position</p>

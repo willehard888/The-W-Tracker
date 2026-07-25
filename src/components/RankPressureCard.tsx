@@ -156,7 +156,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
                 !hasRank
                   ? "bg-muted/30 text-muted-foreground"
                   : isRising
-                  ? "bg-emerald-500/15 text-emerald-400"
+                  ? "bg-xp-green/15 text-xp-green"
                   : isFalling
                   ? "bg-destructive/15 text-destructive"
                   : "bg-gold/10 text-gold/70",
@@ -198,7 +198,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
                 : isFalling
                 ? "bg-destructive/10 text-destructive border border-destructive/25"
                 : isRising
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/25"
+                ? "bg-xp-green/10 text-xp-green border border-xp-green/25"
                 : "bg-gold/8 text-gold/85 border border-gold/20",
             )}
           >

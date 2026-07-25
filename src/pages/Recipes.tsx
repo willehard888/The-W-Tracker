@@ -74,7 +74,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
             <p className="text-[12px] text-muted-foreground leading-snug">{recipe.blurb}</p>
           </div>
           <RecipeImage id={recipe.id} className="absolute inset-0 h-full w-full object-cover" />
-          <span className="absolute bottom-2.5 right-2.5 inline-flex items-center gap-1 rounded-md bg-black/45 backdrop-blur-sm px-2 py-1 text-[9.5px] font-semibold tracking-wide text-white/85">
+          <span className="absolute bottom-2.5 right-2.5 inline-flex items-center gap-1 rounded-md bg-black/45 backdrop-blur-sm px-2 py-1 text-[10px] font-semibold tracking-wide text-white/85">
             <Maximize2 size={10} /> Enlarge
           </span>
         </button>
@@ -122,7 +122,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
                   <p className="text-[10px] font-black uppercase tracking-wider text-foreground/60 mb-1.5">{g.title}</p>
                   <ul className="space-y-1">
                     {g.items.map((it, i) => (
-                      <li key={i} className="flex items-baseline gap-2 text-[12.5px]">
+                      <li key={i} className="flex items-baseline gap-2 text-[12px]">
                         <span className="h-1 w-1 rounded-full bg-gold/50 shrink-0 mt-1.5" />
                         <span className="text-foreground/85">
                           {it.qty != null && (
@@ -148,7 +148,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
               <Refrigerator size={15} className="text-gold/80 shrink-0" />
               <div>
                 <p className="text-[14px] font-black tabular-nums leading-none">{recipe.mealPrep.fridgeDays}d</p>
-                <p className="text-[8.5px] uppercase tracking-wider text-muted-foreground mt-0.5">Fridge</p>
+                <p className="text-[9px] uppercase tracking-wider text-muted-foreground mt-0.5">Fridge</p>
               </div>
             </div>
             {recipe.mealPrep.freezerWeeks != null && (
@@ -156,7 +156,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
                 <Snowflake size={15} className="text-gold/80 shrink-0" />
                 <div>
                   <p className="text-[14px] font-black tabular-nums leading-none">{recipe.mealPrep.freezerWeeks}wk</p>
-                  <p className="text-[8.5px] uppercase tracking-wider text-muted-foreground mt-0.5">Freezer</p>
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground mt-0.5">Freezer</p>
                 </div>
               </div>
             )}
@@ -166,7 +166,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
           </p>
           <ul className="space-y-1">
             {recipe.mealPrep.tips.map((t, i) => (
-              <li key={i} className="text-[11.5px] text-muted-foreground leading-snug flex gap-1.5">
+              <li key={i} className="text-[11px] text-muted-foreground leading-snug flex gap-1.5">
                 <span className="text-gold/50 shrink-0">•</span> {t}
               </li>
             ))}

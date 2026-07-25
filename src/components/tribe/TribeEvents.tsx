@@ -186,27 +186,27 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
         {isNext && (
           <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 rounded-full bg-[hsl(18_95%_58%)]/15 border border-[hsl(18_95%_58%)]/35">
             <Flame size={9} className="text-[hsl(18_95%_58%)]" fill="currentColor" />
-            <span className="text-[8.5px] font-black uppercase tracking-widest text-[hsl(18_95%_58%)]">Next up</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-[hsl(18_95%_58%)]">Next up</span>
           </div>
         )}
         <div className="flex items-start gap-3">
           <div className="shrink-0 w-14 rounded-xl bg-gradient-to-b from-gold/20 to-gold/[0.04] border border-gold/30 flex flex-col items-center justify-center py-2 shadow-[0_4px_14px_-8px_hsl(var(--gold)/0.6)]">
-            <span className="text-[8.5px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "EEE")}</span>
+            <span className="text-[9px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "EEE")}</span>
             <span className="font-display font-black text-2xl leading-none text-gold tabular-nums my-0.5">{format(start, "d")}</span>
-            <span className="text-[8.5px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "MMM")}</span>
+            <span className="text-[9px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "MMM")}</span>
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               {ev.activity && (() => {
                 const ActIcon = activityIcon(ev.activity);
                 return (
-                  <span className="inline-flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded px-1.5 py-0.5">
+                  <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded px-1.5 py-0.5">
                     <ActIcon size={9} strokeWidth={2.6} /> {ev.activity}
                   </span>
                 );
               })()}
               {rel && (
-                <span className="text-[8.5px] font-black uppercase tracking-wider text-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%)]/10 border border-[hsl(18_95%_58%)]/25 rounded px-1.5 py-0.5">{rel}</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%)]/10 border border-[hsl(18_95%_58%)]/25 rounded px-1.5 py-0.5">{rel}</span>
               )}
             </div>
             <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{ev.title}</p>
@@ -221,7 +221,7 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
                 <div className="h-full rounded-full bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold transition-all duration-500" style={{ width: `${pct}%` }} />
               </div>
             )}
-            {ev.description && <p className="text-[11.5px] text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
+            {ev.description && <p className="text-[11px] text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
             {isMember && (
               <div className="mt-2.5 flex items-center gap-1.5">
                 {ev.meeting_url && (
@@ -285,11 +285,11 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-[8.5px] font-black uppercase tracking-widest text-gold bg-gold/12 border border-gold/30 rounded px-1.5 py-0.5">
+              <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-gold bg-gold/12 border border-gold/30 rounded px-1.5 py-0.5">
                 <ActIcon size={9} strokeWidth={2.6} /> {series.sessions.length}-part series
               </span>
               {series.activity && (
-                <span className="text-[8.5px] font-black uppercase tracking-wider text-muted-foreground">{series.activity}</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">{series.activity}</span>
               )}
             </div>
             <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{series.title}</p>
@@ -447,7 +447,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
           ))}
         </div>
         {kind === "series" && (
-          <p className="text-[10.5px] text-muted-foreground -mt-1 mb-2.5 leading-snug">
+          <p className="text-[10px] text-muted-foreground -mt-1 mb-2.5 leading-snug">
             A multi-part run — a course, a workshop series, a program. Add every session date; place &amp; link below apply to them all.
           </p>
         )}
@@ -457,7 +457,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
           <div className="space-y-2">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="text-[8.5px] font-black tracking-widest uppercase text-muted-foreground/55 mb-1">{group.label}</p>
+                <p className="text-[9px] font-black tracking-widest uppercase text-muted-foreground/55 mb-1">{group.label}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {group.items.map(({ name, icon: Icon }) => (
                     <button key={name} onClick={() => pickActivity(name)}

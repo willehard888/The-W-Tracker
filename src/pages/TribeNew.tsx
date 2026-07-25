@@ -143,7 +143,7 @@ const TribeNew = () => {
               className={cn(
                 "pr-10",
                 nameStatus === "taken" && "border-destructive/60",
-                nameStatus === "available" && "border-[hsl(152_68%_46%)]/60",
+                nameStatus === "available" && "border-xp-green/60",
               )}
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -151,7 +151,7 @@ const TribeNew = () => {
                 <Loader2 size={14} className="animate-spin text-muted-foreground" />
               )}
               {nameStatus === "available" && (
-                <Check size={14} className="text-[hsl(152_68%_46%)]" />
+                <Check size={14} className="text-xp-green" />
               )}
               {nameStatus === "taken" && (
                 <X size={14} className="text-destructive" />
@@ -161,7 +161,7 @@ const TribeNew = () => {
           <div className="flex items-center justify-between mt-1">
             <p className="text-[10px] text-muted-foreground">{name.length}/40</p>
             {nameStatus === "available" && (
-              <p className="text-[10px] font-bold text-[hsl(152_68%_46%)]">Available</p>
+              <p className="text-[10px] font-bold text-xp-green">Available</p>
             )}
             {nameStatus === "taken" && (
               <p className="text-[10px] font-bold text-destructive">Already taken</p>
@@ -241,7 +241,7 @@ const TribeNew = () => {
                 )}
               >
                 <o.icon size={15} className={visibility === o.v ? "text-gold" : "text-muted-foreground"} />
-                <p className={cn("text-[12.5px] font-black mt-1.5", visibility === o.v ? "text-gold" : "text-foreground")}>{o.t}</p>
+                <p className={cn("text-[12px] font-black mt-1.5", visibility === o.v ? "text-gold" : "text-foreground")}>{o.t}</p>
                 <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">{o.d}</p>
               </button>
             ))}

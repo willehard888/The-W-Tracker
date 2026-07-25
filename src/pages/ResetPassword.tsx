@@ -97,8 +97,8 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm text-center animate-reveal">
-          <div className="h-14 w-14 mx-auto rounded-xl bg-green-500/20 border border-green-500/30 flex items-center justify-center mb-6">
-            <Check size={24} className="text-green-400" />
+          <div className="h-14 w-14 mx-auto rounded-xl bg-xp-green/20 border border-xp-green/30 flex items-center justify-center mb-6">
+            <Check size={24} className="text-xp-green" />
           </div>
           <h1 className="font-display text-2xl font-bold mb-2">Password Updated</h1>
           <p className="text-sm text-muted-foreground mb-6">

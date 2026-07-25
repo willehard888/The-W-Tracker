@@ -218,7 +218,7 @@ const Auth = () => {
               ) : (
                 <div className="mt-2 rounded-lg border border-gold/25 bg-gold/[0.04] px-3 py-2 flex items-center gap-2">
                   <Crown size={13} className="text-gold shrink-0" />
-                  <p className="text-[10.5px] text-foreground/85 leading-snug">
+                  <p className="text-[10px] text-foreground/85 leading-snug">
                     <span className="text-gold font-bold">14-day free trial</span> — full access to
                     coach, training, recipes &amp; recovery. Cancel anytime.
                   </p>

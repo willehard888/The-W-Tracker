@@ -147,7 +147,7 @@ const BadgeCompare = () => {
                   className={cn(
                     "flex items-center gap-3 p-3 rounded-xl border transition-all",
                     iHave && theyHave ? "border-gold/20 bg-gold/[0.03]" :
-                    iHave && !theyHave ? "border-emerald-500/20 bg-emerald-500/[0.03]" :
+                    iHave && !theyHave ? "border-xp-green/20 bg-xp-green/[0.03]" :
                     !iHave && theyHave ? "border-destructive/20 bg-destructive/[0.03]" :
                     "border-border bg-card opacity-40"
                   )}
@@ -166,10 +166,10 @@ const BadgeCompare = () => {
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full", iHave ? "bg-emerald-500/15 text-emerald-400" : "bg-secondary text-muted-foreground")}>
+                    <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full", iHave ? "bg-xp-green/15 text-xp-green" : "bg-secondary text-muted-foreground")}>
                       {iHave ? "✓" : "✗"}
                     </span>
-                    <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full", theyHave ? "bg-emerald-500/15 text-emerald-400" : "bg-secondary text-muted-foreground")}>
+                    <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full", theyHave ? "bg-xp-green/15 text-xp-green" : "bg-secondary text-muted-foreground")}>
                       {theyHave ? "✓" : "✗"}
                     </span>
                   </div>

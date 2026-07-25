@@ -45,7 +45,7 @@ const LessonQuiz = ({
           const picked = answers[qi];
           return (
             <div key={qi}>
-              <p className="text-[12.5px] font-semibold leading-snug mb-2">
+              <p className="text-[12px] font-semibold leading-snug mb-2">
                 {qi + 1}. {q.q}
               </p>
               <div className="space-y-1.5">
@@ -63,14 +63,14 @@ const LessonQuiz = ({
                       style={{
                         background: showState
                           ? isCorrect
-                            ? "hsl(142 70% 50% / 0.12)"
+                            ? "hsl(152 68% 50% / 0.12)"
                             : "hsl(0 75% 60% / 0.10)"
                           : isPicked
                             ? `${accent}18`
                             : "hsl(var(--background) / 0.4)",
                         borderColor: showState
                           ? isCorrect
-                            ? "hsl(142 70% 50% / 0.55)"
+                            ? "hsl(152 68% 50% / 0.55)"
                             : "hsl(0 75% 60% / 0.45)"
                           : isPicked
                             ? `${accent}66`
@@ -85,7 +85,7 @@ const LessonQuiz = ({
                         }}
                       >
                         {showState && isCorrect && (
-                          <CheckCircle2 size={11} className="text-emerald-300" />
+                          <CheckCircle2 size={11} className="text-xp-green" />
                         )}
                         {showState && isPicked && !isCorrect && (
                           <XCircle size={11} className="text-rose-300" />

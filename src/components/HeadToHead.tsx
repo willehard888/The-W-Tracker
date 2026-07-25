@@ -55,7 +55,7 @@ const DeltaPill = ({
       className={cn(
         "inline-flex items-center gap-0.5 px-1.5 py-[3px] rounded-full text-[9px] font-black tabular-nums border leading-none",
         tied && "text-muted-foreground border-border bg-secondary/30",
-        !tied && meWins && "text-emerald-300 border-emerald-500/40 bg-emerald-500/10 shadow-[0_0_8px_-2px_hsl(142_70%_45%/0.4)]",
+        !tied && meWins && "text-xp-green border-xp-green/40 bg-xp-green/10 shadow-[0_0_8px_-2px_hsl(152_68%_45%/0.4)]",
         !tied && !meWins && "text-rose-300 border-rose-500/40 bg-rose-500/10",
       )}
     >
@@ -183,8 +183,8 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
         </div>
         <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider flex items-center gap-1">
           <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400/70 opacity-75 animate-ping" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+            <span className="absolute inline-flex h-full w-full rounded-full bg-xp-green/70 opacity-75 animate-ping" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-xp-green" />
           </span>
           Live
         </span>

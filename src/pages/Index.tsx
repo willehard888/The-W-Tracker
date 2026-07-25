@@ -236,7 +236,7 @@ const Index = () => {
                 <span className="text-muted-foreground font-semibold"> · #{rankData!.rank}</span>
               )}
             </p>
-            <p className="text-[10.5px] text-muted-foreground leading-tight">
+            <p className="text-[10px] text-muted-foreground leading-tight">
               {(rankData?.rank ?? 0) > 0
                 ? `of ${(rankData?.totalUsers ?? 0).toLocaleString()} · Lv ${profile.level}`
                 : "Your climb starts today"}
@@ -319,7 +319,7 @@ const Index = () => {
                   15
                 </span>
               </div>
-              <p className="text-[13.5px] font-bold text-foreground leading-tight">
+              <p className="text-[13px] font-bold text-foreground leading-tight">
                 High-protein bowls &amp; plates that scale to a full week
               </p>
             </div>
@@ -356,7 +356,7 @@ const Index = () => {
                   500+
                 </span>
               </div>
-              <p className="text-[13.5px] font-bold text-foreground leading-tight">
+              <p className="text-[13px] font-bold text-foreground leading-tight">
                 Every lift with photos &amp; step-by-step form cues
               </p>
             </div>

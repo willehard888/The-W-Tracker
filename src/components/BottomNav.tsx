@@ -163,7 +163,7 @@ const BottomNav = () => {
 
               <span
                 className={cn(
-                  "relative text-[9.5px] font-bold tracking-wide leading-none",
+                  "relative text-[10px] font-bold tracking-wide leading-none",
                   active ? "opacity-100" : "opacity-65",
                 )}
               >

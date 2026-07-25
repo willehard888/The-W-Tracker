@@ -29,7 +29,7 @@ const ProgressionSummaryCard = () => {
       </div>
 
       {empty ? (
-        <p className="text-[12.5px] text-muted-foreground leading-snug">
+        <p className="text-[12px] text-muted-foreground leading-snug">
           Log your lifts (weight × reps) in your program to track PRs and progression here.
         </p>
       ) : (
@@ -46,8 +46,8 @@ const ProgressionSummaryCard = () => {
                 <div key={m.name} className="flex items-center gap-2 text-[12px]">
                   <span className="flex-1 truncate font-bold text-foreground/90">{m.name}</span>
                   <span className="tabular-nums text-muted-foreground">{m.latestWeight}kg</span>
-                  <span className="tabular-nums font-black text-[hsl(152_68%_46%)]">+{Math.round(m.deltaKg * 10) / 10}kg</span>
-                  {m.isPR ? <Trophy size={11} className="text-gold" /> : <TrendingUp size={11} className="text-[hsl(152_68%_46%)]" />}
+                  <span className="tabular-nums font-black text-xp-green">+{Math.round(m.deltaKg * 10) / 10}kg</span>
+                  {m.isPR ? <Trophy size={11} className="text-gold" /> : <TrendingUp size={11} className="text-xp-green" />}
                 </div>
               ))}
             </div>

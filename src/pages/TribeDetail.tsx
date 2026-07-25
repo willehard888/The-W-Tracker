@@ -581,7 +581,7 @@ const TribeDetail = () => {
       {/* Tiny LIVE indicator under the hero */}
       <div className="flex items-center justify-center gap-1.5 mb-3">
         <span
-          className={`h-1.5 w-1.5 rounded-full ${fireReactor.connected ? "bg-emerald-400 animate-pulse" : "bg-muted-foreground/40"}`}
+          className={`h-1.5 w-1.5 rounded-full ${fireReactor.connected ? "bg-xp-green animate-pulse" : "bg-muted-foreground/40"}`}
           style={fireReactor.connected ? { boxShadow: "0 0 8px hsl(142 76% 50% / 0.8)" } : undefined}
         />
         <span className="text-[9px] uppercase tracking-widest font-black text-muted-foreground/80">

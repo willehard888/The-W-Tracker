@@ -65,7 +65,7 @@ const PerformanceOSDashboard = () => {
   const prev = values[values.length - 2] ?? null;
   const delta = latest != null && prev != null ? latest - prev : 0;
   const TrendIcon = delta > 1 ? TrendingUp : delta < -1 ? TrendingDown : Minus;
-  const trendColor = delta > 1 ? "text-emerald-400" : delta < -1 ? "text-rose-400" : "text-muted-foreground";
+  const trendColor = delta > 1 ? "text-xp-green" : delta < -1 ? "text-rose-400" : "text-muted-foreground";
 
   // Average components over last 7 days
   const last7 = (snaps ?? []).slice(-7);

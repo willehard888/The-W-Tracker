@@ -90,7 +90,7 @@ const buttonVariants = cva(
         tier: "text-primary-foreground font-bold [--tier-color:var(--gold)] [background:hsl(var(--tier-color))] hover:brightness-105",
 
         // Success — flat green.
-        success: "text-white font-semibold bg-[hsl(140_52%_36%)] hover:brightness-105",
+        success: "text-white font-semibold bg-[hsl(152_52%_36%)] hover:brightness-105",
 
         // Warning — flat amber.
         warning: "text-[hsl(24_80%_12%)] font-semibold bg-[hsl(38_86%_52%)] hover:brightness-105",

@@ -98,7 +98,7 @@ const CoachBriefHero = ({
               className="w-full flex items-center gap-2 rounded-xl border border-gold/20 bg-gold/[0.04] px-3 py-2.5 text-left active:scale-[0.99] transition-transform"
             >
               <MessageCircle size={13} className="text-gold/70 shrink-0" />
-              <span className="text-[12.5px] font-semibold text-foreground/85 leading-snug">{q}</span>
+              <span className="text-[12px] font-semibold text-foreground/85 leading-snug">{q}</span>
             </button>
           ))}
         </div>

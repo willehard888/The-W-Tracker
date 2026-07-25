@@ -102,8 +102,8 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
                   <Icon size={14} className="text-gold" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[12.5px] font-bold leading-tight">{title}</p>
-                  <p className="text-[10.5px] text-muted-foreground leading-snug mt-0.5">{text}</p>
+                  <p className="text-[12px] font-bold leading-tight">{title}</p>
+                  <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">{text}</p>
                 </div>
               </div>
             ))}

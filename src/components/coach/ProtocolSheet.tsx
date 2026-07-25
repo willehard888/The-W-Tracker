@@ -134,7 +134,7 @@ const ProtocolBody = ({
           <div className="rounded-2xl border border-gold/35 bg-gold/[0.08] p-3.5">
             <div className="flex items-center gap-1.5 mb-1">
               <Sparkles size={11} className="text-gold" />
-              <p className="text-[9.5px] font-black uppercase tracking-[0.22em] text-gold">
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">
                 Why this — for you, today
               </p>
             </div>
@@ -143,7 +143,7 @@ const ProtocolBody = ({
         )}
 
         <Block icon={Clock} label="Dose">
-          <p className="text-[13.5px] font-bold text-foreground/95">{protocol.dose.summary}</p>
+          <p className="text-[13px] font-bold text-foreground/95">{protocol.dose.summary}</p>
           {(protocol.dose.frequency_per_week || protocol.dose.duration_min) && (
             <p className="text-[11px] text-muted-foreground mt-1">
               {protocol.dose.duration_min ? `${protocol.dose.duration_min} min` : null}
@@ -175,7 +175,7 @@ const ProtocolBody = ({
           <Block icon={BookOpen} label="Anchor references">
             <ul className="space-y-1">
               {protocol.citations.map((c) => (
-                <li key={c} className="text-[11.5px] text-muted-foreground leading-snug">
+                <li key={c} className="text-[11px] text-muted-foreground leading-snug">
                   • {c}
                 </li>
               ))}
@@ -201,7 +201,7 @@ const Block = ({ icon: Icon, label, children }: { icon: any; label: string; chil
   <div>
     <div className="flex items-center gap-1.5 mb-1">
       <Icon size={11} className="text-muted-foreground" />
-      <p className="text-[9.5px] font-black uppercase tracking-[0.22em] text-muted-foreground">{label}</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground">{label}</p>
     </div>
     {children}
   </div>

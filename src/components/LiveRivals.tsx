@@ -64,7 +64,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Ahead of you</p>
             </div>
             <div className="flex items-center gap-1 text-xs font-black tabular-nums text-muted-foreground">
-              <ArrowUp size={12} className="text-emerald-400" />
+              <ArrowUp size={12} className="text-xp-green" />
               {data.above.delta.toFixed(1)} pts
             </div>
           </button>

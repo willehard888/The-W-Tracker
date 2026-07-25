@@ -134,13 +134,13 @@ const StateCard = () => {
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <span className="text-xl shrink-0">{pillarMeta.emoji}</span>
           <div className="text-left min-w-0 flex-1">
-            <p className="text-[9.5px] font-black uppercase tracking-[0.18em] text-muted-foreground/85 mb-0.5">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/85 mb-0.5">
               Weakest pillar
             </p>
             <p className={cn("text-[13px] font-bold leading-tight", pillarMeta.tint.text)}>
               {pillarMeta.name}
             </p>
-            <p className="text-[10.5px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">
+            <p className="text-[10px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">
               {pillarMeta.blurb}
             </p>
           </div>

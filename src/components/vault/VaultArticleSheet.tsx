@@ -153,7 +153,7 @@ const VaultArticleSheet = ({
                   </span>
                 )}
                 <EvidenceChip tier={article.evidence_tier} />
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[8.5px] font-black tracking-[0.16em] uppercase text-muted-foreground">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[9px] font-black tracking-[0.16em] uppercase text-muted-foreground">
                   <Clock size={8} strokeWidth={3} />
                   {article.read_time_min} min
                 </span>
@@ -167,7 +167,7 @@ const VaultArticleSheet = ({
                   {article.subtitle}
                 </p>
               )}
-              <p className="text-[12.5px] text-muted-foreground mt-2 leading-relaxed">
+              <p className="text-[12px] text-muted-foreground mt-2 leading-relaxed">
                 {article.summary}
               </p>
             </div>
@@ -189,7 +189,7 @@ const VaultArticleSheet = ({
                   }}
                 >
                   <SectionHeader Icon={Lightbulb} label="Why it matters" color={accent} />
-                  <p className="text-[12.5px] text-foreground/90 leading-relaxed">
+                  <p className="text-[12px] text-foreground/90 leading-relaxed">
                     {article.why_it_matters}
                   </p>
                 </section>
@@ -215,7 +215,7 @@ const VaultArticleSheet = ({
                       Protocol
                     </p>
                   </div>
-                  <dl className="space-y-2 text-[12.5px]">
+                  <dl className="space-y-2 text-[12px]">
                     {article.protocol.duration && (
                       <ProtocolRow label="Duration" value={article.protocol.duration} />
                     )}
@@ -234,13 +234,13 @@ const VaultArticleSheet = ({
 
               {article.benefits.length > 0 && (
                 <section>
-                  <SectionHeader Icon={CheckCircle2} label="Expected benefits" color="hsl(142 70% 50%)" />
+                  <SectionHeader Icon={CheckCircle2} label="Expected benefits" color="hsl(152 68% 50%)" />
                   <ul className="space-y-1.5">
                     {article.benefits.map((b, i) => (
-                      <li key={i} className="flex items-start gap-2 text-[12.5px]">
+                      <li key={i} className="flex items-start gap-2 text-[12px]">
                         <CheckCircle2
                           size={13}
-                          className="mt-[3px] shrink-0 text-emerald-400"
+                          className="mt-[3px] shrink-0 text-xp-green"
                           strokeWidth={2.6}
                         />
                         <span className="text-foreground/90">{b}</span>
@@ -255,7 +255,7 @@ const VaultArticleSheet = ({
                   <SectionHeader Icon={AlertTriangle} label="Risks & limits" color="hsl(35 90% 60%)" />
                   <ul className="space-y-1.5">
                     {article.risks.map((r, i) => (
-                      <li key={i} className="flex items-start gap-2 text-[12.5px]">
+                      <li key={i} className="flex items-start gap-2 text-[12px]">
                         <AlertTriangle
                           size={13}
                           className="mt-[3px] shrink-0 text-amber-400"
@@ -270,7 +270,7 @@ const VaultArticleSheet = ({
 
               <section>
                 <SectionHeader Icon={BookMarked} label="The science" color={accent} />
-                <article className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:tracking-tight prose-h2:text-[16px] prose-h2:mt-5 prose-h2:mb-2 prose-h3:text-[14px] prose-p:my-2 prose-p:leading-relaxed prose-li:my-0.5 prose-strong:text-foreground prose-table:text-[11.5px] prose-th:font-black prose-th:text-foreground prose-th:bg-card/60 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-td:border-border/40">
+                <article className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:tracking-tight prose-h2:text-[16px] prose-h2:mt-5 prose-h2:mb-2 prose-h3:text-[14px] prose-p:my-2 prose-p:leading-relaxed prose-li:my-0.5 prose-strong:text-foreground prose-table:text-[11px] prose-th:font-black prose-th:text-foreground prose-th:bg-card/60 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-td:border-border/40">
                   <ReactMarkdown>{article.body_md}</ReactMarkdown>
                 </article>
               </section>
@@ -286,7 +286,7 @@ const VaultArticleSheet = ({
                   <SectionHeader Icon={Zap} label="Try this today" color={accent} />
                   <ol className="space-y-2">
                     {article.try_today.map((step, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-[12.5px]">
+                      <li key={i} className="flex items-start gap-2.5 text-[12px]">
                         <span
                           className="mt-[1px] h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-black"
                           style={{
@@ -309,7 +309,7 @@ const VaultArticleSheet = ({
                   <SectionHeader Icon={ListChecks} label="Key takeaways" color={accent} />
                   <ul className="space-y-1.5">
                     {article.key_takeaways.map((k, i) => (
-                      <li key={i} className="flex items-start gap-2 text-[12.5px]">
+                      <li key={i} className="flex items-start gap-2 text-[12px]">
                         <span
                           className="mt-[7px] h-1.5 w-1.5 rounded-full shrink-0"
                           style={{ background: accent }}
@@ -386,7 +386,7 @@ const VaultArticleSheet = ({
 
 const ProtocolRow = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col">
-    <dt className="text-[9.5px] font-black tracking-[0.16em] uppercase text-muted-foreground/80">
+    <dt className="text-[10px] font-black tracking-[0.16em] uppercase text-muted-foreground/80">
       {label}
     </dt>
     <dd className="text-foreground/95 leading-snug">{value}</dd>

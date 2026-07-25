@@ -42,9 +42,9 @@ const TONE_STYLES: Record<CoachLineTone, { border: string; bg: string; iconColor
     iconColor: "text-rose-300",
   },
   celebration: {
-    border: "border-emerald-400/45",
-    bg: "bg-gradient-to-r from-emerald-400/12 via-emerald-400/6 to-transparent",
-    iconColor: "text-emerald-300",
+    border: "border-xp-green/45",
+    bg: "bg-gradient-to-r from-xp-green/12 via-xp-green/6 to-transparent",
+    iconColor: "text-xp-green",
   },
 };
 
@@ -88,7 +88,7 @@ const CoachLine = ({
       aria-label={onClick ? "Open W Coach" : undefined}
     >
       <span className={cn("shrink-0 mt-0.5", styles.iconColor)}>{resolvedIcon}</span>
-      <p className="text-[12.5px] italic leading-snug text-foreground/90">
+      <p className="text-[12px] italic leading-snug text-foreground/90">
         {withPrefix && (
           <span className={cn("not-italic font-black mr-1.5", styles.iconColor)}>Coach:</span>
         )}

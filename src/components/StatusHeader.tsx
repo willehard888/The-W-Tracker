@@ -14,22 +14,25 @@ import { Crown, Clock, ChevronRight, Flame, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import BrandLogo from "@/components/BrandLogo";
 
+// Voice matches the tier `message` strings in status-tiers.ts — quiet, earned,
+// premium restraint. Not gym-bro hustle clichés (which read cheap at the very
+// top of the app, refreshed daily).
 const PRESSURE_QUOTES = [
-  "Grind never stops 🔥",
-  "Discipline beats talent",
-  "Level up or get left behind",
-  "Stay hungry, stay humble",
-  "Prove them wrong 🏆",
-  "Consistency is king",
-  "No excuses, only results",
-  "Outwork everyone 💪",
-  "Built different",
-  "Earn your status",
-  "Legends are made, not born",
-  "Don't break now",
-  "Most fail before this",
-  "You're ahead — for now",
-  "Others are catching up",
+  "Discipline is the new flex",
+  "Show up before you feel like it",
+  "The work is the reward",
+  "Quiet consistency, loud results",
+  "Earned, never given",
+  "Standards over motivation",
+  "Prove it to yourself",
+  "One honest day at a time",
+  "Depth over noise",
+  "Your standard is the ceiling",
+  "Small reps, compounded",
+  "Keep the chain unbroken",
+  "Become undeniable",
+  "The rare few finish",
+  "Let the streak speak",
 ];
 
 const HIDDEN_ROUTES = new Set([

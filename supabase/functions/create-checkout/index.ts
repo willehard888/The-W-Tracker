@@ -65,6 +65,9 @@ serve(async (req) => {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       metadata: { tier, plan, user_id: user.id },
+      // Also stamp the user id onto the subscription so revoke events
+      // (customer.subscription.deleted/updated) can resolve the user reliably.
+      subscription_data: { metadata: { tier, plan, user_id: user.id } },
       success_url: `${req.headers.get("origin")}/profile?checkout=success`,
       cancel_url: `${req.headers.get("origin")}/paywall`,
     });

@@ -6,6 +6,22 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Internal-only: cron invokes with the service-role key. Without this, any
+// signed-in user could trigger the evening reminder blast (and spam duplicates).
+function isServiceRole(token: string, envKey: string): boolean {
+  if (!token) return false;
+  if (envKey && token === envKey) return true;
+  try {
+    const seg = token.split(".")[1];
+    if (!seg) return false;
+    const b64 = seg.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64.length % 4 ? b64 + "=".repeat(4 - (b64.length % 4)) : b64;
+    return JSON.parse(atob(padded))?.role === "service_role";
+  } catch {
+    return false;
+  }
+}
+
 // Send the streak reminder at 20:00 in the user's OWN local time. The cron
 // fires this hourly; users_due_for_streak_reminder returns only the users for
 // whom it's currently 20:00 local, have a live streak, and haven't checked in
@@ -20,6 +36,14 @@ Deno.serve(async (req) => {
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+  if (!isServiceRole(token, SUPABASE_SERVICE_ROLE_KEY)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);

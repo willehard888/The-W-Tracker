@@ -3,6 +3,25 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // Webhooks are server-to-server — no CORS headers needed.
 const jsonHeaders = { "Content-Type": "application/json" };
 
+// Resolve the Supabase user id. The GoTrue admin API has NO getUserByEmail
+// (the previous code called a non-existent method → every webhook 500'd and no
+// Stripe purchase ever granted access). Prefer the user_id we stamp into the
+// checkout/subscription metadata; fall back to scanning listUsers by email.
+// deno-lint-ignore no-explicit-any
+async function resolveUserId(admin: any, opts: { userId?: string; email?: string }): Promise<string | null> {
+  if (opts.userId) return opts.userId;
+  const email = opts.email?.toLowerCase();
+  if (!email) return null;
+  for (let page = 1; page <= 10; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+    if (error || !data?.users?.length) break;
+    const match = data.users.find((u: any) => u.email?.toLowerCase() === email);
+    if (match) return match.id;
+    if (data.users.length < 200) break;
+  }
+  return null;
+}
+
 async function verifyStripeSignature(
   payload: string,
   sigHeader: string,
@@ -90,29 +109,24 @@ Deno.serve(async (req) => {
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
-      const customerEmail: string | undefined =
-        session.customer_email || session.customer_details?.email;
-
-      if (customerEmail) {
-        const { data: userData, error: userError } =
-          await supabase.auth.admin.getUserByEmail(customerEmail);
-
-        if (userError || !userData?.user) {
-          console.warn(`No user found for email: ${customerEmail}`, userError);
+      // Only grant on a genuinely paid checkout.
+      if (session.payment_status && session.payment_status !== "paid") {
+        console.warn("Checkout not paid, skipping:", session.id, session.payment_status);
+      } else {
+        const uid = await resolveUserId(supabase, {
+          userId: session.metadata?.user_id,
+          email: session.customer_email || session.customer_details?.email,
+        });
+        if (!uid) {
+          console.warn("No user resolved for checkout session:", session.id);
         } else {
           const { error } = await supabase
             .from("profiles")
             .update({ is_elite: true })
-            .eq("user_id", userData.user.id);
-
-          if (error) {
-            console.error("Failed to update profile:", error);
-          } else {
-            console.log(`Elite activated for ${customerEmail} (${userData.user.id})`);
-          }
+            .eq("user_id", uid);
+          if (error) console.error("Failed to update profile:", error);
+          else console.log(`Elite activated for ${uid}`);
         }
-      } else {
-        console.warn("No email in checkout session:", session.id);
       }
     }
 
@@ -125,20 +139,18 @@ Deno.serve(async (req) => {
         subscription.status === "active" || subscription.status === "trialing";
 
       if (!isActive) {
-        const customerEmail: string | undefined = subscription.metadata?.email;
-        if (customerEmail) {
-          const { data: userData, error: userError } =
-            await supabase.auth.admin.getUserByEmail(customerEmail);
-
-          if (userError || !userData?.user) {
-            console.warn(`No user found for email: ${customerEmail}`, userError);
-          } else {
-            await supabase
-              .from("profiles")
-              .update({ is_elite: false })
-              .eq("user_id", userData.user.id);
-            console.log(`Elite deactivated for ${customerEmail}`);
-          }
+        const uid = await resolveUserId(supabase, {
+          userId: subscription.metadata?.user_id,
+          email: subscription.metadata?.email,
+        });
+        if (uid) {
+          await supabase
+            .from("profiles")
+            .update({ is_elite: false })
+            .eq("user_id", uid);
+          console.log(`Elite deactivated for ${uid}`);
+        } else {
+          console.warn("No user resolved for subscription:", subscription.id);
         }
       }
     }

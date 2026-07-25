@@ -59,10 +59,19 @@ serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     });
 
+    // Only the RECENT check-in window matters for decay. The old code pulled the
+    // 10,000 globally-newest rows, so once daily volume exceeded that an active
+    // user whose latest check-in fell outside the global top-10k was absent from
+    // the map and had their streak wrongly zeroed. Max grace is 2 days + up to 3
+    // shields = 5 days, so an 8-day window is complete AND bounded by recent
+    // activity (not total history).
+    const GRACE_WINDOW_DAYS = 8;
+    const windowStartISO = new Date(Date.now() - GRACE_WINDOW_DAYS * DAY_MS).toISOString();
     const [{ data: profiles, error: profilesError }, { data: checkins, error: checkinsError }] = await Promise.all([
       supabase.from("profiles").select("user_id, streak, streak_shields").gt("streak", 0),
       supabase.from("daily_checkins").select("user_id, checked_in_at")
-        .order("checked_in_at", { ascending: false }).limit(10000),
+        .gte("checked_in_at", windowStartISO)
+        .order("checked_in_at", { ascending: false }),
     ]);
     if (profilesError) throw profilesError;
     if (checkinsError) throw checkinsError;

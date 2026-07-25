@@ -1,8 +1,19 @@
 import { forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Flame, Trophy, Swords, Shield, Sparkles, Star } from "lucide-react";
+import { ArrowRight, Flame, Trophy, Sparkles, Dumbbell, Utensils, Moon, ShieldCheck } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
+
+// What the app ACTUALLY delivers — names the substance (coach, training,
+// nutrition, recovery, the verified-discipline moat), not just the game layer.
+const WHAT_YOU_GET = [
+  { icon: Sparkles, title: "AI coach", text: "A coach in your pocket — daily plan, training, recovery." },
+  { icon: Dumbbell, title: "Train", text: "500+ exercises + programs with exact sets & progression." },
+  { icon: Utensils, title: "Fuel", text: "High-protein recipes, macros & meal-prep templates." },
+  { icon: Moon, title: "Recover", text: "Sleep, HRV & recovery protocols to bounce back faster." },
+  { icon: ShieldCheck, title: "Verified", text: "Apple Health proves your discipline — unfakeable." },
+  { icon: Trophy, title: "Compete", text: "Streaks, ranks, 1v1 battles & the leaderboard." },
+] as const;
 
 const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
   const navigate = useNavigate();
@@ -52,9 +63,9 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
             or fall behind.
           </h1>
 
-          <p className="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-sm mx-auto mb-12">
-            Turn self-improvement into a visible status game. Track discipline. Compete with others.{" "}
-            <span className="text-foreground font-medium">Earn your status.</span>
+          <p className="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-sm mx-auto mb-10">
+            An AI coach, training, nutrition &amp; recovery — in one app.{" "}
+            <span className="text-foreground font-medium">Discipline you can prove, status you earn.</span>
           </p>
 
           <div className="flex flex-col gap-3 w-full max-w-xs mx-auto animate-reveal animate-reveal-delay-2">
@@ -76,23 +87,27 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
           </div>
         </div>
 
-        {/* Feature pills */}
-        <div className="flex flex-wrap justify-center gap-2.5 mt-16 animate-reveal animate-reveal-delay-3">
-          {[
-            { icon: Flame, text: "Streaks" },
-            { icon: Trophy, text: "Ranks" },
-            { icon: Swords, text: "1v1 Battles" },
-            { icon: Shield, text: "Badges" },
-            { icon: Star, text: "Leaderboard" },
-          ].map(({ icon: Icon, text }) => (
-            <div
-              key={text}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-full border border-border/50 bg-card/40 backdrop-blur-sm"
-            >
-              <Icon size={13} className="text-gold" />
-              <span className="text-[11px] font-semibold text-foreground/80">{text}</span>
-            </div>
-          ))}
+        {/* What you actually get — one app replaces the whole stack */}
+        <div className="w-full max-w-md mx-auto mt-14 animate-reveal animate-reveal-delay-3">
+          <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-gold/70 mb-3">
+            One app · replaces five
+          </p>
+          <div className="grid grid-cols-2 gap-2.5 text-left">
+            {WHAT_YOU_GET.map(({ icon: Icon, title, text }) => (
+              <div
+                key={title}
+                className="flex gap-2.5 p-3 rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm"
+              >
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gold/10">
+                  <Icon size={14} className="text-gold" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[12.5px] font-bold leading-tight">{title}</p>
+                  <p className="text-[10.5px] text-muted-foreground leading-snug mt-0.5">{text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </main>
 

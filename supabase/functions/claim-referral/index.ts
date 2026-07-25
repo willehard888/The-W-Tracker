@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendApnsBatch } from "../_shared/apns.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,36 +48,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Close the loop — tell the referrer a friend just joined with their code.
-    // Best-effort, never blocks the response.
-    if ((data as any)?.success) {
-      try {
-        const { data: ud } = await supabase.auth.getUser();
-        const newUserId = ud?.user?.id;
-        const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-        if (newUserId && serviceKey) {
-          const admin = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
-          const { data: me } = await admin
-            .from("profiles").select("username, referred_by").eq("user_id", newUserId).maybeSingle();
-          const referrerId = (me as any)?.referred_by;
-          if (referrerId) {
-            const { data: tokens } = await admin
-              .from("push_tokens").select("token, platform").eq("user_id", referrerId);
-            if (tokens && tokens.length > 0) {
-              const results = await sendApnsBatch(tokens as any, {
-                title: "New recruit! 🔥",
-                body: `@${(me as any)?.username ?? "Someone"} joined with your code — guide them to keep going and climb your reward ladder.`,
-                data: { route: "/referrals" },
-              });
-              const dead = results.filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered").map((r) => r.token);
-              if (dead.length) await admin.from("push_tokens").delete().in("token", dead);
-            }
-          }
-        }
-      } catch (e) {
-        console.error("referral signup notify failed:", e);
-      }
-    }
+    // The "new recruit joined" push to the referrer is sent by the DB trigger
+    // (referrals INSERT → tg_notify_referral_joined → notify-referral), which
+    // also logs the referral_joined analytics event. Do NOT also push here — a
+    // second inline push was double-notifying the referrer for one join.
 
     return new Response(JSON.stringify(data ?? { success: false }), {
       status: 200,

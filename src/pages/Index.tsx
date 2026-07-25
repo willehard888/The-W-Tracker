@@ -12,7 +12,9 @@ import MoreSection from "@/components/ui/more-section";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import ConfettiBurst from "@/components/ConfettiBurst";
 import { supabase } from "@/integrations/supabase/client";
 import { getTierConfig } from "@/lib/status-tiers";
 import { recipeThumb } from "@/lib/recipe-images";
@@ -139,6 +141,28 @@ const Index = () => {
   // card unlocks at midnight (not 24h after the last check-in).
   const { canCheckin, timeUntilCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
 
+  // Streak-milestone moment — 7/30/100/365 days should FEEL like a win on the
+  // screen you open most, not pass silently. Fires once per milestone (guarded
+  // in localStorage) with confetti + a premium-voiced toast.
+  const [milestoneConfetti, setMilestoneConfetti] = useState(false);
+  useEffect(() => {
+    const s = profile?.streak ?? 0;
+    const MESSAGES: Record<number, string> = {
+      7: "One week unbroken. The chain is real.",
+      30: "30 days — this is where most quit. Not you.",
+      100: "Triple digits. Elite territory. Rare air.",
+      365: "A full year. You've become undeniable.",
+    };
+    if (!(s in MESSAGES)) return;
+    const key = `streak_milestone_seen_${s}`;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, "1");
+    setMilestoneConfetti(true);
+    toast.success(`🔥 ${s}-day streak`, { description: MESSAGES[s], duration: 5500 });
+    const t = setTimeout(() => setMilestoneConfetti(false), 2600);
+    return () => clearTimeout(t);
+  }, [profile?.streak]);
+
   if (!profile) return null;
 
   const xpToNext = profile.level * 500;
@@ -158,6 +182,7 @@ const Index = () => {
 
   return (
     <div className="h-full pb-6 px-4 pt-3 relative overflow-y-auto overflow-x-hidden">
+      <ConfettiBurst active={milestoneConfetti} />
       {/* Tier-reactive top aura */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[760px] h-[460px] pointer-events-none z-0"

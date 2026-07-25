@@ -491,7 +491,13 @@ const Leaderboard = () => {
                   <p className="text-sm font-semibold truncate flex items-center gap-1.5">
                     <TierUsername username={user.username} tier={user.status_tier || "recruit"} />
                     {verifiedSet?.has(user.user_id) && (
-                      <ShieldCheck size={12} className="text-[hsl(var(--xp-green))] shrink-0" aria-label="HealthKit-verified" />
+                      <span
+                        className="shrink-0 inline-flex items-center justify-center h-[15px] w-[15px] rounded-md bg-teal/15 border border-teal/30 text-teal"
+                        aria-label="HealthKit-verified — unfakeable discipline"
+                        title="Verified by Apple Health"
+                      >
+                        <ShieldCheck size={10} strokeWidth={2.6} />
+                      </span>
                     )}
                     {isMe && <span className="text-[9px] text-gold/70 font-medium">(you)</span>}
                   </p>

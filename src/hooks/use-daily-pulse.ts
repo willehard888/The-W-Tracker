@@ -36,7 +36,11 @@ export const useDailyPulse = (
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
-      if (!userId || currentRank === undefined || currentScore === undefined || totalUsers === undefined) {
+      // Bail until the rank has actually loaded. The caller passes the live
+      // rank/totalUsers, which are undefined on cold start — running here with a
+      // 0 rank would write a bogus { rank: 0 } snapshot for today (and, since we
+      // only refresh once per day, poison the "climbed today" delta permanently).
+      if (!userId || currentScore === undefined || !currentRank || currentRank <= 0 || !totalUsers || totalUsers <= 0) {
         return;
       }
 

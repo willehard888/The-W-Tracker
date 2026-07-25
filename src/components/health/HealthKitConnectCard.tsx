@@ -16,7 +16,7 @@ import { track, FUNNEL } from "@/lib/analytics";
  *   3. Connected → "Verified Performer" stat card
  */
 const HealthKitConnectCard = () => {
-  const { available, connect, syncing, error } = useHealthKit();
+  const { available, connect, syncToday, syncing, error } = useHealthKit();
   const { user } = useAuth();
   const [stats, setStats] = useState<{
     total_checkins: number;
@@ -107,7 +107,7 @@ const HealthKitConnectCard = () => {
         variant="ghost"
         size="sm"
         loading={syncing}
-        onClick={() => useHealthKit().syncToday()}
+        onClick={() => { void syncToday(); }}
         className="w-full mt-3 text-[11px]"
       >
         <Check size={11} /> Sync now

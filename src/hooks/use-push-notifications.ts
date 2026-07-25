@@ -50,6 +50,10 @@ export const usePushNotifications = (): PushNotificationState => {
   const { user } = useAuth();
   const [needsPriming, setNeedsPriming] = useState(false);
   const activatedRef = useRef(false);
+  // Retain the exact listener handles we added, so cleanup removes ONLY ours —
+  // never a global removeAllListeners() that would also kill listeners other
+  // modules registered.
+  const handlesRef = useRef<Array<{ remove: () => Promise<void> }>>([]);
 
   const syncStreakWarning = useCallback(async () => {
     if (!user) return;
@@ -62,7 +66,7 @@ export const usePushNotifications = (): PushNotificationState => {
       lastCheckinAt: lastCheckin?.checked_in_at ?? null,
       streak: profile?.streak ?? 0,
     });
-  }, [user]);
+  }, [user?.id]);
 
   const registerToken = useCallback(async (token: string) => {
     if (!user) return;
@@ -71,7 +75,7 @@ export const usePushNotifications = (): PushNotificationState => {
       { user_id: user.id, token, platform },
       { onConflict: "user_id,token" },
     );
-  }, [user]);
+  }, [user?.id]);
 
   // Register for pushes + wire navigation listeners. Idempotent (guarded by
   // activatedRef) so it can run either when permission is already granted on
@@ -81,18 +85,19 @@ export const usePushNotifications = (): PushNotificationState => {
     activatedRef.current = true;
 
     await PushNotifications.register();
-    PushNotifications.addListener("registration", (token) => registerToken(token.value));
-    PushNotifications.addListener("registrationError", (err) => console.error("Push registration error:", err));
-    PushNotifications.addListener("pushNotificationReceived", () => { /* foreground: OS shows it */ });
-    PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
-      const route = action.notification.data?.route;
-      safeNavigate(typeof route === "string" ? route : "");
-    });
-
-    LocalNotifications.addListener("localNotificationActionPerformed", (event) => {
-      const route = event.notification.extra?.route;
-      safeNavigate(typeof route === "string" ? route : "");
-    });
+    handlesRef.current.push(
+      await PushNotifications.addListener("registration", (token) => registerToken(token.value)),
+      await PushNotifications.addListener("registrationError", (err) => console.error("Push registration error:", err)),
+      await PushNotifications.addListener("pushNotificationReceived", () => { /* foreground: OS shows it */ }),
+      await PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+        const route = action.notification.data?.route;
+        safeNavigate(typeof route === "string" ? route : "");
+      }),
+      await LocalNotifications.addListener("localNotificationActionPerformed", (event) => {
+        const route = event.notification.extra?.route;
+        safeNavigate(typeof route === "string" ? route : "");
+      }),
+    );
 
     // Local streak-warning notifications ride the same opt-in moment.
     const localGranted = await requestStreakNotificationPermission().catch(() => false);
@@ -145,11 +150,16 @@ export const usePushNotifications = (): PushNotificationState => {
     return () => {
       cancelled = true;
       if (primeTimer) clearTimeout(primeTimer);
-      PushNotifications.removeAllListeners();
-      LocalNotifications.removeAllListeners();
+      // Remove ONLY the listeners we added (not a global wipe), and reset so a
+      // remount can re-activate cleanly.
+      handlesRef.current.forEach((h) => { void h.remove(); });
+      handlesRef.current = [];
       activatedRef.current = false;
     };
-  }, [user, activate]);
+    // Key on user?.id — supabase emits a fresh user object hourly on
+    // TOKEN_REFRESHED; without this the whole register/listener cycle churned
+    // every hour, dropping a notification tap that landed mid-teardown.
+  }, [user?.id, activate]);
 
   return { needsPriming, enablePush, dismissPriming };
 };

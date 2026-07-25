@@ -37,5 +37,8 @@ export function useActivityHeartbeat() {
     const onVis = () => { if (document.visibilityState === "visible") beat(); };
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
-  }, [user]);
+    // Key on user?.id, NOT the user object — supabase hands us a fresh user
+    // object on every hourly TOKEN_REFRESHED, which would otherwise tear down +
+    // re-run this effect every hour for no reason.
+  }, [user?.id]);
 }

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { syncNightMetrics } from "@/lib/health/night-metrics";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface NightMetrics {
   night_date: string;
@@ -28,9 +29,12 @@ export const NIGHT_FACTORS = ["alcohol", "late meal", "stress", "travel", "sick"
 const rpc = supabase.rpc.bind(supabase) as any;
 
 /** Recent nightly recovery metrics (newest first) — powers the Recovery card. */
-export const useRecentNights = (days = 30) =>
-  useQuery<NightMetrics[]>({
-    queryKey: ["night-metrics", days],
+export const useRecentNights = (days = 30) => {
+  const { user } = useAuth();
+  return useQuery<NightMetrics[]>({
+    // Scope the cache to the user — otherwise account B sees account A's cached
+    // recovery metrics on a shared device until a refetch.
+    queryKey: ["night-metrics", user?.id, days],
     staleTime: 5 * 60_000,
     queryFn: async () => {
       const { data, error } = await rpc("recent_night_metrics", { p_days: days });
@@ -38,6 +42,7 @@ export const useRecentNights = (days = 30) =>
       return (data as NightMetrics[]) ?? [];
     },
   });
+};
 
 /** Tag what happened last night (alcohol, late meal, …) — ground truth the coach reads. */
 export const useSetNightFactors = () => {

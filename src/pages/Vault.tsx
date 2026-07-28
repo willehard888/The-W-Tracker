@@ -89,6 +89,10 @@ const Vault = () => {
     null,
   );
 
+  // Hero stats derived from the real library so they never drift as content
+  // ships. Same cached query the category sections use (react-query dedups).
+  const { data: allVaultArticles } = useVaultArticles();
+
   useEffect(() => {
     if (subscriptionLoading) return;
     if (!isPremium) navigate("/paywall", { replace: true });
@@ -98,6 +102,17 @@ const Vault = () => {
 
   const firstName =
     (profile as any)?.username || (profile as any)?.display_name || null;
+
+  // Real counts; fall back to a dash until the cached list resolves (avoids a
+  // "0" flash) rather than to hardcoded numbers that would drift.
+  const articleCount = allVaultArticles?.length ?? null;
+  const citationCount =
+    allVaultArticles?.reduce((n, a) => n + (a.references_json?.length ?? 0), 0) ?? null;
+  const heroStats = [
+    { label: "Articles", value: articleCount != null ? String(articleCount) : "—" },
+    { label: "Categories", value: String(CATEGORIES.length) },
+    { label: "Citations", value: citationCount != null ? `${citationCount}` : "—" },
+  ];
 
   return (
     <div className="min-h-screen pb-12 px-4 pt-3">
@@ -138,11 +153,7 @@ const Vault = () => {
         </p>
 
         <div className="mt-4 grid grid-cols-3 gap-2">
-          {[
-            { label: "Articles", value: "20" },
-            { label: "Categories", value: "5" },
-            { label: "Citations", value: "60+" },
-          ].map((s) => (
+          {heroStats.map((s) => (
             <div key={s.label} className="rounded-xl bg-secondary/30 border border-border/50 px-2 py-2">
               <p className="font-display text-base font-black text-gold leading-none tabular-nums">
                 {s.value}
@@ -187,7 +198,7 @@ const Vault = () => {
 
       <div className="mt-8 text-center">
         <p className="text-[10px] tracking-widest uppercase text-muted-foreground/70">
-          Premium member · €4,99/mo
+          Premium member · 4,99 €/mo
         </p>
       </div>
 

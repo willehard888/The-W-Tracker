@@ -73,23 +73,19 @@ const Coach = () => {
   // actual error message so the dev / user knows exactly what to fix.
   if (athleteError || programError) {
     const err = (athleteError ?? programError)!;
+    // Keep the technical cause for debugging, but never show DB/migration
+    // internals to a paying user — surface a calm, recoverable message.
+    if (typeof console !== "undefined") console.error("W Coach failed to load:", err);
     return (
       <div className="flex flex-col h-full">
         <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
         <div className="flex-1 flex items-center justify-center px-6 text-center">
           <div className="max-w-sm space-y-4">
             <div className="text-3xl" aria-hidden>⚠️</div>
-            <h2 className="text-lg font-display font-bold">W Coach failed to load</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed break-words">
-              {err.message || "Unknown error"}
-            </p>
-            <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
-              If this mentions "relation does not exist", the Coach database
-              tables haven't been deployed yet. Apply the migrations under
-              <code className="px-1 mx-1 rounded bg-card/60 border border-border/40">
-                supabase/migrations/
-              </code>
-              and try again.
+            <h2 className="text-lg font-display font-bold">Coach is taking a breather</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              We couldn't load your Coach just now. Check your connection and try
+              again — your progress is safe.
             </p>
             <Button onClick={() => { refetch(); refetchAthlete(); }} className="w-full">
               <RotateCw size={14} className="mr-2" /> Retry
@@ -232,51 +228,6 @@ const CoachShell = ({ session, program, navigate }: any) => {
   );
 };
 
-// ── Free Coach upsell (playbook FAQ + live-chat upsell) ────────────────────────
-// Free users tap "Ask Coach" → land here. They browse the curated playbook for
-// instant answers (real value, no network call), and each answer ends with a
-// soft upsell to unlock live, data-aware coaching. Value first, then the ask.
-const FreeCoachUpsell = ({ navigate, onClose }: { navigate: any; onClose: () => void }) => {
-  const [selected, setSelected] = useState<FaqEntry | null>(null);
-
-  if (selected) {
-    return (
-      <div className="absolute inset-0 z-50 bg-background flex flex-col">
-        <div className="shrink-0 px-3 pt-3 pb-2 flex items-center gap-2 border-b border-border/30">
-          <button
-            onClick={() => { hapticImpact("light"); setSelected(null); }}
-            className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-card/60"
-            aria-label="Back to playbook"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <p className="font-display text-sm font-black tracking-tight truncate">{selected.question}</p>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-4 py-4">
-          <div className="prose prose-invert prose-sm max-w-none text-sm leading-relaxed">
-            <ReactMarkdown>{selected.answer_md}</ReactMarkdown>
-          </div>
-
-          <div className="mt-6 rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/[0.08] to-card p-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-1">
-              Want this tailored to you?
-            </p>
-            <p className="text-[13px] font-medium text-foreground/90 leading-snug mb-3">
-              Live W Coach reads your check-ins, sleep and training to answer in your context — not generic tips.
-            </p>
-            <Button variant="gold" size="lg" className="w-full font-black" onClick={() => navigate("/paywall")}>
-              <Sparkles size={16} strokeWidth={2.6} /> Unlock live coaching
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return <FaqBrowser onClose={onClose} onSelect={setSelected} />;
-};
-
 // ── Chat sheet (slide-up over content) ────────────────────────────────────────
 // (PersistentComposer removed — it was a fixed input bar pinned above
 // BottomNav that gave /coach a sub-app feel no other W page has. Chat is
@@ -405,19 +356,19 @@ const ChatSheet = ({
           /* fall through */
         }
         const summary = detail || `HTTP ${resp.status}`;
+        // Technical detail (upstream provider status/body) stays in the console
+        // for debugging; the user only ever sees calm, recoverable copy.
+        if (typeof console !== "undefined") console.error("Coach request failed:", summary);
 
-        if (resp.status === 429) toast.error("Coach is busy. Try again in a moment.");
-        else if (resp.status === 402) toast.error("OpenRouter credits exhausted. Top up at openrouter.ai/credits.");
-        else if (resp.status === 401) toast.error("OpenRouter API key invalid.");
-        else toast.error(`Coach failed to respond — ${summary}`);
+        if (resp.status === 429) toast.error("Coach is busy right now. Try again in a moment.");
+        else if (resp.status === 402 || resp.status === 401) toast.error("Coach is briefly unavailable. Please try again shortly.");
+        else toast.error("Coach couldn't respond. Tap to retry.");
 
         setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
-            content: detail
-              ? `**Coach failed to respond.**\n\n\`\`\`\n${detail}\n\`\`\`\n\nTap to retry.`
-              : "Coach lost connection. Tap to retry.",
+            content: "Coach lost connection. Tap to retry.",
             failed: true,
           },
         ]);

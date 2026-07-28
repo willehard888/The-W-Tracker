@@ -20,7 +20,6 @@ export const BrandLogo = forwardRef<HTMLImageElement, BrandLogoProps>(
       width={size}
       height={size}
       decoding={priority ? "sync" : "async"}
-      fetchPriority={priority ? "high" : "auto"}
       draggable={false}
       className={cn("select-none", className)}
       style={{ width: size, height: size }}

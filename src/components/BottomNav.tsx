@@ -29,9 +29,9 @@ const colorMap: Record<TabColor, { text: string; rgb: string }> = {
 
 const HIDDEN_PATHS = new Set(["/landing", "/auth", "/onboarding", "/paywall"]);
 
-// Lazy-route prefetch map — käynnistetään import() kun käyttäjä hover/focus-tapahtuma
-// kohdistuu BottomNav-painikkeeseen, jolloin sivu on jo lähes valmis kun klikkaus tulee.
-// Käytetään jo olemassa olevia App.tsx:n lazy-importteja vastaavia dynamic importteja.
+// Lazy-route prefetch map — kick off import() on hover/focus of a BottomNav
+// button so the destination is nearly loaded by the time the tap lands.
+// Mirrors the dynamic imports already declared as lazy routes in App.tsx.
 const PREFETCH: Record<string, () => Promise<unknown>> = {
   "/checkin": () => import("@/pages/DailyCheckin"),
   "/coach": () => import("@/pages/Coach"),
@@ -115,7 +115,7 @@ const BottomNav = () => {
         {tabs.map(({ icon: Icon, label, path, color }) => {
           const active = location.pathname === path;
           const c = colorMap[color];
-          const colorVar = c.rgb.startsWith("var(") ? `hsl(${c.rgb})` : `hsl(${c.rgb})`;
+          const colorVar = `hsl(${c.rgb})`;
 
           return (
             <button

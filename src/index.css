@@ -473,7 +473,9 @@
      Unified secondary surface — matte obsidian panel
      Used for list rows, leaderboard items, message bubbles, settings.
      ============================================================ */
-  .surface-panel {
+  /* surface-paper is a legacy alias — same selector so the two can never drift. */
+  .surface-panel,
+  .surface-paper {
     position: relative;
     background:
       linear-gradient(180deg, hsl(258 16% 8%) 0%, hsl(258 16% 6%) 100%);
@@ -502,20 +504,6 @@
       0 4px 12px -3px hsl(42 78% 30% / 0.25);
   }
 
-  /* Legacy alias — surface-paper now maps to unified panel */
-  .surface-paper {
-    position: relative;
-    background:
-      linear-gradient(180deg, hsl(258 16% 8%) 0%, hsl(258 16% 6%) 100%);
-    border: 1px solid hsl(var(--border) / 0.7);
-    border-top-color: hsl(0 0% 100% / 0.05);
-    border-bottom-color: hsl(0 0% 0% / 0.4);
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.035),
-      inset 0 -1px 0 hsl(0 0% 0% / 0.25),
-      0 1px 1px hsl(0 0% 0% / 0.28),
-      0 4px 10px -3px hsl(0 0% 0% / 0.24);
-  }
 
   /* ============================================================
      Hairline — single divider style for the entire app
@@ -4616,8 +4604,11 @@ html, body, #root {
   -webkit-touch-callout: none;
 }
 
-/* iOS smooth momentum scroll inside the main scroll container */
-.scroll-smooth {
+/* iOS momentum scroll inside the main scroll container. Deliberately NOT named
+   `scroll-smooth` — that collides with Tailwind's built-in utility, which would
+   also set scroll-behavior:smooth and animate programmatic scroll-to-top on tab
+   switches. This class carries only the momentum property. */
+.momentum-scroll {
   -webkit-overflow-scrolling: touch;
 }
 

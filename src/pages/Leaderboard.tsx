@@ -20,6 +20,7 @@ import { useMyRank } from "@/hooks/use-my-rank";
 import { hapticSelection } from "@/lib/haptics";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import AnimatedNumber from "@/components/AnimatedNumber";
+import EmptyState from "@/components/ui/empty-state";
 
 type LeaderRow = {
   username: string;
@@ -446,6 +447,10 @@ const Leaderboard = () => {
         </div>
       )}
 
+      {/* "The Chase" = ranks 4+. Only render its divider when there ARE rows
+          below the podium, so a sparse/first-run board never shows an orphan
+          header. A truly empty board gets a proper empty state instead. */}
+      {currentLeaders.length > 3 && (
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
         <div className="flex items-center gap-2 mb-3 px-1">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
@@ -529,6 +534,18 @@ const Leaderboard = () => {
           })}
         </div>
       </div>
+      )}
+
+      {/* Nobody on the board yet (fresh deploy / new season) — invite action. */}
+      {currentLeaders.length === 0 && (
+        <div className="mt-4 animate-reveal animate-reveal-delay-3">
+          <EmptyState
+            icon={Trophy}
+            title="The board is warming up"
+            description="Be the first to check in and claim rank #1."
+          />
+        </div>
+      )}
 
       {/* Secondary boards — different purposes (tribes, invites) collapsed so
           Ranks stays focused on the one question: where do I rank? */}

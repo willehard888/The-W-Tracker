@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
+import { hapticNotification } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 interface LevelUpCelebrationProps {
@@ -11,6 +12,8 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
   const [phase, setPhase] = useState<"enter" | "show" | "exit">("enter");
 
   useEffect(() => {
+    // The biggest dopamine beat in the app deserves a felt success buzz.
+    void hapticNotification("success");
     const t1 = setTimeout(() => setPhase("show"), 100);
     const t2 = setTimeout(() => setPhase("exit"), 3000);
     const t3 = setTimeout(() => onComplete(), 3600);

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
+import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 interface BadgeUnlockModalProps {
@@ -52,10 +53,15 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
     setPhase("enter");
     // Bend every flame on screen as the badge lands.
     import("@/lib/wind").then(({ triggerGust }) => triggerGust(0.85));
+    // Felt reward: a success buzz on unlock, plus a heavy thud at the burst
+    // for the rarer badges so their weight is physical, not just visual.
+    void hapticNotification("success");
+    const isRare = badge.rarity === "epic" || badge.rarity === "legendary";
+    const tHaptic = isRare ? setTimeout(() => void hapticImpact("heavy"), 300) : undefined;
     const t1 = setTimeout(() => setPhase("burst"), 300);
     const t2 = setTimeout(() => setPhase("reveal"), 800);
     const t3 = setTimeout(() => setPhase("details"), 1500);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    return () => { if (tHaptic) clearTimeout(tHaptic); clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [badge]);
 
   if (!badge) return null;

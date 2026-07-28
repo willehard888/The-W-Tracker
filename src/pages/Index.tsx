@@ -1,4 +1,5 @@
 import { ChevronRight, Award, Crown, Utensils, Dumbbell, ArrowUp } from "lucide-react";
+import AnimatedNumber from "@/components/AnimatedNumber";
 import BadgeCard from "@/components/BadgeCard";
 import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
@@ -233,7 +234,7 @@ const Index = () => {
             <p className="text-[13px] font-black leading-tight truncate">
               {tierConfig.label}
               {(rankData?.rank ?? 0) > 0 && (
-                <span className="text-muted-foreground font-semibold"> · #{rankData!.rank}</span>
+                <span className="text-muted-foreground font-semibold"> · #<AnimatedNumber value={rankData!.rank} duration={700} /></span>
               )}
             </p>
             <p className="text-[10px] text-muted-foreground leading-tight">

@@ -217,7 +217,7 @@ const AppRoutes = () => {
   return (
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden momentum-scroll">
         {/* RouteFallback renders a layout-matched skeleton for the destination
             route (HomeSkeleton on /, FeedSkeleton on /feed, etc.) so the lazy-
             load → real-content swap has zero visual jank. LazyFallback (a

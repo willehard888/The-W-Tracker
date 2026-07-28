@@ -918,9 +918,16 @@ const DailyCheckin = () => {
           <Zap size={20} />
           {submitting ? "Submitting..." : `Submit Day — Earn ${totalXp} XP`}
         </Button>
-        <p className="mt-2 text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1">
-          <Sparkles size={12} className="text-gold" /> {maxCount} habits · your personal standard
-        </p>
+        {honest !== true && !submitting ? (
+          // Close the loop on the greyed button so it doesn't read as broken.
+          <p className="mt-2 text-center text-[11px] font-semibold text-gold/85">
+            Confirm “Were you honest?” above to submit
+          </p>
+        ) : (
+          <p className="mt-2 text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1">
+            <Sparkles size={12} className="text-gold" /> {maxCount} habits · your personal standard
+          </p>
+        )}
       </div>
     </div>
   );

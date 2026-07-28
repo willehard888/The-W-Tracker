@@ -478,7 +478,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
               <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Sessions</label>
               {sessions.map((s, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="shrink-0 h-7 w-7 rounded-lg bg-gold/15 border border-gold/25 flex items-center justify-center text-[10px] font-black text-gold tabular-nums">{i + 1}</span>
+                  <span className="shrink-0 h-7 w-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-[10px] font-black text-muted-foreground tabular-nums">{i + 1}</span>
                   <input type="datetime-local" value={s}
                     onChange={(e) => setSessions((prev) => prev.map((x, idx) => idx === i ? e.target.value : x))}
                     className={cn(field, "flex-1")} />

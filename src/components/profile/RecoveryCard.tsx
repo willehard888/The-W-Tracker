@@ -4,6 +4,7 @@ import { Capacitor } from "@capacitor/core";
 import { cn } from "@/lib/utils";
 import { useRecentNights, useNightSync, useSetNightFactors, NIGHT_FACTORS } from "@/hooks/use-night-metrics";
 import { hapticSelection } from "@/lib/haptics";
+import Sparkline from "@/components/coach/Sparkline";
 
 const median = (xs: number[]) => {
   const a = xs.filter((v) => v != null).sort((x, y) => x - y);
@@ -50,6 +51,17 @@ const RecoveryCard = () => {
   const prior = (nights ?? []).slice(1, 15).map((n) => n.resting_hr).filter((v): v is number => v != null);
   const baseRhr = median(prior);
   const rhrDelta = last!.resting_hr != null && baseRhr != null ? last!.resting_hr - baseRhr : null;
+
+  // 14-night resting-HR trend (oldest → newest) — the "am I getting fitter?"
+  // signal. A falling RHR is improving cardiovascular fitness/recovery, so here
+  // DOWN is good. Reuses the dependency-free Sparkline; only shown with ≥5 pts.
+  const rhrTrend = (nights ?? [])
+    .slice(0, 14)
+    .map((n) => n.resting_hr)
+    .filter((v): v is number => v != null)
+    .reverse();
+  const trendDelta =
+    rhrTrend.length >= 5 ? rhrTrend[rhrTrend.length - 1] - rhrTrend[0] : null;
 
   const deep = last!.sleep_deep_min ?? 0;
   const rem = last!.sleep_rem_min ?? 0;
@@ -133,6 +145,25 @@ const RecoveryCard = () => {
           </div>
         )}
       </div>
+
+      {/* 14-night RHR trajectory — proof of getting fitter over time, not just
+          last night. Falling line = improving; labeled so DOWN reads as good. */}
+      {rhrTrend.length >= 5 && (
+        <div className="mb-3 rounded-xl border border-border/40 bg-card/40 px-3 py-2">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+              Resting HR · {rhrTrend.length} nights
+            </p>
+            {trendDelta != null && Math.abs(trendDelta) >= 1 && (
+              <span className={cn("text-[10px] font-black tabular-nums", trendDelta < 0 ? "text-xp-green" : "text-[hsl(18_95%_58%)]")}>
+                {trendDelta < 0 ? "↓" : "↑"} {Math.abs(Math.round(trendDelta))} bpm
+                <span className="text-muted-foreground/60 font-bold"> {trendDelta < 0 ? "· fitter" : ""}</span>
+              </span>
+            )}
+          </div>
+          <Sparkline values={rhrTrend} className="w-full h-7" />
+        </div>
+      )}
 
       {/* Causal read — the "why", stated plainly */}
       <p className="text-[12px] text-foreground/85 leading-snug mb-3">{cause}</p>

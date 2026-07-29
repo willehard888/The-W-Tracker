@@ -124,14 +124,14 @@ export const buildHolisticContext = (
     .join(" · ");
 
   return `Life context (do not list these back — *use* them):
-- Identity / self-description: ${athlete.i_am ? `"${String(athlete.i_am).slice(0, 200)}"` : "(not provided)"}
+- THEIR WHY / who they're becoming: ${athlete.i_am ? `"${String(athlete.i_am).slice(0, 200)}"` : "(not provided)"}
 - Hobbies that recharge them: ${hobbies.length ? hobbies.join(", ") : "(not provided)"}
 - Life situation: ${athlete.life_context ? `"${String(athlete.life_context).slice(0, 200)}"` : "(not provided)"}
 - ${stressLine}
 - ${moodLine}
 - Mental-health focus areas: ${focus.length ? focus.join(", ") : "(none flagged)"}${focusGuidance ? `\n  Tone adjustments → ${focusGuidance}.` : ""}
 
-Use this. If they journal about "stuck", reach for life_context. If they say "no energy", reach for today's mood + stress baseline. If you prescribe a recovery practice, frame it through one of their hobbies when possible (reading → wind-down, outdoors → walk-and-talk, music → breath-paced playlist, cooking → mindful prep, creative → 25-min flow block).`;
+Use this. Their WHY is the deepest lever you have: when a hard thing needs doing (a session, sleep discipline, saying no), connect it to who they said they're becoming — "you told me you want to be the dad who shows up strong; that's what tonight's sleep is really about" — but invoke it sparingly and earned, never as a canned tagline. If they journal about "stuck", reach for life_context. If they say "no energy", reach for today's mood + stress baseline. If you prescribe a recovery practice, frame it through one of their hobbies when possible (reading → wind-down, outdoors → walk-and-talk, music → breath-paced playlist, cooking → mindful prep, creative → 25-min flow block).`;
 };
 
 /**

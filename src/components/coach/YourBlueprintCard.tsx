@@ -60,6 +60,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
   const toneLabel = profile.tone_pref ? TONE_LABEL[profile.tone_pref] : null;
   const hobbies = profile.hobbies?.slice(0, 3) ?? [];
   const lifeContext = profile.life_context?.trim();
+  const why = profile.i_am?.trim();
 
   return (
     <button
@@ -87,7 +88,21 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
         <ChevronRight size={16} className="text-gold/60 shrink-0 mt-1.5" aria-hidden />
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2.5">
+      {/* The "why" — the identity the user is training toward. Headline of the
+          card because it's the whole point; goal/voice/joy are the supporting
+          detail. Falls back gracefully when not yet authored. */}
+      {why && (
+        <div className="mt-4">
+          <p className="text-[9px] font-black uppercase tracking-[0.24em] text-gold/70 mb-1">
+            Who I'm becoming
+          </p>
+          <p className="font-display text-[17px] font-black leading-snug tracking-tight text-foreground">
+            {why}
+          </p>
+        </div>
+      )}
+
+      <div className="mt-4 grid grid-cols-2 gap-2.5">
         {goalLabel && (
           <Row icon={<Target size={11} />} label="Goal" value={goalLabel} />
         )}

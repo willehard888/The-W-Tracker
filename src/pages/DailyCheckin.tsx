@@ -31,6 +31,7 @@ import { queueCheckin, isNetworkError } from "@/lib/offline-checkin";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useCheckinConfig } from "@/hooks/use-checkin-config";
 import { useCheckinDay } from "@/hooks/use-checkin-day";
+import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import CheckinHabitPicker from "@/components/checkin/CheckinHabitPicker";
 import {
   resolveCheckinHabits, PILLAR_LABEL, OPTIONAL_XP_CAP, type CheckinPillar, type CheckinHabit,
@@ -102,6 +103,8 @@ const HabitToggle = ({
 const DailyCheckin = () => {
   const navigate = useNavigate();
   const { user, profile, refreshProfile } = useAuth();
+  const { profile: athlete } = useAthleteProfile();
+  const why = athlete?.i_am?.trim();
   const queryClient = useQueryClient();
 
   // The user's personalized habit selection (or the classic default set).
@@ -626,6 +629,20 @@ const DailyCheckin = () => {
         maxCount={maxCount}
         onBack={() => navigate("/")}
       />
+
+      {/* The "why" anchor — reframes the whole check-in from "earn XP" to
+          "become who I said I'd become." Quiet, non-gold, only shown once the
+          user has authored their identity statement. */}
+      {why && (
+        <div className="mt-2 mb-1 rounded-2xl border border-border/50 bg-card/40 px-4 py-2.5">
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+            Today's discipline is for
+          </p>
+          <p className="text-[13px] font-bold leading-snug text-foreground/90 mt-0.5">
+            {why}
+          </p>
+        </div>
+      )}
 
       <CheckinHabitPicker
         open={pickerOpen}

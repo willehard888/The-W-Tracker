@@ -408,15 +408,17 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
               <div className="text-xs text-muted-foreground">{t.sub}</div>
             </button>
           ))}
-          <Field label="Optional: one line about you">
+          <Field label="Your why — who are you becoming?">
             <textarea
               rows={2}
               value={draft.i_am}
               onChange={e => set({ i_am: e.target.value.slice(0, 160) })}
-              placeholder="e.g. Father of 2, 35, building strength without losing weekends."
+              placeholder="e.g. The dad my kids see show up strong every day. Someone who keeps promises to himself."
               className="w-full resize-none rounded-2xl border border-border/50 bg-card/60 px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
             />
-            <p className="text-[10px] text-muted-foreground/70 mt-1">{draft.i_am.length}/160</p>
+            <p className="text-[10px] text-muted-foreground/70 mt-1">
+              {draft.i_am.length}/160 · This is what every check-in is really for.
+            </p>
           </Field>
         </div>
       ),

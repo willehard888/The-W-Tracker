@@ -52,6 +52,7 @@ const CoachHabits = lazy(() => import("./pages/CoachHabits"));
 const CoachReflect = lazy(() => import("./pages/CoachReflect"));
 const CoachGoal = lazy(() => import("./pages/CoachGoal"));
 const CoachProgress = lazy(() => import("./pages/CoachProgress"));
+const Journey = lazy(() => import("./pages/Journey"));
 const CoachProgramDetail = lazy(() => import("./pages/CoachProgramDetail"));
 const CoachMemoryScreen = lazy(() => import("./pages/CoachMemoryScreen"));
 const ProtocolLibrary = lazy(() => import("./pages/ProtocolLibrary"));
@@ -246,6 +247,7 @@ const AppRoutes = () => {
           <Route path="/coach/reflect" element={<ProtectedRoute><CoachReflect /></ProtectedRoute>} />
           <Route path="/coach/goal" element={<ProtectedRoute><CoachGoal /></ProtectedRoute>} />
           <Route path="/coach/progress" element={<ProtectedRoute><CoachProgress /></ProtectedRoute>} />
+          <Route path="/journey" element={<ProtectedRoute><Journey /></ProtectedRoute>} />
           <Route path="/coach/program" element={<ProtectedRoute><CoachProgramDetail /></ProtectedRoute>} />
           <Route path="/coach/memory" element={<ProtectedRoute><CoachMemoryScreen /></ProtectedRoute>} />
           <Route path="/coach/library" element={<ProtectedRoute><ProtocolLibrary /></ProtectedRoute>} />

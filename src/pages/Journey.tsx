@@ -1,0 +1,283 @@
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Compass, TrendingUp, TrendingDown, Moon, Flame, BookHeart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { useJourney, weeklyXp, type JourneyReflection } from "@/hooks/use-journey";
+import Sparkline from "@/components/coach/Sparkline";
+import AnimatedNumber from "@/components/AnimatedNumber";
+import EmptyState from "@/components/ui/empty-state";
+import { cn } from "@/lib/utils";
+
+const MOOD_EMOJI = ["😢", "😕", "😐", "🙂", "😄"];
+
+/**
+ * /journey — the Growth Mirror. Renders longitudinal data the app already
+ * stores but never showed back: the daily win/friction reflection diary (was
+ * write-only), the XP-per-week trajectory, and the sleep trend — plus a "how
+ * far you've come" delta strip. Answers the one question a self-improvement app
+ * must answer: "am I actually becoming who I set out to be?"
+ */
+const Journey = () => {
+  const navigate = useNavigate();
+  const { profile } = useAuth();
+  const { data, isLoading } = useJourney(56);
+
+  const reflections = data?.reflections ?? [];
+  const checkins = data?.checkins ?? [];
+
+  const xpWeeks = useMemo(() => weeklyXp(checkins), [checkins]);
+
+  // "How far you've come" — first-week vs latest-week XP, and first vs last 7d
+  // sleep average. Only shown once there's enough history to be meaningful.
+  const xpDelta =
+    xpWeeks.length >= 2 ? xpWeeks[xpWeeks.length - 1] - xpWeeks[0] : null;
+  const xpPct =
+    xpWeeks.length >= 2 && xpWeeks[0] > 0
+      ? Math.round(((xpWeeks[xpWeeks.length - 1] - xpWeeks[0]) / xpWeeks[0]) * 100)
+      : null;
+
+  const sleepSeries = useMemo(
+    () => checkins.map((c) => c.sleep).filter((v) => v > 0),
+    [checkins],
+  );
+  const sleepDelta = useMemo(() => {
+    const s = checkins.filter((c) => c.sleep > 0);
+    if (s.length < 8) return null;
+    const first = s.slice(0, 7);
+    const last = s.slice(-7);
+    const avg = (xs: typeof s) => xs.reduce((a, b) => a + b.sleep, 0) / xs.length;
+    return avg(last) - avg(first);
+  }, [checkins]);
+
+  const bestStreak = profile?.longest_streak ?? 0;
+  const daysTracked = checkins.length;
+
+  const hasAnyData = daysTracked > 0 || reflections.length > 0;
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="shrink-0 page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
+        <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => navigate(-1)}>
+          <ArrowLeft size={18} />
+        </Button>
+        <div className="flex items-center gap-2">
+          <div className="h-7 w-7 rounded-full bg-[hsl(var(--gold)/0.12)] flex items-center justify-center">
+            <Compass size={14} className="text-gold" />
+          </div>
+          <h1 className="font-display text-base font-black">Your Journey</h1>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto momentum-scroll px-4 pt-4 pb-8 space-y-4">
+        {!isLoading && !hasAnyData && (
+          <EmptyState
+            icon={Compass}
+            title="Your journey starts today"
+            description="Check in and reflect daily — this is where you'll watch yourself become who you set out to be."
+          />
+        )}
+
+        {/* How far you've come — delta strip */}
+        {(xpDelta != null || sleepDelta != null || bestStreak > 0) && (
+          <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp size={12} className="text-gold" />
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">
+                How far you've come
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <DeltaTile
+                icon={Flame}
+                label="Best streak"
+                value={<AnimatedNumber value={bestStreak} duration={800} />}
+                unit="days"
+              />
+              {xpPct != null && (
+                <DeltaTile
+                  icon={TrendingUp}
+                  label="XP / week"
+                  value={<><span>{xpPct >= 0 ? "+" : ""}</span><AnimatedNumber value={xpPct} duration={800} /><span>%</span></>}
+                  good={xpPct >= 0}
+                />
+              )}
+              {sleepDelta != null && Math.abs(sleepDelta) >= 0.1 && (
+                <DeltaTile
+                  icon={Moon}
+                  label="Sleep"
+                  value={`${sleepDelta > 0 ? "+" : ""}${sleepDelta.toFixed(1)}h`}
+                  good={sleepDelta > 0}
+                />
+              )}
+            </div>
+            <p className="mt-3 text-[11px] text-muted-foreground leading-snug">
+              {daysTracked > 0
+                ? `${daysTracked} days tracked · every check-in is a vote for who you're becoming.`
+                : "Keep showing up — the proof compounds."}
+            </p>
+          </div>
+        )}
+
+        {/* XP-per-week trajectory */}
+        {xpWeeks.length >= 2 && (
+          <TrendCard
+            icon={TrendingUp}
+            title="Momentum"
+            sub={`XP per week · ${xpWeeks.length} weeks`}
+            values={xpWeeks}
+            delta={xpDelta != null ? `${xpDelta >= 0 ? "+" : ""}${xpDelta.toLocaleString()} xp` : null}
+            good={(xpDelta ?? 0) >= 0}
+          />
+        )}
+
+        {/* Sleep trend */}
+        {sleepSeries.length >= 5 && (
+          <TrendCard
+            icon={Moon}
+            title="Recovery base"
+            sub={`Sleep · last ${sleepSeries.length} nights logged`}
+            values={sleepSeries}
+            delta={sleepDelta != null && Math.abs(sleepDelta) >= 0.1 ? `${sleepDelta > 0 ? "+" : ""}${sleepDelta.toFixed(1)}h vs start` : null}
+            good={(sleepDelta ?? 0) >= 0}
+          />
+        )}
+
+        {/* The reflection diary — was write-only; now you can read your journey */}
+        <div className="rounded-2xl border border-border/50 bg-card/40 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <BookHeart size={13} className="text-gold" />
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">
+              Your reflections
+            </p>
+            {reflections.length > 0 && (
+              <span className="ml-auto text-[11px] font-bold text-gold/80 tabular-nums">
+                {reflections.length}
+              </span>
+            )}
+          </div>
+
+          {reflections.length === 0 ? (
+            <p className="text-[12px] text-muted-foreground leading-snug">
+              Your daily wins and frictions will collect here — a private record of the person you're
+              building. Add one from the Coach's evening reflection.
+            </p>
+          ) : (
+            <div className="space-y-2.5">
+              {reflections.slice(0, 30).map((r) => (
+                <ReflectionRow key={r.reflection_date} r={r} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const DeltaTile = ({
+  icon: Icon,
+  label,
+  value,
+  unit,
+  good,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: React.ReactNode;
+  unit?: string;
+  good?: boolean;
+}) => (
+  <div className="rounded-xl border border-border/40 bg-card/50 px-2.5 py-2.5 text-center">
+    <Icon
+      size={12}
+      className={cn(
+        "mx-auto mb-1",
+        good === undefined ? "text-gold/70" : good ? "text-xp-green" : "text-[hsl(18_95%_58%)]",
+      )}
+    />
+    <p className="font-display text-lg font-black tabular-nums leading-none">{value}</p>
+    {unit && <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">{unit}</p>}
+    <p className="text-[9px] font-bold text-muted-foreground/70 uppercase tracking-wider mt-1">{label}</p>
+  </div>
+);
+
+const TrendCard = ({
+  icon: Icon,
+  title,
+  sub,
+  values,
+  delta,
+  good,
+}: {
+  icon: React.ElementType;
+  title: string;
+  sub: string;
+  values: number[];
+  delta: string | null;
+  good: boolean;
+}) => (
+  <div className="rounded-2xl border border-border/50 bg-card/40 p-4">
+    <div className="flex items-start justify-between mb-2">
+      <div className="flex items-center gap-2">
+        <Icon size={13} className="text-gold" />
+        <div>
+          <p className="text-[13px] font-black leading-tight">{title}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{sub}</p>
+        </div>
+      </div>
+      {delta && (
+        <span className={cn("inline-flex items-center gap-0.5 text-[11px] font-black tabular-nums", good ? "text-xp-green" : "text-[hsl(18_95%_58%)]")}>
+          {good ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+          {delta}
+        </span>
+      )}
+    </div>
+    <Sparkline values={values} className="w-full h-10" />
+  </div>
+);
+
+const relDate = (iso: string): string => {
+  const d = new Date(iso + "T00:00:00");
+  const today = new Date();
+  const days = Math.round((today.setHours(0, 0, 0, 0) - d.setHours(0, 0, 0, 0)) / (24 * 60 * 60 * 1000));
+  if (days <= 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  return new Date(iso + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
+};
+
+const ReflectionRow = ({ r }: { r: JourneyReflection }) => {
+  const mood = r.mood_1to5 != null ? MOOD_EMOJI[Math.min(4, Math.max(0, r.mood_1to5 - 1))] : null;
+  const hasBody = !!(r.win?.trim() || r.friction?.trim());
+  return (
+    <div className="rounded-xl border border-border/40 bg-card/50 px-3 py-2.5">
+      <div className="flex items-center gap-2 mb-1">
+        {mood && <span className="text-sm leading-none">{mood}</span>}
+        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+          {relDate(r.reflection_date)}
+        </span>
+      </div>
+      {!hasBody ? (
+        <p className="text-[11px] text-muted-foreground/70 italic">Checked in.</p>
+      ) : (
+        <div className="space-y-1">
+          {r.win?.trim() && (
+            <p className="text-[12px] leading-snug">
+              <span className="text-gold font-black">Win · </span>
+              <span className="text-foreground/90">{r.win.trim()}</span>
+            </p>
+          )}
+          {r.friction?.trim() && (
+            <p className="text-[12px] leading-snug">
+              <span className="text-muted-foreground font-black">Friction · </span>
+              <span className="text-foreground/80">{r.friction.trim()}</span>
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Journey;

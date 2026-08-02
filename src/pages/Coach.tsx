@@ -17,7 +17,7 @@ import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import { useTodayReflection } from "@/hooks/use-coach-reflection";
 import { supabase } from "@/integrations/supabase/client";
 import StateCard from "@/components/coach/v2/StateCard";
-import MoveCard from "@/components/coach/v2/MoveCard";
+import TodaysPlanCard from "@/components/coach/TodaysPlanCard";
 import ProgramCard from "@/components/coach/v2/ProgramCard";
 import CoachBriefHero from "@/components/coach/v2/CoachBriefHero";
 import AskCoachPill from "@/components/coach/v2/AskCoachPill";
@@ -206,9 +206,11 @@ const CoachShell = ({ session, program, navigate }: any) => {
       <div className="flex-1 overflow-y-auto px-4 pt-3 pb-8 space-y-3">
         {/* The AI leads — proactive daily brief, the centre of the experience. */}
         <CoachBriefHero onOpenChat={() => openChat()} onAsk={(q) => openChat(q)} />
+        {/* The adaptive daily plan — readiness + missions, the coach's real
+            "what to do today" engine (replaces the rule-based MoveCard). */}
+        <TodaysPlanCard />
         <AskCoachPill onOpenChat={() => openChat()} onBrowseFaq={() => openChat()} />
         <StateCard />
-        <MoveCard />
         <ProgramCard />
         <HealthKitConnectCard />
         <CoachFooterLinks />

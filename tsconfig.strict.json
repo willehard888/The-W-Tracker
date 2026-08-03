@@ -1,0 +1,9 @@
+{
+  "//": "SHADOW config for the type-safety ratchet (scripts/type-debt.mjs). It does NOT affect the Vite build, which uses tsconfig.app.json. It turns the strict flags ON so we can count remaining type debt and prevent it from growing — new code must be strict-clean while existing debt is paid down file-by-file.",
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true
+  }
+}

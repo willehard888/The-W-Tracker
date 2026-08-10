@@ -121,8 +121,21 @@ Deno.serve(async (req) => {
     } else if (revokeEvents.includes(event.type)) {
       isElite = false;
     } else if (event.type === "CANCELLATION") {
+      // Access correctly continues until EXPIRATION — but the signal must be
+      // COUNTED. This was a pure no-op before: churn wasn't even measurable
+      // (admin metrics read these events).
       console.log("Cancellation received - user keeps access until expiration");
-      return new Response(JSON.stringify({ success: true, action: "none" }), {
+      const { error: evErr } = await supabase.from("analytics_events").insert({
+        user_id: appUserId,
+        event: "subscription_cancelled",
+        props: {
+          store: event.store ?? null,
+          product_id: event.product_id ?? null,
+          period_type: event.period_type ?? null,
+        },
+      });
+      if (evErr) console.warn("cancellation analytics insert failed:", evErr.message);
+      return new Response(JSON.stringify({ success: true, action: "recorded" }), {
         status: 200,
         headers: jsonHeaders,
       });

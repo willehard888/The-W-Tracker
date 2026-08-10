@@ -50,6 +50,10 @@ export const FUNNEL = {
   checkinVerified: "checkin_verified",
   streakMilestone: "streak_milestone",
   // Monetization
+  // Trial lifecycle — enables trial→paid conversion measurement, which was
+  // previously impossible (no trial events existed at all).
+  trialStarted: "trial_started",
+  trialExpired: "trial_expired",
   paywallViewed: "paywall_viewed",
   purchaseStarted: "purchase_started",
   purchaseCompleted: "purchase_completed",

@@ -1,6 +1,8 @@
 import { ChevronRight, Award, Crown, Utensils, Dumbbell, ArrowUp } from "lucide-react";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import BadgeCard from "@/components/BadgeCard";
+import TrialExpirySheet from "@/components/TrialExpirySheet";
+import { track, FUNNEL } from "@/lib/analytics";
 import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
@@ -47,6 +49,21 @@ const Index = () => {
     return () => clearTimeout(t);
   }, []);
   const { profile, isElite } = useAuth();
+
+  // trial_started — fired once per user when their trial window is fresh
+  // (<48h old). Without this event, trial→paid conversion was unmeasurable.
+  useEffect(() => {
+    const uid = profile?.user_id;
+    const startedAt = profile?.trial_started_at ? new Date(profile.trial_started_at).getTime() : NaN;
+    if (!uid || !Number.isFinite(startedAt)) return;
+    if (Date.now() - startedAt > 48 * 60 * 60 * 1000) return;
+    const key = `trial_started_tracked_${uid}`;
+    try {
+      if (localStorage.getItem(key) === "1") return;
+      localStorage.setItem(key, "1");
+    } catch { return; }
+    void track(FUNNEL.trialStarted);
+  }, [profile?.user_id, profile?.trial_started_at]);
 
   const { data: latestNudge } = useQuery({
     queryKey: ["latest-coach-nudge", profile?.user_id],
@@ -453,6 +470,9 @@ const Index = () => {
           {tierConfig.message}
         </p>
       </div>
+
+      {/* Trial-end conversion moment — one-shot value recap + upgrade CTA. */}
+      <TrialExpirySheet />
     </div>
   );
 };

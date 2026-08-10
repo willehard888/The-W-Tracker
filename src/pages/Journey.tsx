@@ -26,10 +26,15 @@ const Journey = () => {
   const reflections = data?.reflections ?? [];
   const checkins = data?.checkins ?? [];
 
-  const xpWeeks = useMemo(() => weeklyXp(checkins), [checkins]);
+  const xpWeeksAll = useMemo(() => weeklyXp(checkins), [checkins]);
 
-  // "How far you've come" — first-week vs latest-week XP, and first vs last 7d
-  // sleep average. Only shown once there's enough history to be meaningful.
+  // COMPLETE weeks only for the trend math: the last bucket is the current,
+  // partial week and the first is clipped by the 56-day window. Comparing them
+  // raw showed "XP/week −90%" every Monday morning. Need ≥2 complete weeks.
+  const xpWeeks = useMemo(
+    () => (xpWeeksAll.length >= 4 ? xpWeeksAll.slice(1, -1) : xpWeeksAll.slice(0, -1)),
+    [xpWeeksAll],
+  );
   const xpDelta =
     xpWeeks.length >= 2 ? xpWeeks[xpWeeks.length - 1] - xpWeeks[0] : null;
   const xpPct =
@@ -53,7 +58,10 @@ const Journey = () => {
   const bestStreak = profile?.longest_streak ?? 0;
   const daysTracked = checkins.length;
 
-  const hasAnyData = daysTracked > 0 || reflections.length > 0;
+  // bestStreak included: a returning user with a lifetime streak but no recent
+  // window data must see their record, NOT "your journey starts today" stacked
+  // on top of the delta strip.
+  const hasAnyData = daysTracked > 0 || reflections.length > 0 || bestStreak > 0;
 
   return (
     <div className="flex flex-col h-full">
@@ -152,7 +160,7 @@ const Journey = () => {
             </p>
             {reflections.length > 0 && (
               <span className="ml-auto text-[11px] font-bold text-gold/80 tabular-nums">
-                {reflections.length}
+                {reflections.length > 30 ? "last 30" : reflections.length}
               </span>
             )}
           </div>

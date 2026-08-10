@@ -935,8 +935,10 @@ const DailyCheckin = () => {
           <Zap size={20} />
           {submitting ? "Submitting..." : `Submit Day — Earn ${totalXp} XP`}
         </Button>
-        {honest !== true && !submitting ? (
+        {honest === null && !submitting ? (
           // Close the loop on the greyed button so it doesn't read as broken.
+          // Only when UNANSWERED — after "No" the red guidance above owns the
+          // message; showing this too read as "flip it to Yes to proceed".
           <p className="mt-2 text-center text-[11px] font-semibold text-gold/85">
             Confirm “Were you honest?” above to submit
           </p>

@@ -19,11 +19,10 @@ const TopTribesWidget = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Founding a tribe is Elite+ only — don't dangle a "Found a tribe" CTA at
-  // users who can't (it read as if tribes were open to everyone).
-  const tier = profile?.status_tier;
-  const canCreate =
-    isApexSubscriber || tier === "elite" || tier === "apex" || tier === "legend";
+  // Tribe creation was opened to every member server-side (20260616160000 —
+  // can_create_tribe is now just "signed in"), so the old Elite-only client
+  // gate silently hid the CTA from users who CAN create.
+  const canCreate = !!profile;
 
   useEffect(() => {
     const load = async () => {

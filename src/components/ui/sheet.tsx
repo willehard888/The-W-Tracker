@@ -63,9 +63,11 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
         <SheetPrimitive.Close
           className={cn(
             "absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted",
-            // Visual 32px, tap target expanded to Apple's 44pt minimum via an
-            // invisible inset — pseudo-element takes the taps, no visual change.
-            "relative before:absolute before:content-[''] before:-inset-[6px]",
+            // Visual 32px, tap target expanded to Apple's 44pt via an invisible
+            // ::before inset. No `relative` — tailwind-merge treats absolute/
+            // relative as one conflict group, so it stripped the `absolute`
+            // above and dropped the X inline into the sheet body.
+            "before:absolute before:content-[''] before:-inset-[6px]",
             "transition-[background,color,box-shadow] duration-200",
             "hover:bg-[hsl(0_0%_100%/0.06)] hover:text-foreground",
             "hover:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.06),inset_0_-1px_0_hsl(var(--border-strong)/0.7)]",

@@ -9,7 +9,6 @@ import { RedeemLegendInviteDialog } from "@/components/RedeemLegendInviteDialog"
 interface TierLadderProps {
   currentTier: string;
   /** @deprecated Apex is earned-only — kept for backwards compatibility, not used. */
-  isApexSubscriber?: boolean;
   className?: string;
 }
 

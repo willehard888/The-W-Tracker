@@ -60,8 +60,14 @@ const RecoveryCard = () => {
     .map((n) => n.resting_hr)
     .filter((v): v is number => v != null)
     .reverse();
-  const trendDelta =
-    rhrTrend.length >= 5 ? rhrTrend[rhrTrend.length - 1] - rhrTrend[0] : null;
+  // Median of the first 3 vs last 3 nights — a single bad night at either
+  // endpoint must not flip the "fitter" badge (same treatment as the baseline).
+  const trendDelta = (() => {
+    if (rhrTrend.length < 5) return null;
+    const head = median(rhrTrend.slice(0, 3));
+    const tail = median(rhrTrend.slice(-3));
+    return head != null && tail != null ? tail - head : null;
+  })();
 
   const deep = last!.sleep_deep_min ?? 0;
   const rem = last!.sleep_rem_min ?? 0;

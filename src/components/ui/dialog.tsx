@@ -48,10 +48,13 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Close
         className={cn(
           "absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted",
-          // Visual 32px, but expand the tap target to Apple's 44pt minimum with
-          // an invisible inset — the dismiss control on every dialog was a 32px
-          // target. Pseudo-element receives the taps; no layout/visual change.
-          "relative before:absolute before:content-[''] before:-inset-[6px]",
+          // Visual 32px, tap target expanded to Apple's 44pt via an invisible
+          // ::before inset. NOTE: no `relative` here — tailwind-merge collapses
+          // absolute/relative into one conflict group (last wins), so adding
+          // `relative` STRIPPED the `absolute` above and dropped the X into the
+          // dialog's grid flow. `absolute` is its own containing block for the
+          // pseudo-element, so it isn't needed anyway.
+          "before:absolute before:content-[''] before:-inset-[6px]",
           "transition-[background,color,box-shadow] duration-200",
           "hover:bg-[hsl(0_0%_100%/0.06)] hover:text-foreground",
           "hover:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.06),inset_0_-1px_0_hsl(var(--border-strong)/0.7)]",

@@ -1,4 +1,4 @@
-import { Swords, Crown, Clock, Trophy, Check, X, Loader2 } from "lucide-react";
+import { Swords, Crown, Clock, Trophy, Check, X, Loader2, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";

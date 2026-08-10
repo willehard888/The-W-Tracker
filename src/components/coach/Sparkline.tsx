@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 interface Props {
   /** Values in chronological order (oldest → newest). */
   values: number[];
@@ -10,6 +12,10 @@ interface Props {
  * pulling a charting library into the lazy exercise chunk.
  */
 const Sparkline = ({ values, className }: Props) => {
+  // Unique gradient id per instance — a hardcoded id collides when several
+  // sparklines render on one page (url(#…) resolves to the FIRST match, so a
+  // future variant color would silently render as the other chart's gradient).
+  const gradId = useId();
   if (values.length < 2) return null;
   const W = 100;
   const H = 32;
@@ -28,12 +34,12 @@ const Sparkline = ({ values, className }: Props) => {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className={className} aria-hidden>
       <defs>
-        <linearGradient id="spark-fill" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="hsl(var(--gold))" stopOpacity="0.22" />
           <stop offset="100%" stopColor="hsl(var(--gold))" stopOpacity="0" />
         </linearGradient>
       </defs>
-      <polygon points={area} fill="url(#spark-fill)" />
+      <polygon points={area} fill={`url(#${gradId})`} />
       <polyline
         points={pts}
         fill="none"

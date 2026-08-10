@@ -164,9 +164,16 @@ const Battles = () => {
     enabled: votingBattleIds.length > 0,
   });
 
-  // Realtime: refresh battles, scores and votes immediately
+  // Realtime: refresh battles, scores and votes immediately.
+  // NOTE: no unfiltered `profiles` subscription — it delivered EVERY profile
+  // update in the product to every client on this page (the nightly tier
+  // recompute writes all N rows → N invalidations in a burst). Participant
+  // stats stay fresh via the query's own refetchInterval.
+  // Dep is the stable user id: `profile` gets a new object identity on every
+  // realtime profile update, which tore down and re-subscribed this channel.
+  const battlesRtUid = profile?.user_id;
   useEffect(() => {
-    if (!profile) return;
+    if (!battlesRtUid) return;
     const channel = supabase
       .channel(uniqueChannelName("battles-realtime"))
       .on(
@@ -176,13 +183,6 @@ const Battles = () => {
           queryClient.invalidateQueries({ queryKey: ["battles"] });
           queryClient.invalidateQueries({ queryKey: ["battle-participants"] });
           queryClient.invalidateQueries({ queryKey: ["community-voting-battles"] });
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "profiles" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["battle-participants"] });
         }
       )
       .on(
@@ -198,44 +198,47 @@ const Battles = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile, queryClient]);
+  }, [battlesRtUid, queryClient]);
 
 
-  // Admin: cancel/delete battle
+  // Admin: cancel/delete battle. supabase-js returns { error } — it does NOT
+  // throw — so these must check the error field or an RLS-denied write shows
+  // a false success toast.
   const adminCancelBattle = async (battleId: string) => {
-    try {
-      await supabase.from("battles").update({ status: "completed", ended_at: new Date().toISOString(), winner_id: null }).eq("id", battleId);
-      toast.success("Battle cancelled by admin");
-      queryClient.invalidateQueries({ queryKey: ["battles"] });
-    } catch {
+    const { error } = await supabase.from("battles").update({ status: "completed", ended_at: new Date().toISOString(), winner_id: null }).eq("id", battleId);
+    if (error) {
       toast.error("Failed to cancel battle");
+      return;
     }
+    toast.success("Battle cancelled by admin");
+    queryClient.invalidateQueries({ queryKey: ["battles"] });
   };
 
   const adminDeleteBattle = async (battleId: string) => {
-    try {
-      await supabase.from("battles").delete().eq("id", battleId);
-      toast.success("Battle deleted by admin");
-      queryClient.invalidateQueries({ queryKey: ["battles"] });
-    } catch {
+    const { error } = await supabase.from("battles").delete().eq("id", battleId);
+    if (error) {
       toast.error("Failed to delete battle");
+      return;
     }
+    toast.success("Battle deleted by admin");
+    queryClient.invalidateQueries({ queryKey: ["battles"] });
   };
 
   const handleVote = async (battleId: string, votedFor: string) => {
     if (!profile) return;
-    try {
-      await supabase.from("battle_votes").insert({
-        battle_id: battleId,
-        voter_id: profile.user_id,
-        voted_for: votedFor,
-      });
-      toast.success("Vote cast! 🗳️");
-      queryClient.invalidateQueries({ queryKey: ["my-battle-votes"] });
-      queryClient.invalidateQueries({ queryKey: ["vote-counts"] });
-    } catch {
-      toast.error("Failed to vote");
+    const { error } = await supabase.from("battle_votes").insert({
+      battle_id: battleId,
+      voter_id: profile.user_id,
+      voted_for: votedFor,
+    });
+    if (error) {
+      // 23505 = already voted (unique constraint); RLS blocks self-votes.
+      toast.error(error.code === "23505" ? "You already voted in this battle" : "Failed to vote");
+      return;
     }
+    toast.success("Vote cast! 🗳️");
+    queryClient.invalidateQueries({ queryKey: ["my-battle-votes"] });
+    queryClient.invalidateQueries({ queryKey: ["vote-counts"] });
   };
 
   const handleCreate = async () => {

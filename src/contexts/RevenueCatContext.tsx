@@ -177,6 +177,10 @@ function toMessage(err: unknown): string {
 
 export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
+  // Key ALL RevenueCat effects on the stable user id — the Supabase user OBJECT
+  // gets a new identity on every token refresh (~hourly), which re-ran the SDK
+  // configure + entitlement sync chain each time (and was the CRIT-1 trigger).
+  const userId = user?.id ?? null;
   const [rcElite, setRcElite] = useState(false);
   const [packages, setPackages] = useState<any[]>([]);
   const [rcLoading, setRcLoading] = useState(true);
@@ -187,11 +191,11 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   /** Sync elite status to database with simple retry. */
   const syncElite = useCallback(
     async (elite: boolean) => {
-      if (!user) return;
+      if (!userId) return;
       const MAX_ATTEMPTS = 3;
       for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
         const { error } = await supabase.rpc("set_elite_status", {
-          target_user_id: user.id,
+          target_user_id: userId,
           elite,
         });
         if (!error) return;
@@ -200,21 +204,29 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       }
       console.error("[RC] syncElite failed after all retries");
     },
-    [user],
+    [userId],
   );
 
-  /** Update elite state + sync to DB. */
+  /** Update elite state + sync to DB — GRANT-only.
+   *
+   * CRIT-1: this used to sync `false` too, which meant "RevenueCat doesn't
+   * know this user" (the NORMAL state for every web/Stripe subscriber) wrote
+   * is_elite=false to the DB on every app init and foreground — actively
+   * revoking paid Stripe memberships from the iOS app. Revocation authority
+   * lives in the provider webhooks (revenuecat-webhook / stripe-webhook),
+   * never in a client-observed absence.
+   */
   const applyElite = useCallback(
     async (info: any) => {
       const elite = hasElite(info);
       setRcElite(elite);
-      if (user) writeEliteCache(user.id, elite);
+      if (userId) writeEliteCache(userId, elite);
       updateRevenueCatDebug({
         entitlement: elite ? ENTITLEMENT : null,
       });
-      await syncElite(elite);
+      if (elite) await syncElite(true);
     },
-    [syncElite, user],
+    [syncElite, userId],
   );
 
   /** Fetch the monthly product directly and set the price label. */
@@ -266,7 +278,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
 
   // ─── Init (native only) ─────────────────────────────
   useEffect(() => {
-    if (!user) {
+    if (!userId) {
       setRcElite(false);
       setPackages([]);
       setMonthlyPriceLabel(null);
@@ -282,7 +294,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
 
     // Optimistically hydrate from the last-known entitlement so a returning
     // subscriber doesn't see a paywall flash before the live check resolves.
-    setRcElite(readEliteCache(user.id));
+    setRcElite(readEliteCache(userId));
 
     if (!isNativePlatform()) {
       setRcLoading(false);
@@ -295,18 +307,18 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       try {
         // 1. Configure SDK (retry transient failures)
         await withRetry(() =>
-          CapPurchases.configure({ apiKey: RC_API_KEY_APPLE, appUserID: user.id }),
+          CapPurchases.configure({ apiKey: RC_API_KEY_APPLE, appUserID: userId }),
         );
         if (cancelled) return;
         setRcReady(true);
         updateRevenueCatDebug({
-          appUserId: user.id,
+          appUserId: userId,
           entitlement: null,
           lastOfferingError: null,
           lastProductFetchError: null,
         });
         pushIosDebugLog("RevenueCat", "SDK configured", {
-          appUserId: user.id,
+          appUserId: userId,
           entitlement: ENTITLEMENT,
           productIds: PRODUCT_IDS,
         });
@@ -382,14 +394,14 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     })();
 
     return () => { cancelled = true; };
-  }, [user, applyElite, loadMonthlyPrice]);
+  }, [userId, applyElite, loadMonthlyPrice]);
 
   // ─── Re-check entitlements when the app returns from background ──────
   // A subscription can be purchased, renewed, expired, or refunded while the
   // app is suspended. native-bootstrap dispatches `native:resume` on resume;
   // we re-pull customerInfo so gating reflects reality without a relaunch.
   useEffect(() => {
-    if (!user || !isNativePlatform()) return;
+    if (!userId || !isNativePlatform()) return;
     const onResume = () => {
       void (async () => {
         try {
@@ -402,7 +414,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     };
     window.addEventListener("native:resume", onResume);
     return () => window.removeEventListener("native:resume", onResume);
-  }, [user, applyElite]);
+  }, [userId, applyElite]);
 
   // ─── Purchase via package ───────────────────────────
   const purchase = useCallback(

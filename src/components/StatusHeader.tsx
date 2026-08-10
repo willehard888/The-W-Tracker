@@ -54,12 +54,15 @@ const StatusHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Keyed on the local date so the quote actually rotates at midnight — with
+  // empty deps it was frozen for the whole session (app left open overnight
+  // showed yesterday's quote indefinitely).
+  const quoteDay = new Date().toDateString();
   const dailyQuote = useMemo(() => {
-    const today = new Date().toDateString();
     let hash = 0;
-    for (let i = 0; i < today.length; i++) hash = ((hash << 5) - hash) + today.charCodeAt(i);
+    for (let i = 0; i < quoteDay.length; i++) hash = ((hash << 5) - hash) + quoteDay.charCodeAt(i);
     return PRESSURE_QUOTES[Math.abs(hash) % PRESSURE_QUOTES.length];
-  }, []);
+  }, [quoteDay]);
 
   // Last check-in drives the EFFECTIVE streak so the header resets the moment
   // a calendar day is missed — not only after a late check-in. Same query key

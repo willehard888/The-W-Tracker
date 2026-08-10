@@ -17,7 +17,7 @@ import { findWeakestPillarSmart } from "@/lib/coach/pick-free-move";
  *   2) A "weakest pillar" chip the user can tap to fill the gap
  *
  * Free + Elite both see the same card. Elite gets the same data; the
- * differentiator is downstream (AI plan in MoveCard).
+ * differentiator is downstream (the adaptive plan in TodaysPlanCard).
  */
 const StateCard = () => {
   const navigate = useNavigate();

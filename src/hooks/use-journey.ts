@@ -70,11 +70,18 @@ export const useJourney = (windowDays = 56) => {
         energy_1to5: r.energy_1to5,
       }));
 
-      const checkins: JourneyCheckin[] = (ciRes.data ?? []).map((r: any) => ({
-        date: String(r.checked_in_at).slice(0, 10),
-        xp: Number(r.xp_earned) || 0,
-        sleep: Number(r.sleep_hours) || 0,
-      }));
+      const checkins: JourneyCheckin[] = (ciRes.data ?? []).map((r: any) => {
+        // LOCAL date (mirrors use-daily-plan's todayISO) — slicing the raw
+        // timestamptz took the UTC date, which pushed late-evening/early-
+        // morning check-ins into the wrong day and even the wrong ISO week.
+        const d = new Date(r.checked_in_at);
+        const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        return {
+          date,
+          xp: Number(r.xp_earned) || 0,
+          sleep: Number(r.sleep_hours) || 0,
+        };
+      });
 
       return { reflections, checkins };
     },

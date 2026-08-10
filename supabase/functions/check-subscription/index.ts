@@ -89,11 +89,11 @@ Deno.serve(async (req) => {
     );
 
     if (customers.data.length === 0) {
-      await serviceClient.from("profiles").update({
-        is_elite: false,
-        is_premium: false,
-        is_apex_subscriber: false,
-      }).eq("user_id", userId);
+      // CRIT-1: do NOT wipe entitlements here. "No Stripe customer" is the
+      // NORMAL state for every iOS/RevenueCat subscriber — this unconditional
+      // clear was revoking Apple-paid memberships every 5 minutes from the web
+      // app. Revocation authority lives in the webhooks (stripe-webhook /
+      // revenuecat-webhook), each clearing only what it granted.
       return new Response(JSON.stringify({ subscribed: false, tier: null }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -125,8 +125,15 @@ Deno.serve(async (req) => {
           if (PRICE_IDS.apex.has(priceId)) isApex = true;
           else if (PRICE_IDS.elite.has(priceId)) isElite = true;
         }
-        const periodEnd = sub.current_period_end;
-        if (periodEnd && typeof periodEnd === "number" && (endTs === null || periodEnd > endTs)) {
+        // M2: on newer Stripe API versions (2025-08-27.basil+) current_period_end
+        // moved onto the subscription ITEMS — read both so subscription_end is
+        // never silently null.
+        const subEnd = (sub as any).current_period_end;
+        const itemEnds = sub.items.data
+          .map((it: any) => it.current_period_end)
+          .filter((v: any): v is number => typeof v === "number");
+        const periodEnd = typeof subEnd === "number" ? subEnd : (itemEnds.length ? Math.max(...itemEnds) : null);
+        if (periodEnd && (endTs === null || periodEnd > endTs)) {
           endTs = periodEnd;
         }
       }
@@ -139,28 +146,38 @@ Deno.serve(async (req) => {
         console.warn("check-subscription: active subscription found with unmapped price ids", [...matchedPriceIds]);
       }
 
-      const update: Record<string, any> = {
-        is_elite: hasRecognizedAccess,
+      // GRANT-only sync (CRIT-1): this path may add entitlements it sees on
+      // Stripe but must never clear flags another provider (RevenueCat) owns.
+      const update: Record<string, any> = {};
+      if (hasRecognizedAccess) {
+        update.is_elite = true;
         // Any active recognized subscription grants Premium (Vault) access.
-        is_premium: hasRecognizedAccess,
-      };
+        update.is_premium = true;
+      }
       if (isApex) {
         update.is_apex_subscriber = true;
-        if (!subscriptionEnd) update.apex_subscription_started_at = new Date().toISOString();
-      } else {
-        update.is_apex_subscriber = false;
+        // M2 fix: this used to key on subscriptionEnd (which was always null on
+        // the new API version) and so RESET Apex tenure on every single call.
+        // Only stamp the start when it isn't already set.
+        const { data: prof } = await serviceClient
+          .from("profiles")
+          .select("apex_subscription_started_at")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (!prof?.apex_subscription_started_at) {
+          update.apex_subscription_started_at = new Date().toISOString();
+        }
       }
-      await serviceClient.from("profiles").update(update).eq("user_id", userId);
+      if (Object.keys(update).length > 0) {
+        await serviceClient.from("profiles").update(update).eq("user_id", userId);
+      }
       // Re-evaluate status tier (may promote to apex via guard rail)
       if (isApex) {
         await serviceClient.rpc("update_status_tier", { target_user_id: userId });
       }
     } else {
-      await serviceClient.from("profiles").update({
-        is_elite: false,
-        is_premium: false,
-        is_apex_subscriber: false,
-      }).eq("user_id", userId);
+      // CRIT-1: no active STRIPE sub ≠ no membership — the user may be an
+      // iOS/RevenueCat subscriber. Never clear flags here; webhooks revoke.
     }
 
     return new Response(JSON.stringify({

@@ -95,13 +95,19 @@ SELECT cron.schedule(
   $$
 );
 
--- Coach weekly review — Sundays 19:00 UTC
+-- NOTE: coach-weekly-review is deliberately NOT cron-scheduled. The function
+-- authenticates a USER JWT (auth.getUser), so a service-role cron call 401s —
+-- it silently failed every Sunday until removed (2026-08-10). The review is
+-- generated on-demand from the client (PerformanceOSDashboard).
+
+-- Coach proactive — hourly; per-user local-time triggers (recovery crash,
+-- streak-at-risk evening save, morning intention) with kind-scoped dedup.
 SELECT cron.schedule(
-  'coach-weekly-review',
-  '0 19 * * 0',
+  'coach-proactive-hourly',
+  '0 * * * *',
   $$
     SELECT net.http_post(
-      url     := 'https://NEW_REF.supabase.co/functions/v1/coach-weekly-review',
+      url     := 'https://NEW_REF.supabase.co/functions/v1/coach-proactive',
       headers := jsonb_build_object(
         'Authorization', 'Bearer SERVICE_ROLE_KEY',
         'Content-Type', 'application/json'

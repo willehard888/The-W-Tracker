@@ -67,14 +67,37 @@ serve(async (req) => {
     // activity (not total history).
     const GRACE_WINDOW_DAYS = 8;
     const windowStartISO = new Date(Date.now() - GRACE_WINDOW_DAYS * DAY_MS).toISOString();
-    const [{ data: profiles, error: profilesError }, { data: checkins, error: checkinsError }] = await Promise.all([
-      supabase.from("profiles").select("user_id, streak, streak_shields").gt("streak", 0),
-      supabase.from("daily_checkins").select("user_id, checked_in_at")
-        .gte("checked_in_at", windowStartISO)
-        .order("checked_in_at", { ascending: false }),
-    ]);
-    if (profilesError) throw profilesError;
-    if (checkinsError) throw checkinsError;
+
+    // CRITICAL: paginate BOTH reads. PostgREST caps un-ranged selects (default
+    // max-rows 1000 on hosted projects). Without paging, any active user whose
+    // latest check-in fell outside the first page vanished from the map below
+    // and had their live streak wrongly zeroed — a mass streak wipe that grows
+    // with the user base.
+    const PAGE = 1000;
+    const fetchAll = async <T>(build: (from: number, to: number) => any): Promise<T[]> => {
+      const all: T[] = [];
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await build(from, from + PAGE - 1);
+        if (error) throw error;
+        const rows = (data ?? []) as T[];
+        all.push(...rows);
+        if (rows.length < PAGE) break;
+      }
+      return all;
+    };
+
+    const profiles = await fetchAll<{ user_id: string; streak: number; streak_shields?: number }>(
+      (from, to) =>
+        supabase.from("profiles").select("user_id, streak, streak_shields")
+          .gt("streak", 0).order("user_id").range(from, to),
+    );
+    const checkins = await fetchAll<{ user_id: string; checked_in_at: string }>(
+      (from, to) =>
+        supabase.from("daily_checkins").select("user_id, checked_in_at")
+          .gte("checked_in_at", windowStartISO)
+          .order("checked_in_at", { ascending: false })
+          .range(from, to),
+    );
 
     const latestCheckinByUser = new Map<string, string>();
     for (const c of checkins || []) {

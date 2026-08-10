@@ -46,6 +46,21 @@ const localHour = (tz: string | null): number => {
   }
 };
 
+// IANA tz → current offset minutes in getTimezoneOffset() convention
+// (positive = west of UTC). gatherSituation needs this for streakAtRisk /
+// checkedInToday to evaluate in the USER's day, not UTC — without it the
+// evening streak-risk trigger could never fire.
+const tzOffsetMinutes = (tz: string | null): number => {
+  try {
+    const now = new Date();
+    const utc = new Date(now.toLocaleString("en-US", { timeZone: "UTC" }));
+    const local = new Date(now.toLocaleString("en-US", { timeZone: tz || "UTC" }));
+    return Math.round((utc.getTime() - local.getTime()) / 60_000);
+  } catch {
+    return 0;
+  }
+};
+
 const median = (xs: number[]): number | null => {
   const a = xs.filter((v) => v != null && !Number.isNaN(v)).sort((x, y) => x - y);
   if (!a.length) return null;
@@ -115,17 +130,24 @@ Deno.serve(async (req) => {
 
     results.processed++;
     try {
-      // One proactive nudge per user per day (shared dedup with morning-nudge).
-      const { data: existing } = await supabase
+      const trigger = await pickTrigger(supabase, p, { inMorning, inEvening, yesterdayStart, todayStartISO });
+      if (!trigger) { results.skipped++; continue; }
+
+      // Dedup per KIND: the daily slot (morning intent / recovery) is separate
+      // from the evening streak-save, so a 07:00 nudge never suppresses the
+      // 19:00 streak protection. limit(1)+array (NOT maybeSingle — once dupes
+      // exist it returns PGRST116 with data=null, which read as "no nudge" and
+      // spammed pushes every pass). The unique (user, kind, day) index is the
+      // race-proof backstop against coach-morning-nudge.
+      const dbKind = trigger.kind === "streak_risk" ? "streak_risk" : "daily";
+      const { data: existingRows, error: dedupErr } = await supabase
         .from("coach_nudges")
         .select("id")
         .eq("user_id", p.user_id)
+        .eq("kind", dbKind)
         .gte("created_at", todayStartISO)
-        .maybeSingle();
-      if (existing) { results.skipped++; continue; }
-
-      const trigger = await pickTrigger(supabase, p, { inMorning, inEvening, yesterdayStart, todayStartISO });
-      if (!trigger) { results.skipped++; continue; }
+        .limit(1);
+      if (dedupErr || (existingRows?.length ?? 0) > 0) { results.skipped++; continue; }
 
       // AI-enhance the copy when possible; otherwise use the deterministic fallback.
       let headline = trigger.headline;
@@ -136,9 +158,13 @@ Deno.serve(async (req) => {
       }
 
       const { error: insErr } = await supabase.from("coach_nudges").insert({
-        user_id: p.user_id, headline, content,
+        user_id: p.user_id, headline, content, kind: dbKind,
       });
-      if (insErr) { results.errors++; continue; }
+      if (insErr) {
+        // unique_violation = the other engine won the slot — skip, not an error.
+        if ((insErr as any).code === "23505") { results.skipped++; } else { results.errors++; }
+        continue;
+      }
 
       const { data: tokens } = await supabase
         .from("push_tokens").select("token, platform").eq("user_id", p.user_id);
@@ -181,7 +207,12 @@ async function pickTrigger(
       .limit(15);
     const rows = (nights ?? []) as any[];
     const last = rows[0];
-    if (last && (last.resting_hr != null || last.sleep_total_min != null)) {
+    // Freshness guard: only alert on a night that actually IS last night —
+    // a stale row from a user who stopped syncing must not trigger "ease off".
+    const lastFresh =
+      last?.night_date &&
+      (Date.now() - new Date(`${last.night_date}T00:00:00Z`).getTime()) / 86_400_000 <= 2;
+    if (last && lastFresh && (last.resting_hr != null || last.sleep_total_min != null)) {
       const baseRhr = median(rows.slice(1).map((n) => Number(n.resting_hr)).filter((v) => v > 0));
       const rhrUp = last.resting_hr != null && baseRhr != null && last.resting_hr - baseRhr >= 6;
       const shortSleep = last.sleep_total_min != null && last.sleep_total_min < 360; // < 6h
@@ -223,7 +254,13 @@ async function pickTrigger(
 
   // ── Evening window ──────────────────────────────────────────────────────
   // 2. Streak at risk — live streak, not yet checked in on the local day.
-  const situation = await gatherSituation(supabase, p.user_id, { streak: p.streak ?? null }).catch(() => null);
+  // tzOffsetMinutes MUST be passed: without it gatherSituation evaluates the
+  // "checked in today / evening window" logic at UTC and streakAtRisk is
+  // hardcoded false — the entire evening trigger was dead code.
+  const situation = await gatherSituation(supabase, p.user_id, {
+    streak: p.streak ?? null,
+    tzOffsetMinutes: tzOffsetMinutes((p as any).timezone ?? null),
+  }).catch(() => null);
   if (situation?.streakAtRisk && (p.streak ?? 0) > 0) {
     return {
       kind: "streak_risk",

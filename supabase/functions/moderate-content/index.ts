@@ -248,12 +248,33 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, supabaseService);
 
-    // 1. Cache lookup by image hash
-    if (image_hash) {
+    // SECURITY: never trust the client-supplied image_hash — an attacker could
+    // submit an abusive image under a hash that was previously cached as
+    // "allow" and skip the model entirely. Compute the hash from the actual
+    // bytes server-side; for URL-only submissions (no bytes here) skip the
+    // cache and always run the model.
+    let effective_hash: string | null = null;
+    if (image_b64) {
+      try {
+        const raw = image_b64.includes(",") ? image_b64.slice(image_b64.indexOf(",") + 1) : image_b64;
+        const bytes = Uint8Array.from(atob(raw), (c) => c.charCodeAt(0));
+        const digest = await crypto.subtle.digest("SHA-256", bytes);
+        effective_hash = Array.from(new Uint8Array(digest))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      } catch {
+        effective_hash = null; // undecodable → no cache, model decides
+      }
+    }
+    // Note: `image_hash` from the body is deliberately ignored from here on.
+    void image_hash;
+
+    // 1. Cache lookup by SERVER-computed image hash
+    if (effective_hash) {
       const { data: cached } = await adminClient
         .from("moderation_cache")
         .select("action, categories, confidence, severity, reason")
-        .eq("image_hash", image_hash)
+        .eq("image_hash", effective_hash)
         .maybeSingle();
 
       if (cached) {
@@ -369,9 +390,9 @@ Deno.serve(async (req) => {
     }
 
     // 4. Persist cache
-    if (image_hash) {
+    if (effective_hash) {
       await adminClient.from("moderation_cache").upsert({
-        image_hash,
+        image_hash: effective_hash,
         action: finalAction,
         categories: result.categories,
         confidence: result.confidence,

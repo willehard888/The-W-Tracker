@@ -363,7 +363,11 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5-mini",
+        // Premium coach = the model is the product. gpt-5 for quality, with a
+        // fast/cheap fallback so a transient upstream hiccup (rate limit /
+        // timeout / 5xx) auto-recovers instead of surfacing an error.
+        model: "openai/gpt-5",
+        models: ["openai/gpt-5", "google/gemini-3-flash-preview"],
         stream: true,
         messages: [{ role: "system", content: systemPrompt }, ...trimmed],
         reasoning: { effort: goDeep ? "high" : "medium" },

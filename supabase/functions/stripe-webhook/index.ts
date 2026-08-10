@@ -120,12 +120,25 @@ Deno.serve(async (req) => {
         if (!uid) {
           console.warn("No user resolved for checkout session:", session.id);
         } else {
+          // Grant the FULL entitlement set (mirrors check-subscription). The old
+          // `{ is_elite: true }`-only write left Apex buyers under-provisioned
+          // and is_premium (the Vault gate) unset for everyone.
+          const tier = session.metadata?.tier === "apex" ? "apex" : "elite";
           const { error } = await supabase
             .from("profiles")
-            .update({ is_elite: true })
+            .update({
+              is_elite: true,
+              is_premium: true,
+              ...(tier === "apex" ? { is_apex_subscriber: true } : {}),
+            })
             .eq("user_id", uid);
           if (error) console.error("Failed to update profile:", error);
-          else console.log(`Elite activated for ${uid}`);
+          else console.log(`${tier} activated for ${uid}`);
+
+          // Web conversions must reward the referrer too — this was only wired
+          // into the RevenueCat (iOS) webhook, silently stiffing web referrals.
+          const { error: refErr } = await supabase.rpc("reward_referral_conversion", { p_user: uid });
+          if (refErr) console.warn("reward_referral_conversion failed:", refErr.message);
         }
       }
     }
@@ -135,23 +148,48 @@ Deno.serve(async (req) => {
       event.type === "customer.subscription.updated"
     ) {
       const subscription = event.data.object;
-      const isActive =
-        subscription.status === "active" || subscription.status === "trialing";
+      // Grace period: past_due means Stripe is still retrying the card — do NOT
+      // revoke yet (matches the deliberate RevenueCat BILLING_ISSUE policy).
+      // Revoke on genuinely terminal states only.
+      const stillEntitled =
+        subscription.status === "active" ||
+        subscription.status === "trialing" ||
+        subscription.status === "past_due";
 
-      if (!isActive) {
+      if (!stillEntitled) {
         const uid = await resolveUserId(supabase, {
           userId: subscription.metadata?.user_id,
           email: subscription.metadata?.email,
         });
         if (uid) {
+          // Revoke the FULL set — `is_elite`-only left is_premium/apex true
+          // forever, i.e. cancellers kept Vault + Apex free permanently.
           await supabase
             .from("profiles")
-            .update({ is_elite: false })
+            .update({ is_elite: false, is_premium: false, is_apex_subscriber: false })
             .eq("user_id", uid);
-          console.log(`Elite deactivated for ${uid}`);
+          console.log(`Membership deactivated for ${uid} (${subscription.status})`);
         } else {
           console.warn("No user resolved for subscription:", subscription.id);
         }
+      }
+    }
+
+    // Dunning signal — payment failed but the sub is in grace. Recorded as an
+    // analytics event so churn/dunning becomes measurable (and later, a push).
+    if (event.type === "invoice.payment_failed") {
+      const invoice = event.data.object;
+      const uid = await resolveUserId(supabase, {
+        userId: invoice.subscription_details?.metadata?.user_id ?? invoice.metadata?.user_id,
+        email: invoice.customer_email,
+      });
+      if (uid) {
+        await supabase.from("analytics_events").insert({
+          user_id: uid,
+          event: "payment_failed",
+          props: { invoice_id: invoice.id, attempt: invoice.attempt_count ?? null },
+        });
+        console.log(`payment_failed recorded for ${uid}`);
       }
     }
 

@@ -111,13 +111,16 @@ Deno.serve(async (req) => {
       const winnerVerified = winnerId
         ? await winnerActivityVerified(supabase, winnerId, new Date(battle.started_at).getTime(), endDate, battle.battle_type)
         : null;
-      await supabase.from("battles").update({
+      // Status guard: two overlapping runs (15-min cron + manual invoke) must
+      // not both resolve — only the run that still sees "active" wins.
+      const { data: updatedRows } = await supabase.from("battles").update({
         status: "completed",
         ended_at: new Date().toISOString(),
         winner_id: winnerId,
         winner_verified: winnerVerified,
         verification_notes: { battle_type: battle.battle_type, winner_verified: winnerVerified },
-      }).eq("id", battle.id);
+      }).eq("id", battle.id).eq("status", "active").select("id");
+      if (!updatedRows?.length) continue; // another run already resolved it
       if (winnerId) await supabase.rpc("update_status_tier", { target_user_id: winnerId });
     }
     resolved++;
@@ -130,7 +133,10 @@ Deno.serve(async (req) => {
     .eq("status", "voting");
 
   for (const battle of votingBattles || []) {
-    const endedAt = new Date(battle.ended_at).getTime();
+    // Null/invalid ended_at → NaN comparisons silently skipped the 1-hour
+    // voting window; treat as "not resolvable yet" instead.
+    const endedAt = battle.ended_at ? new Date(battle.ended_at).getTime() : NaN;
+    if (Number.isNaN(endedAt)) continue;
     const hoursSinceVoting = (now - endedAt) / 3600000;
 
     if (hoursSinceVoting < 1) continue; // Not yet 1 hour
@@ -152,12 +158,13 @@ Deno.serve(async (req) => {
     const winnerVerified = winnerId
       ? await winnerActivityVerified(supabase, winnerId, new Date(battle.started_at).getTime(), endedAt, battle.battle_type)
       : null;
-    await supabase.from("battles").update({
+    const { data: votedRows } = await supabase.from("battles").update({
       status: "completed",
       winner_id: winnerId,
       winner_verified: winnerVerified,
       verification_notes: { battle_type: battle.battle_type, winner_verified: winnerVerified, resolved_by: "vote" },
-    }).eq("id", battle.id);
+    }).eq("id", battle.id).eq("status", "voting").select("id");
+    if (!votedRows?.length) continue; // another run already resolved it
     if (winnerId) await supabase.rpc("update_status_tier", { target_user_id: winnerId });
     resolved++;
   }

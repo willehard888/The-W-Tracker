@@ -10,6 +10,23 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Internal-only: cron invokes with the service-role key. Without this, ANY
+// project JWT (incl. the anon key in the app bundle) could trigger a full
+// LLM + push blast over every Elite user.
+function isServiceRole(token: string, envKey: string): boolean {
+  if (!token) return false;
+  if (envKey && token === envKey) return true;
+  try {
+    const seg = token.split(".")[1];
+    if (!seg) return false;
+    const b64 = seg.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64.length % 4 ? b64 + "=".repeat(4 - (b64.length % 4)) : b64;
+    return JSON.parse(atob(padded))?.role === "service_role";
+  } catch {
+    return false;
+  }
+}
+
 // Deliver the morning nudge at 07:00 in the user's local time. Cron fires this
 // hourly; we skip any user for whom it isn't 07:00 locally right now. NULL tz
 // (hasn't opened the updated app yet) falls back to UTC so they still get one.
@@ -61,6 +78,14 @@ Deno.serve(async (req) => {
   const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 
+  const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+  if (!isServiceRole(token, SERVICE_KEY)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   if (!OPENROUTER_API_KEY) {
     return new Response(JSON.stringify({ error: "OPENROUTER_API_KEY not configured" }), {
       status: 500,
@@ -102,15 +127,18 @@ Deno.serve(async (req) => {
     results.processed++;
 
     try {
-      // Skip if nudge already exists today
-      const { data: existing } = await supabase
+      // Skip if a daily-slot nudge already exists today. limit(1)+array (NOT
+      // maybeSingle): once duplicates exist, maybeSingle returns a PGRST116
+      // error with data=null, which read as "no nudge" and spammed more pushes.
+      const { data: existingRows, error: dedupErr } = await supabase
         .from("coach_nudges")
         .select("id")
         .eq("user_id", profile.user_id)
+        .eq("kind", "daily")
         .gte("created_at", todayStartISO)
-        .maybeSingle();
+        .limit(1);
 
-      if (existing) {
+      if (dedupErr || (existingRows?.length ?? 0) > 0) {
         results.skipped++;
         continue;
       }
@@ -201,15 +229,23 @@ Rules:
         continue;
       }
 
+      // kind='daily' + the unique (user, kind, day) index = race-proof dedup:
+      // a concurrent coach-proactive morning insert loses cleanly here.
       const { error: insertErr } = await supabase.from("coach_nudges").insert({
         user_id: profile.user_id,
         headline: parsed.headline,
         content: parsed.content,
+        kind: "daily",
       });
 
       if (insertErr) {
-        console.error(`Insert error for ${profile.user_id}:`, insertErr);
-        results.errors++;
+        // unique_violation = the other engine already nudged today — not an error.
+        if ((insertErr as any).code !== "23505") {
+          console.error(`Insert error for ${profile.user_id}:`, insertErr);
+          results.errors++;
+        } else {
+          results.skipped++;
+        }
         continue;
       }
 

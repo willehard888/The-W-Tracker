@@ -144,14 +144,23 @@ export async function sendApnsBatch(
 ): Promise<ApnsResult[]> {
   const ios = tokens.filter((t) => t.platform === "ios");
   if (ios.length === 0) return [];
-  const results = await Promise.all(
-    ios.map((t) =>
-      sendApnsPush(t.token, payload).catch((e) => ({
-        token: t.token,
-        status: 0,
-        reason: e instanceof Error ? e.message : String(e),
-      })),
-    ),
-  );
+  // Chunked delivery — an unbounded Promise.all over every token exhausts the
+  // isolate's socket pool once the user base grows (10k tokens = 10k parallel
+  // fetches). 100 concurrent keeps APNs happy and the isolate healthy.
+  const CHUNK = 100;
+  const results: ApnsResult[] = [];
+  for (let i = 0; i < ios.length; i += CHUNK) {
+    const slice = ios.slice(i, i + CHUNK);
+    const settled = await Promise.all(
+      slice.map((t) =>
+        sendApnsPush(t.token, payload).catch((e) => ({
+          token: t.token,
+          status: 0,
+          reason: e instanceof Error ? e.message : String(e),
+        })),
+      ),
+    );
+    results.push(...settled);
+  }
   return results;
 }

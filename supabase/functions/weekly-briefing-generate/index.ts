@@ -137,12 +137,37 @@ function computeStats(checkins: Checkin[]) {
   };
 }
 
+// Internal-only: cron invokes with the service-role key. Without this, ANY
+// project JWT could trigger a full 7-day-context LLM generation per premium
+// user per request (the dedup insert happens AFTER the expensive generation).
+function isServiceRole(token: string, envKey: string): boolean {
+  if (!token) return false;
+  if (envKey && token === envKey) return true;
+  try {
+    const seg = token.split(".")[1];
+    if (!seg) return false;
+    const b64 = seg.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64.length % 4 ? b64 + "=".repeat(4 - (b64.length % 4)) : b64;
+    return JSON.parse(atob(padded))?.role === "service_role";
+  } catch {
+    return false;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+
+  const authToken = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+  if (!isServiceRole(authToken, SERVICE_KEY)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   if (!OPENROUTER_API_KEY) {
     return new Response(JSON.stringify({ error: "OPENROUTER_API_KEY not configured" }), {

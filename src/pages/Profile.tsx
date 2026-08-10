@@ -101,7 +101,10 @@ const Profile = () => {
       // Shrink before upload — avatars render ≤128px, no need to store a multi-MB original.
       const optimized = await downscaleImage(file, { maxDim: 512, quality: 0.82, skipUnder: 60_000 });
       const ext = optimized.name.split(".").pop();
-      const path = `avatars/${profile.user_id}-${Date.now()}.${ext}`;
+      // The proof-photos INSERT policy requires the first path segment to be the
+      // user's id (auth.uid() = foldername[1]). Uploading to an "avatars/" folder
+      // failed RLS — so nest under the user's own folder like check-in proofs do.
+      const path = `${profile.user_id}/avatar-${Date.now()}.${ext}`;
       const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, optimized, { contentType: optimized.type });
       if (uploadErr) throw uploadErr;
       const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);

@@ -87,7 +87,8 @@ const PremiumHero = ({
   errorMessage,
   onCta,
   onDismissError,
-  yearlyDiscountPct = 20,
+  // Real discount: 49,99/yr vs 12×4,99 = 59,88 → ~17% (was a hardcoded, inflated 20).
+  yearlyDiscountPct = 17,
   yearlyAvailable = true,
 }: PremiumHeroProps) => {
   // Monthly-first: the product is 4.99 €/mo with a 14-day free trial. Yearly

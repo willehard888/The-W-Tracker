@@ -281,12 +281,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Check subscription on login and periodically (every 5 minutes).
   // The immediate call on login is intentional — it syncs is_elite fast.
   // The interval is kept long to avoid hammering the edge function.
+  // Keyed on the stable user ID, not the user OBJECT — Supabase mints a new
+  // object identity on every token refresh (~hourly), which reset this
+  // interval and fired an immediate extra check-subscription each time.
+  // checkSubscription is intentionally omitted from deps: its identity churns
+  // with `user` but its behavior only depends on user.id.
+  const checkSubUserId = user?.id;
   useEffect(() => {
-    if (!user) return;
+    if (!checkSubUserId) return;
     checkSubscription();
     const interval = setInterval(checkSubscription, 5 * 60_000);
     return () => clearInterval(interval);
-  }, [user, checkSubscription]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkSubUserId]);
 
   const signUp = useCallback(async (email: string, password: string, username: string) => {
     const { error } = await supabase.auth.signUp({

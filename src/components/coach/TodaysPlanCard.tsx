@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dumbbell, HeartPulse, Brain, Repeat, Flame, Check, RotateCw, Sparkles,
 } from "lucide-react";
@@ -49,7 +50,9 @@ const whyLine = (plan: { readiness_score: number; readiness_breakdown: Record<st
 
 const TodaysPlanCard = () => {
   const { plan, isLoading, completedIds, done, total, generate, completeMission } = useDailyPlan();
+  const navigate = useNavigate();
   const [generating, setGenerating] = useState(false);
+  const [needsMembership, setNeedsMembership] = useState(false);
   const [busy, setBusy] = useState<Set<string>>(new Set());
   const [confetti, setConfetti] = useState(false);
   const autoTried = useRef(false);
@@ -61,7 +64,11 @@ const TodaysPlanCard = () => {
     autoTried.current = true;
     setGenerating(true);
     generate()
-      .catch(() => {/* keep the empty state; user can retry */})
+      .catch((e: any) => {
+        // 403 = the plan engine is membership-gated while the Coach page
+        // itself is open to all — show the upsell, not a dead CTA.
+        if (e?.message === "membership_required") setNeedsMembership(true);
+      })
       .finally(() => setGenerating(false));
   }, [isLoading, plan, generating, generate]);
 
@@ -71,8 +78,14 @@ const TodaysPlanCard = () => {
     setGenerating(true);
     try {
       await generate();
+      setNeedsMembership(false);
     } catch (e: any) {
-      toast.error(e?.message ?? "Couldn't refresh the plan");
+      if (e?.message === "membership_required") {
+        setNeedsMembership(true);
+      } else {
+        // Never show the raw "Edge Function returned a non-2xx…" string.
+        toast.error("Couldn't refresh the plan — try again in a moment.");
+      }
     } finally {
       setGenerating(false);
     }
@@ -84,8 +97,10 @@ const TodaysPlanCard = () => {
     try {
       const res = await completeMission(m.id);
       void hapticNotification("success");
-      // Celebrate finishing the whole plan.
-      if (total > 0 && done + 1 >= total) {
+      // Celebrate finishing the whole plan. completedIds.size (not `done` from
+      // the render closure) so two quick taps can't both read a stale count
+      // and skip the celebration.
+      if (total > 0 && completedIds.size + 1 >= total) {
         setConfetti(true);
         setTimeout(() => setConfetti(false), 1600);
       }
@@ -109,6 +124,26 @@ const TodaysPlanCard = () => {
           Reading your recent recovery, training and streak.
         </p>
       </div>
+    );
+  }
+
+  // Membership-gated — show the value + route to the paywall, never a dead CTA.
+  if (!plan && needsMembership) {
+    return (
+      <button
+        type="button"
+        onClick={() => navigate("/paywall")}
+        className="w-full text-left rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/[0.06] to-card p-4 active:scale-[0.99] transition-transform"
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <Sparkles size={14} className="text-gold" />
+          <p className="text-[13px] font-bold">Your daily plan is a member feature</p>
+        </div>
+        <p className="text-[11px] text-muted-foreground leading-snug">
+          A readiness score + 3–5 missions fitted to how you're actually recovering —
+          rebuilt for you every morning. Unlock full access.
+        </p>
+      </button>
     );
   }
 

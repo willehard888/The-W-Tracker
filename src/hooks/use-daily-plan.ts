@@ -106,8 +106,42 @@ export const useDailyPlan = () => {
 
   const generate = async () => {
     const { data, error } = await supabase.functions.invoke("coach-daily-plan");
-    if (error) throw error;
-    if ((data as any)?.error) throw new Error((data as any).error);
+    if (error) {
+      // supabase.functions.invoke wraps non-2xx as FunctionsHttpError with the
+      // Response on `context` — surface the status so the UI can distinguish
+      // "membership required" (403) from a real failure instead of showing the
+      // raw "non-2xx status code" string to users.
+      const ctx = (error as { context?: { status?: number } }).context;
+      const status = ctx?.status;
+      throw new Error(status === 403 ? "membership_required" : error.message);
+    }
+    interface GeneratePayload {
+      error?: string;
+      plan_id?: string;
+      readiness_score?: number;
+      readiness_breakdown?: Record<string, number | string>;
+      adjustment?: DailyPlan["adjustment"];
+      headline?: string | null;
+      missions?: Mission[];
+    }
+    const d = (data ?? {}) as GeneratePayload;
+    if (d.error) throw new Error(d.error);
+    // Seed the cache straight from the response — the invalidate alone left a
+    // one-render gap where plan===null and the "Build today's plan" CTA
+    // flashed before the refetch landed.
+    if (d?.plan_id && user?.id) {
+      qc.setQueryData(["coach-daily-plan", user.id, date], {
+        id: d.plan_id,
+        user_id: user.id,
+        plan_date: date,
+        readiness_score: d.readiness_score ?? 50,
+        readiness_breakdown: d.readiness_breakdown ?? {},
+        adjustment: d.adjustment ?? "hold",
+        headline: d.headline ?? null,
+        missions: d.missions ?? [],
+        generated_at: new Date().toISOString(),
+      } satisfies DailyPlan);
+    }
     qc.invalidateQueries({ queryKey: ["coach-daily-plan", user?.id] });
     return data;
   };

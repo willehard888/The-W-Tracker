@@ -516,7 +516,7 @@ const Profile = () => {
 
       {/* Tier Ladder — full progression map */}
       <div className="animate-reveal animate-reveal-delay-3">
-        <TierLadder currentTier={profile.status_tier || "recruit"} isApexSubscriber={isApexSubscriber} />
+        <TierLadder currentTier={profile.status_tier || "recruit"} />
       </div>
 
       {/* Road to Elite — earned-status progress (moved here from Settings) */}

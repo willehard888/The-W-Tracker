@@ -59,9 +59,12 @@ export const useTrialAccess = (): TrialAccess => {
       };
     }
 
-    const startedAt = profile.trial_started_at
+    const startedAtRaw = profile.trial_started_at
       ? new Date(profile.trial_started_at).getTime()
       : new Date(profile.created_at).getTime();
+    // NaN guard: a missing/invalid timestamp otherwise rendered "NaNd" in the
+    // trial pill and made isExpired permanently false.
+    const startedAt = Number.isFinite(startedAtRaw) ? startedAtRaw : now;
 
     const elapsed = now - startedAt;
     const msRemaining = Math.max(0, TRIAL_DURATION_MS - elapsed);

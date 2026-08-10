@@ -112,7 +112,7 @@ const Leaderboard = () => {
 
   const isElite = profile?.status_tier === 'elite'; // EARNED tier, not the paid flag
 
-  const { data: allTimeLeaders } = useQuery({
+  const { data: allTimeLeaders, isLoading: allTimeLoading } = useQuery({
     queryKey: ["leaderboard-all-time"],
     staleTime: 5 * 60_000,   // leaderboard refreshes every 5 min is more than enough
     gcTime:    15 * 60_000,
@@ -169,7 +169,7 @@ const Leaderboard = () => {
     },
   });
 
-  const { data: seasonData } = useQuery({
+  const { data: seasonData, isLoading: seasonLoading } = useQuery({
     queryKey: ["leaderboard-season", activeSeason?.id, profile?.user_id],
     enabled: !!activeSeason?.id,
     staleTime: 5 * 60_000,
@@ -536,8 +536,10 @@ const Leaderboard = () => {
       </div>
       )}
 
-      {/* Nobody on the board yet (fresh deploy / new season) — invite action. */}
-      {currentLeaders.length === 0 && (
+      {/* Nobody on the board yet (fresh deploy / new season) — invite action.
+          Gated on the ACTIVE mode's loading state so a cold cache doesn't flash
+          "the board is warming up" for ~500ms before data lands. */}
+      {currentLeaders.length === 0 && !(mode === "season" ? seasonLoading || !activeSeason : allTimeLoading) && (
         <div className="mt-4 animate-reveal animate-reveal-delay-3">
           <EmptyState
             icon={Trophy}

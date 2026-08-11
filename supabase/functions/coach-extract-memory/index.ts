@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
           {
             role: "system",
             content:
-              "You distill DURABLE facts about an athlete from a coaching chat. Output ONLY long-lived facts (preferences, constraints, goals, equipment, schedule, history, dislikes, injuries) — never one-off mood, never coach advice, never restate program. Each fact: atomic, ≤120 chars, written in third person ('User …'). Skip if nothing durable.",
+              "You distill DURABLE facts about an athlete from a coaching chat — the notes a world-class private coach would keep in their client file. Output ONLY long-lived, coaching-relevant facts: injuries & pain patterns, hard constraints (schedule, family, work, equipment), stated goals & their WHY, strong preferences/dislikes, life context (job type, kids, shift work), meaningful wins & PRs, recurring failure patterns (what derails them, when). NEVER: one-off mood, session trivia, coach advice, program restatement, anything the app already tracks (streak/XP/tier). Each fact: atomic, ≤120 chars, third person ('User …'), specific enough to coach from. Skip freely — an empty list beats noise.",
           },
           {
             role: "user",

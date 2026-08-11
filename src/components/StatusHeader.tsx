@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import { getEffectiveStreak } from "@/lib/streak";
+import { pickDaily } from "@/lib/daily-rotation";
 import { getTierConfig, getNextTier, TIER_ORDER, formatTier } from "@/lib/status-tiers";
 import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
@@ -58,11 +59,7 @@ const StatusHeader = () => {
   // empty deps it was frozen for the whole session (app left open overnight
   // showed yesterday's quote indefinitely).
   const quoteDay = new Date().toDateString();
-  const dailyQuote = useMemo(() => {
-    let hash = 0;
-    for (let i = 0; i < quoteDay.length; i++) hash = ((hash << 5) - hash) + quoteDay.charCodeAt(i);
-    return PRESSURE_QUOTES[Math.abs(hash) % PRESSURE_QUOTES.length];
-  }, [quoteDay]);
+  const dailyQuote = useMemo(() => pickDaily(PRESSURE_QUOTES), [quoteDay]);
 
   // Last check-in drives the EFFECTIVE streak so the header resets the moment
   // a calendar day is missed — not only after a late check-in. Same query key

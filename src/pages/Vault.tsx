@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Utensils,
@@ -107,6 +107,26 @@ const Vault = () => {
     if (!isPremium) navigate("/paywall", { replace: true });
   }, [isPremium, subscriptionLoading, navigate]);
 
+  // ?lesson=<slug> deep link (Daily Insight card and coach references) — open
+  // the article sheet once the library resolves, then strip the param so
+  // closing the sheet or going back doesn't reopen it.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const lessonSlug = searchParams.get("lesson");
+  useEffect(() => {
+    if (!lessonSlug || !allVaultArticles) return;
+    const article = allVaultArticles.find((a) => a.slug === lessonSlug);
+    if (article) {
+      const accent =
+        CATEGORIES.find((c) => c.id === article.category_id)?.accent ?? "hsl(45 90% 58%)";
+      setOpenArticle({ article, accent });
+    }
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("lesson");
+      return next;
+    }, { replace: true });
+  }, [lessonSlug, allVaultArticles, setSearchParams]);
+
   if (!isPremium) return null;
 
   const firstName =
@@ -158,7 +178,7 @@ const Vault = () => {
         </h1>
         <p className="text-[12px] text-muted-foreground max-w-[300px] mx-auto leading-relaxed">
           A curated, evidence-led library of protocols across nutrition, training,
-          recovery and nervous-system regulation — every article cited.
+          recovery, nervous-system regulation and inner work — every article cited.
         </p>
 
         <div className="mt-4 grid grid-cols-3 gap-2">

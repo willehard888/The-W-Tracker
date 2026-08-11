@@ -2,6 +2,7 @@ import { Crown, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AppImage from "@/components/ui/app-image";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
+import DayStatsSticker, { type DayStats } from "@/components/feed/DayStatsSticker";
 
 const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
 
@@ -11,6 +12,9 @@ export interface PostMediaProps {
   alt?: string;
   /** Author tier — drives the corner ribbon (elite → gold, apex → ember). */
   tier?: string | null;
+  /** Day stats for check-in proof photos — renders the premium stat sticker
+   *  (bottom-left counterpart to the tier ribbon). Composer posts pass none. */
+  dayStats?: DayStats | null;
   /** Tap handler for images (opens the lightbox). Videos play inline. */
   onOpenImage?: () => void;
   className?: string;
@@ -25,7 +29,7 @@ export interface PostMediaProps {
  *   image is shown in the lightbox on tap.
  * - Tier ribbon overlay. HEIC originals get a graceful notice.
  */
-const PostMedia = ({ imageUrl, videoUrl, alt = "", tier, onOpenImage, className }: PostMediaProps) => {
+const PostMedia = ({ imageUrl, videoUrl, alt = "", tier, dayStats, onOpenImage, className }: PostMediaProps) => {
   const ribbon =
     tier === "elite" ? { icon: Crown, label: "Elite", color: "text-gold", border: "border-gold/40" }
     : tier === "apex" ? { icon: Zap, label: "Apex", color: "text-[hsl(18_95%_58%)]", border: "border-[hsl(18_95%_58%)]/50" }
@@ -73,6 +77,7 @@ const PostMedia = ({ imageUrl, videoUrl, alt = "", tier, onOpenImage, className 
           <span className={cn("text-[9px] font-black tracking-wider uppercase", ribbon.color)}>{ribbon.label}</span>
         </div>
       )}
+      {dayStats && <DayStatsSticker stats={dayStats} />}
     </div>
   );
 };

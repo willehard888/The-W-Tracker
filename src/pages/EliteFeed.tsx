@@ -624,6 +624,39 @@ const EliteFeed = () => {
     },
   });
 
+  // C) Day-stats stickers — check-in proof photos carry that DAY's stats as a
+  //    premium overlay. Auto proof posts share their image_url byte-for-byte
+  //    with daily_checkins.proof_photo_url, so the SECURITY DEFINER RPC joins
+  //    on URL equality (which also naturally excludes composer posts — their
+  //    feed-images URLs match nothing).
+  const proofImageUrls = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          (posts ?? [])
+            .map((p: any) => p.image_url as string | null)
+            .filter((u): u is string => !!u && u.includes("/proof-photos/")),
+        ),
+      ),
+    [posts],
+  );
+  const { data: dayStatsMap } = useQuery({
+    queryKey: ["feed-day-stats", proofImageUrls],
+    enabled: proofImageUrls.length > 0,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("feed_post_day_stats" as any, {
+        p_image_urls: proofImageUrls.slice(0, 60),
+      });
+      if (error) return new Map<string, { xp_earned: number; habits_done: number; verified: boolean }>();
+      return new Map(
+        ((data ?? []) as Array<{ image_url: string; xp_earned: number; habits_done: number; verified: boolean }>).map(
+          (r) => [r.image_url, { xp_earned: r.xp_earned, habits_done: r.habits_done, verified: r.verified }],
+        ),
+      );
+    },
+  });
+
   // A) Social proof — how many showed up in the last 24h. Loss-aversion +
   //    momentum ("everyone's moving, add yours").
   const { data: todayWins } = useQuery({
@@ -929,6 +962,7 @@ const EliteFeed = () => {
               liked={!!reactions?.has(post.id)}
               hasGivenKudos={!!userKudosPosts?.has(post.id)}
               verified={!!verifiedSet?.has(post.user_id)}
+              dayStats={post.image_url ? dayStatsMap?.get(post.image_url) ?? null : null}
               kudosRemaining={kudosRemaining}
               kudosPerMonth={KUDOS_PER_MONTH}
               isCommentsOpen={isOpen}

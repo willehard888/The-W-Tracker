@@ -34,6 +34,8 @@ export interface FeedPostCardProps {
   liked: boolean;
   hasGivenKudos: boolean;
   verified: boolean;
+  /** Day stats for check-in proof photos (premium sticker overlay). */
+  dayStats?: import("@/components/feed/DayStatsSticker").DayStats | null;
   kudosRemaining: number;
   kudosPerMonth: number;
 
@@ -82,6 +84,7 @@ const FeedPostCard = memo(function FeedPostCard({
   liked,
   hasGivenKudos,
   verified,
+  dayStats,
   kudosRemaining,
   kudosPerMonth,
   isCommentsOpen,
@@ -247,12 +250,13 @@ const FeedPostCard = memo(function FeedPostCard({
           imageUrl={post.image_url}
           alt={post.content || "Post image"}
           tier={post.profile?.status_tier}
+          dayStats={dayStats}
           onOpenImage={() => onOpenLightbox(post)}
         />
       )}
 
       {/* Video */}
-      {(post as any).video_url && <PostMedia videoUrl={(post as any).video_url} />}
+      {post.video_url && <PostMedia videoUrl={post.video_url} />}
 
       {/* Actions — themed for ranking system */}
       <div className="flex items-center gap-1 px-3 py-2.5 mt-1 border-t border-border/40">

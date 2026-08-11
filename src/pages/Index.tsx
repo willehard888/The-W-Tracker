@@ -21,7 +21,7 @@ import ConfettiBurst from "@/components/ConfettiBurst";
 import { Portal } from "@/components/ui/Portal";
 import { supabase } from "@/integrations/supabase/client";
 import { getTierConfig } from "@/lib/status-tiers";
-import { recipeThumb } from "@/lib/recipe-images";
+import { recipeThumb, recipeSquare } from "@/lib/recipe-images";
 import { exerciseImg } from "@/lib/exercise-library";
 import { useTierRisk } from "@/hooks/use-tier-risk";
 import { useCheckinDay } from "@/hooks/use-checkin-day";
@@ -320,11 +320,9 @@ const Index = () => {
             <div className="h-16 w-16 rounded-2xl overflow-hidden shrink-0 relative border border-gold/30 bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center">
               <Utensils size={22} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />
               <div
-                className="absolute inset-0 bg-no-repeat"
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                 style={{
-                  backgroundImage: `url(${recipeThumb("greek-chicken-bowl")})`,
-                  backgroundSize: "230%",
-                  backgroundPosition: "85% 16%",
+                  backgroundImage: `url(${recipeSquare("greek-chicken-bowl") ?? recipeThumb("greek-chicken-bowl")})`,
                 }}
               />
             </div>

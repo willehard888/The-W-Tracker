@@ -9,6 +9,7 @@ import RecoveryCard from "@/components/profile/RecoveryCard";
 import JourneyCard from "@/components/profile/JourneyCard";
 import ProfileHero from "@/components/profile/ProfileHero";
 import { downscaleImage } from "@/lib/downscale-image";
+import { withNetworkRetry, isTransientNetworkError } from "@/lib/retry";
 import { hapticSelection } from "@/lib/haptics";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeVault from "@/components/BadgeVault";
@@ -105,15 +106,26 @@ const Profile = () => {
       // user's id (auth.uid() = foldername[1]). Uploading to an "avatars/" folder
       // failed RLS — so nest under the user's own folder like check-in proofs do.
       const path = `${profile.user_id}/avatar-${Date.now()}.${ext}`;
-      const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, optimized, { contentType: optimized.type });
-      if (uploadErr) throw uploadErr;
+      // Retried on transient network drops (WKWebView "Load failed" on flaky
+      // cellular) — an image POST is the most drop-prone request in the app.
+      await withNetworkRetry(async () => {
+        const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, optimized, { contentType: optimized.type, upsert: true });
+        if (uploadErr && !`${uploadErr.message}`.includes("already exists")) throw new Error(uploadErr.message);
+      });
       const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
-      await supabase.rpc("update_own_profile", { new_avatar_url: urlData.publicUrl });
+      await withNetworkRetry(async () => {
+        const { error: rpcErr } = await supabase.rpc("update_own_profile", { new_avatar_url: urlData.publicUrl });
+        if (rpcErr) throw new Error(rpcErr.message);
+      });
       toast.success("Profile photo updated! 📸");
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
     } catch (err) {
       console.error(err);
-      toast.error("Failed to upload photo");
+      toast.error(
+        isTransientNetworkError(err)
+          ? "Connection dropped — check your signal and try again."
+          : "Failed to upload photo",
+      );
     }
     setUploadingAvatar(false);
     e.target.value = "";

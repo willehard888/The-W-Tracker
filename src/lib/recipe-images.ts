@@ -22,6 +22,15 @@ const posterMods = import.meta.glob("../assets/recipes/poster/*.jpg", {
   query: "?url",
 }) as Record<string, string>;
 
+// Square food-only crops (the appetizing dish, cut from the branded card's
+// photo region) — used by the recipe LIST thumbnails so the tiny box shows
+// centered food instead of an awkward slice of the full 2:3 card.
+const squareMods = import.meta.glob("../assets/recipes/square/*.jpg", {
+  eager: true,
+  import: "default",
+  query: "?url",
+}) as Record<string, string>;
+
 const byId = (mods: Record<string, string>): Record<string, string> =>
   Object.fromEntries(
     Object.entries(mods).map(([path, url]) => [
@@ -32,9 +41,13 @@ const byId = (mods: Record<string, string>): Record<string, string> =>
 
 const THUMBS = byId(thumbMods);
 const POSTERS = byId(posterMods);
+const SQUARES = byId(squareMods);
 
 /** Small list/home thumbnail (~50–70KB). Undefined if no image for this id. */
 export const recipeThumb = (id: string): string | undefined => THUMBS[id];
 
 /** Larger poster for the detail / zoom view (~200KB). */
 export const recipePoster = (id: string): string | undefined => POSTERS[id];
+
+/** Square food-only crop for list thumbnails (480×480, retina-crisp). */
+export const recipeSquare = (id: string): string | undefined => SQUARES[id];

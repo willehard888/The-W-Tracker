@@ -5,7 +5,7 @@ import {
   ChevronRight, Utensils, Layers, Leaf, Maximize2,
 } from "lucide-react";
 import PosterZoom from "@/components/recipes/PosterZoom";
-import { recipeThumb, recipePoster } from "@/lib/recipe-images";
+import { recipeThumb, recipePoster, recipeSquare } from "@/lib/recipe-images";
 import { Button } from "@/components/ui/button";
 import { RECIPES, type Recipe } from "@/data/recipes";
 import { cn } from "@/lib/utils";
@@ -225,27 +225,27 @@ const Recipes = () => {
                     className="w-full text-left rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.05] via-card/95 to-card p-4 active:scale-[0.99] transition-transform"
                   >
                     <div className="flex items-start gap-3">
-                      {/* Thumbnail: crop to the food (centre of the dish, below the
-                          top-right badge). background-size + position pans/zooms
-                          reliably; gold gradient + icon show if the image is missing. */}
-                      <div className="h-14 w-14 rounded-xl overflow-hidden bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 relative">
+                      {/* Thumbnail: a DEDICATED square food crop (cut from the
+                          branded card's photo region at build time) — the old
+                          CSS pan/zoom over the full 2:3 card showed an awkward
+                          off-center slice. Gold gradient + icon = missing-image
+                          fallback. */}
+                      <div className="h-16 w-16 rounded-xl overflow-hidden bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 relative border border-border/40">
                         <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />
                         <div
-                          className="absolute inset-0 bg-no-repeat"
+                          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                           style={{
-                            backgroundImage: `url(${recipeThumb(r.id)})`,
-                            backgroundSize: "230%",
-                            backgroundPosition: "85% 16%",
+                            backgroundImage: `url(${recipeSquare(r.id) ?? recipeThumb(r.id)})`,
                           }}
                         />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-display text-[15px] font-black leading-tight">{r.title}</p>
-                        <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{r.subtitle}</p>
-                        <div className="flex items-center gap-3 mt-2 text-[10px] font-bold text-muted-foreground">
+                        <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">{r.subtitle}</p>
+                        <div className="flex items-center gap-3 mt-2 text-[11px] font-bold text-muted-foreground">
                           <span className="text-gold tabular-nums">{r.nutrition.calories} kcal</span>
                           <span className="tabular-nums">{r.nutrition.protein}g protein</span>
-                          <span className="inline-flex items-center gap-0.5"><Clock size={10} /> {r.prepMin + r.cookMin}m</span>
+                          <span className="inline-flex items-center gap-0.5"><Clock size={11} /> {r.prepMin + r.cookMin}m</span>
                         </div>
                       </div>
                       <ChevronRight size={16} className="text-gold/60 shrink-0 mt-1" />

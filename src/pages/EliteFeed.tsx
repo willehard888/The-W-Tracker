@@ -648,11 +648,29 @@ const EliteFeed = () => {
       const { data, error } = await supabase.rpc("feed_post_day_stats" as any, {
         p_image_urls: proofImageUrls.slice(0, 60),
       });
-      if (error) return new Map<string, { xp_earned: number; habits_done: number; verified: boolean }>();
+      if (error)
+        return new Map<
+          string,
+          { xp_earned: number; habits_done: number; verified: boolean; streak_at_day: number }
+        >();
       return new Map(
-        ((data ?? []) as Array<{ image_url: string; xp_earned: number; habits_done: number; verified: boolean }>).map(
-          (r) => [r.image_url, { xp_earned: r.xp_earned, habits_done: r.habits_done, verified: r.verified }],
-        ),
+        (
+          (data ?? []) as Array<{
+            image_url: string;
+            xp_earned: number;
+            habits_done: number;
+            verified: boolean;
+            streak_at_day: number;
+          }>
+        ).map((r) => [
+          r.image_url,
+          {
+            xp_earned: r.xp_earned,
+            habits_done: r.habits_done,
+            verified: r.verified,
+            streak_at_day: Number(r.streak_at_day) || 0,
+          },
+        ]),
       );
     },
   });

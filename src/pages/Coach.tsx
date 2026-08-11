@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, ArrowLeft, Loader2, X, BookOpen, RotateCw, Plus, Sparkles, MoreVertical, User, Brain } from "lucide-react";
+import { Send, ArrowLeft, X, BookOpen, RotateCw, Plus, Sparkles, MoreVertical, User, Brain } from "lucide-react";
 import { matchFaq, COACH_FAQ, FaqEntry } from "@/lib/coach-faq";
 import FaqBrowser from "@/components/coach/FaqBrowser";
 import ReactMarkdown from "react-markdown";
@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
+import { withNetworkRetry } from "@/lib/retry";
 import { toast } from "sonner";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { ProfileSkeleton as PageSkeleton } from "@/components/skeletons/PageSkeleton";
@@ -237,8 +238,39 @@ const CoachShell = ({ session, program, navigate }: any) => {
 // scroll, matching every other W destination's CTA pattern.)
 type ChatMsg = Msg & { faq_id?: string; failed?: boolean; isFaq?: boolean };
 
-const STALE_MS = 24 * 60 * 60 * 1000;
+// 7 days: the coach should remember the week's thread — extracted memory
+// facts carry everything older. (Was 24h, which made every morning start
+// from a blank amnesiac chat.)
+const STALE_MS = 7 * 24 * 60 * 60 * 1000;
 const HISTORY_TS_KEY = "w_coach_messages_v1_ts";
+
+/** Memoized markdown for COMPLETED assistant messages — parsing markdown on
+ *  every SSE delta of every message made long chats visibly stutter. The
+ *  actively-streaming message renders as plain text (see below) and only
+ *  goes through markdown once, on completion. */
+const CoachMarkdown = memo(({ content }: { content: string }) => (
+  <ReactMarkdown>{content || "…"}</ReactMarkdown>
+));
+
+/** Premium "coach is thinking" indicator — three staggered gold dots.
+ *  gpt-5 reasons before it speaks; this makes that phase feel deliberate
+ *  instead of broken. CSS-only (animate-pulse), reduced-motion safe. */
+const ThinkingIndicator = () => (
+  <div className="flex justify-start">
+    <div className="rounded-2xl rounded-bl-md px-3.5 py-2.5 bg-card/70 border border-border/40 flex items-center gap-2">
+      <span className="flex items-center gap-1">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse"
+            style={{ animationDelay: `${i * 220}ms`, animationDuration: "1.1s" }}
+          />
+        ))}
+      </span>
+      <span className="text-[11px] font-bold text-muted-foreground">Coach is thinking…</span>
+    </div>
+  </div>
+);
 
 const ChatSheet = ({
   session, program, initialPrompt, onClose,
@@ -276,9 +308,21 @@ const ChatSheet = ({
       localStorage.setItem(HISTORY_TS_KEY, String(Date.now()));
     } catch {}
     requestAnimationFrame(() => {
-      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+      const el = scrollRef.current;
+      if (!el) return;
+      // Respect the reader: only follow the stream when they're already near
+      // the bottom (reading along). "auto" during streaming — a smooth-scroll
+      // animation retriggered per token janks; smooth only on discrete sends.
+      const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 140;
+      if (nearBottom) {
+        el.scrollTo({ top: el.scrollHeight, behavior: streaming ? "auto" : "smooth" });
+      }
     });
   }, [messages, streaming]);
+
+  // Kill an in-flight stream when the sheet closes/unmounts — the request
+  // used to keep running (and setting state) against an unmounted tree.
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   const newChat = () => {
     hapticImpact("light");
@@ -316,7 +360,10 @@ const ChatSheet = ({
       const controller = new AbortController();
       abortRef.current = controller;
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-coach`;
-      const resp = await fetch(url, {
+      // Retry wraps only the connection phase (fetch resolves at headers) —
+      // a transient WKWebView "Load failed" reconnects invisibly; once the
+      // stream is open there is deliberately no retry.
+      const resp = await withNetworkRetry(() => fetch(url, {
         method: "POST",
         signal: controller.signal,
         headers: {
@@ -337,7 +384,7 @@ const ChatSheet = ({
           // Local tz offset so the coach can judge timing (streak at risk tonight, etc).
           tz_offset: new Date().getTimezoneOffset(),
         }),
-      });
+      }), 2);
       if (!resp.ok || !resp.body) {
         // Try to parse the structured error payload from ai-coach so we can
         // surface the *actual* upstream error (OpenRouter status + body)
@@ -572,7 +619,18 @@ const ChatSheet = ({
               }
               onClick={m.failed ? retryLast : undefined}
               >
-                {m.role === "assistant" ? <ReactMarkdown>{m.content || "…"}</ReactMarkdown> : m.content}
+                {m.role === "assistant" ? (
+                  streaming && i === messages.length - 1 && !m.isFaq && !m.failed ? (
+                    // Actively streaming: plain text + gold cursor. Markdown
+                    // parses ONCE on completion instead of per delta.
+                    <span className="whitespace-pre-wrap">
+                      {m.content}
+                      <span className="inline-block w-[2px] h-[1em] ml-0.5 align-text-bottom bg-gold animate-pulse" aria-hidden />
+                    </span>
+                  ) : (
+                    <CoachMarkdown content={m.content} />
+                  )
+                ) : m.content}
                 {m.failed && (
                   <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-destructive font-bold">
                     <RotateCw size={11} /> Tap to retry
@@ -596,13 +654,7 @@ const ChatSheet = ({
             </motion.div>
           ))}
         </AnimatePresence>
-        {streaming && messages[messages.length - 1]?.role === "user" && (
-          <div className="flex justify-start">
-            <div className="rounded-2xl rounded-bl-md px-3.5 py-2.5 bg-card/70 border border-border/40">
-              <Loader2 size={14} className="animate-spin text-gold" />
-            </div>
-          </div>
-        )}
+        {streaming && messages[messages.length - 1]?.role === "user" && <ThinkingIndicator />}
       </div>
 
       <div

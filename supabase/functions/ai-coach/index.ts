@@ -168,11 +168,16 @@ ${recentSummary}${reflectionsBlock}${goalsBlock}${logsBlock}${insightsBlock}${br
 ${situationBlock ? `\n${situationBlock}\n` : ""}
 ${INNER_WORK_BLOCK}
 
-How to reply:
-- **Match length to the weight of what they asked.** A vent → mirror first, then ONE question or small move. Quick tactical Q → 2–3 sentences. Deep ask → go deep but structured.
+How to reply — the craft of a world-class private coach:
+- **Lead with the answer.** First sentence = the verdict or the move. No preamble, no "great question", no restating what they asked. They should be able to stop reading after sentence one and know what to do.
+- **Match length to the weight of what they asked.** A vent → mirror first, then ONE question or small move. Quick tactical Q → 2–3 sentences. Deep ask → go deep but structured. Default ceiling: 3 short paragraphs.
 - **One concrete next move** at the end. Dated to today or tomorrow. Specific (movement, breath count, time on the calendar) — never "try to relax".
-- Reference at most ONE concrete stat from their data, only if it sharpens the answer.
-- Markdown sparingly: bold for key numbers, short list only when prescribing 2–3 steps.
+- **Use what you know.** Their file, memory, and last 7 days exist so you never coach a stranger. Continuity is the product: "how did the knee handle Tuesday's volume?" beats any generic insight. But weave facts in naturally — never recite data back, never mention having "memory" or "data".
+- Reference at most ONE concrete stat, only if it sharpens the answer.
+- **Ask at most ONE question, and only when the answer genuinely changes your prescription.** If you can give a sensible default with a fork ("if X, do A; if Y, do B"), do that instead of asking.
+- **Hold the standard.** No empty validation, no cheerleading — praise evidence (a rep done tired, a streak defended), not effort-theater. You are demanding AND unmistakably on their side; certainty over hedging ("do this" — not "you could consider").
+- Mirror their language and energy: terse athlete gets terse coach; someone struggling gets warmth first, prescription second.
+- Markdown sparingly: bold for key numbers, short list only when prescribing 2–3 steps. No headings in chat, no sign-off.
 - If today has a prescribed session, stay consistent with it (or explicitly justify deviating).
 - Refuse medical / legal / financial advice that requires a licensed pro — give a framework and tell them to see one. Same for clinical mental-health (suicidal ideation, panic disorder, etc.) — name what you see, give one regulation tool, point at a professional.${ventDirective}`;
 };
@@ -216,29 +221,47 @@ Deno.serve(async (req) => {
 
     const userId = userData.user.id;
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("username, xp, level, streak, longest_streak, status_tier, is_elite")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    // Membership gate (active subscription OR within 7-day trial).
-    // The Coach is part of the paid app, not an Elite-only perk.
-    const { data: hasAccess, error: accessErr } = await supabase.rpc(
-      "has_active_access",
-      { _user_id: userId },
-    );
-    if (accessErr || !hasAccess) {
-      return new Response(JSON.stringify({ error: "Active membership required" }), {
-        status: 403,
+    // Parse the body FIRST (fast, no network) so validation errors return
+    // before any context gathering, and tz_offset is in hand for stage 2.
+    const body = await req.json();
+    const messages: ChatMessage[] = Array.isArray(body?.messages) ? body.messages : [];
+    const goDeep = body?.go_deep === true;
+    if (messages.length === 0) {
+      return new Response(JSON.stringify({ error: "No messages" }), {
+        status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Fetch context in parallel
+    // ── Context gather stage 1: EVERYTHING independent, one Promise.all.
+    // (Was 9 sequential stages / ~20 round trips — the second-largest
+    // latency term after model reasoning.)
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const todayDate = new Date().toISOString().slice(0, 10);
-    const [checkinsRes, briefingRes, athleteRes, programRes, briefRes, reflectionsRes, goalsRes] = await Promise.all([
+    const [
+      profileRes,
+      accessRes,
+      memoryRes,
+      progression,
+      nightSignals,
+      checkinsRes, briefingRes, athleteRes, programRes, briefRes, reflectionsRes, goalsRes,
+    ] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("username, xp, level, streak, longest_streak, status_tier, is_elite")
+        .eq("user_id", userId)
+        .maybeSingle(),
+      supabase.rpc("has_active_access", { _user_id: userId }),
+      // Long-term memory — the facts coach-extract-memory has been banking
+      // after every chat. This is the read side that makes them count.
+      supabase
+        .from("coach_chat_memory")
+        .select("fact")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(12),
+      gatherProgression(supabase, userId, { limit: 60 }).catch(() => []),
+      gatherNightSignals(supabase, userId).catch(() => ({ hasData: false })),
       supabase
         .from("daily_checkins")
         .select(
@@ -271,9 +294,17 @@ Deno.serve(async (req) => {
         .limit(5),
     ]);
 
-    const body = await req.json();
-    const messages: ChatMessage[] = Array.isArray(body?.messages) ? body.messages : [];
-    const goDeep = body?.go_deep === true;
+    const profile = profileRes.data;
+
+    // Membership gate (active subscription OR within 7-day trial).
+    // The Coach is part of the paid app, not an Elite-only perk.
+    if (accessRes.error || !accessRes.data) {
+      return new Response(JSON.stringify({ error: "Active membership required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const faqContext = body?.faq_context && typeof body.faq_context === "object"
       ? { question: String(body.faq_context.question ?? "").slice(0, 300), answer: String(body.faq_context.answer ?? "").slice(0, 2000) }
       : null;
@@ -287,22 +318,16 @@ Deno.serve(async (req) => {
             ? moodTodayRaw.mood : null,
         }
       : undefined;
-    if (messages.length === 0) {
-      return new Response(JSON.stringify({ error: "No messages" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const trimmed = messages.slice(-20).map((m) => ({
       role: m.role === "assistant" ? "assistant" : "user",
       content: String(m.content ?? "").slice(0, 4000),
     }));
 
-    // Compute today's prescribed session and recent program logs
+    // ── Stage 2: the only two gathers with stage-1 dependencies
+    // (situation needs profile.streak; program logs need the program id).
     const program: any = programRes.data ?? null;
     let todaySession: any = null;
-    let recentLogs: any[] = [];
     if (program?.plan_json?.weeks) {
       const started = new Date(program.started_on);
       const now = new Date();
@@ -311,36 +336,40 @@ Deno.serve(async (req) => {
       const dayIdx = (now.getDay() + 6) % 7;
       const wk = program.plan_json.weeks.find((w: any) => w.week === weekIdx);
       todaySession = wk?.days?.[dayIdx] ?? null;
-
-      const { data: logs } = await supabase
-        .from("coach_program_logs")
-        .select("week, day_index, completed, perceived_rpe, logged_at")
-        .eq("user_id", userId)
-        .eq("program_id", program.id)
-        .order("logged_at", { ascending: false })
-        .limit(5);
-      recentLogs = logs ?? [];
     }
+
+    const tzOffset = typeof body?.tz_offset === "number" ? body.tz_offset : undefined;
+    const [situation, logsRes] = await Promise.all([
+      gatherSituation(supabase, userId, {
+        tzOffsetMinutes: tzOffset,
+        streak: profile?.streak ?? null,
+      }).catch(() => null),
+      program?.plan_json?.weeks
+        ? supabase
+            .from("coach_program_logs")
+            .select("week, day_index, completed, perceived_rpe, logged_at")
+            .eq("user_id", userId)
+            .eq("program_id", program.id)
+            .order("logged_at", { ascending: false })
+            .limit(5)
+        : Promise.resolve({ data: [] as any[] }),
+    ]);
+    const recentLogs = (logsRes as any).data ?? [];
+    const situationBlock = situation ? buildSituationBlock(situation) : "";
 
     // Pull the latest user message for vent-detection heuristic.
     const latestUserMessage = [...trimmed].reverse().find((m) => m.role === "user")?.content ?? "";
 
-    // Cross-domain situation (tribe, battles, rank, check-in timing) — best-effort.
-    const tzOffset = typeof body?.tz_offset === "number" ? body.tz_offset : undefined;
-    const situation = await gatherSituation(supabase, userId, {
-      tzOffsetMinutes: tzOffset,
-      streak: profile?.streak ?? null,
-    }).catch(() => null);
-    const situationBlock = situation ? buildSituationBlock(situation) : "";
-
-    // Progression digest (per-lift trajectory, PRs, stalls) → so the coach tracks
-    // progress like a real coach and drives the next target. Best-effort.
-    const progression = await gatherProgression(supabase, userId).catch(() => []);
     const progressionBlock = buildProgressionBlock(progression);
-    // Last night's recovery signals → causal reasoning ("why did I sleep badly").
-    const nightSignals = await gatherNightSignals(supabase, userId).catch(() => ({ hasData: false }));
     const causalBlock = buildCausalBlock(nightSignals as any);
     const workoutLogBlock = [progressionBlock, causalBlock].filter(Boolean).map((b) => `\n\n${b}`).join("");
+
+    // Long-term memory block — injected right after the athlete file so the
+    // coach actually KNOWS the athlete across sessions.
+    const memoryFacts = (memoryRes.data ?? []).map((m: any) => String(m.fact)).filter(Boolean);
+    const memoryBlock = memoryFacts.length
+      ? `\n\nWHAT YOU KNOW ABOUT THIS ATHLETE (long-term memory from past conversations — weave in naturally when relevant, never recite as a list, never say "according to my memory"):\n${memoryFacts.map((f) => `- ${f}`).join("\n")}`
+      : "";
 
     const systemPrompt = buildSystemPrompt(
       profile,
@@ -355,7 +384,7 @@ Deno.serve(async (req) => {
       moodToday,
       latestUserMessage,
       situationBlock,
-    ) + workoutLogBlock + (faqContext
+    ) + memoryBlock + workoutLogBlock + (faqContext
       ? `\n\nThe user just read the Playbook answer to: "${faqContext.question}". Do NOT repeat that answer. Go deeper, address their follow-up directly, or apply it to their specific context.`
       : "");
 
@@ -373,8 +402,14 @@ Deno.serve(async (req) => {
         models: ["openai/gpt-5", "google/gemini-3-flash-preview"],
         stream: true,
         messages: [{ role: "system", content: systemPrompt }, ...trimmed],
-        reasoning: { effort: goDeep ? "high" : "medium" },
+        // Reasoning tokens stream BEFORE any visible content, so effort is
+        // the dominant time-to-first-word term. "low" keeps gpt-5 sharp for
+        // chat coaching; Go Deep buys real thinking time.
+        reasoning: { effort: goDeep ? "medium" : "low" },
       }),
+      // Hard deadline so a hung upstream never leaves the user on an
+      // infinite spinner (client shows the failed bubble + retry).
+      signal: AbortSignal.timeout(55_000),
     });
 
     if (!upstream.ok) {

@@ -40,7 +40,9 @@ export interface NightSignals {
 
 export async function gatherNightSignals(supabase: AnyClient, _userId: string): Promise<NightSignals> {
   try {
-    const { data } = await supabase.rpc("recent_night_metrics", { p_days: 30 });
+    // 14 days is all the block uses (baseline = up to 14 prior rows) — 30
+    // just paid for rows that were sliced away, on every chat message.
+    const { data } = await supabase.rpc("recent_night_metrics", { p_days: 14 });
     const rows = (Array.isArray(data) ? data : []) as NightRow[];
     if (!rows.length) return { hasData: false };
     const last = rows[0];

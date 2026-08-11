@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
 import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
+import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -122,6 +123,8 @@ Athlete:
 Today's prescribed session: ${sessionLine}
 Recent: avg sleep ${avgSleep ?? "?"}h (last night ${lastSleep ?? "?"}h), ${workouts7}/7 workouts.
 ${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}
+${INNER_WORK_BLOCK}
+
 Write the daily brief — 2-3 sentences, second person, signed off as "— W Coach".
 Reference ONE concrete recent stat and ONE adjustment to today's session if warranted.
 End with a single clear action for the next 24h.

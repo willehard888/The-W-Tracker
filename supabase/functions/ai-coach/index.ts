@@ -14,6 +14,7 @@ import {
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
 import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
+import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -165,6 +166,8 @@ Athlete file:
 Recent activity:
 ${recentSummary}${reflectionsBlock}${goalsBlock}${logsBlock}${insightsBlock}${briefBlock}${sessionBlock}
 ${situationBlock ? `\n${situationBlock}\n` : ""}
+${INNER_WORK_BLOCK}
+
 How to reply:
 - **Match length to the weight of what they asked.** A vent → mirror first, then ONE question or small move. Quick tactical Q → 2–3 sentences. Deep ask → go deep but structured.
 - **One concrete next move** at the end. Dated to today or tomorrow. Specific (movement, breath count, time on the calendar) — never "try to relax".

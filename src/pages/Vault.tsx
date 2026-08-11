@@ -80,6 +80,15 @@ const CATEGORIES: VaultCategory[] = [
     icon: WindIcon,
     accent: "hsl(190 80% 60%)",
   },
+  {
+    id: "inner-work",
+    title: "Inner Work",
+    tagline: "Identity · energy · manifestation",
+    description:
+      "The honest version of manifestation, energy and self-image work: what research supports (mental contrasting, imagery, self-talk), what is speculative — and how to use both to become who you're training to be.",
+    icon: Sparkles,
+    accent: "hsl(45 90% 58%)",
+  },
 ];
 
 const Vault = () => {

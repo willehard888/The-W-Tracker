@@ -139,12 +139,46 @@ const NerveMotif = ({ accent }: { accent: string }) => (
   </g>
 );
 
+/** Inner Work — radiant inner sun rising over a horizon line. */
+const InnerWorkMotif = ({ accent }: { accent: string }) => (
+  <g fill="none" strokeLinecap="round">
+    {/* horizon */}
+    <path d="M240 108 h 148" stroke={GOLD} strokeOpacity="0.25" strokeWidth="1.5" />
+    {/* rising core */}
+    <g transform="translate(314 92)">
+      <circle r="16" fill={accent} fillOpacity="0.16" />
+      <circle r="9" fill={accent} fillOpacity="0.9" />
+      <circle r="13" stroke={GOLD} strokeOpacity="0.5" strokeWidth="1" />
+      {/* rays */}
+      {[-72, -48, -24, 0, 24, 48, 72].map((deg) => {
+        const rad = ((deg - 90) * Math.PI) / 180;
+        const x1 = Math.cos(rad) * 20, y1 = Math.sin(rad) * 20;
+        const x2 = Math.cos(rad) * (deg % 48 === 0 ? 32 : 27), y2 = Math.sin(rad) * (deg % 48 === 0 ? 32 : 27);
+        return (
+          <path
+            key={deg}
+            d={`M${x1} ${y1} L${x2} ${y2}`}
+            stroke={deg % 48 === 0 ? accent : GOLD}
+            strokeOpacity={deg % 48 === 0 ? 0.8 : 0.45}
+            strokeWidth="2"
+          />
+        );
+      })}
+    </g>
+    {/* star field */}
+    {[{ x: 254, y: 52, r: 1.5 }, { x: 282, y: 38, r: 1.1 }, { x: 356, y: 40, r: 1.4 }, { x: 378, y: 62, r: 1.0 }].map((s, i) => (
+      <circle key={i} cx={s.x} cy={s.y} r={s.r} fill={GOLD} fillOpacity="0.8" />
+    ))}
+  </g>
+);
+
 const MOTIFS: Record<string, (p: { accent: string }) => JSX.Element> = {
   recipes: NutritionMotif,
   training: TrainingMotif,
   recovery: RecoveryMotif,
   mind: MindMotif,
   "nervous-system": NerveMotif,
+  "inner-work": InnerWorkMotif,
 };
 
 const VaultCover = ({ id, accent }: { id: string; accent: string }) => {

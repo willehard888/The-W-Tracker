@@ -8,6 +8,7 @@ import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
 import PodCard from "@/components/home/PodCard";
 import CoachStrip from "@/components/home/CoachStrip";
+import DailyInsightCard from "@/components/home/DailyInsightCard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Reveal from "@/components/home/Reveal";
 import EmptyState from "@/components/ui/empty-state";
@@ -306,6 +307,12 @@ const Index = () => {
         <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
           <CoachStrip latestNudge={latestNudge ?? null} latestBriefing={latestBriefing ?? null} />
         </ErrorBoundary>
+      </Reveal>
+
+      {/* DAILY INSIGHT — one Inner Work idea per day, deep-links to the Vault
+          lesson. Between coach and content so the mind gets fed daily too. */}
+      <Reveal className="mb-4 relative z-10" delay={90}>
+        <DailyInsightCard />
       </Reveal>
 
       {/* MEAL-PREP RECIPES — raised to a primary slot, prominent with a big

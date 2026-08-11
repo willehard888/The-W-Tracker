@@ -287,7 +287,7 @@ const VaultCategoryBlock = ({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gold/85 mb-0.5">Meal-prep recipes</p>
-                  <p className="text-[12px] font-bold leading-tight">5 high-protein bowls · scale 1×–5× · storage & reheat</p>
+                  <p className="text-[12px] font-bold leading-tight">15 high-protein recipes · scale 1×–5× · storage & reheat</p>
                 </div>
                 <ChevronRight size={16} className="text-gold shrink-0" />
               </div>

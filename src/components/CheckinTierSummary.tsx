@@ -6,6 +6,8 @@ import XpCounter from "@/components/XpCounter";
 import { Button } from "@/components/ui/button";
 import CoachLine from "@/components/coach/CoachLine";
 import { useCoachObservation } from "@/hooks/use-coach-observation";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import AnimatedNumber from "@/components/AnimatedNumber";
 
@@ -317,7 +319,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
           className="mb-3"
         >
           <ErrorBoundary fallback={<></>}>
-            <PostCheckinCoachLine />
+            <PostCheckinCoachLine summary={summary} />
           </ErrorBoundary>
         </motion.div>
 
@@ -354,10 +356,39 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
   );
 };
 
-/** Scoped Coach line for the post-checkin celebration screen. */
-const PostCheckinCoachLine = () => {
-  const { text, isLoading } = useCoachObservation({ context: "post-checkin" });
-  if (isLoading || !text) return null;
+/** Scoped Coach line for the post-checkin celebration screen.
+ *
+ * Tries a REAL personalized reaction first (coach-reaction edge fn — the
+ * user's tone + today's actual numbers + their authored "why"), and falls
+ * back to the deterministic template while loading or on ANY failure
+ * (offline / non-member / provider down), so the celebration never breaks. */
+const PostCheckinCoachLine = ({ summary }: { summary: CheckinTierSummaryProps["summary"] }) => {
+  const { text: fallback, isLoading } = useCoachObservation({ context: "post-checkin" });
+
+  const { data: aiText } = useQuery({
+    // Keyed on the day's totals so a re-render never re-invokes; one AI call
+    // per check-in.
+    queryKey: ["checkin-reaction", summary.newTotalXp, summary.newStreak],
+    staleTime: Infinity,
+    gcTime: 60 * 60_000,
+    retry: false,
+    queryFn: async (): Promise<string | null> => {
+      const { data, error } = await supabase.functions.invoke("coach-reaction", {
+        body: {
+          xp_earned: summary.xpEarned,
+          tasks_done: summary.completedCount,
+          tasks_total: summary.maxCount,
+          streak: summary.newStreak,
+        },
+      });
+      if (error) return null;
+      const t = (data as { text?: string } | null)?.text;
+      return typeof t === "string" && t.trim() ? t.trim() : null;
+    },
+  });
+
+  const text = aiText || fallback;
+  if ((isLoading && !aiText) || !text) return null;
   return <CoachLine text={text} tone="celebration" />;
 };
 

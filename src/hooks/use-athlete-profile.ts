@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { withNetworkRetry, isTransientNetworkError } from "@/lib/retry";
 
 export type ToneId = "drill_sergeant" | "calm_mentor" | "scientist" | "hype";
 export type GoalId = "all" | "strength" | "hypertrophy" | "endurance" | "fat_loss" | "longevity" | "focus";
@@ -101,11 +102,19 @@ export const useAthleteProfile = () => {
       if (!enriched.timezone) {
         try { enriched.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch {}
       }
-      const { data, error } = await supabase.rpc("upsert_athlete_profile" as any, {
-        _patch: enriched as any,
+      // withNetworkRetry: on-device saves fail with WKWebView's transient
+      // "TypeError: Load failed" on flaky cellular — retry those (the draft is
+      // preserved either way); real errors (RLS/validation) rethrow at once.
+      return await withNetworkRetry(async () => {
+        const { data, error } = await supabase.rpc("upsert_athlete_profile" as any, {
+          _patch: enriched as any,
+        });
+        if (error) {
+          if (isTransientNetworkError(error.message)) throw new Error(error.message);
+          throw error;
+        }
+        return data as AthleteProfile;
       });
-      if (error) throw error;
-      return data as AthleteProfile;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["athlete-profile", user?.id] });

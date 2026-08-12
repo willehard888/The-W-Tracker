@@ -5,6 +5,7 @@
   "framework": "vite",
   "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund",
   "rewrites": [
+    { "source": "/waitlist", "destination": "/waitlist.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

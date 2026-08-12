@@ -1,6 +1,11 @@
+import { useMemo } from "react";
 import { Flame, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { hapticImpact } from "@/lib/haptics";
+import { useCheckinConfig } from "@/hooks/use-checkin-config";
+import { resolveCheckinHabits } from "@/lib/checkin-habits";
+import { maxDailyXp } from "@/lib/checkin-xp";
 
 interface CommandDeckProps {
   streak: number;
@@ -28,6 +33,12 @@ const CommandDeck = ({
   const isLegend = tier === "legend";
   const isApex = tier === "apex";
 
+  // Honest XP promise: computed from the user's OWN habit set via the same
+  // scoring model as the check-in screen (was a hardcoded "+50 XP" that
+  // contradicted the number DailyCheckin showed for the same action).
+  const { keys: habitKeys } = useCheckinConfig();
+  const maxXp = useMemo(() => maxDailyXp(resolveCheckinHabits(habitKeys)), [habitKeys]);
+
   const border = canCheckin
     ? isLegend
       ? "linear-gradient(135deg, hsl(280 70% 60%), hsl(42 78% 54%), hsl(350 80% 60%), hsl(280 70% 60%))"
@@ -47,7 +58,7 @@ const CommandDeck = ({
     >
       <button
         type="button"
-        onClick={() => canCheckin && navigate("/checkin")}
+        onClick={() => { if (canCheckin) { hapticImpact("medium"); navigate("/checkin"); } }}
         disabled={!canCheckin}
         className={cn(
           "group relative w-full text-left rounded-3xl p-4 overflow-hidden transition-all duration-200 active:scale-[0.99]",
@@ -119,14 +130,14 @@ const CommandDeck = ({
                 <Flame size={15} strokeWidth={2.9} /> Check in now
               </span>
               <span className="inline-flex items-center gap-1 font-black text-sm tabular-nums">
-                +50 XP
+                Up to +{maxXp} XP
                 <ChevronRight size={17} className="transition-transform group-active:translate-x-0.5" />
               </span>
             </div>
           ) : (
             <div className="mt-3.5 flex items-center justify-between rounded-xl px-4 py-2.5 border border-border/40">
               <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Locked</p>
-              <p className="text-xs font-black text-muted-foreground tabular-nums">+50 XP</p>
+              <p className="text-xs font-black text-gold/80 tabular-nums">Day banked ✓</p>
             </div>
           )}
         </div>

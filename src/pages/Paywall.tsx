@@ -242,6 +242,17 @@ const Paywall = () => {
   // ─── Render ──────────────────────────────────────────────────
   return (
     <div className="min-h-screen pb-8 px-4 pt-6 safe-top">
+      {/* Escape hatch — the bottom nav and header are hidden on /paywall, so
+          without this the page is a hard dead end (trial users tapping the
+          header pill were stuck). */}
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-2 h-10 w-10 rounded-full flex items-center justify-center bg-card/70 border border-border/60 active:scale-95 transition"
+        aria-label="Back"
+      >
+        <ArrowLeft size={18} />
+      </button>
+
       {subscriptionLoading && !isElite && (
         <div className="mb-4 flex items-center justify-center gap-2 rounded-xl border border-border/70 bg-card/80 px-4 py-3 text-sm text-muted-foreground">
           <Loader2 size={16} className="animate-spin" />

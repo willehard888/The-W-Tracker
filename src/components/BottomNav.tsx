@@ -29,6 +29,28 @@ const colorMap: Record<TabColor, { text: string; rgb: string }> = {
 
 const HIDDEN_PATHS = new Set(["/landing", "/auth", "/onboarding", "/paywall"]);
 
+// Pushed pages highlight their PARENT tab so "where am I" never goes dark —
+// with exact matching, /checkin, /feed, /battles etc. lit no tab at all.
+const PARENT_TAB: Array<{ prefix: string; tab: string }> = [
+  { prefix: "/checkin", tab: "/" },
+  { prefix: "/coach", tab: "/" },
+  { prefix: "/recipes", tab: "/" },
+  { prefix: "/exercises", tab: "/" },
+  { prefix: "/vault", tab: "/" },
+  { prefix: "/feed", tab: "/squad" },
+  { prefix: "/tribes", tab: "/squad" },
+  { prefix: "/tribe", tab: "/squad" },
+  { prefix: "/friends", tab: "/squad" },
+  { prefix: "/messages", tab: "/squad" },
+  { prefix: "/battles", tab: "/leaderboard" },
+  { prefix: "/journey", tab: "/profile" },
+];
+
+const activeTabFor = (pathname: string): string => {
+  const hit = PARENT_TAB.find((m) => pathname === m.prefix || pathname.startsWith(m.prefix + "/") || pathname.startsWith(m.prefix + "-"));
+  return hit ? hit.tab : pathname;
+};
+
 // Lazy-route prefetch map — kick off import() on hover/focus of a BottomNav
 // button so the destination is nearly loaded by the time the tap lands.
 // Mirrors the dynamic imports already declared as lazy routes in App.tsx.
@@ -113,7 +135,7 @@ const BottomNav = () => {
 
       <div className="relative max-w-lg mx-auto flex items-center justify-around px-1.5 pt-2 pb-1.5">
         {tabs.map(({ icon: Icon, label, path, color }) => {
-          const active = location.pathname === path;
+          const active = activeTabFor(location.pathname) === path;
           const c = colorMap[color];
           const colorVar = `hsl(${c.rgb})`;
 

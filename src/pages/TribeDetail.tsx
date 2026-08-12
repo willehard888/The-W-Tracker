@@ -29,6 +29,7 @@ import {
   Shield,
 } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 import TribeInviteModal from "@/components/TribeInviteModal";
 import TribePendingRequestsDialog from "@/components/TribePendingRequestsDialog";
 import TribeReportsDialog from "@/components/TribeReportsDialog";
@@ -448,7 +449,7 @@ const TribeDetail = () => {
       toast.success("Posted! 🔥");
       load();
     } catch (e: any) {
-      toast.error(e?.message || "Failed to post");
+      toast.error(friendlyError(e, "Could not post. Try again."));
     } finally {
       setPosting(false);
       setUploadPhase(null);
@@ -457,7 +458,7 @@ const TribeDetail = () => {
 
   const handleJoin = async () => {
     const { data, error } = await supabase.rpc("join_tribe" as any, { p_tribe_id: id });
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyError(error)); return; }
     if (data === "pending") toast.success("Request sent");
     else toast.success("Joined!");
     load();
@@ -465,7 +466,7 @@ const TribeDetail = () => {
 
   const handleLeave = async () => {
     const { error } = await supabase.rpc("leave_tribe" as any, { p_tribe_id: id });
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyError(error)); return; }
     toast.success("Left the tribe");
     load();
   };
@@ -473,7 +474,7 @@ const TribeDetail = () => {
   const handleDelete = async () => {
     if (!confirm("Delete this tribe? This cannot be undone.")) return;
     const { error } = await supabase.rpc("delete_tribe" as any, { p_tribe_id: id });
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyError(error)); return; }
     toast.success("Tribe deleted");
     navigate("/tribes");
   };
@@ -629,7 +630,7 @@ const TribeDetail = () => {
         onNavigateBattles={() => navigate(`/tribes/${id}/battles`)}
         onClaim={async () => {
           const { error } = await supabase.rpc("claim_paused_tribe" as any, { p_tribe_id: id });
-          if (error) { toast.error(error.message); return; }
+          if (error) { toast.error(friendlyError(error)); return; }
           toast.success(`You now lead ${tribe.name} — fire revived 🔥`);
           load();
         }}

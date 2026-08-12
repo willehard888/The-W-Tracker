@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Search, Swords, Users } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -76,7 +77,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
     });
     setSubmitting(false);
     if (error) {
-      toast.error(error.message);
+      toast.error(friendlyError(error));
       return;
     }
     toast.success(`Challenge sent to ${selected.name}`);

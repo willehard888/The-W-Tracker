@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2, Users, Lock, Globe, Check, X } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
 import TribeFlame from "@/components/tribe/TribeFlame";
 import { TRIBE_ACTIVITY_GROUPS } from "@/lib/tribe-activities";
@@ -65,7 +66,7 @@ const TribeNew = () => {
         p_cover_url: null,
       });
       if (error) {
-        toast.error(error.message);
+        toast.error(friendlyError(error));
         return;
       }
       // Best-effort activity tag — never block navigation on it.
@@ -79,7 +80,7 @@ const TribeNew = () => {
       toast.success("Tribe created!");
       navigate(`/tribes/${data}`);
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to create tribe");
+      toast.error(friendlyError(e, "Could not create the tribe. Try again."));
     } finally {
       setSubmitting(false);
     }

@@ -28,6 +28,7 @@ import MediaPreview from "@/components/media/MediaPreview";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -448,7 +449,7 @@ const EliteFeed = () => {
       toast.success("Comment updated");
       queryClient.invalidateQueries({ queryKey: ["feed-comments"] });
     },
-    onError: (e: any) => toast.error(e?.message || "Failed to update"),
+    onError: (e: any) => toast.error(friendlyError(e, "Could not update. Try again.")),
   });
 
   const deleteComment = useMutation({
@@ -466,7 +467,7 @@ const EliteFeed = () => {
       queryClient.invalidateQueries({ queryKey: ["feed-comments"] });
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
     },
-    onError: (e: any) => toast.error(e?.message || "Failed to delete"),
+    onError: (e: any) => toast.error(friendlyError(e, "Could not delete. Try again.")),
   });
 
   // Memoize comment tree — avoids rebuilding the entire tree on every render.

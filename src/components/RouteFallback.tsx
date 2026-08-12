@@ -23,7 +23,8 @@ const RouteFallback = () => {
   if (pathname.startsWith("/leaderboard")) return <LeaderboardSkeleton />;
   if (pathname.startsWith("/profile") || pathname.startsWith("/user/"))
     return <ProfileSkeleton />;
-  if (pathname.startsWith("/feed")) return <FeedSkeleton />;
+  if (pathname.startsWith("/feed") || pathname.startsWith("/squad"))
+    return <FeedSkeleton />;
   if (
     pathname.startsWith("/messages") ||
     pathname.startsWith("/tribes") ||

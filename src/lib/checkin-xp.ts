@@ -58,6 +58,29 @@ export function assessSleep(sleep: number, recentSleep: number[] = []): SleepAss
   };
 }
 
+/**
+ * Best possible day for a habit set: everything done + proof photo, optimal
+ * sleep (×1.0). Used by promo surfaces ("Earn up to N XP") so they can never
+ * contradict the real check-in math. Workout is valued at the habit's own
+ * base XP (sport choice can raise it — this is the honest floor of the max).
+ */
+export function maxDailyXp(habits: CheckinHabit[]): number {
+  const allDone: CheckinState = {
+    sleepOptimal: true,
+    workout: true,
+    hydration: HYDRATION_DONE_LITERS,
+    completed: Object.fromEntries(habits.map((h) => [h.key, true])),
+  };
+  const workoutXp = habits.find((h) => h.key === "workout")?.xp ?? 0;
+  return computeCheckinXp({
+    habits,
+    state: allDone,
+    sportXp: workoutXp,
+    hasProof: true,
+    sleepMultiplier: 1,
+  }).totalXp;
+}
+
 export interface CheckinState {
   sleepOptimal: boolean;
   workout: boolean;

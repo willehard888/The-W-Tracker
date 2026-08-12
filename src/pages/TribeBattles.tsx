@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ArrowLeft, Loader2, Plus, Swords, Clock, History } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 import TribeBattleCard, { type TribeBattle } from "@/components/TribeBattleCard";
 import TribeChallengeModal from "@/components/TribeChallengeModal";
 import EmptyStateUI from "@/components/ui/empty-state";
@@ -99,7 +100,7 @@ const TribeBattles = () => {
     });
     setRespondingId(null);
     if (error) {
-      toast.error(error.message);
+      toast.error(friendlyError(error));
       return;
     }
     toast.success(accept ? "Battle started ⚔️" : "Challenge declined");

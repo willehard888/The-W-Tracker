@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Plus, Lock, Crown, Zap, Check, X, Sparkles, Mail, Trophy, ChevronRight, Pause, ShieldCheck, Flame } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
 import { avatarUrl, transformImage } from "@/lib/img";
 import TribeSearchBar from "@/components/TribeSearchBar";
@@ -280,7 +281,7 @@ const Tribes = () => {
       p_tribe_id: id,
     });
     if (error) {
-      toast.error(error.message);
+      toast.error(friendlyError(error));
       return;
     }
     if (data === "pending") toast.success("Request sent — awaiting approval");
@@ -294,7 +295,7 @@ const Tribes = () => {
       p_tribe_id: id,
     });
     if (error) {
-      toast.error(error.message);
+      toast.error(friendlyError(error));
       return;
     }
     toast.success(`You now lead ${name} — fire revived 🔥`);
@@ -309,7 +310,7 @@ const Tribes = () => {
     });
     setRespondingId(null);
     if (error) {
-      toast.error(error.message);
+      toast.error(friendlyError(error));
       return;
     }
     toast.success(accept ? `Joined ${invite.tribe?.name ?? "tribe"}!` : "Invite declined");

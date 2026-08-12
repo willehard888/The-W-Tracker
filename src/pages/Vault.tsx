@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import EmptyState from "@/components/ui/empty-state";
 import { useVaultArticles, type VaultArticle } from "@/hooks/use-vault-articles";
 import { useVaultProgress } from "@/hooks/use-vault-progress";
+import { useTrialAccess } from "@/hooks/use-trial-access";
 import EvidenceChip from "@/components/vault/EvidenceChip";
 import VaultArticleSheet from "@/components/vault/VaultArticleSheet";
 import CourseProgressRing from "@/components/vault/CourseProgressRing";
@@ -94,6 +95,11 @@ const CATEGORIES: VaultCategory[] = [
 const Vault = () => {
   const navigate = useNavigate();
   const { isPremium, subscriptionLoading, profile } = useAuth();
+  // Trial = full access (the header pill literally promises "Full access ·
+  // Nd"). Server RLS agrees since vault_trial_access — has_active_access
+  // covers members AND trialists, same gate the AI Coach uses.
+  const { isInTrial } = useTrialAccess();
+  const hasVaultAccess = isPremium || isInTrial;
   const [openArticle, setOpenArticle] = useState<{ article: VaultArticle; accent: string } | null>(
     null,
   );
@@ -104,8 +110,8 @@ const Vault = () => {
 
   useEffect(() => {
     if (subscriptionLoading) return;
-    if (!isPremium) navigate("/paywall", { replace: true });
-  }, [isPremium, subscriptionLoading, navigate]);
+    if (!hasVaultAccess) navigate("/paywall", { replace: true });
+  }, [hasVaultAccess, subscriptionLoading, navigate]);
 
   // ?lesson=<slug> deep link (Daily Insight card and coach references) — open
   // the article sheet once the library resolves, then strip the param so
@@ -127,7 +133,7 @@ const Vault = () => {
     }, { replace: true });
   }, [lessonSlug, allVaultArticles, setSearchParams]);
 
-  if (!isPremium) return null;
+  if (!hasVaultAccess) return null;
 
   const firstName =
     (profile as any)?.username || (profile as any)?.display_name || null;

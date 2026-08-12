@@ -244,7 +244,16 @@ const Leaderboard = () => {
 
   const currentLeaders = mode === "season" ? seasonData?.top || [] : allTimeLeaders || [];
   const totalUsersForMode = mode === "season" ? seasonData?.full.length || 1 : totalCount || 1;
-  const rank = mode === "season" ? seasonData?.myRank || null : myRankData?.rank || null;
+  // All-Time "Your Position" derives from the SAME XP-ordered list the board
+  // shows — the rank_score-based RPC could say "#7" while the user's own
+  // highlighted row sat at #12 on the very same screen. RPC stays as the
+  // fallback for users deeper than the visible board.
+  const myAllTimeIdx = profile?.user_id
+    ? (allTimeLeaders ?? []).findIndex((u) => u.user_id === profile.user_id)
+    : -1;
+  const rank = mode === "season"
+    ? seasonData?.myRank || null
+    : myAllTimeIdx >= 0 ? myAllTimeIdx + 1 : myRankData?.rank || null;
 
   // HealthKit-verified leaders — unfakeable discipline shown as status on the
   // board. Reuses the same `verified_authors` RPC the feed uses.
@@ -259,10 +268,10 @@ const Leaderboard = () => {
       return new Set((data as string[]) ?? []);
     },
   });
-  const percentile = mode === "season"
-    ? (rank ? Math.max(1, Math.round(((totalUsersForMode - rank) / totalUsersForMode) * 100)) : 0)
-    : (myRankData?.percentile ?? 0);
-  const hasRank = mode === "season" ? Boolean(rank) : Boolean(myRankData?.hasRank);
+  const percentile = rank
+    ? Math.max(1, Math.round(((totalUsersForMode - rank) / totalUsersForMode) * 100))
+    : mode === "season" ? 0 : Math.round(myRankData?.percentile ?? 0);
+  const hasRank = mode === "season" ? Boolean(rank) : (myAllTimeIdx >= 0 || Boolean(myRankData?.hasRank));
   const mySeasonWins = profile?.user_id ? championData?.counts?.[profile.user_id] || 0 : 0;
 
   // countdownText replaced by <CountdownTimer> component — see render below.
@@ -304,8 +313,10 @@ const Leaderboard = () => {
               <Trophy size={26} className="text-gold blur-[6px]" />
             </div>
           </div>
+          {/* Title matches the tab that brought you here ("Ranks") — a tab
+              labeled one thing landing on a page titled another reads lost. */}
           <h1 className="font-display text-3xl font-black tracking-tight bg-gradient-to-br from-gold via-amber-200 to-gold bg-clip-text text-transparent">
-            Leaderboard
+            Ranks
           </h1>
         </div>
         <p className="text-sm text-muted-foreground mt-1.5 flex items-center gap-1.5">
@@ -369,7 +380,7 @@ const Leaderboard = () => {
                 <p className="font-display font-bold text-base tracking-tight">Your Position</p>
                 <p className="text-xs text-muted-foreground">
                   {hasRank ? (
-                    <>Ahead of <span className="text-gold font-bold">{percentile >= 99 ? percentile.toFixed(1) : Math.round(percentile)}%</span> · {mode === "season" ? "Season" : "All Time"}</>
+                    <>Ahead of <span className="text-gold font-bold">{Math.min(99, Math.round(percentile))}%</span> · {mode === "season" ? "Season" : "All Time"}</>
                   ) : (
                     <>Make your first check-in · {mode === "season" ? "Season" : "All Time"}</>
                   )}
@@ -388,7 +399,7 @@ const Leaderboard = () => {
             <p className="text-[10px] text-destructive font-bold mt-3 text-center uppercase tracking-wider">⚠️ Falling behind — others are gaining</p>
           )}
           {hasRank && percentile >= 90 && (
-            <p className="text-[10px] text-gold font-bold mt-3 text-center uppercase tracking-wider">🔥 Top {100 - percentile}% — defend your spot</p>
+            <p className="text-[10px] text-gold font-bold mt-3 text-center uppercase tracking-wider">🔥 Top {Math.max(1, Math.round(100 - percentile))}% — defend your spot</p>
           )}
         </div>
       )}

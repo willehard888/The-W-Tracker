@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -419,8 +420,8 @@ const DailyCheckin = () => {
           return;
         }
         console.error("record_checkin failed after retries:", rpcError);
-        toast.error("Couldn't save your check-in — check your connection and try again.", {
-          description: rpcError.message ? `Details: ${rpcError.message}` : undefined,
+        toast.error("Couldn't save your check-in.", {
+          description: friendlyError(rpcError, "Check your connection and try again — your day is saved locally."),
           duration: 6000,
         });
         hapticNotification("error");

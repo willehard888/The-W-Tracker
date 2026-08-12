@@ -171,22 +171,26 @@ const Profile = () => {
     enabled: !!profile,
   });
 
-  const { data: userPosts } = useQuery({
+  const { data: userPostsData } = useQuery({
     queryKey: ["user-posts", profile?.user_id],
     staleTime: 2 * 60_000,   // posts can change when user creates one
     gcTime:    10 * 60_000,
     queryFn: async () => {
-      if (!profile) return [];
-      const { data } = await supabase
+      if (!profile) return { posts: [], total: 0 };
+      // count: "exact" so the header shows the REAL total — the list itself
+      // stays capped at 20 (a prolific user used to see "Posts (20)" forever).
+      const { data, count } = await supabase
         .from("feed_posts")
-        .select("*")
+        .select("*", { count: "exact" })
         .eq("user_id", profile.user_id)
         .order("created_at", { ascending: false })
         .limit(20);
-      return data || [];
+      return { posts: data || [], total: count ?? (data?.length || 0) };
     },
     enabled: !!profile,
   });
+  const userPosts = userPostsData?.posts;
+  const userPostsTotal = userPostsData?.total ?? 0;
 
   const { data: kudosReceived } = useQuery({
     queryKey: ["kudos-received", profile?.user_id],
@@ -552,7 +556,7 @@ const Profile = () => {
       {/* User Posts */}
       {userPosts && userPosts.length > 0 && (
         <div className="animate-reveal animate-reveal-delay-4">
-          <h2 className="font-display font-bold text-base mb-3 tracking-tight">Posts ({userPosts.length})</h2>
+          <h2 className="font-display font-bold text-base mb-3 tracking-tight">Posts ({userPostsTotal})</h2>
           <div className="space-y-3">
             {userPosts.map((post) => (
               <div key={post.id} className="rounded-xl border border-border bg-card p-4">

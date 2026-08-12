@@ -204,7 +204,18 @@ const Exercises = () => {
               ))}
             </div>
             {capped.length === 0 && (
-              <p className="text-center text-[12px] text-muted-foreground py-10">No exercises match that search.</p>
+              <div className="text-center py-10">
+                <p className="text-[12px] text-muted-foreground mb-3">
+                  No exercises match{group ? " that search in this muscle group" : " that search"}.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { setQuery(""); setGroup(null); }}
+                  className="inline-flex items-center rounded-lg border border-gold/30 bg-gold/[0.06] px-3 py-1.5 text-[11px] font-bold text-gold active:scale-95 transition"
+                >
+                  Clear search & filters
+                </button>
+              </div>
             )}
             {!query && !group && filtered.length > CAP && (
               <p className="text-center text-[11px] text-muted-foreground py-4">

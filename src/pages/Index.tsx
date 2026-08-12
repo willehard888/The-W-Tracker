@@ -257,7 +257,7 @@ const Index = () => {
             </p>
             <p className="text-[10px] text-muted-foreground leading-tight">
               {(rankData?.rank ?? 0) > 0
-                ? `of ${(rankData?.totalUsers ?? 0).toLocaleString()} · Lv ${profile.level}`
+                ? `of ${(rankData?.totalUsers ?? 0).toLocaleString()} · Lv ${profile.level} · ${Math.max(0, xpToNext - profile.xp)} XP to Lv ${profile.level + 1}`
                 : "Your climb starts today"}
             </p>
           </div>
@@ -391,7 +391,10 @@ const Index = () => {
       {/* SECONDARY — Today stays focused on the one job (check in) + the AI
           move + the pod, plus recipes. Everything else (vault, invite, badges)
           is one tap away under "More". */}
-      <MoreSection label="More" className="relative z-10 mt-1 mb-2">
+      {/* defaultOpen: the Vault, referral CTA and badges are three of the
+          app's value stories — hidden behind a 10px "MORE" they were
+          effectively invisible. */}
+      <MoreSection label="More" defaultOpen className="relative z-10 mt-1 mb-2">
       {/* THE VAULT — premium content library */}
       <Reveal className="mb-4 relative z-10" delay={40}>
         <button

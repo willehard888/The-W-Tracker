@@ -384,7 +384,7 @@ const UserProfile = () => {
             ) : null}
             <span className="inline-flex items-center px-3 py-1.5 rounded-full">
               <span className="text-[11px] font-black tracking-wider text-muted-foreground/80 uppercase">
-                Level {profile.level}
+                Lv {profile.level}
               </span>
             </span>
             {championHistory && championHistory.wins > 0 && (

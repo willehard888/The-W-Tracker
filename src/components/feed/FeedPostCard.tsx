@@ -184,7 +184,7 @@ const FeedPostCard = memo(function FeedPostCard({
             {post.profile?.level > 0 && (
               <>
                 <span>•</span>
-                <span className="font-semibold">Lv.{post.profile.level}</span>
+                <span className="font-semibold">Lv {post.profile.level}</span>
               </>
             )}
             {post.profile?.streak > 0 && (
@@ -199,7 +199,7 @@ const FeedPostCard = memo(function FeedPostCard({
         {/* Post menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button aria-label="Post options" className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/60 hover:text-muted-foreground">
+            <button aria-label="Post options" className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground/60 hover:text-muted-foreground">
               <MoreHorizontal size={16} />
             </button>
           </DropdownMenuTrigger>
@@ -264,7 +264,7 @@ const FeedPostCard = memo(function FeedPostCard({
           onClick={() => onToggleReaction(post.id)}
           aria-label={liked ? "Remove fire" : "Give fire"}
           className={cn(
-            "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
+            "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all active:scale-95",
             liked
               ? "bg-streak-orange/15 text-streak-orange"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -281,7 +281,7 @@ const FeedPostCard = memo(function FeedPostCard({
           onClick={() => onToggleComments(post.id)}
           aria-label="Toggle comments"
           className={cn(
-            "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
+            "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all active:scale-95",
             isCommentsOpen
               ? "bg-gold/10 text-gold"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -305,7 +305,7 @@ const FeedPostCard = memo(function FeedPostCard({
             disabled={giveKudosPending}
             aria-label={hasGivenKudos ? "Remove kudos" : "Give kudos"}
             className={cn(
-              "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
+              "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all active:scale-95",
               hasGivenKudos
                 ? "bg-purple/15 text-purple ring-1 ring-purple/30"
                 : kudosRemaining > 0

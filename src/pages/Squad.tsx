@@ -40,7 +40,7 @@ const Squad = () => {
         <button
           onClick={() => { hapticSelection(); navigate("/friends"); }}
           aria-label="Friends"
-          className="h-9 w-9 rounded-full bg-secondary/70 border border-border flex items-center justify-center text-foreground/90 shrink-0 active:scale-95 transition-transform"
+          className="h-11 w-11 rounded-full bg-secondary/70 border border-border flex items-center justify-center text-foreground/90 shrink-0 active:scale-95 transition-transform"
         >
           <UserPlus size={17} />
         </button>

@@ -831,7 +831,7 @@ const DailyCheckin = () => {
             <label className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] cursor-pointer">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold"><Camera size={20} /></div>
               <div className="text-left flex-1">
-                <p className="font-semibold text-sm">Upload Proof Photo</p>
+                <p className="font-semibold text-sm">Take proof photo (live only)</p>
                 <p className="text-xs text-muted-foreground">Earns <span className="text-gold font-bold">+30 bonus XP</span></p>
               </div>
               {proofFile && <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+30 XP</span>}

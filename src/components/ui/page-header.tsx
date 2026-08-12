@@ -28,7 +28,7 @@ export const PageHeader = ({ title, subtitle, onBack, action, className }: PageH
           type="button"
           onClick={onBack}
           aria-label="Back"
-          className="shrink-0 -ml-1 mt-0.5 h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground active:scale-90 active:text-foreground transition-transform"
+          className="shrink-0 -ml-1 mt-0.5 h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground active:scale-90 active:text-foreground transition-transform"
         >
           <ChevronLeft size={20} />
         </button>

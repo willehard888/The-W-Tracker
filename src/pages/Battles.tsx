@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Swords, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image, Vote, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
+import { Swords, ArrowLeft, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image, Vote, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { BoardRowsSkeleton } from "@/components/skeletons/PageSkeleton";
 import FriendPickerSheet from "@/components/social/FriendPickerSheet";
 import {
   DropdownMenu,
@@ -325,7 +326,8 @@ const Battles = () => {
 
   const getOpponent = (battle: any) => {
     const oppId = battle.challenger_id === profile?.user_id ? battle.opponent_id : battle.challenger_id;
-    return participants?.[oppId] || { username: "...", xp: 0, streak: 0 };
+    // "Loading…" beats a literal "vs ..." card while participants resolve.
+    return participants?.[oppId] || { username: "Loading…", xp: 0, streak: 0 };
   };
 
   const getBattleTypeInfo = (typeId: string) => BATTLE_TYPES.find(t => t.id === typeId) || BATTLE_TYPES[0];
@@ -360,9 +362,19 @@ const Battles = () => {
         }}
       />
 
-      <div className="animate-reveal mb-6">
-        <h1 className="font-display text-3xl font-bold tracking-tight">Battles</h1>
-        <p className="text-sm text-muted-foreground mt-1">Challenge others. Prove your discipline.</p>
+      <div className="animate-reveal mb-6 flex items-center gap-3">
+        {/* Pushed page (entered from Ranks) — needs its own way back. */}
+        <button
+          onClick={() => navigate(-1)}
+          className="h-10 w-10 rounded-full flex items-center justify-center bg-card/70 border border-border/60 active:scale-95 transition shrink-0"
+          aria-label="Back"
+        >
+          <ArrowLeft size={18} />
+        </button>
+        <div>
+          <h1 className="font-display text-3xl font-bold tracking-tight">Battles</h1>
+          <p className="text-sm text-muted-foreground mt-1">Challenge others. Prove your discipline.</p>
+        </div>
       </div>
 
       {/* Create Battle CTA */}
@@ -608,13 +620,17 @@ const Battles = () => {
         </div>
       )}
 
+      {/* Data-phase skeleton — previously nothing rendered until battles
+          resolved, then cards popped in. */}
+      {isLoading && !showCreate && <BoardRowsSkeleton />}
+
       {/* Empty state */}
       {!isLoading && (!battles || battles.length === 0) && !showCreate && (
         <div className="animate-reveal animate-reveal-delay-2">
           <EmptyState
             icon={Swords}
             title="No battles yet"
-            description="Challenge a friend — winner takes the score, loser owes a workout."
+            description="Challenge a friend — winner takes the score."
           />
         </div>
       )}

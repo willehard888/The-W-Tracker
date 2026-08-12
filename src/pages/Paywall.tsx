@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
+import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
 import {
   Crown, ArrowLeft, Loader2, ShieldCheck, Sparkles,
@@ -192,9 +193,7 @@ const Paywall = () => {
       track(FUNNEL.purchaseFailed, { plan, platform: "native", reason: e?.message?.toString().slice(0, 120) });
       hapticNotification("error");
       setStatus("error");
-      setErrorMessage(
-        e?.message?.toString().slice(0, 200) || "Purchase failed. Please try again.",
-      );
+      setErrorMessage(friendlyError(e, "Purchase failed. Please try again."));
     }
   };
 
@@ -220,7 +219,7 @@ const Paywall = () => {
     } catch (e: any) {
       track(FUNNEL.purchaseFailed, { plan, platform: "web", reason: e?.message?.toString().slice(0, 120) });
       setStatus("error");
-      setErrorMessage(e?.message || "Could not start checkout.");
+      setErrorMessage(friendlyError(e, "Could not start checkout. Please try again."));
     }
   };
 

@@ -34,9 +34,10 @@ import { useCheckinDay } from "@/hooks/use-checkin-day";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import CheckinHabitPicker from "@/components/checkin/CheckinHabitPicker";
 import {
-  resolveCheckinHabits, PILLAR_LABEL, OPTIONAL_XP_CAP, type CheckinPillar, type CheckinHabit,
+  resolveCheckinHabits, PILLAR_LABEL, type CheckinPillar, type CheckinHabit,
   type VerifySignal,
 } from "@/lib/checkin-habits";
+import { assessSleep, isHabitDone, computeCheckinXp } from "@/lib/checkin-xp";
 
 const SPORT_CATEGORIES = [
   { id: "none", label: "No workout", xp: 0, emoji: "—" },
@@ -247,62 +248,27 @@ const DailyCheckin = () => {
     return false;
   };
 
-  const { isOptimalSleep, isChronicOversleep, oversleepCount, sleepMultiplier, sleepPenaltyLabel } = useMemo(() => {
-    const oversleepCount = (recentSleep || []).filter((h) => h >= 10).length;
-    const chronic = oversleepCount >= 3;
-    const optimal = (sleep >= 7.5 && sleep <= 9) || (sleep > 9 && sleep <= 12 && !chronic);
-    let multiplier = 1.0;
-    if (sleep >= 7.5 && sleep <= 9) multiplier = 1.0;
-    else if (sleep > 9 && sleep <= 12) multiplier = chronic ? 0.6 : 0.95;
-    else if (sleep >= 7 && sleep < 7.5) multiplier = 0.8;
-    else if (sleep >= 6 && sleep < 7) multiplier = 0.65;
-    else if (sleep >= 5 && sleep < 6) multiplier = 0.5;
-    else multiplier = 0.4;
-    let penalty: string | null = null;
-    if (multiplier < 1) {
-      const pct = `${Math.round((1 - multiplier) * 100)}% XP penalty`;
-      if (chronic && sleep > 9) penalty = `Chronic oversleep — ${pct}`;
-      else if (sleep >= 7 && sleep < 7.5) penalty = `Sub-optimal sleep — ${pct}`;
-      else if (sleep < 7) penalty = `Poor sleep — ${pct}`;
-      else penalty = pct;
-    }
-    return { isOptimalSleep: optimal, isChronicOversleep: chronic, oversleepCount, sleepMultiplier: multiplier, sleepPenaltyLabel: penalty };
-  }, [sleep, recentSleep]);
+  // Scoring model lives in src/lib/checkin-xp.ts (unit-tested; the server's
+  // record_checkin RPC mirrors the same caps and multiplier).
+  const { isOptimalSleep, isChronicOversleep, oversleepCount, sleepMultiplier, sleepPenaltyLabel } = useMemo(
+    () => assessSleep(sleep, recentSleep || []),
+    [sleep, recentSleep],
+  );
 
   const done = (key: string) => !!completed[key];
   const toggle = (key: string) => setCompleted((c) => ({ ...c, [key]: !c[key] }));
 
-  // Is a given chosen habit "done" (for XP + completion counting)?
-  const habitDone = (h: CheckinHabit): boolean => {
-    if (h.key === "sleep") return isOptimalSleep;
-    if (h.key === "workout") return workout;
-    if (h.key === "hydration") return hydration >= 3;
-    return done(h.key);
-  };
-  const habitXp = (h: CheckinHabit): number => {
-    if (h.key === "workout") return workout ? selectedSport.xp : 0;
-    return habitDone(h) ? h.xp : 0;
-  };
+  const checkinState = { sleepOptimal: isOptimalSleep, workout, hydration, completed };
+  const habitDone = (h: CheckinHabit): boolean => isHabitDone(h, checkinState);
 
-  // Proof photo is available to everyone (all app users are paid members) and
-  // earns the same bonus for all.
-  const proofBonus = proofFile ? 30 : 0;
-  // Anti-cheat scoring: core habits (sleep, workout, water, meditation) earn their
-  // full value; self-chosen habits together add at most OPTIONAL_XP_CAP, so stacking
-  // many optional habits can't inflate the score. The server enforces the same cap.
-  // XP is identical for everyone — it does NOT depend on membership. "Elite" is an
-  // EARNED status tier (profile.status_tier), not a paid tier, so it grants no XP edge.
-  let coreXp = 0, optionalXpRaw = 0;
-  for (const h of chosenHabits) {
-    const xp = habitXp(h);
-    if (h.core) coreXp += xp; else optionalXpRaw += xp;
-  }
-  const optionalXp = Math.min(optionalXpRaw, OPTIONAL_XP_CAP);
-  const rawXp = coreXp + optionalXp + proofBonus;
-  const baseXp = Math.round(rawXp * sleepMultiplier);
-  const totalXp = baseXp + questBonusXp;
-
-  const completedCount = chosenHabits.filter(habitDone).length;
+  const { baseXp, totalXp, completedCount } = computeCheckinXp({
+    habits: chosenHabits,
+    state: checkinState,
+    sportXp: selectedSport.xp,
+    hasProof: !!proofFile,
+    sleepMultiplier,
+    questBonusXp,
+  });
   const maxCount = chosenHabits.length;
 
   // Habits grouped by pillar, excluding the ones with custom widgets

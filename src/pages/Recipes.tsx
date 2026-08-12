@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import PosterZoom from "@/components/recipes/PosterZoom";
 import { recipeThumb, recipePoster, recipeSquare } from "@/lib/recipe-images";
+import { fmtQty } from "@/lib/recipe-scaling";
 import { Button } from "@/components/ui/button";
 import { RECIPES, type Recipe } from "@/data/recipes";
 import { cn } from "@/lib/utils";
@@ -39,12 +40,6 @@ const RecipeImage = ({ id, className }: { id: string; className?: string }) => {
   );
 };
 
-// Scale a base (1-serving) quantity by the batch size and format cleanly.
-const fmtQty = (qty: number | undefined, batch: number) => {
-  if (qty == null) return "";
-  const v = Math.round(qty * batch * 100) / 100;
-  return String(v);
-};
 
 const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }) => {
   const [batch, setBatch] = useState(1);

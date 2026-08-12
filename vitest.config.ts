@@ -9,6 +9,40 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    coverage: {
+      provider: "v8",
+      // Coverage is a ratchet over the PURE LOGIC layer only — lib + data.
+      // UI/components stay guarded by tsc, the type-debt ratchet and build.
+      // Thresholds are set to the achieved floor; raise them, never lower.
+      include: ["src/lib/**/*.ts", "src/data/**/*.ts"],
+      exclude: [
+        // Native/DOM/side-effect modules — not meaningfully unit-testable:
+        "src/lib/haptics.ts",
+        "src/lib/platform.ts",
+        "src/lib/native-bootstrap.ts",
+        "src/lib/native-auth.ts",
+        "src/lib/oauth-session.ts",
+        "src/lib/route-preload.ts",
+        "src/lib/streak-notifications.ts",
+        "src/lib/health/**",
+        "src/lib/wind.ts",
+        "src/lib/downscale-image.ts",
+        "src/lib/observability.ts",
+        "src/lib/analytics.ts",
+        "src/lib/badge-awards.ts",
+        "src/lib/tribe-streak.ts",
+        "src/lib/exercise-library.ts",
+        "src/lib/recipe-images.ts",
+        "src/lib/ios-debug.ts",
+        "src/lib/apple-username.ts",
+        "src/lib/xp-constants.ts",
+      ],
+      thresholds: {
+        // Floor set after batch 2 lands — see CI step.
+        lines: 80,
+        functions: 80,
+      },
+    },
   },
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },

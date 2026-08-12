@@ -96,7 +96,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
     }
     if (r.viewer_status === "pending_invite") {
       return (
-        <Button size="sm" variant="outline" className="h-8 text-[11px]" onClick={() => navigate("/tribes")}>
+        <Button size="sm" variant="outline" className="h-8 text-[11px]" onClick={() => navigate("/squad?tab=tribes")}>
           Accept invite
         </Button>
       );

@@ -126,7 +126,7 @@ const MyTribeBattles = () => {
           Join or found a tribe to wage collective battles.
         </p>
         <button
-          onClick={() => navigate("/tribes")}
+          onClick={() => navigate("/squad?tab=tribes")}
           className="text-[11px] font-black uppercase tracking-widest text-gold inline-flex items-center gap-1"
         >
           Find a tribe <ChevronRight size={12} />
@@ -247,7 +247,7 @@ const MyTribeBattles = () => {
           </button>
         ) : (
           <button
-            onClick={() => navigate("/tribes")}
+            onClick={() => navigate("/squad?tab=tribes")}
             className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-gold inline-flex items-center gap-0.5"
           >
             My tribes <ChevronRight size={10} />

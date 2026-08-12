@@ -15,6 +15,8 @@ import StatusBadge from "@/components/StatusBadge";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
 import TopTribesWidget from "@/components/TopTribesWidget";
 import MoreSection from "@/components/ui/more-section";
+import { Button } from "@/components/ui/button";
+import { BoardRowsSkeleton } from "@/components/skeletons/PageSkeleton";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { hapticSelection } from "@/lib/haptics";
@@ -201,7 +203,7 @@ const Leaderboard = () => {
       return {
         full,
         top: full.slice(0, BOARD_LIMIT),
-        myRank: myRank > 0 ? myRank : null,
+        myRank: myRank && myRank > 0 ? myRank : null,
       };
     },
   });
@@ -404,6 +406,12 @@ const Leaderboard = () => {
         </div>
       )}
 
+      {/* Data-phase skeleton — RouteFallback only covers the lazy-chunk load;
+          without this the podium+rows popped in with a big layout shift. */}
+      {(mode === "season" ? seasonLoading : allTimeLoading) && currentLeaders.length === 0 && (
+        <BoardRowsSkeleton />
+      )}
+
       {/* Podium — top 3, hero treatment */}
       {currentLeaders.length >= 1 && (
         <div className="relative mb-5 animate-reveal animate-reveal-delay-2">
@@ -518,7 +526,7 @@ const Leaderboard = () => {
                     {isMe && <span className="text-[9px] text-gold/70 font-medium">(you)</span>}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[11px] text-muted-foreground">Lvl {user.level}</p>
+                    <p className="text-[11px] text-muted-foreground">Lv {user.level}</p>
                     {user.streak > 0 && (
                       <>
                         <span className="text-muted-foreground/40">•</span>
@@ -537,7 +545,7 @@ const Leaderboard = () => {
                     {points.toLocaleString()}
                   </p>
                   <p className="text-[9px] text-muted-foreground/60 uppercase tracking-wider font-bold">
-                    {mode === "season" ? "S-XP" : "XP"}
+                    {mode === "season" ? "Season XP" : "XP"}
                   </p>
                 </div>
               </button>
@@ -556,6 +564,7 @@ const Leaderboard = () => {
             icon={Trophy}
             title="The board is warming up"
             description="Be the first to check in and claim rank #1."
+            action={<Button size="sm" onClick={() => navigate("/checkin")}>Check in now</Button>}
           />
         </div>
       )}

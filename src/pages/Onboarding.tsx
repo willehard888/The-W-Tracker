@@ -183,7 +183,7 @@ const SLIDES = [
   },
   {
     title: "Rise Through the Ranks",
-    description: "Earn status tiers from Rising to Elite. The leaderboard shows the world who's putting in the work.",
+    description: "Earn status tiers from Recruit to Legend. The leaderboard shows the world who's putting in the work.",
     Illustration: RankAnimation,
   },
   {

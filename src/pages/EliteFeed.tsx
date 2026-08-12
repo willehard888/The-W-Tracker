@@ -37,13 +37,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const TIER_STYLES: Record<string, string> = {
-  elite: "bg-gradient-to-br from-gold to-amber-600",
-  high_performer: "bg-gradient-to-br from-purple-500 to-indigo-600",
-  rising: "bg-gradient-to-br from-sky-400 to-blue-600",
-  normal: "bg-secondary",
-};
-
 const SUPPORTED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 const SUPPORTED_VIDEO_MIME_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
@@ -738,7 +731,16 @@ const EliteFeed = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-2xl font-bold tracking-tight leading-none my-[10px] py-[10px]">Elite Feed</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Discipline proof from top performers</p>
+            <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
+              Discipline proof from top performers
+              {/* Kudos quota was invisible on touch (title attr only) — the
+                  scarce mechanic is only fun if you can SEE the budget. */}
+              {user && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/25 px-2 py-0.5 text-[10px] font-black text-gold tabular-nums">
+                  <Award size={10} /> {kudosRemaining}/{KUDOS_PER_MONTH} kudos
+                </span>
+              )}
+            </p>
           </div>
 
           {/* Admin controls */}
@@ -849,7 +851,7 @@ const EliteFeed = () => {
           </div>
           <p className="text-[13px] font-bold leading-snug text-foreground/90">
             <span className="text-[hsl(var(--streak-orange))] font-black tabular-nums">{todayWins}</span>{" "}
-            {todayWins === 1 ? "operator has" : "operators"} showed up in the last 24h.
+            {todayWins === 1 ? "operator" : "operators"} showed up in the last 24h.
             <span className="text-muted-foreground font-medium"> Add yours.</span>
           </p>
         </div>
@@ -923,21 +925,9 @@ const EliteFeed = () => {
         </div>
       )}
 
-      {!canPost && user && (
-        <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-gold/25 bg-gold/5 p-6 text-center mb-6">
-          <div className="h-12 w-12 rounded-full gradient-gold flex items-center justify-center mx-auto mb-3 glow-gold">
-            <Crown size={20} className="text-primary-foreground" />
-          </div>
-          <p className="text-sm font-bold">Posting is for the Elite tier</p>
-          <p className="text-xs text-muted-foreground mt-1 mb-4 max-w-xs mx-auto">
-            Earn Elite status to post — hit a 30-day streak with 20 active days in the last 30, or place in the top 20% by rank.
-          </p>
-          <Button variant="ember" size="sm" className="rounded-full" onClick={() => navigate("/profile")}>
-            <Crown size={14} />
-            View Road to Elite
-          </Button>
-        </div>
-      )}
+      {/* (The old "Posting is for the Elite tier" gate card was removed —
+          canPost is !!user now, so the block was unreachable dead copy that
+          contradicted the current model.) */}
 
       {/* Posts */}
       <div className="space-y-4 animate-reveal animate-reveal-delay-2">

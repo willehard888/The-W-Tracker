@@ -11,7 +11,7 @@ import { hapticImpact } from "@/lib/haptics";
 import { withNetworkRetry } from "@/lib/retry";
 import { toast } from "sonner";
 import { useCoachProgram } from "@/hooks/use-coach-program";
-import { ProfileSkeleton as PageSkeleton } from "@/components/skeletons/PageSkeleton";
+import { CoachSkeleton as PageSkeleton } from "@/components/skeletons/PageSkeleton";
 import AthleteProfileOnboarding from "@/components/coach/AthleteProfileOnboarding";
 import MoodSnapshot from "@/components/coach/MoodSnapshot";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
@@ -411,7 +411,7 @@ const ChatSheet = ({
 
         if (resp.status === 429) toast.error("Coach is busy right now. Try again in a moment.");
         else if (resp.status === 402 || resp.status === 401) toast.error("Coach is briefly unavailable. Please try again shortly.");
-        else toast.error("Coach couldn't respond. Tap to retry.");
+        else toast.error("Coach couldn't respond.", { action: { label: "Retry", onClick: () => retryLast() } });
 
         setMessages((prev) => [
           ...prev,

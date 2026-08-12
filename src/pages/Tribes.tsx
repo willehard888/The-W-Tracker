@@ -403,24 +403,8 @@ const Tribes = () => {
         >
           <Plus size={16} /> Create a Tribe
         </Button>
-      ) : (
-        <div className="mb-4 rounded-xl p-4 border border-[hsl(18_95%_58%)]/25 bg-[hsl(18_95%_58%)]/5 flex items-center gap-3">
-          <div className="h-9 w-9 rounded-lg bg-[hsl(18_95%_58%)]/15 border border-[hsl(18_95%_58%)]/30 flex items-center justify-center shrink-0">
-            <Lock size={14} className="text-[hsl(18_95%_58%)]" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-black text-[hsl(18_95%_58%)] tracking-wide">
-              Reach Elite to lead your own tribe
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Hit top 20% rank — or 20 active days with a 21-day streak. Earned, not bought.
-            </p>
-          </div>
-          <Button size="sm" variant="outline" onClick={() => navigate("/profile")} className="shrink-0">
-            Progress
-          </Button>
-        </div>
-      )}
+      ) : null /* canCreate is true for everyone now — the old "Reach Elite
+        to lead your own tribe" gate card was unreachable dead copy. */}
 
       {/* Tabs */}
       <div className="flex gap-1.5 mb-4 p-1 rounded-xl surface-inset border border-border/40">
@@ -508,11 +492,11 @@ const Tribes = () => {
       ) : tribes.length === 0 ? (
         <EmptyState
           icon={Users}
-          title={tab === "browse" ? "No public tribes yet" : "No tribes joined"}
+          title={tab === "browse" ? "No tribes yet" : "No tribes joined"}
           description={
             tab === "browse"
               ? "Be the first founder — start a tribe and rally your circle."
-              : "Browse the public directory or get invited to start grinding together."
+              : "Browse the directory or get invited to start grinding together."
           }
           action={
             tab === "mine" ? (
@@ -617,11 +601,17 @@ const Tribes = () => {
             // Ember-bar height grows with collective tier (cold → 0%, legendary → 100%)
             const heatPct = cTier < 0 ? 0 : Math.min(100, ((cTier + 1) / 6) * 100);
             return (
-            <button
+            /* div+role, not <button>: the row contains real Join/Claim
+               <Button>s and nested buttons are invalid DOM (breaks hit-testing
+               and screen readers). */
+            <div
               key={t.id}
+              role="button"
+              tabIndex={0}
               onClick={() => navigate(`/tribes/${t.id}`)}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/tribes/${t.id}`); } }}
               className={cn(
-                "group w-full text-left rounded-2xl p-4 border apex-tribe-card-hover relative overflow-hidden",
+                "group w-full text-left cursor-pointer rounded-2xl p-4 border apex-tribe-card-hover relative overflow-hidden",
                 isPaused
                   ? "border-muted-foreground/30 bg-gradient-to-br from-card/60 to-secondary/20 grayscale-[0.4]"
                   : "border-[hsl(18_95%_58%)]/20 bg-gradient-to-br from-card/80 via-card/60 to-[hsl(18_95%_58%)]/5"
@@ -784,7 +774,7 @@ const Tribes = () => {
                   </Button>
                 )}
               </div>
-            </button>
+            </div>
             );
           })}
         </div>

@@ -232,8 +232,10 @@ const Vault = () => {
       </div>
 
       <div className="mt-8 text-center">
+        {/* No hardcoded price — a US/UK member paid a different number than
+            "4,99 €" and the store price is the only truth. */}
         <p className="text-[10px] tracking-widest uppercase text-muted-foreground/70">
-          Premium member · 4,99 €/mo
+          Premium member
         </p>
       </div>
 
@@ -259,7 +261,7 @@ const VaultCategoryBlock = ({
   const [expanded, setExpanded] = useState(false);
   // Fetch all articles once (cached) and filter locally — avoids per-category refetches
   // and ensures content is ready the moment the user expands a category.
-  const { data: allArticles, isLoading, error } = useVaultArticles();
+  const { data: allArticles, isLoading, error, refetch } = useVaultArticles();
   const { data: progress } = useVaultProgress();
   const articles = (allArticles ?? []).filter((a) => a.category_id === category.id);
   const completedIds = new Set((progress ?? []).map((p) => p.article_id));
@@ -338,9 +340,18 @@ const VaultCategoryBlock = ({
           )}
 
           {!isLoading && error && (
-            <p className="text-[11px] text-rose-400/90 py-3 text-center">
-              Couldn't load articles. Pull to refresh.
-            </p>
+            <div className="py-3 text-center">
+              {/* Real retry — this page has no pull-to-refresh, so the old
+                  "Pull to refresh" copy asked for something impossible. */}
+              <p className="text-[11px] text-rose-400/90 mb-2">Couldn't load articles.</p>
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gold/30 bg-gold/[0.06] px-3 py-1.5 text-[11px] font-bold text-gold active:scale-95 transition"
+              >
+                Try again
+              </button>
+            </div>
           )}
 
           {!isLoading && !error && articles.length === 0 && (

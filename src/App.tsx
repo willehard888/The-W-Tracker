@@ -30,7 +30,6 @@ const DailyCheckin = lazy(() => import("./pages/DailyCheckin"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Battles = lazy(() => import("./pages/Battles"));
 const Profile = lazy(() => import("./pages/Profile"));
-const EliteFeed = lazy(() => import("./pages/EliteFeed"));
 const Referrals = lazy(() => import("./pages/Referrals"));
 const Paywall = lazy(() => import("./pages/Paywall"));
 const BadgeCompare = lazy(() => import("./pages/BadgeCompare"));
@@ -56,7 +55,6 @@ const Journey = lazy(() => import("./pages/Journey"));
 const CoachProgramDetail = lazy(() => import("./pages/CoachProgramDetail"));
 const CoachMemoryScreen = lazy(() => import("./pages/CoachMemoryScreen"));
 const ProtocolLibrary = lazy(() => import("./pages/ProtocolLibrary"));
-const Tribes = lazy(() => import("./pages/Tribes"));
 const Squad = lazy(() => import("./pages/Squad"));
 const TribeNew = lazy(() => import("./pages/TribeNew"));
 const TribeDetail = lazy(() => import("./pages/TribeDetail"));
@@ -252,7 +250,9 @@ const AppRoutes = () => {
           <Route path="/coach/memory" element={<ProtectedRoute><CoachMemoryScreen /></ProtectedRoute>} />
           <Route path="/coach/library" element={<ProtectedRoute><ProtocolLibrary /></ProtectedRoute>} />
           <Route path="/squad" element={<ProtectedRoute><Squad /></ProtectedRoute>} />
-          <Route path="/tribes" element={<ProtectedRoute><Tribes /></ProtectedRoute>} />
+          {/* Legacy standalone routes — Squad is the single entry point for
+              Feed and Tribes (renders them behind its segmented header). */}
+          <Route path="/tribes" element={<Navigate to="/squad?tab=tribes" replace />} />
           <Route path="/tribes/new" element={<ProtectedRoute><TribeNew /></ProtectedRoute>} />
           <Route path="/tribes/leaderboard" element={<ProtectedRoute><TribeLeaderboard /></ProtectedRoute>} />
           <Route path="/tribes/:id" element={<ProtectedRoute><TribeDetail /></ProtectedRoute>} />
@@ -264,7 +264,7 @@ const AppRoutes = () => {
           <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
           <Route path="/admin/legend-invites" element={<ProtectedRoute><AdminLegendInvites /></ProtectedRoute>} />
           <Route path="/button-gallery" element={<ProtectedRoute><ButtonGallery /></ProtectedRoute>} />
-          <Route path="/feed" element={<ProtectedRoute><EliteFeed /></ProtectedRoute>} />
+          <Route path="/feed" element={<Navigate to="/squad" replace />} />
           <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
           <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />
           <Route path="/badges/compare" element={<ProtectedRoute><BadgeCompare /></ProtectedRoute>} />

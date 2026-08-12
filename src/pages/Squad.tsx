@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Flame, Users, UserPlus } from "lucide-react";
 import EliteFeed from "./EliteFeed";
 import Tribes from "./Tribes";
@@ -10,6 +9,10 @@ import { hapticSelection } from "@/lib/haptics";
  * Squad — the single social home. Merges the old Feed and Tribe tabs behind one
  * segmented control (freeing a nav slot for Coach) and keeps Friends one tap
  * away. The Pod lives on Today; DMs are reached from Friends.
+ *
+ * The active sub-tab lives in the URL (`/squad?tab=tribes`) so back-links from
+ * tribe screens land on the right tab and the legacy /feed and /tribes routes
+ * can redirect here.
  */
 const SUB = [
   { key: "feed", label: "Feed", icon: Flame },
@@ -18,7 +21,10 @@ const SUB = [
 
 const Squad = () => {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"feed" | "tribes">("feed");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab: "feed" | "tribes" = searchParams.get("tab") === "tribes" ? "tribes" : "feed";
+  const setTab = (next: "feed" | "tribes") =>
+    setSearchParams(next === "feed" ? {} : { tab: next }, { replace: true });
 
   return (
     <div className="flex flex-col">

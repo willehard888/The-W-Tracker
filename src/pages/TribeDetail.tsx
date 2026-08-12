@@ -476,7 +476,7 @@ const TribeDetail = () => {
     const { error } = await supabase.rpc("delete_tribe" as any, { p_tribe_id: id });
     if (error) { toast.error(friendlyError(error)); return; }
     toast.success("Tribe deleted");
-    navigate("/tribes");
+    navigate("/squad?tab=tribes");
   };
 
   const handleChanged = () => {
@@ -564,7 +564,7 @@ const TribeDetail = () => {
         </Portal>
       )}
 
-      <button onClick={() => { hapticSelection(); navigate("/tribes"); }} className="flex items-center gap-1 text-xs text-muted-foreground mb-4 relative active:scale-95 transition-transform">
+      <button onClick={() => { hapticSelection(); navigate("/squad?tab=tribes"); }} className="flex items-center gap-1 text-xs text-muted-foreground mb-4 relative active:scale-95 transition-transform">
         <ArrowLeft size={14} /> Tribes
       </button>
 

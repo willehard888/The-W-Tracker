@@ -75,7 +75,7 @@ const TopTribesWidget = () => {
             {canCreate ? "No tribes ranked yet — be the first founder." : "No tribes ranked yet."}
           </p>
           <button
-            onClick={() => navigate(canCreate ? "/tribes/new" : "/tribes")}
+            onClick={() => navigate(canCreate ? "/tribes/new" : "/squad?tab=tribes")}
             className="text-[11px] font-black uppercase tracking-widest text-[hsl(18_95%_58%)] inline-flex items-center gap-1"
           >
             {canCreate ? "Found a tribe" : "Browse tribes"} <ChevronRight size={12} />

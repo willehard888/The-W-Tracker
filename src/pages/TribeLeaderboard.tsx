@@ -80,7 +80,7 @@ const TribeLeaderboard = () => {
   return (
     <div className="min-h-full pb-32 px-4 pt-4">
       <button
-        onClick={() => navigate("/tribes")}
+        onClick={() => navigate("/squad?tab=tribes")}
         className="flex items-center gap-1 text-xs text-muted-foreground mb-4"
       >
         <ArrowLeft size={14} /> Tribes

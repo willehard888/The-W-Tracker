@@ -13,7 +13,7 @@ import { LocalNotifications } from "@capacitor/local-notifications";
 // outside this list is silently ignored — defends against a payload trying to
 // open external URLs / arbitrary attacker-controlled destinations.
 const SAFE_ROUTES = new Set<string>([
-  "/", "/checkin", "/feed", "/tribes", "/messages",
+  "/", "/checkin", "/feed", "/tribes", "/squad", "/messages",
   "/leaderboard", "/battles", "/profile", "/coach",
   "/coach/library", "/coach/habits", "/coach/program",
   "/coach/memory", "/coach/goal", "/coach/reflect",

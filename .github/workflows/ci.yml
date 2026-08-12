@@ -36,8 +36,8 @@ jobs:
       - name: Type-debt ratchet (strict errors + `as any` must not grow)
         run: node scripts/type-debt.mjs
 
-      - name: Unit tests
-        run: npm test
+      - name: Unit tests + coverage ratchet (thresholds in vitest.config.ts)
+        run: npx vitest run --coverage
 
       - name: Production build
         run: npm run build

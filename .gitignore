@@ -34,3 +34,4 @@ supabase/.temp/
 # override files stay ignored:
 .env.local
 .env.*.local
+coverage/

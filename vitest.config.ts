@@ -38,9 +38,13 @@ export default defineConfig({
         "src/lib/xp-constants.ts",
       ],
       thresholds: {
-        // Floor set after batch 2 lands — see CI step.
-        lines: 80,
-        functions: 80,
+        // RATCHET FLOOR — current achieved: lines 95.8 / branches 90.8 /
+        // funcs 92.8. Raise when coverage grows; never lower. CI enforces
+        // via `vitest run --coverage`.
+        lines: 94,
+        statements: 94,
+        branches: 89,
+        functions: 91,
       },
     },
   },

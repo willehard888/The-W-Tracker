@@ -40,6 +40,18 @@ workflows:
       # requires NodeJS >=22.0.0" when Node 20 was used).
       node: 22
 
+    # Skip iOS builds for pushes that can't change the shipped app: backend
+    # (edge functions/migrations run server-side), CI config, docs, tests.
+    # Saves build minutes and keeps every TestFlight build meaningful.
+    when:
+      changeset:
+        excludes:
+          - "supabase/**"
+          - ".github/**"
+          - "**/*.md"
+          - "src/**/__tests__/**"
+          - "scripts/obsidian/**"
+
     triggering:
       events:
         - push
@@ -47,6 +59,9 @@ workflows:
         - pattern: main
           include: true
           source: true
+      # Rapid push cadence used to queue a build per commit — only the
+      # newest commit matters for TestFlight, so cancel stale ones.
+      cancel_previous_builds: true
 
     integrations:
       app_store_connect: codemagic
@@ -60,11 +75,14 @@ workflows:
         script: |
           # Fail the build BEFORE the expensive archive if types or tests break,
           # so regressions (incl. an entitlement/signing mismatch surfaced at
-          # type level) never reach TestFlight. Lint is intentionally NOT gated
-          # yet — there's a large `as any` backlog (see type-tightening task);
-          # add `npm run lint` here once that's cleared.
+          # type level) never reach TestFlight. Gates are IDENTICAL to GitHub
+          # CI (tsc + type-debt ratchet + tests with the coverage floor) — a
+          # build that reaches TestFlight has passed the exact same bar.
+          # Lint is intentionally NOT gated yet — there's a large `as any`
+          # backlog (see type-tightening task); add `npm run lint` once cleared.
           npx tsc --noEmit
-          npm run test
+          node scripts/type-debt.mjs
+          npx vitest run --coverage
 
       - name: Build web bundle + sync Capacitor (→ ios/App/App/public)
         script: |

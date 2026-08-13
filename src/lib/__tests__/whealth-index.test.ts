@@ -6,6 +6,7 @@
 import { describe, it, expect } from "vitest";
 import {
   computeWhealthIndex,
+  computeWhealthIndexDetailed,
   scoreSleep,
   scoreRecovery,
   scoreMovement,
@@ -270,5 +271,39 @@ describe("computeWhealthIndex — integration", () => {
     expect(r.pillars.nutrition).not.toBeNull();
     expect(r.pillars.recovery).not.toBeNull(); // rest-day compliance from checkins
     expect(r.overall).not.toBeNull();
+  });
+});
+
+describe("computeWhealthIndexDetailed — breakdown consistency", () => {
+  it("pillar score equals the composite of its own breakdown parts", () => {
+    const inputs: WhealthInputs = {
+      checkins: Array.from({ length: 28 }, (_, i) => checkin(i, { workout: i % 2 === 0, protein: true, healthyFood: true })),
+      nights: Array.from({ length: 28 }, (_, i) => night(i)),
+      days: [], reflections: Array.from({ length: 10 }, (_, i) => refl(i)),
+      habitStreaks: [12], lessonsCompleted: 5, lessonsTotal: 20, avgQuizScore: 80,
+      liftPrs: 2, liftStalls: 1, liftCount: 3, tribeCount: 1, friendCount: 2, iAmSet: true,
+    };
+    const d = computeWhealthIndexDetailed(inputs);
+    const summary = computeWhealthIndex(inputs);
+    expect(d.pillars).toEqual(summary.pillars);
+    expect(d.overall).toBe(summary.overall);
+    // Every pillar has a non-empty parts list with labels + weights
+    for (const parts of Object.values(d.breakdown)) {
+      expect(parts.length).toBeGreaterThanOrEqual(3);
+      for (const p of parts) {
+        expect(p.label.length).toBeGreaterThan(2);
+        expect(p.weight).toBeGreaterThan(0);
+        if (p.score != null) {
+          expect(p.score).toBeGreaterThanOrEqual(0);
+          expect(p.score).toBeLessThanOrEqual(100);
+        }
+      }
+    }
+  });
+
+  it("zero-data breakdown labels every part as null (drill-down shows 'no data yet')", () => {
+    const d = computeWhealthIndexDetailed(EMPTY);
+    expect(d.breakdown.sleep.every((p) => p.score == null)).toBe(true);
+    expect(d.breakdown.nutrition.every((p) => p.score == null)).toBe(true);
   });
 });

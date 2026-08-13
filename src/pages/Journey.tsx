@@ -1,10 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Compass, TrendingUp, TrendingDown, Moon, Flame, BookHeart, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJourney, weeklyXp, type JourneyReflection } from "@/hooks/use-journey";
 import { useWhealthSnapshots } from "@/hooks/use-whealth-snapshots";
+import { useLiveWhealthIndex } from "@/hooks/use-live-whealth-index";
+import PillarSheet from "@/components/journey/PillarSheet";
+import type { PillarScores } from "@/lib/whealth-index";
 import { useRecentNights } from "@/hooks/use-night-metrics";
 import WhealthIndexCard from "@/components/journey/WhealthIndexCard";
 import CoachSeesCard from "@/components/journey/CoachSeesCard";
@@ -59,11 +62,20 @@ const Journey = () => {
     return avg(last) - avg(first);
   }, [checkins]);
 
-  // Whealth OS: nightly snapshots (index hero + coach observations) and the
-  // real HealthKit resting-HR trend.
+  // Whealth OS: nightly snapshots (history + coach observations) + the LIVE
+  // on-device computation (same pure core) so the index moves the moment you
+  // check in. Live preferred for current values; snapshots power the trend.
   const { data: snapshots } = useWhealthSnapshots(28);
+  const { data: liveIndex } = useLiveWhealthIndex();
   const latestSnap = snapshots?.[0];
   const priorSnap = snapshots && snapshots.length > 1 ? snapshots[snapshots.length - 1] : undefined;
+  const heroOverall = liveIndex?.overall ?? latestSnap?.overall ?? null;
+  const heroPillars = liveIndex?.overall != null ? liveIndex.pillars : latestSnap?.pillars;
+  const overallHistory = useMemo(
+    () => [...(snapshots ?? [])].reverse().map((s) => s.overall),
+    [snapshots],
+  );
+  const [openPillar, setOpenPillar] = useState<keyof PillarScores | null>(null);
   const { data: nights } = useRecentNights(30);
   const rhrSeries = useMemo(
     () =>
@@ -110,9 +122,27 @@ const Journey = () => {
           />
         )}
 
-        {/* WHEALTH INDEX — the nightly-computed life score, six honest pillars */}
-        {latestSnap && (
-          <WhealthIndexCard latest={latestSnap} prior={priorSnap} />
+        {/* WHEALTH INDEX — live on-device score, six honest pillars, trend */}
+        {heroOverall != null && heroPillars && (
+          <WhealthIndexCard
+            overall={heroOverall}
+            pillars={heroPillars}
+            priorPillars={priorSnap?.pillars}
+            priorOverall={priorSnap?.overall}
+            priorDate={priorSnap?.snapshotDate}
+            live={liveIndex?.overall != null}
+            history={overallHistory}
+            onPillarTap={setOpenPillar}
+          />
+        )}
+
+        {openPillar && (
+          <PillarSheet
+            pillar={openPillar}
+            score={heroPillars?.[openPillar] ?? null}
+            parts={liveIndex?.breakdown?.[openPillar] ?? []}
+            onClose={() => setOpenPillar(null)}
+          />
         )}
 
         {/* What your coach sees — grounded observations + the 7-day focus */}

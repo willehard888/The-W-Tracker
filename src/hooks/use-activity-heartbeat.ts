@@ -1,6 +1,11 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { track, FUNNEL } from "@/lib/analytics";
+
+// Once per app SESSION (module-level): the D1-return signal richer than
+// check-ins — "did they come back at all", not just "did they log".
+let appOpenedTracked = false;
 
 /**
  * Stamp last_active_at + timezone whenever the app is foregrounded, so
@@ -23,6 +28,10 @@ export function useActivityHeartbeat() {
       const nowMs = Date.now();
       if (nowMs - lastBeat < 5 * 60 * 1000) return; // throttle
       lastBeat = nowMs;
+      if (!appOpenedTracked) {
+        appOpenedTracked = true;
+        void track(FUNNEL.appOpened);
+      }
       let tz: string | null = null;
       try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || null; } catch { /* keep null */ }
       const offset = -new Date().getTimezoneOffset(); // minutes east of UTC

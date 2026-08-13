@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { supabase } from "@/integrations/supabase/client";
+import { track, FUNNEL } from "@/lib/analytics";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   requestStreakNotificationPermission,
@@ -110,6 +111,8 @@ export const usePushNotifications = (): PushNotificationState => {
     try { localStorage.setItem(PRIMING_DISMISS_KEY, String(Date.now())); } catch { /* noop */ }
     try {
       const perm = await PushNotifications.requestPermissions();
+      // Opt-in rate is the single biggest lever on every push retention loop.
+      void track(FUNNEL.pushPermission, { granted: perm.receive === "granted" });
       if (perm.receive === "granted") await activate();
     } catch (e) {
       console.warn("push permission request failed", e);

@@ -41,6 +41,7 @@ const HealthKitConnectCard = () => {
   const isConnected = (stats?.verified_count ?? 0) > 0;
 
   const handleConnect = async () => {
+    void track(FUNNEL.healthkitPromptShown); // measure the ask, not just the yes
     const ok = await connect();
     if (ok) {
       void track(FUNNEL.healthkitConnected); // funnel step 2

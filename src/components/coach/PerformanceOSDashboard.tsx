@@ -74,9 +74,12 @@ const PerformanceOSDashboard = () => {
     const total = last7.reduce((s, x) => s + Number((x.components as any)?.[key] ?? 0), 0);
     return Math.round(total / last7.length);
   };
+  // Keys must match what coach-weekly-review actually WRITES (sleep_pts,
+  // train_pts, consistency_pts, energy_pts) — the old rpe_pts/missed_pts were
+  // coach-daily-plan's readiness keys, so two tiles rendered a permanent 0.
   const sleepAvg = avgComponent("sleep_pts");
-  const recoveryAvg = avgComponent("rpe_pts");
-  const consistencyAvg = avgComponent("missed_pts");
+  const recoveryAvg = avgComponent("energy_pts");
+  const consistencyAvg = avgComponent("consistency_pts");
 
   return (
     <div className="space-y-3">

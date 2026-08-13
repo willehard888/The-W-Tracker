@@ -30,7 +30,7 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
     private func readTypes() -> Set<HKObjectType> {
         var types = Set<HKObjectType>()
         if let sleep = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) { types.insert(sleep) }
-        let ids: [HKQuantityTypeIdentifier] = [.restingHeartRate, .respiratoryRate, .heartRate, .oxygenSaturation]
+        let ids: [HKQuantityTypeIdentifier] = [.restingHeartRate, .respiratoryRate, .heartRate, .oxygenSaturation, .heartRateVariabilitySDNN]
         for id in ids {
             if let t = HKObjectType.quantityType(forIdentifier: id) { types.insert(t) }
         }
@@ -116,6 +116,9 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
         quantity(.oxygenSaturation, unit: HKUnit.percent(), key: "spo2") { xs in
             xs.isEmpty ? nil : (xs.reduce(0, +) / Double(xs.count)) * 100.0
         }
+        // HRV (SDNN, ms) — Apple Watch samples this a few times per night; the
+        // overnight average is the recovery signal the Whealth Index reads.
+        quantity(.heartRateVariabilitySDNN, unit: HKUnit.secondUnit(with: .milli), key: "hrv_sdnn", reduce: avg)
 
         group.notify(queue: .main) {
             call.resolve(result)

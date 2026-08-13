@@ -27,6 +27,7 @@ import { useTierRisk } from "@/hooks/use-tier-risk";
 import { useCheckinDay } from "@/hooks/use-checkin-day";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { useDailyPulse } from "@/hooks/use-daily-pulse";
+import { useBackgroundHealthSync } from "@/hooks/use-background-health-sync";
 // Pull-to-refresh removed temporarily — was intercepting inner taps.
 
 const Index = () => {
@@ -49,6 +50,9 @@ const Index = () => {
     return () => clearTimeout(t);
   }, []);
   const { profile, isElite } = useAuth();
+  // Fill health_sync_snapshots + health_night_metrics daily, not only when
+  // the check-in/Profile screens happen to open (data holes starved trends).
+  useBackgroundHealthSync();
 
   // trial_started — fired once per user when their trial window is fresh
   // (<48h old). Without this event, trial→paid conversion was unmeasurable.

@@ -2,6 +2,7 @@ import { Sparkles, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCoachObservation } from "@/hooks/use-coach-observation";
 import { useCoachBrief } from "@/hooks/use-coach-brief";
+import { useWhealthSnapshots } from "@/hooks/use-whealth-snapshots";
 
 // First readable sentence of the AI brief, markdown stripped, for the inline line.
 const briefLine = (md?: string | null): string | null => {
@@ -40,8 +41,14 @@ const CoachStrip = (_props: CoachStripProps) => {
   const navigate = useNavigate();
   const { text: coachLine } = useCoachObservation({ context: "home" });
   const { brief } = useCoachBrief();
-  // Prefer the real AI brief voice; fall back to the deterministic line.
-  const line = briefLine(brief?.brief_md) || coachLine?.trim() || "Training, sleep, mind — anything on your mind.";
+  const { data: snapshots } = useWhealthSnapshots(1);
+  // Voice priority: today's AI brief → the nightly Whealth focus (grounded in
+  // ALL the user's computed data) → the deterministic template line.
+  const line =
+    briefLine(brief?.brief_md) ||
+    snapshots?.[0]?.focus ||
+    coachLine?.trim() ||
+    "Training, sleep, mind — anything on your mind.";
 
   return (
     <button

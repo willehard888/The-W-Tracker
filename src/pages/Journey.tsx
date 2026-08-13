@@ -1,9 +1,13 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Compass, TrendingUp, TrendingDown, Moon, Flame, BookHeart } from "lucide-react";
+import { ArrowLeft, Compass, TrendingUp, TrendingDown, Moon, Flame, BookHeart, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJourney, weeklyXp, type JourneyReflection } from "@/hooks/use-journey";
+import { useWhealthSnapshots } from "@/hooks/use-whealth-snapshots";
+import { useRecentNights } from "@/hooks/use-night-metrics";
+import WhealthIndexCard from "@/components/journey/WhealthIndexCard";
+import CoachSeesCard from "@/components/journey/CoachSeesCard";
 import Sparkline from "@/components/coach/Sparkline";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import EmptyState from "@/components/ui/empty-state";
@@ -55,6 +59,26 @@ const Journey = () => {
     return avg(last) - avg(first);
   }, [checkins]);
 
+  // Whealth OS: nightly snapshots (index hero + coach observations) and the
+  // real HealthKit resting-HR trend.
+  const { data: snapshots } = useWhealthSnapshots(28);
+  const latestSnap = snapshots?.[0];
+  const priorSnap = snapshots && snapshots.length > 1 ? snapshots[snapshots.length - 1] : undefined;
+  const { data: nights } = useRecentNights(30);
+  const rhrSeries = useMemo(
+    () =>
+      [...(nights ?? [])]
+        .reverse() // oldest → newest for the sparkline
+        .map((n) => n.resting_hr)
+        .filter((v): v is number => v != null && v > 0),
+    [nights],
+  );
+  const rhrDelta = useMemo(() => {
+    if (rhrSeries.length < 8) return null;
+    const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+    return avg(rhrSeries.slice(-7)) - avg(rhrSeries.slice(0, 7));
+  }, [rhrSeries]);
+
   const bestStreak = profile?.longest_streak ?? 0;
   const daysTracked = checkins.length;
 
@@ -83,6 +107,26 @@ const Journey = () => {
             icon={Compass}
             title="Your journey starts today"
             description="Check in and reflect daily — this is where you'll watch yourself become who you set out to be."
+          />
+        )}
+
+        {/* WHEALTH INDEX — the nightly-computed life score, six honest pillars */}
+        {latestSnap && (
+          <WhealthIndexCard latest={latestSnap} prior={priorSnap} />
+        )}
+
+        {/* What your coach sees — grounded observations + the 7-day focus */}
+        {latestSnap && <CoachSeesCard snapshot={latestSnap} />}
+
+        {/* Resting heart rate — real HealthKit recovery trend */}
+        {rhrSeries.length >= 7 && (
+          <TrendCard
+            icon={HeartPulse}
+            title="Resting heart rate"
+            sub="HealthKit · lower is better"
+            values={rhrSeries}
+            delta={rhrDelta != null ? `${rhrDelta > 0 ? "+" : ""}${rhrDelta.toFixed(1)} bpm` : null}
+            good={(rhrDelta ?? 0) <= 0}
           />
         )}
 

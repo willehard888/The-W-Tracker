@@ -23,7 +23,11 @@ const BadgeShowcase = ({ badges, onBadgeClick, className, totalEarned }: BadgeSh
   const overflow = total - display.length;
 
   return (
-    <div className={cn("flex items-center gap-3 justify-center", className)}>
+    // flex-wrap: with 5 badges + the "+N more" tile the row overflows a phone
+    // width, and justify-center on an overflowing row CLIPS both edges (the
+    // first badge rendered half off-screen). Wrapping keeps every badge fully
+    // visible on a centered second row instead.
+    <div className={cn("flex flex-wrap items-center gap-3 justify-center", className)}>
       {display.map((badge, idx) => (
         <button
           key={badge.id}

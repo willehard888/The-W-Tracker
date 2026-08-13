@@ -11,6 +11,7 @@ import type { PillarScores } from "@/lib/whealth-index";
 import { useRecentNights } from "@/hooks/use-night-metrics";
 import WhealthIndexCard from "@/components/journey/WhealthIndexCard";
 import CoachSeesCard from "@/components/journey/CoachSeesCard";
+import StoryShareModal from "@/components/StoryShareModal";
 import Sparkline from "@/components/coach/Sparkline";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import EmptyState from "@/components/ui/empty-state";
@@ -76,6 +77,7 @@ const Journey = () => {
     [snapshots],
   );
   const [openPillar, setOpenPillar] = useState<keyof PillarScores | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
   const { data: nights } = useRecentNights(30);
   const rhrSeries = useMemo(
     () =>
@@ -133,6 +135,16 @@ const Journey = () => {
             live={liveIndex?.overall != null}
             history={overallHistory}
             onPillarTap={setOpenPillar}
+            onShare={() => setShareOpen(true)}
+          />
+        )}
+
+        {shareOpen && heroOverall != null && heroPillars && (
+          <StoryShareModal
+            open={shareOpen}
+            onClose={() => setShareOpen(false)}
+            variant="whealth"
+            whealthData={{ overall: heroOverall, pillars: heroPillars }}
           />
         )}
 

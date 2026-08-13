@@ -11,14 +11,16 @@ import { track, FUNNEL } from "@/lib/analytics";
 interface StoryShareModalProps {
   open: boolean;
   onClose: () => void;
-  variant?: "stats" | "badge" | "streak" | "referral";
+  variant?: "stats" | "badge" | "streak" | "referral" | "whealth";
+  /** Whealth variant: the live index values to render. */
+  whealthData?: { overall: number; pillars: Record<string, number | null> };
   badgeData?: { name: string; icon: string; rarity: string };
   /** Referral variant: the inviter's code + full link. */
   referralCode?: string;
   referralLink?: string;
 }
 
-const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referralCode, referralLink }: StoryShareModalProps) => {
+const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referralCode, referralLink, whealthData }: StoryShareModalProps) => {
   const { profile } = useAuth();
   const cardRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
@@ -228,6 +230,71 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
         ctx.font = "600 9px 'Inter', system-ui, sans-serif";
         ctx.fillText("BADGE UNLOCKED", card.offsetWidth / 2, cardH - 30);
 
+      } else if (variant === "whealth" && whealthData) {
+        const cx = card.offsetWidth / 2;
+        const centerY = cardH / 2 - 30;
+
+        ctx.fillStyle = "#f0ece4";
+        ctx.font = "800 20px 'Space Grotesk', system-ui, sans-serif";
+        ctx.fillText(`@${profile.username}`, cx, centerY - 92);
+
+        // 270° gauge arc
+        const R = 62;
+        ctx.lineWidth = 9;
+        ctx.lineCap = "round";
+        const a0 = 0.75 * Math.PI;
+        const aFull = a0 + 1.5 * Math.PI;
+        ctx.strokeStyle = "rgba(255,255,255,0.08)";
+        ctx.beginPath();
+        ctx.arc(cx, centerY + 10, R, a0, aFull);
+        ctx.stroke();
+        const aVal = a0 + 1.5 * Math.PI * (whealthData.overall / 100);
+        const arcGrad = ctx.createLinearGradient(cx - R, centerY - R, cx + R, centerY + R);
+        arcGrad.addColorStop(0, "rgba(240, 205, 120, 1)");
+        arcGrad.addColorStop(1, "rgba(202, 158, 62, 1)");
+        ctx.strokeStyle = arcGrad;
+        ctx.shadowColor = "rgba(202, 158, 62, 0.5)";
+        ctx.shadowBlur = 16;
+        ctx.beginPath();
+        ctx.arc(cx, centerY + 10, R, a0, aVal);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = "rgba(202, 158, 62, 1)";
+        ctx.font = "900 44px 'Space Grotesk', system-ui, sans-serif";
+        ctx.fillText(`${whealthData.overall}`, cx, centerY + 24);
+        ctx.fillStyle = "rgba(202, 158, 62, 0.7)";
+        ctx.font = "900 11px 'Space Grotesk', system-ui, sans-serif";
+        ctx.fillText("WHEALTH INDEX", cx, centerY + 44);
+
+        // Six mini pillar bars
+        const pillars: Array<[string, number | null]> = [
+          ["SLP", whealthData.pillars.sleep], ["RCV", whealthData.pillars.recovery],
+          ["MOV", whealthData.pillars.movement], ["NUT", whealthData.pillars.nutrition],
+          ["MND", whealthData.pillars.mind], ["INR", whealthData.pillars.inner],
+        ];
+        const barW = 28, gap = 10;
+        const totalW = pillars.length * barW + (pillars.length - 1) * gap;
+        let bx = cx - totalW / 2;
+        const barBase = centerY + 122;
+        for (const [label, v] of pillars) {
+          ctx.fillStyle = "rgba(255,255,255,0.08)";
+          ctx.fillRect(bx, barBase - 44, barW, 44);
+          if (v != null) {
+            ctx.fillStyle = v >= 75 ? "rgba(202,158,62,1)" : v >= 50 ? "rgba(202,158,62,0.7)" : "rgba(235,87,27,0.85)";
+            const hh = Math.max(3, (v / 100) * 44);
+            ctx.fillRect(bx, barBase - hh, barW, hh);
+          }
+          ctx.fillStyle = "rgba(255,255,255,0.35)";
+          ctx.font = "800 7px 'Inter', system-ui, sans-serif";
+          ctx.fillText(label, bx + barW / 2, barBase + 12);
+          bx += barW + gap;
+        }
+
+        ctx.fillStyle = "rgba(255,255,255,0.2)";
+        ctx.font = "600 9px 'Inter', system-ui, sans-serif";
+        ctx.fillText("COMPUTED FROM ALL MY DATA", cx, cardH - 30);
+
       } else if (variant === "referral") {
         const cx = card.offsetWidth / 2;
         const centerY = cardH / 2;
@@ -294,6 +361,8 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
             ? `🔥 ${profile.streak}-day streak on Whealth Factory. ${profile.streak >= 30 ? "Most fail before this." : "Beat my streak!"}`
             : variant === "badge" && badgeData
             ? `Just unlocked ${badgeData.name} ${badgeData.icon} (${badgeData.rarity.toUpperCase()}) on Whealth Factory!`
+            : variant === "whealth" && whealthData
+            ? `Whealth Index ${whealthData.overall}/100 on Whealth Factory — one number for sleep, recovery, movement, nutrition, mind & inner work. What's yours?`
             : `${profile.xp.toLocaleString()} XP • Level ${profile.level} • ${tierConfig.emoji} ${tierConfig.label} on Whealth Factory. The grind doesn't stop.`,
           url: variant === "referral" ? (referralLink || window.location.origin) : window.location.origin,
         });
@@ -375,6 +444,37 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                     </div>
                   ))}
                 </div>
+              </>
+            )}
+
+            {variant === "whealth" && whealthData && (
+              <>
+                <p className="font-extrabold text-foreground mb-2 text-xl">@{profile.username}</p>
+                <p className="font-black text-gold text-6xl drop-shadow-[0_0_20px_hsl(42_78%_54%/0.5)] tabular-nums">
+                  {whealthData.overall}
+                </p>
+                <p className="font-black tracking-widest text-gold/60 mb-5 text-[11px]">WHEALTH INDEX / 100</p>
+                <div className="flex items-end justify-center gap-2 h-12 mb-1">
+                  {([["SLP","sleep"],["RCV","recovery"],["MOV","movement"],["NUT","nutrition"],["MND","mind"],["INR","inner"]] as const).map(([label, key]) => {
+                    const v = whealthData.pillars[key];
+                    return (
+                      <div key={key} className="flex flex-col items-center gap-1">
+                        <div className="w-6 h-11 bg-white/10 rounded-sm overflow-hidden flex items-end">
+                          {v != null && (
+                            <div
+                              className={cn("w-full", v >= 75 ? "bg-gold" : v >= 50 ? "bg-gold/70" : "bg-[hsl(18_95%_58%/0.85)]")}
+                              style={{ height: `${Math.max(6, v)}%` }}
+                            />
+                          )}
+                        </div>
+                        <p className="text-[7px] font-extrabold tracking-wider text-white/35">{label}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-muted-foreground/30 font-semibold mt-3 text-[9px] tracking-wider">
+                  COMPUTED FROM ALL MY DATA
+                </p>
               </>
             )}
 

@@ -1,4 +1,4 @@
-import { ChevronRight, Award, ArrowUp } from "lucide-react";
+import { ChevronRight, Award, ArrowUp, Crown } from "lucide-react";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import BadgeCard from "@/components/BadgeCard";
 import TrialExpirySheet from "@/components/TrialExpirySheet";
@@ -28,6 +28,7 @@ import { useCheckinDay } from "@/hooks/use-checkin-day";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { useDailyPulse } from "@/hooks/use-daily-pulse";
 import { useBackgroundHealthSync } from "@/hooks/use-background-health-sync";
+import { useLiveWhealthIndex } from "@/hooks/use-live-whealth-index";
 // Pull-to-refresh removed temporarily — was intercepting inner taps.
 
 const Index = () => {
@@ -53,6 +54,7 @@ const Index = () => {
   // Fill health_sync_snapshots + health_night_metrics daily, not only when
   // the check-in/Profile screens happen to open (data holes starved trends).
   useBackgroundHealthSync();
+  const { data: liveWhealth } = useLiveWhealthIndex();
 
   // trial_started — fired once per user when their trial window is fresh
   // (<48h old). Without this event, trial→paid conversion was unmeasurable.
@@ -264,6 +266,20 @@ const Index = () => {
                 : "Your climb starts today"}
             </p>
           </div>
+          {/* W-Index chip — the flagship number, felt daily. span+role (not a
+              nested <button>) because the whole strip is already a button. */}
+          {liveWhealth?.overall != null && (
+            <span
+              role="button"
+              tabIndex={0}
+              aria-label="Open your Whealth Index"
+              onClick={(e) => { e.stopPropagation(); navigate("/journey"); }}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); navigate("/journey"); } }}
+              className="shrink-0 inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/30 px-2 py-1 text-[10px] font-black text-gold tabular-nums active:scale-95 transition"
+            >
+              <Crown size={10} strokeWidth={2.8} /> {liveWhealth.overall}
+            </span>
+          )}
           {pulse.hasSnapshot && pulse.rankDelta > 0 ? (
             <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 text-[10px] font-black text-teal">
               <ArrowUp size={11} strokeWidth={3} /> {pulse.rankDelta} today

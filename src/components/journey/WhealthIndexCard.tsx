@@ -15,7 +15,7 @@ export const PILLAR_META: Array<{ key: keyof PillarScores; label: string }> = [
 ];
 
 const barColor = (v: number) =>
-  v >= 75 ? "bg-gold" : v >= 50 ? "bg-gold/70" : v >= 25 ? "bg-[hsl(18_95%_58%)]/80" : "bg-destructive/70";
+  v >= 75 ? "bg-gold" : v >= 50 ? "bg-gold/70" : v >= 25 ? "bg-[hsl(18_95%_58%/0.8)]" : "bg-destructive/70";
 
 /** Animated radial gauge — pure SVG stroke-dashoffset, reduced-motion safe. */
 const Gauge = ({ value }: { value: number }) => {

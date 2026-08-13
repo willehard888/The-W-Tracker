@@ -5,6 +5,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { personalStreakTier } from "@/lib/streak";
 
 /** Map a collective streak total to the 0–6 tier ladder. Tier 6 = Firestorm (plasma ceiling). */
 export const collectiveStreakTier = (total: number): number => {
@@ -44,6 +45,95 @@ export const collectiveAccent = (total: number): string => {
 
 /** Whether this collective flame is at the Firestorm (plasma) tier. */
 export const isFirestorm = (total: number) => collectiveStreakTier(total) >= 6;
+
+// ── Flame palettes ────────────────────────────────────────────────────────────
+// Full per-tier color tables for the TribeFireLite engine. Lifted from
+// StreakFlameInline (the app's reference flame) so tribe fire and header fire
+// share one visual language. `base` is the dark gradient root at the flame's
+// bottom — without it every tier bottomed out in the same hardcoded red and
+// the cyan/magenta top tiers never read as different fires.
+
+export interface FlamePalette {
+  /** Dark root at the flame base (bottom gradient stop). */
+  base: string;
+  /** Outer body color. */
+  outer: string;
+  /** Mid body color. */
+  mid: string;
+  /** Hottest visible color (tip / inner core). */
+  core: string;
+  /** Light-emission color (halo, ground cast, box-shadow bloom). */
+  glow: string;
+  /** Matching text/label color. */
+  text: string;
+}
+
+const COLD_PALETTE: FlamePalette = {
+  base:  "hsl(var(--muted-foreground))",
+  outer: "hsl(var(--muted-foreground))",
+  mid:   "hsl(var(--muted-foreground))",
+  core:  "hsl(var(--muted-foreground))",
+  glow:  "transparent",
+  text:  "hsl(var(--muted-foreground))",
+};
+
+/** Indexed by tier 0..6. Cold (-1) falls back to COLD_PALETTE. */
+const TIER_PALETTES: FlamePalette[] = [
+  // 0 Hot
+  { base: "hsl(8 78% 34%)",   outer: "hsl(14 90% 56%)",  mid: "hsl(18 90% 55%)",  core: "hsl(42 100% 72%)",  glow: "hsl(14 90% 56%)",  text: "hsl(14 90% 62%)" },
+  // 1 Warm
+  { base: "hsl(10 80% 36%)",  outer: "hsl(14 88% 48%)",  mid: "hsl(20 92% 56%)",  core: "hsl(42 100% 75%)",  glow: "hsl(18 95% 58%)",  text: "hsl(18 95% 62%)" },
+  // 2 On Fire
+  { base: "hsl(8 82% 38%)",   outer: "hsl(16 92% 50%)",  mid: "hsl(28 95% 58%)",  core: "hsl(48 100% 80%)",  glow: "hsl(28 95% 60%)",  text: "hsl(28 95% 65%)" },
+  // 3 Blazing
+  { base: "hsl(16 85% 40%)",  outer: "hsl(28 95% 52%)",  mid: "hsl(40 95% 60%)",  core: "hsl(56 100% 86%)",  glow: "hsl(42 85% 60%)",  text: "hsl(42 90% 65%)" },
+  // 4 Diamond — cyan + gold
+  { base: "hsl(210 70% 35%)", outer: "hsl(190 90% 60%)", mid: "hsl(40 95% 60%)",  core: "hsl(58 100% 90%)",  glow: "hsl(200 85% 65%)", text: "hsl(200 85% 70%)" },
+  // 5 Legendary — magenta + gold
+  { base: "hsl(285 65% 35%)", outer: "hsl(300 75% 60%)", mid: "hsl(35 100% 60%)", core: "hsl(60 100% 92%)",  glow: "hsl(280 80% 65%)", text: "hsl(280 80% 70%)" },
+  // 6 Firestorm — cyan-core plasma
+  { base: "hsl(255 70% 35%)", outer: "hsl(310 85% 60%)", mid: "hsl(265 80% 60%)", core: "hsl(180 100% 92%)", glow: "hsl(195 90% 65%)", text: "hsl(195 95% 72%)" },
+];
+
+/** Palette for a tier index (-1..6). */
+export const tierPalette = (tier: number): FlamePalette =>
+  tier >= 0 && tier <= 6 ? TIER_PALETTES[tier] : COLD_PALETTE;
+
+/** Palette for a tribe's collective streak total. */
+export const collectivePalette = (total: number): FlamePalette =>
+  tierPalette(collectiveStreakTier(total));
+
+/**
+ * Per-tier flicker speed in seconds (lower = livelier). Same ladder as
+ * StreakFlameInline so a Firestorm tribe burns with header-flame urgency.
+ */
+export const tierFlameSpeed = (tier: number): number =>
+  tier >= 6 ? 0.7 :
+  tier === 5 ? 0.85 :
+  tier === 4 ? 1.0 :
+  tier === 3 ? 1.15 :
+  tier === 2 ? 1.3 :
+  tier === 1 ? 1.55 : 1.85;
+
+/**
+ * Palette for an individual member's streak — uses the PERSONAL ladder
+ * (3/7/14/30/60/100/200, `personalStreakTier` from lib/streak) so member
+ * flames (MemberContributionStrip) get all 7 states instead of being
+ * flattened by the collective thresholds (30..6000).
+ */
+export const personalPalette = (streak: number): FlamePalette =>
+  tierPalette(personalStreakTier(streak));
+
+/**
+ * Append an alpha channel to an hsl() color string. Handles both literal
+ * (`hsl(14 90% 56%)`) and token (`hsl(var(--muted-foreground))`) forms —
+ * replaces the fragile `accent.replace(/(\d+)%\)/...)` surgery scattered
+ * through the tribe components, which silently broke on the token form.
+ */
+export const withAlpha = (color: string, alpha: number): string => {
+  if (!color.startsWith("hsl(") || !color.endsWith(")")) return color;
+  return `${color.slice(0, -1)} / ${alpha})`;
+};
 
 /**
  * Sum of every active member's `streak` for a single tribe.

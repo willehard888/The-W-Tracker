@@ -139,6 +139,15 @@ Deno.serve(async (req) => {
           // into the RevenueCat (iOS) webhook, silently stiffing web referrals.
           const { error: refErr } = await supabase.rpc("reward_referral_conversion", { p_user: uid });
           if (refErr) console.warn("reward_referral_conversion failed:", refErr.message);
+
+          // Server-truth purchase event (the webhook is the ledger; the client
+          // event only fires if the browser survives the redirect round-trip).
+          const { error: evErr } = await supabase.from("analytics_events").insert({
+            user_id: uid,
+            event: "purchase_completed",
+            props: { source: "stripe_webhook", tier },
+          });
+          if (evErr) console.warn("purchase analytics insert failed:", evErr.message);
         }
       }
     }

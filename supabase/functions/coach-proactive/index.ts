@@ -177,7 +177,14 @@ Deno.serve(async (req) => {
         const ok = push.filter((r) => r.status === 200).length;
         const dead = push.filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered").map((r) => r.token);
         if (dead.length > 0) await supabase.from("push_tokens").delete().in("token", dead);
-        if (ok > 0) { results.sent++; results.byKind[trigger.kind] = (results.byKind[trigger.kind] ?? 0) + 1; }
+        if (ok > 0) {
+          results.sent++; results.byKind[trigger.kind] = (results.byKind[trigger.kind] ?? 0) + 1;
+          // Attribution: which nudge kinds actually re-engage (join vs app_opened).
+          const { error: evErr } = await supabase.from("analytics_events").insert({
+            user_id: p.user_id, event: "nudge_sent", props: { kind: trigger.kind },
+          });
+          if (evErr) console.warn("nudge analytics insert failed:", evErr.message);
+        }
       }
     } catch (_e) {
       results.errors++;

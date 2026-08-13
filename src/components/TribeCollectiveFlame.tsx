@@ -3,6 +3,7 @@
 // because the previous component spawned a RAF loop + 3 SVG turbulence
 // filters per card.
 import TribeFireLite from "@/components/TribeFireLite";
+import TribeEmberSeed from "@/components/TribeEmberSeed";
 import EmberRiseLayer from "@/components/EmberRiseLayer";
 import type { FireEvent } from "@/hooks/use-tribe-fire-reactor";
 import { cn } from "@/lib/utils";
@@ -102,7 +103,7 @@ const TribeCollectiveFlame = ({
         "relative rounded-3xl overflow-hidden border",
         isHero ? "p-6" : "p-5",
         isCold
-          ? "border-border/60 bg-card/50"
+          ? "border-[hsl(18_60%_35%)]/30 bg-card/50"
           : "border-[hsl(18_95%_58%)]/40 surface-ember shadow-[0_0_40px_hsl(18_95%_58%/0.20)]",
         className,
       )}
@@ -202,7 +203,7 @@ const TribeCollectiveFlame = ({
             style={{ width: size, height: size * 1.2 }}
           >
             {isCold ? (
-              <div className="text-7xl opacity-40 leading-none animate-pulse">🕯️</div>
+              <TribeEmberSeed size={size * 1.1} />
             ) : (
               <div
                 key={reactor?.pulseToken ?? 0}
@@ -233,8 +234,10 @@ const TribeCollectiveFlame = ({
             <span
               className="font-display font-black text-6xl tabular-nums leading-none"
               style={{
-                color: isCold ? "hsl(var(--muted-foreground))" : accent,
-                textShadow: isCold ? undefined : `0 0 32px ${accent.replace(")", " / 0.6)")}`,
+                color: isCold ? "hsl(24 45% 62%)" : accent,
+                textShadow: isCold
+                  ? "0 0 24px hsl(18 90% 50% / 0.25)"
+                  : `0 0 32px ${accent.replace(")", " / 0.6)")}`,
               }}
             >
               {total.toLocaleString()}
@@ -259,7 +262,7 @@ const TribeCollectiveFlame = ({
                     animation: "flame-plasma-hue 4s linear infinite, shimmer-slide 5s linear infinite",
                   }
                 : isCold
-                ? { color: "hsl(var(--muted-foreground))" }
+                ? { color: "hsl(20 55% 55%)", textShadow: "0 0 14px hsl(18 90% 50% / 0.3)" }
                 : { color: accent, textShadow: `0 0 18px ${accent.replace(")", " / 0.4)")}` }
             }
           >
@@ -281,7 +284,7 @@ const TribeCollectiveFlame = ({
 
           {isCold && (
             <p className="text-[11px] text-muted-foreground/80 mt-2 leading-snug max-w-[260px]">
-              This fire is cold. Be the first to feed it — <span className="font-black text-foreground/85">30+ combined days</span> to ignite.
+              The embers are waiting. <span className="font-black text-[hsl(24_80%_62%)]">{Math.max(0, 30 - total)} combined day{Math.max(0, 30 - total) === 1 ? "" : "s"}</span> of streaks to ignition.
             </p>
           )}
         </div>
@@ -293,7 +296,7 @@ const TribeCollectiveFlame = ({
             style={{ width: size, height: size * 1.15 }}
           >
             {isCold ? (
-              <div className="text-4xl opacity-40 leading-none">🕯️</div>
+              <TribeEmberSeed size={size * 0.95} />
             ) : (
               <TribeFireLite tier={tier} palette={palette} size={size} />
             )}
@@ -361,9 +364,46 @@ const TribeCollectiveFlame = ({
 
             {isCold && (
               <p className="text-[10px] text-muted-foreground/70 mt-1.5 leading-snug">
-                This fire is cold — <span className="font-black text-foreground/80">30+ combined days</span> to ignite.
+                Embers waiting — <span className="font-black text-[hsl(24_80%_62%)]">{Math.max(0, 30 - total)} day{Math.max(0, 30 - total) === 1 ? "" : "s"}</span> to ignition.
               </p>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Ignition progress — cold tribes get a visible goal, not a dead end */}
+      {isCold && (
+        <div className="relative mt-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[9px] uppercase tracking-widest font-black text-[hsl(20_60%_55%)]">
+              Ignition
+            </span>
+            <span className="text-[10px] font-bold tabular-nums text-foreground/70">
+              {total} / 30 days
+            </span>
+          </div>
+          <div className="relative h-2 rounded-full overflow-hidden bg-secondary/60 flex gap-[2px]">
+            {Array.from({ length: 10 }).map((_, i) => {
+              const igPct = Math.min(100, (total / 30) * 100);
+              const segPct = (i + 1) * 10;
+              const filled = igPct >= segPct;
+              const partial = !filled && igPct > i * 10;
+              const ember = "hsl(18 95% 58%)";
+              return (
+                <span
+                  key={i}
+                  className="flex-1 transition-all"
+                  style={{
+                    background: filled
+                      ? ember
+                      : partial
+                      ? `linear-gradient(90deg, ${ember} ${(igPct - i * 10) * 10}%, transparent ${(igPct - i * 10) * 10}%)`
+                      : "transparent",
+                    boxShadow: filled ? "0 0 6px hsl(18 95% 58% / 0.7)" : undefined,
+                  }}
+                />
+              );
+            })}
           </div>
         </div>
       )}

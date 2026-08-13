@@ -5,6 +5,7 @@ import { fetchUserTotalTribeHeat, collectiveStreakTier, collectiveTierName, coll
 // Unified fire engine — same identity as every other tribe surface. The old
 // TribeFlame here used feTurbulence, the exact technique the lag fixes banned.
 import TribeFireLite from "@/components/TribeFireLite";
+import TribeEmberSeed from "@/components/TribeEmberSeed";
 import { cn } from "@/lib/utils";
 import { Flame, Sparkles, Users } from "lucide-react";
 
@@ -80,7 +81,7 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
       className={cn(
         "relative rounded-3xl mb-5 overflow-hidden border",
         isCold
-          ? "border-border/50 bg-card/40"
+          ? "border-[hsl(18_60%_35%)]/30 bg-card/40"
           : "border-[hsl(18_95%_58%)]/40 surface-ember shadow-[0_0_50px_hsl(18_95%_58%/0.25)]",
       )}
       style={!isCold ? ({ ["--ember-accent" as string]: accent } as React.CSSProperties) : undefined}
@@ -148,11 +149,7 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
           style={{ width: size, height: size * 1.2 }}
         >
           {isCold ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="h-20 w-20 rounded-full border border-border/60 bg-secondary/30 flex items-center justify-center">
-                <Flame size={30} className="text-muted-foreground/40" strokeWidth={1.6} />
-              </div>
-            </div>
+            <TribeEmberSeed size={size} />
           ) : (
             <TribeFireLite
               tier={tier}
@@ -169,7 +166,7 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
             className="font-display font-black text-6xl tabular-nums leading-none"
             style={
               isCold
-                ? { color: "hsl(var(--muted-foreground))" }
+                ? { color: "hsl(24 45% 62%)", textShadow: "0 0 24px hsl(18 90% 50% / 0.25)" }
                 : {
                     color: accent,
                     textShadow: `0 0 32px ${accent.replace(")", " / 0.6)")}`,
@@ -186,7 +183,7 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
           className="font-display font-black text-2xl mt-2 uppercase tracking-wider"
           style={
             isCold
-              ? { color: "hsl(var(--muted-foreground))" }
+              ? { color: "hsl(20 55% 55%)", textShadow: "0 0 14px hsl(18 90% 50% / 0.3)" }
               : { color: accent, textShadow: `0 0 18px ${accent.replace(")", " / 0.4)")}` }
           }
         >

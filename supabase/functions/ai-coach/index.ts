@@ -161,6 +161,7 @@ Athlete file:
 - Dietary: ${(athlete?.dietary ?? []).join(", ") || "none"}
 - No-go protocols (hard filter, never suggest): ${(athlete?.no_go_protocols ?? []).join(", ") || "none"}
 - Preferred session length: ${athlete?.preferred_session_length_min ?? 45} min
+- Rhythm: wake ${athlete?.wake_time ?? "?"} · sleep ${athlete?.sleep_time ?? "?"} · training days ${(athlete?.training_days_pref ?? []).join("/") || "flexible"}${Array.isArray(athlete?.busy_blocks) && athlete.busy_blocks.length ? `\n- Busy blocks: ${athlete.busy_blocks.map((b: any) => `${b.label ?? b.day ?? ""} ${b.start ?? ""}-${b.end ?? ""}`.trim()).filter(Boolean).join("; ").slice(0, 160)}` : ""}
 - Tier: ${tier} · Streak ${streak}d (longest ${longest})
 
 Recent activity:
@@ -245,6 +246,7 @@ Deno.serve(async (req) => {
       progression,
       nightSignals,
       checkinsRes, briefingRes, athleteRes, programRes, briefRes, reflectionsRes, goalsRes,
+      snapshotRes, lessonsRes, habitsRes, journalRes,
     ] = await Promise.all([
       supabase
         .from("profiles")
@@ -282,16 +284,45 @@ Deno.serve(async (req) => {
       supabase.from("coach_daily_briefs").select("payload").eq("user_id", userId).eq("brief_date", todayDate).maybeSingle(),
       supabase
         .from("coach_reflections")
-        .select("rpe_1to10, energy_1to5, sleep_quality_1to5, mood_1to5, friction, reflection_date")
+        .select("rpe_1to10, energy_1to5, sleep_quality_1to5, mood_1to5, win, friction, reflection_date")
         .eq("user_id", userId)
         .order("reflection_date", { ascending: false })
-        .limit(3),
+        .limit(7),
       supabase
         .from("coach_goals")
         .select("title, metric, unit, baseline_value, current_value, target_value, deadline")
         .eq("user_id", userId)
         .eq("status", "active")
         .limit(5),
+      // Whealth OS: the nightly-computed index — how the coach "knows
+      // everything" in ~120 tokens.
+      supabase
+        .from("coach_performance_snapshots")
+        .select("snapshot_date, performance_score, components")
+        .eq("user_id", userId)
+        .order("snapshot_date", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      // What they've STUDIED (reference, never re-teach).
+      supabase
+        .from("vault_lesson_progress")
+        .select("quiz_score, vault_articles(title, category_id)")
+        .eq("user_id", userId)
+        .limit(60),
+      // Per-habit maturity (streaks/levels).
+      supabase
+        .from("user_habits")
+        .select("protocol_id, current_streak, best_streak, level")
+        .eq("user_id", userId)
+        .is("archived_at", null),
+      // Recent journal lines — the member's own words.
+      supabase
+        .from("daily_checkins")
+        .select("checked_in_at, journal_entry, verified_at")
+        .eq("user_id", userId)
+        .gte("checked_in_at", new Date(Date.now() - 30 * 86400_000).toISOString())
+        .order("checked_in_at", { ascending: false })
+        .limit(30),
     ]);
 
     const profile = profileRes.data;
@@ -371,6 +402,62 @@ Deno.serve(async (req) => {
       ? `\n\nWHAT YOU KNOW ABOUT THIS ATHLETE (long-term memory from past conversations — weave in naturally when relevant, never recite as a list, never say "according to my memory"):\n${memoryFacts.map((f) => `- ${f}`).join("\n")}`
       : "";
 
+    // ── Whealth OS blocks — the full-data awareness layer ──────────────────
+    const snap: any = snapshotRes?.data ?? null;
+    const snapComp = snap?.components ?? {};
+    let whealthBlock = "";
+    if (snap && snapComp?.pillars) {
+      const p = snapComp.pillars as Record<string, number | null>;
+      const pillarLine = ["sleep", "recovery", "movement", "nutrition", "mind", "inner"]
+        .map((k) => `${k} ${p[k] == null ? "–" : p[k]}`)
+        .join(" · ");
+      const patternLines = Array.isArray(snapComp.patterns)
+        ? snapComp.patterns.slice(0, 3).map((x: any) =>
+            `- ${x.metric}: ${x.avgA}${x.unit} ${x.aLabel} vs ${x.avgB}${x.unit} ${x.bLabel} (n=${x.nA}/${x.nB})`)
+        : [];
+      whealthBlock = `\n\nWHEALTH INDEX (computed nightly from ALL their data, as of ${snap.snapshot_date}): overall ${snap.performance_score}/100 — ${pillarLine}.` +
+        (snapComp.focus ? `\nCurrent 7-day focus: ${snapComp.focus}` : "") +
+        (patternLines.length ? `\nTheir own measured patterns:\n${patternLines.join("\n")}` : "") +
+        `\nUse the weakest pillar and these patterns to aim your coaching; cite a number only when it sharpens the point.`;
+    }
+
+    const lessons = (lessonsRes?.data ?? []) as Array<{ quiz_score: number | null; vault_articles: { title: string; category_id: string } | null }>;
+    let studiedBlock = "";
+    if (lessons.length) {
+      const byCat = new Map<string, number>();
+      for (const l of lessons) {
+        const cat = l.vault_articles?.category_id ?? "other";
+        byCat.set(cat, (byCat.get(cat) ?? 0) + 1);
+      }
+      const weak = lessons
+        .filter((l) => l.quiz_score != null && l.quiz_score < 67 && l.vault_articles?.title)
+        .slice(0, 2)
+        .map((l) => l.vault_articles!.title);
+      studiedBlock = `\n\nSTUDIED IN THE VAULT (${lessons.length} lessons: ${[...byCat.entries()].map(([c, n]) => `${c} ${n}`).join(", ")}) — build on what they know, never re-teach it.` +
+        (weak.length ? ` Shaky on: ${weak.join("; ")} — reinforce when relevant.` : "");
+    }
+
+    const habitRows = (habitsRes?.data ?? []) as Array<{ protocol_id: string; current_streak: number | null; best_streak: number | null; level: number | null }>;
+    const habitsBlock = habitRows.length
+      ? `\n\nHABIT TRACK (their chosen protocols): ${habitRows
+          .map((h) => `${h.protocol_id} ${h.current_streak ?? 0}d (best ${h.best_streak ?? 0}, Lv${h.level ?? 1})`)
+          .join(" · ")}`
+      : "";
+
+    const journalRows = (journalRes?.data ?? []) as Array<{ checked_in_at: string; journal_entry: string | null; verified_at: string | null }>;
+    const journalLines = journalRows
+      .filter((j) => j.journal_entry && j.journal_entry.trim().length > 0)
+      .slice(0, 3)
+      .map((j) => `- ${j.checked_in_at.slice(5, 10)}: "${j.journal_entry!.trim().slice(0, 120)}"`);
+    const verifiedDays = journalRows.filter((j) => j.verified_at != null).length;
+    const journalBlock =
+      (journalLines.length
+        ? `\n\nTHEIR OWN JOURNAL LINES (private — mirror their language, never quote back verbatim):\n${journalLines.join("\n")}`
+        : "") +
+      (journalRows.length
+        ? `\nDiscipline verification: ${verifiedDays} of last ${journalRows.length} check-in days HealthKit-verified.`
+        : "");
+
     const systemPrompt = buildSystemPrompt(
       profile,
       athleteRes.data ?? null,
@@ -384,7 +471,7 @@ Deno.serve(async (req) => {
       moodToday,
       latestUserMessage,
       situationBlock,
-    ) + memoryBlock + workoutLogBlock + (faqContext
+    ) + memoryBlock + whealthBlock + studiedBlock + habitsBlock + journalBlock + workoutLogBlock + (faqContext
       ? `\n\nThe user just read the Playbook answer to: "${faqContext.question}". Do NOT repeat that answer. Go deeper, address their follow-up directly, or apply it to their specific context.`
       : "");
 

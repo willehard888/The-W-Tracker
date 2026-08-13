@@ -107,6 +107,26 @@ Deno.serve(async (req) => {
     const nightSignals = await gatherNightSignals(sb, uid).catch(() => ({ hasData: false }));
     const causalBlock = buildCausalBlock(nightSignals as any);
 
+    // Whealth Index snapshot — the morning brief cites the real computed
+    // state, not vibes. Fail-open.
+    let whealthBlock = "";
+    try {
+      const { data: snap } = await sb
+        .from("coach_performance_snapshots")
+        .select("snapshot_date, performance_score, components")
+        .eq("user_id", uid)
+        .order("snapshot_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const comp: any = snap?.components ?? null;
+      if (snap && comp?.pillars) {
+        const pillarLine = ["sleep", "recovery", "movement", "nutrition", "mind", "inner"]
+          .map((k) => `${k} ${comp.pillars[k] == null ? "–" : comp.pillars[k]}`)
+          .join(" · ");
+        whealthBlock = `\nWhealth Index (nightly, ${snap.snapshot_date}): overall ${snap.performance_score}/100 — ${pillarLine}.${comp.focus ? ` 7-day focus: ${comp.focus}` : ""}\n`;
+      }
+    } catch { /* optional */ }
+
     const systemPrompt = `You are W Coach — the user's personal performance trainer inside the W app. You speak DIRECTLY to them, like a world-class private coach who knows their week, their body, and their goal.
 
 ${tone}
@@ -122,7 +142,7 @@ Athlete:
 
 Today's prescribed session: ${sessionLine}
 Recent: avg sleep ${avgSleep ?? "?"}h (last night ${lastSleep ?? "?"}h), ${workouts7}/7 workouts.
-${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}
+${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}${whealthBlock}
 ${INNER_WORK_BLOCK}
 
 Write the daily brief — 2-3 sentences, second person, signed off as "— W Coach".

@@ -85,6 +85,16 @@ export interface PillarScores {
   inner: number | null;
 }
 
+/** One sub-signal inside a pillar — the drill-down unit. null = no data yet. */
+export interface PillarPart {
+  key: string;
+  label: string;
+  score: number | null;
+  weight: number;
+}
+
+export type WhealthBreakdown = Record<keyof PillarScores, PillarPart[]>;
+
 export interface WhealthPattern {
   key: string;
   /** Human framing of the two groups, e.g. "nights under 7h" vs "7h+ nights". */
@@ -134,8 +144,8 @@ const ramp = (v: number, zero: number, full: number): number =>
  *  and treating that as "slept 0h" poisoned the average (real prod case). */
 const hasSleepData = (n: NightRow): boolean => (n.sleepTotalMin ?? 0) >= 60;
 
-/** Sleep: duration in the 7.5-9h band + stage quality + bedtime consistency. */
-export function scoreSleep(checkins: CheckinDay[], nights: NightRow[]): number | null {
+/** Sleep sub-signals: duration in the 7.5-9h band + stage quality + bedtime consistency. */
+export function sleepParts(checkins: CheckinDay[], nights: NightRow[]): PillarPart[] {
   // Duration: prefer HealthKit totals, fall back to self-reported.
   const hkHours = nights.filter(hasSleepData).map((n) => n.sleepTotalMin! / 60);
   const selfHours = checkins.map((c) => c.sleepHours).filter((v): v is number => v != null);
@@ -168,15 +178,19 @@ export function scoreSleep(checkins: CheckinDay[], nights: NightRow[]): number |
     consistencyScore = round(ramp(sd, 120, 30) * 100);
   }
 
-  return composite([
-    { score: durationScore, weight: 50 },
-    { score: stageScore, weight: 25 },
-    { score: consistencyScore, weight: 25 },
-  ]);
+  return [
+    { key: "duration", label: "Sleep duration", score: durationScore, weight: 50 },
+    { key: "stages", label: "Deep + REM share", score: stageScore, weight: 25 },
+    { key: "consistency", label: "Bedtime consistency", score: consistencyScore, weight: 25 },
+  ];
 }
 
-/** Recovery: RHR vs personal baseline, HRV presence/trend, rest-day compliance. */
-export function scoreRecovery(checkins: CheckinDay[], nights: NightRow[]): number | null {
+export function scoreSleep(checkins: CheckinDay[], nights: NightRow[]): number | null {
+  return composite(sleepParts(checkins, nights));
+}
+
+/** Recovery sub-signals: RHR vs personal baseline, HRV trend, rest-day compliance. */
+export function recoveryParts(checkins: CheckinDay[], nights: NightRow[]): PillarPart[] {
   const rhrs = nights.map((n) => n.restingHr).filter((v): v is number => v != null);
   let rhrScore: number | null = null;
   if (rhrs.length >= 7) {
@@ -204,19 +218,23 @@ export function scoreRecovery(checkins: CheckinDay[], nights: NightRow[]): numbe
     restScore = round(ramp(restDays / weeks, 0, 1.5) * 100);
   }
 
-  return composite([
-    { score: rhrScore, weight: 40 },
-    { score: hrvScore, weight: 30 },
-    { score: restScore, weight: 30 },
-  ]);
+  return [
+    { key: "rhr", label: "Resting HR vs baseline", score: rhrScore, weight: 40 },
+    { key: "hrv", label: "HRV trend", score: hrvScore, weight: 30 },
+    { key: "rest", label: "Rest-day compliance", score: restScore, weight: 30 },
+  ];
 }
 
-/** Movement: training frequency, daily steps, strength progression. */
-export function scoreMovement(
+export function scoreRecovery(checkins: CheckinDay[], nights: NightRow[]): number | null {
+  return composite(recoveryParts(checkins, nights));
+}
+
+/** Movement sub-signals: training frequency, daily steps, strength progression. */
+export function movementParts(
   checkins: CheckinDay[],
   days: DayRow[],
   lifts: { prs: number; stalls: number; count: number },
-): number | null {
+): PillarPart[] {
   let freqScore: number | null = null;
   if (checkins.length >= 7) {
     const perWeek = (checkins.filter((c) => c.workout).length / checkins.length) * 7;
@@ -232,16 +250,30 @@ export function scoreMovement(
     progressionScore = total === 0 ? 60 : round((lifts.prs / total) * 100);
   }
 
-  return composite([
-    { score: freqScore, weight: 40 },
-    { score: stepScore, weight: 30 },
-    { score: progressionScore, weight: 30 },
-  ]);
+  return [
+    { key: "frequency", label: "Training frequency", score: freqScore, weight: 40 },
+    { key: "steps", label: "Daily steps", score: stepScore, weight: 30 },
+    { key: "progression", label: "Strength progression", score: progressionScore, weight: 30 },
+  ];
 }
 
-/** Nutrition: protein + whole-food hit-rates, hydration. */
-export function scoreNutrition(checkins: CheckinDay[]): number | null {
-  if (checkins.length < 5) return null;
+export function scoreMovement(
+  checkins: CheckinDay[],
+  days: DayRow[],
+  lifts: { prs: number; stalls: number; count: number },
+): number | null {
+  return composite(movementParts(checkins, days, lifts));
+}
+
+/** Nutrition sub-signals: protein + whole-food hit-rates, hydration. */
+export function nutritionParts(checkins: CheckinDay[]): PillarPart[] {
+  if (checkins.length < 5) {
+    return [
+      { key: "protein", label: "Protein hit-rate", score: null, weight: 40 },
+      { key: "food", label: "Whole-food hit-rate", score: null, weight: 30 },
+      { key: "hydration", label: "Hydration", score: null, weight: 30 },
+    ];
+  }
   const rate = (pick: (c: CheckinDay) => boolean) =>
     checkins.filter(pick).length / checkins.length;
   const proteinScore = round(ramp(rate((c) => c.protein), 0.1, 0.85) * 100);
@@ -249,19 +281,23 @@ export function scoreNutrition(checkins: CheckinDay[]): number | null {
   const hyds = checkins.map((c) => c.hydration).filter((v): v is number => v != null && v > 0);
   const hydScore = hyds.length >= 5 ? round(ramp(avg(hyds)!, 1, 2.8) * 100) : null;
 
-  return composite([
-    { score: proteinScore, weight: 40 },
-    { score: foodScore, weight: 30 },
-    { score: hydScore, weight: 30 },
-  ]);
+  return [
+    { key: "protein", label: "Protein hit-rate", score: proteinScore, weight: 40 },
+    { key: "food", label: "Whole-food hit-rate", score: foodScore, weight: 30 },
+    { key: "hydration", label: "Hydration", score: hydScore, weight: 30 },
+  ];
 }
 
-/** Mind: meditation practice, mindful minutes, mood & energy levels. */
-export function scoreMind(
+export function scoreNutrition(checkins: CheckinDay[]): number | null {
+  return composite(nutritionParts(checkins));
+}
+
+/** Mind sub-signals: meditation practice, mindful minutes, mood & energy levels. */
+export function mindParts(
   checkins: CheckinDay[],
   days: DayRow[],
   reflections: ReflectionRow[],
-): number | null {
+): PillarPart[] {
   let medScore: number | null = null;
   if (checkins.length >= 7) {
     const perWeek = (checkins.filter((c) => c.meditation).length / checkins.length) * 7;
@@ -276,16 +312,24 @@ export function scoreMind(
   const energies = reflections.map((r) => r.energy).filter((v): v is number => v != null);
   const energyScore = energies.length >= 5 ? round(ramp(avg(energies)!, 1.5, 4.2) * 100) : null;
 
-  return composite([
-    { score: medScore, weight: 30 },
-    { score: mindfulScore, weight: 20 },
-    { score: moodScore, weight: 25 },
-    { score: energyScore, weight: 25 },
-  ]);
+  return [
+    { key: "meditation", label: "Meditation days", score: medScore, weight: 30 },
+    { key: "mindful", label: "Mindful minutes", score: mindfulScore, weight: 20 },
+    { key: "mood", label: "Mood level", score: moodScore, weight: 25 },
+    { key: "energy", label: "Energy level", score: energyScore, weight: 25 },
+  ];
 }
 
-/** Inner: learning (Vault), self-reflection depth, identity, connection. */
-export function scoreInner(inputs: {
+export function scoreMind(
+  checkins: CheckinDay[],
+  days: DayRow[],
+  reflections: ReflectionRow[],
+): number | null {
+  return composite(mindParts(checkins, days, reflections));
+}
+
+/** Inner sub-signals: learning (Vault), self-reflection depth, identity, connection. */
+export function innerParts(inputs: {
   lessonsCompleted: number;
   lessonsTotal: number;
   avgQuizScore: number | null;
@@ -294,7 +338,7 @@ export function scoreInner(inputs: {
   tribeCount: number;
   friendCount: number;
   iAmSet: boolean;
-}): number | null {
+}): PillarPart[] {
   const { lessonsCompleted, lessonsTotal, avgQuizScore, reflections, habitStreaks, tribeCount, friendCount, iAmSet } = inputs;
 
   const lessonScore = lessonsTotal > 0
@@ -316,14 +360,18 @@ export function scoreInner(inputs: {
   const identityScore = iAmSet ? 100 : 0;
   const quizBonus = avgQuizScore != null ? round(avgQuizScore) : null;
 
-  return composite([
-    { score: lessonScore, weight: 25 },
-    { score: quizBonus, weight: 10 },
-    { score: journalScore, weight: 20 },
-    { score: habitScore, weight: 15 },
-    { score: connectionScore, weight: 20 },
-    { score: identityScore, weight: 10 },
-  ]);
+  return [
+    { key: "lessons", label: "Lessons studied", score: lessonScore, weight: 25 },
+    { key: "quiz", label: "Lesson mastery", score: quizBonus, weight: 10 },
+    { key: "journaling", label: "Reflection depth", score: journalScore, weight: 20 },
+    { key: "habits", label: "Habit maturity", score: habitScore, weight: 15 },
+    { key: "connection", label: "Connection", score: connectionScore, weight: 20 },
+    { key: "identity", label: "Identity (\"I am\") set", score: identityScore, weight: 10 },
+  ];
+}
+
+export function scoreInner(inputs: Parameters<typeof innerParts>[0]): number | null {
+  return composite(innerParts(inputs));
 }
 
 // ── Pattern detection (paired comparisons, honest n) ───────────────────────
@@ -453,16 +501,23 @@ export const PILLAR_WEIGHTS: Record<keyof PillarScores, number> = {
   inner: 14,
 };
 
-export function computeWhealthIndex(inputs: WhealthInputs): WhealthResult {
-  const pillars: PillarScores = {
-    sleep: scoreSleep(inputs.checkins, inputs.nights),
-    recovery: scoreRecovery(inputs.checkins, inputs.nights),
-    movement: scoreMovement(inputs.checkins, inputs.days, {
+export interface WhealthResultDetailed extends WhealthResult {
+  /** Per-pillar sub-signal decomposition — the drill-down data. */
+  breakdown: WhealthBreakdown;
+}
+
+/** Full computation incl. per-pillar sub-signal breakdown (drill-down UI,
+ *  snapshot storage). computeWhealthIndex remains the thin summary wrapper. */
+export function computeWhealthIndexDetailed(inputs: WhealthInputs): WhealthResultDetailed {
+  const breakdown: WhealthBreakdown = {
+    sleep: sleepParts(inputs.checkins, inputs.nights),
+    recovery: recoveryParts(inputs.checkins, inputs.nights),
+    movement: movementParts(inputs.checkins, inputs.days, {
       prs: inputs.liftPrs, stalls: inputs.liftStalls, count: inputs.liftCount,
     }),
-    nutrition: scoreNutrition(inputs.checkins),
-    mind: scoreMind(inputs.checkins, inputs.days, inputs.reflections),
-    inner: scoreInner({
+    nutrition: nutritionParts(inputs.checkins),
+    mind: mindParts(inputs.checkins, inputs.days, inputs.reflections),
+    inner: innerParts({
       lessonsCompleted: inputs.lessonsCompleted,
       lessonsTotal: inputs.lessonsTotal,
       avgQuizScore: inputs.avgQuizScore,
@@ -472,6 +527,15 @@ export function computeWhealthIndex(inputs: WhealthInputs): WhealthResult {
       friendCount: inputs.friendCount,
       iAmSet: inputs.iAmSet,
     }),
+  };
+
+  const pillars: PillarScores = {
+    sleep: composite(breakdown.sleep),
+    recovery: composite(breakdown.recovery),
+    movement: composite(breakdown.movement),
+    nutrition: composite(breakdown.nutrition),
+    mind: composite(breakdown.mind),
+    inner: composite(breakdown.inner),
   };
 
   const overall = composite(
@@ -485,5 +549,11 @@ export function computeWhealthIndex(inputs: WhealthInputs): WhealthResult {
     overall,
     pillars,
     patterns: detectPatterns(inputs.checkins, inputs.reflections, inputs.nights),
+    breakdown,
   };
+}
+
+export function computeWhealthIndex(inputs: WhealthInputs): WhealthResult {
+  const { overall, pillars, patterns } = computeWhealthIndexDetailed(inputs);
+  return { overall, pillars, patterns };
 }

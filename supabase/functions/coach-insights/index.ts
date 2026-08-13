@@ -11,7 +11,7 @@
 // Cron-only (service role guard, same pattern as weekly-briefing-generate).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import {
-  computeWhealthIndex,
+  computeWhealthIndexDetailed,
   type WhealthInputs,
   type CheckinDay,
   type NightRow,
@@ -195,7 +195,7 @@ Deno.serve(async (req) => {
           iAmSet: !!(athleteR.data?.i_am && String(athleteR.data.i_am).trim().length > 0),
         };
 
-        const result = computeWhealthIndex(inputs);
+        const result = computeWhealthIndexDetailed(inputs);
 
         // LLM phrasing — computed facts in, coach voice out. Skipped when
         // there's nothing to phrase or no API key (snapshot still stored).
@@ -263,6 +263,7 @@ Deno.serve(async (req) => {
               engine: "whealth-os",
               pillars: result.pillars,
               patterns: result.patterns,
+              breakdown: result.breakdown,
               observations,
               focus,
             },

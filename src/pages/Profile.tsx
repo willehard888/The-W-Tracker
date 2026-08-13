@@ -1,5 +1,5 @@
 
-import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy, CreditCard, Medal, Moon, Trash2, MoreVertical, Settings as SettingsIcon } from "lucide-react";
+import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy, CreditCard, Medal, Moon, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { isNativePlatform } from "@/lib/platform";
 import StatCard from "@/components/StatCard";
@@ -37,6 +37,7 @@ import TierLadder from "@/components/TierLadder";
 import YourBlueprintCard from "@/components/coach/YourBlueprintCard";
 import CoachLine from "@/components/coach/CoachLine";
 import { useCoachObservation } from "@/hooks/use-coach-observation";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 import StatusNameplate from "@/components/StatusNameplate";
@@ -50,6 +51,7 @@ import { format } from "date-fns";
 
 const Profile = () => {
   const { profile, signOut, isElite, isApexSubscriber } = useAuth();
+  const isAdmin = useIsAdmin(profile?.user_id);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [previewBadge, setPreviewBadge] = useState<any>(null);
@@ -688,6 +690,16 @@ const Profile = () => {
               >
                 <CreditCard size={14} />
                 Manage Subscription
+              </Button>
+            </div>
+          )}
+
+          {/* Founder Command Center — admins only (RPCs re-enforce server-side) */}
+          {isAdmin && (
+            <div className="flex gap-2 animate-reveal animate-reveal-delay-1">
+              <Button variant="gold-outline" size="sm" className="flex-1" onClick={() => navigate("/admin/metrics")}>
+                <BarChart3 size={14} />
+                Command Center
               </Button>
             </div>
           )}

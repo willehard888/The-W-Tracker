@@ -66,6 +66,7 @@ const Exercises = lazy(() => import("./pages/Exercises"));
 const WeeklyBriefing = lazy(() => import("./pages/WeeklyBriefing"));
 const AdminModeration = lazy(() => import("./pages/AdminModeration"));
 const AdminLegendInvites = lazy(() => import("./pages/AdminLegendInvites"));
+const AdminMetrics = lazy(() => import("./pages/AdminMetrics"));
 const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 
 const queryClient = new QueryClient({
@@ -263,6 +264,7 @@ const AppRoutes = () => {
           <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
           <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
           <Route path="/admin/legend-invites" element={<ProtectedRoute><AdminLegendInvites /></ProtectedRoute>} />
+          <Route path="/admin/metrics" element={<ProtectedRoute><AdminMetrics /></ProtectedRoute>} />
           <Route path="/button-gallery" element={<ProtectedRoute><ButtonGallery /></ProtectedRoute>} />
           <Route path="/feed" element={<Navigate to="/squad" replace />} />
           <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { fetchUserTotalTribeHeat, collectiveStreakTier, collectiveTierName, collectiveAccent } from "@/lib/tribe-streak";
-// Premium signature flame — organic SVG turbulence + bloom + embers, one
-// animated <feTurbulence> (compositor-friendly, no RAF/particle loop).
-import TribeFlame from "@/components/tribe/TribeFlame";
+import { fetchUserTotalTribeHeat, collectiveStreakTier, collectiveTierName, collectiveAccent, collectivePalette } from "@/lib/tribe-streak";
+// Unified fire engine — same identity as every other tribe surface. The old
+// TribeFlame here used feTurbulence, the exact technique the lag fixes banned.
+import TribeFireLite from "@/components/TribeFireLite";
 import { cn } from "@/lib/utils";
 import { Flame, Sparkles, Users } from "lucide-react";
 
@@ -154,10 +154,11 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
               </div>
             </div>
           ) : (
-            <TribeFlame
-              size={size}
-              intensity={Math.min(1, 0.55 + tier * 0.09)}
-              hue={tier >= 6 ? 190 : tier >= 4 ? 14 : tier >= 2 ? 18 : 28}
+            <TribeFireLite
+              tier={tier}
+              palette={collectivePalette(total)}
+              variant="hero"
+              size={size * 0.78}
             />
           )}
         </div>

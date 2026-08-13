@@ -102,7 +102,10 @@ const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard"
   return (
     <div
       className={cn("relative flex items-end justify-center", className)}
-      style={{ width: size, height: flameHeightPx, contain: "layout paint", willChange: "transform" }}
+      // contain: layout only — paint containment clipped the halo bloom /
+      // ground cast into a hard rectangle at the container bounds. The light
+      // layers are transform/opacity-animated, so compositing stays cheap.
+      style={{ width: size, height: flameHeightPx, contain: "layout", willChange: "transform" }}
       aria-hidden
     >
       {/* Chiaroscuro contact shadow — grounds the flame (Blazing+, non-mini) */}

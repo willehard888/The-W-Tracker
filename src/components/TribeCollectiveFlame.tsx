@@ -10,6 +10,7 @@ import {
   collectiveStreakTier,
   collectiveTierName,
   collectiveAccent,
+  collectivePalette,
 } from "@/lib/tribe-streak";
 
 interface TribeCollectiveFlameProps {
@@ -87,6 +88,7 @@ const TribeCollectiveFlame = ({
        tier === 0 ? 68  : 56);
 
   const accent = collectiveAccent(total);
+  const palette = collectivePalette(total);
   const tierName = collectiveTierName(total);
   const avg = memberCount && memberCount > 0
     ? Math.round((total / memberCount) * 10) / 10
@@ -215,7 +217,7 @@ const TribeCollectiveFlame = ({
                     : undefined
                 }
               >
-                <TribeFireLite tier={tier} accent={accent} size={size} />
+                <TribeFireLite tier={tier} palette={palette} variant="hero" size={size} />
               </div>
             )}
             {/* Realtime ember-rise + "+N" overlay — extends well beyond flame container */}
@@ -293,7 +295,7 @@ const TribeCollectiveFlame = ({
             {isCold ? (
               <div className="text-4xl opacity-40 leading-none">🕯️</div>
             ) : (
-              <TribeFireLite tier={tier} accent={accent} size={size} />
+              <TribeFireLite tier={tier} palette={palette} size={size} />
             )}
           </div>
 

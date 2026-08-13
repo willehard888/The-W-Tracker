@@ -2181,7 +2181,9 @@
   [style*="aurora-shift"],
   [style*="flame-rim-pulse"],
   [style*="flame-plasma"],
-  [style*="flame-lightning"] {
+  [style*="flame-lightning"],
+  [style*="tfl-"],
+  [style*="tribeflame-"] {
     animation: none !important;
   }
 }
@@ -2528,6 +2530,47 @@
   0%   { opacity: 0; transform: translateY(0) scale(0.7); }
   18%  { opacity: 1; }
   100% { opacity: 0; transform: translate(var(--ember-drift, 6px), -64px) scale(1.15); }
+}
+
+/* ============================================================
+   TribeFireLite v2 — shared keyframes (were per-instance <style>
+   blocks; a Tribes page shipped ~15 identical copies into the DOM).
+   All transform/opacity only — safe at 15+ concurrent instances.
+   ============================================================ */
+@keyframes tfl-sway-back  { 0%, 100% { transform: rotate(-0.8deg) scaleY(0.99); } 50% { transform: rotate(0.8deg)  scaleY(1.01); } }
+@keyframes tfl-sway-mid   { 0%, 100% { transform: rotate(1deg)    scaleY(1);    } 50% { transform: rotate(-1deg)   scaleY(0.985); } }
+@keyframes tfl-sway-front { 0%, 100% { transform: rotate(-1.2deg) scaleY(1.01); } 50% { transform: rotate(1.2deg)  scaleY(0.985); } }
+/* Living flicker — asymmetric scale/skew (v1 was opacity 1→0.92, a still image) */
+@keyframes tfl-flicker-v2 {
+  0%   { transform: scaleY(1)    scaleX(1)    skewX(0deg);    opacity: 0.94; }
+  18%  { transform: scaleY(1.1)  scaleX(0.92) skewX(-2.4deg); opacity: 1; }
+  42%  { transform: scaleY(1.04) scaleX(0.97) skewX(2deg);    opacity: 0.97; }
+  68%  { transform: scaleY(1.14) scaleX(0.9)  skewX(-1.6deg); opacity: 1; }
+  86%  { transform: scaleY(1.02) scaleX(0.98) skewX(1.2deg);  opacity: 0.95; }
+  100% { transform: scaleY(1)    scaleX(1)    skewX(0deg);    opacity: 0.94; }
+}
+/* White-hot inner core — faster, never in lockstep with the body */
+@keyframes tfl-core-lick {
+  0%   { transform: scaleY(0.96) scaleX(1)    skewX(0deg);  opacity: 0.8; }
+  30%  { transform: scaleY(1.18) scaleX(0.86) skewX(-3deg); opacity: 1; }
+  55%  { transform: scaleY(1.02) scaleX(0.96) skewX(2deg);  opacity: 0.88; }
+  78%  { transform: scaleY(1.22) scaleX(0.84) skewX(-2deg); opacity: 1; }
+  100% { transform: scaleY(0.96) scaleX(1)    skewX(0deg);  opacity: 0.8; }
+}
+/* Secondary fork tongue — whips sideways at its own rhythm */
+@keyframes tfl-fork-lick {
+  0%   { transform: rotate(-6deg) scaleY(0.9);  opacity: 0.55; }
+  40%  { transform: rotate(4deg)  scaleY(1.15); opacity: 0.95; }
+  70%  { transform: rotate(-3deg) scaleY(1.02); opacity: 0.75; }
+  100% { transform: rotate(-6deg) scaleY(0.9);  opacity: 0.55; }
+}
+/* Ember rise — per-ember --tfl-ember-drift set inline (v1 read the var but
+   never set it, so every ember flew the same straight path in formation) */
+@keyframes tfl-ember-rise {
+  0%   { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  15%  { opacity: 0.95; }
+  70%  { opacity: 0.7; }
+  100% { transform: translate(var(--tfl-ember-drift, -4px), -90px) scale(0.2); opacity: 0; }
 }
 
 @keyframes level-up-flash {

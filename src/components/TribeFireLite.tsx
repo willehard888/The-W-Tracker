@@ -1,196 +1,303 @@
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import {
+  tierPalette,
+  tierFlameSpeed,
+  withAlpha,
+  type FlamePalette,
+} from "@/lib/tribe-streak";
 
 /**
- * TribeFireLite — premium tribe-fire visual that uses ZERO JavaScript at
- * runtime. The original StylizedStreakFlame is 2400 lines + a RAF loop
- * + 3 SVG turbulence filters + pointer + device-orientation listeners
- * which dragged the whole app's frame budget on the Tribes page.
+ * TribeFireLite v2 — the single tribe-fire engine, still ZERO JavaScript per
+ * frame. Pure CSS transforms/opacity on 3 SVG silhouettes + light layers
+ * ported from StreakFlameInline (the app's reference flame): halo bloom,
+ * chiaroscuro contact shadow, white-hot core, inner fork, ground cast,
+ * heart bloom, per-tier palette + speed. NO feTurbulence/feDisplacementMap —
+ * that engine cost 30-50% of frame budget on mid-tier iPhones and was
+ * deliberately removed from every tribe surface.
  *
- * Design:
- *  - 3 layered SVG flame silhouettes (back / mid / front)
- *  - Pure CSS keyframe animations for sway / breath / flicker
- *  - 6 subtle ember dots floating up via CSS translateY keyframes
- *  - Soft radial under-glow as a single absolute div
- *  - Tier drives:
- *      • flame height (more dramatic at higher tiers)
- *      • accent color (warm orange → white-hot)
- *      • ember count + speed
- *
- * Cost: 3 paths + 6 circles + 1 gradient — totally GPU-free for the JS
- * thread. No layout thrash, no per-frame re-paint of CSS vars.
+ * Perf ladder via `variant`:
+ *  - "mini"     (strip avatars, battle cards, ≤40px): no blur() layers, ≤3
+ *               embers, no hue-rotate wrapper. Lists render up to ~23 of these.
+ *  - "standard" (list rows, compact panels): + halo bloom, chiaroscuro,
+ *               white-hot core, hue wash at Diamond+.
+ *  - "hero"     (page heroes, 1 per page): + ground cast, molten pool,
+ *               heart bloom, densest embers.
  */
-
 interface Props {
-  /** 0–6 tier from collectiveStreakTier(). Higher = bigger + hotter. */
+  /** Tier -1..6 (collective or personal ladder — caller's choice). */
   tier: number;
-  /** Outer accent color in hsl() string form. */
-  accent: string;
-  /** Container pixel size. The flame fills the container width. */
+  /** Full flame palette. Preferred — falls back to tierPalette(tier). */
+  palette?: FlamePalette;
+  /**
+   * Legacy single-accent fallback (SplashScreen). Only used when `palette`
+   * is absent: tints outer/glow while keeping the warm legacy body.
+   */
+  accent?: string;
   size?: number;
+  variant?: "hero" | "standard" | "mini";
   className?: string;
 }
 
-// Three handpicked silhouettes from the heavy component, kept minimal.
-// All on viewBox 100×140 so we can scale uniformly.
 const FLAME_BACK  = "M50 12 C 58 30, 72 38, 76 56 C 82 76, 78 96, 68 110 C 60 122, 54 132, 50 138 C 46 132, 40 122, 32 110 C 22 96, 18 76, 24 56 C 28 38, 42 30, 50 12 Z";
 const FLAME_MID   = "M50 4 C 56 22, 66 32, 70 50 C 76 70, 72 92, 60 108 C 52 120, 50 130, 50 138 C 50 130, 40 120, 32 108 C 22 92, 24 70, 30 50 C 36 32, 48 22, 50 4 Z";
 const FLAME_FRONT = "M50 -2 C 51 16, 58 28, 60 48 C 62 70, 58 94, 53 112 C 51 124, 50 132, 50 138 C 50 132, 49 124, 47 112 C 42 94, 38 70, 40 48 C 42 28, 49 16, 50 -2 Z";
 
-const TribeFireLite = ({ tier, accent, size = 200, className }: Props) => {
-  // Tier-driven knobs
-  const tierBoost = Math.max(0, Math.min(6, tier)) / 6; // 0..1
-  const innerHot = accent;
-  const innerWarm = accent.replace(/(\d+)%\)/, (_m, l) => `${Math.min(100, parseInt(l) + 12)}%)`);
+const legacyAccentPalette = (accent: string): FlamePalette => ({
+  base:  "hsl(10 76% 36%)",
+  outer: accent,
+  mid:   "hsl(28 86% 54%)",
+  core:  "hsl(54 82% 86%)",
+  glow:  accent,
+  text:  accent,
+});
 
-  // Ember positions — deterministic, decided once per tier
-  const embers = useMemo(() => {
-    const count = 4 + Math.round(tierBoost * 4); // 4..8 embers
-    return Array.from({ length: count }).map((_, i) => ({
-      id: i,
-      // distribute horizontally with slight stagger
-      x: 30 + ((i * 47) % 40) + (i % 2 === 0 ? -8 : 8),
-      // staggered start delay so they don't all rise in sync
-      delay: (i * 0.42) % 3,
-      // duration varies slightly per ember
-      dur: 2.6 + (i % 3) * 0.4,
-      // size varies
-      r: 1.2 + (i % 3) * 0.6,
-    }));
-  }, [tierBoost]);
+const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard", className }: Props) => {
+  const uid = useId();
+  const pal = palette ?? (accent ? legacyAccentPalette(accent) : tierPalette(tier));
+  const t = Math.max(-1, Math.min(6, tier));
+  const tierBoost = Math.max(0, t) / 6; // 0..1
+  const speed = tierFlameSpeed(t);
 
-  const flameHeightPx = size * (0.9 + tierBoost * 0.25);
+  const isMini = variant === "mini";
+  const isHero = variant === "hero";
+  const isWarmPlus  = t >= 1;
+  const isFirePlus  = t >= 2;
+  const isBlazePlus = t >= 3;
+  const isDiamond   = t >= 4;
+  const isLegendary = t >= 5;
+  const isFirestorm = t >= 6;
+
+  const emberCount = isMini ? 3 : isHero ? 8 + Math.round(tierBoost * 2) : 5;
+  const embers = useMemo(
+    () =>
+      Array.from({ length: emberCount }).map((_, i) => ({
+        id: i,
+        x: 30 + ((i * 47) % 40) + (i % 2 === 0 ? -8 : 8),
+        // Deterministic per-index drift so embers never move in formation.
+        drift: ((i * 31) % 29) - 14, // -14..+14 px
+        delay: (i * 0.42) % 3,
+        dur: 2.2 + (i % 4) * 0.45,
+        r: 1.2 + (i % 3) * 0.6,
+      })),
+    [emberCount],
+  );
+
+  // Tier grows the flame; preserveAspectRatio="none" stretches the silhouette
+  // into the taller container instead of letterboxing it (v1 wasted the boost
+  // as empty space above the flame).
+  const flameHeightPx = size * (1.15 + tierBoost * 0.25);
+
+  // Diamond+ hue wash (aurora) / Firestorm plasma cycle — the top-tier "wow".
+  const hueAnim = isMini
+    ? undefined
+    : isFirestorm
+    ? "flame-plasma-hue 4s linear infinite"
+    : isLegendary
+    ? "flame-aurora-hue 6s linear infinite"
+    : isDiamond
+    ? "flame-aurora-hue 10s linear infinite"
+    : undefined;
 
   return (
     <div
       className={cn("relative flex items-end justify-center", className)}
-      style={{
-        width: size,
-        height: flameHeightPx,
-        // Single GPU layer — keeps the page repaint cost minimal
-        contain: "layout paint",
-        willChange: "transform",
-      }}
+      style={{ width: size, height: flameHeightPx, contain: "layout paint", willChange: "transform" }}
       aria-hidden
     >
-      {/* Under-glow — radial gradient pool beneath the fire */}
+      {/* Chiaroscuro contact shadow — grounds the flame (Blazing+, non-mini) */}
+      {isBlazePlus && !isMini && (
+        <span
+          className="absolute left-1/2 pointer-events-none"
+          style={{
+            width: size * 1.6,
+            height: size * 0.22,
+            bottom: -size * 0.05,
+            background: "radial-gradient(ellipse at 50% 50%, hsl(0 0% 0% / 0.42) 0%, hsl(0 0% 0% / 0.18) 45%, transparent 78%)",
+            filter: `blur(${Math.max(3, size * 0.06)}px)`,
+            animation: `flame-chiaroscuro ${(speed * 4.2).toFixed(2)}s ease-in-out infinite`,
+            transform: "translateX(-50%)",
+          }}
+        />
+      )}
+
+      {/* Radiant halo bloom — the flame emits light (Warm+, non-mini) */}
+      {isWarmPlus && !isMini && (
+        <span
+          className="absolute left-1/2 bottom-0 rounded-full pointer-events-none"
+          style={{
+            width: size * 2.2,
+            height: size * 1.6,
+            background: `radial-gradient(ellipse at 50% 72%, ${withAlpha(pal.glow, 0.5)} 0%, ${withAlpha(pal.glow, 0.16)} 42%, transparent 72%)`,
+            mixBlendMode: "screen",
+            transform: "translate(-50%, 8%)",
+            animation: `flame-halo-bloom ${(speed * 3.8).toFixed(2)}s ease-in-out infinite`,
+          }}
+        />
+      )}
+
+      {/* Under-glow — warm pool at the base (all tiers) */}
       <div
         className="absolute inset-x-0 bottom-0 pointer-events-none"
         style={{
           height: size * 0.6,
-          background: `radial-gradient(ellipse 80% 60% at 50% 100%, ${accent.replace(")", " / 0.28)")} 0%, ${accent.replace(")", " / 0.09)")} 38%, transparent 72%)`,
-          filter: "blur(10px)",
+          background: `radial-gradient(ellipse 80% 60% at 50% 100%, ${withAlpha(pal.glow, 0.28)} 0%, ${withAlpha(pal.glow, 0.09)} 38%, transparent 72%)`,
+          ...(isMini ? {} : { filter: "blur(10px)" }),
           opacity: 0.45 + tierBoost * 0.3,
         }}
       />
 
-      {/* SVG flames — 3 layers, CSS-keyframe sway only */}
-      <svg
-        viewBox="0 0 100 140"
-        preserveAspectRatio="xMidYEnd meet"
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          overflow: "visible",
-        }}
+      {/* Volumetric ground cast — light projected onto the floor (hero, Blazing+) */}
+      {isHero && isBlazePlus && (
+        <span
+          className="absolute left-1/2 pointer-events-none"
+          style={{
+            width: size * 2,
+            height: size * 0.34,
+            bottom: -size * 0.1,
+            background: `radial-gradient(ellipse at 50% 50%, ${withAlpha(pal.glow, 0.55)} 0%, transparent 75%)`,
+            filter: "blur(5px)",
+            mixBlendMode: "screen",
+            transform: "translateX(-50%)",
+            animation: `flame-ground-cast ${(speed * 4).toFixed(2)}s ease-in-out infinite`,
+          }}
+        />
+      )}
+
+      {/* Molten floor pool (hero, Blazing+) — ported from the old TribeFlame */}
+      {isHero && isBlazePlus && (
+        <span
+          className="absolute left-1/2 pointer-events-none rounded-full"
+          style={{
+            width: size * 0.9,
+            height: size * 0.12,
+            bottom: -size * 0.02,
+            background: `radial-gradient(ellipse at 50% 50%, ${withAlpha(pal.core, 0.75)} 0%, ${withAlpha(pal.outer, 0.4)} 45%, transparent 80%)`,
+            transform: "translateX(-50%)",
+            animation: "tribeflame-pool 3.6s ease-in-out infinite",
+          }}
+        />
+      )}
+
+      {/* Flame body — 3 palette-driven silhouettes + core + fork */}
+      <div
+        className="absolute inset-0"
+        style={hueAnim ? { animation: hueAnim } : undefined}
       >
-        <defs>
-          {/* Per-flame vertical gradients — deep red base → hot tip */}
-          <linearGradient id="tfl-back" x1="50%" y1="100%" x2="50%" y2="0%">
-            <stop offset="0%"  stopColor="hsl(10 76% 36%)" stopOpacity="0.85" />
-            <stop offset="40%" stopColor={innerHot} stopOpacity="0.78" />
-            <stop offset="80%" stopColor={innerWarm} stopOpacity="0.68" />
-            <stop offset="100%" stopColor="hsl(42 82% 66%)" stopOpacity="0.5" />
-          </linearGradient>
-          <linearGradient id="tfl-mid" x1="50%" y1="100%" x2="50%" y2="0%">
-            <stop offset="0%"  stopColor="hsl(8 80% 40%)" stopOpacity="0.95" />
-            <stop offset="35%" stopColor={innerHot} stopOpacity="0.9" />
-            <stop offset="75%" stopColor="hsl(42 84% 62%)" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="hsl(50 82% 82%)" stopOpacity="0.62" />
-          </linearGradient>
-          <linearGradient id="tfl-front" x1="50%" y1="100%" x2="50%" y2="0%">
-            <stop offset="0%"  stopColor="hsl(10 84% 46%)" stopOpacity="0.96" />
-            <stop offset="30%" stopColor="hsl(28 86% 54%)" stopOpacity="0.96" />
-            <stop offset="65%" stopColor="hsl(46 86% 66%)" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="hsl(54 82% 86%)" stopOpacity="0.7" />
-          </linearGradient>
-          {/* Ember gradient — bright warm core */}
-          <radialGradient id="tfl-ember">
-            <stop offset="0%"  stopColor="hsl(50 100% 80%)" stopOpacity="1" />
-            <stop offset="60%" stopColor="hsl(20 100% 60%)" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="hsl(10 100% 50%)" stopOpacity="0" />
-          </radialGradient>
-        </defs>
+        <svg
+          viewBox="0 0 100 140"
+          preserveAspectRatio="none"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible" }}
+        >
+          <defs>
+            <linearGradient id={`tfl-b-${uid}`} x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%" stopColor={pal.base} stopOpacity="0.85" />
+              <stop offset="40%" stopColor={pal.outer} stopOpacity="0.78" />
+              <stop offset="80%" stopColor={pal.mid} stopOpacity="0.68" />
+              <stop offset="100%" stopColor={pal.core} stopOpacity="0.5" />
+            </linearGradient>
+            <linearGradient id={`tfl-m-${uid}`} x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%" stopColor={pal.base} stopOpacity="0.95" />
+              <stop offset="35%" stopColor={pal.outer} stopOpacity="0.9" />
+              <stop offset="75%" stopColor={pal.mid} stopOpacity="0.85" />
+              <stop offset="100%" stopColor={pal.core} stopOpacity="0.62" />
+            </linearGradient>
+            <linearGradient id={`tfl-f-${uid}`} x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%" stopColor={pal.outer} stopOpacity="0.96" />
+              <stop offset="30%" stopColor={pal.mid} stopOpacity="0.96" />
+              <stop offset="65%" stopColor={pal.core} stopOpacity="0.9" />
+              <stop offset="100%" stopColor="hsl(0 0% 100%)" stopOpacity="0.72" />
+            </linearGradient>
+            <radialGradient id={`tfl-e-${uid}`}>
+              <stop offset="0%" stopColor={pal.core} stopOpacity="1" />
+              <stop offset="60%" stopColor={pal.glow} stopOpacity="0.8" />
+              <stop offset="100%" stopColor={pal.outer} stopOpacity="0" />
+            </radialGradient>
+          </defs>
 
-        {/* BACK — slow, wide sway */}
-        <g style={{ animation: "tfl-sway-back 5.4s ease-in-out infinite", transformOrigin: "50% 100%" }}>
-          <path d={FLAME_BACK} fill="url(#tfl-back)" />
-        </g>
+          <g style={{ animation: `tfl-sway-back ${(speed * 2.9).toFixed(2)}s ease-in-out infinite`, transformOrigin: "50% 100%" }}>
+            <path d={FLAME_BACK} fill={`url(#tfl-b-${uid})`} />
+          </g>
+          <g style={{ animation: `tfl-sway-mid ${(speed * 2.3).toFixed(2)}s ease-in-out infinite`, transformOrigin: "50% 100%" }}>
+            <path d={FLAME_MID} fill={`url(#tfl-m-${uid})`} />
+          </g>
+          <g style={{ animation: `tfl-sway-front ${(speed * 1.7).toFixed(2)}s ease-in-out infinite`, transformOrigin: "50% 100%" }}>
+            <g style={{ animation: `tfl-flicker-v2 ${speed.toFixed(2)}s ease-in-out infinite`, transformOrigin: "50% 100%" }}>
+              <path d={FLAME_FRONT} fill={`url(#tfl-f-${uid})`} />
+            </g>
+          </g>
 
-        {/* MID — medium sway, slightly faster, opposite direction */}
-        <g style={{ animation: "tfl-sway-mid 4.2s ease-in-out infinite", transformOrigin: "50% 100%" }}>
-          <path d={FLAME_MID} fill="url(#tfl-mid)" />
-        </g>
+          {/* White-hot inner core — its own faster lick (On Fire+, non-mini) */}
+          {isFirePlus && !isMini && (
+            <g transform="translate(22.5 62.1) scale(0.55)">
+              <g style={{ animation: `tfl-core-lick ${(speed * 0.55).toFixed(2)}s ease-in-out infinite`, transformOrigin: "50px 138px" }}>
+                <path d={FLAME_FRONT} fill={pal.core} opacity="0.9" />
+                <ellipse cx="50" cy="112" rx="10" ry="20" fill="hsl(0 0% 100%)" opacity="0.55" />
+              </g>
+            </g>
+          )}
 
-        {/* FRONT — quickest sway + flicker */}
-        <g style={{ animation: "tfl-sway-front 3.1s ease-in-out infinite", transformOrigin: "50% 100%" }}>
-          <path
-            d={FLAME_FRONT}
-            fill="url(#tfl-front)"
-            style={{ animation: "tfl-flicker 1.8s ease-in-out infinite" }}
-          />
-        </g>
+          {/* Secondary fork tongue (Legendary+, non-mini) */}
+          {isLegendary && !isMini && (
+            <g transform="translate(12 93.8) scale(0.32)">
+              <g style={{ animation: `tfl-fork-lick ${(speed * 0.45).toFixed(2)}s ease-in-out infinite`, transformOrigin: "50px 138px" }}>
+                <path d={FLAME_FRONT} fill={pal.mid} opacity="0.8" />
+              </g>
+            </g>
+          )}
 
-        {/* Embers — small dots rising from the base */}
-        {embers.map((e) => (
-          <circle
-            key={e.id}
-            cx={e.x}
-            cy={130}
-            r={e.r}
-            fill="url(#tfl-ember)"
+          {/* Rising embers — per-ember drift so they never move in formation */}
+          {embers.map((e) => (
+            <circle
+              key={e.id}
+              cx={e.x}
+              cy={130}
+              r={e.r}
+              fill={`url(#tfl-e-${uid})`}
+              style={{
+                animation: `tfl-ember-rise ${e.dur}s linear ${e.delay}s infinite`,
+                transformOrigin: "center",
+                ["--tfl-ember-drift" as string]: `${e.drift}px`,
+              }}
+            />
+          ))}
+        </svg>
+
+        {/* Heart bloom — pulsing white-hot center (hero, Diamond+) */}
+        {isHero && isDiamond && (
+          <span
+            className="absolute left-1/2 rounded-full pointer-events-none"
             style={{
-              animation: `tfl-ember-rise ${e.dur}s linear ${e.delay}s infinite`,
-              transformOrigin: "center",
+              width: size * 0.18,
+              height: size * 0.26,
+              bottom: size * 0.14,
+              background: `radial-gradient(ellipse at 50% 60%, hsl(0 0% 100% / 0.9) 0%, ${withAlpha(pal.core, 0.6)} 45%, transparent 75%)`,
+              mixBlendMode: "screen",
+              transform: "translateX(-50%)",
+              animation: `flame-heart-bloom ${(speed * 2).toFixed(2)}s ease-in-out infinite`,
             }}
           />
-        ))}
-      </svg>
+        )}
 
-      {/* Scoped keyframes — only this component pays for them */}
-      <style>{`
-        @keyframes tfl-sway-back {
-          0%, 100% { transform: rotate(-0.8deg) scaleY(0.99); }
-          50%      { transform: rotate(0.8deg)  scaleY(1.01); }
-        }
-        @keyframes tfl-sway-mid {
-          0%, 100% { transform: rotate(1deg) scaleY(1); }
-          50%      { transform: rotate(-1deg) scaleY(0.985); }
-        }
-        @keyframes tfl-sway-front {
-          0%, 100% { transform: rotate(-1.2deg) scaleY(1.01); }
-          50%      { transform: rotate(1.2deg)  scaleY(0.985); }
-        }
-        @keyframes tfl-flicker {
-          0%, 100% { opacity: 1; }
-          50%      { opacity: 0.92; }
-        }
-        @keyframes tfl-ember-rise {
-          0%   { transform: translate(0, 0) scale(0.6); opacity: 0; }
-          15%  { opacity: 0.95; }
-          70%  { opacity: 0.7; }
-          100% { transform: translate(var(--tfl-ember-drift, -4px), -90px) scale(0.2); opacity: 0; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          [style*="tfl-sway"],
-          [style*="tfl-flicker"],
-          [style*="tfl-ember-rise"] {
-            animation: none !important;
-          }
-        }
-      `}</style>
+        {/* Plasma spark dots (Firestorm, non-mini) */}
+        {isFirestorm && !isMini &&
+          [0, 1].map((i) => (
+            <span
+              key={i}
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                width: 3,
+                height: 3,
+                left: `${38 + i * 26}%`,
+                bottom: size * 0.3,
+                background: pal.core,
+                boxShadow: `0 0 6px ${pal.glow}, 0 0 12px ${pal.glow}`,
+                animation: `flame-ember-float ${(speed * (2.4 + i * 0.7)).toFixed(2)}s ease-out ${(i * 0.9).toFixed(1)}s infinite`,
+                ["--ember-rise" as string]: `${-size * 1.05}px`,
+              }}
+            />
+          ))}
+      </div>
     </div>
   );
 };

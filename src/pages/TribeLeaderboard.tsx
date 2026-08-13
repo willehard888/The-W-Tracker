@@ -7,6 +7,7 @@ import TribeFireLite from "@/components/TribeFireLite";
 import EmptyState from "@/components/ui/empty-state";
 import {
   collectiveAccent,
+  tierPalette,
   collectiveStreakTier,
   fetchTribeCollectiveStreaks,
 } from "@/lib/tribe-streak";
@@ -190,7 +191,8 @@ const TribeLeaderboard = () => {
                           <div className="absolute inset-0 flex items-end justify-center pointer-events-none">
                             <TribeFireLite
                               tier={isFirst ? Math.max(flameTier, 4) : flameTier}
-                              accent={flameAccent}
+                              palette={tierPalette(isFirst ? Math.max(flameTier, 4) : flameTier)}
+                              variant={isFirst ? "hero" : "standard"}
                               size={flameSize}
                             />
                           </div>

@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff, Flame, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { trackAnon } from "@/lib/analytics";
 import { toast } from "sonner";
 import { nativeAppleSignIn } from "@/lib/native-auth";
 import BrandLogo from "@/components/BrandLogo";
@@ -42,6 +43,9 @@ const Auth = () => {
     if (modeParam === "signup") setMode("signup");
     else if (modeParam === "login") setMode("login");
   }, [modeParam]);
+
+  // Anonymous funnel: landing → auth screen → signup submit.
+  useEffect(() => { void trackAnon("auth_viewed"); }, []);
 
   // Auto-switch to signup if referral link + persist code for post-auth claim
   useEffect(() => {
@@ -110,6 +114,7 @@ const Auth = () => {
         setLoading(false);
         return;
       }
+      void trackAnon("signup_submitted"); // pre-auth: fires whether or not signUp succeeds
       const { error: err } = await signUp(email, password, username);
       if (err) {
         setError(err.message);

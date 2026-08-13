@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { track, FUNNEL } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Flame, Trophy, Swords, Shield, ArrowRight, ChevronRight, Zap, Star, Target, Crown } from "lucide-react";
 
@@ -202,6 +203,8 @@ const SLIDES = [
 
 const Onboarding = () => {
   const [current, setCurrent] = useState(0);
+  // Growth Engine: the mandatory onboarding wall was a measurement black box.
+  useEffect(() => { void track(FUNNEL.onboardingViewed); }, []);
   const [direction, setDirection] = useState<"next" | "prev">("next");
   const [animKey, setAnimKey] = useState(0);
   const navigate = useNavigate();
@@ -215,7 +218,8 @@ const Onboarding = () => {
    * the first time the user opens it (when `!athlete.onboarded`), so we don't
    * block first-run entry with a long form.
    */
-  const finish = () => {
+  const finish = (skipped = false) => {
+    void track(skipped ? FUNNEL.onboardingSkipped : FUNNEL.onboardingDone, { slide: current });
     try {
       localStorage.setItem("w_onboarding_done", "true");
     } catch {}
@@ -223,6 +227,7 @@ const Onboarding = () => {
   };
 
   const goTo = (idx: number) => {
+    void track(FUNNEL.onboardingStep, { slide: idx });
     setDirection(idx > current ? "next" : "prev");
     setCurrent(idx);
     setAnimKey(k => k + 1);
@@ -318,7 +323,7 @@ const Onboarding = () => {
       {/* Skip */}
       <div className="w-full flex justify-end">
         <button
-          onClick={finish}
+          onClick={() => finish(true)}
           className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1"
         >
           Skip

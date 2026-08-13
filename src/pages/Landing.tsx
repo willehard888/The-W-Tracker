@@ -1,6 +1,8 @@
 import { forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { trackAnon } from "@/lib/analytics";
 import { ArrowRight, Flame, Trophy, Sparkles, Dumbbell, Utensils, Moon, ShieldCheck } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 
@@ -17,6 +19,8 @@ const WHAT_YOU_GET = [
 
 const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
   const navigate = useNavigate();
+  // Anonymous top-of-funnel: the only pre-auth measurement point.
+  useEffect(() => { void trackAnon("landing_viewed"); }, []);
 
   return (
     <div ref={ref} className="min-h-screen gradient-dark flex flex-col overflow-hidden relative">

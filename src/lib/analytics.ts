@@ -66,4 +66,37 @@ export const FUNNEL = {
   //   invite_shared → referral_joined → referral_converted
   referralJoined: "referral_joined",
   referralConverted: "referral_converted",
+  // Server-fired lifecycle (webhooks) — kept here so the constant list stays
+  // the single inventory of every event name in the table.
+  subscriptionCancelled: "subscription_cancelled",
+  paymentFailed: "payment_failed",
+  // Activation spine (Growth Engine): every step a user can drop from.
+  onboardingViewed: "onboarding_viewed",
+  onboardingStep: "onboarding_step",
+  onboardingDone: "onboarding_done",
+  onboardingSkipped: "onboarding_skipped",
+  appOpened: "app_opened",
+  pushPermission: "push_permission",
+  healthkitPromptShown: "healthkit_prompt_shown",
+  // Anonymous top-of-funnel — fired via log_anon_event RPC (allowlisted
+  // server-side), user_id NULL. The only pre-auth events that exist.
+  landingViewed: "landing_viewed",
+  authViewed: "auth_viewed",
+  signupSubmitted: "signup_submitted",
 } as const;
+
+/**
+ * Anonymous top-of-funnel event (pre-auth). Goes through the allowlisted
+ * log_anon_event SECURITY DEFINER RPC — plain track() drops anon events by
+ * design. Fail-open like everything else here.
+ */
+export async function trackAnon(
+  event: "landing_viewed" | "auth_viewed" | "signup_submitted",
+): Promise<void> {
+  captureEvent(event);
+  try {
+    await supabase.rpc("log_anon_event" as never, { _event: event } as never);
+  } catch {
+    /* best-effort */
+  }
+}

@@ -109,9 +109,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (!data) {
           await ensureProfile(authUser);
-          // Funnel step 1 — a brand-new profile was just created.
-          void track(FUNNEL.signup, undefined, authUser.id);
-
           const retry = await supabase
             .from("profiles")
             .select("*")
@@ -120,6 +117,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
           data = retry.data ?? null;
         }
+
+        // Funnel step 1 — fire on the user's FIRST session, detected from the
+        // auth user's created_at (the old "!data" branch never fired: the
+        // handle_new_user trigger guarantees the profile exists, so the funnel
+        // had no denominator). localStorage-deduped like trial_started.
+        try {
+          const createdAt = new Date(authUser.created_at ?? 0).getTime();
+          if (Number.isFinite(createdAt) && Date.now() - createdAt < 10 * 60_000) {
+            const key = `signup_tracked_${authUser.id}`;
+            if (!localStorage.getItem(key)) {
+              localStorage.setItem(key, "1");
+              void track(FUNNEL.signup, undefined, authUser.id);
+            }
+          }
+        } catch { /* analytics is never load-bearing */ }
 
         setProfile(data);
         setIsElite(Boolean(data?.is_elite));

@@ -12,6 +12,7 @@ interface NightResult {
   min_hr?: number;
   respiratory_rate?: number;
   spo2?: number;
+  hrv_sdnn?: number;
   sleep_total_min?: number;
   sleep_deep_min?: number;
   sleep_rem_min?: number;
@@ -77,7 +78,7 @@ export async function syncNightMetrics(): Promise<boolean> {
       p_resting_hr: round1(r.resting_hr),
       p_avg_hr: round1(r.avg_hr),
       p_min_hr: round1(r.min_hr),
-      p_hrv_sdnn: null,
+      p_hrv_sdnn: round1(r.hrv_sdnn), // overnight SDNN avg (ms) — plugin queries it as of Whealth OS
       p_respiratory_rate: round1(r.respiratory_rate),
       p_spo2: round1(r.spo2),
       p_sleep_total_min: r.sleep_total_min ?? null,

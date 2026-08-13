@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { useAthleteProfile, type ToneId } from "@/hooks/use-athlete-profile";
-import { useLifeOSBrief } from "@/hooks/use-life-os-brief";
 import { useDailyPlan } from "@/hooks/use-daily-plan";
 
 /**
@@ -148,10 +147,9 @@ const pickIndex = (seedDate: string, bucket: number): number => {
 
 export const useCoachObservation = ({ context }: UseCoachObservationOptions): CoachObservation => {
   const { profile, isLoading: profileLoading } = useAthleteProfile();
-  const { brief, isLoading: briefLoading } = useLifeOSBrief();
   const { plan, isLoading: planLoading } = useDailyPlan();
 
-  const isLoading = profileLoading || briefLoading || planLoading;
+  const isLoading = profileLoading || planLoading;
 
   const text = useMemo(() => {
     const tone = (profile?.tone_pref ?? "calm_mentor") as ToneId;
@@ -161,14 +159,15 @@ export const useCoachObservation = ({ context }: UseCoachObservationOptions): Co
     const seed = new Date().toISOString().slice(0, 10);
     const tmpl = bank[pickIndex(`${seed}-${context}`, bank.length)];
 
-    // Resolve substitutions — fall back to plan headline, then to a neutral phrase.
+    // {focus} resolves from the daily plan headline (the LifeOS brief source
+    // was removed — its edge function was dead: never generated, broken
+    // column select; Whealth OS snapshots supersede it).
     const focus =
-      (isMeaningful(brief?.focus) && brief!.focus) ||
       (isMeaningful(plan?.headline) && plan!.headline) ||
       "showing up daily";
 
     return tmpl.replace("{focus}", focus).replace("{adjust}", plan?.adjustment ?? "hold");
-  }, [profile?.tone_pref, brief?.focus, plan?.headline, plan?.adjustment, context]);
+  }, [profile?.tone_pref, plan?.headline, plan?.adjustment, context]);
 
   return { text, isLoading };
 };

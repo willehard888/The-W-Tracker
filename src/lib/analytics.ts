@@ -70,6 +70,11 @@ export const FUNNEL = {
   // the single inventory of every event name in the table.
   subscriptionCancelled: "subscription_cancelled",
   paymentFailed: "payment_failed",
+  // Server-fired push attribution (winback-lapsed / daily-reminder /
+  // coach-proactive) — join against app_opened to measure push→return.
+  winbackSent: "winback_sent",
+  reminderSent: "reminder_sent",
+  nudgeSent: "nudge_sent",
   // Activation spine (Growth Engine): every step a user can drop from.
   onboardingViewed: "onboarding_viewed",
   onboardingStep: "onboarding_step",

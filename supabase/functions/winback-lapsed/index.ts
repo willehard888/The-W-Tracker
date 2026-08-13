@@ -79,6 +79,19 @@ Deno.serve(async (req) => {
       }
       results[`d${tier.daysAgo}`] = sent;
       console.log(`Win-back d${tier.daysAgo}: sent=${sent}/${pushResults.length}, cleaned=${dead.length}`);
+
+      // Attribution: without a sent-event, win-back effectiveness is
+      // unmeasurable (join winback_sent → next app_opened per user).
+      if (userIds.length > 0) {
+        const { error: evErr } = await supabase.from("analytics_events").insert(
+          userIds.map((uid: string) => ({
+            user_id: uid,
+            event: "winback_sent",
+            props: { tier: `d${tier.daysAgo}` },
+          })),
+        );
+        if (evErr) console.warn("winback analytics insert failed:", evErr.message);
+      }
     }
 
     return new Response(JSON.stringify({ ok: true, results }), {

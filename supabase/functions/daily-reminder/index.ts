@@ -93,6 +93,13 @@ Deno.serve(async (req) => {
     }
     console.log(`Daily reminder push: sent=${sent}/${pushResults.length}, cleaned=${dead.length}`);
 
+    // Attribution: reminder_sent + app_opened joins answer "do streak
+    // reminders actually bring people back?" — fail-open.
+    const { error: evErr } = await supabase.from("analytics_events").insert(
+      dueUserIds.map((uid: string) => ({ user_id: uid, event: "reminder_sent", props: {} })),
+    );
+    if (evErr) console.warn("reminder analytics insert failed:", evErr.message);
+
     return new Response(
       JSON.stringify({
         message: `Sent ${sent} reminders`,

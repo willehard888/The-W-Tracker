@@ -118,6 +118,17 @@ Deno.serve(async (req) => {
 
     if (grantEvents.includes(event.type)) {
       isElite = true;
+      // Server-truth purchase event — the client-side purchase_completed only
+      // fires when the app is foregrounded through the whole flow; the webhook
+      // is the ledger. INITIAL_PURCHASE only (renewals aren't conversions).
+      if (event.type === "INITIAL_PURCHASE") {
+        const { error: evErr } = await supabase.from("analytics_events").insert({
+          user_id: appUserId,
+          event: "purchase_completed",
+          props: { source: "revenuecat_webhook", store: event.store ?? null, product_id: productId ?? null },
+        });
+        if (evErr) console.warn("purchase analytics insert failed:", evErr.message);
+      }
     } else if (revokeEvents.includes(event.type)) {
       isElite = false;
     } else if (event.type === "CANCELLATION") {

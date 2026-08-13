@@ -416,7 +416,7 @@ const Tribes = () => {
             className={cn(
               "flex-1 text-xs font-black py-2 rounded-lg uppercase tracking-wider transition-all",
               tab === t
-                ? "bg-gold text-primary-foreground"
+                ? "bg-[linear-gradient(180deg,hsl(44_92%_66%),hsl(36_90%_56%)_50%,hsl(28_86%_48%))] text-[hsl(26_85%_10%)] shadow-[0_0_0_1px_hsl(40_80%_70%/0.3),inset_0_1px_0_hsl(48_100%_92%/0.6),inset_0_-1px_2px_hsl(16_80%_24%/0.4),0_2px_8px_-2px_hsl(28_90%_40%/0.5)]"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -426,7 +426,7 @@ const Tribes = () => {
       </div>
 
       {/* Open to all — clubs are free to create and join */}
-      <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg border border-border/50 bg-secondary/20">
+      <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg border border-[hsl(var(--gold)/0.18)] bg-card/40 shadow-[inset_0_1px_0_hsl(0_0%_100%/0.04)]">
         <Users size={11} className="text-muted-foreground shrink-0" />
         <p className="text-[11px] text-muted-foreground leading-tight">
           <span className="font-black text-foreground">Open to everyone</span> — create your own and

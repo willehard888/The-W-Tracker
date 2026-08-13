@@ -15,24 +15,31 @@ import { hapticImpact } from "@/lib/haptics";
 // filled primary variant so all CTAs match.
 // ─────────────────────────────────────────────────────────────────────
 const PRIMARY_EMBER = [
-  "text-[hsl(24_80%_12%)] font-extrabold tracking-[-0.005em]",
-  "[text-shadow:0_1px_0_hsl(42_100%_90%/0.45)]",
+  "text-[hsl(26_85%_10%)] font-extrabold tracking-[-0.005em]",
+  "[text-shadow:0_1px_0_hsl(45_100%_88%/0.4)]",
   "overflow-hidden isolate",
-  // BASE: clean vertical amber→orange gradient (matches the reference CTA)
-  "[background:linear-gradient(180deg,hsl(40_96%_72%)_0%,hsl(33_95%_63%)_38%,hsl(25_93%_55%)_72%,hsl(20_90%_48%)_100%)]",
-  // Engraved bezel: bright top highlight, warm dark foot, soft warm outer glow
-  "shadow-[inset_0_1px_0_hsl(46_100%_94%/0.6),inset_0_-1px_0_hsl(20_80%_28%/0.45),0_1px_2px_hsl(20_60%_14%/0.32),0_8px_20px_-6px_hsl(24_90%_48%/0.45),0_16px_32px_-16px_hsl(22_88%_46%/0.5)]",
-  // ::before — soft crown highlight on top + warm bloom at the foot
+  // MOLTEN METAL: champagne crown → rich amber → deep ember foot. The old
+  // bright flat orange read as bubblegum; expensive = deeper, less saturated,
+  // with a machined hairline rim and tight dark depth instead of neon bloom.
+  "[background:linear-gradient(180deg,hsl(44_92%_68%)_0%,hsl(36_90%_58%)_34%,hsl(27_88%_49%)_68%,hsl(19_82%_40%)_100%)]",
+  // Machined bezel: 1px light rim, crisp top edge, engraved foot, tight dark
+  // drop shadow (depth) + restrained warm halo (not a glow bomb)
+  "shadow-[0_0_0_1px_hsl(40_80%_70%/0.35),inset_0_1px_0_hsl(48_100%_92%/0.7),inset_0_-2px_6px_hsl(16_80%_24%/0.5),0_2px_6px_hsl(20_60%_8%/0.5),0_12px_28px_-12px_hsl(20_70%_10%/0.8),0_6px_18px_-8px_hsl(28_90%_45%/0.35)]",
+  // ::before — metallic sheen band on the crown + faint molten heat at the foot
   "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:z-[1]",
-  "before:[background:radial-gradient(120%_70%_at_50%_-18%,hsl(46_100%_95%/0.5)_0%,hsl(42_100%_88%/0.15)_34%,transparent_64%),radial-gradient(120%_60%_at_50%_120%,hsl(20_100%_55%/0.25)_0%,transparent_62%)]",
-  // Hover: a touch brighter + warmer + slightly deeper glow
-  "hover:brightness-[1.05] hover:saturate-[1.04]",
-  "hover:shadow-[inset_0_1px_0_hsl(46_100%_94%/0.7),inset_0_-1px_0_hsl(20_80%_28%/0.5),0_2px_4px_hsl(20_60%_14%/0.38),0_12px_28px_-6px_hsl(24_90%_48%/0.55),0_22px_44px_-16px_hsl(22_88%_46%/0.6)]",
-  // Pressed: muted + sunken
-  "active:brightness-[0.97]",
+  "before:[background:linear-gradient(180deg,hsl(50_100%_96%/0.32)_0%,hsl(48_100%_90%/0.08)_28%,transparent_45%),radial-gradient(120%_60%_at_50%_125%,hsl(16_95%_45%/0.28)_0%,transparent_60%)]",
+  // ::after — slow glass glint sweep on hover (the luxury tell)
+  "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
+  "after:[background:linear-gradient(110deg,transparent_30%,hsl(50_100%_95%/0.45)_50%,transparent_70%)]",
+  "after:opacity-0 after:transition-[transform,opacity] after:duration-[900ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+  "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
+  "hover:brightness-[1.04]",
+  "hover:shadow-[0_0_0_1px_hsl(42_85%_74%/0.5),inset_0_1px_0_hsl(48_100%_92%/0.8),inset_0_-2px_6px_hsl(16_80%_24%/0.55),0_3px_8px_hsl(20_60%_8%/0.55),0_16px_36px_-12px_hsl(20_70%_10%/0.85),0_10px_24px_-8px_hsl(30_90%_48%/0.45)]",
+  // Pressed: sunken, rim dims
+  "active:brightness-[0.96]",
   "active:before:opacity-60",
-  "active:shadow-[inset_0_1px_3px_hsl(20_78%_14%/0.5),inset_0_-1px_0_hsl(46_100%_88%/0.18),0_1px_1px_hsl(0_0%_0%/0.25)]",
-  "disabled:grayscale-[0.3] disabled:before:hidden",
+  "active:shadow-[0_0_0_1px_hsl(40_80%_70%/0.28),inset_0_2px_5px_hsl(18_75%_14%/0.55),inset_0_-1px_0_hsl(46_100%_86%/0.15),0_1px_2px_hsl(0_0%_0%/0.3)]",
+  "disabled:grayscale-[0.3] disabled:before:hidden disabled:after:hidden",
 ].join(" ");
 
 const buttonVariants = cva(

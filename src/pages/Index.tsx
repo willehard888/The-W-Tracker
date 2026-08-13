@@ -1,4 +1,4 @@
-import { ChevronRight, Award, Crown, Utensils, Dumbbell, ArrowUp } from "lucide-react";
+import { ChevronRight, Award, ArrowUp } from "lucide-react";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import BadgeCard from "@/components/BadgeCard";
 import TrialExpirySheet from "@/components/TrialExpirySheet";
@@ -9,6 +9,7 @@ import CommandDeck from "@/components/home/CommandDeck";
 import PodCard from "@/components/home/PodCard";
 import CoachStrip from "@/components/home/CoachStrip";
 import DailyInsightCard from "@/components/home/DailyInsightCard";
+import LibraryHub from "@/components/home/LibraryHub";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Reveal from "@/components/home/Reveal";
 import EmptyState from "@/components/ui/empty-state";
@@ -22,8 +23,6 @@ import ConfettiBurst from "@/components/ConfettiBurst";
 import { Portal } from "@/components/ui/Portal";
 import { supabase } from "@/integrations/supabase/client";
 import { getTierConfig } from "@/lib/status-tiers";
-import { recipeThumb, recipeSquare } from "@/lib/recipe-images";
-import { exerciseImg } from "@/lib/exercise-library";
 import { useTierRisk } from "@/hooks/use-tier-risk";
 import { useCheckinDay } from "@/hooks/use-checkin-day";
 import { useMyRank } from "@/hooks/use-my-rank";
@@ -315,110 +314,17 @@ const Index = () => {
         <DailyInsightCard />
       </Reveal>
 
-      {/* MEAL-PREP RECIPES — raised to a primary slot, prominent with a big
-          food image so it pulls the eye. */}
+      {/* THE LIBRARY — one premium hub for everything the membership unlocks
+          (recipes, exercises, Vault). Replaces three stacked same-weight
+          cards; founder feedback: too many buttons, combine with value. */}
       <Reveal className="mb-4 relative z-10" delay={100}>
-        <button
-          type="button"
-          onClick={() => navigate("/recipes")}
-          className="w-full text-left rounded-2xl border border-border/60 bg-card/60 p-3.5 active:scale-[0.99] transition-transform hover:bg-card/80"
-        >
-          <div className="flex items-center gap-3.5">
-            <div className="h-16 w-16 rounded-2xl overflow-hidden shrink-0 relative border border-gold/30 bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center">
-              <Utensils size={22} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />
-              <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                style={{
-                  backgroundImage: `url(${recipeSquare("greek-chicken-bowl") ?? recipeThumb("greek-chicken-bowl")})`,
-                }}
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
-                  Meal-prep recipes
-                </p>
-                <span className="text-[9px] font-black text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-0.5 tabular-nums">
-                  15
-                </span>
-              </div>
-              <p className="text-[13px] font-bold text-foreground leading-tight">
-                High-protein bowls &amp; plates that scale to a full week
-              </p>
-            </div>
-            <ChevronRight size={18} className="text-gold shrink-0" />
-          </div>
-        </button>
+        <LibraryHub />
       </Reveal>
 
-      {/* EXERCISE LIBRARY — illustrated gym moves + step-by-step instructions,
-          surfaced like recipes. */}
-      <Reveal className="mb-4 relative z-10" delay={120}>
-        <button
-          type="button"
-          onClick={() => navigate("/exercises")}
-          className="w-full text-left rounded-2xl border border-border/60 bg-card/60 p-3.5 active:scale-[0.99] transition-transform hover:bg-card/80"
-        >
-          <div className="flex items-center gap-3.5">
-            <div className="h-16 w-16 rounded-2xl overflow-hidden shrink-0 relative border border-gold/30 bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center">
-              <Dumbbell size={22} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />
-              <img
-                src={exerciseImg("https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Bench_Press_-_Medium_Grip/0.jpg", 160)}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
-                  Exercise library
-                </p>
-                <span className="text-[9px] font-black text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-0.5 tabular-nums">
-                  500+
-                </span>
-              </div>
-              <p className="text-[13px] font-bold text-foreground leading-tight">
-                Every lift with photos &amp; step-by-step form cues
-              </p>
-            </div>
-            <ChevronRight size={18} className="text-gold shrink-0" />
-          </div>
-        </button>
-      </Reveal>
-
-      {/* SECONDARY — Today stays focused on the one job (check in) + the AI
-          move + the pod, plus recipes. Everything else (vault, invite, badges)
-          is one tap away under "More". */}
-      {/* defaultOpen: the Vault, referral CTA and badges are three of the
-          app's value stories — hidden behind a 10px "MORE" they were
-          effectively invisible. */}
-      <MoreSection label="More" defaultOpen className="relative z-10 mt-1 mb-2">
-      {/* THE VAULT — premium content library */}
-      <Reveal className="mb-4 relative z-10" delay={40}>
-        <button
-          type="button"
-          onClick={() => navigate("/vault")}
-          className="w-full text-left rounded-2xl border border-border/60 bg-card/40 p-4 active:scale-[0.99] transition-transform"
-        >
-          <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0">
-              <Crown size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">
-                The Vault · Premium
-              </p>
-              <p className="text-[13px] font-bold text-foreground leading-tight">
-                Recipes, training programs, recovery, sleep &amp; mind tools
-              </p>
-            </div>
-            <ChevronRight size={16} className="text-gold shrink-0" />
-          </div>
-        </button>
-      </Reveal>
-
+      {/* SECONDARY — Today stays focused: check in, the AI move, the pod,
+          daily insight and ONE library card. Invite + badges are one tap
+          away under "More". */}
+      <MoreSection label="More" className="relative z-10 mt-1 mb-2">
       {/* EARN FREE MEMBERSHIP — referral CTA */}
       <Reveal className="mb-4 relative z-10" delay={80}>
         <InviteCTA referralCount={profile.referral_count || 0} />

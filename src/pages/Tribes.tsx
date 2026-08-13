@@ -20,7 +20,7 @@ import TribeFireHero from "@/components/TribeFireHero";
 import TribeAmbientFireField from "@/components/TribeAmbientFireField";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { TRIBE_ACTIVITIES, activityIcon } from "@/lib/tribe-activities";
-import { fetchTribeCollectiveStreaks, collectiveStreakTier, collectiveTierName, collectiveAccent } from "@/lib/tribe-streak";
+import { fetchTribeCollectiveStreaks, collectiveStreakTier, collectiveTierName, collectiveAccent, collectivePalette } from "@/lib/tribe-streak";
 
 interface Tribe {
   id: string;
@@ -535,7 +535,7 @@ const Tribes = () => {
                     {(collectiveStreaks.get(featured.id) ?? 0) >= 30 ? (
                       <TribeFireLite
                         tier={collectiveStreakTier(collectiveStreaks.get(featured.id) ?? 0)}
-                        accent={collectiveAccent(collectiveStreaks.get(featured.id) ?? 0)}
+                        palette={collectivePalette(collectiveStreaks.get(featured.id) ?? 0)}
                         size={64}
                       />
                     ) : !featured.cover_url ? (
@@ -684,7 +684,7 @@ const Tribes = () => {
                           : undefined
                       }
                     >
-                      <TribeFireLite tier={cTier} accent={cAccent} size={Math.min(56, 36 + cTier * 6)} />
+                      <TribeFireLite tier={cTier} palette={collectivePalette(cStreak)} size={Math.min(56, 36 + cTier * 6)} />
                     </div>
                   ) : !t.cover_url ? (
                     isPaused

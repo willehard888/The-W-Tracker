@@ -12,6 +12,7 @@ import TribeChallengeModal from "@/components/TribeChallengeModal";
 import EmptyStateUI from "@/components/ui/empty-state";
 import {
   collectiveAccent,
+  tierPalette,
   collectiveStreakTier,
   fetchTribeCollectiveStreak,
   fetchTribeCollectiveStreaks,
@@ -149,7 +150,8 @@ const TribeBattles = () => {
             <div className="absolute -left-2 bottom-0 pointer-events-none flex items-end justify-center w-32 h-full">
               <TribeFireLite
                 tier={Math.max(heroTier, 3)}
-                accent={heroAccent}
+                palette={tierPalette(Math.max(heroTier, 3))}
+                variant="hero"
                 size={120}
               />
             </div>

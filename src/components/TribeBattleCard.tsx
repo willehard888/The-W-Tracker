@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import TribeFireLite from "@/components/TribeFireLite";
-import { collectiveTierName, collectiveStreakTier, collectiveAccent } from "@/lib/tribe-streak";
+import { collectiveTierName, collectiveStreakTier, collectiveAccent, collectivePalette } from "@/lib/tribe-streak";
 
 export interface TribeBattle {
   id: string;
@@ -117,7 +117,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
             <div className="flex items-center gap-2">
               <div className="shrink-0 w-10 h-12 flex items-end justify-center">
                 {tier >= 0 ? (
-                  <TribeFireLite tier={tier} accent={accent} size={40} />
+                  <TribeFireLite tier={tier} palette={collectivePalette(streak)} variant="mini" size={40} />
                 ) : (
                   <Flame size={16} className="text-muted-foreground/40" strokeWidth={1.6} />
                 )}

@@ -113,20 +113,21 @@ const StatusNameplate = ({
   const labelSize = size === "lg" ? "text-[40px] sm:text-[44px]" : "text-[34px]";
   const padding = size === "lg" ? "px-5 py-4" : "px-4 py-3.5";
 
-  // Always trust the tier config label for top tiers (Legend/Apex/Elite) so it
-  // matches the rest of the UI. For mid/low tiers we can use the live percentile
-  // when available, but never round down to 0%.
-  const useConfigLabel = isLegend || isApex || isElite;
+  // The chip must never contradict the live rank rendered right beside it —
+  // a static "Top 0.1%" next to "#1 / 4" reads as a lie. Prefer live data
+  // (percentile, or rank/total when sane); the tier-config label is only the
+  // no-data fallback (e.g. public profiles). Never round down to "Top 0%".
+  const liveTopShare = (() => {
+    if (percentile !== undefined) return 100 - percentile;
+    if (rank != null && totalUsers && totalUsers > 0 && rank >= 1 && rank <= totalUsers) {
+      return (rank / totalUsers) * 100;
+    }
+    return null;
+  })();
   const percentLabel = !ranked
     ? "Unranked"
-    : useConfigLabel
-    ? cfg.percentile
-    : percentile !== undefined
-    ? (() => {
-        const top = 100 - percentile;
-        if (top < 1) return "Top 1%";
-        return `Top ${Math.round(top)}%`;
-      })()
+    : liveTopShare !== null
+    ? `Top ${Math.max(1, Math.round(liveTopShare))}%`
     : cfg.percentile;
 
   // Only show "#N / total" when the data is sane: ranked, present, and the

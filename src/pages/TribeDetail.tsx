@@ -49,7 +49,7 @@ import FeedTheFireCTA from "@/components/FeedTheFireCTA";
 import TribeAmbientFireField from "@/components/TribeAmbientFireField";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { hapticImpact, hapticSelection, hapticNotification } from "@/lib/haptics";
-import { fetchTribeCollectiveStreak, collectiveAccent, collectiveStreakTier, collectiveTierName } from "@/lib/tribe-streak";
+import { collectivePalette, fetchTribeCollectiveStreak, collectiveAccent, collectiveStreakTier, collectiveTierName } from "@/lib/tribe-streak";
 
 interface Member {
   user_id: string;
@@ -265,7 +265,7 @@ const TribeDetail = () => {
       if (nextTier > prevTier && nextTier >= 0) {
         setTierUp({
           name: collectiveTierName(next),
-          accent: collectiveAccent(next),
+          accent: collectivePalette(next).glow,
           key: Date.now(),
         });
         // Auto-dismiss tier-up celebration after 4s
@@ -498,7 +498,7 @@ const TribeDetail = () => {
 
   // Tier-reactive page tint based on tribe's collective heat
   const pageTint = collectiveStreak >= 30
-    ? collectiveAccent(collectiveStreak)
+    ? collectivePalette(collectiveStreak).glow
     : null;
 
   return (
@@ -593,7 +593,7 @@ const TribeDetail = () => {
       {/* Feed-the-Fire CTA — only shows if user hasn't checked in today */}
       {isMember && (
         <FeedTheFireCTA
-          accent={collectiveStreak >= 30 ? collectiveAccent(collectiveStreak) : undefined}
+          accent={collectiveStreak >= 30 ? collectivePalette(collectiveStreak).glow : undefined}
           tribeName={tribe?.name}
         />
       )}

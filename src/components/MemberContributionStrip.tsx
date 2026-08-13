@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Crown } from "lucide-react";
 import TribeFireLite from "@/components/TribeFireLite";
-import { collectiveAccent, collectiveStreakTier, tierPalette } from "@/lib/tribe-streak";
+import { personalPalette, withAlpha } from "@/lib/tribe-streak";
+import { personalStreakTier } from "@/lib/streak";
 import { cn } from "@/lib/utils";
 import { avatarUrl } from "@/lib/img";
 
@@ -47,8 +48,11 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar">
         {sorted.map((m, idx) => {
           const streak = m.streak ?? 0;
-          const tier = collectiveStreakTier(Math.max(streak * 10, 0)); // single-member tier ladder is steeper; multiply ×10 to share thresholds
-          const accent = collectiveAccent(Math.max(streak * 10, 0));
+          // PERSONAL ladder (3/7/14/30/60/100/200) — the old streak*10 hack on
+          // the collective thresholds flattened members to 2-3 visible states.
+          const tier = personalStreakTier(streak);
+          const pal = personalPalette(streak);
+          const accent = pal.glow === "transparent" ? "hsl(var(--muted-foreground))" : pal.glow;
           const showRealFlame = idx < maxFlames && streak >= 3;
           // Per-member flame size scales with their streak rank
           const flameSize = idx === 0 ? 38 : idx === 1 ? 32 : idx === 2 ? 30 : 26;
@@ -70,9 +74,9 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
                   className="absolute -top-4 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[7px] font-black tracking-[0.18em] uppercase border whitespace-nowrap"
                   style={{
                     color: accent,
-                    background: `linear-gradient(180deg, ${accent.replace(")", " / 0.18)")} 0%, ${accent.replace(")", " / 0.06)")} 100%)`,
-                    borderColor: accent.replace(")", " / 0.55)"),
-                    boxShadow: `0 0 10px ${accent.replace(")", " / 0.5)")}`,
+                    background: `linear-gradient(180deg, ${withAlpha(accent, 0.18)} 0%, ${withAlpha(accent, 0.06)} 100%)`,
+                    borderColor: withAlpha(accent, 0.55),
+                    boxShadow: `0 0 10px ${withAlpha(accent, 0.5)}`,
                   }}
                 >
                   <Crown size={7} strokeWidth={2.6} fill="currentColor" />
@@ -93,8 +97,8 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
                       ? {
                           borderColor: accent,
                           boxShadow: isTopStoker
-                            ? `0 0 18px ${accent.replace(")", " / 0.75)")}, inset 0 0 8px ${accent.replace(")", " / 0.3)")}`
-                            : `0 0 10px ${accent.replace(")", " / 0.5)")}`,
+                            ? `0 0 18px ${withAlpha(accent, 0.75)}, inset 0 0 8px ${withAlpha(accent, 0.3)}`
+                            : `0 0 10px ${withAlpha(accent, 0.5)}`,
                         }
                       : undefined
                   }
@@ -113,7 +117,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
                     className="absolute -top-3 left-1/2 -translate-x-1/2 pointer-events-none"
                     style={{ width: flameSize, height: flameSize }}
                   >
-                    <TribeFireLite tier={Math.max(0, tier)} palette={tierPalette(Math.max(0, tier))} variant="mini" size={flameSize} />
+                    <TribeFireLite tier={Math.max(0, tier)} palette={pal} variant="mini" size={flameSize} />
                   </div>
                 ) : streak > 0 ? (
                   <div className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-background/90 border border-border/60 flex items-center justify-center">

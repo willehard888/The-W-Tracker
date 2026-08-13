@@ -274,7 +274,8 @@ const Tribes = () => {
     joinedIds.forEach((id) => { sum += collectiveStreaks.get(id) ?? 0; });
     return sum;
   }, [joinedIds, collectiveStreaks]);
-  const ambientAccent = collectiveAccent(ambientHeat);
+  // Ambient light matches the flame's actual emission color (palette.glow).
+  const ambientAccent = collectivePalette(ambientHeat).glow;
 
   const handleJoin = async (id: string) => {
     const { data, error } = await supabase.rpc("join_tribe" as any, {

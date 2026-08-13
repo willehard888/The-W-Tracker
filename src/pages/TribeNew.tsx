@@ -8,7 +8,8 @@ import { ArrowLeft, Loader2, Users, Lock, Globe, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
-import TribeFlame from "@/components/tribe/TribeFlame";
+import TribeFireLite from "@/components/TribeFireLite";
+import { tierPalette } from "@/lib/tribe-streak";
 import { TRIBE_ACTIVITY_GROUPS } from "@/lib/tribe-activities";
 
 const TribeNew = () => {
@@ -107,7 +108,7 @@ const TribeNew = () => {
           style={{ background: "radial-gradient(ellipse 70% 60% at 50% 0%, hsl(42 78% 54% / 0.12) 0%, transparent 65%)" }}
         />
         <div className="relative flex flex-col items-center text-center px-5 pt-5 pb-5">
-          <TribeFlame size={96} intensity={0.7} hue={28} className="mb-1" />
+          <TribeFireLite tier={3} palette={tierPalette(3)} variant="standard" size={75} className="mb-1" />
           <p className={cn(
             "font-display text-xl font-black tracking-tight leading-tight",
             name.trim() ? "text-foreground" : "text-muted-foreground/50",

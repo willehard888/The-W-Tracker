@@ -8,6 +8,7 @@ import {
   buildPersonaBlock,
   buildHolisticContext,
   isVentingMessage,
+  REGISTER_PROTOCOL,
   VENT_DIRECTIVE,
   type TodayMood,
 } from "../_shared/coach-persona.ts";
@@ -67,6 +68,23 @@ Yesterday: sleep ${last.sleep_hours}h, ${last.workout ? "workout✓" : "no worko
 
 // Voice nuance now lives inside buildPersonaBlock() in ../_shared/coach-persona.ts.
 
+// ── Context gating ────────────────────────────────────────────────────────────
+// A "Moi" against a 4k-token briefing prompt produced briefing-shaped replies:
+// with a 3-token message, attention has nowhere to go but the injected stats.
+// Light messages get a ~1k-token prompt (persona + register + memory) so the
+// model can simply TALK. False-light is safe — chat history + memory carry
+// continuity, and the register rules still allow coaching when asked.
+const GREETING_RE =
+  /^(moi+|moikka|morjes|moro|terve|hei+|heippa|huomenta|hyvää huomenta|hyvää iltaa|iltaa|kiitos|kiitti|ok(ei)?|selvä|jees|hyvä|joo+|no moi|mitä kuuluu|mitäs kuuluu|mites menee|miten menee|hi|hey+|hello|yo|sup|thanks|thank you|good (morning|evening)|gm|what'?s up|how are you)[\s!?.,🙂😊👋🔥💪]*$/i;
+const DOMAIN_RE =
+  /tree?ni|ohjelm|sali|penk|kyyk|maastav|sarj|toisto|prote|ravin|ruoka|nukku|\buni\b|palautu|väsy|stress|workout|program|plan|gym|bench|squat|deadlift|\bset\b|\brep\b|sleep|recover|paino|kilo|\d/i;
+const isLightMessage = (msg: string, goDeep: boolean): boolean => {
+  if (goDeep) return false;
+  const t = msg.trim();
+  if (GREETING_RE.test(t)) return true;
+  return t.length <= 30 && !t.includes("?") && t.split(/\s+/).length <= 4 && !DOMAIN_RE.test(t);
+};
+
 const buildSystemPrompt = (
   profile: any,
   athlete: any,
@@ -80,6 +98,9 @@ const buildSystemPrompt = (
   todayMood: TodayMood | undefined,
   latestUserMessage: string,
   situationBlock: string,
+  memoryBlock: string,
+  knowledgeBlocks: string,
+  light: boolean,
 ) => {
   const tier = profile?.status_tier ?? "recruit";
   const streak = profile?.streak ?? 0;
@@ -110,8 +131,10 @@ const buildSystemPrompt = (
           .join("\n")}`
       : "";
 
+  // One line, not the whole brief — the user already read it on the Coach
+  // page; echoing it verbatim made every chat turn duplicate the briefing.
   const briefBlock = todayBrief
-    ? `\n\nThis morning you (W Coach) wrote them:\n"${todayBrief.brief_md ?? ""}"\nStay consistent with that brief — don't contradict it.`
+    ? `\n\nThis morning's brief already told them: "${String(todayBrief.brief_md ?? "").slice(0, 140)}…" — do not repeat it; stay consistent with it if training comes up.`
     : "";
 
   const sessionBlock = todaySession
@@ -146,7 +169,29 @@ const buildSystemPrompt = (
   const today = new Date();
   const dayName = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][today.getDay()];
 
+  // ── LIGHT MODE — greetings / small talk. ~1k tokens: persona + register +
+  // memory. No stats arsenal to recite, so the model can simply be a person.
+  if (light) {
+    const lastCheckin = checkins7d[checkins7d.length - 1];
+    const glance = `Today at a glance (mention only if genuinely relevant, never as a report): streak ${streak}d${
+      lastCheckin ? ` · yesterday sleep ${lastCheckin.sleep_hours}h` : ""
+    }${todaySession ? ` · session on deck: ${todaySession.focus}` : ""}.`;
+
+    return `${personaBlock}
+
+${REGISTER_PROTOCOL}
+
+${holisticBlock}
+
+Today is ${dayName}, ${today.toISOString().slice(0, 10)}.
+${glance}${memoryBlock}
+
+How to reply: apply the CONVERSATION REGISTER above. Mirror their language and energy — "Moi" gets "Moi" energy back, not a briefing. At most one question, and only if it genuinely matters. No markdown in small talk. If they signal crisis (suicidal language, "I can't function"), name what you see in one sentence, give one regulation tool, and point them — by name — to a human professional today.${ventDirective}`;
+  }
+
   return `${personaBlock}
+
+${REGISTER_PROTOCOL}
 
 ${holisticBlock}
 
@@ -168,18 +213,20 @@ Recent activity:
 ${recentSummary}${reflectionsBlock}${goalsBlock}${logsBlock}${insightsBlock}${briefBlock}${sessionBlock}
 ${situationBlock ? `\n${situationBlock}\n` : ""}
 ${INNER_WORK_BLOCK}
+${knowledgeBlocks}
 
-How to reply — the craft of a world-class private coach:
-- **Lead with the answer.** First sentence = the verdict or the move. No preamble, no "great question", no restating what they asked. They should be able to stop reading after sentence one and know what to do.
-- **Match length to the weight of what they asked.** A vent → mirror first, then ONE question or small move. Quick tactical Q → 2–3 sentences. Deep ask → go deep but structured. Default ceiling: 3 short paragraphs.
-- **One concrete next move** at the end. Dated to today or tomorrow. Specific (movement, breath count, time on the calendar) — never "try to relax".
+How to reply — the craft of a world-class private coach.
+Apply the CONVERSATION REGISTER above — registers 1–3 exempt you from every prescription rule below:
+- **When they asked a question, lead with the answer.** First sentence = the verdict or the move. No preamble, no "great question", no restating what they asked. (Contentless messages — greetings, thanks — have no "answer" to lead with; do not manufacture one.)
+- **Match length to the weight of what they asked.** A vent → mirror first, then ONE question or small move. Quick tactical Q → 2–3 sentences. Deep ask → go deep but structured. Default ceiling: 3 short paragraphs; greetings and small talk: 1–2 sentences.
+- **One concrete next move** at the end of coaching replies (registers 4–6 only). Dated to today or tomorrow. Specific (movement, breath count, time on the calendar) — never "try to relax".
 - **Use what you know.** Their file, memory, and last 7 days exist so you never coach a stranger. Continuity is the product: "how did the knee handle Tuesday's volume?" beats any generic insight. But weave facts in naturally — never recite data back, never mention having "memory" or "data".
 - Reference at most ONE concrete stat, only if it sharpens the answer.
 - **Ask at most ONE question, and only when the answer genuinely changes your prescription.** If you can give a sensible default with a fork ("if X, do A; if Y, do B"), do that instead of asking.
 - **Hold the standard.** No empty validation, no cheerleading — praise evidence (a rep done tired, a streak defended), not effort-theater. You are demanding AND unmistakably on their side; certainty over hedging ("do this" — not "you could consider").
-- Mirror their language and energy: terse athlete gets terse coach; someone struggling gets warmth first, prescription second.
+- Mirror their language and energy: terse athlete gets terse coach; "Moi" gets "Moi" energy back, not a briefing; someone struggling gets warmth first, prescription second.
 - Markdown sparingly: bold for key numbers, short list only when prescribing 2–3 steps. No headings in chat, no sign-off.
-- If today has a prescribed session, stay consistent with it (or explicitly justify deviating).
+- If the conversation is about today's training, stay consistent with the prescribed session (or explicitly justify deviating). Never volunteer the session unprompted.
 - Refuse medical / legal / financial advice that requires a licensed pro — give a framework and tell them to see one. Same for clinical mental-health (suicidal ideation, panic disorder, etc.) — name what you see, give one regulation tool, point at a professional.${ventDirective}`;
 };
 
@@ -458,6 +505,19 @@ Deno.serve(async (req) => {
         ? `\nDiscipline verification: ${verifiedDays} of last ${journalRows.length} check-in days HealthKit-verified.`
         : "");
 
+    // ── Assemble. Data blocks live under ONE preamble that subordinates
+    // their per-block directives to the conversation register — six blocks
+    // each demanding output was exactly what made every reply a briefing.
+    const light = isLightMessage(latestUserMessage, goDeep);
+    const faqBlock = faqContext
+      ? `\n\nThe user just read the Playbook answer to: "${faqContext.question}". Do NOT repeat that answer. Go deeper, address their follow-up directly, or apply it to their specific context.`
+      : "";
+    const dataBlocks = memoryBlock + whealthBlock + studiedBlock + habitsBlock + journalBlock + workoutLogBlock + faqBlock;
+    const knowledgeBlocks = dataBlocks.trim()
+      ? `\n━━ YOUR KNOWLEDGE OF THIS ATHLETE ━━
+Everything below is what you KNOW — it is not your outline. Per reply, pull at most 1–2 elements that genuinely serve the message and ignore the rest. In small talk and greetings, use none of it (knowing ≠ reciting). Any per-block instruction below is subordinate to the CONVERSATION REGISTER.${dataBlocks}`
+      : "";
+
     const systemPrompt = buildSystemPrompt(
       profile,
       athleteRes.data ?? null,
@@ -471,9 +531,11 @@ Deno.serve(async (req) => {
       moodToday,
       latestUserMessage,
       situationBlock,
-    ) + memoryBlock + whealthBlock + studiedBlock + habitsBlock + journalBlock + workoutLogBlock + (faqContext
-      ? `\n\nThe user just read the Playbook answer to: "${faqContext.question}". Do NOT repeat that answer. Go deeper, address their follow-up directly, or apply it to their specific context.`
-      : "");
+      memoryBlock,
+      knowledgeBlocks,
+      light,
+    );
+    console.log("ai-coach", light ? "light" : "full", "sys≈", Math.round(systemPrompt.length / 4), "tok");
 
     const upstream = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -493,6 +555,12 @@ Deno.serve(async (req) => {
         // the dominant time-to-first-word term. "low" keeps gpt-5 sharp for
         // chat coaching; Go Deep buys real thinking time.
         reasoning: { effort: goDeep ? "medium" : "low" },
+        // Style comes from the prompt; these are guardrails. verbosity is a
+        // gpt-5 param — OpenRouter drops unsupported params on the fallback
+        // model. max_tokens is a runaway backstop (includes reasoning tokens;
+        // effort-low reasoning is small, 1500 still fits a full session).
+        verbosity: goDeep ? "medium" : "low",
+        max_tokens: goDeep ? 4000 : 1500,
       }),
       // Hard deadline so a hung upstream never leaves the user on an
       // infinite spinner (client shows the failed bubble + retry).

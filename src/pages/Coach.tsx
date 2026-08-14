@@ -517,7 +517,10 @@ const ChatSheet = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPrompt]);
 
-  const quickAnswers = COACH_FAQ.slice(0, 6);
+  const quickAnswers = COACH_FAQ.slice(0, 4);
+  // Conversational starters — real model round-trips (no faqId) so the empty
+  // state teaches "you can TALK to this coach", not just request briefings.
+  const conversationStarters = ["Mitä kuuluu?", "Miten tänään kannattaa treenata?"];
 
   return (
     <>
@@ -580,6 +583,15 @@ const ChatSheet = ({
               Quick answers
             </p>
             <div className="flex flex-col gap-2 max-w-sm mx-auto">
+              {conversationStarters.map((q) => (
+                <button
+                  key={q}
+                  onClick={() => send(q)}
+                  className="text-left rounded-xl border border-gold/20 bg-gold/[0.04] hover:bg-gold/[0.1] hover:border-gold/40 px-3.5 py-2.5 text-sm transition"
+                >
+                  {q}
+                </button>
+              ))}
               {quickAnswers.map((f) => (
                 <button
                   key={f.id}

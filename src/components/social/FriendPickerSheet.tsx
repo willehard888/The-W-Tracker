@@ -63,7 +63,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search friends"
-              className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-3 py-2.5 text-[13px] outline-none focus:border-gold/50"
+              className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
             />
           </div>
         </div>

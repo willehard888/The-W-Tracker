@@ -154,7 +154,7 @@ const Messages = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search users..."
-            className="w-full h-10 pl-9 pr-9 rounded-xl border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-shadow"
+            className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors placeholder:text-muted-foreground/50"
           />
           {searchQuery && (
             <button aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground">
@@ -290,7 +290,7 @@ const Messages = () => {
       {isLoading && (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-xl border border-border bg-card p-4 animate-pulse flex gap-3">
+            <div key={i} className="rounded-xl border border-border bg-card p-4 skeleton-block flex gap-3">
               <div className="h-10 w-10 rounded-full bg-secondary" />
               <div className="flex-1 space-y-2">
                 <div className="h-3 w-24 bg-secondary rounded" />

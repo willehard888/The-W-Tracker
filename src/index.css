@@ -300,6 +300,18 @@
   .surface-card {
     @apply rounded-2xl border border-border/50 bg-card/40;
   }
+  /* Loading placeholder — the premium gold shimmer (replaces flat animate-pulse) */
+  .skeleton-block {
+    @apply relative overflow-hidden;
+  }
+  .skeleton-block::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent 0%, hsl(var(--gold) / 0.08) 45%, hsl(var(--gold) / 0.14) 50%, hsl(var(--gold) / 0.08) 55%, transparent 100%);
+    animation: skeleton-sweep 1.6s ease-in-out infinite;
+  }
   :root {
     --z-nav: 40;
     --z-sheet: 50;

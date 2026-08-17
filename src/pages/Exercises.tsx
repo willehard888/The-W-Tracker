@@ -143,7 +143,7 @@ const Exercises = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search 500+ exercises…"
-            className="w-full rounded-xl border border-border/50 bg-background/50 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50"
+            className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
           />
           {query && (
             <button aria-label="Clear search" onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -176,7 +176,7 @@ const Exercises = () => {
         {!ready ? (
           <div className="space-y-2">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-[72px] rounded-2xl bg-card/40 border border-border/40 animate-pulse" />
+              <div key={i} className="h-[72px] rounded-2xl bg-card/40 border border-border/40 skeleton-block" />
             ))}
           </div>
         ) : (

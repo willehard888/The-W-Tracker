@@ -940,7 +940,7 @@ const EliteFeed = () => {
         {isLoading && (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-2xl border border-border bg-card p-4 animate-pulse">
+              <div key={i} className="rounded-2xl border border-border bg-card p-4 skeleton-block">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="h-10 w-10 rounded-full bg-secondary" />
                   <div className="space-y-1.5">

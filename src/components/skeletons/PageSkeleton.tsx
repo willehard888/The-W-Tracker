@@ -6,7 +6,7 @@
  * already defined in index.css and used by RouteFallback.
  */
 
-const Block = ({
+export const Block = ({
   className = "",
   delay = 0,
   height,
@@ -112,5 +112,16 @@ export const ListSkeleton = () => (
     {Array.from({ length: 7 }).map((_, i) => (
       <Block key={i} height={72} delay={i * 40} />
     ))}
+  </div>
+);
+
+/** Generic detail-page data phase (hero card + rows) — drops inline where the
+ *  data will render, replacing the bare centered spinner that 13 pages used. */
+export const DetailSkeleton = () => (
+  <div className="space-y-3 animate-fade-in pt-2">
+    <Block height={180} />
+    <Block height={96} delay={80} />
+    <Block height={72} delay={140} />
+    <Block height={72} delay={200} />
   </div>
 );

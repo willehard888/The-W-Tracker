@@ -108,7 +108,7 @@ const PublicProfile = () => {
         <Lock size={32} className="text-muted-foreground/40 mb-3" />
         <h1 className="font-display text-xl font-black mb-2">User not found</h1>
         <p className="text-sm text-muted-foreground mb-6">@{username} doesn't exist on Whealth Factory</p>
-        <Button variant="coal" onClick={() => navigate("/")}>Open Whealth Factory</Button>
+        <Button variant="ember" onClick={() => navigate("/")}>Open Whealth Factory</Button>
       </div>
     );
   }
@@ -250,7 +250,7 @@ const PublicProfile = () => {
 
         {/* CTA — moved up so it's visible above the fold */}
         <Link to="/landing" className="block mb-5">
-          <Button variant="coal" size="default" className="w-full">
+          <Button variant="ember" size="default" className="w-full">
             <ExternalLink size={14} />
             Track your status
           </Button>

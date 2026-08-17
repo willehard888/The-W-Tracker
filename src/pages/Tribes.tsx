@@ -12,6 +12,7 @@ import EmptyState from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
+import { SEGMENT_ACTIVE } from "@/components/ui/segment";
 import { avatarUrl, transformImage } from "@/lib/img";
 import TribeSearchBar from "@/components/TribeSearchBar";
 import StreakFlameInline from "@/components/StreakFlameInline";
@@ -416,7 +417,7 @@ const Tribes = () => {
             className={cn(
               "flex-1 text-xs font-black py-2 rounded-lg uppercase tracking-wider transition-all",
               tab === t
-                ? "bg-[linear-gradient(180deg,hsl(44_92%_66%),hsl(36_90%_56%)_50%,hsl(28_86%_48%))] text-[hsl(26_85%_10%)] shadow-[0_0_0_1px_hsl(40_80%_70%/0.3),inset_0_1px_0_hsl(48_100%_92%/0.6),inset_0_-1px_2px_hsl(16_80%_24%/0.4),0_2px_8px_-2px_hsl(28_90%_40%/0.5)]"
+                ? SEGMENT_ACTIVE
                 : "text-muted-foreground hover:text-foreground"
             )}
           >

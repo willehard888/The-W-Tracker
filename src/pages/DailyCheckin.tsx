@@ -560,7 +560,7 @@ const DailyCheckin = () => {
             </div>
             <h1 className="font-display text-2xl font-black tracking-tight mb-2">Checked in ✓</h1>
             <p className="text-muted-foreground text-sm mb-8">Your day is locked in. Nice work.</p>
-            <Button variant="gold" size="lg" onClick={() => navigate("/")}>Back to Dashboard</Button>
+            <Button variant="ember" size="lg" onClick={() => navigate("/")}>Back to Dashboard</Button>
           </div>
         }
       >
@@ -630,7 +630,7 @@ const DailyCheckin = () => {
             Pick the habits you'll actually track every day. Sleep, workout, water &amp; meditation
             stay in — add whatever matters to you.
           </p>
-          <Button variant="gold" size="lg" className="w-full" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
+          <Button variant="ember" size="lg" className="w-full" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
             <SlidersHorizontal size={16} /> Choose my habits
           </Button>
           <button onClick={dismissOnboard} className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 hover:text-foreground transition-colors py-1">

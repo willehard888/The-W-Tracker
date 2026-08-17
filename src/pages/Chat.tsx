@@ -296,7 +296,7 @@ const Chat = () => {
             />
           </div>
           <Button
-            variant={text.trim() ? "gold" : "secondary"}
+            variant={text.trim() ? "ember" : "secondary"}
             size="icon-lg"
             onClick={handleSend}
             loading={sending}

@@ -130,7 +130,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
         )}
 
         <Button
-          variant={alreadyLogged ? "secondary" : "gold"}
+          variant={alreadyLogged ? "secondary" : "ember"}
           size="lg"
           disabled={alreadyLogged || saving}
           onClick={markDone}

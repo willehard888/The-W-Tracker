@@ -10,6 +10,7 @@ import { fmtQty } from "@/lib/recipe-scaling";
 import { Button } from "@/components/ui/button";
 import { RECIPES, type Recipe } from "@/data/recipes";
 import { cn } from "@/lib/utils";
+import { SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 
 const BATCH_OPTIONS = [1, 2, 3, 4, 5] as const;
@@ -88,8 +89,8 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
                 className={cn(
                   "flex-1 rounded-lg py-2.5 text-[13px] font-black tabular-nums transition-all active:scale-[0.97] border",
                   batch === b
-                    ? "bg-gold text-primary-foreground border-transparent"
-                    : "bg-secondary/40 border-border/50 text-foreground/60",
+                    ? cn(SEGMENT_ACTIVE, "border-transparent")
+                    : cn("bg-secondary/40 border-border/50", SEGMENT_IDLE),
                 )}
               >
                 {b}×

@@ -117,7 +117,7 @@ const HabitsTab = () => {
           <p className="text-[11px] text-muted-foreground mb-4">
             Open the library and add up to 8 evidence-graded protocols.
           </p>
-          <Button variant="gold" size="sm" onClick={() => navigate("/coach/library")}>
+          <Button variant="ember" size="sm" onClick={() => navigate("/coach/library")}>
             <Plus size={13} /> Add your first habit
           </Button>
         </div>

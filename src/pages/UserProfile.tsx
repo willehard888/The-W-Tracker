@@ -23,10 +23,6 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 
-// Shared action-button styling for the profile header.
-const PRIMARY_BTN = "inline-flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-[12px] font-black tracking-tight transition-all active:scale-[0.98]";
-const BTN_GOLD = "bg-gold text-primary-foreground shadow-[0_3px_12px_-2px_hsl(42_78%_50%/0.45)]";
-const SECONDARY_BTN = "text-gold border border-gold/30 bg-gold/[0.06] hover:bg-gold/10";
 
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -490,63 +486,60 @@ const UserProfile = () => {
                   const sent = friendship?.status === "pending" && friendship.requester_id === myProfile?.user_id;
                   if (areFriends) {
                     return (
-                      <button onClick={() => handleFriendAction("remove")} className={cn(PRIMARY_BTN, "text-[hsl(var(--teal))] border border-[hsl(var(--teal))]/35 bg-[hsl(var(--teal))]/[0.07]")}>
+                      <Button variant="gold-outline" size="sm" onClick={() => handleFriendAction("remove")} className="w-full">
                         <UserCheck size={15} /> Friends
-                      </button>
+                      </Button>
                     );
                   }
                   if (incoming) {
                     return (
                       <div className="flex gap-1.5">
-                        <button onClick={() => handleFriendAction("accept")} className={cn(PRIMARY_BTN, "flex-1", BTN_GOLD)}>
+                        <Button variant="ember" size="sm" onClick={() => handleFriendAction("accept")} className="flex-1">
                           <UserCheck size={15} /> Accept
-                        </button>
-                        <button onClick={() => handleFriendAction("decline")} className={cn(PRIMARY_BTN, "px-3 text-muted-foreground border border-border/60 bg-card/40")} aria-label="Decline">
+                        </Button>
+                        <Button variant="secondary" size="sm" onClick={() => handleFriendAction("decline")} className="px-3" aria-label="Decline">
                           <UserX size={15} />
-                        </button>
+                        </Button>
                       </div>
                     );
                   }
                   if (sent) {
                     return (
-                      <button onClick={() => handleFriendAction("cancel")} className={cn(PRIMARY_BTN, "text-muted-foreground border border-border/50 bg-card/30")}>
+                      <Button variant="secondary" size="sm" onClick={() => handleFriendAction("cancel")} className="w-full">
                         <Clock size={14} /> Pending
-                      </button>
+                      </Button>
                     );
                   }
                   return (
-                    <button onClick={() => handleFriendAction("send")} className={cn(PRIMARY_BTN, BTN_GOLD)}>
+                    <Button variant="ember" size="sm" onClick={() => handleFriendAction("send")} className="w-full">
                       <UserPlus size={15} /> Add friend
-                    </button>
+                    </Button>
                   );
                 })()}
 
                 {/* Challenge — battle is friends-only */}
-                <button
+                <Button
+                  variant={areFriends ? "ember" : "secondary"}
+                  size="sm"
                   onClick={() =>
                     areFriends
                       ? setShowBattleModal(true)
                       : toast(`Add @${profile.username} as a friend to battle them`)
                   }
-                  className={cn(
-                    PRIMARY_BTN,
-                    areFriends
-                      ? "text-white bg-gradient-to-r from-[hsl(22_90%_52%)] to-[hsl(12_88%_46%)] shadow-[0_3px_14px_-2px_hsl(18_90%_50%/0.5)]"
-                      : "text-muted-foreground/70 border border-border/60 bg-card/30",
-                  )}
+                  className="w-full"
                 >
                   <Swords size={15} /> Challenge
-                </button>
+                </Button>
               </div>
 
               {/* Secondary row — message + compare */}
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => navigate(`/chat/${userId}`)} className={cn(PRIMARY_BTN, SECONDARY_BTN)}>
+                <Button variant="gold-outline" size="sm" onClick={() => navigate(`/chat/${userId}`)} className="w-full">
                   <MessageCircle size={15} /> Message
-                </button>
-                <button onClick={() => navigate(`/badges/compare?user=${profile.username}`)} className={cn(PRIMARY_BTN, SECONDARY_BTN)}>
+                </Button>
+                <Button variant="gold-outline" size="sm" onClick={() => navigate(`/badges/compare?user=${profile.username}`)} className="w-full">
                   <GitCompare size={15} /> Compare
-                </button>
+                </Button>
               </div>
             </div>
           </motion.div>
@@ -814,7 +807,7 @@ const BattleChallengeModal = ({
         ))}
       </div>
 
-      <Button variant="coal" className="w-full rounded-full" onClick={onChallenge} disabled={creating}>
+      <Button variant="ember" className="w-full rounded-full" onClick={onChallenge} disabled={creating}>
         <Swords size={14} />
         {creating ? "Sending..." : "Send Challenge"}
       </Button>

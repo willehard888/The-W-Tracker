@@ -514,7 +514,7 @@ const Profile = () => {
       {/* Stats — battles + kudos */}
       <div className="flex flex-col gap-3 animate-reveal animate-reveal-delay-2">
         <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
-        <StatCard icon={Trophy} label="Kudos Received" value={kudosReceived || 0} variant="gold" />
+        <StatCard icon={Trophy} label="Kudos Received" value={kudosReceived || 0} variant="ember" />
       </div>
 
       {/* Your Blueprint — Coach's read of who you are. Renders null when

@@ -277,7 +277,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
               </div>
             </div>
           </div>
-          <Button onClick={handleSaveMeta} disabled={busy} className="w-full" variant="coal">
+          <Button onClick={handleSaveMeta} disabled={busy} className="w-full" variant="ember">
             {busy ? <Loader2 size={14} className="animate-spin" /> : null}
             {uploading ? "Uploading…" : savingMeta ? "Saving…" : "Save changes"}
           </Button>

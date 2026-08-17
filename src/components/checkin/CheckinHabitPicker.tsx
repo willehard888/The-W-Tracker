@@ -186,7 +186,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving }
 
             {/* Footer */}
             <div className="px-5 pt-3 border-t border-border/60 shrink-0">
-              <Button variant="gold" size="lg" className="w-full" onClick={handleSave} disabled={saving}>
+              <Button variant="ember" size="lg" className="w-full" onClick={handleSave} disabled={saving}>
                 {saving ? <><Loader2 size={18} className="animate-spin" /> Saving…</> : "Save my check-in"}
               </Button>
             </div>

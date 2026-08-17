@@ -111,10 +111,10 @@ const buttonVariants = cva(
         // Ember outline — premium hairline ember for secondary tribe actions
         "ember-outline": [
           "relative text-[hsl(22_98%_66%)] font-semibold",
-          "border border-[hsl(18_95%_58%/0.5)]",
+          "border border-[hsl(var(--ember)/0.5)]",
           "overflow-hidden isolate",
-          "[background:linear-gradient(180deg,hsl(18_95%_58%/0.08)_0%,hsl(14_92%_42%/0.05)_100%)]",
-          "shadow-[inset_0_1px_0_hsl(48_100%_88%/0.14),inset_0_-1px_0_hsl(10_82%_14%/0.4),inset_0_-8px_16px_-12px_hsl(18_95%_58%/0.4),0_1px_2px_hsl(14_70%_10%/0.3),0_4px_12px_-6px_hsl(18_95%_58%/0.25)]",
+          "[background:linear-gradient(180deg,hsl(var(--ember)/0.08)_0%,hsl(14_92%_42%/0.05)_100%)]",
+          "shadow-[inset_0_1px_0_hsl(48_100%_88%/0.14),inset_0_-1px_0_hsl(10_82%_14%/0.4),inset_0_-8px_16px_-12px_hsl(var(--ember)/0.4),0_1px_2px_hsl(14_70%_10%/0.3),0_4px_12px_-6px_hsl(var(--ember)/0.25)]",
           // ::before — soft inner heat glow at the bottom
           "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none",
           "before:[background:radial-gradient(120%_80%_at_50%_120%,hsl(18_98%_58%/0.18)_0%,transparent_60%)]",
@@ -124,10 +124,10 @@ const buttonVariants = cva(
           "after:opacity-0 after:transition-[transform,opacity] after:duration-[700ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
           "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
           "hover:text-[hsl(28_100%_74%)]",
-          "hover:border-[hsl(18_95%_58%/0.85)]",
-          "hover:[background:linear-gradient(180deg,hsl(18_95%_58%/0.18)_0%,hsl(14_92%_42%/0.10)_100%)]",
-          "hover:shadow-[inset_0_1px_0_hsl(48_100%_88%/0.2),inset_0_-1px_0_hsl(10_82%_14%/0.45),inset_0_-10px_18px_-12px_hsl(18_95%_60%/0.55),0_2px_3px_hsl(14_70%_10%/0.35),0_8px_20px_-4px_hsl(18_95%_58%/0.4)]",
-          "active:[background:linear-gradient(180deg,hsl(18_95%_58%/0.10)_0%,hsl(14_92%_42%/0.05)_100%)]",
+          "hover:border-[hsl(var(--ember)/0.85)]",
+          "hover:[background:linear-gradient(180deg,hsl(var(--ember)/0.18)_0%,hsl(14_92%_42%/0.10)_100%)]",
+          "hover:shadow-[inset_0_1px_0_hsl(48_100%_88%/0.2),inset_0_-1px_0_hsl(10_82%_14%/0.45),inset_0_-10px_18px_-12px_hsl(18_95%_60%/0.55),0_2px_3px_hsl(14_70%_10%/0.35),0_8px_20px_-4px_hsl(var(--ember)/0.4)]",
+          "active:[background:linear-gradient(180deg,hsl(var(--ember)/0.10)_0%,hsl(14_92%_42%/0.05)_100%)]",
           "active:shadow-[inset_0_2px_4px_hsl(10_82%_10%/0.5)]",
         ].join(" "),
 
@@ -158,9 +158,9 @@ const buttonVariants = cva(
         // Stronger ember vibe than the inherited `outline` look.
         "ember-glass": [
           "relative text-[hsl(22_98%_72%)] font-semibold overflow-hidden isolate",
-          "border border-[hsl(18_95%_58%/0.45)]",
-          "[background:linear-gradient(180deg,hsl(18_95%_58%/0.10)_0%,hsl(14_92%_42%/0.06)_100%)]",
-          "shadow-[inset_0_1px_0_hsl(48_100%_88%/0.16),inset_0_-1px_0_hsl(10_82%_14%/0.45),inset_0_-10px_20px_-12px_hsl(18_95%_58%/0.42),0_1px_2px_hsl(14_70%_10%/0.32),0_4px_14px_-6px_hsl(18_95%_58%/0.28)]",
+          "border border-[hsl(var(--ember)/0.45)]",
+          "[background:linear-gradient(180deg,hsl(var(--ember)/0.10)_0%,hsl(14_92%_42%/0.06)_100%)]",
+          "shadow-[inset_0_1px_0_hsl(48_100%_88%/0.16),inset_0_-1px_0_hsl(10_82%_14%/0.45),inset_0_-10px_20px_-12px_hsl(var(--ember)/0.42),0_1px_2px_hsl(14_70%_10%/0.32),0_4px_14px_-6px_hsl(var(--ember)/0.28)]",
           "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none",
           "before:[background:radial-gradient(120%_80%_at_50%_120%,hsl(18_98%_58%/0.22)_0%,transparent_60%)]",
           "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
@@ -168,9 +168,9 @@ const buttonVariants = cva(
           "after:opacity-0 after:transition-[transform,opacity] after:duration-[700ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
           "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
           "hover:text-[hsl(28_100%_78%)]",
-          "hover:border-[hsl(18_95%_58%/0.85)]",
-          "hover:[background:linear-gradient(180deg,hsl(18_95%_58%/0.20)_0%,hsl(14_92%_42%/0.12)_100%)]",
-          "hover:shadow-[inset_0_1px_0_hsl(48_100%_88%/0.22),inset_0_-1px_0_hsl(10_82%_14%/0.5),inset_0_-12px_22px_-12px_hsl(18_95%_60%/0.55),0_2px_3px_hsl(14_70%_10%/0.35),0_8px_22px_-4px_hsl(18_95%_58%/0.42)]",
+          "hover:border-[hsl(var(--ember)/0.85)]",
+          "hover:[background:linear-gradient(180deg,hsl(var(--ember)/0.20)_0%,hsl(14_92%_42%/0.12)_100%)]",
+          "hover:shadow-[inset_0_1px_0_hsl(48_100%_88%/0.22),inset_0_-1px_0_hsl(10_82%_14%/0.5),inset_0_-12px_22px_-12px_hsl(18_95%_60%/0.55),0_2px_3px_hsl(14_70%_10%/0.35),0_8px_22px_-4px_hsl(var(--ember)/0.42)]",
           "active:shadow-[inset_0_2px_4px_hsl(10_82%_10%/0.5)]",
         ].join(" "),
 

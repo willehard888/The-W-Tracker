@@ -82,7 +82,7 @@ const TIER_PALETTES: FlamePalette[] = [
   // 0 Hot
   { base: "hsl(8 78% 34%)",   outer: "hsl(14 90% 56%)",  mid: "hsl(18 90% 55%)",  core: "hsl(42 100% 72%)",  glow: "hsl(14 90% 56%)",  text: "hsl(14 90% 62%)" },
   // 1 Warm
-  { base: "hsl(10 80% 36%)",  outer: "hsl(14 88% 48%)",  mid: "hsl(20 92% 56%)",  core: "hsl(42 100% 75%)",  glow: "hsl(18 95% 58%)",  text: "hsl(18 95% 62%)" },
+  { base: "hsl(10 80% 36%)",  outer: "hsl(14 88% 48%)",  mid: "hsl(20 92% 56%)",  core: "hsl(42 100% 75%)",  glow: "hsl(var(--ember))",  text: "hsl(18 95% 62%)" },
   // 2 On Fire
   { base: "hsl(8 82% 38%)",   outer: "hsl(16 92% 50%)",  mid: "hsl(28 95% 58%)",  core: "hsl(48 100% 80%)",  glow: "hsl(28 95% 60%)",  text: "hsl(28 95% 65%)" },
   // 3 Blazing

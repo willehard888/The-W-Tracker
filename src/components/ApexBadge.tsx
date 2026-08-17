@@ -77,9 +77,9 @@ const ApexBadge = ({
       title="Earned Apex — Top 10%"
       className={cn(
         "inline-flex items-center rounded-full font-black uppercase tracking-wider",
-        "bg-gradient-to-r from-[hsl(18_95%_58%)] to-[hsl(var(--gold))]",
-        "text-background border border-[hsl(18_95%_58%)]/60",
-        "shadow-[0_0_8px_hsl(18_95%_58%/0.4)]",
+        "bg-gradient-to-r from-[hsl(var(--ember))] to-[hsl(var(--gold))]",
+        "text-background border border-[hsl(var(--ember))]/60",
+        "shadow-[0_0_8px_hsl(var(--ember)/0.4)]",
         s.wrap,
         className,
       )}

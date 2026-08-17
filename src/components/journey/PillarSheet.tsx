@@ -16,7 +16,7 @@ const PILLAR_LABEL: Record<keyof PillarScores, string> = {
 };
 
 const partColor = (v: number) =>
-  v >= 75 ? "bg-gold" : v >= 50 ? "bg-gold/70" : v >= 25 ? "bg-[hsl(18_95%_58%/0.8)]" : "bg-destructive/70";
+  v >= 75 ? "bg-gold" : v >= 50 ? "bg-gold/70" : v >= 25 ? "bg-[hsl(var(--ember)/0.8)]" : "bg-destructive/70";
 
 interface PillarSheetProps {
   pillar: keyof PillarScores;

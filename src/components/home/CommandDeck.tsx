@@ -41,10 +41,10 @@ const CommandDeck = ({
 
   const border = canCheckin
     ? isLegend
-      ? "linear-gradient(135deg, hsl(280 70% 60%), hsl(42 78% 54%), hsl(350 80% 60%), hsl(280 70% 60%))"
+      ? "linear-gradient(135deg, hsl(280 70% 60%), hsl(var(--gold)), hsl(350 80% 60%), hsl(280 70% 60%))"
       : isApex
-      ? "linear-gradient(135deg, hsl(18 95% 58%), hsl(42 78% 54%), hsl(42 85% 70%), hsl(18 95% 58%))"
-      : "linear-gradient(135deg, hsl(42 78% 54%), hsl(18 95% 58%), hsl(42 85% 70%), hsl(42 78% 54%))"
+      ? "linear-gradient(135deg, hsl(var(--ember)), hsl(var(--gold)), hsl(42 85% 70%), hsl(var(--ember)))"
+      : "linear-gradient(135deg, hsl(var(--gold)), hsl(var(--ember)), hsl(42 85% 70%), hsl(var(--gold)))"
     : "linear-gradient(135deg, hsl(var(--border)), hsl(var(--border)))";
 
   return (
@@ -66,7 +66,7 @@ const CommandDeck = ({
         )}
         style={{
           background: canCheckin
-            ? "radial-gradient(130% 90% at 0% 0%, hsl(42 78% 54% / 0.16), transparent 60%), linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 5%))"
+            ? "radial-gradient(130% 90% at 0% 0%, hsl(var(--gold) / 0.16), transparent 60%), linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 5%))"
             : "linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 6%))",
         }}
       >
@@ -75,7 +75,7 @@ const CommandDeck = ({
           <div
             aria-hidden
             className="absolute -top-16 -right-12 w-44 h-44 rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, hsl(42 78% 54% / 0.30) 0%, transparent 65%)" }}
+            style={{ background: "radial-gradient(circle, hsl(var(--gold) / 0.30) 0%, transparent 65%)" }}
           />
         )}
 
@@ -86,7 +86,7 @@ const CommandDeck = ({
               className={cn(
                 "h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 relative",
                 canCheckin
-                  ? "gradient-gold text-primary-foreground shadow-[0_0_24px_hsl(42_78%_54%/0.55)]"
+                  ? "gradient-gold text-primary-foreground shadow-[0_0_24px_hsl(var(--gold)/0.55)]"
                   : "bg-secondary text-muted-foreground",
               )}
             >
@@ -116,8 +116,8 @@ const CommandDeck = ({
 
             {/* Streak chip — header-style flame flicker */}
             {streak > 0 && (
-              <div className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[hsl(18_95%_58%/0.12)] border border-[hsl(18_95%_58%)]/30 px-2.5 py-1">
-                <Flame size={13} className="text-[hsl(18_95%_58%)] status-flame-flicker" strokeWidth={2.8} />
+              <div className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[hsl(var(--ember)/0.12)] border border-[hsl(var(--ember))]/30 px-2.5 py-1">
+                <Flame size={13} className="text-[hsl(var(--ember))] status-flame-flicker" strokeWidth={2.8} />
                 <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(22_95%_66%)]">{streak}</span>
               </div>
             )}
@@ -125,7 +125,7 @@ const CommandDeck = ({
 
           {/* Primary action bar */}
           {canCheckin ? (
-            <div className="mt-3.5 flex items-center justify-between gap-2 rounded-xl px-4 py-3 gradient-gold text-primary-foreground shadow-[0_8px_22px_-8px_hsl(42_78%_54%/0.7)] group-active:brightness-95">
+            <div className="mt-3.5 flex items-center justify-between gap-2 rounded-xl px-4 py-3 gradient-gold text-primary-foreground shadow-[0_8px_22px_-8px_hsl(var(--gold)/0.7)] group-active:brightness-95">
               <span className="font-black text-sm uppercase tracking-wide inline-flex items-center gap-1.5">
                 <Flame size={15} strokeWidth={2.9} /> Check in now
               </span>

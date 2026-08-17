@@ -42,7 +42,7 @@ const TribeComposer = ({
   onPost,
   progressLabel,
 }: TribeComposerProps) => (
-  <div className="mb-4 rounded-2xl p-3 border border-[hsl(18_95%_58%)]/25 bg-card/70">
+  <div className="mb-4 rounded-2xl p-3 border border-[hsl(var(--ember))]/25 bg-card/70">
     <Textarea
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -82,7 +82,7 @@ const TribeComposer = ({
           type="button"
           onClick={() => fileRef.current?.click()}
           disabled={posting || hasVideo}
-          className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-[hsl(18_95%_58%)] hover:bg-[hsl(18_95%_58%)]/10 transition-colors disabled:opacity-40"
+          className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-[hsl(var(--ember))] hover:bg-[hsl(var(--ember))]/10 transition-colors disabled:opacity-40"
           aria-label="Add image"
         >
           <ImageIcon size={16} />
@@ -91,7 +91,7 @@ const TribeComposer = ({
           type="button"
           onClick={() => videoInputRef.current?.click()}
           disabled={posting || hasImage}
-          className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-[hsl(18_95%_58%)] hover:bg-[hsl(18_95%_58%)]/10 transition-colors disabled:opacity-40"
+          className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-[hsl(var(--ember))] hover:bg-[hsl(var(--ember))]/10 transition-colors disabled:opacity-40"
           aria-label="Add video"
         >
           <VideoIcon size={16} />
@@ -102,7 +102,7 @@ const TribeComposer = ({
         onClick={onPost}
         size="sm"
         disabled={posting || (!value.trim() && !hasImage && !hasVideo)}
-        className="bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-bold"
+        className="bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-bold"
       >
         {posting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
         Post

@@ -112,7 +112,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
     isDiamond   ? "hsl(200 85% 65%)" :
     isBlazing   ? "hsl(42 85% 60%)"  :
     isOnFire    ? "hsl(28 95% 60%)"  :
-    isWarm      ? "hsl(18 95% 58%)"  :
+    isWarm      ? "hsl(var(--ember))"  :
     isHot       ? "hsl(14 90% 56%)"  : "hsl(var(--muted-foreground))";
 
   /* Number text class */
@@ -185,14 +185,14 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
           className="absolute inset-0 pointer-events-none"
           style={{
             background: isLegendary
-              ? "radial-gradient(circle at 25% -10%, hsl(280 70% 60% / 0.28), transparent 55%), radial-gradient(circle at 75% 110%, hsl(42 78% 54% / 0.22), transparent 55%), radial-gradient(circle at 50% 50%, hsl(350 80% 60% / 0.08), transparent 70%)"
+              ? "radial-gradient(circle at 25% -10%, hsl(280 70% 60% / 0.28), transparent 55%), radial-gradient(circle at 75% 110%, hsl(var(--gold) / 0.22), transparent 55%), radial-gradient(circle at 50% 50%, hsl(350 80% 60% / 0.08), transparent 70%)"
               : isDiamond
-              ? "radial-gradient(circle at 30% -10%, hsl(200 80% 65% / 0.25), transparent 55%), radial-gradient(circle at 70% 110%, hsl(42 78% 54% / 0.18), transparent 55%)"
+              ? "radial-gradient(circle at 30% -10%, hsl(200 80% 65% / 0.25), transparent 55%), radial-gradient(circle at 70% 110%, hsl(var(--gold) / 0.18), transparent 55%)"
               : isBlazing
-              ? "radial-gradient(circle at 30% -5%, hsl(42 78% 54% / 0.28), transparent 60%), radial-gradient(circle at 75% 100%, hsl(18 95% 58% / 0.12), transparent 60%)"
+              ? "radial-gradient(circle at 30% -5%, hsl(var(--gold) / 0.28), transparent 60%), radial-gradient(circle at 75% 100%, hsl(var(--ember) / 0.12), transparent 60%)"
               : isOnFire
-              ? "radial-gradient(circle at 30% -5%, hsl(18 95% 58% / 0.25), transparent 60%)"
-              : "radial-gradient(circle at 30% -5%, hsl(18 95% 58% / 0.18), transparent 65%)",
+              ? "radial-gradient(circle at 30% -5%, hsl(var(--ember) / 0.25), transparent 60%)"
+              : "radial-gradient(circle at 30% -5%, hsl(var(--ember) / 0.18), transparent 65%)",
           }}
         />
       )}
@@ -532,7 +532,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
                           : isDiamond
                           ? "linear-gradient(90deg, hsl(200 85% 60%), hsl(42 90% 65%))"
                           : isBlazing
-                          ? "linear-gradient(90deg, hsl(18 95% 58%), hsl(42 90% 65%))"
+                          ? "linear-gradient(90deg, hsl(var(--ember)), hsl(42 90% 65%))"
                           : `linear-gradient(90deg, ${accent}, ${accent.replace("60%", "70%")})`,
                         boxShadow: `0 0 6px ${accent.replace(")", " / 0.5)")}`,
                         animation: "streak-segment-fill 0.8s cubic-bezier(0.23, 1, 0.32, 1)",

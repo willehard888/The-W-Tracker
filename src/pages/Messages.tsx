@@ -154,7 +154,7 @@ const Messages = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search users..."
-            className="w-full h-10 pl-9 pr-9 rounded-xl border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-purple-500/30 transition-shadow"
+            className="w-full h-10 pl-9 pr-9 rounded-xl border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-shadow"
           />
           {searchQuery && (
             <button aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground">
@@ -334,7 +334,7 @@ const ConversationRow = ({ conv, userId, navigate, isFriend }: { conv: any; user
     className={cn(
       "w-full flex items-center gap-3 rounded-xl border p-4 text-left transition-all active:scale-[0.98] card-depth",
       conv.unread > 0
-        ? "border-purple-500/30 bg-purple-500/5"
+        ? "border-gold/30 bg-gold/5"
         : isFriend
           ? "border-[hsl(var(--teal))]/15 bg-card"
           : "border-border bg-card"
@@ -362,7 +362,7 @@ const ConversationRow = ({ conv, userId, navigate, isFriend }: { conv: any; user
       </p>
     </div>
     {conv.unread > 0 && (
-      <div className="h-5 min-w-5 px-1.5 rounded-full bg-purple-500 flex items-center justify-center">
+      <div className="h-5 min-w-5 px-1.5 rounded-full bg-ember flex items-center justify-center">
         <span className="text-[10px] font-bold text-white">{conv.unread}</span>
       </div>
     )}

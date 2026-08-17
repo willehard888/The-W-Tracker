@@ -54,7 +54,7 @@ const CheckinTierHeader = ({
     2: "from-[hsl(210_90%_56%)]/15 via-background to-background",
     3: "from-[hsl(var(--purple))]/18 via-background to-background",
     4: "from-gold/20 via-background to-background",
-    5: "from-[hsl(18_95%_58%)]/22 via-gold/10 to-background",
+    5: "from-[hsl(var(--ember))]/22 via-gold/10 to-background",
     6: "from-[hsl(280_70%_55%)]/22 via-gold/10 to-[hsl(350_80%_55%)]/15",
   };
 
@@ -64,7 +64,7 @@ const CheckinTierHeader = ({
     2: { bar: "bg-[hsl(210_90%_56%)]", ring: "ring-[hsl(210_90%_56%)]/40", chipBg: "bg-[hsl(210_90%_56%)]/15", chipText: "text-[hsl(210_90%_56%)]" },
     3: { bar: "bg-[hsl(var(--purple))]", ring: "ring-[hsl(var(--purple))]/40", chipBg: "bg-[hsl(var(--purple))]/15", chipText: "text-[hsl(var(--purple))]" },
     4: { bar: "bg-gradient-to-r from-gold to-gold-light", ring: "ring-gold/50", chipBg: "bg-gold/15", chipText: "text-gold" },
-    5: { bar: "bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)]", ring: "ring-[hsl(18_95%_58%)]/55", chipBg: "bg-gradient-to-r from-[hsl(18_95%_58%)]/20 to-gold/15", chipText: "text-[hsl(18_95%_58%)]" },
+    5: { bar: "bg-gradient-to-r from-[hsl(var(--ember))] via-gold to-[hsl(var(--ember))]", ring: "ring-[hsl(var(--ember))]/55", chipBg: "bg-gradient-to-r from-[hsl(var(--ember))]/20 to-gold/15", chipText: "text-[hsl(var(--ember))]" },
     6: { bar: "bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)]", ring: "ring-[hsl(280_70%_60%)]/55", chipBg: "bg-gradient-to-r from-[hsl(280_70%_55%)]/20 via-gold/15 to-[hsl(350_80%_55%)]/20", chipText: "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(280_70%_70%)] via-gold to-[hsl(350_80%_65%)]" },
   };
 
@@ -75,7 +75,7 @@ const CheckinTierHeader = ({
     streakIntensity === "legendary"
       ? "text-gold drop-shadow-[0_0_10px_hsl(var(--gold)/0.7)]"
       : streakIntensity === "critical"
-      ? "text-[hsl(18_95%_58%)] drop-shadow-[0_0_10px_hsl(18_95%_58%/0.7)]"
+      ? "text-[hsl(var(--ember))] drop-shadow-[0_0_10px_hsl(var(--ember)/0.7)]"
       : streakIntensity === "hot"
       ? "text-streak-orange drop-shadow-[0_0_8px_hsl(var(--streak-orange)/0.5)]"
       : streakIntensity === "warm"
@@ -91,7 +91,7 @@ const CheckinTierHeader = ({
       {cfg.rank >= 5 && (
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           {[
-            { right: "8%",  delay: "0s",   color: "hsl(18 95% 58%)" },
+            { right: "8%",  delay: "0s",   color: "hsl(var(--ember))" },
             { right: "32%", delay: "1.4s", color: "hsl(var(--gold))" },
             { right: "60%", delay: "2.8s", color: cfg.rank === 6 ? "hsl(280 70% 70%)" : "hsl(18 95% 62%)" },
           ].map((e, i) => (
@@ -153,7 +153,7 @@ const CheckinTierHeader = ({
           className={cn(
             "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border-2 shrink-0",
             cfg.rank >= 5
-              ? "border-gold/70 bg-gradient-to-r from-gold/20 via-[hsl(18_95%_58%)]/20 to-gold/20 shadow-[0_0_14px_hsl(var(--gold)/0.5)]"
+              ? "border-gold/70 bg-gradient-to-r from-gold/20 via-[hsl(var(--ember))]/20 to-gold/20 shadow-[0_0_14px_hsl(var(--gold)/0.5)]"
               : cfg.rank === 4
               ? "border-gold/60 bg-gold/15 shadow-[0_0_10px_hsl(var(--gold)/0.4)]"
               : "border-gold/40 bg-gold/10",
@@ -190,7 +190,7 @@ const CheckinTierHeader = ({
               streakIntensity === "legendary"
                 ? "text-gold"
                 : streakIntensity === "critical"
-                ? "text-[hsl(18_95%_58%)]"
+                ? "text-[hsl(var(--ember))]"
                 : streakIntensity === "hot"
                 ? "text-streak-orange"
                 : streakIntensity === "warm"

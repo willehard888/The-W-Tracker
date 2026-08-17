@@ -90,7 +90,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
           style={{
             animation: "badge-unlock-burst 1.2s ease-out forwards",
             background: `radial-gradient(circle, ${
-              isLegendary ? "hsl(42 78% 54% / 0.15)" :
+              isLegendary ? "hsl(var(--gold) / 0.15)" :
               badge.rarity === "epic" ? "hsl(275 80% 60% / 0.12)" :
               badge.rarity === "rare" ? "hsl(210 90% 56% / 0.1)" :
               "hsl(225 10% 52% / 0.08)"

@@ -11,8 +11,8 @@ interface Props {
 const tone = (s: number) => {
   if (s >= 80) return { ring: "hsl(152 68% 55%)", bg: "hsl(152 68% 50% / 0.15)", text: "text-xp-green" };
   if (s >= 60) return { ring: "hsl(var(--gold))", bg: "hsl(var(--gold) / 0.15)", text: "text-gold" };
-  if (s >= 40) return { ring: "hsl(28 90% 60%)", bg: "hsl(28 90% 55% / 0.15)", text: "text-amber-400" };
-  return { ring: "hsl(0 78% 60%)", bg: "hsl(0 78% 55% / 0.15)", text: "text-rose-400" };
+  if (s >= 40) return { ring: "hsl(28 90% 60%)", bg: "hsl(28 90% 55% / 0.15)", text: "text-amber" };
+  return { ring: "hsl(0 78% 60%)", bg: "hsl(0 78% 55% / 0.15)", text: "text-rose" };
 };
 
 const ReadinessRing = ({ score, size = 56, label, className }: Props) => {

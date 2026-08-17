@@ -90,10 +90,10 @@ const TribeLeaderboard = () => {
       {/* Hero */}
       <div className="relative rounded-2xl mb-5 p-[2px] overflow-hidden"
         style={{
-          background: "conic-gradient(from 180deg at 50% 50%, hsl(42 78% 54% / 0.7), hsl(18 95% 58% / 0.5), hsl(42 78% 54% / 0.7))",
+          background: "conic-gradient(from 180deg at 50% 50%, hsl(var(--gold) / 0.7), hsl(var(--ember) / 0.5), hsl(var(--gold) / 0.7))",
         }}
       >
-        <div className="rounded-2xl p-5 bg-gradient-to-br from-[hsl(18_95%_58%)]/12 via-card/85 to-gold/10 text-center">
+        <div className="rounded-2xl p-5 bg-gradient-to-br from-[hsl(var(--ember))]/12 via-card/85 to-gold/10 text-center">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/40 backdrop-blur-sm border border-gold/50 mb-2">
             <Trophy size={11} className="text-gold" strokeWidth={2.6} />
             <span className="text-[10px] font-black tracking-widest uppercase text-gold">
@@ -101,7 +101,7 @@ const TribeLeaderboard = () => {
             </span>
           </div>
           <h1 className="font-display text-2xl font-black tracking-tight leading-none">
-            <span className="bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[hsl(var(--ember))] via-gold to-[hsl(var(--ember))] bg-clip-text text-transparent">
               Top Tribes
             </span>
           </h1>
@@ -143,7 +143,7 @@ const TribeLeaderboard = () => {
           <div className="space-y-3 mb-5">
             {top3.map((r) => {
               const podium = r.rank === 1
-                ? { Icon: Crown, color: "hsl(42 78% 54%)", label: "Gold", glow: 0.55 }
+                ? { Icon: Crown, color: "hsl(var(--gold))", label: "Gold", glow: 0.55 }
                 : r.rank === 2
                 ? { Icon: Medal, color: "hsl(0 0% 78%)", label: "Silver", glow: 0.4 }
                 : { Icon: Award, color: "hsl(28 60% 52%)", label: "Bronze", glow: 0.4 };
@@ -294,7 +294,7 @@ const TribeLeaderboard = () => {
           <div className="max-w-md mx-auto pointer-events-auto">
             <button
               onClick={() => navigate(`/tribes/${myBest.tribe_id}`)}
-              className="w-full rounded-xl p-3 border border-gold/40 bg-background/85 backdrop-blur-md flex items-center gap-3 shadow-[0_0_18px_hsl(42_78%_54%/0.3)]"
+              className="w-full rounded-xl p-3 border border-gold/40 bg-background/85 backdrop-blur-md flex items-center gap-3 shadow-[0_0_18px_hsl(var(--gold)/0.3)]"
             >
               <span className="text-[10px] font-black tracking-widest uppercase text-gold shrink-0">
                 Your tribe

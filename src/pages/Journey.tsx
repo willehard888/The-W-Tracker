@@ -287,7 +287,7 @@ const DeltaTile = ({
       size={12}
       className={cn(
         "mx-auto mb-1",
-        good === undefined ? "text-gold/70" : good ? "text-xp-green" : "text-[hsl(18_95%_58%)]",
+        good === undefined ? "text-gold/70" : good ? "text-xp-green" : "text-[hsl(var(--ember))]",
       )}
     />
     <p className="font-display text-lg font-black tabular-nums leading-none">{value}</p>
@@ -321,7 +321,7 @@ const TrendCard = ({
         </div>
       </div>
       {delta && (
-        <span className={cn("inline-flex items-center gap-0.5 text-[11px] font-black tabular-nums", good ? "text-xp-green" : "text-[hsl(18_95%_58%)]")}>
+        <span className={cn("inline-flex items-center gap-0.5 text-[11px] font-black tabular-nums", good ? "text-xp-green" : "text-[hsl(var(--ember))]")}>
           {good ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
           {delta}
         </span>

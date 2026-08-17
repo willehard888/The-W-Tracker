@@ -52,7 +52,7 @@ const CATEGORIES: VaultCategory[] = [
     description:
       "Programming principles that hold across decades of S&C research: progressive overload, Zone 2 base, the Norwegian 4×4, and proper deload periodisation.",
     icon: Dumbbell,
-    accent: "hsl(18 95% 58%)",
+    accent: "hsl(var(--ember))",
   },
   {
     id: "recovery",

@@ -91,7 +91,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="font-display font-black flex items-center gap-2">
-            <UserPlus size={16} className="text-[hsl(18_95%_58%)]" />
+            <UserPlus size={16} className="text-[hsl(var(--ember))]" />
             Invite to Tribe
           </DialogTitle>
         </DialogHeader>
@@ -157,7 +157,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
                     <Users size={10} /> Member
                   </span>
                 ) : isInvited ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[hsl(18_95%_58%)] px-2 py-1 rounded-md bg-[hsl(18_95%_58%)]/10 border border-[hsl(18_95%_58%)]/30">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[hsl(var(--ember))] px-2 py-1 rounded-md bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
                     <Check size={10} /> Invited
                   </span>
                 ) : (

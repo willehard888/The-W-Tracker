@@ -167,7 +167,7 @@ const WeeklyBriefing = () => {
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] pointer-events-none z-0"
         style={{
           background:
-            "radial-gradient(ellipse at center top, hsl(42 78% 54% / 0.18) 0%, transparent 70%)",
+            "radial-gradient(ellipse at center top, hsl(var(--gold) / 0.18) 0%, transparent 70%)",
         }}
       />
 
@@ -189,7 +189,7 @@ const WeeklyBriefing = () => {
           <p className="text-[10px] uppercase tracking-[0.3em] text-gold/80 font-bold mb-2">
             Weekly Briefing · {formatDateRange(briefing.week_start, briefing.week_end)}
           </p>
-          <h1 className="font-display font-black text-3xl leading-tight tracking-tight bg-gradient-to-b from-[hsl(42_90%_75%)] to-[hsl(42_78%_54%)] bg-clip-text text-transparent">
+          <h1 className="font-display font-black text-3xl leading-tight tracking-tight bg-gradient-to-b from-[hsl(42_90%_75%)] to-[hsl(var(--gold))] bg-clip-text text-transparent">
             "{briefing.headline}"
           </h1>
         </motion.div>

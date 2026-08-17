@@ -55,7 +55,7 @@ const StatusNameplate = ({
   const labelClass = isLegend
     ? "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(280_70%_75%)] via-gold to-[hsl(350_80%_70%)] drop-shadow-[0_2px_22px_hsl(280_70%_60%/0.55)]"
     : isApex
-    ? "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(18_95%_62%)] via-gold to-[hsl(18_95%_62%)] drop-shadow-[0_2px_22px_hsl(18_95%_58%/0.55)]"
+    ? "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(18_95%_62%)] via-gold to-[hsl(18_95%_62%)] drop-shadow-[0_2px_22px_hsl(var(--ember)/0.55)]"
     : isElite
     ? "text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark drop-shadow-[0_2px_18px_hsl(var(--gold)/0.5)]"
     : isHigh
@@ -70,7 +70,7 @@ const StatusNameplate = ({
   const wrapperClass = isLegend
     ? "border-[hsl(280_70%_60%)]/45 bg-[radial-gradient(120%_140%_at_50%_0%,hsl(280_70%_55%/0.18),hsl(42_90%_55%/0.08)_45%,hsl(350_80%_55%/0.1)_75%,transparent)]"
     : isApex
-    ? "border-[hsl(18_95%_58%)]/55 bg-[radial-gradient(120%_140%_at_50%_0%,hsl(18_95%_58%/0.18),hsl(var(--gold)/0.08)_55%,transparent)]"
+    ? "border-[hsl(var(--ember))]/55 bg-[radial-gradient(120%_140%_at_50%_0%,hsl(var(--ember)/0.18),hsl(var(--gold)/0.08)_55%,transparent)]"
     : isElite
     ? "border-gold/45 bg-[radial-gradient(120%_140%_at_50%_0%,hsl(var(--gold)/0.14),transparent_70%)]"
     : isHigh
@@ -85,7 +85,7 @@ const StatusNameplate = ({
   const glowClass = isLegend
     ? "shadow-[0_0_44px_-6px_hsl(280_70%_60%/0.55),0_0_70px_-12px_hsl(var(--gold)/0.3)]"
     : isApex
-    ? "shadow-[0_0_40px_-4px_hsl(18_95%_58%/0.5),0_0_60px_-10px_hsl(var(--gold)/0.35)]"
+    ? "shadow-[0_0_40px_-4px_hsl(var(--ember)/0.5),0_0_60px_-10px_hsl(var(--gold)/0.35)]"
     : isElite
     ? "shadow-[0_0_32px_-4px_hsl(var(--gold)/0.55)]"
     : isHigh
@@ -162,7 +162,7 @@ const StatusNameplate = ({
           style={{
             background: isLegend
               ? "conic-gradient(from 200deg at 50% 30%, hsl(280 70% 58%/0.22), hsl(42 90% 55%/0.16), hsl(350 80% 55%/0.2), hsl(280 70% 58%/0.22))"
-              : "radial-gradient(ellipse at 30% 20%, hsl(18 95% 58%/0.2), transparent 60%)",
+              : "radial-gradient(ellipse at 30% 20%, hsl(var(--ember)/0.2), transparent 60%)",
           }}
         />
       )}
@@ -187,7 +187,7 @@ const StatusNameplate = ({
           className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 status-coal-pulse"
           style={{
             background:
-              "radial-gradient(ellipse at 50% 100%, hsl(18 95% 58% / 0.45) 0%, hsl(var(--gold) / 0.18) 35%, transparent 70%)",
+              "radial-gradient(ellipse at 50% 100%, hsl(var(--ember) / 0.45) 0%, hsl(var(--gold) / 0.18) 35%, transparent 70%)",
             transformOrigin: "center bottom",
           }}
         />
@@ -197,11 +197,11 @@ const StatusNameplate = ({
       {isApex && (
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           {[
-            { left: "12%", delay: "0s",   color: "hsl(18 95% 58%)", size: 3 },
+            { left: "12%", delay: "0s",   color: "hsl(var(--ember))", size: 3 },
             { left: "28%", delay: "0.7s", color: "hsl(var(--gold))", size: 2 },
             { left: "45%", delay: "1.4s", color: "hsl(18 95% 62%)", size: 3 },
             { left: "62%", delay: "2.1s", color: "hsl(var(--gold-light))", size: 2 },
-            { left: "78%", delay: "2.8s", color: "hsl(18 95% 58%)", size: 2.5 },
+            { left: "78%", delay: "2.8s", color: "hsl(var(--ember))", size: 2.5 },
             { left: "90%", delay: "3.5s", color: "hsl(var(--gold))", size: 2 },
           ].map((e, i) => (
             <span
@@ -236,7 +236,7 @@ const StatusNameplate = ({
                 width: e.size,
                 height: e.size,
                 background: "hsl(var(--gold-light))",
-                boxShadow: "0 0 5px hsl(var(--gold)), 0 0 10px hsl(42 78% 54% / 0.6)",
+                boxShadow: "0 0 5px hsl(var(--gold)), 0 0 10px hsl(var(--gold) / 0.6)",
                 animationDelay: e.delay,
                 animationDuration: "5s",
               }}
@@ -256,8 +256,8 @@ const StatusNameplate = ({
               key={i}
               className="absolute bottom-1 status-ember-rise rounded-full w-[2px] h-[2px]"
               style={{
-                background: "hsl(42 78% 54%)",
-                boxShadow: "0 0 4px hsl(42 78% 54%), 0 0 8px hsl(42 78% 54% / 0.5)",
+                background: "hsl(var(--gold))",
+                boxShadow: "0 0 4px hsl(var(--gold)), 0 0 8px hsl(var(--gold) / 0.5)",
                 animationDelay: e.delay,
                 animationDuration: "5.5s",
               }}
@@ -294,7 +294,7 @@ const StatusNameplate = ({
         <>
           <span
             aria-hidden
-            className="absolute top-3 right-5 h-1 w-1 rounded-full bg-[hsl(18_95%_58%)] animate-pulse"
+            className="absolute top-3 right-5 h-1 w-1 rounded-full bg-[hsl(var(--ember))] animate-pulse"
           />
           <span
             aria-hidden
@@ -328,7 +328,7 @@ const StatusNameplate = ({
             borderColor: isLegend
               ? "hsl(280 70% 60% / 0.45)"
               : isApex
-              ? "hsl(18 95% 58% / 0.55)"
+              ? "hsl(var(--ember) / 0.55)"
               : "hsl(var(--gold) / 0.45)",
           }}
         />
@@ -378,7 +378,7 @@ const StatusNameplate = ({
             className={cn(
               "text-[10px] font-black uppercase tracking-[0.22em] px-2.5 py-1 rounded-full border",
               isLegend && "border-[hsl(280_70%_60%)]/40 text-[hsl(280_70%_80%)] bg-[hsl(280_70%_55%)]/10",
-              isApex && "border-[hsl(18_95%_58%)]/45 text-[hsl(18_95%_70%)] bg-[hsl(18_95%_58%)]/10",
+              isApex && "border-[hsl(var(--ember))]/45 text-[hsl(18_95%_70%)] bg-[hsl(var(--ember))]/10",
               isElite && "border-gold/45 text-gold bg-gold/10",
               isHigh && "border-[hsl(var(--purple))]/40 text-[hsl(var(--purple))] bg-[hsl(var(--purple))]/10",
               isPerformer && "border-[hsl(210_90%_56%)]/40 text-[hsl(210_90%_68%)] bg-[hsl(210_90%_56%)]/10",

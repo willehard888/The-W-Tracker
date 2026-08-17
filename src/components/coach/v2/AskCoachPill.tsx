@@ -15,7 +15,7 @@ const AskCoachPill = ({ onOpenChat }: { onOpenChat: () => void; onBrowseFaq?: ()
       aria-label="Open W Coach chat"
     >
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_18px_hsl(42_78%_54%/0.4)]">
+        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_18px_hsl(var(--gold)/0.4)]">
           <Send size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
         </div>
         <div className="flex-1 min-w-0">

@@ -35,7 +35,7 @@ const Scale = ({
             className={cn(
               "flex-1 h-9 rounded-lg text-[12px] font-black transition-all border",
               active
-                ? "bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] border-[hsl(42_78%_48%)] shadow-[0_2px_8px_-2px_hsl(42_78%_54%/0.6)]"
+                ? "bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] border-[hsl(42_78%_48%)] shadow-[0_2px_8px_-2px_hsl(var(--gold)/0.6)]"
                 : "bg-card/40 border-border/40 text-muted-foreground/60 hover:border-border/80",
             )}
           >

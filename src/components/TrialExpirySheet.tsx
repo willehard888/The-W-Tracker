@@ -72,7 +72,7 @@ const TrialExpirySheet = () => {
             <X size={16} />
           </button>
 
-          <div className="mx-auto mb-3 h-12 w-12 rounded-2xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shadow-[0_0_18px_hsl(42_78%_54%/0.4)]">
+          <div className="mx-auto mb-3 h-12 w-12 rounded-2xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shadow-[0_0_18px_hsl(var(--gold)/0.4)]">
             <Crown size={22} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />
           </div>
 

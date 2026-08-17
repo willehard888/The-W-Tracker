@@ -89,7 +89,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
                   className={cn(
                     "h-12 w-12 rounded-full border-2 bg-secondary overflow-hidden transition-transform group-active/m:scale-95",
                     streak >= 30
-                      ? "border-[hsl(18_95%_58%)] shadow-[0_0_10px_hsl(18_95%_58%/0.5)]"
+                      ? "border-[hsl(var(--ember))] shadow-[0_0_10px_hsl(var(--ember)/0.5)]"
                       : "border-border/60",
                   )}
                   style={

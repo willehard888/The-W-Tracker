@@ -82,7 +82,7 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
         "relative rounded-3xl mb-5 overflow-hidden border",
         isCold
           ? "border-[hsl(18_60%_35%)]/30 bg-card/40"
-          : "border-[hsl(18_95%_58%)]/40 surface-ember shadow-[0_0_50px_hsl(18_95%_58%/0.25)]",
+          : "border-[hsl(var(--ember))]/40 surface-ember shadow-[0_0_50px_hsl(var(--ember)/0.25)]",
       )}
       style={!isCold ? ({ ["--ember-accent" as string]: accent } as React.CSSProperties) : undefined}
     >
@@ -124,7 +124,7 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
             borderColor: !isCold ? accent.replace(")", " / 0.7)") : "hsl(var(--border))",
           }}
         >
-          <Sparkles size={11} className="text-[hsl(18_95%_58%)]" />
+          <Sparkles size={11} className="text-[hsl(var(--ember))]" />
           <span
             className="text-[10px] font-black tracking-widest uppercase"
             style={!isCold ? { color: accent } : { color: "hsl(var(--muted-foreground))" }}
@@ -197,7 +197,7 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
               const browse = document.getElementById("tribes-browse-anchor");
               browse?.scrollIntoView({ behavior: "smooth", block: "start" });
             }}
-            className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-[hsl(18_95%_58%/0.5)] text-[11px] font-black tracking-wide text-[hsl(24_98%_66%)] [background:linear-gradient(180deg,hsl(18_95%_58%/0.12),hsl(14_92%_42%/0.06))] shadow-[inset_0_1px_0_hsl(48_100%_88%/0.15),inset_0_-6px_12px_-8px_hsl(18_95%_58%/0.45),0_4px_14px_-6px_hsl(18_95%_58%/0.35)] hover:border-[hsl(18_95%_58%/0.8)] hover:text-[hsl(28_100%_74%)] active:scale-[0.97] transition-[transform,border-color,color]"
+            className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-[hsl(var(--ember)/0.5)] text-[11px] font-black tracking-wide text-[hsl(24_98%_66%)] [background:linear-gradient(180deg,hsl(var(--ember)/0.12),hsl(14_92%_42%/0.06))] shadow-[inset_0_1px_0_hsl(48_100%_88%/0.15),inset_0_-6px_12px_-8px_hsl(var(--ember)/0.45),0_4px_14px_-6px_hsl(var(--ember)/0.35)] hover:border-[hsl(var(--ember)/0.8)] hover:text-[hsl(28_100%_74%)] active:scale-[0.97] transition-[transform,border-color,color]"
           >
             <Flame size={12} /> Find a fire to feed
           </button>

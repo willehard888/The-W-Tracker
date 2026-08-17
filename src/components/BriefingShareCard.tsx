@@ -45,7 +45,7 @@ const BriefingShareCard = forwardRef<HTMLDivElement, BriefingShareCardProps>(
             width: 1200,
             height: 800,
             background:
-              "radial-gradient(ellipse at center, hsl(42 78% 54% / 0.35) 0%, transparent 65%)",
+              "radial-gradient(ellipse at center, hsl(var(--gold) / 0.35) 0%, transparent 65%)",
             pointerEvents: "none",
           }}
         />
@@ -57,7 +57,7 @@ const BriefingShareCard = forwardRef<HTMLDivElement, BriefingShareCardProps>(
               fontSize: 28,
               letterSpacing: 8,
               textTransform: "uppercase",
-              color: "hsl(42 78% 54%)",
+              color: "hsl(var(--gold))",
               fontWeight: 800,
               marginBottom: 16,
             }}
@@ -78,7 +78,7 @@ const BriefingShareCard = forwardRef<HTMLDivElement, BriefingShareCardProps>(
               lineHeight: 1.05,
               letterSpacing: -2,
               background:
-                "linear-gradient(180deg, hsl(42 90% 70%) 0%, hsl(42 78% 54%) 100%)",
+                "linear-gradient(180deg, hsl(42 90% 70%) 0%, hsl(var(--gold)) 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
@@ -118,7 +118,7 @@ const BriefingShareCard = forwardRef<HTMLDivElement, BriefingShareCardProps>(
               fontSize: 96,
               fontWeight: 900,
               background:
-                "linear-gradient(180deg, hsl(42 90% 70%) 0%, hsl(42 78% 54%) 100%)",
+                "linear-gradient(180deg, hsl(42 90% 70%) 0%, hsl(var(--gold)) 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
@@ -156,7 +156,7 @@ const Stat = ({
   <div
     style={{
       background: "rgba(255,255,255,0.05)",
-      border: "2px solid hsl(42 78% 54% / 0.25)",
+      border: "2px solid hsl(var(--gold) / 0.25)",
       borderRadius: 24,
       padding: 32,
     }}

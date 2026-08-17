@@ -108,7 +108,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
           size="sm"
           onClick={() => handleAction(r)}
           disabled={actingId === r.id}
-          className="h-8 text-[11px] bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black"
+          className="h-8 text-[11px] bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
         >
           {actingId === r.id ? <Loader2 size={11} className="animate-spin" /> : <Lock size={11} />}
           Request
@@ -120,7 +120,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
         size="sm"
         onClick={() => handleAction(r)}
         disabled={actingId === r.id}
-        className="h-8 text-[11px] bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black"
+        className="h-8 text-[11px] bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
       >
         {actingId === r.id ? <Loader2 size={11} className="animate-spin" /> : "Join"}
       </Button>
@@ -138,7 +138,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search all tribes (public & private)"
-          className="pl-9 pr-9 h-10 bg-card/60 border-border focus-visible:ring-[hsl(18_95%_58%)]/40"
+          className="pl-9 pr-9 h-10 bg-card/60 border-border focus-visible:ring-[hsl(var(--ember))]/40"
         />
         {query && (
           <button
@@ -174,13 +174,13 @@ const TribeSearchBar = ({ onChanged }: Props) => {
                       "h-9 w-9 rounded-lg flex items-center justify-center shrink-0 border",
                       r.visibility === "private"
                         ? "bg-secondary/60 border-border"
-                        : "bg-[hsl(18_95%_58%)]/15 border-[hsl(18_95%_58%)]/30",
+                        : "bg-[hsl(var(--ember))]/15 border-[hsl(var(--ember))]/30",
                     )}
                   >
                     {r.visibility === "private" ? (
                       <Lock size={14} className="text-muted-foreground" />
                     ) : (
-                      <Users size={14} className="text-[hsl(18_95%_58%)]" />
+                      <Users size={14} className="text-[hsl(var(--ember))]" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">

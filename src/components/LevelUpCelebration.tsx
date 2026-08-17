@@ -33,7 +33,7 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
           style={{
-            background: "radial-gradient(circle, hsl(42 78% 54% / 0.15) 0%, hsl(270 60% 58% / 0.08) 40%, transparent 70%)",
+            background: "radial-gradient(circle, hsl(var(--gold) / 0.15) 0%, hsl(270 60% 58% / 0.08) 40%, transparent 70%)",
             animation: "pulse 2s ease-in-out infinite",
           }}
         />
@@ -52,7 +52,7 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
             key={i}
             className="absolute w-2 h-2 rounded-full"
             style={{
-              background: i % 2 === 0 ? "hsl(42 78% 54%)" : "hsl(270 60% 58%)",
+              background: i % 2 === 0 ? "hsl(var(--gold))" : "hsl(270 60% 58%)",
               transform: `rotate(${i * 30}deg) translateY(-120px)`,
               animation: `levelup-particle 2s ease-out infinite ${i * 0.1}s`,
               opacity: phase === "show" ? 1 : 0,
@@ -70,12 +70,12 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
         {/* Level number */}
         <div className="relative mb-4">
           <div className="absolute -inset-4 rounded-full opacity-30 blur-xl"
-            style={{ background: "linear-gradient(135deg, hsl(42 78% 54%), hsl(270 60% 58%))" }}
+            style={{ background: "linear-gradient(135deg, hsl(var(--gold)), hsl(270 60% 58%))" }}
           />
           <div className="relative h-28 w-28 rounded-full flex items-center justify-center"
             style={{
-              background: "linear-gradient(135deg, hsl(42 78% 54%), hsl(42 60% 40%))",
-              boxShadow: "0 0 40px hsl(42 78% 54% / 0.4), 0 0 80px hsl(42 78% 54% / 0.2)",
+              background: "linear-gradient(135deg, hsl(var(--gold)), hsl(42 60% 40%))",
+              boxShadow: "0 0 40px hsl(var(--gold) / 0.4), 0 0 80px hsl(var(--gold) / 0.2)",
             }}
           >
             <span className="font-display text-5xl font-black text-primary-foreground">

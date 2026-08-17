@@ -70,6 +70,18 @@ export default {
           light: "hsl(var(--gold-light))",
           dark: "hsl(var(--gold-dark))",
         },
+        // The app's OTHER signature color — defined in index.css since the
+        // rebrand but never exposed, which is why 21 files hardcoded the
+        // literal hsl triple instead of writing text-ember.
+        ember: {
+          DEFAULT: "hsl(var(--ember))",
+          light: "hsl(var(--ember-light))",
+          dark: "hsl(var(--ember-dark))",
+        },
+        lava: {
+          DEFAULT: "hsl(var(--lava))",
+          deep: "hsl(var(--lava-deep))",
+        },
         purple: {
           DEFAULT: "hsl(var(--purple))",
           light: "hsl(var(--purple-light))",

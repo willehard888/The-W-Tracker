@@ -46,7 +46,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
     2: "from-[hsl(210_90%_56%)]/15 via-background to-background",
     3: "from-[hsl(var(--purple))]/18 via-background to-background",
     4: "from-gold/20 via-background to-background",
-    5: "from-[hsl(18_95%_58%)]/25 via-gold/10 to-background",
+    5: "from-[hsl(var(--ember))]/25 via-gold/10 to-background",
     6: "from-[hsl(280_70%_55%)]/22 via-gold/10 to-[hsl(350_80%_55%)]/15",
   };
   const tierAccent: Record<number, { ring: string; glow: string; iconBg: string }> = {
@@ -55,7 +55,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
     2: { ring: "ring-[hsl(210_90%_56%)]/50", glow: "shadow-[0_0_24px_hsl(210_90%_56%/0.30)]", iconBg: "bg-[hsl(210_90%_56%)]/20 text-[hsl(210_90%_56%)]" },
     3: { ring: "ring-[hsl(var(--purple))]/55", glow: "shadow-[0_0_28px_hsl(var(--purple)/0.35)]", iconBg: "bg-[hsl(var(--purple))]/20 text-[hsl(var(--purple))]" },
     4: { ring: "ring-gold/55", glow: "shadow-[0_0_30px_hsl(var(--gold)/0.45)]", iconBg: "gradient-gold text-primary-foreground" },
-    5: { ring: "ring-[hsl(18_95%_58%)]/65", glow: "shadow-[0_0_38px_hsl(18_95%_58%/0.5),0_0_60px_hsl(var(--gold)/0.30)]", iconBg: "bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold text-background" },
+    5: { ring: "ring-[hsl(var(--ember))]/65", glow: "shadow-[0_0_38px_hsl(var(--ember)/0.5),0_0_60px_hsl(var(--gold)/0.30)]", iconBg: "bg-gradient-to-br from-[hsl(var(--ember))] to-gold text-background" },
     6: { ring: "ring-[hsl(280_70%_60%)]/65", glow: "shadow-[0_0_42px_hsl(280_70%_60%/0.55)]", iconBg: "bg-gradient-to-br from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background" },
   };
 
@@ -88,9 +88,9 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
         style={{
           background:
             cfg.rank >= 5
-              ? "radial-gradient(circle at 50% 30%, hsl(18 95% 58% / 0.18) 0%, transparent 60%)"
+              ? "radial-gradient(circle at 50% 30%, hsl(var(--ember) / 0.18) 0%, transparent 60%)"
               : cfg.rank >= 4
-              ? "radial-gradient(circle at 50% 30%, hsl(42 78% 54% / 0.15) 0%, transparent 60%)"
+              ? "radial-gradient(circle at 50% 30%, hsl(var(--gold) / 0.15) 0%, transparent 60%)"
               : "radial-gradient(circle at 50% 30%, hsl(var(--gold) / 0.08) 0%, transparent 60%)",
         }}
       />
@@ -112,7 +112,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
                 : "bg-background/60 text-foreground/80",
             )}
           >
-            {cfg.rank >= 5 && <Flame size={10} strokeWidth={3} fill="currentColor" className="text-[hsl(18_95%_58%)]" />}
+            {cfg.rank >= 5 && <Flame size={10} strokeWidth={3} fill="currentColor" className="text-[hsl(var(--ember))]" />}
             {cfg.rank === 6 && <Sparkles size={10} strokeWidth={3} className="text-gold" />}
             {cfg.label} Tier
           </span>
@@ -164,7 +164,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
           className={cn(
             "rounded-2xl border-2 p-4 mb-3 inner-light relative overflow-hidden",
             cfg.rank >= 5
-              ? "border-gold/50 bg-gradient-to-br from-[hsl(18_95%_58%)]/10 via-gold/8 to-transparent"
+              ? "border-gold/50 bg-gradient-to-br from-[hsl(var(--ember))]/10 via-gold/8 to-transparent"
               : cfg.rank === 4
               ? "border-gold/40 bg-gold/8"
               : "border-gold/30 bg-gold/5",
@@ -242,7 +242,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
                 : summary.newStreak >= 30
                 ? "border-gold/60 bg-gold/12 shadow-[0_0_18px_hsl(var(--gold)/0.4)]"
                 : summary.newStreak >= 14
-                ? "border-[hsl(18_95%_58%)]/55 bg-[hsl(18_95%_58%)]/10 shadow-[0_0_14px_hsl(18_95%_58%/0.3)]"
+                ? "border-[hsl(var(--ember))]/55 bg-[hsl(var(--ember))]/10 shadow-[0_0_14px_hsl(var(--ember)/0.3)]"
                 : "border-streak-orange/40 bg-streak-orange/8",
             )}
           >
@@ -256,7 +256,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
                     : summary.newStreak >= 30
                     ? "text-gold"
                     : summary.newStreak >= 14
-                    ? "text-[hsl(18_95%_58%)]"
+                    ? "text-[hsl(var(--ember))]"
                     : "text-streak-orange"
                 }
               />
@@ -270,7 +270,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
                   : summary.newStreak >= 30
                   ? "text-gold"
                   : summary.newStreak >= 14
-                  ? "text-[hsl(18_95%_58%)]"
+                  ? "text-[hsl(var(--ember))]"
                   : "text-streak-orange",
               )}
             >

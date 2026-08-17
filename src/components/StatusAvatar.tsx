@@ -63,7 +63,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
   const ringStyle = isLegend
     ? "bg-[conic-gradient(from_0deg,hsl(280_70%_58%),hsl(42_90%_55%),hsl(350_80%_55%),hsl(280_70%_58%))]"
     : isApex
-    ? "bg-gradient-to-tr from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)]"
+    ? "bg-gradient-to-tr from-[hsl(var(--ember))] via-gold to-[hsl(var(--ember))]"
     : tier === "elite"
     ? "bg-gradient-to-tr from-gold via-gold to-gold/70"
     : tier === "high_performer"
@@ -85,7 +85,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
           className="absolute inset-0 rounded-full pointer-events-none status-amber-ring-breathe"
           style={{
             boxShadow:
-              "0 0 0 2px hsl(18 95% 58% / 0.55), 0 0 16px 2px hsl(18 95% 58% / 0.5), 0 0 32px 4px hsl(var(--gold) / 0.35)",
+              "0 0 0 2px hsl(var(--ember) / 0.55), 0 0 16px 2px hsl(var(--ember) / 0.5), 0 0 32px 4px hsl(var(--gold) / 0.35)",
           }}
         />
       )}
@@ -97,12 +97,12 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
           className="pointer-events-none absolute inset-0 status-legend-conic-spin"
         >
           <span
-            className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-1 h-1 rounded-full bg-[hsl(18_95%_58%)]"
-            style={{ boxShadow: "0 0 6px hsl(18 95% 58%), 0 0 12px hsl(var(--gold))" }}
+            className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-1 h-1 rounded-full bg-[hsl(var(--ember))]"
+            style={{ boxShadow: "0 0 6px hsl(var(--ember)), 0 0 12px hsl(var(--gold))" }}
           />
           <span
             className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-[3px] h-[3px] rounded-full bg-gold"
-            style={{ boxShadow: "0 0 5px hsl(var(--gold)), 0 0 10px hsl(18 95% 58%)" }}
+            style={{ boxShadow: "0 0 5px hsl(var(--gold)), 0 0 10px hsl(var(--ember))" }}
           />
         </div>
       )}
@@ -126,7 +126,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
           isHighTier && "shadow-[0_0_12px_-2px_currentColor]",
           isApex && animated && "apex-aura-large",
           // High Performer — first hint of warmth
-          tier === "high_performer" && "shadow-[0_4px_12px_hsl(42_78%_54%/0.18)]",
+          tier === "high_performer" && "shadow-[0_4px_12px_hsl(var(--gold)/0.18)]",
         )}
         style={
           isHighTier
@@ -134,7 +134,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
                 color: isLegend
                   ? "hsl(280 70% 60% / 0.5)"
                   : isApex
-                  ? "hsl(18 95% 58% / 0.5)"
+                  ? "hsl(var(--ember) / 0.5)"
                   : "hsl(var(--gold) / 0.4)",
                 willChange: "transform",
                 transform: "translateZ(0)",
@@ -157,7 +157,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
             "absolute -bottom-0.5 -right-0.5 rounded-full border-2 border-background flex items-center justify-center",
             sizes.badge,
             isLegend && "bg-[hsl(280_70%_55%)]",
-            isApex && "bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold shadow-[0_0_8px_hsl(18_95%_58%/0.7)]",
+            isApex && "bg-gradient-to-br from-[hsl(var(--ember))] to-gold shadow-[0_0_8px_hsl(var(--ember)/0.7)]",
             tier === "elite" && "bg-gold",
             tier === "high_performer" && "bg-[hsl(var(--purple))]",
             tier === "performer" && "bg-[hsl(210_90%_56%)]",
@@ -182,7 +182,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
       {isApex && animated && (
         <div
           aria-hidden
-          className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border border-background flex items-center justify-center shadow-[0_0_6px_hsl(18_95%_58%/0.8)] status-amber-ring-breathe"
+          className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-[hsl(var(--ember))] to-gold border border-background flex items-center justify-center shadow-[0_0_6px_hsl(var(--ember)/0.8)] status-amber-ring-breathe"
         >
           <Zap size={9} className="text-background status-flame-flicker" strokeWidth={3} fill="currentColor" />
         </div>

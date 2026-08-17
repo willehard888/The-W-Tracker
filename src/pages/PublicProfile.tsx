@@ -152,7 +152,7 @@ const PublicProfile = () => {
           <div className="flex-1 grid grid-cols-3 gap-1 text-center">
             {[
               { label: "XP", value: (profile.xp ?? 0) >= 1000 ? `${((profile.xp ?? 0) / 1000).toFixed(1)}k` : (profile.xp ?? 0).toString(), color: "text-gold" },
-              { label: "Streak", value: `${profile.streak ?? 0}d`, color: "text-[hsl(18_95%_58%)]" },
+              { label: "Streak", value: `${profile.streak ?? 0}d`, color: "text-[hsl(var(--ember))]" },
               { label: "Level", value: (profile.level ?? 1).toString(), color: "text-foreground" },
             ].map((s, i) => (
               <motion.div

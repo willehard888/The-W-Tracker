@@ -12,12 +12,12 @@ const TIER_META: Record<Tier, { label: string; Icon: typeof ShieldCheck; classes
   promising: {
     label: "Promising",
     Icon: Sparkles,
-    classes: "border-amber-400/40 bg-amber-400/10 text-amber-300",
+    classes: "border-amber/40 bg-amber/10 text-amber-light",
   },
   speculative: {
     label: "Speculative",
     Icon: FlaskConical,
-    classes: "border-rose-400/40 bg-rose-400/10 text-rose-300",
+    classes: "border-rose/40 bg-rose/10 text-rose-light",
   },
 };
 

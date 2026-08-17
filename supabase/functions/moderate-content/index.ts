@@ -363,7 +363,7 @@ Deno.serve(async (req) => {
           action: "allow",
           is_safe: true,
           severity: "low",
-          error: e?.message ?? "moderation_failed",
+          error: "moderation_failed",
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -438,7 +438,7 @@ Deno.serve(async (req) => {
     );
   } catch (e: any) {
     console.error("moderate-content error:", e);
-    return new Response(JSON.stringify({ error: e?.message ?? "Unknown error" }), {
+    return new Response(JSON.stringify({ error: "moderation_failed" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -22,21 +22,33 @@ async function resolveUserId(admin: any, opts: { userId?: string; email?: string
   return null;
 }
 
+// Constant-time string compare — `===` short-circuits on the first differing
+// byte, which leaks timing information about the expected HMAC.
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 async function verifyStripeSignature(
   payload: string,
   sigHeader: string,
   secret: string,
 ): Promise<boolean> {
-  const parts = sigHeader.split(",").reduce((acc: Record<string, string>, part) => {
+  // During secret rotation Stripe sends MULTIPLE v1= signatures (old + new).
+  // The old reduce kept only the LAST one, so rotation broke verification and
+  // paid checkouts silently stopped granting access. Collect them all.
+  let timestamp = "";
+  const signatures: string[] = [];
+  for (const part of sigHeader.split(",")) {
     const [key, value] = part.split("=");
-    if (key && value) acc[key.trim()] = value;
-    return acc;
-  }, {});
+    if (!key || !value) continue;
+    if (key.trim() === "t") timestamp = value;
+    if (key.trim() === "v1") signatures.push(value);
+  }
 
-  const timestamp = parts["t"];
-  const signature = parts["v1"];
-
-  if (!timestamp || !signature) return false;
+  if (!timestamp || signatures.length === 0) return false;
 
   // Reject requests older than 5 minutes.
   const now = Math.floor(Date.now() / 1000);
@@ -56,7 +68,7 @@ async function verifyStripeSignature(
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
-  return expectedSig === signature;
+  return signatures.some((s) => timingSafeEqual(expectedSig, s));
 }
 
 Deno.serve(async (req) => {

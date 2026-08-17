@@ -25,6 +25,7 @@ const esc = (s: string) =>
 const BOT_RE = /bot|crawler|spider|facebookexternalhit|twitterbot|slackbot|discordbot|linkedinbot|whatsapp|telegrambot|preview|skype|embedly|pinterest|vkshare|w3c_validator|googlebot|bingbot|duckduckbot|applebot/i;
 
 Deno.serve(async (req) => {
+  try {
   const url = new URL(req.url);
   // username can be in path (?path=/u/foo) or query (?u=foo)
   let username = url.searchParams.get("u")?.trim();
@@ -81,6 +82,15 @@ Deno.serve(async (req) => {
       "cache-control": "public, max-age=120, s-maxage=120",
     },
   });
+  } catch (e) {
+    // A DB hiccup must not return a bare 500: social crawlers cache the
+    // broken preview for the whole share loop. Serve a branded fallback.
+    console.error("og fallback:", e);
+    return new Response(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect width="1200" height="630" fill="#0a0810"/><text x="600" y="330" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="56" fill="#f5b942">Whealth Factory</text></svg>`,
+      { headers: { "content-type": "image/svg+xml; charset=utf-8", "cache-control": "public, max-age=60", "access-control-allow-origin": "*" } },
+    );
+  }
 });
 
 function renderHtml(p: { title: string; desc: string; image: string; url: string }) {

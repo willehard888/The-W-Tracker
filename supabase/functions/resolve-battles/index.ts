@@ -65,6 +65,7 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
 
+  try {
   let resolved = 0;
 
   // 1. Resolve expired active battles
@@ -77,7 +78,12 @@ Deno.serve(async (req) => {
   const now = Date.now();
 
   for (const battle of expiredBattles || []) {
-    const endDate = new Date(battle.started_at).getTime() + battle.duration_days * 86400000;
+    // Null/invalid duration or start → NaN end. `now < NaN` is FALSE, so a
+    // bad row resolved immediately and new Date(NaN).toISOString() then threw
+    // a RangeError that killed every remaining battle in the batch.
+    const startMs = new Date(battle.started_at).getTime();
+    const endDate = startMs + Number(battle.duration_days) * 86400000;
+    if (!Number.isFinite(endDate)) continue;
     if (now < endDate) continue;
 
     const cProof = !!battle.challenger_proof_url;
@@ -155,8 +161,9 @@ Deno.serve(async (req) => {
     else if (opponentVotes > challengerVotes) winnerId = battle.opponent_id;
     // else still tie → no winner
 
-    const winnerVerified = winnerId
-      ? await winnerActivityVerified(supabase, winnerId, new Date(battle.started_at).getTime(), endedAt, battle.battle_type)
+    const votingStartMs = new Date(battle.started_at).getTime();
+    const winnerVerified = winnerId && Number.isFinite(votingStartMs)
+      ? await winnerActivityVerified(supabase, winnerId, votingStartMs, endedAt, battle.battle_type)
       : null;
     const { data: votedRows } = await supabase.from("battles").update({
       status: "completed",
@@ -173,4 +180,11 @@ Deno.serve(async (req) => {
     JSON.stringify({ resolved }),
     { headers: { "Content-Type": "application/json" } }
   );
+  } catch (e) {
+    console.error("resolve-battles error:", e);
+    return new Response(
+      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
 });

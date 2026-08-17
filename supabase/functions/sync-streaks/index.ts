@@ -51,7 +51,10 @@ serve(async (req) => {
     // The previous version required a USER JWT via getUser(), which the cron's
     // service-role key fails — so streak decay silently never ran.
     const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
-    if (!serviceKey || token !== serviceKey) {
+    // isServiceRole (not exact equality): the JWT-role fallback is what makes
+    // key rotation safe — the strict compare silently 401'd the cron after a
+    // rotation and streak decay stopped without any signal.
+    if (!serviceKey || !isServiceRole(token, serviceKey)) {
       return json({ error: "Unauthorized" }, 401);
     }
 

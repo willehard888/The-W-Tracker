@@ -107,6 +107,7 @@ function notFoundSvg(username: string) {
 }
 
 Deno.serve(async (req) => {
+  try {
   const url = new URL(req.url);
   const username = url.searchParams.get("u")?.trim();
   const headers = {
@@ -140,4 +141,13 @@ Deno.serve(async (req) => {
   });
 
   return new Response(svg, { headers });
+  } catch (e) {
+    // A DB hiccup must not return a bare 500: social crawlers cache the
+    // broken preview for the whole share loop. Serve a branded fallback.
+    console.error("og fallback:", e);
+    return new Response(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect width="1200" height="630" fill="#0a0810"/><text x="600" y="330" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="56" fill="#f5b942">Whealth Factory</text></svg>`,
+      { headers: { "content-type": "image/svg+xml; charset=utf-8", "cache-control": "public, max-age=60", "access-control-allow-origin": "*" } },
+    );
+  }
 });

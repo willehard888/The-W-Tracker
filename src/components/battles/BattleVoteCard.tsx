@@ -23,10 +23,10 @@ const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => 
       className={cn(
         "w-full py-2 rounded-lg text-xs font-bold transition-all active:scale-95 border",
         mine
-          ? "bg-purple-500/20 border-purple-500/40 text-purple-400"
+          ? "bg-gold/20 border-gold/40 text-gold"
           : myVote
             ? "bg-secondary/50 border-border text-muted-foreground cursor-not-allowed"
-            : "bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20",
+            : "bg-gold/10 border-gold/30 text-gold hover:bg-gold/20",
       )}
     >
       {mine ? `Voted ✓ (${votes})` : myVote ? `${votes}` : `Vote (${votes})`}
@@ -34,9 +34,9 @@ const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => 
   );
 
   return (
-    <div className="rounded-xl border border-purple-500/20 overflow-hidden glass-3d depth-realistic">
+    <div className="rounded-xl border border-gold/20 overflow-hidden glass-3d depth-realistic">
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-gold flex items-center gap-1">
           {typeInfo.emoji} {typeInfo.label} Battle — TIE
         </span>
         <span className="text-[10px] text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>
@@ -75,7 +75,7 @@ const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => 
       {totalVotes > 0 && (
         <div className="px-4 pb-3">
           <div className="h-2 rounded-full bg-secondary overflow-hidden flex">
-            <div className="h-full bg-purple-500 transition-all duration-500" style={{ width: `${(challengerVotes / totalVotes) * 100}%` }} />
+            <div className="h-full bg-gold transition-all duration-500" style={{ width: `${(challengerVotes / totalVotes) * 100}%` }} />
             <div className="h-full bg-gold transition-all duration-500" style={{ width: `${(opponentVotes / totalVotes) * 100}%` }} />
           </div>
         </div>

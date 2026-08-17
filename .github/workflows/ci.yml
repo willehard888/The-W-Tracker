@@ -35,6 +35,8 @@ jobs:
 
       - name: Type-debt ratchet (strict errors + `as any` must not grow)
         run: node scripts/type-debt.mjs
+      - name: Style guard (no literal brand colors)
+        run: node scripts/style-guard.mjs
 
       - name: Unit tests + coverage ratchet (thresholds in vitest.config.ts)
         run: npx vitest run --coverage

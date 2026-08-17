@@ -115,7 +115,7 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
             <div className="flex-1 min-w-0">
               <p className={cn(
                 "text-xs font-bold",
-                quest.completed ? "text-purple-300" : "text-foreground"
+                quest.completed ? "text-gold-light" : "text-foreground"
               )}>
                 {quest.title}
               </p>

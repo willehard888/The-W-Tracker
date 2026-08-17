@@ -345,7 +345,7 @@ const Battles = () => {
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen pb-4 px-4 pt-6">
+    <div className="min-h-full pb-4 px-4 pt-6">
       
       <input
         ref={fileInputRef}

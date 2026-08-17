@@ -209,7 +209,7 @@ const UserProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-full flex items-center justify-center">
         <div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" />
       </div>
     );
@@ -217,7 +217,7 @@ const UserProfile = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen pb-4 px-4 pt-6 text-center">
+      <div className="min-h-full pb-4 px-4 pt-6 text-center">
         <p className="text-muted-foreground mt-20">User not found</p>
         <Button variant="ghost" size="sm" className="mt-4" onClick={() => navigate(-1)}>
           <ChevronLeft size={16} /> Go back
@@ -264,7 +264,7 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="min-h-screen pb-6 relative">
+    <div className="min-h-full pb-6 relative">
       {/* Hero */}
       <div
         className="relative px-4 pt-12 pb-6 overflow-hidden"

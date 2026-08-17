@@ -6,7 +6,7 @@ const NotFound = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+    <div className="min-h-full flex flex-col items-center justify-center px-6 text-center">
       <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mb-6">
         <span className="text-4xl">🔍</span>
       </div>

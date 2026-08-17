@@ -25,7 +25,7 @@ const AppleAuthLaunch = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background px-6 text-center">
+    <div className="min-h-full flex flex-col items-center justify-center gap-4 bg-background px-6 text-center">
       {error ? (
         <>
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-destructive/30 bg-destructive/10 text-destructive">

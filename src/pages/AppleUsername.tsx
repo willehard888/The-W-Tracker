@@ -109,7 +109,7 @@ const AppleUsername = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-dark flex items-center justify-center px-6">
+    <div className="min-h-full gradient-dark flex items-center justify-center px-6">
       <div className="w-full max-w-sm rounded-3xl border border-border bg-card/90 p-6 shadow-2xl">
         <div className="mb-6 space-y-2 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold">Apple Sign In</p>

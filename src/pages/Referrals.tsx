@@ -109,7 +109,7 @@ const Referrals = () => {
   const ringOffset = ringCirc - (nextProgress / 100) * ringCirc;
 
   return (
-    <div className="min-h-screen pb-4 px-4 pt-4">
+    <div className="min-h-full pb-4 px-4 pt-4">
       <div className="flex items-center gap-3 mb-6 animate-reveal">
         <button onClick={() => navigate(-1)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
           <ChevronLeft size={20} />

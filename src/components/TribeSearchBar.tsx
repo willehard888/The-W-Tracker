@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Lock, Loader2, Users, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { friendlyError } from "@/lib/error-copy";
 
 interface SearchResult {
   id: string;
@@ -63,7 +64,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
     const { data, error } = await supabase.rpc("join_tribe" as any, { p_tribe_id: r.id });
     setActingId(null);
     if (error) {
-      toast.error(error.message);
+      toast.error(friendlyError(error));
       return;
     }
     if (data === "pending") {

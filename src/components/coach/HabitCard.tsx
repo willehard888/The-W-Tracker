@@ -13,6 +13,7 @@ import {
 } from "@/lib/wellness-framework";
 import EvidenceChip from "./EvidenceChip";
 import type { UserHabit } from "@/hooks/use-user-habits";
+import { friendlyError } from "@/lib/error-copy";
 
 interface Props {
   habit: UserHabit;
@@ -42,7 +43,7 @@ const HabitCard = ({ habit, doneToday, onLog, onArchive, onOpen }: Props) => {
       await onLog();
       hapticNotification("success");
     } catch (e: any) {
-      if (e?.message !== "already_logged") toast.error(e?.message ?? "Couldn't log.");
+      if (e?.message !== "already_logged") toast.error(friendlyError(e, "Couldn't log."));
     } finally {
       setBusy(false);
     }

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { friendlyError } from "@/lib/error-copy";
 
 const Sparkline = ({ values }: { values: number[] }) => {
   if (values.length < 2) return <div className="h-12 flex items-center text-[10px] text-muted-foreground">Not enough data yet.</div>;
@@ -50,7 +51,7 @@ const PerformanceOSDashboard = () => {
       await qc.invalidateQueries({ queryKey: ["coach-weekly-review-latest"] });
       await qc.invalidateQueries({ queryKey: ["coach-performance-snapshots"] });
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to generate review");
+      toast.error(friendlyError(e, "Failed to generate review"));
     } finally {
       setGenerating(false);
     }

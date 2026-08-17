@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Crown, Loader2, Settings, Shield, ShieldOff, UserMinus, Lock, Image as ImageIcon, Trash2, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModeration } from "@/hooks/use-moderation";
+import { friendlyError } from "@/lib/error-copy";
 
 interface Member {
   user_id: string;
@@ -145,7 +146,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       onChanged();
       onOpenChange(false);
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to update tribe");
+      toast.error(friendlyError(e, "Failed to update tribe"));
     } finally {
       setSavingMeta(false);
       setUploading(false);
@@ -164,7 +165,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       toast.success(role === "admin" ? "Promoted to admin" : "Removed admin role");
       onChanged();
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to update role");
+      toast.error(friendlyError(e, "Failed to update role"));
     } finally {
       setBusyId(null);
     }
@@ -182,7 +183,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       toast.success(`${username} removed`);
       onChanged();
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to remove member");
+      toast.error(friendlyError(e, "Failed to remove member"));
     } finally {
       setBusyId(null);
     }

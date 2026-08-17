@@ -25,6 +25,7 @@ const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
 
 // Comment-tree helpers are shared with EliteFeed — see src/lib/comment-tree.ts.
 import { buildCommentTree, MAX_VISUAL_DEPTH, type CommentNode } from "@/lib/comment-tree";
+import { friendlyError } from "@/lib/error-copy";
 
 const isEdited = (node: CommentNode) => {
   if (!node.updated_at || !node.created_at) return false;
@@ -262,7 +263,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
       queryClient.invalidateQueries({ queryKey: ["tribe-post-comments", post.id] });
       onChanged();
     },
-    onError: (e: any) => toast.error(e?.message || "Failed to comment"),
+    onError: (e: any) => toast.error(friendlyError(e, "Failed to comment")),
   });
 
   const editComment = useMutation({
@@ -279,7 +280,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
       toast.success("Comment updated");
       queryClient.invalidateQueries({ queryKey: ["tribe-post-comments", post.id] });
     },
-    onError: (e: any) => toast.error(e?.message || "Failed to update"),
+    onError: (e: any) => toast.error(friendlyError(e, "Failed to update")),
   });
 
   const deleteComment = useMutation({
@@ -293,7 +294,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
       queryClient.invalidateQueries({ queryKey: ["tribe-post-comments", post.id] });
       onChanged();
     },
-    onError: (e: any) => toast.error(e?.message || "Failed to delete"),
+    onError: (e: any) => toast.error(friendlyError(e, "Failed to delete")),
   });
 
   const toggleLike = useMutation({
@@ -330,7 +331,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
       toast.success(post.kudosed ? "Kudos removed" : "Kudos! 🏆");
       onChanged();
     },
-    onError: (e: any) => toast.error(e?.message || "Kudos failed"),
+    onError: (e: any) => toast.error(friendlyError(e, "Kudos failed")),
   });
 
   const reportPost = useMutation({
@@ -359,7 +360,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
       toast.success("Post deleted");
       onChanged();
     },
-    onError: (e: any) => toast.error(e?.message || "Failed to delete"),
+    onError: (e: any) => toast.error(friendlyError(e, "Failed to delete")),
   });
 
   // Memoize comment tree — avoids rebuilding on every render that doesn't change comments.

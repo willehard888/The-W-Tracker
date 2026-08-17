@@ -255,7 +255,7 @@ const EliteFeed = () => {
     },
     onSettled: () => setUploadPhase(null),
     onError: (error: any) => {
-      toast.error(error?.message || "Failed to create post. Try again.");
+      toast.error(friendlyError(error, "Failed to create post. Try again."));
     },
   });
 
@@ -362,7 +362,7 @@ const EliteFeed = () => {
     onError: (error: any, _vars, context) => {
       if (context?.prevInteractions !== undefined) queryClient.setQueryData(interactionsKey, context.prevInteractions);
       if (context?.prevPosts !== undefined) queryClient.setQueryData(postsKey, context.prevPosts);
-      toast.error(error?.message || "Kudos failed");
+      toast.error(friendlyError(error, "Kudos failed"));
     },
     onSuccess: () => {
       toast.success("Kudos! 🏆");

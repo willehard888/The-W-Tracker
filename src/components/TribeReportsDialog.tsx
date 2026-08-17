@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, ShieldAlert, Trash2, Check } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 
 interface ReportRow {
   id: string;
@@ -135,7 +136,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
       .delete()
       .eq("id", r.post.id);
     if (error) {
-      toast.error(error.message);
+      toast.error(friendlyError(error));
       setBusyId(null);
       return;
     }

@@ -143,7 +143,7 @@ const OAuthCallback = () => {
         // ① iOS external browser → forward tokens to native app via URL scheme
         if (hasOAuthParams(merged) && (isIOSExternalBrowser() || shouldForceNativeHandoff(merged))) {
           const deepLink = buildAppCallbackUrlFromCurrentLocation();
-          console.log("[OAuthCB] Redirecting to native app:", deepLink);
+          if (import.meta.env.DEV) console.log("[OAuthCB] Redirecting to native app:", deepLink);
           clearPublishedAppleAttempt();
           updateOauthDebug({
             callbackUrl: window.location.href,

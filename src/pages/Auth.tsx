@@ -138,7 +138,7 @@ const Auth = () => {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen gradient-dark flex flex-col items-center justify-center px-6">
+      <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm animate-reveal text-center">
           <div className="h-14 w-14 mx-auto rounded-xl gradient-gold flex items-center justify-center glow-gold mb-6">
             <span className="text-xl font-black text-primary-foreground">✉️</span>
@@ -159,7 +159,7 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen gradient-dark flex flex-col items-center justify-center px-6">
+    <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm animate-reveal">
         {/* Logo */}
         <div className="flex flex-col items-center mb-10">

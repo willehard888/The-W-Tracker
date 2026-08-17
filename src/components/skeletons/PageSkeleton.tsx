@@ -34,7 +34,7 @@ const Block = ({
 );
 
 export const HomeSkeleton = () => (
-  <div className="px-4 pt-4 pb-24 space-y-3 animate-fade-in">
+  <div className="px-4 pt-4 pb-8 space-y-3 animate-fade-in">
     <Block height={172} />
     <div className="grid grid-cols-3 gap-2">
       <Block height={84} delay={60} />
@@ -48,7 +48,7 @@ export const HomeSkeleton = () => (
 );
 
 export const LeaderboardSkeleton = () => (
-  <div className="px-4 pt-4 pb-24 space-y-2 animate-fade-in">
+  <div className="px-4 pt-4 pb-8 space-y-2 animate-fade-in">
     <Block height={48} />
     <Block height={132} delay={60} />
     {Array.from({ length: 8 }).map((_, i) => (
@@ -58,7 +58,7 @@ export const LeaderboardSkeleton = () => (
 );
 
 export const ProfileSkeleton = () => (
-  <div className="px-4 pt-4 pb-24 space-y-3 animate-fade-in">
+  <div className="px-4 pt-4 pb-8 space-y-3 animate-fade-in">
     <Block height={144} />
     <div className="grid grid-cols-2 gap-2">
       <Block height={88} delay={60} />
@@ -70,7 +70,7 @@ export const ProfileSkeleton = () => (
 );
 
 export const FeedSkeleton = () => (
-  <div className="px-4 pt-4 pb-24 space-y-3 animate-fade-in">
+  <div className="px-4 pt-4 pb-8 space-y-3 animate-fade-in">
     <Block height={56} />
     <Block height={320} delay={80} />
     <Block height={320} delay={160} />
@@ -78,7 +78,7 @@ export const FeedSkeleton = () => (
 );
 
 export const CheckinSkeleton = () => (
-  <div className="px-4 pt-4 pb-24 space-y-3 animate-fade-in">
+  <div className="px-4 pt-4 pb-8 space-y-3 animate-fade-in">
     <Block height={120} />
     <Block height={220} delay={80} />
     <Block height={140} delay={160} />
@@ -99,7 +99,7 @@ export const BoardRowsSkeleton = () => (
 /** Coach page skeleton — hero strip + plan card + chat CTA (the previous
  *  Profile-shaped fallback caused a visible layout jump on every open). */
 export const CoachSkeleton = () => (
-  <div className="px-4 pt-4 pb-24 space-y-3 animate-fade-in">
+  <div className="px-4 pt-4 pb-8 space-y-3 animate-fade-in">
     <Block height={96} />
     <Block height={200} delay={80} />
     <Block height={72} delay={160} />
@@ -108,7 +108,7 @@ export const CoachSkeleton = () => (
 );
 
 export const ListSkeleton = () => (
-  <div className="px-4 pt-4 pb-24 space-y-2 animate-fade-in">
+  <div className="px-4 pt-4 pb-8 space-y-2 animate-fade-in">
     {Array.from({ length: 7 }).map((_, i) => (
       <Block key={i} height={72} delay={i * 40} />
     ))}

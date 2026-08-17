@@ -48,7 +48,7 @@ export class ErrorBoundary extends Component<Props, State> {
         .join("\n");
 
       return (
-        <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6 text-left max-w-md mx-auto">
+        <div className="min-h-full flex flex-col items-center justify-center gap-4 p-6 text-left max-w-md mx-auto">
           <p className="text-white/90 text-sm font-bold text-center">
             Something went wrong. Please reload the app.
           </p>

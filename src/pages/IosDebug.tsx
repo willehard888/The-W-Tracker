@@ -36,7 +36,7 @@ const IosDebug = () => {
   const logs = useMemo(() => [...state.logs].reverse().slice(0, 40), [state.logs]);
 
   return (
-    <div className="min-h-screen pb-6 px-4 pt-6 safe-top space-y-4">
+    <div className="min-h-full pb-6 px-4 pt-6 safe-top space-y-4">
       <div className="flex items-center justify-between gap-2">
         <button
           onClick={() => navigate(-1)}

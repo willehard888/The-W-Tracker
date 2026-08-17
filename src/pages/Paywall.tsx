@@ -111,7 +111,7 @@ const Paywall = () => {
   // ─── Already a member ────────────────────────────────────────
   if (isElite) {
     return (
-      <div className="min-h-screen pb-4 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
+      <div className="min-h-full pb-4 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
         <div className="h-20 w-20 rounded-full flex items-center justify-center mb-4 gradient-gold glow-gold">
           <Sparkles size={36} className="text-primary-foreground" strokeWidth={2.4} />
         </div>
@@ -240,7 +240,7 @@ const Paywall = () => {
 
   // ─── Render ──────────────────────────────────────────────────
   return (
-    <div className="min-h-screen pb-8 px-4 pt-6 safe-top">
+    <div className="min-h-full pb-8 px-4 pt-6 safe-top">
       {/* Escape hatch — the bottom nav and header are hidden on /paywall, so
           without this the page is a hard dead end (trial users tapping the
           header pill were stuck). */}

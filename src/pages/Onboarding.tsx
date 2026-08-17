@@ -259,7 +259,7 @@ const Onboarding = () => {
 
   return (
     <div
-      className="min-h-screen gradient-dark flex flex-col items-center justify-between px-6 py-8 safe-top safe-bottom overflow-hidden"
+      className="min-h-full gradient-dark flex flex-col items-center justify-between px-6 py-8 safe-top safe-bottom overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >

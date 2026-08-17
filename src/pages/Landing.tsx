@@ -23,7 +23,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
   useEffect(() => { void trackAnon("landing_viewed"); }, []);
 
   return (
-    <div ref={ref} className="min-h-screen gradient-dark flex flex-col overflow-hidden relative">
+    <div ref={ref} className="min-h-full gradient-dark flex flex-col overflow-hidden relative">
       {/* Single composited atmosphere layer — replaces three stacked gradients */}
       <div
         aria-hidden

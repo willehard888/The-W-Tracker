@@ -150,7 +150,7 @@ const Vault = () => {
   ];
 
   return (
-    <div className="min-h-screen pb-12 px-4 pt-3">
+    <div className="min-h-full pb-12 px-4 pt-3">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 animate-reveal">
         <button

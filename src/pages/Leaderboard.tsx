@@ -284,7 +284,7 @@ const Leaderboard = () => {
   return (
     <div
       ref={scrollRef}
-      className="min-h-screen pb-4 px-4 pt-6"
+      className="min-h-full pb-4 px-4 pt-6"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}

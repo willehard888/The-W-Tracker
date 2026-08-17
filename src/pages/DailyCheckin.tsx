@@ -536,7 +536,7 @@ const DailyCheckin = () => {
   // Daily lock screen
   if (!canCheckin && !submitted) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center pb-4">
+      <div className="min-h-full flex flex-col items-center justify-center px-6 text-center pb-4">
         <div className="animate-reveal">
           <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
             <Moon size={36} className="text-muted-foreground" />
@@ -554,7 +554,7 @@ const DailyCheckin = () => {
     return (
       <ErrorBoundary
         fallback={
-          <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+          <div className="min-h-full flex flex-col items-center justify-center px-6 text-center">
             <div className="h-20 w-20 rounded-full bg-xp-green/15 flex items-center justify-center mx-auto mb-5">
               <Check size={40} className="text-xp-green" />
             </div>
@@ -580,7 +580,7 @@ const DailyCheckin = () => {
   }
 
   return (
-    <div className="min-h-screen pb-4 px-4 pt-0">
+    <div className="min-h-full pb-4 px-4 pt-0">
       <ModerationGate
         state={moderation.state}
         message={moderation.message}

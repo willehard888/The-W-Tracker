@@ -63,7 +63,7 @@ export default function AdminLegendInvites() {
 
   if (isAdmin === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-full flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-gold" />
       </div>
     );
@@ -105,7 +105,7 @@ export default function AdminLegendInvites() {
   };
 
   return (
-    <div className="min-h-screen pb-12 px-4 pt-6">
+    <div className="min-h-full pb-12 px-4 pt-6">
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <Crown className="h-5 w-5 text-gold" fill="currentColor" />

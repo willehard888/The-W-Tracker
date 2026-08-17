@@ -210,7 +210,7 @@ const OAuthCallback = () => {
 
   if (sentToApp) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background px-8">
+      <div className="min-h-full flex flex-col items-center justify-center gap-4 bg-background px-8">
         <div className="h-16 w-16 rounded-2xl gradient-gold flex items-center justify-center glow-gold">
           <span className="text-2xl">✓</span>
         </div>
@@ -230,7 +230,7 @@ const OAuthCallback = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-3">
+    <div className="min-h-full flex flex-col items-center justify-center gap-3">
       <div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" />
       <p className="text-sm text-muted-foreground">Signing you in…</p>
     </div>

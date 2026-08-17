@@ -62,7 +62,7 @@ export default function AdminModeration() {
 
   if (isAdmin === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-full flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-gold" />
       </div>
     );
@@ -100,7 +100,7 @@ export default function AdminModeration() {
   };
 
   return (
-    <div className="min-h-screen pb-8 px-4 pt-6">
+    <div className="min-h-full pb-8 px-4 pt-6">
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <ShieldCheck className="h-5 w-5 text-gold" />

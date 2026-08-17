@@ -78,7 +78,7 @@ const ResetPassword = () => {
 
   if (!isRecovery && !success) {
     return (
-      <div className="min-h-screen gradient-dark flex flex-col items-center justify-center px-6">
+      <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm text-center animate-reveal">
           <h1 className="font-display text-2xl font-bold mb-2">Invalid Link</h1>
           <p className="text-sm text-muted-foreground mb-6">
@@ -95,7 +95,7 @@ const ResetPassword = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen gradient-dark flex flex-col items-center justify-center px-6">
+      <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm text-center animate-reveal">
           <div className="h-14 w-14 mx-auto rounded-xl bg-xp-green/20 border border-xp-green/30 flex items-center justify-center mb-6">
             <Check size={24} className="text-xp-green" />
@@ -113,7 +113,7 @@ const ResetPassword = () => {
   }
 
   return (
-    <div className="min-h-screen gradient-dark flex flex-col items-center justify-center px-6">
+    <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm animate-reveal">
         <div className="flex flex-col items-center mb-10">
           <BrandLogo size={56} priority className="rounded-xl glow-gold mb-4" />

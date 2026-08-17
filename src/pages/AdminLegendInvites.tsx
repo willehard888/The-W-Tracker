@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -166,11 +167,7 @@ export default function AdminLegendInvites() {
         All invites ({invites?.length ?? 0})
       </h3>
 
-      {isLoading && (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-gold" />
-        </div>
-      )}
+      {isLoading && <DetailSkeleton />}
 
       <div className="space-y-2">
         {invites?.map((inv) => {

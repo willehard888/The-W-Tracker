@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -114,9 +115,7 @@ const TribeBattles = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-12">
-        <Loader2 size={20} className="animate-spin text-gold" />
-      </div>
+      <DetailSkeleton />
     );
   }
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -152,8 +153,8 @@ const WeeklyBriefing = () => {
 
   if (loading || !briefing) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <Loader2 className="h-6 w-6 text-gold animate-spin" />
+      <div className="h-full px-4 pt-4">
+        <DetailSkeleton />
       </div>
     );
   }
@@ -321,10 +322,8 @@ const WeeklyBriefing = () => {
 };
 
 const StatTile = ({ label, value }: { label: string; value: string }) => (
-  <div className="rounded-xl glass-card border border-gold/15 p-4">
-    <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1">
-      {label}
-    </p>
+  <div className="surface-card border-gold/15 p-4">
+    <p className="eyebrow mb-1">{label}</p>
     <p className="font-display font-black text-2xl text-gold tabular-nums">{value}</p>
   </div>
 );

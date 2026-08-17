@@ -334,7 +334,7 @@ const VaultCategoryBlock = ({
           {isLoading && (
             <div className="space-y-2">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="h-16 rounded-xl bg-card/40 border border-border/40 animate-pulse" />
+                <div key={i} className="h-16 rounded-xl bg-card/40 border border-border/40 skeleton-block" />
               ))}
             </div>
           )}

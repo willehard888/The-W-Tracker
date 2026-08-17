@@ -103,14 +103,14 @@ const Friends = () => {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Add a friend by username"
-              className="w-full rounded-2xl border border-gold/25 bg-background/40 pl-9 pr-3 py-3 text-[13px] outline-none focus:border-gold/50"
+              className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
             />
           </div>
 
           {searching2 && (
             <div className="mt-2 space-y-1.5">
               {searching && !results ? (
-                <div className="h-14 rounded-xl bg-card/60 animate-pulse" />
+                <div className="h-14 rounded-xl bg-card/60 skeleton-block" />
               ) : (results ?? []).length === 0 ? (
                 <p className="text-[12px] text-muted-foreground px-1 py-3 text-center">No users match “{q.trim()}”.</p>
               ) : (
@@ -232,7 +232,7 @@ const Friends = () => {
           </p>
           {friendsLoading ? (
             <div className="space-y-1.5">
-              {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-card/60 animate-pulse" />)}
+              {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-card/60 skeleton-block" />)}
             </div>
           ) : (friends?.length ?? 0) === 0 ? (
             <div className="surface-card p-6 text-center">

@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { ProfileSkeleton } from "@/components/skeletons/PageSkeleton";
 import { Portal } from "@/components/ui/Portal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -205,8 +206,8 @@ const UserProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-full flex items-center justify-center">
-        <div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+      <div className="min-h-full px-4 pt-4">
+        <ProfileSkeleton />
       </div>
     );
   }

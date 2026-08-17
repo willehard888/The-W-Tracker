@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { uniqueChannelName } from "@/lib/realtime";
@@ -125,11 +126,7 @@ export default function AdminModeration() {
         </div>
       </div>
 
-      {isLoading && (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-gold" />
-        </div>
-      )}
+      {isLoading && <DetailSkeleton />}
 
       {!isLoading && queue && queue.length === 0 && (
         <div className="text-center py-16">

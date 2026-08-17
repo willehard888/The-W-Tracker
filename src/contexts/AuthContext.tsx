@@ -3,7 +3,8 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import { track, FUNNEL } from "@/lib/analytics";
-import { identifyUser, resetIdentity } from "@/lib/observability";
+import { identifyUser, resetIdentity, captureException } from "@/lib/observability";
+import { uniqueChannelName } from "@/lib/realtime";
 import { clearAppleAuthStarted, clearAppleUsernameSelectionPending, isAppleAuthStarted, markAppleUsernameSelectionPending } from "@/lib/apple-username";
 
 interface AuthContextType {
@@ -65,7 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const ensureProfile = async (authUser: User) => {
     const username = buildFallbackUsername(authUser);
 
-    await supabase.from("profiles").upsert(
+    const { error } = await supabase.from("profiles").upsert(
       {
         user_id: authUser.id,
         username,
@@ -73,6 +74,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       },
       { onConflict: "user_id" },
     );
+    // A silent failure here leaves profile null forever — the user is signed
+    // in but locked out with no signal. Report it so it's visible in prod.
+    if (error) captureException(error, { where: "ensureProfile" });
   };
 
   const isAppleUserProfile = (authUser: User) => {
@@ -101,11 +105,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const run = (async () => {
       try {
-        let { data } = await supabase
+        const first = await supabase
           .from("profiles")
           .select("*")
           .eq("user_id", authUser.id)
           .maybeSingle();
+        if (first.error) captureException(first.error, { where: "fetchProfile" });
+        let data = first.data;
 
         if (!data) {
           await ensureProfile(authUser);
@@ -276,7 +282,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const uid = user?.id;
     if (!uid) return;
     const channel = supabase
-      .channel(`profile-rt:${uid}`)
+      // uniqueChannelName: a duplicate static name at the app ROOT throws
+      // "cannot add postgres_changes callbacks after subscribe()" and takes
+      // down the whole app through ErrorBoundary (see lib/realtime docblock).
+      .channel(uniqueChannelName("profile-rt", uid))
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "profiles", filter: `user_id=eq.${uid}` },

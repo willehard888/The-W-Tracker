@@ -20,11 +20,10 @@ type TabColor = typeof tabs[number]["color"];
 
 const colorMap: Record<TabColor, { text: string; rgb: string }> = {
   // Unified Gold · Fire/Lava · Black palette — every tab lives in the same
-  // warm spectrum (no more cool teal / violet / pink accents in the nav).
+  // warm spectrum. Only the colors the tabs actually use live here (extra
+  // keys were a strict-mode type error waiting to bite).
   gold:  { text: "text-[hsl(var(--gold))]",         rgb: "var(--gold)" },
-  ember: { text: "text-[hsl(var(--ember))]",        rgb: "var(--ember)" },
-  lava:  { text: "text-[hsl(var(--lava))]",         rgb: "var(--lava)" },
-  apex:  { text: "text-[hsl(18_95%_58%)]",          rgb: "18 95% 58%" },
+  apex:  { text: "text-[hsl(var(--ember))]",        rgb: "var(--ember)" },
 };
 
 const HIDDEN_PATHS = new Set(["/landing", "/auth", "/onboarding", "/paywall"]);

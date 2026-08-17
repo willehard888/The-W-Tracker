@@ -5,6 +5,7 @@ import { uniqueChannelName } from "@/lib/realtime";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, Send } from "lucide-react";
+import { toast } from "sonner";
 import StatusAvatar from "@/components/StatusAvatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -54,14 +55,14 @@ const Chat = () => {
     if (!user || !partnerId || !messages) return;
     const unread = messages.filter((m) => m.receiver_id === user.id && !m.read);
     if (unread.length > 0) {
-      supabase
+      void supabase
         .from("direct_messages")
         .update({ read: true })
         .eq("receiver_id", user.id)
         .eq("sender_id", partnerId)
         .eq("read", false)
-        .then(() => {
-          queryClient.invalidateQueries({ queryKey: ["conversations"] });
+        .then(({ error }) => {
+          if (!error) queryClient.invalidateQueries({ queryKey: ["conversations"] });
         });
     }
   }, [messages, user, partnerId, queryClient]);
@@ -73,7 +74,10 @@ const Chat = () => {
       .channel(uniqueChannelName("chat", partnerId))
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "direct_messages" },
+        // Server-side filter: without it this client received EVERY DM in the
+        // product and filtered in JS. Realtime allows one filter — receiver
+        // covers messages TO me; my own sends invalidate in handleSend.
+        { event: "INSERT", schema: "public", table: "direct_messages", filter: `receiver_id=eq.${user.id}` },
         (payload) => {
           const msg = payload.new as any;
           if (
@@ -97,35 +101,47 @@ const Chat = () => {
     if (!user || !partnerId || !text.trim()) return;
     setSending(true);
     const messageContent = text.trim();
-    await supabase.from("direct_messages").insert({
-      sender_id: user.id,
-      receiver_id: partnerId,
-      content: messageContent,
-    });
-
-    // Trigger push notification for receiver
     try {
-      const { data: senderProfile } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("user_id", user.id)
-        .single();
-
-      await supabase.functions.invoke("notify-message", {
-        body: {
-          receiver_id: partnerId,
-          sender_username: senderProfile?.username || "Someone",
-          message_preview: messageContent,
-        },
+      // supabase-js returns { error } — it does NOT throw. Without this check
+      // an RLS/DB failure cleared the input and the message never existed.
+      const { error } = await supabase.from("direct_messages").insert({
+        sender_id: user.id,
+        receiver_id: partnerId,
+        content: messageContent,
       });
-    } catch (e) {
-      console.log("Push notification failed (non-critical):", e);
-    }
+      if (error) {
+        toast.error("Message didn't send — try again.");
+        return; // keep the text in the input so nothing is lost
+      }
 
-    setText("");
-    setSending(false);
-    queryClient.invalidateQueries({ queryKey: ["chat-messages", partnerId] });
-    queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      // Trigger push notification for receiver (best-effort)
+      try {
+        const { data: senderProfile } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("user_id", user.id)
+          .single();
+
+        await supabase.functions.invoke("notify-message", {
+          body: {
+            receiver_id: partnerId,
+            sender_username: senderProfile?.username || "Someone",
+            message_preview: messageContent,
+          },
+        });
+      } catch {
+        /* push is non-critical — the message itself is already saved */
+      }
+
+      setText("");
+      queryClient.invalidateQueries({ queryKey: ["chat-messages", partnerId] });
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    } catch {
+      toast.error("Message didn't send — try again.");
+    } finally {
+      // Without finally, a network throw left the send button spinning forever.
+      setSending(false);
+    }
   };
 
   const partnerTier = (partner as any)?.status_tier || "recruit";

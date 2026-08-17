@@ -91,7 +91,7 @@ export const useDailyPulse = (
           .eq("user_id", userId);
       }
     };
-    run();
+    void run().catch(() => { /* snapshot is best-effort */ });
     return () => {
       cancelled = true;
     };

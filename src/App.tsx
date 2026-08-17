@@ -228,8 +228,11 @@ const AppRoutes = () => {
               BottomNav) visible if the current page crashes. The global
               ErrorBoundary at the very root only kicks in for
               shell-level failures. Page crashes get a contained recovery
-              UI here so the user can still navigate elsewhere. */}
-          <ErrorBoundary>
+              UI here so the user can still navigate elsewhere.
+              key={pathname}: without it the boundary LATCHED into the error
+              state — tapping BottomNav changed the URL but the fallback kept
+              rendering and the user could never navigate out. */}
+          <ErrorBoundary key={location.pathname}>
           <Routes>
           <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />

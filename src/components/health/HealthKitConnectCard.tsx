@@ -28,11 +28,11 @@ const HealthKitConnectCard = () => {
   // Read verification stats (server-computed over last 14 days).
   useEffect(() => {
     if (!user?.id) return;
-    supabase.rpc("user_verified_performer_stats" as any, { _user_id: user.id })
-      .then(({ data }) => {
-        if (data) setStats(data as any);
-      })
-      .catch(() => { /* table may not exist yet on pre-migration DBs */ });
+    void supabase.rpc("user_verified_performer_stats" as any, { _user_id: user.id })
+      .then(
+        ({ data }) => { if (data) setStats(data as any); },
+        () => { /* table may not exist yet on pre-migration DBs */ },
+      );
   }, [user?.id, syncing]);
 
   if (available === false) return null;       // wrong platform, hide

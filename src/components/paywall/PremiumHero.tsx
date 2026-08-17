@@ -327,7 +327,7 @@ const PremiumHero = ({
         {/* CTA */}
         <Button
           size="xl"
-          variant="gold"
+          variant="ember"
           className={cn(
             "w-full font-black text-base tracking-wide h-14",
             !busy && "breathing-glow",

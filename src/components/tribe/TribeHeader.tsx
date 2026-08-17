@@ -133,7 +133,7 @@ const TribeHeader = ({
               {canClaim && (
                 <Button
                   size="sm"
-                  variant="magma"
+                  variant="ember"
                   className="mt-3 w-full"
                   onClick={onClaim}
                 >

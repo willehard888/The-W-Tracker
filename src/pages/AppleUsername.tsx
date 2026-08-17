@@ -149,7 +149,7 @@ const AppleUsername = () => {
 
           <Button
             type="submit"
-            variant="coal"
+            variant="ember"
             size="xl"
             className="w-full"
             disabled={saving || !!validationMessage || username.length < 3 || availability === "checking" || availability === "taken"}

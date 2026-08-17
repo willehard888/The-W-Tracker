@@ -84,9 +84,6 @@ const buttonVariants = cva(
         // Link — gold-soft → gold
         link: "text-[hsl(var(--gold-soft))] underline-offset-4 hover:text-[hsl(var(--gold))] hover:underline",
 
-        // Gold — alias of the primary ember CTA
-        gold: PRIMARY_EMBER,
-
         // Gold outline — clean gold hairline, fills lightly on hover.
         "gold-outline": "border border-[hsl(var(--gold)/0.4)] text-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.04)] font-semibold hover:bg-[hsl(var(--gold)/0.1)] hover:border-[hsl(var(--gold)/0.6)]",
 
@@ -130,9 +127,6 @@ const buttonVariants = cva(
           "active:[background:linear-gradient(180deg,hsl(var(--ember)/0.10)_0%,hsl(14_92%_42%/0.05)_100%)]",
           "active:shadow-[inset_0_2px_4px_hsl(10_82%_10%/0.5)]",
         ].join(" "),
-
-        // Coal / Hiillos — high-value identity CTA. Now the shared primary look.
-        coal: PRIMARY_EMBER,
 
         // Gold-soft — explicit premium gold-glass for cancel/compare/message style actions.
         // Stronger gold crown than `secondary` — pick this when you want clearer "luxury cancel".
@@ -203,11 +197,9 @@ const buttonVariants = cva(
           "active:shadow-[inset_0_2px_4px_hsl(20_85%_6%/0.7)]",
         ].join(" "),
 
-        // MAGMA / BULLION / AURUM — legacy "premium fire" CTAs, now unified
-        // with the shared PRIMARY_EMBER look so every primary button matches.
-        magma: PRIMARY_EMBER,
-        bullion: PRIMARY_EMBER,
-        aurum: PRIMARY_EMBER,
+        // (gold/coal/magma/bullion/aurum aliases removed — 7 names for one
+        // identical button meant the same CTA was declared 5 different ways.
+        // `ember` and `default` are the two that remain.)
       },
       size: {
         default: "h-10 min-h-10 px-4 py-2 rounded-md",

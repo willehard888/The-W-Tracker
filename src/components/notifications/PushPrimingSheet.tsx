@@ -69,7 +69,7 @@ export default function PushPrimingSheet({ open, onEnable, onDismiss }: PushPrim
         </div>
 
         <Button
-          variant="gold"
+          variant="ember"
           size="xl"
           className="w-full"
           onClick={() => { hapticSelection(); onEnable(); }}

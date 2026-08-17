@@ -317,7 +317,7 @@ const Leaderboard = () => {
           </div>
           {/* Title matches the tab that brought you here ("Ranks") — a tab
               labeled one thing landing on a page titled another reads lost. */}
-          <h1 className="font-display text-3xl font-black tracking-tight bg-gradient-to-br from-gold via-gold-light to-gold bg-clip-text text-transparent">
+          <h1 className="font-display text-2xl font-black tracking-tight bg-gradient-to-br from-gold via-gold-light to-gold bg-clip-text text-transparent">
             Ranks
           </h1>
         </div>

@@ -155,7 +155,7 @@ const Vault = () => {
       <div className="flex items-center justify-between mb-4 animate-reveal">
         <button
           onClick={() => navigate(-1)}
-          className="h-9 w-9 rounded-full flex items-center justify-center bg-card/70 border border-border/60 backdrop-blur active:scale-95 transition"
+          className="shrink-0 -ml-1 h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground active:scale-90 active:text-foreground transition-transform"
           aria-label="Back"
         >
           <ArrowLeft size={16} />
@@ -179,7 +179,7 @@ const Vault = () => {
             Welcome in, {firstName}
           </p>
         )}
-        <h1 className="font-display text-[32px] leading-[0.95] font-black tracking-tight mb-2">
+        <h1 className="font-display text-2xl leading-none font-black tracking-tight mb-2">
           The <span className="text-gradient-gold">Vault</span>
         </h1>
         <p className="text-[12px] text-muted-foreground max-w-[300px] mx-auto leading-relaxed">

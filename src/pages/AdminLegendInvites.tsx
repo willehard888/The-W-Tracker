@@ -109,7 +109,7 @@ export default function AdminLegendInvites() {
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <Crown className="h-5 w-5 text-gold" fill="currentColor" />
-          <h1 className="font-display text-2xl font-bold tracking-tight">Legend Invites</h1>
+          <h1 className="font-display text-2xl font-black tracking-tight">Legend Invites</h1>
         </div>
         <p className="text-sm text-muted-foreground">
           Invite-only access to the Legend tier. Each code is single-use.

@@ -366,13 +366,13 @@ const Battles = () => {
         {/* Pushed page (entered from Ranks) — needs its own way back. */}
         <button
           onClick={() => navigate(-1)}
-          className="h-10 w-10 rounded-full flex items-center justify-center bg-card/70 border border-border/60 active:scale-95 transition shrink-0"
+          className="shrink-0 -ml-1 h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground active:scale-90 active:text-foreground transition-transform"
           aria-label="Back"
         >
           <ArrowLeft size={18} />
         </button>
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">Battles</h1>
+          <h1 className="font-display text-2xl font-black tracking-tight">Battles</h1>
           <p className="text-sm text-muted-foreground mt-1">Challenge others. Prove your discipline.</p>
         </div>
       </div>

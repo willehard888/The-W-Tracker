@@ -142,7 +142,7 @@ const Messages = () => {
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
       
       <div className="animate-reveal mb-6">
-        <h1 className="font-display text-2xl font-bold tracking-tight leading-none py-[10px]">Messages</h1>
+        <h1 className="font-display text-2xl font-black tracking-tight leading-none py-[10px]">Messages</h1>
         <p className="text-sm text-muted-foreground mt-0.5">Direct messages</p>
       </div>
 

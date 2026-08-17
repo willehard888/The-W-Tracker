@@ -111,12 +111,12 @@ const Referrals = () => {
   return (
     <div className="min-h-full pb-4 px-4 pt-4">
       <div className="flex items-center gap-3 mb-6 animate-reveal">
-        <button onClick={() => navigate(-1)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
+        <button onClick={() => navigate(-1)} aria-label="Back" className="shrink-0 -ml-1 h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground active:scale-90 active:text-foreground transition-transform">
           <ChevronLeft size={20} />
         </button>
         <BrandLogo size={32} className="rounded-lg" alt="W" />
         <div>
-          <h1 className="font-display text-xl font-bold tracking-tight">Recruit Your Way to Legend</h1>
+          <h1 className="font-display text-2xl font-black tracking-tight">Recruit Your Way to Legend</h1>
           <p className="text-xs text-muted-foreground">Every paid friend pulls you closer to Founders Circle.</p>
         </div>
       </div>

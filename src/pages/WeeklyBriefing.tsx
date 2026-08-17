@@ -174,7 +174,7 @@ const WeeklyBriefing = () => {
       <div className="relative z-10">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
+          className="shrink-0 -ml-1 mb-2 h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground active:scale-90 active:text-foreground transition-transform"
         >
           <ArrowLeft size={16} /> Back
         </button>
@@ -189,7 +189,7 @@ const WeeklyBriefing = () => {
           <p className="text-[10px] uppercase tracking-[0.3em] text-gold/80 font-bold mb-2">
             Weekly Briefing · {formatDateRange(briefing.week_start, briefing.week_end)}
           </p>
-          <h1 className="font-display font-black text-3xl leading-tight tracking-tight bg-gradient-to-b from-[hsl(42_90%_75%)] to-[hsl(var(--gold))] bg-clip-text text-transparent">
+          <h1 className="font-display font-black text-2xl leading-tight tracking-tight text-gradient-gold">
             "{briefing.headline}"
           </h1>
         </motion.div>

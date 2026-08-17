@@ -104,7 +104,7 @@ export default function AdminModeration() {
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <ShieldCheck className="h-5 w-5 text-gold" />
-          <h1 className="font-display text-2xl font-bold tracking-tight">Moderation Queue</h1>
+          <h1 className="font-display text-2xl font-black tracking-tight">Moderation Queue</h1>
         </div>
         <p className="text-sm text-muted-foreground">
           Low-confidence AI blocks waiting for human review.

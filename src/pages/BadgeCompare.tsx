@@ -74,7 +74,7 @@ const BadgeCompare = () => {
         </button>
         
         <div>
-          <h1 className="font-display text-xl font-bold tracking-tight">Badge Compare</h1>
+          <h1 className="font-display text-2xl font-black tracking-tight">Badge Compare</h1>
           <p className="text-xs text-muted-foreground">See how your collection stacks up</p>
         </div>
       </div>

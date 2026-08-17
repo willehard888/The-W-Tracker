@@ -107,7 +107,7 @@ const MyTribeBattles = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-6">
-        <Loader2 size={16} className="animate-spin text-[hsl(18_95%_58%)]" />
+        <Loader2 size={16} className="animate-spin text-[hsl(var(--ember))]" />
       </div>
     );
   }
@@ -117,7 +117,7 @@ const MyTribeBattles = () => {
     return (
       <div className="rounded-xl border border-dashed border-border/60 p-4 text-center">
         <div className="flex items-center justify-center gap-2 mb-1.5">
-          <Swords size={14} className="text-[hsl(18_95%_58%)]" />
+          <Swords size={14} className="text-[hsl(var(--ember))]" />
           <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">
             Tribe Battles
           </p>
@@ -169,7 +169,7 @@ const MyTribeBattles = () => {
         className={cn(
           "w-full text-left rounded-xl border p-3 transition-transform active:scale-[0.99]",
           b.status === "active" &&
-            "border-[hsl(18_95%_58%)]/45 bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.07] to-card/60 shadow-[0_0_18px_hsl(18_95%_58%/0.12)]",
+            "border-[hsl(var(--ember))]/45 bg-gradient-to-br from-[hsl(var(--ember))]/[0.07] to-card/60 shadow-[0_0_18px_hsl(var(--ember)/0.12)]",
           b.status === "pending" && "border-gold/40 bg-gradient-to-br from-gold/[0.05] to-card/60",
           b.status === "completed" && iWon && "border-gold/50 bg-gradient-to-br from-gold/[0.08] to-card/60",
           b.status === "completed" && !iWon && !isDraw && "border-border/50 bg-card/50",
@@ -179,9 +179,9 @@ const MyTribeBattles = () => {
       >
         <div className="flex items-center justify-between mb-1.5">
           <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-black text-muted-foreground">
-            <Swords size={10} className="text-[hsl(18_95%_58%)]" />
+            <Swords size={10} className="text-[hsl(var(--ember))]" />
             {b.status === "pending" && (myIsChallenger ? "Awaiting" : "Incoming")}
-            {b.status === "active" && <span className="text-[hsl(18_95%_58%)]">Live</span>}
+            {b.status === "active" && <span className="text-[hsl(var(--ember))]">Live</span>}
             {b.status === "completed" && (iWon ? <span className="text-gold">Victory</span> : isDraw ? "Draw" : "Defeat")}
             {b.status === "declined" && "Declined"}
             {b.status === "expired" && "Expired"}
@@ -212,7 +212,7 @@ const MyTribeBattles = () => {
             </div>
             <div className="h-1.5 rounded-full bg-secondary overflow-hidden flex">
               <div
-                className="h-full bg-gradient-to-r from-gold to-[hsl(18_95%_58%)] transition-all"
+                className="h-full bg-gradient-to-r from-gold to-[hsl(var(--ember))] transition-all"
                 style={{ width: `${myPct}%` }}
               />
               <div className="h-full bg-foreground/30" style={{ width: `${100 - myPct}%` }} />
@@ -230,10 +230,10 @@ const MyTribeBattles = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Swords size={13} className="text-[hsl(18_95%_58%)]" />
+          <Swords size={13} className="text-[hsl(var(--ember))]" />
           <h2 className="font-display font-bold text-sm tracking-tight">Tribe Battles</h2>
           {active.length > 0 && (
-            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-[hsl(18_95%_58%)] px-1.5 py-0.5 rounded-full bg-[hsl(18_95%_58%)]/10 border border-[hsl(18_95%_58%)]/30">
+            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-[hsl(var(--ember))] px-1.5 py-0.5 rounded-full bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
               <Flame size={8} /> {active.length} live
             </span>
           )}
@@ -263,7 +263,7 @@ const MyTribeBattles = () => {
           {tribes.length === 1 ? (
             <button
               onClick={() => navigate(`/tribes/${tribes[0].id}/battles`)}
-              className="text-[11px] font-black uppercase tracking-widest text-[hsl(18_95%_58%)] inline-flex items-center gap-1"
+              className="text-[11px] font-black uppercase tracking-widest text-[hsl(var(--ember))] inline-flex items-center gap-1"
             >
               Open arena <ChevronRight size={12} />
             </button>

@@ -134,7 +134,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
         className="pointer-events-none absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-50"
         style={{
           background:
-            "radial-gradient(circle, hsl(42 78% 54% / 0.18) 0%, transparent 70%)",
+            "radial-gradient(circle, hsl(var(--gold) / 0.18) 0%, transparent 70%)",
         }}
       />
 

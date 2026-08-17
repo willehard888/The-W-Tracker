@@ -275,7 +275,7 @@ const UserProfile = () => {
           className={cn(
             "pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-64 blur-3xl opacity-60",
             isLegend && "bg-[radial-gradient(ellipse_at_center,hsl(280_70%_55%/0.4),transparent_70%)]",
-            isApex && "bg-[radial-gradient(ellipse_at_center,hsl(18_95%_58%/0.35),transparent_70%)]",
+            isApex && "bg-[radial-gradient(ellipse_at_center,hsl(var(--ember)/0.35),transparent_70%)]",
             isElite && !isApex && !isLegend && "bg-[radial-gradient(ellipse_at_center,hsl(var(--gold)/0.3),transparent_70%)]",
             isHigh && "bg-[radial-gradient(ellipse_at_center,hsl(var(--purple)/0.3),transparent_70%)]",
           )}
@@ -428,7 +428,7 @@ const UserProfile = () => {
             transition={{ delay: 0.35 }}
             className="mt-6 flex flex-col items-center"
           >
-            <p className="font-display font-black text-[64px] leading-none text-gold drop-shadow-[0_0_24px_hsl(42_78%_54%/0.55)] tabular-nums">
+            <p className="font-display font-black text-[64px] leading-none text-gold drop-shadow-[0_0_24px_hsl(var(--gold)/0.55)] tabular-nums">
               {(profile.xp ?? 0).toLocaleString().replace(/,/g, " ")}
             </p>
             <p className="text-[10px] font-black tracking-[0.32em] text-gold/70 mt-2">TOTAL XP</p>

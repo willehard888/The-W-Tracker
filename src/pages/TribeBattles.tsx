@@ -141,7 +141,7 @@ const TribeBattles = () => {
         const heroAccent = collectiveAccent(collectiveStreak);
         return (
           <div
-            className="relative rounded-2xl border border-[hsl(18_95%_58%)]/40 bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.10] via-card/70 to-gold/[0.06] p-4 pl-32 mb-4 overflow-hidden"
+            className="relative rounded-2xl border border-[hsl(var(--ember))]/40 bg-gradient-to-br from-[hsl(var(--ember))]/[0.10] via-card/70 to-gold/[0.06] p-4 pl-32 mb-4 overflow-hidden"
             style={{
               boxShadow: `0 0 26px ${heroAccent.replace(")", " / 0.22)")}, inset 0 -32px 60px ${heroAccent.replace(")", " / 0.14)")}`,
             }}
@@ -157,8 +157,8 @@ const TribeBattles = () => {
             </div>
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-1">
-                <Swords size={18} className="text-[hsl(18_95%_58%)]" />
-                <p className="text-[10px] uppercase tracking-widest font-black bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
+                <Swords size={18} className="text-[hsl(var(--ember))]" />
+                <p className="text-[10px] uppercase tracking-widest font-black bg-gradient-to-r from-[hsl(var(--ember))] to-gold bg-clip-text text-transparent">
                   Tribe Battles
                 </p>
               </div>

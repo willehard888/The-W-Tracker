@@ -83,20 +83,20 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
   const completedCount = questStatuses.filter((q) => q.completed).length;
 
   return (
-    <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-4">
+    <div className="rounded-xl border border-gold/20 bg-gold/5 p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-purple-500/15 flex items-center justify-center">
-            <Target size={16} className="text-purple-400" />
+          <div className="h-8 w-8 rounded-lg bg-gold/15 flex items-center justify-center">
+            <Target size={16} className="text-gold" />
           </div>
           <div>
             <p className="font-display font-bold text-sm tracking-tight">Daily Quests</p>
             <p className="text-[10px] text-muted-foreground">Bonus objectives — refreshes daily</p>
           </div>
         </div>
-        <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20">
-          <Flame size={12} className="text-purple-400" />
-          <span className="text-[10px] font-bold text-purple-400">{completedCount}/3</span>
+        <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-gold/10 border border-gold/20">
+          <Flame size={12} className="text-gold" />
+          <span className="text-[10px] font-bold text-gold">{completedCount}/3</span>
         </div>
       </div>
 
@@ -107,7 +107,7 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
             className={cn(
               "flex items-center gap-3 rounded-lg border p-3 transition-all duration-300",
               quest.completed
-                ? "border-purple-500/30 bg-purple-500/10"
+                ? "border-gold/30 bg-gold/10"
                 : "border-border/50 bg-card/50"
             )}
           >
@@ -123,8 +123,8 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
             </div>
             {quest.completed ? (
               <div className="flex items-center gap-1">
-                <span className="text-[10px] font-bold text-purple-400">+{quest.xpReward}</span>
-                <CheckCircle2 size={14} className="text-purple-400" />
+                <span className="text-[10px] font-bold text-gold">+{quest.xpReward}</span>
+                <CheckCircle2 size={14} className="text-gold" />
               </div>
             ) : (
               <div className="flex items-center gap-1">
@@ -137,9 +137,9 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
       </div>
 
       {totalBonus > 0 && (
-        <div className="mt-3 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20">
-          <Zap size={12} className="text-purple-400" />
-          <span className="text-xs font-bold text-purple-400">Quest Bonus: +{totalBonus} XP</span>
+        <div className="mt-3 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-gold/10 border border-gold/20">
+          <Zap size={12} className="text-gold" />
+          <span className="text-xs font-bold text-gold">Quest Bonus: +{totalBonus} XP</span>
         </div>
       )}
     </div>

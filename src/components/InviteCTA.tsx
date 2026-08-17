@@ -45,7 +45,7 @@ const InviteCTA = ({ referralCount }: InviteCTAProps) => {
         className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, hsl(42 78% 54% / 0.18) 0%, transparent 70%)",
+            "radial-gradient(circle, hsl(var(--gold) / 0.18) 0%, transparent 70%)",
         }}
       />
       <div className="relative flex items-center gap-3">

@@ -117,7 +117,7 @@ const StreakFlameInline = ({
         outer: "hsl(14 88% 48%)",
         mid:   "hsl(20 92% 56%)",
         core:  "hsl(42 100% 75%)",
-        glow:  "hsl(18 95% 58%)",
+        glow:  "hsl(var(--ember))",
         text:  "hsl(18 95% 62%)",
       };
     }

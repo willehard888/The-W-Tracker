@@ -77,22 +77,22 @@ const CommentThread = ({
     <div className="animate-fade-in">
       <div className="flex gap-2.5 relative">
         {isReply && (
-          <span aria-hidden="true" className="absolute -left-3 top-0 bottom-0 w-px bg-gradient-to-b from-[hsl(18_95%_58%)]/30 via-[hsl(18_95%_58%)]/15 to-transparent" />
+          <span aria-hidden="true" className="absolute -left-3 top-0 bottom-0 w-px bg-gradient-to-b from-[hsl(var(--ember))]/30 via-[hsl(var(--ember))]/15 to-transparent" />
         )}
-        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold flex items-center justify-center text-[10px] font-black text-background shrink-0 mt-0.5">
+        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[hsl(var(--ember))] to-gold flex items-center justify-center text-[10px] font-black text-background shrink-0 mt-0.5">
           {username.charAt(0)?.toUpperCase() || "?"}
         </div>
         <div className="flex-1 min-w-0">
           <div className={cn(
             "border rounded-2xl rounded-tl-sm px-3 py-2 max-w-full",
             isEditing ? "block" : "inline-block",
-            isReply ? "bg-card border-[hsl(18_95%_58%)]/25" : "bg-card border-border/40",
-            isEditing && "border-[hsl(18_95%_58%)]/60",
+            isReply ? "bg-card border-[hsl(var(--ember))]/25" : "bg-card border-border/40",
+            isEditing && "border-[hsl(var(--ember))]/60",
           )}>
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold text-[hsl(18_95%_58%)]">@{username}</span>
+              <span className="text-[11px] font-bold text-[hsl(var(--ember))]">@{username}</span>
               {isEdited(node) && !isEditing && (
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-[hsl(18_95%_58%)]/70 italic">· edited</span>
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-[hsl(var(--ember))]/70 italic">· edited</span>
               )}
             </div>
             {isEditing ? (
@@ -102,7 +102,7 @@ const CommentThread = ({
                   onChange={(e) => setDraft(e.target.value.slice(0, 300))}
                   rows={2}
                   autoFocus
-                  className="w-full bg-background/50 border border-[hsl(18_95%_58%)]/30 focus:border-[hsl(18_95%_58%)] rounded-lg px-2 py-1.5 text-xs text-foreground/90 outline-none resize-none focus:ring-2 focus:ring-[hsl(18_95%_58%)]/30"
+                  className="w-full bg-background/50 border border-[hsl(var(--ember))]/30 focus:border-[hsl(var(--ember))] rounded-lg px-2 py-1.5 text-xs text-foreground/90 outline-none resize-none focus:ring-2 focus:ring-[hsl(var(--ember))]/30"
                   onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); cancelEdit(); } }}
                 />
                 <div className="flex items-center justify-end gap-1.5">
@@ -112,7 +112,7 @@ const CommentThread = ({
                   </button>
                   <button type="button" onClick={() => { hapticImpact("light"); saveEdit(); }}
                     disabled={saving || !draft.trim()}
-                    className="text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background px-3 py-1 rounded-md disabled:opacity-50">
+                    className="text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background px-3 py-1 rounded-md disabled:opacity-50">
                     {saving ? "Saving…" : "Save"}
                   </button>
                 </div>
@@ -130,14 +130,14 @@ const CommentThread = ({
               </p>
               {currentUserId && (
                 <button type="button" onClick={() => { hapticSelection(); onReply(node.id, username, node.content || ""); }}
-                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-[hsl(18_95%_58%)] transition-colors">
+                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-[hsl(var(--ember))] transition-colors">
                   <Reply size={10} /> Reply
                 </button>
               )}
               {isOwn && (
                 <>
                   <button type="button" onClick={() => { hapticSelection(); setDraft(node.content || ""); setEditingId(node.id); }}
-                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-[hsl(18_95%_58%)] transition-colors">
+                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-[hsl(var(--ember))] transition-colors">
                     Edit
                   </button>
                 </>
@@ -166,7 +166,7 @@ const CommentThread = ({
       {node.children.length > 0 && (
         <div className={cn(
           "mt-2.5 space-y-2.5 relative",
-          node.depth < MAX_VISUAL_DEPTH ? "ml-6 pl-3 border-l border-[hsl(18_95%_58%)]/15" : "ml-3 pl-3 border-l border-dashed border-[hsl(18_95%_58%)]/20",
+          node.depth < MAX_VISUAL_DEPTH ? "ml-6 pl-3 border-l border-[hsl(var(--ember))]/15" : "ml-3 pl-3 border-l border-dashed border-[hsl(var(--ember))]/20",
         )}>
           {node.children.map((child: CommentNode) => (
             <CommentThread key={child.id} node={child} currentUserId={currentUserId} canDeleteAny={canDeleteAny}
@@ -373,7 +373,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
       <div className={cn(
         "rounded-2xl border bg-card overflow-hidden",
         isApexAuthor
-          ? "border-[hsl(18_95%_58%)]/40 shadow-[0_0_18px_hsl(18_95%_58%/0.18)]"
+          ? "border-[hsl(var(--ember))]/40 shadow-[0_0_18px_hsl(var(--ember)/0.18)]"
           : "border-border",
         post.reported && "ring-1 ring-destructive/40",
       )}>
@@ -408,12 +408,12 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                   tier={(post.author?.status_tier as any) || "recruit"}
                   fallback="user"
                 />
-                {isOwn && <span className="ml-1 text-[10px] text-[hsl(18_95%_58%)]/70 font-medium">(you)</span>}
+                {isOwn && <span className="ml-1 text-[10px] text-[hsl(var(--ember))]/70 font-medium">(you)</span>}
               </button>
               {isApexAuthor && (
-                <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-[hsl(18_95%_58%)]/15 border border-[hsl(18_95%_58%)]/40">
-                  <Zap size={7} className="text-[hsl(18_95%_58%)]" fill="currentColor" />
-                  <span className="text-[8px] font-black tracking-wider uppercase text-[hsl(18_95%_58%)]">Apex</span>
+                <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-[hsl(var(--ember))]/15 border border-[hsl(var(--ember))]/40">
+                  <Zap size={7} className="text-[hsl(var(--ember))]" fill="currentColor" />
+                  <span className="text-[8px] font-black tracking-wider uppercase text-[hsl(var(--ember))]">Apex</span>
                 </span>
               )}
               {post.author?.status_tier === "elite" && (
@@ -497,7 +497,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             aria-label="Toggle comments"
             className={cn(
               "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
-              showComments ? "bg-[hsl(18_95%_58%)]/12 text-[hsl(18_95%_58%)]" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              showComments ? "bg-[hsl(var(--ember))]/12 text-[hsl(var(--ember))]" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}>
             <MessageCircle size={15} fill={showComments ? "currentColor" : "none"} />
             <span className="tabular-nums">{post.comments_count > 0 ? post.comments_count : ""}</span>
@@ -579,10 +579,10 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             {isMember ? (
               <div className="pt-2 border-t border-border/30">
                 {replyTo && (
-                  <div className="mb-2 flex items-stretch gap-2 rounded-xl border border-[hsl(18_95%_58%)]/30 bg-[hsl(18_95%_58%)]/[0.06] p-2 animate-fade-in">
-                    <div className="w-0.5 rounded-full bg-[hsl(18_95%_58%)] shrink-0" />
+                  <div className="mb-2 flex items-stretch gap-2 rounded-xl border border-[hsl(var(--ember))]/30 bg-[hsl(var(--ember))]/[0.06] p-2 animate-fade-in">
+                    <div className="w-0.5 rounded-full bg-[hsl(var(--ember))] shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-[hsl(18_95%_58%)] uppercase tracking-wider">
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-[hsl(var(--ember))] uppercase tracking-wider">
                         <Reply size={10} /> Replying to @{replyTo.username}
                       </div>
                       <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 break-words">
@@ -597,7 +597,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                 )}
 
                 <div className="flex items-end gap-2">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold flex items-center justify-center text-[10px] font-black text-background shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[hsl(var(--ember))] to-gold flex items-center justify-center text-[10px] font-black text-background shrink-0">
                     {profile?.username?.charAt(0)?.toUpperCase() || "?"}
                   </div>
                   <div className="flex-1 min-w-0 relative">
@@ -610,8 +610,8 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                       className={cn(
                         "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 transition-all",
                         replyTo
-                          ? "border-[hsl(18_95%_58%)]/40 focus:ring-[hsl(18_95%_58%)]/50 focus:border-[hsl(18_95%_58%)]/60"
-                          : "border-border focus:ring-[hsl(18_95%_58%)]/40 focus:border-[hsl(18_95%_58%)]/40",
+                          ? "border-[hsl(var(--ember))]/40 focus:ring-[hsl(var(--ember))]/50 focus:border-[hsl(var(--ember))]/60"
+                          : "border-border focus:ring-[hsl(var(--ember))]/40 focus:border-[hsl(var(--ember))]/40",
                       )}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && commentText.trim()) { hapticImpact("light"); addComment.mutate(); }
@@ -633,7 +633,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                     className={cn(
                       "h-9 w-9 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0",
                       commentText.trim()
-                        ? "bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background"
+                        ? "bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background"
                         : "bg-secondary text-muted-foreground"
                     )}>
                     <Send size={14} />

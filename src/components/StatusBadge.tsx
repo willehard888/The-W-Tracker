@@ -54,8 +54,8 @@ const StatusBadge = ({ tier, division = 0, size = "md", showAura = true, classNa
             background: isLegend
               ? "linear-gradient(135deg, hsl(280 70% 58%), hsl(42 90% 55%), hsl(350 80% 55%))"
               : isApex
-              ? "linear-gradient(135deg, hsl(18 95% 58%), hsl(42 90% 55%))"
-              : "linear-gradient(135deg, hsl(42 78% 54%), hsl(42 90% 65%))",
+              ? "linear-gradient(135deg, hsl(var(--ember)), hsl(42 90% 55%))"
+              : "linear-gradient(135deg, hsl(var(--gold)), hsl(42 90% 65%))",
           }}
         />
       )}
@@ -66,7 +66,7 @@ const StatusBadge = ({ tier, division = 0, size = "md", showAura = true, classNa
           sizeClasses[size],
           config.borderClass,
           isLegend && "border-[hsl(280_70%_60%)]/50 bg-gradient-to-r from-[hsl(280_70%_55%)]/12 via-gold/8 to-[hsl(350_80%_55%)]/8",
-          isApex && "border-[hsl(18_95%_58%)]/40 bg-gradient-to-r from-[hsl(18_95%_58%)]/10 to-gold/8",
+          isApex && "border-[hsl(var(--ember))]/40 bg-gradient-to-r from-[hsl(var(--ember))]/10 to-gold/8",
           tier === 'elite' && "border-gold/40 bg-gold/8",
           tier === 'high_performer' && "border-[hsl(var(--purple))]/30 bg-[hsl(var(--purple))]/5",
           tier === 'performer' && "border-[hsl(210_90%_56%)]/25 bg-[hsl(210_90%_56%)]/5",
@@ -78,7 +78,7 @@ const StatusBadge = ({ tier, division = 0, size = "md", showAura = true, classNa
           size={iconSizes[size]}
           className={cn(
             isLegend && "text-[hsl(280_70%_65%)] drop-shadow-[0_0_4px_hsl(280_70%_60%/0.5)]",
-            isApex && "text-[hsl(18_95%_58%)] drop-shadow-[0_0_4px_hsl(18_95%_58%/0.4)] status-flame-flicker",
+            isApex && "text-[hsl(var(--ember))] drop-shadow-[0_0_4px_hsl(var(--ember)/0.4)] status-flame-flicker",
             tier === 'elite' && "text-gold drop-shadow-[0_0_4px_hsl(var(--gold)/0.4)]",
             tier === 'elite' && size === 'lg' && "status-flame-flicker",
             tier === 'high_performer' && "text-[hsl(var(--purple))]",
@@ -90,7 +90,7 @@ const StatusBadge = ({ tier, division = 0, size = "md", showAura = true, classNa
         <span
           className={cn(
             isLegend && "bg-gradient-to-r from-[hsl(280_70%_65%)] via-gold to-[hsl(350_80%_60%)] bg-clip-text text-transparent",
-            isApex && "bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent",
+            isApex && "bg-gradient-to-r from-[hsl(var(--ember))] to-gold bg-clip-text text-transparent",
             tier === 'elite' && "text-gold",
             tier === 'high_performer' && "text-[hsl(var(--purple))]",
             tier === 'performer' && "text-[hsl(210_90%_56%)]",

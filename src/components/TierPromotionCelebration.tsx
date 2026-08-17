@@ -101,7 +101,7 @@ const TierPromotionCelebration = () => {
                   filter: isLegend
                     ? "drop-shadow(0 0 30px hsl(280 70% 60% / 0.6))"
                     : isApex
-                    ? "drop-shadow(0 0 30px hsl(18 95% 58% / 0.6))"
+                    ? "drop-shadow(0 0 30px hsl(var(--ember) / 0.6))"
                     : "drop-shadow(0 0 24px hsl(var(--gold) / 0.5))",
                 }}
               >

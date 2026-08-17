@@ -38,7 +38,7 @@ const RecoveryCard = () => {
         className="w-full text-left rounded-2xl border border-border/50 bg-card/50 p-4 active:scale-[0.99] transition-transform"
       >
         <div className="flex items-center gap-2 mb-1">
-          <HeartPulse size={13} className="text-[hsl(18_95%_58%)]" />
+          <HeartPulse size={13} className="text-[hsl(var(--ember))]" />
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">Recovery</p>
         </div>
         <p className="text-[12px] text-muted-foreground leading-snug">
@@ -104,14 +104,14 @@ const RecoveryCard = () => {
     <div
       className={cn(
         "rounded-2xl border p-4",
-        underRecovered ? "border-[hsl(18_95%_58%)]/40 bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.07] via-card/95 to-card"
+        underRecovered ? "border-[hsl(var(--ember))]/40 bg-gradient-to-br from-[hsl(var(--ember))]/[0.07] via-card/95 to-card"
           : "border-xp-green/35 bg-gradient-to-br from-xp-green/[0.06] via-card/95 to-card",
       )}
     >
       <div className="flex items-center gap-2 mb-2.5">
-        <HeartPulse size={13} className={underRecovered ? "text-[hsl(18_95%_58%)]" : "text-xp-green"} />
+        <HeartPulse size={13} className={underRecovered ? "text-[hsl(var(--ember))]" : "text-xp-green"} />
         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">Recovery · last night</p>
-        <span className={cn("ml-auto text-[10px] font-black uppercase tracking-wider", underRecovered ? "text-[hsl(18_95%_58%)]" : "text-xp-green")}>{status}</span>
+        <span className={cn("ml-auto text-[10px] font-black uppercase tracking-wider", underRecovered ? "text-[hsl(var(--ember))]" : "text-xp-green")}>{status}</span>
       </div>
 
       {last!.sleep_total_min != null && (
@@ -137,7 +137,7 @@ const RecoveryCard = () => {
             <span className="text-[13px] font-black tabular-nums">{Math.round(last!.resting_hr)}</span>
             <span className="text-[10px] text-muted-foreground">rhr</span>
             {rhrDelta != null && Math.abs(rhrDelta) >= 1 && (
-              <span className={cn("text-[10px] font-black tabular-nums", rhrDelta > 0 ? "text-[hsl(18_95%_58%)]" : "text-xp-green")}>
+              <span className={cn("text-[10px] font-black tabular-nums", rhrDelta > 0 ? "text-[hsl(var(--ember))]" : "text-xp-green")}>
                 {rhrDelta > 0 ? "+" : ""}{Math.round(rhrDelta)}
               </span>
             )}
@@ -161,7 +161,7 @@ const RecoveryCard = () => {
               Resting HR · {rhrTrend.length} nights
             </p>
             {trendDelta != null && Math.abs(trendDelta) >= 1 && (
-              <span className={cn("text-[10px] font-black tabular-nums", trendDelta < 0 ? "text-xp-green" : "text-[hsl(18_95%_58%)]")}>
+              <span className={cn("text-[10px] font-black tabular-nums", trendDelta < 0 ? "text-xp-green" : "text-[hsl(var(--ember))]")}>
                 {trendDelta < 0 ? "↓" : "↑"} {Math.abs(Math.round(trendDelta))} bpm
                 <span className="text-muted-foreground/60 font-bold"> {trendDelta < 0 ? "· fitter" : ""}</span>
               </span>

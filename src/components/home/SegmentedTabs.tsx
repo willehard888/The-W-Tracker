@@ -61,7 +61,7 @@ const SegmentedTabs = ({
                 className={cn(
                   "flex-1 text-[10px] font-black uppercase tracking-[0.14em] py-1.5 px-1 rounded-full transition-all duration-300 relative",
                   isActive
-                    ? "bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] shadow-[0_2px_8px_-1px_hsl(42_78%_54%/0.55),inset_0_1px_0_hsl(42_95%_75%/0.6)]"
+                    ? "bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] shadow-[0_2px_8px_-1px_hsl(var(--gold)/0.55),inset_0_1px_0_hsl(42_95%_75%/0.6)]"
                     : "text-muted-foreground/70 hover:text-foreground/90",
                 )}
               >

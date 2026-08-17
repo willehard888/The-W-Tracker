@@ -30,7 +30,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage: [
-            "radial-gradient(ellipse 70% 45% at 50% 0%, hsl(42 78% 54% / 0.2) 0%, transparent 60%)",
+            "radial-gradient(ellipse 70% 45% at 50% 0%, hsl(var(--gold) / 0.2) 0%, transparent 60%)",
             "radial-gradient(ellipse 55% 35% at 50% 22%, hsl(270 60% 58% / 0.1) 0%, transparent 65%)",
             "radial-gradient(ellipse 120% 100% at 50% 50%, transparent 45%, hsl(260 18% 2% / 0.9) 100%)",
           ].join(","),
@@ -43,7 +43,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
       <header className="relative flex items-center justify-between px-6 pt-6 pb-4 animate-reveal">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="absolute -inset-2 rounded-2xl opacity-50 blur-lg" style={{ background: "hsl(42 78% 54% / 0.35)" }} />
+            <div className="absolute -inset-2 rounded-2xl opacity-50 blur-lg" style={{ background: "hsl(var(--gold) / 0.35)" }} />
             <BrandLogo size={80} priority className="relative rounded-2xl" />
           </div>
           <span className="font-display font-bold text-lg tracking-tight text-gradient-gold">Whealth Factory</span>

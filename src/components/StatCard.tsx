@@ -37,7 +37,7 @@ const StatCard = ({ icon: Icon, label, value, sublabel, variant = "default", cla
       {variant === "elite" &&
       <>
           <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(135deg, hsl(42 78% 54% / 0.1), transparent 60%)" }} />
+        style={{ background: "linear-gradient(135deg, hsl(var(--gold) / 0.1), transparent 60%)" }} />
         
           <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full pointer-events-none opacity-60 blur-xl animate-pulse"
         style={{ background: "radial-gradient(circle, hsl(42 90% 55% / 0.2) 0%, transparent 70%)" }} />

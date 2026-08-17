@@ -15,7 +15,7 @@ export const PILLAR_META: Array<{ key: keyof PillarScores; label: string }> = [
 ];
 
 const barColor = (v: number) =>
-  v >= 75 ? "bg-gold" : v >= 50 ? "bg-gold/70" : v >= 25 ? "bg-[hsl(18_95%_58%/0.8)]" : "bg-destructive/70";
+  v >= 75 ? "bg-gold" : v >= 50 ? "bg-gold/70" : v >= 25 ? "bg-[hsl(var(--ember)/0.8)]" : "bg-destructive/70";
 
 /** Animated radial gauge — pure SVG stroke-dashoffset, reduced-motion safe. */
 const Gauge = ({ value }: { value: number }) => {
@@ -36,7 +36,7 @@ const Gauge = ({ value }: { value: number }) => {
         <defs>
           <linearGradient id="whealth-gauge-grad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="hsl(42 90% 70%)" />
-            <stop offset="55%" stopColor="hsl(42 78% 54%)" />
+            <stop offset="55%" stopColor="hsl(var(--gold))" />
             <stop offset="100%" stopColor="hsl(30 90% 50%)" />
           </linearGradient>
         </defs>
@@ -51,7 +51,7 @@ const Gauge = ({ value }: { value: number }) => {
           strokeDasharray={C}
           strokeDashoffset={offset}
           style={{ transition: "stroke-dashoffset 0.9s cubic-bezier(0.16, 1, 0.3, 1)" }}
-          className="motion-reduce:transition-none drop-shadow-[0_0_6px_hsl(42_78%_54%/0.45)]"
+          className="motion-reduce:transition-none drop-shadow-[0_0_6px_hsl(var(--gold)/0.45)]"
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -95,7 +95,7 @@ const WhealthIndexCard = ({
       <div className="rounded-[15px] bg-card/80 p-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shadow-[0_0_16px_-4px_hsl(42_78%_54%/0.5)]">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shadow-[0_0_16px_-4px_hsl(var(--gold)/0.5)]">
               <Crown size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
             </div>
             <div>

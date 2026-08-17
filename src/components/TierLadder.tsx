@@ -23,7 +23,7 @@ const TIER_ROW_STYLE: Record<number, { base: string; accent: string; height: str
   2: { base: "border-[hsl(210_90%_56%)]/35 bg-gradient-to-r from-[hsl(210_90%_56%)]/[0.06] to-transparent shadow-[0_0_14px_hsl(210_90%_56%/0.12)]", accent: "bg-[hsl(210_90%_56%)]/15 text-[hsl(210_90%_56%)]", height: "min-h-[64px]" },
   3: { base: "border-[hsl(var(--purple))]/40 bg-[hsl(var(--purple))]/[0.06] shadow-[0_0_18px_hsl(var(--purple)/0.18)]", accent: "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))]", height: "min-h-[66px]" },
   4: { base: "border-gold/50 bg-gold/[0.06] shadow-[0_0_22px_hsl(var(--gold)/0.22)]", accent: "gradient-gold text-primary-foreground", height: "min-h-[70px]" },
-  5: { base: "border-[hsl(18_95%_58%)]/60 bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.10] to-gold/[0.08] shadow-[0_0_22px_hsl(18_95%_58%/0.25)]", accent: "bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold text-background", height: "min-h-[76px]" },
+  5: { base: "border-[hsl(var(--ember))]/60 bg-gradient-to-br from-[hsl(var(--ember))]/[0.10] to-gold/[0.08] shadow-[0_0_22px_hsl(var(--ember)/0.25)]", accent: "bg-gradient-to-br from-[hsl(var(--ember))] to-gold text-background", height: "min-h-[76px]" },
   6: { base: "border-[hsl(280_70%_60%)]/55 bg-gradient-to-br from-[hsl(280_70%_55%)]/[0.12] via-gold/[0.08] to-[hsl(350_80%_55%)]/[0.12] shadow-[0_0_26px_hsl(280_70%_60%/0.28)]", accent: "bg-gradient-to-br from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background", height: "min-h-[80px]" },
 };
 
@@ -111,7 +111,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                   // Calm "current" treatment — static gold ring + glow, no shimmer
                   isCurrent && "ring-1 ring-gold/70 shadow-[0_0_18px_hsl(var(--gold)/0.35)]",
                   // Apex — gold sheen + extra glow
-                  cfg.rank === 5 && "shadow-[0_0_28px_hsl(18_95%_58%/0.30),inset_0_1px_0_hsl(var(--gold)/0.30)]",
+                  cfg.rank === 5 && "shadow-[0_0_28px_hsl(var(--ember)/0.30),inset_0_1px_0_hsl(var(--gold)/0.30)]",
                   // Legend — jewel gradient + heavy glow
                   cfg.rank === 6 && "shadow-[0_0_34px_hsl(280_70%_60%/0.40),inset_0_1px_0_hsl(var(--gold)/0.45)]",
                   isLocked && "opacity-95",
@@ -127,8 +127,8 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                     <span
                       className="absolute bottom-0 right-1 w-[2px] h-[2px] rounded-full status-ember-rise"
                       style={{
-                        background: "hsl(18 95% 58%)",
-                        boxShadow: "0 0 4px hsl(18 95% 58%), 0 0 8px hsl(var(--gold))",
+                        background: "hsl(var(--ember))",
+                        boxShadow: "0 0 4px hsl(var(--ember)), 0 0 8px hsl(var(--gold))",
                         animationDuration: "4.2s",
                       }}
                     />
@@ -136,7 +136,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       className="absolute bottom-0 right-3 w-[2px] h-[2px] rounded-full status-ember-rise"
                       style={{
                         background: "hsl(var(--gold))",
-                        boxShadow: "0 0 4px hsl(var(--gold)), 0 0 8px hsl(18 95% 58%)",
+                        boxShadow: "0 0 4px hsl(var(--gold)), 0 0 8px hsl(var(--ember))",
                         animationDelay: "2.1s",
                         animationDuration: "4.2s",
                       }}
@@ -168,7 +168,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       : isUnlocked
                       ? "bg-xp-green/15 text-xp-green border border-xp-green/25"
                       : cn("bg-background/40 border border-gold/25", cfg.textClass),
-                    cfg.rank === 5 && !isCurrent && !isUnlocked && "border-[hsl(18_95%_58%)]/55 shadow-[0_0_10px_hsl(18_95%_58%/0.35)]",
+                    cfg.rank === 5 && !isCurrent && !isUnlocked && "border-[hsl(var(--ember))]/55 shadow-[0_0_10px_hsl(var(--ember)/0.35)]",
                     cfg.rank === 6 && !isCurrent && !isUnlocked && "border-[hsl(280_70%_60%)]/55 shadow-[0_0_12px_hsl(280_70%_60%/0.45)]",
                   )}
                 >
@@ -229,7 +229,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                         <Crown size={11} strokeWidth={3.2} fill="currentColor" /> Invite
                       </span>
                     ) : cfg.rank === 5 ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2.5 py-1 rounded-md text-background bg-gradient-to-r from-[hsl(18_95%_58%)] via-gold to-[hsl(18_95%_58%)] border border-gold shadow-[0_0_14px_hsl(18_95%_58%/0.55),inset_0_1px_0_hsl(var(--gold-light)/0.5)]">
+                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2.5 py-1 rounded-md text-background bg-gradient-to-r from-[hsl(var(--ember))] via-gold to-[hsl(var(--ember))] border border-gold shadow-[0_0_14px_hsl(var(--ember)/0.55),inset_0_1px_0_hsl(var(--gold-light)/0.5)]">
                         <Zap size={11} strokeWidth={3.2} fill="currentColor" /> Earn
                       </span>
                     ) : (
@@ -264,9 +264,9 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
         const heroGlow = isLegend
           ? "radial-gradient(ellipse at top, hsl(280 70% 55% / 0.45), transparent 65%)"
           : isApex
-          ? "radial-gradient(ellipse at top, hsl(18 95% 58% / 0.45), hsl(42 78% 54% / 0.25) 40%, transparent 70%)"
+          ? "radial-gradient(ellipse at top, hsl(var(--ember) / 0.45), hsl(var(--gold) / 0.25) 40%, transparent 70%)"
           : cfg.rank === 4
-          ? "radial-gradient(ellipse at top, hsl(42 78% 54% / 0.40), transparent 70%)"
+          ? "radial-gradient(ellipse at top, hsl(var(--gold) / 0.40), transparent 70%)"
           : cfg.rank === 3
           ? "radial-gradient(ellipse at top, hsl(270 60% 58% / 0.35), transparent 70%)"
           : cfg.rank === 2

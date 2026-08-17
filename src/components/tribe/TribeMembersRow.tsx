@@ -42,7 +42,7 @@ const TribeMembersRow = ({
         {members.map((m) => (
           <button key={m.user_id} onClick={() => onMemberClick(m.user_id)}
             className="flex flex-col items-center gap-1 shrink-0 w-14">
-            <div className={`relative h-12 w-12 rounded-full border-2 ${m.role === "owner" ? "border-gold shadow-[0_0_12px_hsl(42_78%_54%/0.6)]" : "border-[hsl(18_95%_58%)]/30"} bg-secondary overflow-hidden`}>
+            <div className={`relative h-12 w-12 rounded-full border-2 ${m.role === "owner" ? "border-gold shadow-[0_0_12px_hsl(var(--gold)/0.6)]" : "border-[hsl(var(--ember))]/30"} bg-secondary overflow-hidden`}>
               {m.avatar_url ? (
                 <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 48)} alt={m.username} className="h-full w-full object-cover" />
               ) : (
@@ -56,13 +56,13 @@ const TribeMembersRow = ({
                 </div>
               )}
               {m.role === "owner" && (
-                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-1 py-px rounded-sm bg-gradient-to-r from-gold to-[hsl(18_95%_58%)] shadow-[0_0_6px_hsl(42_78%_54%/0.7)] flex items-center gap-0.5">
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-1 py-px rounded-sm bg-gradient-to-r from-gold to-[hsl(var(--ember))] shadow-[0_0_6px_hsl(var(--gold)/0.7)] flex items-center gap-0.5">
                   <Crown size={6} className="text-background" strokeWidth={3} fill="currentColor" />
                   <span className="text-[6px] font-black tracking-wider uppercase text-background leading-none">Founder</span>
                 </div>
               )}
               {m.role === "admin" && (
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1 py-px rounded-sm bg-[hsl(18_95%_58%)]/90">
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1 py-px rounded-sm bg-[hsl(var(--ember))]/90">
                   <Shield size={6} className="text-background" />
                 </div>
               )}

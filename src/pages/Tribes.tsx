@@ -346,8 +346,8 @@ const Tribes = () => {
       {invites.length > 0 && (
         <div className="mb-5">
           <div className="flex items-center gap-2 mb-2">
-            <Mail size={12} className="text-[hsl(18_95%_58%)]" />
-            <h2 className="text-[11px] font-black tracking-widest uppercase text-[hsl(18_95%_58%)]">
+            <Mail size={12} className="text-[hsl(var(--ember))]" />
+            <h2 className="text-[11px] font-black tracking-widest uppercase text-[hsl(var(--ember))]">
               Tribe Invites · {invites.length}
             </h2>
           </div>
@@ -355,11 +355,11 @@ const Tribes = () => {
             {invites.map((inv) => (
               <div
                 key={inv.id}
-                className="rounded-xl p-3 border border-[hsl(18_95%_58%)]/35 bg-gradient-to-br from-[hsl(18_95%_58%)]/8 via-card/70 to-gold/5"
+                className="rounded-xl p-3 border border-[hsl(var(--ember))]/35 bg-gradient-to-br from-[hsl(var(--ember))]/8 via-card/70 to-gold/5"
               >
                 <div className="flex items-start gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[hsl(18_95%_58%)]/30 to-gold/15 border border-[hsl(18_95%_58%)]/40 flex items-center justify-center shrink-0">
-                    <Crown size={14} className="text-[hsl(18_95%_58%)]" strokeWidth={2.4} />
+                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[hsl(var(--ember))]/30 to-gold/15 border border-[hsl(var(--ember))]/40 flex items-center justify-center shrink-0">
+                    <Crown size={14} className="text-[hsl(var(--ember))]" strokeWidth={2.4} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-black text-sm truncate">{inv.tribe?.name ?? "Tribe"}</p>
@@ -430,7 +430,7 @@ const Tribes = () => {
         <Users size={11} className="text-muted-foreground shrink-0" />
         <p className="text-[11px] text-muted-foreground leading-tight">
           <span className="font-black text-foreground">Open to everyone</span> — create your own and
-          join up to <span className="font-black text-[hsl(18_95%_58%)]">25 tribes</span>.
+          join up to <span className="font-black text-[hsl(var(--ember))]">25 tribes</span>.
         </p>
       </div>
 
@@ -515,15 +515,15 @@ const Tribes = () => {
               onClick={() => navigate(`/tribes/${featured.id}`)}
               className="group w-full text-left rounded-2xl p-[2px] apex-conic-border apex-tribe-card-hover overflow-hidden"
             >
-              <div className="rounded-2xl p-5 bg-gradient-to-br from-card/90 via-[hsl(18_95%_58%)]/8 to-gold/5 relative overflow-hidden apex-portal-glow">
-                <div className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-background/50 backdrop-blur-sm border border-[hsl(18_95%_58%)]/40">
-                  <Sparkles size={9} className="text-[hsl(18_95%_58%)]" />
-                  <span className="text-[9px] font-black tracking-widest uppercase text-[hsl(18_95%_58%)]">
+              <div className="rounded-2xl p-5 bg-gradient-to-br from-card/90 via-[hsl(var(--ember))]/8 to-gold/5 relative overflow-hidden apex-portal-glow">
+                <div className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-background/50 backdrop-blur-sm border border-[hsl(var(--ember))]/40">
+                  <Sparkles size={9} className="text-[hsl(var(--ember))]" />
+                  <span className="text-[9px] font-black tracking-widest uppercase text-[hsl(var(--ember))]">
                     Featured
                   </span>
                 </div>
                 <div className="flex items-start gap-4 relative">
-                  <div className="relative h-20 w-20 rounded-2xl bg-gradient-to-br from-[hsl(18_95%_58%)]/35 via-gold/20 to-[hsl(18_95%_58%)]/25 border border-[hsl(18_95%_58%)]/55 flex items-center justify-center shrink-0 shadow-[0_0_28px_hsl(18_95%_58%/0.55)] overflow-hidden">
+                  <div className="relative h-20 w-20 rounded-2xl bg-gradient-to-br from-[hsl(var(--ember))]/35 via-gold/20 to-[hsl(var(--ember))]/25 border border-[hsl(var(--ember))]/55 flex items-center justify-center shrink-0 shadow-[0_0_28px_hsl(var(--ember)/0.55)] overflow-hidden">
                     {featured.cover_url && (
                       <img
                         src={transformImage(featured.cover_url, { width: 800, quality: 70 })}
@@ -540,14 +540,14 @@ const Tribes = () => {
                         size={64}
                       />
                     ) : !featured.cover_url ? (
-                      <Crown size={32} className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_10px_hsl(18_95%_58%/0.9)]" strokeWidth={2.4} />
+                      <Crown size={32} className="text-[hsl(var(--ember))] drop-shadow-[0_0_10px_hsl(var(--ember)/0.9)]" strokeWidth={2.4} />
                     ) : null}
-                    <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border-2 border-background flex items-center justify-center shadow-[0_0_8px_hsl(18_95%_58%/0.8)] animate-pulse">
+                    <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-gradient-to-br from-[hsl(var(--ember))] to-gold border-2 border-background flex items-center justify-center shadow-[0_0_8px_hsl(var(--ember)/0.8)] animate-pulse">
                       <Zap size={10} className="text-background" strokeWidth={3} fill="currentColor" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0 pt-1">
-                    <p className="font-display font-black text-2xl truncate leading-tight tracking-tight bg-gradient-to-r from-foreground via-[hsl(42_78%_70%)] to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_2px_12px_hsl(18_95%_58%/0.4)]">
+                    <p className="font-display font-black text-2xl truncate leading-tight tracking-tight bg-gradient-to-r from-foreground via-[hsl(42_78%_70%)] to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_2px_12px_hsl(var(--ember)/0.4)]">
                       {featured.name}
                     </p>
                     {featured.description && (
@@ -556,9 +556,9 @@ const Tribes = () => {
                       </p>
                     )}
                     <div className="flex items-center gap-3 mt-2.5">
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[hsl(18_95%_58%)]/10 border border-[hsl(18_95%_58%)]/30">
-                        <Users size={9} className="text-[hsl(18_95%_58%)]" />
-                        <span className="text-[10px] font-bold tabular-nums text-[hsl(18_95%_58%)]">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
+                        <Users size={9} className="text-[hsl(var(--ember))]" />
+                        <span className="text-[10px] font-bold tabular-nums text-[hsl(var(--ember))]">
                           {featured.member_count}
                         </span>
                       </span>
@@ -615,7 +615,7 @@ const Tribes = () => {
                 "group w-full text-left cursor-pointer rounded-2xl p-4 border apex-tribe-card-hover relative overflow-hidden",
                 isPaused
                   ? "border-muted-foreground/30 bg-gradient-to-br from-card/60 to-secondary/20 grayscale-[0.4]"
-                  : "border-[hsl(18_95%_58%)]/20 bg-gradient-to-br from-card/80 via-card/60 to-[hsl(18_95%_58%)]/5"
+                  : "border-[hsl(var(--ember))]/20 bg-gradient-to-br from-card/80 via-card/60 to-[hsl(var(--ember))]/5"
               )}
               style={{ animationDelay: `${idx * 60}ms` }}
             >
@@ -631,7 +631,7 @@ const Tribes = () => {
                   }}
                 />
               )}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-gradient-to-r from-transparent via-[hsl(18_95%_58%)]/8 to-transparent" />
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-gradient-to-r from-transparent via-[hsl(var(--ember))]/8 to-transparent" />
 
               {ownedIds.has(t.id) && !isPaused && (
                 <div className="absolute top-2 right-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gold/15 border border-gold/40">
@@ -700,7 +700,7 @@ const Tribes = () => {
                       "font-display font-black text-xl truncate leading-tight tracking-tight",
                       isPaused
                         ? "text-muted-foreground/80"
-                        : "bg-gradient-to-r from-foreground via-foreground to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_1px_8px_hsl(18_95%_58%/0.25)]"
+                        : "bg-gradient-to-r from-foreground via-foreground to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_1px_8px_hsl(var(--ember)/0.25)]"
                     )}
                   >
                     {t.name}

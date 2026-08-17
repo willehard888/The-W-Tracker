@@ -47,7 +47,7 @@ const FeedTheFireCTA = ({ accent, tribeName, className }: FeedTheFireCTAProps) =
 
   if (checkedToday === null || checkedToday === true) return null;
 
-  const c = accent ?? "hsl(18 95% 58%)";
+  const c = accent ?? "hsl(var(--ember))";
 
   return (
     <button

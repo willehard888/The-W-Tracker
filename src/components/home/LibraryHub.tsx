@@ -79,7 +79,7 @@ const LibraryHub = () => {
       <div className="rounded-[15px] bg-card/80 overflow-hidden">
         {/* Header — quiet, no chevron: the value statement, not a button */}
         <div className="flex items-center gap-3 px-4 pt-3.5 pb-3">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_16px_-4px_hsl(42_78%_54%/0.5)]">
+          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_16px_-4px_hsl(var(--gold)/0.5)]">
             <Crown size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
           </div>
           <div className="min-w-0">

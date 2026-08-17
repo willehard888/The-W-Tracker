@@ -85,7 +85,7 @@ const TribePendingRequestsDialog = ({ tribeId, open, onOpenChange, onChanged }: 
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <UserCheck size={16} className="text-[hsl(18_95%_58%)]" />
+            <UserCheck size={16} className="text-[hsl(var(--ember))]" />
             Pending requests
           </DialogTitle>
         </DialogHeader>
@@ -132,7 +132,7 @@ const TribePendingRequestsDialog = ({ tribeId, open, onOpenChange, onChanged }: 
                     size="sm"
                     onClick={() => handleRespond(p.user_id, true)}
                     disabled={actingId === p.user_id}
-                    className="h-8 px-2 bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black"
+                    className="h-8 px-2 bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
                   >
                     <Check size={12} />
                   </Button>

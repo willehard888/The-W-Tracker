@@ -90,7 +90,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
       <DialogContent className="max-w-sm bg-background border-border/60">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <Swords size={18} className="text-[hsl(18_95%_58%)]" />
+            <Swords size={18} className="text-[hsl(var(--ember))]" />
             <DialogTitle className="font-display font-black">Challenge a tribe</DialogTitle>
           </div>
           <DialogDescription className="text-xs">
@@ -126,7 +126,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
               className={cn(
                 "w-full text-left rounded-lg border p-2.5 transition-all flex items-center gap-2",
                 selected?.id === r.id
-                  ? "border-[hsl(18_95%_58%)]/60 bg-[hsl(18_95%_58%)]/10"
+                  ? "border-[hsl(var(--ember))]/60 bg-[hsl(var(--ember))]/10"
                   : "border-border bg-card/50 hover:border-border/80",
               )}
             >

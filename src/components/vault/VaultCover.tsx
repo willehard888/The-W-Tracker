@@ -5,7 +5,7 @@
  * fine engraved grid, a tasteful category motif, and a gold hairline frame.
  * No raster assets — fits the precision direction and ships in the bundle.
  */
-const GOLD = "hsl(42 78% 54%)";
+const GOLD = "hsl(var(--gold))";
 
 const Frame = ({ id, accent, children }: { id: string; accent: string; children: React.ReactNode }) => (
   <svg viewBox="0 0 420 168" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full" aria-hidden>

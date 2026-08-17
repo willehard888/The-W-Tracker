@@ -42,7 +42,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
     isLegend
       ? "from-[hsl(280_70%_60%)] via-gold to-[hsl(350_80%_60%)]"
       : isApex
-      ? "from-[hsl(18_95%_58%)] to-gold"
+      ? "from-[hsl(var(--ember))] to-gold"
       : isElite
       ? "from-gold-dark via-gold to-gold-light"
       : tier === "high_performer"
@@ -58,7 +58,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
     isLegend
       ? "conic-gradient(from_0deg,hsl(280_70%_58%/0.5),hsl(42_90%_55%/0.4),hsl(350_80%_55%/0.5),hsl(280_70%_58%/0.5))"
       : isApex
-      ? "conic-gradient(from_0deg,hsl(18_95%_58%/0.5),hsl(42_90%_55%/0.4),hsl(18_95%_58%/0.5))"
+      ? "conic-gradient(from_0deg,hsl(var(--ember)/0.5),hsl(42_90%_55%/0.4),hsl(var(--ember)/0.5))"
       : isElite
       ? "conic-gradient(from_0deg,hsl(42_90%_55%/0.4),hsl(42_78%_45%/0.2),hsl(42_90%_55%/0.4))"
       : null;
@@ -96,9 +96,9 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
             background: isLegend
               ? "radial-gradient(ellipse at top right, hsl(280 70% 60% / 0.18), transparent 60%)"
               : isApex
-              ? "radial-gradient(ellipse at top right, hsl(18 95% 58% / 0.16), transparent 60%)"
+              ? "radial-gradient(ellipse at top right, hsl(var(--ember) / 0.16), transparent 60%)"
               : isElite
-              ? "radial-gradient(ellipse at top right, hsl(42 78% 54% / 0.14), transparent 60%)"
+              ? "radial-gradient(ellipse at top right, hsl(var(--gold) / 0.14), transparent 60%)"
               : "radial-gradient(ellipse at top right, hsl(var(--purple) / 0.06), transparent 60%)",
           }}
         />

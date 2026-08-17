@@ -58,7 +58,7 @@ const TribeHeader = ({
 
   return (
     <div className="relative rounded-2xl mb-4 p-[2px] apex-conic-border overflow-hidden">
-      <div className="relative rounded-2xl p-5 overflow-hidden bg-gradient-to-br from-[hsl(18_95%_58%)]/15 via-card/85 to-[hsl(var(--gold))]/10 apex-spotlight">
+      <div className="relative rounded-2xl p-5 overflow-hidden bg-gradient-to-br from-[hsl(var(--ember))]/15 via-card/85 to-[hsl(var(--gold))]/10 apex-spotlight">
         {/* Cover photo background — owner-uploaded, dimmed for legibility */}
         {tribe.cover_url && (
           <div className="absolute inset-0 pointer-events-none">
@@ -77,20 +77,20 @@ const TribeHeader = ({
           className="absolute inset-0 pointer-events-none opacity-60"
           style={{
             transform: `translateY(${parallax}px)`,
-            background: "radial-gradient(ellipse at top, hsl(18 95% 58% / 0.18), transparent 70%)",
+            background: "radial-gradient(ellipse at top, hsl(var(--ember) / 0.18), transparent 70%)",
           }}
         />
         <div className="relative z-10">
           <div className="flex items-start gap-3">
-            <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-[hsl(18_95%_58%)]/30 via-gold/15 to-[hsl(18_95%_58%)]/20 border border-[hsl(18_95%_58%)]/45 flex items-center justify-center shrink-0 shadow-[0_0_14px_hsl(18_95%_58%/0.3)]">
-              <Crown size={26} className="text-[hsl(18_95%_58%)] drop-shadow-[0_0_4px_hsl(18_95%_58%/0.4)]" strokeWidth={2.4} />
-              <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold border-2 border-background flex items-center justify-center shadow-[0_0_6px_hsl(18_95%_58%/0.4)]">
+            <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-[hsl(var(--ember))]/30 via-gold/15 to-[hsl(var(--ember))]/20 border border-[hsl(var(--ember))]/45 flex items-center justify-center shrink-0 shadow-[0_0_14px_hsl(var(--ember)/0.3)]">
+              <Crown size={26} className="text-[hsl(var(--ember))] drop-shadow-[0_0_4px_hsl(var(--ember)/0.4)]" strokeWidth={2.4} />
+              <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-gradient-to-br from-[hsl(var(--ember))] to-gold border-2 border-background flex items-center justify-center shadow-[0_0_6px_hsl(var(--ember)/0.4)]">
                 <Zap size={10} className="text-background" strokeWidth={3.2} fill="currentColor" />
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/40 backdrop-blur-sm border border-[hsl(18_95%_58%)]/50 mb-1.5">
-                <span className="text-[9px] font-black tracking-widest uppercase bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
+              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/40 backdrop-blur-sm border border-[hsl(var(--ember))]/50 mb-1.5">
+                <span className="text-[9px] font-black tracking-widest uppercase bg-gradient-to-r from-[hsl(var(--ember))] to-gold bg-clip-text text-transparent">
                   {tribe.is_paused ? "Paused Tribe" : "Apex Tribe"}
                 </span>
               </div>
@@ -99,7 +99,7 @@ const TribeHeader = ({
               {founder && (
                 <button
                   onClick={() => onNavigateUser(founder.user_id)}
-                  className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-gold/20 to-[hsl(18_95%_58%)]/15 border border-gold/45 hover:from-gold/25 transition-colors"
+                  className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-gold/20 to-[hsl(var(--ember))]/15 border border-gold/45 hover:from-gold/25 transition-colors"
                 >
                   <Crown size={9} className="text-gold" strokeWidth={2.8} fill="currentColor" />
                   <span className="text-[9px] font-black tracking-widest uppercase text-gold">Founder</span>
@@ -128,7 +128,7 @@ const TribeHeader = ({
                 </p>
               </div>
               <p className="text-[12px] text-foreground/80 leading-snug">
-                The founder is no longer Apex. The fire is on hold until a new <span className="font-black text-[hsl(18_95%_58%)]">Apex member</span> takes over leadership.
+                The founder is no longer Apex. The fire is on hold until a new <span className="font-black text-[hsl(var(--ember))]">Apex member</span> takes over leadership.
               </p>
               {canClaim && (
                 <Button
@@ -145,13 +145,13 @@ const TribeHeader = ({
 
           <button
             onClick={onNavigateBattles}
-            className="mt-4 w-full rounded-xl border border-[hsl(18_95%_58%)]/45 bg-gradient-to-r from-[hsl(18_95%_58%)]/[0.10] to-gold/[0.06] hover:from-[hsl(18_95%_58%)]/15 hover:to-gold/10 transition-all p-2.5 flex items-center gap-2.5 text-left"
+            className="mt-4 w-full rounded-xl border border-[hsl(var(--ember))]/45 bg-gradient-to-r from-[hsl(var(--ember))]/[0.10] to-gold/[0.06] hover:from-[hsl(var(--ember))]/15 hover:to-gold/10 transition-all p-2.5 flex items-center gap-2.5 text-left"
           >
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[hsl(18_95%_58%)] to-gold flex items-center justify-center shrink-0 shadow-[0_0_10px_hsl(18_95%_58%/0.5)]">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[hsl(var(--ember))] to-gold flex items-center justify-center shrink-0 shadow-[0_0_10px_hsl(var(--ember)/0.5)]">
               <Swords size={14} className="text-background" strokeWidth={2.6} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-widest font-black bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold bg-clip-text text-transparent">
+              <p className="text-[10px] uppercase tracking-widest font-black bg-gradient-to-r from-[hsl(var(--ember))] to-gold bg-clip-text text-transparent">
                 Tribe Battles
               </p>
               <p className="text-[10px] text-muted-foreground truncate">
@@ -164,7 +164,7 @@ const TribeHeader = ({
           {isOwner && pendingCount > 0 && (
             <button
               onClick={onOpenPending}
-              className="mt-3 w-full rounded-xl border border-gold/45 bg-gradient-to-r from-gold/15 to-[hsl(18_95%_58%)]/10 hover:from-gold/20 transition-all p-2.5 flex items-center gap-2.5 text-left"
+              className="mt-3 w-full rounded-xl border border-gold/45 bg-gradient-to-r from-gold/15 to-[hsl(var(--ember))]/10 hover:from-gold/20 transition-all p-2.5 flex items-center gap-2.5 text-left"
             >
               <div className="h-8 w-8 rounded-lg bg-gold/25 border border-gold/40 flex items-center justify-center shrink-0">
                 <UserCheck size={14} className="text-gold" strokeWidth={2.6} />

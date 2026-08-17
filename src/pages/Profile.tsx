@@ -365,7 +365,7 @@ const Profile = () => {
   const heroBgClass = isLegendTier
     ? "border-[hsl(280_70%_60%)]/35 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(280_60%_18%/0.7),hsl(255_14%_6%)_55%,hsl(350_50%_12%/0.5)_100%)]"
     : isApexTier
-    ? "border-[hsl(18_95%_58%)]/35 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(18_75%_18%/0.65),hsl(255_14%_6%)_60%)]"
+    ? "border-[hsl(var(--ember))]/35 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(18_75%_18%/0.65),hsl(255_14%_6%)_60%)]"
     : tier === 'elite'
     ? "border-gold/25 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(42_70%_18%/0.55),hsl(255_14%_6%)_60%)]"
     : isHighTier
@@ -375,10 +375,10 @@ const Profile = () => {
   const heroTopGlowStyle = isLegendTier
     ? "radial-gradient(ellipse at center, hsl(280 70% 60% / 0.4), transparent 70%)"
     : isApexTier
-    ? "radial-gradient(ellipse at center, hsl(18 95% 58% / 0.4), transparent 70%)"
+    ? "radial-gradient(ellipse at center, hsl(var(--ember) / 0.4), transparent 70%)"
     : isHighTier
     ? "radial-gradient(ellipse at center, hsl(var(--purple) / 0.35), transparent 70%)"
-    : "radial-gradient(ellipse at center, hsl(42 78% 54% / 0.35), transparent 70%)";
+    : "radial-gradient(ellipse at center, hsl(var(--gold) / 0.35), transparent 70%)";
 
   return (
     <div className="min-h-screen pb-4 px-4 pt-6">
@@ -619,7 +619,7 @@ const Profile = () => {
             <div className="animate-reveal animate-reveal-delay-1">
               <div className="rounded-2xl border-2 border-gold/50 p-5 glow-gold glass-3d depth-realistic shadow-gold/20">
                 <div className="flex items-center gap-2 mb-4">
-                  <Medal size={24} className="text-gold drop-shadow-[0_0_8px_hsl(42_78%_54%/0.6)]" />
+                  <Medal size={24} className="text-gold drop-shadow-[0_0_8px_hsl(var(--gold)/0.6)]" />
                   <h2 className="font-display font-black text-xl tracking-tight">Season Champion</h2>
                   <span className="ml-auto text-gold font-display font-black text-2xl">{championHistory.wins}x</span>
                 </div>

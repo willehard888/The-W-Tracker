@@ -56,7 +56,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
     <div
       className={cn(
         "rounded-2xl border p-4 relative overflow-hidden",
-        battle.status === "active" && "border-[hsl(18_95%_58%)]/45 bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.06] to-card/60 shadow-[0_0_18px_hsl(18_95%_58%/0.15)]",
+        battle.status === "active" && "border-[hsl(var(--ember))]/45 bg-gradient-to-br from-[hsl(var(--ember))]/[0.06] to-card/60 shadow-[0_0_18px_hsl(var(--ember)/0.15)]",
         battle.status === "pending" && "border-gold/40 bg-gradient-to-br from-gold/[0.05] to-card/60",
         battle.status === "completed" && iWon && "border-gold/60 bg-gradient-to-br from-gold/[0.10] to-card/60 shadow-[0_0_18px_hsl(var(--gold)/0.25)]",
         battle.status === "completed" && !iWon && !isDraw && "border-border/50 bg-card/50",
@@ -67,7 +67,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-black text-muted-foreground">
-          <Swords size={11} className="text-[hsl(18_95%_58%)]" />
+          <Swords size={11} className="text-[hsl(var(--ember))]" />
           {battle.status === "pending" && (myIsChallenger ? "Awaiting Response" : "Incoming Challenge")}
           {battle.status === "active" && "Battle Live"}
           {battle.status === "completed" && (iWon ? <span className="text-gold">Victory</span> : isDraw ? "Draw" : "Defeat")}
@@ -189,7 +189,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
           </div>
           <div className="h-2 rounded-full bg-secondary overflow-hidden flex">
             <div
-              className="h-full bg-gradient-to-r from-gold to-[hsl(18_95%_58%)] transition-all"
+              className="h-full bg-gradient-to-r from-gold to-[hsl(var(--ember))] transition-all"
               style={{ width: `${myPct}%` }}
             />
             <div
@@ -221,7 +221,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
             onClick={onAccept}
             disabled={responding}
             size="sm"
-            className="flex-1 bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold text-background font-black"
+            className="flex-1 bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
           >
             {responding ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
             Accept

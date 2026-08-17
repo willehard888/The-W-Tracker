@@ -104,7 +104,7 @@ const TribeCollectiveFlame = ({
         isHero ? "p-6" : "p-5",
         isCold
           ? "border-[hsl(18_60%_35%)]/30 bg-card/50"
-          : "border-[hsl(18_95%_58%)]/40 surface-ember shadow-[0_0_40px_hsl(18_95%_58%/0.20)]",
+          : "border-[hsl(var(--ember))]/40 surface-ember shadow-[0_0_40px_hsl(var(--ember)/0.20)]",
         className,
       )}
       style={
@@ -340,7 +340,7 @@ const TribeCollectiveFlame = ({
                 className={cn(
                   "inline-flex items-center px-1.5 py-0.5 rounded-md border text-[9px] font-black tracking-widest uppercase",
                   isCold && "border-border/60 text-muted-foreground",
-                  !isCold && !isFirestorm && "border-[hsl(18_95%_58%)]/40 text-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%)]/10",
+                  !isCold && !isFirestorm && "border-[hsl(var(--ember))]/40 text-[hsl(var(--ember))] bg-[hsl(var(--ember))]/10",
                   isFirestorm && "border-transparent text-transparent bg-clip-text",
                 )}
                 style={isFirestorm ? {
@@ -388,7 +388,7 @@ const TribeCollectiveFlame = ({
               const segPct = (i + 1) * 10;
               const filled = igPct >= segPct;
               const partial = !filled && igPct > i * 10;
-              const ember = "hsl(18 95% 58%)";
+              const ember = "hsl(var(--ember))";
               return (
                 <span
                   key={i}
@@ -399,7 +399,7 @@ const TribeCollectiveFlame = ({
                       : partial
                       ? `linear-gradient(90deg, ${ember} ${(igPct - i * 10) * 10}%, transparent ${(igPct - i * 10) * 10}%)`
                       : "transparent",
-                    boxShadow: filled ? "0 0 6px hsl(18 95% 58% / 0.7)" : undefined,
+                    boxShadow: filled ? "0 0 6px hsl(var(--ember) / 0.7)" : undefined,
                   }}
                 />
               );

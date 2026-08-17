@@ -26,7 +26,7 @@ const DayStatsSticker = ({ stats, className }: { stats: DayStats; className?: st
         // Gradient hairline frame (p-px trick) + soft gold ambience
         "pointer-events-none absolute bottom-2 left-2 rounded-2xl p-px",
         "bg-gradient-to-br from-gold/80 via-gold/25 to-gold/50",
-        "shadow-[0_6px_24px_-6px_rgba(0,0,0,0.75),0_0_22px_-6px_hsl(42_78%_54%/0.4)]",
+        "shadow-[0_6px_24px_-6px_rgba(0,0,0,0.75),0_0_22px_-6px_hsl(var(--gold)/0.4)]",
         className,
       )}
     >
@@ -51,7 +51,7 @@ const DayStatsSticker = ({ stats, className }: { stats: DayStats; className?: st
             </>
           )}
           <span className="inline-flex items-center gap-0.5 font-display text-[14px] font-black text-gold leading-none tabular-nums glow-gold-text">
-            <Zap size={12} strokeWidth={2.8} className="drop-shadow-[0_0_8px_hsl(42_78%_54%/0.7)]" />
+            <Zap size={12} strokeWidth={2.8} className="drop-shadow-[0_0_8px_hsl(var(--gold)/0.7)]" />
             +{stats.xp_earned} XP
           </span>
           {stats.habits_done > 0 && (

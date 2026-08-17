@@ -119,7 +119,7 @@ const StatusHeader = () => {
     tier === "legend"
       ? "from-[hsl(280_70%_55%)]/25 via-gold/15 to-[hsl(350_80%_55%)]/20"
       : tier === "apex"
-      ? "from-[hsl(18_95%_58%)]/35 via-gold/20 to-[hsl(18_95%_58%)]/15"
+      ? "from-[hsl(var(--ember))]/35 via-gold/20 to-[hsl(var(--ember))]/15"
       : tier === "elite"
       ? "from-gold/25 via-gold/10 to-transparent"
       : tier === "high_performer"
@@ -134,7 +134,7 @@ const StatusHeader = () => {
     tier === "legend"
       ? "bg-gradient-to-r from-[hsl(280_70%_60%)] via-gold to-[hsl(350_80%_60%)]"
       : tier === "apex"
-      ? "bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold"
+      ? "bg-gradient-to-r from-[hsl(var(--ember))] to-gold"
       : tier === "elite"
       ? "bg-gradient-to-r from-gold-dark to-gold"
       : tier === "high_performer"
@@ -164,7 +164,7 @@ const StatusHeader = () => {
         {/* Top hairline shimmer — flame-tinted for Apex */}
         <div className={cn(
           "pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent to-transparent",
-          isApex ? "via-[hsl(18_95%_58%)]/70" : "via-gold/55",
+          isApex ? "via-[hsl(var(--ember))]/70" : "via-gold/55",
         )} />
 
         {/* Bottom rim — only when user is hot (streak ≥ 7). Pulses with tier accent. */}
@@ -175,11 +175,11 @@ const StatusHeader = () => {
             style={{
               background: `linear-gradient(90deg, transparent 0%, ${
                 isApex
-                  ? "hsl(18 95% 58% / 0.85)"
+                  ? "hsl(var(--ember) / 0.85)"
                   : tier === "legend"
                   ? "hsl(280 70% 60% / 0.8)"
                   : tier === "elite"
-                  ? "hsl(42 78% 54% / 0.8)"
+                  ? "hsl(var(--gold) / 0.8)"
                   : "hsl(18 92% 56% / 0.7)"
               } 50%, transparent 100%)`,
               animation: "flame-rim-pulse 4.5s ease-in-out infinite",
@@ -191,7 +191,7 @@ const StatusHeader = () => {
         {(isApex || tier === "elite") && (
           <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-8 overflow-hidden">
             {[
-              { left: "30%", delay: "0s",   color: isApex ? "hsl(18 95% 58%)" : "hsl(var(--gold-light))" },
+              { left: "30%", delay: "0s",   color: isApex ? "hsl(var(--ember))" : "hsl(var(--gold-light))" },
               { left: "72%", delay: "1.8s", color: isApex ? "hsl(var(--gold))" : "hsl(var(--gold))" },
             ].map((e, i) => (
               <span
@@ -215,7 +215,7 @@ const StatusHeader = () => {
           className="w-full flex items-center justify-center gap-2 pt-2 pb-1.5 active:opacity-80 transition-opacity"
           aria-label="Whealth Factory — Home"
         >
-          <BrandLogo size={28} alt="" className="rounded-md shadow-[0_2px_8px_hsl(42_78%_54%/0.5)]" />
+          <BrandLogo size={28} alt="" className="rounded-md shadow-[0_2px_8px_hsl(var(--gold)/0.5)]" />
           <span className="font-display font-black tracking-[0.22em] uppercase text-gradient-gold leading-none text-lg">
             Whealth Factory
           </span>
@@ -307,7 +307,7 @@ const StatusHeader = () => {
                       "shrink-0 inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black leading-none whitespace-nowrap px-2 py-1 rounded-full border transition-all active:scale-95 cursor-pointer",
                       isLegendTarget
                         ? "text-gold border-gold/55 bg-gradient-to-r from-[hsl(280_70%_55%)]/15 via-gold/12 to-[hsl(350_80%_55%)]/15 hover:border-gold shadow-[0_0_8px_hsl(var(--gold)/0.30)]"
-                        : "text-[hsl(18_95%_62%)] border-[hsl(18_95%_58%)]/50 bg-[hsl(18_95%_58%)]/10 hover:border-[hsl(18_95%_58%)] shadow-[0_0_6px_hsl(18_95%_58%/0.20)]",
+                        : "text-[hsl(18_95%_62%)] border-[hsl(var(--ember))]/50 bg-[hsl(var(--ember))]/10 hover:border-[hsl(var(--ember))] shadow-[0_0_6px_hsl(var(--ember)/0.20)]",
                     )}
                     aria-label={`How to reach ${label}`}
                   >
@@ -332,7 +332,7 @@ const StatusHeader = () => {
 
           {/* Status pill — Apex > Elite > Trial — calmer, luxurious */}
           {isApex ? (
-            <div className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-[hsl(18_95%_58%)]/55 animate-breathe-soft">
+            <div className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-[hsl(var(--ember))]/55 animate-breathe-soft">
               <Zap
                 size={11}
                 className="relative z-10 text-primary-foreground status-flame-flicker"

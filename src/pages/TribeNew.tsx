@@ -105,7 +105,7 @@ const TribeNew = () => {
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
-          style={{ background: "radial-gradient(ellipse 70% 60% at 50% 0%, hsl(42 78% 54% / 0.12) 0%, transparent 65%)" }}
+          style={{ background: "radial-gradient(ellipse 70% 60% at 50% 0%, hsl(var(--gold) / 0.12) 0%, transparent 65%)" }}
         />
         <div className="relative flex flex-col items-center text-center px-5 pt-5 pb-5">
           <TribeFireLite tier={3} palette={tierPalette(3)} variant="standard" size={75} className="mb-1" />

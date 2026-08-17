@@ -178,15 +178,15 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
   const pct = ev.capacity ? Math.min(100, (ev.going_count / ev.capacity) * 100) : 0;
   return (
     <div className={cn(
-      "relative rounded-2xl overflow-hidden border bg-gradient-to-br from-[hsl(18_95%_58%)]/[0.05] via-card/70 to-card",
-      isNext ? "border-[hsl(18_95%_58%)]/40 shadow-[0_10px_34px_-18px_hsl(18_95%_58%/0.6)]" : "border-border/60",
+      "relative rounded-2xl overflow-hidden border bg-gradient-to-br from-[hsl(var(--ember))]/[0.05] via-card/70 to-card",
+      isNext ? "border-[hsl(var(--ember))]/40 shadow-[0_10px_34px_-18px_hsl(var(--ember)/0.6)]" : "border-border/60",
     )}>
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[hsl(18_95%_58%)] to-gold" />
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[hsl(var(--ember))] to-gold" />
       <div className="p-3.5 pl-4">
         {isNext && (
-          <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 rounded-full bg-[hsl(18_95%_58%)]/15 border border-[hsl(18_95%_58%)]/35">
-            <Flame size={9} className="text-[hsl(18_95%_58%)]" fill="currentColor" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-[hsl(18_95%_58%)]">Next up</span>
+          <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 rounded-full bg-[hsl(var(--ember))]/15 border border-[hsl(var(--ember))]/35">
+            <Flame size={9} className="text-[hsl(var(--ember))]" fill="currentColor" />
+            <span className="text-[9px] font-black uppercase tracking-widest text-[hsl(var(--ember))]">Next up</span>
           </div>
         )}
         <div className="flex items-start gap-3">
@@ -206,19 +206,19 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
                 );
               })()}
               {rel && (
-                <span className="text-[9px] font-black uppercase tracking-wider text-[hsl(18_95%_58%)] bg-[hsl(18_95%_58%)]/10 border border-[hsl(18_95%_58%)]/25 rounded px-1.5 py-0.5">{rel}</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-[hsl(var(--ember))] bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/25 rounded px-1.5 py-0.5">{rel}</span>
               )}
             </div>
             <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{ev.title}</p>
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground">
               <span className="inline-flex items-center gap-1"><Clock size={11} /> {format(start, "EEE HH:mm")} · {ev.duration_min}m</span>
               {ev.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={11} /> {ev.place}</span>}
-              {ev.meeting_url && <span className="inline-flex items-center gap-1 text-[hsl(18_95%_58%)] font-bold"><Video size={11} /> Online</span>}
+              {ev.meeting_url && <span className="inline-flex items-center gap-1 text-[hsl(var(--ember))] font-bold"><Video size={11} /> Online</span>}
               <span className="inline-flex items-center gap-1"><Users size={11} /> {ev.going_count}{ev.capacity ? `/${ev.capacity}` : ""} going</span>
             </div>
             {ev.capacity != null && (
               <div className="mt-2 h-1.5 rounded-full bg-secondary/60 overflow-hidden">
-                <div className="h-full rounded-full bg-gradient-to-r from-[hsl(18_95%_58%)] to-gold transition-all duration-500" style={{ width: `${pct}%` }} />
+                <div className="h-full rounded-full bg-gradient-to-r from-[hsl(var(--ember))] to-gold transition-all duration-500" style={{ width: `${pct}%` }} />
               </div>
             )}
             {ev.description && <p className="text-[11px] text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
@@ -226,7 +226,7 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
               <div className="mt-2.5 flex items-center gap-1.5">
                 {ev.meeting_url && (
                   <a href={ev.meeting_url} target="_blank" rel="noopener noreferrer" onClick={() => hapticImpact("light")}
-                    className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[11px] font-black bg-[hsl(18_95%_58%)] text-background active:scale-95 transition-transform">
+                    className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[11px] font-black bg-[hsl(var(--ember))] text-background active:scale-95 transition-transform">
                     <Video size={12} /> Join
                   </a>
                 )}
@@ -277,10 +277,10 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
       "relative rounded-2xl overflow-hidden border bg-gradient-to-br from-gold/[0.06] via-card/70 to-card",
       isNext ? "border-gold/45 shadow-[0_10px_34px_-18px_hsl(var(--gold)/0.6)]" : "border-border/60",
     )}>
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-gold to-[hsl(18_95%_58%)]" />
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-gold to-[hsl(var(--ember))]" />
       <div className="p-3.5 pl-4">
         <div className="flex items-start gap-2.5">
-          <div className="shrink-0 h-10 w-10 rounded-xl bg-gradient-to-br from-gold/25 to-[hsl(18_95%_58%)]/15 border border-gold/35 flex items-center justify-center">
+          <div className="shrink-0 h-10 w-10 rounded-xl bg-gradient-to-br from-gold/25 to-[hsl(var(--ember))]/15 border border-gold/35 flex items-center justify-center">
             <Layers size={17} className="text-gold" strokeWidth={2.4} />
           </div>
           <div className="flex-1 min-w-0">
@@ -319,15 +319,15 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                     <span className="inline-flex items-center gap-1"><Clock size={9} /> {s.duration_min}m</span>
                     {s.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={9} /> {s.place}</span>}
-                    {s.meeting_url && <span className="inline-flex items-center gap-1 text-[hsl(18_95%_58%)] font-bold"><Video size={9} /> Online</span>}
-                    {rel && <span className="font-black uppercase tracking-wider text-[hsl(18_95%_58%)]">{rel}</span>}
+                    {s.meeting_url && <span className="inline-flex items-center gap-1 text-[hsl(var(--ember))] font-bold"><Video size={9} /> Online</span>}
+                    {rel && <span className="font-black uppercase tracking-wider text-[hsl(var(--ember))]">{rel}</span>}
                   </div>
                 </div>
                 {isMember && (
                   <div className="flex items-center gap-1 shrink-0">
                     {s.meeting_url && (
                       <a href={s.meeting_url} target="_blank" rel="noopener noreferrer" onClick={() => hapticImpact("light")}
-                        className="h-7 w-7 rounded-lg flex items-center justify-center bg-[hsl(18_95%_58%)] text-background active:scale-95" aria-label="Join">
+                        className="h-7 w-7 rounded-lg flex items-center justify-center bg-[hsl(var(--ember))] text-background active:scale-95" aria-label="Join">
                         <Video size={12} />
                       </a>
                     )}

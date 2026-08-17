@@ -32,7 +32,7 @@ export interface PostMediaProps {
 const PostMedia = ({ imageUrl, videoUrl, alt = "", tier, dayStats, onOpenImage, className }: PostMediaProps) => {
   const ribbon =
     tier === "elite" ? { icon: Crown, label: "Elite", color: "text-gold", border: "border-gold/40" }
-    : tier === "apex" ? { icon: Zap, label: "Apex", color: "text-[hsl(18_95%_58%)]", border: "border-[hsl(18_95%_58%)]/50" }
+    : tier === "apex" ? { icon: Zap, label: "Apex", color: "text-[hsl(var(--ember))]", border: "border-[hsl(var(--ember))]/50" }
     : null;
 
   // Video — delegate to the lazy player inside the shared frame.

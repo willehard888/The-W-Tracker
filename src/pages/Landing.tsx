@@ -68,8 +68,10 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
           </h1>
 
           <p className="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-sm mx-auto mb-10">
-            An AI coach, training, nutrition &amp; recovery — in one app.{" "}
-            <span className="text-foreground font-medium">Discipline you can prove, status you earn.</span>
+            Turn self-improvement into a visible status game.{" "}
+            <span className="text-foreground font-medium">
+              Track your discipline. Compete with others. Earn your Status.
+            </span>
           </p>
 
           <div className="flex flex-col gap-3 w-full max-w-xs mx-auto animate-reveal animate-reveal-delay-2">

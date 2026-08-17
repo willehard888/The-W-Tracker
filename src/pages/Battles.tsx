@@ -32,7 +32,7 @@ const BATTLE_TYPES = [
   { id: "xp", label: "Total XP", emoji: "⚡", icon: Zap, description: "Most XP earned wins", color: "text-gold" },
   { id: "cold_shower", label: "Cold Showers", emoji: "🧊", icon: Snowflake, description: "Most cold showers taken", color: "text-blue-400" },
   { id: "workout", label: "Workouts", emoji: "💪", icon: Dumbbell, description: "Most workouts completed", color: "text-[hsl(var(--streak-orange))]" },
-  { id: "meditation", label: "Meditation", emoji: "🧘", icon: Brain, description: "Most meditation sessions", color: "text-purple-400" },
+  { id: "meditation", label: "Meditation", emoji: "🧘", icon: Brain, description: "Most meditation sessions", color: "text-ember-light" },
   { id: "hydration", label: "Hydration", emoji: "💧", icon: Droplets, description: "Most liters of water", color: "text-cyan-400" },
   { id: "streak", label: "Streak", emoji: "🔥", icon: Flame, description: "Longest streak during battle", color: "text-[hsl(var(--streak-orange))]" },
 ] as const;
@@ -581,7 +581,7 @@ const Battles = () => {
       {(communityVotingBattles && communityVotingBattles.length > 0) && (
         <div className="animate-reveal animate-reveal-delay-2 mb-6">
           <h2 className="font-display font-bold text-sm mb-3 tracking-tight flex items-center gap-2">
-            <Vote size={14} className="text-purple-400" />
+            <Vote size={14} className="text-gold" />
             Community Vote — Tied Battles
           </h2>
           <p className="text-[10px] text-muted-foreground mb-3">These battles ended in a tie. Cast your vote to decide the winner!</p>

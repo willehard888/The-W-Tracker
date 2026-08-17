@@ -365,10 +365,6 @@
     box-shadow: 0 0 8px hsl(var(--purple) / 0.1);
   }
 
-  .text-purple-brand {
-    color: hsl(var(--purple));
-  }
-
   .text-teal {
     color: hsl(var(--teal));
   }
@@ -387,10 +383,6 @@
 
   .gradient-teal {
     background: linear-gradient(135deg, hsl(var(--teal-dark)), hsl(var(--teal)), hsl(var(--teal-light)));
-  }
-
-  .text-rose-brand {
-    color: hsl(var(--rose));
   }
 
   .glow-rose-sm {
@@ -515,19 +507,6 @@
   }
 
   /* Soft gold-tinted variant of panel — for selected/sent states */
-  .surface-panel-gold {
-    position: relative;
-    background:
-      linear-gradient(180deg, hsl(42 35% 12% / 0.85) 0%, hsl(42 30% 7% / 0.92) 100%);
-    border: 1px solid hsl(42 78% 54% / 0.18);
-    border-top-color: hsl(42 78% 54% / 0.28);
-    border-bottom-color: hsl(0 0% 0% / 0.4);
-    box-shadow:
-      inset 0 1px 0 hsl(42 90% 70% / 0.08),
-      inset 0 -1px 0 hsl(0 0% 0% / 0.3),
-      0 1px 1px hsl(0 0% 0% / 0.3),
-      0 4px 12px -3px hsl(42 78% 30% / 0.25);
-  }
 
 
   /* ============================================================
@@ -593,33 +572,12 @@
   /* ============================================================
      Type scale — single ladder used app-wide
      ============================================================ */
-  .text-display-xl {
-    font-family: 'Space Grotesk', Inter, system-ui, sans-serif;
-    font-weight: 800;
-    font-size: 2rem;
-    line-height: 2.375rem;
-    letter-spacing: -0.025em;
-  }
-  .text-display-lg {
-    font-family: 'Space Grotesk', Inter, system-ui, sans-serif;
-    font-weight: 700;
-    font-size: 1.5rem;
-    line-height: 1.875rem;
-    letter-spacing: -0.02em;
-  }
   .text-display-md {
     font-family: 'Space Grotesk', Inter, system-ui, sans-serif;
     font-weight: 700;
     font-size: 1.125rem;
     line-height: 1.5rem;
     letter-spacing: -0.015em;
-  }
-  .text-body-lg {
-    font-family: Inter, system-ui, sans-serif;
-    font-weight: 500;
-    font-size: 0.9375rem;
-    line-height: 1.375rem;
-    letter-spacing: -0.005em;
   }
   .text-body {
     font-family: Inter, system-ui, sans-serif;
@@ -644,31 +602,11 @@
   .text-gold-soft { color: hsl(var(--gold-soft)); }
 
   /* Realistic depth — physical card lifted off the page */
-  .depth-3d {
-    box-shadow:
-      0 1px 1px hsl(0 0% 0% / 0.32),
-      0 2px 4px hsl(0 0% 0% / 0.18),
-      0 8px 16px -4px hsl(0 0% 0% / 0.28),
-      0 16px 32px -12px hsl(0 0% 0% / 0.35),
-      inset 0 1px 0 hsl(0 0% 100% / 0.06);
-  }
 
   /* Stronger lift for hero/featured cards */
-  .depth-3d-lg {
-    box-shadow:
-      0 1px 1px hsl(0 0% 0% / 0.4),
-      0 4px 8px hsl(0 0% 0% / 0.22),
-      0 12px 24px -6px hsl(0 0% 0% / 0.32),
-      0 28px 56px -14px hsl(0 0% 0% / 0.45),
-      inset 0 1px 0 hsl(0 0% 100% / 0.08);
-  }
 
   .gradient-rose {
     background: linear-gradient(135deg, hsl(var(--rose-dark)), hsl(var(--rose)), hsl(var(--rose-light)));
-  }
-
-  .text-amber-brand {
-    color: hsl(var(--amber));
   }
 
   .gradient-amber {
@@ -710,17 +648,6 @@
     border-top: 1px solid hsl(0 0% 100% / 0.07);
   }
 
-  .card-depth-lg {
-    transform-style: preserve-3d;
-    box-shadow:
-      0 12px 40px hsl(0 0% 0% / 0.45),
-      0 4px 12px hsl(0 0% 0% / 0.25),
-      0 20px 50px -8px hsl(0 0% 0% / 0.2),
-      inset 0 1px 0 hsl(0 0% 100% / 0.06),
-      inset 0 -1px 0 hsl(0 0% 0% / 0.2);
-    border-top: 1px solid hsl(0 0% 100% / 0.08);
-  }
-
   /* 3D lifted card — floats above the surface */
   .card-3d {
     transform-style: preserve-3d;
@@ -749,27 +676,6 @@
   }
 
   /* 3D gold card variant */
-  .card-3d-gold {
-    transform-style: preserve-3d;
-    transform: perspective(600px) translateZ(0);
-    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    box-shadow:
-      0 4px 16px hsl(42 78% 54% / 0.1),
-      0 8px 24px hsl(0 0% 0% / 0.3),
-      0 16px 40px -8px hsl(42 78% 54% / 0.06),
-      inset 0 1px 0 hsl(42 78% 54% / 0.1);
-    border-top: 1px solid hsl(42 78% 54% / 0.15);
-    border-bottom: 1px solid hsl(0 0% 0% / 0.3);
-  }
-
-  .card-3d-gold:hover {
-    transform: perspective(600px) translateZ(8px) rotateX(1.5deg);
-    box-shadow:
-      0 20px 50px hsl(42 78% 54% / 0.15),
-      0 8px 20px hsl(0 0% 0% / 0.3),
-      0 30px 60px -12px hsl(42 78% 54% / 0.08),
-      inset 0 1px 0 hsl(42 78% 54% / 0.15);
-  }
 
   /* 3D button press effect */
   .btn-3d {
@@ -1187,18 +1093,6 @@
   }
 
   /* Magnetic spring-press — applies a satisfying scale/lift on press */
-  .magnetic-press {
-    transition: transform 0.45s cubic-bezier(0.16, 1.2, 0.32, 1),
-                box-shadow 0.45s cubic-bezier(0.16, 1.2, 0.32, 1);
-    will-change: transform;
-  }
-  .magnetic-press:hover {
-    transform: translateY(-2px) scale(1.012);
-  }
-  .magnetic-press:active {
-    transform: translateY(1px) scale(0.985);
-    transition-duration: 120ms;
-  }
 
   /* Shimmering text sweep — premium aura over headlines/numbers */
   .text-shimmer-sweep {
@@ -1242,25 +1136,6 @@
   }
 
   /* Tap ripple — appears once, satisfying click feedback */
-  .tap-ripple {
-    position: relative;
-    overflow: hidden;
-  }
-  .tap-ripple::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: radial-gradient(
-      circle at center,
-      hsl(var(--gold) / 0.25) 0%,
-      transparent 60%
-    );
-    opacity: 0;
-    transform: scale(0.4);
-    pointer-events: none;
-    transition: opacity 0.35s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  }
   .tap-ripple:active::after {
     opacity: 1;
     transform: scale(1);
@@ -1953,18 +1828,6 @@
     inset 0 1px 0 hsl(42 78% 54% / 0.12),
     inset 0 -1px 0 hsl(0 0% 0% / 0.5),
     0 4px 20px -6px hsl(0 0% 0% / 0.5);
-}
-.surface-aurora {
-  position: relative;
-  background:
-    radial-gradient(ellipse 90% 60% at 20% 0%, hsl(280 70% 55% / 0.18) 0%, transparent 55%),
-    radial-gradient(ellipse 100% 70% at 50% 100%, hsl(18 95% 58% / 0.14) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 50% at 90% 30%, hsl(200 85% 60% / 0.10) 0%, transparent 55%),
-    linear-gradient(180deg, hsl(258 18% 7%) 0%, hsl(258 22% 4%) 100%);
-  box-shadow:
-    inset 0 1px 0 hsl(280 70% 70% / 0.12),
-    inset 0 -1px 0 hsl(0 0% 0% / 0.5),
-    0 4px 24px -8px hsl(280 60% 30% / 0.4);
 }
 
 /* Ember drift — small particles slowly rising. Cheap to render. */
@@ -3350,13 +3213,6 @@
   }
 
   /* Hide scrollbar utility — kept for nav strips */
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
 }
 
 /* ============================================================
@@ -4476,39 +4332,6 @@ button:active > .aurum-lava-glow {
 }
 
 /* ── 3D Fire Text — chiselled, raised letters that float above the flames ── */
-.text-3d-fire {
-  /* Stacked dark drops below + bright highlights above = chiselled depth.
-     Outer dark halos give the letters a hard silhouette so the fire
-     never visually "swallows" them. */
-  text-shadow:
-    /* deep base shadows (extrusion) */
-    0 1px 0 hsl(0 0% 0% / 0.95),
-    0 2px 0 hsl(0 0% 0% / 0.9),
-    0 3px 0 hsl(0 0% 0% / 0.85),
-    0 4px 0 hsl(0 0% 0% / 0.78),
-    0 5px 0 hsl(0 0% 0% / 0.7),
-    0 6px 1px hsl(0 0% 0% / 0.55),
-    /* black outline / hard silhouette */
-    -1px -1px 0 hsl(0 0% 0% / 0.95),
-     1px -1px 0 hsl(0 0% 0% / 0.95),
-    -1px  1px 0 hsl(0 0% 0% / 0.95),
-     1px  1px 0 hsl(0 0% 0% / 0.95),
-    /* outer ember glow so it reads as part of the fire */
-    0 0 14px hsl(22 100% 55% / 0.55),
-    0 0 28px hsl(14 95% 45% / 0.35);
-  /* Subtle top highlight via filter */
-  filter: drop-shadow(0 -1px 0 hsl(48 100% 90% / 0.35));
-}
-
-.text-3d-fire-sm {
-  text-shadow:
-    0 1px 0 hsl(0 0% 0% / 0.95),
-    0 2px 0 hsl(0 0% 0% / 0.85),
-    0 3px 1px hsl(0 0% 0% / 0.65),
-    -1px 0 0 hsl(0 0% 0% / 0.9),
-     1px 0 0 hsl(0 0% 0% / 0.9),
-    0 0 8px hsl(22 100% 55% / 0.5);
-}
 
 /* ── HEAT-GLOWING NUMBER — molten metal heated by the fire below ── */
 .text-fire-hot {
@@ -4594,13 +4417,6 @@ button:active > .aurum-lava-glow {
   }
 
   /* Lava text gradient — for fire/streak headings */
-  .text-gradient-lava {
-    background: linear-gradient(135deg, hsl(var(--gold-light)) 0%, hsl(var(--ember-light)) 35%, hsl(var(--lava)) 75%, hsl(var(--lava-deep)) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
 
   /* Premium hairline ember rim — subtle warm border */
   .ring-ember {

@@ -51,7 +51,7 @@ const insightIcon = (kind: string) => {
     case "win":
       return <Trophy size={18} className="text-gold" />;
     case "pattern":
-      return <Eye size={18} className="text-purple-300" />;
+      return <Eye size={18} className="text-gold-light" />;
     case "trend":
     default:
       return <TrendingUp size={18} className="text-gold" />;

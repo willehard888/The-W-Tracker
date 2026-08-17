@@ -82,6 +82,7 @@ workflows:
           # backlog (see type-tightening task); add `npm run lint` once cleared.
           npx tsc --noEmit
           node scripts/type-debt.mjs
+          node scripts/style-guard.mjs
           npx vitest run --coverage
 
       - name: Build web bundle + sync Capacitor (→ ios/App/App/public)

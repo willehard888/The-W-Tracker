@@ -36,9 +36,14 @@ export default function AdminLegendInvites() {
       setIsAdmin(false);
       return;
     }
-    supabase
+    let alive = true;
+    void supabase
       .rpc("has_role", { _user_id: user.id, _role: "admin" })
-      .then(({ data }) => setIsAdmin(!!data));
+      .then(
+        ({ data }) => { if (alive) setIsAdmin(!!data); },
+        () => { if (alive) setIsAdmin(false); },
+      );
+    return () => { alive = false; };
   }, [user]);
 
   const { data: invites, isLoading } = useQuery({

@@ -31,7 +31,9 @@ const CheckinTierHeader = ({
   onBack,
 }: CheckinTierHeaderProps) => {
   const cfg = getTierConfig(tier);
-  const perfPercent = Math.round((completedCount / maxCount) * 100);
+  // maxCount can hit 0 if the habit set ever loses its core habits — a
+  // bare division rendered "NaN%" and width: NaN%.
+  const perfPercent = maxCount > 0 ? Math.round((completedCount / maxCount) * 100) : 0;
 
   // Aggressive headline depending on tier rank + progress
   const getHeadline = () => {

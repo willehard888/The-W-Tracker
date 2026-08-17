@@ -300,14 +300,13 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
     mutationFn: async () => {
       if (!user) return;
       hapticImpact(post.liked ? "light" : "medium");
-      if (post.liked) {
-        await supabase.from("tribe_post_reactions").delete()
-          .eq("post_id", post.id).eq("user_id", user.id);
-      } else {
-        await supabase.from("tribe_post_reactions").insert({
-          post_id: post.id, user_id: user.id,
-        });
-      }
+      const { error } = post.liked
+        ? await supabase.from("tribe_post_reactions").delete()
+            .eq("post_id", post.id).eq("user_id", user.id)
+        : await supabase.from("tribe_post_reactions").insert({
+            post_id: post.id, user_id: user.id,
+          });
+      if (error) throw error;
     },
     onSuccess: () => onChanged(),
   });
@@ -337,10 +336,12 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
   const reportPost = useMutation({
     mutationFn: async () => {
       if (!user) return;
-      await supabase.from("tribe_post_reports").insert({
+      const { error: reportErr } = await supabase.from("tribe_post_reports").insert({
         post_id: post.id, reporter_id: user.id, reason: "Reported by user",
       });
-      await supabase.from("tribe_posts").update({ reported: true }).eq("id", post.id);
+      if (reportErr) throw reportErr;
+      const { error: flagErr } = await supabase.from("tribe_posts").update({ reported: true }).eq("id", post.id);
+      if (flagErr) throw flagErr;
     },
     onSuccess: () => {
       toast.success("Post reported", { description: "Tribe owner will review it." });

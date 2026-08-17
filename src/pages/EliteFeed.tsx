@@ -235,12 +235,13 @@ const EliteFeed = () => {
         video_url = urlData.publicUrl;
       }
 
-      await supabase.from("feed_posts").insert({
+      const { error: insertErr } = await supabase.from("feed_posts").insert({
         user_id: user.id,
         content: newPost || null,
         image_url,
         video_url,
       } as any);
+      if (insertErr) throw insertErr;
     },
     onSuccess: () => {
       setNewPost("");
@@ -275,11 +276,10 @@ const EliteFeed = () => {
       if (!user) return;
       const liked = reactions?.has(postId);
       hapticImpact(liked ? "light" : "medium");
-      if (liked) {
-        await supabase.from("feed_reactions").delete().eq("post_id", postId).eq("user_id", user.id);
-      } else {
-        await supabase.from("feed_reactions").insert({ post_id: postId, user_id: user.id });
-      }
+      const { error } = liked
+        ? await supabase.from("feed_reactions").delete().eq("post_id", postId).eq("user_id", user.id)
+        : await supabase.from("feed_reactions").insert({ post_id: postId, user_id: user.id });
+      if (error) throw error;
     },
     onMutate: async (postId: string) => {
       await Promise.all([
@@ -321,15 +321,14 @@ const EliteFeed = () => {
       if (!alreadyGiven && kudosRemaining <= 0) {
         throw new Error("Monthly kudos used up");
       }
-      if (alreadyGiven) {
-        await supabase.from("kudos").delete().eq("post_id", postId).eq("giver_id", user.id);
-      } else {
-        await supabase.from("kudos").insert({
-          giver_id: user.id,
-          post_id: postId,
-          receiver_id: receiverId,
-        } as any);
-      }
+      const { error } = alreadyGiven
+        ? await supabase.from("kudos").delete().eq("post_id", postId).eq("giver_id", user.id)
+        : await supabase.from("kudos").insert({
+            giver_id: user.id,
+            post_id: postId,
+            receiver_id: receiverId,
+          } as any);
+      if (error) throw error;
     },
     onMutate: async ({ postId }: { postId: string; receiverId: string }) => {
       await Promise.all([
@@ -398,12 +397,13 @@ const EliteFeed = () => {
   const addComment = useMutation({
     mutationFn: async () => {
       if (!user || !showComments || !commentText.trim()) return;
-      await supabase.from("feed_comments").insert({
+      const { error } = await supabase.from("feed_comments").insert({
         post_id: showComments,
         user_id: user.id,
         content: commentText.trim(),
         parent_id: replyTo?.id ?? null,
       });
+      if (error) throw error;
     },
     onMutate: async () => {
       if (!showComments) return {};
@@ -485,12 +485,14 @@ const EliteFeed = () => {
   const reportPost = useMutation({
     mutationFn: async (postId: string) => {
       if (!user) return;
-      await supabase.from("reports").insert({
+      const { error: reportErr } = await supabase.from("reports").insert({
         reporter_id: user.id,
         post_id: postId,
         reason: "Reported by user",
       });
-      await supabase.from("feed_posts").update({ reported: true }).eq("id", postId);
+      if (reportErr) throw reportErr;
+      const { error: flagErr } = await supabase.from("feed_posts").update({ reported: true }).eq("id", postId);
+      if (flagErr) throw flagErr;
     },
     onSuccess: () => {
       toast.success("Post reported", { description: "We'll review this content." });
@@ -504,7 +506,8 @@ const EliteFeed = () => {
   // Admin: delete any post
   const adminDeletePost = useMutation({
     mutationFn: async (postId: string) => {
-      await supabase.from("feed_posts").delete().eq("id", postId);
+      const { error } = await supabase.from("feed_posts").delete().eq("id", postId);
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Post removed by admin");
@@ -517,7 +520,8 @@ const EliteFeed = () => {
   const deletePost = useMutation({
     mutationFn: async (postId: string) => {
       if (!user) return;
-      await supabase.from("feed_posts").delete().eq("id", postId).eq("user_id", user.id);
+      const { error } = await supabase.from("feed_posts").delete().eq("id", postId).eq("user_id", user.id);
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Post deleted");
@@ -528,7 +532,8 @@ const EliteFeed = () => {
   // Admin: unreport post
   const unreportPost = useMutation({
     mutationFn: async (postId: string) => {
-      await supabase.from("feed_posts").update({ reported: false }).eq("id", postId);
+      const { error } = await supabase.from("feed_posts").update({ reported: false }).eq("id", postId);
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Post approved");
@@ -540,7 +545,8 @@ const EliteFeed = () => {
   // Admin: resolve report
   const resolveReport = useMutation({
     mutationFn: async ({ reportId, action }: { reportId: string; postId?: string; action: "approve" | "delete" }) => {
-      await supabase.from("reports").update({ resolved: true }).eq("id", reportId);
+      const { error } = await supabase.from("reports").update({ resolved: true }).eq("id", reportId);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-reports"] });

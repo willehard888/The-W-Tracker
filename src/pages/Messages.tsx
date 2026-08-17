@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { MessageCircle, UserCheck, UserPlus, Search, X, SearchX } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
@@ -8,6 +8,7 @@ import EmptyState from "@/components/ui/empty-state";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
 import { useState } from "react";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
@@ -15,6 +16,7 @@ import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 const Messages = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["friends"], ["conversations"]]);
 
@@ -224,8 +226,10 @@ const Messages = () => {
                 </div>
                 <button
                   onClick={async () => {
-                    await supabase.from("friendships").update({ status: "accepted" as any }).eq("id", req.id);
-                    window.location.reload();
+                    const { error } = await supabase.from("friendships").update({ status: "accepted" as any }).eq("id", req.id);
+                    if (error) { toast.error("Could not accept — try again."); return; }
+                    queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
+                    queryClient.invalidateQueries({ queryKey: ["conversations"] });
                   }}
                   className="h-7 px-3 rounded-full bg-[hsl(var(--teal))]/15 text-[hsl(var(--teal))] text-[10px] font-bold border border-[hsl(var(--teal))]/30 active:scale-95 transition-transform"
                 >
@@ -233,8 +237,9 @@ const Messages = () => {
                 </button>
                 <button
                   onClick={async () => {
-                    await supabase.from("friendships").update({ status: "declined" as any }).eq("id", req.id);
-                    window.location.reload();
+                    const { error } = await supabase.from("friendships").update({ status: "declined" as any }).eq("id", req.id);
+                    if (error) { toast.error("Could not decline — try again."); return; }
+                    queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
                   }}
                   className="h-7 px-2 rounded-full bg-secondary text-muted-foreground text-[10px] font-bold border border-border active:scale-95 transition-transform"
                 >

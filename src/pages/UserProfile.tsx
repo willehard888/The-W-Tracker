@@ -178,17 +178,23 @@ const UserProfile = () => {
   const handleFriendAction = async (action: "send" | "accept" | "decline" | "cancel" | "remove") => {
     if (!myProfile || !userId) return;
     try {
+      // supabase-js returns { error }, it does NOT throw — without these
+      // checks an RLS denial showed "Friend request sent!" on a no-op.
       if (action === "send") {
-        await supabase.from("friendships").insert({ requester_id: myProfile.user_id, addressee_id: userId });
+        const { error } = await supabase.from("friendships").insert({ requester_id: myProfile.user_id, addressee_id: userId });
+        if (error) throw error;
         toast.success("Friend request sent! 🤝");
       } else if (action === "accept" && friendship) {
-        await supabase.from("friendships").update({ status: "accepted" as any, updated_at: new Date().toISOString() }).eq("id", friendship.id);
+        const { error } = await supabase.from("friendships").update({ status: "accepted" as any, updated_at: new Date().toISOString() }).eq("id", friendship.id);
+        if (error) throw error;
         toast.success("Friend request accepted! 🎉");
       } else if (action === "decline" && friendship) {
-        await supabase.from("friendships").update({ status: "declined" as any, updated_at: new Date().toISOString() }).eq("id", friendship.id);
+        const { error } = await supabase.from("friendships").update({ status: "declined" as any, updated_at: new Date().toISOString() }).eq("id", friendship.id);
+        if (error) throw error;
         toast("Request declined");
       } else if ((action === "cancel" || action === "remove") && friendship) {
-        await supabase.from("friendships").delete().eq("id", friendship.id);
+        const { error } = await supabase.from("friendships").delete().eq("id", friendship.id);
+        if (error) throw error;
         toast(action === "cancel" ? "Request cancelled" : "Friend removed");
       }
       ["friendship", "friends", "friends-list", "friend-requests",

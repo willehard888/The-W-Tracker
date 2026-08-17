@@ -45,6 +45,11 @@ const Referrals = () => {
     enabled: !!profile,
   });
 
+  // MUST run before the early return — a hook after `return null` crashes with
+  // "Rendered more hooks than during the previous render" the moment profile
+  // resolves (same class of bug already fixed in Paywall.tsx).
+  const { data: recruits } = useMyReferrals();
+
   if (!profile) return null;
 
   const referralLink = `${window.location.origin}/auth?ref=${profile.referral_code || profile.username}`;
@@ -95,8 +100,6 @@ const Referrals = () => {
   const nextProgress = nextReward ? Math.min(100, Math.round((referralCount / nextReward.count) * 100)) : 100;
   const remainingToNext = nextReward ? Math.max(0, nextReward.count - referralCount) : 0;
   const nextIsPremium = nextReward?.premium;
-
-  const { data: recruits } = useMyReferrals();
 
   // SVG conic progress ring
   const ringSize = 132;

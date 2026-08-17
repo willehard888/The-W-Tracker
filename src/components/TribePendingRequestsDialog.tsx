@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Check, X, Loader2, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import TierUsername from "@/components/TierUsername";
+import { friendlyError } from "@/lib/error-copy";
 
 interface PendingMember {
   user_id: string;
@@ -71,7 +72,7 @@ const TribePendingRequestsDialog = ({ tribeId, open, onOpenChange, onChanged }: 
     });
     setActingId(null);
     if (error) {
-      toast.error(error.message);
+      toast.error(friendlyError(error));
       return;
     }
     toast.success(accept ? "Member approved" : "Request declined");

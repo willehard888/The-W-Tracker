@@ -8,12 +8,22 @@ import { toast } from "sonner";
 import { clearAppleAuthStarted, clearAppleUsernameSelectionPending } from "@/lib/apple-username";
 import { supabase } from "@/integrations/supabase/client";
 import { initNativeShell } from "@/lib/native-bootstrap";
-import { initObservability } from "@/lib/observability";
+import { initObservability, captureException } from "@/lib/observability";
 
 // Fire-and-forget — runs before React mount, but doesn't block it.
 void initNativeShell();
 // Error monitoring + product analytics (no-op until the env keys are set).
 void initObservability();
+
+// Async failures outside React's render path (floating promises, event
+// handlers, realtime callbacks) never hit the ErrorBoundary — without these
+// listeners they were completely invisible in production.
+window.addEventListener("unhandledrejection", (e) => {
+  captureException(e.reason ?? new Error("unhandled rejection"), { where: "unhandledrejection" });
+});
+window.addEventListener("error", (e) => {
+  captureException(e.error ?? new Error(e.message), { where: "window.onerror" });
+});
 
 let oauthHandled = false;
 // Timestamp of when oauthHandled was set, so we can expire it after a safe window.

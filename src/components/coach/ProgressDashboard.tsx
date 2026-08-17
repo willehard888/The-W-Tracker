@@ -10,6 +10,7 @@ import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip,
 } from "recharts";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 
 interface Props {
   program: CoachProgram;
@@ -68,7 +69,7 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
       setRead((data as any).read);
       setStats((data as any).stats);
     } catch (e: any) {
-      toast.error(e?.message ?? "Couldn't read progress.");
+      toast.error(friendlyError(e, "Couldn't read progress."));
     } finally {
       setLoading(false);
     }

@@ -10,6 +10,7 @@ import { Portal } from "@/components/ui/Portal";
 import { hapticNotification, hapticImpact } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 
 /**
  * TodaysPlanCard — surfaces the adaptive daily plan the coach already computes
@@ -106,7 +107,7 @@ const TodaysPlanCard = () => {
       }
       toast.success(`+${res.xp_awarded} XP`);
     } catch (e: any) {
-      toast.error(e?.message ?? "Couldn't log that");
+      toast.error(friendlyError(e, "Couldn't log that"));
     } finally {
       setBusy((s) => { const n = new Set(s); n.delete(m.id); return n; });
     }

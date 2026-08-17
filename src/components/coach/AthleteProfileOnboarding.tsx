@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import { useAthleteProfile, type ToneId, type GoalId } from "@/hooks/use-athlete-profile";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 
 const DRAFT_KEY = "w_coach_onboarding_draft_v2";
 const STEP_KEY = "w_coach_onboarding_step_v2";
@@ -439,7 +440,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
         toast.success("Profile saved. Coach is now personal.");
         onDone();
       } catch (e: any) {
-        toast.error(e?.message ?? "Failed to save profile");
+        toast.error(friendlyError(e, "Failed to save profile"));
       }
     } else {
       hapticImpact("light");

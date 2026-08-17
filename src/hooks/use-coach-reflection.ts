@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 
 const todayISO = () => {
   const d = new Date();
@@ -56,7 +57,7 @@ export const useTodayReflection = () => {
       qc.invalidateQueries({ queryKey: ["coach-daily-plan"] });
       toast.success("Reflection logged");
     },
-    onError: (e: any) => toast.error(e.message ?? "Failed to save"),
+    onError: (e: any) => toast.error(friendlyError(e, "Failed to save")),
   });
 
   return { reflection: query.data, isLoading: query.isLoading, submit };

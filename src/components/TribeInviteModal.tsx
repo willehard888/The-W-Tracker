@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Search, UserPlus, Check, Users } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 
 interface Props {
   tribeId: string;
@@ -78,7 +79,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
     });
     setSendingId(null);
     if (error) {
-      toast.error(error.message);
+      toast.error(friendlyError(error));
       return;
     }
     setInvitedIds((s) => new Set(s).add(u.user_id));

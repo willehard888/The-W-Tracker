@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { friendlyError } from "@/lib/error-copy";
 import {
   Dialog,
   DialogContent,
@@ -58,7 +59,7 @@ export const RedeemLegendInviteDialog = ({ trigger }: Props) => {
       setCode("");
       await refreshProfile();
     } catch (e: any) {
-      toast.error(e.message ?? "Failed to redeem");
+      toast.error(friendlyError(e, "Failed to redeem"));
     } finally {
       setLoading(false);
     }

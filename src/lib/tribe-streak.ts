@@ -140,11 +140,12 @@ export const withAlpha = (color: string, alpha: number): string => {
  * Two queries: members → profiles. RLS-safe (read-only on public columns).
  */
 export const fetchTribeCollectiveStreak = async (tribeId: string): Promise<number> => {
-  const { data: members } = await supabase
+  const { data: members, error: membersErr } = await supabase
     .from("tribe_members")
     .select("user_id")
     .eq("tribe_id", tribeId)
     .eq("status", "active");
+  if (membersErr) console.warn("tribe-streak members:", membersErr.message);
   const ids = ((members as any) ?? []).map((m: any) => m.user_id as string);
   if (ids.length === 0) return 0;
 
@@ -209,11 +210,12 @@ export const fetchTribeCollectiveStreaks = async (
   if (tribeIds.length === 0) return out;
   tribeIds.forEach((id) => out.set(id, 0));
 
-  const { data: members } = await supabase
+  const { data: members, error: batchErr } = await supabase
     .from("tribe_members")
     .select("tribe_id, user_id")
     .in("tribe_id", tribeIds)
     .eq("status", "active");
+  if (batchErr) console.warn("tribe-streak batch:", batchErr.message);
   const rows = ((members as any) ?? []) as { tribe_id: string; user_id: string }[];
   if (rows.length === 0) return out;
 

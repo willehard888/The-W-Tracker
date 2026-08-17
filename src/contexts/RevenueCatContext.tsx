@@ -244,7 +244,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
         products?.find((x: any) => isKnownMonthlyId(productId(x)));
       if (p) {
         const label = priceLabel(p);
-        console.log("[RC] Monthly product:", productId(p), label);
+        if (import.meta.env.DEV) console.log("[RC] Monthly product:", productId(p), label);
         if (label) setMonthlyPriceLabel(label);
         updateRevenueCatDebug({
           loadedProductIds,
@@ -374,7 +374,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
             pushIosDebugLog("RevenueCat", "No available packages in current offering");
           }
         } catch (e) {
-          console.log("[RC] No offerings configured, using direct product:", e);
+          if (import.meta.env.DEV) console.log("[RC] No offerings configured, using direct product:", e);
           const message = toMessage(e);
           updateRevenueCatDebug({
             offeringPackageIds: [],
@@ -420,7 +420,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const purchase = useCallback(
     async (pkg: any) => {
       try {
-        console.log("[RC] Purchasing package:", pkg?.identifier);
+        if (import.meta.env.DEV) console.log("[RC] Purchasing package:", pkg?.identifier);
         updateRevenueCatDebug({
           lastPurchaseError: null,
           lastPurchasedProductId: productId(storeProduct(pkg)),
@@ -449,7 +449,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const purchaseProduct = useCallback(
     async (id: string) => {
       try {
-        console.log("[RC] Purchasing product:", id);
+        if (import.meta.env.DEV) console.log("[RC] Purchasing product:", id);
         updateRevenueCatDebug({
           lastPurchaseError: null,
           lastPurchasedProductId: id,

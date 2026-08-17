@@ -11,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { captureException } from "@/lib/observability";
 import { downscaleImage } from "@/lib/downscale-image";
 import MediaPreview from "@/components/media/MediaPreview";
 import { track, FUNNEL } from "@/lib/analytics";
@@ -486,17 +487,17 @@ const DailyCheckin = () => {
                 duration: 4500,
               });
             }
-          } catch (err) { console.warn("verify_checkin failed", err); }
-        }).catch((err) => console.warn("HK sync failed", err));
+          } catch (err) { console.warn("verify_checkin failed", err); captureException(err, { where: "checkin.verify" }); }
+        }).catch((err) => { console.warn("HK sync failed", err); captureException(err, { where: "checkin.hkSync" }); });
       }
 
       void (async () => {
-        try { await syncStreakWarningNotification({ lastCheckinAt: checkinTimestamp, streak: r.new_streak }); } catch (e) { console.warn("streak notif", e); }
-        try { await supabase.rpc("update_status_tier", { target_user_id: user.id }); } catch (e) { console.warn("tier update", e); }
+        try { await syncStreakWarningNotification({ lastCheckinAt: checkinTimestamp, streak: r.new_streak }); } catch (e) { console.warn("streak notif", e); captureException(e, { where: "checkin.streakNotif" }); }
+        try { await supabase.rpc("update_status_tier", { target_user_id: user.id }); } catch (e) { console.warn("tier update", e); captureException(e, { where: "checkin.tierUpdate" }); }
         try {
           const newBadge = await checkAndAwardBadges(user.id);
           if (newBadge?.isNew) setUnlockedBadge(newBadge.badge);
-        } catch (e) { console.warn("badge award", e); }
+        } catch (e) { console.warn("badge award", e); captureException(e, { where: "checkin.badgeAward" }); }
         try {
           const { count: tribeCount } = await supabase
             .from("tribe_members")
@@ -513,9 +514,10 @@ const DailyCheckin = () => {
             const content = sportLabel
               ? `Daily check-in ✅ ${sportLabel} — ${totalXp} XP earned 🔥`
               : `Daily check-in ✅ — ${totalXp} XP earned 🔥`;
-            await supabase.from("feed_posts").insert({ user_id: user.id, content, image_url: proof_photo_url });
+            const { error: postErr } = await supabase.from("feed_posts").insert({ user_id: user.id, content, image_url: proof_photo_url });
+            if (postErr) throw postErr;
           }
-        } catch (e) { console.warn("feed post", e); }
+        } catch (e) { console.warn("feed post", e); captureException(e, { where: "checkin.feedPost" }); }
         try { await refreshProfile(); } catch (e) { console.warn("refresh profile", e); }
         queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
         queryClient.invalidateQueries({ queryKey: ["user-badges"] });

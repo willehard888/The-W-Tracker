@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import EmptyState from "@/components/ui/empty-state";
+import { friendlyError } from "@/lib/error-copy";
 
 type LegendInvite = {
   id: string;
@@ -92,7 +93,7 @@ export default function AdminLegendInvites() {
       setExpiresInDays("");
       queryClient.invalidateQueries({ queryKey: ["legend-invites"] });
     } catch (e: any) {
-      toast.error(e.message ?? "Failed to create invite");
+      toast.error(friendlyError(e, "Failed to create invite"));
     } finally {
       setCreating(false);
     }

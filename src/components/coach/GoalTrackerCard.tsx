@@ -8,6 +8,7 @@ import { useCoachGoals } from "@/hooks/use-coach-goals";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { hapticImpact } from "@/lib/haptics";
+import { friendlyError } from "@/lib/error-copy";
 
 const computePace = (g: { baseline_value: number | null; current_value: number | null; target_value: number; deadline: string | null; created_at: string }) => {
   const baseline = g.baseline_value ?? 0;
@@ -52,7 +53,7 @@ const GoalTrackerCard = () => {
       hapticImpact("light");
       toast.success("Goal locked");
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed");
+      toast.error(friendlyError(e, "Failed"));
     }
   };
 

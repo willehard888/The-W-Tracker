@@ -8,6 +8,7 @@ import { useCoachMemory } from "@/hooks/use-coach-memory";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { hapticImpact } from "@/lib/haptics";
+import { friendlyError } from "@/lib/error-copy";
 
 const SOURCE_LABEL: Record<string, string> = {
   chat: "From chat",
@@ -55,7 +56,7 @@ const CoachMemoryScreen = () => {
                   if (!id) toast.info("Already remembered");
                   else { toast.success("Locked in"); hapticImpact("light"); }
                   setDraft("");
-                } catch (e: any) { toast.error(e?.message ?? "Failed"); }
+                } catch (e: any) { toast.error(friendlyError(e, "Failed")); }
               }}>
               <Plus size={16} />
             </Button>

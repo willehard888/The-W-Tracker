@@ -8,6 +8,7 @@ import FriendPickerSheet from "@/components/social/FriendPickerSheet";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
 import { avatarUrl } from "@/lib/img";
+import { friendlyError } from "@/lib/error-copy";
 
 const ERR: Record<string, string> = {
   already_in_pod: "You're already in a pod. Leave it first.",
@@ -48,7 +49,7 @@ const PodCard = () => {
       if (ok) toast.success(ok);
       setMode("idle"); setName("");
     } catch (e: any) {
-      toast.error(ERR[errKey(e) ?? ""] ?? e?.message ?? "Something went wrong");
+      toast.error(ERR[errKey(e) ?? ""] ?? friendlyError(e));
     } finally {
       setBusy(false);
     }
@@ -247,7 +248,7 @@ const PodCard = () => {
             hapticNotification("success");
             toast.success(`Invited @${f.username} to the pod`);
           } catch (e: any) {
-            toast.error(ERR[errKey(e) ?? ""] ?? e?.message ?? "Couldn't invite");
+            toast.error(ERR[errKey(e) ?? ""] ?? friendlyError(e, "Couldn't invite"));
           } finally {
             setBusyInvite(null);
           }

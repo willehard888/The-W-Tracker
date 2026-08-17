@@ -548,7 +548,7 @@ const TribeDetail = () => {
             }}
           >
             <p
-              className="text-[10px] uppercase tracking-[0.3em] font-black text-center mb-1"
+              className="text-[10px] uppercase tracking-[0.22em] font-black text-center mb-1"
               style={{ color: tierUp.accent }}
             >
               Tribe Fire promoted

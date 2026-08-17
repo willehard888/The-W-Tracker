@@ -112,7 +112,7 @@ const AppleUsername = () => {
     <div className="min-h-full gradient-dark flex items-center justify-center px-6">
       <div className="w-full max-w-sm rounded-3xl border border-border bg-card/90 p-6 shadow-2xl">
         <div className="mb-6 space-y-2 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold">Apple Sign In</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">Apple Sign In</p>
           <h1 className="font-display text-3xl font-black tracking-tight">Choose your username</h1>
           <p className="text-sm text-muted-foreground">
             Your first Apple sign-in was successful. Pick a unique @username to finish setup.

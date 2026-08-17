@@ -305,7 +305,7 @@ const TribeCollectiveFlame = ({
           {/* Stats */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground/85">
+              <p className="text-[10px] uppercase tracking-[0.22em] font-black text-muted-foreground/85">
                 Tribe Fire
               </p>
               {!!todayCount && todayCount > 0 && (

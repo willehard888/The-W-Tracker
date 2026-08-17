@@ -32,7 +32,7 @@ const DayStatsSticker = ({ stats, className }: { stats: DayStats; className?: st
     >
       <div className="edge-sheen rounded-[15px] bg-black/70 backdrop-blur-xl px-3 py-2">
         {/* Micro wordmark — the brand seal */}
-        <p className="text-[6.5px] font-bold tracking-[0.32em] text-gold/80 uppercase leading-none">
+        <p className="text-[6.5px] font-bold tracking-[0.22em] text-gold/80 uppercase leading-none">
           Whealth Factory
         </p>
 

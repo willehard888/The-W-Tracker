@@ -66,7 +66,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
       />
       <div className="relative">
         {/* Header band */}
-        <p className="text-[10px] font-black tracking-[0.2em] uppercase text-gold/90 mb-1">
+        <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold/90 mb-1">
           Today · W{currentWeek} · {day.day}
         </p>
         <h2 className="font-display text-[26px] leading-[1.05] font-black tracking-tight">

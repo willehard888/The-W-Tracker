@@ -209,7 +209,7 @@ const Index = () => {
     <div className="h-full pb-6 px-4 pt-3 relative overflow-y-auto overflow-x-hidden">
       {milestoneConfetti && (
         <Portal>
-          <div className="fixed inset-0 pointer-events-none z-[200]">
+          <div className="fixed inset-0 pointer-events-none z-[var(--z-toast)]">
             <ConfettiBurst active={milestoneConfetti} />
           </div>
         </Portal>

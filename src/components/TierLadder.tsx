@@ -60,7 +60,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
           <p className="font-display font-black text-base uppercase tracking-widest bg-gradient-to-r from-gold-light via-gold to-gold-light bg-clip-text text-transparent drop-shadow-[0_0_12px_hsl(var(--gold)/0.35)]">
             Your Ascension
           </p>
-          <p className="text-[10px] text-gold/85 mt-0.5 font-bold tracking-[0.18em] uppercase flex items-center gap-1">
+          <p className="text-[10px] text-gold/85 mt-0.5 font-bold tracking-[0.22em] uppercase flex items-center gap-1">
             <Sparkles size={9} className="text-gold" strokeWidth={3} />
             7 levels of dominance
           </p>
@@ -197,7 +197,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       {cfg.label}
                     </p>
                     {isCurrent && (
-                      <span className="relative text-[9px] uppercase tracking-[0.2em] font-black text-background bg-gradient-to-r from-gold to-gold-light px-1.5 py-[2px] rounded-sm shadow-[0_0_8px_hsl(var(--gold)/0.5)]">
+                      <span className="relative text-[9px] uppercase tracking-[0.22em] font-black text-background bg-gradient-to-r from-gold to-gold-light px-1.5 py-[2px] rounded-sm shadow-[0_0_8px_hsl(var(--gold)/0.5)]">
                         Current
                         <span
                           aria-hidden
@@ -209,7 +209,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       <Crown size={11} className="text-gold drop-shadow-[0_0_4px_hsl(var(--gold)/0.7)]" strokeWidth={2.8} />
                     )}
                     {!isCurrent && isLocked && cfg.rank === 6 && (
-                      <span className="inline-flex items-center gap-0.5 text-[8px] uppercase tracking-[0.18em] font-black px-1.5 py-[2px] rounded-sm bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background shadow-[0_0_8px_hsl(280_70%_60%/0.55)]">
+                      <span className="inline-flex items-center gap-0.5 text-[8px] uppercase tracking-[0.22em] font-black px-1.5 py-[2px] rounded-sm bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background shadow-[0_0_8px_hsl(280_70%_60%/0.55)]">
                         <Crown size={9} strokeWidth={3} /> Founder
                       </span>
                     )}
@@ -320,7 +320,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       <h2 className={cn("font-display font-black text-2xl leading-none", cfg.textClass)}>
                         {cfg.label}
                       </h2>
-                      <p className="text-[11px] uppercase tracking-[0.18em] font-bold mt-1.5 text-muted-foreground">
+                      <p className="text-[11px] uppercase tracking-[0.22em] font-bold mt-1.5 text-muted-foreground">
                         {cfg.percentile} · Rank {cfg.rank}
                       </p>
                     </div>
@@ -365,7 +365,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       {cfg.requirements.orPath && cfg.requirements.percentile > 0 && (cfg.requirements.activeDays > 0 || cfg.requirements.streak > 0) && (
                         <div className="flex items-center gap-2 py-0.5">
                           <span className="h-px flex-1 bg-border/50" />
-                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">or</span>
+                          <span className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground">or</span>
                           <span className="h-px flex-1 bg-border/50" />
                         </div>
                       )}
@@ -397,7 +397,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                     {isLegend && (
                       <div className="mt-2.5 flex items-center gap-2 px-3 py-2 rounded-lg border border-gold/45 bg-gradient-to-r from-[hsl(280_70%_55%)]/15 via-gold/10 to-[hsl(350_80%_55%)]/15 shadow-[0_0_18px_hsl(var(--gold)/0.20)]">
                         <Crown size={13} className="text-gold shrink-0" strokeWidth={2.6} />
-                        <span className="font-black text-gold uppercase tracking-[0.16em] text-[10px]">Founders Circle</span>
+                        <span className="font-black text-gold uppercase tracking-[0.22em] text-[10px]">Founders Circle</span>
                         <span className="text-foreground/60 text-[10px] font-semibold ml-auto">— invite only</span>
                       </div>
                     )}
@@ -428,12 +428,12 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                     </div>
                   ) : isLegend ? (
                     <div className="space-y-2">
-                      <div className="rounded-lg p-3 text-center text-[12px] font-black bg-gradient-to-r from-[hsl(280_70%_55%)]/12 via-gold/12 to-[hsl(350_80%_55%)]/12 border border-gold/40 text-gold uppercase tracking-[0.18em]">
+                      <div className="rounded-lg p-3 text-center text-[12px] font-black bg-gradient-to-r from-[hsl(280_70%_55%)]/12 via-gold/12 to-[hsl(350_80%_55%)]/12 border border-gold/40 text-gold uppercase tracking-[0.22em]">
                         🔱 Invite only
                       </div>
                       <RedeemLegendInviteDialog
                         trigger={
-                          <button className="w-full rounded-lg p-3 text-[12px] font-black bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background uppercase tracking-[0.18em] shadow-[0_0_22px_hsl(var(--gold)/0.35)] hover:brightness-110 transition inline-flex items-center justify-center gap-2">
+                          <button className="w-full rounded-lg p-3 text-[12px] font-black bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background uppercase tracking-[0.22em] shadow-[0_0_22px_hsl(var(--gold)/0.35)] hover:brightness-110 transition inline-flex items-center justify-center gap-2">
                             <Crown size={13} fill="currentColor" /> Redeem invite code
                           </button>
                         }

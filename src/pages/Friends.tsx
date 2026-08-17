@@ -119,7 +119,7 @@ const Friends = () => {
                   const isSent = sentIds.has(r.user_id);
                   const incomingFid = incomingById.get(r.user_id);
                   return (
-                    <div key={r.user_id} className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/50 p-2.5">
+                    <div key={r.user_id} className="flex items-center gap-3 surface-card p-2.5">
                       <button onClick={() => navigate(`/user/${r.user_id}`)} className="shrink-0">
                         <Avatar url={r.avatar_url} name={r.username} size={40} />
                       </button>
@@ -161,7 +161,7 @@ const Friends = () => {
                 const isSent = sentIds.has(s.user_id);
                 const incomingFid = incomingById.get(s.user_id);
                 return (
-                  <div key={s.user_id} className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/50 p-2.5">
+                  <div key={s.user_id} className="flex items-center gap-3 surface-card p-2.5">
                     <button onClick={() => navigate(`/user/${s.user_id}`)} className="shrink-0">
                       <Avatar url={s.avatar_url} name={s.username} size={40} />
                     </button>
@@ -235,7 +235,7 @@ const Friends = () => {
               {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-card/60 animate-pulse" />)}
             </div>
           ) : (friends?.length ?? 0) === 0 ? (
-            <div className="rounded-2xl border border-border/40 bg-card/40 p-6 text-center">
+            <div className="surface-card p-6 text-center">
               <Users size={26} className="text-gold/60 mx-auto mb-2" />
               <p className="text-[13px] font-bold text-foreground">No friends yet</p>
               <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
@@ -245,7 +245,7 @@ const Friends = () => {
           ) : (
             <div className="space-y-1.5">
               {friends!.map((f) => (
-                <div key={f.user_id} className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/50 p-2.5">
+                <div key={f.user_id} className="flex items-center gap-3 surface-card p-2.5">
                   <button onClick={() => navigate(`/user/${f.user_id}`)} className="shrink-0">
                     <Avatar url={f.avatar_url} name={f.username} />
                   </button>

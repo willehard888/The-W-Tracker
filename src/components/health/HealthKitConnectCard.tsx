@@ -118,7 +118,7 @@ const HealthKitConnectCard = () => {
 };
 
 const Tile = ({ label, value, sub }: { label: string; value: string; sub: string }) => (
-  <div className="rounded-xl border border-border/40 bg-card/40 px-3 py-2.5">
+  <div className="surface-card px-3 py-2.5">
     <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground mb-0.5">
       {label}
     </p>

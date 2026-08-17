@@ -58,7 +58,7 @@ const ImageLightbox = ({
       role="dialog"
       aria-modal="true"
       aria-label="Image preview"
-      className="fixed inset-0 z-[100] flex flex-col animate-fade-in"
+      className="fixed inset-0 z-[var(--z-modal)] flex flex-col animate-fade-in"
       style={{ backgroundColor: `hsl(var(--background) / ${0.98 * (1 - dismiss * 0.6)})` }}
     >
       {/* Top bar — author + close */}

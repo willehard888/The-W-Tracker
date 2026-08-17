@@ -294,7 +294,7 @@ const UserProfile = () => {
 
         <div className="relative z-10 text-center">
           {/* Brand kicker */}
-          <p className="text-[10px] font-black uppercase tracking-[0.32em] text-gold/70 mb-3">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/70 mb-3">
             Whealth Factory
           </p>
 
@@ -427,7 +427,7 @@ const UserProfile = () => {
             <p className="font-display font-black text-[64px] leading-none text-gold drop-shadow-[0_0_24px_hsl(var(--gold)/0.55)] tabular-nums">
               {(profile.xp ?? 0).toLocaleString().replace(/,/g, " ")}
             </p>
-            <p className="text-[10px] font-black tracking-[0.32em] text-gold/70 mt-2">TOTAL XP</p>
+            <p className="text-[10px] font-black tracking-[0.22em] text-gold/70 mt-2">TOTAL XP</p>
           </motion.div>
 
           {/* Tier message — italic, evocative */}
@@ -477,7 +477,7 @@ const UserProfile = () => {
             transition={{ delay: 0.4 }}
             className="mb-5 mt-4"
           >
-            <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-2.5 space-y-2">
+            <div className="surface-card backdrop-blur-sm p-2.5 space-y-2">
               {/* Primary row — connect + battle */}
               <div className="grid grid-cols-2 gap-2">
                 {/* Friend status (adapts) */}

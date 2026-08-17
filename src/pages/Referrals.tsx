@@ -122,7 +122,7 @@ const Referrals = () => {
       </div>
 
       {/* Hero invite — code + link + two primary share actions (precision) */}
-      <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-border/60 bg-card/40 p-5 mb-4">
+      <div className="animate-reveal animate-reveal-delay-1 surface-card p-5 mb-4">
         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80 mb-1">Your invite</p>
         <p className="text-[13px] text-muted-foreground leading-snug mb-4">
           Your friends get a <span className="text-foreground font-semibold">14-day free trial</span>. You earn free months, Apex and Legend status.
@@ -134,7 +134,7 @@ const Referrals = () => {
           className="w-full rounded-xl border border-gold/30 bg-gold/[0.06] px-4 py-3 mb-2 flex items-center gap-3 active:scale-[0.99] transition-transform"
         >
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gold/60 mb-0.5">Invite code</p>
+            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-gold/60 mb-0.5">Invite code</p>
             <p className="font-display text-xl font-black text-gold tracking-wide truncate leading-none">{referralCode}</p>
           </div>
           <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold text-gold">
@@ -332,7 +332,7 @@ const Referrals = () => {
           <h2 className="font-display font-bold text-sm tracking-tight mb-3">Your recruits</h2>
           <div className="space-y-1.5">
             {recruits!.map((r, i) => (
-              <div key={i} className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/50 p-2.5">
+              <div key={i} className="flex items-center gap-3 surface-card p-2.5">
                 <div className="h-9 w-9 rounded-full overflow-hidden bg-gradient-to-br from-gold/40 to-card flex items-center justify-center font-black text-gold shrink-0 text-xs">
                   {r.avatar_url ? <img src={r.avatar_url} alt="" className="h-full w-full object-cover" /> : (r.referred_username?.charAt(0) || "?").toUpperCase()}
                 </div>
@@ -372,7 +372,7 @@ const Referrals = () => {
             { icon: CreditCard, t: "They subscribe", d: "Friend starts a paid plan" },
             { icon: Gift, t: "You earn", d: "Free months · Apex · Legend" },
           ].map((s, i) => (
-            <div key={i} className="rounded-2xl border border-border/60 bg-card/40 p-3 text-center">
+            <div key={i} className="surface-card p-3 text-center">
               <div className="mx-auto mb-2 h-9 w-9 rounded-xl bg-gold/10 border border-gold/25 flex items-center justify-center">
                 <s.icon size={16} className="text-gold" />
               </div>

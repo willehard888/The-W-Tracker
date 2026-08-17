@@ -85,7 +85,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving }
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[120] flex flex-col"
+          className="fixed inset-0 z-[var(--z-celebration)] flex flex-col"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -135,7 +135,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving }
                 if (!habits?.length) return null;
                 return (
                   <div key={pillar}>
-                    <p className="mb-2 text-[11px] font-black tracking-[0.18em] uppercase text-gold/70">
+                    <p className="mb-2 text-[11px] font-black tracking-[0.22em] uppercase text-gold/70">
                       {PILLAR_LABEL[pillar]}
                     </p>
                     <div className="space-y-2">

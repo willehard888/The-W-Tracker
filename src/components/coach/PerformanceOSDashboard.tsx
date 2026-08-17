@@ -92,7 +92,7 @@ const PerformanceOSDashboard = () => {
       >
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-gold/80">Performance Score</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80">Performance Score</p>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="font-display text-4xl font-black tabular-nums leading-none">
                 {latest ?? "—"}
@@ -118,7 +118,7 @@ const PerformanceOSDashboard = () => {
           { label: "Recovery", val: recoveryAvg, max: 25 },
           { label: "Consistency", val: consistencyAvg, max: 20 },
         ].map((c) => (
-          <div key={c.label} className="rounded-xl border border-border/40 bg-card/40 p-3">
+          <div key={c.label} className="surface-card p-3">
             <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">{c.label}</p>
             <p className="text-lg font-black tabular-nums mt-0.5">{c.val}<span className="text-[10px] text-muted-foreground/60">/{c.max}</span></p>
             <div className="h-1 rounded-full bg-card mt-1 overflow-hidden">
@@ -140,7 +140,7 @@ const PerformanceOSDashboard = () => {
         >
           <div className="flex items-center gap-2 mb-2">
             <Calendar size={12} className="text-gold" />
-            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-gold/80">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80">
               Week of {new Date(review.week_starts_on).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
             </p>
           </div>

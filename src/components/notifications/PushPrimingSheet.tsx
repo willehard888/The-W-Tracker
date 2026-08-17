@@ -20,7 +20,7 @@ export default function PushPrimingSheet({ open, onEnable, onDismiss }: PushPrim
 
   return (
     <Portal>
-    <div className="fixed inset-0 z-[100] flex items-end justify-center">
+    <div className="fixed inset-0 z-[var(--z-modal)] flex items-end justify-center">
       {/* Scrim */}
       <button
         aria-label="Dismiss"

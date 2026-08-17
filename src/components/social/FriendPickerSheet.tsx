@@ -35,7 +35,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
 
   return (
     <Portal>
-    <div className="fixed inset-0 z-[120] flex flex-col justify-end">
+    <div className="fixed inset-0 z-[var(--z-celebration)] flex flex-col justify-end">
       <button
         aria-label="Close"
         onClick={() => onOpenChange(false)}
@@ -96,7 +96,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                 key={f.user_id}
                 disabled={busyId === f.user_id}
                 onClick={() => onPick(f)}
-                className="w-full flex items-center gap-3 rounded-xl border border-border/40 bg-card/50 p-2.5 text-left active:scale-[0.99] transition-transform disabled:opacity-50"
+                className="w-full flex items-center gap-3 surface-card p-2.5 text-left active:scale-[0.99] transition-transform disabled:opacity-50"
               >
                 <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-gold/40 to-card flex items-center justify-center text-[13px] font-black text-gold shrink-0">
                   {f.avatar_url ? (

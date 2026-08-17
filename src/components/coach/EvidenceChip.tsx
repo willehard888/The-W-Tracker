@@ -13,7 +13,7 @@ const EvidenceChip = ({ evidence, className, size = "xs" }: Props) => {
     <span
       title={meta.description}
       className={cn(
-        "inline-flex items-center gap-1 font-black tracking-[0.16em] uppercase rounded-md border whitespace-nowrap",
+        "inline-flex items-center gap-1 font-black tracking-[0.22em] uppercase rounded-md border whitespace-nowrap",
         meta.chip,
         size === "xs" ? "text-[9px] px-1 py-px" : "text-[10px] px-1.5 py-0.5",
         className,

@@ -28,7 +28,7 @@ import { toast } from "sonner";
  *  - Radix's focus trap + body scroll lock can race with the parent
  *    ModalStack's framer-motion <motion.div> transforms, occasionally
  *    swallowing the open state on iOS Safari.
- *  - Rendering straight into <body> (with z-[1000]) guarantees the sheet
+ *  - Rendering straight into <body> (with z-[var(--z-top)]) guarantees the sheet
  *    sits above the TabHost, BottomNav, and any push-route stack regardless
  *    of containing-block / transform ancestors.
  */
@@ -90,7 +90,7 @@ const VaultArticleSheet = ({
       {open && article && (
         <motion.div
           key="vault-sheet-root"
-          className="fixed inset-0 z-[1000]"
+          className="fixed inset-0 z-[var(--z-top)]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -140,7 +140,7 @@ const VaultArticleSheet = ({
               <div className="flex items-center gap-1.5 flex-wrap mb-2 pr-10">
                 {article.lesson_number && (
                   <span
-                    className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black tracking-[0.18em] uppercase"
+                    className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black tracking-[0.22em] uppercase"
                     style={{
                       background: `${accent}22`,
                       color: accent,
@@ -153,7 +153,7 @@ const VaultArticleSheet = ({
                   </span>
                 )}
                 <EvidenceChip tier={article.evidence_tier} />
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[9px] font-black tracking-[0.16em] uppercase text-muted-foreground">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[9px] font-black tracking-[0.22em] uppercase text-muted-foreground">
                   <Clock size={8} strokeWidth={3} />
                   {article.read_time_min} min
                 </span>
@@ -209,7 +209,7 @@ const VaultArticleSheet = ({
                   <div className="flex items-center gap-2 mb-3">
                     <Target size={13} style={{ color: accent }} strokeWidth={2.6} />
                     <p
-                      className="text-[10px] font-black tracking-[0.18em] uppercase"
+                      className="text-[10px] font-black tracking-[0.22em] uppercase"
                       style={{ color: accent }}
                     >
                       Protocol
@@ -327,7 +327,7 @@ const VaultArticleSheet = ({
 
               {article.references_json?.length > 0 && (
                 <section className="pt-2 border-t border-border/30">
-                  <p className="text-[10px] font-black tracking-[0.18em] uppercase text-muted-foreground mb-2">
+                  <p className="text-[10px] font-black tracking-[0.22em] uppercase text-muted-foreground mb-2">
                     References
                   </p>
                   <ol className="space-y-1.5 text-[11px] text-muted-foreground/90 list-decimal list-inside">
@@ -357,7 +357,7 @@ const VaultArticleSheet = ({
                 type="button"
                 onClick={handleComplete}
                 disabled={completeLesson.isPending || isCompleted}
-                className="w-full rounded-2xl py-3 text-[12px] font-black tracking-[0.18em] uppercase transition active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full rounded-2xl py-3 text-[12px] font-black tracking-[0.22em] uppercase transition active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{
                   background: isCompleted ? `${accent}20` : accent,
                   color: isCompleted ? accent : "hsl(var(--background))",
@@ -386,7 +386,7 @@ const VaultArticleSheet = ({
 
 const ProtocolRow = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col">
-    <dt className="text-[10px] font-black tracking-[0.16em] uppercase text-muted-foreground/80">
+    <dt className="text-[10px] font-black tracking-[0.22em] uppercase text-muted-foreground/80">
       {label}
     </dt>
     <dd className="text-foreground/95 leading-snug">{value}</dd>
@@ -404,7 +404,7 @@ const SectionHeader = ({
 }) => (
   <div className="flex items-center gap-2 mb-2">
     <Icon size={13} style={{ color }} strokeWidth={2.6} />
-    <p className="text-[10px] font-black tracking-[0.18em] uppercase" style={{ color }}>
+    <p className="text-[10px] font-black tracking-[0.22em] uppercase" style={{ color }}>
       {label}
     </p>
   </div>

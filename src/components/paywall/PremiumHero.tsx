@@ -288,7 +288,7 @@ const PremiumHero = ({
                   <span className="h-5 w-5 rounded-md flex items-center justify-center bg-gradient-to-br from-gold/35 to-gold/10 border border-gold/55 shadow-[0_0_8px_hsl(var(--gold)/0.35)]">
                     <Icon size={11} className="text-gold" strokeWidth={2.8} />
                   </span>
-                  <p className="text-[10px] font-black tracking-[0.18em] uppercase text-gold">
+                  <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold">
                     {title}
                   </p>
                 </div>
@@ -362,7 +362,7 @@ const PremiumHero = ({
 
         {/* Value anchor — what one membership replaces (honest market prices) */}
         <div className="mt-4 rounded-xl border border-gold/20 bg-background/40 p-3 backdrop-blur-sm">
-          <p className="text-[10px] font-black tracking-[0.18em] uppercase text-gold mb-2">
+          <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold mb-2">
             Replaces a stack of apps
           </p>
           <div className="space-y-1">

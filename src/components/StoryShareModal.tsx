@@ -415,7 +415,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
           <div className="absolute bottom-3 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
 
           <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-            <p className="font-bold tracking-[0.3em] text-gold/80 mb-1 text-lg">WHEALTH FACTORY</p>
+            <p className="font-bold tracking-[0.22em] text-gold/80 mb-1 text-lg">WHEALTH FACTORY</p>
             <p className={cn(
               "font-black uppercase tracking-wider mb-4 text-[10px]",
               tier === 'legend' ? "text-[hsl(280_70%_60%)]" :
@@ -523,7 +523,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                 <p className="font-extrabold text-foreground text-2xl">Train with me.</p>
                 <p className="text-muted-foreground/60 text-xs mb-5">@{profile.username} on Whealth Factory</p>
                 <div className="w-full rounded-xl border border-gold/40 bg-gold/[0.08] px-4 py-3 mb-5">
-                  <p className="text-[9px] font-bold tracking-[0.2em] text-gold/60 mb-1">YOUR INVITE CODE</p>
+                  <p className="text-[9px] font-bold tracking-[0.22em] text-gold/60 mb-1">YOUR INVITE CODE</p>
                   <p className="font-display font-black text-gold text-xl tracking-wide break-all leading-none">
                     {(referralCode || profile.username).toUpperCase()}
                   </p>
@@ -534,11 +534,11 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
             )}
 
             {variant === "referral" ? (
-              <p className="absolute bottom-4 text-gold/40 font-bold tracking-[0.2em] text-[10px]">
+              <p className="absolute bottom-4 text-gold/40 font-bold tracking-[0.22em] text-[10px]">
                 USE MY CODE AT SIGN-UP
               </p>
             ) : (
-              <p className="absolute bottom-4 text-muted-foreground/20 font-semibold tracking-[0.3em] text-xl">
+              <p className="absolute bottom-4 text-muted-foreground/20 font-semibold tracking-[0.22em] text-xl">
                 DISCIPLINE IS THE NEW FLEX
               </p>
             )}

@@ -100,7 +100,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
       {isLoading ? (
         <div className="h-20 rounded-2xl bg-card/40 border border-border/50 animate-pulse" />
       ) : (events?.length ?? 0) === 0 ? (
-        <div className="rounded-2xl border border-border/60 bg-card/40 p-5 text-center">
+        <div className="surface-card p-5 text-center">
           <Calendar size={24} className="text-gold/60 mx-auto mb-2" />
           <p className="text-[13px] font-bold text-foreground">No meetups yet</p>
           <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
@@ -428,7 +428,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
 
   return (
     <Portal>
-    <div className="fixed inset-0 z-[120] flex flex-col justify-end">
+    <div className="fixed inset-0 z-[var(--z-celebration)] flex flex-col justify-end">
       <button aria-label="Close" onClick={onClose} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div className="relative z-10 mx-auto w-full max-w-md rounded-t-3xl border-t border-gold/25 bg-card max-h-[88vh] overflow-y-auto p-4 pb-8 animate-in slide-in-from-bottom duration-200">
         <div className="flex items-center justify-between mb-3">

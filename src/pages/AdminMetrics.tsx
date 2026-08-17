@@ -268,7 +268,7 @@ export default function AdminMetrics() {
       ) : cohorts.length === 0 ? (
         <p className="text-xs text-muted-foreground py-4 text-center">No cohorts yet.</p>
       ) : (
-        <div className="rounded-xl border border-border/60 bg-card/40 overflow-hidden">
+        <div className="surface-card overflow-hidden">
           <table className="w-full text-[11px]">
             <thead>
               <tr className="border-b border-border/60 text-muted-foreground uppercase tracking-wider text-[9px]">
@@ -306,11 +306,11 @@ export default function AdminMetrics() {
         <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-gold/60" /></div>
       ) : (
         <div className="space-y-5">
-          <div className="rounded-xl border border-border/60 bg-card/40 p-4">
+          <div className="surface-card p-4">
             <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Activation</p>
             <FunnelBars steps={ACTIVATION_STEPS} byStep={steps} />
           </div>
-          <div className="rounded-xl border border-border/60 bg-card/40 p-4">
+          <div className="surface-card p-4">
             <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Monetization</p>
             <FunnelBars steps={MONETIZATION_STEPS} byStep={steps} />
           </div>

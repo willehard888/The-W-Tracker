@@ -33,7 +33,7 @@ const LessonQuiz = ({
       <div className="flex items-center gap-2 mb-3">
         <HelpCircle size={13} style={{ color: accent }} strokeWidth={2.6} />
         <p
-          className="text-[10px] font-black tracking-[0.18em] uppercase"
+          className="text-[10px] font-black tracking-[0.22em] uppercase"
           style={{ color: accent }}
         >
           Comprehension check

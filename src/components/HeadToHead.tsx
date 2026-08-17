@@ -177,7 +177,7 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
       <div className="flex items-center justify-between mb-3 relative">
         <div className="flex items-center gap-1.5">
           <Swords size={11} className="text-gold/80" />
-          <p className="text-[10px] uppercase tracking-[0.28em] font-black text-gold/80">
+          <p className="text-[10px] uppercase tracking-[0.22em] font-black text-gold/80">
             Head to Head
           </p>
         </div>
@@ -193,7 +193,7 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
       {/* Players */}
       <div className="flex items-center justify-between gap-2 mb-4 relative">
         <div className="flex-1 text-right min-w-0">
-          <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground/70 font-bold mb-0.5">
+          <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold mb-0.5">
             You
           </p>
           <p
@@ -218,7 +218,7 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground/70 font-bold mb-0.5">
+          <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold mb-0.5">
             Them
           </p>
           <p

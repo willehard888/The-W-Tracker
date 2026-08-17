@@ -130,7 +130,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
     <div className="px-1 pt-2 pb-8">
       <div className="flex items-center gap-2 mb-1">
         <Sparkles size={14} className="text-gold" />
-        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gold">Coach briefing</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">Coach briefing</p>
       </div>
       <h2 className="font-display text-2xl font-black tracking-tight leading-tight">Design my next block</h2>
       <p className="text-sm text-muted-foreground mt-1 mb-5">
@@ -139,7 +139,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 
       <div className="rounded-2xl border border-[hsl(var(--gold)/0.3)] bg-gradient-to-b from-[hsl(var(--gold)/0.06)] to-card/40 p-4 mb-5">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[10px] font-black tracking-[0.18em] uppercase text-gold">From your athlete profile</p>
+          <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold">From your athlete profile</p>
           <button type="button" onClick={() => navigate("/coach/profile")}
             className="text-[10px] font-bold text-muted-foreground inline-flex items-center gap-1 hover:text-foreground transition">
             <Settings2 size={11} /> Edit
@@ -178,7 +178,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 
       {lastError && (
         <div className="mt-5 rounded-2xl border border-destructive/50 bg-destructive/10 p-3.5">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-destructive mb-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-destructive mb-1">
             Generation failed — exact reason
           </p>
           <p className="text-[12px] text-foreground/90 leading-snug break-words font-mono">

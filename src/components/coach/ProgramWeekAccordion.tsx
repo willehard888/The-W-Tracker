@@ -20,7 +20,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
     <div className="space-y-3">
       {program.ai_summary && (
         <div className="rounded-2xl border border-gold/20 bg-card/60 p-3.5">
-          <p className="text-[10px] font-black tracking-[0.2em] uppercase text-gold mb-1">Overview</p>
+          <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold mb-1">Overview</p>
           <p className={cn("text-[12px] text-foreground/85 leading-snug", !showSummary && "line-clamp-2")}>
             {program.ai_summary}
           </p>
@@ -56,7 +56,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
               className="w-full flex items-center justify-between px-4 py-3 text-left"
             >
               <div className="min-w-0">
-                <p className="text-[10px] font-black tracking-[0.2em] uppercase text-gold">Week {week.week}</p>
+                <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold">Week {week.week}</p>
                 <p className="font-display text-base font-black tracking-tight truncate">{week.theme}</p>
               </div>
               <ChevronDown

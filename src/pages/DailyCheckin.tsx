@@ -603,8 +603,8 @@ const DailyCheckin = () => {
           "become who I said I'd become." Quiet, non-gold, only shown once the
           user has authored their identity statement. */}
       {why && (
-        <div className="mt-2 mb-1 rounded-2xl border border-border/50 bg-card/40 px-4 py-2.5">
-          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+        <div className="mt-2 mb-1 surface-card px-4 py-2.5">
+          <p className="text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground/60">
             Today's discipline is for
           </p>
           <p className="text-[13px] font-bold leading-snug text-foreground/90 mt-0.5">
@@ -641,7 +641,7 @@ const DailyCheckin = () => {
 
       {/* Habits header + prominent Customize button */}
       <div className="mt-3 mb-3 flex items-center justify-between gap-3">
-        <p className="text-[11px] font-black tracking-[0.16em] uppercase text-gold/80">
+        <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold/80">
           Your habits · tap what you did
         </p>
         <button
@@ -783,7 +783,7 @@ const DailyCheckin = () => {
         if (!habits?.length) return null;
         return (
           <div key={pillar} className="mb-4">
-            <p className="mb-2 text-[11px] font-black tracking-[0.16em] uppercase text-muted-foreground/70">{PILLAR_LABEL[pillar]}</p>
+            <p className="mb-2 text-[11px] font-black tracking-[0.22em] uppercase text-muted-foreground/70">{PILLAR_LABEL[pillar]}</p>
             <div className="space-y-2">
               {habits.map((h) => (
                 <HabitToggle key={h.key} habit={h} active={done(h.key)} onToggle={() => toggle(h.key)} detected={isDetected(h)} />

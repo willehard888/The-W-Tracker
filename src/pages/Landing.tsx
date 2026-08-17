@@ -102,7 +102,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
             {WHAT_YOU_GET.map(({ icon: Icon, title, text }) => (
               <div
                 key={title}
-                className="flex gap-2.5 p-3 rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm"
+                className="flex gap-2.5 p-3 surface-card backdrop-blur-sm"
               >
                 <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gold/10">
                   <Icon size={14} className="text-gold" />
@@ -121,7 +121,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
       <footer className="relative pb-8 pt-4 text-center animate-reveal animate-reveal-delay-4">
         <div className="flex items-center justify-center gap-2">
           <Sparkles size={10} className="text-gold/30" />
-          <p className="text-[10px] text-muted-foreground/60 tracking-[0.2em] uppercase font-medium">
+          <p className="text-[10px] text-muted-foreground/60 tracking-[0.22em] uppercase font-medium">
             Built for those who refuse to be average
           </p>
           <Sparkles size={10} className="text-gold/30" />

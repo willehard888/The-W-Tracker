@@ -270,7 +270,7 @@ const StatusHeader = () => {
               <div className="flex items-center gap-1.5 min-w-0">
                 <span
                   className={cn(
-                    "shrink-0 whitespace-nowrap text-[10px] uppercase tracking-[0.16em] font-black leading-none",
+                    "shrink-0 whitespace-nowrap text-[10px] uppercase tracking-[0.22em] font-black leading-none",
                     config.textClass,
                   )}
                 >

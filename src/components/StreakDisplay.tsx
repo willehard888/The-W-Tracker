@@ -229,7 +229,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
             />
             <p
               className={cn(
-                "text-[10px] font-black uppercase tracking-[0.24em] whitespace-nowrap",
+                "text-[10px] font-black uppercase tracking-[0.22em] whitespace-nowrap",
                 !isHot && "text-muted-foreground"
               )}
               style={{ color: isHot ? accent : undefined }}
@@ -487,13 +487,13 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
               >
                 {displayStreak}
               </span>
-              <span className="font-black text-muted-foreground/70 font-display text-xs uppercase tracking-[0.2em]">
+              <span className="font-black text-muted-foreground/70 font-display text-xs uppercase tracking-[0.22em]">
                 day{displayStreak === 1 ? "" : "s"}
               </span>
             </div>
 
             <div className="flex items-center gap-3 mt-2 flex-wrap">
-              <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-[0.18em] whitespace-nowrap">
+              <span className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-[0.22em] whitespace-nowrap">
                 Best <span className="text-foreground font-black tabular-nums">{longestStreak}d</span>
               </span>
               {displayStreak === longestStreak && displayStreak > 0 && (

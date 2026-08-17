@@ -239,7 +239,7 @@ const TribeFireHero = ({ tribeCount }: TribeFireHeroProps) => {
         )}
 
         {/* Tagline */}
-        <p className="mt-4 text-[11px] uppercase tracking-[0.2em] font-black text-muted-foreground/70">
+        <p className="mt-4 text-[11px] uppercase tracking-[0.22em] font-black text-muted-foreground/70">
           Every check-in feeds the fire
         </p>
       </div>

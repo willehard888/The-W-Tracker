@@ -114,7 +114,7 @@ const ProfileHero = ({
         {/* PREMIUM ribbon — only for Founding Apex subscribers */}
         {isApexSubscriber && (
           <div className="mt-4 mb-1 flex justify-center">
-            <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm text-[10px] font-black uppercase tracking-[0.14em] bg-gold/15 text-gold border border-gold/40">
+            <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm text-[10px] font-black uppercase tracking-[0.22em] bg-gold/15 text-gold border border-gold/40">
               <Crown size={11} strokeWidth={3} />
               Premium · Day-One
             </span>
@@ -177,7 +177,7 @@ const ProfileHero = ({
           <p className="font-display font-black text-[64px] leading-none text-gold tabular-nums">
             {(profile.xp ?? 0).toLocaleString().replace(/,/g, " ")}
           </p>
-          <p className="text-[10px] font-black tracking-[0.32em] text-gold/70 mt-2">TOTAL XP</p>
+          <p className="text-[10px] font-black tracking-[0.22em] text-gold/70 mt-2">TOTAL XP</p>
         </div>
 
         {/* Tier message — italic, subtle */}

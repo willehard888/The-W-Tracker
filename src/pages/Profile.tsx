@@ -599,7 +599,7 @@ const Profile = () => {
 
           {/* Membership status (subscriber line — earned-tier crown lives in hero) */}
           {isElite && (
-            <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-border/60 bg-card/40 p-3 flex items-center gap-3">
+            <div className="animate-reveal animate-reveal-delay-1 surface-card p-3 flex items-center gap-3">
               <div className="h-8 w-8 rounded-lg bg-xp-green/10 border border-xp-green/30 flex items-center justify-center shrink-0">
                 <CreditCard size={14} className="text-xp-green" />
               </div>

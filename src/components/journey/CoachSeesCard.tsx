@@ -10,7 +10,7 @@ const CoachSeesCard = ({ snapshot }: { snapshot: WhealthSnapshot }) => {
   if (!snapshot.observations.length && !snapshot.focus && !snapshot.patterns.length) return null;
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/40 p-4">
+    <div className="surface-card p-4">
       <div className="flex items-center gap-2 mb-3">
         <Sparkles size={13} className="text-gold" />
         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70">

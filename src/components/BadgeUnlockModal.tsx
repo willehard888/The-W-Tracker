@@ -72,7 +72,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
 
   return (
     <Portal>
-    <div className="fixed inset-0 z-[100] flex items-center justify-center" onClick={onClose}>
+    <div className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center" onClick={onClose}>
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-background/95 backdrop-blur-xl transition-opacity duration-700"
@@ -192,7 +192,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
           )}
         >
           <p className={cn(
-            "text-[10px] font-black uppercase tracking-[0.3em] mb-3",
+            "text-[10px] font-black uppercase tracking-[0.22em] mb-3",
             isLegendary ? "text-gold" : "text-muted-foreground"
           )}>
             {isLegendary ? "⚡ Legendary Badge Unlocked ⚡" : "Badge Unlocked"}
@@ -203,7 +203,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
             style.ring,
             isLegendary ? "bg-gold/[0.08]" : "bg-card"
           )}>
-            <span className={cn("text-[10px] font-black uppercase tracking-[0.2em]", style.text)}>
+            <span className={cn("text-[10px] font-black uppercase tracking-[0.22em]", style.text)}>
               {badge.rarity}
             </span>
           </div>

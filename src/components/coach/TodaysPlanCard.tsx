@@ -263,7 +263,7 @@ const TodaysPlanCard = () => {
 
       {confetti && (
         <Portal>
-          <div className="fixed inset-0 pointer-events-none z-[200]">
+          <div className="fixed inset-0 pointer-events-none z-[var(--z-toast)]">
             <ConfettiBurst active={confetti} />
           </div>
         </Portal>

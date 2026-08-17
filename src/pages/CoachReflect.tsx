@@ -61,7 +61,7 @@ const CoachReflect = () => {
         {/* The actual reflection form. Component returns null while loading
             so we render our own skeleton in the gap. */}
         {isLoading ? (
-          <div className="h-32 rounded-2xl border border-border/40 bg-card/40 animate-pulse" />
+          <div className="h-32 surface-card animate-pulse" />
         ) : (
           <EveningReflectionCard />
         )}

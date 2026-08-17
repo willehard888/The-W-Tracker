@@ -58,7 +58,7 @@ const Gauge = ({ value }: { value: number }) => {
         <span className="font-display text-[34px] font-black leading-none tabular-nums glow-gold-text">
           {value}
         </span>
-        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
+        <span className="text-[8px] font-black uppercase tracking-[0.22em] text-muted-foreground mt-0.5">
           / 100
         </span>
       </div>

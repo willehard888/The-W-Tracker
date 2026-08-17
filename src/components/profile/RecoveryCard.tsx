@@ -155,9 +155,9 @@ const RecoveryCard = () => {
       {/* 14-night RHR trajectory — proof of getting fitter over time, not just
           last night. Falling line = improving; labeled so DOWN reads as good. */}
       {rhrTrend.length >= 5 && (
-        <div className="mb-3 rounded-xl border border-border/40 bg-card/40 px-3 py-2">
+        <div className="mb-3 surface-card px-3 py-2">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground/60">
               Resting HR · {rhrTrend.length} nights
             </p>
             {trendDelta != null && Math.abs(trendDelta) >= 1 && (

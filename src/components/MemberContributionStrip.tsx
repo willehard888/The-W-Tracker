@@ -71,7 +71,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
               {/* TOP STOKER ribbon above #1 */}
               {isTopStoker && (
                 <span
-                  className="absolute -top-4 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[7px] font-black tracking-[0.18em] uppercase border whitespace-nowrap"
+                  className="absolute -top-4 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[7px] font-black tracking-[0.22em] uppercase border whitespace-nowrap"
                   style={{
                     color: accent,
                     background: `linear-gradient(180deg, ${withAlpha(accent, 0.18)} 0%, ${withAlpha(accent, 0.06)} 100%)`,

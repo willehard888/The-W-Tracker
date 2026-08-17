@@ -19,7 +19,7 @@ const WeekStrip = ({ program, currentWeek, todayDayIndex, logs, onSelect }: Prop
   return (
     <div className="rounded-2xl border border-border/40 bg-card/60 p-3 mb-3">
       <div className="flex items-center justify-between mb-2 px-0.5">
-        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/80">
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">
           Week {currentWeek} · {week.theme}
         </p>
       </div>

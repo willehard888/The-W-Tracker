@@ -232,7 +232,7 @@ const PillarChip = ({
     type="button"
     onClick={onClick}
     className={cn(
-      "shrink-0 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.16em] border transition-all whitespace-nowrap",
+      "shrink-0 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.22em] border transition-all whitespace-nowrap",
       active
         ? "bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] border-transparent shadow-[0_2px_8px_-1px_hsl(var(--gold)/0.45)]"
         : "bg-card/40 border-border/50 text-muted-foreground/80 hover:text-foreground",

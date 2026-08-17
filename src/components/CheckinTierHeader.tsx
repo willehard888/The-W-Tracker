@@ -123,7 +123,7 @@ const CheckinTierHeader = ({
           <div className="flex items-center gap-1.5 mb-0.5">
             <span
               className={cn(
-                "inline-flex items-center gap-1 px-1.5 py-[2px] rounded text-[8px] uppercase tracking-[0.16em] font-black ring-1",
+                "inline-flex items-center gap-1 px-1.5 py-[2px] rounded text-[8px] uppercase tracking-[0.22em] font-black ring-1",
                 accent.chipBg,
                 accent.chipText,
                 accent.ring,
@@ -208,7 +208,7 @@ const CheckinTierHeader = ({
         {/* Progress bar with aggressive label */}
         <div className="min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[9px] uppercase tracking-[0.15em] font-black text-muted-foreground flex items-center gap-1">
+            <span className="text-[9px] uppercase tracking-[0.22em] font-black text-muted-foreground flex items-center gap-1">
               <Target size={9} strokeWidth={3} />
               Today
             </span>

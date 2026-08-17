@@ -91,7 +91,7 @@ const HabitCard = ({ habit, doneToday, onLog, onArchive, onOpen }: Props) => {
             className="min-w-0 flex-1 text-left active:opacity-80"
           >
             <div className="flex items-center gap-1.5 mb-0.5">
-              <span className={cn("text-[9px] font-black uppercase tracking-[0.18em]", pillar.tint.text)}>
+              <span className={cn("text-[9px] font-black uppercase tracking-[0.22em]", pillar.tint.text)}>
                 {pillar.name}
               </span>
               <EvidenceChip evidence={protocol.evidence} />

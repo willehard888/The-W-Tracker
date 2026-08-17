@@ -336,7 +336,7 @@ const StatusNameplate = ({
 
       <div className="relative flex flex-col items-center text-center gap-1.5">
         {/* Tiny eyebrow */}
-        <p className="text-[9px] font-black uppercase tracking-[0.32em] text-muted-foreground/70">
+        <p className="text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground/70">
           Status
         </p>
 
@@ -389,7 +389,7 @@ const StatusNameplate = ({
             {percentLabel}
           </span>
           {showRank && (
-            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/80">
+            <span className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">
               #{rank!.toLocaleString()}
               <span className="text-muted-foreground/50 font-bold">
                 {" / "}

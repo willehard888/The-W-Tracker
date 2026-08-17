@@ -238,7 +238,7 @@ const Journey = () => {
         )}
 
         {/* The reflection diary — was write-only; now you can read your journey */}
-        <div className="rounded-2xl border border-border/50 bg-card/40 p-4">
+        <div className="surface-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <BookHeart size={13} className="text-gold" />
             <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">
@@ -282,7 +282,7 @@ const DeltaTile = ({
   unit?: string;
   good?: boolean;
 }) => (
-  <div className="rounded-xl border border-border/40 bg-card/50 px-2.5 py-2.5 text-center">
+  <div className="surface-card px-2.5 py-2.5 text-center">
     <Icon
       size={12}
       className={cn(
@@ -311,7 +311,7 @@ const TrendCard = ({
   delta: string | null;
   good: boolean;
 }) => (
-  <div className="rounded-2xl border border-border/50 bg-card/40 p-4">
+  <div className="surface-card p-4">
     <div className="flex items-start justify-between mb-2">
       <div className="flex items-center gap-2">
         <Icon size={13} className="text-gold" />
@@ -345,7 +345,7 @@ const ReflectionRow = ({ r }: { r: JourneyReflection }) => {
   const mood = r.mood_1to5 != null ? MOOD_EMOJI[Math.min(4, Math.max(0, r.mood_1to5 - 1))] : null;
   const hasBody = !!(r.win?.trim() || r.friction?.trim());
   return (
-    <div className="rounded-xl border border-border/40 bg-card/50 px-3 py-2.5">
+    <div className="surface-card px-3 py-2.5">
       <div className="flex items-center gap-2 mb-1">
         {mood && <span className="text-sm leading-none">{mood}</span>}
         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">

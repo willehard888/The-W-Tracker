@@ -35,7 +35,7 @@ const HabitsTab = () => {
   }, [habits]);
 
   if (isLoading) {
-    return <div className="rounded-2xl border border-border/40 bg-card/40 h-44 animate-pulse" />;
+    return <div className="surface-card h-44 animate-pulse" />;
   }
 
   return (
@@ -66,7 +66,7 @@ const HabitsTab = () => {
       {/* Pillar coverage map — six dots, lit = at least one habit, dim =
           blind spot. Tap a dim pillar to jump straight into the library
           filtered to that pillar. */}
-      <div className="rounded-2xl border border-border/50 bg-card/40 p-4">
+      <div className="surface-card p-4">
         <div className="flex items-center justify-between mb-3">
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground">
             Pillar coverage
@@ -144,7 +144,7 @@ const HabitsTab = () => {
       )}
 
       {/* Level legend */}
-      <div className="rounded-2xl border border-border/50 bg-card/40 p-4">
+      <div className="surface-card p-4">
         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground mb-2">
           Habit progression
         </p>

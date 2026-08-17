@@ -76,7 +76,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
         </button>
 
         {/* MEAL PREP — batch scaler (the one thing the poster can't do) */}
-        <div className="rounded-2xl border border-border/60 bg-card/40 p-4">
+        <div className="surface-card p-4">
           <div className="flex items-center gap-2 mb-2.5">
             <Layers size={12} className="text-gold" />
             <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70">Meal prep — cook in batch</p>
@@ -106,7 +106,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
 
         {/* Scaled shopping list — only when batching (poster covers the 1× case) */}
         {batch > 1 && (
-          <div className="rounded-2xl border border-border/60 bg-card/40 p-4">
+          <div className="surface-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <Leaf size={13} className="text-gold" />
               <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70">Shopping list</p>
@@ -137,7 +137,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
         )}
 
         {/* Storage / reheat — same calm palette (no competing accent colour) */}
-        <div className="rounded-2xl border border-border/60 bg-card/40 p-4">
+        <div className="surface-card p-4">
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70 mb-3">Storage & reheat</p>
           <div className="flex gap-2 mb-3">
             <div className="flex-1 rounded-lg bg-secondary/30 border border-border/50 p-2.5 flex items-center gap-2">

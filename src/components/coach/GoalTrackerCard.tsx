@@ -78,7 +78,7 @@ const GoalTrackerCard = () => {
   if (adding) {
     return (
       <div className="rounded-2xl border border-border/40 bg-card/50 p-4 space-y-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gold">New goal</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">New goal</p>
         <Input placeholder="Title (e.g. Bench 100 kg)" value={draft.title}
           onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} />
         <div className="grid grid-cols-2 gap-2">
@@ -112,7 +112,7 @@ const GoalTrackerCard = () => {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gold flex items-center gap-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold flex items-center gap-1">
             <Target size={10} /> North Star
           </p>
           <h3 className="font-display text-base font-black mt-0.5 truncate">{activeGoal.title}</h3>

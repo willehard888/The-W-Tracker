@@ -105,7 +105,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
         >
           <span
             className={cn(
-              "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] uppercase tracking-[0.2em] font-black ring-1",
+              "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] uppercase tracking-[0.22em] font-black ring-1",
               accent.ring,
               cfg.rank >= 5
                 ? "bg-background/60 text-foreground"
@@ -344,7 +344,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9 }}
-            className="mt-4 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.2em] font-black text-gold"
+            className="mt-4 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.22em] font-black text-gold"
           >
             <Crown size={11} strokeWidth={3} />
             {cfg.rank === 6 ? "Founders Circle is watching" : "Apex doesn't skip days"}

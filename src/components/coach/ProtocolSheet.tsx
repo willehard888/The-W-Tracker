@@ -56,7 +56,7 @@ const ProtocolSheet = ({ protocol, open, onOpenChange, why }: Props) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="fixed inset-0 z-[100] bg-black/55"
+            className="fixed inset-0 z-[var(--z-modal)] bg-black/55"
             onClick={() => onOpenChange(false)}
             aria-hidden
           />

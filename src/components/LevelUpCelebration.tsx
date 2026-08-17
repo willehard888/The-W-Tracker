@@ -23,7 +23,7 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
   return (
     <Portal>
     <div className={cn(
-      "fixed inset-0 z-[100] flex items-center justify-center transition-all duration-500",
+      "fixed inset-0 z-[var(--z-modal)] flex items-center justify-center transition-all duration-500",
       phase === "enter" ? "opacity-0" : phase === "exit" ? "opacity-0 scale-110" : "opacity-100"
     )}>
       {/* Backdrop */}
@@ -85,7 +85,7 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
         </div>
 
         {/* Text */}
-        <p className="text-[10px] uppercase tracking-[0.3em] text-gold/60 font-bold mb-1"
+        <p className="text-[10px] uppercase tracking-[0.22em] text-gold/60 font-bold mb-1"
           style={{ animation: phase === "show" ? "fade-in 0.5s ease-out 0.3s both" : undefined }}
         >
           New Level Reached

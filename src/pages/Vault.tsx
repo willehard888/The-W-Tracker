@@ -169,7 +169,7 @@ const Vault = () => {
       </div>
 
       {/* Hero — clean & precise (calm canvas, one gold accent, sharp type) */}
-      <div className="relative mb-5 animate-reveal animate-reveal-delay-1 rounded-2xl border border-border/60 bg-card/40 px-5 pt-7 pb-5 text-center">
+      <div className="relative mb-5 animate-reveal animate-reveal-delay-1 surface-card px-5 pt-7 pb-5 text-center">
         <div className="mx-auto mb-3 h-14 w-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold-dark))] shadow-[0_6px_20px_-6px_hsl(var(--gold)/0.5)]">
           <Sparkles size={26} className="text-background" strokeWidth={2.4} />
         </div>
@@ -202,12 +202,12 @@ const Vault = () => {
       </div>
 
       {/* Banner — calm, single hairline */}
-      <div className="mb-5 rounded-2xl border border-border/60 bg-card/40 px-4 py-3 animate-reveal animate-reveal-delay-2 flex items-start gap-3">
+      <div className="mb-5 surface-card px-4 py-3 animate-reveal animate-reveal-delay-2 flex items-start gap-3">
         <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-gold/10 border border-gold/30">
           <Flame size={15} className="text-gold" strokeWidth={2.4} />
         </div>
         <div className="min-w-0">
-          <p className="text-[10px] font-black tracking-[0.2em] uppercase text-gold/85 mb-0.5">
+          <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold/85 mb-0.5">
             Founding-member library
           </p>
           <p className="text-[12px] text-muted-foreground leading-snug">
@@ -286,7 +286,7 @@ const VaultCategoryBlock = ({
           <div className="absolute inset-x-0 bottom-0 z-10 p-4">
             <div className="flex items-center gap-1.5 mb-1">
               <Icon size={13} style={{ color: category.accent }} strokeWidth={2.6} />
-              <p className="text-[10px] font-black tracking-[0.2em] uppercase" style={{ color: category.accent }}>
+              <p className="text-[10px] font-black tracking-[0.22em] uppercase" style={{ color: category.accent }}>
                 {category.tagline}
               </p>
             </div>
@@ -323,7 +323,7 @@ const VaultCategoryBlock = ({
                   <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.5} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gold/85 mb-0.5">Meal-prep recipes</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">Meal-prep recipes</p>
                   <p className="text-[12px] font-bold leading-tight">15 high-protein recipes · scale 1×–5× · storage & reheat</p>
                 </div>
                 <ChevronRight size={16} className="text-gold shrink-0" />
@@ -401,13 +401,13 @@ const VaultCategoryBlock = ({
                       )}
                       <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
                         <EvidenceChip tier={a.evidence_tier} />
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[9px] font-black tracking-[0.16em] uppercase text-muted-foreground">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[9px] font-black tracking-[0.22em] uppercase text-muted-foreground">
                           <Clock size={8} strokeWidth={3} />
                           {a.read_time_min} min
                         </span>
                         {done && (
                           <span
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-[0.16em] uppercase"
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-[0.22em] uppercase"
                             style={{
                               background: `${category.accent}22`,
                               color: category.accent,

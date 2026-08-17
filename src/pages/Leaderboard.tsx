@@ -330,13 +330,13 @@ const Leaderboard = () => {
       {/* 1v1 Battles — friend challenges live under Ranks (no orphan route) */}
       <button
         onClick={() => navigate("/battles")}
-        className="animate-reveal mb-5 w-full text-left rounded-2xl border border-border/60 bg-card/40 p-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform"
+        className="animate-reveal mb-5 w-full text-left surface-card p-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform"
       >
         <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[hsl(22_90%_52%)] to-[hsl(12_88%_46%)] flex items-center justify-center shrink-0">
           <Swords size={18} className="text-white" strokeWidth={2.4} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(18_95%_62%)] mb-0.5">1v1 Battles</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[hsl(18_95%_62%)] mb-0.5">1v1 Battles</p>
           <p className="text-[12px] font-bold leading-tight">Challenge a friend — winner takes the score</p>
         </div>
         <ChevronRight size={16} className="text-muted-foreground shrink-0" />
@@ -351,11 +351,11 @@ const Leaderboard = () => {
         />
         <div className="flex items-center justify-between gap-2 relative">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.15em] text-gold/80 font-bold">Current Season</p>
+            <p className="text-[10px] uppercase tracking-[0.22em] text-gold/80 font-bold">Current Season</p>
             <p className="font-display font-bold text-lg tracking-tight mt-0.5">{activeSeason?.name || "Season"}</p>
           </div>
           <div className="text-right">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-bold">Ends in</p>
+            <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-bold">Ends in</p>
             <p className="font-display font-black text-sm text-gold flex items-center justify-end gap-1 tabular-nums mt-0.5">
               <Clock3 size={14} /> <CountdownTimer endsAt={activeSeason?.ends_at} />
             </p>
@@ -473,7 +473,7 @@ const Leaderboard = () => {
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
         <div className="flex items-center gap-2 mb-3 px-1">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">The Chase</p>
+          <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-bold">The Chase</p>
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
         </div>
         <div className="space-y-1.5">
@@ -734,7 +734,7 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
           aria-selected={isSeason}
           onClick={() => onChange("season")}
           className={cn(
-            "relative z-10 py-2 text-xs font-display font-black uppercase tracking-[0.18em] transition-colors",
+            "relative z-10 py-2 text-xs font-display font-black uppercase tracking-[0.22em] transition-colors",
             isSeason ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
           )}
         >
@@ -748,7 +748,7 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
           aria-selected={!isSeason}
           onClick={() => onChange("all_time")}
           className={cn(
-            "relative z-10 py-2 text-xs font-display font-black uppercase tracking-[0.18em] transition-colors",
+            "relative z-10 py-2 text-xs font-display font-black uppercase tracking-[0.22em] transition-colors",
             !isSeason ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
           )}
         >
@@ -759,7 +759,7 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
         </button>
       </div>
       {/* Swipe hint */}
-      <div className="mt-2 flex items-center justify-center gap-1.5 text-[9px] uppercase tracking-[0.25em] text-muted-foreground/70 font-bold">
+      <div className="mt-2 flex items-center justify-center gap-1.5 text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold">
         <ChevronLeft size={10} className={cn("transition-opacity", isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
         <span>Swipe to switch</span>
         <ChevronRight size={10} className={cn("transition-opacity", !isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />

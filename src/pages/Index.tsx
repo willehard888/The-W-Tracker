@@ -309,15 +309,6 @@ const Index = () => {
         </Reveal>
       )}
 
-      {/* ACCOUNTABILITY POD — your 3-5 who see your daily check-in. Pinned right
-          under the check-in deck so "did my pod show up / did I?" is the second
-          thing you see. The core retention loop. */}
-      <Reveal className="mb-4 relative z-10" delay={60}>
-        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
-          <PodCard />
-        </ErrorBoundary>
-      </Reveal>
-
       {/* AI COACH — the brain of the app. Elevated right under the daily loop
           so the coach is present every day (it frames today + answers
           anything). Content (Vault, recipes) now lives one tap away under More
@@ -339,6 +330,14 @@ const Index = () => {
           cards; founder feedback: too many buttons, combine with value. */}
       <Reveal className="mb-4 relative z-10" delay={100}>
         <LibraryHub />
+      </Reveal>
+      {/* ACCOUNTABILITY POD — your 3-5 who see your daily check-in. Moved
+          below The Library (founder call): the daily loop + coach lead the
+          page, the social layer follows the content hub. */}
+      <Reveal className="mb-4 relative z-10" delay={110}>
+        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
+          <PodCard />
+        </ErrorBoundary>
       </Reveal>
 
       {/* SECONDARY — Today stays focused: check in, the AI move, the pod,

@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 110" width="240" height="220">
+  <!-- Whealth Factory — faceted gold W mark.
+       Each stroke of the W is split along its centerline into a light and a
+       dark face (milled-prism look), with a bright machined ridge line and a
+       single signature glint at the top-right tip. -->
+  <defs>
+    <linearGradient id="faceLight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFEDB0"/>
+      <stop offset=".45" stop-color="#F2C34D"/>
+      <stop offset="1" stop-color="#C08A26"/>
+    </linearGradient>
+    <linearGradient id="faceDark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#DCA93A"/>
+      <stop offset=".5" stop-color="#A06A1C"/>
+      <stop offset="1" stop-color="#6F4710"/>
+    </linearGradient>
+    <linearGradient id="baseShadow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset=".7" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#3A2405" stop-opacity=".55"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".55" r=".55">
+      <stop offset="0" stop-color="#F2C34D" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#F2C34D" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="spark" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset=".4" stop-color="#FFF3C4"/>
+      <stop offset="1" stop-color="#FFF3C4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- warm aura behind the mark -->
+  <ellipse cx="60" cy="55" rx="58" ry="50" fill="url(#glow)"/>
+
+  <!-- ── W: 4 bars × 2 facets ─────────────────────────────────────────── -->
+  <!-- Bar 1 (descending) -->
+  <polygon points="6,6 14,6 32,94 24,94" fill="url(#faceLight)"/>
+  <polygon points="14,6 22,6 40,94 32,94" fill="url(#faceDark)"/>
+  <!-- Bar 2 (ascending to mid peak) -->
+  <polygon points="24,94 32,94 60,26 52,26" fill="url(#faceDark)"/>
+  <polygon points="32,94 40,94 68,26 60,26" fill="url(#faceLight)"/>
+  <!-- Bar 3 (descending from mid peak) -->
+  <polygon points="52,26 60,26 88,94 80,94" fill="url(#faceLight)"/>
+  <polygon points="60,26 68,26 96,94 88,94" fill="url(#faceDark)"/>
+  <!-- Bar 4 (ascending) -->
+  <polygon points="80,94 88,94 106,6 98,6" fill="url(#faceDark)"/>
+  <polygon points="88,94 96,94 114,6 106,6" fill="url(#faceLight)"/>
+
+  <!-- machined ridge lines along each bar's crest -->
+  <g stroke="#FFF6D8" stroke-width="1.4" stroke-linecap="round" opacity=".9">
+    <line x1="14" y1="7.5" x2="32" y2="92.5"/>
+    <line x1="32" y1="92.5" x2="60" y2="27.5"/>
+    <line x1="60" y1="27.5" x2="88" y2="92.5"/>
+    <line x1="88" y1="92.5" x2="106" y2="7.5"/>
+  </g>
+
+  <!-- crisp top edges catch the light -->
+  <g stroke="#FFEFB8" stroke-width="1.2" stroke-linecap="round" opacity=".8">
+    <line x1="6" y1="6" x2="22" y2="6"/>
+    <line x1="52" y1="26" x2="68" y2="26"/>
+    <line x1="98" y1="6" x2="114" y2="6"/>
+  </g>
+
+  <!-- grounding shadow at the feet -->
+  <polygon points="24,94 40,94 32,94" fill="none"/>
+  <rect x="20" y="70" width="24" height="24" fill="url(#baseShadow)" opacity=".5" transform="skewX(-8)" style="mix-blend-mode:multiply" clip-path="none" visibility="hidden"/>
+
+  <!-- signature glint at the top-right tip -->
+  <g transform="translate(112,7)">
+    <circle r="7" fill="url(#spark)"/>
+    <path d="M0,-6.5 L1.1,-1.1 L6.5,0 L1.1,1.1 L0,6.5 L-1.1,1.1 L-6.5,0 L-1.1,-1.1 Z" fill="#FFFFFF"/>
+  </g>
+</svg>

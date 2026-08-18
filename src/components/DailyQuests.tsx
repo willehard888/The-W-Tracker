@@ -18,7 +18,9 @@ const ALL_QUESTS: Quest[] = [
   { id: "no_phone", title: "Digital Detox", description: "No phone morning AND evening", xpReward: 20, emoji: "📵", checkFn: (d) => d.noPhoneAm && d.noPhonePm },
   { id: "perfect_sleep", title: "Sleep Champion", description: "Get exactly 8-9 hours of sleep", xpReward: 15, emoji: "😴", checkFn: (d) => d.sleep >= 8 && d.sleep <= 9 },
   { id: "full_nutrition", title: "Fuel Machine", description: "Healthy food + protein intake", xpReward: 15, emoji: "🥗", checkFn: (d) => d.healthyFood && d.protein },
-  { id: "combat_workout", title: "Fighter Spirit", description: "Do a combat sport workout", xpReward: 25, emoji: "🥊", checkFn: (d) => d.sportCategory === "combat" },
+  // Generalized from the old combat-only "Fighter Spirit": fires when today's
+  // workout is one of the athlete's OWN sports (athlete profile sports[]).
+  { id: "own_sport", title: "Own Turf", description: "Train one of your own sports today", xpReward: 25, emoji: "🎯", checkFn: (d) => d.sportCategory !== "none" && Array.isArray(d.mySports) && d.mySports.includes(d.sportCategory) },
   { id: "extra_grind", title: "Double Session", description: "Complete an extra workout", xpReward: 20, emoji: "💪", checkFn: (d) => d.extraWorkout },
   { id: "early_bird", title: "Early Bird", description: "Sleep 7h+ and no phone in the morning", xpReward: 15, emoji: "🌅", checkFn: (d) => d.sleep >= 7 && d.noPhoneAm },
   { id: "total_discipline", title: "Total Discipline", description: "Complete 8+ tasks in one day", xpReward: 30, emoji: "👑", checkFn: (d) => d.completedCount >= 8 },
@@ -57,6 +59,8 @@ interface DailyQuestsProps {
     noPhonePm: boolean;
     completedCount: number;
     reading: boolean;
+    /** Athlete profile sports[] — powers the own-sport quest. */
+    mySports: string[];
   };
   onBonusXpChange: (bonusXp: number) => void;
 }

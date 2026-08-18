@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  Footprints, Dumbbell, PersonStanding, Bike, Waves, Mountain, Swords,
+  Footprints, Dumbbell, PersonStanding, Bike, Waves, Mountain, Swords, Trophy, Flag,
   Flower2, Wind, Snowflake, Salad,
   Hammer, Presentation, GraduationCap, BookOpen, Lightbulb,
   Users, Target, Sparkles,
@@ -39,6 +39,11 @@ export const TRIBE_ACTIVITY_GROUPS: TribeActivityGroup[] = [
       { name: "Hike", icon: Mountain },
       { name: "Combat", icon: Swords },
       { name: "Walk", icon: Footprints },
+      { name: "Tennis", icon: Trophy },
+      { name: "Padel", icon: Trophy },
+      { name: "Golf", icon: Flag },
+      { name: "Climbing", icon: Mountain },
+      { name: "Ski", icon: Snowflake },
     ],
   },
   {

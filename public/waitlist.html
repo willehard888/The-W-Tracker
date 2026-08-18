@@ -130,6 +130,39 @@
     .card h3 { font-size: 12px; font-weight: 700; line-height: 1.25; }
     .card p { font-size: 10px; color: hsl(var(--muted)); line-height: 1.375; margin-top: 2px; }
 
+    /* ── Desktop (≥1024px): two-column hero, editorial scale ─────────────
+       Mobile keeps the centered single column above; everything here only
+       widens the stage. */
+    @media (min-width: 1024px) {
+      header { width: 100%; max-width: 1216px; margin: 0 auto; padding: 32px 48px 0; }
+      main {
+        flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 26.5rem);
+        align-items: center; align-content: center; column-gap: 5.5rem;
+        width: 100%; max-width: 1216px; margin: 0 auto; padding: 48px;
+        text-align: left;
+      }
+      .hero { max-width: 38rem; margin: 0; }
+      .badge { margin-bottom: 28px; }
+      h1 { font-size: 4.1rem; line-height: 0.96; }
+      .subcopy { font-size: 19px; max-width: 27rem; margin: 0 0 40px; }
+      .form-wrap { max-width: 27rem; margin: 0; }
+      #waitlist-form { display: flex; gap: 12px; }
+      #waitlist-form .email-input { margin-bottom: 0 !important; flex: 1; min-width: 0; }
+      #waitlist-form .cta { width: auto; padding: 0 28px; white-space: nowrap; flex-shrink: 0; }
+      .grid-wrap { max-width: none; margin: 0; }
+      .grid { gap: 12px; }
+      .card { padding: 16px 14px; border-radius: 18px; }
+      .chip { height: 32px; width: 32px; border-radius: 9px; }
+      .chip svg { width: 15px; height: 15px; }
+      .card h3 { font-size: 13px; }
+      .card p { font-size: 11px; line-height: 1.45; margin-top: 3px; }
+      /* Widen the top glow so the two-column stage sits in one pool of light */
+      .atmosphere { background-image:
+        radial-gradient(ellipse 55% 60% at 32% 8%, hsl(42 78% 54% / 0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 45% at 78% 60%, hsl(270 60% 58% / 0.1) 0%, transparent 65%),
+        radial-gradient(ellipse 120% 100% at 50% 50%, transparent 45%, hsl(260 18% 2% / 0.9) 100%); }
+    }
+
     footer { position: relative; padding: 16px 0 32px; text-align: center; }
     footer .row { display: flex; align-items: center; justify-content: center; gap: 8px; }
     footer p { font-size: 10px; color: hsl(40 6% 72% / 0.6); letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500; }

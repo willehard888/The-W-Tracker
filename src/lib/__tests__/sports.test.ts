@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   SPORTS,
   sportFromHealthKit,
+  buildForYou,
   SPORT_CATALOG,
   SPORT_GROUPS,
   NO_WORKOUT,
@@ -91,5 +92,18 @@ describe("sportFromHealthKit", () => {
     expect(sportFromHealthKit("transition")).toBeNull();
     expect(sportFromHealthKit(null)).toBeNull();
     expect(sportFromHealthKit("underwaterDiving")).toBe("other");
+  });
+});
+
+describe("buildForYou", () => {
+  it("orders detected → profile → recent, deduped, max 5", () => {
+    const out = buildForYou("tennis", ["gym", "tennis", "run"], ["swim", "gym", "yoga", "hiit"]);
+    expect(out.map((s) => s.id)).toEqual(["tennis", "gym", "run", "swim", "yoga"]);
+  });
+
+  it("filters unknown/legacy ids and handles empty inputs", () => {
+    expect(buildForYou(null, ["zumba-legacy"], []).length).toBe(0);
+    expect(buildForYou(undefined, undefined, undefined)).toEqual([]);
+    expect(buildForYou("run", null, null).map((s) => s.id)).toEqual(["run"]);
   });
 });

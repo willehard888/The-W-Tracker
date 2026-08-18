@@ -99,6 +99,30 @@ export const sportsByGroup = (): Array<{ group: SportGroup; sports: Sport[] }> =
   SPORT_GROUPS.map((group) => ({ group, sports: SPORTS.filter((s) => s.group === group) }))
     .filter((g) => g.sports.length > 0);
 
+/**
+ * The "For you" shortlist for the check-in picker: dedup union of the
+ * HealthKit-detected sport (today), the athlete's profile sports and their
+ * recent check-in sports — in that priority order, max 5. In practice this
+ * covers ~all real picks, so the 24-sport catalog can stay collapsed.
+ */
+export const buildForYou = (
+  detected: string | null | undefined,
+  profileSports: string[] | null | undefined,
+  recent: string[] | null | undefined,
+): Sport[] => {
+  const seen = new Set<string>();
+  const out: Sport[] = [];
+  for (const id of [detected, ...(profileSports ?? []), ...(recent ?? [])]) {
+    if (!id || seen.has(id)) continue;
+    const sport = SPORTS.find((s) => s.id === id);
+    if (!sport) continue; // unknown/legacy ids never render a broken row
+    seen.add(id);
+    out.push(sport);
+    if (out.length >= 5) break;
+  }
+  return out;
+};
+
 // ── HealthKit → sport id ─────────────────────────────────────────────────────
 // capacitor-health returns HKWorkoutActivityType as camelCase strings (its
 // workoutTypeMapping table). Map them to our catalog so Apple-detected

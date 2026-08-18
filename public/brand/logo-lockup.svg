@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 200" width="980" height="200">
+  <!-- Whealth Factory — horizontal lockup: faceted gold W + gold wordmark.
+       Wordmark uses Space Grotesk (the app's display font); falls back to a
+       geometric sans where the font isn't loaded. -->
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&amp;display=swap');
+      .word { font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif; font-weight: 700; letter-spacing: -0.5px; }
+    </style>
+    <linearGradient id="faceLight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFEDB0"/>
+      <stop offset=".45" stop-color="#F2C34D"/>
+      <stop offset="1" stop-color="#C08A26"/>
+    </linearGradient>
+    <linearGradient id="faceDark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#DCA93A"/>
+      <stop offset=".5" stop-color="#A06A1C"/>
+      <stop offset="1" stop-color="#6F4710"/>
+    </linearGradient>
+    <linearGradient id="wordGold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE9A8"/>
+      <stop offset=".55" stop-color="#E9BC4F"/>
+      <stop offset="1" stop-color="#B0801F"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".55" r=".55">
+      <stop offset="0" stop-color="#F2C34D" stop-opacity=".32"/>
+      <stop offset="1" stop-color="#F2C34D" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="spark" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset=".4" stop-color="#FFF3C4"/>
+      <stop offset="1" stop-color="#FFF3C4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ── Mark ─────────────────────────────────────────────────────────── -->
+  <g transform="translate(28,42) scale(1.06)">
+    <ellipse cx="60" cy="52" rx="60" ry="52" fill="url(#glow)"/>
+    <polygon points="6,6 14,6 32,94 24,94" fill="url(#faceLight)"/>
+    <polygon points="14,6 22,6 40,94 32,94" fill="url(#faceDark)"/>
+    <polygon points="24,94 32,94 60,26 52,26" fill="url(#faceDark)"/>
+    <polygon points="32,94 40,94 68,26 60,26" fill="url(#faceLight)"/>
+    <polygon points="52,26 60,26 88,94 80,94" fill="url(#faceLight)"/>
+    <polygon points="60,26 68,26 96,94 88,94" fill="url(#faceDark)"/>
+    <polygon points="80,94 88,94 106,6 98,6" fill="url(#faceDark)"/>
+    <polygon points="88,94 96,94 114,6 106,6" fill="url(#faceLight)"/>
+    <g stroke="#FFF6D8" stroke-width="1.4" stroke-linecap="round" opacity=".9">
+      <line x1="14" y1="7.5" x2="32" y2="92.5"/>
+      <line x1="32" y1="92.5" x2="60" y2="27.5"/>
+      <line x1="60" y1="27.5" x2="88" y2="92.5"/>
+      <line x1="88" y1="92.5" x2="106" y2="7.5"/>
+    </g>
+    <g stroke="#FFEFB8" stroke-width="1.2" stroke-linecap="round" opacity=".8">
+      <line x1="6" y1="6" x2="22" y2="6"/>
+      <line x1="52" y1="26" x2="68" y2="26"/>
+      <line x1="98" y1="6" x2="114" y2="6"/>
+    </g>
+    <g transform="translate(112,7)">
+      <circle r="7" fill="url(#spark)"/>
+      <path d="M0,-6.5 L1.1,-1.1 L6.5,0 L1.1,1.1 L0,6.5 L-1.1,1.1 L-6.5,0 L-1.1,-1.1 Z" fill="#FFFFFF"/>
+    </g>
+  </g>
+
+  <!-- ── Wordmark ─────────────────────────────────────────────────────── -->
+  <!-- soft depth shadow -->
+  <text x="192" y="121" class="word" font-size="58" fill="#2A1A05" opacity=".55" transform="translate(0,2)">Whealth Factory</text>
+  <text x="192" y="121" class="word" font-size="58" fill="url(#wordGold)">Whealth Factory</text>
+  <!-- tagline -->
+  <text x="194" y="152" class="word" font-size="15" letter-spacing="7" fill="#B0801F" opacity=".85">EARN YOUR STATUS</text>
+</svg>

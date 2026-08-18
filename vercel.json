@@ -5,6 +5,8 @@
   "framework": "vite",
   "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund",
   "rewrites": [
+    { "source": "/", "has": [{ "type": "host", "value": "www.whealthfactory.com" }], "destination": "/waitlist.html" },
+    { "source": "/", "has": [{ "type": "host", "value": "whealthfactory.com" }], "destination": "/waitlist.html" },
     { "source": "/waitlist", "destination": "/waitlist.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],

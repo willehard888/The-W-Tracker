@@ -736,7 +736,9 @@ const DailyCheckin = () => {
           <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", sportOpen && "rotate-180")} />
         </button>
         {sportOpen && (
-          <div className="mt-1.5 rounded-2xl border border-border bg-card overflow-hidden max-h-[420px] overflow-y-auto">
+          // No inner max-h scroll — a nested scrollbar hid the bottom rows of
+          // opened groups. The page scrolls naturally instead.
+          <div className="mt-1.5 rounded-2xl border border-border bg-card overflow-hidden">
             {/* FOR YOU — detected + profile + recent covers ~all real picks,
                 so the 24-sport catalog stays collapsed below. */}
             {forYou.length > 0 && (

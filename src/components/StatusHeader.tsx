@@ -47,6 +47,9 @@ const HIDDEN_ROUTES = new Set([
   "/privacy",
   "/terms",
   "/ios-debug",
+  // Check-in is a focused full-screen flow with its own header/back — the
+  // global brand bar on top was a double header eating vertical space.
+  "/checkin",
 ]);
 
 const StatusHeader = () => {

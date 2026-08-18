@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useState } from "react";
+import { SPORTS } from "@/lib/sports";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft, Sparkles, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -94,6 +95,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
       injuries: profile?.injuries ?? [],
       dietary: profile?.dietary ?? [],
       equipment: profile?.equipment ?? [],
+      sports: profile?.sports ?? [],
       tone_pref: profile?.tone_pref ?? "calm_mentor",
       preferred_session_length_min: profile?.preferred_session_length_min ?? 45,
       i_am: profile?.i_am ?? "",
@@ -143,6 +145,27 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
               </div>
             </button>
           ))}
+
+          {/* Sports — the coach's standing sport context ("lajivalmennus").
+              Separate from hobbies on purpose: hobbies steer recovery framing,
+              sports steer programming. */}
+          <div className="pt-3">
+            <p className="eyebrow mb-2">What do you train? <span className="normal-case tracking-normal font-semibold text-muted-foreground/70">(pick any)</span></p>
+            <div className="flex flex-wrap gap-1.5">
+              {SPORTS.map((sp) => (
+                <button key={sp.id} type="button"
+                  onClick={() => { hapticImpact("light"); toggle("sports", sp.id); }}
+                  className={cn(
+                    "px-2.5 py-1.5 rounded-full border text-[12px] font-bold transition-all",
+                    (draft.sports ?? []).includes(sp.id)
+                      ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.1)] text-foreground"
+                      : "border-border/40 bg-card/40 text-muted-foreground"
+                  )}>
+                  {sp.emoji} {sp.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       ),
     },

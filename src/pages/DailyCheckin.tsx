@@ -40,20 +40,11 @@ import {
   type VerifySignal,
 } from "@/lib/checkin-habits";
 import { assessSleep, isHabitDone, computeCheckinXp } from "@/lib/checkin-xp";
+import { SPORT_CATALOG } from "@/lib/sports";
 
-const SPORT_CATEGORIES = [
-  { id: "none", label: "No workout", xp: 0, emoji: "—" },
-  { id: "walk", label: "Walking / Light Cardio", xp: 10, emoji: "🚶" },
-  { id: "run", label: "Running / Jogging", xp: 20, emoji: "🏃" },
-  { id: "gym", label: "Gym / Weights", xp: 30, emoji: "🏋️" },
-  { id: "swim", label: "Swimming", xp: 25, emoji: "🏊" },
-  { id: "yoga", label: "Yoga / Stretching", xp: 15, emoji: "🧘" },
-  { id: "combat", label: "Thai Boxing / MMA", xp: 35, emoji: "🥊" },
-  { id: "hiit", label: "HIIT / CrossFit", xp: 30, emoji: "⚡" },
-  { id: "team", label: "Team Sports", xp: 25, emoji: "⚽" },
-  { id: "cycling", label: "Cycling", xp: 20, emoji: "🚴" },
-  { id: "other", label: "Other Sport", xp: 20, emoji: "🏅" },
-];
+// Sport catalog now lives in src/lib/sports.ts — shared with the athlete
+// profile, quests and (via the persisted sport column) the AI coach.
+const SPORT_CATEGORIES = SPORT_CATALOG;
 
 const PILLAR_ORDER: CheckinPillar[] = [
   "sleep", "movement", "nutrition", "mind", "recovery", "connection",
@@ -344,6 +335,8 @@ const DailyCheckin = () => {
         p_journal_entry: done("journaling") ? "logged" : null,
         p_tz_offset_minutes: tzOffsetMinutes,
         p_habits: habitsJson,
+        // The sport finally survives submit — the coach's sport history.
+        p_sport: sportCategory !== "none" ? sportCategory : null,
       };
 
       let result: unknown = null;

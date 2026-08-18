@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       analytics_events: {
@@ -192,6 +217,7 @@ export type Database = {
           secondary_goal: string | null
           sex: string | null
           sleep_time: string
+          sports: string[]
           stress_baseline: number | null
           target_horizon_weeks: number | null
           timezone: string
@@ -224,6 +250,7 @@ export type Database = {
           secondary_goal?: string | null
           sex?: string | null
           sleep_time?: string
+          sports?: string[]
           stress_baseline?: number | null
           target_horizon_weeks?: number | null
           timezone?: string
@@ -256,6 +283,7 @@ export type Database = {
           secondary_goal?: string | null
           sex?: string | null
           sleep_time?: string
+          sports?: string[]
           stress_baseline?: number | null
           target_horizon_weeks?: number | null
           timezone?: string
@@ -459,6 +487,7 @@ export type Database = {
           created_at: string
           headline: string | null
           id: string
+          kind: string
           seen_at: string | null
           user_id: string
         }
@@ -467,6 +496,7 @@ export type Database = {
           created_at?: string
           headline?: string | null
           id?: string
+          kind?: string
           seen_at?: string | null
           user_id: string
         }
@@ -475,6 +505,7 @@ export type Database = {
           created_at?: string
           headline?: string | null
           id?: string
+          kind?: string
           seen_at?: string | null
           user_id?: string
         }
@@ -795,6 +826,7 @@ export type Database = {
           protein_intake: boolean
           reading: boolean
           sleep_hours: number
+          sport: string | null
           user_id: string
           verified_at: string | null
           verified_bonus_xp: number
@@ -820,6 +852,7 @@ export type Database = {
           protein_intake?: boolean
           reading?: boolean
           sleep_hours?: number
+          sport?: string | null
           user_id: string
           verified_at?: string | null
           verified_bonus_xp?: number
@@ -845,6 +878,7 @@ export type Database = {
           protein_intake?: boolean
           reading?: boolean
           sleep_hours?: number
+          sport?: string | null
           user_id?: string
           verified_at?: string | null
           verified_bonus_xp?: number
@@ -2468,6 +2502,27 @@ export type Database = {
           },
         ]
       }
+      waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          source?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          source?: string
+        }
+        Relationships: []
+      }
       weekly_briefings: {
         Row: {
           generated_at: string
@@ -2577,6 +2632,19 @@ export type Database = {
         Returns: string
       }
       add_user_habit: { Args: { _protocol_id: string }; Returns: Json }
+      admin_funnel: { Args: { p_days?: number }; Returns: Json }
+      admin_metrics_overview: { Args: never; Returns: Json }
+      admin_retention_cohorts: {
+        Args: { p_weeks?: number }
+        Returns: {
+          cohort_size: number
+          cohort_week: string
+          d1_pct: number
+          d30_pct: number
+          d7_pct: number
+        }[]
+      }
+      admin_virality: { Args: { p_days?: number }; Returns: Json }
       append_chat_memory_batch: { Args: { _facts: Json }; Returns: number }
       approve_tribe_member: {
         Args: { p_accept: boolean; p_tribe_id: string; p_user_id: string }
@@ -2675,6 +2743,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      feed_post_day_stats: {
+        Args: { p_image_urls: string[] }
+        Returns: {
+          checkin_day: string
+          habits_done: number
+          image_url: string
+          streak_at_day: number
+          verified: boolean
+          xp_earned: number
+        }[]
+      }
       finalize_expired_leaderboard_seasons: { Args: never; Returns: undefined }
       get_active_coach_program: {
         Args: { _user_id: string }
@@ -2766,6 +2845,10 @@ export type Database = {
       is_valid_tribe_owner: { Args: { _user_id: string }; Returns: boolean }
       join_pod: { Args: { p_code: string }; Returns: Json }
       join_tribe: { Args: { p_tribe_id: string }; Returns: string }
+      join_waitlist: {
+        Args: { _email: string; _source?: string }
+        Returns: boolean
+      }
       leave_pod: { Args: never; Returns: undefined }
       leave_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
       list_friend_requests: { Args: never; Returns: Json }
@@ -2783,6 +2866,7 @@ export type Database = {
       list_pod_invites: { Args: never; Returns: Json }
       list_sent_friend_requests: { Args: never; Returns: Json }
       list_tribe_events: { Args: { p_tribe: string }; Returns: Json }
+      log_anon_event: { Args: { _event: string }; Returns: undefined }
       log_habit: { Args: { _date?: string; _habit_id: string }; Returns: Json }
       log_preference_signal: {
         Args: {
@@ -2806,6 +2890,7 @@ export type Database = {
         }
         Returns: string
       }
+      mark_nudge_seen: { Args: { _nudge_id: string }; Returns: undefined }
       pending_friend_request_count: { Args: never; Returns: number }
       people_you_may_know: {
         Args: { p_limit?: number }
@@ -2890,6 +2975,7 @@ export type Database = {
           p_protein_intake: boolean
           p_reading: boolean
           p_sleep_hours: number
+          p_sport?: string
           p_tz_offset_minutes?: number
           p_workout: boolean
           p_xp_earned: number
@@ -3037,6 +3123,7 @@ export type Database = {
           secondary_goal: string | null
           sex: string | null
           sleep_time: string
+          sports: string[]
           stress_baseline: number | null
           target_horizon_weeks: number | null
           timezone: string
@@ -3368,6 +3455,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],

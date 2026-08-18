@@ -184,6 +184,7 @@ const DailyCheckin = () => {
   const [detectedWorkoutMin, setDetectedWorkoutMin] = useState<number | null>(null);
   const sleepPrefilled = useRef(false);
   const stepsPrefilled = useRef(false);
+  const sportPrefilled = useRef(false);
 
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
   const [honest, setHonest] = useState<boolean | null>(null);
@@ -211,6 +212,11 @@ const DailyCheckin = () => {
     healthKit.syncToday().then((snap) => {
       if (!alive || !snap) return;
       const workoutDone = (snap.workout_count ?? 0) >= 1 || (snap.workout_minutes ?? 0) >= 15;
+      // Apple told us WHICH sport — pre-select it once (user can still change).
+      if (workoutDone && snap.primary_sport && !sportPrefilled.current) {
+        sportPrefilled.current = true;
+        setSportCategory((cur) => (cur === "none" ? snap.primary_sport! : cur));
+      }
       const stepsDone = (snap.steps ?? 0) >= 8000;
       const mindDone = (snap.mindful_minutes ?? 0) > 0;
       const sleepKnown = snap.sleep_hours != null && snap.sleep_hours > 0;

@@ -117,6 +117,44 @@
     .success-card p:first-child { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 17px; margin-bottom: 6px; }
     .success-card p:last-child { font-size: 13px; color: hsl(var(--muted)); }
 
+    /* ── Quiz (runs in the hero form slot before the email step) ── */
+    [hidden] { display: none !important; } /* survives the desktop display:flex override */
+    .q-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .q-backbtn {
+      display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex-shrink: 0;
+      border-radius: 9999px; border: 1px solid hsl(var(--border)); background: hsl(var(--card) / 0.6);
+      color: hsl(var(--muted)); cursor: pointer; transition: color .2s, border-color .2s;
+    }
+    .q-backbtn:hover { color: hsl(var(--foreground)); border-color: hsl(42 78% 54% / 0.4); }
+    .q-backbtn svg { width: 14px; height: 14px; stroke: currentColor; }
+    .q-progress { flex: 1; height: 4px; border-radius: 9999px; background: hsl(var(--border) / 0.6); overflow: hidden; }
+    #q-bar { height: 100%; width: 0; border-radius: 9999px; background: linear-gradient(90deg, hsl(42 85% 70%), hsl(42 78% 54%)); transition: width .35s cubic-bezier(0.16, 1, 0.3, 1); }
+    .q-count { font-size: 11px; font-weight: 700; color: hsl(40 6% 55%); letter-spacing: 0.08em; font-variant-numeric: tabular-nums; }
+    .q-title { font-size: 22px; font-weight: 700; letter-spacing: -0.022em; text-align: left; }
+    .q-sub { font-size: 12px; color: hsl(40 6% 55%); text-align: left; margin-top: 4px; }
+    .q-opts { display: flex; flex-direction: column; gap: 8px; margin: 16px 0 4px; }
+    .q-opt {
+      display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 16px; border-radius: 12px;
+      text-align: left; cursor: pointer; font: inherit; font-size: 14px; font-weight: 600;
+      color: hsl(var(--foreground)); background: hsl(var(--card) / 0.5); border: 1px solid hsl(var(--border) / 0.7);
+      transition: border-color .15s, background .15s, transform .15s, box-shadow .15s;
+    }
+    .q-opt:hover { border-color: hsl(42 78% 54% / 0.45); }
+    .q-opt:active { transform: scale(0.985); }
+    .q-opt .q-em { width: 22px; text-align: center; flex-shrink: 0; }
+    .q-opt .q-check { margin-left: auto; width: 18px; height: 18px; border-radius: 9999px; border: 1.5px solid hsl(var(--border)); flex-shrink: 0; transition: border-color .15s, background .15s, box-shadow .15s; }
+    .q-opt.sel { border-color: hsl(42 78% 54% / 0.75); background: hsl(42 78% 54% / 0.09); box-shadow: 0 0 0 1px hsl(42 78% 54% / 0.35), 0 8px 24px -12px hsl(42 78% 54% / 0.4); }
+    .q-opt.sel .q-check { border-color: hsl(42 78% 54%); background: hsl(42 78% 54%); box-shadow: inset 0 0 0 3px hsl(258 16% 6.5%); }
+    .q-continue { margin-top: 12px; }
+    .q-skip { display: block; margin: 14px auto 0; background: none; border: 0; cursor: pointer; font: inherit; font-size: 11px; color: hsl(40 6% 50%); text-decoration: underline; text-underline-offset: 3px; }
+    .q-skip:hover { color: hsl(var(--muted)); }
+    .q-anim { animation: reveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @media (prefers-reduced-motion: reduce) { .q-anim { animation: none; } }
+    @media (min-width: 1024px) {
+      .q-title { font-size: 26px; }
+      .q-skip { margin-left: 0; }
+    }
+
     .grid-wrap { width: 100%; max-width: 28rem; margin: 56px auto 0; }
     .eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: hsl(42 78% 54% / 0.7); margin-bottom: 12px; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; }
@@ -195,20 +233,42 @@
       </p>
 
       <div class="form-wrap reveal d2">
-        <form id="waitlist-form" novalidate>
-          <input
-            id="email" class="email-input" type="email" inputmode="email" autocomplete="email"
-            placeholder="your@email.com" aria-label="Email address" required
-            style="margin-bottom:12px"
-          />
-          <button id="submit" class="cta" type="submit">Join the waitlist</button>
-        </form>
-        <div id="msg" class="form-msg" role="status" aria-live="polite"></div>
+        <!-- Intro → 4 quiz steps → email. One slot, content swaps in place. -->
+        <div id="q-intro">
+          <button id="q-start" class="cta" type="button">Claim your spot →</button>
+          <p class="microcopy" style="margin-top:12px">60 seconds · 4 questions · Be first in when we open the doors.</p>
+        </div>
+
+        <div id="q-step" hidden>
+          <div class="q-head">
+            <button id="q-back" class="q-backbtn" type="button" aria-label="Back">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <div class="q-progress" aria-hidden="true"><div id="q-bar"></div></div>
+            <span id="q-count" class="q-count">1/5</span>
+          </div>
+          <div id="q-body" role="group" aria-live="polite">
+            <h2 id="q-title" class="q-title display"></h2>
+            <p id="q-sub" class="q-sub" hidden></p>
+            <div id="q-opts" class="q-opts"></div>
+            <button id="q-continue" class="cta q-continue" type="button" hidden>Continue</button>
+            <form id="waitlist-form" hidden novalidate>
+              <input
+                id="email" class="email-input" type="email" inputmode="email" autocomplete="email"
+                placeholder="your@email.com" aria-label="Email address" required
+                style="margin-bottom:12px"
+              />
+              <button id="submit" class="cta" type="submit">Join the waitlist</button>
+            </form>
+          </div>
+          <div id="msg" class="form-msg" role="status" aria-live="polite"></div>
+          <button id="q-skip" class="q-skip" type="button">Skip — just add my email</button>
+        </div>
+
         <div id="success" class="success-card">
           <p>🔥 You're on the list.</p>
-          <p>Check your inbox when we open the doors — you're in first.</p>
+          <p id="success-copy">Check your inbox when we open the doors — you're in first.</p>
         </div>
-        <p class="microcopy">Be first in when we open the doors. No spam, ever.</p>
       </div>
     </div>
 
@@ -258,11 +318,109 @@
     const SUPABASE_URL = "https://gcwuvijcuzhunkcauzom.supabase.co";
     const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdjd3V2aWpjdXpodW5rY2F1em9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTk2MTksImV4cCI6MjA4OTMzNTYxOX0.rBshyYHfuzAAGQlbCN0oeManxENC6mRS6lvfuMcOWEo";
 
-    const form = document.getElementById("waitlist-form");
-    const emailEl = document.getElementById("email");
-    const btn = document.getElementById("submit");
-    const msg = document.getElementById("msg");
-    const success = document.getElementById("success");
+    // ── Quiz step machine ────────────────────────────────────────────────
+    // 4 questions, then email. Answers ride into join_waitlist(_answers).
+    // Everything is optional by design: Skip jumps straight to email and the
+    // RPC drops malformed payloads server-side — a signup can never fail
+    // because of the survey.
+    const QUIZ = [
+      { key: "age", title: "How old are you?", opts: [
+        { v: "u18", label: "Under 18" }, { v: "18-24", label: "18–24" },
+        { v: "25-34", label: "25–34" }, { v: "35-44", label: "35–44" }, { v: "45+", label: "45+" },
+      ]},
+      { key: "goals", title: "What are you chasing?", sub: "Pick up to 3", multi: true, max: 3, opts: [
+        { v: "muscle", em: "💪", label: "Build muscle" }, { v: "fat", em: "🔥", label: "Lose fat" },
+        { v: "energy", em: "⚡", label: "More energy" }, { v: "discipline", em: "🎯", label: "Discipline & consistency" },
+        { v: "sleep", em: "😴", label: "Better sleep & recovery" }, { v: "mental", em: "🧠", label: "Mental strength" },
+      ]},
+      { key: "struggle", title: "What's been holding you back?", opts: [
+        { v: "consistency", em: "📉", label: "Can't stay consistent" }, { v: "no-plan", em: "🗺️", label: "No clear plan" },
+        { v: "motivation", em: "🔋", label: "Motivation dies fast" }, { v: "busy", em: "⏳", label: "Too busy" },
+        { v: "quit", em: "🎢", label: "I start strong, then quit" },
+      ]},
+      { key: "training", title: "How often do you train right now?", opts: [
+        { v: "0", label: "Not at all — yet" }, { v: "1-2", label: "1–2× a week" },
+        { v: "3-4", label: "3–4× a week" }, { v: "5+", label: "5+× a week" },
+      ]},
+    ];
+    const EMAIL_STEP = QUIZ.length;            // index of the final step
+    const TOTAL = QUIZ.length + 1;
+    const GOAL_LINES = {
+      muscle: "Your muscle-building plan is waiting.",
+      fat: "Your fat-loss plan is waiting.",
+      energy: "Your energy plan is waiting.",
+      discipline: "Your Discipline plan is waiting.",
+      sleep: "Your recovery plan is waiting.",
+      mental: "Your mental-strength plan is waiting.",
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const intro = $("q-intro"), step = $("q-step"), body = $("q-body");
+    const bar = $("q-bar"), count = $("q-count"), title = $("q-title"), sub = $("q-sub");
+    const optsEl = $("q-opts"), contBtn = $("q-continue"), skipBtn = $("q-skip"), backBtn = $("q-back");
+    const form = $("waitlist-form"), emailEl = $("email"), btn = $("submit");
+    const msg = $("msg"), success = $("success"), successCopy = $("success-copy");
+
+    const answers = {};
+    let idx = 0;
+
+    const show = (i) => {
+      idx = i;
+      bar.style.width = ((i + 1) / TOTAL) * 100 + "%";
+      count.textContent = (i + 1) + "/" + TOTAL;
+      msg.textContent = ""; msg.classList.remove("error");
+      // replay the entrance animation on each step
+      body.classList.remove("q-anim"); void body.offsetWidth; body.classList.add("q-anim");
+
+      if (i === EMAIL_STEP) {
+        title.textContent = "Where do we send your invite?";
+        sub.hidden = false; sub.textContent = "Be first in when we open the doors. No spam, ever.";
+        optsEl.hidden = true; contBtn.hidden = true; skipBtn.hidden = true;
+        form.hidden = false;
+        emailEl.focus({ preventScroll: true });
+        return;
+      }
+
+      const q = QUIZ[i];
+      title.textContent = q.title;
+      sub.hidden = !q.sub; sub.textContent = q.sub || "";
+      form.hidden = true; optsEl.hidden = false; skipBtn.hidden = false;
+      contBtn.hidden = !q.multi;
+      contBtn.disabled = !(answers[q.key] && answers[q.key].length);
+      optsEl.innerHTML = "";
+      for (const o of q.opts) {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "q-opt";
+        const selected = q.multi ? (answers[q.key] || []).includes(o.v) : answers[q.key] === o.v;
+        if (selected) b.classList.add("sel");
+        b.innerHTML = (o.em ? '<span class="q-em">' + o.em + "</span>" : "") +
+          "<span>" + o.label + "</span>" + '<span class="q-check" aria-hidden="true"></span>';
+        b.addEventListener("click", () => {
+          if (q.multi) {
+            const cur = answers[q.key] || [];
+            answers[q.key] = cur.includes(o.v)
+              ? cur.filter((x) => x !== o.v)
+              : cur.length < q.max ? cur.concat(o.v) : cur;
+            b.classList.toggle("sel", answers[q.key].includes(o.v));
+            contBtn.disabled = answers[q.key].length === 0;
+          } else {
+            answers[q.key] = o.v;
+            [...optsEl.children].forEach((c) => c.classList.remove("sel"));
+            b.classList.add("sel");
+            setTimeout(() => show(idx + 1), 200); // let the gold state land first
+          }
+        });
+        optsEl.appendChild(b);
+      }
+    };
+
+    $("q-start").addEventListener("click", () => { intro.hidden = true; step.hidden = false; show(0); });
+    contBtn.addEventListener("click", () => show(idx + 1));
+    skipBtn.addEventListener("click", () => show(EMAIL_STEP));
+    backBtn.addEventListener("click", () => {
+      if (idx === 0) { step.hidden = true; intro.hidden = false; return; }
+      show(idx - 1);
+    });
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -277,6 +435,8 @@
       }
       btn.disabled = true;
       btn.textContent = "Joining…";
+      const payload = { v: 1 };
+      for (const q of QUIZ) if (answers[q.key] && answers[q.key].length) payload[q.key] = answers[q.key];
       try {
         const resp = await fetch(SUPABASE_URL + "/rest/v1/rpc/join_waitlist", {
           method: "POST",
@@ -285,11 +445,13 @@
             apikey: ANON_KEY,
             Authorization: "Bearer " + ANON_KEY,
           },
-          body: JSON.stringify({ _email: email, _source: "waitlist-page" }),
+          body: JSON.stringify({ _email: email, _source: "waitlist-quiz", _answers: payload }),
         });
         const ok = resp.ok && (await resp.json()) === true;
         if (!ok) throw new Error("rejected");
-        form.style.display = "none";
+        const line = (answers.goals || []).map((g) => GOAL_LINES[g]).find(Boolean);
+        if (line) successCopy.textContent = line + " Check your inbox when we open the doors — you're in first.";
+        step.hidden = true;
         success.style.display = "block";
       } catch {
         msg.textContent = "Couldn't join right now — try again in a moment.";

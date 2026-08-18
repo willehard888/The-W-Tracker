@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Moon, Dumbbell, Droplets, Camera, Zap,
-  ChevronDown, Check, Plus,
+  ChevronDown, Check, Plus, Search, X,
   SlidersHorizontal, ShieldCheck, Sparkles,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +40,8 @@ import {
   type VerifySignal,
 } from "@/lib/checkin-habits";
 import { assessSleep, isHabitDone, computeCheckinXp } from "@/lib/checkin-xp";
-import { SPORT_CATALOG, sportById, sportsByGroup } from "@/lib/sports";
+import { SPORT_CATALOG, SPORTS, sportsByGroup, buildForYou } from "@/lib/sports";
+import { useRecentSports } from "@/hooks/use-recent-sports";
 
 // Sport catalog now lives in src/lib/sports.ts — shared with the athlete
 // profile, quests and (via the persisted sport column) the AI coach.
@@ -185,6 +186,11 @@ const DailyCheckin = () => {
   const sleepPrefilled = useRef(false);
   const stepsPrefilled = useRef(false);
   const sportPrefilled = useRef(false);
+  // Smart picker: search + one-open-group accordion + the For-you shortlist.
+  const [sportQuery, setSportQuery] = useState("");
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [detectedSportId, setDetectedSportId] = useState<string | null>(null);
+  const recentSports = useRecentSports();
 
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
   const [honest, setHonest] = useState<boolean | null>(null);
@@ -201,6 +207,7 @@ const DailyCheckin = () => {
   const moderation = useModeration();
 
   const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory) ?? SPORT_CATEGORIES[0];
+  const forYou = buildForYou(detectedSportId, athlete?.sports, recentSports);
   const workout = sportCategory !== "none";
 
   // ── Apple Health auto-detect (billion-dollar verification) ──────────────
@@ -215,6 +222,7 @@ const DailyCheckin = () => {
       // Apple told us WHICH sport — pre-select it once (user can still change).
       if (workoutDone && snap.primary_sport && !sportPrefilled.current) {
         sportPrefilled.current = true;
+        setDetectedSportId(snap.primary_sport);
         setSportCategory((cur) => (cur === "none" ? snap.primary_sport! : cur));
       }
       const stepsDone = (snap.steps ?? 0) >= 8000;
@@ -729,14 +737,62 @@ const DailyCheckin = () => {
         </button>
         {sportOpen && (
           <div className="mt-1.5 rounded-2xl border border-border bg-card overflow-hidden max-h-[420px] overflow-y-auto">
-            {/* Your sports first — two taps and your own sport is logged */}
-            {(athlete?.sports ?? []).length > 0 && (
+            {/* FOR YOU — detected + profile + recent covers ~all real picks,
+                so the 24-sport catalog stays collapsed below. */}
+            {forYou.length > 0 && (
               <div>
-                <p className="eyebrow px-4 pt-3 pb-1.5 text-gold/80">Your sports</p>
-                {(athlete?.sports ?? []).map((id) => sportById(id)).filter((sp) => sp.id !== "none").map((sport) => (
+                <p className="eyebrow px-4 pt-3 pb-1.5 text-gold/80">For you</p>
+                {forYou.map((sport) => (
                   <button
-                    key={`mine-${sport.id}`}
+                    key={`fy-${sport.id}`}
                     onClick={() => { setSportCategory(sport.id); setSportOpen(false); }}
+                    className={cn(
+                      "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
+                      sportCategory === sport.id ? "bg-gold/5" : "hover:bg-secondary/50",
+                    )}
+                  >
+                    <span className="text-lg w-7 text-center">{sport.emoji}</span>
+                    <span className="text-sm font-medium flex-1 flex items-center gap-1.5">
+                      {sport.label}
+                      {detectedSportId === sport.id && (
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck size={10} /> Detected</span>
+                      )}
+                    </span>
+                    <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Search — "ten" → Tennis. The whole catalog is one keystroke away. */}
+            <div className="px-3 pt-3 pb-1 relative">
+              <Search size={14} className="absolute left-6 top-1/2 mt-1 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+              <input
+                value={sportQuery}
+                onChange={(e) => setSportQuery(e.target.value)}
+                placeholder="Search sports…"
+                className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
+              />
+              {sportQuery && (
+                <button
+                  onClick={() => setSportQuery("")}
+                  className="absolute right-6 top-1/2 mt-1 -translate-y-1/2 text-muted-foreground/60"
+                  aria-label="Clear search"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            {sportQuery.trim() ? (
+              /* Search results — flat list */
+              (() => {
+                const q = sportQuery.trim().toLowerCase();
+                const hits = SPORTS.filter((sp) => sp.label.toLowerCase().includes(q) || sp.id.includes(q));
+                return hits.length ? hits.map((sport) => (
+                  <button
+                    key={`q-${sport.id}`}
+                    onClick={() => { setSportCategory(sport.id); setSportOpen(false); setSportQuery(""); }}
                     className={cn(
                       "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
                       sportCategory === sport.id ? "bg-gold/5" : "hover:bg-secondary/50",
@@ -746,33 +802,44 @@ const DailyCheckin = () => {
                     <span className="text-sm font-medium flex-1">{sport.label}</span>
                     <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
                   </button>
-                ))}
-              </div>
-            )}
-            {/* Full catalog, grouped */}
-            {sportsByGroup().map(({ group, sports }) => {
-              const rest = sports.filter((sp) => !(athlete?.sports ?? []).includes(sp.id));
-              if (rest.length === 0) return null;
-              return (
-                <div key={group}>
-                  <p className="eyebrow px-4 pt-3 pb-1.5">{group}</p>
-                  {rest.map((sport) => (
+                )) : (
+                  <p className="px-4 py-4 text-xs text-muted-foreground">No sports match "{sportQuery.trim()}"</p>
+                );
+              })()
+            ) : (
+              /* Groups — collapsed by default; a new user with an empty
+                 For-you shortlist gets them all open (an empty picker is worse). */
+              sportsByGroup().map(({ group, sports }) => {
+                const open = forYou.length === 0 || openGroup === group;
+                return (
+                  <div key={group}>
                     <button
-                      key={sport.id}
-                      onClick={() => { setSportCategory(sport.id); setSportOpen(false); }}
-                      className={cn(
-                        "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
-                        sportCategory === sport.id ? "bg-gold/5" : "hover:bg-secondary/50",
-                      )}
+                      onClick={() => setOpenGroup((g) => (g === group ? null : group))}
+                      className="flex items-center justify-between w-full px-4 pt-3 pb-1.5 text-left"
                     >
-                      <span className="text-lg w-7 text-center">{sport.emoji}</span>
-                      <span className="text-sm font-medium flex-1">{sport.label}</span>
-                      <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
+                      <span className="eyebrow">{group} <span className="text-muted-foreground/50">({sports.length})</span></span>
+                      {forYou.length > 0 && (
+                        <ChevronDown size={12} className={cn("text-muted-foreground/60 transition-transform", open && "rotate-180")} />
+                      )}
                     </button>
-                  ))}
-                </div>
-              );
-            })}
+                    {open && sports.map((sport) => (
+                      <button
+                        key={sport.id}
+                        onClick={() => { setSportCategory(sport.id); setSportOpen(false); }}
+                        className={cn(
+                          "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
+                          sportCategory === sport.id ? "bg-gold/5" : "hover:bg-secondary/50",
+                        )}
+                      >
+                        <span className="text-lg w-7 text-center">{sport.emoji}</span>
+                        <span className="text-sm font-medium flex-1">{sport.label}</span>
+                        <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
+                      </button>
+                    ))}
+                  </div>
+                );
+              })
+            )}
             {sportCategory !== "none" && (
               <button
                 onClick={() => { setSportCategory("none"); setSportOpen(false); }}

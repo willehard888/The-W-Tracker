@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   SPORTS,
+  sportFromHealthKit,
   SPORT_CATALOG,
   SPORT_GROUPS,
   NO_WORKOUT,
@@ -58,5 +59,37 @@ describe("sport catalog invariants", () => {
     expect(sportLabel("tennis")).toBe("🎾 Tennis");
     expect(sportLabel("none")).toBeNull();
     expect(sportLabel(null)).toBeNull();
+  });
+});
+
+describe("sportFromHealthKit", () => {
+  it("maps the common HKWorkoutActivityType strings to catalog ids", () => {
+    expect(sportFromHealthKit("tennis")).toBe("tennis");
+    expect(sportFromHealthKit("running")).toBe("run");
+    expect(sportFromHealthKit("traditionalStrengthTraining")).toBe("gym");
+    expect(sportFromHealthKit("functionalStrengthTraining")).toBe("gym");
+    expect(sportFromHealthKit("highIntensityIntervalTraining")).toBe("hiit");
+    expect(sportFromHealthKit("soccer")).toBe("football");
+    expect(sportFromHealthKit("hockey")).toBe("icehockey");
+    expect(sportFromHealthKit("crossCountrySkiing")).toBe("xcski");
+    expect(sportFromHealthKit("downhillSkiing")).toBe("ski");
+    expect(sportFromHealthKit("martialArts")).toBe("combat");
+    expect(sportFromHealthKit("skatingSports")).toBe("skate");
+  });
+
+  it("every mapped id exists in the catalog", () => {
+    const hkTypes = ["tennis","pickleball","golf","soccer","basketball","hockey","running","walking","hiking","cycling","swimming","rowing","yoga","dance","boxing","traditionalStrengthTraining","highIntensityIntervalTraining","climbing","crossCountrySkiing","downhillSkiing","skatingSports","rugby","volleyball"];
+    for (const t of hkTypes) {
+      const id = sportFromHealthKit(t);
+      expect(id, t).toBeTruthy();
+      expect(SPORTS.some((s) => s.id === id), `${t} → ${id}`).toBe(true);
+    }
+  });
+
+  it("non-workouts and unknowns behave", () => {
+    expect(sportFromHealthKit("cooldown")).toBeNull();
+    expect(sportFromHealthKit("transition")).toBeNull();
+    expect(sportFromHealthKit(null)).toBeNull();
+    expect(sportFromHealthKit("underwaterDiving")).toBe("other");
   });
 });

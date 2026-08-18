@@ -19,6 +19,7 @@
  */
 
 import { Capacitor } from "@capacitor/core";
+import { sportFromHealthKit } from "@/lib/sports";
 
 export interface DaySnapshot {
   /** YYYY-MM-DD in the user's local timezone. */
@@ -26,6 +27,9 @@ export interface DaySnapshot {
   steps: number | null;
   workout_minutes: number | null;
   workout_count: number | null;
+  /** Sport id (src/lib/sports.ts) of the day's LONGEST workout, from
+   *  HKWorkoutActivityType — pre-fills the check-in sport picker. */
+  primary_sport: string | null;
   /** capacitor-health doesn't expose sleep — kept null until plugin upgrade. */
   sleep_hours: number | null;
   active_kcal: number | null;
@@ -142,11 +146,14 @@ export async function readTodaySnapshot(): Promise<DaySnapshot | null> {
       includeSteps: false,
     }),
   );
-  const workouts = ((wkRes as any)?.workouts ?? []) as Array<{ duration?: number }>;
+  const workouts = ((wkRes as any)?.workouts ?? []) as Array<{ duration?: number; workoutType?: string }>;
   const workout_count = workouts.length || null;
   // `duration` from this plugin is seconds.
   const totalSeconds = workouts.reduce((s, w) => s + (Number(w.duration) || 0), 0);
   const workout_minutes = totalSeconds > 0 ? Math.round(totalSeconds / 60) : null;
+  // Apple knows WHICH sport — take the day's longest workout's type.
+  const longest = [...workouts].sort((a, b) => (Number(b.duration) || 0) - (Number(a.duration) || 0))[0];
+  const primary_sport = sportFromHealthKit(longest?.workoutType);
 
   // Mindful minutes — aggregated MindfulSession duration (seconds → minutes).
   const mindRes = await safeCall(() =>
@@ -167,6 +174,7 @@ export async function readTodaySnapshot(): Promise<DaySnapshot | null> {
     steps,
     workout_minutes,
     workout_count,
+    primary_sport,
     sleep_hours: null, // capacitor-health doesn't support sleep yet
     active_kcal,
     mindful_minutes,

@@ -98,3 +98,50 @@ export const sportLabel = (id: string | null | undefined): string | null => {
 export const sportsByGroup = (): Array<{ group: SportGroup; sports: Sport[] }> =>
   SPORT_GROUPS.map((group) => ({ group, sports: SPORTS.filter((s) => s.group === group) }))
     .filter((g) => g.sports.length > 0);
+
+// ── HealthKit → sport id ─────────────────────────────────────────────────────
+// capacitor-health returns HKWorkoutActivityType as camelCase strings (its
+// workoutTypeMapping table). Map them to our catalog so Apple-detected
+// workouts pre-fill the check-in picker with the RIGHT sport. Conservative:
+// ambiguous racket/misc types land on "other" rather than the wrong label.
+const HEALTHKIT_SPORT: Record<string, string> = {
+  tennis: "tennis",
+  pickleball: "padel", // closest cousin in the catalog
+  golf: "golf",
+  soccer: "football",
+  basketball: "basketball",
+  hockey: "icehockey",
+  running: "run", trackAndField: "run",
+  walking: "walk", wheelchairWalkPace: "walk", wheelchairRunPace: "walk",
+  hiking: "hike",
+  cycling: "cycling", handCycling: "cycling",
+  swimming: "swim", waterFitness: "swim",
+  rowing: "rowing", paddleSports: "rowing",
+  yoga: "yoga", pilates: "yoga", flexibility: "yoga", barre: "yoga",
+  mindAndBody: "yoga", taiChi: "yoga",
+  dance: "dance", cardioDance: "dance", socialDance: "dance", danceInspiredTraining: "dance",
+  boxing: "combat", kickboxing: "combat", martialArts: "combat", wrestling: "combat", fencing: "combat",
+  traditionalStrengthTraining: "gym", functionalStrengthTraining: "gym", coreTraining: "gym",
+  highIntensityIntervalTraining: "hiit", crossTraining: "hiit",
+  mixedMetabolicCardioTraining: "hiit", mixedCardio: "hiit", jumpRope: "hiit",
+  stairClimbing: "hiit", stairs: "hiit", stepTraining: "hiit", elliptical: "hiit",
+  climbing: "climbing",
+  crossCountrySkiing: "xcski",
+  downhillSkiing: "ski", snowboarding: "ski", snowSports: "ski",
+  skatingSports: "skate",
+  americanFootball: "team", australianFootball: "team", rugby: "team",
+  volleyball: "team", handball: "team", lacrosse: "team", cricket: "team",
+  baseball: "team", softball: "team", floorball: "floorball",
+};
+
+/**
+ * Sport id for a HealthKit workoutType string, or null when the type isn't a
+ * real trainable workout (cooldown, transition, play, …) or is unknown.
+ */
+export const sportFromHealthKit = (workoutType: string | null | undefined): string | null => {
+  if (!workoutType) return null;
+  const mapped = HEALTHKIT_SPORT[workoutType];
+  if (mapped) return mapped;
+  const NON_WORKOUT = new Set(["cooldown", "preparationAndRecovery", "transition", "play", "fitnessGaming"]);
+  return NON_WORKOUT.has(workoutType) ? null : "other";
+};

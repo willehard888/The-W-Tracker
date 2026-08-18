@@ -16,6 +16,7 @@ import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
 import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
+import { sportName, sportBreakdown } from "../_shared/sports.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,6 +33,7 @@ interface Checkin {
   checked_in_at: string;
   xp_earned: number;
   workout: boolean;
+  sport: string | null;
   cold_shower: boolean;
   healthy_food: boolean;
   protein_intake: boolean;
@@ -49,6 +51,7 @@ const summarize7d = (checkins: Checkin[]) => {
   const avgHydr = checkins.reduce((s, c) => s + Number(c.hydration_liters ?? 0), 0) / days;
   const totalXp = checkins.reduce((s, c) => s + (c.xp_earned ?? 0), 0);
   const workouts = checkins.filter((c) => c.workout).length;
+  const sportsLine = sportBreakdown(checkins.filter((c) => c.workout).map((c) => c.sport));
   const cold = checkins.filter((c) => c.cold_shower).length;
   const perfect = checkins.filter(
     (c) =>
@@ -62,8 +65,8 @@ const summarize7d = (checkins: Checkin[]) => {
       c.no_phone_evening,
   ).length;
   const last = checkins[checkins.length - 1];
-  return `Last 7d: ${days}/7 check-ins, ${totalXp} XP total, avg sleep ${avgSleep.toFixed(1)}h, avg hydration ${avgHydr.toFixed(1)}L, ${workouts} workouts, ${cold} cold showers, ${perfect} perfect days.
-Yesterday: sleep ${last.sleep_hours}h, ${last.workout ? "workout✓" : "no workout"}, ${last.cold_shower ? "cold✓" : "no cold"}, hydration ${last.hydration_liters}L.`;
+  return `Last 7d: ${days}/7 check-ins, ${totalXp} XP total, avg sleep ${avgSleep.toFixed(1)}h, avg hydration ${avgHydr.toFixed(1)}L, ${workouts} workouts${sportsLine ? ` (${sportsLine})` : ""}, ${cold} cold showers, ${perfect} perfect days.
+Yesterday: sleep ${last.sleep_hours}h, ${last.workout ? `workout✓${sportName(last.sport) ? ` (${sportName(last.sport)})` : ""}` : "no workout"}, ${last.cold_shower ? "cold✓" : "no cold"}, hydration ${last.hydration_liters}L.`;
 };
 
 // Voice nuance now lives inside buildPersonaBlock() in ../_shared/coach-persona.ts.
@@ -201,6 +204,7 @@ Athlete file:
 - Handle: ${username} · first name: ${firstName}
 - Goal: ${athlete?.primary_goal ?? "general performance"}${athlete?.secondary_goal ? ` + ${athlete.secondary_goal}` : ""} (horizon ${athlete?.target_horizon_weeks ?? "?"} weeks)
 - Age / sex: ${athlete?.age ?? "?"} / ${athlete?.sex ?? "?"} · ${athlete?.height_cm ?? "?"}cm · ${athlete?.weight_kg ?? "?"}kg
+- Sports they train: ${(athlete?.sports ?? []).map((id: string) => sportName(id) ?? id).join(", ") || "not set"}
 - Equipment: ${(athlete?.equipment ?? []).join(", ") || "unknown"}
 - Injuries: ${(athlete?.injuries ?? []).join(", ") || "none reported"}
 - Dietary: ${(athlete?.dietary ?? []).join(", ") || "none"}
@@ -221,6 +225,7 @@ Apply the CONVERSATION REGISTER above — registers 1–3 exempt you from every 
 - **Match length to the weight of what they asked.** A vent → mirror first, then ONE question or small move. Quick tactical Q → 2–3 sentences. Deep ask → go deep but structured. Default ceiling: 3 short paragraphs; greetings and small talk: 1–2 sentences.
 - **One concrete next move** at the end of coaching replies (registers 4–6 only). Dated to today or tomorrow. Specific (movement, breath count, time on the calendar) — never "try to relax".
 - **Use what you know.** Their file, memory, and last 7 days exist so you never coach a stranger. Continuity is the product: "how did the knee handle Tuesday's volume?" beats any generic insight. But weave facts in naturally — never recite data back, never mention having "memory" or "data".
+- **When a sport is in play** (theirs from the file, or named in the message), coach it like a specialist: sport-specific conditioning, movement patterns, common injury profiles, skill/practice periodization — and connect gym work to on-court/field/ice performance. Generic gym advice for a named sport is a failure.
 - Reference at most ONE concrete stat, only if it sharpens the answer.
 - **Ask at most ONE question, and only when the answer genuinely changes your prescription.** If you can give a sensible default with a fork ("if X, do A; if Y, do B"), do that instead of asking.
 - **Hold the standard.** No empty validation, no cheerleading — praise evidence (a rep done tired, a streak defended), not effort-theater. You are demanding AND unmistakably on their side; certainty over hedging ("do this" — not "you could consider").
@@ -314,7 +319,7 @@ Deno.serve(async (req) => {
       supabase
         .from("daily_checkins")
         .select(
-          "checked_in_at, xp_earned, workout, cold_shower, healthy_food, protein_intake, hydration_liters, sleep_hours, reading, no_phone_morning, no_phone_evening",
+          "checked_in_at, xp_earned, workout, sport, cold_shower, healthy_food, protein_intake, hydration_liters, sleep_hours, reading, no_phone_morning, no_phone_evening",
         )
         .eq("user_id", userId)
         .gte("checked_in_at", sevenDaysAgo)

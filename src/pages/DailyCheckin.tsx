@@ -40,7 +40,7 @@ import {
   type VerifySignal,
 } from "@/lib/checkin-habits";
 import { assessSleep, isHabitDone, computeCheckinXp } from "@/lib/checkin-xp";
-import { SPORT_CATALOG } from "@/lib/sports";
+import { SPORT_CATALOG, sportById, sportsByGroup } from "@/lib/sports";
 
 // Sport catalog now lives in src/lib/sports.ts — shared with the athlete
 // profile, quests and (via the persisted sport column) the AI coach.
@@ -722,21 +722,51 @@ const DailyCheckin = () => {
           <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", sportOpen && "rotate-180")} />
         </button>
         {sportOpen && (
-          <div className="mt-1.5 rounded-2xl border border-border bg-card overflow-hidden">
-            {SPORT_CATEGORIES.filter((s) => s.id !== "none").map((sport) => (
-              <button
-                key={sport.id}
-                onClick={() => { setSportCategory(sport.id); setSportOpen(false); }}
-                className={cn(
-                  "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border last:border-0 active:scale-[0.98]",
-                  sportCategory === sport.id ? "bg-gold/5" : "hover:bg-secondary/50",
-                )}
-              >
-                <span className="text-lg w-7 text-center">{sport.emoji}</span>
-                <span className="text-sm font-medium flex-1">{sport.label}</span>
-                <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
-              </button>
-            ))}
+          <div className="mt-1.5 rounded-2xl border border-border bg-card overflow-hidden max-h-[420px] overflow-y-auto">
+            {/* Your sports first — two taps and your own sport is logged */}
+            {(athlete?.sports ?? []).length > 0 && (
+              <div>
+                <p className="eyebrow px-4 pt-3 pb-1.5 text-gold/80">Your sports</p>
+                {(athlete?.sports ?? []).map((id) => sportById(id)).filter((sp) => sp.id !== "none").map((sport) => (
+                  <button
+                    key={`mine-${sport.id}`}
+                    onClick={() => { setSportCategory(sport.id); setSportOpen(false); }}
+                    className={cn(
+                      "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
+                      sportCategory === sport.id ? "bg-gold/5" : "hover:bg-secondary/50",
+                    )}
+                  >
+                    <span className="text-lg w-7 text-center">{sport.emoji}</span>
+                    <span className="text-sm font-medium flex-1">{sport.label}</span>
+                    <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* Full catalog, grouped */}
+            {sportsByGroup().map(({ group, sports }) => {
+              const rest = sports.filter((sp) => !(athlete?.sports ?? []).includes(sp.id));
+              if (rest.length === 0) return null;
+              return (
+                <div key={group}>
+                  <p className="eyebrow px-4 pt-3 pb-1.5">{group}</p>
+                  {rest.map((sport) => (
+                    <button
+                      key={sport.id}
+                      onClick={() => { setSportCategory(sport.id); setSportOpen(false); }}
+                      className={cn(
+                        "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
+                        sportCategory === sport.id ? "bg-gold/5" : "hover:bg-secondary/50",
+                      )}
+                    >
+                      <span className="text-lg w-7 text-center">{sport.emoji}</span>
+                      <span className="text-sm font-medium flex-1">{sport.label}</span>
+                      <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
+                    </button>
+                  ))}
+                </div>
+              );
+            })}
             {sportCategory !== "none" && (
               <button
                 onClick={() => { setSportCategory("none"); setSportOpen(false); }}
@@ -806,6 +836,7 @@ const DailyCheckin = () => {
             checkinData={{
               sleep,
               sportCategory,
+              mySports: athlete?.sports ?? [],
               extraWorkout: done("extra_workout"),
               coldShower: done("cold_shower"),
               healthyFood: done("healthy_food"),

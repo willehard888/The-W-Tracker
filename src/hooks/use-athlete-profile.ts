@@ -48,6 +48,9 @@ export interface AthleteProfile {
   preferred_session_length_min: number;
   i_am: string | null;
   onboarded: boolean;
+  /** Sports the athlete trains (migration 20260818082050) — the coach's
+   *  standing sport context. Ids from src/lib/sports.ts. */
+  sports: string[];
   /** Holistic fields (migration 20260511181220) ─────────────────────────── */
   hobbies: HobbyId[];
   life_context: string | null;
@@ -88,6 +91,7 @@ export const useAthleteProfile = () => {
         injuries:            Array.isArray(raw.injuries)            ? raw.injuries            : [],
         dietary:             Array.isArray(raw.dietary)             ? raw.dietary             : [],
         equipment:           Array.isArray(raw.equipment)           ? raw.equipment           : [],
+        sports:              Array.isArray(raw.sports)              ? raw.sports              : [],
         hobbies:             Array.isArray(raw.hobbies)             ? raw.hobbies             : [],
         mental_health_focus: Array.isArray(raw.mental_health_focus) ? raw.mental_health_focus : [],
       };

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sportById } from "@/lib/sports";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -97,6 +98,7 @@ const AthleteProfileSettings = () => {
 
         <Section title="Goal">
           <Row label="Primary" value={GOALS[profile.primary_goal ?? ""] ?? "—"} />
+          <Row label="Sports" value={(profile.sports ?? []).length ? (profile.sports ?? []).map((id) => sportById(id).label).join(", ") : "—"} />
           <Row label="Horizon" value={profile.target_horizon_weeks ? `${profile.target_horizon_weeks} weeks` : "—"} />
         </Section>
 

@@ -2,6 +2,7 @@
 // Pulls last 7 days of check-ins, reflections, mission logs and program logs,
 // then asks the AI to identify the driver of the week, wins, frictions, and next-week focus.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { sportBreakdown } from "../_shared/sports.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -74,7 +75,7 @@ Deno.serve(async (req) => {
 
     const [checkinsRes, reflectionsRes, missionsRes, athleteRes, goalRes] = await Promise.all([
       supabase.from("daily_checkins")
-        .select("checked_in_at, sleep_hours, workout, cold_shower, healthy_food, hydration_liters, xp_earned")
+        .select("checked_in_at, sleep_hours, workout, sport, cold_shower, healthy_food, hydration_liters, xp_earned")
         .eq("user_id", userId).gte("checked_in_at", since).order("checked_in_at", { ascending: true }),
       supabase.from("coach_reflections")
         .select("reflection_date, energy_1to5, sleep_quality_1to5, mood_1to5, rpe_1to10, win, friction")
@@ -97,6 +98,7 @@ Deno.serve(async (req) => {
     const days = checkins.length;
     const avgSleep = days ? checkins.reduce((s, c) => s + Number(c.sleep_hours ?? 0), 0) / days : 0;
     const workouts = checkins.filter((c) => c.workout).length;
+    const sportsLine = sportBreakdown(checkins.filter((c) => c.workout).map((c: any) => c.sport));
     const avgEnergy = reflections.length
       ? reflections.reduce((s, r) => s + (r.energy_1to5 ?? 0), 0) / reflections.length
       : 3;
@@ -106,7 +108,7 @@ Deno.serve(async (req) => {
     const energyPts = Math.min(15, (avgEnergy / 5) * 15);
     const performance_score = Math.round(sleepPts + trainPts + consistencyPts + energyPts);
 
-    let headline = `${workouts} workouts · ${days}/7 days · avg sleep ${avgSleep.toFixed(1)}h`;
+    let headline = `${workouts} workouts${sportsLine ? ` (${sportsLine})` : ""} · ${days}/7 days · avg sleep ${avgSleep.toFixed(1)}h`;
     let driver_of_week = workouts >= 4 ? "Training volume" : avgSleep >= 7.5 ? "Sleep" : "Consistency";
     let wins: string[] = [];
     let frictions: string[] = [];

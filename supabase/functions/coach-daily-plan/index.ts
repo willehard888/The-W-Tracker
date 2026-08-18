@@ -5,6 +5,7 @@
 // DEFINER RPC `upsert_daily_plan`.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { sportName } from "../_shared/sports.ts";
 import { buildPersonaBlock, buildHolisticContext } from "../_shared/coach-persona.ts";
 import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
 
@@ -18,6 +19,7 @@ interface Checkin {
   checked_in_at: string;
   xp_earned: number;
   workout: boolean;
+  sport?: string | null;
   cold_shower: boolean;
   healthy_food: boolean;
   protein_intake: boolean;
@@ -152,7 +154,7 @@ const buildPrompt = (
   const last = checkins[checkins.length - 1];
 
   const recent = last
-    ? `Yesterday: sleep ${last.sleep_hours}h · ${last.workout ? "workout✓" : "no workout"} · hydration ${last.hydration_liters}L · ${last.cold_shower ? "cold✓" : "no cold"} · ${last.healthy_food ? "food✓" : "food gap"}`
+    ? `Yesterday: sleep ${last.sleep_hours}h · ${last.workout ? `workout✓${sportName(last.sport) ? ` (${sportName(last.sport)})` : ""}` : "no workout"} · hydration ${last.hydration_liters}L · ${last.cold_shower ? "cold✓" : "no cold"} · ${last.healthy_food ? "food✓" : "food gap"}`
     : "No check-in yesterday.";
 
   const sessionLine = todayDay
@@ -483,7 +485,7 @@ Deno.serve(async (req) => {
       supabase
         .from("daily_checkins")
         .select(
-          "checked_in_at, xp_earned, workout, cold_shower, healthy_food, protein_intake, hydration_liters, sleep_hours, reading, no_phone_morning, no_phone_evening",
+          "checked_in_at, xp_earned, workout, sport, cold_shower, healthy_food, protein_intake, hydration_liters, sleep_hours, reading, no_phone_morning, no_phone_evening",
         )
         .eq("user_id", userId)
         .gte("checked_in_at", sevenDaysAgo)

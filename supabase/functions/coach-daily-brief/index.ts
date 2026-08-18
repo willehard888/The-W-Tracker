@@ -1,6 +1,7 @@
 // Daily AI Trainer Brief — generates a short, signed, context-aware brief
 // from the W Coach. Cached per user per day in coach_daily_briefs.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { sportBreakdown } from "../_shared/sports.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
 import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
@@ -59,7 +60,7 @@ Deno.serve(async (req) => {
       sb.from("profiles").select("username, status_tier, streak, longest_streak, level, xp").eq("user_id", uid).maybeSingle(),
       sb.from("coach_athlete_profile" as any).select("*").eq("user_id", uid).maybeSingle(),
       sb.from("coach_programs").select("*").eq("user_id", uid).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      sb.from("daily_checkins").select("checked_in_at, sleep_hours, hydration_liters, workout, protein_intake, healthy_food, xp_earned").eq("user_id", uid).gte("checked_in_at", sevenAgo).order("checked_in_at", { ascending: false }).limit(7),
+      sb.from("daily_checkins").select("checked_in_at, sleep_hours, hydration_liters, workout, sport, protein_intake, healthy_food, xp_earned").eq("user_id", uid).gte("checked_in_at", sevenAgo).order("checked_in_at", { ascending: false }).limit(7),
     ]);
 
     const profile = profileRes.data ?? {};
@@ -87,6 +88,7 @@ Deno.serve(async (req) => {
       ? (checkins.reduce((s: number, c: any) => s + Number(c.sleep_hours ?? 0), 0) / checkins.length).toFixed(1)
       : null;
     const workouts7 = checkins.filter((c: any) => c.workout).length;
+    const sports7 = sportBreakdown(checkins.filter((c: any) => c.workout).map((c: any) => c.sport));
 
     const firstName = (athlete?.i_am || profile.username || "").split(" ")[0] || "there";
     const tone = TONE_LINE[athlete?.tone_pref ?? "calm_mentor"] ?? TONE_LINE.calm_mentor;
@@ -141,7 +143,7 @@ Athlete:
 - No-go: ${(athlete?.no_go_protocols ?? []).join(", ") || "none"}
 
 Today's prescribed session: ${sessionLine}
-Recent: avg sleep ${avgSleep ?? "?"}h (last night ${lastSleep ?? "?"}h), ${workouts7}/7 workouts.
+Recent: avg sleep ${avgSleep ?? "?"}h (last night ${lastSleep ?? "?"}h), ${workouts7}/7 workouts${sports7 ? ` (${sports7})` : ""}.
 ${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}${whealthBlock}
 ${INNER_WORK_BLOCK}
 

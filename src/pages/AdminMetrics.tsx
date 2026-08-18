@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, Loader2, Users, Flame, CreditCard, Share2, TrendingUp } from "lucide-react";
+import { BarChart3, Loader2, Users, Flame, CreditCard, Share2, TrendingUp, Mail } from "lucide-react";
 import { format } from "date-fns";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import { cn } from "@/lib/utils";
@@ -31,6 +31,26 @@ type Virality = {
   referred_signups: number;
   total_referred_ever: number;
   k_factor: number | null;
+};
+type WaitlistData = {
+  total: number;
+  last_7d: number;
+  welcomed: number;
+  goal_counts: Record<string, number>;
+  rows: Array<{
+    email: string;
+    source: string;
+    age: string | null;
+    goals: string[] | null;
+    created_at: string;
+    welcomed: boolean;
+  }>;
+};
+
+// Quiz goal ids → short labels (mirrors public/waitlist.html).
+const GOAL_LABELS: Record<string, string> = {
+  muscle: "Muscle", fat: "Fat loss", energy: "Energy",
+  discipline: "Discipline", sleep: "Sleep", mental: "Mental",
 };
 
 // Display order mirrors the actual user journey; conversion % is step/first.
@@ -192,6 +212,16 @@ export default function AdminMetrics() {
     },
   });
 
+  const { data: waitlist } = useQuery({
+    queryKey: ["admin-waitlist"],
+    enabled: !!isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_waitlist" as never);
+      if (error) throw error;
+      return data as unknown as WaitlistData;
+    },
+  });
+
   if (isAdmin === null) {
     return (
       <div className="min-h-full flex items-center justify-center">
@@ -332,6 +362,85 @@ export default function AdminMetrics() {
           <StatTile label="Referred signups" value={num(virality.referred_signups)} />
           <StatTile label="Invites shared" value={num(virality.invites_shared)} />
           <StatTile label="Distinct sharers" value={num(virality.distinct_sharers)} />
+        </div>
+      )}
+
+      {/* 5 — Waitlist */}
+      <SectionHeader icon={Mail} title="Waitlist" sub="pre-launch" />
+      {!waitlist ? (
+        <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-gold/60" /></div>
+      ) : (
+        <div className="space-y-5">
+          <div className="grid grid-cols-3 gap-2">
+            <StatTile label="Total signups" value={num(waitlist.total)} accent />
+            <StatTile label="Last 7 days" value={num(waitlist.last_7d)} />
+            <StatTile
+              label="Welcomed"
+              value={waitlist.total > 0 ? Math.round((num(waitlist.welcomed) / num(waitlist.total)) * 100) : 0}
+              format={(n) => `${n}%`}
+            />
+          </div>
+
+          {Object.keys(waitlist.goal_counts ?? {}).length > 0 && (
+            <div className="surface-card p-4">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Goals people chase</p>
+              <div className="space-y-2">
+                {Object.entries(waitlist.goal_counts)
+                  .sort(([, a], [, b]) => num(b) - num(a))
+                  .map(([goal, n]) => {
+                    const max = Math.max(...Object.values(waitlist.goal_counts).map(num), 1);
+                    return (
+                      <div key={goal}>
+                        <div className="flex items-baseline justify-between mb-1">
+                          <span className="text-[11px] font-semibold text-foreground/85">{GOAL_LABELS[goal] ?? goal}</span>
+                          <span className="text-[11px] tabular-nums text-muted-foreground">{num(n)}</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-gold/70 to-gold transition-all duration-700"
+                            style={{ width: `${(num(n) / max) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+
+          {(waitlist.rows ?? []).length === 0 ? (
+            <p className="text-xs text-muted-foreground py-4 text-center">No signups yet.</p>
+          ) : (
+            <div className="surface-card overflow-hidden">
+              <table className="w-full text-[11px]">
+                <thead>
+                  <tr className="border-b border-border/60 text-muted-foreground uppercase tracking-wider text-[9px]">
+                    <th className="text-left font-semibold px-3 py-2">Email</th>
+                    <th className="text-right font-semibold px-2 py-2">Age</th>
+                    <th className="text-right font-semibold px-2 py-2">Goals</th>
+                    <th className="text-right font-semibold px-3 py-2">Joined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {waitlist.rows.map((r) => (
+                    <tr key={r.email} className="border-b border-border/30 last:border-0">
+                      <td className="px-3 py-2 font-semibold max-w-[140px] truncate">
+                        {r.welcomed && <span className="text-xp-green mr-1" title="Welcome email sent">✓</span>}
+                        {r.email}
+                      </td>
+                      <td className="px-2 py-2 text-right tabular-nums text-muted-foreground">{r.age ?? "—"}</td>
+                      <td className="px-2 py-2 text-right text-muted-foreground max-w-[110px] truncate">
+                        {(r.goals ?? []).map((g) => GOAL_LABELS[g] ?? g).join(", ") || "—"}
+                      </td>
+                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
+                        {format(new Date(r.created_at), "MMM d")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>

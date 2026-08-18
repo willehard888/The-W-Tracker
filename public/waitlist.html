@@ -142,18 +142,17 @@
     .q-opt:hover { border-color: hsl(42 78% 54% / 0.45); }
     .q-opt:active { transform: scale(0.985); }
     .q-opt .q-em { width: 22px; text-align: center; flex-shrink: 0; }
+    .q-opt .q-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .q-opt .q-desc { font-size: 11px; font-weight: 500; color: hsl(var(--muted)); line-height: 1.4; }
     .q-opt .q-check { margin-left: auto; width: 18px; height: 18px; border-radius: 9999px; border: 1.5px solid hsl(var(--border)); flex-shrink: 0; transition: border-color .15s, background .15s, box-shadow .15s; }
     .q-opt.sel { border-color: hsl(42 78% 54% / 0.75); background: hsl(42 78% 54% / 0.09); box-shadow: 0 0 0 1px hsl(42 78% 54% / 0.35), 0 8px 24px -12px hsl(42 78% 54% / 0.4); }
     .q-opt.sel .q-check { border-color: hsl(42 78% 54%); background: hsl(42 78% 54%); box-shadow: inset 0 0 0 3px hsl(258 16% 6.5%); }
     .q-continue { margin-top: 12px; }
-    .q-skip { display: block; margin: 14px auto 0; background: none; border: 0; cursor: pointer; font: inherit; font-size: 11px; color: hsl(40 6% 50%); text-decoration: underline; text-underline-offset: 3px; }
-    .q-skip:hover { color: hsl(var(--muted)); }
+    .q-opts input::-webkit-outer-spin-button, .q-opts input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .q-opts input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     .q-anim { animation: reveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
     @media (prefers-reduced-motion: reduce) { .q-anim { animation: none; } }
-    @media (min-width: 1024px) {
-      .q-title { font-size: 26px; }
-      .q-skip { margin-left: 0; }
-    }
+    @media (min-width: 1024px) { .q-title { font-size: 26px; } }
 
     .grid-wrap { width: 100%; max-width: 28rem; margin: 56px auto 0; }
     .eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: hsl(42 78% 54% / 0.7); margin-bottom: 12px; }
@@ -262,7 +261,6 @@
             </form>
           </div>
           <div id="msg" class="form-msg" role="status" aria-live="polite"></div>
-          <button id="q-skip" class="q-skip" type="button">Skip — just add my email</button>
         </div>
 
         <div id="success" class="success-card">
@@ -324,19 +322,19 @@
     // RPC drops malformed payloads server-side — a signup can never fail
     // because of the survey.
     const QUIZ = [
-      { key: "age", title: "How old are you?", opts: [
-        { v: "u18", label: "Under 18" }, { v: "18-24", label: "18–24" },
-        { v: "25-34", label: "25–34" }, { v: "35-44", label: "35–44" }, { v: "45+", label: "45+" },
-      ]},
-      { key: "goals", title: "What are you chasing?", sub: "Pick up to 3", multi: true, max: 3, opts: [
+      { key: "age", title: "How old are you?", sub: "Your exact age — the plan adapts to it.", inputStep: true },
+      { key: "goals", title: "What are your most important fitness goals?", sub: "Pick up to 3", multi: true, max: 3, opts: [
         { v: "muscle", em: "💪", label: "Build muscle" }, { v: "fat", em: "🔥", label: "Lose fat" },
         { v: "energy", em: "⚡", label: "More energy" }, { v: "discipline", em: "🎯", label: "Discipline & consistency" },
         { v: "sleep", em: "😴", label: "Better sleep & recovery" }, { v: "mental", em: "🧠", label: "Mental strength" },
       ]},
-      { key: "struggle", title: "What's been holding you back?", opts: [
-        { v: "consistency", em: "📉", label: "Can't stay consistent" }, { v: "no-plan", em: "🗺️", label: "No clear plan" },
-        { v: "motivation", em: "🔋", label: "Motivation dies fast" }, { v: "busy", em: "⏳", label: "Too busy" },
-        { v: "quit", em: "🎢", label: "I start strong, then quit" },
+      { key: "struggle", title: "What's really holding your progress back?", opts: [
+        { v: "consistency", em: "📉", label: "Can't stay consistent", desc: "I train for a week or two, then everyday life takes over." },
+        { v: "no-plan", em: "🗺️", label: "No clear plan", desc: "I never know exactly what to do next, so I improvise — or do nothing." },
+        { v: "motivation", em: "🔋", label: "Motivation dies fast", desc: "I rely on feeling motivated, and the feeling always fades." },
+        { v: "busy", em: "⏳", label: "Too busy", desc: "Work and life eat my hours — training is the first thing to go." },
+        { v: "quit", em: "🎢", label: "I start strong, then quit", desc: "Every restart looks the same: all-in for a month, then nothing." },
+        { v: "alone", em: "🏝️", label: "No one holds me to it", desc: "Nobody notices whether I show up or slip — so slipping is easy." },
       ]},
       { key: "training", title: "How often do you train right now?", opts: [
         { v: "0", label: "Not at all — yet" }, { v: "1-2", label: "1–2× a week" },
@@ -357,7 +355,7 @@
     const $ = (id) => document.getElementById(id);
     const intro = $("q-intro"), step = $("q-step"), body = $("q-body");
     const bar = $("q-bar"), count = $("q-count"), title = $("q-title"), sub = $("q-sub");
-    const optsEl = $("q-opts"), contBtn = $("q-continue"), skipBtn = $("q-skip"), backBtn = $("q-back");
+    const optsEl = $("q-opts"), contBtn = $("q-continue"), backBtn = $("q-back");
     const form = $("waitlist-form"), emailEl = $("email"), btn = $("submit");
     const msg = $("msg"), success = $("success"), successCopy = $("success-copy");
 
@@ -375,7 +373,7 @@
       if (i === EMAIL_STEP) {
         title.textContent = "Where do we send your invite?";
         sub.hidden = false; sub.textContent = "Be first in when we open the doors. No spam, ever.";
-        optsEl.hidden = true; contBtn.hidden = true; skipBtn.hidden = true;
+        optsEl.hidden = true; contBtn.hidden = true;
         form.hidden = false;
         emailEl.focus({ preventScroll: true });
         return;
@@ -384,17 +382,38 @@
       const q = QUIZ[i];
       title.textContent = q.title;
       sub.hidden = !q.sub; sub.textContent = q.sub || "";
-      form.hidden = true; optsEl.hidden = false; skipBtn.hidden = false;
+      form.hidden = true; optsEl.hidden = false;
+      optsEl.innerHTML = "";
+
+      if (q.inputStep) {
+        // Exact age as a number, not a bracket.
+        contBtn.hidden = false;
+        const input = document.createElement("input");
+        input.id = "q-age"; input.className = "email-input";
+        input.type = "number"; input.inputMode = "numeric";
+        input.min = "13"; input.max = "100"; input.placeholder = "Your age";
+        input.setAttribute("aria-label", "Your age");
+        if (answers.age) input.value = answers.age;
+        const valid = () => { const n = Number(input.value); return Number.isInteger(n) && n >= 13 && n <= 100; };
+        contBtn.disabled = !valid();
+        input.addEventListener("input", () => { contBtn.disabled = !valid(); if (valid()) answers.age = Number(input.value); });
+        input.addEventListener("keydown", (e) => { if (e.key === "Enter" && valid()) { e.preventDefault(); show(idx + 1); } });
+        optsEl.appendChild(input);
+        input.focus({ preventScroll: true });
+        return;
+      }
+
       contBtn.hidden = !q.multi;
       contBtn.disabled = !(answers[q.key] && answers[q.key].length);
-      optsEl.innerHTML = "";
       for (const o of q.opts) {
         const b = document.createElement("button");
         b.type = "button"; b.className = "q-opt";
         const selected = q.multi ? (answers[q.key] || []).includes(o.v) : answers[q.key] === o.v;
         if (selected) b.classList.add("sel");
         b.innerHTML = (o.em ? '<span class="q-em">' + o.em + "</span>" : "") +
-          "<span>" + o.label + "</span>" + '<span class="q-check" aria-hidden="true"></span>';
+          '<span class="q-txt"><span>' + o.label + "</span>" +
+          (o.desc ? '<span class="q-desc">' + o.desc + "</span>" : "") + "</span>" +
+          '<span class="q-check" aria-hidden="true"></span>';
         b.addEventListener("click", () => {
           if (q.multi) {
             const cur = answers[q.key] || [];
@@ -416,7 +435,6 @@
 
     $("q-start").addEventListener("click", () => { intro.hidden = true; step.hidden = false; show(0); });
     contBtn.addEventListener("click", () => show(idx + 1));
-    skipBtn.addEventListener("click", () => show(EMAIL_STEP));
     backBtn.addEventListener("click", () => {
       if (idx === 0) { step.hidden = true; intro.hidden = false; return; }
       show(idx - 1);
@@ -436,7 +454,10 @@
       btn.disabled = true;
       btn.textContent = "Joining…";
       const payload = { v: 1 };
-      for (const q of QUIZ) if (answers[q.key] && answers[q.key].length) payload[q.key] = answers[q.key];
+      for (const q of QUIZ) {
+        const a = answers[q.key];
+        if (typeof a === "number" || (a && a.length)) payload[q.key] = a;
+      }
       try {
         const resp = await fetch(SUPABASE_URL + "/rest/v1/rpc/join_waitlist", {
           method: "POST",

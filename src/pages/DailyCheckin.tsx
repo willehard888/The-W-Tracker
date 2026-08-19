@@ -102,6 +102,22 @@ const DailyCheckin = () => {
   const why = athlete?.i_am?.trim();
   const queryClient = useQueryClient();
 
+  // Active tribe membership — powers the Tribe Player quest.
+  const { data: inTribe } = useQuery({
+    queryKey: ["in-tribe", user?.id],
+    enabled: !!user?.id,
+    staleTime: 10 * 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tribe_members")
+        .select("tribe_id")
+        .eq("user_id", user!.id)
+        .eq("status", "active")
+        .limit(1);
+      return (data?.length ?? 0) > 0;
+    },
+  });
+
   // The user's personalized habit selection (or the classic default set).
   const { keys: habitKeys, isCustomized, save: saveHabits, saving: savingHabits } = useCheckinConfig();
   const chosenHabits = useMemo(() => resolveCheckinHabits(habitKeys), [habitKeys]);
@@ -506,13 +522,33 @@ const DailyCheckin = () => {
           if (newBadge?.isNew) setUnlockedBadge(newBadge.badge);
         } catch (e) { console.warn("badge award", e); captureException(e, { where: "checkin.badgeAward" }); }
         try {
-          const { count: tribeCount } = await supabase
+          // Rich loopback: name the fire this check-in fed and open it on tap.
+          const { data: mems } = await supabase
             .from("tribe_members")
-            .select("tribe_id", { count: "exact", head: true })
+            .select("tribe_id")
             .eq("user_id", user.id).eq("status", "active");
-          if ((tribeCount ?? 0) > 0) {
-            const flameMsg = (tribeCount ?? 0) === 1 ? "Your tribe felt it 🔥" : `Your ${tribeCount} tribes felt it 🔥`;
-            toast.success(flameMsg, { description: `+1 day → collective fire just grew`, duration: 4500 });
+          const tribeIds = ((mems as any) ?? []).map((m: any) => m.tribe_id as string);
+          if (tribeIds.length > 0) {
+            const { data: myTribes } = await supabase
+              .from("tribes")
+              .select("id, name, collective_streak")
+              .in("id", tribeIds)
+              .order("collective_streak", { ascending: false })
+              .limit(1);
+            const top = ((myTribes as any) ?? [])[0];
+            if (top) {
+              const others = tribeIds.length - 1;
+              toast.success(
+                `${top.name} +1 → ${((top.collective_streak as number) ?? 0) + 1}d 🔥`,
+                {
+                  description: others > 0
+                    ? `You fed ${tribeIds.length} fires today. Tap to see the tribe.`
+                    : "Your check-in feeds the collective fire. Tap to see it.",
+                  duration: 5000,
+                  action: { label: "Open", onClick: () => navigate(`/tribes/${top.id}`) },
+                },
+              );
+            }
           }
         } catch { /* non-critical */ }
         try {
@@ -912,6 +948,7 @@ const DailyCheckin = () => {
               sleep,
               sportCategory,
               mySports: athlete?.sports ?? [],
+              inTribe: !!inTribe,
               extraWorkout: done("extra_workout"),
               coldShower: done("cold_shower"),
               healthyFood: done("healthy_food"),

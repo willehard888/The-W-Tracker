@@ -57,8 +57,8 @@ const TribeHeader = ({
   const founder = members.find((m) => m.role === "owner");
 
   return (
-    <div className="relative rounded-2xl mb-4 p-[2px] apex-conic-border overflow-hidden">
-      <div className="relative rounded-2xl p-5 overflow-hidden bg-gradient-to-br from-[hsl(var(--ember))]/15 via-card/85 to-[hsl(var(--gold))]/10 apex-spotlight">
+    <div className="relative mb-4 surface-card overflow-hidden">
+      <div className="relative rounded-2xl p-5 overflow-hidden">
         {/* Cover photo background — owner-uploaded, dimmed for legibility */}
         {tribe.cover_url && (
           <div className="absolute inset-0 pointer-events-none">

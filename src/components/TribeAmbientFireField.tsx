@@ -21,7 +21,8 @@ interface TribeAmbientFireFieldProps {
  */
 const TribeAmbientFireField = ({ total, accent, className }: TribeAmbientFireFieldProps) => {
   // Particle count scales with heat
-  const count = total >= 1500 ? 28 : total >= 700 ? 22 : total >= 300 ? 18 : total >= 100 ? 12 : total >= 30 ? 6 : 0;
+  // Halved — the ambience should whisper, not compete with the content.
+  const count = total >= 1500 ? 12 : total >= 700 ? 10 : total >= 300 ? 8 : total >= 100 ? 6 : total >= 30 ? 4 : 0;
   const intensity = Math.min(1, total / 1500);
 
   const particles = useMemo(() => {

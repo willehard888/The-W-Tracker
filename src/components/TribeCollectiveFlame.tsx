@@ -71,22 +71,23 @@ const TribeCollectiveFlame = ({
   const isFirestorm = tier >= 6;
   const isHero = variant === "hero";
 
-  // Hero scales bigger; compact keeps the inline 56–190px ladder
+  // Deliberately small — the flame is a status mark, not the page's centerpiece
+  // (founder: "tulianimaatio huomattavasti pienemmäksi").
   const size = isHero
-    ? (tier >= 6 ? 260 :
-       tier >= 5 ? 230 :
-       tier >= 4 ? 210 :
-       tier >= 3 ? 190 :
-       tier >= 2 ? 170 :
-       tier >= 1 ? 150 :
-       tier >= 0 ? 132 : 110)
-    : (tier >= 6 ? 190 :
-       tier === 5 ? 160 :
-       tier === 4 ? 138 :
-       tier === 3 ? 116 :
-       tier === 2 ? 96  :
-       tier === 1 ? 80  :
-       tier === 0 ? 68  : 56);
+    ? (tier >= 6 ? 120 :
+       tier >= 5 ? 112 :
+       tier >= 4 ? 104 :
+       tier >= 3 ? 96 :
+       tier >= 2 ? 88 :
+       tier >= 1 ? 80 :
+       tier >= 0 ? 76 : 72)
+    : (tier >= 6 ? 96 :
+       tier === 5 ? 86 :
+       tier === 4 ? 76 :
+       tier === 3 ? 66 :
+       tier === 2 ? 58 :
+       tier === 1 ? 50 :
+       tier === 0 ? 46 : 44);
 
   const accent = collectiveAccent(total);
   const palette = collectivePalette(total);
@@ -229,10 +230,10 @@ const TribeCollectiveFlame = ({
             )}
           </div>
 
-          {/* Big number */}
+          {/* Number — text-4xl, not 6xl: the fire is a mark, not a monument */}
           <div className="flex items-baseline gap-2">
             <span
-              className="font-display font-black text-6xl tabular-nums leading-none"
+              className="font-display font-black text-4xl tabular-nums leading-none"
               style={{
                 color: isCold ? "hsl(24 45% 62%)" : accent,
                 textShadow: isCold
@@ -248,7 +249,7 @@ const TribeCollectiveFlame = ({
           {/* Tier headline */}
           <p
             className={cn(
-              "font-display font-black text-2xl mt-2 uppercase tracking-wider",
+              "font-display font-black text-sm mt-1.5 uppercase tracking-[0.18em]",
               isFirestorm && "bg-clip-text text-transparent",
             )}
             style={

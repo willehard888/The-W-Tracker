@@ -36,7 +36,6 @@ import TribePendingRequestsDialog from "@/components/TribePendingRequestsDialog"
 import TribeReportsDialog from "@/components/TribeReportsDialog";
 import TribeManageDialog from "@/components/TribeManageDialog";
 import TribeEvents from "@/components/tribe/TribeEvents";
-import TribeMembersRow from "@/components/tribe/TribeMembersRow";
 import EmptyState from "@/components/ui/empty-state";
 import TribeComposer from "@/components/tribe/TribeComposer";
 import TribeHeader from "@/components/tribe/TribeHeader";
@@ -118,19 +117,6 @@ const TribeDetail = () => {
       return count || 0;
     },
     enabled: !!user,
-  });
-
-  // Tribe-level verified discipline — which members are HealthKit-verified.
-  // Reuses the verified_authors RPC; keyed by member ids (TanStack compares by value).
-  const { data: verifiedMemberIds } = useQuery({
-    queryKey: ["tribe-verified-members", members.map((m) => m.user_id)],
-    enabled: members.length > 0,
-    staleTime: 5 * 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("verified_authors", { p_ids: members.map((m) => m.user_id) });
-      if (error) return new Set<string>();
-      return new Set((data as string[]) ?? []);
-    },
   });
 
   const kudosRemaining = Math.max(0, 2 - (kudosGivenThisMonth || 0));
@@ -644,10 +630,8 @@ const TribeDetail = () => {
 
 
 
-      {/* (Hero flame moved to top of page) */}
-
-      {/* Members row */}
-      <TribeMembersRow members={members} onMemberClick={(uid) => navigate(`/user/${uid}`)} verifiedIds={verifiedMemberIds} />
+      {/* Members live in MemberContributionStrip above — the second full
+          member list this page used to carry duplicated the same people. */}
 
       {/* Meetups & events — the show-up-together loop */}
       {id && (

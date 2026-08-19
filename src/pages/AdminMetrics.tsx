@@ -37,20 +37,34 @@ type WaitlistData = {
   last_7d: number;
   welcomed: number;
   goal_counts: Record<string, number>;
+  struggle_counts: Record<string, number>;
   rows: Array<{
     email: string;
     source: string;
     age: string | null;
     goals: string[] | null;
+    struggle: string | null;
+    training: string | null;
     created_at: string;
     welcomed: boolean;
   }>;
 };
 
-// Quiz goal ids → short labels (mirrors public/waitlist.html).
+// Quiz answer ids → short labels (mirror public/waitlist.html).
 const GOAL_LABELS: Record<string, string> = {
   muscle: "Muscle", fat: "Fat loss", energy: "Energy",
   discipline: "Discipline", sleep: "Sleep", mental: "Mental",
+};
+const STRUGGLE_LABELS: Record<string, string> = {
+  consistency: "Can't stay consistent",
+  "no-plan": "No clear plan",
+  motivation: "Motivation dies fast",
+  busy: "Too busy",
+  quit: "Starts strong, then quits",
+  alone: "No one holds them to it",
+};
+const TRAINING_LABELS: Record<string, string> = {
+  "0": "Not training yet", "1-2": "1–2×/week", "3-4": "3–4×/week", "5+": "5+×/week",
 };
 
 // Display order mirrors the actual user journey; conversion % is step/first.
@@ -408,37 +422,74 @@ export default function AdminMetrics() {
             </div>
           )}
 
+          {/* Struggles — the "what's holding you back" answer, aggregated. */}
+          {Object.keys(waitlist.struggle_counts ?? {}).length > 0 && (
+            <div className="surface-card p-4">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">What holds them back</p>
+              <div className="space-y-2">
+                {Object.entries(waitlist.struggle_counts)
+                  .sort(([, a], [, b]) => num(b) - num(a))
+                  .map(([s, n]) => {
+                    const max = Math.max(...Object.values(waitlist.struggle_counts).map(num), 1);
+                    return (
+                      <div key={s}>
+                        <div className="flex items-baseline justify-between mb-1">
+                          <span className="text-[11px] font-semibold text-foreground/85">{STRUGGLE_LABELS[s] ?? s}</span>
+                          <span className="text-[11px] tabular-nums text-muted-foreground">{num(n)}</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-[hsl(var(--ember))]/70 to-[hsl(var(--ember))] transition-all duration-700"
+                            style={{ width: `${(num(n) / max) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+
+          {/* Per-signup cards — the WHOLE quiz answer set, not just a 4-column
+              table that dropped struggle + training. */}
           {(waitlist.rows ?? []).length === 0 ? (
             <p className="text-xs text-muted-foreground py-4 text-center">No signups yet.</p>
           ) : (
-            <div className="surface-card overflow-hidden">
-              <table className="w-full text-[11px]">
-                <thead>
-                  <tr className="border-b border-border/60 text-muted-foreground uppercase tracking-wider text-[9px]">
-                    <th className="text-left font-semibold px-3 py-2">Email</th>
-                    <th className="text-right font-semibold px-2 py-2">Age</th>
-                    <th className="text-right font-semibold px-2 py-2">Goals</th>
-                    <th className="text-right font-semibold px-3 py-2">Joined</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {waitlist.rows.map((r) => (
-                    <tr key={r.email} className="border-b border-border/30 last:border-0">
-                      <td className="px-3 py-2 font-semibold max-w-[140px] truncate">
+            <div className="space-y-2">
+              {waitlist.rows.map((r) => {
+                const chips: string[] = [];
+                if (r.age) chips.push(`${r.age} yrs`);
+                (r.goals ?? []).forEach((g) => chips.push(GOAL_LABELS[g] ?? g));
+                if (r.struggle) chips.push(STRUGGLE_LABELS[r.struggle] ?? r.struggle);
+                if (r.training) chips.push(TRAINING_LABELS[r.training] ?? r.training);
+                return (
+                  <div key={r.email} className="surface-card p-3">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <p className="text-[12px] font-bold truncate min-w-0">
                         {r.welcomed && <span className="text-xp-green mr-1" title="Welcome email sent">✓</span>}
                         {r.email}
-                      </td>
-                      <td className="px-2 py-2 text-right tabular-nums text-muted-foreground">{r.age ?? "—"}</td>
-                      <td className="px-2 py-2 text-right text-muted-foreground max-w-[110px] truncate">
-                        {(r.goals ?? []).map((g) => GOAL_LABELS[g] ?? g).join(", ") || "—"}
-                      </td>
-                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
+                      </p>
+                      <span className="text-[10px] tabular-nums text-muted-foreground shrink-0">
                         {format(new Date(r.created_at), "MMM d")}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </span>
+                    </div>
+                    {chips.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {chips.map((c, i) => (
+                          <span
+                            key={i}
+                            className="text-[10px] font-semibold rounded-md px-1.5 py-0.5 bg-secondary/50 border border-border/50 text-muted-foreground"
+                          >
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[10px] text-muted-foreground/60 mt-1.5">No quiz answers (email only)</p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Send, ArrowLeft, X, BookOpen, RotateCw, Plus, Sparkles, MoreVertical, User, Brain } from "lucide-react";
 import { matchFaq, COACH_FAQ, FaqEntry } from "@/lib/coach-faq";
 import FaqBrowser from "@/components/coach/FaqBrowser";
@@ -36,6 +36,13 @@ const Coach = () => {
   // users. The correct names are used now.
   const { session, loading } = useAuth();
   const navigate = useNavigate();
+  // Seeded from the day's coach feedback → go straight to the chat shell; a
+  // user who tapped "ask the coach about today" shouldn't hit the profile wall.
+  // Frozen at mount: CoachShell strips the ?seed param, and re-reading it live
+  // would flip this false and bounce the user back into onboarding.
+  const [hasSeed] = useState(() => {
+    try { return !!new URLSearchParams(window.location.search).get("seed"); } catch { return false; }
+  });
   const {
     isLoading,
     error: programError,
@@ -100,7 +107,7 @@ const Coach = () => {
   // The profile drives plan quality, so we prompt for it — but it's optional.
   // If the user hasn't onboarded AND hasn't already skipped, show the form with
   // an explicit "Skip for now" escape so they're never trapped at the wall.
-  if (!athlete?.onboarded && !onboardSkipped) {
+  if (!athlete?.onboarded && !onboardSkipped && !hasSeed) {
     return (
       <div className="flex flex-col h-full">
         <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
@@ -187,8 +194,22 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
 };
 
 const CoachShell = ({ session, program, navigate }: any) => {
-  const [chatOpen, setChatOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  // ?seed=<the day's coach feedback> → open chat with it as the opening
+  // assistant bubble so the user can continue that exact conversation.
+  const seedRef = useRef<string | null>(searchParams.get("seed"));
+  const [seedAssistant] = useState<string | null>(() => seedRef.current);
+  const [chatOpen, setChatOpen] = useState(!!seedRef.current);
   const [chatPrompt, setChatPrompt] = useState<string | null>(null);
+
+  // Strip ?seed once consumed so a refresh doesn't re-seed the chat.
+  useEffect(() => {
+    if (seedRef.current) {
+      searchParams.delete("seed");
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // AI-first landing. W Coach SPEAKS FIRST (CoachBriefHero) — a proactive,
   // data-aware brief — then offers the live chat and the supporting cards.
@@ -223,6 +244,7 @@ const CoachShell = ({ session, program, navigate }: any) => {
             session={session}
             program={program}
             initialPrompt={chatPrompt}
+            seedAssistant={seedAssistant}
             onClose={() => { setChatOpen(false); setChatPrompt(null); }}
           />
         )}
@@ -243,6 +265,15 @@ type ChatMsg = Msg & { faq_id?: string; failed?: boolean; isFaq?: boolean };
 // from a blank amnesiac chat.)
 const STALE_MS = 7 * 24 * 60 * 60 * 1000;
 const HISTORY_TS_KEY = "w_coach_messages_v1_ts";
+
+// Follow-up chips shown when the chat is seeded from the day's coach feedback.
+// ai-coach already has today's check-in + brief in its system prompt, so these
+// answer with real, grounded advice.
+const PERFORMANCE_FOLLOWUPS = [
+  "How do I improve tomorrow?",
+  "Why was my output low today?",
+  "What should I prioritize next?",
+];
 
 /** Memoized markdown for COMPLETED assistant messages — parsing markdown on
  *  every SSE delta of every message made long chats visibly stutter. The
@@ -273,9 +304,14 @@ const ThinkingIndicator = () => (
 );
 
 const ChatSheet = ({
-  session, program, initialPrompt, onClose,
-}: { session: any; program: any; initialPrompt: string | null; onClose: () => void }) => {
+  session, program, initialPrompt, seedAssistant, onClose,
+}: { session: any; program: any; initialPrompt: string | null; seedAssistant?: string | null; onClose: () => void }) => {
   const [messages, setMessages] = useState<ChatMsg[]>(() => {
+    // Seeded from the day's coach feedback → a fresh thread with that line as
+    // the opening assistant bubble (reads as "continue this conversation").
+    if (seedAssistant && seedAssistant.trim()) {
+      return [{ role: "assistant", content: seedAssistant.trim() }];
+    }
     try {
       const ts = Number(localStorage.getItem(HISTORY_TS_KEY) ?? 0);
       if (Date.now() - ts > STALE_MS) return [];
@@ -284,6 +320,8 @@ const ChatSheet = ({
     } catch {}
     return [];
   });
+  // Performance follow-up chips shown until the user asks their first question.
+  const [seedChipsShown, setSeedChipsShown] = useState(!!(seedAssistant && seedAssistant.trim()));
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [showBrowser, setShowBrowser] = useState(false);
@@ -486,6 +524,7 @@ const ChatSheet = ({
 
     hapticImpact("light");
     setInput("");
+    setSeedChipsShown(false); // first question sent — retire the follow-up chips
     const userMsg: ChatMsg = { role: "user", content: text };
     const next = [...messages.filter((m) => !m.failed), userMsg];
     setMessages(next);
@@ -667,6 +706,24 @@ const ChatSheet = ({
           ))}
         </AnimatePresence>
         {streaming && messages[messages.length - 1]?.role === "user" && <ThinkingIndicator />}
+
+        {/* Seeded from today's feedback — one-tap follow-ups on improving. */}
+        {seedChipsShown && !streaming && (
+          <div className="flex flex-col gap-2 max-w-sm pt-1">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-xp-green/80">
+              Ask a follow-up
+            </p>
+            {PERFORMANCE_FOLLOWUPS.map((q) => (
+              <button
+                key={q}
+                onClick={() => send(q)}
+                className="text-left rounded-xl border border-xp-green/25 bg-xp-green/[0.05] hover:bg-xp-green/[0.12] hover:border-xp-green/45 px-3.5 py-2.5 text-sm transition"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div

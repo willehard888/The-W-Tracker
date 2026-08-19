@@ -27,13 +27,15 @@ interface CheckinTierSummaryProps {
   };
   onProfile: () => void;
   onDashboard: () => void;
+  /** Open W Coach primed with the day's feedback so the user can go deeper. */
+  onAskCoach?: (seedText: string) => void;
 }
 
 /**
  * Bold, tier-specific post-submit recap.
  * Replaces the generic gold card with a full premium hero per tier.
  */
-const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTierSummaryProps) => {
+const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach }: CheckinTierSummaryProps) => {
   const cfg = getTierConfig(tier);
   const leveledUp = summary.newLevel > summary.oldLevel;
   const perfPct = Math.round((summary.completedCount / summary.maxCount) * 100);
@@ -319,7 +321,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
           className="mb-3"
         >
           <ErrorBoundary fallback={<></>}>
-            <PostCheckinCoachLine summary={summary} />
+            <PostCheckinCoachLine summary={summary} onAskCoach={onAskCoach} />
           </ErrorBoundary>
         </motion.div>
 
@@ -362,7 +364,13 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard }: CheckinTi
  * user's tone + today's actual numbers + their authored "why"), and falls
  * back to the deterministic template while loading or on ANY failure
  * (offline / non-member / provider down), so the celebration never breaks. */
-const PostCheckinCoachLine = ({ summary }: { summary: CheckinTierSummaryProps["summary"] }) => {
+const PostCheckinCoachLine = ({
+  summary,
+  onAskCoach,
+}: {
+  summary: CheckinTierSummaryProps["summary"];
+  onAskCoach?: (seedText: string) => void;
+}) => {
   const { text: fallback, isLoading } = useCoachObservation({ context: "post-checkin" });
 
   const { data: aiText } = useQuery({
@@ -389,7 +397,23 @@ const PostCheckinCoachLine = ({ summary }: { summary: CheckinTierSummaryProps["s
 
   const text = aiText || fallback;
   if ((isLoading && !aiText) || !text) return null;
-  return <CoachLine text={text} tone="celebration" />;
+  // Only make it a chat entry point when a REAL coach reaction rendered (aiText).
+  // The deterministic fallback means no coach access, so opening chat would 403.
+  const canContinue = !!aiText && !!onAskCoach;
+  return (
+    <div className="space-y-1">
+      <CoachLine
+        text={text}
+        tone="celebration"
+        onClick={canContinue ? () => onAskCoach!(aiText!) : undefined}
+      />
+      {canContinue && (
+        <p className="text-[10px] font-bold text-xp-green/80 pl-3.5 flex items-center gap-1">
+          Tap to ask the Coach how to improve →
+        </p>
+      )}
+    </div>
+  );
 };
 
 export default CheckinTierSummary;

@@ -115,6 +115,35 @@ Deno.serve(async (req) => {
     await serviceClient.from("feed_posts").delete().eq("user_id", user.id);
     await serviceClient.from("battles").delete().eq("challenger_id", user.id);
     await serviceClient.from("battles").delete().eq("opponent_id", user.id);
+
+    // Coach, health, habit, analytics and membership PII the original list
+    // missed — GDPR/Apple deletion must remove ALL of it. Resilient: a table
+    // that doesn't exist or is already empty must not abort the deletion.
+    const extraTables = [
+      "coach_chat_memory", "coach_athlete_profile", "coach_programs", "coach_program_logs",
+      "coach_daily_briefs", "coach_daily_plans", "coach_mission_logs", "coach_reflections",
+      "coach_goals", "coach_performance_snapshots", "coach_weekly_reviews", "coach_nudges",
+      "weekly_briefings", "vault_lesson_progress", "user_habits", "user_habit_logs",
+      "analytics_events", "tribe_members", "tribe_invites", "tribe_event_rsvps",
+      "moderation_queue", "content_moderations", "night_metrics", "workout_logs",
+      "health_sync_snapshots",
+    ];
+    for (const t of extraTables) {
+      try { await serviceClient.from(t).delete().eq("user_id", user.id); }
+      catch (e) { console.warn(`delete-account: ${t} skipped`, e); }
+    }
+
+    // Storage: the user's proof photos + avatars survived deletion in the
+    // (now enumeration-locked) buckets. Purge both folders.
+    for (const bucket of ["proof-photos", "feed-images"]) {
+      try {
+        const { data: files } = await serviceClient.storage.from(bucket).list(user.id);
+        if (files && files.length > 0) {
+          await serviceClient.storage.from(bucket).remove(files.map((f) => `${user.id}/${f.name}`));
+        }
+      } catch (e) { console.warn(`delete-account: storage ${bucket} skipped`, e); }
+    }
+
     await serviceClient.from("profiles").delete().eq("user_id", user.id);
 
     const { error: deleteError } = await serviceClient.auth.admin.deleteUser(user.id);

@@ -4,6 +4,18 @@ import { sendApnsBatch } from "../_shared/apns.ts";
 // Webhooks are server-to-server — no CORS headers needed.
 const jsonHeaders = { "Content-Type": "application/json" };
 
+// Constant-time string compare (the bearer secret is static; avoid leaking
+// length/prefix via early-exit ===). Same primitive stripe-webhook uses.
+function timingSafeEqual(a: string, b: string): boolean {
+  const enc = new TextEncoder();
+  const ba = enc.encode(a);
+  const bb = enc.encode(b);
+  if (ba.length !== bb.length) return false;
+  let diff = 0;
+  for (let i = 0; i < ba.length; i++) diff |= ba[i] ^ bb[i];
+  return diff === 0;
+}
+
 // Premium replaces Apex purchase. Apex IDs kept as legacy fallback.
 const PREMIUM_PRODUCT_IDS = [
   // Current product (4.99 €/mo, App Store Connect / RevenueCat)
@@ -41,7 +53,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (authHeader !== `Bearer ${webhookSecret}`) {
+    if (!authHeader || !timingSafeEqual(authHeader, `Bearer ${webhookSecret}`)) {
       console.error("Unauthorized webhook request");
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -55,6 +67,20 @@ Deno.serve(async (req) => {
     if (!event) {
       return new Response(JSON.stringify({ error: "No event in payload" }), {
         status: 400,
+        headers: jsonHeaders,
+      });
+    }
+
+    // SECURITY: sandbox purchases fire the same authentic INITIAL_PURCHASE /
+    // RENEWAL webhooks as production but cost nothing (a free Apple sandbox
+    // account, or a StoreKit-hooked device, buys the €4.99 product for €0 and
+    // it "renews" every few minutes). Never grant a real entitlement from a
+    // sandbox event. DEBUG_ALLOW_SANDBOX lets our own TestFlight testing opt in.
+    if (event.environment && event.environment !== "PRODUCTION"
+        && Deno.env.get("DEBUG_ALLOW_SANDBOX") !== "true") {
+      console.log(`RevenueCat: ignoring ${event.environment} event ${event.type}`);
+      return new Response(JSON.stringify({ ok: true, skipped: "non-production" }), {
+        status: 200,
         headers: jsonHeaders,
       });
     }

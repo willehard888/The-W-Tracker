@@ -388,6 +388,19 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Per-user daily cap before the (expensive) GPT-5 call. Paid members get a
+    // generous limit; trial users get much less (abuse is almost always fresh
+    // trial accounts). Atomic Postgres counter — survives isolate churn.
+    const isPaid = profile?.is_elite === true;
+    const dailyLimit = isPaid ? 200 : 40;
+    const { data: allowed } = await supabase.rpc("bump_ai_usage", { p_limit: dailyLimit, p_kind: "coach" });
+    if (allowed === false) {
+      return new Response(
+        JSON.stringify({ error: "You've reached today's Coach limit. It resets at midnight UTC." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const faqContext = body?.faq_context && typeof body.faq_context === "object"
       ? { question: String(body.faq_context.question ?? "").slice(0, 300), answer: String(body.faq_context.answer ?? "").slice(0, 2000) }
       : null;

@@ -43,7 +43,7 @@ const CoachBriefHero = ({
       >
         <div className="flex items-center gap-2 mb-1.5">
           <Sparkles size={14} className="text-gold" />
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">W Coach</p>
+          <p className="eyebrow">W Coach</p>
         </div>
         <p className="text-[14px] font-bold text-foreground leading-snug">
           I'm your coach. Tell me how today's going and I'll build the next move around your data.
@@ -63,7 +63,7 @@ const CoachBriefHero = ({
           <span className="absolute inline-flex h-full w-full rounded-full bg-gold opacity-60 animate-ping" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-gold" />
         </span>
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">W Coach</p>
+        <p className="eyebrow">W Coach</p>
         {brief.ribbon && (
           <span className="ml-auto text-[9px] font-black uppercase tracking-wider text-gold/70 bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5 truncate max-w-[55%]">
             {brief.ribbon}

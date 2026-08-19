@@ -73,10 +73,10 @@ const StateCard = () => {
   const pillarMeta = PILLARS[weakestPillar];
 
   return (
-    <div className="rounded-3xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] via-card/95 to-card p-5 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.45)]">
+    <div className="surface-card p-5">
       <div className="flex items-center gap-2 mb-3">
         <Activity size={12} className="text-gold" />
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
+        <p className="eyebrow">
           Your read
         </p>
         {profile?.streak && profile.streak > 0 ? (

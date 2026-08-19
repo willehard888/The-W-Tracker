@@ -55,10 +55,10 @@ const HealthKitConnectCard = () => {
 
   if (!isConnected) {
     return (
-      <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
+      <div className="surface-card p-4">
         <div className="flex items-center gap-2 mb-2">
-          <Heart size={14} className="text-rose-400" />
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">
+          <Heart size={14} className="text-gold" />
+          <p className="eyebrow">
             Apple Health
           </p>
         </div>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useNavigate, useParams } from "react-router-dom";
 import { Portal } from "@/components/ui/Portal";
@@ -96,6 +97,9 @@ const TribeDetail = () => {
   const [tribe, setTribe] = useState<any>(null);
   const [posts, setPosts] = useState<TribePostCardPost[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [challenge, setChallenge] = useState<{
+    week_start: string; target: number; progress: number; status: string;
+  } | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [composer, setComposer] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -243,6 +247,21 @@ const TribeDetail = () => {
       setMilestones(((ms as any) ?? []) as Milestone[]);
     } catch {
       setMilestones([]);
+    }
+
+    // Weekly challenge — ensure this week's exists (idempotent), then read it.
+    try {
+      await supabase.rpc("ensure_tribe_challenge" as never, { p_tribe_id: id } as never);
+      const { data: ch } = await supabase
+        .from("tribe_challenges" as any)
+        .select("week_start, target, progress, status")
+        .eq("tribe_id", id)
+        .order("week_start", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setChallenge((ch as any) ?? null);
+    } catch {
+      setChallenge(null);
     }
 
     setLoading(false);
@@ -607,6 +626,44 @@ const TribeDetail = () => {
           {fireReactor.connected ? "Live" : "Connecting…"}
         </span>
       </div>
+
+      {/* Weekly challenge — the tribe's shared goal, alive from day one */}
+      {challenge && (() => {
+        const done = challenge.status === "completed";
+        const failed = challenge.status === "failed";
+        const pct = Math.min(100, Math.round((challenge.progress / Math.max(1, challenge.target)) * 100));
+        const end = new Date(challenge.week_start); end.setDate(end.getDate() + 7);
+        const daysLeft = Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86400000));
+        return (
+          <div className={cn("surface-card p-4 mb-4", done && "border-gold/50 bg-gold/[0.06]")}>
+            <div className="flex items-baseline justify-between mb-2">
+              <span className={cn("eyebrow", done ? "text-gold" : "text-gold/80")}>
+                {done ? "Weekly challenge crushed 🏆" : failed ? "Last week's challenge" : "Weekly challenge"}
+              </span>
+              <span className="text-[11px] tabular-nums text-muted-foreground">
+                {done ? "+25 XP each" : failed ? "missed" : `${daysLeft}d left`}
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between mb-1.5">
+              <span className="text-[13px] font-bold">
+                {challenge.progress}/{challenge.target} check-ins together
+              </span>
+              <span className={cn("text-[11px] font-bold tabular-nums", done ? "text-gold" : "text-muted-foreground")}>
+                {pct}%
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all duration-700",
+                  failed ? "bg-muted-foreground/40" : "bg-gradient-to-r from-gold/70 to-gold",
+                )}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Feed-the-Fire CTA — only shows if user hasn't checked in today */}
       {isMember && (

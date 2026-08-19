@@ -50,9 +50,12 @@ async function verifyStripeSignature(
 
   if (!timestamp || signatures.length === 0) return false;
 
-  // Reject requests older than 5 minutes.
+  // Reject requests older than 5 minutes. Number.isFinite guards a non-numeric
+  // timestamp: parseInt → NaN, and `NaN > 300` is false, which would fall
+  // through the freshness check open.
   const now = Math.floor(Date.now() / 1000);
-  if (Math.abs(now - parseInt(timestamp, 10)) > 300) return false;
+  const ts = Number.parseInt(timestamp, 10);
+  if (!Number.isFinite(ts) || Math.abs(now - ts) > 300) return false;
 
   const signedPayload = `${timestamp}.${payload}`;
   const encoder = new TextEncoder();

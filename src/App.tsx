@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useRef } from "react";
+import { Capacitor } from "@capacitor/core";
 import { MotionConfig } from "framer-motion";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/query-client";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
 import { useActivityHeartbeat } from "@/hooks/use-activity-heartbeat";
@@ -69,26 +71,8 @@ const AdminLegendInvites = lazy(() => import("./pages/AdminLegendInvites"));
 const AdminMetrics = lazy(() => import("./pages/AdminMetrics"));
 const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      // Tiered freshness: 2 min default so back-navigation within a session
-      // reuses cache instead of refetching. Volatile/realtime-backed queries
-      // override with a shorter staleTime; static catalogs use a longer one.
-      staleTime: 120_000,
-      gcTime: 30 * 60_000,
-      retry: (failureCount, error: any) => {
-        // Don't retry on 4xx (auth/not-found errors)
-        if (error?.status >= 400 && error?.status < 500) return false;
-        return failureCount < 2;
-      },
-      refetchOnWindowFocus: false,
-    },
-    mutations: {
-      retry: 0,
-    },
-  },
-});
+// queryClient moved to src/lib/query-client.ts so AuthContext.signOut can
+// clear it on logout (shared-device data leakage).
 
 import RouteFallback from "@/components/RouteFallback";
 
@@ -281,7 +265,12 @@ const AppRoutes = () => {
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/terms" element={<TermsOfUse />} />
-          <Route path="/ios-debug" element={<IosDebug />} />
+          {/* Debug panel persists token-presence + auth flow state — never
+              expose it on the public prod web build. Native app + dev only,
+              and behind auth. */}
+          {(import.meta.env.DEV || Capacitor.isNativePlatform()) && (
+            <Route path="/ios-debug" element={<ProtectedRoute><IosDebug /></ProtectedRoute>} />
+          )}
           <Route path="/apple-auth-launch" element={<AppleAuthLaunch />} />
           <Route path="/~oauth" element={<OAuthCallback />} />
           <Route path="/~oauth/callback" element={<OAuthCallback />} />

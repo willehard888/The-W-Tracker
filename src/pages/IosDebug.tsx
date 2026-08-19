@@ -68,8 +68,6 @@ const IosDebug = () => {
 
       <section className="rounded-xl border border-border bg-card p-4 space-y-2">
         <h2 className="font-display text-sm font-bold">Apple OAuth callback</h2>
-        <Field label="callbackUrl" value={stringify(state.oauth.callbackUrl)} />
-        <Field label="callbackPath" value={stringify(state.oauth.callbackPath)} />
         <Field label="callbackAt" value={stringify(state.oauth.callbackAt)} />
         <Field label="redirectUri" value={stringify(state.oauth.redirectUri)} />
         <Field label="sentState" value={stringify(state.oauth.sentState)} />
@@ -78,8 +76,6 @@ const IosDebug = () => {
         <Field label="hasAccessToken" value={asYesNo(state.oauth.hasAccessToken)} />
         <Field label="hasRefreshToken" value={asYesNo(state.oauth.hasRefreshToken)} />
         <Field label="sessionApplied" value={asYesNo(state.oauth.sessionApplied)} />
-        <Field label="handoffToApp" value={asYesNo(state.oauth.handoffToApp)} />
-        <Field label="deepLinkUrl" value={stringify(state.oauth.deepLinkUrl)} />
         <Field label="error" value={stringify(state.oauth.error)} />
         <Field label="errorDescription" value={stringify(state.oauth.errorDescription)} />
       </section>

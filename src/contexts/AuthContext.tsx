@@ -6,6 +6,8 @@ import { track, FUNNEL } from "@/lib/analytics";
 import { identifyUser, resetIdentity, captureException } from "@/lib/observability";
 import { uniqueChannelName } from "@/lib/realtime";
 import { clearAppleAuthStarted, clearAppleUsernameSelectionPending, isAppleAuthStarted, markAppleUsernameSelectionPending } from "@/lib/apple-username";
+import { clearIosDebug } from "@/lib/ios-debug";
+import { queryClient } from "@/lib/query-client";
 
 interface AuthContextType {
   user: User | null;
@@ -337,6 +339,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
     clearAppleAuthStarted();
     clearAppleUsernameSelectionPending();
+    // SECURITY: purge all local identity/token-bearing state so a shared or
+    // kiosk device doesn't leak the previous user's data to the next.
+    clearIosDebug(); // held a refresh token in plaintext (localStorage)
+    try {
+      ["w_onboarding_done", "pending_referral_code", "w_coach_onboard_skipped"].forEach(
+        (k) => localStorage.removeItem(k),
+      );
+      sessionStorage.removeItem("w_apple_name_suggestion");
+    } catch { /* storage unavailable */ }
+    queryClient.clear(); // drop cached profile/feed/tribe queries
     setProfile(null);
     setIsElite(false);
     setSubscriptionEnd(null);

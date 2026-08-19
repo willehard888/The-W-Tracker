@@ -1,6 +1,7 @@
 export interface OAuthDebugState {
-  callbackUrl: string | null;
-  callbackPath: string | null;
+  // SECURITY: never store raw callback/deep-link URLs here — they carry the
+  // access + refresh tokens in the hash, and this state is persisted to
+  // localStorage in plaintext. Only presence booleans + non-secret metadata.
   callbackAt: string | null;
   redirectUri: string | null;
   sentState: string | null;
@@ -10,8 +11,6 @@ export interface OAuthDebugState {
   hasAccessToken: boolean;
   hasRefreshToken: boolean;
   sessionApplied: boolean | null;
-  deepLinkUrl: string | null;
-  handoffToApp: boolean;
 }
 
 export interface RevenueCatDebugState {
@@ -49,8 +48,6 @@ const MAX_LOGS = 120;
 const defaultState: IosDebugState = {
   updatedAt: new Date(0).toISOString(),
   oauth: {
-    callbackUrl: null,
-    callbackPath: null,
     callbackAt: null,
     redirectUri: null,
     sentState: null,
@@ -60,8 +57,6 @@ const defaultState: IosDebugState = {
     hasAccessToken: false,
     hasRefreshToken: false,
     sessionApplied: null,
-    deepLinkUrl: null,
-    handoffToApp: false,
   },
   revenuecat: {
     appUserId: null,

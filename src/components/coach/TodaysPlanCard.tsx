@@ -96,7 +96,7 @@ const TodaysPlanCard = () => {
     if (completedIds.has(m.id) || busy.has(m.id)) return;
     setBusy((s) => new Set(s).add(m.id));
     try {
-      const res = await completeMission(m.id);
+      await completeMission(m.id);
       void hapticNotification("success");
       // Celebrate finishing the whole plan. completedIds.size (not `done` from
       // the render closure) so two quick taps can't both read a stale count
@@ -105,7 +105,8 @@ const TodaysPlanCard = () => {
         setConfetti(true);
         setTimeout(() => setConfetti(false), 1600);
       }
-      toast.success(`+${res.xp_awarded} XP`);
+      // No XP toast — missions are accountability, not an XP source.
+      toast.success("Done ✓");
     } catch (e: any) {
       toast.error(friendlyError(e, "Couldn't log that"));
     } finally {
@@ -247,9 +248,9 @@ const TodaysPlanCard = () => {
                   <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{m.detail}</p>
                 )}
               </div>
-              <span className={cn("shrink-0 text-[11px] font-black tabular-nums mt-0.5", isDone ? "text-xp-green" : "text-gold")}>
-                +{m.xp}
-              </span>
+              {isDone && (
+                <span className="shrink-0 text-[11px] font-black text-xp-green mt-0.5">Done</span>
+              )}
             </button>
           );
         })}

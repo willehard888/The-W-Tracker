@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 // Pull-to-refresh removed temporarily — touch handlers on the page wrapper
 // were intercepting inner taps on tribe cards. Re-add once we have a more
 // isolated touch-area implementation.
-import { Users, Plus, Crown, Check, X, Sparkles, Mail, Trophy, Pause, ShieldCheck, Flame, ChevronRight } from "lucide-react";
+import { Users, Plus, Crown, Check, X, Sparkles, Mail, Trophy, Pause, Flame, ChevronRight } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
@@ -109,9 +109,6 @@ const Tribes = () => {
     return () => { alive = false; };
   }, [profile?.user_id]);
 
-  const tier = profile?.status_tier;
-  // Tribes/clubs are open to everyone now — no tier gate.
-  const canCreate = true;
 
   // ── Tribe list (browse / mine) ───────────────────────────────────────────
   const tribesQuery = useQuery<TribesPageData>({
@@ -295,18 +292,6 @@ const Tribes = () => {
     if (data === "pending") toast.success("Request sent — awaiting approval");
     else if (data === "already_member") toast.info("Already a member");
     else toast.success("Joined the tribe!");
-    reloadTribes();
-  };
-
-  const handleClaim = async (id: string, name: string) => {
-    const { error } = await supabase.rpc("claim_paused_tribe" as any, {
-      p_tribe_id: id,
-    });
-    if (error) {
-      toast.error(friendlyError(error));
-      return;
-    }
-    toast.success(`You now lead ${name} — fire revived 🔥`);
     reloadTribes();
   };
 
@@ -658,20 +643,6 @@ const Tribes = () => {
                     ) : null}
                   </div>
                 </div>
-                {/* Action: Claim (paused + member + apex), or Join (not joined + browse) */}
-                {isPaused && joinedIds.has(t.id) && canCreate && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleClaim(t.id, t.name);
-                    }}
-                    className="shrink-0"
-                  >
-                    <ShieldCheck size={12} /> Claim
-                  </Button>
-                )}
                 {tab === "browse" && !joinedIds.has(t.id) && !isPaused && (
                   <Button
                     size="sm"

@@ -3,7 +3,14 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+// Service role: profiles SELECT is authenticated-only, and these functions are
+// public (verify_jwt=false, for social scrapers). Reads only 7 non-sensitive
+// card fields. Was the anon key → RLS denied → every share card was blank.
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+// Escape LIKE wildcards so a username with %/_ can't become a pattern
+// (enumeration oracle). Postgres ilike uses backslash as the escape char.
+const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
 
 const TIER_THEME: Record<string, { label: string; emoji: string; accent: string; percentile: string }> = {
   recruit:        { label: "RECRUIT",         emoji: "⬛", accent: "#6b7280", percentile: "Bottom 50%" },
@@ -120,11 +127,11 @@ Deno.serve(async (req) => {
     return new Response(notFoundSvg("unknown"), { headers });
   }
 
-  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   const { data } = await sb
     .from("profiles")
     .select("username, display_name, xp, level, streak, status_tier, is_elite")
-    .ilike("username", username)
+    .ilike("username", escapeLike(username))
     .maybeSingle();
 
   if (!data) return new Response(notFoundSvg(username), { headers });

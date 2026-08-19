@@ -4,7 +4,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+// Service role: profiles SELECT is authenticated-only and this is a public
+// function (verify_jwt=false). Reads only non-sensitive card fields.
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
 const APP_ORIGIN = Deno.env.get("APP_ORIGIN") ?? "https://status-level-up.lovable.app";
 const FN_BASE = `${SUPABASE_URL}/functions/v1`;
 
@@ -53,11 +56,11 @@ Deno.serve(async (req) => {
     }), { headers: { "content-type": "text/html; charset=utf-8" } });
   }
 
-  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   const { data } = await sb
     .from("profiles")
     .select("username, display_name, xp, level, streak, status_tier, is_elite")
-    .ilike("username", username)
+    .ilike("username", escapeLike(username))
     .maybeSingle();
 
   if (!data) {

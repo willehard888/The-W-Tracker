@@ -16,8 +16,3 @@ verify_jwt = false
 
 [functions.stripe-webhook]
 verify_jwt = false
-
-# Public sign-in endpoint (no JWT yet at call time). Hardened in-code:
-# disabled unless DEMO_LOGIN_ENABLED=true and a DEMO_PASSWORD is configured.
-[functions.demo-login]
-verify_jwt = false

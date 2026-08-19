@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { format } from "date-fns";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useNavigate, useParams } from "react-router-dom";
 import { Portal } from "@/components/ui/Portal";
@@ -59,6 +60,25 @@ interface Member {
   role: string;
 }
 
+interface Milestone {
+  id: string;
+  kind: "founded" | "member_joined" | "tier_up" | "battle_won" | "challenge_done";
+  payload: Record<string, unknown> | null;
+  created_at: string;
+}
+
+const TIER_NAMES = ["Hot", "Blaze", "Inferno", "Nova", "Diamond", "Legendary", "Firestorm"];
+const milestoneLine = (m: Milestone): { emoji: string; text: string } => {
+  const p = m.payload ?? {};
+  switch (m.kind) {
+    case "founded":       return { emoji: "🏛️", text: `${p.name ?? "This tribe"} was founded` };
+    case "member_joined": return { emoji: "🤝", text: `@${p.username ?? "?"} joined the tribe` };
+    case "tier_up":       return { emoji: "🔥", text: `Fire tier up — ${TIER_NAMES[Number(p.tier)] ?? "new tier"} (${p.streak ?? "?"}d)` };
+    case "battle_won":    return { emoji: "⚔️", text: `Battle won vs ${p.opponent ?? "?"} (${p.score ?? ""})` };
+    case "challenge_done": return { emoji: "🏆", text: `Weekly challenge crushed` };
+  }
+};
+
 const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 const SUPPORTED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
 const MAX_IMAGE_SIZE_MB = 8;
@@ -75,6 +95,7 @@ const TribeDetail = () => {
   const [parallax, setParallax] = useState(0);
   const [tribe, setTribe] = useState<any>(null);
   const [posts, setPosts] = useState<TribePostCardPost[]>([]);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [composer, setComposer] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -209,6 +230,19 @@ const TribeDetail = () => {
       setCollectiveStreak(total);
     } catch {
       setCollectiveStreak(0);
+    }
+
+    // Milestone ledger — tier-ups, joins, battle wins woven into the feed.
+    try {
+      const { data: ms } = await supabase
+        .from("tribe_milestones" as any)
+        .select("id, kind, payload, created_at")
+        .eq("tribe_id", id)
+        .order("created_at", { ascending: false })
+        .limit(15);
+      setMilestones(((ms as any) ?? []) as Milestone[]);
+    } catch {
+      setMilestones([]);
     }
 
     setLoading(false);
@@ -646,27 +680,45 @@ const TribeDetail = () => {
         />
       )}
 
-      {/* Posts */}
+      {/* Timeline — posts and milestones interleaved by time. Milestones give
+          even a quiet tribe a heartbeat (founded, joins, tier-ups, wins). */}
       <div className="space-y-3">
-        {posts.length === 0 ? (
+        {posts.length === 0 && milestones.length === 0 ? (
           <EmptyState
             icon={Flame}
             title="Be the first to ignite this tribe"
             description="Share something the tribe needs to hear."
           />
         ) : (
-          posts.map((p) => (
-            <TribePostCard
-              key={p.id}
-              post={p}
-              isMember={isMember}
-              isOwner={isOwner}
-              isAdmin={!!isAdmin}
-              canKudos={canKudos}
-              kudosRemaining={kudosRemaining}
-              onChanged={handleChanged}
-            />
-          ))
+          [
+            ...posts.map((p) => ({ t: new Date(p.created_at).getTime(), post: p, ms: null as Milestone | null })),
+            ...milestones.map((m) => ({ t: new Date(m.created_at).getTime(), post: null as TribePostCardPost | null, ms: m })),
+          ]
+            .sort((a, b) => b.t - a.t)
+            .map((item) =>
+              item.post ? (
+                <TribePostCard
+                  key={item.post.id}
+                  post={item.post}
+                  isMember={isMember}
+                  isOwner={isOwner}
+                  isAdmin={!!isAdmin}
+                  canKudos={canKudos}
+                  kudosRemaining={kudosRemaining}
+                  onChanged={handleChanged}
+                />
+              ) : (
+                <div key={item.ms!.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl border border-border/40 bg-card/25">
+                  <span className="text-sm">{milestoneLine(item.ms!).emoji}</span>
+                  <p className="text-[12px] font-semibold text-foreground/80 flex-1 min-w-0 truncate">
+                    {milestoneLine(item.ms!).text}
+                  </p>
+                  <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+                    {format(new Date(item.ms!.created_at), "MMM d")}
+                  </span>
+                </div>
+              ),
+            )
         )}
       </div>
 

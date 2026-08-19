@@ -171,7 +171,9 @@ const EliteFeed = () => {
   );
   // Kudos = the premium, scarce recognition (fire/Heart is the unlimited like).
   // 2/month was too tight to feel alive; 10 keeps it meaningful but usable.
-  const KUDOS_PER_MONTH = 10;
+  // 2/month, matching the tribe feed and enforced server-side in the kudos
+  // RLS policy (kudos award +10 XP — the cap prevents collusion farming).
+  const KUDOS_PER_MONTH = 2;
   const kudosRemaining = Math.max(0, KUDOS_PER_MONTH - kudosGivenThisMonth);
 
   const createPost = useMutation({
@@ -743,7 +745,7 @@ const EliteFeed = () => {
                   scarce mechanic is only fun if you can SEE the budget. */}
               {user && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/25 px-2 py-0.5 text-[10px] font-black text-gold tabular-nums">
-                  <Award size={10} /> {kudosRemaining}/{KUDOS_PER_MONTH} kudos
+                  <Award size={10} /> {kudosRemaining}/{KUDOS_PER_MONTH} kudos left this month
                 </span>
               )}
             </p>

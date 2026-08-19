@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useTribeEvents, useTribeEventActions, type TribeEvent, type RsvpStatus } from "@/hooks/use-tribe-events";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { safeHttpUrl } from "@/lib/safe-url";
 import { TRIBE_ACTIVITY_GROUPS, activityIcon, activityDefaults } from "@/lib/tribe-activities";
 
 const ERR: Record<string, string> = {
@@ -224,8 +225,8 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
             {ev.description && <p className="text-[11px] text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
             {isMember && (
               <div className="mt-2.5 flex items-center gap-1.5">
-                {ev.meeting_url && (
-                  <a href={ev.meeting_url} target="_blank" rel="noopener noreferrer" onClick={() => hapticImpact("light")}
+                {safeHttpUrl(ev.meeting_url) && (
+                  <a href={safeHttpUrl(ev.meeting_url)} target="_blank" rel="noopener noreferrer" onClick={() => hapticImpact("light")}
                     className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[11px] font-black bg-[hsl(var(--ember))] text-background active:scale-95 transition-transform">
                     <Video size={12} /> Join
                   </a>
@@ -326,7 +327,7 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
                 {isMember && (
                   <div className="flex items-center gap-1 shrink-0">
                     {s.meeting_url && (
-                      <a href={s.meeting_url} target="_blank" rel="noopener noreferrer" onClick={() => hapticImpact("light")}
+                      <a href={safeHttpUrl(s.meeting_url)} target="_blank" rel="noopener noreferrer" onClick={() => hapticImpact("light")}
                         className="h-7 w-7 rounded-lg flex items-center justify-center bg-[hsl(var(--ember))] text-background active:scale-95" aria-label="Join">
                         <Video size={12} />
                       </a>

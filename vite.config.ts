@@ -4,7 +4,6 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const useCloudAuthMock = process.env.MOCK_CLOUD_AUTH === "true";
 
   return {
     server: {
@@ -43,10 +42,6 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
-        // Optional local-only fallback mock (disabled by default)
-        ...(useCloudAuthMock
-          ? { "@lovable.dev/cloud-auth-js": path.resolve(__dirname, "./src/mocks/cloud-auth.ts") }
-          : {}),
       },
     },
   };

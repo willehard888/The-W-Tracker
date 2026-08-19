@@ -21,7 +21,6 @@ import StateCard from "@/components/coach/v2/StateCard";
 import TodaysPlanCard from "@/components/coach/TodaysPlanCard";
 import ProgramCard from "@/components/coach/v2/ProgramCard";
 import CoachBriefHero from "@/components/coach/v2/CoachBriefHero";
-import AskCoachPill from "@/components/coach/v2/AskCoachPill";
 import CoachFooterLinks from "@/components/coach/v2/CoachFooterLinks";
 import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
 
@@ -231,7 +230,6 @@ const CoachShell = ({ session, program, navigate }: any) => {
         {/* The adaptive daily plan — readiness + missions, the coach's real
             "what to do today" engine (replaces the rule-based MoveCard). */}
         <TodaysPlanCard />
-        <AskCoachPill onOpenChat={() => openChat()} onBrowseFaq={() => openChat()} />
         <StateCard />
         <ProgramCard />
         <HealthKitConnectCard />

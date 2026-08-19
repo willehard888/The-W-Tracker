@@ -16,8 +16,8 @@ import { friendlyError } from "@/lib/error-copy";
  * TodaysPlanCard — surfaces the adaptive daily plan the coach already computes
  * (readiness score + push/hold/deload/swap adjustment + evidence-graded
  * missions) which until now was built end-to-end but never rendered. Missions
- * are tappable and award XP server-side via complete_coach_mission; the realtime
- * sub in useDailyPlan keeps done/total live. Turns the coach from "chat + a
+ * are tappable accountability (no XP — XP comes from check-ins/battles); the
+ * realtime sub in useDailyPlan keeps done/total live. Turns the coach from "chat + a
  * one-liner" into "here's your data-driven plan for today — and I'll hold you to it."
  */
 
@@ -117,7 +117,7 @@ const TodaysPlanCard = () => {
   // Loading / first-generation state.
   if ((isLoading || generating) && !plan) {
     return (
-      <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
+      <div className="surface-card p-4">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Sparkles size={14} className="text-gold animate-pulse" />
           <p className="text-[13px] font-bold">Building today's plan…</p>
@@ -135,7 +135,7 @@ const TodaysPlanCard = () => {
       <button
         type="button"
         onClick={() => navigate("/paywall")}
-        className="w-full text-left rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/[0.06] to-card p-4 active:scale-[0.99] transition-transform"
+        className="w-full text-left surface-card p-4 active:scale-[0.99] transition-transform"
       >
         <div className="flex items-center gap-2 mb-1">
           <Sparkles size={14} className="text-gold" />
@@ -155,7 +155,7 @@ const TodaysPlanCard = () => {
       <button
         type="button"
         onClick={regenerate}
-        className="w-full text-left rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4 active:scale-[0.99] transition-transform"
+        className="w-full text-left surface-card p-4 active:scale-[0.99] transition-transform"
       >
         <div className="flex items-center gap-2 mb-1">
           <Sparkles size={14} className="text-gold" />
@@ -171,13 +171,13 @@ const TodaysPlanCard = () => {
   const adjust = ADJUST[plan.adjustment] ?? ADJUST.hold;
 
   return (
-    <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
+    <div className="surface-card p-4">
       {/* Header — readiness ring + adjustment + why */}
       <div className="flex items-start gap-3">
         <ReadinessRing score={plan.readiness_score} size={58} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">Today's plan</p>
+            <p className="eyebrow">Today's plan</p>
             <button
               type="button"
               onClick={regenerate}

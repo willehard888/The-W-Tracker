@@ -969,19 +969,16 @@ const DailyCheckin = () => {
             <label className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] cursor-pointer">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold"><Camera size={20} /></div>
               <div className="text-left flex-1">
-                <p className="font-semibold text-sm">Take proof photo (live only)</p>
-                <p className="text-xs text-muted-foreground">Earns <span className="text-gold font-bold">+30 bonus XP</span></p>
+                <p className="font-semibold text-sm">Add proof photo</p>
+                <p className="text-xs text-muted-foreground">Camera or gallery · earns <span className="text-gold font-bold">+30 bonus XP</span></p>
               </div>
               {proofFile && <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+30 XP</span>}
-              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+              {/* No `capture` attr: iOS then offers Take Photo AND Photo Library
+                  in the native sheet (founder decision — gallery proofs allowed,
+                  so the old 5-minute freshness gate is gone too). */}
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                const fileAge = Date.now() - file.lastModified;
-                if (fileAge > 5 * 60 * 1000) {
-                  toast.error("Please take a fresh photo right now. Gallery photos are not allowed.");
-                  e.target.value = "";
-                  return;
-                }
                 hapticSelection();
                 setProofFile(file);
                 const reader = new FileReader();

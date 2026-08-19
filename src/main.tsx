@@ -91,11 +91,8 @@ async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
     const hash = new URLSearchParams(parsed.hash.startsWith("#") ? parsed.hash.slice(1) : parsed.hash);
 
     updateOauthDebug({
-      callbackUrl: url,
-      callbackPath: `${parsed.pathname}${parsed.search}${parsed.hash}`,
+      // No raw URL — it carries the tokens in its hash (persisted in plaintext).
       callbackAt: new Date().toISOString(),
-      deepLinkUrl: url,
-      handoffToApp: false,
       returnedState: search.get("state") ?? hash.get("state"),
       hasAccessToken: search.has("access_token") || hash.has("access_token"),
       hasRefreshToken: search.has("refresh_token") || hash.has("refresh_token"),

@@ -161,7 +161,6 @@ async function performAppleSignIn(options?: {
       error: null,
       errorDescription: null,
       sessionApplied: null,
-      handoffToApp: false,
     });
 
     pushIosDebugLog("AppleAuth", "Calling SignInWithApple.authorize", {

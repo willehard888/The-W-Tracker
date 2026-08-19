@@ -7,75 +7,13 @@ import { clearPublishedAppleAttempt } from "@/lib/native-auth";
 import { clearAppleAuthStarted, clearAppleUsernameSelectionPending } from "@/lib/apple-username";
 import { toast } from "sonner";
 
-const APP_SCHEME = "app.lovable.wtracker";
-
-function getRequestedAppScheme(merged: URLSearchParams): string {
-  return merged.get("app_scheme") || APP_SCHEME;
-}
-
-function shouldForceNativeHandoff(merged: URLSearchParams): boolean {
-  return merged.get("native_handoff") === "1";
-}
-
-function buildNativeCallbackUrl(merged: URLSearchParams): string {
-  const scheme = getRequestedAppScheme(merged);
-  const qs = merged.toString();
-  return `${scheme}://oauth/callback${qs ? `?${qs}` : ""}`;
-}
-
-function buildAppCallbackUrlFromCurrentLocation() {
-  const url = new URL(window.location.href);
-  const merged = mergeTokensToQuery(url.toString());
-  return buildNativeCallbackUrl(merged);
-}
-
-function openNativeApp(deepLink: string) {
-  pushIosDebugLog("OAuthCallback", "Opening native app via deep link", {
-    schemePrefix: deepLink.slice(0, deepLink.indexOf("://") + 3),
-    length: deepLink.length,
-  });
-  window.location.replace(deepLink);
-
-  window.setTimeout(() => {
-    try {
-      pushIosDebugLog("OAuthCallback", "Retrying deep link after 700ms (no app return detected)", {
-        stillVisible: typeof document !== "undefined" ? document.visibilityState : "unknown",
-      });
-      window.location.assign(deepLink);
-    } catch (err) {
-      pushIosDebugLog("OAuthCallback", "Retry deep link failed", {
-        message: err instanceof Error ? err.message : String(err),
-      });
-    }
-  }, 700);
-
-  if (typeof document !== "undefined") {
-    const onVisibility = () => {
-      pushIosDebugLog("OAuthCallback", "Visibility changed after deep link", {
-        state: document.visibilityState,
-      });
-      if (document.visibilityState === "hidden") {
-        document.removeEventListener("visibilitychange", onVisibility);
-      }
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-    window.setTimeout(() => {
-      document.removeEventListener("visibilitychange", onVisibility);
-    }, 5000);
-  }
-}
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === "string") return error;
-  try {
-    return JSON.stringify(error);
-  } catch {
-    return String(error);
-  }
-}
-
-// ─── Helpers ────────────────────────────────────────────
+// SECURITY: this page previously had a "native handoff" branch that forwarded
+// the OAuth access + refresh tokens to a custom URL scheme
+// (app_scheme://oauth/callback?access_token=…). The scheme was caller-
+// controlled and unvalidated (redirect + token theft), and the app never even
+// registered it. It was also dead code — native Apple Sign-In runs entirely
+// through src/lib/native-auth.ts (SignInWithApple + signInWithIdToken) and
+// never round-trips tokens through a browser. The whole branch is removed.
 
 /** Merge hash-fragment params into query params (Apple puts tokens in hash). */
 function mergeTokensToQuery(href: string): URLSearchParams {
@@ -88,28 +26,10 @@ function mergeTokensToQuery(href: string): URLSearchParams {
   return merged;
 }
 
-/** True when the page has OAuth-related params. */
-function hasOAuthParams(merged: URLSearchParams): boolean {
-  return (
-    merged.has("access_token") ||
-    merged.has("refresh_token") ||
-    merged.has("error")
-  );
-}
-
-/** True when running in iOS Safari/Chrome (NOT inside Capacitor WebView). */
-function isIOSExternalBrowser(): boolean {
-  const ua = navigator.userAgent;
-  return /iPhone|iPad|iPod/.test(ua) && !ua.includes("CapacitorWebView");
-}
-
-// ─── Component ──────────────────────────────────────────
-
 const OAuthCallback = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [processing, setProcessing] = useState(true);
-  const [sentToApp, setSentToApp] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -118,67 +38,39 @@ const OAuthCallback = () => {
         const oauthError = merged.get("error");
         const oauthErrorDescription = merged.get("error_description");
 
+        // Never persist the raw callback URL — it carries the tokens in its
+        // hash. Only the presence booleans are useful for debugging.
         updateOauthDebug({
-          callbackUrl: window.location.href,
-          callbackPath: `${window.location.pathname}${window.location.search}${window.location.hash}`,
           callbackAt: new Date().toISOString(),
           returnedState: merged.get("state"),
           error: oauthError,
           errorDescription: oauthErrorDescription,
           hasAccessToken: merged.has("access_token"),
           hasRefreshToken: merged.has("refresh_token"),
-          handoffToApp: false,
-          deepLinkUrl: null,
           sessionApplied: null,
         });
 
         pushIosDebugLog("OAuthCallback", "Callback opened", {
-          pathname: window.location.pathname,
           hasAccessToken: merged.has("access_token"),
           hasRefreshToken: merged.has("refresh_token"),
           state: merged.get("state"),
           error: oauthError,
         });
 
-        // ① iOS external browser → forward tokens to native app via URL scheme
-        if (hasOAuthParams(merged) && (isIOSExternalBrowser() || shouldForceNativeHandoff(merged))) {
-          const deepLink = buildAppCallbackUrlFromCurrentLocation();
-          if (import.meta.env.DEV) console.log("[OAuthCB] Redirecting to native app:", deepLink);
-          clearPublishedAppleAttempt();
-          updateOauthDebug({
-            callbackUrl: window.location.href,
-            deepLinkUrl: deepLink,
-            handoffToApp: true,
-          });
-          pushIosDebugLog("OAuthCallback", "Forwarding callback to app deep link", {
-            deepLink,
-          });
-          setSentToApp(true);
-          openNativeApp(deepLink);
-          return;
-        }
-
-        // ② Web flow → apply session directly
+        // Web flow → apply session directly.
         const sessionApplied = await applySessionFromUrl(window.location.href);
         clearPublishedAppleAttempt();
         updateOauthDebug({ sessionApplied });
-        pushIosDebugLog("OAuthCallback", "Session apply result", {
-          sessionApplied,
-        });
+        pushIosDebugLog("OAuthCallback", "Session apply result", { sessionApplied });
 
-        // Log any OAuth error params
         if (oauthError) {
           console.error("[OAuthCB] Error:", oauthError, oauthErrorDescription);
           clearAppleAuthStarted();
           clearAppleUsernameSelectionPending();
           toast.error("Apple sign-in failed. Please try again.");
-          pushIosDebugLog("OAuthCallback", "OAuth provider error in callback", {
-            error: oauthError,
-            errorDescription: oauthErrorDescription,
-          });
         }
 
-        if (!sessionApplied && !oauthError && !sentToApp) {
+        if (!sessionApplied && !oauthError) {
           clearPublishedAppleAttempt();
           clearAppleAuthStarted();
           clearAppleUsernameSelectionPending();
@@ -188,46 +80,18 @@ const OAuthCallback = () => {
         console.error("[OAuthCB] Unexpected:", e);
         clearAppleAuthStarted();
         clearAppleUsernameSelectionPending();
-        const message = "Connection error. Try again.";
-        toast.error(message);
+        toast.error("Connection error. Try again.");
         clearPublishedAppleAttempt();
-        updateOauthDebug({ error: message });
-        pushIosDebugLog("OAuthCallback", "Unexpected callback exception", {
-          message,
-        });
+        updateOauthDebug({ error: "Connection error. Try again." });
       }
       setProcessing(false);
     })();
   }, []);
 
-  // Navigate once session is resolved
   useEffect(() => {
-    if (sentToApp || processing || loading) return;
+    if (processing || loading) return;
     navigate(user ? "/" : "/auth", { replace: true });
-  }, [sentToApp, processing, loading, user, navigate]);
-
-  // ─── Render ─────────────────────────────────────────
-
-  if (sentToApp) {
-    return (
-      <div className="min-h-full flex flex-col items-center justify-center gap-4 bg-background px-8">
-        <div className="h-16 w-16 rounded-2xl gradient-gold flex items-center justify-center glow-gold">
-          <span className="text-2xl">✓</span>
-        </div>
-        <p className="text-sm text-muted-foreground text-center">
-          Kirjautuminen onnistui! Palaa sovellukseen.
-        </p>
-        <button
-          onClick={() => {
-              openNativeApp(buildAppCallbackUrlFromCurrentLocation());
-          }}
-          className="text-gold underline text-sm"
-        >
-          Avaa sovellus
-        </button>
-      </div>
-    );
-  }
+  }, [processing, loading, user, navigate]);
 
   return (
     <div className="min-h-full flex flex-col items-center justify-center gap-3">

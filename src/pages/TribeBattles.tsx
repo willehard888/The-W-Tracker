@@ -33,10 +33,24 @@ const TribeBattles = () => {
   const [respondingId, setRespondingId] = useState<string | null>(null);
 
   const isOwner = !!profile?.user_id && tribe?.owner_id === profile.user_id;
+  const [isMember, setIsMember] = useState(false);
 
   const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
+
+    // Any active member can raise a challenge (founder decision) — the old
+    // owner-only gate left everyone else with three empty tabs.
+    if (profile?.user_id) {
+      const { data: mem } = await supabase
+        .from("tribe_members")
+        .select("status")
+        .eq("tribe_id", id)
+        .eq("user_id", profile.user_id)
+        .eq("status", "active")
+        .maybeSingle();
+      setIsMember(!!mem);
+    }
 
     // Auto-resolve any expired battles first (best-effort)
     try {
@@ -88,7 +102,7 @@ const TribeBattles = () => {
 
     setBattles(rawBattles);
     setLoading(false);
-  }, [id]);
+  }, [id, profile?.user_id]);
 
   useEffect(() => {
     load();
@@ -166,7 +180,7 @@ const TribeBattles = () => {
                 Pit your tribe against another. Combined member XP wins. Winning tribe earns +50 XP each.
               </p>
 
-              {isOwner && (
+              {(isMember || isOwner) && (
                 <Button
                   onClick={() => setChallengeOpen(true)}
                   size="sm"

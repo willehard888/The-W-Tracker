@@ -120,11 +120,8 @@ const TribeDetail = () => {
   });
 
   const kudosRemaining = Math.max(0, 2 - (kudosGivenThisMonth || 0));
-  const canKudos = !!profile && (
-    (profile as any).is_apex_subscriber === true ||
-    profile.status_tier === "apex" ||
-    profile.status_tier === "legend"
-  );
+  // Founder decision: kudos is open to every member (2/month, enforced by RLS).
+  const canKudos = !!profile;
 
   const load = async () => {
     if (!id || !profile?.user_id) return;
@@ -145,8 +142,10 @@ const TribeDetail = () => {
 
     const rawMembers = ((allMRes as any).data) ?? [];
     const memberIds = rawMembers.map((r: any) => r.user_id);
+    // streak included — MemberContributionStrip ranks by it (it silently
+    // rendered every member as 0d while this select omitted the column).
     const { data: memberProfiles } = memberIds.length
-      ? await supabase.from("profiles").select("user_id, username, avatar_url, status_tier").in("user_id", memberIds)
+      ? await supabase.from("profiles").select("user_id, username, avatar_url, status_tier, streak").in("user_id", memberIds)
       : { data: [] as any[] };
     const profMap = new Map(((memberProfiles as any) ?? []).map((p: any) => [p.user_id, p]));
     setMembers(
@@ -603,22 +602,10 @@ const TribeDetail = () => {
         members={members}
         isMember={isMember}
         isOwner={isOwner}
-        canClaim={
-          isMember &&
-          ((profile as any)?.is_apex_subscriber === true ||
-            profile?.status_tier === "apex" ||
-            profile?.status_tier === "legend")
-        }
         pendingCount={pendingCount}
         reportedCount={reportedCount}
         onNavigateUser={(uid) => navigate(`/user/${uid}`)}
         onNavigateBattles={() => navigate(`/tribes/${id}/battles`)}
-        onClaim={async () => {
-          const { error } = await supabase.rpc("claim_paused_tribe" as any, { p_tribe_id: id });
-          if (error) { toast.error(friendlyError(error)); return; }
-          toast.success(`You now lead ${tribe.name} — fire revived 🔥`);
-          load();
-        }}
         onOpenPending={() => setPendingOpen(true)}
         onOpenReports={() => setReportsOpen(true)}
         onJoin={handleJoin}

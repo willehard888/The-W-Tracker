@@ -5,7 +5,14 @@ import {
 import { Button } from "@/components/ui/button";
 import TierUsername from "@/components/TierUsername";
 import { transformImage } from "@/lib/img";
-import type { TribeMember } from "@/components/tribe/TribeMembersRow";
+export interface TribeMember {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  status_tier: string | null;
+  role: string;
+  streak?: number;
+}
 
 export interface TribeHeaderProps {
   tribe: any;
@@ -13,12 +20,10 @@ export interface TribeHeaderProps {
   members: TribeMember[];
   isMember: boolean;
   isOwner: boolean;
-  canClaim: boolean;
   pendingCount: number;
   reportedCount: number;
   onNavigateUser: (userId: string) => void;
   onNavigateBattles: () => void;
-  onClaim: () => void;
   onOpenPending: () => void;
   onOpenReports: () => void;
   onJoin: () => void;
@@ -40,12 +45,10 @@ const TribeHeader = ({
   members,
   isMember,
   isOwner,
-  canClaim,
   pendingCount,
   reportedCount,
   onNavigateUser,
   onNavigateBattles,
-  onClaim,
   onOpenPending,
   onOpenReports,
   onJoin,
@@ -128,18 +131,8 @@ const TribeHeader = ({
                 </p>
               </div>
               <p className="text-[12px] text-foreground/80 leading-snug">
-                The founder is no longer Apex. The fire is on hold until a new <span className="font-black text-[hsl(var(--ember))]">Apex member</span> takes over leadership.
+                This tribe is on hold.
               </p>
-              {canClaim && (
-                <Button
-                  size="sm"
-                  variant="ember"
-                  className="mt-3 w-full"
-                  onClick={onClaim}
-                >
-                  <Crown size={13} /> Claim leadership & revive
-                </Button>
-              )}
             </div>
           )}
 

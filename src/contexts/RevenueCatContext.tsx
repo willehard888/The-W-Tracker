@@ -188,33 +188,15 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const [monthlyPriceLabel, setMonthlyPriceLabel] = useState<string | null>(null);
   const [yearlyPriceLabel, setYearlyPriceLabel] = useState<string | null>(null);
 
-  /** Sync elite status to database with simple retry. */
-  const syncElite = useCallback(
-    async (elite: boolean) => {
-      if (!userId) return;
-      const MAX_ATTEMPTS = 3;
-      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-        const { error } = await supabase.rpc("set_elite_status", {
-          target_user_id: userId,
-          elite,
-        });
-        if (!error) return;
-        console.warn(`[RC] syncElite attempt ${attempt} failed:`, error);
-        if (attempt < MAX_ATTEMPTS) await new Promise((r) => setTimeout(r, attempt * 1000));
-      }
-      console.error("[RC] syncElite failed after all retries");
-    },
-    [userId],
-  );
-
-  /** Update elite state + sync to DB — GRANT-only.
+  /** Update elite state (local + cache only) — the DB is NEVER written from
+   *  the client.
    *
-   * CRIT-1: this used to sync `false` too, which meant "RevenueCat doesn't
-   * know this user" (the NORMAL state for every web/Stripe subscriber) wrote
-   * is_elite=false to the DB on every app init and foreground — actively
-   * revoking paid Stripe memberships from the iOS app. Revocation authority
-   * lives in the provider webhooks (revenuecat-webhook / stripe-webhook),
-   * never in a client-observed absence.
+   *  SECURITY: entitlement grants are server-authoritative. The RevenueCat
+   *  webhook (verified server-side) writes profiles.is_elite/is_premium on
+   *  purchase; set_elite_status is now service-role-only. A client-observed
+   *  entitlement here only drives local UI state — writing it to the DB would
+   *  let any client self-grant a paid tier for free. (Also closes CRIT-1: a
+   *  client-observed *absence* must never revoke a paid Stripe membership.)
    */
   const applyElite = useCallback(
     async (info: any) => {
@@ -224,9 +206,8 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       updateRevenueCatDebug({
         entitlement: elite ? ENTITLEMENT : null,
       });
-      if (elite) await syncElite(true);
     },
-    [syncElite, userId],
+    [userId],
   );
 
   /** Fetch the monthly product directly and set the price label. */

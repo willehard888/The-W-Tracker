@@ -156,8 +156,8 @@ export const useDailyPlan = () => {
     const result = data as any;
     if (result?.error) throw new Error(result.error);
     qc.invalidateQueries({ queryKey: ["coach-mission-logs", user?.id] });
-    qc.invalidateQueries({ queryKey: ["profile"] });
-    return result as { ok: true; xp_awarded: number; new_xp: number };
+    // Missions no longer touch profiles.xp — nothing to refresh on the profile.
+    return result as { ok: true };
   };
 
   const completedIds = new Set((logsQuery.data ?? []).map((l) => l.mission_id));

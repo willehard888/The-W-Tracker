@@ -616,6 +616,7 @@ const DailyCheckin = () => {
             summary={summary}
             onProfile={() => navigate("/profile")}
             onDashboard={() => navigate("/")}
+            onAskCoach={(seed) => navigate(`/coach?seed=${encodeURIComponent(seed)}`)}
           />
         )}
       </ErrorBoundary>

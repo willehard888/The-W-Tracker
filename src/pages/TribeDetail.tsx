@@ -51,7 +51,7 @@ import FeedTheFireCTA from "@/components/FeedTheFireCTA";
 import TribeAmbientFireField from "@/components/TribeAmbientFireField";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { hapticImpact, hapticSelection, hapticNotification } from "@/lib/haptics";
-import { collectivePalette, fetchTribeCollectiveStreak, collectiveAccent, collectiveStreakTier, collectiveTierName } from "@/lib/tribe-streak";
+import { collectivePalette, collectiveAccent, collectiveStreakTier, collectiveTierName } from "@/lib/tribe-streak";
 
 interface Member {
   user_id: string;
@@ -233,13 +233,19 @@ const TribeDetail = () => {
       setReportedCount(0);
     }
 
-    // Tribe collective streak — sum of every active member's streak
-    try {
-      const total = await fetchTribeCollectiveStreak(id);
-      setCollectiveStreak(total);
-    } catch {
-      setCollectiveStreak(0);
-    }
+    // Tribe collective streak — sum of every active member's LIVE streak, from
+    // the same member profiles the "Who's feeding the fire" strip renders.
+    // The server column tribes.collective_streak is only recomputed nightly
+    // (refresh_tribe_fire cron), so reading it made the flame lag the strip
+    // (strip 3+3=6, flame stuck at last night's 4). Computing it live here
+    // keeps the headline number and the member strip in lockstep. The server
+    // column still feeds leaderboard/tier/history where a nightly snapshot is
+    // acceptable.
+    const liveCollective = ((memberProfiles as any) ?? []).reduce(
+      (sum: number, p: any) => sum + (p?.streak ?? 0),
+      0,
+    );
+    setCollectiveStreak(liveCollective);
 
     // Milestone ledger — tier-ups, joins, battle wins woven into the feed.
     try {

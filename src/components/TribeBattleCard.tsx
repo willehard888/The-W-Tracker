@@ -1,4 +1,6 @@
 import { Swords, Crown, Clock, Trophy, Check, X, Loader2, Flame } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -36,8 +38,25 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
   const myIsChallenger = battle.challenger_tribe_id === myTribeId;
   const me = myIsChallenger ? battle.challenger : battle.opponent;
   const them = myIsChallenger ? battle.opponent : battle.challenger;
-  const myScore = myIsChallenger ? battle.challenger_score : battle.opponent_score;
-  const theirScore = myIsChallenger ? battle.opponent_score : battle.challenger_score;
+
+  // Live standings — the stored scores are only written at resolution, so an
+  // active battle used to show a 0–0 / 50-50 bar for its entire duration.
+  const { data: standings } = useQuery({
+    queryKey: ["tribe-battle-standings", battle.id],
+    enabled: battle.status === "active",
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("tribe_battle_standings" as never, { p_battle_id: battle.id } as never);
+      if (error) throw error;
+      return data as unknown as { challenger_score: number; opponent_score: number };
+    },
+  });
+
+  const liveChallenger = standings?.challenger_score ?? battle.challenger_score;
+  const liveOpponent = standings?.opponent_score ?? battle.opponent_score;
+  const myScore = myIsChallenger ? liveChallenger : liveOpponent;
+  const theirScore = myIsChallenger ? liveOpponent : liveChallenger;
   const totalScore = Math.max(myScore + theirScore, 1);
   const myPct = (myScore / totalScore) * 100;
 
@@ -197,6 +216,16 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
               style={{ width: `${100 - myPct}%` }}
             />
           </div>
+          {battle.status === "active" && myScore !== theirScore && (
+            <p className={cn(
+              "text-[10px] font-bold mt-1.5 tabular-nums",
+              myScore > theirScore ? "text-xp-green" : "text-[hsl(var(--ember))]",
+            )}>
+              {myScore > theirScore
+                ? `Ahead by ${(myScore - theirScore).toLocaleString()} XP — keep the pressure on`
+                : `Behind by ${(theirScore - myScore).toLocaleString()} XP — every check-in counts`}
+            </p>
+          )}
         </div>
       )}
 

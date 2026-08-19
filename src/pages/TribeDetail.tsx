@@ -100,6 +100,10 @@ const TribeDetail = () => {
   const [challenge, setChallenge] = useState<{
     week_start: string; target: number; progress: number; status: string;
   } | null>(null);
+  // Feed pagination: load() always fetches up to this many posts; "Load more"
+  // raises it and reloads (a ref so the realtime-refetch closure sees it too).
+  const postLimitRef = useRef(50);
+  const [canLoadMore, setCanLoadMore] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
   const [composer, setComposer] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -155,7 +159,7 @@ const TribeDetail = () => {
     const [tRes, mRes, pRes, allMRes] = await Promise.all([
       supabase.from("tribes").select("*").eq("id", id).maybeSingle(),
       supabase.from("tribe_members").select("role, status").eq("tribe_id", id).eq("user_id", profile.user_id).maybeSingle(),
-      supabase.from("tribe_posts").select("*").eq("tribe_id", id).order("created_at", { ascending: false }).limit(50),
+      supabase.from("tribe_posts").select("*").eq("tribe_id", id).order("created_at", { ascending: false }).limit(postLimitRef.current),
       supabase.from("tribe_members").select("user_id, role").eq("tribe_id", id).eq("status", "active").limit(40),
     ]);
 
@@ -208,6 +212,7 @@ const TribeDetail = () => {
         kudosed: kudosedSet.has(p.id),
       })) as TribePostCardPost[],
     );
+    setCanLoadMore(rawPosts.length >= postLimitRef.current);
 
     if (m?.role === "owner") {
       const { count } = await supabase
@@ -776,6 +781,16 @@ const TribeDetail = () => {
                 </div>
               ),
             )
+        )}
+        {canLoadMore && (
+          <Button
+            variant="secondary"
+            size="sm"
+            className="w-full"
+            onClick={() => { postLimitRef.current += 50; void load(); }}
+          >
+            Load older posts
+          </Button>
         )}
       </div>
 

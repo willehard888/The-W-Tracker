@@ -66,6 +66,21 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Membership gate + daily cap (this function had neither — any
+    // authenticated user could pump the LLM indefinitely).
+    const { data: access } = await supabase.rpc("has_active_access", { _user_id: u.user.id });
+    if (!access) {
+      return new Response(JSON.stringify({ error: "Active membership required" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { data: allowed } = await supabase.rpc("bump_ai_usage", { p_limit: 60, p_kind: "memory" });
+    if (allowed === false) {
+      return new Response(JSON.stringify({ ok: true, inserted: 0, skipped: "rate_limited" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const body = await req.json();
     const messages = Array.isArray(body?.messages) ? body.messages.slice(-10) : [];
     if (messages.length === 0) {

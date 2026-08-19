@@ -253,12 +253,19 @@ Deno.serve(async (req) => {
     // "allow" and skip the model entirely. Compute the hash from the actual
     // bytes server-side; for URL-only submissions (no bytes here) skip the
     // cache and always run the model.
+    // Key the cache on image bytes AND the accompanying text. Keying on the
+    // image alone let an attacker pair a previously-allowed image with abusive
+    // text and get an "allow" the model never saw (the text wasn't scored).
     let effective_hash: string | null = null;
     if (image_b64) {
       try {
         const raw = image_b64.includes(",") ? image_b64.slice(image_b64.indexOf(",") + 1) : image_b64;
         const bytes = Uint8Array.from(atob(raw), (c) => c.charCodeAt(0));
-        const digest = await crypto.subtle.digest("SHA-256", bytes);
+        const textBytes = new TextEncoder().encode(" " + (typeof text === "string" ? text : ""));
+        const combined = new Uint8Array(bytes.length + textBytes.length);
+        combined.set(bytes, 0);
+        combined.set(textBytes, bytes.length);
+        const digest = await crypto.subtle.digest("SHA-256", combined);
         effective_hash = Array.from(new Uint8Array(digest))
           .map((b) => b.toString(16).padStart(2, "0"))
           .join("");

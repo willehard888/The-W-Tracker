@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 // Pull-to-refresh removed temporarily — touch handlers on the page wrapper
 // were intercepting inner taps on tribe cards. Re-add once we have a more
 // isolated touch-area implementation.
-import { Users, Plus, Lock, Crown, Zap, Check, X, Sparkles, Mail, Trophy, ChevronRight, Pause, ShieldCheck, Flame } from "lucide-react";
+import { Users, Plus, Crown, Check, X, Sparkles, Mail, Trophy, Pause, ShieldCheck, Flame, ChevronRight } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
@@ -17,8 +17,6 @@ import { avatarUrl, transformImage } from "@/lib/img";
 import TribeSearchBar from "@/components/TribeSearchBar";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import TribeFireLite from "@/components/TribeFireLite";
-import TribeFireHero from "@/components/TribeFireHero";
-import TribeAmbientFireField from "@/components/TribeAmbientFireField";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { TRIBE_ACTIVITIES, activityIcon } from "@/lib/tribe-activities";
 import { fetchTribeCollectiveStreaks, collectiveStreakTier, collectiveTierName, collectiveAccent, collectivePalette } from "@/lib/tribe-streak";
@@ -93,6 +91,23 @@ const Tribes = () => {
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [tab, setTab] = useState<"browse" | "mine">("browse");
   const [activityFilter, setActivityFilter] = useState<string | null>(null);
+  // Members land on My Tribes, newcomers on Browse — decided once on load,
+  // never fighting a tab the user has tapped themselves.
+  const tabTouched = useRef(false);
+  useEffect(() => {
+    if (!profile?.user_id) return;
+    let alive = true;
+    void supabase
+      .from("tribe_members")
+      .select("tribe_id")
+      .eq("user_id", profile.user_id)
+      .eq("status", "active")
+      .limit(1)
+      .then(({ data }) => {
+        if (alive && !tabTouched.current && (data?.length ?? 0) > 0) setTab("mine");
+      });
+    return () => { alive = false; };
+  }, [profile?.user_id]);
 
   const tier = profile?.status_tier;
   // Tribes/clubs are open to everyone now — no tier gate.
@@ -269,15 +284,6 @@ const Tribes = () => {
     });
   }, [listReactor.events, userToTribes]);
 
-  // Total ambient heat across all the user's joined tribes — drives the page's ember field
-  const ambientHeat = useMemo(() => {
-    let sum = 0;
-    joinedIds.forEach((id) => { sum += collectiveStreaks.get(id) ?? 0; });
-    return sum;
-  }, [joinedIds, collectiveStreaks]);
-  // Ambient light matches the flame's actual emission color (palette.glow).
-  const ambientAccent = collectivePalette(ambientHeat).glow;
-
   const handleJoin = async (id: string) => {
     const { data, error } = await supabase.rpc("join_tribe" as any, {
       p_tribe_id: id,
@@ -331,17 +337,6 @@ const Tribes = () => {
 
   return (
     <div className="min-h-full pb-8 px-4 pt-4 relative">
-      {/* Ambient fire field — drifts behind the whole page, intensifies with
-          the user's combined tribe heat. Cold (<30) = invisible. */}
-      {ambientHeat >= 30 && (
-        <div className="fixed inset-0 pointer-events-none -z-10">
-          <TribeAmbientFireField total={ambientHeat} accent={ambientAccent} />
-        </div>
-      )}
-
-      {/* THE HERO — collective fire is the centerpiece */}
-      <TribeFireHero tribeCount={joinedIds.size} />
-      <div id="tribes-browse-anchor" />
 
       {/* Pending invites */}
       {invites.length > 0 && (
@@ -396,24 +391,12 @@ const Tribes = () => {
         </div>
       )}
 
-      {/* Create CTA — single, refined (the empty state no longer duplicates it) */}
-      {canCreate ? (
-        <Button
-          onClick={() => navigate("/tribes/new")}
-          variant="ember"
-          className="w-full mb-4"
-        >
-          <Plus size={16} /> Create a Tribe
-        </Button>
-      ) : null /* canCreate is true for everyone now — the old "Reach Elite
-        to lead your own tribe" gate card was unreachable dead copy. */}
-
-      {/* Tabs */}
-      <div className="flex gap-1.5 mb-4 p-1 rounded-xl surface-inset border border-border/40">
-        {(["browse", "mine"] as const).map((t) => (
+      {/* Tabs — the page's first element: content over ceremony */}
+      <div className="flex gap-1.5 mb-3 p-1 rounded-xl surface-inset border border-border/40">
+        {(["mine", "browse"] as const).map((t) => (
           <button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => { tabTouched.current = true; setTab(t); }}
             className={cn(
               "flex-1 text-xs font-black py-2 rounded-lg uppercase tracking-wider transition-all",
               tab === t
@@ -426,62 +409,53 @@ const Tribes = () => {
         ))}
       </div>
 
-      {/* Open to all — clubs are free to create and join */}
-      <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg border border-[hsl(var(--gold)/0.18)] bg-card/40 shadow-[inset_0_1px_0_hsl(0_0%_100%/0.04)]">
-        <Users size={11} className="text-muted-foreground shrink-0" />
-        <p className="text-[11px] text-muted-foreground leading-tight">
-          <span className="font-black text-foreground">Open to everyone</span> — create your own and
-          join up to <span className="font-black text-[hsl(var(--ember))]">25 tribes</span>.
-        </p>
+      {tab === "browse" && <TribeSearchBar onChanged={reloadTribes} />}
+
+      {/* One quiet tool row — no competing full-width CTAs */}
+      <div className="flex gap-2 mb-3">
+        <Button
+          onClick={() => navigate("/tribes/new")}
+          variant="gold-outline"
+          size="sm"
+          className="flex-1 h-9"
+        >
+          <Plus size={14} /> Create a Tribe
+        </Button>
+        <Button
+          onClick={() => navigate("/tribes/leaderboard")}
+          variant="gold-outline"
+          size="sm"
+          className="flex-1 h-9"
+        >
+          <Trophy size={14} /> Leaderboard
+        </Button>
       </div>
 
-      {/* Browse-only: search + leaderboard CTA */}
+      {/* Browse by activity */}
       {tab === "browse" && (
-        <>
-          <TribeSearchBar onChanged={reloadTribes} />
-          <button
-            onClick={() => navigate("/tribes/leaderboard")}
-            className="w-full mb-4 rounded-xl p-3 border border-border/60 bg-card/40 flex items-center gap-3 text-left transition-transform active:scale-[0.99]"
-          >
-            <div className="h-9 w-9 rounded-lg bg-gold/12 border border-gold/25 flex items-center justify-center shrink-0">
-              <Trophy size={16} className="text-gold" strokeWidth={2.6} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-widest font-black text-gold/85">
-                Tribe Leaderboard
-              </p>
-              <p className="text-[11px] text-muted-foreground truncate">
-                Which tribes earn the most XP this week
-              </p>
-            </div>
-            <ChevronRight size={14} className="text-muted-foreground shrink-0" />
-          </button>
-
-          {/* Browse by activity */}
-          <div className="mb-4 -mx-4 px-4 overflow-x-auto no-scrollbar">
-            <div className="flex gap-1.5 w-max">
-              {[null, ...TRIBE_ACTIVITIES].map((a) => {
-                const active = activityFilter === a;
-                const Icon = a ? activityIcon(a) : null;
-                return (
-                  <button
-                    key={a ?? "all"}
-                    onClick={() => setActivityFilter(a)}
-                    className={cn(
-                      "shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-black border transition-all active:scale-95",
-                      active
-                        ? "bg-gold text-primary-foreground border-transparent"
-                        : "bg-secondary/40 border-border/50 text-muted-foreground",
-                    )}
-                  >
-                    {Icon && <Icon size={12} strokeWidth={2.6} />}
-                    {a ?? "All"}
-                  </button>
-                );
-              })}
-            </div>
+        <div className="mb-4 -mx-4 px-4 overflow-x-auto no-scrollbar">
+          <div className="flex gap-1.5 w-max">
+            {[null, ...TRIBE_ACTIVITIES].map((a) => {
+              const active = activityFilter === a;
+              const Icon = a ? activityIcon(a) : null;
+              return (
+                <button
+                  key={a ?? "all"}
+                  onClick={() => setActivityFilter(a)}
+                  className={cn(
+                    "shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border transition-all active:scale-95",
+                    active
+                      ? "bg-gold text-primary-foreground border-transparent"
+                      : "bg-secondary/30 border-border/40 text-muted-foreground",
+                  )}
+                >
+                  {Icon && <Icon size={12} strokeWidth={2.4} />}
+                  {a ?? "All"}
+                </button>
+              );
+            })}
           </div>
-        </>
+        </div>
       )}
 
       {/* List */}
@@ -510,85 +484,74 @@ const Tribes = () => {
         />
       ) : (
         <div className="space-y-3">
-          {/* Featured Tribe */}
+          {/* Featured Tribe — same anatomy as the rows, just an eyebrow + gold edge */}
           {tab === "browse" && featured && (
             <button
               onClick={() => navigate(`/tribes/${featured.id}`)}
-              className="group w-full text-left rounded-2xl p-[2px] apex-conic-border apex-tribe-card-hover overflow-hidden"
+              className="w-full text-left surface-card p-4 border-gold/35 apex-tribe-card-hover"
             >
-              <div className="rounded-2xl p-5 bg-gradient-to-br from-card/90 via-[hsl(var(--ember))]/8 to-gold/5 relative overflow-hidden apex-portal-glow">
-                <div className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-background/50 backdrop-blur-sm border border-[hsl(var(--ember))]/40">
-                  <Sparkles size={9} className="text-[hsl(var(--ember))]" />
-                  <span className="text-[9px] font-black tracking-widest uppercase text-[hsl(var(--ember))]">
-                    Featured
-                  </span>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Sparkles size={10} className="text-gold" />
+                <span className="eyebrow text-gold/85">Featured</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="relative h-10 w-10 rounded-lg border border-gold/40 bg-secondary/50 flex items-center justify-center shrink-0 overflow-hidden">
+                  {featured.cover_url && (
+                    <img
+                      src={transformImage(featured.cover_url, { width: 640, quality: 68 })}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 h-full w-full object-cover opacity-75"
+                    />
+                  )}
+                  {(collectiveStreaks.get(featured.id) ?? 0) >= 30 ? (
+                    <TribeFireLite
+                      tier={collectiveStreakTier(collectiveStreaks.get(featured.id) ?? 0)}
+                      palette={collectivePalette(collectiveStreaks.get(featured.id) ?? 0)}
+                      size={30}
+                      variant="mini"
+                    />
+                  ) : !featured.cover_url ? (
+                    <Crown size={16} className="text-gold" strokeWidth={2.4} />
+                  ) : null}
                 </div>
-                <div className="flex items-start gap-4 relative">
-                  <div className="relative h-20 w-20 rounded-2xl bg-gradient-to-br from-[hsl(var(--ember))]/35 via-gold/20 to-[hsl(var(--ember))]/25 border border-[hsl(var(--ember))]/55 flex items-center justify-center shrink-0 shadow-[0_0_28px_hsl(var(--ember)/0.55)] overflow-hidden">
-                    {featured.cover_url && (
-                      <img
-                        src={transformImage(featured.cover_url, { width: 800, quality: 70 })}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        className="absolute inset-0 h-full w-full object-cover opacity-70"
-                      />
-                    )}
-                    {(collectiveStreaks.get(featured.id) ?? 0) >= 30 ? (
-                      <TribeFireLite
-                        tier={collectiveStreakTier(collectiveStreaks.get(featured.id) ?? 0)}
-                        palette={collectivePalette(collectiveStreaks.get(featured.id) ?? 0)}
-                        size={64}
-                      />
-                    ) : !featured.cover_url ? (
-                      <Crown size={32} className="text-[hsl(var(--ember))] drop-shadow-[0_0_10px_hsl(var(--ember)/0.9)]" strokeWidth={2.4} />
-                    ) : null}
-                    <div className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-gradient-to-br from-[hsl(var(--ember))] to-gold border-2 border-background flex items-center justify-center shadow-[0_0_8px_hsl(var(--ember)/0.8)] animate-pulse">
-                      <Zap size={10} className="text-background" strokeWidth={3} fill="currentColor" />
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0 pt-1">
-                    <p className="font-display font-black text-2xl truncate leading-tight tracking-tight bg-gradient-to-r from-foreground via-[hsl(42_78%_70%)] to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_2px_12px_hsl(var(--ember)/0.4)]">
-                      {featured.name}
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-[15px] truncate leading-tight">{featured.name}</p>
+                  {featured.description && (
+                    <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                      {featured.description}
                     </p>
-                    {featured.description && (
-                      <p className="text-[11px] text-muted-foreground/90 line-clamp-2 mt-1">
-                        {featured.description}
-                      </p>
+                  )}
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums text-muted-foreground">
+                      <Users size={9} /> {featured.member_count}
+                    </span>
+                    {(collectiveStreaks.get(featured.id) ?? 0) >= 30 && (
+                      <StreakFlameInline
+                        streak={collectiveStreaks.get(featured.id) ?? 0}
+                        suffix="d"
+                        className="text-[10px]"
+                      />
                     )}
-                    <div className="flex items-center gap-3 mt-2.5">
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
-                        <Users size={9} className="text-[hsl(var(--ember))]" />
-                        <span className="text-[10px] font-bold tabular-nums text-[hsl(var(--ember))]">
-                          {featured.member_count}
-                        </span>
-                      </span>
-                      {(collectiveStreaks.get(featured.id) ?? 0) >= 30 && (
-                        <StreakFlameInline
-                          streak={collectiveStreaks.get(featured.id) ?? 0}
-                          suffix="d"
-                          className="text-[11px]"
-                        />
-                      )}
-                      {memberPreviews[featured.id] && memberPreviews[featured.id].length > 0 && (
-                        <div className="flex -space-x-2">
-                          {memberPreviews[featured.id].slice(0, 4).map((p) => (
-                            <div
-                              key={p.user_id}
-                              className="h-6 w-6 rounded-full bg-secondary border-2 border-background overflow-hidden"
-                            >
-                              {p.avatar_url ? (
-                                <img loading="lazy" decoding="async" src={avatarUrl(p.avatar_url, 40)} alt={p.username} className="h-full w-full object-cover" />
-                              ) : (
-                                <div className="h-full w-full flex items-center justify-center text-[8px] font-black text-muted-foreground">
-                                  {p.username.slice(0, 2).toUpperCase()}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    {memberPreviews[featured.id] && memberPreviews[featured.id].length > 0 && (
+                      <div className="flex -space-x-2">
+                        {memberPreviews[featured.id].slice(0, 4).map((p) => (
+                          <div
+                            key={p.user_id}
+                            className="h-5 w-5 rounded-full bg-secondary border-2 border-background overflow-hidden"
+                          >
+                            {p.avatar_url ? (
+                              <img loading="lazy" decoding="async" src={avatarUrl(p.avatar_url, 40)} alt={p.username} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-[7px] font-black text-muted-foreground">
+                                {p.username.slice(0, 2).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -600,8 +563,6 @@ const Tribes = () => {
             const cTier = collectiveStreakTier(cStreak);
             const cAccent = collectiveAccent(cStreak);
             const isPaused = !!t.is_paused;
-            // Ember-bar height grows with collective tier (cold → 0%, legendary → 100%)
-            const heatPct = cTier < 0 ? 0 : Math.min(100, ((cTier + 1) / 6) * 100);
             return (
             /* div+role, not <button>: the row contains real Join/Claim
                <Button>s and nested buttons are invalid DOM (breaks hit-testing
@@ -613,54 +574,16 @@ const Tribes = () => {
               onClick={() => navigate(`/tribes/${t.id}`)}
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/tribes/${t.id}`); } }}
               className={cn(
-                "group w-full text-left cursor-pointer rounded-2xl p-4 border apex-tribe-card-hover relative overflow-hidden",
-                isPaused
-                  ? "border-muted-foreground/30 bg-gradient-to-br from-card/60 to-secondary/20 grayscale-[0.4]"
-                  : "border-[hsl(var(--ember))]/20 bg-gradient-to-br from-card/80 via-card/60 to-[hsl(var(--ember))]/5"
+                "w-full text-left cursor-pointer surface-card p-4 apex-tribe-card-hover relative",
+                isPaused && "grayscale-[0.4] opacity-80"
               )}
               style={{ animationDelay: `${idx * 60}ms` }}
             >
-              {/* Left-edge ember bar — visible heat ladder when scanning the list */}
-              {!isPaused && cTier >= 0 && (
+              <div className="flex items-start gap-3">
                 <div
-                  aria-hidden
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full"
+                  className="relative h-10 w-10 rounded-lg bg-secondary/50 flex items-center justify-center shrink-0 overflow-hidden"
                   style={{
-                    height: `${heatPct}%`,
-                    background: `linear-gradient(180deg, ${cAccent.replace(")", " / 0.0)")} 0%, ${cAccent} 50%, ${cAccent.replace(")", " / 0.0)")} 100%)`,
-                    boxShadow: `0 0 8px ${cAccent.replace(")", " / 0.7)")}`,
-                  }}
-                />
-              )}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-gradient-to-r from-transparent via-[hsl(var(--ember))]/8 to-transparent" />
-
-              {ownedIds.has(t.id) && !isPaused && (
-                <div className="absolute top-2 right-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gold/15 border border-gold/40">
-                  <Crown size={8} className="text-gold" />
-                  <span className="text-[9px] font-black tracking-wider uppercase text-gold">
-                    Owner
-                  </span>
-                </div>
-              )}
-
-              {isPaused && (
-                <div className="absolute top-2 right-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted-foreground/15 border border-muted-foreground/40">
-                  <Pause size={8} className="text-muted-foreground" strokeWidth={2.6} fill="currentColor" />
-                  <span className="text-[9px] font-black tracking-wider uppercase text-muted-foreground">
-                    Paused
-                  </span>
-                </div>
-              )}
-
-              <div className="flex items-start gap-3 relative">
-                <div
-                  className="relative h-14 w-14 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
-                  style={{
-                    background: !isPaused && cTier >= 0
-                      ? `radial-gradient(ellipse at 50% 90%, ${cAccent.replace(")", " / 0.30)")} 0%, transparent 70%)`
-                      : "hsl(var(--secondary) / 0.5)",
-                    border: `1px solid ${!isPaused && cTier >= 0 ? cAccent.replace(")", " / 0.5)") : "hsl(var(--border))"}`,
-                    boxShadow: !isPaused && cTier >= 0 ? `0 0 14px ${cAccent.replace(")", " / 0.4)")}` : undefined,
+                    border: `1px solid ${!isPaused && cTier >= 0 ? cAccent.replace(")", " / 0.45)") : "hsl(var(--border))"}`,
                   }}
                 >
                   {t.cover_url && (
@@ -686,66 +609,53 @@ const Tribes = () => {
                           : undefined
                       }
                     >
-                      <TribeFireLite tier={cTier} palette={collectivePalette(cStreak)} size={Math.min(56, 36 + cTier * 6)} />
+                      <TribeFireLite tier={cTier} palette={collectivePalette(cStreak)} size={30} variant="mini" />
                     </div>
                   ) : !t.cover_url ? (
                     isPaused
-                      ? <Pause size={18} className="text-muted-foreground/50" />
-                      : <Flame size={18} className="text-muted-foreground/40" strokeWidth={1.6} />
+                      ? <Pause size={16} className="text-muted-foreground/50" />
+                      : <Flame size={16} className="text-muted-foreground/40" strokeWidth={1.6} />
                   ) : null}
                 </div>
                 <div className="flex-1 min-w-0">
-                  {/* TRIBE NAME — dominant, gradient, larger so it reads first */}
-                  <p
-                    className={cn(
-                      "font-display font-black text-xl truncate leading-tight tracking-tight",
-                      isPaused
-                        ? "text-muted-foreground/80"
-                        : "bg-gradient-to-r from-foreground via-foreground to-[hsl(18_95%_70%)] bg-clip-text text-transparent drop-shadow-[0_1px_8px_hsl(var(--ember)/0.25)]"
+                  <div className="flex items-center gap-1.5">
+                    <p className={cn("font-bold text-[15px] truncate leading-tight", isPaused && "text-muted-foreground/80")}>
+                      {t.name}
+                    </p>
+                    {ownedIds.has(t.id) && !isPaused && (
+                      <Crown size={11} className="text-gold shrink-0" aria-label="Owner" />
                     )}
-                  >
-                    {t.name}
-                  </p>
-                  {(t as any).primary_activity && (() => {
-                    const ActIcon = activityIcon((t as any).primary_activity);
-                    return (
-                      <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded-md bg-gold/10 border border-gold/30 text-[9px] font-black uppercase tracking-wider text-gold">
-                        <ActIcon size={9} strokeWidth={2.6} /> {(t as any).primary_activity}
-                      </span>
-                    );
-                  })()}
+                  </div>
                   {t.description && (
-                    <p className="text-[11px] text-muted-foreground/90 line-clamp-2 mt-1 leading-snug">
+                    <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5 leading-snug">
                       {t.description}
                     </p>
                   )}
-                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  {/* One meta row: activity · members · fire */}
+                  <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
+                    {(t as any).primary_activity && (() => {
+                      const ActIcon = activityIcon((t as any).primary_activity);
+                      return (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          <ActIcon size={9} strokeWidth={2.4} /> {(t as any).primary_activity}
+                        </span>
+                      );
+                    })()}
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums text-muted-foreground">
+                      <Users size={9} /> {t.member_count}
+                    </span>
                     {isPaused ? (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border border-muted-foreground/40 bg-muted-foreground/10 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                        Awaiting Apex owner
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Paused · awaiting owner
                       </span>
                     ) : cTier >= 0 ? (
                       <span
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[10px] font-black tabular-nums"
-                        style={{
-                          color: cAccent,
-                          borderColor: cAccent.replace(")", " / 0.4)"),
-                          background: cAccent.replace(")", " / 0.10)"),
-                        }}
+                        className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums"
+                        style={{ color: cAccent }}
                       >
                         <Flame size={10} fill="currentColor" /> {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
                       </span>
-                    ) : (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-md border border-border text-[10px] font-black text-muted-foreground">
-                        Cold fire
-                      </span>
-                    )}
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-secondary/40 border border-border/60">
-                      <Users size={9} className="text-muted-foreground" />
-                      <span className="text-[10px] font-bold tabular-nums text-muted-foreground">
-                        {t.member_count}
-                      </span>
-                    </span>
+                    ) : null}
                   </div>
                 </div>
                 {/* Action: Claim (paused + member + apex), or Join (not joined + browse) */}

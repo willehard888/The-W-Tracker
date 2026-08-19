@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { getTierConfig, getPreviousTier, type StatusTier } from "@/lib/status-tiers";
+import { getPreviousTier, type StatusTier } from "@/lib/status-tiers";
 import { getStreakDeadlineState } from "@/lib/streak";
 
 export type RiskLevel = "safe" | "pressure" | "danger";
@@ -29,31 +29,23 @@ interface UseTierRiskParams {
 export const useTierRisk = ({ tier, rankScore, streak, lastCheckinAt }: UseTierRiskParams): TierRiskState => {
   return useMemo(() => {
     const current = (tier || "recruit") as StatusTier;
-    const currentConfig = getTierConfig(current);
     const prevTier = getPreviousTier(current);
 
-    // Streak deadline (48h window)
+    // Streak deadline (48h window) — the ONLY real, data-grounded risk.
     const deadline = getStreakDeadlineState(streak, lastCheckinAt);
     const hoursLeft = deadline?.expired ? 0 : deadline?.hours ?? null;
     const minsLeft = deadline?.expired ? 0 : deadline?.mins ?? null;
 
-    // Score margin: rank_score is 0–100. Estimate cutoff distance as
-    // a rough proxy from current tier's required percentile vs. score.
-    // Lower tiers don't have a meaningful drop-down so margin defaults to safe.
-    let pointsAbove: number | null = null;
-    if (prevTier && currentConfig.rank > 0) {
-      // Heuristic: roughly each 5 points = ~5% percentile shift in mid-band.
-      // We use the current rank_score as proxy. If rank_score has fallen close
-      // to ~5 points above the next-down tier's typical score, mark pressure.
-      // We approximate the cutoff with the previous tier's required percentile / 10.
-      const proxyCutoff = (prevTier.requirements.percentile / 100) * 50; // soft proxy
-      pointsAbove = Math.max(0, rankScore - proxyCutoff);
-    }
-
+    // NOTE: the old "score margin" path was removed. It estimated a demotion
+    // cutoff from a hand-tuned proxy ("(prevTier.percentile/100)*50"), not real
+    // ranking data, and for top-tier users it collapsed to Math.max(0, …) = 0 —
+    // firing a red "Only 0.0 pts above Apex" DANGER banner that was both false
+    // and meaningless. Status is performance-earned; a fabricated demotion
+    // warning undermines that. Only the streak deadline (a real deadline the
+    // user can act on) drives this banner now.
     let level: RiskLevel = "safe";
     let reason: "streak" | "score" | null = null;
 
-    // Streak danger trumps everything
     if (streak > 0 && deadline) {
       if (deadline.expired || (hoursLeft !== null && hoursLeft < 24)) {
         level = "danger";
@@ -64,22 +56,11 @@ export const useTierRisk = ({ tier, rankScore, streak, lastCheckinAt }: UseTierR
       }
     }
 
-    // Score-based pressure (only if not already in danger)
-    if (level !== "danger" && pointsAbove !== null) {
-      if (pointsAbove < 5) {
-        level = "danger";
-        reason = "score";
-      } else if (pointsAbove < 12) {
-        if (level === "safe") level = "pressure";
-        if (!reason) reason = "score";
-      }
-    }
-
     return {
       level,
       currentTier: current,
       previousTierLabel: prevTier?.label ?? null,
-      pointsAboveCutoff: pointsAbove,
+      pointsAboveCutoff: null,
       hoursUntilStreakBreak: hoursLeft,
       minutesUntilStreakBreak: minsLeft,
       reason,

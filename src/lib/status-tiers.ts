@@ -188,8 +188,17 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
   },
 };
 
+/**
+ * Canonical tier id. 'normal' is a legacy DB alias of recruit that is NOT in
+ * TIER_ORDER — raw indexOf() on it returned -1 and quietly broke ladder math
+ * (the header's next-tier chip told a recruit "→ Legend"). Every ladder
+ * lookup below normalizes through this.
+ */
+export const canonicalTier = (tier?: string | null): StatusTier =>
+  !tier || tier === "normal" || !(tier in TIER_CONFIG) ? "recruit" : (tier as StatusTier);
+
 export const getTierConfig = (tier: string): TierConfig => {
-  return TIER_CONFIG[tier as StatusTier] || TIER_CONFIG.recruit;
+  return TIER_CONFIG[canonicalTier(tier)];
 };
 
 // ── Divisions (Phase 2) ───────────────────────────────────────────────────────
@@ -224,7 +233,7 @@ export const formatTierShort = (tier: string, division?: number | null): string 
  * Decode back with `tierFromLadder` / `divisionFromLadder`.
  */
 export const ladderRankValue = (tier: string, division?: number | null): number => {
-  const idx = Math.max(0, TIER_ORDER.indexOf(tier as StatusTier));
+  const idx = Math.max(0, TIER_ORDER.indexOf(canonicalTier(tier)));
   return idx * 4 + (division ?? 0);
 };
 export const tierFromLadder = (v: number): StatusTier => TIER_ORDER[Math.min(TIER_ORDER.length - 1, Math.floor(v / 4))];
@@ -233,15 +242,46 @@ export const divisionFromLadder = (v: number): number => v % 4;
 export const TIER_ORDER: StatusTier[] = ['recruit', 'operator', 'performer', 'high_performer', 'elite', 'apex', 'legend'];
 
 export const getNextTier = (current: string): TierConfig | null => {
-  const idx = TIER_ORDER.indexOf(current as StatusTier);
+  const idx = TIER_ORDER.indexOf(canonicalTier(current));
   if (idx < 0 || idx >= TIER_ORDER.length - 1) return null;
   return TIER_CONFIG[TIER_ORDER[idx + 1]];
 };
 
 export const getPreviousTier = (current: string): TierConfig | null => {
-  const idx = TIER_ORDER.indexOf(current as StatusTier);
+  const idx = TIER_ORDER.indexOf(canonicalTier(current));
   if (idx <= 0) return null;
   return TIER_CONFIG[TIER_ORDER[idx - 1]];
+};
+
+// ── Live "Top N%" label (one derivation for every surface) ──────────────────
+// The header once showed the tier's STATIC band ("Top 0.1%") while the
+// nameplate computed the LIVE share ("Top 50%" at #1 of 2) — two numbers for
+// the same user on the same screen. Every surface must derive the label here.
+
+export interface LiveRankData {
+  rank?: number | null;
+  totalUsers?: number;
+  percentile?: number;
+  hasRank?: boolean;
+}
+
+/**
+ * The percentile label to show next to a tier:
+ * - unranked (hasRank === false) → "Unranked"
+ * - live data → "Top N%" (never rounded down to "Top 0%")
+ * - no data at all (e.g. anon/public surfaces) → the tier band description
+ */
+export const topShareLabel = (tier: string, rankData?: LiveRankData | null): string => {
+  if (rankData?.hasRank === false) return "Unranked";
+  const live = (() => {
+    if (rankData?.percentile !== undefined) return 100 - rankData.percentile;
+    const { rank, totalUsers } = rankData ?? {};
+    if (rank != null && totalUsers && totalUsers > 0 && rank >= 1 && rank <= totalUsers) {
+      return (rank / totalUsers) * 100;
+    }
+    return null;
+  })();
+  return live !== null ? `Top ${Math.max(1, Math.round(live))}%` : getTierConfig(tier).percentile;
 };
 
 // ── Hero surface (one tier ladder for every profile hero) ────────────────────

@@ -254,17 +254,31 @@ const Index = () => {
         >
           <span className="text-xl leading-none shrink-0">{tierConfig.emoji}</span>
           <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-black leading-tight truncate">
-              {tierConfig.label}
-              {(rankData?.rank ?? 0) > 0 && (
-                <span className="text-muted-foreground font-semibold"> · #<AnimatedNumber value={rankData!.rank} duration={700} /></span>
-              )}
-            </p>
-            <p className="text-[10px] text-muted-foreground leading-tight">
-              {(rankData?.rank ?? 0) > 0
-                ? `of ${(rankData?.totalUsers ?? 0).toLocaleString()} · Lv ${profile.level} · ${Math.max(0, xpToNext - profile.xp)} XP to Lv ${profile.level + 1}`
-                : "Your climb starts today"}
-            </p>
+            {/* Rank shows only when EARNED and sane (hasRank, rank ≤ total) —
+                an unranked recruit once read "#3 of 2" here. Same guard rule
+                as StatusNameplate. */}
+            {(() => {
+              const sane =
+                rankData?.hasRank === true &&
+                (rankData.rank ?? 0) > 0 &&
+                (rankData.totalUsers ?? 0) > 0 &&
+                rankData.rank! <= rankData.totalUsers!;
+              return (
+                <>
+                  <p className="text-[13px] font-black leading-tight truncate">
+                    {tierConfig.label}
+                    {sane && (
+                      <span className="text-muted-foreground font-semibold"> · #<AnimatedNumber value={rankData!.rank} duration={700} /></span>
+                    )}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    {sane
+                      ? `of ${(rankData?.totalUsers ?? 0).toLocaleString()} · Lv ${profile.level} · ${Math.max(0, xpToNext - profile.xp)} XP to Lv ${profile.level + 1}`
+                      : "Your climb starts today"}
+                  </p>
+                </>
+              );
+            })()}
           </div>
           {/* W-Index chip — the flagship number, felt daily. span+role (not a
               nested <button>) because the whole strip is already a button. */}

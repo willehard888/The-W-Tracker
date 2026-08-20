@@ -7,7 +7,7 @@ import StatusNameplate from "@/components/StatusNameplate";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import ImageLightbox from "@/components/ImageLightbox";
 import { getTierConfig, getTierUsernameClass, formatTier } from "@/lib/status-tiers";
-import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock, Heart, MessageCircle, Award, Camera } from "lucide-react";
+import { Crown, Trophy, ChevronLeft, ExternalLink, Lock, Heart, MessageCircle, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
@@ -116,7 +116,6 @@ const PublicProfile = () => {
 
   const tier = getTierConfig(profile.status_tier || 'recruit');
   const isApexSubscriber = Boolean((profile as any).is_apex_subscriber);
-  const isLegendPinned = Boolean((profile as any).legend_pinned);
 
   return (
     <div className="min-h-[100dvh] relative pb-10">
@@ -237,7 +236,7 @@ const PublicProfile = () => {
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gold/45 bg-gold/5">
               <Trophy size={10} className="text-gold" />
               <span className="text-[10px] font-black text-gold tracking-wider uppercase">
-                Champion{championHistory.wins > 1 ? ` ×${championHistory.wins}` : ''}
+                {championHistory.wins > 1 ? `${championHistory.wins}× ` : ""}Season Champion
               </span>
             </span>
           )}

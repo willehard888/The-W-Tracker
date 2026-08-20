@@ -51,9 +51,9 @@ const HIDDEN_ROUTES = new Set([
   // Check-in is a focused full-screen flow with its own header/back — the
   // global brand bar on top was a double header eating vertical space.
   "/checkin",
-  // Profile renders its own full identity hero — the bar above it repeated
-  // avatar + name + streak + tier as a second identity block.
-  "/profile",
+  // NOTE: /profile is NOT hidden — it gets the sticky brand strip like every
+  // other tab (identity row stays Home/Leaderboard-only via showIdentity, so
+  // the hero below is still the single identity block).
 ]);
 
 const StatusHeader = () => {

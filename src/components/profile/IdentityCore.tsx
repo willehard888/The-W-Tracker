@@ -6,7 +6,6 @@ import ApexBadge from "@/components/ApexBadge";
 import StatusAvatar from "@/components/StatusAvatar";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import FeaturedBadgeHero from "@/components/FeaturedBadgeHero";
-import BrandLogo from "@/components/BrandLogo";
 import { Crown, Trophy, ShieldCheck, Lock, Shield } from "lucide-react";
 
 export interface IdentityRankData {
@@ -34,9 +33,6 @@ export interface IdentityCoreProps {
   nameplateSize?: "md" | "lg";
   /** Rendered between the pill row and the XP block (e.g. activity pulse). */
   afterPills?: ReactNode;
-  /** Show the brand lockup at the top — for pages where the global
-   *  StatusHeader (which carries the same lockup) is hidden. */
-  showBrand?: boolean;
 }
 
 /**
@@ -60,7 +56,6 @@ const IdentityCore = ({
   showLock,
   nameplateSize = "lg",
   afterPills,
-  showBrand,
 }: IdentityCoreProps) => {
   const tier = profile.status_tier || "recruit";
   const division = (profile as any).tier_division ?? 0;
@@ -70,17 +65,6 @@ const IdentityCore = ({
 
   return (
     <div className="relative flex flex-col items-center text-center">
-      {/* Brand strip — identical to the global StatusHeader lockup; only on
-          pages where that header is hidden (no stacked double lockup) */}
-      {showBrand && (
-        <div className="flex items-center justify-center gap-2 mb-5">
-          <BrandLogo size={28} alt="" className="rounded-md shadow-[0_2px_8px_hsl(var(--gold)/0.5)]" />
-          <span className="font-display font-black tracking-[0.22em] uppercase text-gradient-gold leading-none text-lg">
-            Whealth Factory
-          </span>
-        </div>
-      )}
-
       {/* Avatar */}
       {avatarSlot ?? (
         <div className="relative mb-4">

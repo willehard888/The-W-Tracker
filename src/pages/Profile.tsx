@@ -1,5 +1,5 @@
 
-import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, CalendarCheck, Gauge, ChevronRight } from "lucide-react";
+import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, CalendarCheck, Gauge, ChevronRight, Pencil, Brain, UserRound, FileText } from "lucide-react";
 import { isNativePlatform } from "@/lib/platform";
 import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
 import ProgressionSummaryCard from "@/components/profile/ProgressionSummaryCard";
@@ -472,20 +472,9 @@ const Profile = () => {
                 <LogOut size={14} className="text-gold" />
                 <span>Sign Out</span>
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setQuickMenuOpen(false);
-                  // Defer to next tick so the menu closes cleanly before
-                  // the destructive dialog opens — feels less abrupt.
-                  setTimeout(() => setDeleteDialogOpen(true), 80);
-                }}
-                disabled={deletingAccount}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm text-destructive hover:bg-destructive/10 active:bg-destructive/20 active:scale-[0.98] transition border-t border-border/40 disabled:opacity-50"
-              >
-                <Trash2 size={14} />
-                <span>{deletingAccount ? "Deleting…" : "Delete Account"}</span>
-              </button>
+              {/* Delete Account lives ONLY in Settings behind the
+                  type-to-confirm dialog — no quick path to a destructive
+                  action from a kebab menu. */}
             </div>
           </>
         )}
@@ -692,7 +681,7 @@ const Profile = () => {
           <h2 className="font-display font-bold text-base mb-3 tracking-tight">Posts ({userPostsTotal})</h2>
           <div className="space-y-3">
             {userPosts.map((post) => (
-              <div key={post.id} className="rounded-xl border border-border bg-card p-4">
+              <div key={post.id} className="surface-card p-4">
                 {post.content && <p className="text-base mb-2">{post.content}</p>}
                 {post.image_url && (
                   <img loading="lazy" decoding="async" src={post.image_url} alt="Post" className="w-full rounded-lg object-cover max-h-48 mb-2" />
@@ -751,45 +740,26 @@ const Profile = () => {
 
           {/* Season Champion lives as a pill in the hero — no duplicate card here. */}
 
-          {/* Share + Invite + Compare buttons */}
-          <div className="flex gap-2 animate-reveal animate-reveal-delay-1">
-            <Button
-              variant="gold-outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => setShareModal({ open: true, variant: "stats" })}
-            >
-              <Image size={14} />
-              Share Stats
-            </Button>
-            <Button
-              variant="gold-outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => setShareModal({ open: true, variant: "streak" })}
-            >
-              <Flame size={14} />
-              Share Streak
-            </Button>
-          </div>
-          <div className="flex gap-2 animate-reveal animate-reveal-delay-1">
-            <Button variant="gold-outline" size="sm" className="flex-1" onClick={() => navigate("/referrals")}>
-              <Users size={14} />
-              Invite Friends
-            </Button>
-            <Button variant="gold-outline" size="sm" className="flex-1" onClick={() => navigate("/badges/compare")}>
-              <GitCompare size={14} />
-              Compare Badges
-            </Button>
-          </div>
+          {/* Grouped nav rows — one visual language (eyebrow + surface-card
+              list + chevrons), not a wall of identical gold buttons. */}
+          <SettingsGroup title="Account">
+            <SettingsRow icon={Pencil} label="Edit name" sub={profile.display_name || "Not set"} onClick={() => { setNameDraft(profile?.display_name ?? ""); setNameDialogOpen(true); }} />
+            <SettingsRow icon={UserRound} label="Athlete profile" sub="Goals, schedule, injuries — what the coach trains" onClick={() => navigate("/coach/profile")} />
+            <SettingsRow icon={Brain} label="Coach memory" sub="What the coach remembers about you" onClick={() => navigate("/coach/memory")} />
+          </SettingsGroup>
 
-          {/* Manage Subscription (Elite only) */}
+          <SettingsGroup title="Sharing & friends">
+            <SettingsRow icon={Users} label="Invite friends" sub="Both get rewarded" badge={Number(profile.referral_count) || undefined} onClick={() => navigate("/referrals")} />
+            <SettingsRow icon={Image} label="Share stats" onClick={() => setShareModal({ open: true, variant: "stats" })} />
+            <SettingsRow icon={Flame} label="Share streak" onClick={() => setShareModal({ open: true, variant: "streak" })} />
+            <SettingsRow icon={GitCompare} label="Compare badges" onClick={() => navigate("/badges/compare")} />
+          </SettingsGroup>
+
           {isElite && (
-            <div className="flex gap-2 animate-reveal animate-reveal-delay-1">
-              <Button
-                variant="gold-outline"
-                size="sm"
-                className="flex-1"
+            <SettingsGroup title="Membership">
+              <SettingsRow
+                icon={CreditCard}
+                label="Manage subscription"
                 onClick={() => {
                   if (isNativePlatform()) {
                     window.open("https://apps.apple.com/account/subscriptions", "_blank");
@@ -803,24 +773,22 @@ const Profile = () => {
                       .catch(() => toast.error("Could not open subscription management"));
                   }
                 }}
-              >
-                <CreditCard size={14} />
-                Manage Subscription
-              </Button>
-            </div>
+              />
+            </SettingsGroup>
           )}
 
-          {/* Founder Command Center — admins only (RPCs re-enforce server-side) */}
           {isAdmin && (
-            <div className="flex gap-2 animate-reveal animate-reveal-delay-1">
-              <Button variant="gold-outline" size="sm" className="flex-1" onClick={() => navigate("/admin/metrics")}>
-                <BarChart3 size={14} />
-                Command Center
-              </Button>
-            </div>
+            <SettingsGroup title="Founder">
+              <SettingsRow icon={BarChart3} label="Command Center" sub="Growth metrics & waitlist" onClick={() => navigate("/admin/metrics")} />
+            </SettingsGroup>
           )}
 
-          {/* Account actions */}
+          <SettingsGroup title="Legal">
+            <SettingsRow icon={FileText} label="Privacy policy" onClick={() => navigate("/privacy")} />
+            <SettingsRow icon={FileText} label="Terms of use" onClick={() => navigate("/terms")} />
+          </SettingsGroup>
+
+          {/* Account actions — destructive looks destructive */}
           <div className="flex gap-2 pt-2 animate-reveal animate-reveal-delay-1">
             <Button variant="secondary" size="sm" className="flex-1" onClick={signOut}>
               <LogOut size={14} />
@@ -832,7 +800,7 @@ const Profile = () => {
             <Button
               variant="outline"
               size="sm"
-              className="flex-1"
+              className="flex-1 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={() => { setDeleteConfirmText(""); setDeleteDialogOpen(true); }}
             >
               <Trash2 size={14} />
@@ -901,5 +869,46 @@ const ProfileCoachLine = () => {
   if (isLoading || !text) return null;
   return <CoachLine text={text} />;
 };
+
+/** Settings section: eyebrow + surface-card list of rows. */
+const SettingsGroup = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <div className="animate-reveal animate-reveal-delay-1">
+    <p className="eyebrow px-1 mb-1.5">{title}</p>
+    <div className="surface-card overflow-hidden divide-y divide-border/30">{children}</div>
+  </div>
+);
+
+/** One tappable settings row — icon · label/sub · optional badge · chevron. */
+const SettingsRow = ({
+  icon: Icon,
+  label,
+  sub,
+  badge,
+  onClick,
+}: {
+  icon: React.ElementType;
+  label: string;
+  sub?: string;
+  badge?: number;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={() => { void hapticSelection(); onClick(); }}
+    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-card/60 transition-colors active:scale-[0.99]"
+  >
+    <Icon size={14} className="text-muted-foreground shrink-0" />
+    <span className="flex-1 min-w-0">
+      <span className="block text-[13px] font-semibold truncate">{label}</span>
+      {sub && <span className="block text-[10px] text-muted-foreground truncate mt-0.5">{sub}</span>}
+    </span>
+    {badge != null && badge > 0 && (
+      <span className="shrink-0 px-1.5 py-0.5 rounded-full bg-gold/10 border border-gold/30 text-gold text-[10px] font-black tabular-nums">
+        {badge}
+      </span>
+    )}
+    <ChevronRight size={14} className="text-muted-foreground/60 shrink-0" />
+  </button>
+);
 
 export default Profile;

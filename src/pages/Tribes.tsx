@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 // isolated touch-area implementation.
 import {
   Users, Plus, Crown, Check, X, Mail, Trophy, Flame, ChevronRight, Lock,
-  Dumbbell, Flower2, GraduationCap, Sparkles,
+  Dumbbell, Flower2, GraduationCap, Sparkles, Calendar,
 } from "lucide-react";
+import { format } from "date-fns";
 import type { LucideIcon } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
 import { toast } from "sonner";
@@ -80,6 +81,13 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   Community: Users,
 };
 
+interface NextEvent {
+  title: string;
+  activity: string | null;
+  starts_at: string;
+  going: number;
+}
+
 interface TribesPageData {
   tribes: Tribe[];
   ownedIds: Set<string>;
@@ -89,6 +97,7 @@ interface TribesPageData {
   featuredId: string | null;
   userToTribes: Map<string, string[]>;
   pulse: Map<string, { checked: number; total: number }>;
+  nextEvents: Map<string, NextEvent>;
 }
 
 const EMPTY_PAGE: TribesPageData = {
@@ -100,6 +109,7 @@ const EMPTY_PAGE: TribesPageData = {
   featuredId: null,
   userToTribes: new Map(),
   pulse: new Map(),
+  nextEvents: new Map(),
 };
 
 const Tribes = () => {
@@ -180,6 +190,7 @@ const Tribes = () => {
       const pendingIds = new Set<string>();
       let userToTribes = new Map<string, string[]>();
       let pulse = new Map<string, { checked: number; total: number }>();
+      const nextEvents = new Map<string, NextEvent>();
       let featuredPreviews: TribesPageData["featuredPreviews"] = [];
       let featuredId: string | null = null;
 
@@ -187,8 +198,9 @@ const Tribes = () => {
         const ids = list.map((t) => t.id);
 
         // My membership rows (active AND pending — the row CTA needs the
-        // truth for "Requested ✓") + today's pulse, in parallel.
-        const [memsRes, pulseRes] = await Promise.all([
+        // truth for "Requested ✓") + today's pulse + upcoming events,
+        // in parallel.
+        const [memsRes, pulseRes, eventsRes] = await Promise.all([
           supabase
             .from("tribe_members")
             .select("tribe_id, role, status")
@@ -196,6 +208,13 @@ const Tribes = () => {
             .in("tribe_id", ids)
             .in("status", ["active", "pending"]),
           supabase.rpc("tribe_today_pulse" as any, { p_tribe_ids: ids }),
+          supabase
+            .from("tribe_events")
+            .select("id, tribe_id, title, activity, starts_at")
+            .in("tribe_id", ids)
+            .gte("starts_at", new Date().toISOString())
+            .order("starts_at", { ascending: true })
+            .limit(60),
         ]);
         (((memsRes as any).data ?? []) as any[]).forEach((m: any) => {
           if (m.status === "active") joinedIds.add(m.tribe_id);
@@ -205,6 +224,34 @@ const Tribes = () => {
         (((pulseRes as any).data ?? []) as any[]).forEach((r: any) => {
           pulse.set(r.tribe_id, { checked: r.checked, total: r.total });
         });
+
+        // First upcoming event per tribe — "Group ride · Sat 8.00 · 6 going"
+        // is the strongest join signal a row can carry. RLS scopes this to
+        // public tribes + my own, which is exactly right for discovery.
+        const firstEvents = new Map<string, { id: string; title: string; activity: string | null; starts_at: string }>();
+        (((eventsRes as any).data ?? []) as any[]).forEach((e: any) => {
+          if (!firstEvents.has(e.tribe_id)) firstEvents.set(e.tribe_id, e);
+        });
+        if (firstEvents.size > 0) {
+          const evIds = Array.from(firstEvents.values()).map((e) => e.id);
+          const { data: rsvps } = await supabase
+            .from("tribe_event_rsvps")
+            .select("event_id")
+            .in("event_id", evIds)
+            .eq("status", "going");
+          const goingByEvent = new Map<string, number>();
+          ((rsvps as any) ?? []).forEach((r: any) => {
+            goingByEvent.set(r.event_id, (goingByEvent.get(r.event_id) ?? 0) + 1);
+          });
+          firstEvents.forEach((e, tribeId) => {
+            nextEvents.set(tribeId, {
+              title: e.title,
+              activity: e.activity,
+              starts_at: e.starts_at,
+              going: goingByEvent.get(e.id) ?? 0,
+            });
+          });
+        }
 
         if (tab === "browse") {
           // Featured = momentum, not size: the unjoined tribe with the most
@@ -254,7 +301,7 @@ const Tribes = () => {
         }
       }
 
-      return { tribes: list, ownedIds, joinedIds, pendingIds, featuredPreviews, featuredId, userToTribes, pulse };
+      return { tribes: list, ownedIds, joinedIds, pendingIds, featuredPreviews, featuredId, userToTribes, pulse, nextEvents };
     },
   });
 
@@ -492,6 +539,19 @@ const Tribes = () => {
                 </span>
               )}
             </div>
+            {(() => {
+              const ev = data.nextEvents.get(t.id);
+              if (!ev) return null;
+              return (
+                <div className="flex items-center gap-1.5 mt-1.5 text-[10px] font-bold text-[hsl(var(--ember))]">
+                  <Calendar size={10} strokeWidth={2.6} className="shrink-0" />
+                  <span className="truncate">
+                    {ev.title} · {format(new Date(ev.starts_at), "EEE HH:mm")}
+                    {ev.going > 0 ? ` · ${ev.going} going` : ""}
+                  </span>
+                </div>
+              );
+            })()}
             {opts.featured && data.featuredPreviews.length > 0 && (
               <div className="flex -space-x-2 mt-2">
                 {data.featuredPreviews.map((m) => (

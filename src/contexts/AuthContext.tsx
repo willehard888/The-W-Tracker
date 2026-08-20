@@ -90,6 +90,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         let data = first.data;
 
         if (!data) {
+          // Zombie-session guard: if the stored JWT points at an auth user
+          // that no longer exists (account deleted on another device, or via
+          // the dashboard), every query 401s, profile stays null forever and
+          // the app renders black screens. Detect it and sign out so the
+          // user lands on /landing instead of a void.
+          const { error: userErr } = await supabase.auth.getUser();
+          if (userErr) {
+            await supabase.auth.signOut().catch(() => null);
+            return;
+          }
           await ensureProfile(authUser);
           const retry = await supabase
             .from("profiles")

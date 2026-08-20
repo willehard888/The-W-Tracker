@@ -1,7 +1,8 @@
 // Locally-bundled, pre-optimized recipe images.
 //
-// Supabase image transformations are NOT enabled on this project's plan
-// (render/image returns "FeatureNotEnabled"), so the Storage originals were
+// (Historical note: transforms were once unavailable here; they ARE enabled
+// now — see src/lib/img.ts — but bundling stays the better call for these.)
+// The Storage originals were
 // ~2 MB PNGs that loaded slowly and forced a wasted 403 round-trip. These
 // JPEGs are pre-resized (thumb ≤560px, poster ≤1000px) — ~30× smaller for the
 // list thumbnails — and ship with the app, so they load instantly from the

@@ -17,7 +17,8 @@ import EmptyState from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
-import { avatarUrl, transformImage } from "@/lib/img";
+import { avatarUrl } from "@/lib/img";
+import AppImage from "@/components/ui/app-image";
 import { hapticSelection } from "@/lib/haptics";
 import TribeSearchBar from "@/components/TribeSearchBar";
 import TribeFireLite from "@/components/TribeFireLite";
@@ -476,11 +477,10 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             }}
           >
             {t.cover_url && (
-              <img
-                src={transformImage(t.cover_url, { width: 640, quality: 68 })}
+              <AppImage
+                src={t.cover_url}
+                width={40}
                 alt=""
-                loading="lazy"
-                decoding="async"
                 className="absolute inset-0 h-full w-full object-cover opacity-75"
               />
             )}

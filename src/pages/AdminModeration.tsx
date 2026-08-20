@@ -9,6 +9,7 @@ import { ShieldCheck, ShieldAlert, Loader2, CheckCircle2, XCircle } from "lucide
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
+import AppImage from "@/components/ui/app-image";
 
 export default function AdminModeration() {
   const { user } = useAuth();
@@ -143,11 +144,10 @@ export default function AdminModeration() {
           >
             <div className="flex items-start gap-3">
               {item.image_url ? (
-                <img
+                <AppImage
                   src={item.image_url}
+                  width={80}
                   alt=""
-                  loading="lazy"
-                  decoding="async"
                   className="h-20 w-20 rounded-lg object-cover border border-border/50 shrink-0"
                 />
               ) : (

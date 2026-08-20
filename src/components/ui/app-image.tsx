@@ -1,6 +1,7 @@
 import { ImgHTMLAttributes, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { transformImage } from "@/lib/img";
+import { isPrivateStorageUrl, useSignedMediaUrl } from "@/lib/signed-url";
 
 interface AppImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "src"> {
   src?: string | null;
@@ -31,8 +32,13 @@ export const AppImage = ({
   style,
   ...rest
 }: AppImageProps) => {
-  const transformed = transformImage(src, { width, quality, resize: "cover" });
-  const original = src || undefined;
+  // Private-bucket media (proof-photos / feed-images since the S7 flip)
+  // can't render from the public endpoint — resolve a signed URL, with the
+  // resize baked into the same signature. Public/external URLs skip this.
+  const isPrivate = isPrivateStorageUrl(src);
+  const signed = useSignedMediaUrl(isPrivate ? src : null, { width, quality });
+  const transformed = isPrivate ? signed : transformImage(src, { width, quality, resize: "cover" });
+  const original = (isPrivate ? signed : src) || undefined;
 
   const [loaded, setLoaded] = useState(false);
   // "transform" → optimized URL; "original" → fell back; "failed" → both failed.

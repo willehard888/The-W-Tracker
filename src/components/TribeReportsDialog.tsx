@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { avatarUrl } from "@/lib/img";
+import AppImage from "@/components/ui/app-image";
+import { useSignedMediaUrl } from "@/lib/signed-url";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -34,6 +36,20 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   onChanged?: () => void;
 }
+
+/** Reported videos live in the private feed-images bucket — sign to preview. */
+const ReportVideo = ({ src }: { src: string }) => {
+  const signed = useSignedMediaUrl(src);
+  if (!signed) return null;
+  return (
+    <video
+      src={signed}
+      className="rounded-md max-h-32 w-full object-cover border border-border/40"
+      muted
+      playsInline
+    />
+  );
+};
 
 export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChanged }: Props) {
   const [loading, setLoading] = useState(true);
@@ -204,22 +220,14 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
                     </p>
                   )}
                   {r.post.image_url && (
-                    <img
+                    <AppImage
                       src={r.post.image_url}
+                      width={320}
                       alt=""
-                      loading="lazy"
-                      decoding="async"
                       className="rounded-md max-h-32 w-full object-cover border border-border/40"
                     />
                   )}
-                  {r.post.video_url && (
-                    <video
-                      src={r.post.video_url}
-                      className="rounded-md max-h-32 w-full object-cover border border-border/40"
-                      muted
-                      playsInline
-                    />
-                  )}
+                  {r.post.video_url && <ReportVideo src={r.post.video_url} />}
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground italic">Post no longer exists.</p>

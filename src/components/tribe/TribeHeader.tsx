@@ -4,7 +4,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TierUsername from "@/components/TierUsername";
-import { transformImage } from "@/lib/img";
+import { useSignedMediaUrl } from "@/lib/signed-url";
 export interface TribeMember {
   user_id: string;
   username: string;
@@ -62,16 +62,18 @@ const TribeHeader = ({
   onShare,
   ownerPulse,
 }: TribeHeaderProps) => {
+  // Covers live in the private feed-images bucket — sign + resize in one round.
+  const coverSrc = useSignedMediaUrl(tribe.cover_url, { width: 640, quality: 68 });
   const founder = members.find((m) => m.role === "owner");
 
   return (
     <div className="relative mb-4 surface-card overflow-hidden">
       <div className="relative rounded-2xl p-5 overflow-hidden">
         {/* Cover photo background — owner-uploaded, dimmed for legibility */}
-        {tribe.cover_url && (
+        {coverSrc && (
           <div className="absolute inset-0 pointer-events-none">
             <img
-              src={transformImage(tribe.cover_url, { width: 640, quality: 68 })}
+              src={coverSrc}
               alt=""
               decoding="async"
               loading="lazy"

@@ -1,5 +1,6 @@
 import { Image } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSignedMediaUrl } from "@/lib/signed-url";
 import type { BattleTypeInfo } from "@/components/battles/types";
 
 interface Props {
@@ -12,6 +13,9 @@ interface Props {
 
 /** A tied battle in community voting — proof photos side-by-side + vote bar. */
 const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => {
+  // proof-photos is a private bucket — render via signed URLs.
+  const challengerProof = useSignedMediaUrl(battle.challenger_proof_url);
+  const opponentProof = useSignedMediaUrl(battle.opponent_proof_url);
   const challengerVotes = counts[battle.challenger_id] || 0;
   const opponentVotes = counts[battle.opponent_id] || 0;
   const totalVotes = challengerVotes + opponentVotes;
@@ -45,8 +49,8 @@ const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => 
       <div className="flex gap-2 px-4 py-3">
         <div className="flex-1 text-center">
           <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary mb-2">
-            {battle.challenger_proof_url ? (
-              <img loading="lazy" decoding="async" src={battle.challenger_proof_url} alt="Challenger proof" className="w-full h-full object-cover" />
+            {challengerProof ? (
+              <img loading="lazy" decoding="async" src={challengerProof} alt="Challenger proof" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground/40"><Image size={24} /></div>
             )}
@@ -61,8 +65,8 @@ const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => 
 
         <div className="flex-1 text-center">
           <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary mb-2">
-            {battle.opponent_proof_url ? (
-              <img loading="lazy" decoding="async" src={battle.opponent_proof_url} alt="Opponent proof" className="w-full h-full object-cover" />
+            {opponentProof ? (
+              <img loading="lazy" decoding="async" src={opponentProof} alt="Opponent proof" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground/40"><Image size={24} /></div>
             )}

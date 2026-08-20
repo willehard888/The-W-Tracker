@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useSignedMediaUrl } from "@/lib/signed-url";
 import type { BattleTypeInfo } from "@/components/battles/types";
 
 interface Props {
@@ -28,6 +29,9 @@ const BattleActiveCard = ({
   battle, opp, typeInfo, profileUsername, myScore, oppScore, amWinning, daysLeft,
   myProof, oppProof, isAdmin, isUploading, onRequestUpload, onAdminCancel, onAdminDelete,
 }: Props) => {
+  // proof-photos is a private bucket — render via signed URLs.
+  const myProofSrc = useSignedMediaUrl(myProof);
+  const oppProofSrc = useSignedMediaUrl(oppProof);
   const TypeIcon = typeInfo.icon;
   return (
     <div className="rounded-xl border border-gold/20 overflow-hidden glass-3d depth-realistic">
@@ -122,7 +126,7 @@ const BattleActiveCard = ({
           <div className="flex-1">
             {myProof ? (
               <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
-                <img loading="lazy" decoding="async" src={myProof} alt="My proof" className="w-full h-full object-cover" />
+                {myProofSrc && <img loading="lazy" decoding="async" src={myProofSrc} alt="My proof" className="w-full h-full object-cover" />}
                 <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
                   <span className="text-[9px] font-bold text-white">You ✅</span>
                 </div>
@@ -149,7 +153,7 @@ const BattleActiveCard = ({
           <div className="flex-1">
             {oppProof ? (
               <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
-                <img loading="lazy" decoding="async" src={oppProof} alt="Opponent proof" className="w-full h-full object-cover" />
+                {oppProofSrc && <img loading="lazy" decoding="async" src={oppProofSrc} alt="Opponent proof" className="w-full h-full object-cover" />}
                 <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
                   <span className="text-[9px] font-bold text-white">@{opp.username} ✅</span>
                 </div>

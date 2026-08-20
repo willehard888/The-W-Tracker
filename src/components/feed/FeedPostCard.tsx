@@ -183,7 +183,7 @@ const FeedPostCard = memo(function FeedPostCard({
             <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
             {/* Author-only: server moderation hasn't approved yet (others can't
                 see the post until it does — usually seconds). */}
-            {(post as any).moderation_status === "pending" && (
+            {post.moderation_status === "pending" && (
               <span className="inline-flex items-center px-1.5 py-px rounded-full border border-amber-400/40 bg-amber-400/10 text-amber-400 font-bold uppercase tracking-wider">
                 Reviewing…
               </span>

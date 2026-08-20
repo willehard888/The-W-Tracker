@@ -251,11 +251,6 @@ const UserProfile = () => {
         </div>
 
         <div className="relative z-10 text-center">
-          {/* Brand kicker */}
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/70 mb-3">
-            Whealth Factory
-          </p>
-
           {/* Shared identity block — identical to /profile (page owns the
               background + entrance animation; rank comes from the same RPC) */}
           <motion.div

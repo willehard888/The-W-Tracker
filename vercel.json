@@ -10,6 +10,17 @@
   ],
   "rewrites": [
     { "source": "/waitlist", "destination": "/waitlist.html" },
+    {
+      "source": "/u/:username",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(bot|crawler|spider|facebookexternalhit|twitterbot|slackbot|discordbot|linkedinbot|whatsapp|telegrambot|applebot|preview|embedly|pinterest|skype).*"
+        }
+      ],
+      "destination": "https://gcwuvijcuzhunkcauzom.supabase.co/functions/v1/og-profile?u=:username"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

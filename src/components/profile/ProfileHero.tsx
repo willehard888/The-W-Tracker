@@ -1,10 +1,12 @@
-import { Crown, Camera, Trophy, ShieldCheck } from "lucide-react";
+import { Crown, Camera, Trophy, ShieldCheck, Lock, Pencil, Share2, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierUsernameClass } from "@/lib/status-tiers";
 import StatusNameplate from "@/components/StatusNameplate";
 import ApexBadge from "@/components/ApexBadge";
 import BadgeShowcase from "@/components/BadgeShowcase";
-import { avatarUrl } from "@/lib/img";
+import StatusAvatar from "@/components/StatusAvatar";
+import StreakFlameInline from "@/components/StreakFlameInline";
+import { format } from "date-fns";
 
 interface RankData {
   rank?: number | null;
@@ -15,7 +17,6 @@ interface RankData {
 
 export interface ProfileHeroProps {
   profile: any;
-  isElite: boolean;
   isApexSubscriber: boolean;
   uploadingAvatar: boolean;
   avatarInputRef: React.RefObject<HTMLInputElement>;
@@ -30,16 +31,20 @@ export interface ProfileHeroProps {
   earnedBadges: any[] | undefined;
   onPreviewBadge: (badge: any) => void;
   verified?: boolean;
+  onShare: () => void;
+  onEditName: () => void;
 }
 
 /**
- * Profile hero card (avatar, nameplate, status pills, XP, featured badge, badge
- * row). Extracted from Profile.tsx. Glows calmed for the restrained look:
- * dimmer avatar halo, no XP text drop-shadow, flat PREMIUM ribbon, softer vignette.
+ * Profile hero — the identity card (the global StatusHeader is hidden on
+ * /profile so this is the ONE identity block, not a repeat of the bar above).
+ * Tier-themed gradient stays; inside: shared StatusAvatar with an
+ * everyone-can-edit camera, tier-colored @handle with the permanent-name lock,
+ * editable display name, rank nameplate, status pills, the massive XP, and a
+ * tri-stat strip that finally puts the streak on the profile.
  */
 const ProfileHero = ({
   profile,
-  isElite,
   isApexSubscriber,
   uploadingAvatar,
   avatarInputRef,
@@ -54,10 +59,14 @@ const ProfileHero = ({
   earnedBadges,
   onPreviewBadge,
   verified,
+  onShare,
+  onEditName,
 }: ProfileHeroProps) => {
+  const shields = Number(profile.streak_shields ?? 0);
+
   return (
     <div className={cn(
-      "animate-reveal relative mb-6 overflow-hidden rounded-3xl border p-6 pt-10 pb-7",
+      "animate-reveal relative mb-6 overflow-hidden rounded-3xl border p-6 pt-8 pb-7",
       heroBgClass,
     )}>
       {/* Top vignette glow */}
@@ -69,9 +78,19 @@ const ProfileHero = ({
       {/* Top accent line */}
       <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
 
+      {/* Share profile — quiet icon, top-right */}
+      <button
+        type="button"
+        onClick={onShare}
+        aria-label="Share profile"
+        className="absolute top-3 right-3 z-10 h-9 w-9 rounded-full bg-background/50 border border-border/60 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-gold hover:border-gold/40 active:scale-95 transition"
+      >
+        <Share2 size={15} />
+      </button>
+
       <div className="relative flex flex-col items-center text-center">
-        {/* Avatar — large, gold ring, camera/crown badge */}
-        <div className="relative mb-5">
+        {/* Avatar — shared StatusAvatar (tier ring + badge), camera for everyone */}
+        <div className="relative mb-4">
           <input
             ref={avatarInputRef}
             type="file"
@@ -80,40 +99,30 @@ const ProfileHero = ({
             onChange={onAvatarUpload}
           />
           <div className="absolute inset-0 -m-3 rounded-full bg-gold/15 blur-2xl" aria-hidden />
-          {profile.avatar_url ? (
-            <img
-              src={avatarUrl(profile.avatar_url, 128)}
-              alt={profile.username}
-              decoding="async"
-              className="relative h-32 w-32 rounded-full object-cover ring-2 ring-gold ring-offset-4 ring-offset-background"
-            />
-          ) : (
-            <div className="relative h-32 w-32 rounded-full gradient-gold flex items-center justify-center text-5xl font-black font-display text-primary-foreground ring-2 ring-gold ring-offset-4 ring-offset-background">
-              {profile.username?.charAt(0)?.toUpperCase()}
-            </div>
-          )}
-          {isElite ? (
-            <button
-              onClick={() => avatarInputRef.current?.click()}
-              disabled={uploadingAvatar}
-              className="absolute -bottom-1 -right-1 h-10 w-10 rounded-full bg-background border border-gold/40 flex items-center justify-center transition-all hover:bg-gold/10 active:scale-95"
-            >
-              {uploadingAvatar ? (
-                <span className="text-[10px] text-gold animate-pulse">...</span>
-              ) : (
-                <Camera size={16} className="text-gold" />
-              )}
-            </button>
-          ) : (
-            <div className="absolute -bottom-1 -right-1 h-10 w-10 rounded-full bg-background border border-gold/40 flex items-center justify-center">
-              <Crown size={18} className="text-gold" />
-            </div>
-          )}
+          <StatusAvatar
+            src={profile.avatar_url}
+            name={profile.username}
+            tier={tier}
+            size="xl"
+            className="relative"
+          />
+          <button
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={uploadingAvatar}
+            aria-label="Change profile photo"
+            className="absolute -bottom-1 -right-1 h-10 w-10 rounded-full bg-background border border-gold/40 flex items-center justify-center transition-all hover:bg-gold/10 active:scale-95"
+          >
+            {uploadingAvatar ? (
+              <span className="text-[10px] text-gold animate-pulse">...</span>
+            ) : (
+              <Camera size={16} className="text-gold" />
+            )}
+          </button>
         </div>
 
         {/* PREMIUM ribbon — only for Founding Apex subscribers */}
         {isApexSubscriber && (
-          <div className="mt-4 mb-1 flex justify-center">
+          <div className="mt-2 mb-1 flex justify-center">
             <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm text-[10px] font-black uppercase tracking-[0.22em] bg-gold/15 text-gold border border-gold/40">
               <Crown size={11} strokeWidth={3} />
               Premium · Day-One
@@ -121,16 +130,33 @@ const ProfileHero = ({
           </div>
         )}
 
-        {/* Username — colored by status tier */}
-        <h1 className={cn(
-          "font-display text-[34px] leading-none font-black tracking-tight",
-          getTierUsernameClass(profile.status_tier || 'recruit'),
-        )}>
-          @{profile.username}
-        </h1>
+        {/* @handle — tier-colored, with the permanent-name lock */}
+        <div className="flex items-center gap-2">
+          <h1 className={cn(
+            "font-display text-[32px] leading-none font-black tracking-tight",
+            getTierUsernameClass(profile.status_tier || 'recruit'),
+          )}>
+            @{profile.username}
+          </h1>
+          <Lock size={13} className="text-muted-foreground/50 shrink-0" aria-label="Permanent username" />
+        </div>
+
+        {/* Display name — the human name under the handle, editable */}
+        <button
+          type="button"
+          onClick={onEditName}
+          className="mt-1.5 inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground/90 active:scale-95 transition group"
+        >
+          {profile.display_name ? (
+            <span className="text-sm font-semibold">{profile.display_name}</span>
+          ) : (
+            <span className="text-xs font-medium text-muted-foreground/60">Add your name</span>
+          )}
+          <Pencil size={11} className="text-muted-foreground/50 group-hover:text-gold transition-colors" />
+        </button>
 
         {/* Status nameplate */}
-        <div className="mt-5 w-full">
+        <div className="mt-4 w-full">
           <StatusNameplate
             tier={tier}
             rank={rankData?.rank ?? undefined}
@@ -147,21 +173,13 @@ const ProfileHero = ({
             <ApexBadge isFounding={isApexSubscriber} size="md" />
           ) : profile.status_tier === 'legend' ? (
             <ApexBadge tier="legend" size="md" />
-          ) : isElite ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
-              <Crown size={12} className="text-gold" />
-              <span className="text-[11px] font-black text-gold tracking-wider uppercase">Elite</span>
-            </span>
           ) : null}
-          <span className="inline-flex items-center px-3 py-1.5 rounded-full">
-            <span className="text-[11px] font-black tracking-wider text-muted-foreground/80 uppercase">
-              Lv {profile.level}
-            </span>
-          </span>
           {championHistory && championHistory.wins > 0 && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
               <Trophy size={12} className="text-gold" />
-              <span className="text-[11px] font-black text-gold tracking-wider uppercase">Season Champion</span>
+              <span className="text-[11px] font-black text-gold tracking-wider uppercase">
+                {championHistory.wins > 1 ? `${championHistory.wins}× ` : ""}Season Champion
+              </span>
             </span>
           )}
           {verified && (
@@ -178,6 +196,33 @@ const ProfileHero = ({
             {(profile.xp ?? 0).toLocaleString().replace(/,/g, " ")}
           </p>
           <p className="text-[10px] font-black tracking-[0.22em] text-gold/70 mt-2">TOTAL XP</p>
+        </div>
+
+        {/* Tri-stat strip — the streak finally lives on the profile */}
+        <div className="mt-6 w-full grid grid-cols-3 divide-x divide-border/40 rounded-2xl border border-border/40 bg-background/30 backdrop-blur-sm py-3">
+          <div className="flex flex-col items-center gap-0.5 px-1">
+            <StreakFlameInline streak={profile.streak ?? 0} suffix="d" className="text-[15px]" />
+            <span className="eyebrow inline-flex items-center gap-1">
+              Streak
+              {shields > 0 && (
+                <span className="inline-flex items-center gap-0.5 text-gold normal-case tracking-normal">
+                  <Shield size={8} fill="currentColor" />{shields}
+                </span>
+              )}
+            </span>
+          </div>
+          <div className="flex flex-col items-center gap-0.5 px-1">
+            <span className="font-display font-black text-[15px] tabular-nums text-foreground/90">
+              {profile.longest_streak ?? 0}d
+            </span>
+            <span className="eyebrow">Best</span>
+          </div>
+          <div className="flex flex-col items-center gap-0.5 px-1">
+            <span className="font-display font-black text-[15px] tabular-nums text-foreground/90">
+              {profile.level ?? 1}
+            </span>
+            <span className="eyebrow">Level</span>
+          </div>
         </div>
 
         {/* Tier message — italic, subtle */}
@@ -202,6 +247,13 @@ const ProfileHero = ({
               onBadgeClick={onPreviewBadge}
             />
           </div>
+        )}
+
+        {/* Member since — quiet closing line */}
+        {profile.created_at && (
+          <p className="eyebrow mt-6">
+            Member since {format(new Date(profile.created_at), "MMM yyyy")}
+          </p>
         )}
       </div>
 

@@ -364,7 +364,11 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
             : variant === "whealth" && whealthData
             ? `Whealth Index ${whealthData.overall}/100 on Whealth Factory — one number for sleep, recovery, movement, nutrition, mind & inner work. What's yours?`
             : `${profile.xp.toLocaleString()} XP • Level ${profile.level} • ${tierConfig.emoji} ${tierConfig.label} on Whealth Factory. The grind doesn't stop.`,
-          url: variant === "referral" ? (referralLink || window.location.origin) : window.location.origin,
+          // Non-referral shares point at the user's PUBLIC profile — the /u/
+          // route serves an OG card to crawlers, so the link lands rich.
+          url: variant === "referral"
+            ? (referralLink || window.location.origin)
+            : `https://whealthfactory.com/u/${profile.username}`,
         });
         void track(FUNNEL.inviteShared, { method: "native", surface: "story", variant });
       } catch {}

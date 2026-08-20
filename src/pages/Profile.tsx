@@ -1,8 +1,6 @@
 
-import { Flame, Zap, Award, Shield, Share2, Crown, LogOut, Users, Image, GitCompare, Camera, MessageSquare, Heart, Trophy, CreditCard, Medal, Moon, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3 } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, CalendarCheck, Gauge, ChevronRight } from "lucide-react";
 import { isNativePlatform } from "@/lib/platform";
-import StatCard from "@/components/StatCard";
 import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
 import ProgressionSummaryCard from "@/components/profile/ProgressionSummaryCard";
 import RecoveryCard from "@/components/profile/RecoveryCard";
@@ -11,14 +9,12 @@ import ProfileHero from "@/components/profile/ProfileHero";
 import { downscaleImage } from "@/lib/downscale-image";
 import { withNetworkRetry, isTransientNetworkError } from "@/lib/retry";
 import { hapticSelection } from "@/lib/haptics";
-import StreakDisplay from "@/components/StreakDisplay";
 import BadgeVault from "@/components/BadgeVault";
-import BadgeShowcase from "@/components/BadgeShowcase";
-import StatusBadge from "@/components/StatusBadge";
 import RankPressureCard from "@/components/RankPressureCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,9 +24,9 @@ import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import StoryShareModal from "@/components/StoryShareModal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow, subDays } from "date-fns";
+import { formatDistanceToNow, subDays, format } from "date-fns";
 import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
-import { getTierConfig, getTierUsernameClass } from "@/lib/status-tiers";
+import { getTierConfig } from "@/lib/status-tiers";
 import RoadToElite from "@/components/RoadToElite";
 import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
 import TierLadder from "@/components/TierLadder";
@@ -38,13 +34,12 @@ import YourBlueprintCard from "@/components/coach/YourBlueprintCard";
 import CoachLine from "@/components/coach/CoachLine";
 import { useCoachObservation } from "@/hooks/use-coach-observation";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { useModeration } from "@/hooks/use-moderation";
+import { useWhealthSnapshots } from "@/hooks/use-whealth-snapshots";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-
-import StatusNameplate from "@/components/StatusNameplate";
 import LiveRivals from "@/components/LiveRivals";
-import ApexBadge from "@/components/ApexBadge";
 import { useMyRank } from "@/hooks/use-my-rank";
-import { format } from "date-fns";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 // Pull-to-refresh removed temporarily — touch handlers on the page wrapper
 // were intercepting inner taps (e.g., logout button, share, badges). Will
 // re-add once the touch-area is properly isolated.
@@ -54,8 +49,13 @@ const Profile = () => {
   const isAdmin = useIsAdmin(profile?.user_id);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const moderation = useModeration();
   const [previewBadge, setPreviewBadge] = useState<any>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  // Display-name editor — the human name under the permanent @handle.
+  const [nameDialogOpen, setNameDialogOpen] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [savingName, setSavingName] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   // Type-to-confirm guard: the final delete button stays disabled until the
@@ -101,6 +101,12 @@ const Profile = () => {
     if (!file || !profile) return;
     setUploadingAvatar(true);
     try {
+      // An avatar is public content everywhere in the app — gate it through
+      // the same moderation the feed/tribe images use.
+      const outcome = await moderation.moderateImage({ file, kind: "feed_post" });
+      if (outcome.blocked) {
+        throw new Error(outcome.friendlyMessage ?? "Image rejected by content policy");
+      }
       // Shrink before upload — avatars render ≤128px, no need to store a multi-MB original.
       const optimized = await downscaleImage(file, { maxDim: 512, quality: 0.82, skipUnder: 60_000 });
       const ext = optimized.name.split(".").pop();
@@ -121,16 +127,62 @@ const Profile = () => {
       });
       toast.success("Profile photo updated! 📸");
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       toast.error(
         isTransientNetworkError(err)
           ? "Connection dropped — check your signal and try again."
+          : (err?.message?.includes("policy") || err?.message?.includes("rejected"))
+          ? err.message
           : "Failed to upload photo",
       );
     }
     setUploadingAvatar(false);
     e.target.value = "";
+  };
+
+  // Share MY profile — the first place in the app that builds the user's own
+  // public /u/ link (vercel routes it to the OG shim for crawlers).
+  const handleShareProfile = async () => {
+    if (!profile?.username) return;
+    const url = `https://whealthfactory.com/u/${profile.username}`;
+    const text = `@${profile.username} on Whealth Factory — Lv ${profile.level ?? 1} · ${(profile.xp ?? 0).toLocaleString()} XP · ${profile.streak ?? 0}d streak`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `@${profile.username}`, text, url });
+        return;
+      }
+    } catch {
+      return; // user dismissed the sheet
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Profile link copied");
+    } catch {
+      toast.error("Couldn't copy the link");
+    }
+  };
+
+  const handleSaveDisplayName = async () => {
+    const trimmed = nameDraft.trim();
+    if (trimmed.length > 40) {
+      toast.error("Max 40 characters");
+      return;
+    }
+    setSavingName(true);
+    try {
+      const { error } = await supabase.rpc("update_own_profile", {
+        new_display_name: trimmed || null,
+      } as never);
+      if (error) throw error;
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success(trimmed ? "Name saved" : "Name cleared");
+      setNameDialogOpen(false);
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to save name");
+    } finally {
+      setSavingName(false);
+    }
   };
 
   const { data: allBadges } = useQuery({
@@ -241,23 +293,25 @@ const Profile = () => {
     enabled: !!profile,
   });
 
-  const { data: lastCheckin } = useQuery({
-    queryKey: ["last-checkin-profile", profile?.user_id],
-    staleTime: 5 * 60_000,
+  // Lifetime check-in count — the "days you showed up" number.
+  const { data: checkinTotal } = useQuery({
+    queryKey: ["checkin-total", profile?.user_id],
+    staleTime: 10 * 60_000,
     gcTime:    30 * 60_000,
     queryFn: async () => {
-      if (!profile) return null;
-      const { data } = await supabase
+      if (!profile) return 0;
+      const { count } = await supabase
         .from("daily_checkins")
-        .select("checked_in_at")
-        .eq("user_id", profile.user_id)
-        .order("checked_in_at", { ascending: false })
-        .limit(1)
-        .single();
-      return data;
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", profile.user_id);
+      return count || 0;
     },
     enabled: !!profile,
   });
+
+  // Whealth Index from the nightly snapshot (cheap single query — NOT the
+  // 11-query live hook). Latest score + a small trend line.
+  const { data: whealthSnapshots } = useWhealthSnapshots(14);
 
   const { data: championHistory } = useQuery({
     queryKey: ["champion-history", profile?.user_id],
@@ -445,12 +499,31 @@ const Profile = () => {
         badgeData={shareModal.badgeData}
       />
 
-      
+      {/* Display-name editor */}
+      <Dialog open={nameDialogOpen} onOpenChange={setNameDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Your name</DialogTitle>
+            <DialogDescription>
+              Shown under your permanent @{profile?.username} handle. Optional.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={nameDraft}
+            onChange={(e) => setNameDraft(e.target.value)}
+            placeholder="e.g. Rasmus P."
+            maxLength={40}
+            autoFocus
+          />
+          <Button variant="ember" onClick={handleSaveDisplayName} disabled={savingName} className="w-full">
+            {savingName ? "Saving…" : "Save"}
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       {/* Profile Header — cinematic hero card, themed by tier */}
       <ProfileHero
         profile={profile}
-        isElite={isElite}
         isApexSubscriber={isApexSubscriber}
         uploadingAvatar={uploadingAvatar}
         avatarInputRef={avatarInputRef}
@@ -465,17 +538,81 @@ const Profile = () => {
         earnedBadges={earnedBadges}
         onPreviewBadge={setPreviewBadge}
         verified={!!verifiedStats?.is_verified_performer}
+        onShare={handleShareProfile}
+        onEditName={() => { setNameDraft(profile?.display_name ?? ""); setNameDialogOpen(true); }}
       />
 
-      <Tabs value={profileTab} onValueChange={(v) => setProfileTab(v as typeof profileTab)} className="w-full">
-        <TabsList className="w-full grid grid-cols-3 h-auto p-1 mb-4">
-          <TabsTrigger value="stats">Stats</TabsTrigger>
-          <TabsTrigger value="badges">Badges</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-        </TabsList>
+      {/* Tabs — the app-wide segmented control language */}
+      <div className={cn(SEGMENT_TRACK, "mb-4")}>
+        {(["stats", "badges", "settings"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => { void hapticSelection(); setProfileTab(t); }}
+            className={cn(
+              "flex-1 text-xs font-black py-2 rounded-lg uppercase tracking-wider transition-all",
+              profileTab === t ? SEGMENT_ACTIVE : SEGMENT_IDLE,
+            )}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
 
-        {/* ─────────────────────── STATS TAB ─────────────────────── */}
-        <TabsContent value="stats" className="space-y-3 mt-0">
+      {/* ─────────────────────── STATS TAB ─────────────────────── */}
+      {profileTab === "stats" && (
+      <div className="space-y-3">
+
+      {/* Hard numbers first — the lifetime scoreboard */}
+      <div className="grid grid-cols-2 gap-2 animate-reveal animate-reveal-delay-1">
+        {[
+          { icon: CalendarCheck, label: "Check-ins", value: checkinTotal ?? 0, accent: "text-gold" },
+          { icon: Flame, label: "Best streak", value: `${profile.longest_streak ?? 0}d`, accent: "text-[hsl(var(--ember))]" },
+          { icon: Award, label: "Battles won", value: battleStats?.won || 0, accent: "text-rose-400" },
+          { icon: Trophy, label: "Kudos received", value: kudosReceived || 0, accent: "text-gold" },
+        ].map((s) => (
+          <div key={s.label} className="surface-card p-3.5 flex items-center gap-3">
+            <s.icon size={16} className={cn("shrink-0", s.accent)} />
+            <div className="min-w-0">
+              <p className="font-display font-black text-lg leading-none tabular-nums">{s.value}</p>
+              <p className="eyebrow mt-1">{s.label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Whealth Index — the headline metric, from the nightly snapshot */}
+      {whealthSnapshots && whealthSnapshots.length > 0 && (() => {
+        const latest = whealthSnapshots[0];
+        const series = [...whealthSnapshots].reverse();
+        const points = series
+          .map((s, i) => `${(i / Math.max(1, series.length - 1)) * 100},${34 - (s.overall / 100) * 30}`)
+          .join(" ");
+        return (
+          <button
+            type="button"
+            onClick={() => navigate("/journey")}
+            className="w-full text-left surface-card p-4 flex items-center gap-4 animate-reveal animate-reveal-delay-1 active:scale-[0.99] transition-transform"
+          >
+            <div className="shrink-0">
+              <p className="font-display font-black text-3xl leading-none text-gold tabular-nums">{latest.overall}</p>
+              <p className="eyebrow mt-1 inline-flex items-center gap-1"><Gauge size={9} /> Whealth Index</p>
+            </div>
+            <svg viewBox="0 0 100 36" className="flex-1 h-9" preserveAspectRatio="none" aria-hidden>
+              <polyline
+                points={points}
+                fill="none"
+                stroke="hsl(var(--gold))"
+                strokeOpacity="0.7"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            <ChevronRight size={16} className="text-muted-foreground/60 shrink-0" />
+          </button>
+        );
+      })()}
 
       {/* Rank Position */}
       {rankData && (
@@ -509,12 +646,6 @@ const Profile = () => {
       {/* Recovery — last night's sleep + heart rate, causal "why" via coach */}
       <div className="animate-reveal animate-reveal-delay-2">
         <RecoveryCard />
-      </div>
-
-      {/* Stats — battles + kudos */}
-      <div className="flex flex-col gap-3 animate-reveal animate-reveal-delay-2">
-        <StatCard icon={Award} label="Battles Won" value={battleStats?.won || 0} variant="rose" />
-        <StatCard icon={Trophy} label="Kudos Received" value={kudosReceived || 0} variant="ember" />
       </div>
 
       {/* Your Blueprint — Coach's read of who you are. Renders null when
@@ -578,10 +709,12 @@ const Profile = () => {
         </div>
       )}
 
-        </TabsContent>
+      </div>
+      )}
 
-        {/* ─────────────────────── BADGES TAB ─────────────────────── */}
-        <TabsContent value="badges" className="space-y-3 mt-0">
+      {/* ─────────────────────── BADGES TAB ─────────────────────── */}
+      {profileTab === "badges" && (
+        <div className="space-y-3">
           <div className="animate-reveal animate-reveal-delay-1">
             <BadgeVault
               allBadges={allBadges || []}
@@ -592,10 +725,12 @@ const Profile = () => {
               onSetFeatured={handleSetFeatured}
             />
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* ─────────────────────── SETTINGS TAB ─────────────────────── */}
-        <TabsContent value="settings" className="space-y-3 mt-0">
+      {/* ─────────────────────── SETTINGS TAB ─────────────────────── */}
+      {profileTab === "settings" && (
+        <div className="space-y-3">
 
           {/* Membership status (subscriber line — earned-tier crown lives in hero) */}
           {isElite && (
@@ -614,26 +749,7 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Season Champion — past wins */}
-          {championHistory && championHistory.wins > 0 && (
-            <div className="animate-reveal animate-reveal-delay-1">
-              <div className="rounded-2xl border-2 border-gold/50 p-5 glow-gold glass-3d depth-realistic shadow-gold/20">
-                <div className="flex items-center gap-2 mb-4">
-                  <Medal size={24} className="text-gold drop-shadow-[0_0_8px_hsl(var(--gold)/0.6)]" />
-                  <h2 className="font-display font-black text-xl tracking-tight">Season Champion</h2>
-                  <span className="ml-auto text-gold font-display font-black text-2xl">{championHistory.wins}x</span>
-                </div>
-                <div className="space-y-2">
-                  {championHistory.seasons.map((s: any, i: number) => (
-                    <div key={i} className="flex items-center justify-between text-base">
-                      <span className="text-muted-foreground font-medium">{s.name}</span>
-                      <span className="font-display font-bold tabular-nums text-foreground">{(s.points ?? 0).toLocaleString()} XP</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Season Champion lives as a pill in the hero — no duplicate card here. */}
 
           {/* Share + Invite + Compare buttons */}
           <div className="flex gap-2 animate-reveal animate-reveal-delay-1">
@@ -723,10 +839,8 @@ const Profile = () => {
               Delete Account
             </Button>
 
-            {/* Controlled delete-confirm — triggered by the kebab menu's
-                "Delete Account" item. The Settings-tab button uses the
-                uncontrolled AlertDialog above. Both routes converge on
-                performAccountDeletion(). */}
+            {/* Controlled delete-confirm — both entry points (Settings button
+                + kebab item) converge here on performAccountDeletion(). */}
             <AlertDialog
               open={deleteDialogOpen}
               onOpenChange={(open) => { setDeleteDialogOpen(open); if (!open) setDeleteConfirmText(""); }}
@@ -775,8 +889,8 @@ const Profile = () => {
             </AlertDialog>
           </div>
 
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </div>
   );
 };

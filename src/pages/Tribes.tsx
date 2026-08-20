@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,20 +7,28 @@ import { Button } from "@/components/ui/button";
 // Pull-to-refresh removed temporarily — touch handlers on the page wrapper
 // were intercepting inner taps on tribe cards. Re-add once we have a more
 // isolated touch-area implementation.
-import { Users, Plus, Crown, Check, X, Sparkles, Mail, Trophy, Pause, Flame, ChevronRight } from "lucide-react";
+import {
+  Users, Plus, Crown, Check, X, Mail, Trophy, Flame, ChevronRight, Lock,
+  Dumbbell, Flower2, GraduationCap, Sparkles,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
-import { SEGMENT_ACTIVE } from "@/components/ui/segment";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 import { avatarUrl, transformImage } from "@/lib/img";
+import { hapticSelection } from "@/lib/haptics";
 import TribeSearchBar from "@/components/TribeSearchBar";
-import StreakFlameInline from "@/components/StreakFlameInline";
 import TribeFireLite from "@/components/TribeFireLite";
+import TribeEmberSeed from "@/components/TribeEmberSeed";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
-import { TRIBE_ACTIVITIES, activityIcon } from "@/lib/tribe-activities";
-import { fetchTribeCollectiveStreaks, collectiveStreakTier, collectiveTierName, collectiveAccent, collectivePalette } from "@/lib/tribe-streak";
+import { TRIBE_ACTIVITY_GROUPS, activityIcon } from "@/lib/tribe-activities";
+import { collectiveStreakTier, collectiveTierName, collectiveAccent, collectivePalette, withAlpha } from "@/lib/tribe-streak";
 
+// tribes `.select("*")` — typed to what the discovery UI actually renders.
+// (supabase/types.ts predates the fire-server columns; local shape keeps us
+// honest without `as any` casts.)
 interface Tribe {
   id: string;
   name: string;
@@ -29,9 +37,14 @@ interface Tribe {
   cover_url: string | null;
   visibility: string;
   member_count: number;
+  member_cap: number | null;
   owner_id: string;
+  primary_activity: string | null;
+  collective_streak: number | null;
+  weekly_xp: number | null;
+  fire_tier: number | null;
   is_paused?: boolean;
-  paused_reason?: string | null;
+  created_at: string;
 }
 
 interface Invite {
@@ -42,8 +55,6 @@ interface Invite {
   tribe: { name: string; description: string | null; member_count: number; visibility: string } | null;
   inviter: { username: string } | null;
 }
-
-import { forwardRef } from "react";
 
 const TribeSkeleton = forwardRef<HTMLDivElement>((_, ref) => (
   <div
@@ -61,26 +72,38 @@ const TribeSkeleton = forwardRef<HTMLDivElement>((_, ref) => (
 ));
 TribeSkeleton.displayName = "TribeSkeleton";
 
+// Group chips need a face; groups themselves don't carry icons in the lib.
+const GROUP_ICONS: Record<string, LucideIcon> = {
+  "Fitness & Movement": Dumbbell,
+  "Mind & Wellness": Flower2,
+  "Learn & Grow": GraduationCap,
+  Community: Users,
+};
+
 interface TribesPageData {
   tribes: Tribe[];
   ownedIds: Set<string>;
   joinedIds: Set<string>;
-  memberPreviews: Record<string, { user_id: string; avatar_url: string | null; username: string }[]>;
+  pendingIds: Set<string>;
+  featuredPreviews: { user_id: string; avatar_url: string | null; username: string }[];
+  featuredId: string | null;
   userToTribes: Map<string, string[]>;
-  collectiveStreaks: Map<string, number>;
+  pulse: Map<string, { checked: number; total: number }>;
 }
 
 const EMPTY_PAGE: TribesPageData = {
   tribes: [],
   ownedIds: new Set(),
   joinedIds: new Set(),
-  memberPreviews: {},
+  pendingIds: new Set(),
+  featuredPreviews: [],
+  featuredId: null,
   userToTribes: new Map(),
-  collectiveStreaks: new Map(),
+  pulse: new Map(),
 };
 
 const Tribes = () => {
-  const { profile, isApexSubscriber } = useAuth();
+  const { profile } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -90,6 +113,10 @@ const Tribes = () => {
   const [rowPulse, setRowPulse] = useState<Map<string, number>>(new Map());
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [tab, setTab] = useState<"browse" | "mine">("browse");
+  // Two-level activity picker: a group opens its activities; an activity
+  // filters server-side (the old flat 26-chip strip filtered client-side over
+  // a top-50 slice, hiding every small tribe).
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [activityFilter, setActivityFilter] = useState<string | null>(null);
   // Members land on My Tribes, newcomers on Browse — decided once on load,
   // never fighting a tab the user has tapped themselves.
@@ -109,26 +136,27 @@ const Tribes = () => {
     return () => { alive = false; };
   }, [profile?.user_id]);
 
-
   // ── Tribe list (browse / mine) ───────────────────────────────────────────
   const tribesQuery = useQuery<TribesPageData>({
-    queryKey: ["tribes-page", tab, profile?.user_id],
+    queryKey: ["tribes-page", tab, activityFilter, profile?.user_id],
     enabled: !!profile?.user_id,
-    // Keep the current list on screen while the new tab/user loads — no blank
-    // flash on tab switch (stale-while-revalidate).
+    // Keep the current list on screen while the new tab/filter loads — no
+    // blank flash on switch (stale-while-revalidate).
     placeholderData: keepPreviousData,
     queryFn: async () => {
       let list: Tribe[] = [];
 
       if (tab === "browse") {
-        // All tribes are private. We list every tribe so people can discover
-        // and *request* to join — gating happens via approval, not visibility.
-        const { data } = await supabase
+        let q = supabase
           .from("tribes")
           .select("*")
           .order("member_count", { ascending: false })
           .limit(50);
-        list = (data as any) ?? [];
+        // Server-side activity filter — small tribes must be findable even
+        // when they'd never crack the top-50 by member count.
+        if (activityFilter) q = q.eq("primary_activity", activityFilter);
+        const { data } = await q;
+        list = (((data as any) ?? []) as Tribe[]).filter((t) => !t.is_paused);
       } else {
         const { data: memberships } = await supabase
           .from("tribe_members")
@@ -143,70 +171,90 @@ const Tribes = () => {
             .from("tribes")
             .select("*")
             .in("id", ids);
-          list = (data as any) ?? [];
+          list = ((data as any) ?? []) as Tribe[];
         }
       }
 
       const ownedIds = new Set<string>();
       const joinedIds = new Set<string>();
-      let memberPreviews: TribesPageData["memberPreviews"] = {};
+      const pendingIds = new Set<string>();
       let userToTribes = new Map<string, string[]>();
+      let pulse = new Map<string, { checked: number; total: number }>();
+      let featuredPreviews: TribesPageData["featuredPreviews"] = [];
+      let featuredId: string | null = null;
 
-      // Mark owned + joined
       if (profile?.user_id && list.length > 0) {
         const ids = list.map((t) => t.id);
-        const { data: mems } = await supabase
-          .from("tribe_members")
-          .select("tribe_id, role, status")
-          .eq("user_id", profile.user_id)
-          .in("tribe_id", ids);
-        ((mems as any) ?? []).forEach((m: any) => {
+
+        // My membership rows (active AND pending — the row CTA needs the
+        // truth for "Requested ✓") + today's pulse, in parallel.
+        const [memsRes, pulseRes] = await Promise.all([
+          supabase
+            .from("tribe_members")
+            .select("tribe_id, role, status")
+            .eq("user_id", profile.user_id)
+            .in("tribe_id", ids)
+            .in("status", ["active", "pending"]),
+          supabase.rpc("tribe_today_pulse" as any, { p_tribe_ids: ids }),
+        ]);
+        (((memsRes as any).data ?? []) as any[]).forEach((m: any) => {
           if (m.status === "active") joinedIds.add(m.tribe_id);
+          if (m.status === "pending") pendingIds.add(m.tribe_id);
           if (m.role === "owner") ownedIds.add(m.tribe_id);
         });
-
-        // Member avatar previews — top 4 per tribe, plus all-member map for reactor
-        const { data: previews } = await supabase
-          .from("tribe_members")
-          .select("tribe_id, user_id")
-          .in("tribe_id", ids)
-          .eq("status", "active")
-          .limit(ids.length * 40);
-        const userIds: string[] = Array.from(new Set(((previews as any) ?? []).map((p: any) => p.user_id as string)));
-        const { data: profs } = userIds.length
-          ? await supabase
-              .from("profiles")
-              .select("user_id, username, avatar_url")
-              .in("user_id", userIds)
-          : { data: [] as any[] };
-        const profMap = new Map(((profs as any) ?? []).map((p: any) => [p.user_id, p]));
-        const map: TribesPageData["memberPreviews"] = {};
-        const u2t = new Map<string, string[]>();
-        ((previews as any) ?? []).forEach((row: any) => {
-          const arr = map[row.tribe_id] ?? (map[row.tribe_id] = []);
-          if (arr.length < 4) {
-            const p = profMap.get(row.user_id);
-            if (p) arr.push(p as any);
-          }
-          const tArr = u2t.get(row.user_id) ?? [];
-          tArr.push(row.tribe_id);
-          u2t.set(row.user_id, tArr);
+        (((pulseRes as any).data ?? []) as any[]).forEach((r: any) => {
+          pulse.set(r.tribe_id, { checked: r.checked, total: r.total });
         });
-        memberPreviews = map;
-        userToTribes = u2t;
-      }
 
-      // Collective streak per tribe — drives the inline flame on each row
-      let collectiveStreaks = new Map<string, number>();
-      if (list.length > 0) {
-        try {
-          collectiveStreaks = await fetchTribeCollectiveStreaks(list.map((t) => t.id));
-        } catch {
-          collectiveStreaks = new Map();
+        if (tab === "browse") {
+          // Featured = momentum, not size: the unjoined tribe with the most
+          // weekly XP. (The old pick was "biggest tribe you're not in".)
+          const candidates = list.filter((t) => !joinedIds.has(t.id));
+          const featured = candidates.reduce<Tribe | null>(
+            (best, t) =>
+              (t.weekly_xp ?? 0) > (best?.weekly_xp ?? -1) ? t : best,
+            null,
+          );
+          if (featured && featured.member_count > 0) {
+            featuredId = featured.id;
+            // Avatar previews only for the one card that renders them —
+            // the old page fetched ~2000 member rows for 50 tribes and
+            // showed 4 avatars.
+            const { data: previews } = await supabase
+              .from("tribe_members")
+              .select("user_id")
+              .eq("tribe_id", featured.id)
+              .eq("status", "active")
+              .limit(4);
+            const uids = ((previews as any) ?? []).map((p: any) => p.user_id);
+            if (uids.length) {
+              const { data: profs } = await supabase
+                .from("profiles")
+                .select("user_id, username, avatar_url")
+                .in("user_id", uids);
+              featuredPreviews = ((profs as any) ?? []) as TribesPageData["featuredPreviews"];
+            }
+          }
+        } else {
+          // Realtime reactor member map — My Tribes only (a browse list of 50
+          // strangers' tribes doesn't need a 2000-user realtime sub).
+          const { data: members } = await supabase
+            .from("tribe_members")
+            .select("tribe_id, user_id")
+            .in("tribe_id", ids)
+            .eq("status", "active")
+            .limit(ids.length * 40);
+          const u2t = new Map<string, string[]>();
+          ((members as any) ?? []).forEach((row: any) => {
+            const arr = u2t.get(row.user_id) ?? [];
+            arr.push(row.tribe_id);
+            u2t.set(row.user_id, arr);
+          });
+          userToTribes = u2t;
         }
       }
 
-      return { tribes: list, ownedIds, joinedIds, memberPreviews, userToTribes, collectiveStreaks };
+      return { tribes: list, ownedIds, joinedIds, pendingIds, featuredPreviews, featuredId, userToTribes, pulse };
     },
   });
 
@@ -214,14 +262,17 @@ const Tribes = () => {
   const tribes = data.tribes;
   const ownedIds = data.ownedIds;
   const joinedIds = data.joinedIds;
-  const memberPreviews = data.memberPreviews;
+  const pendingIds = data.pendingIds;
   const userToTribes = data.userToTribes;
+  const pulse = data.pulse;
   const loading = !!profile?.user_id && tribesQuery.isLoading;
 
-  // Seed the live collective-streak map whenever fresh server data arrives.
+  // Seed the live collective-streak map from the rows themselves —
+  // tribes.collective_streak is server-owned (nightly refresh_tribe_fire);
+  // the reactor layers live deltas on top.
   useEffect(() => {
-    setCollectiveStreaks(data.collectiveStreaks);
-  }, [data.collectiveStreaks]);
+    setCollectiveStreaks(new Map(tribes.map((t) => [t.id, t.collective_streak ?? 0])));
+  }, [tribes]);
 
   // ── Pending invites ──────────────────────────────────────────────────────
   const invitesQuery = useQuery<Invite[]>({
@@ -258,8 +309,9 @@ const Tribes = () => {
   const reloadTribes = () => queryClient.invalidateQueries({ queryKey: ["tribes-page"] });
   const reloadInvites = () => queryClient.invalidateQueries({ queryKey: ["tribe-invites"] });
 
-  // Realtime fire reactor — every check-in by any member of any visible tribe
-  // bumps that tribe's row mini-flame and increments its collective streak.
+  // Realtime fire reactor — every check-in by a fellow member bumps that
+  // tribe's row mini-flame and increments its collective streak. My Tribes
+  // only (userToTribes is empty on browse by design).
   const allMemberIds = useMemo(() => Array.from(userToTribes.keys()), [userToTribes]);
   const listReactor = useTribeFireReactor(allMemberIds);
   const lastListEventRef = useRef<string | null>(null);
@@ -312,13 +364,182 @@ const Tribes = () => {
     if (accept && invite.tribe_id) navigate(`/tribes/${invite.tribe_id}`);
   };
 
-  const featuredRaw = tribes.find((t) => !joinedIds.has(t.id) && t.member_count > 0 && !t.is_paused);
-  // Hide the featured card while an activity filter is active so the grid is pure.
-  const featured = activityFilter ? null : featuredRaw;
-  const restBase = featured ? tribes.filter((t) => t.id !== featured.id) : tribes;
-  const restList = activityFilter
-    ? restBase.filter((t) => (t as any).primary_activity === activityFilter)
-    : restBase;
+  const featured = tab === "browse" && !activityFilter
+    ? tribes.find((t) => t.id === data.featuredId) ?? null
+    : null;
+  const restList = featured ? tribes.filter((t) => t.id !== featured.id) : tribes;
+
+  // ── One unified card anatomy — the featured card is a row with an eyebrow,
+  //    not a different species. ─────────────────────────────────────────────
+  const renderTribeCard = (t: Tribe, opts: { featured?: boolean; idx?: number } = {}) => {
+    const cStreak = collectiveStreaks.get(t.id) ?? 0;
+    const cTier = collectiveStreakTier(cStreak);
+    const cAccent = collectiveAccent(cStreak);
+    const isPrivate = t.visibility === "private";
+    const isJoined = joinedIds.has(t.id);
+    const isPending = pendingIds.has(t.id);
+    const p = pulse.get(t.id);
+    const spotsLeft = t.member_cap != null ? Math.max(0, t.member_cap - t.member_count) : null;
+    const isNew = Date.now() - new Date(t.created_at).getTime() < 14 * 24 * 60 * 60 * 1000;
+    const ActIcon = t.primary_activity ? activityIcon(t.primary_activity) : null;
+
+    return (
+      /* div+role, not <button>: the row contains real Join/Request <Button>s
+         and nested buttons are invalid DOM (breaks hit-testing and SRs). */
+      <div
+        key={t.id}
+        role="button"
+        tabIndex={0}
+        onClick={() => navigate(`/tribes/${t.id}`)}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/tribes/${t.id}`); } }}
+        className={cn(
+          "w-full text-left cursor-pointer surface-card p-4 apex-tribe-card-hover relative",
+          opts.featured && "border-gold/35",
+        )}
+        style={opts.idx != null ? { animationDelay: `${opts.idx * 60}ms` } : undefined}
+      >
+        {opts.featured && (
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5">
+              <Flame size={10} className="text-[hsl(var(--ember))]" fill="currentColor" />
+              <span className="eyebrow text-gold/85">On fire this week</span>
+            </div>
+            {(t.weekly_xp ?? 0) > 0 && (
+              <span className="text-[10px] font-black tabular-nums text-gold">
+                +{(t.weekly_xp ?? 0).toLocaleString()} XP
+              </span>
+            )}
+          </div>
+        )}
+        <div className="flex items-start gap-3">
+          <div
+            className="relative h-10 w-10 rounded-lg bg-secondary/50 flex items-center justify-center shrink-0 overflow-hidden"
+            style={{
+              border: `1px solid ${cTier >= 0 ? withAlpha(cAccent, 0.45) : "hsl(var(--border))"}`,
+            }}
+          >
+            {t.cover_url && (
+              <img
+                src={transformImage(t.cover_url, { width: 640, quality: 68 })}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-cover opacity-75"
+              />
+            )}
+            {cTier >= 0 ? (
+              <div
+                key={rowPulse.get(t.id) ?? 0}
+                className="relative w-full h-full flex items-center justify-center"
+                style={
+                  (rowPulse.get(t.id) ?? 0) > 0
+                    ? {
+                        animation: "flame-intake 1100ms cubic-bezier(.2,.8,.2,1)",
+                        willChange: "transform, filter",
+                        transformOrigin: "50% 92%",
+                      }
+                    : undefined
+                }
+              >
+                <TribeFireLite tier={cTier} palette={collectivePalette(cStreak)} size={30} variant="mini" />
+              </div>
+            ) : !t.cover_url ? (
+              // Cold ≠ dead: the ember seed is the premium waiting state.
+              <TribeEmberSeed size={30} />
+            ) : null}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <p className="font-bold text-[15px] truncate leading-tight">{t.name}</p>
+              {isPrivate && <Lock size={10} className="text-muted-foreground/70 shrink-0" aria-label="Private" />}
+              {ownedIds.has(t.id) && <Crown size={11} className="text-gold shrink-0" aria-label="Owner" />}
+              {isNew && !opts.featured && (
+                <span className="shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold text-[8px] font-black tracking-widest uppercase">
+                  New
+                </span>
+              )}
+            </div>
+            {t.description && (
+              <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5 leading-snug">
+                {t.description}
+              </p>
+            )}
+            {/* One meta row: activity · members (+spots) · fire · lit today */}
+            <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
+              {ActIcon && t.primary_activity && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <ActIcon size={9} strokeWidth={2.4} /> {t.primary_activity}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums text-muted-foreground">
+                <Users size={9} /> {t.member_count}
+                {spotsLeft != null && spotsLeft > 0 && spotsLeft <= 5 && (
+                  <span className="text-[hsl(var(--ember))]">· {spotsLeft} spot{spotsLeft === 1 ? "" : "s"} left</span>
+                )}
+              </span>
+              {cTier >= 0 && (
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums"
+                  style={{ color: cAccent }}
+                >
+                  <Flame size={10} fill="currentColor" /> {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
+                </span>
+              )}
+              {p && p.checked > 0 && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums text-[hsl(var(--ember))]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--ember))] animate-pulse" />
+                  {p.checked}/{p.total} lit today
+                </span>
+              )}
+            </div>
+            {opts.featured && data.featuredPreviews.length > 0 && (
+              <div className="flex -space-x-2 mt-2">
+                {data.featuredPreviews.map((m) => (
+                  <div
+                    key={m.user_id}
+                    className="h-5 w-5 rounded-full bg-secondary border-2 border-background overflow-hidden"
+                  >
+                    {m.avatar_url ? (
+                      <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 40)} alt={m.username} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-[7px] font-black text-muted-foreground">
+                        {m.username.slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {tab === "browse" && !isJoined && (
+            isPending ? (
+              <Button size="sm" variant="outline" disabled className="shrink-0">
+                <Check size={12} /> Requested
+              </Button>
+            ) : isPrivate ? (
+              <Button
+                size="sm"
+                variant="ember-glass"
+                onClick={(e) => { e.stopPropagation(); handleJoin(t.id); }}
+                className="shrink-0"
+              >
+                <Lock size={11} /> Request
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="ember"
+                onClick={(e) => { e.stopPropagation(); handleJoin(t.id); }}
+                className="shrink-0"
+              >
+                Join
+              </Button>
+            )
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-full pb-8 px-4 pt-4 relative">
@@ -377,16 +598,14 @@ const Tribes = () => {
       )}
 
       {/* Tabs — the page's first element: content over ceremony */}
-      <div className="flex gap-1.5 mb-3 p-1 rounded-xl surface-inset border border-border/40">
+      <div className={cn(SEGMENT_TRACK, "mb-3")}>
         {(["mine", "browse"] as const).map((t) => (
           <button
             key={t}
-            onClick={() => { tabTouched.current = true; setTab(t); }}
+            onClick={() => { tabTouched.current = true; void hapticSelection(); setTab(t); }}
             className={cn(
               "flex-1 text-xs font-black py-2 rounded-lg uppercase tracking-wider transition-all",
-              tab === t
-                ? SEGMENT_ACTIVE
-                : "text-muted-foreground hover:text-foreground"
+              tab === t ? SEGMENT_ACTIVE : SEGMENT_IDLE,
             )}
           >
             {t === "browse" ? "Browse" : "My Tribes"}
@@ -396,52 +615,86 @@ const Tribes = () => {
 
       {tab === "browse" && <TribeSearchBar onChanged={reloadTribes} />}
 
-      {/* One quiet tool row — no competing full-width CTAs */}
-      <div className="flex gap-2 mb-3">
-        <Button
-          onClick={() => navigate("/tribes/new")}
-          variant="gold-outline"
-          size="sm"
-          className="flex-1 h-9"
-        >
-          <Plus size={14} /> Create a Tribe
-        </Button>
-        <Button
-          onClick={() => navigate("/tribes/leaderboard")}
-          variant="gold-outline"
-          size="sm"
-          className="flex-1 h-9"
-        >
-          <Trophy size={14} /> Leaderboard
-        </Button>
-      </div>
-
-      {/* Browse by activity */}
+      {/* Browse by activity — 4 group chips, tap to reveal the group's
+          activities. Replaces the old flat 26-chip strip. */}
       {tab === "browse" && (
-        <div className="mb-4 -mx-4 px-4 overflow-x-auto no-scrollbar">
-          <div className="flex gap-1.5 w-max">
-            {[null, ...TRIBE_ACTIVITIES].map((a) => {
-              const active = activityFilter === a;
-              const Icon = a ? activityIcon(a) : null;
-              return (
-                <button
-                  key={a ?? "all"}
-                  onClick={() => setActivityFilter(a)}
-                  className={cn(
-                    "shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border transition-all active:scale-95",
-                    active
-                      ? "bg-gold text-primary-foreground border-transparent"
-                      : "bg-secondary/30 border-border/40 text-muted-foreground",
-                  )}
-                >
-                  {Icon && <Icon size={12} strokeWidth={2.4} />}
-                  {a ?? "All"}
-                </button>
-              );
-            })}
+        <>
+          <div className="mb-2 -mx-4 px-4 overflow-x-auto no-scrollbar">
+            <div className="flex gap-1.5 w-max">
+              <button
+                onClick={() => { void hapticSelection(); setOpenGroup(null); setActivityFilter(null); }}
+                className={cn(
+                  "shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border transition-all active:scale-95",
+                  !openGroup && !activityFilter
+                    ? "bg-gold text-primary-foreground border-transparent"
+                    : "bg-secondary/30 border-border/40 text-muted-foreground",
+                )}
+              >
+                All
+              </button>
+              {TRIBE_ACTIVITY_GROUPS.map((g) => {
+                const GIcon = GROUP_ICONS[g.label] ?? Sparkles;
+                const active = openGroup === g.label;
+                return (
+                  <button
+                    key={g.label}
+                    onClick={() => {
+                      void hapticSelection();
+                      if (active) { setOpenGroup(null); setActivityFilter(null); }
+                      else { setOpenGroup(g.label); setActivityFilter(null); }
+                    }}
+                    className={cn(
+                      "shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border transition-all active:scale-95",
+                      active
+                        ? "bg-gold text-primary-foreground border-transparent"
+                        : "bg-secondary/30 border-border/40 text-muted-foreground",
+                    )}
+                  >
+                    <GIcon size={12} strokeWidth={2.4} /> {g.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+          {openGroup && (
+            <div className="mb-2 -mx-4 px-4 overflow-x-auto no-scrollbar animate-reveal">
+              <div className="flex gap-1.5 w-max">
+                {(TRIBE_ACTIVITY_GROUPS.find((g) => g.label === openGroup)?.items ?? []).map((a) => {
+                  const active = activityFilter === a.name;
+                  const AIcon = a.icon;
+                  return (
+                    <button
+                      key={a.name}
+                      onClick={() => { void hapticSelection(); setActivityFilter(active ? null : a.name); }}
+                      className={cn(
+                        "shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold border transition-all active:scale-95",
+                        active
+                          ? "bg-[hsl(var(--ember))] text-primary-foreground border-transparent"
+                          : "bg-secondary/20 border-border/40 text-muted-foreground",
+                      )}
+                    >
+                      <AIcon size={11} strokeWidth={2.4} /> {a.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </>
       )}
+
+      {/* Section header — eyebrow + quiet Leaderboard link (navigation, not a CTA) */}
+      <div className="flex items-center justify-between mb-2 mt-1">
+        <span className="eyebrow">
+          {tab === "mine" ? "My tribes" : activityFilter ? `${activityFilter} tribes` : "Discover"}
+        </span>
+        <button
+          onClick={() => navigate("/tribes/leaderboard")}
+          className="inline-flex items-center gap-1 text-[11px] font-bold text-gold/85 active:scale-95 transition-transform"
+        >
+          <Trophy size={11} /> Leaderboard <ChevronRight size={11} className="-ml-0.5" />
+        </button>
+      </div>
 
       {/* List */}
       {loading ? (
@@ -451,215 +704,51 @@ const Tribes = () => {
           <TribeSkeleton />
         </div>
       ) : tribes.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title={tab === "browse" ? "No tribes yet" : "No tribes joined"}
-          description={
-            tab === "browse"
-              ? "Be the first founder — start a tribe and rally your circle."
-              : "Browse the directory or get invited to start grinding together."
-          }
-          action={
-            tab === "mine" ? (
-              <Button size="sm" variant="ember" onClick={() => setTab("browse")}>
-                <ChevronRight size={14} /> Browse tribes
+        activityFilter ? (
+          <EmptyState
+            icon={activityIcon(activityFilter)}
+            title={`No ${activityFilter} tribes yet`}
+            description="The category is wide open — start the first one and own it."
+            action={
+              <Button size="sm" variant="ember" onClick={() => navigate("/tribes/new")}>
+                <Plus size={14} /> Start the first
               </Button>
-            ) : undefined
-          }
-        />
+            }
+          />
+        ) : (
+          <EmptyState
+            icon={Users}
+            title={tab === "browse" ? "No tribes yet" : "No tribes joined"}
+            description={
+              tab === "browse"
+                ? "Be the first founder — start a tribe and rally your circle."
+                : "Browse the directory or get invited to start grinding together."
+            }
+            action={
+              tab === "mine" ? (
+                <Button size="sm" variant="ember" onClick={() => { tabTouched.current = true; setTab("browse"); }}>
+                  <ChevronRight size={14} /> Browse tribes
+                </Button>
+              ) : (
+                <Button size="sm" variant="ember" onClick={() => navigate("/tribes/new")}>
+                  <Plus size={14} /> Create a Tribe
+                </Button>
+              )
+            }
+          />
+        )
       ) : (
         <div className="space-y-3">
-          {/* Featured Tribe — same anatomy as the rows, just an eyebrow + gold edge */}
-          {tab === "browse" && featured && (
-            <button
-              onClick={() => navigate(`/tribes/${featured.id}`)}
-              className="w-full text-left surface-card p-4 border-gold/35 apex-tribe-card-hover"
-            >
-              <div className="flex items-center gap-1.5 mb-2">
-                <Sparkles size={10} className="text-gold" />
-                <span className="eyebrow text-gold/85">Featured</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="relative h-10 w-10 rounded-lg border border-gold/40 bg-secondary/50 flex items-center justify-center shrink-0 overflow-hidden">
-                  {featured.cover_url && (
-                    <img
-                      src={transformImage(featured.cover_url, { width: 640, quality: 68 })}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                      className="absolute inset-0 h-full w-full object-cover opacity-75"
-                    />
-                  )}
-                  {(collectiveStreaks.get(featured.id) ?? 0) >= 30 ? (
-                    <TribeFireLite
-                      tier={collectiveStreakTier(collectiveStreaks.get(featured.id) ?? 0)}
-                      palette={collectivePalette(collectiveStreaks.get(featured.id) ?? 0)}
-                      size={30}
-                      variant="mini"
-                    />
-                  ) : !featured.cover_url ? (
-                    <Crown size={16} className="text-gold" strokeWidth={2.4} />
-                  ) : null}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-[15px] truncate leading-tight">{featured.name}</p>
-                  {featured.description && (
-                    <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
-                      {featured.description}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums text-muted-foreground">
-                      <Users size={9} /> {featured.member_count}
-                    </span>
-                    {(collectiveStreaks.get(featured.id) ?? 0) >= 30 && (
-                      <StreakFlameInline
-                        streak={collectiveStreaks.get(featured.id) ?? 0}
-                        suffix="d"
-                        className="text-[10px]"
-                      />
-                    )}
-                    {memberPreviews[featured.id] && memberPreviews[featured.id].length > 0 && (
-                      <div className="flex -space-x-2">
-                        {memberPreviews[featured.id].slice(0, 4).map((p) => (
-                          <div
-                            key={p.user_id}
-                            className="h-5 w-5 rounded-full bg-secondary border-2 border-background overflow-hidden"
-                          >
-                            {p.avatar_url ? (
-                              <img loading="lazy" decoding="async" src={avatarUrl(p.avatar_url, 40)} alt={p.username} className="h-full w-full object-cover" />
-                            ) : (
-                              <div className="h-full w-full flex items-center justify-center text-[7px] font-black text-muted-foreground">
-                                {p.username.slice(0, 2).toUpperCase()}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </button>
-          )}
+          {featured && renderTribeCard(featured, { featured: true })}
+          {restList.map((t, idx) => renderTribeCard(t, { idx }))}
 
-          {restList.map((t, idx) => {
-            const cStreak = collectiveStreaks.get(t.id) ?? 0;
-            const cTier = collectiveStreakTier(cStreak);
-            const cAccent = collectiveAccent(cStreak);
-            const isPaused = !!t.is_paused;
-            return (
-            /* div+role, not <button>: the row contains real Join/Claim
-               <Button>s and nested buttons are invalid DOM (breaks hit-testing
-               and screen readers). */
-            <div
-              key={t.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => navigate(`/tribes/${t.id}`)}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/tribes/${t.id}`); } }}
-              className={cn(
-                "w-full text-left cursor-pointer surface-card p-4 apex-tribe-card-hover relative",
-                isPaused && "grayscale-[0.4] opacity-80"
-              )}
-              style={{ animationDelay: `${idx * 60}ms` }}
-            >
-              <div className="flex items-start gap-3">
-                <div
-                  className="relative h-10 w-10 rounded-lg bg-secondary/50 flex items-center justify-center shrink-0 overflow-hidden"
-                  style={{
-                    border: `1px solid ${!isPaused && cTier >= 0 ? cAccent.replace(")", " / 0.45)") : "hsl(var(--border))"}`,
-                  }}
-                >
-                  {t.cover_url && (
-                    <img
-                      src={transformImage(t.cover_url, { width: 640, quality: 68 })}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                      className="absolute inset-0 h-full w-full object-cover opacity-75"
-                    />
-                  )}
-                  {!isPaused && cTier >= 0 ? (
-                    <div
-                      key={rowPulse.get(t.id) ?? 0}
-                      className="relative w-full h-full flex items-center justify-center"
-                      style={
-                        (rowPulse.get(t.id) ?? 0) > 0
-                          ? {
-                              animation: "flame-intake 1100ms cubic-bezier(.2,.8,.2,1)",
-                              willChange: "transform, filter",
-                              transformOrigin: "50% 92%",
-                            }
-                          : undefined
-                      }
-                    >
-                      <TribeFireLite tier={cTier} palette={collectivePalette(cStreak)} size={30} variant="mini" />
-                    </div>
-                  ) : !t.cover_url ? (
-                    isPaused
-                      ? <Pause size={16} className="text-muted-foreground/50" />
-                      : <Flame size={16} className="text-muted-foreground/40" strokeWidth={1.6} />
-                  ) : null}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <p className={cn("font-bold text-[15px] truncate leading-tight", isPaused && "text-muted-foreground/80")}>
-                      {t.name}
-                    </p>
-                    {ownedIds.has(t.id) && !isPaused && (
-                      <Crown size={11} className="text-gold shrink-0" aria-label="Owner" />
-                    )}
-                  </div>
-                  {t.description && (
-                    <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5 leading-snug">
-                      {t.description}
-                    </p>
-                  )}
-                  {/* One meta row: activity · members · fire */}
-                  <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
-                    {(t as any).primary_activity && (() => {
-                      const ActIcon = activityIcon((t as any).primary_activity);
-                      return (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                          <ActIcon size={9} strokeWidth={2.4} /> {(t as any).primary_activity}
-                        </span>
-                      );
-                    })()}
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums text-muted-foreground">
-                      <Users size={9} /> {t.member_count}
-                    </span>
-                    {isPaused ? (
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Paused · awaiting owner
-                      </span>
-                    ) : cTier >= 0 ? (
-                      <span
-                        className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums"
-                        style={{ color: cAccent }}
-                      >
-                        <Flame size={10} fill="currentColor" /> {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-                {tab === "browse" && !joinedIds.has(t.id) && !isPaused && (
-                  <Button
-                    size="sm"
-                    variant="ember"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleJoin(t.id);
-                    }}
-                    className="shrink-0"
-                  >
-                    Join
-                  </Button>
-                )}
-              </div>
-            </div>
-            );
-          })}
+          {/* Creation is rare — a quiet ghost row at the end, not a toolbar CTA */}
+          <button
+            onClick={() => navigate("/tribes/new")}
+            className="w-full rounded-2xl border border-dashed border-border/60 p-3.5 flex items-center justify-center gap-2 text-[12px] font-bold text-muted-foreground hover:text-gold hover:border-gold/40 transition-colors active:scale-[0.99]"
+          >
+            <Plus size={14} /> Start your own tribe
+          </button>
         </div>
       )}
     </div>

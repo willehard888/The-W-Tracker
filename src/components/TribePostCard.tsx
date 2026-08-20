@@ -190,6 +190,8 @@ export interface TribePostCardPost {
   kudos_count: number;
   reported: boolean;
   created_at: string;
+  /** Server-side moderation gate (S7a) — others see the post only when approved. */
+  moderation_status?: string;
   liked?: boolean;
   kudosed?: boolean;
   author?: {
@@ -422,7 +424,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             </div>
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
               <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
-              {(post as any).moderation_status === "pending" && (
+              {post.moderation_status === "pending" && (
                 <span className="inline-flex items-center px-1.5 py-px rounded-full border border-amber-400/40 bg-amber-400/10 text-amber-400 font-bold uppercase tracking-wider">
                   Reviewing…
                 </span>

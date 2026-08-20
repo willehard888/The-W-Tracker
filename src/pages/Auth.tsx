@@ -18,6 +18,28 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  // Live availability so a collision is visible BEFORE submit — the server
+  // used to silently suffix a taken name (mogger -> mogger2), which broke the
+  // "your name is fully yours" promise.
+  const [nameStatus, setNameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
+  useEffect(() => {
+    if (mode !== "signup" || username.length < 3 || !/^[a-z0-9_]+$/.test(username)) {
+      setNameStatus("idle");
+      return;
+    }
+    let active = true;
+    setNameStatus("checking");
+    const t = setTimeout(async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .ilike("username", username)
+        .limit(1);
+      if (!active) return;
+      setNameStatus(((data ?? []).length > 0) ? "taken" : "available");
+    }, 400);
+    return () => { active = false; clearTimeout(t); };
+  }, [username, mode]);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -114,6 +136,12 @@ const Auth = () => {
         setLoading(false);
         return;
       }
+      if (nameStatus === "taken") {
+        setError("That username is taken — pick another.");
+        hapticNotification("error");
+        setLoading(false);
+        return;
+      }
       void trackAnon("signup_submitted"); // pre-auth: fires whether or not signUp succeeds
       const { error: err } = await signUp(email, password, username);
       if (err) {
@@ -202,15 +230,30 @@ const Auth = () => {
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                  onChange={(e) => setUsername(e.target.value.trim().toLowerCase())}
                   placeholder="your_handle"
                   maxLength={20}
-                  className="w-full h-12 pl-8 pr-4 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold/40 transition-all"
+                  className={
+                    "w-full h-12 pl-8 pr-4 rounded-xl border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/40 transition-all " +
+                    (nameStatus === "taken"
+                      ? "border-destructive/60"
+                      : nameStatus === "available"
+                      ? "border-xp-green/60"
+                      : "border-border focus:border-gold/40")
+                  }
                 />
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                <Flame size={10} className="text-gold" /> Locked permanently once set
-              </p>
+              {nameStatus === "taken" ? (
+                <p className="text-[10px] text-destructive mt-1 font-bold">@{username} is taken — pick another.</p>
+              ) : nameStatus === "available" ? (
+                <p className="text-[10px] text-xp-green mt-1 font-bold">@{username} is yours ✓</p>
+              ) : nameStatus === "checking" ? (
+                <p className="text-[10px] text-muted-foreground mt-1">Checking availability…</p>
+              ) : (
+                <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                  <Flame size={10} className="text-gold" /> Locked permanently once set
+                </p>
+              )}
               {refCode ? (
                 <div className="mt-2 rounded-lg border border-gold/30 bg-gold/5 px-3 py-2">
                   <p className="text-[11px] text-gold font-bold">

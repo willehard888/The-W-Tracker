@@ -41,6 +41,7 @@ const HIDDEN_ROUTES = new Set([
   "/auth",
   "/onboarding",
   "/apple-username",
+  "/choose-username",
   "/apple-auth-launch",
   "/paywall",
   "/reset-password",

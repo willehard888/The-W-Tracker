@@ -26,7 +26,7 @@ const colorMap: Record<TabColor, { text: string; rgb: string }> = {
   apex:  { text: "text-[hsl(var(--ember))]",        rgb: "var(--ember)" },
 };
 
-const HIDDEN_PATHS = new Set(["/landing", "/auth", "/onboarding", "/paywall"]);
+const HIDDEN_PATHS = new Set(["/landing", "/auth", "/onboarding", "/paywall", "/choose-username"]);
 
 // Pushed pages highlight their PARENT tab so "where am I" never goes dark —
 // with exact matching, /checkin, /feed, /battles etc. lit no tab at all.

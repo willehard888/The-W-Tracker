@@ -25,7 +25,6 @@ import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import OAuthCallback from "./pages/OAuthCallback";
 import NotFound from "./pages/NotFound";
-import { isAppleUsernameSelectionPending } from "@/lib/apple-username";
 
 // Lazy-loaded pages for code-splitting
 const DailyCheckin = lazy(() => import("./pages/DailyCheckin"));
@@ -45,7 +44,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const IosDebug = lazy(() => import("./pages/IosDebug"));
 const AppleAuthLaunch = lazy(() => import("./pages/AppleAuthLaunch"));
-const AppleUsername = lazy(() => import("./pages/AppleUsername"));
+const ChooseUsername = lazy(() => import("./pages/ChooseUsername"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Coach = lazy(() => import("./pages/Coach"));
 const AthleteProfileSettings = lazy(() => import("./pages/AthleteProfileSettings"));
@@ -83,12 +82,12 @@ const LazyFallback = () => (
 );
 
 // Paths reachable WITHOUT an active subscription/trial — the paywall itself,
-// onboarding, the Apple username picker, and legal pages — so a gated user can
+// onboarding, the username picker, and legal pages — so a gated user can
 // still subscribe, finish setup and read terms.
 const ACCESS_EXEMPT = new Set([
   "/paywall",
   "/onboarding",
-  "/apple-username",
+  "/choose-username",
   "/privacy",
   "/terms",
   "/reset-password",
@@ -99,21 +98,25 @@ const ACCESS_EXEMPT = new Set([
 const PAYWALL_ENABLED = false;
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, isPremium } = useAuth();
+  const { user, profile, loading, isPremium } = useAuth();
   if (loading) return <LazyFallback />;
   if (!user) return <Navigate to="/landing" replace />;
 
   const path = window.location.pathname;
 
-  if (isAppleUsernameSelectionPending() && path !== "/apple-username") {
-    return <Navigate to="/apple-username" replace />;
+  // DB-driven username gate: anyone whose handle wasn't their own choice
+  // (Apple/OAuth placeholder, collision suffix, legacy auto-generation)
+  // picks one before anything else. Replaces the old Apple-only
+  // sessionStorage gate — the flag rides on the profile row itself.
+  if (profile?.username_is_auto === true && path !== "/choose-username") {
+    return <Navigate to="/choose-username" replace />;
   }
 
   // Read once per render; localStorage is sync but cheap, this just keeps it tidy.
   if (
     !localStorage.getItem("w_onboarding_done") &&
     path !== "/onboarding" &&
-    path !== "/apple-username"
+    path !== "/choose-username"
   ) {
     return <Navigate to="/onboarding" replace />;
   }
@@ -221,7 +224,9 @@ const AppRoutes = () => {
           <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
           <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-          <Route path="/apple-username" element={<ProtectedRoute><AppleUsername /></ProtectedRoute>} />
+          <Route path="/choose-username" element={<ProtectedRoute><ChooseUsername /></ProtectedRoute>} />
+          {/* Legacy alias — the picker used to be Apple-only */}
+          <Route path="/apple-username" element={<Navigate to="/choose-username" replace />} />
           <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
           <Route path="/checkin" element={<ProtectedRoute><DailyCheckin /></ProtectedRoute>} />
           <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />

@@ -4,7 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { applySessionFromUrl } from "@/lib/oauth-session";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 import { clearPublishedAppleAttempt } from "@/lib/native-auth";
-import { clearAppleAuthStarted, clearAppleUsernameSelectionPending } from "@/lib/apple-username";
 import { toast } from "sonner";
 
 // SECURITY: this page previously had a "native handoff" branch that forwarded
@@ -65,21 +64,15 @@ const OAuthCallback = () => {
 
         if (oauthError) {
           console.error("[OAuthCB] Error:", oauthError, oauthErrorDescription);
-          clearAppleAuthStarted();
-          clearAppleUsernameSelectionPending();
           toast.error("Apple sign-in failed. Please try again.");
         }
 
         if (!sessionApplied && !oauthError) {
           clearPublishedAppleAttempt();
-          clearAppleAuthStarted();
-          clearAppleUsernameSelectionPending();
           toast.error("Connection error. Try again.");
         }
       } catch (e) {
         console.error("[OAuthCB] Unexpected:", e);
-        clearAppleAuthStarted();
-        clearAppleUsernameSelectionPending();
         toast.error("Connection error. Try again.");
         clearPublishedAppleAttempt();
         updateOauthDebug({ error: "Connection error. Try again." });

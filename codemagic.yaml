@@ -1,5 +1,10 @@
 # Codemagic CI/CD config — iOS build pipeline
 #
+# NOTE 2026-08-20: push triggers arrive via a plain repo webhook
+# (https://api.codemagic.io/hooks/<app-id>). It silently vanished once and
+# builds just stopped appearing — if that happens again, check
+# `gh api repos/<owner>/<repo>/hooks` first and re-create the hook.
+#
 # Replaces Xcode Cloud for the W Tracker iOS build. Xcode Cloud's
 # scheduler aggressively parallelises pod target builds and ignores
 # PBXTargetDependency for Swift module resolution — that broke every

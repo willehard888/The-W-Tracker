@@ -6,6 +6,7 @@ import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
 import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
+import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -146,6 +147,7 @@ Today's prescribed session: ${sessionLine}
 Recent: avg sleep ${avgSleep ?? "?"}h (last night ${lastSleep ?? "?"}h), ${workouts7}/7 workouts${sports7 ? ` (${sports7})` : ""}.
 ${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}${whealthBlock}
 ${INNER_WORK_BLOCK}
+${LONGEVITY_BLOCK}
 
 Write the daily brief — 2-3 sentences, second person, signed off as "— W Coach".
 Reference ONE concrete recent stat and ONE adjustment to today's session if warranted.

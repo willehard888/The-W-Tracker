@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTrialAccess } from "@/hooks/use-trial-access";
 
 export type VaultQuizQ = { q: string; choices: string[]; correct: number; explain: string };
 
@@ -34,9 +35,13 @@ export type VaultArticle = {
 
 export const useVaultArticles = (categoryId?: string) => {
   const { user, isPremium } = useAuth();
+  // Trialists have server-side read access (has_active_access RLS since
+  // vault_trial_access) — gating the fetch on isPremium alone left them
+  // staring at an empty library the page gate had already let them into.
+  const { isInTrial } = useTrialAccess();
   return useQuery({
     queryKey: ["vault-articles", categoryId ?? "all", user?.id],
-    enabled: !!user?.id && !!isPremium,
+    enabled: !!user?.id && (!!isPremium || isInTrial),
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       let q = supabase

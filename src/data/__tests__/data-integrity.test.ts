@@ -46,9 +46,10 @@ describe("fmtQty — the shopping-list math users cook from", () => {
   });
 });
 
-describe("daily insights ↔ Inner Work lessons", () => {
-  // Slugs seeded by 20260811085218_vault_inner_work_content.sql — the deep
-  // link /vault?lesson=<slug> dies silently if these drift.
+describe("daily insights ↔ Vault lessons", () => {
+  // Slugs seeded by 20260811085218_vault_inner_work_content.sql and
+  // 20260820061501_vault_longevity_content.sql — the deep link
+  // /vault?lesson=<slug> dies silently if these drift.
   const LESSON_SLUGS = new Set([
     "inner-operating-system",
     "manifestation-demystified",
@@ -60,6 +61,16 @@ describe("daily insights ↔ Inner Work lessons", () => {
     "authentic-self-image",
     "letting-go",
     "inner-work-recap",
+    "healthspan-vs-lifespan",
+    "hierarchy-of-longevity-levers",
+    "vo2max-strongest-predictor",
+    "strength-longevity-organ",
+    "protein-aging-athlete",
+    "sleep-repair-budget",
+    "metabolic-health-waistline",
+    "connection-purpose-longevity",
+    "supplement-graveyard",
+    "hundred-year-operating-system",
   ]);
 
   it("every insight points at a real lesson slug", () => {

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import EvidenceChip from "./EvidenceChip";
 import LessonQuiz from "./LessonQuiz";
-import type { VaultArticle } from "@/hooks/use-vault-articles";
+import { useVaultArticles, type VaultArticle } from "@/hooks/use-vault-articles";
 import { useCompleteLesson, useVaultProgress } from "@/hooks/use-vault-progress";
 import { hapticImpact } from "@/lib/haptics";
 import { toast } from "sonner";
@@ -47,6 +47,16 @@ const VaultArticleSheet = ({
   const { data: progress } = useVaultProgress();
   const completeLesson = useCompleteLesson();
   const [quizScore, setQuizScore] = useState<number | null>(null);
+
+  // Course length for the "Lesson N of M" badge — counted from the cached
+  // library (react-query dedups with the Vault page's query). The old
+  // hardcoded "of 5" was wrong for every 8-13 lesson course.
+  const { data: allArticles } = useVaultArticles();
+  const courseTotal = article
+    ? (allArticles ?? []).filter(
+        (a) => a.category_id === article.category_id && a.lesson_number != null,
+      ).length
+    : 0;
 
   const isCompleted = !!progress?.find((p) => p.article_id === article?.id);
 
@@ -147,9 +157,9 @@ const VaultArticleSheet = ({
                       border: `1px solid ${accent}55`,
                     }}
                   >
-                    {article.course_role === "foundations"
-                      ? "Lesson 1 · Foundations"
-                      : `Lesson ${article.lesson_number} of 5`}
+                    {`Lesson ${article.lesson_number}${courseTotal ? ` of ${courseTotal}` : ""}${
+                      article.course_role === "foundations" ? " · Foundations" : ""
+                    }`}
                   </span>
                 )}
                 <EvidenceChip tier={article.evidence_tier} />

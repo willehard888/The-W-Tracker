@@ -172,6 +172,42 @@ const InnerWorkMotif = ({ accent }: { accent: string }) => (
   </g>
 );
 
+/** Longevity — a long ascending path over the horizon toward a distant sun,
+ *  mile markers fading with distance: the decades-long game made visible. */
+const LongevityMotif = ({ accent }: { accent: string }) => (
+  <g fill="none" strokeLinecap="round">
+    {/* horizon */}
+    <path d="M236 112 h 156" stroke={GOLD} strokeOpacity="0.22" strokeWidth="1.5" />
+    {/* distant sun, half-risen on the horizon */}
+    <g transform="translate(352 112)">
+      <clipPath id="lon-sun-clip">
+        <rect x="-24" y="-24" width="48" height="24" />
+      </clipPath>
+      <circle r="17" fill={accent} fillOpacity="0.16" clipPath="url(#lon-sun-clip)" />
+      <circle r="11" fill={accent} fillOpacity="0.85" clipPath="url(#lon-sun-clip)" />
+      <circle r="15" stroke={GOLD} strokeOpacity="0.45" strokeWidth="1" clipPath="url(#lon-sun-clip)" />
+    </g>
+    {/* the long path — converging perspective lines toward the sun */}
+    <path d="M244 156 L 348 113" stroke={accent} strokeOpacity="0.55" strokeWidth="1.5" />
+    <path d="M300 156 L 352 113" stroke={accent} strokeOpacity="0.35" strokeWidth="1.5" />
+    {/* mile markers along the path, shrinking with distance */}
+    {[
+      { x: 262, y: 146, h: 12 },
+      { x: 290, y: 135, h: 9 },
+      { x: 314, y: 126, h: 6.5 },
+      { x: 332, y: 119, h: 4.5 },
+    ].map((m, i) => (
+      <line key={i} x1={m.x} y1={m.y} x2={m.x} y2={m.y - m.h} stroke={GOLD} strokeOpacity={0.7 - i * 0.12} strokeWidth="2" />
+    ))}
+    {/* rising pulse arc — capability curve bending upward, not down */}
+    <path d="M240 84 q 40 -6 76 -22 q 26 -12 46 -14" stroke={accent} strokeOpacity="0.45" strokeWidth="1.5" strokeDasharray="1 7" />
+    {/* star field */}
+    {[{ x: 256, y: 44, r: 1.4 }, { x: 296, y: 34, r: 1.0 }, { x: 372, y: 48, r: 1.3 }, { x: 388, y: 78, r: 1.0 }].map((s, i) => (
+      <circle key={i} cx={s.x} cy={s.y} r={s.r} fill={GOLD} fillOpacity="0.8" />
+    ))}
+  </g>
+);
+
 const MOTIFS: Record<string, (p: { accent: string }) => JSX.Element> = {
   recipes: NutritionMotif,
   training: TrainingMotif,
@@ -179,6 +215,7 @@ const MOTIFS: Record<string, (p: { accent: string }) => JSX.Element> = {
   mind: MindMotif,
   "nervous-system": NerveMotif,
   "inner-work": InnerWorkMotif,
+  longevity: LongevityMotif,
 };
 
 const VaultCover = ({ id, accent }: { id: string; accent: string }) => {

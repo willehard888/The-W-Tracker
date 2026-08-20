@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTrialAccess } from "@/hooks/use-trial-access";
 
 export type VaultProgressRow = {
   article_id: string;
@@ -10,9 +11,12 @@ export type VaultProgressRow = {
 
 export const useVaultProgress = () => {
   const { user, isPremium } = useAuth();
+  // Trialists can read lessons (has_active_access RLS) — fetch their progress
+  // too so completed rows render; writes stay premium-gated server-side.
+  const { isInTrial } = useTrialAccess();
   return useQuery({
     queryKey: ["vault-progress", user?.id],
-    enabled: !!user?.id && !!isPremium,
+    enabled: !!user?.id && (!!isPremium || isInTrial),
     staleTime: 60 * 1000,
     queryFn: async () => {
       const { data, error } = await supabase

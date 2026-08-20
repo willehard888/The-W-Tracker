@@ -8,6 +8,7 @@ import {
   Brain,
   Wind as WindIcon,
   Sparkles,
+  Hourglass,
   ArrowLeft,
   Crown,
   Clock,
@@ -53,6 +54,15 @@ const CATEGORIES: VaultCategory[] = [
       "Programming principles that hold across decades of S&C research: progressive overload, Zone 2 base, the Norwegian 4×4, and proper deload periodisation.",
     icon: Dumbbell,
     accent: "hsl(var(--ember))",
+  },
+  {
+    id: "longevity",
+    title: "Longevity",
+    tagline: "Healthspan · VO₂max · the long game",
+    description:
+      "The 100-Year Athlete: healthspan over lifespan, ranked by mortality evidence — VO₂max, strength, protein, sleep, metabolic health and connection, with an honest walk through the supplement graveyard.",
+    icon: Hourglass,
+    accent: "hsl(168 70% 45%)",
   },
   {
     id: "recovery",

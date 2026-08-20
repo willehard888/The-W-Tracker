@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Crown, Flame, Sparkles, Zap, Star, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getTierConfig, type StatusTier } from "@/lib/status-tiers";
+import { getTierConfig, topShareLabel, type StatusTier } from "@/lib/status-tiers";
 
 interface StatusNameplateProps {
   tier: string;
@@ -114,21 +114,9 @@ const StatusNameplate = ({
   const padding = size === "lg" ? "px-5 py-4" : "px-4 py-3.5";
 
   // The chip must never contradict the live rank rendered right beside it —
-  // a static "Top 0.1%" next to "#1 / 4" reads as a lie. Prefer live data
-  // (percentile, or rank/total when sane); the tier-config label is only the
-  // no-data fallback (e.g. public profiles). Never round down to "Top 0%".
-  const liveTopShare = (() => {
-    if (percentile !== undefined) return 100 - percentile;
-    if (rank != null && totalUsers && totalUsers > 0 && rank >= 1 && rank <= totalUsers) {
-      return (rank / totalUsers) * 100;
-    }
-    return null;
-  })();
-  const percentLabel = !ranked
-    ? "Unranked"
-    : liveTopShare !== null
-    ? `Top ${Math.max(1, Math.round(liveTopShare))}%`
-    : cfg.percentile;
+  // and it must match every other surface (the header row included), so the
+  // label comes from the ONE shared derivation in status-tiers.
+  const percentLabel = topShareLabel(tier, { rank, totalUsers, percentile, hasRank: ranked ?? false });
 
   // Only show "#N / total" when the data is sane: ranked, present, and the
   // rank cannot exceed the population (guards against RLS-visibility skew that

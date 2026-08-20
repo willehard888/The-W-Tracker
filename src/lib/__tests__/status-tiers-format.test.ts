@@ -38,7 +38,8 @@ describe("legacy 'normal' tier tolerance", () => {
     expect(ladderRankValue("normal")).toBe(ladderRankValue("recruit"));
   });
 
-  it("KNOWN LIMITATION: getNextTier('normal') is null — the data migration normalize_legacy_normal_tier keeps the value out of prod", () => {
-    expect(getNextTier("normal")).toBeNull();
+  it("getNextTier('normal') canonicalizes to recruit's next tier — the old null told a recruit '→ Legend' in the header", () => {
+    expect(getNextTier("normal")?.label).toBe(getNextTier("recruit")?.label);
+    expect(getNextTier("normal")?.label).toBe("Operator");
   });
 });

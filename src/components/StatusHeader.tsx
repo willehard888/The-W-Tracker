@@ -8,7 +8,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import { getEffectiveStreak } from "@/lib/streak";
 import { pickDaily } from "@/lib/daily-rotation";
-import { getTierConfig, getNextTier, TIER_ORDER, formatTier } from "@/lib/status-tiers";
+import { getTierConfig, getNextTier, TIER_ORDER, formatTier, topShareLabel, canonicalTier } from "@/lib/status-tiers";
+import { useMyRank } from "@/hooks/use-my-rank";
 import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
 import { Crown, Clock, ChevronRight, Flame, Zap } from "lucide-react";
@@ -61,6 +62,9 @@ const StatusHeader = () => {
   const { isInTrial, daysRemaining, hoursRemaining } = useTrialAccess();
   const navigate = useNavigate();
   const location = useLocation();
+  // Live rank — the SAME get_user_rank source and shared cache every other
+  // surface uses, so the header can never contradict the profile nameplate.
+  const { data: rankData } = useMyRank(profile?.user_id);
 
   // Keyed on the local date so the quote actually rotates at midnight — with
   // empty deps it was frozen for the whole session (app left open overnight
@@ -99,7 +103,9 @@ const StatusHeader = () => {
   )
     return null;
 
-  const tier = profile.status_tier || "recruit";
+  // Canonical id — legacy 'normal' rows must behave exactly like recruit in
+  // every ladder computation below (indexOf on the raw value returned -1).
+  const tier = canonicalTier(profile.status_tier);
   const division = (profile as any).tier_division ?? 0;
   const config = getTierConfig(tier);
   const next = getNextTier(tier);
@@ -284,7 +290,7 @@ const StatusHeader = () => {
                   {formatTier(tier, division)}
                 </span>
                 <span className="truncate text-[10px] text-muted-foreground/70 leading-none">
-                  · {config.percentile}
+                  · {topShareLabel(tier, rankData)}
                 </span>
               </div>
               {tier !== "legend" && (() => {

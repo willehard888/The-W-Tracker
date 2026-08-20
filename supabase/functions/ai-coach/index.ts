@@ -16,6 +16,7 @@ import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
 import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
+import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
 import { sportName, sportBreakdown } from "../_shared/sports.ts";
 
 const corsHeaders = {
@@ -217,6 +218,7 @@ Recent activity:
 ${recentSummary}${reflectionsBlock}${goalsBlock}${logsBlock}${insightsBlock}${briefBlock}${sessionBlock}
 ${situationBlock ? `\n${situationBlock}\n` : ""}
 ${INNER_WORK_BLOCK}
+${LONGEVITY_BLOCK}
 ${knowledgeBlocks}
 
 How to reply — the craft of a world-class private coach.

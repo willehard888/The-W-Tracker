@@ -1,8 +1,9 @@
 /**
- * Daily Inner Work insights — one surfaces on Home per day (see
+ * Daily Vault insights — one surfaces on Home per day (see
  * DailyInsightCard + pickDaily). Each deep-links to its Vault lesson via
- * /vault?lesson=<slug>. Tone matches the course: honest-premium, no woo
- * claims — mechanisms you own (attention, identity, state), not magic.
+ * /vault?lesson=<slug>. Two courses feed the pool: Inner Work (attention,
+ * identity, state) and Longevity (healthspan, the five levers). Tone matches
+ * the courses: honest-premium, evidence-first, no woo claims.
  */
 export interface DailyInsight {
   id: string;
@@ -72,4 +73,50 @@ export const DAILY_INSIGHTS: DailyInsight[] = [
   // 10 · Recap
   { id: "recap-1", text: "Prime attention. Build identity. Manage state. Release the rest. Fifteen minutes a day — that's the whole system.", lessonSlug: "inner-work-recap" },
   { id: "recap-2", text: "Tools that aren't scheduled don't compound. Put the morning prime and evening release on the clock.", lessonSlug: "inner-work-recap" },
+
+  // ══ Longevity: The 100-Year Athlete ══
+
+  // L1 · Healthspan vs Lifespan
+  { id: "lon-hs-1", text: "The goal isn't more years. It's more years you'd actually want — capable, mobile, yours.", lessonSlug: "healthspan-vs-lifespan" },
+  { id: "lon-hs-2", text: "Whatever you want to do in your last decade, you can only do if you trained for it. Plan backwards.", lessonSlug: "healthspan-vs-lifespan" },
+  { id: "lon-hs-3", text: "Two people die at 88. One declined for 20 years, one hiked at 80. Same lifespan — train for the second life.", lessonSlug: "healthspan-vs-lifespan" },
+
+  // L2 · Hierarchy of levers
+  { id: "lon-lev-1", text: "Five basics predict 12–14 extra years at 50. No supplement comes within an order of magnitude. The basics ARE the biohack.", lessonSlug: "hierarchy-of-longevity-levers" },
+  { id: "lon-lev-2", text: "Before any longevity hack, one question: which lever does it pull — fitness, strength, sleep, metabolic, connection?", lessonSlug: "hierarchy-of-longevity-levers" },
+  { id: "lon-lev-3", text: "Low fitness rivals smoking as a mortality risk. Today's session is the most serious medicine you'll take.", lessonSlug: "hierarchy-of-longevity-levers" },
+
+  // L3 · VO2max
+  { id: "lon-vo2-1", text: "Every 1-MET gain in fitness ≈ 13% lower all-cause mortality. The treadmill is a longevity device.", lessonSlug: "vo2max-strongest-predictor" },
+  { id: "lon-vo2-2", text: "Stairs cost the same oxygen at 85 as at 35. VO₂max decides whether they're trivial or impossible. Build altitude now.", lessonSlug: "vo2max-strongest-predictor" },
+  { id: "lon-vo2-3", text: "One 4×4 interval session a week — 4 min hard, 3 easy, ×4. That's the whole VO₂max entry fee.", lessonSlug: "vo2max-strongest-predictor" },
+
+  // L4 · Strength
+  { id: "lon-str-1", text: "Grip strength out-predicts blood pressure for mortality. Muscle is the retirement account — today's session is a deposit.", lessonSlug: "strength-longevity-organ" },
+  { id: "lon-str-2", text: "30–60 minutes of strength work a week associates with 10–17% lower mortality. Two sessions. That's the dose.", lessonSlug: "strength-longevity-organ" },
+  { id: "lon-str-3", text: "90-year-olds still build strength in trials. The machinery never closes — but the rebuild costs more every decade you wait.", lessonSlug: "strength-longevity-organ" },
+
+  // L5 · Protein
+  { id: "lon-pro-1", text: "Aging muscle goes deaf to protein — the same intake quietly stops working. 1.6–2.2 g/kg, spread over the day.", lessonSlug: "protein-aging-athlete" },
+  { id: "lon-pro-2", text: "A 10 g breakfast never triggers muscle building. Anchor every meal on protein first — 30 g is the floor.", lessonSlug: "protein-aging-athlete" },
+
+  // L6 · Sleep
+  { id: "lon-slp-1", text: "Under 6 hours tracks with 12% higher mortality and more dementia decades later. Tonight's window is a longevity rep.", lessonSlug: "sleep-repair-budget" },
+  { id: "lon-slp-2", text: "You can't control sleep — only the window you give it. Fixed wake time, 8-hour opportunity, caffeine curfew.", lessonSlug: "sleep-repair-budget" },
+
+  // L7 · Metabolic health
+  { id: "lon-met-1", text: "Keep your waist under half your height — a tape measure out-screens BMI for the diseases that end healthspan.", lessonSlug: "metabolic-health-waistline" },
+  { id: "lon-met-2", text: "Ten minutes of walking after dinner pulls glucose into muscle with barely any insulin. Best return-per-minute in health.", lessonSlug: "metabolic-health-waistline" },
+
+  // L8 · Connection & purpose
+  { id: "lon-con-1", text: "Isolation carries mortality risk in smoking's class. Your tribe session is a longevity protocol, not a social extra.", lessonSlug: "connection-purpose-longevity" },
+  { id: "lon-con-2", text: "People with a clear reason to get up died at half the rate over 5 years. Name yours in one sentence.", lessonSlug: "connection-purpose-longevity" },
+
+  // L9 · Supplement graveyard
+  { id: "lon-sup-1", text: "Resveratrol: 9 years of human data, zero association with living longer. The mice were interesting. You're not a mouse.", lessonSlug: "supplement-graveyard" },
+  { id: "lon-sup-2", text: "Three questions kill most longevity products: human outcomes? which lever? who profits if I believe?", lessonSlug: "supplement-graveyard" },
+
+  // L10 · Recap
+  { id: "lon-os-1", text: "The last decade of your life is being negotiated this decade — in ordinary weeks like this one. Run the week.", lessonSlug: "hundred-year-operating-system" },
+  { id: "lon-os-2", text: "Bad weeks shrink the system, never stop it. One lift, one walk, protein, sleep — the floor keeps the identity alive.", lessonSlug: "hundred-year-operating-system" },
 ];

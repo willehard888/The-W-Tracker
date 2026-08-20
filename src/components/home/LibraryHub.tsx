@@ -31,7 +31,7 @@ const ROWS = [
     key: "vault",
     path: "/vault",
     title: "The Vault",
-    sub: "Courses: training, recovery, mind & inner work",
+    sub: "Courses: training, longevity, recovery, mind & inner work",
     chip: "Premium",
   },
 ] as const;

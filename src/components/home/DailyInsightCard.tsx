@@ -35,7 +35,7 @@ const DailyInsightCard = () => {
             {insight.text}
           </p>
           <p className="text-[10px] font-bold text-muted-foreground mt-1.5">
-            Inner Work — tap to open the lesson
+            The Vault — tap to open the lesson
           </p>
         </div>
         <ChevronRight size={16} className="text-gold/60 shrink-0 mt-1" />

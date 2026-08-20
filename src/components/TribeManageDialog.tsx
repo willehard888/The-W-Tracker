@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { avatarUrl } from "@/lib/img";
+import { useSignedMediaUrl } from "@/lib/signed-url";
 import { downscaleImage } from "@/lib/downscale-image";
 import { toast } from "sonner";
 import { Crown, Loader2, Settings, Shield, ShieldOff, UserMinus, Lock, Globe, Image as ImageIcon, Trash2, Upload } from "lucide-react";
@@ -59,6 +60,12 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
   const [coverPreview, setCoverPreview] = useState<string | null>(tribe.cover_url ?? null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  // Stored covers live in the private feed-images bucket — sign for preview.
+  // Freshly picked files are data: URLs from FileReader and pass through as-is.
+  const storedCoverSrc = useSignedMediaUrl(
+    coverPreview && !coverPreview.startsWith("data:") ? coverPreview : null,
+  );
+  const displayCover = coverPreview?.startsWith("data:") ? coverPreview : storedCoverSrc;
   const [savingMeta, setSavingMeta] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -226,7 +233,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
           <div className="relative rounded-xl overflow-hidden border border-border bg-card/40 aspect-[16/9]">
             {coverPreview ? (
               <>
-                <img loading="lazy" decoding="async" src={coverPreview} alt="Cover preview" className="absolute inset-0 h-full w-full object-cover" />
+                {displayCover && <img loading="lazy" decoding="async" src={displayCover} alt="Cover preview" className="absolute inset-0 h-full w-full object-cover" />}
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
                 <div className="absolute bottom-2 right-2 flex gap-1.5">
                   <button

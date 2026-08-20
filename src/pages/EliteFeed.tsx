@@ -814,7 +814,7 @@ const EliteFeed = () => {
                         <div className="mt-2 rounded-lg border border-border/50 bg-card p-2">
                           <p className="text-xs text-foreground/80 line-clamp-2">{report.post.content || "(image only)"}</p>
                           {report.post.image_url && (
-                            <img loading="lazy" decoding="async" src={report.post.image_url} alt="" className="mt-1 h-16 w-24 object-cover rounded" />
+                            <AppImage src={report.post.image_url} width={96} alt="" className="mt-1 h-16 w-24 object-cover rounded" />
                           )}
                         </div>
                       )}

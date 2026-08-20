@@ -6,6 +6,7 @@ import ProgressionSummaryCard from "@/components/profile/ProgressionSummaryCard"
 import RecoveryCard from "@/components/profile/RecoveryCard";
 import JourneyCard from "@/components/profile/JourneyCard";
 import ProfileHero from "@/components/profile/ProfileHero";
+import AppImage from "@/components/ui/app-image";
 import { downscaleImage } from "@/lib/downscale-image";
 import { withNetworkRetry, isTransientNetworkError } from "@/lib/retry";
 import { hapticSelection } from "@/lib/haptics";
@@ -110,17 +111,17 @@ const Profile = () => {
       // Shrink before upload — avatars render ≤128px, no need to store a multi-MB original.
       const optimized = await downscaleImage(file, { maxDim: 512, quality: 0.82, skipUnder: 60_000 });
       const ext = optimized.name.split(".").pop();
-      // The proof-photos INSERT policy requires the first path segment to be the
-      // user's id (auth.uid() = foldername[1]). Uploading to an "avatars/" folder
-      // failed RLS — so nest under the user's own folder like check-in proofs do.
+      // Avatars live in their own PUBLIC bucket (S7b) — they render on the
+      // logged-out /u/ page and OG cards, unlike proofs which are private.
+      // INSERT policy requires the first path segment to be the user's id.
       const path = `${profile.user_id}/avatar-${Date.now()}.${ext}`;
       // Retried on transient network drops (WKWebView "Load failed" on flaky
       // cellular) — an image POST is the most drop-prone request in the app.
       await withNetworkRetry(async () => {
-        const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, optimized, { contentType: optimized.type, upsert: true });
+        const { error: uploadErr } = await supabase.storage.from("avatars").upload(path, optimized, { contentType: optimized.type, upsert: true });
         if (uploadErr && !`${uploadErr.message}`.includes("already exists")) throw new Error(uploadErr.message);
       });
-      const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
       await withNetworkRetry(async () => {
         const { error: rpcErr } = await supabase.rpc("update_own_profile", { new_avatar_url: urlData.publicUrl });
         if (rpcErr) throw new Error(rpcErr.message);
@@ -684,7 +685,7 @@ const Profile = () => {
               <div key={post.id} className="surface-card p-4">
                 {post.content && <p className="text-base mb-2">{post.content}</p>}
                 {post.image_url && (
-                  <img loading="lazy" decoding="async" src={post.image_url} alt="Post" className="w-full rounded-lg object-cover max-h-48 mb-2" />
+                  <AppImage src={post.image_url} width={600} alt="Post" className="w-full rounded-lg object-cover max-h-48 mb-2" />
                 )}
                 <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                   <span className="flex items-center gap-1"><Heart size={10} /> {post.likes_count}</span>

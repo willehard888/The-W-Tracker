@@ -4,6 +4,7 @@ import StreakFlameInline from "@/components/StreakFlameInline";
 import { X, Heart, MessageCircle, Award } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
 import ZoomableImage from "@/components/ui/ZoomableImage";
+import { useSignedMediaUrl } from "@/lib/signed-url";
 import type { StatusTier } from "@/lib/status-tiers";
 
 interface ImageLightboxProps {
@@ -46,6 +47,9 @@ const ImageLightbox = ({
 
   // Reset the swipe-dismiss progress each time the viewer (re)opens.
   useEffect(() => { if (open) setDismiss(0); }, [open]);
+
+  // Private-bucket media renders via a signed URL (S7 storage flip).
+  const resolvedUrl = useSignedMediaUrl(imageUrl);
 
   if (!open || !imageUrl) return null;
 
@@ -91,7 +95,7 @@ const ImageLightbox = ({
       {/* Image stage — pinch/double-tap zoom, swipe-down to dismiss */}
       <div className="relative flex-1 min-h-0">
         <ZoomableImage
-          url={imageUrl}
+          url={resolvedUrl ?? imageUrl}
           alt={caption || "Post image"}
           onClose={onClose}
           onDismissProgress={setDismiss}

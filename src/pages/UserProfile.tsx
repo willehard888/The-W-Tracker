@@ -4,9 +4,9 @@ import { Portal } from "@/components/ui/Portal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Flame, Zap, Award, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Crown, TrendingUp, Share2, Trophy, Camera, Play } from "lucide-react";
+import { Flame, Zap, Award, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Crown, TrendingUp, Share2, Trophy, Camera } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
-import AppImage from "@/components/ui/app-image";
+import GridMedia from "@/components/feed/GridMedia";
 import StatusAvatar from "@/components/StatusAvatar";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { Button } from "@/components/ui/button";
@@ -613,27 +613,7 @@ const UserProfile = () => {
                     }}
                     className="group relative aspect-square overflow-hidden bg-secondary"
                   >
-                    {isVideo ? (
-                      <>
-                        <video
-                          src={src}
-                          muted
-                          playsInline
-                          preload="metadata"
-                          className="absolute inset-0 h-full w-full object-cover"
-                        />
-                        <span className="absolute top-1.5 right-1.5">
-                          <Play size={14} className="text-foreground drop-shadow-lg" fill="currentColor" />
-                        </span>
-                      </>
-                    ) : (
-                      <AppImage
-                        src={src}
-                        width={320}
-                        alt={`@${profile.username} post`}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    )}
+                    <GridMedia src={src} isVideo={isVideo} alt={`@${profile.username} post`} />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/45 transition-colors flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
                       <span className="flex items-center gap-1 text-[12px] font-black text-foreground">
                         <Heart size={12} fill="currentColor" />

@@ -2,6 +2,7 @@ import { Crown, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AppImage from "@/components/ui/app-image";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
+import { useSignedMediaUrl } from "@/lib/signed-url";
 import DayStatsSticker, { type DayStats } from "@/components/feed/DayStatsSticker";
 
 const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
@@ -30,6 +31,9 @@ export interface PostMediaProps {
  * - Tier ribbon overlay. HEIC originals get a graceful notice.
  */
 const PostMedia = ({ imageUrl, videoUrl, alt = "", tier, dayStats, onOpenImage, className }: PostMediaProps) => {
+  // Videos in private buckets render via signed URLs (images are handled
+  // inside AppImage; <video> has no such wrapper).
+  const signedVideo = useSignedMediaUrl(videoUrl);
   const ribbon =
     tier === "elite" ? { icon: Crown, label: "Elite", color: "text-gold", border: "border-gold/40" }
     : tier === "apex" ? { icon: Zap, label: "Apex", color: "text-[hsl(var(--ember))]", border: "border-[hsl(var(--ember))]/50" }
@@ -39,7 +43,7 @@ const PostMedia = ({ imageUrl, videoUrl, alt = "", tier, dayStats, onOpenImage, 
   if (videoUrl) {
     return (
       <div className={cn("mt-3 mx-4 rounded-2xl overflow-hidden border border-border/60", className)}>
-        <LazyVideoPlayer src={videoUrl} />
+        <LazyVideoPlayer src={signedVideo ?? videoUrl} />
       </div>
     );
   }

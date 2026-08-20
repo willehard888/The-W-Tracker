@@ -7,12 +7,13 @@ import StatusNameplate from "@/components/StatusNameplate";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import ImageLightbox from "@/components/ImageLightbox";
 import { getTierConfig, getTierUsernameClass, formatTier } from "@/lib/status-tiers";
-import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock, Heart, MessageCircle, Award, Play, Camera } from "lucide-react";
+import { Crown, Flame, Zap, Trophy, ChevronLeft, ExternalLink, Lock, Heart, MessageCircle, Award, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import GridMedia from "@/components/feed/GridMedia";
 
 const PublicProfile = () => {
   const { username } = useParams<{ username: string }>();
@@ -288,27 +289,7 @@ const PublicProfile = () => {
                     }}
                     className="group relative aspect-square overflow-hidden bg-secondary"
                   >
-                    {isVideo ? (
-                      <>
-                        <video
-                          src={src}
-                          muted
-                          playsInline
-                          preload="metadata"
-                          className="absolute inset-0 h-full w-full object-cover"
-                        />
-                        <span className="absolute top-1.5 right-1.5">
-                          <Play size={14} className="text-foreground drop-shadow-lg" fill="currentColor" />
-                        </span>
-                      </>
-                    ) : (
-                      <img
-                        src={src}
-                        alt={`@${profile.username} post`}
-                        loading="lazy"
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    )}
+                    <GridMedia src={src} isVideo={isVideo} alt={`@${profile.username} post`} />
                     {/* Hover overlay with metrics — desktop nicety */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/45 transition-colors flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
                       <span className="flex items-center gap-1 text-[12px] font-black text-foreground">

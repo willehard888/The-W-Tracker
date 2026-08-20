@@ -422,6 +422,11 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             </div>
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
               <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+              {(post as any).moderation_status === "pending" && (
+                <span className="inline-flex items-center px-1.5 py-px rounded-full border border-amber-400/40 bg-amber-400/10 text-amber-400 font-bold uppercase tracking-wider">
+                  Reviewing…
+                </span>
+              )}
               {post.author?.level && post.author.level > 0 && (<><span>•</span><span className="font-semibold">Lv.{post.author.level}</span></>)}
               {post.author?.streak && post.author.streak > 0 && (
                 <><span>•</span><StreakFlameInline streak={post.author.streak} suffix="d" className="text-[10px]" /></>

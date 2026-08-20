@@ -185,6 +185,129 @@ Deno.serve(async (req) => {
     const supabaseAnon = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseService = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+    // ── Server-enforcement branch (S7a) ──────────────────────────────────
+    // DB AFTER INSERT triggers call this with the service-role key and
+    // { server_enforce, table, content_id }. Posts insert as 'pending' and
+    // only this pass makes them visible to others — the enforcement the
+    // client-orchestrated path can't provide (direct INSERTs skip it).
+    // It also moderates the image AND caption TOGETHER, closing the client
+    // asymmetry where an image post's caption was never scored.
+    //
+    // Role detection: the vault-stored key is not byte-identical to the
+    // runtime env key, so compare env AND (gateway-verified) JWT role —
+    // verify_jwt=true means the platform already checked the signature
+    // before this code runs, so reading the role claim is safe.
+    const bearer = authHeader.replace(/^Bearer\s+/i, "");
+    const isServiceCall = (() => {
+      if (bearer === supabaseService) return true;
+      try {
+        const seg = bearer.split(".")[1];
+        if (!seg) return false;
+        const b64 = seg.replace(/-/g, "+").replace(/_/g, "/");
+        const padded = b64.length % 4 ? b64 + "=".repeat(4 - (b64.length % 4)) : b64;
+        return JSON.parse(atob(padded))?.role === "service_role";
+      } catch {
+        return false;
+      }
+    })();
+    if (isServiceCall) {
+      const sbody = await req.json().catch(() => ({} as Record<string, unknown>));
+      const jsonRes = (obj: unknown, status = 200) =>
+        new Response(JSON.stringify(obj), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (sbody?.server_enforce !== true) return jsonRes({ error: "bad service request" }, 400);
+
+      const table = sbody.table === "tribe_posts" ? "tribe_posts" : sbody.table === "feed_posts" ? "feed_posts" : null;
+      const contentId = typeof sbody.content_id === "string" ? sbody.content_id : null;
+      if (!table || !contentId) return jsonRes({ error: "bad service request" }, 400);
+
+      const admin = createClient(supabaseUrl, supabaseService);
+      const { data: row } = await admin
+        .from(table)
+        .select("id, user_id, content, image_url, video_url, moderation_status")
+        .eq("id", contentId)
+        .maybeSingle();
+      if (!row) return jsonRes({ skipped: "not_found" });
+      if (row.moderation_status !== "pending") return jsonRes({ skipped: `already_${row.moderation_status}` });
+
+      const postText = typeof row.content === "string" && row.content.trim() ? row.content : null;
+
+      // Make the stored image fetchable regardless of bucket visibility —
+      // sign our own storage objects (works for public buckets today and
+      // future-proofs the private flip).
+      const storageRef = (url: string | null) => {
+        const m = url?.match(/\/object\/(?:public|sign)\/([^/]+)\/(.+?)(?:\?|$)/);
+        return m ? { bucket: m[1], key: m[2] } : null;
+      };
+      let imageUrl: string | null = row.image_url ?? null;
+      const ref = storageRef(imageUrl);
+      if (ref) {
+        const { data: signed } = await admin.storage.from(ref.bucket).createSignedUrl(ref.key, 600);
+        if (signed?.signedUrl) imageUrl = signed.signedUrl;
+      }
+
+      let verdict: ModerationResult | null = null;
+      if (imageUrl || postText) {
+        try {
+          const ac = new AbortController();
+          const timer = setTimeout(() => ac.abort(), 20_000);
+          verdict = await callModerator({ url: imageUrl }, postText, "feed_post", ac.signal);
+          clearTimeout(timer);
+        } catch (e) {
+          // Leave pending — the sweeper cron approves + queues for human
+          // review after 10 min. Never block a post on infra failure.
+          console.error("server_enforce moderation failed", e);
+          return jsonRes({ enforced: false, left: "pending" });
+        }
+      } else {
+        // Video-only / empty: nothing this model scores — approve.
+        verdict = { is_safe: true, categories: [], confidence: 1, reason: "no scorable content", action: "allow", severity: "low" } as ModerationResult;
+      }
+
+      // Confidence routing mirrors the client path: uncertain blocks → flag.
+      let finalA = verdict.action;
+      if (finalA === "block" && verdict.confidence < 0.85) finalA = "flag";
+
+      const contentType = table === "feed_posts" ? "feed_post" : "tribe_post";
+      if (finalA === "block") {
+        if (ref) await admin.storage.from(ref.bucket).remove([ref.key]);
+        await admin.from(table).delete().eq("id", contentId);
+      } else {
+        await admin.from(table).update({ moderation_status: "approved" }).eq("id", contentId);
+        if (finalA === "flag") {
+          await admin.from("moderation_queue").insert({
+            content_type: contentType,
+            content_id: contentId,
+            user_id: row.user_id,
+            image_url: row.image_url ?? null,
+            text_content: postText,
+            ai_action: verdict.action,
+            ai_confidence: verdict.confidence,
+            ai_categories: verdict.categories,
+            ai_reason: verdict.reason,
+            severity: verdict.severity,
+          });
+        }
+      }
+
+      await admin.from("content_moderations").insert({
+        content_type: contentType,
+        content_id: contentId,
+        image_url: row.image_url ?? null,
+        text_content: postText,
+        is_safe: finalA !== "block",
+        categories: verdict.categories,
+        confidence: verdict.confidence,
+        reason: verdict.reason,
+        action: finalA,
+        severity: verdict.severity,
+        model: MODEL,
+        cache_hit: false,
+        latency_ms: Date.now() - startedAt,
+      });
+
+      return jsonRes({ enforced: true, action: finalA });
+    }
+
     const userClient = createClient(supabaseUrl, supabaseAnon, {
       global: { headers: { Authorization: authHeader } },
     });

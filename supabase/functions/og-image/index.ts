@@ -105,6 +105,77 @@ function buildSvg(p: {
 </svg>`;
 }
 
+// Tribe fire tier accents — mirrors the client ladder in tribe-streak.ts
+// (30/100/300/700/1500/3000/6000). Hexes approximate the HSL palette.
+const tribeAccent = (streak: number): { accent: string; tier: string } => {
+  if (streak >= 6000) return { accent: "#c084fc", tier: "FIRESTORM" };
+  if (streak >= 3000) return { accent: "#7dd3fc", tier: "LEGENDARY" };
+  if (streak >= 1500) return { accent: "#67e8f9", tier: "DIAMOND" };
+  if (streak >= 700) return { accent: "#fcd34d", tier: "BLAZING" };
+  if (streak >= 300) return { accent: "#f5b942", tier: "ON FIRE" };
+  if (streak >= 100) return { accent: "#fb923c", tier: "WARM" };
+  if (streak >= 30) return { accent: "#fb6a3b", tier: "HOT" };
+  return { accent: "#a8887a", tier: "GATHERING" };
+};
+
+function buildTribeSvg(t: {
+  name: string;
+  memberCount: number;
+  collectiveStreak: number;
+  activity: string | null;
+}) {
+  const { accent, tier } = tribeAccent(t.collectiveStreak);
+  const name = escapeXml(t.name);
+  const streak = t.collectiveStreak.toLocaleString().replace(/,/g, " ");
+  const sub = [
+    `${t.memberCount} MEMBER${t.memberCount === 1 ? "" : "S"}`,
+    t.activity ? escapeXml(t.activity.toUpperCase()) : null,
+    tier,
+  ].filter(Boolean).join(" · ");
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="0%" r="120%">
+      <stop offset="0%" stop-color="${accent}" stop-opacity="0.35"/>
+      <stop offset="55%" stop-color="#0f0d14" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#08070b" stop-opacity="1"/>
+    </radialGradient>
+    <linearGradient id="hairline" x1="0" x2="1">
+      <stop offset="0" stop-color="${accent}" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="${accent}" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="${accent}" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="fglow" cx="50%" cy="60%" r="55%">
+      <stop offset="0%" stop-color="${accent}" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="${accent}" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="14" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="60" y="60" width="1080" height="510" rx="36" fill="#0a0810" fill-opacity="0.55" stroke="${accent}" stroke-opacity="0.30"/>
+  <line x1="120" y1="60" x2="1080" y2="60" stroke="url(#hairline)" stroke-width="1.5"/>
+  <line x1="120" y1="570" x2="1080" y2="570" stroke="url(#hairline)" stroke-width="1"/>
+
+  <text x="600" y="135" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="20" fill="${accent}" fill-opacity="0.75" letter-spacing="8">WHEALTH FACTORY · TRIBE</text>
+
+  <!-- Flame mark -->
+  <circle cx="600" cy="250" r="105" fill="url(#fglow)"/>
+  <text x="600" y="285" text-anchor="middle" font-size="100">🔥</text>
+
+  <!-- Tribe name -->
+  <text x="600" y="405" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="58" fill="#f5f0e6" letter-spacing="-1">${name}</text>
+  <text x="600" y="442" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="16" fill="#9ca3af" letter-spacing="4">${sub}</text>
+
+  <!-- Collective streak -->
+  <text x="600" y="527" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="84" fill="${accent}" letter-spacing="-2" filter="url(#glow)">${streak}</text>
+  <text x="600" y="555" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="14" fill="${accent}" fill-opacity="0.7" letter-spacing="8">DAYS OF COLLECTIVE FIRE · JOIN THE TRIBE</text>
+</svg>`;
+}
+
 function notFoundSvg(username: string) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <rect width="1200" height="630" fill="#0a0810"/>
@@ -117,11 +188,39 @@ Deno.serve(async (req) => {
   try {
   const url = new URL(req.url);
   const username = url.searchParams.get("u")?.trim();
+  const tribeParam = url.searchParams.get("tribe")?.trim();
   const headers = {
     "content-type": "image/svg+xml; charset=utf-8",
     "cache-control": "public, max-age=300, s-maxage=300",
     "access-control-allow-origin": "*",
   };
+
+  // ?tribe=<uuid-or-slug> — share card for a PUBLIC tribe. Private tribes
+  // get the generic fallback: their existence stays as hidden as their RLS.
+  if (tribeParam) {
+    const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tribeParam);
+    const { data: tribe } = await sb
+      .from("tribes")
+      .select("name, member_count, collective_streak, primary_activity, visibility")
+      .eq(isUuid ? "id" : "slug", tribeParam)
+      .maybeSingle();
+    if (!tribe || tribe.visibility !== "public") {
+      return new Response(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="#0a0810"/><text x="600" y="300" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="52" fill="#f5b942">Whealth Factory</text><text x="600" y="352" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="22" fill="#9ca3af">A private tribe awaits inside</text></svg>`,
+        { headers },
+      );
+    }
+    return new Response(
+      buildTribeSvg({
+        name: tribe.name,
+        memberCount: tribe.member_count ?? 0,
+        collectiveStreak: tribe.collective_streak ?? 0,
+        activity: tribe.primary_activity ?? null,
+      }),
+      { headers },
+    );
+  }
 
   if (!username) {
     return new Response(notFoundSvg("unknown"), { headers });

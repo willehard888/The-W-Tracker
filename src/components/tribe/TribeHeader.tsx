@@ -32,6 +32,8 @@ export interface TribeHeaderProps {
   onDelete: () => void;
   onLeave: () => void;
   onShare: () => void;
+  /** Owner-only week strip: today's check-in pulse (null while loading). */
+  ownerPulse?: { checked: number; total: number } | null;
 }
 
 /**
@@ -58,6 +60,7 @@ const TribeHeader = ({
   onDelete,
   onLeave,
   onShare,
+  ownerPulse,
 }: TribeHeaderProps) => {
   const founder = members.find((m) => m.role === "owner");
 
@@ -135,6 +138,32 @@ const TribeHeader = ({
               <p className="text-[12px] text-foreground/80 leading-snug">
                 This tribe is on hold.
               </p>
+            </div>
+          )}
+
+          {/* Owner week strip — the creator's pulse without opening a dashboard */}
+          {isOwner && (
+            <div className="mt-4 rounded-xl border border-border/50 bg-card/40 px-3 py-2.5">
+              <p className="eyebrow mb-1">This week</p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-gold">
+                  <Zap size={10} fill="currentColor" /> +{(tribe.weekly_xp ?? 0).toLocaleString()} XP
+                </span>
+                {ownerPulse && ownerPulse.total > 0 && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-[hsl(var(--ember))]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--ember))]" />
+                    {ownerPulse.checked}/{ownerPulse.total} lit today
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-muted-foreground">
+                  <Users size={10} /> {tribe.member_count} member{tribe.member_count === 1 ? "" : "s"}
+                </span>
+                {pendingCount > 0 && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-gold">
+                    <UserCheck size={10} /> {pendingCount} request{pendingCount === 1 ? "" : "s"}
+                  </span>
+                )}
+              </div>
             </div>
           )}
 

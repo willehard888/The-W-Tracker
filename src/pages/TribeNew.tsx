@@ -71,12 +71,13 @@ const TribeNew = () => {
         return;
       }
       // Best-effort activity tag — never block navigation on it.
+      // (supabase.rpc returns errors, it doesn't throw — check explicitly.)
       if (activity && data) {
-        try {
-          await supabase.rpc("set_tribe_activity" as any, { p_tribe: data, p_activity: activity });
-        } catch {
-          /* ignore — tribe is created either way */
-        }
+        const { error: actErr } = await supabase.rpc("set_tribe_activity" as any, {
+          p_tribe: data,
+          p_activity: activity,
+        });
+        if (actErr) console.warn("[tribe] set_tribe_activity failed", actErr);
       }
       toast.success("Tribe created!");
       navigate(`/tribes/${data}`);
@@ -206,6 +207,15 @@ const TribeNew = () => {
             ))}
           </div>
           <p className="text-[10px] text-muted-foreground mt-2">From training to meditation, workshops to book clubs — helps people discover your tribe.</p>
+          {TRIBE_ACTIVITY_GROUPS.find((g) => g.label === "Learn & Grow")?.items.some((i) => i.name === activity) && (
+            <div className="mt-2 rounded-lg border border-gold/35 bg-gold/[0.06] px-3 py-2">
+              <p className="text-[10px] font-bold text-gold">Built for creators</p>
+              <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                Host workshops and courses with event series — up to 24 sessions with
+                meeting links, RSVPs and reminders, right inside your tribe.
+              </p>
+            </div>
+          )}
         </div>
 
         <div>

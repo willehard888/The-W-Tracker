@@ -150,6 +150,18 @@ const TribeDetail = () => {
   });
 
   const kudosRemaining = Math.max(0, 2 - (kudosGivenThisMonth || 0));
+
+  // Owner week-strip pulse — one cheap RPC, owner-only consumer.
+  const { data: ownerPulse } = useQuery({
+    queryKey: ["tribe-pulse", id],
+    enabled: !!id && isOwner,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("tribe_today_pulse" as any, { p_tribe_ids: [id] });
+      const row = ((data as any) ?? [])[0];
+      return row ? { checked: row.checked as number, total: row.total as number } : null;
+    },
+  });
   // Founder decision: kudos is open to every member (2/month, enforced by RLS).
   const canKudos = !!profile;
 
@@ -763,6 +775,7 @@ const TribeDetail = () => {
         onDelete={handleDelete}
         onLeave={handleLeave}
         onShare={handleShare}
+        ownerPulse={ownerPulse ?? null}
       />
 
 

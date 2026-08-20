@@ -1,59 +1,37 @@
-import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Flame, Users, Compass, UserPlus } from "lucide-react";
+import { Flame, Users, UserPlus } from "lucide-react";
 import EliteFeed from "./EliteFeed";
 import Tribes from "./Tribes";
 import { cn } from "@/lib/utils";
 import { SEGMENT_ACTIVE } from "@/components/ui/segment";
 import { hapticSelection } from "@/lib/haptics";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 
 /**
- * Squad — the single social home. ONE segmented control: Feed · My Tribes ·
- * Browse. (The tribes area used to render its own second My Tribes/Browse
- * segment right under this one — two stacked gold pill rows read as clutter,
- * so the sub-tabs were promoted into this control and the second row died.)
+ * Squad — the single social home. Feed and Tribes stay SEPARATE top-level
+ * destinations behind one gold segmented control (founder call). Inside
+ * Tribes, the My Tribes/Browse split renders as quiet underline tabs — a
+ * subordinate visual language, never a second gold pill row stacked under
+ * this one (that stack was the "looks cheap" complaint).
  *
- * The active sub-tab lives in the URL (`/squad?tab=mine|browse`) so
- * back-links from tribe screens land on the right tab. The legacy
- * `?tab=tribes` (old push routes, old back-links) resolves to My Tribes for
- * members and Browse for newcomers.
+ * The active tab lives in the URL so back-links from tribe screens land
+ * right: `?tab=tribes` (canonical), with `?tab=mine|browse` accepted as
+ * aliases that also pre-select the sub-tab.
  */
 const SUB = [
   { key: "feed", label: "Feed", icon: Flame },
-  { key: "mine", label: "My Tribes", icon: Users },
-  { key: "browse", label: "Browse", icon: Compass },
+  { key: "tribes", label: "Tribes", icon: Users },
 ] as const;
-
-type Tab = (typeof SUB)[number]["key"];
 
 const Squad = () => {
   const navigate = useNavigate();
-  const { profile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const raw = searchParams.get("tab");
-  const tab: Tab =
-    raw === "mine" || raw === "browse" ? raw : raw === "tribes" ? "mine" : "feed";
-  const setTab = (next: Tab) =>
+  const tab: "feed" | "tribes" =
+    raw === "tribes" || raw === "mine" || raw === "browse" ? "tribes" : "feed";
+  // mine/browse aliases pre-select the sub-tab inside Tribes.
+  const initialSub = raw === "mine" || raw === "browse" ? raw : undefined;
+  const setTab = (next: "feed" | "tribes") =>
     setSearchParams(next === "feed" ? {} : { tab: next }, { replace: true });
-
-  // Legacy ?tab=tribes → members land on My Tribes, newcomers on Browse.
-  useEffect(() => {
-    if (raw !== "tribes" || !profile?.user_id) return;
-    let alive = true;
-    void supabase
-      .from("tribe_members")
-      .select("tribe_id")
-      .eq("user_id", profile.user_id)
-      .eq("status", "active")
-      .limit(1)
-      .then(({ data }) => {
-        if (alive) setSearchParams({ tab: (data?.length ?? 0) > 0 ? "mine" : "browse" }, { replace: true });
-      });
-    return () => { alive = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [raw, profile?.user_id]);
 
   return (
     <div className="flex flex-col">
@@ -64,11 +42,11 @@ const Squad = () => {
               key={s.key}
               onClick={() => { hapticSelection(); setTab(s.key); }}
               className={cn(
-                "flex-1 inline-flex items-center justify-center gap-1 rounded-lg py-2 px-1 text-[11px] font-black transition-all active:scale-[0.98] whitespace-nowrap",
+                "flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-[12px] font-black transition-all active:scale-[0.98]",
                 tab === s.key ? SEGMENT_ACTIVE : "text-muted-foreground",
               )}
             >
-              <s.icon size={13} className="shrink-0" /> {s.label}
+              <s.icon size={14} /> {s.label}
             </button>
           ))}
         </div>
@@ -81,7 +59,7 @@ const Squad = () => {
         </button>
       </div>
 
-      {tab === "feed" ? <EliteFeed /> : <Tribes tab={tab === "browse" ? "browse" : "mine"} />}
+      {tab === "feed" ? <EliteFeed /> : <Tribes initialSub={initialSub} />}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, forwardRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,7 +17,6 @@ import EmptyState from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
-import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 import { avatarUrl, transformImage } from "@/lib/img";
 import { hapticSelection } from "@/lib/haptics";
 import TribeSearchBar from "@/components/TribeSearchBar";
@@ -112,39 +111,28 @@ const EMPTY_PAGE: TribesPageData = {
   nextEvents: new Map(),
 };
 
-const Tribes = () => {
+/**
+ * The tribes area under /squad. The active sub-tab (My Tribes / Browse) is
+ * OWNED BY SQUAD's single segmented control — this component used to render
+ * its own second segment row right below Squad's, and two stacked gold pill
+ * rows read as cheap clutter.
+ */
+const Tribes = ({ tab }: { tab: "mine" | "browse" }) => {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [, setSearchParams] = useSearchParams();
 
   // Ephemeral animation state — seeded from the query, then mutated live by the
   // realtime fire reactor (so it can't live inside TanStack Query).
   const [collectiveStreaks, setCollectiveStreaks] = useState<Map<string, number>>(new Map());
   const [rowPulse, setRowPulse] = useState<Map<string, number>>(new Map());
   const [respondingId, setRespondingId] = useState<string | null>(null);
-  const [tab, setTab] = useState<"browse" | "mine">("browse");
   // Two-level activity picker: a group opens its activities; an activity
   // filters server-side (the old flat 26-chip strip filtered client-side over
   // a top-50 slice, hiding every small tribe).
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [activityFilter, setActivityFilter] = useState<string | null>(null);
-  // Members land on My Tribes, newcomers on Browse — decided once on load,
-  // never fighting a tab the user has tapped themselves.
-  const tabTouched = useRef(false);
-  useEffect(() => {
-    if (!profile?.user_id) return;
-    let alive = true;
-    void supabase
-      .from("tribe_members")
-      .select("tribe_id")
-      .eq("user_id", profile.user_id)
-      .eq("status", "active")
-      .limit(1)
-      .then(({ data }) => {
-        if (alive && !tabTouched.current && (data?.length ?? 0) > 0) setTab("mine");
-      });
-    return () => { alive = false; };
-  }, [profile?.user_id]);
 
   // ── Tribe list (browse / mine) ───────────────────────────────────────────
   const tribesQuery = useQuery<TribesPageData>({
@@ -657,22 +645,6 @@ const Tribes = () => {
         </div>
       )}
 
-      {/* Tabs — the page's first element: content over ceremony */}
-      <div className={cn(SEGMENT_TRACK, "mb-3")}>
-        {(["mine", "browse"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => { tabTouched.current = true; void hapticSelection(); setTab(t); }}
-            className={cn(
-              "flex-1 text-xs font-black py-2 rounded-lg uppercase tracking-wider transition-all",
-              tab === t ? SEGMENT_ACTIVE : SEGMENT_IDLE,
-            )}
-          >
-            {t === "browse" ? "Browse" : "My Tribes"}
-          </button>
-        ))}
-      </div>
-
       {tab === "browse" && <TribeSearchBar onChanged={reloadTribes} />}
 
       {/* Browse by activity — 4 group chips, tap to reveal the group's
@@ -786,7 +758,7 @@ const Tribes = () => {
             }
             action={
               tab === "mine" ? (
-                <Button size="sm" variant="ember" onClick={() => { tabTouched.current = true; setTab("browse"); }}>
+                <Button size="sm" variant="ember" onClick={() => setSearchParams({ tab: "browse" }, { replace: true })}>
                   <ChevronRight size={14} /> Browse tribes
                 </Button>
               ) : (

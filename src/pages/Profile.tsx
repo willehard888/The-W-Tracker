@@ -412,28 +412,8 @@ const Profile = () => {
 
   const tier = profile.status_tier || 'recruit';
   const tierConfig = getTierConfig(tier);
-  const isLegendTier = tier === 'legend';
-  const isApexTier = tier === 'apex';
-  const isHighTier = tier === 'high_performer';
-
-  // Hero card gradient — themed by tier so the whole card screams status
-  const heroBgClass = isLegendTier
-    ? "border-[hsl(280_70%_60%)]/35 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(280_60%_18%/0.7),hsl(255_14%_6%)_55%,hsl(350_50%_12%/0.5)_100%)]"
-    : isApexTier
-    ? "border-[hsl(var(--ember))]/35 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(18_75%_18%/0.65),hsl(255_14%_6%)_60%)]"
-    : tier === 'elite'
-    ? "border-gold/25 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(42_70%_18%/0.55),hsl(255_14%_6%)_60%)]"
-    : isHighTier
-    ? "border-[hsl(var(--purple))]/30 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(270_50%_18%/0.55),hsl(255_14%_6%)_60%)]"
-    : "border-border/40 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(255_14%_11%),hsl(255_14%_5%)_60%)]";
-
-  const heroTopGlowStyle = isLegendTier
-    ? "radial-gradient(ellipse at center, hsl(280 70% 60% / 0.4), transparent 70%)"
-    : isApexTier
-    ? "radial-gradient(ellipse at center, hsl(var(--ember) / 0.4), transparent 70%)"
-    : isHighTier
-    ? "radial-gradient(ellipse at center, hsl(var(--purple) / 0.35), transparent 70%)"
-    : "radial-gradient(ellipse at center, hsl(var(--gold) / 0.35), transparent 70%)";
+  // Hero gradient now comes from the shared getTierHeroSurface ladder
+  // (inside ProfileHero) — one tier ladder for every profile hero.
 
   return (
     <div className="min-h-full pb-4 px-4 pt-6">
@@ -518,8 +498,6 @@ const Profile = () => {
         uploadingAvatar={uploadingAvatar}
         avatarInputRef={avatarInputRef}
         onAvatarUpload={handleAvatarUpload}
-        heroBgClass={heroBgClass}
-        heroTopGlowStyle={heroTopGlowStyle}
         tier={tier}
         rankData={rankData}
         championHistory={championHistory}

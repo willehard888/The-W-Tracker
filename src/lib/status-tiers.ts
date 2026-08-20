@@ -244,6 +244,49 @@ export const getPreviousTier = (current: string): TierConfig | null => {
   return TIER_CONFIG[TIER_ORDER[idx - 1]];
 };
 
+// ── Hero surface (one tier ladder for every profile hero) ────────────────────
+// Profile (/profile), UserProfile (/user/:id) and PublicProfile (/u/:name)
+// each hand-rolled this gradient with drifting hues. This is the single
+// source: bgClass paints the hero card/section, glowStyle is the blurred
+// top vignette. Pages own the container shape (card vs full-bleed).
+
+export interface TierHeroSurface {
+  /** Border + radial-gradient background classes for the hero container. */
+  bgClass: string;
+  /** CSS background for the blurred top-glow element. */
+  glowStyle: string;
+}
+
+export const getTierHeroSurface = (tier: string): TierHeroSurface => {
+  switch (tier as StatusTier) {
+    case "legend":
+      return {
+        bgClass: "border-[hsl(280_70%_60%)]/35 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(280_60%_18%/0.7),hsl(255_14%_6%)_55%,hsl(350_50%_12%/0.5)_100%)]",
+        glowStyle: "radial-gradient(ellipse at center, hsl(280 70% 60% / 0.4), transparent 70%)",
+      };
+    case "apex":
+      return {
+        bgClass: "border-[hsl(var(--ember))]/35 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(18_75%_18%/0.65),hsl(255_14%_6%)_60%)]",
+        glowStyle: "radial-gradient(ellipse at center, hsl(var(--ember) / 0.4), transparent 70%)",
+      };
+    case "elite":
+      return {
+        bgClass: "border-gold/25 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(42_70%_18%/0.55),hsl(255_14%_6%)_60%)]",
+        glowStyle: "radial-gradient(ellipse at center, hsl(var(--gold) / 0.35), transparent 70%)",
+      };
+    case "high_performer":
+      return {
+        bgClass: "border-[hsl(var(--purple))]/30 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(270_50%_18%/0.55),hsl(255_14%_6%)_60%)]",
+        glowStyle: "radial-gradient(ellipse at center, hsl(var(--purple) / 0.35), transparent 70%)",
+      };
+    default:
+      return {
+        bgClass: "border-border/40 bg-[radial-gradient(120%_90%_at_50%_-10%,hsl(255_14%_11%),hsl(255_14%_5%)_60%)]",
+        glowStyle: "radial-gradient(ellipse at center, hsl(var(--gold) / 0.35), transparent 70%)",
+      };
+  }
+};
+
 /**
  * Tailwind class string that colors the @username text according to the
  * user's status tier. Higher tiers use richer gradients; lower tiers use

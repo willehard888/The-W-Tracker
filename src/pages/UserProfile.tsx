@@ -4,20 +4,17 @@ import { Portal } from "@/components/ui/Portal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Flame, Zap, Award, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Crown, TrendingUp, Share2, Trophy, Camera } from "lucide-react";
+import { Flame, Zap, Award, ChevronLeft, Swords, MessageCircle, Snowflake, Dumbbell, Brain, Droplets, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Share2, Camera } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
 import GridMedia from "@/components/feed/GridMedia";
-import StatusAvatar from "@/components/StatusAvatar";
-import StreakFlameInline from "@/components/StreakFlameInline";
 import { Button } from "@/components/ui/button";
 import BadgeCard from "@/components/BadgeCard";
 import EmptyState from "@/components/ui/empty-state";
 import HeadToHead from "@/components/HeadToHead";
 import ProfileActivityPulse from "@/components/ProfileActivityPulse";
-import FeaturedBadgeHero from "@/components/FeaturedBadgeHero";
-import ApexBadge from "@/components/ApexBadge";
-import StatusNameplate from "@/components/StatusNameplate";
-import { getTierConfig, getTierUsernameClass, formatTier, divisionRoman } from "@/lib/status-tiers";
+import IdentityCore from "@/components/profile/IdentityCore";
+import { useMyRank } from "@/hooks/use-my-rank";
+import { getTierConfig, getTierHeroSurface } from "@/lib/status-tiers";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -133,30 +130,9 @@ const UserProfile = () => {
     },
   });
 
-  // Global rank — how many users are ahead on rank_score
-  const { data: globalRank } = useQuery({
-    queryKey: ["user-global-rank", userId, profile?.rank_score],
-    enabled: !!userId && !!profile,
-    queryFn: async () => {
-      if (!profile) return null;
-      const rs = Number(profile.rank_score) || 0;
-      const { count: totalCount } = await supabase
-        .from("profiles")
-        .select("user_id", { count: "exact", head: true });
-      const total = totalCount || 0;
-      // Score 0 = hasn't earned a rank yet → unranked (avoids misleading
-      // "#4 / 3 · Top 100%" for brand-new recruits).
-      if (rs <= 0) return { rank: null as number | null, total, ranked: false };
-      const { count: aheadCount } = await supabase
-        .from("profiles")
-        .select("user_id", { count: "exact", head: true })
-        .gt("rank_score", rs);
-      // Clamp so visibility/RLS skew can never make rank exceed the population.
-      const rank = total > 0 ? Math.min((aheadCount || 0) + 1, total) : (aheadCount || 0) + 1;
-      return { rank, total, ranked: true };
-    },
-    staleTime: 60_000,
-  });
+  // Global rank — same get_user_rank RPC as /profile, so the same user can
+  // never see two different rank numbers on two surfaces.
+  const { data: rankData } = useMyRank(userId);
   const { data: friendship } = useQuery({
     queryKey: ["friendship", myProfile?.user_id, userId],
     queryFn: async () => {
@@ -225,24 +201,8 @@ const UserProfile = () => {
 
   const isOwnProfile = myProfile?.user_id === userId;
   const tier = getTierConfig(profile.status_tier || 'recruit');
-  const isLegend = profile.status_tier === 'legend';
-  const isApex = profile.status_tier === 'apex';
-  const isElite = profile.status_tier === 'elite'; // EARNED tier only, never the paid flag
-  const isHigh = profile.status_tier === 'high_performer';
-  const division = (profile as any).tier_division ?? 0;
-  const isApexSubscriber = Boolean((profile as any).is_apex_subscriber);
-  const isLegendPinned = Boolean((profile as any).legend_pinned);
-
-  // Cinematic tier-based hero gradient
-  const heroBg = isLegend
-    ? "radial-gradient(120% 80% at 50% 0%, hsl(280 70% 18% / 0.85) 0%, hsl(255 14% 7%) 55%, hsl(350 60% 12% / 0.6) 100%)"
-    : isApex
-    ? "radial-gradient(120% 80% at 50% 0%, hsl(18 80% 20% / 0.7) 0%, hsl(255 14% 6%) 60%)"
-    : isElite
-    ? "radial-gradient(120% 80% at 50% 0%, hsl(42 60% 16% / 0.7) 0%, hsl(255 14% 6%) 60%)"
-    : isHigh
-    ? "radial-gradient(120% 80% at 50% 0%, hsl(270 50% 16% / 0.6) 0%, hsl(255 14% 6%) 60%)"
-    : "radial-gradient(120% 80% at 50% 0%, hsl(255 14% 11%) 0%, hsl(255 14% 5%) 60%)";
+  // One shared tier ladder for every profile hero (same as /profile).
+  const heroSurface = getTierHeroSurface(profile.status_tier || 'recruit');
 
   const earnedBadges = (allBadges || []).filter((b) => earnedBadgeIds?.includes(b.id));
 
@@ -262,20 +222,17 @@ const UserProfile = () => {
 
   return (
     <div className="min-h-full pb-6 relative">
-      {/* Hero */}
+      {/* Hero — full-bleed variant of the shared tier surface */}
       <div
-        className="relative px-4 pt-12 pb-6 overflow-hidden"
-        style={{ background: heroBg }}
+        className={cn(
+          "relative px-4 pt-12 pb-6 overflow-hidden border-x-0 border-t-0 rounded-none",
+          heroSurface.bgClass,
+        )}
       >
         <div
           aria-hidden
-          className={cn(
-            "pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-64 blur-3xl opacity-60",
-            isLegend && "bg-[radial-gradient(ellipse_at_center,hsl(280_70%_55%/0.4),transparent_70%)]",
-            isApex && "bg-[radial-gradient(ellipse_at_center,hsl(var(--ember)/0.35),transparent_70%)]",
-            isElite && !isApex && !isLegend && "bg-[radial-gradient(ellipse_at_center,hsl(var(--gold)/0.3),transparent_70%)]",
-            isHigh && "bg-[radial-gradient(ellipse_at_center,hsl(var(--purple)/0.3),transparent_70%)]",
-          )}
+          className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-64 blur-3xl opacity-60"
+          style={{ background: heroSurface.glowStyle }}
         />
 
         <div className="relative z-10 flex items-center justify-between mb-6 safe-top">
@@ -299,171 +256,32 @@ const UserProfile = () => {
             Whealth Factory
           </p>
 
-          {/* Avatar — large, gold ring with offset */}
+          {/* Shared identity block — identical to /profile (page owns the
+              background + entrance animation; rank comes from the same RPC) */}
           <motion.div
-            initial={{ scale: 0.85, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="relative inline-block mb-5"
-          >
-            <div className="absolute inset-0 -m-3 rounded-full bg-gold/35 blur-2xl" aria-hidden />
-            <div className="relative">
-              <StatusAvatar
-                src={profile.avatar_url}
-                name={profile.username}
-                tier={profile.status_tier || 'recruit'}
-                size="xl"
-              />
-            </div>
-          </motion.div>
-
-          {/* PREMIUM ribbon — Founding Apex subscribers */}
-          {isApexSubscriber && (
-            <div className="mb-2 flex justify-center">
-              <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm text-[10px] font-black uppercase tracking-[0.22em] bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold shadow-[0_0_14px_hsl(var(--gold)/0.55)]">
-                <Crown size={11} strokeWidth={3} />
-                Premium · Day-One
-              </span>
-            </div>
-          )}
-
-          {/* Username — colored by status tier — with the live streak flame
-              right after it, mirroring the top header. */}
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="flex items-center justify-center gap-2 flex-wrap"
+            transition={{ duration: 0.45, ease: "easeOut" }}
           >
-            <h1
-              className={cn(
-                "font-display text-[34px] leading-none font-black tracking-tight",
-                getTierUsernameClass(profile.status_tier || 'recruit'),
-              )}
-            >
-              @{profile.username}
-              {isOwnProfile && <span className="text-xs text-gold/70 ml-1.5 font-semibold align-middle">(you)</span>}
-            </h1>
-            {(profile.streak ?? 0) > 0 && (
-              <StreakFlameInline
-                streak={profile.streak}
-                suffix="d"
-                className="text-lg align-middle"
-                countClassName="font-black text-foreground/90"
-              />
-            )}
-          </motion.div>
-          {profile.display_name && (
-            <p className="text-sm text-muted-foreground mt-1.5">{profile.display_name}</p>
-          )}
-
-          {/* MASSIVE status nameplate — the loudest element on the page */}
-          <div className="mt-5">
-            <StatusNameplate
-              tier={profile.status_tier || 'recruit'}
-              rank={globalRank?.rank ?? undefined}
-              totalUsers={globalRank?.total}
-              ranked={globalRank?.ranked ?? false}
-              size="md"
+            <IdentityCore
+              profile={profile}
+              rankData={rankData}
+              championWins={championHistory?.wins ?? 0}
+              tierMessage={tier.message}
+              featuredBadge={featuredBadge}
+              nameplateSize="md"
+              nameSuffix={
+                isOwnProfile ? (
+                  <span className="text-xs text-gold/70 ml-1.5 font-semibold align-middle">(you)</span>
+                ) : undefined
+              }
+              afterPills={
+                <div className="mt-3 flex justify-center">
+                  <ProfileActivityPulse userId={userId!} />
+                </div>
+              }
             />
-          </div>
-
-          {/* Status pills — Apex/Legend supersede Elite (no duplicates) */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.25 }}
-            className="flex flex-wrap items-center justify-center gap-2 mt-4"
-          >
-            {isApex ? (
-              <ApexBadge isFounding={isApexSubscriber} size="md" />
-            ) : isLegend ? (
-              <ApexBadge tier="legend" size="md" />
-            ) : isElite ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
-                <Crown size={12} className="text-gold" />
-                <span className="text-[11px] font-black text-gold tracking-wider uppercase">{formatTier('elite', division)}</span>
-              </span>
-            ) : null}
-            <span className="inline-flex items-center px-3 py-1.5 rounded-full">
-              <span className="text-[11px] font-black tracking-wider text-muted-foreground/80 uppercase">
-                Lv {profile.level}
-              </span>
-            </span>
-            {championHistory && championHistory.wins > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
-                <Trophy size={12} className="text-gold" />
-                <span className="text-[11px] font-black text-gold tracking-wider uppercase">
-                  Season Champion{championHistory.wins > 1 ? ` ×${championHistory.wins}` : ''}
-                </span>
-              </span>
-            )}
-            {isLegendPinned && !isLegend && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[hsl(280_70%_60%)]/45 bg-[hsl(280_70%_55%)]/10">
-                <Crown size={12} className="text-[hsl(280_70%_70%)]" />
-                <span className="text-[11px] font-black tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-[hsl(280_70%_70%)] via-gold to-[hsl(350_80%_60%)]">
-                  Founders Circle
-                </span>
-              </span>
-            )}
           </motion.div>
-
-          {/* Activity pulse — live signal */}
-          <motion.div
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-3 flex justify-center"
-          >
-            <ProfileActivityPulse userId={userId!} />
-          </motion.div>
-
-          {/* Hero XP — massive */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.35 }}
-            className="mt-6 flex flex-col items-center"
-          >
-            <p className="font-display font-black text-[64px] leading-none text-gold drop-shadow-[0_0_24px_hsl(var(--gold)/0.55)] tabular-nums">
-              {(profile.xp ?? 0).toLocaleString().replace(/,/g, " ")}
-            </p>
-            <p className="text-[10px] font-black tracking-[0.22em] text-gold/70 mt-2">TOTAL XP</p>
-          </motion.div>
-
-          {/* Tier message — italic, evocative */}
-          <p className="text-sm text-muted-foreground/70 font-medium italic mt-5 max-w-[280px] mx-auto">
-            {tier.message}
-          </p>
-
-          {/* Featured badge title */}
-          {featuredBadge && (
-            <div className="mt-4 flex justify-center">
-              <FeaturedBadgeHero
-                name={featuredBadge.name}
-                icon={featuredBadge.icon}
-                rarity={featuredBadge.rarity as any}
-              />
-            </div>
-          )}
-
-          {/* Global rank position */}
-          {globalRank?.ranked && globalRank.rank != null && globalRank.total > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45 }}
-              className="mt-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-gold/25 bg-gold/5"
-            >
-              <Medal size={11} className="text-gold" />
-              <span className="text-[10px] font-black tracking-wider text-gold">
-                #{globalRank.rank.toLocaleString()}
-              </span>
-              <span className="text-[10px] text-muted-foreground font-semibold">
-                of {globalRank.total.toLocaleString()}
-              </span>
-            </motion.div>
-          )}
 
           {/* Bottom hairline divider */}
           <div className="pointer-events-none mx-auto mt-6 h-px w-3/4 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />

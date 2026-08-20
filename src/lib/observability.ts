@@ -18,8 +18,14 @@ const DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined;
 const PH_KEY = import.meta.env.VITE_POSTHOG_KEY as string | undefined;
 const PH_HOST = (import.meta.env.VITE_POSTHOG_HOST as string | undefined) || "https://eu.posthog.com";
 
+// Dev sessions (localhost + HMR + QA accounts) generate noise that pages the
+// team — a hot-reload artifact once triggered a "new issue" alert email.
+// Observability is production-only unless explicitly opted in.
+const ENABLED = import.meta.env.PROD || import.meta.env.VITE_OBSERVABILITY_DEV === "1";
+
 /** Fire-and-forget init at app start. Dynamic imports so unconfigured = no bundle cost. */
 export async function initObservability(): Promise<void> {
+  if (!ENABLED) return;
   if (DSN) {
     try {
       const S = await import("@sentry/react");

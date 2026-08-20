@@ -82,6 +82,7 @@ const ProfileHero = ({
         tierMessage={tierMessage}
         featuredBadge={featuredBadge}
         showLock
+        showBrand
         nameplateSize="lg"
         avatarSlot={
           <div className="relative mb-4">

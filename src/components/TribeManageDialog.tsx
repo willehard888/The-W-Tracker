@@ -8,10 +8,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { avatarUrl } from "@/lib/img";
 import { downscaleImage } from "@/lib/downscale-image";
 import { toast } from "sonner";
-import { Crown, Loader2, Settings, Shield, ShieldOff, UserMinus, Lock, Image as ImageIcon, Trash2, Upload } from "lucide-react";
+import { Crown, Loader2, Settings, Shield, ShieldOff, UserMinus, Lock, Globe, Image as ImageIcon, Trash2, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModeration } from "@/hooks/use-moderation";
 import { friendlyError } from "@/lib/error-copy";
+import { cn } from "@/lib/utils";
+import { TRIBE_ACTIVITY_GROUPS } from "@/lib/tribe-activities";
 
 interface Member {
   user_id: string;
@@ -29,6 +31,7 @@ interface Props {
     description: string | null;
     visibility: string;
     cover_url: string | null;
+    primary_activity?: string | null;
   };
   members: Member[];
   currentUserId: string;
@@ -45,8 +48,13 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
 
   const [name, setName] = useState(tribe.name);
   const [description, setDescription] = useState(tribe.description ?? "");
-  // All tribes are private — visibility is locked.
-  const visibility = "private" as const;
+  // Owner-controlled. This used to be hardcoded 'private', which silently
+  // flipped every public tribe to private on the first Manage save — killing
+  // the non-member preview and share story that keys off visibility='public'.
+  const [visibility, setVisibility] = useState<"public" | "private">(
+    tribe.visibility === "private" ? "private" : "public",
+  );
+  const [activity, setActivity] = useState<string>(tribe.primary_activity ?? "");
   const [coverUrl, setCoverUrl] = useState(tribe.cover_url ?? "");
   const [coverPreview, setCoverPreview] = useState<string | null>(tribe.cover_url ?? null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -58,6 +66,8 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
     if (open) {
       setName(tribe.name);
       setDescription(tribe.description ?? "");
+      setVisibility(tribe.visibility === "private" ? "private" : "public");
+      setActivity(tribe.primary_activity ?? "");
       setCoverUrl(tribe.cover_url ?? "");
       setCoverPreview(tribe.cover_url ?? null);
       setCoverFile(null);
@@ -141,6 +151,15 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
         p_clear_cover: willClear,
       });
       if (error) throw error;
+      // Activity is a separate RPC (free-text column, own validation) —
+      // best-effort so a hiccup here never rolls back the main save.
+      if ((activity || null) !== (tribe.primary_activity ?? null)) {
+        const { error: actErr } = await supabase.rpc("set_tribe_activity" as any, {
+          p_tribe: tribeId,
+          p_activity: activity || null,
+        });
+        if (actErr) console.warn("[tribe] set_tribe_activity failed", actErr);
+      }
       toast.success("Tribe updated");
       setCoverFile(null);
       onChanged();
@@ -268,13 +287,54 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
             />
           </div>
           <div>
+            <Label className="text-xs mb-1 block">Activity</Label>
+            <select
+              value={activity}
+              onChange={(e) => setActivity(e.target.value)}
+              className="mt-1 w-full h-9 rounded-md border border-border bg-card/60 px-3 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-gold/50"
+            >
+              <option value="">No activity set</option>
+              {TRIBE_ACTIVITY_GROUPS.map((g) => (
+                <optgroup key={g.label} label={g.label}>
+                  {g.items.map((a) => (
+                    <option key={a.name} value={a.name}>{a.name}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Shown on the browse list — how new members find you.
+            </p>
+          </div>
+          <div>
             <Label className="text-xs mb-1 block">Privacy</Label>
-            <div className="rounded-lg border border-gold/40 bg-gold/8 p-2.5 flex items-center gap-2.5">
-              <Lock size={14} className="text-gold shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-gold">Private — invite only</p>
-                <p className="text-[10px] text-muted-foreground">All tribes require approval to join.</p>
-              </div>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { v: "public" as const, icon: Globe, title: "Public", sub: "Anyone can preview & join" },
+                { v: "private" as const, icon: Lock, title: "Private", sub: "Request to join · content hidden" },
+              ]).map((opt) => {
+                const active = visibility === opt.v;
+                const OIcon = opt.icon;
+                return (
+                  <button
+                    key={opt.v}
+                    type="button"
+                    onClick={() => setVisibility(opt.v)}
+                    className={cn(
+                      "rounded-lg border p-2.5 text-left transition-colors",
+                      active
+                        ? "border-gold/50 bg-gold/8"
+                        : "border-border bg-card/40 hover:border-border/80",
+                    )}
+                  >
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <OIcon size={12} className={active ? "text-gold" : "text-muted-foreground"} />
+                      <p className={cn("text-xs font-bold", active ? "text-gold" : "text-foreground/80")}>{opt.title}</p>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground leading-snug">{opt.sub}</p>
+                  </button>
+                );
+              })}
             </div>
           </div>
           <Button onClick={handleSaveMeta} disabled={busy} className="w-full" variant="ember">

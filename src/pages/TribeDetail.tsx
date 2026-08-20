@@ -30,6 +30,7 @@ import {
   ShieldAlert,
   Settings,
   Shield,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
@@ -534,6 +535,31 @@ const TribeDetail = () => {
     load();
   };
 
+  // Share the tribe out of the app — native share sheet where available,
+  // clipboard everywhere else. The link is the web origin so recipients
+  // without the app still land somewhere real.
+  const handleShare = async () => {
+    const url = `https://whealthfactory.com/tribes/${id}`;
+    const text = collectiveStreak > 0
+      ? `Join ${tribe?.name ?? "my tribe"} on Whealth Factory — ${collectiveStreak} days of collective fire 🔥`
+      : `Join ${tribe?.name ?? "my tribe"} on Whealth Factory`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: tribe?.name ?? "Tribe", text, url });
+        return;
+      }
+    } catch {
+      // user dismissed the sheet — fall through to nothing
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      toast.success("Link copied — send it to your crew");
+    } catch {
+      toast.error("Couldn't copy the link");
+    }
+  };
+
   if (loading) {
     return (
       <DetailSkeleton />
@@ -541,7 +567,28 @@ const TribeDetail = () => {
   }
 
   if (!tribe) {
-    return <div className="text-center py-12 text-sm text-muted-foreground">Tribe not found.</div>;
+    // RLS hides private tribes from non-members entirely — so a shared link
+    // to one lands here. Offer the request path instead of a dead end
+    // (join_tribe is SECURITY DEFINER; it works even when the row is hidden).
+    return (
+      <div className="px-4 pt-4 pb-8">
+        <button onClick={() => navigate("/squad?tab=tribes")} className="flex items-center gap-1 text-xs text-muted-foreground mb-8 active:scale-95 transition-transform">
+          <ArrowLeft size={14} /> Tribes
+        </button>
+        <div className="surface-card p-6 text-center">
+          <div className="mx-auto h-12 w-12 rounded-2xl bg-secondary/50 border border-border/60 flex items-center justify-center mb-3">
+            <Lock size={20} className="text-muted-foreground" />
+          </div>
+          <p className="font-bold text-[15px]">This tribe is private</p>
+          <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
+            Its fire, feed and events open up once you're in.
+          </p>
+          <Button variant="ember" size="sm" className="mt-4" onClick={handleJoin}>
+            Request to join
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   // Tier-reactive page tint based on tribe's collective heat
@@ -715,6 +762,7 @@ const TribeDetail = () => {
         onInvite={() => setInviteOpen(true)}
         onDelete={handleDelete}
         onLeave={handleLeave}
+        onShare={handleShare}
       />
 
 
@@ -800,6 +848,27 @@ const TribeDetail = () => {
         )}
       </div>
 
+      {/* Non-member preview → sticky conversion bar. The public tribe's
+          content above is the pitch; this is the one action. */}
+      {!isMember && (
+        <Portal>
+          <div className="fixed left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+72px)] z-[var(--z-top)] px-4 pointer-events-none">
+            <div className="max-w-md mx-auto pointer-events-auto rounded-2xl border border-[hsl(var(--ember))]/45 bg-background/90 backdrop-blur-md shadow-[0_8px_32px_hsl(0_0%_0%/0.5)] p-3 flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-black truncate">{tribe.name}</p>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {tribe.member_count} member{tribe.member_count === 1 ? "" : "s"}
+                  {collectiveStreak > 0 ? ` · ${collectiveStreak}d collective fire` : ""}
+                </p>
+              </div>
+              <Button size="sm" variant="ember" onClick={handleJoin} className="shrink-0">
+                {tribe.visibility === "private" ? "Request to join" : "Join tribe"}
+              </Button>
+            </div>
+          </div>
+        </Portal>
+      )}
+
       {id && (
         <>
           <TribeInviteModal tribeId={id} open={inviteOpen} onClose={() => setInviteOpen(false)} />
@@ -815,6 +884,7 @@ const TribeDetail = () => {
                 description: tribe.description,
                 visibility: tribe.visibility,
                 cover_url: tribe.cover_url,
+                primary_activity: (tribe as any).primary_activity ?? null,
               }}
               members={members}
               currentUserId={profile.user_id}

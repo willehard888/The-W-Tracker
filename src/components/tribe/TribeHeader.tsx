@@ -1,6 +1,6 @@
 import {
   Crown, Zap, Users, Swords, ArrowLeft, UserCheck, ShieldAlert,
-  Settings, UserPlus, Trash2, LogOut,
+  Settings, UserPlus, Trash2, LogOut, Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TierUsername from "@/components/TierUsername";
@@ -31,6 +31,7 @@ export interface TribeHeaderProps {
   onInvite: () => void;
   onDelete: () => void;
   onLeave: () => void;
+  onShare: () => void;
 }
 
 /**
@@ -56,6 +57,7 @@ const TribeHeader = ({
   onInvite,
   onDelete,
   onLeave,
+  onShare,
 }: TribeHeaderProps) => {
   const founder = members.find((m) => m.role === "owner");
 
@@ -192,9 +194,14 @@ const TribeHeader = ({
 
           <div className="flex gap-2 mt-3">
             {!isMember ? (
-              <Button onClick={onJoin} size="sm" variant="ember" className="flex-1">
-                Join Tribe
-              </Button>
+              <>
+                <Button onClick={onJoin} size="sm" variant="ember" className="flex-1">
+                  Join Tribe
+                </Button>
+                <Button onClick={onShare} size="sm" variant="ember-outline" className="px-3" aria-label="Share tribe">
+                  <Share2 size={14} />
+                </Button>
+              </>
             ) : isOwner ? (
               <>
                 <Button onClick={onManage} size="sm" variant="gold-outline"
@@ -205,6 +212,9 @@ const TribeHeader = ({
                   className="flex-1">
                   <UserPlus size={14} /> Invite
                 </Button>
+                <Button onClick={onShare} size="sm" variant="ember-outline" className="px-3" aria-label="Share tribe">
+                  <Share2 size={14} />
+                </Button>
                 <Button onClick={onDelete} variant="destructive" size="sm" className="px-3">
                   <Trash2 size={14} />
                 </Button>
@@ -214,6 +224,9 @@ const TribeHeader = ({
                 <Button onClick={onInvite} size="sm" variant="ember-outline"
                   className="flex-1">
                   <UserPlus size={14} /> Invite
+                </Button>
+                <Button onClick={onShare} size="sm" variant="ember-outline" className="px-3" aria-label="Share tribe">
+                  <Share2 size={14} />
                 </Button>
                 <Button onClick={onLeave} variant="ember-outline" size="sm" className="flex-1 opacity-80 hover:opacity-100">
                   <LogOut size={14} /> Leave

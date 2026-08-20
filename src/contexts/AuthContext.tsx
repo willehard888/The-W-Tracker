@@ -5,7 +5,6 @@ import { isNativePlatform } from "@/lib/platform";
 import { track, FUNNEL } from "@/lib/analytics";
 import { identifyUser, resetIdentity, captureException } from "@/lib/observability";
 import { uniqueChannelName } from "@/lib/realtime";
-import { clearAppleAuthStarted, clearAppleUsernameSelectionPending, isAppleAuthStarted, markAppleUsernameSelectionPending } from "@/lib/apple-username";
 import { clearIosDebug } from "@/lib/ios-debug";
 import { queryClient } from "@/lib/query-client";
 
@@ -52,49 +51,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // one returning instantly and settling `loading` before profile is set.
   const profilePromiseRef = useRef<Promise<void> | null>(null);
 
-  const buildFallbackUsername = (authUser: User) => {
-    const rawUsername = String(
-      authUser.user_metadata?.username ?? authUser.email?.split("@")[0] ?? "user",
-    )
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9_]+/g, "_")
-      .replace(/^_+|_+$/g, "");
-
-    const base = rawUsername || "user";
-    return `${base.slice(0, 13)}_${authUser.id.slice(0, 6)}`.slice(0, 20);
-  };
-
   const ensureProfile = async (authUser: User) => {
-    const username = buildFallbackUsername(authUser);
+    // Safety net for the (should-never-happen) case where handle_new_user
+    // didn't create a profile. NEVER derive a name from the email — a neutral
+    // placeholder + the auto flag routes the user to the username picker.
+    const username = `athlete_${authUser.id.slice(0, 6)}`;
 
     const { error } = await supabase.from("profiles").upsert(
       {
         user_id: authUser.id,
         username,
+        username_is_auto: true,
         referral_code: `${username}_${authUser.id.slice(0, 6)}`.slice(0, 20),
-      },
+      } as never,
       { onConflict: "user_id" },
     );
     // A silent failure here leaves profile null forever — the user is signed
     // in but locked out with no signal. Report it so it's visible in prod.
     if (error) captureException(error, { where: "ensureProfile" });
-  };
-
-  const isAppleUserProfile = (authUser: User) => {
-    const provider = authUser.app_metadata?.provider;
-    const providers = Array.isArray(authUser.app_metadata?.providers) ? authUser.app_metadata.providers : [];
-    return provider === "apple" || providers.includes("apple");
-  };
-
-  const shouldForceAppleUsernameSetup = (authUser: User, nextProfile: any | null) => {
-    if (!isAppleAuthStarted()) return false;
-
-    const isAppleUser = isAppleUserProfile(authUser);
-    const username = nextProfile?.username?.trim?.() || "";
-    const fallbackUsername = buildFallbackUsername(authUser);
-
-    return isAppleUser && (!username || username === fallbackUsername);
   };
 
   const fetchProfile = (authUser: User): Promise<void> => {
@@ -143,27 +117,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         setProfile(data);
         setIsElite(Boolean(data?.is_elite));
-
-        if (shouldForceAppleUsernameSetup(authUser, data)) {
-          if (!data?.username || data.username === buildFallbackUsername(authUser)) {
-            clearAppleAuthStarted();
-            markAppleUsernameSelectionPending();
-            return;
-          }
-        }
-
-        clearAppleAuthStarted();
-        // Only dismiss the username picker once the user actually has a CHOSEN
-        // (non-fallback) username. Without this guard, a follow-up auth event
-        // fired right after Apple sign-in — e.g. the updateUser() that persists
-        // Apple's name to metadata — would re-run this fetch with the started
-        // flag already cleared, fall through here, and silently cancel a picker
-        // we just queued, dumping the user in with an auto-generated name.
-        const hasChosenUsername =
-          !!data?.username && data.username !== buildFallbackUsername(authUser);
-        if (hasChosenUsername || !isAppleUserProfile(authUser)) {
-          clearAppleUsernameSelectionPending();
-        }
+        // The username picker gate is DB-driven now: ProtectedRoute reads
+        // profiles.username_is_auto straight off this profile — no
+        // sessionStorage flags, no fallback-string comparisons.
       } finally {
         fetchingProfileFor.current = null;
         profilePromiseRef.current = null;
@@ -337,8 +293,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
-    clearAppleAuthStarted();
-    clearAppleUsernameSelectionPending();
     // SECURITY: purge all local identity/token-bearing state so a shared or
     // kiosk device doesn't leak the previous user's data to the next.
     clearIosDebug(); // held a refresh token in plaintext (localStorage)

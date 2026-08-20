@@ -4,11 +4,17 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { clearAppleUsernameSelectionPending, isAppleUsernameSelectionPending } from "@/lib/apple-username";
 
 const USERNAME_REGEX = /^[a-z0-9_]{3,20}$/;
 
-const AppleUsername = () => {
+/**
+ * ChooseUsername — the one-time handle picker, gated by
+ * profiles.username_is_auto (set server-side whenever a user lands with a
+ * name they didn't type themselves: Apple/OAuth placeholder, a collision
+ * suffix, or a legacy auto-generated name). Every user picks their own
+ * @handle exactly once; the DB guard trigger locks it afterwards.
+ */
+const ChooseUsername = () => {
   const navigate = useNavigate();
   const { user, profile, loading, refreshProfile } = useAuth();
   const [username, setUsername] = useState("");
@@ -19,15 +25,15 @@ const AppleUsername = () => {
       navigate("/auth", { replace: true });
       return;
     }
-
-    if (!loading && user && !isAppleUsernameSelectionPending()) {
+    // Already has a chosen name — nothing to do here.
+    if (!loading && user && profile && !profile.username_is_auto) {
       navigate("/", { replace: true });
     }
-  }, [loading, user, navigate]);
+  }, [loading, user, profile, navigate]);
 
-  // Prefill a suggestion from the REAL name Apple gave us on first sign-in
-  // (captured into sessionStorage / user metadata), not the auto-generated
-  // relay-email fallback. Cleaned to the allowed charset.
+  // Prefill a suggestion from the REAL name the provider gave us (captured
+  // into sessionStorage / user metadata on Apple sign-in) — never from the
+  // email. Cleaned to the allowed charset.
   useEffect(() => {
     setUsername((current) => {
       if (current) return current;
@@ -43,8 +49,8 @@ const AppleUsername = () => {
     });
   }, [user]);
 
-  // Live username availability check (debounced) — surface "taken" before the
-  // user submits instead of bouncing them off an RPC unique-violation error.
+  // Live availability (debounced). ilike = case-insensitive, matching the
+  // lower(username) unique index — Mogger can't shadow mogger.
   const [availability, setAvailability] = useState<"idle" | "checking" | "available" | "taken">("idle");
   useEffect(() => {
     if (!username || !USERNAME_REGEX.test(username)) {
@@ -57,10 +63,11 @@ const AppleUsername = () => {
       const { data } = await supabase
         .from("profiles")
         .select("user_id")
-        .eq("username", username)
-        .maybeSingle();
+        .ilike("username", username)
+        .limit(1);
       if (!active) return;
-      const taken = Boolean(data) && data?.user_id !== user?.id;
+      const row = (data ?? [])[0] as { user_id: string } | undefined;
+      const taken = Boolean(row) && row?.user_id !== user?.id;
       setAvailability(taken ? "taken" : "available");
     }, 400);
     return () => { active = false; clearTimeout(t); };
@@ -71,7 +78,7 @@ const AppleUsername = () => {
     if (!USERNAME_REGEX.test(username)) {
       return "Use 3–20 characters: a-z, 0-9 and _";
     }
-    if (availability === "taken") return "That username is taken — try another.";
+    if (availability === "taken") return "That name is taken — try another.";
     return "";
   }, [username, availability]);
 
@@ -83,7 +90,7 @@ const AppleUsername = () => {
       return;
     }
     if (availability === "taken") {
-      toast.error("That username is taken — try another.");
+      toast.error("That name is taken — try another.");
       return;
     }
 
@@ -97,14 +104,13 @@ const AppleUsername = () => {
       // Race: someone grabbed it between the check and submit.
       const taken = /duplicate|unique|already/i.test(error.message || "");
       if (taken) setAvailability("taken");
-      toast.error(taken ? "That username is taken — try another." : (error.message || "Failed to save username"));
+      toast.error(taken ? "That name is taken — try another." : (error.message || "Failed to save username"));
       return;
     }
 
     try { sessionStorage.removeItem("w_apple_name_suggestion"); } catch { /* ignore */ }
-    clearAppleUsernameSelectionPending();
     await refreshProfile();
-    toast.success("Username saved");
+    toast.success(`Welcome, @${username}`);
     navigate("/", { replace: true });
   };
 
@@ -112,22 +118,23 @@ const AppleUsername = () => {
     <div className="min-h-full gradient-dark flex items-center justify-center px-6">
       <div className="w-full max-w-sm rounded-3xl border border-border bg-card/90 p-6 shadow-2xl">
         <div className="mb-6 space-y-2 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">Apple Sign In</p>
-          <h1 className="font-display text-3xl font-black tracking-tight">Choose your username</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">Whealth Factory</p>
+          <h1 className="font-display text-3xl font-black tracking-tight">Claim your name</h1>
           <p className="text-sm text-muted-foreground">
-            Your first Apple sign-in was successful. Pick a unique @username to finish setup.
+            This is your permanent @handle — on the leaderboard, in your tribe,
+            under every W you post. Pick it once, own it forever.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="apple-username" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <label htmlFor="choose-username" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Username
             </label>
             <div className="flex h-12 items-center rounded-xl border border-border bg-background px-4 focus-within:border-gold/50 focus-within:ring-2 focus-within:ring-gold/20">
               <span className="mr-2 text-sm text-gold">@</span>
               <input
-                id="apple-username"
+                id="choose-username"
                 value={username}
                 onChange={(event) => setUsername(event.target.value.trim().toLowerCase())}
                 placeholder="your_name"
@@ -137,14 +144,15 @@ const AppleUsername = () => {
                 className="h-full w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
               />
             </div>
-            <p className="text-xs text-muted-foreground">This will appear as @{username || "your_name"} in the app.</p>
             {validationMessage ? (
               <p className="text-xs text-destructive">{validationMessage}</p>
             ) : availability === "checking" ? (
               <p className="text-xs text-muted-foreground">Checking availability…</p>
             ) : availability === "available" ? (
-              <p className="text-xs text-xp-green">@{username} is available ✓</p>
-            ) : null}
+              <p className="text-xs text-xp-green">@{username} is yours ✓</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">3–20 characters: a-z, 0-9 and _</p>
+            )}
           </div>
 
           <Button
@@ -154,12 +162,15 @@ const AppleUsername = () => {
             className="w-full"
             disabled={saving || !!validationMessage || username.length < 3 || availability === "checking" || availability === "taken"}
           >
-            {saving ? "Saving..." : "Continue to app"}
+            {saving ? "Claiming…" : "Claim it"}
           </Button>
+          <p className="text-center text-[11px] text-muted-foreground">
+            Locked permanently once set — choose one that feels like you.
+          </p>
         </form>
       </div>
     </div>
   );
 };
 
-export default AppleUsername;
+export default ChooseUsername;

@@ -1,11 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { SignInWithApple, type SignInWithAppleResponse } from "@capacitor-community/apple-sign-in";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
-import {
-  clearAppleAuthStarted,
-  clearAppleUsernameSelectionPending,
-  markAppleAuthStarted,
-} from "@/lib/apple-username";
 import { supabase } from "@/integrations/supabase/client";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -112,23 +107,12 @@ function getFriendlyAppleError(err: unknown): Error {
 }
 
 // ────────────────────────────────────────────────────────────────────
-// State reset — called before every attempt so logout → relogin works.
-// ────────────────────────────────────────────────────────────────────
-
-function resetAppleAuthState() {
-  clearAppleAuthStarted();
-  clearAppleUsernameSelectionPending();
-}
-
-// ────────────────────────────────────────────────────────────────────
 // Core sign-in — same code path on iOS native + web.
 // ────────────────────────────────────────────────────────────────────
 
 async function performAppleSignIn(options?: {
   hideEmail?: boolean;
 }): Promise<{ error?: Error }> {
-  resetAppleAuthState();
-
   try {
     const rawNonce = generateRawNonce();
     const hashedNonce = await sha256Hex(rawNonce);
@@ -247,15 +231,8 @@ async function performAppleSignIn(options?: {
       }
     }
 
-    // Mark the Apple flow as in-progress BEFORE the token exchange. The
-    // exchange synchronously emits a SIGNED_IN event that triggers the
-    // AuthContext profile fetch; if we set this flag only AFTER the exchange
-    // returns, that fetch can race ahead, miss the flag, and silently assign
-    // an auto-generated username instead of routing to the picker. Setting it
-    // first closes that race. (Returning users with a real username are not
-    // re-prompted — the picker gate also checks username != fallback.)
-    markAppleAuthStarted();
-
+    // The username picker gate is DB-driven (profiles.username_is_auto) —
+    // no client-side flag needs to be set before the token exchange.
     const { data, error } = await supabase.auth.signInWithIdToken({
       provider: "apple",
       token: identityToken,
@@ -265,7 +242,6 @@ async function performAppleSignIn(options?: {
     });
 
     if (error) {
-      clearAppleAuthStarted();
       pushIosDebugLog("AppleAuth", "Supabase signInWithIdToken failed", {
         message: error.message,
         status: (error as { status?: number }).status,

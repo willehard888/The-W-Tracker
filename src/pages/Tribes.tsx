@@ -221,6 +221,11 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             .order("starts_at", { ascending: true })
             .limit(60),
         ]);
+        // If MY membership rows fail to load, do NOT render the page with an
+        // empty joinedIds — that shows "Join" to existing members (reads as
+        // "the app threw me out"). Throw so react-query retries while
+        // keepPreviousData holds the last good page on screen.
+        if ((memsRes as any).error) throw (memsRes as any).error;
         (((memsRes as any).data ?? []) as any[]).forEach((m: any) => {
           if (m.status === "active") joinedIds.add(m.tribe_id);
           if (m.status === "pending") pendingIds.add(m.tribe_id);

@@ -112,12 +112,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/choose-username" replace />;
   }
 
-  // Read once per render; localStorage is sync but cheap, this just keeps it tidy.
-  if (
-    !localStorage.getItem("w_onboarding_done") &&
-    path !== "/onboarding" &&
-    path !== "/choose-username"
-  ) {
+  // Onboarding gate — the DB flag (profiles.onboarded_at) is the authority so
+  // a reinstall / new device / signOut on a shared device never replays the
+  // flow; localStorage stays as a sync fast-path cache for the same device.
+  const onboarded = !!profile?.onboarded_at || !!localStorage.getItem("w_onboarding_done");
+  if (profile?.onboarded_at && !localStorage.getItem("w_onboarding_done")) {
+    try { localStorage.setItem("w_onboarding_done", "true"); } catch { /* noop */ }
+  }
+  if (!onboarded && path !== "/onboarding" && path !== "/choose-username") {
     return <Navigate to="/onboarding" replace />;
   }
 

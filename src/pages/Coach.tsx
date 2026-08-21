@@ -419,6 +419,9 @@ const ChatSheet = ({
           mood_today: moodSnapshot,
           // Local tz offset so the coach can judge timing (streak at risk tonight, etc).
           tz_offset: new Date().getTimezoneOffset(),
+          // Seeded threads continue straight from today's check-in — tell the
+          // model so the opening assistant bubble isn't an unexplained turn.
+          source: seedAssistant ? "post_checkin" : undefined,
         }),
       }), 2);
       if (!resp.ok || !resp.body) {

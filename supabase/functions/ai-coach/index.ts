@@ -18,6 +18,7 @@ import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.t
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
 import { sportName, sportBreakdown } from "../_shared/sports.ts";
+import { gatherHabitGaps, buildHabitGapsBlock } from "../_shared/habit-gaps.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -54,20 +55,16 @@ const summarize7d = (checkins: Checkin[]) => {
   const workouts = checkins.filter((c) => c.workout).length;
   const sportsLine = sportBreakdown(checkins.filter((c) => c.workout).map((c) => c.sport));
   const cold = checkins.filter((c) => c.cold_shower).length;
-  const perfect = checkins.filter(
-    (c) =>
-      c.workout &&
-      c.cold_shower &&
-      c.healthy_food &&
-      c.protein_intake &&
-      c.hydration_liters >= 3 &&
-      c.reading &&
-      c.no_phone_morning &&
-      c.no_phone_evening,
-  ).length;
+  // Per-habit "perfect day" scoring moved to the habit-gaps block, which
+  // scores against the user's OWN chosen set (this used to hard-code the
+  // legacy 8-habit default and misjudge everyone who customized).
   const last = checkins[checkins.length - 1];
-  return `Last 7d: ${days}/7 check-ins, ${totalXp} XP total, avg sleep ${avgSleep.toFixed(1)}h, avg hydration ${avgHydr.toFixed(1)}L, ${workouts} workouts${sportsLine ? ` (${sportsLine})` : ""}, ${cold} cold showers, ${perfect} perfect days.
-Yesterday: sleep ${last.sleep_hours}h, ${last.workout ? `workout✓${sportName(last.sport) ? ` (${sportName(last.sport)})` : ""}` : "no workout"}, ${last.cold_shower ? "cold✓" : "no cold"}, hydration ${last.hydration_liters}L.`;
+  // After today's check-in the newest row IS today — labeling it
+  // "Yesterday" made the coach misplace the freshest facts in time.
+  const lastIsToday =
+    String(last.checked_in_at ?? "").slice(0, 10) === new Date().toISOString().slice(0, 10);
+  return `Last 7d: ${days}/7 check-ins, ${totalXp} XP total, avg sleep ${avgSleep.toFixed(1)}h, avg hydration ${avgHydr.toFixed(1)}L, ${workouts} workouts${sportsLine ? ` (${sportsLine})` : ""}, ${cold} cold showers.
+${lastIsToday ? "Today (already checked in)" : "Yesterday"}: sleep ${last.sleep_hours}h, ${last.workout ? `workout✓${sportName(last.sport) ? ` (${sportName(last.sport)})` : ""}` : "no workout"}, ${last.cold_shower ? "cold✓" : "no cold"}, hydration ${last.hydration_liters}L.`;
 };
 
 // Voice nuance now lives inside buildPersonaBlock() in ../_shared/coach-persona.ts.
@@ -300,7 +297,7 @@ Deno.serve(async (req) => {
       progression,
       nightSignals,
       checkinsRes, briefingRes, athleteRes, programRes, briefRes, reflectionsRes, goalsRes,
-      snapshotRes, lessonsRes, habitsRes, journalRes,
+      snapshotRes, lessonsRes, habitsRes, journalRes, habitGaps,
     ] = await Promise.all([
       supabase
         .from("profiles")
@@ -377,6 +374,10 @@ Deno.serve(async (req) => {
         .gte("checked_in_at", new Date(Date.now() - 30 * 86400_000).toISOString())
         .order("checked_in_at", { ascending: false })
         .limit(30),
+      // Per-habit truth — which habits they do, skip, and haven't tried.
+      // This is what lets the coach aim advice at the NEGLECTED habits
+      // instead of nagging about ones already done (founder-reported miss).
+      gatherHabitGaps(supabase, userId, { days: 14 }).catch(() => null),
     ]);
 
     const profile = profileRes.data;
@@ -453,7 +454,15 @@ Deno.serve(async (req) => {
         : Promise.resolve({ data: [] as any[] }),
     ]);
     const recentLogs = (logsRes as any).data ?? [];
-    const situationBlock = situation ? buildSituationBlock(situation) : "";
+    // The seeded post-check-in chat used to arrive as an unexplained
+    // assistant turn — the model didn't know the conversation continues
+    // straight from the check-in the athlete JUST submitted.
+    const postCheckin = body?.source === "post_checkin";
+    const situationBlock =
+      (situation ? buildSituationBlock(situation) : "") +
+      (postCheckin
+        ? `\n\nThis chat continues DIRECTLY from the check-in they submitted moments ago — the first assistant message is your own reaction to it. Today's per-habit result is in your knowledge blocks; ground advice in it.`
+        : "");
 
     // Pull the latest user message for vent-detection heuristic.
     const latestUserMessage = [...trimmed].reverse().find((m) => m.role === "user")?.content ?? "";
@@ -532,7 +541,9 @@ Deno.serve(async (req) => {
     const faqBlock = faqContext
       ? `\n\nThe user just read the Playbook answer to: "${faqContext.question}". Do NOT repeat that answer. Go deeper, address their follow-up directly, or apply it to their specific context.`
       : "";
-    const dataBlocks = memoryBlock + whealthBlock + studiedBlock + habitsBlock + journalBlock + workoutLogBlock + faqBlock;
+    const gapsText = buildHabitGapsBlock(habitGaps);
+    const habitGapsBlock = gapsText ? `\n\n${gapsText}` : "";
+    const dataBlocks = memoryBlock + whealthBlock + studiedBlock + habitsBlock + habitGapsBlock + journalBlock + workoutLogBlock + faqBlock;
     const knowledgeBlocks = dataBlocks.trim()
       ? `\n━━ YOUR KNOWLEDGE OF THIS ATHLETE ━━
 Everything below is what you KNOW — it is not your outline. Per reply, pull at most 1–2 elements that genuinely serve the message and ignore the rest. In small talk and greetings, use none of it (knowing ≠ reciting). Any per-block instruction below is subordinate to the CONVERSATION REGISTER.${dataBlocks}`

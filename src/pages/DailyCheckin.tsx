@@ -330,6 +330,10 @@ const DailyCheckin = () => {
           tasks_done: completedCount,
           tasks_total: maxCount,
           streak: (profile?.streak ?? 0) + 1,
+          // Per-habit truth for the reaction — without this the model only
+          // saw "6/13 done" and guessed WHICH habits to nag about.
+          done_keys: chosenHabits.filter((h) => habitDone(h)).map((h) => h.key),
+          missed_keys: chosenHabits.filter((h) => !habitDone(h)).map((h) => h.key),
         }),
     });
     void queryClient.prefetchQuery({

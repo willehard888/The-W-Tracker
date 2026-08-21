@@ -3,7 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { MotionConfig } from "framer-motion";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
-import { usePushNotifications } from "@/hooks/use-push-notifications";
+import { usePushNotifications, PushControlsContext } from "@/hooks/use-push-notifications";
 import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
 import { useActivityHeartbeat } from "@/hooks/use-activity-heartbeat";
 import PushPrimingSheet from "@/components/notifications/PushPrimingSheet";
@@ -204,6 +204,7 @@ const AppRoutes = () => {
   // re-mount tax.
 
   return (
+    <PushControlsContext.Provider value={{ enablePush, dismissPriming }}>
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden momentum-scroll">
@@ -296,6 +297,7 @@ const AppRoutes = () => {
       {user && <TierPromotionCelebration />}
       <PushPrimingSheet open={needsPriming} onEnable={enablePush} onDismiss={dismissPriming} />
     </div>
+    </PushControlsContext.Provider>
   );
 };
 

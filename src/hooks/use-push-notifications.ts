@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useCallback, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,6 +46,19 @@ export interface PushNotificationState {
   /** Call from the priming sheet's "Not now" — snoozes for a week. */
   dismissPriming: () => void;
 }
+
+/**
+ * The app mounts usePushNotifications exactly ONCE (AppContent) — it owns the
+ * native listeners. Other surfaces that need to trigger the OS prompt (the
+ * onboarding push step) consume that single instance through this context
+ * instead of instantiating the hook again (which would duplicate listeners).
+ */
+export const PushControlsContext = createContext<Pick<
+  PushNotificationState,
+  "enablePush" | "dismissPriming"
+> | null>(null);
+
+export const usePushControls = () => useContext(PushControlsContext);
 
 export const usePushNotifications = (): PushNotificationState => {
   const { user } = useAuth();

@@ -235,17 +235,26 @@ workflows:
           # set CURRENT_PROJECT_VERSION to latest+1. agvtool rewrites every
           # target's project.pbxproj in one shot. Idempotent across CI runs:
           # each build picks up the live ASC state.
+          # FLOOR: the ASC query can MISS builds that are still processing
+          # or came from another pipeline — the abandoned Xcode Cloud
+          # workflow's counter reached 1090, invisible to the query, and ASC
+          # rejected our lower number ("bundle version must be higher").
+          # 1100 + Codemagic's own BUILD_NUMBER is monotonic per run and
+          # permanently clears that range; the ASC query still wins whenever
+          # it reports something higher.
+          FLOOR=$((1100 + BUILD_NUMBER))
           if [ -z "${APP_STORE_APP_ID:-}" ]; then
-            echo "⚠️  APP_STORE_APP_ID not set — falling back to BUILD_NUMBER + 800"
-            NEW_BUILD=$((BUILD_NUMBER + 800))
+            echo "⚠️  APP_STORE_APP_ID not set — using floor $FLOOR"
+            NEW_BUILD=$FLOOR
           else
             LATEST=$(app-store-connect get-latest-build-number "$APP_STORE_APP_ID" 2>/dev/null || echo "")
             if [ -z "$LATEST" ] || ! [[ "$LATEST" =~ ^[0-9]+$ ]]; then
-              echo "⚠️  Could not fetch latest build number from ASC — falling back to BUILD_NUMBER + 800"
-              NEW_BUILD=$((BUILD_NUMBER + 800))
+              echo "⚠️  Could not fetch latest build number from ASC — using floor $FLOOR"
+              NEW_BUILD=$FLOOR
             else
               NEW_BUILD=$((LATEST + 1))
-              echo "ℹ️  App Store Connect latest build: $LATEST → bumping to $NEW_BUILD"
+              echo "ℹ️  App Store Connect latest build: $LATEST → candidate $NEW_BUILD (floor $FLOOR)"
+              if [ "$NEW_BUILD" -lt "$FLOOR" ]; then NEW_BUILD=$FLOOR; fi
             fi
           fi
           cd ios/App

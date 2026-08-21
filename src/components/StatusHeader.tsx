@@ -280,16 +280,18 @@ const StatusHeader = () => {
 
             {/* Row 2: tier label + next-tier CTA */}
             <div className="flex items-center justify-between gap-2 mt-1.5">
-              <div className="flex items-center gap-1.5 min-w-0">
+              {/* Label may truncate (never overflow under the chip); the
+                  percentile is the first thing to give way. */}
+              <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
                 <span
                   className={cn(
-                    "shrink-0 whitespace-nowrap text-[10px] uppercase tracking-[0.22em] font-black leading-none",
+                    "truncate min-w-0 text-[10px] uppercase tracking-[0.22em] font-black leading-none",
                     config.textClass,
                   )}
                 >
                   {formatTier(tier, division)}
                 </span>
-                <span className="truncate text-[10px] text-muted-foreground/70 leading-none">
+                <span className="hidden min-[400px]:inline truncate shrink-[2] text-[10px] text-muted-foreground/70 leading-none">
                   · {topShareLabel(tier, rankData)}
                 </span>
               </div>
@@ -378,8 +380,13 @@ const StatusHeader = () => {
               )}
             >
               {trialUrgent ? <Clock size={11} /> : <Crown size={11} />}
-              <span className="text-[10px] font-bold uppercase tracking-wider">
+              {/* Narrow screens keep just crown + days — the long label was
+                  squeezing the tier row into "RE…" next to the next-tier chip. */}
+              <span className="hidden min-[400px]:inline text-[10px] font-bold uppercase tracking-wider">
                 {trialUrgent ? `Ends in ${trialLabel}` : `Full access · ${trialLabel}`}
+              </span>
+              <span className="min-[400px]:hidden text-[10px] font-bold uppercase tracking-wider">
+                {trialLabel}
               </span>
             </button>
           ) : null}

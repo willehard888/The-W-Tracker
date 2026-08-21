@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import CoachLine from "@/components/coach/CoachLine";
 import { useCoachObservation } from "@/hooks/use-coach-observation";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { checkinReactionKey, fetchCheckinReaction } from "@/lib/checkin-reaction";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import AnimatedNumber from "@/components/AnimatedNumber";
 
@@ -317,7 +318,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.65 }}
+          transition={{ delay: 0.3 }}
           className="mb-3"
         >
           <ErrorBoundary fallback={<></>}>
@@ -371,42 +372,46 @@ const PostCheckinCoachLine = ({
   summary: CheckinTierSummaryProps["summary"];
   onAskCoach?: (seedText: string) => void;
 }) => {
-  const { text: fallback, isLoading } = useCoachObservation({ context: "post-checkin" });
+  const { user } = useAuth();
+  // Template line renders IMMEDIATELY — the hook's defaults (calm_mentor tone,
+  // "showing up daily" focus) produce a valid line before its plan/profile
+  // queries resolve, so we no longer gate on isLoading. The founder saw this
+  // line arrive ~10s late; the wait bought nothing.
+  const { text: fallback } = useCoachObservation({ context: "post-checkin" });
 
   const { data: aiText } = useQuery({
-    // Keyed on the day's totals so a re-render never re-invokes; one AI call
-    // per check-in.
-    queryKey: ["checkin-reaction", summary.newTotalXp, summary.newStreak],
+    // Day-keyed (NOT response-keyed) so DailyCheckin's submit-time prefetch
+    // shares this cache — the AI call runs in parallel with record_checkin.
+    queryKey: checkinReactionKey(user?.id ?? ""),
+    enabled: !!user?.id,
     staleTime: Infinity,
     gcTime: 60 * 60_000,
     retry: false,
-    queryFn: async (): Promise<string | null> => {
-      const { data, error } = await supabase.functions.invoke("coach-reaction", {
-        body: {
-          xp_earned: summary.xpEarned,
-          tasks_done: summary.completedCount,
-          tasks_total: summary.maxCount,
-          streak: summary.newStreak,
-        },
-      });
-      if (error) return null;
-      const t = (data as { text?: string } | null)?.text;
-      return typeof t === "string" && t.trim() ? t.trim() : null;
-    },
+    queryFn: () =>
+      fetchCheckinReaction({
+        xp_earned: summary.xpEarned,
+        tasks_done: summary.completedCount,
+        tasks_total: summary.maxCount,
+        streak: summary.newStreak,
+      }),
   });
 
   const text = aiText || fallback;
-  if ((isLoading && !aiText) || !text) return null;
-  // Only make it a chat entry point when a REAL coach reaction rendered (aiText).
-  // The deterministic fallback means no coach access, so opening chat would 403.
-  const canContinue = !!aiText && !!onAskCoach;
+  if (!text) return null;
+  // Chat entry is available from the first paint — the template line seeds
+  // the conversation just as well as the AI one (Coach ?seed= accepts both),
+  // and coach access is universal while the paywall is off.
+  const canContinue = !!onAskCoach;
   return (
     <div className="space-y-1">
-      <CoachLine
-        text={text}
-        tone="celebration"
-        onClick={canContinue ? () => onAskCoach!(aiText!) : undefined}
-      />
+      {/* key={text} cross-fades the template → AI upgrade instead of a hard swap */}
+      <motion.div key={text} initial={{ opacity: 0.55 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
+        <CoachLine
+          text={text}
+          tone="celebration"
+          onClick={canContinue ? () => onAskCoach!(text) : undefined}
+        />
+      </motion.div>
       {canContinue && (
         <p className="text-[10px] font-bold text-xp-green/80 pl-3.5 flex items-center gap-1">
           Tap to ask the Coach how to improve →

@@ -166,6 +166,22 @@ const Index = () => {
   // card unlocks at midnight (not 24h after the last check-in).
   const { canCheckin, timeUntilCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
 
+  // First-W guidance — one-shot card for a brand-new user who landed on Home
+  // without checking in (e.g. skipped onboarding). Auto-hides forever once a
+  // check-in exists; dismissable via the same per-user localStorage pattern
+  // as the check-in first-run card.
+  const [firstWDismissed, setFirstWDismissed] = useState(true);
+  useEffect(() => {
+    if (!profile?.user_id) return;
+    try { setFirstWDismissed(!!localStorage.getItem(`w_home_firstw_${profile.user_id}`)); }
+    catch { setFirstWDismissed(false); }
+  }, [profile?.user_id]);
+  const dismissFirstW = () => {
+    setFirstWDismissed(true);
+    try { localStorage.setItem(`w_home_firstw_${profile!.user_id}`, "1"); } catch { /* noop */ }
+  };
+  const showFirstW = !firstWDismissed && !lastCheckin && (profile?.streak ?? 0) === 0;
+
   // Streak-milestone moment — 7/30/100/365 days should FEEL like a win on the
   // screen you open most, not pass silently. Fires once per milestone (guarded
   // in localStorage) with confetti + a premium-voiced toast.
@@ -303,6 +319,39 @@ const Index = () => {
           )}
         </button>
       </div>
+
+      {/* FIRST W — one-shot bridge for a new user who hasn't checked in yet */}
+      {showFirstW && (
+        <div className="animate-reveal mb-3 relative z-10">
+          <div className="relative rounded-2xl border border-gold/35 bg-gradient-to-r from-gold/10 via-card/60 to-card/60 p-3.5 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/checkin")}
+              className="flex items-center gap-3 flex-1 min-w-0 text-left active:scale-[0.99] transition-transform"
+            >
+              <span className="h-9 w-9 rounded-xl gradient-gold flex items-center justify-center shrink-0">
+                <ArrowUp size={16} className="text-primary-foreground rotate-45" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-black text-foreground leading-tight">
+                  Your first W is one tap away
+                </span>
+                <span className="block text-xs text-muted-foreground leading-tight mt-0.5">
+                  One 60-second check-in starts the streak.
+                </span>
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={dismissFirstW}
+              aria-label="Dismiss"
+              className="h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground/60 hover:text-foreground transition-colors shrink-0"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* COMMAND DECK — Streak + Lock Your Day */}
       <div className="animate-reveal mb-4 relative z-10">

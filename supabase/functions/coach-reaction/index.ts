@@ -7,6 +7,8 @@
 // authored "why". Fast/cheap model; the client falls back to the template on
 // any failure, so this can never break the celebration screen.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { SHARED_HABIT_BY_KEY } from "../_shared/checkin-habits.ts";
+import { gatherHabitGaps } from "../_shared/habit-gaps.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -80,20 +82,46 @@ Deno.serve(async (req) => {
     const sleepH = body?.sleep_hours != null ? Number(body.sleep_hours) : null;
     const workout = body?.workout === true;
 
-    // Athlete context — tone + the authored "why" (both best-effort).
-    const { data: athlete } = await supabase
-      .from("coach_athlete_profile")
-      .select("tone_pref, i_am, language_pref")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    // TODAY's per-habit result, sent by the client (the submit-time prefetch
+    // fires BEFORE record_checkin lands, so today's row isn't in the DB yet).
+    // Whitelisted against the catalog — client strings never reach the prompt.
+    const keysToLabels = (v: unknown): string[] =>
+      (Array.isArray(v) ? v : [])
+        .slice(0, 30)
+        .map((k) => SHARED_HABIT_BY_KEY[String(k)]?.label)
+        .filter((l): l is string => !!l);
+    const doneToday = keysToLabels(body?.done_keys);
+    const missedToday = keysToLabels(body?.missed_keys);
+
+    // Athlete context + habit history in parallel. The gaps read excludes
+    // nothing explicitly, but at prefetch time today's row simply isn't
+    // there yet — history is what we want from it anyway.
+    const [{ data: athlete }, gaps] = await Promise.all([
+      supabase
+        .from("coach_athlete_profile")
+        .select("tone_pref, i_am, language_pref")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      gatherHabitGaps(supabase, user.id, { days: 14 }).catch(() => null),
+    ]);
 
     const tone = TONE_HINT[athlete?.tone_pref ?? "calm_mentor"] ?? TONE_HINT.calm_mentor;
     const why = (athlete?.i_am ?? "").toString().slice(0, 160);
     const lang = (athlete?.language_pref ?? "").toString();
 
+    // 14-day neglect signal from history (today's row may not be in yet).
+    const neglected = (gaps?.rates ?? [])
+      .filter((r) => r.doneDays / Math.max(1, gaps!.checkinDays) < 0.3)
+      .map((r) => `${r.label} ${r.doneDays}/${gaps!.checkinDays}`)
+      .slice(0, 5);
+
     const facts = [
       `XP earned today: ${xp}`,
       tasksTotal > 0 ? `Habits completed: ${tasksDone}/${tasksTotal}` : null,
+      doneToday.length ? `DONE today: ${doneToday.join(", ")}` : null,
+      missedToday.length ? `MISSED today: ${missedToday.join(", ")}` : null,
+      neglected.length ? `Habitually neglected (last ${gaps!.checkinDays} logged days): ${neglected.join(", ")}` : null,
+      gaps?.unchosen?.length ? `Not in their habit set yet: ${gaps.unchosen.slice(0, 3).join(", ")}` : null,
       `Current streak: ${streak} days`,
       sleepH != null ? `Sleep last night: ${sleepH}h` : null,
       `Trained today: ${workout ? "yes" : "no"}`,
@@ -114,7 +142,9 @@ Deno.serve(async (req) => {
             content: `You are W Coach reacting the moment your athlete logs their day. Voice: ${tone}
 Rules:
 - 1-2 sentences, max ~160 characters total.
-- React to TODAY's actual numbers (pick the single most meaningful one — don't list them).
+- React to TODAY's actual facts (pick the single most meaningful one — don't list them).
+- NEVER advise improving anything in the DONE list — it's already handled today; that reads as not paying attention.
+- If suggesting improvement, aim at a MISSED or habitually neglected habit (pick ONE). If nothing was missed, spark curiosity about ONE habit not in their set yet.
 - If a WHY is provided you MAY tie the day to it — only when it lands naturally, never as a canned tagline.
 - ${lang ? `Reply in this language: ${lang}.` : "Reply in the user's likely language (default English)."}
 - No greetings. Never mention being an AI.`,

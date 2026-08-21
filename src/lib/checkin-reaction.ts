@@ -18,6 +18,11 @@ export interface CheckinReactionBody {
   tasks_done: number;
   tasks_total: number;
   streak: number;
+  /** Habit KEYS completed/missed today (server whitelists + maps to labels).
+   *  Sent by the submit-time prefetch — today's row isn't in the DB yet at
+   *  that point, so the body is the only source of today's per-habit truth. */
+  done_keys?: string[];
+  missed_keys?: string[];
 }
 
 const TIMEOUT_MS = 12_000;

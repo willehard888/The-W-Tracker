@@ -29,7 +29,8 @@ import { triggerGust } from "@/lib/wind";
 import CheckinTierHeader from "@/components/CheckinTierHeader";
 import CheckinTierSummary from "@/components/CheckinTierSummary";
 import { useHealthKit } from "@/hooks/use-healthkit";
-import { queueCheckin, isNetworkError } from "@/lib/offline-checkin";
+import { queueCheckin, isNetworkError, localDateStr } from "@/lib/offline-checkin";
+import { checkinReactionKey, fetchCheckinReaction } from "@/lib/checkin-reaction";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useCheckinConfig } from "@/hooks/use-checkin-config";
 import { useCheckinDay } from "@/hooks/use-checkin-day";
@@ -314,6 +315,36 @@ const DailyCheckin = () => {
     if (!user || submitting || !canCheckin || honest !== true) return;
     hapticImpact("medium");
     setSubmitting(true);
+
+    // Warm the summary screen while record_checkin runs — the coach reaction
+    // (1–8s AI round-trip) and the template line's plan dependency both used
+    // to start cold at summary MOUNT, which is why the coach line showed up
+    // ~10s late. Predicted values mirror the offline path; failures are
+    // cached nulls and the deterministic template covers them.
+    void queryClient.prefetchQuery({
+      queryKey: checkinReactionKey(user.id),
+      staleTime: Infinity,
+      queryFn: () =>
+        fetchCheckinReaction({
+          xp_earned: totalXp,
+          tasks_done: completedCount,
+          tasks_total: maxCount,
+          streak: (profile?.streak ?? 0) + 1,
+        }),
+    });
+    void queryClient.prefetchQuery({
+      queryKey: ["coach-daily-plan", user.id, localDateStr()],
+      staleTime: 5 * 60_000,
+      queryFn: async () => {
+        const { data } = await supabase
+          .from("coach_daily_plans")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("plan_date", localDateStr())
+          .maybeSingle();
+        return data ?? null;
+      },
+    });
 
     try {
       const checkinTimestamp = new Date().toISOString();

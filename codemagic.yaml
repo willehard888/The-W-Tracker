@@ -235,25 +235,25 @@ workflows:
           # set CURRENT_PROJECT_VERSION to latest+1. agvtool rewrites every
           # target's project.pbxproj in one shot. Idempotent across CI runs:
           # each build picks up the live ASC state.
-          # FLOOR: the ASC query can MISS builds that are still processing
-          # or came from another pipeline — the abandoned Xcode Cloud
-          # workflow's counter reached 1090, invisible to the query, and ASC
-          # rejected our lower number ("bundle version must be higher").
-          # 1100 + Codemagic's own BUILD_NUMBER is monotonic per run and
-          # permanently clears that range; the ASC query still wins whenever
-          # it reports something higher.
-          FLOOR=$((1100 + BUILD_NUMBER))
+          # TIME-BASED FLOOR: minutes since 2026-01-01 UTC (~334k and always
+          # climbing). The ASC latest-build query is blind to builds still
+          # processing AND to any parallel pipeline's counter (Xcode Cloud
+          # reached 1090+ and kept rejecting our lower numbers even after a
+          # static floor). Wall time is strictly increasing across every
+          # machine and pipeline, so this can never lose the race again.
+          # The ASC answer still wins if it's somehow higher.
+          FLOOR=$(( ($(date +%s) - 1767225600) / 60 ))
           if [ -z "${APP_STORE_APP_ID:-}" ]; then
-            echo "⚠️  APP_STORE_APP_ID not set — using floor $FLOOR"
+            echo "⚠️  APP_STORE_APP_ID not set — using time floor $FLOOR"
             NEW_BUILD=$FLOOR
           else
             LATEST=$(app-store-connect get-latest-build-number "$APP_STORE_APP_ID" 2>/dev/null || echo "")
             if [ -z "$LATEST" ] || ! [[ "$LATEST" =~ ^[0-9]+$ ]]; then
-              echo "⚠️  Could not fetch latest build number from ASC — using floor $FLOOR"
+              echo "⚠️  Could not fetch latest build number from ASC — using time floor $FLOOR"
               NEW_BUILD=$FLOOR
             else
               NEW_BUILD=$((LATEST + 1))
-              echo "ℹ️  App Store Connect latest build: $LATEST → candidate $NEW_BUILD (floor $FLOOR)"
+              echo "ℹ️  App Store Connect latest build: $LATEST → candidate $NEW_BUILD (time floor $FLOOR)"
               if [ "$NEW_BUILD" -lt "$FLOOR" ]; then NEW_BUILD=$FLOOR; fi
             fi
           fi

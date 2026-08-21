@@ -1,7 +1,7 @@
 # Codemagic CI/CD config — iOS build pipeline
 #
-# NOTE 2026-08-20 (retriggered 2026-08-21 after the ASC daily upload
-# limit reset): push triggers arrive via a plain repo webhook
+# NOTE 2026-08-20 (retriggered 2026-08-21; App Store workflow enabled by
+# the founder the same day): push triggers arrive via a plain repo webhook
 # (https://api.codemagic.io/hooks/<app-id>). It silently vanished once and
 # builds just stopped appearing — if that happens again, check
 # `gh api repos/<owner>/<repo>/hooks` first and re-create the hook.

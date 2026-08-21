@@ -143,6 +143,11 @@ export const usePushNotifications = (): PushNotificationState => {
 
       // 'prompt' / 'prompt-with-rationale' → show OUR rationale first, unless
       // we recently snoozed it. Delay so the user lands in the app before we ask.
+      // While onboarding is incomplete the flow owns push priming (it has a
+      // dedicated step) — the global sheet must not pop over the first session.
+      let onboardingDone = false;
+      try { onboardingDone = !!localStorage.getItem("w_onboarding_done"); } catch { /* noop */ }
+      if (!onboardingDone) return;
       let snoozedAt = 0;
       try { snoozedAt = Number(localStorage.getItem(PRIMING_DISMISS_KEY) ?? 0); } catch { /* noop */ }
       if (Date.now() - snoozedAt > REPRIME_AFTER_MS) {

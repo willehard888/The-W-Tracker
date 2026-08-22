@@ -300,7 +300,8 @@ const DailyCheckin = () => {
         p_journal_entry: done("journaling") ? "logged" : null,
         p_tz_offset_minutes: new Date().getTimezoneOffset(),
         p_habits: habitsJson,
-        p_sport: workout ? sportCategory : null,
+        // undefined (not null) → omitted → SQL default NULL; keeps the generated type happy.
+        p_sport: workout ? sportCategory : undefined,
       };
 
       let result: unknown = null;

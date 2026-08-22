@@ -13,7 +13,7 @@ import TierUsername from "@/components/TierUsername";
 import PostMedia from "@/components/feed/PostMedia";
 import ImageLightbox from "@/components/ImageLightbox";
 import {
-  Flame, Heart, MessageCircle, Award, MoreHorizontal,
+  Flame, MessageCircle, Award, MoreHorizontal,
   AlertTriangle, Trash2, ShieldCheck, Crown, Reply, X, Send, Zap,
 } from "lucide-react";
 import {
@@ -368,7 +368,6 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
   // Memoize comment tree — avoids rebuilding on every render that doesn't change comments.
   const tree = useMemo(() => buildCommentTree(comments), [comments]);
   const canDeleteAnyComment = isAdmin || isOwner;
-  const totalSignals = (post.likes_count || 0) + (post.comments_count || 0) + (post.kudos_count || 0);
 
   return (
     <>
@@ -429,7 +428,6 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                   Reviewing…
                 </span>
               )}
-              {post.author?.level && post.author.level > 0 && (<><span>•</span><span className="font-semibold">Lv.{post.author.level}</span></>)}
               {post.author?.streak && post.author.streak > 0 && (
                 <><span>•</span><StreakFlameInline streak={post.author.streak} suffix="d" className="text-[10px]" /></>
               )}
@@ -496,7 +494,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                   ? "bg-streak-orange/15 text-streak-orange"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               )}>
-              {post.liked ? <Flame size={15} fill="currentColor" className="animate-scale-in" /> : <Heart size={15} />}
+              <Flame size={15} fill={post.liked ? "currentColor" : "none"} className={cn(post.liked && "animate-scale-in")} />
               <span className="tabular-nums">{post.likes_count > 0 ? post.likes_count : ""}</span>
             </button>
           )}
@@ -544,9 +542,6 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             </div>
           )}
 
-          <div className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider">
-            {totalSignals === 0 ? <span>Be first</span> : <span>{totalSignals} signals</span>}
-          </div>
         </div>
 
         {/* Comments */}

@@ -6,7 +6,6 @@ import PerformanceOSDashboard from "@/components/coach/PerformanceOSDashboard";
 import ProgressDashboard from "@/components/coach/ProgressDashboard";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { useRecentCheckins } from "@/hooks/use-recent-checkins";
-import { useUserHabits } from "@/hooks/use-user-habits";
 
 /**
  * /coach/progress — your last 7-30 days at a glance.
@@ -25,7 +24,12 @@ const CoachProgress = () => {
   const { profile, isElite } = useAuth();
   const { program, currentWeek, logs } = useCoachProgram();
   const { data: recent } = useRecentCheckins(7);
-  const { habits } = useUserHabits();
+  // Core 4 hit-rate from the same rows (habits live in the check-in now).
+  const coreHitRate = recent && recent.length > 0
+    ? Math.round(
+        (recent.reduce((s, r) => s + (r.sleep_hours >= 7.5 && r.sleep_hours <= 9 ? 1 : 0) + (r.workout ? 1 : 0) + (r.hydration_liters >= 3 ? 1 : 0) + ((r.meditation_morning || r.meditation_evening) ? 1 : 0), 0) / (recent.length * 4)) * 100,
+      )
+    : null;
 
   const checkinsThisWeek = recent?.length ?? 0;
   const sleepAvg = recent && recent.length > 0
@@ -63,8 +67,8 @@ const CoachProgress = () => {
             <SummaryTile icon={Trophy} label="Workouts" value={`${workoutsThisWeek}/7`} />
           </div>
           <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground">Active habits</span>
-            <span className="text-[12px] font-bold text-gold tabular-nums">{habits.length}/8</span>
+            <span className="text-[11px] text-muted-foreground">Core 4 hit rate · 7 days</span>
+            <span className="text-[12px] font-bold text-gold tabular-nums">{coreHitRate == null ? "—" : `${coreHitRate}%`}</span>
           </div>
         </div>
 

@@ -239,7 +239,7 @@ const Friends = () => {
               <Users size={26} className="text-gold/60 mx-auto mb-2" />
               <p className="text-[13px] font-bold text-foreground">No friends yet</p>
               <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
-                Search a username above to send your first request. Friends power your pods and battles.
+                Search a username above to send your first request. Friends power your battles and feed.
               </p>
             </div>
           ) : (

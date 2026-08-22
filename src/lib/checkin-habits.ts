@@ -28,6 +28,9 @@ export interface CheckinHabit {
   core?: boolean;
   /** Short "why it matters" for the picker. */
   note?: string;
+  /** "bonus" = occasional extra, never expected daily (coach praises, never pushes).
+   *  KEEP IN SYNC with supabase/functions/_shared/checkin-habits.ts. */
+  cadence?: "bonus";
 }
 
 /** Bonus XP granted when a habit is HealthKit-verified. */
@@ -56,7 +59,7 @@ export const CHECKIN_HABITS: CheckinHabit[] = [
 
   // ── Movement (new) ────────────────────────────────────────────────────────
   { key: "steps_8k", label: "8,000+ steps", emoji: "🚶", pillar: "movement", xp: 20, verify: "steps", note: "Daily steps strongly predict longevity." },
-  { key: "extra_workout", label: "Second session", emoji: "⚡", pillar: "movement", xp: 25, column: "extra_workout" },
+  { key: "extra_workout", label: "Second session", emoji: "⚡", pillar: "movement", xp: 25, column: "extra_workout", cadence: "bonus" },
   { key: "zone2", label: "Zone-2 cardio", emoji: "🫀", pillar: "movement", xp: 20, verify: "workout", note: "Builds your aerobic base + mitochondria." },
   { key: "mobility", label: "Mobility / stretch", emoji: "🤸", pillar: "movement", xp: 15 },
   { key: "sunlight", label: "Morning sunlight", emoji: "☀️", pillar: "movement", xp: 15, note: "Anchors your circadian rhythm within 30 min of waking." },
@@ -80,7 +83,7 @@ export const CHECKIN_HABITS: CheckinHabit[] = [
 
   // ── Recovery ──────────────────────────────────────────────────────────────
   { key: "cold_shower", label: "Cold exposure", emoji: "🧊", pillar: "recovery", xp: 30, column: "cold_shower" },
-  { key: "sauna", label: "Sauna / heat", emoji: "🔥", pillar: "recovery", xp: 20 },
+  { key: "sauna", label: "Sauna / heat", emoji: "🔥", pillar: "recovery", xp: 20, cadence: "bonus" },
   { key: "early_bed", label: "In bed on time", emoji: "🛌", pillar: "recovery", xp: 15 },
 
   // ── Connection ────────────────────────────────────────────────────────────

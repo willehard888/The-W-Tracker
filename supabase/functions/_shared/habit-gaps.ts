@@ -25,6 +25,8 @@ export interface HabitRate {
   doneDays: number;
   windowDays: number;
   doneToday: boolean | null; // null = no row for today
+  /** Occasional extra — excluded from missed/neglected/perfect-day math. */
+  bonus: boolean;
 }
 
 export interface HabitGaps {
@@ -34,10 +36,12 @@ export interface HabitGaps {
    *  "perfect day" — scored against THEIR set, not the legacy default). */
   perfectDays: number;
   rates: HabitRate[];
-  /** Chosen habits completed today (labels). */
+  /** Chosen DAILY habits completed today (labels). */
   doneToday: string[];
-  /** Chosen habits missed today (labels). */
+  /** Chosen DAILY habits missed today (labels) — bonus habits never appear here. */
   missedToday: string[];
+  /** Bonus habits in their set (labels) — "✓" when done today. */
+  bonusHabits: string[];
   /** Catalog habits NOT in the user's set — new-habit candidates (labels). */
   unchosen: string[];
 }
@@ -80,7 +84,10 @@ export async function gatherHabitGaps(
       doneDays: rows.filter((r) => habitDoneOnRow(r, h.key)).length,
       windowDays: days,
       doneToday: todayRow ? habitDoneOnRow(todayRow, h.key) : null,
+      bonus: h.cadence === "bonus",
     }));
+    const daily = rates.filter((r) => !r.bonus);
+    const bonus = rates.filter((r) => r.bonus);
 
     const chosenKeys = new Set(chosen.map((h) => h.key));
     // A few unchosen candidates, spread across pillars so the suggestion pool
@@ -95,13 +102,16 @@ export async function gatherHabitGaps(
       if (unchosen.length >= 5) break;
     }
 
+    const dailyChosen = chosen.filter((h) => h.cadence !== "bonus");
     return {
       windowDays: days,
       checkinDays: rows.length,
-      perfectDays: rows.filter((r) => chosen.every((h) => habitDoneOnRow(r, h.key))).length,
+      // A perfect day = every DAILY habit done; bonus extras never required.
+      perfectDays: rows.filter((r) => dailyChosen.every((h) => habitDoneOnRow(r, h.key))).length,
       rates,
-      doneToday: rates.filter((r) => r.doneToday === true).map((r) => r.label),
-      missedToday: todayRow ? rates.filter((r) => r.doneToday === false).map((r) => r.label) : [],
+      doneToday: daily.filter((r) => r.doneToday === true).map((r) => r.label),
+      missedToday: todayRow ? daily.filter((r) => r.doneToday === false).map((r) => r.label) : [],
+      bonusHabits: bonus.map((r) => (r.doneToday === true ? `${r.label} ✓ today` : r.label)),
       unchosen,
     };
   } catch (e) {
@@ -124,7 +134,8 @@ export function buildHabitGapsBlock(g: HabitGaps | null): string {
   }
 
   if (g.checkinDays > 0) {
-    const sorted = [...g.rates].sort((a, b) => a.doneDays - b.doneDays);
+    // Bonus habits are excluded from neglect/solid math — they're extras.
+    const sorted = [...g.rates].filter((r) => !r.bonus).sort((a, b) => a.doneDays - b.doneDays);
     const neglected = sorted.filter((r) => r.doneDays / Math.max(1, g.checkinDays) < 0.3);
     const solid = sorted.filter((r) => r.doneDays / Math.max(1, g.checkinDays) >= 0.7);
     if (neglected.length) {
@@ -139,7 +150,10 @@ export function buildHabitGapsBlock(g: HabitGaps | null): string {
     }
   }
   if (g.checkinDays > 0 && g.perfectDays > 0) {
-    lines.push(`- Perfect days (every chosen habit done): ${g.perfectDays}/${g.checkinDays}.`);
+    lines.push(`- Perfect days (every daily habit done): ${g.perfectDays}/${g.checkinDays}.`);
+  }
+  if (g.bonusHabits.length) {
+    lines.push(`- Occasional BONUS habits (never expected daily — praise when done, never push): ${g.bonusHabits.join(", ")}.`);
   }
   if (g.unchosen.length) {
     lines.push(`- Not in their habit set yet (new-habit candidates): ${g.unchosen.join(", ")}.`);
@@ -150,5 +164,5 @@ export function buildHabitGapsBlock(g: HabitGaps | null): string {
   return `Their per-habit truth (use this to AIM advice — never recite the list):
 ${lines.join("\n")}
 
-Rules for using it: NEVER tell them to improve a habit that is already done today or already solid — that reads as not paying attention. Anchor improvement advice in the habitually neglected habits (pick ONE, the most impactful). If everything chosen is solid, inspire ONE new habit from the candidates instead — sell why it compounds with what they already do.`;
+Rules for using it: NEVER tell them to improve a habit that is already done today or already solid — that reads as not paying attention. Anchor improvement advice in the habitually neglected DAILY habits (pick ONE, the most impactful). Bonus habits (e.g. a second training session) are optional extras: celebrate them when done, never call them a gap, "falling behind" or something to fix. If everything daily is solid, inspire ONE new habit from the candidates instead — sell why it compounds with what they already do.`;
 }

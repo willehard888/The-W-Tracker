@@ -1,12 +1,17 @@
 // Check-in XP scoring model — extracted from DailyCheckin so the money/
-// integrity math is unit-testable. The server's record_checkin RPC enforces
-// the same caps; if you change ANY constant or branch here, change the SQL
-// in the same commit.
+// integrity math is unit-testable. The server's record_checkin RPC enforces a
+// CEILING on the same inputs; if you change ANY constant here, re-check the
+// SQL ceiling in the same commit.
 //
 // Invariants (see also xp-constants.ts):
 // - XP is identical for everyone — it does NOT depend on membership.
-// - Optional (self-chosen) habits together add at most OPTIONAL_XP_CAP.
-// - Sleep multiplies the whole day: quality of recovery gates the score.
+// - Core habits pay their full value, every day.
+// - Self-chosen "extras" share ONE pool: together at most OPTIONAL_XP_CAP.
+// - The score is purely ADDITIVE. There used to be a hidden sleep multiplier
+//   that silently scaled the whole day (×0.4–1.0) while every toggle kept
+//   advertising its full value — the number the user saw jumped for reasons
+//   they couldn't see. Honesty beats cleverness: what the screen shows is
+//   exactly what you get.
 
 import { OPTIONAL_XP_CAP, type CheckinHabit } from "@/lib/checkin-habits";
 
@@ -16,69 +21,25 @@ export const PROOF_BONUS_XP = 30;
 /** Hydration slider threshold (liters) at which the habit counts as done. */
 export const HYDRATION_DONE_LITERS = 3;
 
+/** Optimal sleep window — the sleep habit counts as done inside it. */
+export const SLEEP_OPTIMAL_MIN_H = 7.5;
+export const SLEEP_OPTIMAL_MAX_H = 9;
+
 export interface SleepAssessment {
   isOptimalSleep: boolean;
-  isChronicOversleep: boolean;
-  oversleepCount: number;
-  sleepMultiplier: number;
-  sleepPenaltyLabel: string | null;
+  /** Short human label for the slider: "In range" / "Under 7.5h" / "Over 9h". */
+  label: string;
 }
 
-/**
- * Sleep quality → XP multiplier for the whole day.
- * 7.5–9h optimal (×1.0) · 9–12h ×0.95, or ×0.6 when chronic (≥3 oversleep
- * days of ≥10h in the recent window) · 7–7.5h ×0.8 · 6–7h ×0.65 ·
- * 5–6h ×0.5 · under 5h (or >12h) ×0.4.
- */
-export function assessSleep(sleep: number, recentSleep: number[] = []): SleepAssessment {
-  const oversleepCount = recentSleep.filter((h) => h >= 10).length;
-  const chronic = oversleepCount >= 3;
-  const optimal = (sleep >= 7.5 && sleep <= 9) || (sleep > 9 && sleep <= 12 && !chronic);
-  let multiplier = 1.0;
-  if (sleep >= 7.5 && sleep <= 9) multiplier = 1.0;
-  else if (sleep > 9 && sleep <= 12) multiplier = chronic ? 0.6 : 0.95;
-  else if (sleep >= 7 && sleep < 7.5) multiplier = 0.8;
-  else if (sleep >= 6 && sleep < 7) multiplier = 0.65;
-  else if (sleep >= 5 && sleep < 6) multiplier = 0.5;
-  else multiplier = 0.4;
-  let penalty: string | null = null;
-  if (multiplier < 1) {
-    const pct = `${Math.round((1 - multiplier) * 100)}% XP penalty`;
-    if (chronic && sleep > 9) penalty = `Chronic oversleep — ${pct}`;
-    else if (sleep >= 7 && sleep < 7.5) penalty = `Sub-optimal sleep — ${pct}`;
-    else if (sleep < 7) penalty = `Poor sleep — ${pct}`;
-    else penalty = pct;
+/** Sleep → done/not + a plain label. No multiplier, no penalty maths. */
+export function assessSleep(sleep: number): SleepAssessment {
+  if (sleep >= SLEEP_OPTIMAL_MIN_H && sleep <= SLEEP_OPTIMAL_MAX_H) {
+    return { isOptimalSleep: true, label: "In range" };
   }
   return {
-    isOptimalSleep: optimal,
-    isChronicOversleep: chronic,
-    oversleepCount,
-    sleepMultiplier: multiplier,
-    sleepPenaltyLabel: penalty,
+    isOptimalSleep: false,
+    label: sleep < SLEEP_OPTIMAL_MIN_H ? `Under ${SLEEP_OPTIMAL_MIN_H}h` : `Over ${SLEEP_OPTIMAL_MAX_H}h`,
   };
-}
-
-/**
- * Best possible day for a habit set: everything done + proof photo, optimal
- * sleep (×1.0). Used by promo surfaces ("Earn up to N XP") so they can never
- * contradict the real check-in math. Workout is valued at the habit's own
- * base XP (sport choice can raise it — this is the honest floor of the max).
- */
-export function maxDailyXp(habits: CheckinHabit[]): number {
-  const allDone: CheckinState = {
-    sleepOptimal: true,
-    workout: true,
-    hydration: HYDRATION_DONE_LITERS,
-    completed: Object.fromEntries(habits.map((h) => [h.key, true])),
-  };
-  const workoutXp = habits.find((h) => h.key === "workout")?.xp ?? 0;
-  return computeCheckinXp({
-    habits,
-    state: allDone,
-    sportXp: workoutXp,
-    hasProof: true,
-    sleepMultiplier: 1,
-  }).totalXp;
 }
 
 export interface CheckinState {
@@ -109,45 +70,71 @@ export interface CheckinXpBreakdown {
   /** After the OPTIONAL_XP_CAP clamp. */
   optionalXp: number;
   proofBonus: number;
-  rawXp: number;
-  /** rawXp × sleepMultiplier, rounded. */
-  baseXp: number;
   totalXp: number;
+  /** Done habits (core + extras). */
   completedCount: number;
+  coreDone: number;
+  coreTotal: number;
+  extrasDone: number;
+  /** The extras pool as the UI shows it: "+earned / cap XP". */
+  extras: { earned: number; cap: number };
 }
 
 /**
- * The full day score. Core habits earn full value; self-chosen habits are
- * clamped to OPTIONAL_XP_CAP so stacking can't inflate the score; the sleep
- * multiplier gates everything; quest bonus rides on top unmultiplied.
+ * The full day score — additive and transparent:
+ *   core habits (full value) + min(extras, OPTIONAL_XP_CAP) + proof bonus.
  */
 export function computeCheckinXp(args: {
   habits: CheckinHabit[];
   state: CheckinState;
   sportXp: number;
   hasProof: boolean;
-  sleepMultiplier: number;
-  questBonusXp?: number;
 }): CheckinXpBreakdown {
-  const { habits, state, sportXp, hasProof, sleepMultiplier, questBonusXp = 0 } = args;
+  const { habits, state, sportXp, hasProof } = args;
   const proofBonus = hasProof ? PROOF_BONUS_XP : 0;
   let coreXp = 0;
   let optionalXpRaw = 0;
+  let coreDone = 0;
+  let coreTotal = 0;
+  let extrasDone = 0;
   for (const h of habits) {
     const xp = habitXpValue(h, state, sportXp);
-    if (h.core) coreXp += xp;
-    else optionalXpRaw += xp;
+    const done = isHabitDone(h, state);
+    if (h.core) {
+      coreXp += xp;
+      coreTotal += 1;
+      if (done) coreDone += 1;
+    } else {
+      optionalXpRaw += xp;
+      if (done) extrasDone += 1;
+    }
   }
   const optionalXp = Math.min(optionalXpRaw, OPTIONAL_XP_CAP);
-  const rawXp = coreXp + optionalXp + proofBonus;
-  const baseXp = Math.round(rawXp * sleepMultiplier);
   return {
     coreXp,
     optionalXp,
     proofBonus,
-    rawXp,
-    baseXp,
-    totalXp: baseXp + questBonusXp,
-    completedCount: habits.filter((h) => isHabitDone(h, state)).length,
+    totalXp: coreXp + optionalXp + proofBonus,
+    completedCount: coreDone + extrasDone,
+    coreDone,
+    coreTotal,
+    extrasDone,
+    extras: { earned: optionalXp, cap: OPTIONAL_XP_CAP },
   };
+}
+
+/**
+ * Best possible day for a habit set: everything done + proof photo. Used by
+ * promo surfaces ("Up to +N XP") so they can never contradict the check-in —
+ * and because the model is additive, this IS the sum of what the screen shows.
+ */
+export function maxDailyXp(habits: CheckinHabit[]): number {
+  const allDone: CheckinState = {
+    sleepOptimal: true,
+    workout: true,
+    hydration: HYDRATION_DONE_LITERS,
+    completed: Object.fromEntries(habits.map((h) => [h.key, true])),
+  };
+  const workoutXp = habits.find((h) => h.key === "workout")?.xp ?? 0;
+  return computeCheckinXp({ habits, state: allDone, sportXp: workoutXp, hasProof: true }).totalXp;
 }

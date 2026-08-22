@@ -26,7 +26,9 @@ const colorMap: Record<TabColor, { text: string; rgb: string }> = {
   apex:  { text: "text-[hsl(var(--ember))]",        rgb: "var(--ember)" },
 };
 
-const HIDDEN_PATHS = new Set(["/landing", "/auth", "/onboarding", "/paywall", "/choose-username"]);
+// /checkin is hidden too: a stray tab tap mid-form used to unmount the page
+// (the back chevron is the only exit; the draft survives regardless).
+const HIDDEN_PATHS = new Set(["/landing", "/auth", "/onboarding", "/paywall", "/choose-username", "/checkin"]);
 
 // Pushed pages highlight their PARENT tab so "where am I" never goes dark —
 // with exact matching, /checkin, /feed, /battles etc. lit no tab at all.

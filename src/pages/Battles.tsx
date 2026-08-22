@@ -21,7 +21,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import MyTribeBattles from "@/components/MyTribeBattles";
-import MoreSection from "@/components/ui/more-section";
+import BattleChallengeModal from "@/components/battles/BattleChallengeModal";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
+import { hapticSelection } from "@/lib/haptics";
 import BattleIncomingCard from "@/components/battles/BattleIncomingCard";
 import BattleActiveCard from "@/components/battles/BattleActiveCard";
 import BattlePendingCard from "@/components/battles/BattlePendingCard";
@@ -42,6 +44,7 @@ const Battles = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
+  const [scope, setScope] = useState<"1v1" | "tribes">("1v1");
   const [opponent, setOpponent] = useState<{ user_id: string; username: string } | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [duration, setDuration] = useState(7);
@@ -377,115 +380,52 @@ const Battles = () => {
         </div>
       </div>
 
-      {/* Create Battle CTA */}
-      {!showCreate ? (
-        <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-gold/20 p-6 text-center mb-6 glass-3d depth-realistic">
-          <div className="h-16 w-16 rounded-full gradient-gold flex items-center justify-center glow-gold mx-auto mb-4">
-            <Swords size={30} className="text-primary-foreground" />
-          </div>
-          <h2 className="font-display font-bold text-lg mb-1">1v1 Discipline Battle</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Challenge a friend to XP, cold showers, workouts & more.
-          </p>
-          <Button variant="ember" size="lg" className="w-full max-w-xs" onClick={() => setShowCreate(true)}>
-            <Swords size={18} />
-            Create Battle
-          </Button>
-        </div>
+      {/* One battles home: 1v1 | Tribes (tribe battles used to hide in a
+          "More" drawer on the 1v1 page AND live on a separate tribe page). */}
+      <div className={cn(SEGMENT_TRACK, "mb-4")}>
+        {(["1v1", "tribes"] as const).map((k) => (
+          <button
+            key={k}
+            onClick={() => { hapticSelection(); setScope(k); }}
+            className={cn("flex-1 rounded-full py-2 text-sm font-bold transition-all", scope === k ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+          >
+            {k === "1v1" ? "1v1" : "Tribes"}
+          </button>
+        ))}
+      </div>
+
+      {scope === "tribes" ? (
+        <MyTribeBattles />
       ) : (
-        <div className="animate-reveal rounded-xl border border-gold/30 p-5 mb-6 glass-3d depth-realistic">
-          <h3 className="font-display font-bold text-sm mb-4">Challenge a friend</h3>
-
-          <div className="space-y-4">
-            {/* Opponent — picked from friends */}
-            <div>
-              <label className="text-xs text-muted-foreground font-medium mb-1 block">Opponent</label>
-              {opponent ? (
-                <button
-                  onClick={() => setPickerOpen(true)}
-                  className="w-full flex items-center gap-3 rounded-xl border border-gold/30 bg-gold/5 p-2.5 text-left active:scale-[0.99] transition-transform"
-                >
-                  <div className="h-9 w-9 rounded-full gradient-gold flex items-center justify-center text-sm font-black text-primary-foreground shrink-0">
-                    {opponent.username?.charAt(0)?.toUpperCase()}
-                  </div>
-                  <span className="flex-1 min-w-0 font-bold text-sm truncate">@{opponent.username}</span>
-                  <span className="text-[11px] font-bold text-gold shrink-0">Change</span>
-                </button>
-              ) : (
-                <button
-                  onClick={() => setPickerOpen(true)}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-gold/40 bg-card/40 py-3 text-[13px] font-bold text-gold active:scale-[0.99] transition-transform"
-                >
-                  <UserPlus size={15} /> Choose a friend
-                </button>
-              )}
-            </div>
-
-            {/* Battle Type */}
-            <div>
-              <label className="text-xs text-muted-foreground font-medium mb-2 block">Battle Type</label>
-              <div className="grid grid-cols-3 gap-2">
-                {BATTLE_TYPES.map((type) => {
-                  const Icon = type.icon;
-                  return (
-                    <button
-                      key={type.id}
-                      onClick={() => setBattleType(type.id)}
-                      className={cn(
-                        "flex flex-col items-center gap-1 py-3 px-2 rounded-xl text-xs font-bold transition-all active:scale-95 border",
-                        battleType === type.id
-                          ? "bg-gold/10 border-gold/30 text-gold shadow-[0_0_12px_hsl(var(--gold)/0.15)]"
-                          : "bg-secondary border-border text-muted-foreground hover:bg-secondary/80"
-                      )}
-                    >
-                      <Icon size={18} className={battleType === type.id ? type.color : ""} />
-                      <span className="leading-tight text-center">{type.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
-                {getBattleTypeInfo(battleType).description}
-              </p>
-            </div>
-
-            {/* Duration */}
-            <div>
-              <label className="text-xs text-muted-foreground font-medium mb-2 block">Duration</label>
-              <div className="flex gap-2">
-                {[3, 7, 14, 30].map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => setDuration(d)}
-                    className={cn(
-                      "flex-1 py-2 rounded-lg text-sm font-bold transition-all active:scale-95 border",
-                      duration === d
-                        ? "bg-gold/15 text-gold border-gold/30"
-                        : "bg-secondary text-muted-foreground border-border hover:bg-secondary/80"
-                    )}
-                  >
-                    {d}d
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex gap-2 pt-1">
-              <Button variant="ember" className="flex-1" onClick={handleCreate} disabled={creating || !opponent}>
-                <Swords size={16} />
-                {creating ? "Sending..." : "Send Challenge"}
-              </Button>
-              <Button variant="secondary" onClick={() => { setShowCreate(false); setBattleType("xp"); setOpponent(null); }}>Cancel</Button>
-            </div>
-          </div>
+        <>
+      {/* Create Battle CTA — one flow: pick a friend → the shared challenge modal */}
+      <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-gold/20 p-6 text-center mb-6 glass-3d depth-realistic">
+        <div className="h-16 w-16 rounded-full gradient-gold flex items-center justify-center glow-gold mx-auto mb-4">
+          <Swords size={30} className="text-primary-foreground" />
         </div>
+        <h2 className="font-display font-bold text-lg mb-1">1v1 Discipline Battle</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Challenge a friend to XP, cold showers, workouts & more.
+        </p>
+        <Button variant="ember" size="lg" className="w-full max-w-xs" onClick={() => setPickerOpen(true)}>
+          <Swords size={18} />
+          Challenge a friend
+        </Button>
+      </div>
+
+      {showCreate && opponent && (
+        <BattleChallengeModal
+          username={opponent.username}
+          battleType={battleType}
+          setBattleType={setBattleType}
+          duration={duration}
+          setDuration={setDuration}
+          creating={creating}
+          onClose={() => { setShowCreate(false); setOpponent(null); }}
+          onChallenge={handleCreate}
+        />
       )}
 
-      {/* Tribe battles are a different scope — tucked into "More" so the page
-          stays focused on the user's own challenges. */}
-      <MoreSection label="Tribe battles" className="mb-4">
-        <MyTribeBattles />
-      </MoreSection>
 
       {/* Incoming Challenges */}
       {pendingBattles.length > 0 && (
@@ -635,12 +575,15 @@ const Battles = () => {
         </div>
       )}
 
+        </>
+      )}
+
       <FriendPickerSheet
         open={pickerOpen}
         onOpenChange={setPickerOpen}
         title="Choose your opponent"
         subtitle="Battle one of your friends."
-        onPick={(f) => { setOpponent({ user_id: f.user_id, username: f.username }); setPickerOpen(false); }}
+        onPick={(f) => { setOpponent({ user_id: f.user_id, username: f.username }); setPickerOpen(false); setShowCreate(true); }}
       />
     </div>
   );

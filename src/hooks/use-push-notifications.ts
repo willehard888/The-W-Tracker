@@ -16,7 +16,7 @@ import { LocalNotifications } from "@capacitor/local-notifications";
 const SAFE_ROUTES = new Set<string>([
   "/", "/checkin", "/feed", "/tribes", "/squad", "/messages",
   "/leaderboard", "/battles", "/profile", "/coach",
-  "/coach/library", "/coach/habits", "/coach/program",
+  "/coach/program",
   "/coach/memory", "/coach/goal", "/coach/reflect",
   "/coach/progress", "/coach/profile",
 ]);

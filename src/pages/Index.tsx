@@ -6,7 +6,6 @@ import { track, FUNNEL } from "@/lib/analytics";
 import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
-import PodCard from "@/components/home/PodCard";
 import CoachStrip from "@/components/home/CoachStrip";
 import DailyInsightCard from "@/components/home/DailyInsightCard";
 import LibraryHub from "@/components/home/LibraryHub";
@@ -394,18 +393,10 @@ const Index = () => {
       <Reveal className="mb-4 relative z-10" delay={100}>
         <LibraryHub />
       </Reveal>
-      {/* ACCOUNTABILITY POD — your 3-5 who see your daily check-in. Moved
-          below The Library (founder call): the daily loop + coach lead the
-          page, the social layer follows the content hub. */}
-      <Reveal className="mb-4 relative z-10" delay={110}>
-        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
-          <PodCard />
-        </ErrorBoundary>
-      </Reveal>
-
-      {/* SECONDARY — Today stays focused: check in, the AI move, the pod,
-          daily insight and ONE library card. Invite + badges are one tap
-          away under "More". */}
+      {/* SECONDARY — Today stays focused: check in, the AI move, daily
+          insight and ONE library card. Invite + badges are one tap away
+          under "More". (The accountability pod card is gone — Tribe is the
+          one group concept.) */}
       <MoreSection label="More" className="relative z-10 mt-1 mb-2">
       {/* EARN FREE MEMBERSHIP — referral CTA */}
       <Reveal className="mb-4 relative z-10" delay={80}>

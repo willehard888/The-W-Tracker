@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTodayReflection } from "@/hooks/use-coach-reflection";
 import { useRecentCheckins } from "@/hooks/use-recent-checkins";
-import { useUserHabits } from "@/hooks/use-user-habits";
 import { PILLARS } from "@/lib/wellness-framework";
 import { findWeakestPillarSmart } from "@/lib/coach/pick-free-move";
 
@@ -19,12 +18,11 @@ import { findWeakestPillarSmart } from "@/lib/coach/pick-free-move";
  * Free + Elite both see the same card. Elite gets the same data; the
  * differentiator is downstream (the adaptive plan in TodaysPlanCard).
  */
-const StateCard = () => {
+const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { reflection } = useTodayReflection();
   const { data: recent } = useRecentCheckins(7);
-  const { habits } = useUserHabits();
 
   const signal = useMemo(() => {
     if (!recent || recent.length === 0) {
@@ -65,11 +63,10 @@ const StateCard = () => {
       workoutDays: recent.filter((r) => r.workout).length,
       meditationDays: recent.filter((r) => r.meditation_morning || r.meditation_evening).length,
     } : undefined;
-    return findWeakestPillarSmart(
-      habits.map((h) => h.protocol_id),
-      signals,
-    );
-  }, [habits, recent]);
+    // Protocol-habit adoption no longer exists (habits live in the check-in),
+    // so the pillar read comes purely from the last 7 days of signals.
+    return findWeakestPillarSmart([], signals);
+  }, [recent]);
   const pillarMeta = PILLARS[weakestPillar];
 
   return (
@@ -124,7 +121,7 @@ const StateCard = () => {
           subtle context line below it. Avoids the truncated "Sleep —
           Strongest single lever for e..." that looked broken. */}
       <button
-        onClick={() => navigate(`/coach/library?pillar=${weakestPillar}`)}
+        onClick={() => onAsk ? onAsk(`Help me improve my ${pillarMeta.name.toLowerCase()} this week — one concrete change.`) : navigate("/coach")}
         className={cn(
           "mt-4 w-full flex items-center justify-between gap-3 rounded-2xl border px-3.5 py-3 transition-colors active:scale-[0.98]",
           pillarMeta.tint.border,

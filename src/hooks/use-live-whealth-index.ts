@@ -28,7 +28,7 @@ async function gatherLiveInputs(userId: string): Promise<WhealthInputs> {
   const sinceDay = since.slice(0, 10);
   const db = supabase as never as { rpc: (fn: string, args?: Record<string, unknown>) => PromiseLike<{ data: unknown }> };
 
-  const [checkinsR, nightsR, daysR, reflR, habitsR, lessonsR, lessonsTotalR, liftsR, tribesR, friendsR, athleteR] =
+  const [checkinsR, nightsR, daysR, reflR, lessonsR, lessonsTotalR, liftsR, tribesR, friendsR, athleteR] =
     await Promise.all([
       supabase
         .from("daily_checkins")
@@ -43,7 +43,6 @@ async function gatherLiveInputs(userId: string): Promise<WhealthInputs> {
         .from("coach_reflections")
         .select("reflection_date, energy_1to5, mood_1to5, win, friction")
         .eq("user_id", userId).gte("reflection_date", sinceDay),
-      supabase.from("user_habits").select("current_streak").eq("user_id", userId).is("archived_at", null),
       supabase.from("vault_lesson_progress").select("quiz_score").eq("user_id", userId),
       supabase.from("vault_articles").select("id", { count: "exact", head: true }),
       db.rpc("recent_workout_logs", { p_limit: 120 }),
@@ -117,7 +116,21 @@ async function gatherLiveInputs(userId: string): Promise<WhealthInputs> {
 
   return {
     checkins, nights, days, reflections,
-    habitStreaks: ((habitsR.data ?? []) as Array<{ current_streak: number | null }>).map((h) => Number(h.current_streak ?? 0)),
+    // Habits live in the check-in now: streaks = consecutive logged days
+    // (ending on the latest check-in) for each Core 4 habit.
+    habitStreaks: (["sleep", "workout", "hydration", "meditation"] as const).map((k) => {
+      let run = 0;
+      for (let i = checkins.length - 1; i >= 0; i--) {
+        const c = checkins[i];
+        const ok = k === "sleep" ? (c.sleepHours != null && c.sleepHours >= 7.5 && c.sleepHours <= 9)
+          : k === "workout" ? c.workout
+          : k === "hydration" ? (c.hydration != null && c.hydration >= 3)
+          : c.meditation;
+        if (!ok) break;
+        run++;
+      }
+      return run;
+    }),
     lessonsCompleted: (lessonsR.data ?? []).length,
     lessonsTotal: lessonsTotalR.count ?? 0,
     avgQuizScore: quizScores.length ? quizScores.reduce((a, b) => a + b, 0) / quizScores.length : null,

@@ -230,7 +230,7 @@ const CoachShell = ({ session, program, navigate }: any) => {
         {/* The adaptive daily plan — readiness + missions, the coach's real
             "what to do today" engine (replaces the rule-based MoveCard). */}
         <TodaysPlanCard />
-        <StateCard />
+        <StateCard onAsk={(q) => openChat(q)} />
         <ProgramCard />
         <HealthKitConnectCard />
         <CoachFooterLinks />

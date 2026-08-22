@@ -48,14 +48,12 @@ const ChooseUsername = lazy(() => import("./pages/ChooseUsername"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Coach = lazy(() => import("./pages/Coach"));
 const AthleteProfileSettings = lazy(() => import("./pages/AthleteProfileSettings"));
-const CoachHabits = lazy(() => import("./pages/CoachHabits"));
 const CoachReflect = lazy(() => import("./pages/CoachReflect"));
 const CoachGoal = lazy(() => import("./pages/CoachGoal"));
 const CoachProgress = lazy(() => import("./pages/CoachProgress"));
 const Journey = lazy(() => import("./pages/Journey"));
 const CoachProgramDetail = lazy(() => import("./pages/CoachProgramDetail"));
 const CoachMemoryScreen = lazy(() => import("./pages/CoachMemoryScreen"));
-const ProtocolLibrary = lazy(() => import("./pages/ProtocolLibrary"));
 const Squad = lazy(() => import("./pages/Squad"));
 const TribeNew = lazy(() => import("./pages/TribeNew"));
 const TribeDetail = lazy(() => import("./pages/TribeDetail"));
@@ -237,14 +235,16 @@ const AppRoutes = () => {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/coach" element={<ProtectedRoute><Coach /></ProtectedRoute>} />
           <Route path="/coach/profile" element={<ProtectedRoute><AthleteProfileSettings /></ProtectedRoute>} />
-          <Route path="/coach/habits" element={<ProtectedRoute><CoachHabits /></ProtectedRoute>} />
+          {/* Protocol-habit system removed — habits live ONLY in the check-in.
+              Old push deep links land on Coach. */}
+          <Route path="/coach/habits" element={<Navigate to="/coach" replace />} />
           <Route path="/coach/reflect" element={<ProtectedRoute><CoachReflect /></ProtectedRoute>} />
           <Route path="/coach/goal" element={<ProtectedRoute><CoachGoal /></ProtectedRoute>} />
           <Route path="/coach/progress" element={<ProtectedRoute><CoachProgress /></ProtectedRoute>} />
           <Route path="/journey" element={<ProtectedRoute><Journey /></ProtectedRoute>} />
           <Route path="/coach/program" element={<ProtectedRoute><CoachProgramDetail /></ProtectedRoute>} />
           <Route path="/coach/memory" element={<ProtectedRoute><CoachMemoryScreen /></ProtectedRoute>} />
-          <Route path="/coach/library" element={<ProtectedRoute><ProtocolLibrary /></ProtectedRoute>} />
+          <Route path="/coach/library" element={<Navigate to="/coach" replace />} />
           <Route path="/squad" element={<ProtectedRoute><Squad /></ProtectedRoute>} />
           {/* Legacy standalone routes — Squad is the single entry point for
               Feed and Tribes (renders them behind its segmented header). */}

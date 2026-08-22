@@ -1,6 +1,6 @@
 import { memo } from "react";
 import {
-  Flame, Heart, MessageCircle, Send, Crown, MoreHorizontal,
+  Flame, MessageCircle, Send, Crown, MoreHorizontal,
   AlertTriangle, Trash2, ShieldCheck, Award, Reply, X,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -188,12 +188,6 @@ const FeedPostCard = memo(function FeedPostCard({
                 Reviewing…
               </span>
             )}
-            {post.profile?.level > 0 && (
-              <>
-                <span>•</span>
-                <span className="font-semibold">Lv {post.profile.level}</span>
-              </>
-            )}
             {post.profile?.streak > 0 && (
               <>
                 <span>•</span>
@@ -277,11 +271,7 @@ const FeedPostCard = memo(function FeedPostCard({
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
           )}
         >
-          {liked ? (
-            <Flame size={15} fill="currentColor" className="animate-scale-in" />
-          ) : (
-            <Heart size={15} />
-          )}
+          <Flame size={15} fill={liked ? "currentColor" : "none"} className={cn(liked && "animate-scale-in")} />
           <span className="tabular-nums">{post.likes_count > 0 ? post.likes_count : ""}</span>
         </button>
         <button
@@ -338,14 +328,6 @@ const FeedPostCard = memo(function FeedPostCard({
           </div>
         )}
 
-        {/* Engagement summary on the right */}
-        <div className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider">
-          {(post.likes_count || 0) + (post.comments_count || 0) + (post.kudos_count || 0) === 0 ? (
-            <span>Be first</span>
-          ) : (
-            <span>{(post.likes_count || 0) + (post.comments_count || 0) + (post.kudos_count || 0)} signals</span>
-          )}
-        </div>
       </div>
 
       {/* Comments Section */}

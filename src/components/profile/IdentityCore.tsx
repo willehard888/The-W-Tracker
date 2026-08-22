@@ -33,6 +33,9 @@ export interface IdentityCoreProps {
   nameplateSize?: "md" | "lg";
   /** Rendered between the pill row and the XP block (e.g. activity pulse). */
   afterPills?: ReactNode;
+  /** Lifetime check-ins — the third tri-stat cell (level is hidden app-wide:
+   *  it is a pure echo of XP). Undefined → "—". */
+  checkinTotal?: number;
 }
 
 /**
@@ -56,6 +59,7 @@ const IdentityCore = ({
   showLock,
   nameplateSize = "lg",
   afterPills,
+  checkinTotal,
 }: IdentityCoreProps) => {
   const tier = profile.status_tier || "recruit";
   const division = (profile as any).tier_division ?? 0;
@@ -168,7 +172,7 @@ const IdentityCore = ({
         <p className="text-[10px] font-black tracking-[0.22em] text-gold/70 mt-2">TOTAL XP</p>
       </div>
 
-      {/* Tri-stat strip — streak (+shields), best streak, level: same on every hero */}
+      {/* Tri-stat strip — streak (+shields), best streak, check-ins: same on every hero */}
       <div className="mt-6 w-full grid grid-cols-3 divide-x divide-border/40 rounded-2xl border border-border/40 bg-background/30 backdrop-blur-sm py-3">
         <div className="flex flex-col items-center gap-0.5 px-1">
           <StreakFlameInline streak={profile.streak ?? 0} suffix="d" className="text-[15px]" />
@@ -189,9 +193,9 @@ const IdentityCore = ({
         </div>
         <div className="flex flex-col items-center gap-0.5 px-1">
           <span className="font-display font-black text-[15px] tabular-nums text-foreground/90">
-            {profile.level ?? 1}
+            {checkinTotal == null ? "—" : checkinTotal.toLocaleString()}
           </span>
-          <span className="eyebrow">Level</span>
+          <span className="eyebrow">Check-ins</span>
         </div>
       </div>
 

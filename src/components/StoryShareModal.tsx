@@ -184,7 +184,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
         ctx.fillStyle = "rgba(255,255,255,0.25)";
         ctx.font = "bold 10px 'Inter', system-ui, sans-serif";
         ctx.fillText(
-          profile.streak >= 30 ? "MOST FAIL BEFORE THIS →" :
+          profile.streak >= 30 ? "30 DAYS STRONG →" :
           profile.streak >= 7 ? "DON'T BREAK NOW →" :
           "BEAT MY STREAK →",
           card.offsetWidth / 2, centerY + 110
@@ -491,7 +491,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                 </p>
                 <p className="font-black text-gold/70 tracking-wider text-base">DAY STREAK</p>
                 <p className="text-muted-foreground/40 font-bold mt-2 text-xs">
-                  {profile.streak >= 30 ? "MOST FAIL BEFORE THIS →" : profile.streak >= 7 ? "DON'T BREAK NOW →" : "BEAT MY STREAK →"}
+                  {profile.streak >= 30 ? "30 DAYS STRONG →" : profile.streak >= 7 ? "DON'T BREAK NOW →" : "BEAT MY STREAK →"}
                 </p>
                 <p className="text-muted-foreground/25 mt-1 text-sm">Best: {profile.longest_streak} days</p>
               </>

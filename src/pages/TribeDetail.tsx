@@ -509,7 +509,7 @@ const TribeDetail = () => {
       setImageFile(null); setImagePreview(null);
       setVideoFile(null); setVideoPreview(null);
       hapticNotification("success");
-      toast.success("Posted! 🔥");
+      toast.success("Posted");
       load();
     } catch (e: any) {
       toast.error(friendlyError(e, "Could not post. Try again."));

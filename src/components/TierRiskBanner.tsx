@@ -28,7 +28,7 @@ const SUB_BY_TONE: Record<ToneId, { streak: string; status: string }> = {
     status: "Cutoff narrow — a single quality day widens the margin.",
   },
   hype: {
-    streak: "Don't break the chain. One log saves it. LET'S GO.",
+    streak: "One log saves the streak. Let's go.",
     status: "Lock the tier. One big day pins it.",
   },
 };

@@ -129,7 +129,7 @@ const Profile = () => {
         const { error: rpcErr } = await supabase.rpc("update_own_profile", { new_avatar_url: urlData.publicUrl });
         if (rpcErr) throw new Error(rpcErr.message);
       });
-      toast.success("Profile photo updated! 📸");
+      toast.success("Profile photo updated");
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
     } catch (err: any) {
       console.error(err);

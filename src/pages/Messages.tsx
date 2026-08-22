@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { formatTier } from "@/lib/status-tiers";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { MessageCircle, UserCheck, UserPlus, Search, X, SearchX } from "lucide-react";
@@ -185,7 +186,7 @@ const Messages = () => {
                     tier={(u as any).status_tier || "recruit"}
                     className="text-sm font-semibold truncate"
                   />
-                  <p className="text-xs text-muted-foreground/50">Lv {u.level || 1}</p>
+                  <p className="text-xs text-muted-foreground/50">{formatTier((u as any).status_tier || "recruit")}</p>
                 </div>
                 <MessageCircle size={14} className="text-muted-foreground/30" />
               </button>

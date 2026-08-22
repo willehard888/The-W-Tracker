@@ -1,3 +1,4 @@
+import EmptyState from "@/components/ui/empty-state";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -154,7 +155,7 @@ const Friends = () => {
         {/* People you may know — members of your tribes you're not connected to */}
         {!searching2 && (suggestions?.length ?? 0) > 0 && (
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-2 px-1">
+            <p className="eyebrow text-gold/85 mb-2 px-1">
               People you may know
             </p>
             <div className="space-y-1.5">
@@ -195,7 +196,7 @@ const Friends = () => {
         {/* Incoming requests */}
         {(requests?.length ?? 0) > 0 && (
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-2 px-1">
+            <p className="eyebrow text-gold/85 mb-2 px-1">
               Friend requests · {requests!.length}
             </p>
             <div className="space-y-1.5">
@@ -228,7 +229,7 @@ const Friends = () => {
 
         {/* Your friends */}
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/70 mb-2 px-1">
+          <p className="eyebrow/70 mb-2 px-1">
             Your friends
           </p>
           {friendsLoading ? (
@@ -236,13 +237,11 @@ const Friends = () => {
               {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-card/60 skeleton-block" />)}
             </div>
           ) : (friends?.length ?? 0) === 0 ? (
-            <div className="surface-card p-6 text-center">
-              <Users size={26} className="text-gold/60 mx-auto mb-2" />
-              <p className="text-[13px] font-bold text-foreground">No friends yet</p>
-              <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
-                Search a username above to send your first request. Friends power your battles and feed.
-              </p>
-            </div>
+            <EmptyState
+              icon={Users}
+              title="No friends yet"
+              description="Search a username above to send your first request. Friends power your battles and feed."
+            />
           ) : (
             <div className="space-y-1.5">
               {friends!.map((f) => (

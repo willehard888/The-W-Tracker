@@ -88,17 +88,17 @@ const TrialExpirySheet = () => {
             <div className="rounded-xl border border-border/50 bg-card/60 px-2 py-2.5 text-center">
               <Flame size={13} className="mx-auto mb-1 text-gold" />
               <p className="font-display text-lg font-black tabular-nums leading-none">{Math.max(streak, best)}</p>
-              <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">day streak</p>
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">day streak</p>
             </div>
             <div className="rounded-xl border border-border/50 bg-card/60 px-2 py-2.5 text-center">
               <Zap size={13} className="mx-auto mb-1 text-gold" />
               <p className="font-display text-lg font-black tabular-nums leading-none">{xp.toLocaleString()}</p>
-              <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">xp earned</p>
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">xp earned</p>
             </div>
             <div className="rounded-xl border border-border/50 bg-card/60 px-2 py-2.5 text-center">
               <Crown size={13} className="mx-auto mb-1 text-gold" />
               <p className="font-display text-lg font-black tabular-nums leading-none">{level}</p>
-              <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">level</p>
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">level</p>
             </div>
           </div>
 

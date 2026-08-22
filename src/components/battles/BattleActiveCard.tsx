@@ -128,7 +128,7 @@ const BattleActiveCard = ({
               <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
                 {myProofSrc && <img loading="lazy" decoding="async" src={myProofSrc} alt="My proof" className="w-full h-full object-cover" />}
                 <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
-                  <span className="text-[9px] font-bold text-white">You ✅</span>
+                  <span className="text-[10px] font-bold text-white">You ✅</span>
                 </div>
               </div>
             ) : (
@@ -142,7 +142,7 @@ const BattleActiveCard = ({
                 ) : (
                   <>
                     <Camera size={20} className="text-destructive" />
-                    <span className="text-[9px] font-bold text-destructive">UPLOAD NOW</span>
+                    <span className="text-[10px] font-bold text-destructive">UPLOAD NOW</span>
                   </>
                 )}
               </button>
@@ -155,13 +155,13 @@ const BattleActiveCard = ({
               <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
                 {oppProofSrc && <img loading="lazy" decoding="async" src={oppProofSrc} alt="Opponent proof" className="w-full h-full object-cover" />}
                 <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
-                  <span className="text-[9px] font-bold text-white">@{opp.username} ✅</span>
+                  <span className="text-[10px] font-bold text-white">@{opp.username} ✅</span>
                 </div>
               </div>
             ) : (
               <div className="w-full aspect-square rounded-lg border border-border bg-secondary/50 flex flex-col items-center justify-center gap-1">
                 <Image size={16} className="text-muted-foreground/40" />
-                <span className="text-[9px] text-muted-foreground">No proof yet</span>
+                <span className="text-[10px] text-muted-foreground">No proof yet</span>
               </div>
             )}
           </div>

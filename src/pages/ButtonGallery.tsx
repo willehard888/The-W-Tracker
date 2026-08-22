@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Flame, Crown, Zap, Check, Sparkles } from "lucide-react";
+import { ArrowLeft, Flame, Zap, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -13,23 +13,14 @@ import { Button } from "@/components/ui/button";
 type VariantId =
   | "default"
   | "ember"
-  | "obsidian"
   | "destructive"
   | "outline"
   | "secondary"
   | "ghost"
-  | "link"
-  | "glass"
-  | "tier"
-  | "success"
-  | "warning"
   | "gold-outline"
   | "gold-soft"
-  | "gold-icon"
   | "ember-outline"
-  | "ember-glass"
-  | "coal-outline"
-  | "danger-outline";
+  | "ember-glass";
 
 interface VariantSpec {
   id: VariantId;
@@ -40,35 +31,16 @@ interface VariantSpec {
 }
 
 const VARIANTS: VariantSpec[] = [
-  // Hero / next-level
-  { id: "ember", label: "Ember", group: "Hero", description: "Tribes/fire signature CTA — molten metal.", icon: <Flame /> },
-
-  // Premium gold
-  { id: "default", label: "Default (Gold)", group: "Premium", description: "Clean polished gold bar — primary identity.", icon: <Sparkles /> },
-  { id: "gold", label: "Gold", group: "Premium", description: "Alias of default — bright metallic gold.", icon: <Crown /> },
-  { id: "tier", label: "Tier", group: "Premium", description: "Uses --tier-color CSS vars (defaults to gold).", icon: <Sparkles /> },
-
-  // Identity / system
-  { id: "obsidian", label: "Obsidian", group: "Identity", description: "Dark metal escape hatch when gold is too loud.", icon: <Zap /> },
-  { id: "destructive", label: "Destructive", group: "Identity", description: "Red metal with vignette — irreversible actions.", icon: <Zap /> },
-  { id: "success", label: "Success", group: "Identity", description: "Green metal — confirmations & completions.", icon: <Check /> },
-  { id: "warning", label: "Warning", group: "Identity", description: "Amber metal for risky-but-not-destructive.", icon: <Zap /> },
-
-  // Outlines & glass
-  { id: "outline", label: "Outline", group: "Outline & Glass", description: "Premium ember-tinted glass with warm hairline." },
-  { id: "secondary", label: "Secondary", group: "Outline & Glass", description: "Premium gold-glass panel — most used." },
-  { id: "ghost", label: "Ghost", group: "Outline & Glass", description: "Transparent with gold lift on hover." },
-  { id: "glass", label: "Glass", group: "Outline & Glass", description: "Surface glass with saturate filter." },
-  { id: "gold-outline", label: "Gold Outline", group: "Outline & Glass", description: "Hairline gold-soft, fills on hover." },
-  { id: "gold-soft", label: "Gold Soft", group: "Outline & Glass", description: "Stronger gold crown than secondary." },
-  { id: "ember-outline", label: "Ember Outline", group: "Outline & Glass", description: "Premium hairline ember for tribe actions." },
-  { id: "ember-glass", label: "Ember Glass", group: "Outline & Glass", description: "Stronger ember vibe than inherited outline." },
-  { id: "coal-outline", label: "Coal Outline", group: "Outline & Glass", description: "Hairline coal matching the coal variant." },
-  { id: "danger-outline", label: "Danger Outline", group: "Outline & Glass", description: "Hairline destructive, transparent base." },
-
-  // Utility
-  { id: "link", label: "Link", group: "Utility", description: "Gold-soft → gold underline." },
-  { id: "gold-icon", label: "Gold Icon", group: "Utility", description: "For icon-only buttons (back/close/clear)." },
+  { id: "ember", label: "Ember", group: "Hero", description: "The primary CTA — molten amber.", icon: <Flame /> },
+  { id: "default", label: "Default", group: "Premium", description: "Same look as ember — the shared primary.", icon: <Sparkles /> },
+  { id: "destructive", label: "Destructive", group: "Identity", description: "Flat red — irreversible actions.", icon: <Zap /> },
+  { id: "outline", label: "Outline", group: "Outline & Glass", description: "Clean hairline, transparent." },
+  { id: "secondary", label: "Secondary", group: "Outline & Glass", description: "Flat translucent surface — most used." },
+  { id: "ghost", label: "Ghost", group: "Outline & Glass", description: "Transparent, subtle hover." },
+  { id: "gold-outline", label: "Gold Outline", group: "Outline & Glass", description: "Hairline gold, fills lightly on hover." },
+  { id: "gold-soft", label: "Gold Soft", group: "Outline & Glass", description: "Premium gold-glass for cancel/compare actions." },
+  { id: "ember-outline", label: "Ember Outline", group: "Outline & Glass", description: "Hairline ember for secondary tribe actions." },
+  { id: "ember-glass", label: "Ember Glass", group: "Outline & Glass", description: "Ember-tinted glass for fire-context actions." },
 ];
 
 const GROUPS: VariantSpec["group"][] = [
@@ -218,7 +190,7 @@ const VariantRow = ({ spec, isPicked, onPick }: VariantRowProps) => {
 
 const StateCell = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="flex flex-col gap-1.5">
-    <span className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 font-semibold text-center">
+    <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70 font-semibold text-center">
       {label}
     </span>
     {children}

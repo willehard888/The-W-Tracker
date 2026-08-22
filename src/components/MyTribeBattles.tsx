@@ -1,3 +1,4 @@
+import EmptyState from "@/components/ui/empty-state";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Swords, Loader2, ChevronRight, Flame, Clock, Trophy } from "lucide-react";
@@ -115,23 +116,20 @@ const MyTribeBattles = () => {
   if (tribes.length === 0) {
     // User has no tribes — soft CTA
     return (
-      <div className="rounded-xl border border-dashed border-border/60 p-4 text-center">
-        <div className="flex items-center justify-center gap-2 mb-1.5">
-          <Swords size={14} className="text-[hsl(var(--ember))]" />
-          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-            Tribe Battles
-          </p>
-        </div>
-        <p className="text-xs text-muted-foreground mb-3">
-          Join or found a tribe to wage collective battles.
-        </p>
-        <button
-          onClick={() => navigate("/squad?tab=tribes")}
-          className="text-[11px] font-black uppercase tracking-widest text-gold inline-flex items-center gap-1"
-        >
-          Find a tribe <ChevronRight size={12} />
-        </button>
-      </div>
+      <EmptyState
+        size="compact"
+        icon={Swords}
+        title="No tribe battles yet"
+        description="Join or found a tribe to wage collective battles."
+        action={
+          <button
+            onClick={() => navigate("/squad?tab=tribes")}
+            className="text-[11px] font-black uppercase tracking-widest text-gold inline-flex items-center gap-1"
+          >
+            Find a tribe <ChevronRight size={12} />
+          </button>
+        }
+      />
     );
   }
 
@@ -233,7 +231,7 @@ const MyTribeBattles = () => {
           <Swords size={13} className="text-[hsl(var(--ember))]" />
           <h2 className="font-display font-bold text-sm tracking-tight">Tribe Battles</h2>
           {active.length > 0 && (
-            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-[hsl(var(--ember))] px-1.5 py-0.5 rounded-full bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
+            <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-[hsl(var(--ember))] px-1.5 py-0.5 rounded-full bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
               <Flame size={8} /> {active.length} live
             </span>
           )}

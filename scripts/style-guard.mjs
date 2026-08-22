@@ -15,6 +15,10 @@ const BANNED = [
   { re: /42[_ ]78%[_ ]54%/, msg: "literal gold — use hsl(var(--gold))" },
   { re: /18[_ ]95%[_ ]58%/, msg: "literal ember — use hsl(var(--ember))" },
   { re: /purple-[1-9]00/, msg: "stock violet — use gold/ember tokens" },
+  // Type floor: nothing under 10px. 10px is reserved for .eyebrow-style micro
+  // labels; body/secondary text is 11px+ (single-digit sizes are unreadable
+  // on device — audited in the clarity program).
+  { re: /text-\[[5-9](?:\.\d+)?px\]/, msg: "type below 10px — use text-[10px] (.eyebrow) or larger" },
 ];
 
 const hits = [];
@@ -33,7 +37,7 @@ const walk = (dir) => {
 walk("src");
 
 if (hits.length) {
-  console.error("✗ Style guard: banned literal colors found:\n" + hits.map((h) => "  " + h).join("\n"));
+  console.error("✗ Style guard: banned patterns found:\n" + hits.map((h) => "  " + h).join("\n"));
   process.exit(1);
 }
-console.log("✓ Style guard: no banned literal colors. 👍");
+console.log("✓ Style guard: no banned literal colors or sub-10px type. 👍");

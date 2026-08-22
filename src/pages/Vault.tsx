@@ -203,7 +203,7 @@ const Vault = () => {
               <p className="font-display text-base font-black text-gold leading-none tabular-nums">
                 {s.value}
               </p>
-              <p className="text-[9px] tracking-widest uppercase text-muted-foreground mt-1">
+              <p className="text-[10px] tracking-widest uppercase text-muted-foreground mt-1">
                 {s.label}
               </p>
             </div>
@@ -333,7 +333,7 @@ const VaultCategoryBlock = ({
                   <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.5} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">Meal-prep recipes</p>
+                  <p className="eyebrow text-gold/85 mb-0.5">Meal-prep recipes</p>
                   <p className="text-[12px] font-bold leading-tight">15 high-protein recipes · scale 1×–5× · storage & reheat</p>
                 </div>
                 <ChevronRight size={16} className="text-gold shrink-0" />
@@ -394,7 +394,7 @@ const VaultCategoryBlock = ({
                       <div className="flex items-center gap-1.5">
                         {a.lesson_number && (
                           <span
-                            className="text-[9px] font-black tabular-nums tracking-wider uppercase shrink-0"
+                            className="text-[10px] font-black tabular-nums tracking-wider uppercase shrink-0"
                             style={{ color: category.accent }}
                           >
                             L{a.lesson_number}
@@ -411,13 +411,13 @@ const VaultCategoryBlock = ({
                       )}
                       <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
                         <EvidenceChip tier={a.evidence_tier} />
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[9px] font-black tracking-[0.22em] uppercase text-muted-foreground">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[10px] font-black tracking-[0.22em] uppercase text-muted-foreground">
                           <Clock size={8} strokeWidth={3} />
                           {a.read_time_min} min
                         </span>
                         {done && (
                           <span
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-[0.22em] uppercase"
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-[0.22em] uppercase"
                             style={{
                               background: `${category.accent}22`,
                               color: category.accent,

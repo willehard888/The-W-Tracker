@@ -3,6 +3,8 @@ import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
 import { Check, Lock, Zap } from "lucide-react";
+import { useHowItWorks } from "@/components/HowItWorksSheet";
+import { howSeenKey } from "@/lib/how-it-works";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -82,7 +84,7 @@ const DailyCheckin = () => {
     setOnboardDismissed(true);
   };
 
-  const { data: lastCheckin } = useQuery({
+  const { data: lastCheckin, isFetched: lastCheckinLoaded } = useQuery({
     queryKey: ["last-checkin", user?.id],
     staleTime: 0,
     gcTime: 30 * 60_000,
@@ -101,6 +103,19 @@ const DailyCheckin = () => {
     },
     enabled: !!user,
   });
+  // "How The W works" — opens ONCE, automatically, for a user who has never
+  // checked in (this is the first screen that needs the model).
+  const how = useHowItWorks();
+  const autoHowRef = useRef(false);
+  useEffect(() => {
+    if (autoHowRef.current || !user?.id || !how) return;
+    if (!lastCheckinLoaded || lastCheckin || (profile?.streak ?? 0) > 0) return;
+    const key = howSeenKey(user.id);
+    try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch { return; }
+    autoHowRef.current = true;
+    how.open();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, lastCheckinLoaded, lastCheckin]);
 
   // Local-day window + midnight rollover, shared with Home so the two can't
   // disagree about when the check-in reopens.
@@ -539,6 +554,7 @@ const DailyCheckin = () => {
         workoutAnswered={workoutChoice !== null}
         deadlineLine={deadlineLineFor(profile?.streak ?? 0)}
         onBack={() => navigate("/")}
+        onInfo={() => how?.open("checkin")}
       />
 
       {/* The "why" anchor — quiet, only once the user has authored it. */}
@@ -558,6 +574,7 @@ const DailyCheckin = () => {
       />
 
       <CoreFour
+        onInfo={() => how?.open("checkin")}
         sleep={sleep} onSleep={setSleep} sleepOptimal={isOptimalSleep} sleepLabel={sleepLabel} sleepXp={habitXp("sleep")} sleepDetected={!!detected.sleep}
         workoutChoice={workoutChoice} onWorkoutChoice={(c) => { setWorkoutChoice(c); if (c === "rest") setSportCategory("none"); }}
         selectedSport={selectedSport} onSelectSport={(id) => { setSportCategory(id); setWorkoutChoice("trained"); }}

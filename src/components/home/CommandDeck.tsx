@@ -101,7 +101,7 @@ const CommandDeck = ({
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className={cn("text-[10px] font-black uppercase tracking-[0.22em] mb-0.5", canCheckin ? "text-gold" : "text-muted-foreground")}>
+              <p className={cn("eyebrow mb-0.5", canCheckin ? "text-gold" : "text-muted-foreground")}>
                 {canCheckin ? "Today's check-in" : "Day locked"}
               </p>
               <p className="font-display font-black text-[19px] leading-none tracking-tight">

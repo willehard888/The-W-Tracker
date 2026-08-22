@@ -85,7 +85,7 @@ const IdentityCore = ({
       {/* PREMIUM ribbon — Founding Apex subscribers, one quiet style */}
       {isApexSubscriber && (
         <div className="mt-2 mb-1 flex justify-center">
-          <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm text-[10px] font-black uppercase tracking-[0.22em] bg-gold/15 text-gold border border-gold/40">
+          <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm eyebrow bg-gold/15 text-gold border border-gold/40">
             <Crown size={11} strokeWidth={3} />
             Premium · Day-One
           </span>

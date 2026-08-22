@@ -45,7 +45,7 @@ const Scale = ({
       })}
     </div>
     {hints && (
-      <div className="flex justify-between text-[9px] text-muted-foreground/60">
+      <div className="flex justify-between text-[10px] text-muted-foreground/60">
         <span>{hints[0]}</span><span>{hints[1]}</span>
       </div>
     )}

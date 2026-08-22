@@ -92,7 +92,7 @@ const CommentThread = ({
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] font-bold text-[hsl(var(--ember))]">@{username}</span>
               {isEdited(node) && !isEditing && (
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-[hsl(var(--ember))]/70 italic">· edited</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--ember))]/70 italic">· edited</span>
               )}
             </div>
             {isEditing ? (
@@ -125,19 +125,19 @@ const CommentThread = ({
           </div>
           {!isEditing && (
             <div className="flex items-center gap-2 mt-0.5 ml-3 flex-wrap">
-              <p className="text-[9px] text-muted-foreground/50">
+              <p className="text-[10px] text-muted-foreground/50">
                 {formatDistanceToNow(new Date(node.created_at), { addSuffix: true })}
               </p>
               {currentUserId && (
                 <button type="button" onClick={() => { hapticSelection(); onReply(node.id, username, node.content || ""); }}
-                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-[hsl(var(--ember))] transition-colors">
+                  className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-[hsl(var(--ember))] transition-colors">
                   <Reply size={10} /> Reply
                 </button>
               )}
               {isOwn && (
                 <>
                   <button type="button" onClick={() => { hapticSelection(); setDraft(node.content || ""); setEditingId(node.id); }}
-                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-[hsl(var(--ember))] transition-colors">
+                    className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-[hsl(var(--ember))] transition-colors">
                     Edit
                   </button>
                 </>
@@ -149,12 +149,12 @@ const CommentThread = ({
                     onDelete(node.id);
                   }
                 }}
-                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-destructive transition-colors">
+                  className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-destructive transition-colors">
                   Delete
                 </button>
               )}
               {node.children.length > 0 && (
-                <span className="text-[9px] text-muted-foreground/40 tabular-nums">
+                <span className="text-[10px] text-muted-foreground/40 tabular-nums">
                   · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
                 </span>
               )}
@@ -414,7 +414,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               {isApexAuthor && (
                 <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-[hsl(var(--ember))]/15 border border-[hsl(var(--ember))]/40">
                   <Zap size={7} className="text-[hsl(var(--ember))]" fill="currentColor" />
-                  <span className="text-[8px] font-black tracking-wider uppercase text-[hsl(var(--ember))]">Apex</span>
+                  <span className="text-[10px] font-black tracking-wider uppercase text-[hsl(var(--ember))]">Apex</span>
                 </span>
               )}
               {post.author?.status_tier === "elite" && (
@@ -622,7 +622,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                     />
                     {commentText.length > 0 && (
                       <span className={cn(
-                        "absolute right-12 top-1/2 -translate-y-1/2 text-[9px] font-semibold tabular-nums",
+                        "absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-semibold tabular-nums",
                         commentText.length > 270 ? "text-destructive" : "text-muted-foreground/50"
                       )}>
                         {300 - commentText.length}

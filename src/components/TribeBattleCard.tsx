@@ -142,7 +142,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                   {isMine ? "Your tribe" : "Challenger"}
                 </p>
                 <p className={cn("font-display font-black text-sm truncate", isMine && "text-gold")}>
@@ -155,7 +155,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
             </div>
             {hasBigger && (
               <span
-                className="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-black tracking-widest uppercase border"
+                className="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-widest uppercase border"
                 style={{
                   color: accent,
                   borderColor: accent.replace(")", " / 0.5)"),
@@ -167,7 +167,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
               </span>
             )}
             {streak > 0 && (
-              <span className="ml-1.5 mt-1.5 inline-block text-[8px] uppercase tracking-wider text-muted-foreground/70">
+              <span className="ml-1.5 mt-1.5 inline-block text-[10px] uppercase tracking-wider text-muted-foreground/70">
                 {collectiveTierName(streak)}
               </span>
             )}

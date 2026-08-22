@@ -43,7 +43,7 @@ const NextTierProgress = ({ data, className }: { data: NextTierProgressData; cla
       </div>
       {data.either && data.grindPath.length > 0 && (
         <>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/60 text-center">— or —</p>
+          <p className="eyebrow/60 text-center">— or —</p>
           <div className="space-y-2">
             {data.grindPath.map((r) => <Row key={r.key} r={r} />)}
           </div>

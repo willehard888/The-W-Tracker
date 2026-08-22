@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import EmptyState from "@/components/ui/empty-state";
 import { useMemo, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
 import { X, Search, Flame, ChevronRight, UserPlus } from "lucide-react";
@@ -72,24 +74,17 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
           {isLoading ? (
             <div className="h-16 rounded-xl bg-card/60 animate-pulse" />
           ) : list.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-[13px] font-bold text-foreground">
-                {(friends ?? []).length === 0 ? "No friends yet" : "No one to pick"}
-              </p>
-              <p className="text-[11px] text-muted-foreground mt-1 mb-4 leading-snug">
-                {(friends ?? []).length === 0
-                  ? "Add friends to invite them and challenge them."
-                  : "Everyone's already here."}
-              </p>
-              {(friends ?? []).length === 0 && (
-                <button
-                  onClick={() => { onOpenChange(false); navigate("/friends"); }}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-gold px-4 py-2.5 text-[12px] font-black text-primary-foreground"
-                >
+            <EmptyState
+              size="compact"
+              icon={UserPlus}
+              title={(friends ?? []).length === 0 ? "No friends yet" : "No one to pick"}
+              description={(friends ?? []).length === 0 ? "Add friends to invite them and challenge them." : "Everyone's already here."}
+              action={(friends ?? []).length === 0 ? (
+                <Button size="sm" variant="ember" onClick={() => { onOpenChange(false); navigate("/friends"); }}>
                   <UserPlus size={14} /> Add friends
-                </button>
-              )}
-            </div>
+                </Button>
+              ) : null}
+            />
           ) : (
             list.map((f) => (
               <button

@@ -81,7 +81,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     label: "Operator",
     shortLabel: "OPR",
     emoji: "🟢",
-    percentile: "Top 50%",
+    percentile: "Top 75%",
     message: "You showed up. Most never do.",
     pressureMessage: "Don't lose your position",
     color: "teal",
@@ -172,7 +172,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     label: "Legend",
     shortLabel: "LGD",
     emoji: "🔱",
-    percentile: "Top 0.1%",
+    percentile: "Top 1%",
     message: "Untouchable. Your name lives forever here.",
     pressureMessage: "The Founders Circle is watching",
     color: "legend",
@@ -183,7 +183,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     auraSize: 'huge',
     badgeVariant: "legend",
     rank: 6,
-    requirements: { percentile: 99.9, activeDays: 30, streak: 30 },
+    requirements: { percentile: 99, activeDays: 30, streak: 45 },
     unlocks: ["Legend rainbow aura", "Hall of Fame", "Tribes — create communities", "Mythic status"],
   },
 };
@@ -251,6 +251,39 @@ export const getPreviousTier = (current: string): TierConfig | null => {
   const idx = TIER_ORDER.indexOf(canonicalTier(current));
   if (idx <= 0) return null;
   return TIER_CONFIG[TIER_ORDER[idx - 1]];
+};
+
+// ── Consistency (the user-facing name for rank_score) ────────────────────────
+// rank_score decides #N, Top% and tier, yet it was never named in the UI — a
+// bare "Score: 4.7" in 9px. Shown as "Consistency" everywhere, with its
+// three inputs (mirrors calculate_rank_score in SQL: 0.55 / 0.25 / 0.20).
+export const CONSISTENCY_WEIGHTS = [
+  { key: "activeDays", weight: 0.55, label: "Days active (last 30)", hint: "Logged days out of 30" },
+  { key: "dailyXp", weight: 0.25, label: "Daily XP vs the field (last 7 days)", hint: "Your 7-day average against the top average" },
+  { key: "streak", weight: 0.20, label: "Streak", hint: "Consecutive days, diminishing returns" },
+] as const;
+
+/** The tier's band as a plain label, derived from its percentile requirement
+ *  (one source — the static strings drifted: operator said Top 50% but
+ *  requires Top 75%). recruit → "Entry". */
+export const tierBandLabel = (tier: string): string => {
+  const r = getTierConfig(tier).requirements.percentile;
+  if (r <= 0) return "Entry";
+  return `Top ${Math.max(1, Math.round(100 - r))}%`;
+};
+
+export interface NextTierInfo {
+  key: StatusTier;
+  label: string;
+  requirements: TierRequirements;
+}
+
+/** The next rung and what it takes (null at the top). */
+export const nextTierRequirements = (current: string): NextTierInfo | null => {
+  const idx = TIER_ORDER.indexOf(canonicalTier(current));
+  if (idx < 0 || idx >= TIER_ORDER.length - 1) return null;
+  const key = TIER_ORDER[idx + 1];
+  return { key, label: TIER_CONFIG[key].label, requirements: TIER_CONFIG[key].requirements };
 };
 
 // ── Live "Top N%" label (one derivation for every surface) ──────────────────

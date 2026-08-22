@@ -2815,6 +2815,30 @@ export type Database = {
           total_users: number
         }[]
       }
+      get_standings: {
+        Args: { p_limit?: number }
+        Returns: {
+          rank: number
+          user_id: string
+          username: string
+          avatar_url: string | null
+          status_tier: string
+          rank_score: number
+          xp: number
+          streak: number
+        }[]
+      }
+      get_rank_score_breakdown: {
+        Args: { p_user_id: string }
+        Returns: {
+          active_days: number
+          active_days_score: number
+          xp_score: number
+          streak_score: number
+          trust: number
+          total: number
+        }[]
+      }
       has_active_access: { Args: { _user_id: string }; Returns: boolean }
       has_premium: { Args: { _user_id: string }; Returns: boolean }
       has_role: {

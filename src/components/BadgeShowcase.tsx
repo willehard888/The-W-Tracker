@@ -52,7 +52,7 @@ const BadgeShowcase = ({ badges, onBadgeClick, className, totalEarned }: BadgeSh
           <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card text-[11px] font-black text-muted-foreground">
             +{overflow}
           </div>
-          <p className="text-[9px] font-semibold text-muted-foreground">more</p>
+          <p className="text-[10px] font-semibold text-muted-foreground">more</p>
         </div>
       )}
     </div>

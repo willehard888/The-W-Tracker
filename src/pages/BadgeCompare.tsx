@@ -156,7 +156,7 @@ const BadgeCompare = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold truncate">{badge.name}</p>
                     <p className={cn(
-                      "text-[9px] font-black uppercase tracking-[0.22em]",
+                      "text-[10px] font-black uppercase tracking-[0.22em]",
                       badge.rarity === "legendary" ? "text-gold" :
                       badge.rarity === "epic" ? "text-[hsl(var(--badge-epic))]" :
                       badge.rarity === "rare" ? "text-[hsl(var(--badge-rare))]" :

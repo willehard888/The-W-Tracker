@@ -1,3 +1,4 @@
+import EmptyState from "@/components/ui/empty-state";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,7 +54,7 @@ const TopTribesWidget = () => {
         <div className="flex items-center gap-2 min-w-0">
           <Crown size={15} className="text-[hsl(var(--ember))] shrink-0" />
           <h2 className="font-display font-bold text-base tracking-tight truncate">Top Tribes</h2>
-          <span className="shrink-0 text-[9px] uppercase tracking-widest font-black text-muted-foreground px-1.5 py-0.5 rounded-full border border-border/60 bg-secondary/50">
+          <span className="shrink-0 text-[10px] uppercase tracking-widest font-black text-muted-foreground px-1.5 py-0.5 rounded-full border border-border/60 bg-secondary/50">
             Weekly
           </span>
         </div>
@@ -70,17 +71,19 @@ const TopTribesWidget = () => {
           <Loader2 size={14} className="animate-spin text-[hsl(var(--ember))]" />
         </div>
       ) : rows.length === 0 ? (
-        <div className="text-center py-3">
-          <p className="text-xs text-muted-foreground mb-2">
-            {canCreate ? "No tribes ranked yet — be the first founder." : "No tribes ranked yet."}
-          </p>
-          <button
-            onClick={() => navigate(canCreate ? "/tribes/new" : "/squad?tab=tribes")}
-            className="text-[11px] font-black uppercase tracking-widest text-[hsl(var(--ember))] inline-flex items-center gap-1"
-          >
-            {canCreate ? "Found a tribe" : "Browse tribes"} <ChevronRight size={12} />
-          </button>
-        </div>
+        <EmptyState
+          size="compact"
+          title="No tribes ranked yet"
+          description={canCreate ? "Be the first founder." : "Tribes appear here once they have a collective streak."}
+          action={
+            <button
+              onClick={() => navigate(canCreate ? "/tribes/new" : "/squad?tab=tribes")}
+              className="text-[11px] font-black uppercase tracking-widest text-[hsl(var(--ember))] inline-flex items-center gap-1"
+            >
+              {canCreate ? "Found a tribe" : "Browse tribes"} <ChevronRight size={12} />
+            </button>
+          }
+        />
       ) : (
         <div className="space-y-1.5">
           {rows.map((r) => {

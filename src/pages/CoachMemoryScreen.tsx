@@ -44,7 +44,7 @@ const CoachMemoryScreen = () => {
         <div className="surface-card p-3 space-y-2">
           <div className="flex items-center gap-2">
             <Sparkles size={12} className="text-gold" />
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">Add a fact</p>
+            <p className="eyebrow text-gold">Add a fact</p>
           </div>
           <div className="flex gap-2">
             <Input value={draft} onChange={e => setDraft(e.target.value.slice(0, 200))}

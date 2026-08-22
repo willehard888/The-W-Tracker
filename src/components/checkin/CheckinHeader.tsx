@@ -1,4 +1,4 @@
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Info } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,8 @@ interface CheckinHeaderProps {
   /** One calm line, only when the streak is genuinely about to end (see voice rules). */
   deadlineLine?: string | null;
   onBack: () => void;
+  /** (i) → "How The W works" sheet. */
+  onInfo?: () => void;
 }
 
 /**
@@ -22,7 +24,7 @@ interface CheckinHeaderProps {
  * ("1/12 · 8% — EXECUTE TODAY OR FALL" is what this replaces).
  */
 const CheckinHeader = ({
-  streak, xpToday, coreDone, coreTotal, workoutAnswered, deadlineLine, onBack,
+  streak, xpToday, coreDone, coreTotal, workoutAnswered, deadlineLine, onBack, onInfo,
 }: CheckinHeaderProps) => {
   const stateText = !workoutAnswered
     ? "Log your Core 4 — done or not"
@@ -41,7 +43,14 @@ const CheckinHeader = ({
           <ChevronLeft size={20} />
         </button>
         <div className="min-w-0 flex-1">
-          <p className="font-display text-[17px] font-black tracking-tight leading-none">Daily check-in</p>
+          <p className="font-display text-[17px] font-black tracking-tight leading-none flex items-center gap-1.5">
+            Daily check-in
+            {onInfo && (
+              <button type="button" onClick={onInfo} aria-label="How The W works" className="text-muted-foreground/60 hover:text-foreground transition-colors">
+                <Info size={13} />
+              </button>
+            )}
+          </p>
           <p className="text-[11px] text-muted-foreground mt-1 leading-none">{format(new Date(), "EEEE d MMM")}</p>
         </div>
         {streak > 0 && (

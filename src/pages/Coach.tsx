@@ -622,7 +622,7 @@ const ChatSheet = ({
             <p className="text-xs text-muted-foreground max-w-[280px] mx-auto mb-4">
               Ask anything. Coach knows your program, last 7 days, and the playbook below.
             </p>
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80 mb-2">
+            <p className="eyebrow text-gold/80 mb-2">
               Quick answers
             </p>
             <div className="flex flex-col gap-2 max-w-sm mx-auto">
@@ -714,7 +714,7 @@ const ChatSheet = ({
         {/* Seeded from today's feedback — one-tap follow-ups on improving. */}
         {seedChipsShown && !streaming && (
           <div className="flex flex-col gap-2 max-w-sm pt-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-xp-green/80">
+            <p className="eyebrow text-xp-green/80">
               Ask a follow-up
             </p>
             {PERFORMANCE_FOLLOWUPS.map((q) => (

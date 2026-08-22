@@ -84,7 +84,7 @@ const AthleteProfileSettings = () => {
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-8 space-y-5">
         {profile.i_am && (
           <div className="rounded-2xl px-4 py-4 border border-[hsl(var(--gold)/0.4)] bg-[hsl(var(--gold)/0.05)]">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold mb-1">Identity</p>
+            <p className="eyebrow text-gold mb-1">Identity</p>
             <p className="text-sm leading-relaxed">{profile.i_am}</p>
           </div>
         )}
@@ -152,7 +152,7 @@ const AthleteProfileSettings = () => {
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div>
-    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/70 mb-1.5 px-1">{title}</p>
+    <p className="eyebrow/70 mb-1.5 px-1">{title}</p>
     <div className="rounded-2xl bg-card/40 border border-border/30 px-4">{children}</div>
   </div>
 );

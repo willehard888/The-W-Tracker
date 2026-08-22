@@ -1,3 +1,4 @@
+import { HOW_IT_WORKS_BEATS } from "@/lib/how-it-works";
 import { Flame, Zap, TrendingUp, Bell, Check, Sparkles, Bot, BookOpen, Users, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BrandLogo from "@/components/BrandLogo";
@@ -76,11 +77,9 @@ export const WelcomeSlide = ({ onNext }: { onNext: () => void }) => (
 /* ── 5. Teach: the daily loop ── */
 export const CoreLoopSlide = ({ struggle, onNext }: { struggle?: string; onNext: () => void }) => {
   const promise = strugglePromise(struggle);
-  const beats = [
-    { icon: Flame, label: "Check in daily", sub: "60 seconds. Every day counts once." },
-    { icon: Zap, label: "Earn XP & grow your streak", sub: "Miss a day, the flame resets." },
-    { icon: TrendingUp, label: "Consistency becomes rank", sub: "The ladder only counts showing up." },
-  ];
+  // Shared with HowItWorksSheet (src/lib/how-it-works.ts) — one model, no drift.
+  const BEAT_ICONS = { checkin: Flame, streak: Flame, xp: Zap, ladder: TrendingUp } as const;
+  const beats = HOW_IT_WORKS_BEATS.map((b) => ({ icon: BEAT_ICONS[b.key], label: b.title, sub: b.short }));
   return (
     <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
       <FlameHero />

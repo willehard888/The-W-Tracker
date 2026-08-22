@@ -84,7 +84,7 @@ const ExerciseDetail = ({ ex, onBack }: { ex: ExerciseEntry; onBack: () => void 
         </p>
       )}
 
-      <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mt-5 mb-2">How to perform</p>
+      <p className="eyebrow text-gold/85 mt-5 mb-2">How to perform</p>
       <ol className="space-y-2.5">
         {ex.instructions.map((step, i) => (
           <li key={i} className="flex gap-2.5 text-[13px] text-foreground/85 leading-snug">

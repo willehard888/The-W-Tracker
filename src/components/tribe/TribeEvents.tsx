@@ -1,3 +1,4 @@
+import EmptyState from "@/components/ui/empty-state";
 import { useMemo, useState } from "react";
 import { Calendar, MapPin, Users, Plus, X, Trash2, Check, Clock, Flame, Video, Layers, ChevronDown } from "lucide-react";
 import { Portal } from "@/components/ui/Portal";
@@ -101,13 +102,11 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
       {isLoading ? (
         <div className="h-20 rounded-2xl bg-card/40 border border-border/50 animate-pulse" />
       ) : (events?.length ?? 0) === 0 ? (
-        <div className="surface-card p-5 text-center">
-          <Calendar size={24} className="text-gold/60 mx-auto mb-2" />
-          <p className="text-[13px] font-bold text-foreground">No meetups yet</p>
-          <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
-            {isMember ? "Host the first one — a run, a lift, a session. Your tribe shows up." : "Join the tribe to host and join meetups."}
-          </p>
-        </div>
+        <EmptyState
+          icon={Calendar}
+          title="No meetups yet"
+          description={isMember ? "Host the first one — a run, a lift, a session. Your tribe shows up." : "Join the tribe to host and join meetups."}
+        />
       ) : (
         <div className="space-y-3">
           {items.map((it, i) =>
@@ -187,27 +186,27 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
         {isNext && (
           <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 rounded-full bg-[hsl(var(--ember))]/15 border border-[hsl(var(--ember))]/35">
             <Flame size={9} className="text-[hsl(var(--ember))]" fill="currentColor" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-[hsl(var(--ember))]">Next up</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--ember))]">Next up</span>
           </div>
         )}
         <div className="flex items-start gap-3">
           <div className="shrink-0 w-14 rounded-xl bg-gradient-to-b from-gold/20 to-gold/[0.04] border border-gold/30 flex flex-col items-center justify-center py-2 shadow-[0_4px_14px_-8px_hsl(var(--gold)/0.6)]">
-            <span className="text-[9px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "EEE")}</span>
+            <span className="text-[10px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "EEE")}</span>
             <span className="font-display font-black text-2xl leading-none text-gold tabular-nums my-0.5">{format(start, "d")}</span>
-            <span className="text-[9px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "MMM")}</span>
+            <span className="text-[10px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "MMM")}</span>
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               {ev.activity && (() => {
                 const ActIcon = activityIcon(ev.activity);
                 return (
-                  <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded px-1.5 py-0.5">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded px-1.5 py-0.5">
                     <ActIcon size={9} strokeWidth={2.6} /> {ev.activity}
                   </span>
                 );
               })()}
               {rel && (
-                <span className="text-[9px] font-black uppercase tracking-wider text-[hsl(var(--ember))] bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/25 rounded px-1.5 py-0.5">{rel}</span>
+                <span className="text-[10px] font-black uppercase tracking-wider text-[hsl(var(--ember))] bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/25 rounded px-1.5 py-0.5">{rel}</span>
               )}
             </div>
             <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{ev.title}</p>
@@ -286,11 +285,11 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-gold bg-gold/12 border border-gold/30 rounded px-1.5 py-0.5">
+              <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-gold bg-gold/12 border border-gold/30 rounded px-1.5 py-0.5">
                 <ActIcon size={9} strokeWidth={2.6} /> {series.sessions.length}-part series
               </span>
               {series.activity && (
-                <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">{series.activity}</span>
+                <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{series.activity}</span>
               )}
             </div>
             <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{series.title}</p>
@@ -458,7 +457,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
           <div className="space-y-2">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="text-[9px] font-black tracking-widest uppercase text-muted-foreground/55 mb-1">{group.label}</p>
+                <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground/55 mb-1">{group.label}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {group.items.map(({ name, icon: Icon }) => (
                     <button key={name} onClick={() => pickActivity(name)}

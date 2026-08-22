@@ -131,7 +131,7 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <span className="text-xl shrink-0">{pillarMeta.emoji}</span>
           <div className="text-left min-w-0 flex-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/85 mb-0.5">
+            <p className="eyebrow/85 mb-0.5">
               Weakest pillar
             </p>
             <p className={cn("text-[13px] font-bold leading-tight", pillarMeta.tint.text)}>
@@ -164,7 +164,7 @@ const SignalTile = ({
   )}>
     <div className="flex items-center gap-1 mb-0.5">
       <Icon size={10} className={good ? "text-gold" : "text-muted-foreground"} />
-      <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+      <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
         {label}
       </span>
     </div>

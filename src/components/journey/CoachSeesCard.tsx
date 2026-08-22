@@ -13,10 +13,10 @@ const CoachSeesCard = ({ snapshot }: { snapshot: WhealthSnapshot }) => {
     <div className="surface-card p-4">
       <div className="flex items-center gap-2 mb-3">
         <Sparkles size={13} className="text-gold" />
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70">
+        <p className="eyebrow text-foreground/70">
           What your coach sees
         </p>
-        <span className="ml-auto text-[9px] font-bold text-muted-foreground/60 tabular-nums">
+        <span className="ml-auto text-[10px] font-bold text-muted-foreground/60 tabular-nums">
           {snapshot.snapshotDate}
         </span>
       </div>

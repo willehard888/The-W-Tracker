@@ -88,7 +88,7 @@ const CommentThread = memo(function CommentThread({
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] font-bold text-gold">@{username}</span>
               {isEdited(node) && !isEditing && (
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-gold/70 italic">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-gold/70 italic">
                   · edited
                 </span>
               )}
@@ -135,7 +135,7 @@ const CommentThread = memo(function CommentThread({
           </div>
           {!isEditing && (
             <div className="flex items-center gap-2 mt-0.5 ml-3 flex-wrap">
-              <p className="text-[9px] text-muted-foreground/50">
+              <p className="text-[10px] text-muted-foreground/50">
                 {formatDistanceToNow(new Date(node.created_at), { addSuffix: true })}
               </p>
               {currentUserId && (
@@ -145,7 +145,7 @@ const CommentThread = memo(function CommentThread({
                     hapticSelection();
                     onReply(node.id, username, node.content || "");
                   }}
-                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
+                  className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
                 >
                   <Reply size={10} />
                   Reply
@@ -160,7 +160,7 @@ const CommentThread = memo(function CommentThread({
                       setDraft(node.content || "");
                       setEditingId(node.id);
                     }}
-                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
+                    className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-gold transition-colors"
                   >
                     Edit
                   </button>
@@ -172,14 +172,14 @@ const CommentThread = memo(function CommentThread({
                         onDelete(node.id);
                       }
                     }}
-                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-destructive transition-colors"
+                    className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-destructive transition-colors"
                   >
                     Delete
                   </button>
                 </>
               )}
               {node.children.length > 0 && (
-                <span className="text-[9px] text-muted-foreground/40 tabular-nums">
+                <span className="text-[10px] text-muted-foreground/40 tabular-nums">
                   · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
                 </span>
               )}

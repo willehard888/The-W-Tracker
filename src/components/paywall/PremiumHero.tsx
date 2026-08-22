@@ -229,7 +229,7 @@ const PremiumHero = ({
               Yearly
               <span
                 className={cn(
-                  "px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-wider",
+                  "px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wider",
                   isYearly
                     ? "bg-background/25 text-background"
                     : "bg-gold/15 text-gold border border-gold/30",

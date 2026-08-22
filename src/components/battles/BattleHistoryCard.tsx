@@ -29,7 +29,7 @@ const BattleHistoryCard = ({ battle, opponentName, typeInfo, currentUserId, isAd
         <p className="font-semibold text-sm flex items-center gap-1.5">
           vs @{opponentName}
           {won && battle.winner_verified === true && (
-            <span title="HealthKit-verified win" className="inline-flex items-center gap-0.5 text-[9px] font-black uppercase tracking-wider text-[hsl(var(--xp-green))]">
+            <span title="HealthKit-verified win" className="inline-flex items-center gap-0.5 text-[10px] font-black uppercase tracking-wider text-[hsl(var(--xp-green))]">
               <ShieldCheck size={11} /> Verified
             </span>
           )}

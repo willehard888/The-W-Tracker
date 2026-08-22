@@ -55,7 +55,7 @@ const MoodSnapshot = ({ onCaptured, onSkip }: Props) => {
   return (
     <div className="px-4 pt-4 pb-3 mx-3 mb-3 rounded-2xl border border-gold/30 bg-card/60 backdrop-blur-sm">
       <div className="flex items-baseline justify-between mb-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">
+        <p className="eyebrow text-gold">
           10-second check-in
         </p>
         <button

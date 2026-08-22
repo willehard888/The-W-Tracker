@@ -79,7 +79,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
         <div className="surface-card p-4">
           <div className="flex items-center gap-2 mb-2.5">
             <Layers size={12} className="text-gold" />
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70">Meal prep — cook in batch</p>
+            <p className="eyebrow text-foreground/70">Meal prep — cook in batch</p>
           </div>
           <div className="flex gap-1.5">
             {BATCH_OPTIONS.map((b) => (
@@ -109,7 +109,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
           <div className="surface-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <Leaf size={13} className="text-gold" />
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70">Shopping list</p>
+              <p className="eyebrow text-foreground/70">Shopping list</p>
               <span className="ml-auto text-[11px] font-black text-gold tabular-nums">{batch}×</span>
             </div>
             <div className="space-y-3">
@@ -138,13 +138,13 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
 
         {/* Storage / reheat — same calm palette (no competing accent colour) */}
         <div className="surface-card p-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70 mb-3">Storage & reheat</p>
+          <p className="eyebrow text-foreground/70 mb-3">Storage & reheat</p>
           <div className="flex gap-2 mb-3">
             <div className="flex-1 rounded-lg bg-secondary/30 border border-border/50 p-2.5 flex items-center gap-2">
               <Refrigerator size={15} className="text-gold/80 shrink-0" />
               <div>
                 <p className="text-[14px] font-black tabular-nums leading-none">{recipe.mealPrep.fridgeDays}d</p>
-                <p className="text-[9px] uppercase tracking-wider text-muted-foreground mt-0.5">Fridge</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Fridge</p>
               </div>
             </div>
             {recipe.mealPrep.freezerWeeks != null && (
@@ -152,7 +152,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
                 <Snowflake size={15} className="text-gold/80 shrink-0" />
                 <div>
                   <p className="text-[14px] font-black tabular-nums leading-none">{recipe.mealPrep.freezerWeeks}wk</p>
-                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground mt-0.5">Freezer</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Freezer</p>
                 </div>
               </div>
             )}
@@ -210,7 +210,7 @@ const Recipes = () => {
           return (
             <div key={sec.key}>
               <div className="flex items-baseline gap-2 mb-2.5 px-1">
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80">{sec.label}</p>
+                <p className="eyebrow text-gold/80">{sec.label}</p>
                 <span className="text-[10px] font-bold text-muted-foreground/50 tabular-nums">{items.length}</span>
               </div>
               <div className="space-y-3">

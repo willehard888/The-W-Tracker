@@ -160,7 +160,7 @@ const UserProfile = () => {
       } else if (action === "accept" && friendship) {
         const { error } = await supabase.from("friendships").update({ status: "accepted" as any, updated_at: new Date().toISOString() }).eq("id", friendship.id);
         if (error) throw error;
-        toast.success("Friend request accepted! 🎉");
+        toast.success("Friend request accepted");
       } else if (action === "decline" && friendship) {
         const { error } = await supabase.from("friendships").update({ status: "declined" as any, updated_at: new Date().toISOString() }).eq("id", friendship.id);
         if (error) throw error;
@@ -378,7 +378,7 @@ const UserProfile = () => {
                   p_duration_days: duration,
                 });
                 if (error) throw error;
-                toast.success(`Challenge sent to @${profile.username}! ⚔️`);
+                toast.success(`Challenge sent to @${profile.username}`);
                 setShowBattleModal(false);
               } catch (e: any) {
                 const key = e?.message?.match(/not_friends|self_battle|battle_exists|unauthorized/)?.[0];

@@ -108,7 +108,6 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-bold truncate">@{f.username}</p>
                   <p className="text-[10px] text-muted-foreground flex items-center gap-2">
-                    <span>Lv {f.level ?? 1}</span>
                     {(f.streak ?? 0) > 0 && (
                       <span className="inline-flex items-center gap-0.5 text-[hsl(var(--streak-orange))]">
                         <Flame size={9} /> {f.streak}

@@ -47,7 +47,7 @@ export default function PushPrimingSheet({ open, onEnable, onDismiss }: PushPrim
         </div>
 
         <h2 className="text-center font-display text-2xl font-black tracking-tight">
-          Never break the chain
+          Never break the streak
         </h2>
         <p className="mx-auto mt-2 mb-5 max-w-[300px] text-center text-sm text-muted-foreground">
           Turn on reminders so a busy day never costs you your streak. You stay in control — only what matters.

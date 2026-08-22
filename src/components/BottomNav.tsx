@@ -1,16 +1,17 @@
-import { Home, Trophy, User, Users } from "lucide-react";
+import { Home, Trophy, User, Users, Sparkles } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { memo, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 
-// Four focused tabs: show up (Today) → belong (Squad: feed/tribes/friends) →
-// see where you stand (Ranks) → identity (Profile). Coach (the brain) is
-// reached from the Today coach card; Battles/Messages live inside
-// Ranks/Squad — no orphan routes, no crowded nav.
+// Five tabs, one job each: show up (Today) → get guided (Coach: plan, chat,
+// library) → belong (Squad: feed/tribes/friends) → see where you stand
+// (Ranks) → identity (Profile). Battles live inside Ranks, Messages inside
+// Squad — no orphan routes.
 const tabs = [
   { icon: Home, label: "Today", path: "/", color: "gold" },
+  { icon: Sparkles, label: "Coach", path: "/coach", color: "gold" },
   { icon: Users, label: "Squad", path: "/squad", color: "apex" },
   { icon: Trophy, label: "Ranks", path: "/leaderboard", color: "gold" },
   { icon: User, label: "Profile", path: "/profile", color: "gold" },
@@ -34,10 +35,13 @@ const HIDDEN_PATHS = new Set(["/landing", "/auth", "/onboarding", "/paywall", "/
 // with exact matching, /checkin, /feed, /battles etc. lit no tab at all.
 const PARENT_TAB: Array<{ prefix: string; tab: string }> = [
   { prefix: "/checkin", tab: "/" },
-  { prefix: "/coach", tab: "/" },
-  { prefix: "/recipes", tab: "/" },
-  { prefix: "/exercises", tab: "/" },
-  { prefix: "/vault", tab: "/" },
+  { prefix: "/coach", tab: "/coach" },
+  { prefix: "/briefing", tab: "/coach" },
+  { prefix: "/recipes", tab: "/coach" },
+  { prefix: "/exercises", tab: "/coach" },
+  { prefix: "/vault", tab: "/coach" },
+  { prefix: "/badges", tab: "/profile" },
+  { prefix: "/referrals", tab: "/profile" },
   { prefix: "/feed", tab: "/squad" },
   { prefix: "/tribes", tab: "/squad" },
   { prefix: "/tribe", tab: "/squad" },
@@ -62,7 +66,6 @@ const PREFETCH: Record<string, () => Promise<unknown>> = {
   "/leaderboard": () => import("@/pages/Leaderboard"),
   "/profile": () => import("@/pages/Profile"),
 };
-// Note: /coach kept in prefetch — it's reached from the Today coach card.
 const prefetched = new Set<string>();
 const prefetchRoute = (path: string) => {
   if (prefetched.has(path)) return;
@@ -153,7 +156,7 @@ const BottomNav = () => {
               onPointerEnter={() => prefetchRoute(path)}
               onFocus={() => prefetchRoute(path)}
               className={cn(
-                "group relative flex flex-col items-center justify-center gap-0.5 px-1.5 py-1.5 rounded-xl",
+                "group relative flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 rounded-xl min-w-[56px]",
                 "transition-[transform,color,opacity] duration-150 will-change-transform",
                 "[transition-timing-function:cubic-bezier(0.16,1.2,0.32,1)]",
                 "active:scale-[0.92]",

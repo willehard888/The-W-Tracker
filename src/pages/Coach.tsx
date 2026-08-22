@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Send, ArrowLeft, X, BookOpen, RotateCw, Plus, Sparkles, MoreVertical, User, Brain } from "lucide-react";
+import { Send, X, BookOpen, RotateCw, Plus, Sparkles, MoreVertical, User, Brain } from "lucide-react";
 import { matchFaq, COACH_FAQ, FaqEntry } from "@/lib/coach-faq";
 import FaqBrowser from "@/components/coach/FaqBrowser";
 import ReactMarkdown from "react-markdown";
@@ -23,6 +23,7 @@ import ProgramCard from "@/components/coach/v2/ProgramCard";
 import CoachBriefHero from "@/components/coach/v2/CoachBriefHero";
 import CoachFooterLinks from "@/components/coach/v2/CoachFooterLinks";
 import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
+import LibraryHub from "@/components/home/LibraryHub";
 
 type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";
@@ -85,7 +86,7 @@ const Coach = () => {
     if (typeof console !== "undefined") console.error("W Coach failed to load:", err);
     return (
       <div className="flex flex-col h-full">
-        <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
+        <CoachHeader navigate={navigate} />
         <div className="flex-1 flex items-center justify-center px-6 text-center">
           <div className="max-w-sm space-y-4">
             <div className="text-3xl" aria-hidden>⚠️</div>
@@ -109,7 +110,7 @@ const Coach = () => {
   if (!athlete?.onboarded && !onboardSkipped && !hasSeed) {
     return (
       <div className="flex flex-col h-full">
-        <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
+        <CoachHeader navigate={navigate} />
         <div className="w-full flex justify-end px-6 pt-2">
           <button
             onClick={skipOnboarding}
@@ -145,13 +146,12 @@ const Coach = () => {
 // match every other W destination is half the fix. Trainer-profile + memory
 // links live one tap deeper inside a small dropdown menu rather than fighting
 // for header real-estate alongside the back arrow.
-const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }) => {
+// Coach is a root tab now — no back arrow (the tab bar is the way out).
+const CoachHeader = ({ navigate }: { navigate: any }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <div className="shrink-0 px-4 pt-3 pb-2 flex items-center justify-between border-b border-border/30 relative">
-      <Button variant="ghost" size="icon-sm" onClick={onBack} aria-label="Back">
-        <ArrowLeft size={18} />
-      </Button>
+      <span className="h-8 w-8" aria-hidden />
       <h1 className="font-display text-base font-black tracking-tight">W Coach</h1>
       <Button
         variant="ghost"
@@ -175,7 +175,7 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
               className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 active:scale-[0.98] transition"
             >
               <User size={14} className="text-gold" />
-              <span>Trainer profile</span>
+              <span>Athlete profile</span>
             </button>
             <button
               type="button"
@@ -222,7 +222,7 @@ const CoachShell = ({ session, program, navigate }: any) => {
 
   return (
     <div className="flex flex-col h-full relative">
-      <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
+      <CoachHeader navigate={navigate} />
 
       <div className="flex-1 overflow-y-auto px-4 pt-3 pb-8 space-y-3">
         {/* The AI leads — proactive daily brief, the centre of the experience. */}
@@ -232,6 +232,9 @@ const CoachShell = ({ session, program, navigate }: any) => {
         <TodaysPlanCard />
         <StateCard onAsk={(q) => openChat(q)} />
         <ProgramCard />
+        {/* The Library (recipes, exercises, Vault) — content belongs with the
+            coach, not on Today. */}
+        <LibraryHub />
         <HealthKitConnectCard />
         <CoachFooterLinks />
       </div>
@@ -691,7 +694,7 @@ const ChatSheet = ({
               </div>
               {m.isFaq && m.role === "assistant" && (
                 <p className="mt-1 ml-1 text-[10px] text-muted-foreground/70">
-                  From Coach Playbook · Ask a follow-up for more
+                  From Coach FAQ · Ask a follow-up for more
                 </p>
               )}
               {m.role === "assistant" && !m.failed && !m.isFaq && !streaming && i === messages.length - 1 && m.content.length > 60 && (

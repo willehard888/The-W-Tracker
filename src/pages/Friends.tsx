@@ -13,6 +13,7 @@ import {
 } from "@/hooks/use-friends";
 import { useSuggestedFriends } from "@/hooks/use-suggested-friends";
 import { Button } from "@/components/ui/button";
+import { formatTier } from "@/lib/status-tiers";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
@@ -125,7 +126,7 @@ const Friends = () => {
                       </button>
                       <button onClick={() => navigate(`/user/${r.user_id}`)} className="flex-1 min-w-0 text-left">
                         <p className="text-[13px] font-bold truncate">@{r.username}</p>
-                        <p className="text-[10px] text-muted-foreground">Lv {r.level ?? 1}</p>
+                        <p className="text-[10px] text-muted-foreground">{formatTier(r.status_tier || "recruit")}</p>
                       </button>
                       {isFriend ? (
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold text-gold px-2"><UserCheck size={13} /> Friends</span>
@@ -168,7 +169,7 @@ const Friends = () => {
                     <button onClick={() => navigate(`/user/${s.user_id}`)} className="flex-1 min-w-0 text-left">
                       <p className="text-[13px] font-bold truncate">@{s.username}</p>
                       <p className="text-[10px] text-muted-foreground">
-                        {s.mutual_tribes} shared tribe{s.mutual_tribes === 1 ? "" : "s"} · Lv {s.level ?? 1}
+                        {s.mutual_tribes} shared tribe{s.mutual_tribes === 1 ? "" : "s"}
                       </p>
                     </button>
                     {incomingFid ? (
@@ -252,7 +253,6 @@ const Friends = () => {
                   <button onClick={() => navigate(`/user/${f.user_id}`)} className="flex-1 min-w-0 text-left">
                     <p className="text-[13px] font-bold truncate">@{f.username}</p>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-2">
-                      <span>Lv {f.level ?? 1}</span>
                       {(f.streak ?? 0) > 0 && (
                         <span className="inline-flex items-center gap-0.5 text-[hsl(var(--streak-orange))]">
                           <Flame size={9} /> {f.streak}

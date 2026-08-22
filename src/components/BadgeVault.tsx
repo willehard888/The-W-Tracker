@@ -160,7 +160,7 @@ const BadgeVault = ({
       <div className="flex items-end justify-between mb-3">
         <div>
           <h2 className="font-display font-black text-base tracking-tight flex items-center gap-1.5">
-            Badge Vault
+            Badges
             <Sparkles size={12} className="text-gold" />
           </h2>
           <p className="text-[11px] text-muted-foreground tabular-nums">

@@ -240,7 +240,7 @@ const Battles = () => {
       toast.error(error.code === "23505" ? "You already voted in this battle" : "Failed to vote");
       return;
     }
-    toast.success("Vote cast! 🗳️");
+    toast.success("Vote cast");
     queryClient.invalidateQueries({ queryKey: ["my-battle-votes"] });
     queryClient.invalidateQueries({ queryKey: ["vote-counts"] });
   };
@@ -317,7 +317,7 @@ const Battles = () => {
       });
       if (rpcErr) throw rpcErr;
 
-      toast.success("Proof uploaded! 📸");
+      toast.success("Proof uploaded");
       queryClient.invalidateQueries({ queryKey: ["battles"] });
     } catch (err) {
       console.error(err);

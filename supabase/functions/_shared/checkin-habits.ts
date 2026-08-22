@@ -16,6 +16,10 @@ export interface SharedCheckinHabit {
   pillar: "sleep" | "movement" | "nutrition" | "mind" | "recovery" | "connection";
   /** Legacy daily_checkins column holding this habit (absent → habits jsonb). */
   column?: string;
+  /** "bonus" = an occasional extra, NEVER expected daily. The coach praises
+   *  it when done and must never frame it as a gap or "falling behind"
+   *  (founder: a second training session is a nice add-on, not a duty). */
+  cadence?: "bonus";
 }
 
 export const CORE_KEYS = ["sleep", "workout", "hydration", "meditation"];
@@ -26,7 +30,7 @@ export const SHARED_CHECKIN_HABITS: SharedCheckinHabit[] = [
   { key: "hydration", label: "3L+ water", pillar: "nutrition" },
   { key: "meditation", label: "Meditation", pillar: "mind", column: "meditation_morning" },
   { key: "steps_8k", label: "8,000+ steps", pillar: "movement" },
-  { key: "extra_workout", label: "Second session", pillar: "movement", column: "extra_workout" },
+  { key: "extra_workout", label: "Second session", pillar: "movement", column: "extra_workout", cadence: "bonus" },
   { key: "zone2", label: "Zone-2 cardio", pillar: "movement" },
   { key: "mobility", label: "Mobility / stretch", pillar: "movement" },
   { key: "sunlight", label: "Morning sunlight", pillar: "movement" },
@@ -44,13 +48,16 @@ export const SHARED_CHECKIN_HABITS: SharedCheckinHabit[] = [
   { key: "journaling", label: "Journal", pillar: "mind" },
   { key: "gratitude", label: "Gratitude", pillar: "mind" },
   { key: "cold_shower", label: "Cold exposure", pillar: "recovery", column: "cold_shower" },
-  { key: "sauna", label: "Sauna / heat", pillar: "recovery" },
+  { key: "sauna", label: "Sauna / heat", pillar: "recovery", cadence: "bonus" },
   { key: "early_bed", label: "In bed on time", pillar: "recovery" },
   { key: "connection", label: "Real connection", pillar: "connection" },
 ];
 
 export const SHARED_HABIT_BY_KEY: Record<string, SharedCheckinHabit> =
   Object.fromEntries(SHARED_CHECKIN_HABITS.map((h) => [h.key, h]));
+
+export const isBonusHabit = (key: string): boolean =>
+  SHARED_HABIT_BY_KEY[key]?.cadence === "bonus";
 
 /** Mirrors DEFAULT_CHECKIN_KEYS on the client (users who never customized). */
 export const DEFAULT_CHECKIN_KEYS = [

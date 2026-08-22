@@ -7,7 +7,7 @@
 // authored "why". Fast/cheap model; the client falls back to the template on
 // any failure, so this can never break the celebration screen.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { SHARED_HABIT_BY_KEY } from "../_shared/checkin-habits.ts";
+import { SHARED_HABIT_BY_KEY, isBonusHabit } from "../_shared/checkin-habits.ts";
 import { gatherHabitGaps } from "../_shared/habit-gaps.ts";
 
 const corsHeaders = {
@@ -85,13 +85,19 @@ Deno.serve(async (req) => {
     // TODAY's per-habit result, sent by the client (the submit-time prefetch
     // fires BEFORE record_checkin lands, so today's row isn't in the DB yet).
     // Whitelisted against the catalog — client strings never reach the prompt.
-    const keysToLabels = (v: unknown): string[] =>
+    const validKeys = (v: unknown): string[] =>
       (Array.isArray(v) ? v : [])
         .slice(0, 30)
-        .map((k) => SHARED_HABIT_BY_KEY[String(k)]?.label)
-        .filter((l): l is string => !!l);
-    const doneToday = keysToLabels(body?.done_keys);
-    const missedToday = keysToLabels(body?.missed_keys);
+        .map((k) => String(k))
+        .filter((k) => !!SHARED_HABIT_BY_KEY[k]);
+    const label = (k: string) => SHARED_HABIT_BY_KEY[k].label;
+    const doneKeys = validKeys(body?.done_keys);
+    const missedKeys = validKeys(body?.missed_keys);
+    // Bonus habits (second session, sauna…) are optional extras: a skipped
+    // one is NOT a miss, a done one is worth a nod.
+    const doneToday = doneKeys.filter((k) => !isBonusHabit(k)).map(label);
+    const missedToday = missedKeys.filter((k) => !isBonusHabit(k)).map(label);
+    const bonusDone = doneKeys.filter(isBonusHabit).map(label);
 
     // Athlete context + habit history in parallel. The gaps read excludes
     // nothing explicitly, but at prefetch time today's row simply isn't
@@ -120,6 +126,7 @@ Deno.serve(async (req) => {
       tasksTotal > 0 ? `Habits completed: ${tasksDone}/${tasksTotal}` : null,
       doneToday.length ? `DONE today: ${doneToday.join(", ")}` : null,
       missedToday.length ? `MISSED today: ${missedToday.join(", ")}` : null,
+      bonusDone.length ? `BONUS extras done today (optional — worth a nod): ${bonusDone.join(", ")}` : null,
       neglected.length ? `Habitually neglected (last ${gaps!.checkinDays} logged days): ${neglected.join(", ")}` : null,
       gaps?.unchosen?.length ? `Not in their habit set yet: ${gaps.unchosen.slice(0, 3).join(", ")}` : null,
       `Current streak: ${streak} days`,
@@ -145,6 +152,7 @@ Rules:
 - React to TODAY's actual facts (pick the single most meaningful one — don't list them).
 - NEVER advise improving anything in the DONE list — it's already handled today; that reads as not paying attention.
 - If suggesting improvement, aim at a MISSED or habitually neglected habit (pick ONE). If nothing was missed, spark curiosity about ONE habit not in their set yet.
+- Bonus extras (second session, sauna) are optional: celebrate if done, NEVER frame them as a gap, "falling behind", or something to fix.
 - If a WHY is provided you MAY tie the day to it — only when it lands naturally, never as a canned tagline.
 - ${lang ? `Reply in this language: ${lang}.` : "Reply in the user's likely language (default English)."}
 - No greetings. Never mention being an AI.`,

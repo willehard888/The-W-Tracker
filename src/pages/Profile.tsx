@@ -1,14 +1,17 @@
 
-import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, Gauge, ChevronRight, Pencil, Brain, UserRound, FileText } from "lucide-react";
+import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, CalendarCheck, Gauge, ChevronRight, Pencil, Brain, UserRound, FileText } from "lucide-react";
 import { isNativePlatform } from "@/lib/platform";
+import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
 import ProgressionSummaryCard from "@/components/profile/ProgressionSummaryCard";
 import RecoveryCard from "@/components/profile/RecoveryCard";
+import JourneyCard from "@/components/profile/JourneyCard";
 import ProfileHero from "@/components/profile/ProfileHero";
 import AppImage from "@/components/ui/app-image";
 import { downscaleImage } from "@/lib/downscale-image";
 import { withNetworkRetry, isTransientNetworkError } from "@/lib/retry";
 import { hapticSelection } from "@/lib/haptics";
 import BadgeVault from "@/components/BadgeVault";
+import RankPressureCard from "@/components/RankPressureCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -17,20 +20,26 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useRef, useMemo, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import StoryShareModal from "@/components/StoryShareModal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow, format } from "date-fns";
+import { formatDistanceToNow, subDays, format } from "date-fns";
 import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
 import { getTierConfig } from "@/lib/status-tiers";
+import RoadToElite from "@/components/RoadToElite";
+import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
+import TierLadder from "@/components/TierLadder";
+import YourBlueprintCard from "@/components/coach/YourBlueprintCard";
+import CoachLine from "@/components/coach/CoachLine";
+import { useCoachObservation } from "@/hooks/use-coach-observation";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useModeration } from "@/hooks/use-moderation";
 import { useWhealthSnapshots } from "@/hooks/use-whealth-snapshots";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import LiveRivals from "@/components/LiveRivals";
 import { useMyRank } from "@/hooks/use-my-rank";
-import StandingCard from "@/components/status/StandingCard";
-import { useStatusExplainer } from "@/components/status/StatusExplainerProvider";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 // Pull-to-refresh removed temporarily — touch handlers on the page wrapper
 // were intercepting inner taps (e.g., logout button, share, badges). Will
@@ -40,18 +49,6 @@ const Profile = () => {
   const { profile, signOut, isElite, isApexSubscriber } = useAuth();
   const isAdmin = useIsAdmin(profile?.user_id);
   const navigate = useNavigate();
-  const explainer = useStatusExplainer();
-  // /profile?tier=<key> (next-tier chips, pushes) used to open the inline
-  // TierLadder dialog — the ladder now lives in the status explainer sheet.
-  const [searchParams, setSearchParams] = useSearchParams();
-  useEffect(() => {
-    if (!searchParams.get("tier")) return;
-    const next = new URLSearchParams(searchParams);
-    next.delete("tier");
-    setSearchParams(next, { replace: true });
-    explainer?.open();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
   const queryClient = useQueryClient();
   const moderation = useModeration();
   const [previewBadge, setPreviewBadge] = useState<any>(null);
@@ -265,6 +262,37 @@ const Profile = () => {
     enabled: !!profile,
   });
 
+  const { data: weeklySleep } = useQuery({
+    queryKey: ["weekly-sleep", profile?.user_id],
+    staleTime: 10 * 60_000,  // sleep data changes only at daily check-in
+    gcTime:    30 * 60_000,
+    queryFn: async () => {
+      if (!profile) return null;
+      const sevenDaysAgo = subDays(new Date(), 7).toISOString();
+      const { data } = await supabase
+        .from("daily_checkins")
+        .select("sleep_hours")
+        .eq("user_id", profile.user_id)
+        .gte("checked_in_at", sevenDaysAgo);
+      if (!data || data.length === 0) return null;
+      const hours = data.map((d) => Number(d.sleep_hours));
+      const avg = hours.reduce((s, h) => s + h, 0) / hours.length;
+      const oversleepCount = hours.filter((h) => h >= 10).length;
+      const isChronicOversleep = oversleepCount >= 3;
+
+      // Match per-checkin tiers using weekly avg
+      let multiplier: number;
+      if (avg >= 7.5 && avg <= 9) multiplier = 1.0;
+      else if (avg >= 10) multiplier = isChronicOversleep ? 0.6 : 0.95;
+      else if (avg >= 7) multiplier = 0.85; // 7–7.4h avg = sub-optimal
+      else if (avg >= 6) multiplier = 0.7;
+      else if (avg >= 5) multiplier = 0.55;
+      else multiplier = 0.4;
+
+      return { avg: Math.round(avg * 10) / 10, days: data.length, multiplier, isChronicOversleep, oversleepCount };
+    },
+    enabled: !!profile,
+  });
 
   // Lifetime check-in count — the "days you showed up" number.
   const { data: checkinTotal } = useQuery({
@@ -480,7 +508,6 @@ const Profile = () => {
         verified={!!verifiedStats?.is_verified_performer}
         onShare={handleShareProfile}
         onEditName={() => { setNameDraft(profile?.display_name ?? ""); setNameDialogOpen(true); }}
-        checkinTotal={checkinTotal ?? undefined}
       />
 
       {/* Tabs — the app-wide segmented control language */}
@@ -504,22 +531,10 @@ const Profile = () => {
       <div className="space-y-3">
 
       {/* Hard numbers first — the lifetime scoreboard */}
-      {/* Standing — ONE card for "where do I stand" (replaces RankPressureCard,
-          LiveRivals, RoadToElite and the inline TierLadder — four cards about
-          climbing). Tier · #N of M · Top % · Consistency · what's next. */}
-      <div className="animate-reveal animate-reveal-delay-1">
-        <StandingCard
-          tier={tier}
-          rankData={rankData}
-          consistency={Number((profile as any).rank_score) || null}
-          onHowItWorks={() => explainer?.open()}
-          onOpenLadder={() => explainer?.open()}
-        />
-      </div>
-
       <div className="grid grid-cols-2 gap-2 animate-reveal animate-reveal-delay-1">
         {[
-          // Check-ins + best streak live in the hero tri-stat now — no duplicates.
+          { icon: CalendarCheck, label: "Check-ins", value: checkinTotal ?? 0, accent: "text-gold" },
+          { icon: Flame, label: "Best streak", value: `${profile.longest_streak ?? 0}d`, accent: "text-[hsl(var(--ember))]" },
           { icon: Award, label: "Battles won", value: battleStats?.won || 0, accent: "text-rose-400" },
           { icon: Trophy, label: "Kudos received", value: kudosReceived || 0, accent: "text-gold" },
         ].map((s) => (
@@ -567,17 +582,77 @@ const Profile = () => {
         );
       })()}
 
+      {/* Rank Position */}
+      {rankData && (
+        <div className="animate-reveal animate-reveal-delay-1">
+          <RankPressureCard
+            tier={tier}
+            rank={rankData.rank}
+            totalUsers={rankData.totalUsers}
+            percentile={rankData.percentile}
+            hasRank={rankData.hasRank}
+            rankScore={(profile as any).rank_score}
+          />
+        </div>
+      )}
+
+      {/* Live Rivals — who's ahead, who's behind */}
+      <div className="animate-reveal animate-reveal-delay-1">
+        <LiveRivals userId={profile.user_id} myScore={Number((profile as any).rank_score) || 0} />
+      </div>
+
+      {/* Your Journey — the growth mirror: trends + reflection diary */}
+      <div className="animate-reveal animate-reveal-delay-2">
+        <JourneyCard />
+      </div>
+
       {/* Strength progression — PRs + climbing lifts this week */}
       <div className="animate-reveal animate-reveal-delay-2">
         <ProgressionSummaryCard />
       </div>
 
-      {/* Recovery — last night's sleep + heart rate (the weekly sleep card
-          folded in here; two sleep cards four blocks apart was the old state) */}
+      {/* Recovery — last night's sleep + heart rate, causal "why" via coach */}
       <div className="animate-reveal animate-reveal-delay-2">
         <RecoveryCard />
       </div>
 
+      {/* Your Blueprint — Coach's read of who you are. Renders null when
+          the user hasn't completed AthleteProfileOnboarding yet. */}
+      <div className="animate-reveal animate-reveal-delay-2">
+        <ErrorBoundary fallback={<></>}>
+          <YourBlueprintCard />
+        </ErrorBoundary>
+      </div>
+
+      {/* Coach voice: one-line read of the week through Coach's eyes. */}
+      <div className="animate-reveal animate-reveal-delay-2">
+        <ErrorBoundary fallback={<></>}>
+          <ProfileCoachLine />
+        </ErrorBoundary>
+      </div>
+
+      {/* Tier Ladder — full progression map */}
+      <div className="animate-reveal animate-reveal-delay-3">
+        <TierLadder currentTier={profile.status_tier || "recruit"} />
+      </div>
+
+      {/* Road to Elite — earned-status progress (moved here from Settings) */}
+      <div className="animate-reveal animate-reveal-delay-3">
+        <RoadToElite />
+      </div>
+
+      {/* Verified Performer — connect HealthKit to earn unfakeable status.
+          Self-hides on non-iOS / when probing (component handles it). */}
+      <div className="animate-reveal animate-reveal-delay-3">
+        <HealthKitConnectCard />
+      </div>
+
+      {/* Weekly Sleep — recovery context / XP multiplier (moved here from Settings) */}
+      {weeklySleep && (
+        <div className="animate-reveal animate-reveal-delay-3">
+          <WeeklySleepCard data={weeklySleep} />
+        </div>
+      )}
 
       {/* User Posts */}
       {userPosts && userPosts.length > 0 && (
@@ -767,6 +842,12 @@ const Profile = () => {
   );
 };
 
+/** Scoped Coach line on Profile — null when hook is loading or empty. */
+const ProfileCoachLine = () => {
+  const { text, isLoading } = useCoachObservation({ context: "profile" });
+  if (isLoading || !text) return null;
+  return <CoachLine text={text} />;
+};
 
 /** Settings section: eyebrow + surface-card list of rows. */
 const SettingsGroup = ({ title, children }: { title: string; children: React.ReactNode }) => (

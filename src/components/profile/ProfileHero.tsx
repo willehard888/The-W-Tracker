@@ -22,7 +22,6 @@ export interface ProfileHeroProps {
   verified?: boolean;
   onShare: () => void;
   onEditName: () => void;
-  checkinTotal?: number;
 }
 
 /**
@@ -48,7 +47,6 @@ const ProfileHero = ({
   verified,
   onShare,
   onEditName,
-  checkinTotal,
 }: ProfileHeroProps) => {
   const surface = getTierHeroSurface(tier);
 
@@ -85,7 +83,6 @@ const ProfileHero = ({
         featuredBadge={featuredBadge}
         showLock
         nameplateSize="lg"
-        checkinTotal={checkinTotal}
         avatarSlot={
           <div className="relative mb-4">
             <input

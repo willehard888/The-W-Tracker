@@ -24,7 +24,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
         >
           <ChevronLeft size={18} />
         </button>
-        <p className="font-display text-sm font-black tracking-tight">Coach FAQ</p>
+        <p className="font-display text-sm font-black tracking-tight">Coach Playbook</p>
       </div>
 
       <div className="shrink-0 px-3 pt-2 pb-1 flex gap-1.5 overflow-x-auto no-scrollbar">

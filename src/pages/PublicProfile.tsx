@@ -229,7 +229,7 @@ const PublicProfile = () => {
           ) : profile.status_tier === 'elite' ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gold/45 bg-gold/5">
               <Crown size={10} className="text-gold" />
-              <span className="text-[10px] font-black text-gold tracking-wider uppercase">{formatTier('elite')}</span>
+              <span className="text-[10px] font-black text-gold tracking-wider uppercase">{formatTier('elite', (profile as any).tier_division ?? 0)}</span>
             </span>
           ) : null}
           {championHistory && championHistory.wins > 0 && (
@@ -321,7 +321,7 @@ const PublicProfile = () => {
             <EmptyState
               icon={Camera}
               title="No posts yet"
-              description={`When @${profile.username} posts proof to the feed, it'll show here.`}
+              description={`When @${profile.username} drops proof on the Elite Feed, it'll show here.`}
               className="mx-4 my-4"
             />
 

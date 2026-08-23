@@ -129,7 +129,7 @@ const TEMPLATES: Record<ToneId, Record<CoachObservationContext, string[]>> = {
     ],
     "streak-risk": [
       "STREAK ALERT. One quick log saves everything.",
-      "Don't break the streak. 5 minutes. Go.",
+      "Don't break the chain. 5 minutes. Go.",
       "Heat's still there. Log it before the clock kills it.",
     ],
   },

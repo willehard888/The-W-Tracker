@@ -53,20 +53,34 @@ const CoachStrip = (_props: CoachStripProps) => {
   return (
     <button
       onClick={() => navigate("/coach")}
-      className="w-full surface-card p-4 text-left active:scale-[0.99] transition-transform relative overflow-hidden"
+      className="w-full rounded-2xl glass-card-gold p-4 text-left active:scale-[0.99] transition-transform border border-gold/30 relative overflow-hidden"
     >
+      <div
+        className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, hsl(var(--gold) / 0.18) 0%, transparent 70%)",
+        }}
+      />
       <div className="relative flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-gold/12 border border-gold/30 flex items-center justify-center shrink-0">
-          <Sparkles size={18} className="text-gold" />
+        <div className="h-10 w-10 rounded-xl gradient-gold flex items-center justify-center shrink-0 glow-gold">
+          <Sparkles size={18} className="text-primary-foreground" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="eyebrow mb-0.5">W Coach</p>
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <p className="text-[10px] uppercase tracking-widest text-gold/80 font-bold">
+              AI Coach
+            </p>
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold font-bold border border-gold/30">
+              GPT-5
+            </span>
+          </div>
           <p className="font-bold text-sm leading-tight">Ask your coach anything</p>
           <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-2 italic">
             {line}
           </p>
         </div>
-        <ChevronRight size={18} className="text-muted-foreground/60 shrink-0" />
+        <ChevronRight size={18} className="text-gold/60 shrink-0" />
       </div>
     </button>
   );

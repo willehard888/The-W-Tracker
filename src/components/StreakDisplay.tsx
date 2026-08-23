@@ -628,7 +628,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
           >
             {deadline.expired ? (
               <p className="text-xs font-black text-destructive animate-pulse">
-                Streak at risk — one log saves it
+                💀 Streak at risk! Check in NOW
               </p>
             ) : (
               <p className="text-xs text-muted-foreground">

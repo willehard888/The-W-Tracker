@@ -485,7 +485,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
 
       <div className="flex items-center gap-2 mb-1">
         <Sparkles size={14} className="text-gold" />
-        <p className="eyebrow text-gold">Step {step + 1} of {STEPS.length}</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">Step {step + 1} of {STEPS.length}</p>
       </div>
       <h2 className="font-display text-2xl font-black tracking-tight leading-tight">{cur.title}</h2>
       <p className="text-sm text-muted-foreground mt-1 mb-5">{cur.sub}</p>

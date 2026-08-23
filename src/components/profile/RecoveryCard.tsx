@@ -39,7 +39,7 @@ const RecoveryCard = () => {
       >
         <div className="flex items-center gap-2 mb-1">
           <HeartPulse size={13} className="text-[hsl(var(--ember))]" />
-          <p className="eyebrow/80">Recovery</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">Recovery</p>
         </div>
         <p className="text-[12px] text-muted-foreground leading-snug">
           Allow Apple Health (sleep, heart rate) to see last night's recovery and let the coach explain why you slept the way you did.
@@ -110,7 +110,7 @@ const RecoveryCard = () => {
     >
       <div className="flex items-center gap-2 mb-2.5">
         <HeartPulse size={13} className={underRecovered ? "text-[hsl(var(--ember))]" : "text-xp-green"} />
-        <p className="eyebrow/80">Recovery · last night</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">Recovery · last night</p>
         <span className={cn("ml-auto text-[10px] font-black uppercase tracking-wider", underRecovered ? "text-[hsl(var(--ember))]" : "text-xp-green")}>{status}</span>
       </div>
 
@@ -157,7 +157,7 @@ const RecoveryCard = () => {
       {rhrTrend.length >= 5 && (
         <div className="mb-3 surface-card px-3 py-2">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/60">
+            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground/60">
               Resting HR · {rhrTrend.length} nights
             </p>
             {trendDelta != null && Math.abs(trendDelta) >= 1 && (

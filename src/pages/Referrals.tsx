@@ -123,7 +123,7 @@ const Referrals = () => {
 
       {/* Hero invite — code + link + two primary share actions (precision) */}
       <div className="animate-reveal animate-reveal-delay-1 surface-card p-5 mb-4">
-        <p className="eyebrow text-gold/80 mb-1">Your invite</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80 mb-1">Your invite</p>
         <p className="text-[13px] text-muted-foreground leading-snug mb-4">
           Your friends get a <span className="text-foreground font-semibold">14-day free trial</span>. You earn free months, Apex and Legend status.
         </p>
@@ -134,7 +134,7 @@ const Referrals = () => {
           className="w-full rounded-xl border border-gold/30 bg-gold/[0.06] px-4 py-3 mb-2 flex items-center gap-3 active:scale-[0.99] transition-transform"
         >
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/60 mb-0.5">Invite code</p>
+            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-gold/60 mb-0.5">Invite code</p>
             <p className="font-display text-xl font-black text-gold tracking-wide truncate leading-none">{referralCode}</p>
           </div>
           <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold text-gold">
@@ -267,12 +267,12 @@ const Referrals = () => {
         <div className="rounded-xl border border-border bg-card p-3 text-center">
           <Users size={18} className="text-gold mx-auto mb-1" />
           <p className="text-xl font-black font-display text-gold leading-none">{referralCount}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mt-1">Recruited</p>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mt-1">Recruited</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-3 text-center">
           <Trophy size={18} className="text-gold mx-auto mb-1" />
           <p className="text-xl font-black font-display text-gold leading-none">{rewards.filter((r) => r.unlocked).length}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mt-1">Rewards</p>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mt-1">Rewards</p>
         </div>
         <div
           className={cn(
@@ -303,7 +303,7 @@ const Referrals = () => {
           >
             {legendPinned ? "∞" : daysAsApex > 0 ? daysAsApex : `${Math.max(0, 10 - referralCount)}→⚡`}
           </p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mt-1">
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold mt-1">
             {legendPinned ? "Legend Pinned" : daysAsApex > 0 ? "Days as Apex" : "To Apex"}
           </p>
         </div>
@@ -455,7 +455,7 @@ const Referrals = () => {
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {/* Recruit count chip — only for premium so user knows the threshold */}
                       {(isApex || isLegend) && (
-                        <span className="text-[10px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded bg-background/70 text-foreground/90 border border-foreground/15">
+                        <span className="text-[9px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded bg-background/70 text-foreground/90 border border-foreground/15">
                           {r.count} recruits
                         </span>
                       )}
@@ -473,7 +473,7 @@ const Referrals = () => {
                       {!r.unlocked && (isApex || isLegend) && (
                         <span
                           className={cn(
-                            "text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border",
+                            "text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border",
                             isLegend ? "border-[hsl(280_70%_60%/0.5)] bg-[hsl(280_70%_30%/0.4)] text-[hsl(280_75%_85%)]" : "border-[hsl(18_95%_62%/0.5)] bg-[hsl(18_95%_30%/0.4)] text-[hsl(18_95%_80%)]"
                           )}
                         >
@@ -481,7 +481,7 @@ const Referrals = () => {
                         </span>
                       )}
                       {isNext && !r.unlocked && !r.premium && (
-                        <span className="ml-auto text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
+                        <span className="ml-auto text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
                           Next
                         </span>
                       )}

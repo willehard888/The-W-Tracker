@@ -186,7 +186,7 @@ const TribeCollectiveFlame = ({
             </span>
             {!!todayCount && todayCount > 0 && !isCold && (
               <span
-                className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase border"
+                className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase border"
                 style={{
                   color: accent,
                   borderColor: accent.replace(")", " / 0.5)"),
@@ -311,7 +311,7 @@ const TribeCollectiveFlame = ({
               </p>
               {!!todayCount && todayCount > 0 && (
                 <span
-                  className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase border"
+                  className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase border"
                   style={{
                     color: accent,
                     borderColor: accent.replace(")", " / 0.5)"),
@@ -339,7 +339,7 @@ const TribeCollectiveFlame = ({
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               <span
                 className={cn(
-                  "inline-flex items-center px-1.5 py-0.5 rounded-md border text-[10px] font-black tracking-widest uppercase",
+                  "inline-flex items-center px-1.5 py-0.5 rounded-md border text-[9px] font-black tracking-widest uppercase",
                   isCold && "border-border/60 text-muted-foreground",
                   !isCold && !isFirestorm && "border-[hsl(var(--ember))]/40 text-[hsl(var(--ember))] bg-[hsl(var(--ember))]/10",
                   isFirestorm && "border-transparent text-transparent bg-clip-text",
@@ -376,7 +376,7 @@ const TribeCollectiveFlame = ({
       {isCold && (
         <div className="relative mt-4">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] uppercase tracking-widest font-black text-[hsl(20_60%_55%)]">
+            <span className="text-[9px] uppercase tracking-widest font-black text-[hsl(20_60%_55%)]">
               Ignition
             </span>
             <span className="text-[10px] font-bold tabular-nums text-foreground/70">
@@ -413,7 +413,7 @@ const TribeCollectiveFlame = ({
       {!isCold && !atMax && (
         <div className="relative mt-4">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] uppercase tracking-widest font-black text-muted-foreground/80">
+            <span className="text-[9px] uppercase tracking-widest font-black text-muted-foreground/80">
               Next: {collectiveTierName(next)}
             </span>
             <span className="text-[10px] font-bold tabular-nums text-foreground/70">

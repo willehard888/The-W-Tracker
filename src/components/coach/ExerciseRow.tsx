@@ -165,7 +165,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
             <ol className="space-y-1 list-none">
               {ex.instructions.map((step, i) => (
                 <li key={i} className="flex gap-2 text-[11px] text-foreground/80 leading-snug">
-                  <span className="shrink-0 h-4 w-4 rounded-full bg-gold/15 text-gold text-[10px] font-black flex items-center justify-center mt-px">{i + 1}</span>
+                  <span className="shrink-0 h-4 w-4 rounded-full bg-gold/15 text-gold text-[9px] font-black flex items-center justify-center mt-px">{i + 1}</span>
                   <span>{step}</span>
                 </li>
               ))}
@@ -180,7 +180,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           {block.notes && <p className="text-[11px] text-muted-foreground leading-snug">{block.notes}</p>}
           {block.alt && (
             <p className="text-[11px] text-muted-foreground/85">
-              <span className="text-gold/85 font-black uppercase tracking-widest text-[10px] mr-1">Swap</span>{block.alt}
+              <span className="text-gold/85 font-black uppercase tracking-widest text-[9px] mr-1">Swap</span>{block.alt}
             </p>
           )}
 

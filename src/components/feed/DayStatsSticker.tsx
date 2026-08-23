@@ -32,7 +32,7 @@ const DayStatsSticker = ({ stats, className }: { stats: DayStats; className?: st
     >
       <div className="edge-sheen rounded-[15px] bg-black/70 backdrop-blur-xl px-3 py-2">
         {/* Micro wordmark — the brand seal */}
-        <p className="text-[10px] font-bold tracking-[0.22em] text-gold/80 uppercase leading-none">
+        <p className="text-[6.5px] font-bold tracking-[0.22em] text-gold/80 uppercase leading-none">
           Whealth Factory
         </p>
 
@@ -61,7 +61,7 @@ const DayStatsSticker = ({ stats, className }: { stats: DayStats; className?: st
             </span>
           )}
           {stats.verified && (
-            <span className="inline-flex items-center gap-0.5 rounded-md bg-teal/20 border border-teal/40 px-1 py-0.5 text-[10px] font-black uppercase tracking-wider text-teal leading-none">
+            <span className="inline-flex items-center gap-0.5 rounded-md bg-teal/20 border border-teal/40 px-1 py-0.5 text-[8px] font-black uppercase tracking-wider text-teal leading-none">
               <ShieldCheck size={9} strokeWidth={2.8} />
               Verified
             </span>

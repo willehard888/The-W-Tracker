@@ -30,7 +30,7 @@ const CoachGoal = () => {
         <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles size={12} className="text-gold" />
-            <p className="eyebrow text-gold">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">
               Your one big goal
             </p>
           </div>
@@ -48,7 +48,7 @@ const CoachGoal = () => {
         <div className="rounded-2xl border border-border/40 bg-card/30 p-4">
           <div className="flex items-center gap-1.5 mb-2">
             <BookOpen size={11} className="text-muted-foreground" />
-            <p className="eyebrow">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground">
               How it works
             </p>
           </div>
@@ -62,7 +62,7 @@ const CoachGoal = () => {
 
         {/* Examples */}
         <div className="rounded-2xl border border-border/40 bg-card/30 p-4">
-          <p className="eyebrow mb-2">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground mb-2">
             Example goals
           </p>
           <ul className="space-y-1 text-[12px] text-muted-foreground leading-snug">

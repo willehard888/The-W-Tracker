@@ -188,7 +188,7 @@ const Tile = ({ label, value, target }: { label: string; value: string; target: 
       {value}
       <span className="text-[10px] font-bold text-muted-foreground">{target}</span>
     </p>
-    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{label}</p>
+    <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-1">{label}</p>
   </div>
 );
 

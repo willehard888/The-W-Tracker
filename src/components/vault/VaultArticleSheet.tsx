@@ -150,7 +150,7 @@ const VaultArticleSheet = ({
               <div className="flex items-center gap-1.5 flex-wrap mb-2 pr-10">
                 {article.lesson_number && (
                   <span
-                    className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black tracking-[0.22em] uppercase"
+                    className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black tracking-[0.22em] uppercase"
                     style={{
                       background: `${accent}22`,
                       color: accent,
@@ -163,7 +163,7 @@ const VaultArticleSheet = ({
                   </span>
                 )}
                 <EvidenceChip tier={article.evidence_tier} />
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[10px] font-black tracking-[0.22em] uppercase text-muted-foreground">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[9px] font-black tracking-[0.22em] uppercase text-muted-foreground">
                   <Clock size={8} strokeWidth={3} />
                   {article.read_time_min} min
                 </span>

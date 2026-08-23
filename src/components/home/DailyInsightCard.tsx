@@ -28,7 +28,7 @@ const DailyInsightCard = () => {
           <Sparkles size={16} className="text-gold" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="eyebrow text-gold/85 mb-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-1">
             Daily insight
           </p>
           <p className="text-[13px] font-semibold text-foreground/90 leading-snug">

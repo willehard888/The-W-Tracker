@@ -183,7 +183,7 @@ const TribeLeaderboard = () => {
                       <Lock size={10} className="text-muted-foreground shrink-0" />
                     )}
                     {mine && (
-                      <span className="text-[10px] px-1 py-0.5 rounded bg-gold/20 text-gold font-black uppercase tracking-widest shrink-0">
+                      <span className="text-[8px] px-1 py-0.5 rounded bg-gold/20 text-gold font-black uppercase tracking-widest shrink-0">
                         Mine
                       </span>
                     )}

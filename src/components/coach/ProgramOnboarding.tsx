@@ -130,7 +130,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
     <div className="px-1 pt-2 pb-8">
       <div className="flex items-center gap-2 mb-1">
         <Sparkles size={14} className="text-gold" />
-        <p className="eyebrow text-gold">Coach briefing</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">Coach briefing</p>
       </div>
       <h2 className="font-display text-2xl font-black tracking-tight leading-tight">Design my next block</h2>
       <p className="text-sm text-muted-foreground mt-1 mb-5">
@@ -178,7 +178,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 
       {lastError && (
         <div className="mt-5 rounded-2xl border border-destructive/50 bg-destructive/10 p-3.5">
-          <p className="eyebrow text-destructive mb-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-destructive mb-1">
             Generation failed — exact reason
           </p>
           <p className="text-[12px] text-foreground/90 leading-snug break-words font-mono">
@@ -199,7 +199,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 
 const Row = ({ k, v, wide, extra }: { k: string; v: string; wide?: boolean; extra?: React.ReactNode }) => (
   <div className={cn("flex flex-col gap-0.5", wide && "col-span-2")}>
-    <dt className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">{k}</dt>
+    <dt className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/70">{k}</dt>
     <dd className="text-foreground/90 font-medium flex items-center gap-2">{v}{extra}</dd>
   </div>
 );
@@ -208,7 +208,7 @@ const DayDots = ({ active }: { active: number[] }) => (
   <span className="inline-flex gap-0.5 ml-1">
     {DAY_LETTERS.map((l, i) => (
       <span key={i} className={cn(
-        "w-3.5 h-3.5 rounded-[5px] text-[10px] font-black flex items-center justify-center",
+        "w-3.5 h-3.5 rounded-[5px] text-[8px] font-black flex items-center justify-center",
         active.includes(i) ? "bg-[hsl(var(--gold)/0.8)] text-background" : "bg-card/60 text-muted-foreground/50",
       )}>{l}</span>
     ))}

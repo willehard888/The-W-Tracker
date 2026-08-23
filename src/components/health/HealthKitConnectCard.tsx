@@ -88,7 +88,7 @@ const HealthKitConnectCard = () => {
     <div className="rounded-2xl border border-xp-green/30 bg-gradient-to-b from-xp-green/[0.06] to-card p-4">
       <div className="flex items-center gap-2 mb-2">
         <ShieldCheck size={14} className="text-xp-green" />
-        <p className="eyebrow text-xp-green">
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-xp-green">
           {stats?.is_verified_performer ? "Verified Performer ✓" : "Apple Health · Connected"}
         </p>
       </div>
@@ -119,7 +119,7 @@ const HealthKitConnectCard = () => {
 
 const Tile = ({ label, value, sub }: { label: string; value: string; sub: string }) => (
   <div className="surface-card px-3 py-2.5">
-    <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-0.5">
+    <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground mb-0.5">
       {label}
     </p>
     <p className="text-base font-display font-black text-foreground tabular-nums leading-none mb-1">

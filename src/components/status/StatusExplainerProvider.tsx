@@ -45,7 +45,7 @@ const Step = ({ n, icon: Icon, title, children }: { n: number; icon: typeof Flam
       <span className="flex-1 w-px bg-border/50 mt-1" />
     </div>
     <div className="pb-5 min-w-0 flex-1">
-      <p className="eyebrow/70">Step {n}</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/70">Step {n}</p>
       <p className="font-display font-black text-[15px] leading-tight mt-0.5">{title}</p>
       <div className="mt-1.5 text-xs text-muted-foreground leading-snug space-y-1">{children}</div>
     </div>

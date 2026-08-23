@@ -58,7 +58,7 @@ const Gauge = ({ value }: { value: number }) => {
         <span className="font-display text-[34px] font-black leading-none tabular-nums glow-gold-text">
           {value}
         </span>
-        <span className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground mt-0.5">
+        <span className="text-[8px] font-black uppercase tracking-[0.22em] text-muted-foreground mt-0.5">
           / 100
         </span>
       </div>
@@ -99,13 +99,13 @@ const WhealthIndexCard = ({
               <Crown size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
             </div>
             <div>
-              <p className="eyebrow text-gold/85">Whealth Index</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">Whealth Index</p>
               <p className="text-[10px] text-muted-foreground leading-tight">Computed from all your data</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
             {live && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-teal/12 border border-teal/35 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-teal">
+              <span className="inline-flex items-center gap-1 rounded-full bg-teal/12 border border-teal/35 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-teal">
                 <span className="h-1 w-1 rounded-full bg-teal animate-pulse" /> Live
               </span>
             )}
@@ -133,7 +133,7 @@ const WhealthIndexCard = ({
             {history && history.length >= 2 ? (
               <>
                 <Sparkline values={history} className="w-full h-8 text-gold" />
-                <p className="text-[10px] text-muted-foreground/70 uppercase tracking-wider mt-1">28-day trend</p>
+                <p className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mt-1">28-day trend</p>
               </>
             ) : (
               <p className="text-[11px] text-muted-foreground leading-snug">
@@ -168,7 +168,7 @@ const WhealthIndexCard = ({
                   {v == null ? <span className="text-muted-foreground/50">—</span> : v}
                 </p>
                 <p className={cn(
-                  "w-7 shrink-0 text-right text-[10px] font-bold tabular-nums",
+                  "w-7 shrink-0 text-right text-[9px] font-bold tabular-nums",
                   d == null || d === 0 ? "text-muted-foreground/40" : d > 0 ? "text-teal" : "text-destructive",
                 )}>
                   {d == null || d === 0 ? "·" : `${d > 0 ? "+" : ""}${d}`}

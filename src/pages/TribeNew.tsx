@@ -118,11 +118,11 @@ const TribeNew = () => {
           </p>
           <div className="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
             {activity && (
-              <span className="text-[10px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5">
+              <span className="text-[9px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5">
                 {activity}
               </span>
             )}
-            <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-muted-foreground bg-secondary/40 border border-border/50 rounded-full px-2 py-0.5">
+            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-muted-foreground bg-secondary/40 border border-border/50 rounded-full px-2 py-0.5">
               {visibility === "public" ? <><Globe size={9} /> Open</> : <><Lock size={9} /> Approval</>}
             </span>
           </div>
@@ -182,7 +182,7 @@ const TribeNew = () => {
           <div className="space-y-3">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground/60 mb-1.5">
+                <p className="text-[9px] font-black tracking-widest uppercase text-muted-foreground/60 mb-1.5">
                   {group.label}
                 </p>
                 <div className="flex flex-wrap gap-1.5">

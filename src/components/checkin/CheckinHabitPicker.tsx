@@ -112,10 +112,10 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving }
             <div className="px-5 pt-1 pb-3 border-b border-border/60 shrink-0">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="font-display text-xl font-black tracking-tight">Choose your extras</h2>
+                  <h2 className="font-display text-xl font-black tracking-tight">Build your check-in</h2>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {coreCount} core · {optionalCount} added
-                    <span className="text-muted-foreground/60"> · extras share one pool, up to +{OPTIONAL_XP_CAP} XP a day</span>
+                    <span className="text-muted-foreground/60"> (bonus max +{OPTIONAL_XP_CAP} XP/day)</span>
                   </p>
                 </div>
                 <button

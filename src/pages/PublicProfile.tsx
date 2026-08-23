@@ -217,7 +217,7 @@ const PublicProfile = () => {
             size="md"
           />
           {isApexSubscriber && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-[0.22em] bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-[0.22em] bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold">
               <Crown size={9} strokeWidth={3} />
               Day-One
             </span>
@@ -349,7 +349,7 @@ const PublicProfile = () => {
                   )}
                 >
                   <span className="text-2xl">{b.badges?.icon}</span>
-                  <span className="text-[10px] font-bold mt-0.5 line-clamp-1 px-1 text-center text-muted-foreground">
+                  <span className="text-[8px] font-bold mt-0.5 line-clamp-1 px-1 text-center text-muted-foreground">
                     {b.badges?.name}
                   </span>
                 </motion.div>

@@ -44,7 +44,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="eyebrow text-gold/85">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
               {PILLAR_LABEL[pillar]} pillar
             </p>
             <p className="font-display text-2xl font-black tabular-nums leading-tight">
@@ -61,7 +61,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
         </div>
 
         {/* Sub-signals */}
-        <p className="eyebrow text-foreground/60 mb-2">
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/60 mb-2">
           What drives it
         </p>
         <div className="space-y-2.5 mb-5">
@@ -69,7 +69,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
             <div key={p.key} className="flex items-center gap-2.5">
               <p className="w-[128px] shrink-0 text-[11px] font-bold text-foreground/85 leading-tight">
                 {p.label}
-                <span className="block text-[10px] font-medium text-muted-foreground/60">
+                <span className="block text-[9px] font-medium text-muted-foreground/60">
                   weight {p.weight}%
                 </span>
               </p>
@@ -80,7 +80,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
               </div>
               <p className="w-14 shrink-0 text-right text-[11px] font-black tabular-nums">
                 {p.score == null
-                  ? <span className="text-[10px] font-bold text-muted-foreground/50 normal-case">no data yet</span>
+                  ? <span className="text-[9px] font-bold text-muted-foreground/50 normal-case">no data yet</span>
                   : p.score}
               </p>
             </div>
@@ -88,7 +88,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
         </div>
 
         {/* Levers */}
-        <p className="eyebrow text-foreground/60 mb-2">
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/60 mb-2">
           Your biggest levers
         </p>
         <div className="space-y-2.5">

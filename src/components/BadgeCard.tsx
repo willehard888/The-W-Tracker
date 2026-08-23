@@ -92,7 +92,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
           >
             <span className="relative z-[2]">{icon}</span>
           </div>
-          <p className="text-[10px] font-semibold text-foreground text-center leading-tight truncate w-full max-w-[64px]">
+          <p className="text-[9px] font-semibold text-foreground text-center leading-tight truncate w-full max-w-[64px]">
             {name}
           </p>
         </div>
@@ -159,7 +159,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
           </p>
           <span
             className={cn(
-              "inline-block mt-1 px-1.5 py-[1px] rounded-full text-[10px] font-black uppercase tracking-[0.22em] border",
+              "inline-block mt-1 px-1.5 py-[1px] rounded-full text-[8px] font-black uppercase tracking-[0.22em] border",
               style.labelChip,
               style.label
             )}

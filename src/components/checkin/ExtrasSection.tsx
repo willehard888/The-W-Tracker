@@ -1,4 +1,3 @@
-import Hint from "@/components/ui/hint";
 import { Camera, Check, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
@@ -47,7 +46,7 @@ const ExtrasSection = (p: ExtrasSectionProps) => (
         </button>
       </div>
     </div>
-    <Hint beat="xp" className="mb-2.5 px-0.5">One shared pool — up to +{p.cap} XP a day, however many you tick.</Hint>
+    <p className="text-[11px] text-muted-foreground mb-2.5 px-0.5">One shared pool — up to +{p.cap} XP a day, however many you tick.</p>
 
     {p.showFirstRun && (
       <div className="mb-2.5 surface-card p-3 flex items-start gap-2.5">

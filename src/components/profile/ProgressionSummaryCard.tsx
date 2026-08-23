@@ -24,7 +24,7 @@ const ProgressionSummaryCard = () => {
     >
       <div className="flex items-center gap-2 mb-2">
         <TrendingUp size={13} className="text-gold" />
-        <p className="eyebrow text-gold/85">Strength progress</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">Strength progress</p>
         <span className="ml-auto text-[10px] font-bold text-muted-foreground">This week</span>
       </div>
 

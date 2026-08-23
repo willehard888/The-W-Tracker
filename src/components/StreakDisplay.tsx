@@ -229,7 +229,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
             />
             <p
               className={cn(
-                "eyebrow whitespace-nowrap",
+                "text-[10px] font-black uppercase tracking-[0.22em] whitespace-nowrap",
                 !isHot && "text-muted-foreground"
               )}
               style={{ color: isHot ? accent : undefined }}
@@ -241,7 +241,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
           {tier.index >= 0 && (
             <span
               className={cn(
-                "inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border backdrop-blur-sm whitespace-nowrap shrink-0",
+                "inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border backdrop-blur-sm whitespace-nowrap shrink-0",
                 isLegendary && "animate-[streak-badge-shimmer_2.8s_ease-in-out_infinite]"
               )}
               style={{
@@ -497,7 +497,7 @@ const StreakDisplay = ({ streak, longestStreak, className, lastCheckinAt }: Stre
                 Best <span className="text-foreground font-black tabular-nums">{longestStreak}d</span>
               </span>
               {displayStreak === longestStreak && displayStreak > 0 && (
-                <span className="text-[10px] font-black uppercase tracking-wider text-gold flex items-center gap-1 whitespace-nowrap">
+                <span className="text-[9px] font-black uppercase tracking-wider text-gold flex items-center gap-1 whitespace-nowrap">
                   <Zap size={9} /> PB
                 </span>
               )}

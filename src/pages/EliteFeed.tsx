@@ -1,4 +1,3 @@
-import Hint from "@/components/ui/hint";
 
 import { useAuth } from "@/contexts/AuthContext";
 import StreakFlameInline from "@/components/StreakFlameInline";
@@ -779,7 +778,7 @@ const EliteFeed = () => {
                 <ShieldCheck size={12} />
                 Reports
                 {unresolvedReportsCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-black flex items-center justify-center">
+                  <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-black flex items-center justify-center">
                     {unresolvedReportsCount}
                   </span>
                 )}
@@ -963,8 +962,7 @@ const EliteFeed = () => {
           <EmptyState
             icon={Flame}
             title="No posts yet"
-            description="Be the first to share your W — the feed only counts proof."
-            action={<Hint beat="xp">Posting doesn't earn XP — check-ins do. The feed is where you show the work.</Hint>}
+            description="Be the first to share your W — the elite feed only counts proof."
           />
         )}
 

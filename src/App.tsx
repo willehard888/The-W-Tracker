@@ -21,7 +21,6 @@ import StatusHeader from "@/components/StatusHeader";
 import AccessGate from "@/components/AccessGate";
 import TierPromotionCelebration from "@/components/TierPromotionCelebration";
 import { StatusExplainerProvider } from "@/components/status/StatusExplainerProvider";
-import { HowItWorksProvider } from "@/components/HowItWorksSheet";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -206,7 +205,6 @@ const AppRoutes = () => {
   return (
     <PushControlsContext.Provider value={{ enablePush, dismissPriming }}>
     <StatusExplainerProvider>
-    <HowItWorksProvider>
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden momentum-scroll">
@@ -301,7 +299,6 @@ const AppRoutes = () => {
       {user && <TierPromotionCelebration />}
       <PushPrimingSheet open={needsPriming} onEnable={enablePush} onDismiss={dismissPriming} />
     </div>
-    </HowItWorksProvider>
     </StatusExplainerProvider>
     </PushControlsContext.Provider>
   );

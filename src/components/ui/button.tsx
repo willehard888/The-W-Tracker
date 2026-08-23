@@ -66,6 +66,9 @@ const buttonVariants = cva(
         // Primary — the clean orange-amber CTA (shared PRIMARY_EMBER look).
         default: PRIMARY_EMBER,
 
+        // Obsidian — flat dark surface.
+        obsidian: "bg-[hsl(258_16%_13%)] text-primary-foreground border border-border/60 hover:bg-[hsl(258_16%_16%)]",
+
         // Destructive — flat solid red.
         destructive: "bg-destructive text-destructive-foreground hover:brightness-110",
 
@@ -78,8 +81,26 @@ const buttonVariants = cva(
         // Ghost — transparent, subtle neutral hover.
         ghost: "text-foreground hover:bg-secondary/60",
 
+        // Link — gold-soft → gold
+        link: "text-[hsl(var(--gold-soft))] underline-offset-4 hover:text-[hsl(var(--gold))] hover:underline",
+
         // Gold outline — clean gold hairline, fills lightly on hover.
         "gold-outline": "border border-[hsl(var(--gold)/0.4)] text-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.04)] font-semibold hover:bg-[hsl(var(--gold)/0.1)] hover:border-[hsl(var(--gold)/0.6)]",
+
+        // Glass — restrained frosted surface (no heavy glow).
+        glass: "text-foreground bg-white/[0.04] border border-white/10 backdrop-blur-md hover:bg-white/[0.07]",
+
+        // Tier — flat gold fill (uses --tier-color var; defaults to gold).
+        tier: "text-primary-foreground font-bold [--tier-color:var(--gold)] [background:hsl(var(--tier-color))] hover:brightness-105",
+
+        // Success — flat green.
+        success: "text-white font-semibold bg-[hsl(152_52%_36%)] hover:brightness-105",
+
+        // Warning — flat amber.
+        warning: "text-[hsl(24_80%_12%)] font-semibold bg-[hsl(38_86%_52%)] hover:brightness-105",
+
+        // Danger outline — clean destructive hairline, transparent base.
+        "danger-outline": "border border-[hsl(var(--destructive)/0.5)] text-[hsl(var(--destructive))] bg-[hsl(var(--destructive)/0.04)] font-semibold hover:bg-[hsl(var(--destructive)/0.1)] hover:border-[hsl(var(--destructive)/0.7)]",
 
         // Ember — the tribes/fire signature CTA. Now the shared primary look.
         ember: PRIMARY_EMBER,
@@ -147,8 +168,38 @@ const buttonVariants = cva(
           "active:shadow-[inset_0_2px_4px_hsl(10_82%_10%/0.5)]",
         ].join(" "),
 
-        // (obsidian/link/glass/tier/success/warning/danger-outline/gold-icon/
-        // coal-outline removed — zero call sites; fewer names, one language.)
+        // Gold-icon — for icon-only buttons (back/close/clear) that need a warm hover.
+        "gold-icon": [
+          "text-[hsl(var(--foreground-muted))]",
+          "hover:bg-[hsl(var(--gold)/0.08)]",
+          "hover:text-[hsl(var(--gold-light))]",
+          "hover:shadow-[inset_0_1px_0_hsl(var(--gold)/0.20),inset_0_-1px_0_hsl(var(--gold-soft)/0.35),0_4px_14px_-4px_hsl(var(--gold)/0.30)]",
+          "active:bg-[hsl(var(--gold)/0.14)]",
+        ].join(" "),
+
+        // Coal outline — hairline coal for secondary actions matching `coal`
+        "coal-outline": [
+          "relative text-[hsl(40_100%_78%)] font-semibold",
+          "border border-[hsl(28_85%_42%/0.55)]",
+          "overflow-hidden isolate",
+          "[background:linear-gradient(180deg,hsl(20_45%_10%/0.55)_0%,hsl(20_55%_6%/0.65)_100%)]",
+          "shadow-[inset_0_1px_0_hsl(46_100%_88%/0.12),inset_0_-1px_0_hsl(20_85%_6%/0.6),inset_0_-8px_16px_-12px_hsl(20_95%_45%/0.32),0_1px_2px_hsl(0_0%_0%/0.4),0_4px_12px_-6px_hsl(28_85%_36%/0.22)]",
+          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none",
+          "before:[background:radial-gradient(120%_80%_at_50%_120%,hsl(20_98%_50%/0.18)_0%,transparent_60%)]",
+          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none",
+          "after:[background:linear-gradient(110deg,transparent_30%,hsl(40_100%_82%/0.18)_50%,transparent_70%)]",
+          "after:opacity-0 after:transition-[transform,opacity] after:duration-[700ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
+          "hover:text-[hsl(46_100%_84%)]",
+          "hover:border-[hsl(28_92%_52%/0.85)]",
+          "hover:[background:linear-gradient(180deg,hsl(20_55%_14%/0.65)_0%,hsl(20_60%_8%/0.75)_100%)]",
+          "hover:shadow-[inset_0_1px_0_hsl(46_100%_88%/0.18),inset_0_-1px_0_hsl(20_85%_6%/0.7),inset_0_-10px_18px_-12px_hsl(20_95%_45%/0.45),0_2px_3px_hsl(0_0%_0%/0.45),0_8px_20px_-4px_hsl(28_85%_36%/0.35)]",
+          "active:shadow-[inset_0_2px_4px_hsl(20_85%_6%/0.7)]",
+        ].join(" "),
+
+        // (gold/coal/magma/bullion/aurum aliases removed — 7 names for one
+        // identical button meant the same CTA was declared 5 different ways.
+        // `ember` and `default` are the two that remain.)
       },
       size: {
         default: "h-10 min-h-10 px-4 py-2 rounded-md",

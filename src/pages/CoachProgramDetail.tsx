@@ -64,7 +64,7 @@ const CoachProgramDetail = () => {
           >
             <div className="flex items-center gap-2 mb-2">
               <Crown size={12} className="text-gold" />
-              <p className="eyebrow text-gold">
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">
                 Premium feature
               </p>
             </div>
@@ -84,7 +84,7 @@ const CoachProgramDetail = () => {
             <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles size={12} className="text-gold" />
-                <p className="eyebrow text-gold">
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">
                   No program yet
                 </p>
               </div>

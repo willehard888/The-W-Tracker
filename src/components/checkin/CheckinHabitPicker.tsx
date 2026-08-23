@@ -160,7 +160,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving }
                               {h.note && <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">{h.note}</p>}
                             </div>
                             {h.core ? (
-                              <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wide">
+                              <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-bold text-muted-foreground/60 uppercase tracking-wide">
                                 <Lock size={11} /> Core
                               </span>
                             ) : (

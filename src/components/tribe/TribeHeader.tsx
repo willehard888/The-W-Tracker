@@ -100,7 +100,7 @@ const TribeHeader = ({
             </div>
             <div className="flex-1 min-w-0">
               <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background/40 backdrop-blur-sm border border-[hsl(var(--ember))]/50 mb-1.5">
-                <span className="text-[10px] font-black tracking-widest uppercase bg-gradient-to-r from-[hsl(var(--ember))] to-gold bg-clip-text text-transparent">
+                <span className="text-[9px] font-black tracking-widest uppercase bg-gradient-to-r from-[hsl(var(--ember))] to-gold bg-clip-text text-transparent">
                   {tribe.is_paused ? "Paused Tribe" : "Apex Tribe"}
                 </span>
               </div>
@@ -112,7 +112,7 @@ const TribeHeader = ({
                   className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-gold/20 to-[hsl(var(--ember))]/15 border border-gold/45 hover:from-gold/25 transition-colors"
                 >
                   <Crown size={9} className="text-gold" strokeWidth={2.8} fill="currentColor" />
-                  <span className="text-[10px] font-black tracking-widest uppercase text-gold">Founder</span>
+                  <span className="text-[9px] font-black tracking-widest uppercase text-gold">Founder</span>
                   <TierUsername
                     username={founder.username}
                     tier={founder.status_tier || "recruit"}

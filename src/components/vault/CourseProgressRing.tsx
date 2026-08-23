@@ -55,7 +55,7 @@ const CourseProgressRing = ({
             ✓
           </span>
         ) : (
-          <span className="text-[10px] font-black tabular-nums text-foreground/85">
+          <span className="text-[9px] font-black tabular-nums text-foreground/85">
             {done}/{total}
           </span>
         )}

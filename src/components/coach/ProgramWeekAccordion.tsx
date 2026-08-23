@@ -110,7 +110,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                           </div>
                         </div>
                         {isLogged && (
-                          <span className="text-[10px] font-black tracking-widest uppercase text-gold">Done</span>
+                          <span className="text-[9px] font-black tracking-widest uppercase text-gold">Done</span>
                         )}
                       </button>
                       {!isRest && dayOpen && (

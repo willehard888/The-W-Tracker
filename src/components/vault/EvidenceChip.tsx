@@ -29,7 +29,7 @@ const EvidenceChip = ({ tier, size = "sm" }: { tier: Tier; size?: "sm" | "md" })
       className={cn(
         "inline-flex items-center gap-1 rounded-full border font-black tracking-[0.22em] uppercase",
         m.classes,
-        size === "sm" ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-1 text-[10px]",
+        size === "sm" ? "px-1.5 py-0.5 text-[9px]" : "px-2 py-1 text-[10px]",
       )}
     >
       <Icon size={size === "sm" ? 8 : 10} strokeWidth={3} />

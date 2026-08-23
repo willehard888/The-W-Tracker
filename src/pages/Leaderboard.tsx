@@ -21,7 +21,6 @@ import { hapticSelection } from "@/lib/haptics";
 import EmptyState from "@/components/ui/empty-state";
 import StandingCard from "@/components/status/StandingCard";
 import { useStatusExplainer } from "@/components/status/StatusExplainerProvider";
-import { useHowItWorks } from "@/components/HowItWorksSheet";
 
 /**
  * Ranks — one question, answered two ways:
@@ -85,7 +84,6 @@ const Leaderboard = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const explainer = useStatusExplainer();
-  const how = useHowItWorks();
   const [mode, setMode] = useState<Mode>("standings");
   const { scrollRef, pullDistance, isRefreshing, onTouchStart: pullStart, onTouchMove: pullMove, onTouchEnd: pullEnd, PULL_THRESHOLD } = usePullRefresh([
     ["standings"],
@@ -265,7 +263,7 @@ const Leaderboard = () => {
           </div>
           <button
             type="button"
-            onClick={() => { hapticSelection(); how ? how.open("ladder") : explainer?.open(); }}
+            onClick={() => { hapticSelection(); explainer?.open(); }}
             className="shrink-0 mt-0.5 inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/70 px-3 py-1.5 text-[11px] font-bold text-muted-foreground active:scale-95 transition hover:text-foreground"
           >
             <Info size={12} /> How it works

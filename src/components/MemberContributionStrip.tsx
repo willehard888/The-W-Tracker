@@ -71,7 +71,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
               {/* TOP STOKER ribbon above #1 */}
               {isTopStoker && (
                 <span
-                  className="absolute -top-4 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[10px] font-black tracking-[0.22em] uppercase border whitespace-nowrap"
+                  className="absolute -top-4 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full text-[7px] font-black tracking-[0.22em] uppercase border whitespace-nowrap"
                   style={{
                     color: accent,
                     background: `linear-gradient(180deg, ${withAlpha(accent, 0.18)} 0%, ${withAlpha(accent, 0.06)} 100%)`,
@@ -121,7 +121,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
                   </div>
                 ) : streak > 0 ? (
                   <div className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-background/90 border border-border/60 flex items-center justify-center">
-                    <span className="text-[10px] font-black tabular-nums text-muted-foreground">{streak}</span>
+                    <span className="text-[8px] font-black tabular-nums text-muted-foreground">{streak}</span>
                   </div>
                 ) : null}
               </div>
@@ -134,7 +134,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
               </span>
               <span
                 className={cn(
-                  "text-[10px] truncate w-full text-center",
+                  "text-[9px] truncate w-full text-center",
                   isTopStoker ? "font-black text-foreground/95" : "text-muted-foreground/80",
                 )}
               >

@@ -177,7 +177,7 @@ const Journey = () => {
           <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp size={12} className="text-gold" />
-              <p className="eyebrow text-gold">
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">
                 How far you've come
               </p>
             </div>
@@ -241,7 +241,7 @@ const Journey = () => {
         <div className="surface-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <BookHeart size={13} className="text-gold" />
-            <p className="eyebrow/80">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">
               Your reflections
             </p>
             {reflections.length > 0 && (
@@ -291,8 +291,8 @@ const DeltaTile = ({
       )}
     />
     <p className="font-display text-lg font-black tabular-nums leading-none">{value}</p>
-    {unit && <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{unit}</p>}
-    <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider mt-1">{label}</p>
+    {unit && <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">{unit}</p>}
+    <p className="text-[9px] font-bold text-muted-foreground/70 uppercase tracking-wider mt-1">{label}</p>
   </div>
 );
 

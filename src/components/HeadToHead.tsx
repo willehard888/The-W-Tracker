@@ -53,7 +53,7 @@ const DeltaPill = ({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-0.5 px-1.5 py-[3px] rounded-full text-[10px] font-black tabular-nums border leading-none",
+        "inline-flex items-center gap-0.5 px-1.5 py-[3px] rounded-full text-[9px] font-black tabular-nums border leading-none",
         tied && "text-muted-foreground border-border bg-secondary/30",
         !tied && meWins && "text-xp-green border-xp-green/40 bg-xp-green/10 shadow-[0_0_8px_-2px_hsl(152_68%_45%/0.4)]",
         !tied && !meWins && "text-rose-300 border-rose-500/40 bg-rose-500/10",
@@ -181,7 +181,7 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
             Head to Head
           </p>
         </div>
-        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider flex items-center gap-1">
+        <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider flex items-center gap-1">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full rounded-full bg-xp-green/70 opacity-75 animate-ping" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-xp-green" />
@@ -193,7 +193,7 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
       {/* Players */}
       <div className="flex items-center justify-between gap-2 mb-4 relative">
         <div className="flex-1 text-right min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold mb-0.5">
+          <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold mb-0.5">
             You
           </p>
           <p
@@ -218,7 +218,7 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold mb-0.5">
+          <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold mb-0.5">
             Them
           </p>
           <p
@@ -236,7 +236,7 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
       {/* Score summary banner */}
       {overallLead !== "tie" && (
         <div className="mb-2 -mx-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-transparent via-gold/[0.06] to-transparent border-y border-gold/10">
-          <p className="text-[10px] uppercase tracking-[0.22em] font-black text-center text-gold/80">
+          <p className="text-[9px] uppercase tracking-[0.22em] font-black text-center text-gold/80">
             {overallLead === "me" ? "You lead" : "They lead"} {Math.max(wins, losses)}–{Math.min(wins, losses)}
           </p>
         </div>

@@ -2,7 +2,7 @@ import { ArrowUp, ChevronRight, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { getTierConfig, topShareLabel } from "@/lib/status-tiers";
-import { useHowItWorks } from "@/components/HowItWorksSheet";
+import { useStatusExplainer } from "@/components/status/StatusExplainerProvider";
 import { hapticSelection } from "@/lib/haptics";
 import type { MyRankData } from "@/hooks/use-my-rank";
 
@@ -23,7 +23,7 @@ interface HomeNumbersRowProps {
  */
 const HomeNumbersRow = ({ tier, rankData, rankDelta = 0, whealthIndex }: HomeNumbersRowProps) => {
   const navigate = useNavigate();
-  const how = useHowItWorks();
+  const explainer = useStatusExplainer();
   const cfg = getTierConfig(tier);
   const ranked =
     rankData?.hasRank === true &&
@@ -44,9 +44,9 @@ const HomeNumbersRow = ({ tier, rankData, rankDelta = 0, whealthIndex }: HomeNum
           <span
             role="button"
             tabIndex={0}
-            aria-label="How The W works"
-            onClick={(e) => { e.stopPropagation(); how?.open("ladder"); }}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); how?.open("ladder"); } }}
+            aria-label="How status works"
+            onClick={(e) => { e.stopPropagation(); explainer?.open(); }}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); explainer?.open(); } }}
             className="inline-flex h-4 w-4 items-center justify-center rounded-full text-muted-foreground/70 hover:text-foreground"
           >
             <Info size={11} />

@@ -1,5 +1,5 @@
 
-import { Info, Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, Gauge, ChevronRight, Pencil, Brain, UserRound, FileText } from "lucide-react";
+import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, Gauge, ChevronRight, Pencil, Brain, UserRound, FileText } from "lucide-react";
 import { isNativePlatform } from "@/lib/platform";
 import ProgressionSummaryCard from "@/components/profile/ProgressionSummaryCard";
 import RecoveryCard from "@/components/profile/RecoveryCard";
@@ -31,7 +31,6 @@ import { useWhealthSnapshots } from "@/hooks/use-whealth-snapshots";
 import { useMyRank } from "@/hooks/use-my-rank";
 import StandingCard from "@/components/status/StandingCard";
 import { useStatusExplainer } from "@/components/status/StatusExplainerProvider";
-import { useHowItWorks } from "@/components/HowItWorksSheet";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 // Pull-to-refresh removed temporarily — touch handlers on the page wrapper
 // were intercepting inner taps (e.g., logout button, share, badges). Will
@@ -42,7 +41,6 @@ const Profile = () => {
   const isAdmin = useIsAdmin(profile?.user_id);
   const navigate = useNavigate();
   const explainer = useStatusExplainer();
-  const how = useHowItWorks();
   // /profile?tier=<key> (next-tier chips, pushes) used to open the inline
   // TierLadder dialog — the ladder now lives in the status explainer sheet.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -652,7 +650,6 @@ const Profile = () => {
             <SettingsRow icon={Pencil} label="Edit name" sub={profile.display_name || "Not set"} onClick={() => { setNameDraft(profile?.display_name ?? ""); setNameDialogOpen(true); }} />
             <SettingsRow icon={UserRound} label="Athlete profile" sub="Goals, schedule, injuries — what the coach trains" onClick={() => navigate("/coach/profile")} />
             <SettingsRow icon={Brain} label="Coach memory" sub="What the coach remembers about you" onClick={() => navigate("/coach/memory")} />
-            <SettingsRow icon={Info} label="How The W works" sub="Check in · streak · XP · the ladder — 20 seconds" onClick={() => how?.open()} />
           </SettingsGroup>
 
           <SettingsGroup title="Sharing & friends">

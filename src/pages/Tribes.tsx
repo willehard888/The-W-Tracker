@@ -511,7 +511,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               {isPrivate && <Lock size={10} className="text-muted-foreground/70 shrink-0" aria-label="Private" />}
               {ownedIds.has(t.id) && <Crown size={11} className="text-gold shrink-0" aria-label="Owner" />}
               {isNew && !opts.featured && (
-                <span className="shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold text-[10px] font-black tracking-widest uppercase">
+                <span className="shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold text-[8px] font-black tracking-widest uppercase">
                   New
                 </span>
               )}
@@ -572,7 +572,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                     {m.avatar_url ? (
                       <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 40)} alt={m.username} className="h-full w-full object-cover" />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
+                      <div className="h-full w-full flex items-center justify-center text-[7px] font-black text-muted-foreground">
                         {m.username.slice(0, 2).toUpperCase()}
                       </div>
                     )}
@@ -799,7 +799,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             description={
               tab === "browse"
                 ? "Be the first founder — start a tribe and rally your circle."
-                : "A tribe pools everyone's streaks into one collective fire — browse the directory or get invited."
+                : "Browse the directory or get invited to start grinding together."
             }
             action={
               tab === "mine" ? (

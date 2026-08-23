@@ -417,7 +417,7 @@ const FeedPostCard = memo(function FeedPostCard({
                   {commentText.length > 0 && (
                     <span
                       className={cn(
-                        "absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-semibold tabular-nums",
+                        "absolute right-12 top-1/2 -translate-y-1/2 text-[9px] font-semibold tabular-nums",
                         commentText.length > 270 ? "text-destructive" : "text-muted-foreground/50"
                       )}
                     >

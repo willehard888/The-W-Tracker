@@ -1,4 +1,5 @@
-import { ChevronRight, Award, ArrowUp } from "lucide-react";
+import { ChevronRight, Award, ArrowUp, Crown } from "lucide-react";
+import AnimatedNumber from "@/components/AnimatedNumber";
 import BadgeCard from "@/components/BadgeCard";
 import TrialExpirySheet from "@/components/TrialExpirySheet";
 import { track, FUNNEL } from "@/lib/analytics";
@@ -7,7 +8,7 @@ import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
 import CoachStrip from "@/components/home/CoachStrip";
 import DailyInsightCard from "@/components/home/DailyInsightCard";
-import HomeNumbersRow from "@/components/home/HomeNumbersRow";
+import LibraryHub from "@/components/home/LibraryHub";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Reveal from "@/components/home/Reveal";
 import EmptyState from "@/components/ui/empty-state";
@@ -20,6 +21,7 @@ import { toast } from "sonner";
 import ConfettiBurst from "@/components/ConfettiBurst";
 import { Portal } from "@/components/ui/Portal";
 import { supabase } from "@/integrations/supabase/client";
+import { getTierConfig } from "@/lib/status-tiers";
 import { useTierRisk } from "@/hooks/use-tier-risk";
 import { useCheckinDay } from "@/hooks/use-checkin-day";
 import { useMyRank } from "@/hooks/use-my-rank";
@@ -186,7 +188,7 @@ const Index = () => {
   useEffect(() => {
     const s = profile?.streak ?? 0;
     const MESSAGES: Record<number, string> = {
-      7: "One week unbroken. The streak is real.",
+      7: "One week unbroken. The chain is real.",
       30: "30 days — this is where most quit. Not you.",
       100: "Triple digits. Elite territory. Rare air.",
       365: "A full year. You've become undeniable.",
@@ -196,14 +198,16 @@ const Index = () => {
     if (localStorage.getItem(key)) return;
     localStorage.setItem(key, "1");
     setMilestoneConfetti(true);
-    toast.success(`${s}-day streak`, { description: MESSAGES[s], duration: 5500 });
+    toast.success(`🔥 ${s}-day streak`, { description: MESSAGES[s], duration: 5500 });
     const t = setTimeout(() => setMilestoneConfetti(false), 2600);
     return () => clearTimeout(t);
   }, [profile?.streak]);
 
   if (!profile) return null;
 
+  const xpToNext = profile.level * 500;
   const tier = profile.status_tier || "recruit";
+  const tierConfig = getTierConfig(tier);
   const isLegend = tier === "legend";
   const isApex = tier === "apex";
 
@@ -256,6 +260,65 @@ const Index = () => {
         }}
       />
 
+      {/* STATUS STRIP — earned tier + rank + today's climb. The daily "worth it"
+          flex, and it renders the rank delta (pulse) that was computed-but-dropped. */}
+      <div className="animate-reveal mb-3 relative z-10">
+        <button
+          onClick={() => navigate("/leaderboard")}
+          className="w-full flex items-center gap-3 rounded-2xl border border-border/60 bg-card/50 px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform"
+        >
+          <span className="text-xl leading-none shrink-0">{tierConfig.emoji}</span>
+          <div className="min-w-0 flex-1">
+            {/* Rank shows only when EARNED and sane (hasRank, rank ≤ total) —
+                an unranked recruit once read "#3 of 2" here. Same guard rule
+                as StatusNameplate. */}
+            {(() => {
+              const sane =
+                rankData?.hasRank === true &&
+                (rankData.rank ?? 0) > 0 &&
+                (rankData.totalUsers ?? 0) > 0 &&
+                rankData.rank! <= rankData.totalUsers!;
+              return (
+                <>
+                  <p className="text-[13px] font-black leading-tight truncate">
+                    {tierConfig.label}
+                    {sane && (
+                      <span className="text-muted-foreground font-semibold"> · #<AnimatedNumber value={rankData!.rank} duration={700} /></span>
+                    )}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    {sane
+                      ? `of ${(rankData?.totalUsers ?? 0).toLocaleString()} · Lv ${profile.level} · ${Math.max(0, xpToNext - profile.xp)} XP to Lv ${profile.level + 1}`
+                      : "Your climb starts today"}
+                  </p>
+                </>
+              );
+            })()}
+          </div>
+          {/* W-Index chip — the flagship number, felt daily. span+role (not a
+              nested <button>) because the whole strip is already a button. */}
+          {liveWhealth?.overall != null && (
+            <span
+              role="button"
+              tabIndex={0}
+              aria-label="Open your Whealth Index"
+              onClick={(e) => { e.stopPropagation(); navigate("/journey"); }}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); navigate("/journey"); } }}
+              className="shrink-0 inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/30 px-2 py-1 text-[10px] font-black text-gold tabular-nums active:scale-95 transition"
+            >
+              <Crown size={10} strokeWidth={2.8} /> {liveWhealth.overall}
+            </span>
+          )}
+          {pulse.hasSnapshot && pulse.rankDelta > 0 ? (
+            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 text-[10px] font-black text-teal">
+              <ArrowUp size={11} strokeWidth={3} /> {pulse.rankDelta} today
+            </span>
+          ) : (
+            <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+          )}
+        </button>
+      </div>
+
       {/* FIRST W — one-shot bridge for a new user who hasn't checked in yet */}
       {showFirstW && (
         <div className="animate-reveal mb-3 relative z-10">
@@ -301,18 +364,7 @@ const Index = () => {
         />
       </div>
 
-      {/* THE TWO NUMBERS — Standing (→ Ranks, ⓘ how it works) and Whealth
-          Index (→ Journey). Labeled, separate, each a door. */}
-      <div className="animate-reveal mb-4 relative z-10">
-        <HomeNumbersRow
-          tier={tier}
-          rankData={rankData}
-          rankDelta={pulse.hasSnapshot ? pulse.rankDelta : 0}
-          whealthIndex={liveWhealth?.overall ?? null}
-        />
-      </div>
-
-      {/* TIER RISK — only at a real-risk moment (streak deadline / cutoff) */}
+      {/* TIER RISK */}
       {tierRisk.level !== "safe" && (
         <Reveal className="mb-4 relative z-10" delay={0}>
           <TierRiskBanner risk={tierRisk} />
@@ -335,11 +387,28 @@ const Index = () => {
         <DailyInsightCard />
       </Reveal>
 
-      {/* RECENT BADGES — small, visible (was hidden inside "More") */}
-      <Reveal className="mb-4 relative z-10" delay={120}>
+      {/* THE LIBRARY — one premium hub for everything the membership unlocks
+          (recipes, exercises, Vault). Replaces three stacked same-weight
+          cards; founder feedback: too many buttons, combine with value. */}
+      <Reveal className="mb-4 relative z-10" delay={100}>
+        <LibraryHub />
+      </Reveal>
+      {/* SECONDARY — Today stays focused: check in, the AI move, daily
+          insight and ONE library card. Invite + badges are one tap away
+          under "More". (The accountability pod card is gone — Tribe is the
+          one group concept.) */}
+      <MoreSection label="More" className="relative z-10 mt-1 mb-2">
+      {/* EARN FREE MEMBERSHIP — referral CTA */}
+      <Reveal className="mb-4 relative z-10" delay={80}>
+        <InviteCTA referralCount={profile.referral_count || 0} />
+      </Reveal>
+      {/* Recent Badges */}
+      <Reveal className="mb-2" delay={320}>
         <div className="flex items-end justify-between mb-3 px-0.5">
           <div className="flex flex-col">
-            <span className="eyebrow mb-1">Achievements</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80 mb-1">
+              Achievements
+            </span>
             <h2 className="font-display font-bold text-base tracking-tight leading-none">
               Recent Badges
             </h2>
@@ -380,13 +449,14 @@ const Index = () => {
           />
         )}
       </Reveal>
-
-      {/* SECONDARY — invite lives one tap away so Today stays focused. */}
-      <MoreSection label="More" className="relative z-10 mt-1 mb-2">
-        <Reveal className="mb-2 relative z-10" delay={80}>
-          <InviteCTA referralCount={profile.referral_count || 0} />
-        </Reveal>
       </MoreSection>
+
+      {/* Tier message footer — boosted contrast (was muted-foreground/40 → barely visible) */}
+      <div className="mt-6 mb-2 text-center">
+        <p className="text-[10px] text-muted-foreground/60 font-semibold tracking-[0.22em] uppercase">
+          {tierConfig.message}
+        </p>
+      </div>
 
       {/* Trial-end conversion moment — one-shot value recap + upgrade CTA. */}
       <TrialExpirySheet />

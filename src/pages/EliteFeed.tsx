@@ -253,7 +253,7 @@ const EliteFeed = () => {
       setVideoPreview(null);
       hapticNotification("success");
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
-      toast.success("Posted");
+      toast.success("Posted! 🔥");
     },
     onSettled: () => setUploadPhase(null),
     onError: (error: any) => {
@@ -367,7 +367,7 @@ const EliteFeed = () => {
       toast.error(friendlyError(error, "Kudos failed"));
     },
     onSuccess: () => {
-      toast.success("Kudos sent");
+      toast.success("Kudos! 🏆");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["feed-user-interactions"] });
@@ -738,7 +738,7 @@ const EliteFeed = () => {
       <div className="animate-reveal mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight leading-none my-[10px] py-[10px]">Feed</h1>
+            <h1 className="font-display text-2xl font-bold tracking-tight leading-none my-[10px] py-[10px]">Elite Feed</h1>
             <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
               Discipline proof from top performers
               {/* Kudos quota was invisible on touch (title attr only) — the

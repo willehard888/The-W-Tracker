@@ -62,6 +62,7 @@ const IdentityCore = ({
   checkinTotal,
 }: IdentityCoreProps) => {
   const tier = profile.status_tier || "recruit";
+  const division = (profile as any).tier_division ?? 0;
   const isApexSubscriber = Boolean((profile as any).is_apex_subscriber);
   const isLegendPinned = Boolean((profile as any).legend_pinned);
   const shields = Number(profile.streak_shields ?? 0);
@@ -134,7 +135,7 @@ const IdentityCore = ({
         ) : tier === "elite" ? (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
             <Crown size={12} className="text-gold" />
-            <span className="text-[11px] font-black text-gold tracking-wider uppercase">{formatTier("elite")}</span>
+            <span className="text-[11px] font-black text-gold tracking-wider uppercase">{formatTier("elite", division)}</span>
           </span>
         ) : null}
         {championWins > 0 && (

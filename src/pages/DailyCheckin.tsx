@@ -180,6 +180,8 @@ const DailyCheckin = () => {
   const [sleep, setSleep] = useState(8);
   const [sportCategory, setSportCategory] = useState("none");
   const [sportOpen, setSportOpen] = useState(false);
+  // Explicit "Rest day" choice — logged as no workout, but the row reads as answered.
+  const [restDay, setRestDay] = useState(false);
   const [hydration, setHydration] = useState(2);
   // All boolean habits keyed by habit.key.
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
@@ -226,6 +228,7 @@ const DailyCheckin = () => {
   const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory) ?? SPORT_CATEGORIES[0];
   const forYou = buildForYou(detectedSportId, athlete?.sports, recentSports);
   const workout = sportCategory !== "none";
+  const isRestDay = restDay && !workout;
 
   // ── Apple Health auto-detect (billion-dollar verification) ──────────────
   // On open, pull today's HealthKit snapshot to confirm what actually happened
@@ -779,35 +782,62 @@ const DailyCheckin = () => {
         )}
       </div>
 
-      {/* ── Workout (core) ── */}
+      {/* ── Workout (core) ── Trained ▾ | Rest day. A rest day is logged on
+          purpose (no XP, no guilt) instead of leaving the row blank. */}
       <div className="mb-3">
-        <button
-          onClick={() => setSportOpen(!sportOpen)}
+        <div
           className={cn(
-            "flex items-center gap-3 w-full rounded-2xl border p-3.5 transition-all duration-200 text-left active:scale-[0.98]",
+            "rounded-2xl border p-3.5 transition-all duration-200",
             workout
               ? "border-gold/45 bg-gradient-to-r from-gold/[0.12] to-gold/[0.04] shadow-[0_0_0_1px_hsl(var(--gold)/0.15),0_4px_14px_-6px_hsl(var(--gold)/0.35)]"
-              : "border-border bg-card hover:bg-secondary/50",
+              : "border-border bg-card",
           )}
         >
-          <div className={cn(
-            "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
-            workout ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground",
-          )}>
-            <Dumbbell size={20} />
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
+              workout ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground",
+            )}>
+              <Dumbbell size={20} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={cn("font-semibold text-sm flex items-center gap-1.5", workout && "text-gold")}>
+                {workout ? `${selectedSport.emoji} ${selectedSport.label}` : "Workout"}
+                {detected.workout && <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck size={10} /> Detected</span>}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {isRestDay
+                  ? "Rest day — logged"
+                  : workout
+                  ? "Tap Trained to change sport"
+                  : detected.workout ? "Health saw a workout — pick your sport" : "Did you train today?"}
+              </p>
+            </div>
+            {workout && <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+{selectedSport.xp} XP</span>}
           </div>
-          <div className="flex-1 min-w-0">
-            <p className={cn("font-semibold text-sm flex items-center gap-1.5", workout && "text-gold")}>
-              {workout ? `${selectedSport.emoji} ${selectedSport.label}` : "Select Workout"}
-              {detected.workout && <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck size={10} /> Detected</span>}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {detected.workout && !workout ? "Health saw a workout — pick your sport" : "Choose your sport category"}
-            </p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => { hapticSelection(); setRestDay(false); setSportOpen(!sportOpen); }}
+              className={cn(
+                "rounded-xl border px-3 py-2.5 text-sm font-bold transition-all active:scale-[0.97] inline-flex items-center justify-center gap-1.5",
+                workout ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
+              )}
+            >
+              Trained <ChevronDown size={14} className={cn("transition-transform", sportOpen && "rotate-180")} />
+            </button>
+            <button
+              type="button"
+              onClick={() => { hapticSelection(); setRestDay(true); setSportCategory("none"); setSportOpen(false); }}
+              className={cn(
+                "rounded-xl border px-3 py-2.5 text-sm font-bold transition-all active:scale-[0.97]",
+                isRestDay ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
+              )}
+            >
+              Rest day
+            </button>
           </div>
-          {workout && <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+{selectedSport.xp} XP</span>}
-          <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", sportOpen && "rotate-180")} />
-        </button>
+        </div>
         {sportOpen && (
           // No inner max-h scroll — a nested scrollbar hid the bottom rows of
           // opened groups. The page scrolls naturally instead.

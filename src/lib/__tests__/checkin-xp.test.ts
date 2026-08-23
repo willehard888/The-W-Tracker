@@ -8,6 +8,7 @@ import {
   isHabitDone,
   habitXpValue,
   computeCheckinXp,
+  maxDailyXp,
   PROOF_BONUS_XP,
   HYDRATION_DONE_LITERS,
 } from "@/lib/checkin-xp";
@@ -154,5 +155,30 @@ describe("computeCheckinXp — the full day score", () => {
       sleepMultiplier: 1,
     });
     expect(r.completedCount).toBe(1);
+  });
+});
+
+describe("maxDailyXp — the honest ceiling promo surfaces may quote", () => {
+  it("equals the full-day score: every habit done, proof, optimal sleep, workout at base XP", () => {
+    const habits = [
+      habit({ key: "sleep", core: true, xp: 20 }),
+      habit({ key: "workout", core: true, xp: 25 }),
+      habit({ key: "hydration", core: true, xp: 15 }),
+      habit({ key: "reading", xp: 10 }),
+    ];
+    const expected = computeCheckinXp({
+      habits,
+      state: { sleepOptimal: true, workout: true, hydration: HYDRATION_DONE_LITERS, completed: { sleep: true, workout: true, hydration: true, reading: true } },
+      sportXp: 25,
+      hasProof: true,
+      sleepMultiplier: 1,
+    }).totalXp;
+    expect(maxDailyXp(habits)).toBe(expected);
+    expect(maxDailyXp(habits)).toBeGreaterThan(PROOF_BONUS_XP);
+  });
+
+  it("without a workout habit the sport contributes nothing", () => {
+    const habits = [habit({ key: "reading", xp: 10 })];
+    expect(maxDailyXp(habits)).toBe(10 + PROOF_BONUS_XP);
   });
 });

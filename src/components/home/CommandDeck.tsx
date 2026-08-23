@@ -102,15 +102,15 @@ const CommandDeck = ({
 
             <div className="min-w-0 flex-1">
               <p className={cn("text-[10px] font-black uppercase tracking-[0.22em] mb-0.5", canCheckin ? "text-gold" : "text-muted-foreground")}>
-                {canCheckin ? "Today's check-in" : "Day locked"}
+                {canCheckin ? "Lock your day" : "Day locked"}
               </p>
               <p className="font-display font-black text-[19px] leading-none tracking-tight">
-                {canCheckin ? "Log your Core 4" : "See you tomorrow"}
+                {canCheckin ? "Daily Check-In" : "Come back tomorrow"}
               </p>
               <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
                 {canCheckin
-                  ? streak > 0 ? `Keep your ${streak}-day streak alive.` : "Sleep, workout, water, mind — then lock the day."
-                  : `Opens at midnight · ${timeUntilCheckin}`}
+                  ? streak > 0 ? `Defend your ${streak}-day streak.` : "Start your streak. Earn XP. Climb."
+                  : `Next in ${timeUntilCheckin}`}
               </p>
             </div>
 
@@ -127,7 +127,7 @@ const CommandDeck = ({
           {canCheckin ? (
             <div className="mt-3.5 flex items-center justify-between gap-2 rounded-xl px-4 py-3 gradient-gold text-primary-foreground shadow-[0_8px_22px_-8px_hsl(var(--gold)/0.7)] group-active:brightness-95">
               <span className="font-black text-sm uppercase tracking-wide inline-flex items-center gap-1.5">
-                <Flame size={15} strokeWidth={2.9} /> Check in
+                <Flame size={15} strokeWidth={2.9} /> Check in now
               </span>
               <span className="inline-flex items-center gap-1 font-black text-sm tabular-nums">
                 Up to +{maxXp} XP
@@ -137,7 +137,7 @@ const CommandDeck = ({
           ) : (
             <div className="mt-3.5 flex items-center justify-between rounded-xl px-4 py-2.5 border border-border/40">
               <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Locked</p>
-              <p className="text-xs font-black text-gold/80 tabular-nums">Locked ✓</p>
+              <p className="text-xs font-black text-gold/80 tabular-nums">Day banked ✓</p>
             </div>
           )}
         </div>

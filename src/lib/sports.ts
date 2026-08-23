@@ -3,7 +3,7 @@
  *
  * Was a private const inside DailyCheckin.tsx (10 entries, tennis & most
  * real sports funnelled into "Other"). Now shared by the check-in picker,
- * the athlete profile ("What do you train?"), and — via the
+ * the athlete profile ("What do you train?"), DailyQuests, and — via the
  * persisted `daily_checkins.sport` column — the AI coach's sport-specific
  * coaching.
  *

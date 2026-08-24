@@ -1,5 +1,5 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Flame, Users, UserPlus } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { Flame, Users } from "lucide-react";
 import EliteFeed from "./EliteFeed";
 import Tribes from "./Tribes";
 import { cn } from "@/lib/utils";
@@ -23,7 +23,6 @@ const SUB = [
 ] as const;
 
 const Squad = () => {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const raw = searchParams.get("tab");
   const tab: "feed" | "tribes" =
@@ -50,13 +49,6 @@ const Squad = () => {
             </button>
           ))}
         </div>
-        <button
-          onClick={() => { hapticSelection(); navigate("/friends"); }}
-          aria-label="Friends"
-          className="h-11 w-11 rounded-full bg-secondary/70 border border-border flex items-center justify-center text-foreground/90 shrink-0 active:scale-95 transition-transform"
-        >
-          <UserPlus size={17} />
-        </button>
       </div>
 
       {tab === "feed" ? <EliteFeed /> : <Tribes initialSub={initialSub} />}

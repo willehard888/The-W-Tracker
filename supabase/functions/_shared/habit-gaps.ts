@@ -44,6 +44,15 @@ export interface HabitGaps {
   bonusHabits: string[];
   /** Catalog habits NOT in the user's set — new-habit candidates (labels). */
   unchosen: string[];
+  /** User marked themselves sick on TODAY's check-in (habits.sick_day). */
+  sickToday: boolean;
+  /** Sick-marked days in the window. */
+  sickDays: number;
+  /** Consecutive days trained (workout=true), counting back from the most
+   *  recent logged day — the overtraining signal. */
+  consecutiveTrainingDays: number;
+  /** Second sessions (extra_workout) in the last 7 days. */
+  secondSessions7d: number;
 }
 
 const CHECKIN_COLUMNS =
@@ -73,6 +82,11 @@ export async function gatherHabitGaps(
     const rows: Record<string, unknown>[] = checkinsRes.data ?? [];
     const chosen = resolveChosen(profileRes.data?.checkin_habits ?? null);
 
+    const isSickRow = (r: Record<string, unknown>) =>
+      Boolean((r.habits as Record<string, unknown> | null)?.sick_day);
+    // Sick days don't count against habit rates — being ill is not neglect.
+    const wellRows = rows.filter((r) => !isSickRow(r));
+
     const todayStr = new Date().toISOString().slice(0, 10);
     const todayRow =
       rows.find((r) => String(r.checked_in_at ?? "").slice(0, 10) === todayStr) ?? null;
@@ -81,7 +95,7 @@ export async function gatherHabitGaps(
       key: h.key,
       label: h.label,
       pillar: h.pillar,
-      doneDays: rows.filter((r) => habitDoneOnRow(r, h.key)).length,
+      doneDays: wellRows.filter((r) => habitDoneOnRow(r, h.key)).length,
       windowDays: days,
       doneToday: todayRow ? habitDoneOnRow(todayRow, h.key) : null,
       bonus: h.cadence === "bonus",
@@ -103,16 +117,33 @@ export async function gatherHabitGaps(
     }
 
     const dailyChosen = chosen.filter((h) => h.cadence !== "bonus");
+
+    // Overtraining signals: consecutive trained days back from the latest
+    // logged day, and second sessions over the last 7 days.
+    let consecutiveTrainingDays = 0;
+    for (let i = rows.length - 1; i >= 0; i--) {
+      if (rows[i].workout === true) consecutiveTrainingDays++;
+      else break;
+    }
+    const week = rows.filter(
+      (r) => Date.now() - new Date(String(r.checked_in_at)).getTime() < 7 * 86_400_000,
+    );
+    const secondSessions7d = week.filter((r) => habitDoneOnRow(r, "extra_workout")).length;
+
     return {
       windowDays: days,
-      checkinDays: rows.length,
+      checkinDays: wellRows.length,
       // A perfect day = every DAILY habit done; bonus extras never required.
-      perfectDays: rows.filter((r) => dailyChosen.every((h) => habitDoneOnRow(r, h.key))).length,
+      perfectDays: wellRows.filter((r) => dailyChosen.every((h) => habitDoneOnRow(r, h.key))).length,
       rates,
       doneToday: daily.filter((r) => r.doneToday === true).map((r) => r.label),
       missedToday: todayRow ? daily.filter((r) => r.doneToday === false).map((r) => r.label) : [],
       bonusHabits: bonus.map((r) => (r.doneToday === true ? `${r.label} ✓ today` : r.label)),
       unchosen,
+      sickToday: todayRow ? isSickRow(todayRow) : false,
+      sickDays: rows.filter(isSickRow).length,
+      consecutiveTrainingDays,
+      secondSessions7d,
     };
   } catch (e) {
     console.error("gatherHabitGaps failed:", e);
@@ -128,6 +159,15 @@ export function buildHabitGapsBlock(g: HabitGaps | null): string {
   if (!g || g.rates.length === 0) return "";
 
   const lines: string[] = [];
+  if (g.sickToday) {
+    lines.push("- ⚠️ The user marked themselves SICK today.");
+  } else if (g.sickDays > 0) {
+    lines.push(`- Was sick on ${g.sickDays} day${g.sickDays === 1 ? "" : "s"} in this window (those days are excluded from the rates).`);
+  }
+  if (g.consecutiveTrainingDays >= 6 || g.secondSessions7d >= 3) {
+    lines.push(`- 🔺 OVERTRAINING SIGNAL: ${g.consecutiveTrainingDays} consecutive training days` +
+      (g.secondSessions7d >= 3 ? ` and ${g.secondSessions7d} double sessions in 7 days` : "") + ".");
+  }
   if (g.doneToday.length || g.missedToday.length) {
     if (g.doneToday.length) lines.push(`- Done TODAY: ${g.doneToday.join(", ")}.`);
     if (g.missedToday.length) lines.push(`- Missed today: ${g.missedToday.join(", ")}.`);
@@ -164,5 +204,5 @@ export function buildHabitGapsBlock(g: HabitGaps | null): string {
   return `Their per-habit truth (use this to AIM advice — never recite the list):
 ${lines.join("\n")}
 
-Rules for using it: NEVER tell them to improve a habit that is already done today or already solid — that reads as not paying attention. Anchor improvement advice in the habitually neglected DAILY habits (pick ONE, the most impactful). Bonus habits (e.g. a second training session) are optional extras: celebrate them when done, never call them a gap, "falling behind" or something to fix. If everything daily is solid, inspire ONE new habit from the candidates instead — sell why it compounds with what they already do.`;
+Rules for using it: NEVER tell them to improve a habit that is already done today or already solid — that reads as not paying attention. Anchor improvement advice in the habitually neglected DAILY habits (pick ONE, the most impactful). Bonus habits (e.g. a second training session) are optional extras: celebrate them when done, never call them a gap, "falling behind" or something to fix. If everything daily is solid, inspire ONE new habit from the candidates instead — sell why it compounds with what they already do. SICK DAY RULE: when the user is sick, NEVER push training, cold exposure or intensity, and never frame missed habits as failure — praise them for logging while ill and give recovery-promoting guidance only (rest, fluids, extra sleep, gentle walk at most; see a doctor if it drags on). OVERTRAINING RULE: when the overtraining signal fires, proactively recommend a REST day and explain that adaptation happens in recovery — do not program more volume or intensity, even if they ask for it lightly.`;
 }

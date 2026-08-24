@@ -93,6 +93,7 @@ Deno.serve(async (req) => {
     const label = (k: string) => SHARED_HABIT_BY_KEY[k].label;
     const doneKeys = validKeys(body?.done_keys);
     const missedKeys = validKeys(body?.missed_keys);
+    const isSick = body?.sick === true;
     // Bonus habits (second session, sauna…) are optional extras: a skipped
     // one is NOT a miss, a done one is worth a nod.
     const doneToday = doneKeys.filter((k) => !isBonusHabit(k)).map(label);
@@ -122,6 +123,7 @@ Deno.serve(async (req) => {
       .slice(0, 5);
 
     const facts = [
+      isSick ? "⚠️ THE USER IS SICK TODAY (self-reported)." : null,
       `XP earned today: ${xp}`,
       tasksTotal > 0 ? `Habits completed: ${tasksDone}/${tasksTotal}` : null,
       doneToday.length ? `DONE today: ${doneToday.join(", ")}` : null,
@@ -153,6 +155,7 @@ Rules:
 - NEVER advise improving anything in the DONE list — it's already handled today; that reads as not paying attention.
 - If suggesting improvement, aim at a MISSED or habitually neglected habit (pick ONE). If nothing was missed, spark curiosity about ONE habit not in their set yet.
 - Bonus extras (second session, sauna) are optional: celebrate if done, NEVER frame them as a gap, "falling behind", or something to fix.
+- SICK DAY: if the facts say the user is sick, do NOT push training, cold exposure or any missed habit — praise them for logging while ill and give ONE recovery-promoting cue (rest, fluids, extra sleep).
 - If a WHY is provided you MAY tie the day to it — only when it lands naturally, never as a canned tagline.
 - ${lang ? `Reply in this language: ${lang}.` : "Reply in the user's likely language (default English)."}
 - No greetings. Never mention being an AI.`,

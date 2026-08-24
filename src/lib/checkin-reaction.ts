@@ -23,6 +23,8 @@ export interface CheckinReactionBody {
    *  that point, so the body is the only source of today's per-habit truth. */
   done_keys?: string[];
   missed_keys?: string[];
+  /** User marked themselves sick on this check-in — recovery-mode feedback. */
+  sick?: boolean;
 }
 
 const TIMEOUT_MS = 12_000;

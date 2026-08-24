@@ -36,6 +36,7 @@ import { useCheckinConfig } from "@/hooks/use-checkin-config";
 import { useCheckinDay } from "@/hooks/use-checkin-day";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import CheckinHabitPicker from "@/components/checkin/CheckinHabitPicker";
+import ShieldEarnedSheet from "@/components/checkin/ShieldEarnedSheet";
 import {
   resolveCheckinHabits, PILLAR_LABEL, type CheckinPillar, type CheckinHabit,
   type VerifySignal,
@@ -217,6 +218,8 @@ const DailyCheckin = () => {
   const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [questBonusXp, setQuestBonusXp] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
+  // Streak-shield earned → explainer sheet (server says when: every 7th day)
+  const [shieldSheet, setShieldSheet] = useState<number | null>(null);
   const [newLevelReached, setNewLevelReached] = useState(0);
   const [summary, setSummary] = useState<{
     xpEarned: number; newTotalXp: number; oldLevel: number; newLevel: number;
@@ -509,10 +512,9 @@ const DailyCheckin = () => {
         toast.error(`💀 Streak lost! Your ${r.old_streak}-day streak was reset.`, { duration: 5000 });
       }
       if (r.shield_earned) {
-        toast(`🛡️ Streak shield earned! (${r.shields_remaining ?? 0}/3)`, {
-          description: "A missed day will cost a shield instead of your streak.",
-          duration: 5000,
-        });
+        // A shield is rare (every 7-day streak) and meaningful — it gets a
+        // real explainer sheet, not a 4-second toast nobody finishes reading.
+        setShieldSheet(r.shields_remaining ?? 1);
       }
 
       const xpIntoLevel = r.new_xp - (r.new_level - 1) * 500;
@@ -648,6 +650,11 @@ const DailyCheckin = () => {
       >
         {showLevelUp && <LevelUpCelebration newLevel={newLevelReached} onComplete={() => setShowLevelUp(false)} />}
         <BadgeUnlockModal badge={unlockedBadge} onClose={() => setUnlockedBadge(null)} />
+        {/* Earned shield — explainer sheet on top of the summary (the screen
+            the user is actually looking at when the grant happens). */}
+        {shieldSheet !== null && (
+          <ShieldEarnedSheet shieldsBanked={shieldSheet} onClose={() => setShieldSheet(null)} />
+        )}
         <ConfettiBurst active={submitted} />
         {summary && (
           <CheckinTierSummary

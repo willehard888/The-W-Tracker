@@ -173,6 +173,10 @@ post_install do |installer|
     installer.pods_project.targets.each do |target|
       next if %w[Capacitor CapacitorCordova].include?(target.name)
       next if target.name.start_with?('Pods-')
+      # Aggregate targets (e.g. the resource umbrella the Filesystem pod's
+      # IONFilesystemLib brought in) have no product_type — calling it raised
+      # NoMethodError and killed pod install (Codemagic build 2026-08-24).
+      next unless target.respond_to?(:product_type)
       next if target.product_type == 'com.apple.product-type.bundle'
       next if target.dependencies.map(&:name).include?('Capacitor')
       target.add_dependency(cap_target)

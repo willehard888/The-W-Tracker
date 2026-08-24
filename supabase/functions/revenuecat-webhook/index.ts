@@ -259,6 +259,14 @@ Deno.serve(async (req) => {
                 if (dead.length) await supabase.from("push_tokens").delete().in("token", dead);
               }
               // Track for the virality funnel (service role bypasses RLS).
+              await supabase.from("notifications").insert({
+                user_id: referrerId,
+                kind: "referral_converted",
+                title: gotMonth ? "+1 free month unlocked! 🎁" : "Your recruit went Premium 💎",
+                body: gotMonth ? "30 days of free membership added." : `${toNext} more paid friend${toNext === 1 ? "" : "s"} until your next free month.`,
+                route: "/referrals",
+                actor_id: appUserId,
+              });
               await supabase.from("analytics_events").insert({
                 user_id: referrerId,
                 event: "referral_converted",

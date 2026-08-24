@@ -100,6 +100,16 @@ Deno.serve(async (req) => {
       props: { referred_id: referred_id ?? null },
     });
 
+    // In-app inbox row (the bell) — mirrors the push.
+    await supabase.from("notifications").insert({
+      user_id: referrer_id,
+      kind: isActivated ? "referral_activated" : "referral_joined",
+      title: push.title,
+      body: push.body,
+      route: "/referrals",
+      actor_id: referred_id ?? null,
+    });
+
     return new Response(JSON.stringify({ ok: true, sent }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

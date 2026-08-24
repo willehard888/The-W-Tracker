@@ -142,6 +142,20 @@ Deno.serve(async (req) => {
     }
 
     const uniq = Array.from(new Set(recipients));
+
+    // In-app inbox rows — one per recipient. The tribe-invite ledger row is
+    // written by its DB trigger (tribe_invites_ledger), so skip it here to
+    // avoid doubles.
+    if (kind !== "invite") {
+      await supabase.from("notifications").insert(uniq.map((uid) => ({
+        user_id: uid,
+        kind: `tribe_${kind}`,
+        title: push!.title,
+        body: push!.body,
+        route: push!.route,
+      })));
+    }
+
     const { data: tokens } = await supabase
       .from("push_tokens").select("token, platform").in("user_id", uniq);
 

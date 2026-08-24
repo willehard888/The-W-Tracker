@@ -183,6 +183,9 @@ const DailyCheckin = () => {
   const [sportOpen, setSportOpen] = useState(false);
   // Explicit "Rest day" choice — logged as no workout, but the row reads as answered.
   const [restDay, setRestDay] = useState(false);
+  // "Sick today" — logging still keeps the streak, but the coach switches to
+  // recovery mode and never nags about missed training/cold exposure.
+  const [sickToday, setSickToday] = useState(false);
   const [hydration, setHydration] = useState(2);
   // All boolean habits keyed by habit.key.
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
@@ -340,6 +343,7 @@ const DailyCheckin = () => {
           // saw "6/13 done" and guessed WHICH habits to nag about.
           done_keys: chosenHabits.filter((h) => habitDone(h)).map((h) => h.key),
           missed_keys: chosenHabits.filter((h) => !habitDone(h)).map((h) => h.key),
+          sick: sickToday || undefined,
         }),
     });
     void queryClient.prefetchQuery({
@@ -382,6 +386,9 @@ const DailyCheckin = () => {
       // to a legacy column (new evidence-based habits). Column-backed habits
       // still go through the dedicated params below for backward-compat.
       const habitsJson: Record<string, boolean> = {};
+      // Sick flag rides in the habits jsonb — no schema change, and every
+      // coach surface reads this column already.
+      if (sickToday) habitsJson.sick_day = true;
       for (const h of chosenHabits) {
         if (h.core || h.column) continue;
         if (habitDone(h)) habitsJson[h.key] = true;
@@ -702,6 +709,41 @@ const DailyCheckin = () => {
           </p>
         </div>
       )}
+
+      {/* Sick today — recovery mode. Logging still banks the day. */}
+      <button
+        type="button"
+        onClick={() => { hapticSelection(); setSickToday((v) => !v); }}
+        className={cn(
+          "mt-2 mb-1 w-full flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all active:scale-[0.99]",
+          sickToday ? "border-teal/45 bg-teal/[0.08]" : "border-border/50 bg-card/40",
+        )}
+        aria-pressed={sickToday}
+      >
+        <span className="text-lg shrink-0">🤒</span>
+        <span className="min-w-0 flex-1">
+          <span className={cn("block text-sm font-bold", sickToday && "text-teal")}>Sick today</span>
+          <span className="block text-[11px] text-muted-foreground leading-snug mt-0.5">
+            {sickToday
+              ? "Recovery mode on — rest counts. The coach won't push training today, and missed habits don't count against you."
+              : "Feeling ill? Logging still keeps your streak — the coach switches to recovery mode."}
+          </span>
+        </span>
+        <span
+          className={cn(
+            "shrink-0 h-6 w-11 rounded-full border transition-colors relative",
+            sickToday ? "bg-teal/30 border-teal/60" : "bg-secondary border-border",
+          )}
+          aria-hidden
+        >
+          <span
+            className={cn(
+              "absolute top-0.5 h-[18px] w-[18px] rounded-full bg-foreground/90 transition-all",
+              sickToday ? "right-0.5" : "left-0.5",
+            )}
+          />
+        </span>
+      </button>
 
       <CheckinHabitPicker
         open={pickerOpen}

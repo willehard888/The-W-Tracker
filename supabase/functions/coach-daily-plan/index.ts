@@ -153,8 +153,17 @@ const buildPrompt = (
   const streak = profile?.streak ?? 0;
   const last = checkins[checkins.length - 1];
 
+  const wasSick = (c: Checkin | undefined) => Boolean((c as { habits?: { sick_day?: boolean } } | undefined)?.habits?.sick_day);
+  const consecutiveTrained = (() => {
+    let n = 0;
+    for (let i = checkins.length - 1; i >= 0; i--) {
+      if (checkins[i].workout) n++;
+      else break;
+    }
+    return n;
+  })();
   const recent = last
-    ? `Yesterday: sleep ${last.sleep_hours}h · ${last.workout ? `workout✓${sportName(last.sport) ? ` (${sportName(last.sport)})` : ""}` : "no workout"} · hydration ${last.hydration_liters}L · ${last.cold_shower ? "cold✓" : "no cold"} · ${last.healthy_food ? "food✓" : "food gap"}`
+    ? `Yesterday: sleep ${last.sleep_hours}h · ${last.workout ? `workout✓${sportName(last.sport) ? ` (${sportName(last.sport)})` : ""}` : "no workout"} · hydration ${last.hydration_liters}L · ${last.cold_shower ? "cold✓" : "no cold"} · ${last.healthy_food ? "food✓" : "food gap"}${wasSick(last) ? " · ⚠️ SICK (self-reported)" : ""}${consecutiveTrained >= 6 ? ` · 🔺 ${consecutiveTrained} consecutive training days (overtraining risk)` : ""}`
     : "No check-in yesterday.";
 
   const sessionLine = todayDay
@@ -213,6 +222,8 @@ const buildPrompt = (
 - Body: ${athlete.age ?? "?"}y, ${athlete.sex ?? "?"}, ${athlete.height_cm ?? "?"}cm, ${athlete.weight_kg ?? "?"}kg
 - Goal: ${athlete.primary_goal ?? "?"} over ${athlete.target_horizon_weeks ?? "?"} weeks
 - Scheduling rule: NEVER give missions exact clock times — anchor to morning / afternoon / evening at most.
+- SICK RULE: if the recent check-ins show the user marked sick_day (today or yesterday), plan a RECOVERY day — rest, fluids, extra sleep, gentle mobility at most. No training missions, no cold exposure.
+- OVERTRAINING RULE: if they have trained 6+ consecutive days, schedule a deliberate rest/recovery day and say why — adaptation happens in recovery.
 - Diet: ${(athlete.dietary ?? []).join(", ") || "omnivore"}
 - Equipment: ${(athlete.equipment ?? []).join(", ") || "bodyweight only"}
 - Injuries: ${(athlete.injuries ?? []).join(", ") || "none"}
@@ -485,7 +496,7 @@ Deno.serve(async (req) => {
       supabase
         .from("daily_checkins")
         .select(
-          "checked_in_at, xp_earned, workout, sport, cold_shower, healthy_food, protein_intake, hydration_liters, sleep_hours, reading, no_phone_morning, no_phone_evening",
+          "checked_in_at, xp_earned, workout, sport, cold_shower, healthy_food, protein_intake, hydration_liters, sleep_hours, reading, no_phone_morning, no_phone_evening, habits",
         )
         .eq("user_id", userId)
         .gte("checked_in_at", sevenDaysAgo)

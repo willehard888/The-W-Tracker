@@ -21,8 +21,9 @@ function isServiceRole(token: string, envKey: string): boolean {
   }
 }
 
-// Reward milestones (paid conversions) — used for the "you're N away" nudge.
-const REWARD_TIERS = [1, 3, 5, 10, 25, 50];
+// Referral engine v2: every 3 PAID friends = 1 free month (keep in sync with
+// src/lib/referral-rewards.ts + reward_referral_conversion).
+const CREDIT_EVERY = 3;
 
 // Close the referral loop: when a friend joins with your code, the referrer
 // gets a push — that acknowledgement is what makes people invite again (drives
@@ -42,7 +43,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { referrer_id, referred_id } = await req.json();
+    const { referrer_id, referred_id, kind } = await req.json();
     if (!referrer_id) {
       return new Response(JSON.stringify({ error: "referrer_id required" }), {
         status: 400,
@@ -63,19 +64,28 @@ Deno.serve(async (req) => {
 
     const name = (referred as any)?.username ? `@${(referred as any).username}` : "A friend";
     const paid = converted ?? 0;
-    const next = REWARD_TIERS.find((t) => t > paid);
-    const progress = next ? ` ${next - paid} paid recruit${next - paid === 1 ? "" : "s"} away from your next reward.` : "";
+    const toNext = CREDIT_EVERY - (paid % CREDIT_EVERY);
+    const progress = ` ${toNext} paid friend${toNext === 1 ? "" : "s"} until your next free month.`;
+
+    const isActivated = kind === "activated";
+    const push = isActivated
+      ? {
+          title: "Your recruit is locked in 🔥",
+          body: `${name} hit 3 check-ins — +250 XP for you.${progress}`,
+          data: { route: "/referrals" },
+        }
+      : {
+          title: "New recruit joined 🔥",
+          body: `${name} signed up with your code — +50 XP.${progress}`,
+          data: { route: "/referrals" },
+        };
 
     const { data: tokens } = await supabase
       .from("push_tokens").select("token, platform").eq("user_id", referrer_id);
 
     let sent = 0;
     if (tokens && tokens.length > 0) {
-      const results = await sendApnsBatch(tokens as any, {
-        title: "New recruit joined 🔥",
-        body: `${name} signed up with your code. When they go Premium, you earn a reward.${progress}`,
-        data: { route: "/referrals" },
-      });
+      const results = await sendApnsBatch(tokens as any, push);
       sent = results.filter((r) => r.status === 200).length;
       const dead = results
         .filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered")
@@ -86,7 +96,7 @@ Deno.serve(async (req) => {
     // Track for measurement (service role bypasses RLS). Feeds the virality funnel.
     await supabase.from("analytics_events").insert({
       user_id: referrer_id,
-      event: "referral_joined",
+      event: isActivated ? "referral_activated" : "referral_joined",
       props: { referred_id: referred_id ?? null },
     });
 

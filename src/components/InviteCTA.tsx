@@ -8,16 +8,16 @@ interface InviteCTAProps {
 
 const MESSAGES = [
   {
-    title: "Invite 1 friend → you both win",
-    sub: "They get 14-day trial, you get +50 XP instantly",
+    title: "Invite a friend → you both win",
+    sub: "They get a 14-day trial, you get +50 XP the moment they join",
   },
   {
-    title: "3 paying friends = 1 month free for you",
-    sub: "Every referral milestone unlocks credits & badges",
+    title: "3 paid friends = 1 month free",
+    sub: "And another month for every 3 after — no cap",
   },
   {
-    title: "Turn your network into free membership",
-    sub: "10 paying referrals = 6 months free + Founder status",
+    title: "Turn your circle into free membership",
+    sub: "Every 3 paid friends = 1 month free, forever",
   },
 ];
 

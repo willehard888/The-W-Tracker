@@ -238,17 +238,23 @@ Deno.serve(async (req) => {
               const { data: who } = await supabase
                 .from("profiles").select("username").eq("user_id", appUserId).maybeSingle();
               const paid = Number((rewardData as any)?.paid_count ?? 0);
-              const TIERS = [1, 3, 5, 10, 25];
-              const next = TIERS.find((t) => t > paid);
-              const progress = next ? ` You're ${next - paid} away from your next reward.` : "";
+              // Engine v2: every 3 paid friends = 1 free month (no cap).
+              const gotMonth = Array.isArray((rewardData as any)?.rewards) && (rewardData as any).rewards.includes("free_month");
+              const toNext = 3 - (paid % 3);
               const { data: tokens } = await supabase
                 .from("push_tokens").select("token, platform").eq("user_id", referrerId);
               if (tokens && tokens.length > 0) {
-                const results = await sendApnsBatch(tokens as any, {
-                  title: "Your recruit went Premium 💎",
-                  body: `@${(who as any)?.username ?? "A friend"} converted — you earned a reward!${progress}`,
-                  data: { route: "/referrals" },
-                });
+                const results = await sendApnsBatch(tokens as any, gotMonth
+                  ? {
+                      title: "+1 free month unlocked! 🎁",
+                      body: `@${(who as any)?.username ?? "A friend"} went Premium — 30 days of free membership added.`,
+                      data: { route: "/referrals" },
+                    }
+                  : {
+                      title: "Your recruit went Premium 💎",
+                      body: `@${(who as any)?.username ?? "A friend"} converted (+500 XP). ${toNext} more paid friend${toNext === 1 ? "" : "s"} until your next free month.`,
+                      data: { route: "/referrals" },
+                    });
                 const dead = results.filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered").map((r) => r.token);
                 if (dead.length) await supabase.from("push_tokens").delete().in("token", dead);
               }

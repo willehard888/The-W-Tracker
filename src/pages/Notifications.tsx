@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import {
   Bell, Check, X, ChevronLeft, Swords, Users, Trophy, MessageSquare,
-  Gift, Flame, Crown, CheckCheck,
+  Gift, Flame, Crown, CheckCheck, UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
@@ -150,14 +150,25 @@ const Notifications = () => {
           <ChevronLeft size={20} />
         </Button>
         <h1 className="font-display text-base font-black tracking-tight">Notifications</h1>
-        {unread > 0 && (
+        <div className="ml-auto flex items-center gap-2">
+          {unread > 0 && (
+            <button
+              onClick={markAllRead}
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-gold active:opacity-70"
+            >
+              <CheckCheck size={13} /> Mark all read
+            </button>
+          )}
+          {/* Friends management lives behind the bell now — the Squad-header
+              UserPlus button this replaces was the page's only door. */}
           <button
-            onClick={markAllRead}
-            className="ml-auto inline-flex items-center gap-1 text-[11px] font-bold text-gold active:opacity-70"
+            onClick={() => navigate("/friends")}
+            aria-label="Add friends"
+            className="h-9 w-9 rounded-full bg-secondary/70 border border-border flex items-center justify-center text-foreground/90 active:scale-95 transition-transform"
           >
-            <CheckCheck size={13} /> Mark all read
+            <UserPlus size={15} />
           </button>
-        )}
+        </div>
       </div>
 
       {/* ── Needs your response ── */}

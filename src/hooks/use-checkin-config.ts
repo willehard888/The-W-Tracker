@@ -1,6 +1,8 @@
 import { useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { withNetworkRetry } from "@/lib/retry";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { DEFAULT_CHECKIN_KEYS } from "@/lib/checkin-habits";
 
@@ -35,9 +37,27 @@ export const useCheckinConfig = () => {
 
   const mutation = useMutation({
     mutationFn: async (keys: string[]) => {
-      const { error } = await supabase.rpc("set_checkin_habits", { p_keys: keys });
-      if (error) throw new Error(error.message);
+      // Retried on transient drops (WKWebView "Load failed" on flaky cellular)
+      // — this save used to fail silently and the picker closed anyway.
+      await withNetworkRetry(async () => {
+        const { error } = await supabase.rpc("set_checkin_habits", { p_keys: keys });
+        if (error) throw new Error(error.message);
+      });
       return keys;
+    },
+    // Optimistic: the check-in reflects the new set the instant the sheet
+    // closes; a failed save rolls back AND says so out loud.
+    onMutate: async (keys: string[]) => {
+      await queryClient.cancelQueries({ queryKey: ["checkin-config", user?.id] });
+      const previous = queryClient.getQueryData(["checkin-config", user?.id]);
+      queryClient.setQueryData(["checkin-config", user?.id], { keys, customized: true });
+      return { previous };
+    },
+    onError: (_err, _keys, ctx) => {
+      if (ctx?.previous !== undefined) queryClient.setQueryData(["checkin-config", user?.id], ctx.previous);
+      toast.error("Couldn't save your habits", {
+        description: "Check your connection and save again — nothing was changed.",
+      });
     },
     onSuccess: (keys) => {
       queryClient.setQueryData(["checkin-config", user?.id], { keys, customized: true });

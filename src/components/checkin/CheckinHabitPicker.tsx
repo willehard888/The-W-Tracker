@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Lock, ShieldCheck, Loader2, X } from "lucide-react";
+import { Check, Lock, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
@@ -30,7 +30,7 @@ const PILLAR_ORDER: CheckinPillar[] = [
  * (locked on); the rest is the user's personal selection, persisted via
  * set_checkin_habits.
  */
-const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving }: Props) => {
+const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: _saving }: Props) => {
   const [draft, setDraft] = useState<Set<string>>(new Set(selectedKeys));
 
   // Re-seed the draft each time the sheet opens so it reflects saved state.
@@ -67,10 +67,15 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving }
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     // Persist non-core keys only; core is always resolved client-side.
     const keys = CHECKIN_HABITS.filter((h) => !h.core && draft.has(h.key)).map((h) => h.key);
-    try { await onSave(keys); } finally { onOpenChange(false); }
+    // Optimistic: close instantly — the hook updates the cache in onMutate,
+    // retries transient network drops, and on real failure rolls back with a
+    // loud toast. (The old `await` + `finally { close() }` swallowed errors:
+    // the sheet closed, the selection silently never saved.)
+    onOpenChange(false);
+    void onSave(keys).catch(() => { /* surfaced by the hook's toast */ });
   };
 
   const coreCount = CHECKIN_HABITS.filter((h) => h.core).length;
@@ -186,8 +191,8 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving }
 
             {/* Footer */}
             <div className="px-5 pt-3 border-t border-border/60 shrink-0">
-              <Button variant="ember" size="lg" className="w-full" onClick={handleSave} disabled={saving}>
-                {saving ? <><Loader2 size={18} className="animate-spin" /> Saving…</> : "Save my check-in"}
+              <Button variant="ember" size="lg" className="w-full" onClick={handleSave}>
+                Save my habits
               </Button>
             </div>
           </motion.div>

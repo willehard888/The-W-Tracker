@@ -2882,6 +2882,7 @@ export type Database = {
         Returns: {
           avatar_url: string
           converted: boolean
+          activated_at: string | null
           converted_at: string
           created_at: string
           referred_username: string

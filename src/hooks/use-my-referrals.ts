@@ -5,6 +5,7 @@ export interface MyReferral {
   referred_username: string;
   avatar_url: string | null;
   converted: boolean;
+  activated_at: string | null;
   created_at: string;
   converted_at: string | null;
 }

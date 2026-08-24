@@ -265,7 +265,7 @@ const Paywall = () => {
             🎁 Free membership until {creditsUntilLabel}
           </p>
           <p className="text-[11px] text-muted-foreground mt-1">
-            Earned from referral milestones — next payment auto-skipped.
+            Earned from referrals — the app stays fully unlocked until then.
           </p>
         </div>
       )}

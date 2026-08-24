@@ -284,6 +284,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checkSubUserId]);
 
+  // Referral capture — /auth?ref= stores the code in localStorage, and THIS
+  // is the only place that ever claims it (the code used to be written and
+  // then forgotten: no referrals row was ever created through the product).
+  // Runs once per user per session, after the profile has loaded, so it works
+  // for email AND Apple sign-in and survives OAuth redirects.
+  const claimAttemptedFor = useRef<string | null>(null);
+  useEffect(() => {
+    const uid = user?.id;
+    if (!uid || !profile) return;
+    if (claimAttemptedFor.current === uid) return;
+    let code: string | null = null;
+    try { code = localStorage.getItem("pending_referral_code"); } catch { return; }
+    if (!code) return;
+    claimAttemptedFor.current = uid;
+    if (profile.referred_by || code === profile.referral_code) {
+      try { localStorage.removeItem("pending_referral_code"); } catch { /* noop */ }
+      return;
+    }
+    void (async () => {
+      try {
+        const { data, error } = await supabase.rpc("claim_referral", { p_referrer_code: code! });
+        // Terminal outcomes (claimed / invalid / already referred) clear the
+        // key; a network error keeps it so the next session retries.
+        if (!error) {
+          try { localStorage.removeItem("pending_referral_code"); } catch { /* noop */ }
+          if ((data as { success?: boolean } | null)?.success) {
+            // referral_joined analytics + the referrer push both come from the
+            // DB trigger on the referrals INSERT — nothing more to log here.
+            await fetchProfile(user!);
+          }
+        }
+      } catch { /* retry next session */ }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, profile]);
+
   const signUp = useCallback(async (email: string, password: string, username: string) => {
     const { error } = await supabase.auth.signUp({
       email,

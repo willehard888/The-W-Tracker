@@ -29,7 +29,6 @@ const GOALS: Record<string, string> = {
   longevity: "Longevity",
   focus: "Focus",
 };
-const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 // Mental-focus tag → human label, mirrors the onboarding step.
 const MENTAL_FOCUS_LABEL: Record<string, string> = {
   anxiety: "Anxiety",
@@ -103,10 +102,6 @@ const AthleteProfileSettings = () => {
         </Section>
 
         <Section title="Schedule">
-          <Row label="Wake" value={profile.wake_time?.slice(0,5) ?? "—"} />
-          <Row label="Sleep" value={profile.sleep_time?.slice(0,5) ?? "—"} />
-          <Row label="Training days" value={(profile.training_days_pref ?? []).map(d => DAY_NAMES[d]).join(", ") || "—"} />
-          <Row label="Session length" value={profile.preferred_session_length_min ? `${profile.preferred_session_length_min} min` : "—"} />
           <Row label="Timezone" value={profile.timezone ?? "—"} />
         </Section>
 

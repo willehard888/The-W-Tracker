@@ -207,8 +207,7 @@ Athlete file:
 - Injuries: ${(athlete?.injuries ?? []).join(", ") || "none reported"}
 - Dietary: ${(athlete?.dietary ?? []).join(", ") || "none"}
 - No-go protocols (hard filter, never suggest): ${(athlete?.no_go_protocols ?? []).join(", ") || "none"}
-- Preferred session length: ${athlete?.preferred_session_length_min ?? 45} min
-- Rhythm: wake ${athlete?.wake_time ?? "?"} · sleep ${athlete?.sleep_time ?? "?"} · training days ${(athlete?.training_days_pref ?? []).join("/") || "flexible"}${Array.isArray(athlete?.busy_blocks) && athlete.busy_blocks.length ? `\n- Busy blocks: ${athlete.busy_blocks.map((b: any) => `${b.label ?? b.day ?? ""} ${b.start ?? ""}-${b.end ?? ""}`.trim()).filter(Boolean).join("; ").slice(0, 160)}` : ""}
+- Scheduling rule: NEVER prescribe exact clock times for workouts or habits ("train at 15:00") — anchor to morning / afternoon / evening at most, and let them fit it to their day.
 - Tier: ${tier} · Streak ${streak}d (longest ${longest})
 
 Recent activity:

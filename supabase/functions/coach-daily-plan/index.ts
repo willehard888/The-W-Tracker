@@ -212,7 +212,7 @@ const buildPrompt = (
 - ${athlete.i_am ? `Identity: "${athlete.i_am}"` : "Identity: not set"}
 - Body: ${athlete.age ?? "?"}y, ${athlete.sex ?? "?"}, ${athlete.height_cm ?? "?"}cm, ${athlete.weight_kg ?? "?"}kg
 - Goal: ${athlete.primary_goal ?? "?"} over ${athlete.target_horizon_weeks ?? "?"} weeks
-- Schedule: wake ${athlete.wake_time}, sleep ${athlete.sleep_time}, sessions ~${athlete.preferred_session_length_min} min
+- Scheduling rule: NEVER give missions exact clock times — anchor to morning / afternoon / evening at most.
 - Diet: ${(athlete.dietary ?? []).join(", ") || "omnivore"}
 - Equipment: ${(athlete.equipment ?? []).join(", ") || "bodyweight only"}
 - Injuries: ${(athlete.injuries ?? []).join(", ") || "none"}

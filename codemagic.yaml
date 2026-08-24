@@ -296,10 +296,12 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
-        # No `beta_groups:` — internal team only by default. Add groups
-        # here once you're ready to expand external testing:
-        # beta_groups:
-        #   - "Friends & Family"
+        # Every build is distributed to this tester group — WITHOUT this the
+        # build only lands in TestFlight and Apple never notifies testers
+        # (founder 2026-08-25: "sähköpostit eivät tule perille"). The name
+        # must match the App Store Connect group exactly.
+        beta_groups:
+          - "the w group"
       email:
         recipients:
           - rasmus.willehard@gmail.com

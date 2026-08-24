@@ -37,16 +37,12 @@ def capacitor_pods
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorAppLauncher', :path => '../../node_modules/@capacitor/app-launcher'
   pod 'CapacitorBrowser', :path => '../../node_modules/@capacitor/browser'
+  pod 'CapacitorFilesystem', :path => '../../node_modules/@capacitor/filesystem'
   pod 'CapacitorHaptics', :path => '../../node_modules/@capacitor/haptics'
   pod 'CapacitorLocalNotifications', :path => '../../node_modules/@capacitor/local-notifications'
   pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
+  pod 'CapacitorShare', :path => '../../node_modules/@capacitor/share'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
-  # NOTE: The HealthKit night-metrics plugin (HealthNight) is intentionally NOT a
-  # pod. A stand-alone Swift pod cannot resolve `import Capacitor` during its own
-  # module emit under Xcode 26.5 ("no such module 'Capacitor'") — this broke both
-  # @perfood AND a custom HealthNight pod. It now lives in the App target
-  # (ios/App/App/HealthNight.swift, registered via capacitor.config.json
-  # packageClassList), where `import Capacitor` resolves exactly like AppDelegate.swift.
   pod 'RevenuecatPurchasesCapacitor', :path => '../../node_modules/@revenuecat/purchases-capacitor'
   pod 'CapacitorHealth', :path => '../../node_modules/capacitor-health'
 end

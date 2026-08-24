@@ -793,6 +793,14 @@ _dep_entries=(
   # Missing entry caused build 798 to fail with:
   #   HealthPlugin.swift:2:8: error: no such module 'Capacitor'
   "CapacitorHealth:Capacitor Cordova"
+  # @capacitor/share + @capacitor/filesystem (added 2026-08-24, referral
+  # share-card work). Missing entries here are THE recurring failure mode
+  # (StatusBar pre-13, Health build-798): no -F injection → the plugin's
+  # `import Capacitor` fails with "no such module 'Capacitor'" — exactly
+  # what SharePlugin.swift did in the first build after adding these pods.
+  # Filesystem also imports the vendored IONFilesystemLib framework.
+  "CapacitorShare:Capacitor Cordova"
+  "CapacitorFilesystem:Capacitor Cordova IONFilesystemLib"
 )
 for _entry in "${_dep_entries[@]}"; do
   _target="${_entry%%:*}"

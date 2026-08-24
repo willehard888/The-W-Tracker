@@ -1662,6 +1662,36 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          actor_id: string | null
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          read_at: string | null
+          ref_id: string | null
+          route: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          read_at?: string | null
+          ref_id?: string | null
+          route?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          read_at?: string | null
+        }
+        Relationships: []
+      }
       push_tokens: {
         Row: {
           created_at: string
@@ -2916,6 +2946,7 @@ export type Database = {
         Returns: string
       }
       mark_nudge_seen: { Args: { _nudge_id: string }; Returns: undefined }
+      mark_notifications_read: { Args: { p_before?: string }; Returns: number }
       pending_friend_request_count: { Args: never; Returns: number }
       people_you_may_know: {
         Args: { p_limit?: number }

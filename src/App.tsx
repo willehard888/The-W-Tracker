@@ -33,6 +33,7 @@ const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Battles = lazy(() => import("./pages/Battles"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Referrals = lazy(() => import("./pages/Referrals"));
+const Notifications = lazy(() => import("./pages/Notifications"));
 const Paywall = lazy(() => import("./pages/Paywall"));
 const BadgeCompare = lazy(() => import("./pages/BadgeCompare"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
@@ -264,6 +265,7 @@ const AppRoutes = () => {
           <Route path="/admin/metrics" element={<ProtectedRoute><AdminMetrics /></ProtectedRoute>} />
           <Route path="/button-gallery" element={<ProtectedRoute><ButtonGallery /></ProtectedRoute>} />
           <Route path="/feed" element={<Navigate to="/squad" replace />} />
+          <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
           <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />
           <Route path="/badges/compare" element={<ProtectedRoute><BadgeCompare /></ProtectedRoute>} />

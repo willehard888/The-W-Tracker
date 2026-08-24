@@ -43,6 +43,7 @@ const PARENT_TAB: Array<{ prefix: string; tab: string }> = [
   { prefix: "/messages", tab: "/squad" },
   { prefix: "/battles", tab: "/leaderboard" },
   { prefix: "/journey", tab: "/profile" },
+  { prefix: "/notifications", tab: "/" },
 ];
 
 const activeTabFor = (pathname: string): string => {

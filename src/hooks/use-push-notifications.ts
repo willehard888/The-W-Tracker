@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useCallback, useRef, useState } f
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { supabase } from "@/integrations/supabase/client";
+import { queryClient } from "@/lib/query-client";
 import { track, FUNNEL } from "@/lib/analytics";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -15,7 +16,10 @@ import { LocalNotifications } from "@capacitor/local-notifications";
 // open external URLs / arbitrary attacker-controlled destinations.
 const SAFE_ROUTES = new Set<string>([
   "/", "/checkin", "/feed", "/tribes", "/squad", "/messages",
-  "/leaderboard", "/battles", "/profile", "/coach",
+  "/leaderboard",
+  "/referrals",
+  "/friends",
+  "/notifications", "/battles", "/profile", "/coach",
   "/coach/program",
   "/coach/memory", "/coach/goal", "/coach/reflect",
   "/coach/progress", "/coach/profile",
@@ -23,8 +27,10 @@ const SAFE_ROUTES = new Set<string>([
 const SAFE_PREFIXES = ["/briefing/", "/chat/", "/tribes/", "/user/"];
 const isSafeRoute = (r: unknown): r is string => {
   if (typeof r !== "string" || !r.startsWith("/")) return false;
-  if (SAFE_ROUTES.has(r)) return true;
-  return SAFE_PREFIXES.some((p) => r.startsWith(p));
+  // Match on the pathname only — "/squad?tab=tribes" must pass the "/squad"
+  // whitelist entry (query strings used to silently kill the deep link).
+  const path = r.split("?")[0];
+  return SAFE_ROUTES.has(path) || SAFE_PREFIXES.some((p) => path.startsWith(p));
 };
 // Use history.pushState so React Router picks up the change instead of a
 // full-page reload (window.location.href reboots the WebView).
@@ -102,7 +108,11 @@ export const usePushNotifications = (): PushNotificationState => {
     handlesRef.current.push(
       await PushNotifications.addListener("registration", (token) => registerToken(token.value)),
       await PushNotifications.addListener("registrationError", (err) => console.error("Push registration error:", err)),
-      await PushNotifications.addListener("pushNotificationReceived", () => { /* foreground: OS shows it */ }),
+      await PushNotifications.addListener("pushNotificationReceived", () => {
+        // Foreground: the OS shows the banner; we refresh the bell so the
+        // in-app inbox + unread count are already current.
+        queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      }),
       await PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
         const route = action.notification.data?.route;
         safeNavigate(typeof route === "string" ? route : "");

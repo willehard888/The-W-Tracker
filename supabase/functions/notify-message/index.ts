@@ -74,6 +74,17 @@ Deno.serve(async (req) => {
 
     const senderUsername = senderProfile?.username || "Someone";
 
+    // In-app inbox row (the bell) — written even when the receiver has no
+    // push tokens; tapping opens the thread.
+    await serviceClient.from("notifications").insert({
+      user_id: receiver_id,
+      kind: "message",
+      title: `💬 ${senderUsername} sent you a message`,
+      body: message_preview?.substring(0, 100) || "You have a new message",
+      route: `/chat/${user.id}`,
+      actor_id: user.id,
+    });
+
     // Get receiver's push tokens
     const { data: tokens } = await serviceClient
       .from("push_tokens")

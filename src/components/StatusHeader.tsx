@@ -10,9 +10,10 @@ import { getEffectiveStreak } from "@/lib/streak";
 import { pickDaily } from "@/lib/daily-rotation";
 import { getTierConfig, getNextTier, TIER_ORDER, formatTier, topShareLabel, canonicalTier } from "@/lib/status-tiers";
 import { useMyRank } from "@/hooks/use-my-rank";
+import { useUnreadNotificationCount } from "@/hooks/use-notifications";
 import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
-import { Crown, Clock, ChevronRight, Flame, Zap } from "lucide-react";
+import { Crown, Clock, ChevronRight, Flame, Zap, Bell as BellIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import BrandLogo from "@/components/BrandLogo";
 
@@ -65,6 +66,8 @@ const StatusHeader = () => {
   // Live rank — the SAME get_user_rank source and shared cache every other
   // surface uses, so the header can never contradict the profile nameplate.
   const { data: rankData } = useMyRank(profile?.user_id);
+  const { data: unreadRaw } = useUnreadNotificationCount();
+  const unreadCount = unreadRaw ?? 0;
 
   // Keyed on the local date so the quote actually rotates at midnight — with
   // empty deps it was frozen for the whole session (app left open overnight
@@ -222,17 +225,32 @@ const StatusHeader = () => {
           </div>
         )}
 
-        {/* Brand strip — minimal */}
-        <button
-          onClick={() => navigate("/")}
-          className="w-full flex items-center justify-center gap-2 pt-2 pb-1.5 active:opacity-80 transition-opacity"
-          aria-label="Whealth Factory — Home"
-        >
-          <BrandLogo size={28} alt="" className="rounded-md shadow-[0_2px_8px_hsl(var(--gold)/0.5)]" />
-          <span className="font-display font-black tracking-[0.22em] uppercase text-gradient-gold leading-none text-lg">
-            Whealth Factory
-          </span>
-        </button>
+        {/* Brand strip — minimal, with the notification bell pinned right */}
+        <div className="relative">
+          <button
+            onClick={() => navigate("/")}
+            className="w-full flex items-center justify-center gap-2 pt-2 pb-1.5 active:opacity-80 transition-opacity"
+            aria-label="Whealth Factory — Home"
+          >
+            <BrandLogo size={28} alt="" className="rounded-md shadow-[0_2px_8px_hsl(var(--gold)/0.5)]" />
+            <span className="font-display font-black tracking-[0.22em] uppercase text-gradient-gold leading-none text-lg">
+              Whealth Factory
+            </span>
+          </button>
+          {/* The bell — one place for everything that happened to you */}
+          <button
+            onClick={() => navigate("/notifications")}
+            aria-label={unreadCount > 0 ? `Notifications — ${unreadCount} unread` : "Notifications"}
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-90 transition"
+          >
+            <BellIcon size={18} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[hsl(var(--ember))] text-white text-[10px] font-black flex items-center justify-center tabular-nums border-2 border-[hsl(var(--background))]">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
 
 
         {/* Single status row: avatar + identity + tier progress + pill.

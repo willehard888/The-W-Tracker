@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import BrandLogo, { LOGO_DATA_URI } from "@/components/BrandLogo";
+import { shareImage, saveImage, shareText } from "@/lib/share-image";
+import { isNativePlatform } from "@/lib/platform";
 import { getTierConfig } from "@/lib/status-tiers";
 import { track, FUNNEL } from "@/lib/analytics";
 
@@ -24,17 +27,17 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
   const { profile } = useAuth();
   const cardRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   if (!open || !profile) return null;
 
   const tier = profile.status_tier || 'recruit';
   const tierConfig = getTierConfig(tier);
 
-  const handleDownload = async () => {
-    if (!cardRef.current) return;
-    setDownloading(true);
-
-    try {
+  // Renders the story card to a PNG blob — shared by Save Image and Share.
+  const generateBlob = async (): Promise<Blob | null> => {
+    if (!cardRef.current) return null;
+    {
       const card = cardRef.current;
       const canvas = document.createElement("canvas");
       const scale = 3;
@@ -46,6 +49,11 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
       const s = w / card.offsetWidth;
       ctx.scale(s, s);
       const cardH = h / s;
+
+      // The brand mark is an inline data URI — decodes instantly, no CORS.
+      const logo = new Image();
+      logo.src = LOGO_DATA_URI;
+      try { await logo.decode(); } catch { /* text fallback below */ }
 
       // Background gradient based on tier
       const gradient = ctx.createLinearGradient(0, 0, card.offsetWidth, cardH);
@@ -300,80 +308,133 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
         const centerY = cardH / 2;
         const code = (referralCode || profile.username).toUpperCase();
 
+        // Depth: a warm radial glow behind the center + drifting ember dots —
+        // the flat gradient alone read cheap on a bright phone screen.
+        const glow = ctx.createRadialGradient(cx, centerY - 40, 10, cx, centerY - 40, card.offsetWidth * 0.75);
+        const glowTint = tier === "legend" ? "160, 90, 255" : tier === "apex" ? "235, 110, 40" : "202, 158, 62";
+        glow.addColorStop(0, `rgba(${glowTint}, 0.16)`);
+        glow.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, card.offsetWidth, cardH);
+        const embers: Array<[number, number, number, number]> = [
+          [0.12, 0.16, 1.6, 0.5], [0.85, 0.12, 1.2, 0.35], [0.2, 0.82, 1.4, 0.4],
+          [0.9, 0.72, 1.8, 0.5], [0.08, 0.55, 1.1, 0.3], [0.78, 0.4, 1.3, 0.35],
+          [0.3, 0.06, 1.0, 0.3], [0.62, 0.9, 1.5, 0.45], [0.45, 0.24, 0.9, 0.25],
+        ];
+        for (const [px, py, r, a] of embers) {
+          ctx.fillStyle = `rgba(${glowTint}, ${a})`;
+          ctx.beginPath();
+          ctx.arc(px * card.offsetWidth, py * cardH, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Brand mark — the real logo, centered above the headline.
+        if (logo.complete && logo.naturalWidth > 0) {
+          const ls = 52;
+          ctx.save();
+          ctx.shadowColor = "rgba(202,158,62,0.55)";
+          ctx.shadowBlur = 22;
+          ctx.drawImage(logo, cx - ls / 2, centerY - 158, ls, ls);
+          ctx.restore();
+        }
+
         ctx.fillStyle = "#f0ece4";
-        ctx.font = "800 30px 'Space Grotesk', system-ui, sans-serif";
-        ctx.fillText("Train with me.", cx, centerY - 96);
+        ctx.font = "800 34px 'Space Grotesk', system-ui, sans-serif";
+        ctx.fillText("Train with me.", cx, centerY - 62);
 
         ctx.fillStyle = "rgba(255,255,255,0.55)";
         ctx.font = "600 13px 'Inter', system-ui, sans-serif";
-        ctx.fillText(`@${profile.username} on Whealth Factory`, cx, centerY - 72);
+        ctx.fillText(`@${profile.username} on Whealth Factory`, cx, centerY - 38);
 
-        // Invite-code box
-        const boxW = card.offsetWidth - 96, boxH = 60, boxX = 48, boxY = centerY - 48;
-        ctx.fillStyle = "rgba(202, 158, 62, 0.10)";
-        ctx.beginPath(); ctx.roundRect(boxX, boxY, boxW, boxH, 12); ctx.fill();
-        ctx.strokeStyle = "rgba(202, 158, 62, 0.5)"; ctx.lineWidth = 1.5; ctx.stroke();
-        ctx.fillStyle = "rgba(202,158,62,0.65)";
+        // Invite-code chip — the font AUTOFITS so long codes never wrap or clip.
+        const boxW = card.offsetWidth - 72, boxH = 66, boxX = 36, boxY = centerY - 12;
+        const chipGrad = ctx.createLinearGradient(boxX, boxY, boxX + boxW, boxY + boxH);
+        chipGrad.addColorStop(0, "rgba(202, 158, 62, 0.16)");
+        chipGrad.addColorStop(1, "rgba(202, 158, 62, 0.06)");
+        ctx.fillStyle = chipGrad;
+        ctx.beginPath(); ctx.roundRect(boxX, boxY, boxW, boxH, 14); ctx.fill();
+        ctx.strokeStyle = "rgba(202, 158, 62, 0.6)"; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.fillStyle = "rgba(202,158,62,0.7)";
         ctx.font = "700 9px 'Inter', system-ui, sans-serif";
-        ctx.fillText("YOUR INVITE CODE", cx, boxY + 20);
-        ctx.fillStyle = "rgba(202, 158, 62, 1)";
-        ctx.font = "900 22px 'Space Grotesk', system-ui, sans-serif";
-        ctx.fillText(code, cx, boxY + 46);
+        ctx.fillText("YOUR INVITE CODE", cx, boxY + 21);
+        let codeSize = 26;
+        ctx.fillStyle = "rgba(212, 172, 80, 1)";
+        do {
+          ctx.font = `900 ${codeSize}px 'Space Grotesk', system-ui, sans-serif`;
+          if (ctx.measureText(code).width <= boxW - 28) break;
+          codeSize -= 1;
+        } while (codeSize > 10);
+        ctx.save();
+        ctx.shadowColor = "rgba(202,158,62,0.45)";
+        ctx.shadowBlur = 14;
+        ctx.fillText(code, cx, boxY + 50);
+        ctx.restore();
 
-        ctx.fillStyle = "#f0ece4";
-        ctx.font = "800 15px 'Space Grotesk', system-ui, sans-serif";
-        ctx.fillText("14-day free trial", cx, centerY + 46);
-        ctx.fillStyle = "rgba(255,255,255,0.45)";
-        ctx.font = "500 11px 'Inter', system-ui, sans-serif";
-        ctx.fillText("AI coach · daily check-ins · the full system", cx, centerY + 66);
+        // Value line — the trial pitch is gone (every new user gets the trial
+        // anyway); sell what the app IS.
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.font = "600 11.5px 'Inter', system-ui, sans-serif";
+        ctx.fillText("AI coach · daily check-ins · the full system", cx, centerY + 82);
 
-        ctx.fillStyle = "rgba(202,158,62,0.5)";
+        ctx.fillStyle = "rgba(202,158,62,0.55)";
         ctx.font = "700 10px 'Inter', system-ui, sans-serif";
         ctx.fillText("USE MY CODE AT SIGN-UP", cx, cardH - 30);
       }
+      return await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+    }
+  };
 
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `whealth-factory-${variant}.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-        toast.success("Story card downloaded!");
-        setDownloading(false);
-      }, "image/png");
+  const shareCaption =
+    variant === "referral"
+      ? `Train with me on Whealth Factory — daily check-ins, AI coach, the full system. Use my invite code ${(referralCode || profile.username).toUpperCase()}: ${referralLink || "https://whealthfactory.com"}`
+      : variant === "streak"
+      ? `🔥 ${profile.streak}-day streak on Whealth Factory. ${profile.streak >= 30 ? "30 days strong." : "Beat my streak!"} https://whealthfactory.com/u/${profile.username}`
+      : variant === "badge" && badgeData
+      ? `Just unlocked ${badgeData.name} ${badgeData.icon} (${badgeData.rarity.toUpperCase()}) on Whealth Factory! https://whealthfactory.com/u/${profile.username}`
+      : variant === "whealth" && whealthData
+      ? `Whealth Index ${whealthData.overall}/100 on Whealth Factory — one number for sleep, recovery, movement, nutrition, mind & inner work. https://whealthfactory.com/u/${profile.username}`
+      : `${profile.xp.toLocaleString()} XP · ${tierConfig.label} on Whealth Factory. https://whealthfactory.com/u/${profile.username}`;
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const blob = await generateBlob();
+      if (!blob) throw new Error("no blob");
+      const outcome = await saveImage(blob, `whealth-factory-${variant}.png`);
+      if (outcome === "downloaded") toast.success("Story card downloaded!");
+      else if (outcome === "shared") toast.success("Choose “Save Image” in the sheet to save to Photos");
+      void track(FUNNEL.inviteShared, { method: "save", surface: "story", variant });
     } catch (err) {
       console.error(err);
       toast.error("Failed to generate image");
+    } finally {
       setDownloading(false);
     }
   };
 
   const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
+    setSharing(true);
+    try {
+      // Share the IMAGE itself — Instagram/WhatsApp only appear in the sheet
+      // for a real file. The caption carries the invite link.
+      const blob = await generateBlob();
+      if (blob) {
+        const outcome = await shareImage(blob, {
+          filename: `whealth-factory-${variant}.png`,
           title: "Whealth Factory",
-          text: variant === "referral"
-            ? `I run my discipline on Whealth Factory — daily check-ins, AI coach, the whole system. Here's a 14-day free trial: ${referralLink || window.location.origin}`
-            : variant === "streak"
-            ? `🔥 ${profile.streak}-day streak on Whealth Factory. ${profile.streak >= 30 ? "Most fail before this." : "Beat my streak!"}`
-            : variant === "badge" && badgeData
-            ? `Just unlocked ${badgeData.name} ${badgeData.icon} (${badgeData.rarity.toUpperCase()}) on Whealth Factory!`
-            : variant === "whealth" && whealthData
-            ? `Whealth Index ${whealthData.overall}/100 on Whealth Factory — one number for sleep, recovery, movement, nutrition, mind & inner work. What's yours?`
-            : `${profile.xp.toLocaleString()} XP • Level ${profile.level} • ${tierConfig.emoji} ${tierConfig.label} on Whealth Factory. The grind doesn't stop.`,
-          // Non-referral shares point at the user's PUBLIC profile — the /u/
-          // route serves an OG card to crawlers, so the link lands rich.
-          url: variant === "referral"
-            ? (referralLink || window.location.origin)
-            : `https://whealthfactory.com/u/${profile.username}`,
+          text: shareCaption,
         });
-        void track(FUNNEL.inviteShared, { method: "native", surface: "story", variant });
-      } catch {}
-    } else {
-      handleDownload();
+        if (outcome === "downloaded") toast.success("Sharing isn't available here — image downloaded instead");
+        if (outcome !== "cancelled") void track(FUNNEL.inviteShared, { method: "native", surface: "story", variant });
+        return;
+      }
+      // Canvas failed → at least share the text + link.
+      await shareText({ title: "Whealth Factory", text: shareCaption });
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't open sharing");
+    } finally {
+      setSharing(false);
     }
   };
 
@@ -522,20 +583,31 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
               </>
             )}
 
-            {variant === "referral" && (
-              <>
-                <p className="font-extrabold text-foreground text-2xl">Train with me.</p>
-                <p className="text-muted-foreground/60 text-xs mb-5">@{profile.username} on Whealth Factory</p>
-                <div className="w-full rounded-xl border border-gold/40 bg-gold/[0.08] px-4 py-3 mb-5">
-                  <p className="text-[9px] font-bold tracking-[0.22em] text-gold/60 mb-1">YOUR INVITE CODE</p>
-                  <p className="font-display font-black text-gold text-xl tracking-wide break-all leading-none">
-                    {(referralCode || profile.username).toUpperCase()}
-                  </p>
-                </div>
-                <p className="font-black text-foreground text-base">14-day free trial</p>
-                <p className="text-muted-foreground/50 text-[11px] mt-1">AI coach · daily check-ins · the full system</p>
-              </>
-            )}
+            {variant === "referral" && (() => {
+              const code = (referralCode || profile.username).toUpperCase();
+              // Autofit: long codes shrink instead of wrapping mid-code.
+              const codeSize = Math.max(12, Math.min(20, Math.floor(236 / (code.length * 0.66))));
+              return (
+                <>
+                  <div className="relative mb-4">
+                    <div className="absolute inset-0 -m-2 rounded-full bg-gold/20 blur-xl" aria-hidden />
+                    <BrandLogo size={48} className="relative rounded-xl shadow-[0_4px_18px_hsl(var(--gold)/0.5)]" alt="" />
+                  </div>
+                  <p className="font-extrabold text-foreground text-2xl">Train with me.</p>
+                  <p className="text-muted-foreground/60 text-xs mb-5">@{profile.username} on Whealth Factory</p>
+                  <div className="w-full rounded-xl border border-gold/50 bg-gradient-to-br from-gold/[0.14] to-gold/[0.05] px-4 py-3 mb-4 shadow-[0_0_24px_-8px_hsl(var(--gold)/0.4)]">
+                    <p className="text-[10px] font-bold tracking-[0.22em] text-gold/60 mb-1">YOUR INVITE CODE</p>
+                    <p
+                      className="font-display font-black text-gold tracking-wide leading-none whitespace-nowrap drop-shadow-[0_0_10px_hsl(var(--gold)/0.35)]"
+                      style={{ fontSize: `${codeSize}px` }}
+                    >
+                      {code}
+                    </p>
+                  </div>
+                  <p className="text-muted-foreground/50 text-[11px]">AI coach · daily check-ins · the full system</p>
+                </>
+              );
+            })()}
 
             {variant === "referral" ? (
               <p className="absolute bottom-4 text-gold/40 font-bold tracking-[0.22em] text-[10px]">
@@ -555,9 +627,9 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
             <Download size={16} />
             {downloading ? "Saving..." : "Save Image"}
           </Button>
-          <Button variant="gold-outline" size="default" className="flex-1" onClick={handleShare}>
+          <Button variant="gold-outline" size="default" className="flex-1" onClick={handleShare} disabled={sharing}>
             <Share2 size={16} />
-            Share
+            {sharing ? "Opening…" : "Share"}
           </Button>
         </div>
       </div>

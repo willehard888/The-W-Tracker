@@ -13,6 +13,7 @@ import { useReferralStats } from "@/hooks/use-referral-stats";
 import { useMyReferrals } from "@/hooks/use-my-referrals";
 import { track, FUNNEL } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
+import { shareText } from "@/lib/share-image";
 
 type Reward = {
   count: number;
@@ -52,7 +53,9 @@ const Referrals = () => {
 
   if (!profile) return null;
 
-  const referralLink = `${window.location.origin}/auth?ref=${profile.referral_code || profile.username}`;
+  // Hardcoded canonical origin — window.location.origin is capacitor://localhost
+  // inside the native shell, which made every shared link dead on arrival.
+  const referralLink = `https://whealthfactory.com/auth?ref=${profile.referral_code || profile.username}`;
 
   const handleCopy = async () => {
     try {
@@ -67,18 +70,13 @@ const Referrals = () => {
   };
 
   const handleNativeShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Join Whealth Factory",
-          text: `I run my discipline on Whealth Factory — daily check-ins, AI coach, the whole system. Here's a 14-day free trial:`,
-          url: referralLink,
-        });
-        void track(FUNNEL.inviteShared, { method: "native" });
-      } catch {}
-    } else {
-      handleCopy();
-    }
+    const ok = await shareText({
+      title: "Join Whealth Factory",
+      text: `Train with me on Whealth Factory — daily check-ins, AI coach, the full system. Join here: ${referralLink}`,
+      url: referralLink,
+    });
+    if (ok) void track(FUNNEL.inviteShared, { method: "native" });
+    else handleCopy();
   };
 
   const referralCode = profile.referral_code || profile.username;

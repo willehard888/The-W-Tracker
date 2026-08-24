@@ -4,6 +4,7 @@ import {
   isInferno,
   getEffectiveStreak,
   getStreakDeadlineState,
+  isCheckedInToday,
 } from "@/lib/streak";
 
 describe("personalStreakTier — ladder boundaries", () => {
@@ -97,5 +98,16 @@ describe("getStreakDeadlineState — time left to protect", () => {
     const gone = getStreakDeadlineState(5, new Date(2026, 5, 14, 12).toISOString());
     expect(gone!.expired).toBe(true);
     expect(gone!.urgent).toBe(true);
+  });
+});
+
+describe("isCheckedInToday — today banked means no risk", () => {
+  it("true for a check-in earlier today, false for yesterday and null", () => {
+    const now = new Date();
+    expect(isCheckedInToday(now.toISOString())).toBe(true);
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 20, 0, 0);
+    expect(isCheckedInToday(yesterday.toISOString())).toBe(false);
+    expect(isCheckedInToday(null)).toBe(false);
+    expect(isCheckedInToday(undefined)).toBe(false);
   });
 });

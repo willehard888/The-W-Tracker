@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { getPreviousTier, type StatusTier } from "@/lib/status-tiers";
-import { getStreakDeadlineState } from "@/lib/streak";
+import { getStreakDeadlineState, isCheckedInToday } from "@/lib/streak";
 
 export type RiskLevel = "safe" | "pressure" | "danger";
 
@@ -46,7 +46,12 @@ export const useTierRisk = ({ tier, rankScore, streak, lastCheckinAt }: UseTierR
     let level: RiskLevel = "safe";
     let reason: "streak" | "score" | null = null;
 
-    if (streak > 0 && deadline) {
+    // Today is banked → nothing is at risk until tomorrow. Without this the
+    // banner fired every day right after checking in (48h window − a few
+    // hours < the 36h threshold).
+    const bankedToday = isCheckedInToday(lastCheckinAt);
+
+    if (!bankedToday && streak > 0 && deadline) {
       if (deadline.expired || (hoursLeft !== null && hoursLeft < 24)) {
         level = "danger";
         reason = "streak";

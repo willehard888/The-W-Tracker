@@ -57,6 +57,16 @@ export const getEffectiveStreak = (streak: number, lastCheckinAt?: string | null
   return daysSince >= 2 ? 0 : streak;
 };
 
+/** True when the last check-in falls on the CURRENT local calendar day —
+ *  i.e. today is already banked and the streak cannot be at risk before
+ *  tomorrow. (The 48h deadline window alone made Home's risk banner fire
+ *  right AFTER a check-in: ~34h left < the 36h "pressure" threshold.) */
+export const isCheckedInToday = (lastCheckinAt?: string | null): boolean => {
+  const ms = getLastCheckinMs(lastCheckinAt);
+  if (!ms) return false;
+  return new Date(ms).toDateString() === new Date().toDateString();
+};
+
 /**
  * Time remaining before the streak is lost. With the calendar-day model the
  * streak breaks at LOCAL midnight that starts the second day after the last

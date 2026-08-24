@@ -32,8 +32,6 @@ const TONES: { id: ToneId; label: string; sub: string }[] = [
   { id: "hype",           label: "Hype coach",     sub: "Energy. Wins. Momentum." },
 ];
 
-const DAYS = ["M","T","W","T","F","S","S"];
-const DAY_INDEX = [1,2,3,4,5,6,0];
 
 // 4 environment presets replace the previous 9-item granular list.
 // User feedback: "tee välinevalinnasta todella simppeli esim full gym jne."
@@ -48,8 +46,6 @@ const EQUIPMENT_PRESETS: { id: string; label: string; emoji: string; sub: string
 const DIET = ["Omnivore","Vegetarian","Vegan","Lactose-free","Gluten-free","Halal","Keto"];
 const INJURIES = ["Lower back","Knee","Shoulder","Hip","Wrist","Elbow","Neck"];
 
-const SESSION_PRESETS = [20, 30, 45, 60, 90];
-const HORIZON_PRESETS = [4, 8, 12, 26, 52];
 
 // Mind & life step (migration 20260511181220).
 const HOBBIES = [
@@ -297,76 +293,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
         </div>
       ),
     },
-    // 3 — schedule + horizon combined
-    {
-      title: "Your week",
-      sub: "Coach times missions to your real life.",
-      content: (
-        <div className="space-y-5">
-          <Field label="Training days">
-            <div className="flex justify-between gap-1">
-              {DAYS.map((d, i) => {
-                const dayNum = DAY_INDEX[i];
-                const active = draft.training_days_pref.includes(dayNum);
-                return (
-                  <button key={i} type="button"
-                    onClick={() => {
-                      hapticImpact("light");
-                      const arr = draft.training_days_pref;
-                      set({ training_days_pref: active ? arr.filter((x: number) => x !== dayNum) : [...arr, dayNum].sort() });
-                    }}
-                    className={cn(
-                      "flex-1 h-11 rounded-xl text-xs font-bold border transition-all",
-                      active
-                        ? "bg-[hsl(var(--gold)/0.15)] border-[hsl(var(--gold)/0.5)] text-[hsl(var(--gold))]"
-                        : "border-border/40 text-muted-foreground"
-                    )}>
-                    {d}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="text-[10px] text-muted-foreground/70 mt-1.5">
-              {draft.training_days_pref.length} days/week
-            </p>
-          </Field>
-
-          <Field label="Session length">
-            <div className="flex gap-1.5">
-              {SESSION_PRESETS.map(m => (
-                <Chip key={m} small active={draft.preferred_session_length_min === m}
-                  onClick={() => set({ preferred_session_length_min: m })}>
-                  {m}m
-                </Chip>
-              ))}
-            </div>
-          </Field>
-
-          <Field label="Goal horizon">
-            <div className="flex gap-1.5">
-              {HORIZON_PRESETS.map(w => (
-                <Chip key={w} small active={draft.target_horizon_weeks === w}
-                  onClick={() => set({ target_horizon_weeks: w })}>
-                  {w}w
-                </Chip>
-              ))}
-            </div>
-          </Field>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Wake">
-              <Input type="time" value={draft.wake_time}
-                onChange={e => set({ wake_time: e.target.value })} />
-            </Field>
-            <Field label="Sleep">
-              <Input type="time" value={draft.sleep_time}
-                onChange={e => set({ sleep_time: e.target.value })} />
-            </Field>
-          </div>
-        </div>
-      ),
-    },
-    // 4 — constraints (optional, can skip)
+    // 3 — constraints (optional, can skip)
     {
       title: "Anything to work around?",
       sub: "Optional. Tap what applies — or skip ahead.",
@@ -451,9 +378,11 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
 
   const last = step === STEPS.length - 1;
   const cur = STEPS[step];
-  // Steps now: 0=goal, 1=body, 2=mind&life, 3=week, 4=constraints, 5=tone.
-  // "Constraints" remains the only Skip-able step (#4 after insertion).
-  const optional = step === 4;
+  // Steps: 0=goal, 1=body, 2=mind&life, 3=constraints, 4=tone. The "Your
+  // week" step (exact training days / session length / wake & sleep) was
+  // removed on founder request — too precise to plan honestly, and it made
+  // the coach prescribe workouts at exact clock times.
+  const optional = step === 3;
 
   const next = async () => {
     if (last) {

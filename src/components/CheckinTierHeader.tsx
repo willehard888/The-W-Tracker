@@ -83,7 +83,13 @@ const CheckinTierHeader = ({
       : "text-muted-foreground";
 
   return (
-    <div className="sticky top-0 z-20 -mx-4 px-4 pt-3 pb-3 mb-4 bg-[hsl(var(--background)/0.97)] border-b border-border/40 overflow-hidden">
+    <div
+      className="sticky top-0 z-20 -mx-4 px-4 pb-3 mb-4 bg-[hsl(var(--background)/0.97)] border-b border-border/40 overflow-hidden"
+      // The global StatusHeader (which owns the safe-area) is hidden on
+      // /checkin, so this sticky header must clear the notch itself: inset
+      // + 12px on notch iPhones, plain 12px on web/older devices.
+      style={{ paddingTop: "calc(var(--safe-top, 0px) + 12px)" }}
+    >
       {/* Tier-specific glow background */}
       <div className={cn("absolute inset-0 -z-10 bg-gradient-to-br pointer-events-none opacity-90", bg)} />
 

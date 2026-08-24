@@ -889,12 +889,28 @@ _deps_for_target() {
   echo ""
 }
 
+# Where a dep framework lives under $(PODS_CONFIGURATION_BUILD_DIR).
+# Source pods build into <PodName>/ — but VENDORED XCFRAMEWORKS are copied by
+# CocoaPods' "[CP] Copy XCFrameworks" script into
+# XCFrameworkIntermediates/<PodName>/ instead (cocoapods build_settings.rb:
+# PODS_XCFRAMEWORKS_BUILD_DIR = $(PODS_CONFIGURATION_BUILD_DIR)/XCFrameworkIntermediates,
+# consumer search path = ${PODS_XCFRAMEWORKS_BUILD_DIR}/<target>). Pointing
+# -F at the source-pod layout made CapacitorFilesystem fail with
+# "no such module 'IONFilesystemLib'" (Codemagic build 2026-08-24 #2).
+_fdir_for_dep() {
+  case "$1" in
+    Cordova)          echo CapacitorCordova ;;
+    IONFilesystemLib) echo "XCFrameworkIntermediates/IONFilesystemLib" ;;
+    *)                echo "$1" ;;
+  esac
+}
+
 # Build a string like " -F$(PODS_CONFIGURATION_BUILD_DIR)/Capacitor -F$(PODS_CONFIGURATION_BUILD_DIR)/CapacitorCordova"
 _build_f_flags() {
   local _deps="$1"
   local _out=""
   for _d in $_deps; do
-    local _p=$(_pod_for_framework "$_d")
+    local _p=$(_fdir_for_dep "$_d")
     _out="${_out} -F\$(PODS_CONFIGURATION_BUILD_DIR)/${_p}"
   done
   echo "${_out}"
@@ -905,7 +921,7 @@ _build_xcc_f_flags() {
   local _deps="$1"
   local _out=""
   for _d in $_deps; do
-    local _p=$(_pod_for_framework "$_d")
+    local _p=$(_fdir_for_dep "$_d")
     _out="${_out} -Xcc -F\$(PODS_CONFIGURATION_BUILD_DIR)/${_p}"
   done
   echo "${_out}"

@@ -1,0 +1,58 @@
+import { cn } from "@/lib/utils";
+import { illustrationUrl, type IllustratedExercise } from "@/data/exercises-illustrated";
+
+/**
+ * Everkinetic technique illustration, rendered in brand: the source SVGs are
+ * black line art on white — an invert + sepia filter chain turns them into
+ * GOLD lines on the dark tile, so all ~270 drawings read as one bespoke
+ * Whealth Factory illustration set. (Source CC BY-SA 4.0 — attribution lives
+ * in the library footer.)
+ */
+// Verified in-browser: full invert turns the white SVG background pure black
+// (partial invert left a muddy brown box), sepia+saturate turns the line art
+// warm gold. Tiles use a black background so the SVG's square edge is
+// seamless.
+const GOLD_LINES = "invert(1) sepia(0.7) saturate(3) hue-rotate(-18deg) brightness(0.9)";
+
+export const IllustrationThumb = ({ ex, size = 56, className }: { ex: IllustratedExercise; size?: number; className?: string }) => (
+  <div
+    aria-hidden
+    className={cn(
+      "shrink-0 overflow-hidden rounded-xl border border-gold/25 bg-black flex items-center justify-center",
+      "shadow-[inset_0_1px_0_hsl(var(--gold)/0.12)]",
+      className,
+    )}
+    style={{ width: size, height: size }}
+  >
+    <img
+      src={illustrationUrl(ex.idNum, "tension")}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      className="h-full w-full object-contain p-1"
+      style={{ filter: GOLD_LINES }}
+    />
+  </div>
+);
+
+/** Detail hero: the two technique states, Start → Finish. */
+export const IllustrationHero = ({ ex, className }: { ex: IllustratedExercise; className?: string }) => (
+  <div className={cn("grid grid-cols-2 gap-2", className)}>
+    {(["relaxation", "tension"] as const).map((state, i) => (
+      <div key={state} className="relative overflow-hidden rounded-2xl border border-gold/25 bg-black">
+        <img
+          src={illustrationUrl(ex.idNum, state)}
+          alt={`${ex.title} — ${i === 0 ? "start" : "finish"} position`}
+          loading="eager"
+          decoding="async"
+          className="w-full h-40 object-contain p-3"
+          style={{ filter: GOLD_LINES }}
+        />
+        <span className="absolute bottom-2 left-1/2 -translate-x-1/2 eyebrow text-gold/70">
+          {i === 0 ? "Start" : "Finish"}
+        </span>
+        <div aria-hidden className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+      </div>
+    ))}
+  </div>
+);

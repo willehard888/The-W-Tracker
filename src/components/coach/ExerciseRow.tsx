@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, Dumbbell, Check, Loader2 } from "lucide-react";
+import { ChevronDown, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { toast } from "sonner";
 import { useExerciseLibrary, resolveExercise, exerciseImg } from "@/lib/exercise-library";
+import { resolveGroup } from "@/lib/exercise-group";
+import ExerciseTile from "@/components/coach/ExerciseTile";
 import { useExerciseHistory, useDayLogs, useLogSet } from "@/hooks/use-workout-log";
 import Sparkline from "@/components/coach/Sparkline";
 
@@ -73,8 +75,9 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
     if (r != null) setReps(String(r));
   };
 
-  const rawThumb = ex?.images?.[0];
-  const thumb = exerciseImg(rawThumb, 96);
+  // Branded tile — instant, identical style on every row (the mixed library
+  // photos loaded late and read cheap; they still live in the detail below).
+  const group = resolveGroup(block.name, ex?.primary);
   const hasMore = !!(ex || block.notes || block.alt || block.rest_sec || block.tempo);
 
   const save = async () => {
@@ -103,23 +106,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
         onClick={() => hasMore && (hapticImpact("light"), setOpen((v) => !v))}
         className="w-full flex items-center gap-2.5 py-1.5 text-left"
       >
-        <div className="shrink-0 h-10 w-10 rounded-lg overflow-hidden bg-secondary/50 border border-border/40 flex items-center justify-center">
-          {thumb ? (
-            <img
-              src={thumb}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className="h-full w-full object-cover"
-              onError={(e) => {
-                const img = e.currentTarget;
-                if (!img.dataset.fb && rawThumb) { img.dataset.fb = "1"; img.src = rawThumb; }
-              }}
-            />
-          ) : (
-            <Dumbbell size={15} className="text-muted-foreground/60" />
-          )}
-        </div>
+        <ExerciseTile group={group} size={40} />
         <div className="flex-1 min-w-0">
           <span className="font-bold text-sm text-foreground block truncate">{block.name}</span>
           {logged && (

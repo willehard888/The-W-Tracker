@@ -125,13 +125,14 @@ const CommandDeck = ({
 
           {/* Primary action bar */}
           {canCheckin ? (
-            <div className="mt-3.5 flex items-center justify-between gap-2 rounded-xl px-4 py-3 gradient-gold text-primary-foreground shadow-[0_8px_22px_-8px_hsl(var(--gold)/0.7)] group-active:brightness-95">
-              <span className="font-black text-sm uppercase tracking-wide inline-flex items-center gap-1.5">
-                <Flame size={15} strokeWidth={2.9} /> Check in now
+            <div className="mt-3.5 flex items-center justify-between gap-3 rounded-2xl px-5 py-4 min-h-[64px] gradient-gold text-primary-foreground shadow-[0_10px_26px_-8px_hsl(var(--gold)/0.75)] group-active:brightness-95 group-active:scale-[0.99] transition-transform">
+              {/* The one action on this screen — sized like it. */}
+              <span className="font-display font-black text-[26px] leading-none uppercase tracking-tight inline-flex items-center gap-2.5">
+                <Flame size={24} strokeWidth={2.9} /> Lock in
               </span>
-              <span className="inline-flex items-center gap-1 font-black text-sm tabular-nums">
-                Up to +{maxXp} XP
-                <ChevronRight size={17} className="transition-transform group-active:translate-x-0.5" />
+              <span className="inline-flex items-center gap-1 font-black text-[13px] tabular-nums opacity-85 shrink-0">
+                +{maxXp} XP
+                <ChevronRight size={20} className="transition-transform group-active:translate-x-0.5" />
               </span>
             </div>
           ) : (

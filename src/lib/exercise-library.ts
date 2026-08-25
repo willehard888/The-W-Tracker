@@ -1,4 +1,6 @@
-// Lazy access to the bundled exercise library (~540 exercises with photos +
+// Lazy access to the bundled PHOTO exercise DB. Since the illustrated
+// Everkinetic set became the primary visual layer, this serves as the
+// program rows' fallback + detail source. (~540 exercises with photos +
 // instructions). The data module is ~650KB, so it is dynamic-imported on demand
 // (first time an exercise card renders) and cached module-wide — it never ships
 // in the main bundle.

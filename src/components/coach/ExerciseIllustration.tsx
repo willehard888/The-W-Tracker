@@ -12,7 +12,7 @@ import { illustrationUrl, illustrationImg, type IllustratedExercise } from "@/da
 // (partial invert left a muddy brown box), sepia+saturate turns the line art
 // warm gold. Tiles use a black background so the SVG's square edge is
 // seamless.
-const GOLD_LINES = "invert(1) sepia(0.7) saturate(3) hue-rotate(-18deg) brightness(0.9)";
+export const GOLD_LINES = "invert(1) sepia(0.7) saturate(3) hue-rotate(-18deg) brightness(0.9)";
 
 export const IllustrationThumb = ({ ex, size = 56, className, eager = false }: { ex: IllustratedExercise; size?: number; className?: string; eager?: boolean }) => (
   <div

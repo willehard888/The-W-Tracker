@@ -147,7 +147,7 @@ const Exercises = () => {
               className="w-full text-left rounded-2xl border border-gold/20 bg-gradient-to-b from-gold/[0.04] via-card/95 to-card p-3 active:scale-[0.99] transition-transform"
             >
               <div className="flex items-center gap-3">
-                <IllustrationThumb ex={ex} size={56} />
+                <IllustrationThumb ex={ex} size={56} eager={i < 10} />
                 <div className="flex-1 min-w-0">
                   <p className="font-display text-[14px] font-black leading-tight truncate">{ex.title}</p>
                   <p className="text-[11px] text-muted-foreground capitalize mt-0.5 truncate">

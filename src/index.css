@@ -4667,8 +4667,9 @@ p, span.selectable, input, textarea, [contenteditable] {
 
 
 /* ── LOCK IN 3D game button (CommandDeck CTA) ─────────────────────────
-   Two-layer arcade construction: a dark red base under a glossy red face
-   that physically presses down on :active. Gloss sweep + breathe idle. */
+   Two-layer arcade construction: a dark base under a glossy molten-gold
+   face that physically presses down on :active. Gloss sweep + breathe
+   idle; while pressed, a lava slab floods up and melts the face. */
 @keyframes cta-gloss {
   0%, 72% { transform: translateX(-120%) skewX(-18deg); }
   88%, 100% { transform: translateX(320%) skewX(-18deg); }
@@ -4677,17 +4678,13 @@ p, span.selectable, input, textarea, [contenteditable] {
   0%, 100% { filter: brightness(1); }
   50% { filter: brightness(1.06); }
 }
+@keyframes cta-melt-drift {
+  to { background-position: -330px 0; }
+}
+/* While the press is held, the label goes white-hot over the lava. */
+.group:active .cta-melt-label {
+  text-shadow: 0 0 14px hsl(48 100% 80% / 0.8), 0 1px 0 hsl(46 100% 75% / 0.6);
+}
 @media (prefers-reduced-motion: reduce) {
-  .cta-gloss-anim, .cta-breathe-anim { animation: none !important; }
-}
-
-@keyframes cta-ember {
-  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
-  12% { opacity: 1; transform: translate(calc(var(--dx) * 0.2), calc(var(--dy) * 0.25)) scale(1.15); }
-  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.25); }
-}
-@keyframes cta-smoke {
-  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
-  18% { opacity: 0.7; }
-  100% { opacity: 0; transform: translate(var(--dx), -46px) scale(2.4); }
+  .cta-gloss-anim, .cta-breathe-anim, .cta-melt-anim { animation: none !important; }
 }

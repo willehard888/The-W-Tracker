@@ -1,4 +1,4 @@
-import { Camera, Pencil, Share2 } from "lucide-react";
+import { Camera, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierHeroSurface } from "@/lib/status-tiers";
 import BadgeShowcase from "@/components/BadgeShowcase";
@@ -21,15 +21,15 @@ export interface ProfileHeroProps {
   onPreviewBadge: (badge: any) => void;
   verified?: boolean;
   onShare: () => void;
-  onEditName: () => void;
 }
 
 /**
  * Profile hero — the identity card (the global StatusHeader is hidden on
  * /profile so this is the ONE identity block). The shared IdentityCore
  * renders the center (same block as /user/:id); this card adds the
- * own-profile affordances: camera on the avatar, pencil on the name,
- * share button, badge showcase and the member-since line.
+ * own-profile affordances: camera on the avatar, the share button, badge
+ * showcase and the member-since line. (Display names are gone — the ONE
+ * name in this app is the permanent @handle.)
  */
 const ProfileHero = ({
   profile,
@@ -46,7 +46,6 @@ const ProfileHero = ({
   onPreviewBadge,
   verified,
   onShare,
-  onEditName,
 }: ProfileHeroProps) => {
   const surface = getTierHeroSurface(tier);
 
@@ -113,20 +112,6 @@ const ProfileHero = ({
               )}
             </button>
           </div>
-        }
-        displayNameSlot={
-          <button
-            type="button"
-            onClick={onEditName}
-            className="mt-1.5 inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground/90 active:scale-95 transition group"
-          >
-            {profile.display_name ? (
-              <span className="text-sm font-semibold">{profile.display_name}</span>
-            ) : (
-              <span className="text-xs font-medium text-muted-foreground/60">Add your name</span>
-            )}
-            <Pencil size={11} className="text-muted-foreground/50 group-hover:text-gold transition-colors" />
-          </button>
         }
       />
 

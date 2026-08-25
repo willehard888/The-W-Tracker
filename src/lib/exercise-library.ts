@@ -4,6 +4,7 @@
 // in the main bundle.
 import { useEffect, useState } from "react";
 import type { LibraryExercise } from "@/data/exercises";
+import { candidatesForName, bestTokenSubsetSlug, normalizeExerciseName } from "@/lib/exercise-match";
 
 type LibModule = typeof import("@/data/exercises");
 
@@ -16,14 +17,33 @@ export const loadExerciseLibrary = (): Promise<LibModule> => {
   return loading;
 };
 
-/** Resolve a block (slug preferred, name fallback) to a library entry, or null. */
+let byNormName: Map<string, string> | null = null;
+const normNameMap = (lib: LibModule): Map<string, string> => {
+  if (!byNormName) {
+    byNormName = new Map();
+    for (const [slug, ex] of Object.entries(lib.EXERCISES)) {
+      byNormName.set(normalizeExerciseName(ex.name), slug);
+    }
+  }
+  return byNormName;
+};
+
+/** Resolve a block (slug preferred, name fallback) to a library entry, or null.
+ *  AI programs write human names ("Barbell Back Squat", "RDL") — candidates
+ *  (paren-strip + aliases) run first, then a token-subset fallback, so far
+ *  fewer rows lose their technique photos + instructions. */
 export const resolveExercise = (
   slug?: string | null,
   name?: string | null,
 ): LibraryExercise | null => {
   if (!cache) return null;
-  const s = slug && cache.EXERCISES[slug] ? slug : cache.findSlugByName(name);
-  return s ? cache.getExercise(s) : null;
+  if (slug && cache.EXERCISES[slug]) return cache.getExercise(slug);
+  for (const cand of candidatesForName(name)) {
+    const s = cache.findSlugByName(cand);
+    if (s) return cache.getExercise(s);
+  }
+  const fallback = name ? bestTokenSubsetSlug(name, normNameMap(cache)) : null;
+  return fallback ? cache.getExercise(fallback) : null;
 };
 
 export interface ExerciseEntry extends LibraryExercise {

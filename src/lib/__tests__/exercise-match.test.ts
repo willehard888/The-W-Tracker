@@ -81,4 +81,13 @@ describe("illustrated library (Everkinetic)", () => {
     const bp = findIllustrated("Bench Press")!;
     expect(illustrationUrl(bp.idNum, "tension")).toContain(`${bp.idNum}-tension.svg`);
   });
+
+  it("image helpers: bundled thumb path + rasterized proxy URL", async () => {
+    const { illustrationThumb, illustrationImg } = await import("@/data/exercises-illustrated");
+    expect(illustrationThumb("0042")).toBe("/illustrations/0042.webp");
+    const img = illustrationImg("0042", "relaxation", 480);
+    expect(img).toContain("images.weserv.nl");
+    expect(img).toContain("w=480");
+    expect(img).toContain(encodeURIComponent("0042-relaxation.svg"));
+  });
 });

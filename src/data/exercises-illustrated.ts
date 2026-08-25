@@ -21,6 +21,11 @@ export const illustrationUrl = (idNum: string, state: "tension" | "relaxation"):
 export const illustrationImg = (idNum: string, state: "tension" | "relaxation", width: number): string =>
   `https://images.weserv.nl/?url=${encodeURIComponent(`cdn.jsdelivr.net/gh/everkinetic/data@main/dist/svg/${idNum}-${state}.svg`)}&w=${width}&output=webp&q=80`;
 
+/** BUNDLED 112px thumb (public/illustrations/, committed by the generator) —
+ *  zero network requests, instant lists, works offline. */
+export const illustrationThumb = (idNum: string): string =>
+  `/illustrations/${idNum}.webp`;
+
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 let byNorm: Map<string, IllustratedExercise> | null = null;
 export const findIllustrated = (name?: string | null): IllustratedExercise | null => {

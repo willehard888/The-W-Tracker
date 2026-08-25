@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { illustrationUrl, illustrationImg, type IllustratedExercise } from "@/data/exercises-illustrated";
+import { illustrationUrl, illustrationImg, illustrationThumb, type IllustratedExercise } from "@/data/exercises-illustrated";
 
 /**
  * Everkinetic technique illustration, rendered in brand: the source SVGs are
@@ -25,15 +25,16 @@ export const IllustrationThumb = ({ ex, size = 56, className, eager = false }: {
     style={{ width: size, height: size }}
   >
     <img
-      src={illustrationImg(ex.idNum, "tension", 112)}
+      src={illustrationThumb(ex.idNum)}
       alt=""
-      loading={eager ? "eager" : "lazy"}
       decoding="async"
       className="h-full w-full object-contain p-1"
       style={{ filter: GOLD_LINES }}
       onError={(e) => {
+        // Bundled file should always exist; network is a two-stage fallback.
         const img = e.currentTarget;
-        if (!img.dataset.fb) { img.dataset.fb = "1"; img.src = illustrationUrl(ex.idNum, "tension"); }
+        if (!img.dataset.fb) { img.dataset.fb = "1"; img.src = illustrationImg(ex.idNum, "tension", 112); }
+        else if (img.dataset.fb === "1") { img.dataset.fb = "2"; img.src = illustrationUrl(ex.idNum, "tension"); }
       }}
     />
   </div>
@@ -44,12 +45,22 @@ export const IllustrationHero = ({ ex, className }: { ex: IllustratedExercise; c
   <div className={cn("grid grid-cols-2 gap-2", className)}>
     {(["relaxation", "tension"] as const).map((state, i) => (
       <div key={state} className="relative overflow-hidden rounded-2xl border border-gold/25 bg-black">
+        {/* Instant blur-up base from the bundled thumb — no empty frame while
+            the sharp 480px network image arrives. */}
+        <img
+          src={illustrationThumb(ex.idNum)}
+          alt=""
+          aria-hidden
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-contain p-3 blur-[6px] opacity-60"
+          style={{ filter: GOLD_LINES }}
+        />
         <img
           src={illustrationImg(ex.idNum, state, 480)}
           alt={`${ex.title} — ${i === 0 ? "start" : "finish"} position`}
           loading="eager"
           decoding="async"
-          className="w-full h-40 object-contain p-3"
+          className="relative w-full h-40 object-contain p-3"
           style={{ filter: GOLD_LINES }}
           onError={(e) => {
             const img = e.currentTarget;

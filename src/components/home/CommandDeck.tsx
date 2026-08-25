@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { Flame, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,22 @@ interface CommandDeckProps {
  * was removed; the streak now lives as a small flame chip (same flicker as the
  * header) so the card stays simple and the one job is unmistakable.
  */
+// Deterministic particle fans — variance baked in, no per-render randomness.
+const EMBERS = [
+  { x: 8, dx: -26, dy: -58, s: 5, dur: 620 },
+  { x: 20, dx: -12, dy: -74, s: 4, dur: 560 },
+  { x: 34, dx: -4, dy: -52, s: 6, dur: 680 },
+  { x: 47, dx: 6, dy: -82, s: 4, dur: 600 },
+  { x: 58, dx: 14, dy: -60, s: 5, dur: 640 },
+  { x: 72, dx: 24, dy: -70, s: 4, dur: 580 },
+  { x: 86, dx: 32, dy: -54, s: 5, dur: 660 },
+  { x: 94, dx: 40, dy: -66, s: 3, dur: 540 },
+] as const;
+const SMOKE = [
+  { x: 22, dx: -14, dur: 900 },
+  { x: 62, dx: 10, dur: 980 },
+] as const;
+
 const CommandDeck = ({
   streak,
   canCheckin,
@@ -30,6 +46,16 @@ const CommandDeck = ({
   className,
 }: CommandDeckProps) => {
   const navigate = useNavigate();
+  // Press burst: keyed so a rapid double-press restarts the particles.
+  const [burst, setBurst] = useState<number | null>(null);
+  const burstTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fireBurst = () => {
+    if (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setBurst(Date.now());
+    if (burstTimer.current) clearTimeout(burstTimer.current);
+    burstTimer.current = setTimeout(() => setBurst(null), 1100);
+  };
+  useEffect(() => () => { if (burstTimer.current) clearTimeout(burstTimer.current); }, []);
   const isLegend = tier === "legend";
   const isApex = tier === "apex";
 
@@ -58,6 +84,7 @@ const CommandDeck = ({
     >
       <button
         type="button"
+        onPointerDown={() => { if (canCheckin) fireBurst(); }}
         onClick={() => { if (canCheckin) { hapticImpact("medium"); navigate("/checkin"); } }}
         disabled={!canCheckin}
         className={cn(
@@ -125,10 +152,46 @@ const CommandDeck = ({
 
           {/* Primary action bar */}
           {canCheckin ? (
-            {/* LOCK IN — a physical 3D game button. Dark base below, glossy
-                red face above; the whole card is the <button>, so
-                group-active presses the face 6px down into the base. */}
+            // LOCK IN — a physical 3D game button. Dark base below, glossy
+            // red face above; the whole card is the <button>, so group-active
+            // presses the face 6px down into the base.
             <div className="relative mt-3.5">
+              {/* Press burst — embers + smoke erupt from the button's top edge */}
+              {burst !== null && (
+                <div aria-hidden className="pointer-events-none absolute inset-x-4 -top-1 h-0 z-10">
+                  {EMBERS.map((e, i) => (
+                    <span
+                      key={`${burst}-e${i}`}
+                      className="absolute bottom-0 rounded-full"
+                      style={{
+                        left: `${e.x}%`,
+                        width: e.s,
+                        height: e.s,
+                        background: i % 3 === 0 ? "hsl(45 95% 62%)" : "hsl(16 96% 56%)",
+                        boxShadow: `0 0 ${e.s * 2}px hsl(20 100% 60% / 0.9)`,
+                        animation: `cta-ember ${e.dur}ms cubic-bezier(0.16, 0.8, 0.4, 1) forwards`,
+                        ["--dx" as string]: `${e.dx}px`,
+                        ["--dy" as string]: `${e.dy}px`,
+                      }}
+                    />
+                  ))}
+                  {SMOKE.map((p, i) => (
+                    <span
+                      key={`${burst}-s${i}`}
+                      className="absolute bottom-0 rounded-full"
+                      style={{
+                        left: `${p.x}%`,
+                        width: 14,
+                        height: 14,
+                        background: "radial-gradient(circle, hsl(20 15% 70% / 0.5), transparent 70%)",
+                        filter: "blur(3px)",
+                        animation: `cta-smoke ${p.dur}ms ease-out forwards`,
+                        ["--dx" as string]: `${p.dx}px`,
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
               <div
                 aria-hidden
                 className="absolute inset-x-0 top-1.5 -bottom-1.5 rounded-2xl"

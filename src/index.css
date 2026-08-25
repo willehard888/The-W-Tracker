@@ -4680,3 +4680,14 @@ p, span.selectable, input, textarea, [contenteditable] {
 @media (prefers-reduced-motion: reduce) {
   .cta-gloss-anim, .cta-breathe-anim { animation: none !important; }
 }
+
+@keyframes cta-ember {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  12% { opacity: 1; transform: translate(calc(var(--dx) * 0.2), calc(var(--dy) * 0.25)) scale(1.15); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.25); }
+}
+@keyframes cta-smoke {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  18% { opacity: 0.7; }
+  100% { opacity: 0; transform: translate(var(--dx), -46px) scale(2.4); }
+}

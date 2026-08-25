@@ -28,14 +28,13 @@ const BrandedExercisePhoto = ({ src, alt = "", width = 720, className, imgClassN
         alt={alt}
         loading="lazy"
         decoding="async"
-        className={cn("w-full h-auto object-contain grayscale", imgClassName)}
+        className={cn("w-full h-auto object-contain", imgClassName)}
         onError={(e) => {
           const img = e.currentTarget;
           if (!img.dataset.fb && src) { img.dataset.fb = "1"; img.src = src; }
         }}
       />
-      {/* Gold colorize over the greyscale + a quiet vignette */}
-      <div aria-hidden className="absolute inset-0 pointer-events-none mix-blend-color bg-[hsl(42_60%_48%)] opacity-60" />
+      {/* Quiet vignette — the duotone itself comes baked from the proxy */}
       <div aria-hidden className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_45%,hsl(258_16%_5%/0.55)_100%)]" />
       <div aria-hidden className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
     </div>

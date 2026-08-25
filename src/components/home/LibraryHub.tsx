@@ -59,7 +59,7 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
           alt=""
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 h-full w-full object-cover grayscale opacity-80"
+          className="absolute inset-0 h-full w-full object-cover"
         />
       </div>
     );

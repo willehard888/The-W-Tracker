@@ -3,7 +3,7 @@ import { ChevronDown, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { toast } from "sonner";
-import { useExerciseLibrary, resolveExercise } from "@/lib/exercise-library";
+import { useExerciseLibrary, resolveExercise, exerciseImgBranded } from "@/lib/exercise-library";
 import { resolveGroup } from "@/lib/exercise-group";
 import ExerciseTile from "@/components/coach/ExerciseTile";
 import BrandedExercisePhoto from "@/components/coach/BrandedExercisePhoto";
@@ -107,7 +107,19 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
         onClick={() => hasMore && (hapticImpact("light"), setOpen((v) => !v))}
         className="w-full flex items-center gap-2.5 py-1.5 text-left"
       >
-        <ExerciseTile group={group} size={40} />
+        {ex?.images?.[0] ? (
+          <div className="shrink-0 h-10 w-10 rounded-lg overflow-hidden border border-gold/25 bg-[hsl(258_16%_6%)]">
+            <img
+              src={exerciseImgBranded(ex.images[0], 96)}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover"
+            />
+          </div>
+        ) : (
+          <ExerciseTile group={group} size={40} />
+        )}
         <div className="flex-1 min-w-0">
           <span className="font-bold text-sm text-foreground block truncate">{block.name}</span>
           {logged && (

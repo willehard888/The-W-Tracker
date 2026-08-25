@@ -1,3 +1,4 @@
+import { exerciseImgBranded } from "@/lib/exercise-library";
 import ExerciseTile from "@/components/coach/ExerciseTile";
 import BrandedExercisePhoto from "@/components/coach/BrandedExercisePhoto";
 import { resolveGroup } from "@/lib/exercise-group";
@@ -23,6 +24,29 @@ const GROUPS: { label: string; muscles: string[] }[] = [
 ];
 
 const CAP = 80;
+
+/** 56px duotone photo thumb — real image, one brand tone. Tile fallback
+ *  only when the entry has no image at all. */
+const ExerciseThumb = ({ ex, eager = false }: { ex: ExerciseEntry; eager?: boolean }) => {
+  const raw = ex.images?.[0];
+  const src = exerciseImgBranded(raw, 112);
+  if (!src) return <ExerciseTile group={resolveGroup(ex.name, ex.primary)} size={56} className="rounded-xl" />;
+  return (
+    <div className="shrink-0 h-14 w-14 rounded-xl overflow-hidden border border-gold/25 bg-[hsl(258_16%_6%)]">
+      <img
+        src={src}
+        alt=""
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+        className="h-full w-full object-cover"
+        onError={(e) => {
+          const img = e.currentTarget;
+          if (!img.dataset.fb && raw) { img.dataset.fb = "1"; img.src = raw; }
+        }}
+      />
+    </div>
+  );
+};
 
 const ExerciseDetail = ({ ex, onBack }: { ex: ExerciseEntry; onBack: () => void }) => {
   const heroRaw = ex.images?.[ex.images.length - 1];
@@ -152,14 +176,14 @@ const Exercises = () => {
         ) : (
           <>
             <div className="space-y-2">
-              {capped.map((ex) => (
+              {capped.map((ex, i) => (
                 <button
                   key={ex.slug}
                   onClick={() => { hapticImpact("light"); setSelected(ex); }}
                   className="cv-row w-full text-left rounded-2xl border border-gold/20 bg-gradient-to-b from-gold/[0.04] via-card/95 to-card p-3 active:scale-[0.99] transition-transform"
                 >
                   <div className="flex items-center gap-3">
-                    <ExerciseTile group={resolveGroup(ex.name, ex.primary)} size={56} className="rounded-xl" />
+                    <ExerciseThumb ex={ex} eager={i < 8} />
                     <div className="flex-1 min-w-0">
                       <p className="font-display text-[14px] font-black leading-tight truncate">{ex.name}</p>
                       <p className="text-[11px] text-muted-foreground capitalize mt-0.5 truncate">

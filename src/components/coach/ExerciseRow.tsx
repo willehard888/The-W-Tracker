@@ -6,6 +6,9 @@ import { toast } from "sonner";
 import { useExerciseLibrary, resolveExercise, exerciseImgBranded } from "@/lib/exercise-library";
 import { resolveGroup } from "@/lib/exercise-group";
 import ExerciseTile from "@/components/coach/ExerciseTile";
+import { IllustrationThumb, IllustrationHero } from "@/components/coach/ExerciseIllustration";
+import { findIllustrated } from "@/data/exercises-illustrated";
+import { candidatesForName } from "@/lib/exercise-match";
 import BrandedExercisePhoto from "@/components/coach/BrandedExercisePhoto";
 import { useExerciseHistory, useDayLogs, useLogSet } from "@/hooks/use-workout-log";
 import Sparkline from "@/components/coach/Sparkline";
@@ -76,8 +79,15 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
     if (r != null) setReps(String(r));
   };
 
-  // Branded tile — instant, identical style on every row (the mixed library
-  // photos loaded late and read cheap; they still live in the detail below).
+  // Illustration first (the consistent hand-drawn set), then the duotone
+  // photo, then the muscle-group glyph — every row stays on brand.
+  const illustrated = (() => {
+    for (const cand of candidatesForName(block.name)) {
+      const hit = findIllustrated(cand);
+      if (hit) return hit;
+    }
+    return ex ? findIllustrated(ex.name) : null;
+  })();
   const group = resolveGroup(block.name, ex?.primary);
   const hasMore = !!(ex || block.notes || block.alt || block.rest_sec || block.tempo);
 
@@ -107,7 +117,9 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
         onClick={() => hasMore && (hapticImpact("light"), setOpen((v) => !v))}
         className="w-full flex items-center gap-2.5 py-1.5 text-left"
       >
-        {ex?.images?.[0] ? (
+        {illustrated ? (
+          <IllustrationThumb ex={illustrated} size={40} className="rounded-lg" />
+        ) : ex?.images?.[0] ? (
           <div className="shrink-0 h-10 w-10 rounded-lg overflow-hidden border border-gold/25 bg-[hsl(258_16%_6%)]">
             <img
               src={exerciseImgBranded(ex.images[0], 96)}
@@ -138,9 +150,11 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
 
       {open && (
         <div className="pl-0 pb-2 space-y-2.5">
-          {ex?.images?.[0] && (
+          {illustrated ? (
+            <IllustrationHero ex={illustrated} />
+          ) : ex?.images?.[0] ? (
             <BrandedExercisePhoto src={ex.images[ex.images.length - 1]} alt={block.name} width={640} imgClassName="max-h-56" />
-          )}
+          ) : null}
 
           {ex && (ex.primary.length > 0 || ex.equipment) && (
             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">

@@ -60,3 +60,25 @@ describe("exercise group resolution (branded tiles)", () => {
     expect(resolveGroup("Barbell Row", null)).toBe("back");
   });
 });
+
+describe("illustrated library (Everkinetic)", () => {
+  it("generated data is valid: unique slugs, steps and idNum everywhere", async () => {
+    const { ILLUSTRATED_EXERCISES } = await import("@/data/exercises-illustrated");
+    expect(ILLUSTRATED_EXERCISES.length).toBeGreaterThan(250);
+    const slugs = new Set(ILLUSTRATED_EXERCISES.map((e) => e.slug));
+    expect(slugs.size).toBe(ILLUSTRATED_EXERCISES.length);
+    for (const e of ILLUSTRATED_EXERCISES) {
+      expect(e.idNum).toMatch(/^\d{4}$/);
+      expect(e.steps.length).toBeGreaterThan(0);
+      expect(e.title.length).toBeGreaterThan(2);
+    }
+  });
+
+  it("finds common program names", async () => {
+    const { findIllustrated, illustrationUrl } = await import("@/data/exercises-illustrated");
+    expect(findIllustrated("Bench Press")).toBeTruthy();
+    expect(findIllustrated("bench-press")).toBeTruthy(); // slug form normalizes to the title
+    const bp = findIllustrated("Bench Press")!;
+    expect(illustrationUrl(bp.idNum, "tension")).toContain(`${bp.idNum}-tension.svg`);
+  });
+});

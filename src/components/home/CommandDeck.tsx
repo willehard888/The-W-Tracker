@@ -196,8 +196,8 @@ const CommandDeck = ({
                 aria-hidden
                 className="absolute inset-x-0 top-1.5 -bottom-1.5 rounded-2xl"
                 style={{
-                  background: "linear-gradient(180deg, hsl(0 72% 26%), hsl(0 70% 17%))",
-                  boxShadow: "0 12px 28px -8px hsl(4 90% 40% / 0.6)",
+                  background: "linear-gradient(180deg, hsl(20 70% 22%), hsl(18 65% 13%))",
+                  boxShadow: "0 12px 30px -8px hsl(18 95% 45% / 0.65)",
                 }}
               />
               <div
@@ -208,9 +208,9 @@ const CommandDeck = ({
                   "group-active:[animation:none]",
                 )}
                 style={{
-                  background: "linear-gradient(180deg, hsl(6 92% 62%) 0%, hsl(4 86% 53%) 46%, hsl(2 80% 45%) 100%)",
+                  background: "linear-gradient(160deg, hsl(46 96% 64%) 0%, hsl(38 92% 55%) 34%, hsl(24 94% 52%) 70%, hsl(16 90% 47%) 100%)",
                   boxShadow:
-                    "inset 0 2px 0 hsl(12 100% 78% / 0.75), inset 0 -3px 0 hsl(0 70% 32% / 0.9), inset 0 -14px 22px -12px hsl(0 80% 22% / 0.8), 0 1px 0 hsl(0 60% 20%)",
+                    "inset 0 2px 0 hsl(48 100% 85% / 0.9), inset 0 -3px 0 hsl(18 80% 30% / 0.9), inset 0 -14px 22px -12px hsl(14 85% 30% / 0.75), 0 1px 0 hsl(20 60% 18%)",
                   animation: "cta-breathe 3.4s ease-in-out infinite",
                 }}
               >
@@ -219,19 +219,19 @@ const CommandDeck = ({
                   aria-hidden
                   className="cta-gloss-anim absolute inset-y-0 left-0 w-1/3 pointer-events-none"
                   style={{
-                    background: "linear-gradient(90deg, transparent, hsl(20 100% 92% / 0.34), transparent)",
+                    background: "linear-gradient(90deg, transparent, hsl(48 100% 94% / 0.45), transparent)",
                     animation: "cta-gloss 5.2s ease-in-out infinite",
                   }}
                 />
                 <span
-                  className="relative font-display font-black text-[26px] leading-none uppercase tracking-tight inline-flex items-center gap-2.5 text-white"
-                  style={{ textShadow: "0 2px 0 hsl(0 70% 28%), 0 0 22px hsl(10 100% 70% / 0.5)" }}
+                  className="relative font-display font-black text-[26px] leading-none uppercase tracking-tight inline-flex items-center gap-2.5"
+                  style={{ color: "hsl(20 85% 10%)", textShadow: "0 1px 0 hsl(46 100% 75% / 0.6)" }}
                 >
                   <Flame size={24} strokeWidth={2.9} /> Lock in
                 </span>
                 <span
                   className="relative inline-flex items-center gap-1 font-black text-[13px] tabular-nums shrink-0"
-                  style={{ color: "hsl(18 100% 92%)", textShadow: "0 1px 0 hsl(0 70% 30%)" }}
+                  style={{ color: "hsl(20 70% 16%)", opacity: 0.85 }}
                 >
                   +{maxXp} XP
                   <ChevronRight size={20} className="transition-transform group-active:translate-x-0.5" />

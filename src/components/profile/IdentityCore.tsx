@@ -26,8 +26,6 @@ export interface IdentityCoreProps {
   avatarSlot?: ReactNode;
   /** Rendered inline after the @handle (e.g. the "(you)" tag). */
   nameSuffix?: ReactNode;
-  /** Custom display-name row (own profile adds the pencil editor). */
-  displayNameSlot?: ReactNode;
   /** Show the permanent-username lock next to the handle. */
   showLock?: boolean;
   nameplateSize?: "md" | "lg";
@@ -52,7 +50,6 @@ const IdentityCore = ({
   featuredBadge,
   avatarSlot,
   nameSuffix,
-  displayNameSlot,
   showLock,
   nameplateSize = "lg",
   afterPills,
@@ -102,13 +99,6 @@ const IdentityCore = ({
           <Lock size={13} className="text-muted-foreground/50 shrink-0" aria-label="Permanent username" />
         )}
       </div>
-
-      {/* Display name */}
-      {displayNameSlot ?? (
-        profile.display_name ? (
-          <p className="mt-1.5 text-sm font-semibold text-muted-foreground">{profile.display_name}</p>
-        ) : null
-      )}
 
       {/* Status nameplate — the one rank number */}
       <div className="mt-4 w-full">

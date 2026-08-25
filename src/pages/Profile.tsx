@@ -1,5 +1,5 @@
 
-import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, CalendarCheck, Gauge, ChevronRight, Pencil, Brain, UserRound, FileText } from "lucide-react";
+import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, CalendarCheck, Gauge, ChevronRight, Brain, UserRound, FileText } from "lucide-react";
 import { isNativePlatform } from "@/lib/platform";
 import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
 import ProgressionSummaryCard from "@/components/profile/ProgressionSummaryCard";
@@ -53,10 +53,6 @@ const Profile = () => {
   const moderation = useModeration();
   const [previewBadge, setPreviewBadge] = useState<any>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  // Display-name editor — the human name under the permanent @handle.
-  const [nameDialogOpen, setNameDialogOpen] = useState(false);
-  const [nameDraft, setNameDraft] = useState("");
-  const [savingName, setSavingName] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   // Type-to-confirm guard: the final delete button stays disabled until the
@@ -164,27 +160,6 @@ const Profile = () => {
     }
   };
 
-  const handleSaveDisplayName = async () => {
-    const trimmed = nameDraft.trim();
-    if (trimmed.length > 40) {
-      toast.error("Max 40 characters");
-      return;
-    }
-    setSavingName(true);
-    try {
-      const { error } = await supabase.rpc("update_own_profile", {
-        new_display_name: trimmed || null,
-      } as never);
-      if (error) throw error;
-      await queryClient.invalidateQueries({ queryKey: ["profile"] });
-      toast.success(trimmed ? "Name saved" : "Name cleared");
-      setNameDialogOpen(false);
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to save name");
-    } finally {
-      setSavingName(false);
-    }
-  };
 
   const { data: allBadges } = useQuery({
     queryKey: ["all-badges"],
@@ -469,27 +444,6 @@ const Profile = () => {
         badgeData={shareModal.badgeData}
       />
 
-      {/* Display-name editor */}
-      <Dialog open={nameDialogOpen} onOpenChange={setNameDialogOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Your name</DialogTitle>
-            <DialogDescription>
-              Shown under your permanent @{profile?.username} handle. Optional.
-            </DialogDescription>
-          </DialogHeader>
-          <Input
-            value={nameDraft}
-            onChange={(e) => setNameDraft(e.target.value)}
-            placeholder="e.g. Rasmus P."
-            maxLength={40}
-            autoFocus
-          />
-          <Button variant="ember" onClick={handleSaveDisplayName} disabled={savingName} className="w-full">
-            {savingName ? "Saving…" : "Save"}
-          </Button>
-        </DialogContent>
-      </Dialog>
 
       {/* Profile Header — cinematic hero card, themed by tier */}
       <ProfileHero
@@ -507,7 +461,6 @@ const Profile = () => {
         onPreviewBadge={setPreviewBadge}
         verified={!!verifiedStats?.is_verified_performer}
         onShare={handleShareProfile}
-        onEditName={() => { setNameDraft(profile?.display_name ?? ""); setNameDialogOpen(true); }}
       />
 
       {/* Tabs — the app-wide segmented control language */}
@@ -722,7 +675,6 @@ const Profile = () => {
           {/* Grouped nav rows — one visual language (eyebrow + surface-card
               list + chevrons), not a wall of identical gold buttons. */}
           <SettingsGroup title="Account">
-            <SettingsRow icon={Pencil} label="Edit name" sub={profile.display_name || "Not set"} onClick={() => { setNameDraft(profile?.display_name ?? ""); setNameDialogOpen(true); }} />
             <SettingsRow icon={UserRound} label="Athlete profile" sub="Goals, schedule, injuries — what the coach trains" onClick={() => navigate("/coach/profile")} />
             <SettingsRow icon={Brain} label="Coach memory" sub="What the coach remembers about you" onClick={() => navigate("/coach/memory")} />
           </SettingsGroup>

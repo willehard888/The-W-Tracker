@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { Crown, ChevronRight, Utensils, Dumbbell } from "lucide-react";
+import { Crown, ChevronRight, Utensils } from "lucide-react";
 import { recipeSquare, recipeThumb } from "@/lib/recipe-images";
-import { exerciseImgBranded } from "@/lib/exercise-library";
+import { illustrationImg } from "@/data/exercises-illustrated";
+import { GOLD_LINES } from "@/components/coach/ExerciseIllustration";
 import { hapticImpact } from "@/lib/haptics";
 
 /**
@@ -24,8 +25,8 @@ const ROWS = [
     key: "exercises",
     path: "/exercises",
     title: "Exercise library",
-    sub: "Photos & step-by-step form cues",
-    chip: "500+",
+    sub: "Illustrated technique guides, step by step",
+    chip: "260+",
   },
   {
     key: "vault",
@@ -51,15 +52,17 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
     );
   }
   if (id === "exercises") {
+    // The illustrated set's bench press (0042) in the same gold-line
+    // treatment the library itself uses.
     return (
-      <div className={base}>
-        <Dumbbell size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
+      <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 bg-black border border-gold/25 flex items-center justify-center">
         <img
-          src={exerciseImgBranded("https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Bench_Press_-_Medium_Grip/0.jpg", 96)}
+          src={illustrationImg("0042", "tension", 96)}
           alt=""
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="h-full w-full object-contain p-0.5"
+          style={{ filter: GOLD_LINES }}
         />
       </div>
     );

@@ -10,7 +10,7 @@ import BrandLogo from "@/components/BrandLogo";
 // nutrition, recovery, the verified-discipline moat), not just the game layer.
 const WHAT_YOU_GET = [
   { icon: Sparkles, title: "AI coach", text: "Reads your Apple Health, training & recovery — and holds you to it." },
-  { icon: Dumbbell, title: "Train", text: "500+ exercises + programs with exact sets & progression." },
+  { icon: Dumbbell, title: "Train", text: "260+ illustrated exercises + programs with exact sets & progression." },
   { icon: Utensils, title: "Fuel", text: "High-protein recipes, macros & meal-prep templates." },
   { icon: Moon, title: "Recover", text: "Sleep, HRV & recovery protocols to bounce back faster." },
   { icon: ShieldCheck, title: "Verified", text: "Apple Health proves your discipline — unfakeable." },

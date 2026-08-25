@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { Flame, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -40,6 +40,12 @@ const CommandDeck = ({
   className,
 }: CommandDeckProps) => {
   const navigate = useNavigate();
+  // Committed melt: a tap keeps the lava rising for the full choreography
+  // before navigating, so the melt is seen on every press — not only on a
+  // long hold. Reduced-motion users navigate immediately.
+  const [locking, setLocking] = useState(false);
+  const lockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (lockTimer.current) clearTimeout(lockTimer.current); }, []);
   const isLegend = tier === "legend";
   const isApex = tier === "apex";
 
@@ -68,11 +74,21 @@ const CommandDeck = ({
     >
       <button
         type="button"
-        onClick={() => { if (canCheckin) { hapticImpact("medium"); navigate("/checkin"); } }}
+        onClick={() => {
+          if (!canCheckin || locking) return;
+          hapticImpact("medium");
+          if (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            navigate("/checkin");
+            return;
+          }
+          setLocking(true);
+          lockTimer.current = setTimeout(() => navigate("/checkin"), 150);
+        }}
         disabled={!canCheckin}
         className={cn(
           "group relative w-full text-left rounded-3xl p-4 overflow-hidden transition-all duration-200 active:scale-[0.99]",
           !canCheckin && "opacity-80",
+          locking && "cta-locking",
         )}
         style={{
           background: canCheckin
@@ -148,7 +164,7 @@ const CommandDeck = ({
               />
               <div
                 className={cn(
-                  "cta-breathe-anim relative flex items-center justify-between gap-3 min-h-[66px] px-5 rounded-2xl overflow-hidden",
+                  "cta-breathe-anim cta-melt-face relative flex items-center justify-between gap-3 min-h-[66px] px-5 rounded-2xl overflow-hidden",
                   "transition-[transform,box-shadow,filter] duration-100 ease-out",
                   "group-active:translate-y-1.5 group-active:brightness-105",
                   "group-active:[animation:none]",
@@ -168,8 +184,7 @@ const CommandDeck = ({
                     reverses everything automatically. */}
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute -left-1.5 -right-1.5 -bottom-1.5 h-[132%] translate-y-[104%] group-active:translate-y-[6%]"
-                  style={{ transition: "transform 520ms cubic-bezier(0.16, 1, 0.3, 1) 40ms" }}
+                  className="cta-melt-slab pointer-events-none absolute -left-1.5 -right-1.5 -bottom-1.5 h-[132%]"
                 >
                   {/* heated gold just above the melt front — no hard cut */}
                   <div
@@ -262,11 +277,8 @@ const CommandDeck = ({
                 {/* Heat flush over the whole face while pressed */}
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 opacity-0 group-active:opacity-100"
-                  style={{
-                    background: "radial-gradient(90% 130% at 50% 100%, hsl(30 100% 60% / 0.55), transparent 70%)",
-                    transition: "opacity 240ms ease",
-                  }}
+                  className="cta-melt-heat pointer-events-none absolute inset-0"
+                  style={{ background: "radial-gradient(90% 130% at 50% 100%, hsl(30 100% 60% / 0.55), transparent 70%)" }}
                 />
                 {/* Idle gloss sweep */}
                 <span

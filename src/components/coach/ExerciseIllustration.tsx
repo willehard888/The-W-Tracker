@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { illustrationUrl, type IllustratedExercise } from "@/data/exercises-illustrated";
+import { illustrationUrl, illustrationImg, type IllustratedExercise } from "@/data/exercises-illustrated";
 
 /**
  * Everkinetic technique illustration, rendered in brand: the source SVGs are
@@ -14,7 +14,7 @@ import { illustrationUrl, type IllustratedExercise } from "@/data/exercises-illu
 // seamless.
 const GOLD_LINES = "invert(1) sepia(0.7) saturate(3) hue-rotate(-18deg) brightness(0.9)";
 
-export const IllustrationThumb = ({ ex, size = 56, className }: { ex: IllustratedExercise; size?: number; className?: string }) => (
+export const IllustrationThumb = ({ ex, size = 56, className, eager = false }: { ex: IllustratedExercise; size?: number; className?: string; eager?: boolean }) => (
   <div
     aria-hidden
     className={cn(
@@ -25,12 +25,16 @@ export const IllustrationThumb = ({ ex, size = 56, className }: { ex: Illustrate
     style={{ width: size, height: size }}
   >
     <img
-      src={illustrationUrl(ex.idNum, "tension")}
+      src={illustrationImg(ex.idNum, "tension", 112)}
       alt=""
-      loading="lazy"
+      loading={eager ? "eager" : "lazy"}
       decoding="async"
       className="h-full w-full object-contain p-1"
       style={{ filter: GOLD_LINES }}
+      onError={(e) => {
+        const img = e.currentTarget;
+        if (!img.dataset.fb) { img.dataset.fb = "1"; img.src = illustrationUrl(ex.idNum, "tension"); }
+      }}
     />
   </div>
 );
@@ -41,12 +45,16 @@ export const IllustrationHero = ({ ex, className }: { ex: IllustratedExercise; c
     {(["relaxation", "tension"] as const).map((state, i) => (
       <div key={state} className="relative overflow-hidden rounded-2xl border border-gold/25 bg-black">
         <img
-          src={illustrationUrl(ex.idNum, state)}
+          src={illustrationImg(ex.idNum, state, 480)}
           alt={`${ex.title} — ${i === 0 ? "start" : "finish"} position`}
           loading="eager"
           decoding="async"
           className="w-full h-40 object-contain p-3"
           style={{ filter: GOLD_LINES }}
+          onError={(e) => {
+            const img = e.currentTarget;
+            if (!img.dataset.fb) { img.dataset.fb = "1"; img.src = illustrationUrl(ex.idNum, state); }
+          }}
         />
         <span className="absolute bottom-2 left-1/2 -translate-x-1/2 eyebrow text-gold/70">
           {i === 0 ? "Start" : "Finish"}

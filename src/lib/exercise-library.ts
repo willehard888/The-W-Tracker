@@ -67,12 +67,14 @@ export const exerciseImg = (url?: string | null, width = 96): string | undefined
   return `https://images.weserv.nl/?url=${encodeURIComponent(stripped)}&w=${width}&output=webp&q=72`;
 };
 
-/** Brand treatment: greyscale at the proxy — the source photos come from
- *  hundreds of different gyms (red walls, harsh flash) and read cheap in
- *  color. BrandedExercisePhoto layers the gold color-blend on top. */
+/** Brand treatment: a TRUE server-side duotone at the proxy (dark plum →
+ *  gold, slight contrast). The source photos come from hundreds of different
+ *  gyms (red walls, harsh flash) and read cheap in color — the duotone puts
+ *  every one of the 542 photos in the same Whealth Factory tone, as a tiny
+ *  cached WebP. Verified visually against multiple source gyms. */
 export const exerciseImgBranded = (url?: string | null, width = 96): string | undefined => {
   const base = exerciseImg(url, width);
-  return base ? `${base}&filt=greyscale` : undefined;
+  return base ? `${base}&filt=duotone&start=0d0a14&stop=d9b25c&con=8` : undefined;
 };
 
 /** React hook: ensures the library is loaded; re-renders when ready. */

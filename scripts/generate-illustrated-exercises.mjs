@@ -63,6 +63,11 @@ export const illustrationUrl = (idNum: string, state: "tension" | "relaxation"):
 export const illustrationImg = (idNum: string, state: "tension" | "relaxation", width: number): string =>
   \`https://images.weserv.nl/?url=\${encodeURIComponent(\`cdn.jsdelivr.net/gh/everkinetic/data@main/dist/svg/\${idNum}-\${state}.svg\`)}&w=\${width}&output=webp&q=80\`;
 
+/** BUNDLED 112px thumb (public/illustrations/, committed by the generator) —
+ *  zero network requests, instant lists, works offline. */
+export const illustrationThumb = (idNum: string): string =>
+  \`/illustrations/\${idNum}.webp\`;
+
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 let byNorm: Map<string, IllustratedExercise> | null = null;
 export const findIllustrated = (name?: string | null): IllustratedExercise | null => {
@@ -77,3 +82,34 @@ export const normIllustratedName = norm;
 `;
 writeFileSync("src/data/exercises-illustrated.ts", ts);
 console.log(`wrote ${out.length} illustrated exercises`);
+
+// ── Bundle the thumbs: pre-rasterized 112px WebPs into public/illustrations/.
+// The list used to fetch each thumb over the network (~300-500ms per edge
+// miss; RTT-bound on cellular) — local files make every list instant.
+import { mkdirSync, existsSync, statSync } from "node:fs";
+const DIR = "public/illustrations";
+mkdirSync(DIR, { recursive: true });
+const thumbUrl = (idNum) =>
+  `https://images.weserv.nl/?url=${encodeURIComponent(`cdn.jsdelivr.net/gh/everkinetic/data@main/dist/svg/${idNum}-tension.svg`)}&w=112&output=webp&q=80`;
+const queue = out.filter((e) => {
+  const f = `${DIR}/${e.idNum}.webp`;
+  return !existsSync(f) || statSync(f).size < 500;
+});
+console.log(`downloading ${queue.length} thumbs…`);
+for (let i = 0; i < queue.length; i += 8) {
+  await Promise.all(queue.slice(i, i + 8).map(async (e) => {
+    const res = await fetch(thumbUrl(e.idNum));
+    if (!res.ok) throw new Error(`thumb ${e.idNum}: HTTP ${res.status}`);
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.length < 500) throw new Error(`thumb ${e.idNum}: suspiciously small (${buf.length}B)`);
+    writeFileSync(`${DIR}/${e.idNum}.webp`, buf);
+  }));
+  if (i % 64 === 0) console.log(`  ${Math.min(i + 8, queue.length)}/${queue.length}`);
+}
+let ok = 0;
+for (const e of out) {
+  const f = `${DIR}/${e.idNum}.webp`;
+  if (!existsSync(f) || statSync(f).size < 500) throw new Error(`missing/invalid thumb: ${f}`);
+  ok++;
+}
+console.log(`✅ ${ok}/${out.length} bundled thumbs verified in ${DIR}`);

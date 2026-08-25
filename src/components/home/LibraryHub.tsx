@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Crown, ChevronRight, Utensils } from "lucide-react";
 import { recipeSquare, recipeThumb } from "@/lib/recipe-images";
-import { illustrationImg } from "@/data/exercises-illustrated";
+import { illustrationThumb } from "@/data/exercises-illustrated";
 import { GOLD_LINES } from "@/components/coach/ExerciseIllustration";
 import { hapticImpact } from "@/lib/haptics";
 
@@ -57,7 +57,7 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
     return (
       <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 bg-black border border-gold/25 flex items-center justify-center">
         <img
-          src={illustrationImg("0042", "tension", 96)}
+          src={illustrationThumb("0042")}
           alt=""
           loading="lazy"
           decoding="async"

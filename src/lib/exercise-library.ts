@@ -67,6 +67,14 @@ export const exerciseImg = (url?: string | null, width = 96): string | undefined
   return `https://images.weserv.nl/?url=${encodeURIComponent(stripped)}&w=${width}&output=webp&q=72`;
 };
 
+/** Brand treatment: greyscale at the proxy — the source photos come from
+ *  hundreds of different gyms (red walls, harsh flash) and read cheap in
+ *  color. BrandedExercisePhoto layers the gold color-blend on top. */
+export const exerciseImgBranded = (url?: string | null, width = 96): string | undefined => {
+  const base = exerciseImg(url, width);
+  return base ? `${base}&filt=greyscale` : undefined;
+};
+
 /** React hook: ensures the library is loaded; re-renders when ready. */
 export const useExerciseLibrary = () => {
   const [ready, setReady] = useState(!!cache);

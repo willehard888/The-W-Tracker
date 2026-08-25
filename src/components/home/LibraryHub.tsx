@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Crown, ChevronRight, Utensils, Dumbbell } from "lucide-react";
 import { recipeSquare, recipeThumb } from "@/lib/recipe-images";
-import { exerciseImg } from "@/lib/exercise-library";
+import { exerciseImgBranded } from "@/lib/exercise-library";
 import { hapticImpact } from "@/lib/haptics";
 
 /**
@@ -55,11 +55,11 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
       <div className={base}>
         <Dumbbell size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
         <img
-          src={exerciseImg("https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Bench_Press_-_Medium_Grip/0.jpg", 96)}
+          src={exerciseImgBranded("https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Barbell_Bench_Press_-_Medium_Grip/0.jpg", 96)}
           alt=""
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover grayscale opacity-80"
         />
       </div>
     );

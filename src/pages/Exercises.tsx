@@ -1,3 +1,6 @@
+import ExerciseTile from "@/components/coach/ExerciseTile";
+import BrandedExercisePhoto from "@/components/coach/BrandedExercisePhoto";
+import { resolveGroup } from "@/lib/exercise-group";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Dumbbell, ChevronRight, Search, X } from "lucide-react";
@@ -7,7 +10,6 @@ import { hapticImpact } from "@/lib/haptics";
 import {
   useExerciseLibrary,
   getAllExercises,
-  exerciseImg,
   type ExerciseEntry,
 } from "@/lib/exercise-library";
 
@@ -22,27 +24,8 @@ const GROUPS: { label: string; muscles: string[] }[] = [
 
 const CAP = 80;
 
-const ExerciseThumb = ({ ex, size = 96 }: { ex: ExerciseEntry; size?: number }) => {
-  const raw = ex.images?.[0];
-  const src = exerciseImg(raw, size);
-  if (!src) return <Dumbbell size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />;
-  return (
-    <img
-      src={src}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      className="h-full w-full object-cover"
-      onError={(e) => {
-        const img = e.currentTarget;
-        if (!img.dataset.fb && raw) { img.dataset.fb = "1"; img.src = raw; }
-      }}
-    />
-  );
-};
-
 const ExerciseDetail = ({ ex, onBack }: { ex: ExerciseEntry; onBack: () => void }) => {
-  const hero = exerciseImg(ex.images?.[ex.images.length - 1], 720);
+  const heroRaw = ex.images?.[ex.images.length - 1];
   return (
     <div className="px-4 pt-3 pb-28">
       <button
@@ -52,21 +35,8 @@ const ExerciseDetail = ({ ex, onBack }: { ex: ExerciseEntry; onBack: () => void 
         <ArrowLeft size={15} /> All exercises
       </button>
 
-      {hero && (
-        <div className="rounded-2xl overflow-hidden border border-border/50 bg-secondary/30 mb-3">
-          <img
-            src={hero}
-            alt={ex.name}
-            loading="lazy"
-            decoding="async"
-            className="w-full h-auto max-h-72 object-contain bg-black/20"
-            onError={(e) => {
-              const img = e.currentTarget;
-              const raw = ex.images?.[ex.images.length - 1];
-              if (!img.dataset.fb && raw) { img.dataset.fb = "1"; img.src = raw; }
-            }}
-          />
-        </div>
+      {heroRaw && (
+        <BrandedExercisePhoto src={heroRaw} alt={ex.name} width={720} className="mb-3" imgClassName="max-h-72" />
       )}
 
       <h1 className="font-display text-xl font-black tracking-tight leading-tight">{ex.name}</h1>
@@ -189,9 +159,7 @@ const Exercises = () => {
                   className="cv-row w-full text-left rounded-2xl border border-gold/20 bg-gradient-to-b from-gold/[0.04] via-card/95 to-card p-3 active:scale-[0.99] transition-transform"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-14 w-14 rounded-xl overflow-hidden bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0">
-                      <ExerciseThumb ex={ex} />
-                    </div>
+                    <ExerciseTile group={resolveGroup(ex.name, ex.primary)} size={56} className="rounded-xl" />
                     <div className="flex-1 min-w-0">
                       <p className="font-display text-[14px] font-black leading-tight truncate">{ex.name}</p>
                       <p className="text-[11px] text-muted-foreground capitalize mt-0.5 truncate">

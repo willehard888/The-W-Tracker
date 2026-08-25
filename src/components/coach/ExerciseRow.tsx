@@ -3,9 +3,10 @@ import { ChevronDown, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { toast } from "sonner";
-import { useExerciseLibrary, resolveExercise, exerciseImg } from "@/lib/exercise-library";
+import { useExerciseLibrary, resolveExercise } from "@/lib/exercise-library";
 import { resolveGroup } from "@/lib/exercise-group";
 import ExerciseTile from "@/components/coach/ExerciseTile";
+import BrandedExercisePhoto from "@/components/coach/BrandedExercisePhoto";
 import { useExerciseHistory, useDayLogs, useLogSet } from "@/hooks/use-workout-log";
 import Sparkline from "@/components/coach/Sparkline";
 
@@ -126,20 +127,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
       {open && (
         <div className="pl-0 pb-2 space-y-2.5">
           {ex?.images?.[0] && (
-            <div className="rounded-xl overflow-hidden border border-border/40 bg-secondary/30">
-              <img
-                src={exerciseImg(ex.images[ex.images.length - 1], 640)}
-                alt={block.name}
-                loading="lazy"
-                decoding="async"
-                className="w-full h-auto max-h-56 object-contain bg-black/20"
-                onError={(e) => {
-                  const img = e.currentTarget;
-                  const raw = ex!.images[ex!.images.length - 1];
-                  if (!img.dataset.fb && raw) { img.dataset.fb = "1"; img.src = raw; }
-                }}
-              />
-            </div>
+            <BrandedExercisePhoto src={ex.images[ex.images.length - 1]} alt={block.name} width={640} imgClassName="max-h-56" />
           )}
 
           {ex && (ex.primary.length > 0 || ex.equipment) && (

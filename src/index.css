@@ -4697,30 +4697,48 @@ p, span.selectable, input, textarea, [contenteditable] {
   40% { opacity: 1; transform: scale(1.15); }
   60% { opacity: 0.85; }
 }
-/* Press choreography — every rule below reverses on release. */
+/* Press choreography. Two triggers share every rule: a held press
+   (.group:active) and the committed tap (.cta-locking, set on click so
+   the full melt plays before navigation on every press). */
+.cta-melt-slab {
+  transform: translateY(104%);
+  transition: transform 130ms cubic-bezier(0.32, 0, 0.15, 1);
+  will-change: transform;
+}
+.group:active .cta-melt-slab, .group.cta-locking .cta-melt-slab { transform: translateY(6%); }
+.cta-melt-heat {
+  opacity: 0;
+  transition: opacity 60ms ease-out;
+}
+.group:active .cta-melt-heat, .group.cta-locking .cta-melt-heat { opacity: 1; }
+.group.cta-locking .cta-melt-face {
+  transform: translateY(6px);
+  filter: brightness(1.05);
+  animation: none;
+}
 .cta-press-base {
   box-shadow: 0 12px 30px -8px hsl(18 95% 45% / 0.65);
-  transition: box-shadow 300ms ease;
+  transition: box-shadow 90ms ease;
 }
-.group:active .cta-press-base {
+.group:active .cta-press-base, .group.cta-locking .cta-press-base {
   box-shadow: 0 14px 46px -6px hsl(20 100% 50% / 0.9), 0 0 70px -10px hsl(30 100% 55% / 0.55);
 }
 .cta-melt-sparks {
   opacity: 0;
-  transition: opacity 250ms ease 220ms;
+  transition: opacity 60ms ease 30ms;
 }
-.group:active .cta-melt-sparks { opacity: 1; }
+.group:active .cta-melt-sparks, .group.cta-locking .cta-melt-sparks { opacity: 1; }
 .cta-melt-drips {
   transform-origin: top;
   transform: scaleY(0.2);
   opacity: 0;
-  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1) 120ms, opacity 300ms ease 100ms;
+  transition: transform 100ms cubic-bezier(0.22, 1, 0.36, 1) 15ms, opacity 70ms ease 10ms;
 }
-.group:active .cta-melt-drips { transform: scaleY(1); opacity: 1; }
+.group:active .cta-melt-drips, .group.cta-locking .cta-melt-drips { transform: scaleY(1); opacity: 1; }
 .cta-melt-label {
-  transition: text-shadow 300ms ease 120ms, transform 300ms ease 120ms;
+  transition: text-shadow 80ms ease 15ms, transform 80ms ease 15ms;
 }
-.group:active .cta-melt-label {
+.group:active .cta-melt-label, .group.cta-locking .cta-melt-label {
   text-shadow: 0 0 18px hsl(48 100% 82% / 0.95), 0 0 40px hsl(40 100% 70% / 0.5), 0 1px 0 hsl(46 100% 75% / 0.6);
   transform: scale(1.02);
 }

@@ -125,15 +125,55 @@ const CommandDeck = ({
 
           {/* Primary action bar */}
           {canCheckin ? (
-            <div className="mt-3.5 flex items-center justify-between gap-3 rounded-2xl px-5 py-4 min-h-[64px] gradient-gold text-primary-foreground shadow-[0_10px_26px_-8px_hsl(var(--gold)/0.75)] group-active:brightness-95 group-active:scale-[0.99] transition-transform">
-              {/* The one action on this screen — sized like it. */}
-              <span className="font-display font-black text-[26px] leading-none uppercase tracking-tight inline-flex items-center gap-2.5">
-                <Flame size={24} strokeWidth={2.9} /> Lock in
-              </span>
-              <span className="inline-flex items-center gap-1 font-black text-[13px] tabular-nums opacity-85 shrink-0">
-                +{maxXp} XP
-                <ChevronRight size={20} className="transition-transform group-active:translate-x-0.5" />
-              </span>
+            {/* LOCK IN — a physical 3D game button. Dark base below, glossy
+                red face above; the whole card is the <button>, so
+                group-active presses the face 6px down into the base. */}
+            <div className="relative mt-3.5">
+              <div
+                aria-hidden
+                className="absolute inset-x-0 top-1.5 -bottom-1.5 rounded-2xl"
+                style={{
+                  background: "linear-gradient(180deg, hsl(0 72% 26%), hsl(0 70% 17%))",
+                  boxShadow: "0 12px 28px -8px hsl(4 90% 40% / 0.6)",
+                }}
+              />
+              <div
+                className={cn(
+                  "cta-breathe-anim relative flex items-center justify-between gap-3 min-h-[66px] px-5 rounded-2xl overflow-hidden",
+                  "transition-[transform,box-shadow,filter] duration-100 ease-out",
+                  "group-active:translate-y-1.5 group-active:brightness-95",
+                  "group-active:[animation:none]",
+                )}
+                style={{
+                  background: "linear-gradient(180deg, hsl(6 92% 62%) 0%, hsl(4 86% 53%) 46%, hsl(2 80% 45%) 100%)",
+                  boxShadow:
+                    "inset 0 2px 0 hsl(12 100% 78% / 0.75), inset 0 -3px 0 hsl(0 70% 32% / 0.9), inset 0 -14px 22px -12px hsl(0 80% 22% / 0.8), 0 1px 0 hsl(0 60% 20%)",
+                  animation: "cta-breathe 3.4s ease-in-out infinite",
+                }}
+              >
+                {/* Idle gloss sweep */}
+                <span
+                  aria-hidden
+                  className="cta-gloss-anim absolute inset-y-0 left-0 w-1/3 pointer-events-none"
+                  style={{
+                    background: "linear-gradient(90deg, transparent, hsl(20 100% 92% / 0.34), transparent)",
+                    animation: "cta-gloss 5.2s ease-in-out infinite",
+                  }}
+                />
+                <span
+                  className="relative font-display font-black text-[26px] leading-none uppercase tracking-tight inline-flex items-center gap-2.5 text-white"
+                  style={{ textShadow: "0 2px 0 hsl(0 70% 28%), 0 0 22px hsl(10 100% 70% / 0.5)" }}
+                >
+                  <Flame size={24} strokeWidth={2.9} /> Lock in
+                </span>
+                <span
+                  className="relative inline-flex items-center gap-1 font-black text-[13px] tabular-nums shrink-0"
+                  style={{ color: "hsl(18 100% 92%)", textShadow: "0 1px 0 hsl(0 70% 30%)" }}
+                >
+                  +{maxXp} XP
+                  <ChevronRight size={20} className="transition-transform group-active:translate-x-0.5" />
+                </span>
+              </div>
             </div>
           ) : (
             <div className="mt-3.5 flex items-center justify-between rounded-xl px-4 py-2.5 border border-border/40">

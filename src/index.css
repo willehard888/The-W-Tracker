@@ -4665,3 +4665,18 @@ p, span.selectable, input, textarea, [contenteditable] {
   }
 }
 
+
+/* ── LOCK IN 3D game button (CommandDeck CTA) ─────────────────────────
+   Two-layer arcade construction: a dark red base under a glossy red face
+   that physically presses down on :active. Gloss sweep + breathe idle. */
+@keyframes cta-gloss {
+  0%, 72% { transform: translateX(-120%) skewX(-18deg); }
+  88%, 100% { transform: translateX(320%) skewX(-18deg); }
+}
+@keyframes cta-breathe {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.06); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-gloss-anim, .cta-breathe-anim { animation: none !important; }
+}

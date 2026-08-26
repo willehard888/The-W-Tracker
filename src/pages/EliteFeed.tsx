@@ -73,7 +73,7 @@ const EliteFeed = () => {
   const [lightboxPost, setLightboxPost] = useState<any | null>(null);
 
   // Pull-to-refresh
-  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["elite-feed"]]);
+  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["feed-posts"], ["feed-user-interactions"], ["feed-comments"]]);
   const moderation = useModeration();
 
   // Check if current user is admin (shared cache across the app)

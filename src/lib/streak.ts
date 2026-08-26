@@ -47,14 +47,19 @@ const localCalendarDaysBetween = (from: Date, to: Date): number => {
  * full calendar day is missed (≥2 days since the last check-in) it is broken,
  * and we surface 0 IMMEDIATELY on the next render — no late check-in needed.
  */
-export const getEffectiveStreak = (streak: number, lastCheckinAt?: string | null) => {
+export const getEffectiveStreak = (streak: number, lastCheckinAt?: string | null, shields = 0) => {
   if (streak <= 0) return 0;
 
   const lastCheckinMs = getLastCheckinMs(lastCheckinAt);
   if (!lastCheckinMs) return streak;
 
   const daysSince = localCalendarDaysBetween(new Date(lastCheckinMs), new Date());
-  return daysSince >= 2 ? 0 : streak;
+  if (daysSince < 2) return streak;
+  // Banked shields keep the streak alive server-side (record_checkin spends
+  // one per missed day on the next check-in). Showing 0 next to a "🛡 2"
+  // badge told exactly the insured users they had lost it.
+  const missedDays = daysSince - 1;
+  return missedDays <= shields ? streak : 0;
 };
 
 /** True when the last check-in falls on the CURRENT local calendar day —

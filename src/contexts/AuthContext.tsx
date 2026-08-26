@@ -165,10 +165,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (data?.subscribed) {
         setIsElite(true);
         setSubscriptionEnd(data.subscription_end);
-      } else if (data && !data.error) {
-        setIsElite(false);
-        setSubscriptionEnd(null);
       }
+      // No else-revoke: check-subscription only knows about Stripe. For every
+      // RevenueCat/iOS subscriber "no Stripe customer" is the NORMAL state, and
+      // revoking here stripped their Elite on web ~1s after login. Revocation
+      // belongs to the webhooks that own profiles.is_elite; fetchProfile picks
+      // it up.
     } catch (e) {
       console.error("Failed to check subscription:", e);
     }

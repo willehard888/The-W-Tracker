@@ -28,6 +28,11 @@ export function useOfflineCheckinSync() {
           toast.success("Your offline check-in synced ✓", {
             description: "We saved it while you were offline and just logged it.",
           });
+        } else if (res === "stale") {
+          toast.error("Yesterday's check-in couldn't sync", {
+            description: "You were offline past midnight, so it can't be logged for the right day. Today is a fresh start.",
+            duration: 8000,
+          });
         }
       } catch { /* keep the queue; we'll retry on the next trigger */ }
       finally { running = false; }

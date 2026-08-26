@@ -228,6 +228,8 @@ const Messages = () => {
                   onClick={async () => {
                     const { error } = await supabase.from("friendships").update({ status: "accepted" as any }).eq("id", req.id);
                     if (error) { toast.error("Could not accept — try again."); return; }
+                    queryClient.invalidateQueries({ queryKey: ["pending-friend-requests"] });
+                    queryClient.invalidateQueries({ queryKey: ["friends"] });
                     queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
                     queryClient.invalidateQueries({ queryKey: ["conversations"] });
                   }}
@@ -239,6 +241,7 @@ const Messages = () => {
                   onClick={async () => {
                     const { error } = await supabase.from("friendships").update({ status: "declined" as any }).eq("id", req.id);
                     if (error) { toast.error("Could not decline — try again."); return; }
+                    queryClient.invalidateQueries({ queryKey: ["pending-friend-requests"] });
                     queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
                   }}
                   className="h-7 px-2 rounded-full bg-secondary text-muted-foreground text-[10px] font-bold border border-border active:scale-95 transition-transform"

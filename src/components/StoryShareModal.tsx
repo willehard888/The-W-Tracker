@@ -403,7 +403,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
       const outcome = await saveImage(blob, `whealth-factory-${variant}.png`);
       if (outcome === "downloaded") toast.success("Story card downloaded!");
       else if (outcome === "shared") toast.success("Choose “Save Image” in the sheet to save to Photos");
-      void track(FUNNEL.inviteShared, { method: "save", surface: "story", variant });
+      if (outcome !== "cancelled") void track(FUNNEL.inviteShared, { method: "save", surface: "story", variant });
     } catch (err) {
       console.error(err);
       toast.error("Failed to generate image");

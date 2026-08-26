@@ -167,7 +167,10 @@ const TribeDetail = () => {
 
   const load = async () => {
     if (!id || !profile?.user_id) return;
-    setLoading(true);
+    // Skeleton only on FIRST load. Refreshes (a comment, a kudos, another
+    // member's realtime event) update in place — replacing the tree with a
+    // skeleton destroyed open comment threads and typed drafts.
+    if (!tribe) setLoading(true);
 
     const [tRes, mRes, pRes, allMRes] = await Promise.all([
       supabase.from("tribes").select("*").eq("id", id).maybeSingle(),

@@ -185,7 +185,7 @@ const Referrals = () => {
       <div className="animate-reveal animate-reveal-delay-2 grid grid-cols-3 gap-2.5 mb-6">
         <div className="rounded-xl border border-border bg-card p-3 text-center">
           <Users size={18} className="text-gold mx-auto mb-1" />
-          <p className="text-xl font-black font-display text-gold leading-none">{stats?.signupCount ?? paidCount}</p>
+          <p className="text-xl font-black font-display text-gold leading-none">{stats?.signupCount ?? 0}</p>
           <p className="eyebrow mt-1">Joined</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-3 text-center">

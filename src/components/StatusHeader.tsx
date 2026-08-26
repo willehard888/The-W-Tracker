@@ -112,7 +112,7 @@ const StatusHeader = () => {
   const division = (profile as any).tier_division ?? 0;
   const config = getTierConfig(tier);
   const next = getNextTier(tier);
-  const streak = getEffectiveStreak(profile.streak || 0, lastCheckin?.checked_in_at);
+  const streak = getEffectiveStreak(profile.streak || 0, lastCheckin?.checked_in_at, profile.streak_shields ?? 0);
   const isApex = tier === "apex";
   const isApexSubscriber = (profile as any).is_apex_subscriber === true;
 

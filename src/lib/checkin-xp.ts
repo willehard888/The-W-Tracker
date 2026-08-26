@@ -147,7 +147,9 @@ export function computeCheckinXp(args: {
     proofBonus,
     rawXp,
     baseXp,
-    totalXp: baseXp + questBonusXp,
+    // The server ceiling is base + 70; three seeded quests can sum to 75 on
+    // ~10 days/year, which would promise XP the server never awards.
+    totalXp: baseXp + Math.min(questBonusXp, 70),
     completedCount: habits.filter((h) => isHabitDone(h, state)).length,
   };
 }

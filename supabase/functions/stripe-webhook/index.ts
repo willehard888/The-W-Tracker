@@ -123,6 +123,27 @@ Deno.serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
+    // Dedup: Stripe retries deliveries for days; a retried
+    // checkout.session.completed re-ran the referral conversion, notification
+    // and analytics side effects. Fail-open on ledger errors.
+    if (event.id) {
+      const { error: dupErr } = await supabase.from("webhook_events").insert({
+        event_id: event.id,
+        source: "stripe",
+        event_ts: Number(event.created ?? 0) * 1000,
+      });
+      if (dupErr) {
+        if ((dupErr as { code?: string }).code === "23505") {
+          console.log(`Duplicate delivery of ${event.id} — acknowledged, not reprocessed`);
+          return new Response(JSON.stringify({ ok: true, skipped: "duplicate" }), {
+            status: 200,
+            headers: jsonHeaders,
+          });
+        }
+        console.warn("webhook_events insert failed (continuing):", dupErr.message);
+      }
+    }
+
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
       // Only grant on a genuinely paid checkout.

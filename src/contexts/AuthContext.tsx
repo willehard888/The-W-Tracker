@@ -345,7 +345,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // kiosk device doesn't leak the previous user's data to the next.
     clearIosDebug(); // held a refresh token in plaintext (localStorage)
     try {
-      ["w_onboarding_done", "pending_referral_code", "w_coach_onboard_skipped"].forEach(
+      [
+        "w_onboarding_done", "pending_referral_code", "w_coach_onboard_skipped",
+        // Health/mood data and the offline check-in payload are per-user but
+        // stored under global keys — clear them so the next account on a shared
+        // device never inherits the previous user's data.
+        "w_coach_messages_v1", "w_coach_messages_v1_ts",
+        "w_coach_onboarding_draft_v2", "w_coach_onboarding_step_v2",
+        "pending_checkin_v1",
+      ].forEach(
         (k) => localStorage.removeItem(k),
       );
       sessionStorage.removeItem("w_apple_name_suggestion");

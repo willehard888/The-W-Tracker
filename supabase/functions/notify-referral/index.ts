@@ -9,16 +9,11 @@ const corsHeaders = {
 // Internal-only: the referrals trigger invokes this with the service-role key.
 function isServiceRole(token: string, envKey: string): boolean {
   if (!token) return false;
-  if (envKey && token === envKey) return true;
-  try {
-    const seg = token.split(".")[1];
-    if (!seg) return false;
-    const b64 = seg.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = b64.length % 4 ? b64 + "=".repeat(4 - (b64.length % 4)) : b64;
-    return JSON.parse(atob(padded))?.role === "service_role";
-  } catch {
-    return false;
-  }
+  // Exact service-role key match only. The previous fallback decoded the JWT
+  // payload WITHOUT verifying its signature, so any forged token claiming
+  // role=service_role passed — a full auth bypass the moment one of these
+  // functions ever gets verify_jwt=false in config.toml.
+  return !!envKey && token === envKey;
 }
 
 // Referral engine v2: every 3 PAID friends = 1 free month (keep in sync with

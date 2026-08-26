@@ -153,7 +153,6 @@ CI builds run on Xcode Cloud — see `ios/App/ci_scripts/`. The lockfile must st
 | `create-checkout` / `customer-portal` | client          | Stripe checkout / portal redirects         |
 | `claim-referral`               | client                 | Validates + awards referral rewards        |
 | `delete-account`               | client                 | GDPR-style account deletion                |
-| `demo-login`                   | client                 | App Store reviewer dummy account           |
 | `og-image` / `og-profile`      | public (no JWT)        | Open Graph share image rendering           |
 
 Per-function settings (e.g. `verify_jwt = false`) live in `supabase/config.toml`.

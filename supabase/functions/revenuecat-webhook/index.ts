@@ -121,6 +121,46 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Dedup + ordering guard. RevenueCat retries failed deliveries for hours
+    // and makes no ordering promise: an EXPIRATION followed by a retried
+    // older RENEWAL left is_elite = true forever. Every event id is recorded;
+    // a duplicate is acknowledged without reprocessing, and an event older
+    // than the newest one processed for this user must not mutate
+    // entitlements. Fail-open on ledger errors — payments must never break
+    // because bookkeeping did.
+    const eventId: string | undefined = event.id;
+    const eventTs = Number(event.event_timestamp_ms ?? 0);
+    let staleEvent = false;
+    if (eventId) {
+      const { data: newest } = await supabase
+        .from("webhook_events")
+        .select("event_ts")
+        .eq("source", "revenuecat")
+        .eq("app_user_id", appUserId)
+        .order("event_ts", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const { error: dedupErr } = await supabase.from("webhook_events").insert({
+        event_id: eventId,
+        source: "revenuecat",
+        app_user_id: appUserId,
+        event_ts: eventTs,
+      });
+      if (dedupErr) {
+        if ((dedupErr as { code?: string }).code === "23505") {
+          console.log(`Duplicate delivery of event ${eventId} — acknowledged, not reprocessed`);
+          return new Response(JSON.stringify({ ok: true, skipped: "duplicate" }), {
+            status: 200,
+            headers: jsonHeaders,
+          });
+        }
+        console.warn("webhook_events insert failed (continuing):", dedupErr.message);
+      }
+      if (newest && eventTs > 0 && eventTs < Number(newest.event_ts)) {
+        staleEvent = true;
+      }
+    }
+
     const grantEvents = [
       "INITIAL_PURCHASE",
       "RENEWAL",
@@ -173,6 +213,24 @@ Deno.serve(async (req) => {
       });
       if (evErr) console.warn("cancellation analytics insert failed:", evErr.message);
       return new Response(JSON.stringify({ success: true, action: "recorded" }), {
+        status: 200,
+        headers: jsonHeaders,
+      });
+    }
+
+    // A grant for a product we don't recognize must not hand out membership —
+    // any future consumable/tip sold through RevenueCat would otherwise set
+    // is_elite. (Events without product info, e.g. some extensions, pass.)
+    if (isElite === true && productId && !isPremiumProduct && !isApexProduct) {
+      console.warn(`Unknown product ${productId} on ${event.type} — recorded, no entitlement change`);
+      isElite = null;
+    }
+
+    // Out-of-order delivery: a newer event for this user has already been
+    // processed, so this one's entitlement decision is obsolete.
+    if (isElite !== null && staleEvent) {
+      console.log(`Stale event ${eventId} (ts ${eventTs}) — recorded, entitlements unchanged`);
+      return new Response(JSON.stringify({ ok: true, skipped: "stale" }), {
         status: 200,
         headers: jsonHeaders,
       });

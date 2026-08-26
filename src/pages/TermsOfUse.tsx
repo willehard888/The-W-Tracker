@@ -31,7 +31,7 @@ const TermsOfUse = () => {
 
         <section>
           <h2 className="font-semibold text-foreground mb-2">4. User Conduct</h2>
-          <p>You agree not to post offensive, harmful, or inappropriate content. We reserve the right to remove content and suspend accounts that violate these terms.</p>
+          <p>There is zero tolerance for objectionable content or abusive behavior. You agree not to post content that is offensive, harmful, harassing, or otherwise inappropriate, and not to harass or abuse other users. You can report objectionable content and block abusive users from within the app. We review reports and act on them — typically within 24 hours — by removing violating content and ejecting the users responsible. We reserve the right to remove any content and suspend or terminate accounts that violate these terms.</p>
         </section>
 
         <section>

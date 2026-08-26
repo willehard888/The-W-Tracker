@@ -165,10 +165,10 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
   </div>
 );
 
-/* ── 7. Commitment: 14 days ── */
+/* ── 7. Commitment: free trial ── */
 export const TrialSlide = ({ onNext }: { onNext: () => void }) => (
   <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
-    <p className="eyebrow mb-2">Your first 14 days</p>
+    <p className="eyebrow mb-2">Your free trial</p>
     <h1 className="font-display text-[28px] leading-tight font-black tracking-tight text-center mb-1.5">
       Everything unlocked.
     </h1>

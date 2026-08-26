@@ -131,7 +131,7 @@ const CommentThread = ({
               {currentUserId && (
                 <button type="button" onClick={() => { hapticSelection(); onReply(node.id, username, node.content || ""); }}
                   className="flex items-center gap-1 px-2 -mx-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-[hsl(var(--ember))] transition-colors">
-                  <Reply size={10} /> Reply
+                  <Reply aria-hidden size={10} /> Reply
                 </button>
               )}
               {isOwn && (
@@ -382,7 +382,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
         {post.reported && (isAdmin || isOwner) && (
           <div className="px-4 py-2 bg-destructive/10 border-b border-destructive/30 flex items-center justify-between">
             <span className="text-[10px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1">
-              <AlertTriangle size={11} /> Reported
+              <AlertTriangle aria-hidden size={11} /> Reported
             </span>
             <button onClick={() => deletePost.mutate()}
               className="px-2 py-1 rounded text-[10px] font-bold bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors">
@@ -413,12 +413,12 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               </button>
               {isApexAuthor && (
                 <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-[hsl(var(--ember))]/15 border border-[hsl(var(--ember))]/40">
-                  <Zap size={7} className="text-[hsl(var(--ember))]" fill="currentColor" />
+                  <Zap aria-hidden size={7} className="text-[hsl(var(--ember))]" fill="currentColor" />
                   <span className="text-[8px] font-black tracking-wider uppercase text-[hsl(var(--ember))]">Apex</span>
                 </span>
               )}
               {post.author?.status_tier === "elite" && (
-                <Crown size={11} className="text-gold shrink-0" />
+                <Crown role="img" aria-label="Elite tier" size={11} className="text-gold shrink-0" />
               )}
             </div>
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
@@ -437,26 +437,26 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button aria-label="Post options" className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground/75 hover:text-muted-foreground">
-                  <MoreHorizontal size={16} />
+                  <MoreHorizontal aria-hidden size={16} />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[160px]">
                 {isOwn && (
                   <DropdownMenuItem onClick={() => { if (confirm("Delete this post?")) deletePost.mutate(); }}
                     className="text-destructive focus:text-destructive">
-                    <Trash2 size={14} className="mr-2" /> Delete post
+                    <Trash2 aria-hidden size={14} className="mr-2" /> Delete post
                   </DropdownMenuItem>
                 )}
                 {!isOwn && (
                   <DropdownMenuItem onClick={() => reportPost.mutate()} className="text-destructive focus:text-destructive">
-                    <AlertTriangle size={14} className="mr-2" /> Report post
+                    <AlertTriangle aria-hidden size={14} className="mr-2" /> Report post
                   </DropdownMenuItem>
                 )}
                 {(isAdmin || isOwner) && !isOwn && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => deletePost.mutate()} className="text-destructive focus:text-destructive">
-                      <ShieldCheck size={14} className="mr-2" /> {isOwner ? "Owner: Remove" : "Admin: Remove"}
+                      <ShieldCheck aria-hidden size={14} className="mr-2" /> {isOwner ? "Owner: Remove" : "Admin: Remove"}
                     </DropdownMenuItem>
                   </>
                 )}
@@ -494,7 +494,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                   ? "bg-streak-orange/15 text-streak-orange"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               )}>
-              <Flame size={15} fill={post.liked ? "currentColor" : "none"} className={cn(post.liked && "animate-scale-in")} />
+              <Flame aria-hidden size={15} fill={post.liked ? "currentColor" : "none"} className={cn(post.liked && "animate-scale-in")} />
               <span className="tabular-nums">{post.likes_count > 0 ? post.likes_count : ""}</span>
             </button>
           )}
@@ -504,7 +504,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all active:scale-95",
               showComments ? "bg-[hsl(var(--ember))]/12 text-[hsl(var(--ember))]" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}>
-            <MessageCircle size={15} fill={showComments ? "currentColor" : "none"} />
+            <MessageCircle aria-hidden size={15} fill={showComments ? "currentColor" : "none"} />
             <span className="tabular-nums">{post.comments_count > 0 ? post.comments_count : ""}</span>
           </button>
 
@@ -529,7 +529,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                     ? "text-muted-foreground hover:bg-purple/10 hover:text-purple"
                     : "text-muted-foreground/75 cursor-not-allowed"
               )}>
-              <Award size={15} fill={post.kudosed ? "currentColor" : "none"} className={cn(post.kudosed && "animate-scale-in")} />
+              <Award aria-hidden size={15} fill={post.kudosed ? "currentColor" : "none"} className={cn(post.kudosed && "animate-scale-in")} />
               <span className="tabular-nums">{post.kudos_count > 0 ? post.kudos_count : ""}</span>
             </button>
           )}
@@ -537,7 +537,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
           {/* Show kudos count for own post */}
           {isOwn && post.kudos_count > 0 && (
             <div className="flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold text-purple bg-purple/10">
-              <Award size={15} fill="currentColor" />
+              <Award aria-hidden size={15} fill="currentColor" />
               <span className="tabular-nums">{post.kudos_count}</span>
             </div>
           )}
@@ -585,7 +585,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                     <div className="w-0.5 rounded-full bg-[hsl(var(--ember))] shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1 text-[10px] font-bold text-[hsl(var(--ember))] uppercase tracking-wider">
-                        <Reply size={10} /> Replying to @{replyTo.username}
+                        <Reply aria-hidden size={10} /> Replying to @{replyTo.username}
                       </div>
                       <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 break-words">
                         {replyTo.snippet || "(no text)"}
@@ -593,7 +593,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                     </div>
                     <button type="button" onClick={() => { hapticSelection(); setReplyTo(null); }} aria-label="Cancel reply"
                       className="self-start h-6 w-6 rounded-full bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors shrink-0">
-                      <X size={12} />
+                      <X aria-hidden size={12} />
                     </button>
                   </div>
                 )}
@@ -639,7 +639,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                         ? "bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background"
                         : "bg-secondary text-muted-foreground"
                     )}>
-                    <Send size={14} />
+                    <Send aria-hidden size={14} />
                   </button>
                 </div>
               </div>

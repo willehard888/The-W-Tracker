@@ -25,7 +25,7 @@ const DailyInsightCard = () => {
     >
       <div className="flex items-start gap-3">
         <div className="h-9 w-9 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0">
-          <Sparkles size={16} className="text-gold" />
+          <Sparkles aria-hidden size={16} className="text-gold" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-1">
@@ -38,7 +38,7 @@ const DailyInsightCard = () => {
             The Vault — tap to open the lesson
           </p>
         </div>
-        <ChevronRight size={16} className="text-gold/60 shrink-0 mt-1" />
+        <ChevronRight aria-hidden size={16} className="text-gold/60 shrink-0 mt-1" />
       </div>
     </button>
   );

@@ -91,7 +91,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
     if (r.viewer_status === "pending_join") {
       return (
         <Button size="sm" variant="outline" disabled className="h-8 text-[11px]">
-          <Check size={11} /> Sent
+          <Check aria-hidden size={11} /> Sent
         </Button>
       );
     }
@@ -110,7 +110,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
           disabled={actingId === r.id}
           className="h-8 text-[11px] bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
         >
-          {actingId === r.id ? <Loader2 size={11} className="animate-spin" /> : <Lock size={11} />}
+          {actingId === r.id ? <Loader2 aria-hidden size={11} className="animate-spin" /> : <Lock aria-hidden size={11} />}
           Request
         </Button>
       );
@@ -122,7 +122,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
         disabled={actingId === r.id}
         className="h-8 text-[11px] bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
       >
-        {actingId === r.id ? <Loader2 size={11} className="animate-spin" /> : "Join"}
+        {actingId === r.id ? <Loader2 aria-hidden size={11} className="animate-spin" /> : "Join"}
       </Button>
     );
   };
@@ -130,7 +130,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
   return (
     <div className="mb-4">
       <div className="relative">
-        <Search
+        <Search aria-hidden
           size={14}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
         />
@@ -147,7 +147,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
             className="absolute right-0 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center text-muted-foreground hover:text-foreground"
             aria-label="Clear search"
           >
-            <X size={14} />
+            <X aria-hidden size={14} />
           </button>
         )}
       </div>
@@ -156,7 +156,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
         <div className="mt-3 rounded-xl border border-border bg-card/60 overflow-hidden">
           {loading ? (
             <div className="flex justify-center py-6">
-              <Loader2 size={16} className="animate-spin text-muted-foreground" />
+              <Loader2 aria-hidden size={16} className="animate-spin text-muted-foreground" />
             </div>
           ) : results.length === 0 ? (
             <p className="text-center text-xs text-muted-foreground py-6">No tribes found.</p>
@@ -179,9 +179,9 @@ const TribeSearchBar = ({ onChanged }: Props) => {
                     )}
                   >
                     {r.visibility === "private" ? (
-                      <Lock size={14} className="text-muted-foreground" />
+                      <Lock aria-hidden size={14} className="text-muted-foreground" />
                     ) : (
-                      <Users size={14} className="text-[hsl(var(--ember))]" />
+                      <Users aria-hidden size={14} className="text-[hsl(var(--ember))]" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -197,7 +197,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
                       <p className="text-[10px] text-muted-foreground truncate">{r.description}</p>
                     )}
                     <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                      <Users size={9} /> {r.member_count}
+                      <Users aria-hidden size={9} /> {r.member_count}
                     </span>
                   </div>
                   {renderActionButton(r)}

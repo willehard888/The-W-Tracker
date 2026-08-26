@@ -28,7 +28,7 @@ export const MoreSection = ({ label = "More", defaultOpen = false, children, cla
         className="w-full flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/70 active:text-foreground transition-colors"
       >
         {label}
-        <ChevronDown size={13} className={cn("transition-transform duration-200", open && "rotate-180")} />
+        <ChevronDown aria-hidden size={13} className={cn("transition-transform duration-200", open && "rotate-180")} />
       </button>
       {open && <div className="space-y-5 pt-1 animate-reveal">{children}</div>}
     </div>

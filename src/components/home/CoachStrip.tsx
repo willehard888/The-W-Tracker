@@ -64,7 +64,7 @@ const CoachStrip = (_props: CoachStripProps) => {
       />
       <div className="relative flex items-center gap-3">
         <div className="h-10 w-10 rounded-xl gradient-gold flex items-center justify-center shrink-0 glow-gold">
-          <Sparkles size={18} className="text-primary-foreground" />
+          <Sparkles aria-hidden size={18} className="text-primary-foreground" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
@@ -80,7 +80,7 @@ const CoachStrip = (_props: CoachStripProps) => {
             {line}
           </p>
         </div>
-        <ChevronRight size={18} className="text-gold/60 shrink-0" />
+        <ChevronRight aria-hidden size={18} className="text-gold/60 shrink-0" />
       </div>
     </button>
   );

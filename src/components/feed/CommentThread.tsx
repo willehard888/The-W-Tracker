@@ -147,7 +147,7 @@ const CommentThread = memo(function CommentThread({
                   }}
                   className="flex items-center gap-1 px-2 -mx-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-gold transition-colors"
                 >
-                  <Reply size={10} />
+                  <Reply aria-hidden size={10} />
                   Reply
                 </button>
               )}

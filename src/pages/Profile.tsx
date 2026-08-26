@@ -403,7 +403,7 @@ const Profile = () => {
           aria-label="Account menu"
           onClick={() => setQuickMenuOpen((v) => !v)}
         >
-          <MoreVertical size={18} />
+          <MoreVertical aria-hidden size={18} />
         </Button>
         {quickMenuOpen && (
           <>
@@ -418,7 +418,7 @@ const Profile = () => {
                 onClick={() => { hapticSelection(); setQuickMenuOpen(false); setProfileTab("settings"); }}
                 className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 active:scale-[0.98] transition"
               >
-                <SettingsIcon size={14} className="text-gold" />
+                <SettingsIcon aria-hidden size={14} className="text-gold" />
                 <span>Open Settings</span>
               </button>
               <button
@@ -426,7 +426,7 @@ const Profile = () => {
                 onClick={() => { hapticSelection(); setQuickMenuOpen(false); signOut(); }}
                 className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 active:scale-[0.98] transition border-t border-border/40"
               >
-                <LogOut size={14} className="text-gold" />
+                <LogOut aria-hidden size={14} className="text-gold" />
                 <span>Sign Out</span>
               </button>
               {/* Delete Account lives ONLY in Settings behind the
@@ -499,7 +499,7 @@ const Profile = () => {
           { icon: Trophy, label: "Kudos received", value: kudosReceived || 0, accent: "text-gold" },
         ].map((s) => (
           <div key={s.label} className="surface-card p-3.5 flex items-center gap-3">
-            <s.icon size={16} className={cn("shrink-0", s.accent)} />
+            <s.icon aria-hidden size={16} className={cn("shrink-0", s.accent)} />
             <div className="min-w-0">
               <p className="font-display font-black text-lg leading-none tabular-nums">{s.value}</p>
               <p className="eyebrow mt-1">{s.label}</p>
@@ -524,7 +524,7 @@ const Profile = () => {
           >
             <div className="shrink-0">
               <p className="font-display font-black text-3xl leading-none text-gold tabular-nums">{latest.overall}</p>
-              <p className="eyebrow mt-1 inline-flex items-center gap-1"><Gauge size={9} /> Whealth Index</p>
+              <p className="eyebrow mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={9} /> Whealth Index</p>
             </div>
             <svg viewBox="0 0 100 36" className="flex-1 h-9" preserveAspectRatio="none" aria-hidden>
               <polyline
@@ -538,7 +538,7 @@ const Profile = () => {
                 vectorEffect="non-scaling-stroke"
               />
             </svg>
-            <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" />
+            <ChevronRight aria-hidden size={16} className="text-muted-foreground/75 shrink-0" />
           </button>
         );
       })()}
@@ -627,9 +627,9 @@ const Profile = () => {
                   <AppImage src={post.image_url} width={600} alt={post.content || "Post image"} className="w-full rounded-lg object-cover max-h-48 mb-2" />
                 )}
                 <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><Heart size={10} /> {post.likes_count}</span>
-                  <span className="flex items-center gap-1"><Trophy size={10} className="text-gold" /> {post.kudos_count}</span>
-                  <span className="flex items-center gap-1"><MessageSquare size={10} /> {post.comments_count}</span>
+                  <span className="flex items-center gap-1"><Heart aria-hidden size={10} /> {post.likes_count}</span>
+                  <span className="flex items-center gap-1"><Trophy aria-hidden size={10} className="text-gold" /> {post.kudos_count}</span>
+                  <span className="flex items-center gap-1"><MessageSquare aria-hidden size={10} /> {post.comments_count}</span>
                   <span className="ml-auto">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
                 </div>
               </div>
@@ -665,7 +665,7 @@ const Profile = () => {
           {isElite && (
             <div className="animate-reveal animate-reveal-delay-1 surface-card p-3 flex items-center gap-3">
               <div className="h-8 w-8 rounded-lg bg-xp-green/10 border border-xp-green/30 flex items-center justify-center shrink-0">
-                <CreditCard size={14} className="text-xp-green" />
+                <CreditCard aria-hidden size={14} className="text-xp-green" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] font-bold tracking-wider uppercase text-xp-green/90">
@@ -730,7 +730,7 @@ const Profile = () => {
           {/* Account actions — destructive looks destructive */}
           <div className="flex gap-2 pt-2 animate-reveal animate-reveal-delay-1">
             <Button variant="secondary" size="sm" className="flex-1" onClick={signOut}>
-              <LogOut size={14} />
+              <LogOut aria-hidden size={14} />
               Sign Out
             </Button>
             {/* Both delete entry points (this Settings button + the kebab
@@ -742,7 +742,7 @@ const Profile = () => {
               className="flex-1 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={() => { setDeleteConfirmText(""); setDeleteDialogOpen(true); }}
             >
-              <Trash2 size={14} />
+              <Trash2 aria-hidden size={14} />
               Delete Account
             </Button>
 
@@ -836,7 +836,7 @@ const SettingsRow = ({
     onClick={() => { void hapticSelection(); onClick(); }}
     className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-card/60 transition-colors active:scale-[0.99]"
   >
-    <Icon size={14} className="text-muted-foreground shrink-0" />
+    <Icon aria-hidden size={14} className="text-muted-foreground shrink-0" />
     <span className="flex-1 min-w-0">
       <span className="block text-[13px] font-semibold truncate">{label}</span>
       {sub && <span className="block text-[10px] text-muted-foreground truncate mt-0.5">{sub}</span>}
@@ -846,7 +846,7 @@ const SettingsRow = ({
         {badge}
       </span>
     )}
-    <ChevronRight size={14} className="text-muted-foreground/75 shrink-0" />
+    <ChevronRight aria-hidden size={14} className="text-muted-foreground/75 shrink-0" />
   </button>
 );
 

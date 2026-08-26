@@ -80,7 +80,7 @@ const HabitToggle = ({
         <p className={cn("font-bold text-[15px] leading-tight", active ? "text-gold" : "text-foreground")}>{habit.label}</p>
         {detected && (
           <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/12 px-1.5 py-0.5 rounded-full">
-            <ShieldCheck size={10} /> Detected
+            <ShieldCheck aria-hidden size={10} /> Detected
           </span>
         )}
       </div>
@@ -93,7 +93,7 @@ const HabitToggle = ({
       "h-6 w-6 rounded-full border-2 transition-all duration-200 shrink-0 flex items-center justify-center",
       active ? "border-gold bg-gold shadow-[0_0_10px_-1px_hsl(var(--gold)/0.6)]" : "border-muted-foreground/30 group-active:border-muted-foreground/50",
     )}>
-      {active && <Check size={14} className="text-primary-foreground" strokeWidth={3} />}
+      {active && <Check aria-hidden size={14} className="text-primary-foreground" strokeWidth={3} />}
     </div>
   </button>
 );
@@ -631,7 +631,7 @@ const DailyCheckin = () => {
       <div className="min-h-full flex flex-col items-center justify-center px-6 text-center pb-4">
         <div className="animate-reveal">
           <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
-            <Moon size={36} className="text-muted-foreground" />
+            <Moon aria-hidden size={36} className="text-muted-foreground" />
           </div>
           <h1 className="font-display text-2xl font-black tracking-tight mb-2">Already Logged Today</h1>
           <p className="text-muted-foreground text-sm mb-2">You can only check in once per day.</p>
@@ -648,7 +648,7 @@ const DailyCheckin = () => {
         fallback={
           <div className="min-h-full flex flex-col items-center justify-center px-6 text-center">
             <div className="h-20 w-20 rounded-full bg-xp-green/15 flex items-center justify-center mx-auto mb-5">
-              <Check size={40} className="text-xp-green" />
+              <Check aria-hidden size={40} className="text-xp-green" />
             </div>
             <h1 className="font-display text-2xl font-black tracking-tight mb-2">Checked in ✓</h1>
             <p className="text-muted-foreground text-sm mb-8">Your day is locked in. Nice work.</p>
@@ -764,7 +764,7 @@ const DailyCheckin = () => {
             stay in — add whatever matters to you.
           </p>
           <Button variant="ember" size="lg" className="w-full" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
-            <SlidersHorizontal size={16} /> Choose my habits
+            <SlidersHorizontal aria-hidden size={16} /> Choose my habits
           </Button>
           <button onClick={dismissOnboard} className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/75 hover:text-foreground transition-colors py-1">
             Use the defaults for now
@@ -781,13 +781,13 @@ const DailyCheckin = () => {
           onClick={() => { hapticSelection(); setPickerOpen(true); }}
           className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-gradient-to-r from-gold/15 to-gold/[0.06] px-3.5 py-2 text-xs font-black uppercase tracking-wide text-gold transition-all active:scale-[0.96] hover:from-gold/20 shadow-[0_2px_10px_-3px_hsl(var(--gold)/0.4)]"
         >
-          <SlidersHorizontal size={14} /> Customize
+          <SlidersHorizontal aria-hidden size={14} /> Customize
         </button>
       </div>
 
       {healthKit.available && (detected.workout || detected.steps || detected.mindfulness || detected.sleep) && (
         <div className="mb-4 rounded-xl border border-teal/30 bg-teal/5 p-3 flex items-start gap-2.5">
-          <ShieldCheck size={18} className="text-teal shrink-0 mt-0.5" />
+          <ShieldCheck aria-hidden size={18} className="text-teal shrink-0 mt-0.5" />
           <p className="text-xs text-foreground/90 leading-snug">
             <span className="font-semibold text-teal">Apple Health synced.</span>{" "}
             {[
@@ -811,10 +811,10 @@ const DailyCheckin = () => {
           <div className={cn(
             "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
             isOptimalSleep ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground",
-          )}><Moon size={20} /></div>
+          )}><Moon aria-hidden size={20} /></div>
           <div>
             <p className="font-semibold text-sm flex items-center gap-1.5">
-              Sleep {detected.sleep && <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck size={10} /> Health</span>}
+              Sleep {detected.sleep && <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={10} /> Health</span>}
             </p>
             <p className="text-xs text-muted-foreground">Optimal: 7.5–9 hours</p>
           </div>
@@ -848,12 +848,12 @@ const DailyCheckin = () => {
               "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
               workout ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground",
             )}>
-              <Dumbbell size={20} />
+              <Dumbbell aria-hidden size={20} />
             </div>
             <div className="flex-1 min-w-0">
               <p className={cn("font-semibold text-sm flex items-center gap-1.5", workout && "text-gold")}>
                 {workout ? `${selectedSport.emoji} ${selectedSport.label}` : "Workout"}
-                {detected.workout && <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck size={10} /> Detected</span>}
+                {detected.workout && <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={10} /> Detected</span>}
               </p>
               <p className="text-xs text-muted-foreground">
                 {isRestDay
@@ -875,7 +875,7 @@ const DailyCheckin = () => {
                 workout ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
               )}
             >
-              Trained <ChevronDown size={14} className={cn("transition-transform", sportOpen && "rotate-180")} />
+              Trained <ChevronDown aria-hidden size={14} className={cn("transition-transform", sportOpen && "rotate-180")} />
             </button>
             <button
               type="button"
@@ -913,10 +913,10 @@ const DailyCheckin = () => {
                     <span className="text-sm font-medium flex-1 flex items-center gap-1.5">
                       {sport.label}
                       {detectedSportId === sport.id && (
-                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck size={10} /> Detected</span>
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={10} /> Detected</span>
                       )}
                     </span>
-                    {sportCategory === sport.id && <Check size={15} strokeWidth={3} className="text-gold shrink-0" />}
+                    {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
                     <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
                   </button>
                 ))}
@@ -925,7 +925,7 @@ const DailyCheckin = () => {
 
             {/* Search — "ten" → Tennis. The whole catalog is one keystroke away. */}
             <div className="px-3 pt-3 pb-1 relative">
-              <Search size={14} className="absolute left-6 top-1/2 mt-1 -translate-y-1/2 text-muted-foreground/75 pointer-events-none" />
+              <Search aria-hidden size={14} className="absolute left-6 top-1/2 mt-1 -translate-y-1/2 text-muted-foreground/75 pointer-events-none" />
               <input
                 value={sportQuery}
                 onChange={(e) => setSportQuery(e.target.value)}
@@ -939,7 +939,7 @@ const DailyCheckin = () => {
                   className="absolute right-3 top-1/2 mt-1 -translate-y-1/2 h-11 w-11 flex items-center justify-center text-muted-foreground/75"
                   aria-label="Clear search"
                 >
-                  <X size={14} />
+                  <X aria-hidden size={14} />
                 </button>
               )}
             </div>
@@ -961,7 +961,7 @@ const DailyCheckin = () => {
                   >
                     <span className="text-lg w-7 text-center">{sport.emoji}</span>
                     <span className="text-sm font-medium flex-1">{sport.label}</span>
-                    {sportCategory === sport.id && <Check size={15} strokeWidth={3} className="text-gold shrink-0" />}
+                    {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
                     <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
                   </button>
                 )) : (
@@ -981,7 +981,7 @@ const DailyCheckin = () => {
                     >
                       <span className="eyebrow">{group} <span className="text-muted-foreground/75">({sports.length})</span></span>
                       {forYou.length > 0 && (
-                        <ChevronDown size={12} className={cn("text-muted-foreground/75 transition-transform", open && "rotate-180")} />
+                        <ChevronDown aria-hidden size={12} className={cn("text-muted-foreground/75 transition-transform", open && "rotate-180")} />
                       )}
                     </button>
                     {open && sports.map((sport) => (
@@ -996,7 +996,7 @@ const DailyCheckin = () => {
                       >
                         <span className="text-lg w-7 text-center">{sport.emoji}</span>
                         <span className="text-sm font-medium flex-1">{sport.label}</span>
-                        {sportCategory === sport.id && <Check size={15} strokeWidth={3} className="text-gold shrink-0" />}
+                        {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
                     <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
                       </button>
                     ))}
@@ -1029,7 +1029,7 @@ const DailyCheckin = () => {
             <div className={cn(
               "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
               hydration >= 3 ? "bg-gold/15 text-gold" : "bg-teal/10 text-teal",
-            )}><Droplets size={20} /></div>
+            )}><Droplets aria-hidden size={20} /></div>
             <div><p className="font-semibold text-sm">Hydration</p><p className="text-xs text-muted-foreground">Target: 3L+</p></div>
             <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
           </div>
@@ -1061,11 +1061,11 @@ const DailyCheckin = () => {
           className="w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 text-left active:scale-[0.99]"
         >
           <span className="text-sm font-semibold flex items-center gap-2">
-            <Plus size={16} className="text-gold" />
+            <Plus aria-hidden size={16} className="text-gold" />
             Bonus quests &amp; proof photo
             {questBonusXp > 0 && <span className="text-[10px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+{questBonusXp} XP</span>}
           </span>
-          <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", moreOpen && "rotate-180")} />
+          <ChevronDown aria-hidden size={16} className={cn("text-muted-foreground transition-transform", moreOpen && "rotate-180")} />
         </button>
 
         <div className={cn("mt-3 space-y-4", !moreOpen && "hidden")}>
@@ -1093,7 +1093,7 @@ const DailyCheckin = () => {
           {/* Proof photo — available to everyone (all app users are paid) */}
           <div>
             <label className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] cursor-pointer">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold"><Camera size={20} /></div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold"><Camera aria-hidden size={20} /></div>
               <div className="text-left flex-1">
                 <p className="font-semibold text-sm">Add proof photo</p>
                 <p className="text-xs text-muted-foreground">Posted to the Elite Feed · earns <span className="text-gold font-bold">+30 bonus XP</span></p>
@@ -1164,7 +1164,7 @@ const DailyCheckin = () => {
       {/* Submit */}
       <div className="mt-6">
         <Button variant="ember" size="xl" className="w-full" onClick={handleSubmit} loading={submitting} aria-busy={submitting} disabled={submitting || honest !== true}>
-          <Zap size={20} />
+          <Zap aria-hidden size={20} />
           {submitting ? "Submitting..." : `Submit Day — Earn ${totalXp} XP`}
         </Button>
         {honest === null && !submitting ? (
@@ -1176,7 +1176,7 @@ const DailyCheckin = () => {
           </p>
         ) : (
           <p className="mt-2 text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1">
-            <Sparkles size={12} className="text-gold" /> {maxCount} habits · your personal standard
+            <Sparkles aria-hidden size={12} className="text-gold" /> {maxCount} habits · your personal standard
           </p>
         )}
       </div>

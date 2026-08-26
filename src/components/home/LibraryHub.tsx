@@ -43,7 +43,7 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
   if (id === "recipes") {
     return (
       <div className={base}>
-        <Utensils size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
+        <Utensils aria-hidden size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${recipeSquare("greek-chicken-bowl") ?? recipeThumb("greek-chicken-bowl")})` }}
@@ -69,7 +69,7 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
   }
   return (
     <div className={base}>
-      <Crown size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
+      <Crown aria-hidden size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
     </div>
   );
 };
@@ -83,7 +83,7 @@ const LibraryHub = () => {
         {/* Header — quiet, no chevron: the value statement, not a button */}
         <div className="flex items-center gap-3 px-4 pt-3.5 pb-3">
           <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_16px_-4px_hsl(var(--gold)/0.5)]">
-            <Crown size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
+            <Crown aria-hidden size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
@@ -112,7 +112,7 @@ const LibraryHub = () => {
               </div>
               <p className="text-[10px] text-muted-foreground leading-snug truncate mt-0.5">{row.sub}</p>
             </div>
-            <ChevronRight size={16} className="text-gold/60 shrink-0" />
+            <ChevronRight aria-hidden size={16} className="text-gold/60 shrink-0" />
           </button>
         ))}
       </div>

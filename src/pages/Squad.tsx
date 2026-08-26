@@ -45,7 +45,7 @@ const Squad = () => {
                 tab === s.key ? SEGMENT_ACTIVE : "text-muted-foreground",
               )}
             >
-              <s.icon size={14} /> {s.label}
+              <s.icon aria-hidden size={14} /> {s.label}
             </button>
           ))}
         </div>

@@ -175,7 +175,7 @@ const BottomNav = () => {
               )}
 
               <span className="relative flex items-center justify-center h-6 w-6">
-                <Icon
+                <Icon aria-hidden
                   size={20}
                   strokeWidth={active ? 2.5 : 1.75}
                   className="relative z-10"

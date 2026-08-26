@@ -310,9 +310,9 @@ const Leaderboard = () => {
         />
         <div className="flex items-center gap-2.5">
           <div className="relative">
-            <Trophy size={26} className="text-gold drop-shadow-[0_0_12px_hsl(var(--gold)/0.6)]" />
+            <Trophy aria-hidden size={26} className="text-gold drop-shadow-[0_0_12px_hsl(var(--gold)/0.6)]" />
             <div className="absolute inset-0 animate-pulse opacity-60">
-              <Trophy size={26} className="text-gold blur-[6px]" />
+              <Trophy aria-hidden size={26} className="text-gold blur-[6px]" />
             </div>
           </div>
           {/* Title matches the tab that brought you here ("Ranks") — a tab
@@ -333,13 +333,13 @@ const Leaderboard = () => {
         className="animate-reveal mb-5 w-full text-left surface-card p-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform"
       >
         <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[hsl(22_90%_52%)] to-[hsl(12_88%_46%)] flex items-center justify-center shrink-0">
-          <Swords size={18} className="text-white" strokeWidth={2.4} />
+          <Swords aria-hidden size={18} className="text-white" strokeWidth={2.4} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[hsl(18_95%_62%)] mb-0.5">1v1 Battles</p>
           <p className="text-[12px] font-bold leading-tight">Challenge a friend — winner takes the score</p>
         </div>
-        <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+        <ChevronRight aria-hidden size={16} className="text-muted-foreground shrink-0" />
       </button>
 
       {/* Season banner */}
@@ -357,12 +357,12 @@ const Leaderboard = () => {
           <div className="text-right">
             <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-bold">Ends in</p>
             <p className="font-display font-black text-sm text-gold flex items-center justify-end gap-1 tabular-nums mt-0.5">
-              <Clock3 size={14} /> <CountdownTimer endsAt={activeSeason?.ends_at} />
+              <Clock3 aria-hidden size={14} /> <CountdownTimer endsAt={activeSeason?.ends_at} />
             </p>
           </div>
         </div>
         <p className="text-[11px] text-muted-foreground mt-3 relative flex items-center gap-1.5">
-          <Crown size={12} className="text-gold shrink-0" />
+          <Crown aria-hidden size={12} className="text-gold shrink-0" />
           #1 earns <span className="text-gold font-semibold">Season Champion</span> reward + permanent profile badge.
         </p>
       </div>
@@ -394,7 +394,7 @@ const Leaderboard = () => {
             </div>
             <div className="flex flex-col items-end gap-1">
               <StatusBadge tier={profile.status_tier || 'recruit'} division={(profile as any).tier_division ?? 0} size="sm" showAura={false} />
-              <TrendingUp size={16} className="text-gold" />
+              <TrendingUp aria-hidden size={16} className="text-gold" />
             </div>
           </div>
           {hasRank && percentile < 50 && (
@@ -520,7 +520,7 @@ const Leaderboard = () => {
                         aria-label="HealthKit-verified — unfakeable discipline"
                         title="Verified by Apple Health"
                       >
-                        <ShieldCheck size={10} strokeWidth={2.6} />
+                        <ShieldCheck aria-hidden size={10} strokeWidth={2.6} />
                       </span>
                     )}
                     {isMe && <span className="text-[9px] text-gold/70 font-medium">(you)</span>}
@@ -535,7 +535,7 @@ const Leaderboard = () => {
                     )}
                     {wins > 0 && (
                       <p className="text-[10px] text-gold/80 flex items-center gap-0.5">
-                        <Medal size={9} /> {wins}×
+                        <Medal aria-hidden size={9} /> {wins}×
                       </p>
                     )}
                   </div>
@@ -579,7 +579,7 @@ const Leaderboard = () => {
       {championData?.recent?.length ? (
         <div className="mt-6 rounded-xl border border-border glass-3d p-4 animate-reveal animate-reveal-delay-3">
           <div className="flex items-center gap-2 mb-3">
-            <Trophy size={16} className="text-gold" />
+            <Trophy aria-hidden size={16} className="text-gold" />
             <h2 className="font-display font-bold text-base">Hall of Champions</h2>
           </div>
           <div className="space-y-2">
@@ -631,9 +631,9 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
       {isFirst && (
         <div className="absolute -top-5 left-1/2 -translate-x-1/2 pointer-events-none">
           <div className="relative">
-            <Crown size={28} className="text-gold drop-shadow-[0_0_12px_hsl(var(--gold)/0.9)] animate-[float_3s_ease-in-out_infinite]" />
+            <Crown aria-hidden size={28} className="text-gold drop-shadow-[0_0_12px_hsl(var(--gold)/0.9)] animate-[float_3s_ease-in-out_infinite]" />
             <div className="absolute inset-0 blur-md opacity-70 animate-pulse">
-              <Crown size={28} className="text-gold" />
+              <Crown aria-hidden size={28} className="text-gold" />
             </div>
           </div>
         </div>
@@ -666,7 +666,7 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
           />
         )}
         <div className="relative">
-          <StatusAvatar
+          <StatusAvatar aria-hidden
             src={user.avatar_url}
             name={user.username}
             tier={user.status_tier || "recruit"}
@@ -697,7 +697,7 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
         )}
         {wins > 0 && (
           <p className="text-[9px] text-gold/80 flex items-center gap-0.5">
-            <Medal size={9} /> {wins}×
+            <Medal aria-hidden size={9} /> {wins}×
           </p>
         )}
       </div>
@@ -739,7 +739,7 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
           )}
         >
           <span className="inline-flex items-center gap-1.5">
-            <Clock3 size={12} className={cn(isSeason ? "text-primary-foreground" : "text-gold/80")} />
+            <Clock3 aria-hidden size={12} className={cn(isSeason ? "text-primary-foreground" : "text-gold/80")} />
             Season
           </span>
         </button>
@@ -753,16 +753,16 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
           )}
         >
           <span className="inline-flex items-center gap-1.5">
-            <Trophy size={12} className={cn(!isSeason ? "text-primary-foreground" : "text-gold/80")} />
+            <Trophy aria-hidden size={12} className={cn(!isSeason ? "text-primary-foreground" : "text-gold/80")} />
             All Time
           </span>
         </button>
       </div>
       {/* Swipe hint */}
       <div className="mt-2 flex items-center justify-center gap-1.5 text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold">
-        <ChevronLeft size={10} className={cn("transition-opacity", isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
+        <ChevronLeft aria-hidden size={10} className={cn("transition-opacity", isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
         <span>Swipe to switch</span>
-        <ChevronRight size={10} className={cn("transition-opacity", !isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
+        <ChevronRight aria-hidden size={10} className={cn("transition-opacity", !isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
       </div>
     </div>
   );

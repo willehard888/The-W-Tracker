@@ -232,7 +232,7 @@ const StatusHeader = () => {
             className="w-full flex items-center justify-center gap-2 pt-2 pb-1.5 active:opacity-80 transition-opacity"
             aria-label="Whealth Factory — Home"
           >
-            <BrandLogo size={28} alt="" className="rounded-md shadow-[0_2px_8px_hsl(var(--gold)/0.5)]" />
+            <BrandLogo aria-hidden size={28} alt="" className="rounded-md shadow-[0_2px_8px_hsl(var(--gold)/0.5)]" />
             <span className="font-display font-black tracking-[0.22em] uppercase text-gradient-gold leading-none text-lg">
               Whealth Factory
             </span>
@@ -243,7 +243,7 @@ const StatusHeader = () => {
             aria-label={unreadCount > 0 ? `Notifications — ${unreadCount} unread` : "Notifications"}
             className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-90 transition before:absolute before:-inset-1 before:content-['']"
           >
-            <BellIcon size={18} />
+            <BellIcon aria-hidden size={18} />
             {unreadCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[hsl(var(--ember))] text-white text-[10px] font-black flex items-center justify-center tabular-nums border-2 border-[hsl(var(--background))]">
                 {unreadCount > 99 ? "99+" : unreadCount}
@@ -362,7 +362,7 @@ const StatusHeader = () => {
           {/* Status pill — Apex > Elite > Trial — calmer, luxurious */}
           {isApex ? (
             <div className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-[hsl(var(--ember))]/55 animate-breathe-soft">
-              <Zap
+              <Zap aria-hidden
                 size={11}
                 className="relative z-10 text-primary-foreground status-flame-flicker"
                 strokeWidth={3}
@@ -374,7 +374,7 @@ const StatusHeader = () => {
             </div>
           ) : isElite ? (
             <div className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/55 animate-breathe-soft">
-              <Crown size={11} className="relative z-10 text-primary-foreground status-flame-flicker" />
+              <Crown aria-hidden size={11} className="relative z-10 text-primary-foreground status-flame-flicker" />
               {/* Membership indicator — NOT the earned "Elite" rank tier (that's
                   shown in the tier row above). Buying a subscription must never
                   read as having earned the Elite status. */}
@@ -393,7 +393,7 @@ const StatusHeader = () => {
                   : "bg-gold/10 border-gold/35 text-gold",
               )}
             >
-              {trialUrgent ? <Clock size={11} /> : <Crown size={11} />}
+              {trialUrgent ? <Clock aria-hidden size={11} /> : <Crown aria-hidden size={11} />}
               {/* Narrow screens keep just crown + days — the long label was
                   squeezing the tier row into "RE…" next to the next-tier chip. */}
               <span className="hidden min-[400px]:inline text-[10px] font-bold uppercase tracking-wider">

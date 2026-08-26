@@ -52,7 +52,7 @@ const RealisticFlame = forwardRef<RealisticFlameHandle, RealisticFlameProps>(
         className={cn("relative flex items-end justify-center", className)}
         style={{ width: size, height: size }}
       >
-        <StylizedStreakFlame
+        <StylizedStreakFlame aria-hidden
           streak={streak}
           size={size}
           intensify={intensify}

@@ -459,7 +459,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         {opts.featured && (
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
-              <Flame size={10} className="text-[hsl(var(--ember))]" fill="currentColor" />
+              <Flame aria-hidden size={10} className="text-[hsl(var(--ember))]" fill="currentColor" />
               <span className="eyebrow text-gold/85">On fire this week</span>
             </div>
             {(t.weekly_xp ?? 0) > 0 && (
@@ -498,11 +498,11 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                     : undefined
                 }
               >
-                <TribeFireLite tier={cTier} palette={collectivePalette(cStreak)} size={30} variant="mini" />
+                <TribeFireLite aria-hidden tier={cTier} palette={collectivePalette(cStreak)} size={30} variant="mini" />
               </div>
             ) : !t.cover_url ? (
               // Cold ≠ dead: the ember seed is the premium waiting state.
-              <TribeEmberSeed size={30} />
+              <TribeEmberSeed aria-hidden size={30} />
             ) : null}
           </div>
           <div className="flex-1 min-w-0">
@@ -525,11 +525,11 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
               {ActIcon && t.primary_activity && (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  <ActIcon size={9} strokeWidth={2.4} /> {t.primary_activity}
+                  <ActIcon aria-hidden size={9} strokeWidth={2.4} /> {t.primary_activity}
                 </span>
               )}
               <span className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums text-muted-foreground">
-                <Users size={9} /> {t.member_count}
+                <Users aria-hidden size={9} /> {t.member_count}
                 {spotsLeft != null && spotsLeft > 0 && spotsLeft <= 5 && (
                   <span className="text-[hsl(var(--ember))]">· {spotsLeft} spot{spotsLeft === 1 ? "" : "s"} left</span>
                 )}
@@ -539,7 +539,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                   className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums"
                   style={{ color: cAccent }}
                 >
-                  <Flame size={10} fill="currentColor" /> {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
+                  <Flame aria-hidden size={10} fill="currentColor" /> {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
                 </span>
               )}
               {p && p.checked > 0 && (
@@ -554,7 +554,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               if (!ev) return null;
               return (
                 <div className="flex items-center gap-1.5 mt-1.5 text-[10px] font-bold text-[hsl(var(--ember))]">
-                  <Calendar size={10} strokeWidth={2.6} className="shrink-0" />
+                  <Calendar aria-hidden size={10} strokeWidth={2.6} className="shrink-0" />
                   <span className="truncate">
                     {ev.title} · {format(new Date(ev.starts_at), "EEE HH:mm")}
                     {ev.going > 0 ? ` · ${ev.going} going` : ""}
@@ -584,7 +584,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
           {tab === "browse" && !isJoined && (
             isPending ? (
               <Button size="sm" variant="outline" disabled className="shrink-0">
-                <Check size={12} /> Requested
+                <Check aria-hidden size={12} /> Requested
               </Button>
             ) : isPrivate ? (
               <Button
@@ -593,7 +593,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                 onClick={(e) => { e.stopPropagation(); handleJoin(t.id); }}
                 className="shrink-0"
               >
-                <Lock size={11} /> Request
+                <Lock aria-hidden size={11} /> Request
               </Button>
             ) : (
               <Button
@@ -618,7 +618,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
       {invites.length > 0 && (
         <div className="mb-5">
           <div className="flex items-center gap-2 mb-2">
-            <Mail size={12} className="text-[hsl(var(--ember))]" />
+            <Mail aria-hidden size={12} className="text-[hsl(var(--ember))]" />
             <h2 className="text-[11px] font-black tracking-widest uppercase text-[hsl(var(--ember))]">
               Tribe Invites · {invites.length}
             </h2>
@@ -631,7 +631,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               >
                 <div className="flex items-start gap-3">
                   <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[hsl(var(--ember))]/30 to-gold/15 border border-[hsl(var(--ember))]/40 flex items-center justify-center shrink-0">
-                    <Crown size={14} className="text-[hsl(var(--ember))]" strokeWidth={2.4} />
+                    <Crown aria-hidden size={14} className="text-[hsl(var(--ember))]" strokeWidth={2.4} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-black text-sm truncate">{inv.tribe?.name ?? "Tribe"}</p>
@@ -648,7 +648,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                     disabled={respondingId === inv.id}
                     className="flex-1 h-8"
                   >
-                    <Check size={12} /> Accept
+                    <Check aria-hidden size={12} /> Accept
                   </Button>
                   <Button
                     size="sm"
@@ -657,7 +657,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                     disabled={respondingId === inv.id}
                     className="flex-1 h-8"
                   >
-                    <X size={12} /> Decline
+                    <X aria-hidden size={12} /> Decline
                   </Button>
                 </div>
               </div>
@@ -727,7 +727,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                         : "bg-secondary/30 border-border/40 text-muted-foreground",
                     )}
                   >
-                    <GIcon size={12} strokeWidth={2.4} /> {g.label}
+                    <GIcon aria-hidden size={12} strokeWidth={2.4} /> {g.label}
                   </button>
                 );
               })}
@@ -750,7 +750,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                           : "bg-secondary/20 border-border/40 text-muted-foreground",
                       )}
                     >
-                      <AIcon size={11} strokeWidth={2.4} /> {a.name}
+                      <AIcon aria-hidden size={11} strokeWidth={2.4} /> {a.name}
                     </button>
                   );
                 })}
@@ -769,7 +769,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
           onClick={() => navigate("/tribes/leaderboard")}
           className="inline-flex items-center gap-1 text-[11px] font-bold text-gold/85 active:scale-95 transition-transform"
         >
-          <Trophy size={11} /> Leaderboard <ChevronRight size={11} className="-ml-0.5" />
+          <Trophy aria-hidden size={11} /> Leaderboard <ChevronRight aria-hidden size={11} className="-ml-0.5" />
         </button>
       </div>
 
@@ -788,7 +788,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             description="The category is wide open — start the first one and own it."
             action={
               <Button size="sm" variant="ember" onClick={() => navigate("/tribes/new")}>
-                <Plus size={14} /> Start the first
+                <Plus aria-hidden size={14} /> Start the first
               </Button>
             }
           />
@@ -804,11 +804,11 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             action={
               tab === "mine" ? (
                 <Button size="sm" variant="ember" onClick={() => { tabTouched.current = true; setTab("browse"); }}>
-                  <ChevronRight size={14} /> Browse tribes
+                  <ChevronRight aria-hidden size={14} /> Browse tribes
                 </Button>
               ) : (
                 <Button size="sm" variant="ember" onClick={() => navigate("/tribes/new")}>
-                  <Plus size={14} /> Create a Tribe
+                  <Plus aria-hidden size={14} /> Create a Tribe
                 </Button>
               )
             }
@@ -824,7 +824,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             onClick={() => navigate("/tribes/new")}
             className="w-full rounded-2xl border border-dashed border-border/60 p-3.5 flex items-center justify-center gap-2 text-[12px] font-bold text-muted-foreground hover:text-gold hover:border-gold/40 transition-colors active:scale-[0.99]"
           >
-            <Plus size={14} /> Start your own tribe
+            <Plus aria-hidden size={14} /> Start your own tribe
           </button>
         </div>
       )}

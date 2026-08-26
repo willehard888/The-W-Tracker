@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { isSafeRoute } from "@/hooks/use-push-notifications";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
@@ -141,7 +142,9 @@ const Notifications = () => {
         queryClient.invalidateQueries({ queryKey: ["notifications", profile?.user_id, "unread-count"] });
       });
     }
-    if (n.route) navigate(n.route.split("?")[0].startsWith("/") ? n.route : "/");
+    // Reuse the push path's allowlist — the same server data flows here, and
+    // this keeps the whitelist the single navigation chokepoint.
+    if (isSafeRoute(n.route)) navigate(n.route);
   };
 
   const actionCount = (friendRequests?.length ?? 0) + (tribeInvites?.length ?? 0) + (battleChallenges?.length ?? 0);

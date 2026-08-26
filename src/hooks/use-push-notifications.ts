@@ -25,7 +25,7 @@ const SAFE_ROUTES = new Set<string>([
   "/coach/progress", "/coach/profile",
 ]);
 const SAFE_PREFIXES = ["/briefing/", "/chat/", "/tribes/", "/user/"];
-const isSafeRoute = (r: unknown): r is string => {
+export const isSafeRoute = (r: unknown): r is string => {
   if (typeof r !== "string" || !r.startsWith("/")) return false;
   // Match on the pathname only — "/squad?tab=tribes" must pass the "/squad"
   // whitelist entry (query strings used to silently kill the deep link).

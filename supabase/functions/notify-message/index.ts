@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { receiver_id, message_preview } = await req.json();
+    const { receiver_id } = await req.json();
     if (!receiver_id) {
       return new Response(JSON.stringify({ error: "receiver_id required" }), {
         status: 400,
@@ -74,13 +74,26 @@ Deno.serve(async (req) => {
 
     const senderUsername = senderProfile?.username || "Someone";
 
+    // Don't trust message_preview from the body — an attacker who sent one DM
+    // could then loop this endpoint with arbitrary text under the sender's
+    // name. Read the actual latest message for this pair from the DB.
+    const { data: latestMsg } = await serviceClient
+      .from("direct_messages")
+      .select("content")
+      .eq("sender_id", user.id)
+      .eq("receiver_id", receiver_id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const previewText = (latestMsg?.content ?? "").toString().slice(0, 100) || "You have a new message";
+
     // In-app inbox row (the bell) — written even when the receiver has no
     // push tokens; tapping opens the thread.
     await serviceClient.from("notifications").insert({
       user_id: receiver_id,
       kind: "message",
       title: `💬 ${senderUsername} sent you a message`,
-      body: message_preview?.substring(0, 100) || "You have a new message",
+      body: previewText,
       route: `/chat/${user.id}`,
       actor_id: user.id,
     });
@@ -100,7 +113,7 @@ Deno.serve(async (req) => {
 
     const payload = {
       title: `💬 ${senderUsername} sent you a message`,
-      body: message_preview?.substring(0, 100) || "You have a new message",
+      body: previewText,
       data: { route: "/messages" },
     };
 

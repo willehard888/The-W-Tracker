@@ -89,8 +89,19 @@ export default function AdminModeration() {
       return;
     }
 
-    if (decision === "rejected" && item.content_type === "feed_post" && item.content_id) {
-      await supabase.from("feed_posts").delete().eq("id", item.content_id);
+    // On reject, remove the reported content. Maps each reportable content_type
+    // (feed post, tribe post, feed/tribe comment) to its table; direct_message
+    // and profile reports are marked reviewed for out-of-band action (a DM can't
+    // be unsent for both parties, and ejecting a user is a heavier manual step).
+    if (decision === "rejected" && item.content_id) {
+      const table: Record<string, string> = {
+        feed_post: "feed_posts",
+        tribe_post: "tribe_posts",
+        comment: "feed_comments",
+        tribe_comment: "tribe_post_comments",
+      };
+      const target = table[item.content_type];
+      if (target) await supabase.from(target as never).delete().eq("id", item.content_id);
     }
     if (decision === "rejected" && item.content_type === "feed_post" && item.image_url) {
       const path = item.image_url.split("/feed-images/")[1];

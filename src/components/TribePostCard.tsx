@@ -125,19 +125,19 @@ const CommentThread = ({
           </div>
           {!isEditing && (
             <div className="flex items-center gap-2 mt-0.5 ml-3 flex-wrap">
-              <p className="text-[9px] text-muted-foreground/50">
+              <p className="text-[9px] text-muted-foreground/75">
                 {formatDistanceToNow(new Date(node.created_at), { addSuffix: true })}
               </p>
               {currentUserId && (
                 <button type="button" onClick={() => { hapticSelection(); onReply(node.id, username, node.content || ""); }}
-                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-[hsl(var(--ember))] transition-colors">
+                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-[hsl(var(--ember))] transition-colors">
                   <Reply size={10} /> Reply
                 </button>
               )}
               {isOwn && (
                 <>
                   <button type="button" onClick={() => { hapticSelection(); setDraft(node.content || ""); setEditingId(node.id); }}
-                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-[hsl(var(--ember))] transition-colors">
+                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-[hsl(var(--ember))] transition-colors">
                     Edit
                   </button>
                 </>
@@ -149,12 +149,12 @@ const CommentThread = ({
                     onDelete(node.id);
                   }
                 }}
-                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60 hover:text-destructive transition-colors">
+                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-destructive transition-colors">
                   Delete
                 </button>
               )}
               {node.children.length > 0 && (
-                <span className="text-[9px] text-muted-foreground/40 tabular-nums">
+                <span className="text-[9px] text-muted-foreground/75 tabular-nums">
                   · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
                 </span>
               )}
@@ -436,7 +436,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button aria-label="Post options" className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/60 hover:text-muted-foreground">
+                <button aria-label="Post options" className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/75 hover:text-muted-foreground">
                   <MoreHorizontal size={16} />
                 </button>
               </DropdownMenuTrigger>
@@ -527,7 +527,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                   ? "bg-purple/15 text-purple ring-1 ring-purple/30"
                   : kudosRemaining > 0
                     ? "text-muted-foreground hover:bg-purple/10 hover:text-purple"
-                    : "text-muted-foreground/40 cursor-not-allowed"
+                    : "text-muted-foreground/75 cursor-not-allowed"
               )}>
               <Award size={15} fill={post.kudosed ? "currentColor" : "none"} className={cn(post.kudosed && "animate-scale-in")} />
               <span className="tabular-nums">{post.kudos_count > 0 ? post.kudos_count : ""}</span>
@@ -549,14 +549,14 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
           <div className="border-t border-border/50 px-4 py-3 bg-secondary/20">
             <div className="flex items-center justify-between mb-2">
               <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Discussion</p>
-              <p className="text-[10px] text-muted-foreground/60 tabular-nums">
+              <p className="text-[10px] text-muted-foreground/75 tabular-nums">
                 {post.comments_count} {post.comments_count === 1 ? "reply" : "replies"}
               </p>
             </div>
 
             <div className="space-y-3 mb-3 max-h-80 overflow-y-auto pr-1">
               {tree.length === 0 && (
-                <p className="text-xs text-muted-foreground/60 text-center py-3">
+                <p className="text-xs text-muted-foreground/75 text-center py-3">
                   No comments yet — start the conversation
                 </p>
               )}
@@ -608,9 +608,10 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
                       placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Add a comment..."}
+                      aria-label={replyTo ? `Reply to @${replyTo.username}` : "Add a comment"}
                       maxLength={300}
                       className={cn(
-                        "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 transition-all",
+                        "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-all",
                         replyTo
                           ? "border-[hsl(var(--ember))]/40 focus:ring-[hsl(var(--ember))]/50 focus:border-[hsl(var(--ember))]/60"
                           : "border-border focus:ring-[hsl(var(--ember))]/40 focus:border-[hsl(var(--ember))]/40",
@@ -623,7 +624,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                     {commentText.length > 0 && (
                       <span className={cn(
                         "absolute right-12 top-1/2 -translate-y-1/2 text-[9px] font-semibold tabular-nums",
-                        commentText.length > 270 ? "text-destructive" : "text-muted-foreground/50"
+                        commentText.length > 270 ? "text-destructive" : "text-muted-foreground/75"
                       )}>
                         {300 - commentText.length}
                       </span>

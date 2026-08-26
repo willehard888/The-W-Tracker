@@ -119,6 +119,7 @@ const CheckinTierHeader = ({
       <div className="flex items-center gap-3">
         <button
           onClick={onBack}
+          aria-label="Back to dashboard"
           className="p-1.5 rounded-lg hover:bg-secondary/60 transition-colors active:scale-95"
         >
           <ChevronLeft size={20} />

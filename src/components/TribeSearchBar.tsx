@@ -138,6 +138,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search all tribes (public & private)"
+          aria-label="Search tribes"
           className="pl-9 pr-9 h-10 bg-card/60 border-border focus-visible:ring-[hsl(var(--ember))]/40"
         />
         {query && (

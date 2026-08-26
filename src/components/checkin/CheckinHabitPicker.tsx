@@ -120,7 +120,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                   <h2 className="font-display text-xl font-black tracking-tight">Build your check-in</h2>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {coreCount} core · {optionalCount} added
-                    <span className="text-muted-foreground/60"> (bonus max +{OPTIONAL_XP_CAP} XP/day)</span>
+                    <span className="text-muted-foreground/75"> (bonus max +{OPTIONAL_XP_CAP} XP/day)</span>
                   </p>
                 </div>
                 <button
@@ -165,7 +165,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                               {h.note && <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">{h.note}</p>}
                             </div>
                             {h.core ? (
-                              <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-bold text-muted-foreground/60 uppercase tracking-wide">
+                              <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-bold text-muted-foreground/75 uppercase tracking-wide">
                                 <Lock size={11} /> Core
                               </span>
                             ) : (

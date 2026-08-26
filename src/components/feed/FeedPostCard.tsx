@@ -200,7 +200,7 @@ const FeedPostCard = memo(function FeedPostCard({
         {/* Post menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button aria-label="Post options" className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground/60 hover:text-muted-foreground">
+            <button aria-label="Post options" className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground/75 hover:text-muted-foreground">
               <MoreHorizontal size={16} />
             </button>
           </DropdownMenuTrigger>
@@ -307,7 +307,7 @@ const FeedPostCard = memo(function FeedPostCard({
                 ? "bg-purple/15 text-purple ring-1 ring-purple/30"
                 : kudosRemaining > 0
                   ? "text-muted-foreground hover:bg-purple/10 hover:text-purple"
-                  : "text-muted-foreground/40 cursor-not-allowed"
+                  : "text-muted-foreground/75 cursor-not-allowed"
             )}
             title={`${kudosRemaining}/${kudosPerMonth} kudos remaining this month`}
           >
@@ -337,14 +337,14 @@ const FeedPostCard = memo(function FeedPostCard({
             <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
               Discussion
             </p>
-            <p className="text-[10px] text-muted-foreground/60 tabular-nums">
+            <p className="text-[10px] text-muted-foreground/75 tabular-nums">
               {post.comments_count || 0} {post.comments_count === 1 ? "reply" : "replies"}
             </p>
           </div>
 
           <div className="space-y-3 mb-3 max-h-80 overflow-y-auto pr-1">
             {commentTree.length === 0 && (
-              <p className="text-xs text-muted-foreground/60 text-center py-3">
+              <p className="text-xs text-muted-foreground/75 text-center py-3">
                 No comments yet — start the conversation
               </p>
             )}
@@ -399,9 +399,10 @@ const FeedPostCard = memo(function FeedPostCard({
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
                     placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Add a comment..."}
+                    aria-label={replyTo ? `Reply to @${replyTo.username}` : "Add a comment"}
                     maxLength={300}
                     className={cn(
-                      "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 transition-all",
+                      "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-all",
                       replyTo
                         ? "border-gold/40 focus:ring-gold/50 focus:border-gold/60"
                         : "border-border focus:ring-gold/40 focus:border-gold/40",
@@ -418,7 +419,7 @@ const FeedPostCard = memo(function FeedPostCard({
                     <span
                       className={cn(
                         "absolute right-12 top-1/2 -translate-y-1/2 text-[9px] font-semibold tabular-nums",
-                        commentText.length > 270 ? "text-destructive" : "text-muted-foreground/50"
+                        commentText.length > 270 ? "text-destructive" : "text-muted-foreground/75"
                       )}
                     >
                       {300 - commentText.length}
@@ -433,7 +434,7 @@ const FeedPostCard = memo(function FeedPostCard({
                     "h-9 w-9 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0",
                     commentText.trim()
                       ? "gradient-gold text-primary-foreground glow-gold"
-                      : "bg-secondary text-muted-foreground/40 cursor-not-allowed"
+                      : "bg-secondary text-muted-foreground/75 cursor-not-allowed"
                   )}
                 >
                   <Send size={13} />

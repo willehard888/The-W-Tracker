@@ -219,7 +219,7 @@
      that aren't full-width primary actions. Defensive — won't shrink
      anything already larger. */
   button:not([class*="h-"]):not([class*="size-"]):not([data-state]) {
-    min-height: 36px;
+    min-height: 44px;
   }
   button[class*="size-icon-sm"],
   button[class*="size-sm"] {
@@ -4744,4 +4744,17 @@ p, span.selectable, input, textarea, [contenteditable] {
 }
 @media (prefers-reduced-motion: reduce) {
   .cta-gloss-anim, .cta-breathe-anim, .cta-melt-anim { animation: none !important; }
+}
+
+/* Escaped infinite loops the named guards above don't reach:
+   Tailwind's pulse/ping, arbitrary float animations, and the two
+   inline shimmer-slide styles (Home rank strip, check-in header). */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse,
+  .animate-ping,
+  [class*="animate-[float"],
+  [class*="shimmer-slide"],
+  [style*="shimmer-slide"] {
+    animation: none !important;
+  }
 }

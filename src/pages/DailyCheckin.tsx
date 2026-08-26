@@ -701,7 +701,7 @@ const DailyCheckin = () => {
           user has authored their identity statement. */}
       {why && (
         <div className="mt-2 mb-1 surface-card px-4 py-2.5">
-          <p className="text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground/60">
+          <p className="text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground/75">
             Today's discipline is for
           </p>
           <p className="text-[13px] font-bold leading-snug text-foreground/90 mt-0.5">
@@ -765,7 +765,7 @@ const DailyCheckin = () => {
           <Button variant="ember" size="lg" className="w-full" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
             <SlidersHorizontal size={16} /> Choose my habits
           </Button>
-          <button onClick={dismissOnboard} className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 hover:text-foreground transition-colors py-1">
+          <button onClick={dismissOnboard} className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/75 hover:text-foreground transition-colors py-1">
             Use the defaults for now
           </button>
         </div>
@@ -824,7 +824,7 @@ const DailyCheckin = () => {
             {sleep}h {sleep >= 7.5 && sleep <= 9 ? "🚀" : (sleep > 9 && sleep <= 12 && !isChronicOversleep) ? "✨" : sleep >= 7 && sleep < 7.5 ? "😐" : sleep <= 5 ? "💀" : sleep > 9 ? "😴" : "⚠️"}
           </span>
         </div>
-        <input type="range" min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
+        <input type="range" aria-label="Hours of sleep" min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
         {sleepPenaltyLabel && <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ {sleepPenaltyLabel}</p>}
         {isChronicOversleep && sleep >= 10 && (
           <p className="text-[10px] text-muted-foreground mt-1">You've slept 10h+ {oversleepCount} of the last 7 nights — occasional long nights help, chronic oversleep hurts.</p>
@@ -920,17 +920,18 @@ const DailyCheckin = () => {
 
             {/* Search — "ten" → Tennis. The whole catalog is one keystroke away. */}
             <div className="px-3 pt-3 pb-1 relative">
-              <Search size={14} className="absolute left-6 top-1/2 mt-1 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+              <Search size={14} className="absolute left-6 top-1/2 mt-1 -translate-y-1/2 text-muted-foreground/75 pointer-events-none" />
               <input
                 value={sportQuery}
                 onChange={(e) => setSportQuery(e.target.value)}
                 placeholder="Search sports…"
+                aria-label="Search sports"
                 className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
               />
               {sportQuery && (
                 <button
                   onClick={() => setSportQuery("")}
-                  className="absolute right-6 top-1/2 mt-1 -translate-y-1/2 text-muted-foreground/60"
+                  className="absolute right-6 top-1/2 mt-1 -translate-y-1/2 text-muted-foreground/75"
                   aria-label="Clear search"
                 >
                   <X size={14} />
@@ -971,9 +972,9 @@ const DailyCheckin = () => {
                       onClick={() => setOpenGroup((g) => (g === group ? null : group))}
                       className="flex items-center justify-between w-full px-4 pt-3 pb-1.5 text-left"
                     >
-                      <span className="eyebrow">{group} <span className="text-muted-foreground/50">({sports.length})</span></span>
+                      <span className="eyebrow">{group} <span className="text-muted-foreground/75">({sports.length})</span></span>
                       {forYou.length > 0 && (
-                        <ChevronDown size={12} className={cn("text-muted-foreground/60 transition-transform", open && "rotate-180")} />
+                        <ChevronDown size={12} className={cn("text-muted-foreground/75 transition-transform", open && "rotate-180")} />
                       )}
                     </button>
                     {open && sports.map((sport) => (
@@ -1023,7 +1024,7 @@ const DailyCheckin = () => {
             <div><p className="font-semibold text-sm">Hydration</p><p className="text-xs text-muted-foreground">Target: 3L+</p></div>
             <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
           </div>
-          <input type="range" min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
+          <input type="range" aria-label="Litres of water" min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
         </div>
       )}
 

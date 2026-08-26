@@ -344,7 +344,7 @@ const Index = () => {
               type="button"
               onClick={dismissFirstW}
               aria-label="Dismiss"
-              className="h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground/60 hover:text-foreground transition-colors shrink-0"
+              className="h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground/75 hover:text-foreground transition-colors shrink-0"
             >
               ×
             </button>
@@ -453,7 +453,7 @@ const Index = () => {
 
       {/* Tier message footer — boosted contrast (was muted-foreground/40 → barely visible) */}
       <div className="mt-6 mb-2 text-center">
-        <p className="text-[10px] text-muted-foreground/60 font-semibold tracking-[0.22em] uppercase">
+        <p className="text-[10px] text-muted-foreground/75 font-semibold tracking-[0.22em] uppercase">
           {tierConfig.message}
         </p>
       </div>

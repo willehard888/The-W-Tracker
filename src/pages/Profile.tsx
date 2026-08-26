@@ -530,7 +530,7 @@ const Profile = () => {
                 vectorEffect="non-scaling-stroke"
               />
             </svg>
-            <ChevronRight size={16} className="text-muted-foreground/60 shrink-0" />
+            <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" />
           </button>
         );
       })()}
@@ -838,7 +838,7 @@ const SettingsRow = ({
         {badge}
       </span>
     )}
-    <ChevronRight size={14} className="text-muted-foreground/60 shrink-0" />
+    <ChevronRight size={14} className="text-muted-foreground/75 shrink-0" />
   </button>
 );
 

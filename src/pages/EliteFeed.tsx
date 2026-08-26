@@ -876,9 +876,10 @@ const EliteFeed = () => {
               value={newPost}
               onChange={(e) => setNewPost(e.target.value)}
               placeholder="Share your W today..."
+              aria-label="Share your W today"
               rows={2}
               maxLength={500}
-              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 resize-none focus:outline-none leading-relaxed"
+              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground/75 resize-none focus:outline-none leading-relaxed"
             />
           </div>
 

@@ -399,6 +399,7 @@ const Profile = () => {
         <Button
           variant="ghost"
           size="icon-sm"
+          className="h-11 w-11"
           aria-label="Account menu"
           onClick={() => setQuickMenuOpen((v) => !v)}
         >
@@ -483,7 +484,13 @@ const Profile = () => {
       {profileTab === "stats" && (
       <div className="space-y-3">
 
-      {/* Hard numbers first — the lifetime scoreboard */}
+      {/* Hard numbers first — the lifetime scoreboard. Gated on the queries
+          so the tiles never flash plausible-looking zeros while loading. */}
+      {(checkinTotal === undefined || battleStats === undefined || kudosReceived === undefined) ? (
+        <div className="grid grid-cols-2 gap-2">
+          {[0, 1, 2, 3].map((i) => <div key={i} className="skeleton-block h-[62px] rounded-2xl" />)}
+        </div>
+      ) : (
       <div className="grid grid-cols-2 gap-2 animate-reveal animate-reveal-delay-1">
         {[
           { icon: CalendarCheck, label: "Check-ins", value: checkinTotal ?? 0, accent: "text-gold" },
@@ -500,6 +507,7 @@ const Profile = () => {
           </div>
         ))}
       </div>
+      )}
 
       {/* Whealth Index — the headline metric, from the nightly snapshot */}
       {whealthSnapshots && whealthSnapshots.length > 0 && (() => {
@@ -616,7 +624,7 @@ const Profile = () => {
               <div key={post.id} className="surface-card p-4">
                 {post.content && <p className="text-base mb-2">{post.content}</p>}
                 {post.image_url && (
-                  <AppImage src={post.image_url} width={600} alt="Post" className="w-full rounded-lg object-cover max-h-48 mb-2" />
+                  <AppImage src={post.image_url} width={600} alt={post.content || "Post image"} className="w-full rounded-lg object-cover max-h-48 mb-2" />
                 )}
                 <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                   <span className="flex items-center gap-1"><Heart size={10} /> {post.likes_count}</span>

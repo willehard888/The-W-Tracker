@@ -13,7 +13,7 @@ import { useMyRank } from "@/hooks/use-my-rank";
 import { useUnreadNotificationCount } from "@/hooks/use-notifications";
 import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
-import { Crown, Clock, ChevronRight, Flame, Zap, Bell as BellIcon } from "lucide-react";
+import { Crown, Clock, ChevronRight, Flame, Zap, Bell as BellIcon, Shield as ShieldIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import BrandLogo from "@/components/BrandLogo";
 
@@ -241,7 +241,7 @@ const StatusHeader = () => {
           <button
             onClick={() => navigate("/notifications")}
             aria-label={unreadCount > 0 ? `Notifications — ${unreadCount} unread` : "Notifications"}
-            className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-90 transition"
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-90 transition before:absolute before:-inset-1 before:content-['']"
           >
             <BellIcon size={18} />
             {unreadCount > 0 && (
@@ -270,10 +270,15 @@ const StatusHeader = () => {
             />
           </button>
 
-          <button
-            onClick={() => navigate("/leaderboard")}
-            className="flex-1 min-w-0 text-left active:opacity-80 transition-opacity"
-          >
+          {/* Overlay-button pattern: strip-wide tap target under the content;
+              the next-tier chip is a sibling button floating above it. */}
+          <div className="relative flex-1 min-w-0 text-left active:opacity-80 transition-opacity">
+            <button
+              onClick={() => navigate("/leaderboard")}
+              aria-label="Open Ranks"
+              className="absolute inset-0"
+            />
+            <div className="relative pointer-events-none">
             {/* Row 1: name + streak — username glows gold at Elite, animated
                 molten gold at Apex (tier styling via TierUsername). */}
             <div className="flex items-center gap-2">
@@ -288,10 +293,11 @@ const StatusHeader = () => {
               )}
               {((profile as any).streak_shields ?? 0) > 0 && (
                 <span
+                  role="img"
+                  aria-label={`${(profile as any).streak_shields} streak shield${(profile as any).streak_shields === 1 ? "" : "s"} — a missed day costs a shield, not your streak`}
                   className="shrink-0 inline-flex items-center gap-0.5 text-[10px] font-bold text-teal leading-none"
-                  title={`${(profile as any).streak_shields} streak shield${(profile as any).streak_shields === 1 ? "" : "s"} — a missed day costs a shield, not your streak`}
                 >
-                  🛡️{(profile as any).streak_shields}
+                  <ShieldIcon size={11} strokeWidth={2.8} aria-hidden />{(profile as any).streak_shields}
                 </span>
               )}
             </div>
@@ -322,22 +328,11 @@ const StatusHeader = () => {
                 const label = next ? next.label : "Legend";
                 const isLegendTarget = tier === "apex";
                 return (
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(target);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        navigate(target);
-                      }
-                    }}
+                  <button
+                    type="button"
+                    onClick={() => navigate(target)}
                     className={cn(
-                      "shrink-0 inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-black leading-none whitespace-nowrap px-2 py-1 rounded-full border transition-all active:scale-95 cursor-pointer",
+                      "pointer-events-auto relative shrink-0 inline-flex items-center gap-0.5 text-[10px] uppercase tracking-wider font-black leading-none whitespace-nowrap px-2 h-[22px] rounded-full border transition-all active:scale-95 cursor-pointer before:absolute before:-inset-3 before:content-['']",
                       isLegendTarget
                         ? "text-gold border-gold/55 bg-gradient-to-r from-[hsl(280_70%_55%)]/15 via-gold/12 to-[hsl(350_80%_55%)]/15 hover:border-gold shadow-[0_0_8px_hsl(var(--gold)/0.30)]"
                         : "text-[hsl(18_95%_62%)] border-[hsl(var(--ember))]/50 bg-[hsl(var(--ember))]/10 hover:border-[hsl(var(--ember))] shadow-[0_0_6px_hsl(var(--ember)/0.20)]",
@@ -345,8 +340,8 @@ const StatusHeader = () => {
                     aria-label={`How to reach ${label}`}
                   >
                     → {label}
-                    <ChevronRight size={9} />
-                  </span>
+                    <ChevronRight size={9} aria-hidden />
+                  </button>
                 );
               })()}
             </div>
@@ -361,7 +356,8 @@ const StatusHeader = () => {
                 transition={{ duration: 0.9, ease: [0.22, 0.61, 0.36, 1] }}
               />
             </div>
-          </button>
+            </div>
+          </div>
 
           {/* Status pill — Apex > Elite > Trial — calmer, luxurious */}
           {isApex ? (

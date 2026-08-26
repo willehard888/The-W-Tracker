@@ -171,10 +171,10 @@ const FeedPostCard = memo(function FeedPostCard({
               {isOwn && <span className="ml-1 text-[10px] text-gold/70 font-medium">(you)</span>}
             </button>
             {post.profile?.status_tier === "elite" && (
-              <Crown size={12} className="text-gold shrink-0" />
+              <Crown size={12} role="img" aria-label="Elite tier" className="text-gold shrink-0" />
             )}
             {verified && (
-              <span title="HealthKit-verified" className="inline-flex items-center gap-0.5 shrink-0">
+              <span role="img" aria-label="HealthKit-verified" className="inline-flex items-center gap-0.5 shrink-0">
                 <ShieldCheck size={12} className="text-[hsl(var(--xp-green))]" />
               </span>
             )}
@@ -382,7 +382,7 @@ const FeedPostCard = memo(function FeedPostCard({
                     type="button"
                     onClick={() => { hapticSelection(); setReplyTo(null); }}
                     aria-label="Cancel reply"
-                    className="self-start h-6 w-6 rounded-full bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors shrink-0"
+                    className="relative self-start h-6 w-6 rounded-full bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors shrink-0 before:absolute before:-inset-2.5 before:content-['']"
                   >
                     <X size={12} />
                   </button>

@@ -144,7 +144,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
         {query && (
           <button
             onClick={() => setQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-0 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center text-muted-foreground hover:text-foreground"
             aria-label="Clear search"
           >
             <X size={14} />

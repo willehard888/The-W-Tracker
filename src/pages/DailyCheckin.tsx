@@ -822,11 +822,11 @@ const DailyCheckin = () => {
             "ml-auto text-2xl font-bold font-display tabular-nums",
             isOptimalSleep ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground",
           )}>
-            {sleep}h {sleep >= 7.5 && sleep <= 9 ? "🚀" : (sleep > 9 && sleep <= 12 && !isChronicOversleep) ? "✨" : sleep >= 7 && sleep < 7.5 ? "😐" : sleep <= 5 ? "💀" : sleep > 9 ? "😴" : "⚠️"}
+            {sleep}h <span aria-hidden>{sleep >= 7.5 && sleep <= 9 ? "🚀" : (sleep > 9 && sleep <= 12 && !isChronicOversleep) ? "✨" : sleep >= 7 && sleep < 7.5 ? "😐" : sleep <= 5 ? "💀" : sleep > 9 ? "😴" : "⚠️"}</span>
           </span>
         </div>
         <input type="range" aria-label="Hours of sleep" aria-valuetext={`${sleep} hours`} min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x" }} />
-        {sleepPenaltyLabel && <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ {sleepPenaltyLabel}</p>}
+        {sleepPenaltyLabel && <p className="text-[10px] text-destructive mt-1 font-semibold"><span aria-hidden>⚠️</span> {sleepPenaltyLabel}</p>}
         {isChronicOversleep && sleep >= 10 && (
           <p className="text-[10px] text-muted-foreground mt-1">You've slept 10h+ {oversleepCount} of the last 7 nights — occasional long nights help, chronic oversleep hurts.</p>
         )}
@@ -936,7 +936,7 @@ const DailyCheckin = () => {
               {sportQuery && (
                 <button
                   onClick={() => setSportQuery("")}
-                  className="absolute right-6 top-1/2 mt-1 -translate-y-1/2 text-muted-foreground/75"
+                  className="absolute right-3 top-1/2 mt-1 -translate-y-1/2 h-11 w-11 flex items-center justify-center text-muted-foreground/75"
                   aria-label="Clear search"
                 >
                   <X size={14} />

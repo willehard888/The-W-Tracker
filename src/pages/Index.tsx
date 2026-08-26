@@ -263,12 +263,17 @@ const Index = () => {
       {/* STATUS STRIP — earned tier + rank + today's climb. The daily "worth it"
           flex, and it renders the rank delta (pulse) that was computed-but-dropped. */}
       <div className="animate-reveal mb-3 relative z-10">
-        <button
-          onClick={() => navigate("/leaderboard")}
-          className="w-full flex items-center gap-3 rounded-2xl border border-border/60 bg-card/50 px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform"
-        >
-          <span className="text-xl leading-none shrink-0">{tierConfig.emoji}</span>
-          <div className="min-w-0 flex-1">
+        {/* Overlay-button pattern: the strip-wide tap target is a real button
+            UNDER the content (never nested interactives); the W-Index chip is
+            a sibling button that floats above it. */}
+        <div className="relative w-full flex items-center gap-3 rounded-2xl border border-border/60 bg-card/50 px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform">
+          <button
+            onClick={() => navigate("/leaderboard")}
+            aria-label="Open Ranks"
+            className="absolute inset-0 rounded-2xl"
+          />
+          <span aria-hidden className="relative pointer-events-none text-xl leading-none shrink-0">{tierConfig.emoji}</span>
+          <div className="relative pointer-events-none min-w-0 flex-1">
             {/* Rank shows only when EARNED and sane (hasRank, rank ≤ total) —
                 an unranked recruit once read "#3 of 2" here. Same guard rule
                 as StatusNameplate. */}
@@ -286,7 +291,7 @@ const Index = () => {
                       <span className="text-muted-foreground font-semibold"> · #<AnimatedNumber value={rankData!.rank} duration={700} /></span>
                     )}
                   </p>
-                  <p className="text-[10px] text-muted-foreground leading-tight">
+                  <p className="text-[11px] text-muted-foreground leading-tight">
                     {sane
                       ? `of ${(rankData?.totalUsers ?? 0).toLocaleString()} · Lv ${profile.level} · ${Math.max(0, xpToNext - profile.xp)} XP to Lv ${profile.level + 1}`
                       : "Your climb starts today"}
@@ -298,25 +303,23 @@ const Index = () => {
           {/* W-Index chip — the flagship number, felt daily. span+role (not a
               nested <button>) because the whole strip is already a button. */}
           {liveWhealth?.overall != null && (
-            <span
-              role="button"
-              tabIndex={0}
+            <button
+              type="button"
               aria-label="Open your Whealth Index"
-              onClick={(e) => { e.stopPropagation(); navigate("/journey"); }}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); navigate("/journey"); } }}
-              className="shrink-0 inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/30 px-2 py-1 text-[10px] font-black text-gold tabular-nums active:scale-95 transition"
+              onClick={() => navigate("/journey")}
+              className="relative shrink-0 inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/30 px-2 h-6 text-[10px] font-black text-gold tabular-nums active:scale-95 transition before:absolute before:-inset-2.5 before:content-['']"
             >
-              <Crown size={10} strokeWidth={2.8} /> {liveWhealth.overall}
-            </span>
+              <Crown size={10} strokeWidth={2.8} aria-hidden /> {liveWhealth.overall}
+            </button>
           )}
           {pulse.hasSnapshot && pulse.rankDelta > 0 ? (
-            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 text-[10px] font-black text-teal">
+            <span className="relative pointer-events-none shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 text-[10px] font-black text-teal">
               <ArrowUp size={11} strokeWidth={3} /> {pulse.rankDelta} today
             </span>
           ) : (
-            <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+            <ChevronRight size={16} aria-hidden className="relative pointer-events-none text-muted-foreground shrink-0" />
           )}
-        </button>
+        </div>
       </div>
 
       {/* FIRST W — one-shot bridge for a new user who hasn't checked in yet */}
@@ -344,7 +347,7 @@ const Index = () => {
               type="button"
               onClick={dismissFirstW}
               aria-label="Dismiss"
-              className="h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground/75 hover:text-foreground transition-colors shrink-0"
+              className="relative h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground/75 hover:text-foreground transition-colors shrink-0 before:absolute before:-inset-2 before:content-['']"
             >
               ×
             </button>

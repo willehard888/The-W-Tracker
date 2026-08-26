@@ -131,7 +131,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                   className="shrink-0 h-9 w-9 -mr-1 flex items-center justify-center rounded-full bg-secondary/70 text-muted-foreground active:scale-90 transition-transform"
                   aria-label="Close"
                 >
-                  <X size={18} />
+                  <X aria-hidden size={18} />
                 </button>
               </div>
             </div>
@@ -164,20 +164,20 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5">
                                 <p className={cn("font-bold text-[15px] truncate", on && "text-gold")}>{h.label}</p>
-                                {h.verify && <ShieldCheck size={13} className="text-teal shrink-0" />}
+                                {h.verify && <ShieldCheck aria-hidden size={13} className="text-teal shrink-0" />}
                               </div>
                               {h.note && <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">{h.note}</p>}
                             </div>
                             {h.core ? (
                               <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-bold text-muted-foreground/75 uppercase tracking-wide">
-                                <Lock size={11} /> Core
+                                <Lock aria-hidden size={11} /> Core
                               </span>
                             ) : (
                               <div className={cn(
                                 "h-6 w-6 rounded-full border-2 shrink-0 flex items-center justify-center transition-all",
                                 on ? "border-gold bg-gold" : "border-muted-foreground/30",
                               )}>
-                                {on && <Check size={13} className="text-primary-foreground" strokeWidth={3} />}
+                                {on && <Check aria-hidden size={13} className="text-primary-foreground" strokeWidth={3} />}
                               </div>
                             )}
                           </button>
@@ -188,7 +188,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                 );
               })}
               <p className="text-[11px] text-muted-foreground text-center pt-1 pb-2">
-                <ShieldCheck size={12} className="inline text-teal mr-1" />
+                <ShieldCheck aria-hidden size={12} className="inline text-teal mr-1" />
                 marked habits can be auto-verified by Apple Health.
               </p>
             </div>

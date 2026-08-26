@@ -115,8 +115,8 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
                 : "bg-background/60 text-foreground/80",
             )}
           >
-            {cfg.rank >= 5 && <Flame size={10} strokeWidth={3} fill="currentColor" className="text-[hsl(var(--ember))]" />}
-            {cfg.rank === 6 && <Sparkles size={10} strokeWidth={3} className="text-gold" />}
+            {cfg.rank >= 5 && <Flame aria-hidden size={10} strokeWidth={3} fill="currentColor" className="text-[hsl(var(--ember))]" />}
+            {cfg.rank === 6 && <Sparkles aria-hidden size={10} strokeWidth={3} className="text-gold" />}
             {cfg.label} Tier
           </span>
         </motion.div>
@@ -133,11 +133,11 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
           )}
         >
           {leveledUp ? (
-            <Trophy size={34} strokeWidth={2.4} />
+            <Trophy aria-hidden size={34} strokeWidth={2.4} />
           ) : cfg.rank >= 5 ? (
-            <Flame size={34} strokeWidth={2.4} fill="currentColor" />
+            <Flame aria-hidden size={34} strokeWidth={2.4} fill="currentColor" />
           ) : (
-            <Zap size={34} strokeWidth={2.4} fill="currentColor" />
+            <Zap aria-hidden size={34} strokeWidth={2.4} fill="currentColor" />
           )}
         </motion.div>
 
@@ -206,7 +206,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
             )}
           >
             <div className="flex items-center gap-1.5 mb-1">
-              <Trophy size={12} className={leveledUp ? "text-gold" : "text-muted-foreground"} />
+              <Trophy aria-hidden size={12} className={leveledUp ? "text-gold" : "text-muted-foreground"} />
               <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-black">Level</p>
               {leveledUp && (
                 <motion.span
@@ -214,7 +214,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
                   transition={{ duration: 1.4, repeat: Infinity }}
                   className="ml-auto flex items-center gap-0.5 text-[9px] font-black text-gold"
                 >
-                  <ArrowUp size={10} strokeWidth={3} />UP
+                  <ArrowUp aria-hidden size={10} strokeWidth={3} />UP
                 </motion.span>
               )}
             </div>
@@ -303,7 +303,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
           )}
         >
           <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-black">
-            <Target size={11} strokeWidth={3} />
+            <Target aria-hidden size={11} strokeWidth={3} />
             Total XP
           </span>
           <span className="font-display text-xl font-black tabular-nums">
@@ -349,9 +349,9 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
             transition={{ delay: 0.9 }}
             className="mt-4 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.22em] font-black text-gold"
           >
-            <Crown size={11} strokeWidth={3} />
+            <Crown aria-hidden size={11} strokeWidth={3} />
             {cfg.rank === 6 ? "Founders Circle is watching" : "Apex doesn't skip days"}
-            <Crown size={11} strokeWidth={3} />
+            <Crown aria-hidden size={11} strokeWidth={3} />
           </motion.p>
         )}
       </div>

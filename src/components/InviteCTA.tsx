@@ -50,7 +50,7 @@ const InviteCTA = ({ referralCount }: InviteCTAProps) => {
       />
       <div className="relative flex items-center gap-3">
         <div className="h-10 w-10 rounded-xl gradient-gold flex items-center justify-center shrink-0 glow-gold">
-          <Gift size={18} className="text-primary-foreground" />
+          <Gift aria-hidden size={18} className="text-primary-foreground" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[10px] uppercase tracking-widest text-gold/80 font-bold mb-0.5">
@@ -61,7 +61,7 @@ const InviteCTA = ({ referralCount }: InviteCTAProps) => {
             {message.sub}
           </p>
         </div>
-        <ChevronRight size={18} className="text-gold/60 shrink-0" />
+        <ChevronRight aria-hidden size={18} className="text-gold/60 shrink-0" />
       </div>
     </button>
   );

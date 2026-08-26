@@ -123,7 +123,7 @@ const CommandDeck = ({
                   style={{ animationDuration: "2.4s" }}
                 />
               )}
-              <Flame size={24} strokeWidth={2.6} className={cn("relative", canCheckin && "status-flame-flicker")} />
+              <Flame aria-hidden size={24} strokeWidth={2.6} className={cn("relative", canCheckin && "status-flame-flicker")} />
             </div>
 
             <div className="min-w-0 flex-1">
@@ -143,7 +143,7 @@ const CommandDeck = ({
             {/* Streak chip — header-style flame flicker */}
             {streak > 0 && (
               <div className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[hsl(var(--ember)/0.12)] border border-[hsl(var(--ember))]/30 px-2.5 py-1">
-                <Flame size={13} className="text-[hsl(var(--ember))] status-flame-flicker" strokeWidth={2.8} />
+                <Flame aria-hidden size={13} className="text-[hsl(var(--ember))] status-flame-flicker" strokeWidth={2.8} />
                 <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(22_95%_66%)]">{streak}</span>
               </div>
             )}
@@ -293,14 +293,14 @@ const CommandDeck = ({
                   className="cta-melt-label relative z-[2] font-display font-black text-[26px] leading-none uppercase tracking-tight inline-flex items-center gap-2.5"
                   style={{ color: "hsl(20 85% 10%)", textShadow: "0 1px 0 hsl(46 100% 75% / 0.6)" }}
                 >
-                  <Flame size={24} strokeWidth={2.9} /> Lock in
+                  <Flame aria-hidden size={24} strokeWidth={2.9} /> Lock in
                 </span>
                 <span
                   className="relative z-[2] inline-flex items-center gap-1 font-black text-[13px] tabular-nums shrink-0"
                   style={{ color: "hsl(20 70% 16%)" }}
                 >
                   +{maxXp} XP
-                  <ChevronRight size={20} className="transition-transform group-active:translate-x-0.5" />
+                  <ChevronRight aria-hidden size={20} className="transition-transform group-active:translate-x-0.5" />
                 </span>
               </div>
             </div>

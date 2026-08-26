@@ -96,7 +96,7 @@ const TierRiskBanner = ({ risk, className }: TierRiskBannerProps) => {
             isDanger ? "bg-destructive/15 text-destructive" : "bg-gold/15 text-gold",
           )}
         >
-          {isDanger ? <AlertTriangle size={18} strokeWidth={2.5} /> : <Flame size={18} strokeWidth={2.5} />}
+          {isDanger ? <AlertTriangle aria-hidden size={18} strokeWidth={2.5} /> : <Flame aria-hidden size={18} strokeWidth={2.5} />}
         </div>
 
         <div className="flex-1 min-w-0">
@@ -111,7 +111,7 @@ const TierRiskBanner = ({ risk, className }: TierRiskBannerProps) => {
           <p className="text-xs text-muted-foreground truncate mt-0.5">{sub}</p>
         </div>
 
-        <ChevronRight
+        <ChevronRight aria-hidden
           size={18}
           className={cn("shrink-0", isDanger ? "text-destructive/70" : "text-gold/70")}
         />

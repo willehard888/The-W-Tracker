@@ -745,7 +745,7 @@ const EliteFeed = () => {
                   scarce mechanic is only fun if you can SEE the budget. */}
               {user && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/25 px-2 py-0.5 text-[10px] font-black text-gold tabular-nums">
-                  <Award size={10} /> {kudosRemaining}/{KUDOS_PER_MONTH} kudos left this month
+                  <Award aria-hidden size={10} /> {kudosRemaining}/{KUDOS_PER_MONTH} kudos left this month
                 </span>
               )}
             </p>
@@ -763,7 +763,7 @@ const EliteFeed = () => {
                     : "bg-secondary text-muted-foreground hover:text-foreground border border-border"
                 )}
               >
-                {showReported ? <EyeOff size={12} /> : <Eye size={12} />}
+                {showReported ? <EyeOff aria-hidden size={12} /> : <Eye aria-hidden size={12} />}
                 {showReported ? "Hide flagged" : "Flagged"}
               </button>
               <button
@@ -775,7 +775,7 @@ const EliteFeed = () => {
                     : "bg-secondary text-muted-foreground hover:text-foreground border border-border"
                 )}
               >
-                <ShieldCheck size={12} />
+                <ShieldCheck aria-hidden size={12} />
                 Reports
                 {unresolvedReportsCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-black flex items-center justify-center">
@@ -792,7 +792,7 @@ const EliteFeed = () => {
       {isAdmin && showReportsPanel && (
         <div className="animate-reveal rounded-2xl border border-[hsl(var(--purple))]/30 bg-card p-4 mb-6 shadow-[0_0_20px_hsl(var(--purple)/0.08)]">
           <div className="flex items-center gap-2 mb-3">
-            <ShieldCheck size={16} className="text-[hsl(var(--purple))]" />
+            <ShieldCheck aria-hidden size={16} className="text-[hsl(var(--purple))]" />
             <h2 className="font-display text-sm font-bold">Pending Reports</h2>
             <span className="text-[10px] text-muted-foreground">({unresolvedReportsCount})</span>
           </div>
@@ -828,7 +828,7 @@ const EliteFeed = () => {
                         }}
                         className="h-7 px-2.5 rounded-lg bg-[hsl(var(--xp-green))]/15 text-[hsl(var(--xp-green))] text-[10px] font-bold hover:bg-[hsl(var(--xp-green))]/25 transition-colors flex items-center gap-1"
                       >
-                        <CheckCircle size={12} />
+                        <CheckCircle aria-hidden size={12} />
                         Keep
                       </button>
                       {/* Delete post */}
@@ -839,7 +839,7 @@ const EliteFeed = () => {
                         }}
                         className="h-7 px-2.5 rounded-lg bg-destructive/15 text-destructive text-[10px] font-bold hover:bg-destructive/25 transition-colors flex items-center gap-1"
                       >
-                        <Trash2 size={12} />
+                        <Trash2 aria-hidden size={12} />
                         Remove
                       </button>
                     </div>
@@ -855,7 +855,7 @@ const EliteFeed = () => {
       {(todayWins ?? 0) > 0 && (
         <div className="animate-reveal mb-4 rounded-2xl border border-[hsl(var(--streak-orange))]/30 bg-gradient-to-r from-[hsl(var(--streak-orange))]/[0.08] to-transparent px-4 py-3 flex items-center gap-3">
           <div className="h-9 w-9 rounded-xl bg-[hsl(var(--streak-orange))]/15 flex items-center justify-center shrink-0">
-            <Flame size={16} className="text-[hsl(var(--streak-orange))]" fill="currentColor" />
+            <Flame aria-hidden size={16} className="text-[hsl(var(--streak-orange))]" fill="currentColor" />
           </div>
           <p className="text-[13px] font-bold leading-snug text-foreground/90">
             <span className="text-[hsl(var(--streak-orange))] font-black tabular-nums">{todayWins}</span>{" "}
@@ -909,14 +909,14 @@ const EliteFeed = () => {
                 onClick={() => fileRef.current?.click()}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-medium"
               >
-                <Image size={14} />
+                <Image aria-hidden size={14} />
                 Photo
               </button>
               <button
                 onClick={() => videoRef.current?.click()}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-medium"
               >
-                <Video size={14} />
+                <Video aria-hidden size={14} />
                 Video
               </button>
             </div>
@@ -927,7 +927,7 @@ const EliteFeed = () => {
               disabled={createPost.isPending || (!newPost.trim() && !imageFile && !videoFile)}
               className="rounded-full px-5"
             >
-              <Send size={12} />
+              <Send aria-hidden size={12} />
               {createPost.isPending ? "Posting..." : "Post"}
             </Button>
           </div>

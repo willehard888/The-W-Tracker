@@ -23,7 +23,7 @@ const GridMedia = ({ src, isVideo, alt }: { src: string; isVideo: boolean; alt: 
           />
         )}
         <span className="absolute top-1.5 right-1.5">
-          <Play size={14} className="text-foreground drop-shadow-lg" fill="currentColor" />
+          <Play aria-hidden size={14} className="text-foreground drop-shadow-lg" fill="currentColor" />
         </span>
       </>
     );

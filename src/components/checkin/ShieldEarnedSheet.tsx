@@ -20,14 +20,14 @@ const ShieldEarnedSheet = ({ shieldsBanked, onClose }: ShieldEarnedSheetProps) =
       <button aria-label="Close" onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-in fade-in" />
       <div className="relative w-full max-w-md rounded-t-3xl border-t border-border bg-card shadow-2xl animate-in slide-in-from-bottom-8 duration-300 pb-[calc(env(safe-area-inset-bottom)+20px)]">
         <div className="flex justify-center pt-2.5 pb-1"><div className="h-1 w-10 rounded-full bg-white/15" /></div>
-        <button onClick={onClose} aria-label="Close" className="absolute top-3 right-3 h-9 w-9 flex items-center justify-center rounded-full bg-secondary/70 text-muted-foreground active:scale-90 transition-transform"><X size={16} /></button>
+        <button onClick={onClose} aria-label="Close" className="absolute top-3 right-3 h-9 w-9 flex items-center justify-center rounded-full bg-secondary/70 text-muted-foreground active:scale-90 transition-transform"><X aria-hidden size={16} /></button>
 
         <div className="px-6 pt-4 text-center">
           {/* Hero shield */}
           <div className="relative mx-auto mb-4 h-20 w-20">
             <div className="absolute inset-0 -m-3 rounded-full bg-gold/20 blur-2xl" aria-hidden />
             <div className="relative h-20 w-20 rounded-full bg-gold/12 border border-gold/45 flex items-center justify-center shadow-[0_0_32px_-6px_hsl(var(--gold)/0.6)]">
-              <Shield size={36} className="text-gold" fill="currentColor" fillOpacity={0.25} />
+              <Shield aria-hidden size={36} className="text-gold" fill="currentColor" fillOpacity={0.25} />
             </div>
           </div>
 

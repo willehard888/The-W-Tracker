@@ -314,7 +314,7 @@ const Index = () => {
           )}
           {pulse.hasSnapshot && pulse.rankDelta > 0 ? (
             <span className="relative pointer-events-none shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 text-[10px] font-black text-teal">
-              <ArrowUp size={11} strokeWidth={3} /> {pulse.rankDelta} today
+              <ArrowUp aria-hidden size={11} strokeWidth={3} /> {pulse.rankDelta} today
             </span>
           ) : (
             <ChevronRight size={16} aria-hidden className="relative pointer-events-none text-muted-foreground shrink-0" />
@@ -332,7 +332,7 @@ const Index = () => {
               className="flex items-center gap-3 flex-1 min-w-0 text-left active:scale-[0.99] transition-transform"
             >
               <span className="h-9 w-9 rounded-xl gradient-gold flex items-center justify-center shrink-0">
-                <ArrowUp size={16} className="text-primary-foreground rotate-45" />
+                <ArrowUp aria-hidden size={16} className="text-primary-foreground rotate-45" />
               </span>
               <span className="min-w-0">
                 <span className="block text-sm font-black text-foreground leading-tight">
@@ -420,7 +420,7 @@ const Index = () => {
             onClick={() => navigate("/profile")}
             className="flex items-center gap-0.5 text-xs text-gold font-semibold active:opacity-70 transition-opacity"
           >
-            View all <ChevronRight size={13} />
+            View all <ChevronRight aria-hidden size={13} />
           </button>
         </div>
         {userBadges && userBadges.length > 0 ? (
@@ -445,7 +445,7 @@ const Index = () => {
                   onClick={() => navigate("/checkin")}
                   className="text-xs font-bold text-gold active:opacity-70 transition-opacity inline-flex items-center gap-1"
                 >
-                  Lock today <ChevronRight size={12} />
+                  Lock today <ChevronRight aria-hidden size={12} />
                 </button>
               ) : null
             }

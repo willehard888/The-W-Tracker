@@ -122,7 +122,7 @@ const CheckinTierHeader = ({
           aria-label="Back to dashboard"
           className="p-1.5 rounded-lg hover:bg-secondary/60 transition-colors active:scale-95"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft aria-hidden size={20} />
         </button>
 
         <div className="min-w-0 flex-1">
@@ -136,7 +136,7 @@ const CheckinTierHeader = ({
                 accent.ring,
               )}
             >
-              {cfg.rank >= 5 && <Flame size={9} strokeWidth={3} fill="currentColor" />}
+              {cfg.rank >= 5 && <Flame aria-hidden size={9} strokeWidth={3} fill="currentColor" />}
               {formatTierShort(tier, division)}
             </span>
             {username && (
@@ -182,7 +182,7 @@ const CheckinTierHeader = ({
       <div className="mt-3 grid grid-cols-[auto_1fr] items-center gap-3">
         {/* Streak block */}
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-background/60 border border-border/40">
-          <Flame
+          <Flame aria-hidden
             size={14}
             className={cn(
               streakFlameColor,
@@ -216,7 +216,7 @@ const CheckinTierHeader = ({
         <div className="min-w-0">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[9px] uppercase tracking-[0.22em] font-black text-muted-foreground flex items-center gap-1">
-              <Target size={9} strokeWidth={3} />
+              <Target aria-hidden size={9} strokeWidth={3} />
               Today
             </span>
             <span
@@ -264,7 +264,7 @@ const CheckinTierHeader = ({
           animate={{ opacity: 1, y: 0 }}
           className="mt-2 flex items-center gap-1 text-[10px] uppercase tracking-wider font-black text-destructive/90"
         >
-          <AlertTriangle size={10} strokeWidth={3} />
+          <AlertTriangle aria-hidden size={10} strokeWidth={3} />
           {cfg.pressureMessage}
         </motion.p>
       )}
@@ -274,7 +274,7 @@ const CheckinTierHeader = ({
           animate={{ opacity: 1, y: 0 }}
           className="mt-2 flex items-center gap-1 text-[10px] uppercase tracking-wider font-black text-gold"
         >
-          <TrendingUp size={10} strokeWidth={3} />
+          <TrendingUp aria-hidden size={10} strokeWidth={3} />
           You're crushing it — submit & lock the day in.
         </motion.p>
       )}

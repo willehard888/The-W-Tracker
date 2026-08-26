@@ -135,7 +135,7 @@ const FeedPostCard = memo(function FeedPostCard({
       {post.reported && isAdmin && (
         <div className="flex items-center justify-between px-4 py-2 bg-destructive/10 border-b border-destructive/20">
           <div className="flex items-center gap-1.5">
-            <AlertTriangle size={12} className="text-destructive" />
+            <AlertTriangle aria-hidden size={12} className="text-destructive" />
             <span className="text-[10px] font-bold text-destructive uppercase tracking-wider">Reported</span>
           </div>
           <div className="flex items-center gap-1">
@@ -175,7 +175,7 @@ const FeedPostCard = memo(function FeedPostCard({
             )}
             {verified && (
               <span role="img" aria-label="HealthKit-verified" className="inline-flex items-center gap-0.5 shrink-0">
-                <ShieldCheck size={12} className="text-[hsl(var(--xp-green))]" />
+                <ShieldCheck aria-hidden size={12} className="text-[hsl(var(--xp-green))]" />
               </span>
             )}
           </div>
@@ -201,7 +201,7 @@ const FeedPostCard = memo(function FeedPostCard({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button aria-label="Post options" className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground/75 hover:text-muted-foreground">
-              <MoreHorizontal size={16} />
+              <MoreHorizontal aria-hidden size={16} />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-[160px]">
@@ -210,7 +210,7 @@ const FeedPostCard = memo(function FeedPostCard({
                 onClick={() => onDeletePost(post.id)}
                 className="text-destructive focus:text-destructive"
               >
-                <Trash2 size={14} className="mr-2" />
+                <Trash2 aria-hidden size={14} className="mr-2" />
                 Delete post
               </DropdownMenuItem>
             )}
@@ -219,7 +219,7 @@ const FeedPostCard = memo(function FeedPostCard({
                 onClick={() => onReportPost(post.id)}
                 className="text-destructive focus:text-destructive"
               >
-                <AlertTriangle size={14} className="mr-2" />
+                <AlertTriangle aria-hidden size={14} className="mr-2" />
                 Report post
               </DropdownMenuItem>
             )}
@@ -231,7 +231,7 @@ const FeedPostCard = memo(function FeedPostCard({
                   onClick={() => onAdminDelete(post.id)}
                   className="text-destructive focus:text-destructive"
                 >
-                  <ShieldCheck size={14} className="mr-2" />
+                  <ShieldCheck aria-hidden size={14} className="mr-2" />
                   Admin: Remove
                 </DropdownMenuItem>
               </>
@@ -271,7 +271,7 @@ const FeedPostCard = memo(function FeedPostCard({
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
           )}
         >
-          <Flame size={15} fill={liked ? "currentColor" : "none"} className={cn(liked && "animate-scale-in")} />
+          <Flame aria-hidden size={15} fill={liked ? "currentColor" : "none"} className={cn(liked && "animate-scale-in")} />
           <span className="tabular-nums">{post.likes_count > 0 ? post.likes_count : ""}</span>
         </button>
         <button
@@ -284,7 +284,7 @@ const FeedPostCard = memo(function FeedPostCard({
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
           )}
         >
-          <MessageCircle size={15} fill={isCommentsOpen ? "currentColor" : "none"} />
+          <MessageCircle aria-hidden size={15} fill={isCommentsOpen ? "currentColor" : "none"} />
           <span className="tabular-nums">{post.comments_count > 0 ? post.comments_count : ""}</span>
         </button>
 
@@ -311,7 +311,7 @@ const FeedPostCard = memo(function FeedPostCard({
             )}
             title={`${kudosRemaining}/${kudosPerMonth} kudos remaining this month`}
           >
-            <Award
+            <Award aria-hidden
               size={15}
               fill={hasGivenKudos ? "currentColor" : "none"}
               className={cn(hasGivenKudos && "animate-scale-in")}
@@ -323,7 +323,7 @@ const FeedPostCard = memo(function FeedPostCard({
         {/* Show kudos count for own posts */}
         {isOwn && (post.kudos_count || 0) > 0 && (
           <div className="flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold text-purple bg-purple/10">
-            <Award size={15} fill="currentColor" />
+            <Award aria-hidden size={15} fill="currentColor" />
             <span className="tabular-nums">{post.kudos_count}</span>
           </div>
         )}
@@ -371,7 +371,7 @@ const FeedPostCard = memo(function FeedPostCard({
                   <div className="w-0.5 rounded-full bg-gold shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1 text-[10px] font-bold text-gold uppercase tracking-wider">
-                      <Reply size={10} />
+                      <Reply aria-hidden size={10} />
                       Replying to @{replyTo.username}
                     </div>
                     <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 break-words">
@@ -384,7 +384,7 @@ const FeedPostCard = memo(function FeedPostCard({
                     aria-label="Cancel reply"
                     className="relative self-start h-6 w-6 rounded-full bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors shrink-0 before:absolute before:-inset-2.5 before:content-['']"
                   >
-                    <X size={12} />
+                    <X aria-hidden size={12} />
                   </button>
                 </div>
               )}
@@ -437,7 +437,7 @@ const FeedPostCard = memo(function FeedPostCard({
                       : "bg-secondary text-muted-foreground/75 cursor-not-allowed"
                   )}
                 >
-                  <Send size={13} />
+                  <Send aria-hidden size={13} />
                 </button>
               </div>
             </div>

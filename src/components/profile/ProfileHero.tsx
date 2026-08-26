@@ -70,7 +70,7 @@ const ProfileHero = ({
         aria-label="Share profile"
         className="absolute top-3 right-3 z-10 h-9 w-9 rounded-full bg-background/50 border border-border/60 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-gold hover:border-gold/40 active:scale-95 transition before:absolute before:-inset-1 before:content-['']"
       >
-        <Share2 size={15} />
+        <Share2 aria-hidden size={15} />
       </button>
 
       <IdentityCore
@@ -108,7 +108,7 @@ const ProfileHero = ({
               {uploadingAvatar ? (
                 <span className="text-[10px] text-gold animate-pulse">...</span>
               ) : (
-                <Camera size={16} className="text-gold" />
+                <Camera aria-hidden size={16} className="text-gold" />
               )}
             </button>
           </div>

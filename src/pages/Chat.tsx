@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { uniqueChannelName } from "@/lib/realtime";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, Send } from "lucide-react";
+import { ChevronLeft, Send, MoreVertical, Ban, Flag } from "lucide-react";
 import { toast } from "sonner";
 import StatusAvatar from "@/components/StatusAvatar";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useBlockActions } from "@/hooks/use-blocking";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
@@ -15,6 +17,7 @@ const Chat = () => {
   const { partnerId } = useParams<{ partnerId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { block, report } = useBlockActions();
   const queryClient = useQueryClient();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -194,6 +197,31 @@ const Chat = () => {
               </p>
             </div>
           </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button aria-label="Conversation options" className="h-10 w-10 shrink-0 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground active:scale-90 transition">
+                <MoreVertical size={18} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[180px]">
+              <DropdownMenuItem
+                onClick={() => report("direct_message", partnerId!, partnerId!, `Reported chat with @${partner?.username ?? "user"}`)}
+              >
+                <Flag size={14} className="mr-2" aria-hidden /> Report
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => {
+                  if (confirm(`Block @${partner?.username ?? "this user"}? You won't see each other's content and they can't message or friend you.`)) {
+                    block(partnerId!, partner?.username);
+                    navigate("/messages");
+                  }
+                }}
+              >
+                <Ban size={14} className="mr-2" aria-hidden /> Block user
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

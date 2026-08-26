@@ -1,5 +1,5 @@
 
-import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, CalendarCheck, Gauge, ChevronRight, Brain, UserRound, FileText } from "lucide-react";
+import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, CalendarCheck, Gauge, ChevronRight, Brain, UserRound, FileText, Ban } from "lucide-react";
 import { isNativePlatform } from "@/lib/platform";
 import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
 import ProgressionSummaryCard from "@/components/profile/ProgressionSummaryCard";
@@ -692,6 +692,7 @@ const Profile = () => {
             <SettingsRow icon={Image} label="Share stats" onClick={() => setShareModal({ open: true, variant: "stats" })} />
             <SettingsRow icon={Flame} label="Share streak" onClick={() => setShareModal({ open: true, variant: "streak" })} />
             <SettingsRow icon={GitCompare} label="Compare badges" onClick={() => navigate("/badges/compare")} />
+            <SettingsRow icon={Ban} label="Blocked users" onClick={() => navigate("/settings/blocked")} />
           </SettingsGroup>
 
           {isElite && (

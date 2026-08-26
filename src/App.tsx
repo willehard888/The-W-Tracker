@@ -41,6 +41,7 @@ const Friends = lazy(() => import("./pages/Friends"));
 const Chat = lazy(() => import("./pages/Chat"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
+const BlockedUsers = lazy(() => import("./pages/BlockedUsers"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const IosDebug = lazy(() => import("./pages/IosDebug"));
@@ -273,6 +274,7 @@ const AppRoutes = () => {
           <Route path="/chat/:partnerId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
           <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/settings/blocked" element={<ProtectedRoute><BlockedUsers /></ProtectedRoute>} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/terms" element={<TermsOfUse />} />
           {/* Debug panel persists token-presence + auth flow state — never

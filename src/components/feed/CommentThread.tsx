@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { Reply } from "lucide-react";
+import { Reply, Flag } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
@@ -13,6 +13,7 @@ export interface CommentThreadProps {
   onDelete: (id: string) => Promise<void> | void;
   editingId: string | null;
   setEditingId: (id: string | null) => void;
+  onReport?: (commentId: string, authorId: string) => void;
 }
 
 const isEdited = (node: CommentNode) => {
@@ -33,6 +34,7 @@ const CommentThread = memo(function CommentThread({
   onDelete,
   editingId,
   setEditingId,
+  onReport,
 }: CommentThreadProps) {
   const username = node.profile?.username || "anon";
   const isReply = node.depth > 0;
@@ -149,6 +151,15 @@ const CommentThread = memo(function CommentThread({
                 >
                   <Reply aria-hidden size={10} />
                   Reply
+                </button>
+              )}
+              {!isOwn && onReport && (
+                <button
+                  type="button"
+                  onClick={() => onReport(node.id, node.user_id)}
+                  className="flex items-center gap-1 px-2 -mx-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-destructive transition-colors"
+                >
+                  <Flag size={10} aria-hidden /> Report
                 </button>
               )}
               {isOwn && (

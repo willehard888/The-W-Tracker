@@ -6,6 +6,7 @@ import EmptyState from "@/components/ui/empty-state";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { useBlockActions } from "@/hooks/use-blocking";
 import { useState, useRef, useMemo, useCallback } from "react";
 import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
@@ -720,6 +721,8 @@ const EliteFeed = () => {
   const onReportPost = useCallback((id: string) => reportPost.mutate(id), [reportPost.mutate]);
   const onAdminDelete = useCallback((id: string) => adminDeletePost.mutate(id), [adminDeletePost.mutate]);
   const onUnreport = useCallback((id: string) => unreportPost.mutate(id), [unreportPost.mutate]);
+  const { report: reportContent } = useBlockActions();
+  const onReportComment = useCallback((commentId: string, authorId: string) => reportContent("comment", commentId, authorId), [reportContent]);
   const onOpenLightbox = useCallback((p: any) => { hapticSelection(); setLightboxPost(p); }, []);
   const onSubmitComment = useCallback(() => { hapticImpact("light"); addComment.mutate(); }, [addComment.mutate]);
   const composerInitial = profile?.username?.charAt(0)?.toUpperCase() || "?";
@@ -1006,6 +1009,7 @@ const EliteFeed = () => {
               onGiveKudos={onGiveKudos}
               onDeletePost={onDeletePost}
               onReportPost={onReportPost}
+              onReportComment={onReportComment}
               onAdminDelete={onAdminDelete}
               onUnreport={onUnreport}
               onOpenLightbox={onOpenLightbox}

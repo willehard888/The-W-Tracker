@@ -1,5 +1,5 @@
 
-import { Trophy, Lock, Crown, TrendingUp, Clock3, Medal, Swords, ShieldCheck } from "lucide-react";
+import { Trophy, Lock, Crown, TrendingUp, Clock3, Medal, Swords, ShieldCheck, AlertTriangle, Flame } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
@@ -398,10 +398,10 @@ const Leaderboard = () => {
             </div>
           </div>
           {hasRank && percentile < 50 && (
-            <p className="text-[10px] text-destructive font-bold mt-3 text-center uppercase tracking-wider">⚠️ Falling behind — others are gaining</p>
+            <p className="text-[10px] text-destructive font-bold mt-3 text-center uppercase tracking-wider inline-flex items-center gap-1 w-full justify-center"><AlertTriangle size={11} aria-hidden /> Falling behind — others are gaining</p>
           )}
           {hasRank && percentile >= 90 && (
-            <p className="text-[10px] text-gold font-bold mt-3 text-center uppercase tracking-wider">🔥 Top {Math.max(1, Math.round(100 - percentile))}% — defend your spot</p>
+            <p className="text-[10px] text-gold font-bold mt-3 text-center uppercase tracking-wider inline-flex items-center gap-1 w-full justify-center"><Flame size={11} aria-hidden /> Top {Math.max(1, Math.round(100 - percentile))}% — defend your spot</p>
           )}
         </div>
       )}
@@ -734,7 +734,7 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
           aria-selected={isSeason}
           onClick={() => onChange("season")}
           className={cn(
-            "relative z-10 py-2 text-xs font-display font-black uppercase tracking-[0.22em] transition-colors",
+            "relative z-10 py-2 min-h-11 text-xs font-display font-black uppercase tracking-[0.22em] transition-colors active:scale-[0.97]",
             isSeason ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
           )}
         >
@@ -748,7 +748,7 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
           aria-selected={!isSeason}
           onClick={() => onChange("all_time")}
           className={cn(
-            "relative z-10 py-2 text-xs font-display font-black uppercase tracking-[0.22em] transition-colors",
+            "relative z-10 py-2 min-h-11 text-xs font-display font-black uppercase tracking-[0.22em] transition-colors active:scale-[0.97]",
             !isSeason ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
           )}
         >

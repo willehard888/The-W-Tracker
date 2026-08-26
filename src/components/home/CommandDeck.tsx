@@ -297,7 +297,7 @@ const CommandDeck = ({
                 </span>
                 <span
                   className="relative z-[2] inline-flex items-center gap-1 font-black text-[13px] tabular-nums shrink-0"
-                  style={{ color: "hsl(20 70% 16%)", opacity: 0.85 }}
+                  style={{ color: "hsl(20 70% 16%)" }}
                 >
                   +{maxXp} XP
                   <ChevronRight size={20} className="transition-transform group-active:translate-x-0.5" />

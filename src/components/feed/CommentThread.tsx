@@ -145,7 +145,7 @@ const CommentThread = memo(function CommentThread({
                     hapticSelection();
                     onReply(node.id, username, node.content || "");
                   }}
-                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-gold transition-colors"
+                  className="flex items-center gap-1 px-2 -mx-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-gold transition-colors"
                 >
                   <Reply size={10} />
                   Reply
@@ -160,7 +160,7 @@ const CommentThread = memo(function CommentThread({
                       setDraft(node.content || "");
                       setEditingId(node.id);
                     }}
-                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-gold transition-colors"
+                    className="flex items-center gap-1 px-2 -mx-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-gold transition-colors"
                   >
                     Edit
                   </button>
@@ -172,7 +172,7 @@ const CommentThread = memo(function CommentThread({
                         onDelete(node.id);
                       }
                     }}
-                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-destructive transition-colors"
+                    className="flex items-center gap-1 px-2 -mx-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-destructive transition-colors"
                   >
                     Delete
                   </button>

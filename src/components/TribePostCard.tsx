@@ -130,14 +130,14 @@ const CommentThread = ({
               </p>
               {currentUserId && (
                 <button type="button" onClick={() => { hapticSelection(); onReply(node.id, username, node.content || ""); }}
-                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-[hsl(var(--ember))] transition-colors">
+                  className="flex items-center gap-1 px-2 -mx-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-[hsl(var(--ember))] transition-colors">
                   <Reply size={10} /> Reply
                 </button>
               )}
               {isOwn && (
                 <>
                   <button type="button" onClick={() => { hapticSelection(); setDraft(node.content || ""); setEditingId(node.id); }}
-                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-[hsl(var(--ember))] transition-colors">
+                    className="flex items-center gap-1 px-2 -mx-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-[hsl(var(--ember))] transition-colors">
                     Edit
                   </button>
                 </>
@@ -149,7 +149,7 @@ const CommentThread = ({
                     onDelete(node.id);
                   }
                 }}
-                  className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-destructive transition-colors">
+                  className="flex items-center gap-1 px-2 -mx-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-destructive transition-colors">
                   Delete
                 </button>
               )}
@@ -436,7 +436,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button aria-label="Post options" className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/75 hover:text-muted-foreground">
+                <button aria-label="Post options" className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground/75 hover:text-muted-foreground">
                   <MoreHorizontal size={16} />
                 </button>
               </DropdownMenuTrigger>
@@ -489,7 +489,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             <button onClick={() => toggleLike.mutate()}
               aria-label={post.liked ? "Remove fire" : "Give fire"}
               className={cn(
-                "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
+                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all active:scale-95",
                 post.liked
                   ? "bg-streak-orange/15 text-streak-orange"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -501,7 +501,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
           <button onClick={() => { hapticSelection(); setReplyTo(null); setShowComments(!showComments); }}
             aria-label="Toggle comments"
             className={cn(
-              "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
+              "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all active:scale-95",
               showComments ? "bg-[hsl(var(--ember))]/12 text-[hsl(var(--ember))]" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}>
             <MessageCircle size={15} fill={showComments ? "currentColor" : "none"} />
@@ -522,7 +522,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               aria-label={post.kudosed ? "Remove kudos" : "Give kudos"}
               title={`${kudosRemaining}/2 kudos remaining this month`}
               className={cn(
-                "flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold transition-all active:scale-95",
+                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all active:scale-95",
                 post.kudosed
                   ? "bg-purple/15 text-purple ring-1 ring-purple/30"
                   : kudosRemaining > 0
@@ -634,7 +634,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                     disabled={!commentText.trim() || addComment.isPending}
                     aria-label={replyTo ? "Send reply" : "Send comment"}
                     className={cn(
-                      "h-9 w-9 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0",
+                      "h-10 w-10 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0",
                       commentText.trim()
                         ? "bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background"
                         : "bg-secondary text-muted-foreground"

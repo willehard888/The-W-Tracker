@@ -10,6 +10,7 @@ export interface PendingCheckin {
   args: Record<string, unknown>;
   localDate: string; // YYYY-MM-DD in local time, to drop stale next-day replays
   queuedAt: number;
+  userId?: string; // never replay one user's queue as another user
 }
 
 /** Local calendar date (YYYY-MM-DD) — matches the record_checkin window model. */
@@ -24,9 +25,9 @@ export const getPendingCheckin = (): PendingCheckin | null => {
   }
 };
 
-export const queueCheckin = (args: Record<string, unknown>): void => {
+export const queueCheckin = (args: Record<string, unknown>, userId?: string): void => {
   try {
-    localStorage.setItem(KEY, JSON.stringify({ args, localDate: localDateStr(), queuedAt: Date.now() }));
+    localStorage.setItem(KEY, JSON.stringify({ args, localDate: localDateStr(), queuedAt: Date.now(), userId }));
   } catch { /* storage full / unavailable — nothing we can do */ }
 };
 
@@ -41,17 +42,28 @@ export const isNetworkError = (err: { message?: string } | null): boolean => {
   return /failed to fetch|networkerror|network request failed|load failed|timeout|fetch/.test(m);
 };
 
-export type FlushResult = "synced" | "already" | "none" | "failed";
+export type FlushResult = "synced" | "already" | "none" | "failed" | "stale";
 
-/** Replay a queued check-in. Drops only a truly stale (>36h) queue. */
+/** Replay a queued check-in. Same-local-day only — see the stale note below. */
 export async function flushPendingCheckin(supabase: SupabaseClient): Promise<FlushResult> {
   const p = getPendingCheckin();
   if (!p) return "none";
-  // Previously we dropped any queue whose localDate != today — which silently
-  // lost a check-in made at 23:58 and replayed at 00:02. Now we replay recent
-  // queues (they log for the current local day; record_checkin's one-per-day
-  // guard prevents duplicates) and drop only genuinely abandoned ones (>36h).
+  // Genuinely abandoned queue — drop silently.
   if (Date.now() - p.queuedAt > 36 * 60 * 60 * 1000) { clearPendingCheckin(); return "none"; }
+  // record_checkin timestamps the row with server now(), so a queue replayed on
+  // a LATER local day is recorded as THAT day's check-in — spending a shield or
+  // breaking the streak for the gap, and blocking the new day's real check-in.
+  // A short grace window still covers the 23:58 → 00:02 midnight crossing
+  // (deliberate, regression-locked); anything older on a different day is
+  // reported "stale" so the UI can be honest instead of claiming it synced.
+  const crossedDay = p.localDate !== localDateStr();
+  const ageMs = Date.now() - p.queuedAt;
+  if (crossedDay && ageMs > 3 * 60 * 60 * 1000) { clearPendingCheckin(); return "stale"; }
+  // Never replay one user's queued check-in under another account (shared device).
+  if (p.userId) {
+    const { data } = await supabase.auth.getUser();
+    if (data.user && data.user.id !== p.userId) return "none"; // keep; expires via date guard
+  }
 
   const { error } = await supabase.rpc("record_checkin" as never, p.args as never);
   if (!error) { clearPendingCheckin(); return "synced"; }

@@ -143,7 +143,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[9px] uppercase tracking-widest text-muted-foreground">
-                  {isMine ? "Your tribe" : "Challenger"}
+                  {isMine ? "Your tribe" : "Opponent"}
                 </p>
                 <p className={cn("font-display font-black text-sm truncate", isMine && "text-gold")}>
                   {name}

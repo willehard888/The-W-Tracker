@@ -131,11 +131,15 @@ const Notifications = () => {
 
   const openNotification = (n: AppNotification) => {
     if (!n.read_at) {
-      void markNotificationRead(n.id);
       queryClient.setQueryData<AppNotification[]>(["notifications", profile?.user_id], (prev) =>
         prev?.map((x) => (x.id === n.id ? { ...x, read_at: new Date().toISOString() } : x)),
       );
-      queryClient.invalidateQueries({ queryKey: ["notifications", profile?.user_id, "unread-count"] });
+      // Invalidate AFTER the PATCH lands — the globally-mounted unread badge
+      // refetches on invalidate, and an immediate refetch raced the write and
+      // kept showing the pre-read count.
+      void markNotificationRead(n.id).then(() => {
+        queryClient.invalidateQueries({ queryKey: ["notifications", profile?.user_id, "unread-count"] });
+      });
     }
     if (n.route) navigate(n.route.split("?")[0].startsWith("/") ? n.route : "/");
   };

@@ -305,18 +305,21 @@ const ChatSheet = ({
   session, program, initialPrompt, seedAssistant, onClose,
 }: { session: any; program: any; initialPrompt: string | null; seedAssistant?: string | null; onClose: () => void }) => {
   const [messages, setMessages] = useState<ChatMsg[]>(() => {
-    // Seeded from the day's coach feedback → a fresh thread with that line as
-    // the opening assistant bubble (reads as "continue this conversation").
-    if (seedAssistant && seedAssistant.trim()) {
-      return [{ role: "assistant", content: seedAssistant.trim() }];
-    }
+    // Load the saved thread first; a check-in seed APPENDS as the latest
+    // coach bubble. (It used to replace the whole thread — and the persist
+    // effect then overwrote a week of saved history with that one line.)
+    let prior: ChatMsg[] = [];
     try {
       const ts = Number(localStorage.getItem(HISTORY_TS_KEY) ?? 0);
-      if (Date.now() - ts > STALE_MS) return [];
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw) as ChatMsg[];
+      if (Date.now() - ts <= STALE_MS) {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) prior = JSON.parse(raw) as ChatMsg[];
+      }
     } catch {}
-    return [];
+    if (seedAssistant && seedAssistant.trim()) {
+      return [...prior, { role: "assistant", content: seedAssistant.trim() }];
+    }
+    return prior;
   });
   // Performance follow-up chips shown until the user asks their first question.
   const [seedChipsShown, setSeedChipsShown] = useState(!!(seedAssistant && seedAssistant.trim()));

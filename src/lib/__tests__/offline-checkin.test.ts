@@ -67,6 +67,20 @@ describe("flushPendingCheckin", () => {
     expect(getPendingCheckin()).toBeNull();
   });
 
+  it("reports an overnight queue as 'stale' instead of mislogging the next day", async () => {
+    // Queued Tue 07:00, flushed Wed 09:00 — replaying would record Tuesday's
+    // habits as WEDNESDAY's check-in (spending a shield / breaking the streak
+    // for the gap and blocking the real check-in). Must NOT reach the server.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 7, 11, 7, 0));
+    queueCheckin({ p_workout: true });
+    vi.setSystemTime(new Date(2026, 7, 12, 9, 0)); // 26h later, different day
+    const client = fakeClient(null);
+    await expect(flushPendingCheckin(client)).resolves.toBe("stale");
+    expect((client as { rpc: ReturnType<typeof vi.fn> }).rpc).not.toHaveBeenCalled();
+    expect(getPendingCheckin()).toBeNull();
+  });
+
   it("ALREADY_CHECKED_IN_TODAY clears the queue (idempotent replay)", async () => {
     queueCheckin({ p_workout: true });
     await expect(flushPendingCheckin(fakeClient({ message: "ALREADY_CHECKED_IN_TODAY" }))).resolves.toBe("already");

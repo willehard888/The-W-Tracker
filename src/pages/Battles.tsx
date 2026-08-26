@@ -517,6 +517,36 @@ const Battles = () => {
         </div>
       )}
 
+      {/* Your own tied battles — the community is deciding. Without this the
+          battle vanished from the page entirely for its participants (not
+          active, not completed, and excluded from the community list). */}
+      {myVotingBattles.length > 0 && (
+        <div className="animate-reveal animate-reveal-delay-2 mb-6">
+          <h2 className="font-display font-bold text-sm mb-3 tracking-tight flex items-center gap-2">
+            <Vote size={14} className="text-gold" />
+            Tie — Community Is Voting
+          </h2>
+          <p className="text-[10px] text-muted-foreground mb-3">Your battle ended in a tie. Other athletes are casting the deciding votes.</p>
+          <div className="space-y-2">
+            {myVotingBattles.map((battle: any) => {
+              const counts = voteCounts?.[battle.id] || {};
+              const oppId = battle.challenger_id === profile?.user_id ? battle.opponent_id : battle.challenger_id;
+              const mine = counts[profile?.user_id ?? ""] ?? 0;
+              const theirs = counts[oppId] ?? 0;
+              return (
+                <div key={battle.id} className="surface-card p-3.5 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold truncate">vs @{getOpponent(battle).username}</p>
+                    <p className="text-[10px] text-muted-foreground">{getBattleTypeInfo(battle.battle_type).label}</p>
+                  </div>
+                  <p className="text-sm font-black tabular-nums shrink-0">{mine} – {theirs}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Community Voting — Tied Battles */}
       {(communityVotingBattles && communityVotingBattles.length > 0) && (
         <div className="animate-reveal animate-reveal-delay-2 mb-6">

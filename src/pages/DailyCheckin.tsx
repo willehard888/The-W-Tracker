@@ -221,6 +221,8 @@ const DailyCheckin = () => {
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [questBonusXp, setQuestBonusXp] = useState(0);
+  // True once the user has explicitly chosen Trained/Rest/a sport — gates HK prefill.
+  const sportTouched = useRef(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
   // Streak-shield earned → explainer sheet (server says when: every 7th day)
   const [shieldSheet, setShieldSheet] = useState<number | null>(null);
@@ -247,7 +249,9 @@ const DailyCheckin = () => {
       if (!alive || !snap) return;
       const workoutDone = (snap.workout_count ?? 0) >= 1 || (snap.workout_minutes ?? 0) >= 15;
       // Apple told us WHICH sport — pre-select it once (user can still change).
-      if (workoutDone && snap.primary_sport && !sportPrefilled.current) {
+      // Never override a choice the user already made (Rest day sets "none"
+      // on purpose — the async HK snapshot must not turn it back into a workout).
+      if (workoutDone && snap.primary_sport && !sportPrefilled.current && !sportTouched.current) {
         sportPrefilled.current = true;
         setDetectedSportId(snap.primary_sport);
         setSportCategory((cur) => (cur === "none" ? snap.primary_sport! : cur));
@@ -474,7 +478,7 @@ const DailyCheckin = () => {
           return;
         }
         if (isNetworkError(rpcError)) {
-          queueCheckin(rpcArgs as any);
+          queueCheckin(rpcArgs as any, user?.id);
           toast.success("Saved offline 📶", {
             description: "No connection right now — we'll log this check-in automatically when you're back online.",
             duration: 6000,
@@ -495,7 +499,7 @@ const DailyCheckin = () => {
         }
         console.error("record_checkin failed after retries:", rpcError);
         toast.error("Couldn't save your check-in.", {
-          description: friendlyError(rpcError, "Check your connection and try again — your day is saved locally."),
+          description: friendlyError(rpcError, "Nothing was lost from the form — fix the connection and press Submit again."),
           duration: 6000,
         });
         hapticNotification("error");
@@ -614,6 +618,8 @@ const DailyCheckin = () => {
         queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
         queryClient.invalidateQueries({ queryKey: ["user-badges"] });
         queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+        queryClient.invalidateQueries({ queryKey: ["recent-checkins"] });
+        queryClient.invalidateQueries({ queryKey: ["recent-sleep-7d"] });
       })();
 
       return;
@@ -869,7 +875,7 @@ const DailyCheckin = () => {
             <button
               type="button"
               aria-pressed={Boolean(workout) && !isRestDay}
-              onClick={() => { hapticSelection(); setRestDay(false); setSportOpen(!sportOpen); }}
+              onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(false); setSportOpen(!sportOpen); }}
               className={cn(
                 "rounded-xl border px-3 py-2.5 text-sm font-bold transition-all active:scale-[0.97] inline-flex items-center justify-center gap-1.5",
                 workout ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
@@ -880,7 +886,7 @@ const DailyCheckin = () => {
             <button
               type="button"
               aria-pressed={isRestDay}
-              onClick={() => { hapticSelection(); setRestDay(true); setSportCategory("none"); setSportOpen(false); }}
+              onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(true); setSportCategory("none"); setSportOpen(false); }}
               className={cn(
                 "rounded-xl border px-3 py-2.5 text-sm font-bold transition-all active:scale-[0.97]",
                 isRestDay ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
@@ -903,7 +909,7 @@ const DailyCheckin = () => {
                   <button
                     key={`fy-${sport.id}`}
                     aria-pressed={sportCategory === sport.id}
-                    onClick={() => { setSportCategory(sport.id); setSportOpen(false); }}
+                    onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); }}
                     className={cn(
                       "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
                       sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
@@ -953,7 +959,7 @@ const DailyCheckin = () => {
                   <button
                     key={`q-${sport.id}`}
                     aria-pressed={sportCategory === sport.id}
-                    onClick={() => { setSportCategory(sport.id); setSportOpen(false); setSportQuery(""); }}
+                    onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); setSportQuery(""); }}
                     className={cn(
                       "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
                       sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
@@ -988,7 +994,7 @@ const DailyCheckin = () => {
                       <button
                         key={sport.id}
                         aria-pressed={sportCategory === sport.id}
-                    onClick={() => { setSportCategory(sport.id); setSportOpen(false); }}
+                    onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); }}
                         className={cn(
                           "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
                           sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",

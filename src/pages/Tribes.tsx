@@ -323,7 +323,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
   const pendingIds = data.pendingIds;
   const userToTribes = data.userToTribes;
   const pulse = data.pulse;
-  const loading = !!profile?.user_id && tribesQuery.isLoading;
+  const loading = !profile?.user_id || tribesQuery.isLoading;
 
   // Seed the live collective-streak map from the rows themselves —
   // tribes.collective_streak is server-owned (nightly refresh_tribe_fire);

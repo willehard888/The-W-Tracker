@@ -186,7 +186,12 @@ const Leaderboard = () => {
         supabase
           .from("profiles")
           .select("username, xp, level, streak, user_id, avatar_url, status_tier")
-          .gt("xp", 0),
+          .gt("xp", 0)
+          // PostgREST silently truncates at 1000 rows with an ARBITRARY subset
+          // when unordered. Order by xp so the truncation keeps the top players
+          // (season points derive from xp deltas, so high-xp covers the board).
+          .order("xp", { ascending: false })
+          .limit(2000),
       ]);
 
       const baselineMap = new Map<string, number>((baselines || []).map((b: any) => [b.user_id, b.baseline_xp]));

@@ -41,6 +41,7 @@ const PARENT_TAB: Array<{ prefix: string; tab: string }> = [
   { prefix: "/tribe", tab: "/squad" },
   { prefix: "/friends", tab: "/squad" },
   { prefix: "/messages", tab: "/squad" },
+  { prefix: "/settings", tab: "/profile" },
   { prefix: "/battles", tab: "/leaderboard" },
   { prefix: "/journey", tab: "/profile" },
   { prefix: "/notifications", tab: "/" },

@@ -63,6 +63,7 @@ export interface FeedPostCardProps {
   onGiveKudos: (postId: string, receiverId: string) => void;
   onDeletePost: (postId: string) => void;
   onReportPost: (postId: string) => void;
+  onReportComment?: (commentId: string, authorId: string) => void;
   onAdminDelete: (postId: string) => void;
   onUnreport: (postId: string) => void;
   onOpenLightbox: (post: any) => void;
@@ -108,6 +109,7 @@ const FeedPostCard = memo(function FeedPostCard({
   onGiveKudos,
   onDeletePost,
   onReportPost,
+  onReportComment,
   onAdminDelete,
   onUnreport,
   onOpenLightbox,
@@ -358,6 +360,7 @@ const FeedPostCard = memo(function FeedPostCard({
                 onDelete={onDelete}
                 editingId={editingCommentId}
                 setEditingId={setEditingCommentId}
+                onReport={onReportComment}
               />
             ))}
           </div>

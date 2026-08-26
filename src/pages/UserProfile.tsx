@@ -3,7 +3,8 @@ import { ProfileSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Award, ChevronLeft, Swords, MessageCircle, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Share2, Camera } from "lucide-react";
+import { Award, ChevronLeft, Swords, MessageCircle, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Share2, Camera, Ban, Flag } from "lucide-react";
+import { useBlockActions } from "@/hooks/use-blocking";
 import BattleChallengeModal from "@/components/battles/BattleChallengeModal";
 import ImageLightbox from "@/components/ImageLightbox";
 import GridMedia from "@/components/feed/GridMedia";
@@ -26,6 +27,7 @@ const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const { profile: myProfile } = useAuth();
   const navigate = useNavigate();
+  const { block, report } = useBlockActions();
   const queryClient = useQueryClient();
   const [showBattleModal, setShowBattleModal] = useState(false);
   const [battleType, setBattleType] = useState("xp");
@@ -353,6 +355,26 @@ const UserProfile = () => {
                 </Button>
                 <Button variant="gold-outline" size="sm" onClick={() => navigate(`/badges/compare?user=${profile.username}`)} className="w-full">
                   <GitCompare size={15} /> Compare
+                </Button>
+              </div>
+
+              {/* Safety row — report + block (App Store 1.2) */}
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="secondary" size="sm" onClick={() => report("profile", userId!, userId!, `Reported profile @${profile.username}`)} className="w-full text-muted-foreground">
+                  <Flag size={15} /> Report
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    if (confirm(`Block @${profile.username}? You won't see each other's content and they can't message or friend you.`)) {
+                      block(userId!, profile.username);
+                      navigate(-1);
+                    }
+                  }}
+                  className="w-full text-destructive"
+                >
+                  <Ban size={15} /> Block
                 </Button>
               </div>
             </div>

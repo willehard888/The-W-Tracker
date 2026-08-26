@@ -60,6 +60,7 @@ const HabitToggle = ({
 }: { habit: CheckinHabit; active: boolean; onToggle: () => void; detected?: boolean }) => (
   <button
     onClick={() => { hapticSelection(); onToggle(); }}
+    aria-pressed={active}
     className={cn(
       "group relative flex items-center gap-3 w-full rounded-2xl border p-3 text-left transition-all duration-200 active:scale-[0.985]",
       active
@@ -824,7 +825,7 @@ const DailyCheckin = () => {
             {sleep}h {sleep >= 7.5 && sleep <= 9 ? "🚀" : (sleep > 9 && sleep <= 12 && !isChronicOversleep) ? "✨" : sleep >= 7 && sleep < 7.5 ? "😐" : sleep <= 5 ? "💀" : sleep > 9 ? "😴" : "⚠️"}
           </span>
         </div>
-        <input type="range" aria-label="Hours of sleep" min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
+        <input type="range" aria-label="Hours of sleep" aria-valuetext={`${sleep} hours`} min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x" }} />
         {sleepPenaltyLabel && <p className="text-[10px] text-destructive mt-1 font-semibold">⚠️ {sleepPenaltyLabel}</p>}
         {isChronicOversleep && sleep >= 10 && (
           <p className="text-[10px] text-muted-foreground mt-1">You've slept 10h+ {oversleepCount} of the last 7 nights — occasional long nights help, chronic oversleep hurts.</p>
@@ -867,6 +868,7 @@ const DailyCheckin = () => {
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
               type="button"
+              aria-pressed={Boolean(workout) && !isRestDay}
               onClick={() => { hapticSelection(); setRestDay(false); setSportOpen(!sportOpen); }}
               className={cn(
                 "rounded-xl border px-3 py-2.5 text-sm font-bold transition-all active:scale-[0.97] inline-flex items-center justify-center gap-1.5",
@@ -877,6 +879,7 @@ const DailyCheckin = () => {
             </button>
             <button
               type="button"
+              aria-pressed={isRestDay}
               onClick={() => { hapticSelection(); setRestDay(true); setSportCategory("none"); setSportOpen(false); }}
               className={cn(
                 "rounded-xl border px-3 py-2.5 text-sm font-bold transition-all active:scale-[0.97]",
@@ -899,10 +902,11 @@ const DailyCheckin = () => {
                 {forYou.map((sport) => (
                   <button
                     key={`fy-${sport.id}`}
+                    aria-pressed={sportCategory === sport.id}
                     onClick={() => { setSportCategory(sport.id); setSportOpen(false); }}
                     className={cn(
                       "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
-                      sportCategory === sport.id ? "bg-gold/5" : "hover:bg-secondary/50",
+                      sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                     )}
                   >
                     <span className="text-lg w-7 text-center">{sport.emoji}</span>
@@ -912,6 +916,7 @@ const DailyCheckin = () => {
                         <span className="inline-flex items-center gap-1 text-[9px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck size={10} /> Detected</span>
                       )}
                     </span>
+                    {sportCategory === sport.id && <Check size={15} strokeWidth={3} className="text-gold shrink-0" />}
                     <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
                   </button>
                 ))}
@@ -947,14 +952,16 @@ const DailyCheckin = () => {
                 return hits.length ? hits.map((sport) => (
                   <button
                     key={`q-${sport.id}`}
+                    aria-pressed={sportCategory === sport.id}
                     onClick={() => { setSportCategory(sport.id); setSportOpen(false); setSportQuery(""); }}
                     className={cn(
                       "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
-                      sportCategory === sport.id ? "bg-gold/5" : "hover:bg-secondary/50",
+                      sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                     )}
                   >
                     <span className="text-lg w-7 text-center">{sport.emoji}</span>
                     <span className="text-sm font-medium flex-1">{sport.label}</span>
+                    {sportCategory === sport.id && <Check size={15} strokeWidth={3} className="text-gold shrink-0" />}
                     <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
                   </button>
                 )) : (
@@ -980,15 +987,17 @@ const DailyCheckin = () => {
                     {open && sports.map((sport) => (
                       <button
                         key={sport.id}
-                        onClick={() => { setSportCategory(sport.id); setSportOpen(false); }}
+                        aria-pressed={sportCategory === sport.id}
+                    onClick={() => { setSportCategory(sport.id); setSportOpen(false); }}
                         className={cn(
                           "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
-                          sportCategory === sport.id ? "bg-gold/5" : "hover:bg-secondary/50",
+                          sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                         )}
                       >
                         <span className="text-lg w-7 text-center">{sport.emoji}</span>
                         <span className="text-sm font-medium flex-1">{sport.label}</span>
-                        <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
+                        {sportCategory === sport.id && <Check size={15} strokeWidth={3} className="text-gold shrink-0" />}
+                    <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
                       </button>
                     ))}
                   </div>
@@ -1024,7 +1033,7 @@ const DailyCheckin = () => {
             <div><p className="font-semibold text-sm">Hydration</p><p className="text-xs text-muted-foreground">Target: 3L+</p></div>
             <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
           </div>
-          <input type="range" aria-label="Litres of water" min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-1.5" />
+          <input type="range" aria-label="Litres of water" aria-valuetext={`${hydration} litres`} min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x" }} />
         </div>
       )}
 
@@ -1123,8 +1132,10 @@ const DailyCheckin = () => {
         <p className="text-xs text-muted-foreground mt-1 mb-3">
           Answer truthfully — <span className="text-foreground/80 font-semibold">you can't grind with lies.</span>
         </p>
-        <div className="flex gap-3">
+        <div className="flex gap-3" role="radiogroup" aria-label="Were you honest today?">
           <button
+            role="radio"
+            aria-checked={honest === true}
             onClick={() => { hapticSelection(); setHonest(true); }}
             className={cn(
               "flex-1 rounded-xl border p-3 text-sm font-black transition-all active:scale-[0.97]",
@@ -1132,8 +1143,10 @@ const DailyCheckin = () => {
                 ? "border-gold/50 bg-gold/12 text-gold shadow-[0_0_14px_-4px_hsl(var(--gold)/0.5)]"
                 : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80",
             )}
-          >Yes ✅</button>
+          >Yes <span aria-hidden>✅</span></button>
           <button
+            role="radio"
+            aria-checked={honest === false}
             onClick={() => { hapticSelection(); setHonest(false); }}
             className={cn(
               "flex-1 rounded-xl border p-3 text-sm font-black transition-all active:scale-[0.97]",
@@ -1141,16 +1154,16 @@ const DailyCheckin = () => {
                 ? "border-destructive/50 bg-destructive/12 text-destructive"
                 : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80",
             )}
-          >No ❌</button>
+          >No <span aria-hidden>❌</span></button>
         </div>
         {honest === false && (
-          <p className="text-xs text-destructive mt-2.5 font-medium">Be honest with yourself. Go back and fix your answers.</p>
+          <p role="alert" className="text-xs text-destructive mt-2.5 font-medium">Be honest with yourself. Go back and fix your answers.</p>
         )}
       </div>
 
       {/* Submit */}
       <div className="mt-6">
-        <Button variant="ember" size="xl" className="w-full" onClick={handleSubmit} disabled={submitting || honest !== true}>
+        <Button variant="ember" size="xl" className="w-full" onClick={handleSubmit} loading={submitting} aria-busy={submitting} disabled={submitting || honest !== true}>
           <Zap size={20} />
           {submitting ? "Submitting..." : `Submit Day — Earn ${totalXp} XP`}
         </Button>

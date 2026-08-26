@@ -22,7 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.claude/
+# Claude Code: ignore session-local files but version the project skills
+.claude/*
+!.claude/skills/
+# Ruflo plugin runtime state — never belongs in the repo
+.claude-flow/
 
 # Supabase CLI cache
 supabase/.temp/

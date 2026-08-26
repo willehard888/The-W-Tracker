@@ -105,11 +105,11 @@ const PremiumHero = ({
       ? "Opening Apple…"
       : status === "verifying"
       ? "Confirming access…"
-      : "Start 14-day free trial";
+      : "Start your free trial";
 
   const footnote = isYearly
-    ? `14 days free, then ${yearlyPriceLabel}/yr · Cancel anytime`
-    : `14 days free, then ${monthlyPriceLabel}/mo · Cancel anytime`;
+    ? `Free trial, then ${yearlyPriceLabel}/yr · Cancel anytime`
+    : `Free trial, then ${monthlyPriceLabel}/mo · Cancel anytime`;
 
   return (
     <div

@@ -156,7 +156,7 @@ const BottomNav = () => {
                 "transition-[transform,color,opacity] duration-150 will-change-transform",
                 "[transition-timing-function:cubic-bezier(0.16,1.2,0.32,1)]",
                 "active:scale-[0.92]",
-                active ? c.text : "text-muted-foreground/55",
+                active ? c.text : "text-muted-foreground/80",
               )}
               style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
             >
@@ -186,7 +186,6 @@ const BottomNav = () => {
               <span
                 className={cn(
                   "relative text-[10px] font-bold tracking-wide leading-none",
-                  active ? "opacity-100" : "opacity-65",
                 )}
               >
                 {label}

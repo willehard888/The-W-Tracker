@@ -529,7 +529,7 @@ const Leaderboard = () => {
                     <p className="text-[11px] text-muted-foreground">Lv {user.level}</p>
                     {user.streak > 0 && (
                       <>
-                        <span className="text-muted-foreground/40">•</span>
+                        <span className="text-muted-foreground/75">•</span>
                         <StreakFlameInline streak={user.streak} suffix="d" className="text-[10px]" />
                       </>
                     )}
@@ -544,7 +544,7 @@ const Leaderboard = () => {
                   <p className={cn("font-display font-black text-sm tabular-nums", isMe && "text-gold")}>
                     {points.toLocaleString()}
                   </p>
-                  <p className="text-[9px] text-muted-foreground/60 uppercase tracking-wider font-bold">
+                  <p className="text-[9px] text-muted-foreground/75 uppercase tracking-wider font-bold">
                     {mode === "season" ? "Season XP" : "XP"}
                   </p>
                 </div>

@@ -1,6 +1,21 @@
 #!/bin/bash
 set -euo pipefail
 
+# ───────────────────────────────────────────────────────────────────────────
+# Xcode Cloud is NOT this app's release pipeline — Codemagic is (see the
+# codemagic.yaml header). Xcode Cloud auto-runs this script by its filename
+# convention; ci_post_clone.sh, which used to install Node.js on the Xcode
+# Cloud VM, was deliberately deleted (2026-08-26), so on Xcode Cloud this
+# script can only die confusingly at `npm: command not found` (exit 127).
+# Fail fast with the real reason instead, before burning build quota or
+# racing Codemagic's build numbers.
+# ───────────────────────────────────────────────────────────────────────────
+if [[ "${CI_XCODE_CLOUD:-}" == "TRUE" ]]; then
+  echo "❌ Xcode Cloud is deactivated by policy — Codemagic is the only release pipeline."
+  echo "   Deactivate this workflow: App Store Connect → your app → Xcode Cloud → workflow → ⋯ → Deactivate."
+  exit 1
+fi
+
 echo "🔧 Running pre-xcodebuild setup..."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -83,7 +83,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
     : `Day ${summary.newStreak} of your chain. Keep building.`;
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center px-5 py-5 text-center relative overflow-hidden safe-top">
+    <div className="min-h-full flex flex-col items-center justify-center px-5 py-5 text-center relative overflow-hidden safe-top">
       {/* Tier-specific radial glow */}
       <div className={cn("absolute inset-0 pointer-events-none bg-gradient-to-br", bg)} />
       <div

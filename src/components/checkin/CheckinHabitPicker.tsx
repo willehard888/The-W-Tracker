@@ -90,6 +90,9 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
     <AnimatePresence>
       {open && (
         <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Build your check-in"
           className="fixed inset-0 z-[var(--z-celebration)] flex flex-col"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -150,6 +153,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                           <button
                             key={h.key}
                             onClick={() => toggle(h)}
+                            aria-pressed={on}
                             disabled={h.core}
                             className={cn(
                               "flex items-center gap-3 w-full rounded-2xl border p-3.5 text-left transition-all active:scale-[0.98]",

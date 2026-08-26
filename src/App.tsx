@@ -18,7 +18,6 @@ import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
 import AmbientParticles from "@/components/AmbientParticles";
 import BottomNav from "@/components/BottomNav";
 import StatusHeader from "@/components/StatusHeader";
-import AccessGate from "@/components/AccessGate";
 import TierPromotionCelebration from "@/components/TierPromotionCelebration";
 import { StatusExplainerProvider } from "@/components/status/StatusExplainerProvider";
 import Index from "./pages/Index";
@@ -212,9 +211,8 @@ const AppRoutes = () => {
         {/* RouteFallback renders a layout-matched skeleton for the destination
             route (HomeSkeleton on /, FeedSkeleton on /feed, etc.) so the lazy-
             load → real-content swap has zero visual jank. LazyFallback (a
-            spinner) is kept only as the AccessGate gate while auth resolves. */}
+            spinner) is kept as the gate while auth resolves. */}
         <Suspense fallback={<RouteFallback />}>
-          <AccessGate>
           {/* Route-level ErrorBoundary — keeps the app shell (StatusHeader +
               BottomNav) visible if the current page crashes. The global
               ErrorBoundary at the very root only kicks in for
@@ -263,7 +261,7 @@ const AppRoutes = () => {
           <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
           <Route path="/admin/legend-invites" element={<ProtectedRoute><AdminLegendInvites /></ProtectedRoute>} />
           <Route path="/admin/metrics" element={<ProtectedRoute><AdminMetrics /></ProtectedRoute>} />
-          <Route path="/button-gallery" element={<ProtectedRoute><ButtonGallery /></ProtectedRoute>} />
+          {import.meta.env.DEV && <Route path="/button-gallery" element={<ProtectedRoute><ButtonGallery /></ProtectedRoute>} />}
           <Route path="/feed" element={<Navigate to="/squad" replace />} />
           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
@@ -294,7 +292,6 @@ const AppRoutes = () => {
           <Route path="*" element={<NotFound />} />
           </Routes>
           </ErrorBoundary>
-          </AccessGate>
         </Suspense>
       </div>
       <BottomNav />

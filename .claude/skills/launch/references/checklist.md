@@ -32,7 +32,10 @@ numbers reference Apple's App Review Guidelines. Verify, don't assume.
 - [ ] IAP products exist in App Store Connect AND match RevenueCat product
       identifiers (founder verifies in both dashboards; list the product
       IDs from the code for them).
-- [ ] Free-trial copy matches reality (14 days) everywhere it appears.
+- [x] Free-trial copy matches reality — 7d organic / 14d referred; paywall +
+      onboarding use neutral "free trial" wording (fixed 2026-08-26,
+      `PremiumHero.tsx`, `OnboardingSlides.tsx`). InviteCTA keeps "14-day"
+      (a referred friend genuinely gets 14). Re-verify if copy is edited.
 - [ ] Paid Applications agreement + banking + tax active in ASC (founder).
 
 ## 3. User-generated content (1.2) — feed, tribes, comments, DMs
@@ -40,14 +43,30 @@ numbers reference Apple's App Review Guidelines. Verify, don't assume.
 - [ ] Content moderation exists — server-side moderation of posts/images
       (moderate-content edge fn, `moderation_status` flow) ✓ expected; verify
       it still gates the feed.
-- [ ] Report/flag mechanism reachable from every UGC surface (posts,
-      comments, tribe posts, profiles) — grep report/flag actions.
-- [ ] **Block user** capability — Apple requires the ability to block
-      abusive users in social apps. Verify it exists end-to-end (UI + RLS
-      effect). If missing, this is a launch blocker to build.
-- [ ] EULA/terms state zero tolerance for objectionable content.
-- [ ] Developer can act on reports within 24h (admin moderation queue
-      exists — AdminModeration).
+- [x] Report/flag mechanism on every UGC surface — feed posts
+      (`FeedPostCard.tsx`), tribe posts (`TribePostCard.tsx`), comments
+      (`CommentThread.tsx` via `onReport`), DMs (`Chat.tsx` header kebab),
+      profiles (`UserProfile.tsx` actions). Comment/DM/profile reports go
+      through the `report_content` RPC into `moderation_queue`. Built
+      2026-08-26 (`use-blocking.ts`). Regression check: each surface still
+      has a Report control.
+- [x] **Block user** — end-to-end via `blocked_users` + `is_blocked(a,b)`
+      SECURITY DEFINER helper (one-way block, bidirectional hide). The block
+      predicate is on every content SELECT policy (feed/tribe posts,
+      comments, reactions, kudos, DMs, friendships) and both DM + friend
+      INSERT WITH CHECK. UI: Block on `UserProfile.tsx` + `Chat.tsx` kebab,
+      management page `/settings/blocked`. Migration
+      `20260826160000_block_and_report.sql`. Regression check: `is_blocked`
+      still referenced by the content policies (a policy rewrite must
+      re-append `AND NOT public.is_blocked(...)`).
+- [x] EULA/terms state zero tolerance for objectionable content — Apple 1.2
+      wording + mention of report/block in `src/pages/TermsOfUse.tsx`
+      (strengthened 2026-08-26).
+- [x] Developer can act on reports within 24h — `AdminModeration.tsx` reads
+      `moderation_queue` (realtime); reject removes the reported row for
+      feed_post / tribe_post / comment / tribe_comment content types
+      (extended 2026-08-26). Founder-side: the 24h response is a process
+      commitment, not code.
 
 ## 4. Privacy (5.1)
 
@@ -57,8 +76,10 @@ numbers reference Apple's App Review Guidelines. Verify, don't assume.
       prepare the answer sheet from code: health & fitness data, email,
       user content, identifiers, purchase history, usage data — linked to
       identity, not used for tracking).
-- [ ] `PrivacyInfo.xcprivacy` privacy manifest present with required-reason
-      API categories (UserDefaults etc.) — `find ios -name "*.xcprivacy"`.
+- [x] `PrivacyInfo.xcprivacy` privacy manifest present + wired into the App
+      target — required-reason APIs (UserDefaults CA92.1, file timestamp,
+      disk space, boot time), NSPrivacyTracking false (added 2026-08-26).
+      Regression check: still in the pbxproj Resources build phase.
 - [ ] No ATT prompt needed (no cross-app tracking) — confirm no tracking
       SDKs exist.
 - [ ] Account deletion available IN-APP (5.1.1(v)) — delete-account flow in

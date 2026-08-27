@@ -53,7 +53,7 @@ const CoachStrip = (_props: CoachStripProps) => {
   return (
     <button
       onClick={() => navigate("/coach")}
-      className="w-full rounded-2xl glass-card-gold p-4 text-left active:scale-[0.99] transition-transform border border-gold/30 relative overflow-hidden"
+      className="w-full rounded-2xl bg-card/55 border border-border/70 p-4 text-left active:scale-[0.99] transition-transform relative overflow-hidden shadow-[var(--shadow-2)]"
     >
       <div
         className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none"

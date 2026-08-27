@@ -78,7 +78,7 @@ const LibraryHub = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="rounded-2xl p-px bg-gradient-to-br from-gold/50 via-gold/15 to-gold/30">
+    <div className="rounded-2xl p-px bg-border/70 shadow-[var(--shadow-2)]">
       <div className="rounded-[15px] bg-card/80 overflow-hidden">
         {/* Header — quiet, no chevron: the value statement, not a button */}
         <div className="flex items-center gap-3 px-4 pt-3.5 pb-3">

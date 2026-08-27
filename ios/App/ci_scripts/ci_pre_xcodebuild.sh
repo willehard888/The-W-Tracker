@@ -1,21 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# ───────────────────────────────────────────────────────────────────────────
-# Xcode Cloud is NOT this app's release pipeline — Codemagic is (see the
-# codemagic.yaml header). Xcode Cloud auto-runs this script by its filename
-# convention; ci_post_clone.sh, which used to install Node.js on the Xcode
-# Cloud VM, was deliberately deleted (2026-08-26), so on Xcode Cloud this
-# script can only die confusingly at `npm: command not found` (exit 127).
-# Fail fast with the real reason instead, before burning build quota or
-# racing Codemagic's build numbers.
-# ───────────────────────────────────────────────────────────────────────────
-if [[ "${CI_XCODE_CLOUD:-}" == "TRUE" ]]; then
-  echo "❌ Xcode Cloud is deactivated by policy — Codemagic is the only release pipeline."
-  echo "   Deactivate this workflow: App Store Connect → your app → Xcode Cloud → workflow → ⋯ → Deactivate."
-  exit 1
-fi
-
 echo "🔧 Running pre-xcodebuild setup..."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,6 +9,24 @@ ROOT_DIR="$(cd "$IOS_APP_DIR/../.." && pwd)"
 
 echo "ℹ️  ROOT_DIR=$ROOT_DIR"
 echo "ℹ️  IOS_APP_DIR=$IOS_APP_DIR"
+
+# ───────────────────────────────────────────────────────────────────────────
+# Xcode Cloud support (re-enabled 2026-08-27 at the founder's request).
+# ci_post_clone.sh handles Node/npm/pods on the XC VM; here we align the
+# build number with Codemagic's minutes-since-2026-01-01-UTC scheme so an
+# XC upload can never collide with the historical low counter (~780) that
+# used to make every XC upload die with "bundle version must be higher".
+# XC can't query ASC for the latest build number, so it uses the time floor
+# alone; Codemagic uses max(ASC latest+1, floor). If both pipelines archive
+# the same push in the same minute, the second upload is rejected as a
+# duplicate — harmless, the other pipeline's build is identical.
+# ───────────────────────────────────────────────────────────────────────────
+if [[ "${CI_XCODE_CLOUD:-}" == "TRUE" ]]; then
+  XC_BUILD_NUMBER=$(( ( $(date +%s) - 1767225600 ) / 60 ))
+  echo "☁️  Xcode Cloud build — setting CFBundleVersion to time floor ${XC_BUILD_NUMBER}"
+  ( cd "$IOS_APP_DIR" && agvtool new-version -all "${XC_BUILD_NUMBER}" >/dev/null )
+fi
+
 
 # ---------------------------------------------------------------------------
 # Toolchain version pin re-verification

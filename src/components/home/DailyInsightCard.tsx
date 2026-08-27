@@ -21,7 +21,7 @@ const DailyInsightCard = () => {
         hapticImpact("light");
         navigate(`/vault?lesson=${insight.lessonSlug}`);
       }}
-      className="w-full text-left rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] via-card/95 to-card p-4 active:scale-[0.99] transition-transform"
+      className="w-full text-left rounded-2xl border border-border/70 bg-card/55 p-4 active:scale-[0.99] transition-transform shadow-[var(--shadow-2)]"
     >
       <div className="flex items-start gap-3">
         <div className="h-9 w-9 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0">

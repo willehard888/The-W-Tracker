@@ -350,7 +350,10 @@ const Leaderboard = () => {
       {/* Season banner */}
       <div className="animate-reveal animate-reveal-delay-1 relative overflow-hidden rounded-2xl border border-gold/40 glass-3d p-4 mb-4 glow-gold-sm">
         <div
-          className="absolute -top-12 -right-8 h-32 w-32 rounded-full opacity-30 blur-2xl pointer-events-none"
+          /* !absolute: .glass-3d > * forces children position:relative, which
+             pulled this decorative glow into flow and left a 128px void above
+             the content. !absolute keeps it out of flow as intended. */
+          className="!absolute -top-12 -right-8 h-32 w-32 rounded-full opacity-30 blur-2xl pointer-events-none"
           style={{ background: "hsl(var(--gold))" }}
           aria-hidden
         />

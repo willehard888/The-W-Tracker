@@ -24,13 +24,19 @@ import { type FlamePalette, resolveCssColor, tierFlameSpeed } from "@/lib/tribe-
  */
 
 interface TribeFireCanvasProps {
-  /** Tier 0..6 — cold (<30 days) renders TribeEmberSeed elsewhere, never this. */
+  /** Tier 0..6 — or any value with `kindling` (cold hero). */
   tier: number;
   palette: FlamePalette;
   /** CSS width in px; canvas height is size * 1.35. */
   size: number;
   /** Bump to trigger a ~900ms intake surge (member checked in). */
   pulseToken?: number;
+  /**
+   * Cold-state mode (<30 days): a smaller, slower flame struggling to life
+   * on a glowing coal bed — no tip droplet, dimmer heart. Pair with
+   * KINDLING_PALETTE from tribe-streak.
+   */
+  kindling?: boolean;
   paused?: boolean;
   className?: string;
 }
@@ -51,7 +57,7 @@ const makeGlow = (stops: [number, string][]): HTMLCanvasElement => {
   return c;
 };
 
-const TribeFireCanvas = ({ tier, palette, size, pulseToken, paused = false, className }: TribeFireCanvasProps) => {
+const TribeFireCanvas = ({ tier, palette, size, pulseToken, kindling = false, paused = false, className }: TribeFireCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const paletteRef = useRef(palette);
   const surgeRef = useRef(0);
@@ -87,11 +93,11 @@ const TribeFireCanvas = ({ tier, palette, size, pulseToken, paused = false, clas
     canvas.style.height = `${h}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const speedFactor = 1.85 / tierFlameSpeed(tier); // 1.0 (Hot) → 2.64 (Firestorm)
+    const speedFactor = (kindling ? 0.78 : 1) * (1.85 / tierFlameSpeed(Math.max(0, tier)));
     const cx = w / 2;
-    const baseY = h * 0.94; // planted on the ember plate
-    const H0 = h * 0.8;     // resting flame height
-    const W0 = w * 0.62;    // resting flame width
+    const baseY = h * (kindling ? 0.88 : 0.94); // planted on plate / coal bed
+    const H0 = h * (kindling ? 0.52 : 0.8);     // resting flame height
+    const W0 = w * (kindling ? 0.44 : 0.62);    // resting flame width
 
     // ── Palette paint (rebuilt only when the palette changes) ───────────────
     let paintKey = "";
@@ -102,6 +108,7 @@ const TribeFireCanvas = ({ tier, palette, size, pulseToken, paused = false, clas
     let halo: HTMLCanvasElement | null = null;
     let pool: HTMLCanvasElement | null = null;
     let emberSprite: HTMLCanvasElement | null = null;
+    let coalSprite: HTMLCanvasElement | null = null;
     const ensurePaint = () => {
       const p = paletteRef.current;
       const key = `${p.outer}|${p.core}`;
@@ -136,6 +143,11 @@ const TribeFireCanvas = ({ tier, palette, size, pulseToken, paused = false, clas
       halo = makeGlow([[0, a(glow, 0.3)], [0.55, a(glow, 0.1)], [1, a(glow, 0)]]);
       pool = makeGlow([[0, a(glow, 0.5)], [0.6, a(glow, 0.16)], [1, a(glow, 0)]]);
       emberSprite = makeGlow([[0, a(core, 1)], [0.45, a(mid, 0.8)], [1, a(mid, 0)]]);
+      // Coal: a dark stone with an ember heart, drawn as a squashed sprite.
+      coalSprite = makeGlow([
+        [0, a(core, 0.9)], [0.28, a(outer, 0.85)],
+        [0.55, "hsl(8 55% 16%)"], [0.85, "hsl(8 40% 9%)"], [1, "hsl(8 40% 9% / 0)"],
+      ]);
     };
 
     /**
@@ -214,6 +226,18 @@ const TribeFireCanvas = ({ tier, palette, size, pulseToken, paused = false, clas
       ctx.drawImage(halo!, cx - haloS / 2, baseY - H0 * 0.5 - haloS / 2, haloS, haloS);
       ctx.globalCompositeOperation = "source-over";
 
+      // Kindling: the coal mound behind the flame — ember hearts breathing.
+      if (kindling) {
+        const coalW = w * 0.34;
+        const breatheA = 0.8 + 0.2 * Math.sin(t * 1.6);
+        const breatheB = 0.8 + 0.2 * Math.sin(t * 1.9 + 2.2);
+        ctx.globalAlpha = breatheA;
+        ctx.drawImage(coalSprite!, cx - w * 0.34, baseY - coalW * 0.30, coalW, coalW * 0.62);
+        ctx.globalAlpha = breatheB;
+        ctx.drawImage(coalSprite!, cx + w * 0.02, baseY - coalW * 0.28, coalW * 1.05, coalW * 0.64);
+        ctx.globalAlpha = 1;
+      }
+
       // Outer body — one confident silhouette, crisp full-res edge.
       ctx.globalAlpha = 1;
       ctx.fillStyle = outerGrad!;
@@ -258,7 +282,7 @@ const TribeFireCanvas = ({ tier, palette, size, pulseToken, paused = false, clas
 
       // White-hot heart at the root.
       ctx.globalCompositeOperation = "lighter";
-      ctx.globalAlpha = 0.75 + 0.1 * Math.sin(t * 4.4) + 0.25 * surge;
+      ctx.globalAlpha = (kindling ? 0.5 : 0.75) + 0.1 * Math.sin(t * 4.4) + 0.25 * surge;
       ctx.fillStyle = heartGrad!;
       ctx.beginPath();
       ctx.ellipse(cx, baseY - H0 * 0.1, W0 * 0.26, H0 * 0.16, 0, 0, Math.PI * 2);
@@ -281,7 +305,7 @@ const TribeFireCanvas = ({ tier, palette, size, pulseToken, paused = false, clas
       // Tip droplet — a small teardrop pinches off and floats up, fading.
       // One continuous cycle: born at the tip, rises ~0.3H, dissolves.
       const cycle = (t * 0.28) % 1;
-      if (cycle < 0.6) {
+      if (!kindling && cycle < 0.6) {
         const d = cycle / 0.6;
         const dropS = (1 - d * 0.6);
         ctx.globalAlpha = (1 - d) * 0.85;
@@ -314,6 +338,14 @@ const TribeFireCanvas = ({ tier, palette, size, pulseToken, paused = false, clas
         const ex = e.x0 + e.drift * d + Math.sin(t * 3 + e.born) * 3;
         const ey = baseY - H0 * (0.5 + d * 0.55);
         ctx.drawImage(emberSprite!, ex - e.s / 2, ey - e.s / 2, e.s, e.s);
+      }
+
+      // Kindling: one coal in front so the flame rises from WITHIN the mound.
+      if (kindling) {
+        ctx.globalCompositeOperation = "source-over";
+        const coalW = w * 0.4;
+        ctx.globalAlpha = 1;
+        ctx.drawImage(coalSprite!, cx - coalW * 0.52, baseY - coalW * 0.16, coalW, coalW * 0.55);
       }
 
       ctx.globalAlpha = 1;
@@ -359,7 +391,7 @@ const TribeFireCanvas = ({ tier, palette, size, pulseToken, paused = false, clas
       document.removeEventListener("visibilitychange", onVisibility);
       io.disconnect();
     };
-  }, [tier, size]);
+  }, [tier, size, kindling]);
 
   return (
     <canvas

@@ -82,9 +82,9 @@ const COLD_PALETTE: FlamePalette = {
 /** Indexed by tier 0..6. Cold (-1) falls back to COLD_PALETTE. */
 const TIER_PALETTES: FlamePalette[] = [
   // 0 Hot
-  { base: "hsl(8 78% 34%)",   outer: "hsl(14 90% 56%)",  mid: "hsl(18 90% 55%)",  core: "hsl(42 100% 72%)",  glow: "hsl(14 90% 56%)",  text: "hsl(14 90% 62%)" },
+  { base: "hsl(8 78% 34%)",   outer: "hsl(15 92% 57%)",  mid: "hsl(22 94% 58%)",  core: "hsl(44 100% 75%)",  glow: "hsl(14 90% 56%)",  text: "hsl(14 90% 62%)" },
   // 1 Warm
-  { base: "hsl(10 80% 36%)",  outer: "hsl(14 88% 48%)",  mid: "hsl(20 92% 56%)",  core: "hsl(42 100% 75%)",  glow: "hsl(var(--ember))",  text: "hsl(18 95% 62%)" },
+  { base: "hsl(10 80% 36%)",  outer: "hsl(16 90% 52%)",  mid: "hsl(24 94% 58%)",  core: "hsl(45 100% 78%)",  glow: "hsl(var(--ember))",  text: "hsl(18 95% 62%)" },
   // 2 On Fire
   { base: "hsl(8 82% 38%)",   outer: "hsl(16 92% 50%)",  mid: "hsl(28 95% 58%)",  core: "hsl(48 100% 80%)",  glow: "hsl(28 95% 60%)",  text: "hsl(28 95% 65%)" },
   // 3 Blazing
@@ -96,6 +96,20 @@ const TIER_PALETTES: FlamePalette[] = [
   // 6 Firestorm — cyan-core plasma
   { base: "hsl(255 70% 35%)", outer: "hsl(310 85% 60%)", mid: "hsl(265 80% 60%)", core: "hsl(180 100% 92%)", glow: "hsl(195 90% 65%)", text: "hsl(195 95% 72%)" },
 ];
+
+/**
+ * The cold-state kindling fire (hero, <30 days): a small struggling flame on
+ * a coal bed — dimmer and deeper than Hot so ignition still feels like a
+ * promotion, but genuinely alive.
+ */
+export const KINDLING_PALETTE: FlamePalette = {
+  base:  "hsl(6 70% 22%)",
+  outer: "hsl(10 85% 42%)",
+  mid:   "hsl(20 90% 50%)",
+  core:  "hsl(38 100% 66%)",
+  glow:  "hsl(16 90% 45%)",
+  text:  "hsl(24 80% 62%)",
+};
 
 /** Palette for a tier index (-1..6). */
 export const tierPalette = (tier: number): FlamePalette =>

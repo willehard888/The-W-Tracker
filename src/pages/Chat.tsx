@@ -10,6 +10,7 @@ import StatusAvatar from "@/components/StatusAvatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useBlockActions } from "@/hooks/use-blocking";
+import BlockUserDialog from "@/components/BlockUserDialog";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
@@ -21,6 +22,7 @@ const Chat = () => {
   const queryClient = useQueryClient();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -211,12 +213,7 @@ const Chat = () => {
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
-                onClick={() => {
-                  if (confirm(`Block @${partner?.username ?? "this user"}? You won't see each other's content and they can't message or friend you.`)) {
-                    block(partnerId!, partner?.username);
-                    navigate("/messages");
-                  }
-                }}
+                onClick={() => setShowBlockConfirm(true)}
               >
                 <Ban size={14} className="mr-2" aria-hidden /> Block user
               </DropdownMenuItem>
@@ -336,6 +333,16 @@ const Chat = () => {
           </Button>
         </div>
       </div>
+
+      <BlockUserDialog
+        open={showBlockConfirm}
+        username={partner?.username}
+        onOpenChange={setShowBlockConfirm}
+        onConfirm={() => {
+          block(partnerId!, partner?.username);
+          navigate("/messages");
+        }}
+      />
     </div>
   );
 };

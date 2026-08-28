@@ -10,6 +10,8 @@ import type { StatusTier } from "@/lib/status-tiers";
 interface ImageLightboxProps {
   open: boolean;
   imageUrl: string | null;
+  /** Render the media as a playable video instead of a zoomable image. */
+  isVideo?: boolean;
   username?: string;
   avatarUrl?: string | null;
   tier?: StatusTier;
@@ -32,6 +34,7 @@ interface ImageLightboxProps {
 const ImageLightbox = ({
   open,
   imageUrl,
+  isVideo = false,
   username,
   avatarUrl,
   tier = "recruit",
@@ -61,7 +64,7 @@ const ImageLightbox = ({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Image preview"
+      aria-label={isVideo ? "Video preview" : "Image preview"}
       className="fixed inset-0 z-[var(--z-modal)] flex flex-col animate-fade-in"
       style={{ backgroundColor: `hsl(var(--background) / ${0.98 * (1 - dismiss * 0.6)})` }}
     >
@@ -92,15 +95,29 @@ const ImageLightbox = ({
         </button>
       </div>
 
-      {/* Image stage — pinch/double-tap zoom, swipe-down to dismiss */}
+      {/* Media stage — pinch/double-tap zoom + swipe-down (images); native controls (video) */}
       <div className="relative flex-1 min-h-0">
-        <ZoomableImage
-          url={resolvedUrl ?? imageUrl}
-          alt={caption || "Post image"}
-          onClose={onClose}
-          onDismissProgress={setDismiss}
-          imgClassName="max-h-[calc(100dvh-180px)] max-w-full w-auto h-auto object-contain rounded-xl shadow-[0_24px_64px_-12px_hsl(0_0%_0%/0.7)]"
-        />
+        {isVideo ? (
+          // Native controls need direct touch, so no swipe-dismiss here — X/Esc close.
+          // Tap opened this dialog, so unmuted autoplay is gesture-blessed.
+          <div className="h-full w-full flex items-center justify-center p-2">
+            <video
+              src={resolvedUrl ?? imageUrl}
+              controls
+              autoPlay
+              playsInline
+              className="max-h-[calc(100dvh-180px)] max-w-full w-auto h-auto object-contain rounded-xl shadow-[0_24px_64px_-12px_hsl(0_0%_0%/0.7)]"
+            />
+          </div>
+        ) : (
+          <ZoomableImage
+            url={resolvedUrl ?? imageUrl}
+            alt={caption || "Post image"}
+            onClose={onClose}
+            onDismissProgress={setDismiss}
+            imgClassName="max-h-[calc(100dvh-180px)] max-w-full w-auto h-auto object-contain rounded-xl shadow-[0_24px_64px_-12px_hsl(0_0%_0%/0.7)]"
+          />
+        )}
       </div>
 
       {/* Bottom glass card — caption + metrics */}

@@ -782,7 +782,7 @@ const Profile = () => {
                 <AlertDialogFooter>
                   <AlertDialogCancel>Keep Account</AlertDialogCancel>
                   <AlertDialogAction
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="[background:hsl(var(--destructive))] text-destructive-foreground [text-shadow:none] before:hidden after:hidden shadow-[var(--shadow-2)] hover:shadow-[var(--shadow-2)] hover:brightness-110"
                     onClick={performAccountDeletion}
                     disabled={
                       deletingAccount ||

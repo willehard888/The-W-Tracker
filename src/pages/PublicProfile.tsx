@@ -282,7 +282,6 @@ const PublicProfile = () => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.28 + i * 0.025 }}
                     onClick={() => {
-                      if (isVideo) return;
                       setLightboxUrl(src);
                       setLightboxPost(p);
                     }}
@@ -366,6 +365,7 @@ const PublicProfile = () => {
       <ImageLightbox
         open={!!lightboxUrl}
         imageUrl={lightboxUrl}
+        isVideo={!!lightboxPost?.video_url}
         username={profile.username}
         avatarUrl={profile.avatar_url}
         tier={(profile.status_tier || "recruit") as any}

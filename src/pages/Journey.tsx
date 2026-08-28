@@ -282,7 +282,7 @@ const DeltaTile = ({
   unit?: string;
   good?: boolean;
 }) => (
-  <div className="surface-card px-2.5 py-2.5 text-center">
+  <div className="surface-card surface-card-quiet px-2.5 py-2.5 text-center">
     <Icon
       size={12}
       className={cn(
@@ -345,7 +345,7 @@ const ReflectionRow = ({ r }: { r: JourneyReflection }) => {
   const mood = r.mood_1to5 != null ? MOOD_EMOJI[Math.min(4, Math.max(0, r.mood_1to5 - 1))] : null;
   const hasBody = !!(r.win?.trim() || r.friction?.trim());
   return (
-    <div className="surface-card px-3 py-2.5">
+    <div className="surface-panel rounded-xl px-3 py-2.5">
       <div className="flex items-center gap-2 mb-1">
         {mood && <span className="text-sm leading-none">{mood}</span>}
         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">

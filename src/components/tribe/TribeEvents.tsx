@@ -99,7 +99,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
       </div>
 
       {isLoading ? (
-        <div className="h-20 rounded-2xl bg-card/40 border border-border/50 animate-pulse" />
+        <div className="h-20 surface-card animate-pulse" />
       ) : (events?.length ?? 0) === 0 ? (
         <div className="surface-card p-5 text-center">
           <Calendar size={24} className="text-gold/60 mx-auto mb-2" />
@@ -179,7 +179,7 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
   const pct = ev.capacity ? Math.min(100, (ev.going_count / ev.capacity) * 100) : 0;
   return (
     <div className={cn(
-      "relative rounded-2xl overflow-hidden border bg-gradient-to-br from-[hsl(var(--ember))]/[0.05] via-card/70 to-card",
+      "surface-card overflow-hidden bg-gradient-to-br from-[hsl(var(--ember))]/[0.05] via-card/70 to-card",
       isNext ? "border-[hsl(var(--ember))]/40 shadow-[0_10px_34px_-18px_hsl(var(--ember)/0.6)]" : "border-border/60",
     )}>
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[hsl(var(--ember))] to-gold" />
@@ -275,7 +275,7 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
   const hidden = series.sessions.length - shown.length;
   return (
     <div className={cn(
-      "relative rounded-2xl overflow-hidden border bg-gradient-to-br from-gold/[0.06] via-card/70 to-card",
+      "surface-card overflow-hidden bg-gradient-to-br from-gold/[0.06] via-card/70 to-card",
       isNext ? "border-gold/45 shadow-[0_10px_34px_-18px_hsl(var(--gold)/0.6)]" : "border-border/60",
     )}>
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-gold to-[hsl(var(--ember))]" />
@@ -311,7 +311,7 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
             const start = new Date(s.starts_at);
             const rel = isToday(start) ? "Today" : isTomorrow(start) ? "Tomorrow" : null;
             return (
-              <div key={s.id} className="flex items-center gap-2.5 rounded-xl bg-secondary/30 border border-border/40 px-2.5 py-2">
+              <div key={s.id} className="flex items-center gap-2.5 surface-panel rounded-xl px-2.5 py-2">
                 <div className="shrink-0 h-7 w-7 rounded-lg bg-gold/15 border border-gold/25 flex items-center justify-center">
                   <span className="text-[10px] font-black text-gold tabular-nums">{s.session_index ?? idx + 1}</span>
                 </div>
@@ -424,7 +424,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
     setBusy(false);
   };
 
-  const field = "w-full rounded-xl border border-border/50 bg-background/40 px-3 py-2.5 text-[13px] outline-none focus:border-gold/50";
+  const field = "w-full surface-inset rounded-xl px-3 py-2.5 text-[13px] outline-none focus:border-gold/50";
   const sessionCount = sessions.filter((s) => s.trim()).length;
 
   return (

@@ -286,7 +286,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
             <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 pb-4 sm:top-6">
               <div
                 className={cn(
-                  "relative w-full max-w-sm rounded-2xl overflow-hidden border bg-card flex flex-col max-h-[calc(100dvh-2rem)] shadow-2xl",
+                  "relative w-full max-w-sm rounded-2xl overflow-hidden border bg-card flex flex-col max-h-[calc(100dvh-2rem)] shadow-4",
                   rowStyle.base,
                 )}
               >
@@ -352,7 +352,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                     </p>
                     <div className="space-y-1.5">
                       {cfg.requirements.percentile > 0 && (
-                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-background/40 border border-border/50">
+                        <div className="flex items-center gap-2.5 px-3 py-2 surface-inset rounded-lg">
                           <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", unlocked ? "bg-xp-green" : "bg-foreground/40")} />
                           <span className="text-[12px] font-semibold flex-1">
                             Top <span className={cn("font-black tabular-nums", cfg.textClass)}>{(100 - cfg.requirements.percentile).toFixed(cfg.requirements.percentile >= 99 ? 1 : 0)}%</span> in rank score
@@ -370,7 +370,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                         </div>
                       )}
                       {cfg.requirements.activeDays > 0 && (
-                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-background/40 border border-border/50">
+                        <div className="flex items-center gap-2.5 px-3 py-2 surface-inset rounded-lg">
                           <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", unlocked ? "bg-xp-green" : "bg-foreground/40")} />
                           <span className="text-[12px] font-semibold flex-1">
                             <span className={cn("font-black tabular-nums", cfg.textClass)}>{cfg.requirements.activeDays}</span> active days in last 30
@@ -378,7 +378,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                         </div>
                       )}
                       {cfg.requirements.streak > 0 && (
-                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-background/40 border border-border/50">
+                        <div className="flex items-center gap-2.5 px-3 py-2 surface-inset rounded-lg">
                           <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", unlocked ? "bg-xp-green" : "bg-foreground/40")} />
                           <span className="text-[12px] font-semibold flex-1">
                             <span className={cn("font-black tabular-nums", cfg.textClass)}>{cfg.requirements.streak}-day</span> current streak
@@ -386,7 +386,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                         </div>
                       )}
                       {cfg.requirements.percentile === 0 && (
-                        <div className="px-3 py-2 rounded-lg bg-background/40 border border-border/50 text-[12px] text-muted-foreground font-medium">
+                        <div className="px-3 py-2 surface-inset rounded-lg text-[12px] text-muted-foreground font-medium">
                           Default starting tier
                         </div>
                       )}

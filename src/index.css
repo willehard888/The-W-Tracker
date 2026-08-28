@@ -18,16 +18,19 @@
     --motion-slide: 260ms;
     --motion-modal: 320ms;
 
-    /* Obsidian & Gold — unified theme (Gold · Fire/Lava · Black) */
-    --background: 258 18% 2.5%;
+    /* Obsidian & Gold — unified theme (Gold · Fire/Lava · Black).
+       Depth pass 2026-08: background pushed toward true black and card
+       lifted 1.5 L-points so surfaces genuinely FLOAT (the old 4-point gap
+       left elevation entirely to shadows). */
+    --background: 258 20% 1.8%;
     --foreground: 40 8% 94%;
     --foreground-muted: 40 6% 72%;
     --foreground-faint: 255 6% 38%;
 
-    --card: 258 16% 6.5%;
+    --card: 258 16% 8%;
     --card-foreground: 40 8% 94%;
 
-    --popover: 258 16% 6.5%;
+    --popover: 258 16% 8%;
     --popover-foreground: 40 8% 94%;
 
     --primary: 42 78% 54%;
@@ -48,9 +51,9 @@
     /* Crisper hairlines for the precision look — borders read as deliberate
        1px lines (Linear/Stripe) rather than fuzzy edges that vanish into the
        card. */
-    --border: 258 13% 19%;
-    --border-strong: 258 13% 27%;
-    --input: 258 13% 19%;
+    --border: 258 13% 21%;
+    --border-strong: 258 13% 30%;
+    --input: 258 13% 21%;
     --ring: 42 78% 54%;
 
     --radius: 0.75rem;
@@ -59,7 +62,6 @@
     --gold-soft: 42 60% 46%;
     --gold-light: 42 90% 70%;
     --gold-dark: 42 60% 36%;
-    --surface-elevated: 258 14% 10%;
     --xp-green: 152 68% 46%;
     --streak-orange: 18 95% 58%;
     --elite-glow: 42 90% 62%;
@@ -288,8 +290,42 @@
   .eyebrow {
     @apply text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground;
   }
+  /* The app's default floating card (depth pass 2026-08). Deliberate interop
+     choices: top brightening lives in inset shadows (NOT border-top-color —
+     call sites override border-color with utilities and the longhand would
+     win cascade roulette), and the body tint is background-color + a
+     near-transparent shading overlay (NOT an opaque gradient — a bg-* utility
+     override must be able to take the surface). */
   .surface-card {
-    @apply rounded-2xl border border-border/50 bg-card/40;
+    position: relative;
+    @apply rounded-2xl border border-border/50;
+    background-color: hsl(var(--card) / 0.85);
+    background-image: linear-gradient(180deg,
+      hsl(0 0% 100% / 0.03) 0%, transparent 30%, hsl(0 0% 0% / 0.12) 100%);
+    box-shadow:
+      var(--shadow-2),
+      inset 0 1px 0 hsl(0 0% 100% / 0.08),
+      inset 0 -1px 0 hsl(0 0% 0% / 0.3);
+  }
+  /* Top specular — the .depth-realistic::before pattern. No `> *` position
+     reset (that pattern already caused the !absolute workaround on Ranks). */
+  .surface-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(180deg,
+      hsl(0 0% 100% / 0.06) 0%, hsl(0 0% 100% / 0.015) 8%, transparent 22%);
+    z-index: 0;
+  }
+  /* Quiet variant for chips/tiles where a full level-2 float is too heavy.
+     Must sit after .surface-card so it wins the shadow. */
+  .surface-card-quiet {
+    box-shadow: var(--shadow-1), inset 0 1px 0 hsl(0 0% 100% / 0.05);
+  }
+  .surface-card-quiet::before {
+    content: none;
   }
   /* Loading placeholder — the premium gold shimmer (replaces flat animate-pulse) */
   .skeleton-block {
@@ -310,10 +346,18 @@
     --z-celebration: 120;
     --z-toast: 200;
     --z-top: 9999;
-    --shadow-1: 0 1px 2px hsl(0 0% 0% / 0.3);
-    --shadow-2: 0 4px 12px -4px hsl(0 0% 0% / 0.4);
-    --shadow-3: 0 8px 24px -8px hsl(0 0% 0% / 0.5);
-    --shadow-4: 0 16px 48px -12px hsl(0 0% 0% / 0.6);
+    /* Elevation ladder — derived from .depth-realistic's proven stops.
+       1 = resting chip · 2 = default card · 3 = elevated/sticky chrome ·
+       4 = hero/modal (the full depth-realistic outer stack). Each level
+       keeps a 1px contact-dark line so edges stay crisp, not fuzzy. */
+    --shadow-1: 0 1px 0 hsl(0 0% 0% / 0.5), 0 2px 6px -2px hsl(0 0% 0% / 0.35);
+    --shadow-2: 0 1px 0 hsl(0 0% 0% / 0.6), 0 2px 3px hsl(0 0% 0% / 0.3),
+                0 8px 20px -6px hsl(0 0% 0% / 0.45);
+    --shadow-3: 0 1px 0 hsl(0 0% 0% / 0.6), 0 2px 3px hsl(0 0% 0% / 0.32),
+                0 10px 24px -6px hsl(0 0% 0% / 0.48), 0 20px 48px -16px hsl(0 0% 0% / 0.5);
+    --shadow-4: 0 1px 0 hsl(0 0% 0% / 0.65), 0 2px 3px hsl(0 0% 0% / 0.36),
+                0 8px 16px -2px hsl(0 0% 0% / 0.42), 0 24px 48px -12px hsl(0 0% 0% / 0.55),
+                0 48px 96px -32px hsl(0 0% 0% / 0.6);
   }
 
   .text-gold {
@@ -326,10 +370,6 @@
 
   .text-gold-light {
     color: hsl(var(--gold-light));
-  }
-
-  .bg-surface-elevated {
-    background-color: hsl(var(--surface-elevated));
   }
 
   .glow-gold {
@@ -350,10 +390,6 @@
 
   .gradient-dark {
     background: linear-gradient(180deg, hsl(260 18% 5%), hsl(265 20% 3%));
-  }
-
-  .gradient-surface {
-    background: linear-gradient(145deg, hsl(var(--surface-elevated)), hsl(var(--card)));
   }
 
   .gradient-purple {
@@ -493,9 +529,7 @@
      Unified secondary surface — matte obsidian panel
      Used for list rows, leaderboard items, message bubbles, settings.
      ============================================================ */
-  /* surface-paper is a legacy alias — same selector so the two can never drift. */
-  .surface-panel,
-  .surface-paper {
+  .surface-panel {
     position: relative;
     background:
       linear-gradient(180deg, hsl(258 16% 8%) 0%, hsl(258 16% 6%) 100%);
@@ -650,35 +684,6 @@
       inset 0 -1px 0 hsl(0 0% 0% / 0.15);
     border-top: 1px solid hsl(0 0% 100% / 0.07);
   }
-
-  /* 3D lifted card — floats above the surface */
-  .card-3d {
-    transform-style: preserve-3d;
-    transform: perspective(600px) translateZ(0);
-    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    box-shadow:
-      0 4px 16px hsl(0 0% 0% / 0.3),
-      0 1px 4px hsl(0 0% 0% / 0.2),
-      0 16px 32px -8px hsl(0 0% 0% / 0.15),
-      inset 0 1px 0 hsl(0 0% 100% / 0.06);
-    border-top: 1px solid hsl(0 0% 100% / 0.07);
-    border-bottom: 1px solid hsl(0 0% 0% / 0.3);
-  }
-
-  .card-3d:hover {
-    transform: translateY(-1px);
-    box-shadow:
-      0 12px 32px hsl(0 0% 0% / 0.38),
-      0 4px 12px hsl(0 0% 0% / 0.18),
-      inset 0 1px 0 hsl(0 0% 100% / 0.08);
-  }
-
-  .card-3d:active {
-    transform: translateY(0) scale(0.985);
-    transition-duration: 140ms;
-  }
-
-  /* 3D gold card variant */
 
   /* 3D button press effect */
   .btn-3d {
@@ -1363,35 +1368,6 @@
   }
   /* (ember-rise keyframe defined once in the cinematic flame block below) */
 
-  /* Apex card border with animated conic gradient */
-  .apex-conic-border {
-    position: relative;
-    background-clip: padding-box;
-    border: 2px solid transparent;
-  }
-  .apex-conic-border::before {
-    content: "";
-    position: absolute;
-    inset: -2px;
-    border-radius: inherit;
-    padding: 2px;
-    background: conic-gradient(
-      from 0deg,
-      hsl(18 95% 58%),
-      hsl(var(--gold)),
-      hsl(18 95% 58% / 0.4),
-      hsl(var(--gold)),
-      hsl(18 95% 58%)
-    );
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-            mask-composite: exclude;
-    animation: apex-conic-spin 6s linear infinite;
-    pointer-events: none;
-  }
-  @keyframes apex-conic-spin {
-    to { transform: rotate(360deg); }
-  }
 
   /* ──────────── TIER LADDER EFFECTS ──────────── */
 
@@ -1490,7 +1466,6 @@
   .apex-shimmer-sweep::after,
   .apex-embers::before,
   .apex-embers::after,
-  .apex-conic-border::before,
   .tier-shimmer-sweep::before,
   .founding-premium-shimmer,
   .founding-premium-shimmer::before {
@@ -2535,46 +2510,6 @@
   to { transform: rotate(360deg); }
 }
 
-.apex-conic-border {
-  position: relative;
-  isolation: isolate;
-  background:
-    linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
-    conic-gradient(
-      from 0deg,
-      hsl(18 95% 58% / 0.85),
-      hsl(42 78% 54% / 0.85),
-      hsl(18 95% 58% / 0.45),
-      hsl(42 78% 54% / 0.85),
-      hsl(18 95% 58% / 0.85)
-    ) border-box;
-  border: 2px solid transparent;
-}
-
-.apex-conic-border::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  padding: 2px;
-  background: conic-gradient(
-    from 0deg,
-    hsl(18 95% 58% / 0.6),
-    hsl(42 78% 54% / 0.9),
-    transparent 50%,
-    hsl(18 95% 58% / 0.6),
-    hsl(42 78% 54% / 0.9)
-  );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  animation: apex-conic-spin 8s linear infinite;
-  pointer-events: none;
-  z-index: -1;
-  opacity: 0.7;
-}
 
 .apex-portal-glow::after {
   content: "";
@@ -4612,6 +4547,16 @@ p, span.selectable, input, textarea, [contenteditable] {
    don't fight existing component-level styles.
    ============================================================ */
 @layer utilities {
+  /* Top app chrome (StatusHeader) — body-matched bg, elevation only.
+     Self-masking: a black shadow is invisible over the near-black page top
+     and materialises naturally over scrolled content. No scroll JS. */
+  .chrome-top-elevated {
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.04),
+      0 2px 10px -4px hsl(0 0% 0% / 0.45),
+      0 10px 28px -14px hsl(0 0% 0% / 0.5);
+  }
+
   /* Page-header bar — sub-page top bars (CoachHabits, CoachReflect, etc).
      Adds depth: subtle vertical gradient + hairline shadow under the bar
      so the header reads as lifted, not as flat content. */

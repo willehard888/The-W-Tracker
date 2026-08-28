@@ -17,6 +17,14 @@ export default {
         sans: ["Inter", "system-ui", "sans-serif"],
         display: ["Space Grotesk", "Inter", "system-ui", "sans-serif"],
       },
+      // Elevation ladder (index.css --shadow-1..4): shadow-1 chip · shadow-2
+      // card · shadow-3 sticky chrome · shadow-4 hero/modal.
+      boxShadow: {
+        1: "var(--shadow-1)",
+        2: "var(--shadow-2)",
+        3: "var(--shadow-3)",
+        4: "var(--shadow-4)",
+      },
       colors: {
         border: "hsl(var(--border))",
         "border-strong": "hsl(var(--border-strong))",

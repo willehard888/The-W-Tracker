@@ -793,7 +793,7 @@ const EliteFeed = () => {
 
       {/* Admin Reports Panel */}
       {isAdmin && showReportsPanel && (
-        <div className="animate-reveal rounded-2xl border border-[hsl(var(--purple))]/30 bg-card p-4 mb-6 shadow-[0_0_20px_hsl(var(--purple)/0.08)]">
+        <div className="animate-reveal surface-card border-[hsl(var(--purple))]/30 p-4 mb-6">
           <div className="flex items-center gap-2 mb-3">
             <ShieldCheck aria-hidden size={16} className="text-[hsl(var(--purple))]" />
             <h2 className="font-display text-sm font-bold">Pending Reports</h2>
@@ -870,7 +870,7 @@ const EliteFeed = () => {
 
       {/* Create Post */}
       {canPost && (
-        <div className="animate-reveal animate-reveal-delay-1 rounded-2xl border border-gold/20 bg-card p-4 mb-6 shadow-[0_2px_16px_hsl(var(--gold)/0.06)]">
+        <div className="animate-reveal animate-reveal-delay-1 surface-card border-gold/20 p-4 mb-6">
           <div className="flex gap-3">
             <div className="h-9 w-9 rounded-full gradient-gold flex items-center justify-center text-xs font-black text-primary-foreground shrink-0">
               {profile?.username?.charAt(0)?.toUpperCase() || "?"}
@@ -946,7 +946,7 @@ const EliteFeed = () => {
         {isLoading && (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-2xl border border-border bg-card p-4 skeleton-block">
+              <div key={i} className="surface-card p-4 skeleton-block">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="h-10 w-10 rounded-full bg-secondary" />
                   <div className="space-y-1.5">

@@ -35,7 +35,7 @@ const Squad = () => {
   return (
     <div className="flex flex-col">
       <div className="page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <div className="flex-1 flex gap-1 rounded-xl bg-[hsl(258_16%_6%/0.8)] border border-border/60 p-1 shadow-[inset_0_1px_3px_hsl(0_0%_0%/0.45)]">
+        <div className="flex-1 flex gap-1 surface-inset rounded-xl p-1">
           {SUB.map((s) => (
             <button
               key={s.key}

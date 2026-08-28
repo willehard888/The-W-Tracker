@@ -4,7 +4,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TierUsername from "@/components/TierUsername";
-import TribeEmberSeed from "@/components/TribeEmberSeed";
+
 import EmberRiseLayer from "@/components/EmberRiseLayer";
 import TribeFireCanvas from "@/components/tribe/TribeFireCanvas";
 import type { FireEvent } from "@/hooks/use-tribe-fire-reactor";
@@ -16,6 +16,7 @@ import {
   collectiveAccent,
   collectivePalette,
   withAlpha,
+  KINDLING_PALETTE,
 } from "@/lib/tribe-streak";
 
 export interface TribeMember {
@@ -133,15 +134,17 @@ const TribeHero = ({
   const { pct, next, atMax } = nextTierProgress(total);
   const founder = members.find((m) => m.role === "owner");
 
-  // Size ladder — founder-approved v2 scale (the fire is the centerpiece).
+  // Size ladder — the fire is the centerpiece from day one: early tiers are
+  // already substantial ("enimmäiset liekit näyttävämmäksi"), top tiers still
+  // clearly crown them.
   const size =
     tier >= 6 ? 176 :
-    tier >= 5 ? 168 :
-    tier >= 4 ? 156 :
-    tier >= 3 ? 144 :
-    tier >= 2 ? 132 :
-    tier >= 1 ? 122 :
-    tier >= 0 ? 116 : 112;
+    tier >= 5 ? 170 :
+    tier >= 4 ? 164 :
+    tier >= 3 ? 156 :
+    tier >= 2 ? 148 :
+    tier >= 1 ? 140 :
+    tier >= 0 ? 132 : 124;
 
   // Covers live in the private feed-images bucket — sign + resize in one round.
   const coverSrc = useSignedMediaUrl(tribe.cover_url, { width: 640, quality: 68 });
@@ -303,7 +306,16 @@ const TribeHero = ({
             }}
           />
           {isCold ? (
-            <TribeEmberSeed size={size * 1.1} />
+            // Cold ≠ dead: the same premium engine in kindling mode — a small
+            // flame struggling to life on a breathing coal bed.
+            <TribeFireCanvas
+              tier={0}
+              kindling
+              palette={KINDLING_PALETTE}
+              size={size}
+              pulseToken={reactor?.pulseToken}
+              className="absolute bottom-0 left-1/2 -translate-x-1/2"
+            />
           ) : (
             <TribeFireCanvas
               tier={tier}

@@ -303,7 +303,7 @@ const Battles = () => {
 
     setUploadingProof(battleId);
     try {
-      const upload = await downscaleImage(file, { maxDim: 1280, quality: 0.8 });
+      const upload = await downscaleImage(file, { maxDim: 2048, quality: 0.9 });
       const ext = upload.name.split(".").pop();
       const path = `${profile.user_id}/battle-${battleId}-${Date.now()}.${ext}`;
       const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, upload, { contentType: upload.type });

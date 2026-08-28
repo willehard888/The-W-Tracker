@@ -26,7 +26,7 @@ export const AppImage = ({
   src,
   width = 600,
   aspectRatio,
-  quality = 72,
+  quality = 82,
   className,
   alt = "",
   style,

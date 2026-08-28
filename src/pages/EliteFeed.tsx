@@ -208,7 +208,7 @@ const EliteFeed = () => {
       if (imageFile) {
         // Shrink before upload so we don't store/serve multi-MB originals.
         setUploadPhase("Optimizing…");
-        const upload = await downscaleImage(imageFile, { maxDim: 1280, quality: 0.8 });
+        const upload = await downscaleImage(imageFile, { maxDim: 2048, quality: 0.9 });
         const fileExt = upload.name.split(".").pop()?.toLowerCase() || "jpg";
         const safeExt = ["jpeg", "jpg", "png", "webp", "heic", "heif"].includes(fileExt) ? fileExt : "jpg";
         const path = `${user.id}/${Date.now()}.${safeExt}`;

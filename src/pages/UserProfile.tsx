@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Award, ChevronLeft, Swords, MessageCircle, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Share2, Camera, Ban, Flag } from "lucide-react";
 import { useBlockActions } from "@/hooks/use-blocking";
+import BlockUserDialog from "@/components/BlockUserDialog";
 import BattleChallengeModal from "@/components/battles/BattleChallengeModal";
 import ImageLightbox from "@/components/ImageLightbox";
 import GridMedia from "@/components/feed/GridMedia";
@@ -35,6 +36,7 @@ const UserProfile = () => {
   const [creating, setCreating] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [lightboxPost, setLightboxPost] = useState<any>(null);
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["user-profile", userId],
@@ -366,12 +368,7 @@ const UserProfile = () => {
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => {
-                    if (confirm(`Block @${profile.username}? You won't see each other's content and they can't message or friend you.`)) {
-                      block(userId!, profile.username);
-                      navigate(-1);
-                    }
-                  }}
+                  onClick={() => setShowBlockConfirm(true)}
                   className="w-full text-destructive"
                 >
                   <Ban size={15} /> Block
@@ -440,7 +437,6 @@ const UserProfile = () => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.05 + i * 0.02 }}
                     onClick={() => {
-                      if (isVideo) return;
                       setLightboxUrl(src);
                       setLightboxPost(p);
                     }}
@@ -533,6 +529,7 @@ const UserProfile = () => {
       <ImageLightbox
         open={!!lightboxUrl}
         imageUrl={lightboxUrl}
+        isVideo={!!lightboxPost?.video_url}
         username={profile.username}
         avatarUrl={profile.avatar_url}
         tier={(profile.status_tier || "recruit") as any}
@@ -545,6 +542,16 @@ const UserProfile = () => {
         onClose={() => {
           setLightboxUrl(null);
           setLightboxPost(null);
+        }}
+      />
+
+      <BlockUserDialog
+        open={showBlockConfirm}
+        username={profile.username}
+        onOpenChange={setShowBlockConfirm}
+        onConfirm={() => {
+          block(userId!, profile.username);
+          navigate(-1);
         }}
       />
     </div>

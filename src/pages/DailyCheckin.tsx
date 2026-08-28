@@ -65,7 +65,7 @@ const HabitToggle = ({
       "group relative flex items-center gap-3 w-full rounded-2xl border p-3 text-left transition-all duration-200 active:scale-[0.985]",
       active
         ? "border-gold/45 bg-gradient-to-r from-gold/[0.12] to-gold/[0.04] shadow-[0_0_0_1px_hsl(var(--gold)/0.15),0_4px_14px_-6px_hsl(var(--gold)/0.35)]"
-        : "border-border bg-card hover:bg-secondary/50",
+        : "surface-card hover:bg-secondary/50",
     )}
   >
     {/* Emoji tile */}
@@ -707,7 +707,7 @@ const DailyCheckin = () => {
           "become who I said I'd become." Quiet, non-gold, only shown once the
           user has authored their identity statement. */}
       {why && (
-        <div className="mt-2 mb-1 surface-card px-4 py-2.5">
+        <div className="mt-2 mb-1 surface-card surface-card-quiet px-4 py-2.5">
           <p className="text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground/75">
             Today's discipline is for
           </p>
@@ -811,7 +811,7 @@ const DailyCheckin = () => {
         "rounded-2xl border p-4 mb-3 transition-all duration-200",
         isOptimalSleep
           ? "border-gold/45 bg-gradient-to-r from-gold/[0.10] to-gold/[0.03] shadow-[0_0_0_1px_hsl(var(--gold)/0.12),0_4px_14px_-6px_hsl(var(--gold)/0.3)]"
-          : "border-border bg-card",
+          : "surface-card",
       )}>
         <div className="flex items-center gap-3 mb-3">
           <div className={cn(
@@ -846,7 +846,7 @@ const DailyCheckin = () => {
             "rounded-2xl border p-3.5 transition-all duration-200",
             workout
               ? "border-gold/45 bg-gradient-to-r from-gold/[0.12] to-gold/[0.04] shadow-[0_0_0_1px_hsl(var(--gold)/0.15),0_4px_14px_-6px_hsl(var(--gold)/0.35)]"
-              : "border-border bg-card",
+              : "surface-card",
           )}
         >
           <div className="flex items-center gap-3">
@@ -899,7 +899,7 @@ const DailyCheckin = () => {
         {sportOpen && (
           // No inner max-h scroll — a nested scrollbar hid the bottom rows of
           // opened groups. The page scrolls naturally instead.
-          <div className="mt-1.5 rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="mt-1.5 surface-card overflow-hidden">
             {/* FOR YOU — detected + profile + recent covers ~all real picks,
                 so the 24-sport catalog stays collapsed below. */}
             {forYou.length > 0 && (
@@ -937,7 +937,7 @@ const DailyCheckin = () => {
                 onChange={(e) => setSportQuery(e.target.value)}
                 placeholder="Search sports…"
                 aria-label="Search sports"
-                className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
+                className="w-full surface-inset rounded-xl pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
               />
               {sportQuery && (
                 <button
@@ -1029,7 +1029,7 @@ const DailyCheckin = () => {
           "rounded-2xl border p-4 mb-3 transition-all duration-200",
           hydration >= 3
             ? "border-gold/45 bg-gradient-to-r from-gold/[0.10] to-gold/[0.03] shadow-[0_0_0_1px_hsl(var(--gold)/0.12),0_4px_14px_-6px_hsl(var(--gold)/0.3)]"
-            : "border-border bg-card",
+            : "surface-card",
         )}>
           <div className="flex items-center gap-3 mb-3">
             <div className={cn(
@@ -1132,7 +1132,7 @@ const DailyCheckin = () => {
           ? "border-gold/45 bg-gradient-to-b from-gold/[0.08] to-transparent"
           : honest === false
           ? "border-destructive/40 bg-destructive/5"
-          : "border-border bg-card",
+          : "surface-card",
       )}>
         <p className="font-bold text-[15px] flex items-center gap-1.5">Were you honest? <span>🤝</span></p>
         <p className="text-xs text-muted-foreground mt-1 mb-3">

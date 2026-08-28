@@ -132,7 +132,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
                 "w-full text-left rounded-2xl px-4 py-3.5 border transition-all flex items-center gap-3",
                 draft.primary_goal === g.id
                   ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)] shadow-[0_0_24px_-8px_hsl(var(--gold)/0.6)]"
-                  : "border-border/40 bg-card/40"
+                  : "surface-card"
               )}>
               <span className="text-2xl">{g.emoji}</span>
               <div className="flex-1">
@@ -155,7 +155,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
                     "px-2.5 py-1.5 rounded-full border text-[12px] font-bold transition-all",
                     (draft.sports ?? []).includes(sp.id)
                       ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.1)] text-foreground"
-                      : "border-border/40 bg-card/40 text-muted-foreground"
+                      : "surface-card text-muted-foreground"
                   )}>
                   {sp.emoji} {sp.label}
                 </button>
@@ -219,7 +219,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
               value={draft.life_context ?? ""}
               onChange={e => set({ life_context: e.target.value.slice(0, 160) })}
               placeholder="e.g. New baby, working remote, training around 6am only."
-              className="w-full resize-none rounded-2xl border border-border/50 bg-card/60 px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
+              className="w-full resize-none surface-inset rounded-2xl px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
             />
             <p className="text-[10px] text-muted-foreground/70 mt-1">{(draft.life_context ?? "").length}/160</p>
           </Field>
@@ -238,7 +238,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
                       "flex-1 h-12 rounded-xl text-xl border transition-all",
                       active
                         ? "bg-[hsl(var(--gold)/0.15)] border-[hsl(var(--gold)/0.55)]"
-                        : "border-border/40 bg-card/40",
+                        : "surface-card",
                     )}
                     aria-label={`Stress level ${value} of 5`}
                   >
@@ -264,7 +264,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
                       "flex-1 h-12 rounded-xl text-xl border transition-all",
                       active
                         ? "bg-[hsl(var(--gold)/0.15)] border-[hsl(var(--gold)/0.55)]"
-                        : "border-border/40 bg-card/40",
+                        : "surface-card",
                     )}
                     aria-label={`Mood level ${value} of 5`}
                   >
@@ -310,7 +310,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
                     "rounded-2xl border px-3 py-2.5 text-left transition-all active:scale-[0.97]",
                     draft.equipment.includes(p.id)
                       ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)]"
-                      : "border-border/40 bg-card/40 hover:bg-card/60",
+                      : "surface-card hover:bg-card/60",
                   )}
                 >
                   <div className="text-lg mb-0.5">{p.emoji}</div>
@@ -353,7 +353,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
                 "w-full text-left rounded-2xl px-4 py-3 border transition-all",
                 draft.tone_pref === t.id
                   ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)]"
-                  : "border-border/40 bg-card/40"
+                  : "surface-card"
               )}>
               <div className="text-sm font-bold">{t.label}</div>
               <div className="text-xs text-muted-foreground">{t.sub}</div>
@@ -365,7 +365,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
               value={draft.i_am}
               onChange={e => set({ i_am: e.target.value.slice(0, 160) })}
               placeholder="e.g. The dad my kids see show up strong every day. Someone who keeps promises to himself."
-              className="w-full resize-none rounded-2xl border border-border/50 bg-card/60 px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
+              className="w-full resize-none surface-inset rounded-2xl px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
             />
             <p className="text-[10px] text-muted-foreground/70 mt-1">
               {draft.i_am.length}/160 · This is what every check-in is really for.
@@ -463,7 +463,7 @@ const Chip = forwardRef<HTMLButtonElement, { active: boolean; onClick: () => voi
         small ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm",
         active
           ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.12)] text-[hsl(var(--gold))] font-bold"
-          : "border-border/40 bg-card/40 text-muted-foreground"
+          : "surface-card text-muted-foreground"
       )}>
       {children}
     </button>
@@ -482,9 +482,9 @@ const Stepper = ({
   return (
     <div>
       <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
-      <div className="flex items-center gap-2 surface-card px-2 py-2">
+      <div className="flex items-center gap-2 surface-card surface-card-quiet px-2 py-2">
         <button type="button" onClick={dec}
-          className="h-10 w-10 rounded-xl bg-card/60 border border-border/40 flex items-center justify-center active:scale-95 transition">
+          className="h-10 w-10 surface-card surface-card-quiet rounded-xl flex items-center justify-center active:scale-95 transition">
           <Minus size={16} />
         </button>
         <div className="flex-1 text-center">
@@ -492,7 +492,7 @@ const Stepper = ({
           <span className="text-xs text-muted-foreground ml-1.5">{unit}</span>
         </div>
         <button type="button" onClick={inc}
-          className="h-10 w-10 rounded-xl bg-card/60 border border-border/40 flex items-center justify-center active:scale-95 transition">
+          className="h-10 w-10 surface-card surface-card-quiet rounded-xl flex items-center justify-center active:scale-95 transition">
           <Plus size={16} />
         </button>
       </div>

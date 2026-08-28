@@ -168,7 +168,7 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
             onClick={() => setMenuOpen(false)}
             aria-hidden
           />
-          <div className="absolute right-3 top-12 z-40 w-48 rounded-2xl border border-border/60 bg-card shadow-[0_18px_56px_-12px_hsl(var(--background)/0.8)] overflow-hidden">
+          <div className="absolute right-3 top-12 z-40 w-48 surface-glass rounded-2xl overflow-hidden">
             <button
               type="button"
               onClick={() => { setMenuOpen(false); navigate("/coach/profile"); }}
@@ -286,7 +286,7 @@ const CoachMarkdown = memo(({ content }: { content: string }) => (
  *  instead of broken. CSS-only (animate-pulse), reduced-motion safe. */
 const ThinkingIndicator = () => (
   <div className="flex justify-start">
-    <div className="rounded-2xl rounded-bl-md px-3.5 py-2.5 bg-card/70 border border-border/40 flex items-center gap-2">
+    <div className="surface-panel rounded-2xl rounded-bl-md px-3.5 py-2.5 flex items-center gap-2">
       <span className="flex items-center gap-1">
         {[0, 1, 2].map((i) => (
           <span
@@ -669,7 +669,7 @@ const ChatSheet = ({
                       ? "bg-destructive/10 border border-destructive/30 cursor-pointer"
                       : m.isFaq
                         ? "bg-gold/[0.06] border border-gold/25"
-                        : "bg-card/70 border border-border/40"
+                        : "surface-panel border-border/40"
                   }`
               }
               onClick={m.failed ? retryLast : undefined}
@@ -744,7 +744,7 @@ const ChatSheet = ({
             placeholder="Ask your coach…"
             rows={1}
             disabled={streaming}
-            className="flex-1 resize-none rounded-2xl border border-border/50 bg-card/60 px-3.5 py-2.5 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30 max-h-32 disabled:opacity-60"
+            className="flex-1 resize-none surface-inset rounded-2xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30 max-h-32 disabled:opacity-60"
             style={{ minHeight: 42 }}
             autoFocus
           />

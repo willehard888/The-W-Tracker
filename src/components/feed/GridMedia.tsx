@@ -15,7 +15,11 @@ const GridMedia = ({ src, isVideo, alt }: { src: string; isVideo: boolean; alt: 
       <>
         {signedVideo && (
           <video
-            src={signedVideo}
+            // #t=0.1 seeks the browser to 0.1s so it decodes and paints that
+            // frame as a poster — preload="metadata" alone leaves the tile
+            // black since these grid videos never play. Fragment doesn't touch
+            // the signed query string.
+            src={`${signedVideo}#t=0.1`}
             muted
             playsInline
             preload="metadata"

@@ -99,7 +99,7 @@ export const useSignedMediaUrl = (
           parsed!.key,
           TTL_SECONDS,
           transform?.width
-            ? { transform: { width: Math.round(transform.width * 2), quality: transform.quality ?? 72, resize: "cover" as const } }
+            ? { transform: { width: Math.round(transform.width * 2), quality: transform.quality ?? 82, resize: "cover" as const } }
             : undefined,
         );
       if (error || !signed?.signedUrl) {

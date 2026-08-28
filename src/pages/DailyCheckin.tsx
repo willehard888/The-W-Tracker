@@ -376,7 +376,7 @@ const DailyCheckin = () => {
           setSubmitting(false);
           return;
         }
-        const upload = await downscaleImage(proofFile, { maxDim: 1280, quality: 0.8 });
+        const upload = await downscaleImage(proofFile, { maxDim: 2048, quality: 0.9 });
         const ext = upload.name.split(".").pop();
         const path = `${user.id}/${Date.now()}.${ext}`;
         const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, upload, {

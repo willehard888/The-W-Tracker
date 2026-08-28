@@ -19,16 +19,18 @@ export const collectiveStreakTier = (total: number): number => {
   return -1; // Cold (no flame)
 };
 
-export const collectiveTierName = (total: number): string => {
-  const t = collectiveStreakTier(total);
-  return t === 6 ? "Firestorm" :
-         t === 5 ? "Legendary" :
-         t === 4 ? "Diamond"   :
-         t === 3 ? "Blazing"   :
-         t === 2 ? "On Fire"   :
-         t === 1 ? "Warm"      :
-         t === 0 ? "Hot"       : "Cold";
-};
+/** Display name for a tier index (-1..6). The one true name ladder. */
+export const tierName = (t: number): string =>
+  t === 6 ? "Firestorm" :
+  t === 5 ? "Legendary" :
+  t === 4 ? "Diamond"   :
+  t === 3 ? "Blazing"   :
+  t === 2 ? "On Fire"   :
+  t === 1 ? "Warm"      :
+  t === 0 ? "Hot"       : "Cold";
+
+export const collectiveTierName = (total: number): string =>
+  tierName(collectiveStreakTier(total));
 
 /** Accent color for the collective flame at each tier. */
 export const collectiveAccent = (total: number): string => {
@@ -134,6 +136,16 @@ export const withAlpha = (color: string, alpha: number): string => {
   if (!color.startsWith("hsl(") || !color.endsWith(")")) return color;
   return `${color.slice(0, -1)} / ${alpha})`;
 };
+
+/**
+ * Resolve CSS custom-property tokens inside a color string to their computed
+ * values — canvas fillStyle can't evaluate `hsl(var(--ember))`. Reads from
+ * :root at call time; safe to call once per palette build (not per frame).
+ */
+export const resolveCssColor = (color: string): string =>
+  color.replace(/var\((--[\w-]+)\)/g, (_, name: string) =>
+    getComputedStyle(document.documentElement).getPropertyValue(name).trim(),
+  );
 
 /**
  * Collective streak for a single tribe — server-owned since the tribe-fire

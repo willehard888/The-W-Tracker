@@ -41,18 +41,17 @@ import TribeManageDialog from "@/components/TribeManageDialog";
 import TribeEvents from "@/components/tribe/TribeEvents";
 import EmptyState from "@/components/ui/empty-state";
 import TribeComposer from "@/components/tribe/TribeComposer";
-import TribeHeader from "@/components/tribe/TribeHeader";
+import TribeHero from "@/components/tribe/TribeHero";
 import { downscaleImage } from "@/lib/downscale-image";
 import TribePostCard, { type TribePostCardPost } from "@/components/TribePostCard";
 import { useModeration } from "@/hooks/use-moderation";
 import TierUsername from "@/components/TierUsername";
-import TribeCollectiveFlame from "@/components/TribeCollectiveFlame";
 import MemberContributionStrip from "@/components/MemberContributionStrip";
 import FeedTheFireCTA from "@/components/FeedTheFireCTA";
 import TribeAmbientFireField from "@/components/TribeAmbientFireField";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { hapticImpact, hapticSelection, hapticNotification } from "@/lib/haptics";
-import { collectivePalette, collectiveAccent, collectiveStreakTier, collectiveTierName } from "@/lib/tribe-streak";
+import { collectivePalette, collectiveAccent, collectiveStreakTier, collectiveTierName, tierName } from "@/lib/tribe-streak";
 
 interface Member {
   user_id: string;
@@ -69,13 +68,12 @@ interface Milestone {
   created_at: string;
 }
 
-const TIER_NAMES = ["Hot", "Blaze", "Inferno", "Nova", "Diamond", "Legendary", "Firestorm"];
 const milestoneLine = (m: Milestone): { emoji: string; text: string } => {
   const p = m.payload ?? {};
   switch (m.kind) {
     case "founded":       return { emoji: "🏛️", text: `${p.name ?? "This tribe"} was founded` };
     case "member_joined": return { emoji: "🤝", text: `@${p.username ?? "?"} joined the tribe` };
-    case "tier_up":       return { emoji: "🔥", text: `Fire tier up — ${TIER_NAMES[Number(p.tier)] ?? "new tier"} (${p.streak ?? "?"}d)` };
+    case "tier_up":       return { emoji: "🔥", text: `Fire tier up — ${tierName(Number(p.tier))} (${p.streak ?? "?"}d)` };
     case "battle_won":    return { emoji: "⚔️", text: `Battle won vs ${p.opponent ?? "?"} (${p.score ?? ""})` };
     case "challenge_done": return { emoji: "🏆", text: `Weekly challenge crushed` };
   }
@@ -151,10 +149,11 @@ const TribeDetail = () => {
 
   const kudosRemaining = Math.max(0, 2 - (kudosGivenThisMonth || 0));
 
-  // Owner week-strip pulse — one cheap RPC, owner-only consumer.
-  const { data: ownerPulse } = useQuery({
+  // Today's check-in pulse — one cheap RPC, now for every viewer (aggregate
+  // count only; per-member data stays server-side by the privacy decision).
+  const { data: todayPulse } = useQuery({
     queryKey: ["tribe-pulse", id],
-    enabled: !!id && isOwner,
+    enabled: !!id,
     staleTime: 60_000,
     queryFn: async () => {
       const { data } = await supabase.rpc("tribe_today_pulse" as any, { p_tribe_ids: [id] });
@@ -606,9 +605,16 @@ const TribeDetail = () => {
     );
   }
 
+  // DEV-only tier preview: /tribes/:id?fireTotal=1600 forces the hero tier so
+  // every flame tier is verifiable without a 1600-day tribe. Dead code in prod.
+  const devFireTotal = import.meta.env.DEV
+    ? Number(new URLSearchParams(window.location.search).get("fireTotal")) || 0
+    : 0;
+  const fireTotal = devFireTotal > 0 ? devFireTotal : collectiveStreak;
+
   // Tier-reactive page tint based on tribe's collective heat
-  const pageTint = collectiveStreak >= 30
-    ? collectivePalette(collectiveStreak).glow
+  const pageTint = fireTotal >= 30
+    ? collectivePalette(fireTotal).glow
     : null;
 
   return (
@@ -628,7 +634,7 @@ const TribeDetail = () => {
           intensifies with collective heat. Fixed behind content. */}
       {pageTint && (
         <div className="fixed inset-0 pointer-events-none -z-10">
-          <TribeAmbientFireField total={collectiveStreak} accent={pageTint} />
+          <TribeAmbientFireField total={fireTotal} accent={pageTint} />
         </div>
       )}
 
@@ -678,72 +684,119 @@ const TribeDetail = () => {
         <ArrowLeft size={14} /> Tribes
       </button>
 
-      {/* HERO: the flame IS the tribe — name renders under the flame */}
-      <div className="mb-2 relative">
-        <TribeCollectiveFlame
-          variant="hero"
-          total={collectiveStreak}
-          memberCount={tribe?.member_count}
-          tribeName={tribe?.name}
-          reactor={fireReactor}
-        />
-      </div>
+      {/* HERO — the tribe's one cinematic card: fire, identity, actions */}
+      <TribeHero
+        tribe={tribe}
+        total={fireTotal}
+        members={members}
+        isMember={isMember}
+        isOwner={isOwner}
+        parallax={parallax}
+        reactor={fireReactor}
+        todayPulse={todayPulse ?? null}
+        onNavigateUser={(uid) => navigate(`/user/${uid}`)}
+        onNavigateBattles={() => navigate(`/tribes/${id}/battles`)}
+        onJoin={handleJoin}
+        onManage={() => setManageOpen(true)}
+        onInvite={() => setInviteOpen(true)}
+        onDelete={handleDelete}
+        onLeave={handleLeave}
+        onShare={handleShare}
+      />
 
-      {/* Tiny LIVE indicator under the hero */}
-      <div className="flex items-center justify-center gap-1.5 mb-3">
-        <span
-          className={`h-1.5 w-1.5 rounded-full ${fireReactor.connected ? "bg-xp-green animate-pulse" : "bg-muted-foreground/40"}`}
-          style={fireReactor.connected ? { boxShadow: "0 0 8px hsl(142 76% 50% / 0.8)" } : undefined}
-        />
-        <span className="text-[9px] uppercase tracking-widest font-black text-muted-foreground/80">
-          {fireReactor.connected ? "Live" : "Connecting…"}
-        </span>
-      </div>
-
-      {/* Weekly challenge — the tribe's shared goal, alive from day one */}
-      {challenge && (() => {
-        const done = challenge.status === "completed";
-        const failed = challenge.status === "failed";
-        const pct = Math.min(100, Math.round((challenge.progress / Math.max(1, challenge.target)) * 100));
-        const end = new Date(challenge.week_start); end.setDate(end.getDate() + 7);
-        const daysLeft = Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86400000));
-        return (
-          <div className={cn("surface-card p-4 mb-4", done && "border-gold/50 bg-gold/[0.06]")}>
-            <div className="flex items-baseline justify-between mb-2">
-              <span className={cn("eyebrow", done ? "text-gold" : "text-gold/80")}>
-                {done ? "Weekly challenge crushed 🏆" : failed ? "Last week's challenge" : "Weekly challenge"}
-              </span>
-              <span className="text-[11px] tabular-nums text-muted-foreground">
-                {done ? "+25 XP each" : failed ? "missed" : `${daysLeft}d left`}
-              </span>
-            </div>
-            <div className="flex items-baseline justify-between mb-1.5">
-              <span className="text-[13px] font-bold">
-                {challenge.progress}/{challenge.target} check-ins together
-              </span>
-              <span className={cn("text-[11px] font-bold tabular-nums", done ? "text-gold" : "text-muted-foreground")}>
-                {pct}%
-              </span>
-            </div>
-            <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all duration-700",
-                  failed ? "bg-muted-foreground/40" : "bg-gradient-to-r from-gold/70 to-gold",
-                )}
-                style={{ width: `${pct}%` }}
-              />
-            </div>
+      {/* Owner alerts — surfaced only when something needs attention */}
+      {isOwner && pendingCount > 0 && (
+        <button
+          onClick={() => setPendingOpen(true)}
+          className="mb-3 w-full rounded-xl border border-gold/45 bg-gradient-to-r from-gold/15 to-[hsl(var(--ember))]/10 hover:from-gold/20 transition-all p-2.5 flex items-center gap-2.5 text-left"
+        >
+          <div className="h-8 w-8 rounded-lg bg-gold/25 border border-gold/40 flex items-center justify-center shrink-0">
+            <UserCheck size={14} className="text-gold" strokeWidth={2.6} />
           </div>
-        );
-      })()}
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] uppercase tracking-widest font-black text-gold">Pending requests</p>
+            <p className="text-[10px] text-muted-foreground truncate">
+              {pendingCount} {pendingCount === 1 ? "person wants" : "people want"} to join
+            </p>
+          </div>
+          <span className="text-xs font-black tabular-nums text-gold">{pendingCount}</span>
+        </button>
+      )}
+      {isOwner && reportedCount > 0 && (
+        <button
+          onClick={() => setReportsOpen(true)}
+          className="mb-3 w-full rounded-xl border border-destructive/45 bg-gradient-to-r from-destructive/15 to-destructive/5 hover:from-destructive/20 transition-all p-2.5 flex items-center gap-2.5 text-left"
+        >
+          <div className="h-8 w-8 rounded-lg bg-destructive/25 border border-destructive/40 flex items-center justify-center shrink-0">
+            <ShieldAlert size={14} className="text-destructive" strokeWidth={2.6} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] uppercase tracking-widest font-black text-destructive">Reported posts</p>
+            <p className="text-[10px] text-muted-foreground truncate">
+              {reportedCount} {reportedCount === 1 ? "post needs" : "posts need"} your review
+            </p>
+          </div>
+          <span className="text-xs font-black tabular-nums text-destructive">{reportedCount}</span>
+        </button>
+      )}
 
-      {/* Feed-the-Fire CTA — only shows if user hasn't checked in today */}
-      {isMember && (
-        <FeedTheFireCTA
-          accent={collectiveStreak >= 30 ? collectivePalette(collectiveStreak).glow : undefined}
-          tribeName={tribe?.name}
-        />
+      {/* TODAY — the tribe's one actionable band: check in, shared goal */}
+      {(challenge || isMember || (todayPulse && todayPulse.total > 0)) && (
+        <div className="surface-card p-4 mb-4">
+          <div className="flex items-baseline justify-between mb-2.5">
+            <span className="eyebrow">Today</span>
+            <span className="flex items-center gap-3">
+              {todayPulse && todayPulse.total > 0 && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-[hsl(var(--ember))]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--ember))]" />
+                  {todayPulse.checked}/{todayPulse.total} lit today
+                </span>
+              )}
+              {isOwner && (tribe.weekly_xp ?? 0) > 0 && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-gold">
+                  <Zap size={10} fill="currentColor" /> +{(tribe.weekly_xp ?? 0).toLocaleString()} XP
+                </span>
+              )}
+            </span>
+          </div>
+
+          {isMember && (
+            <FeedTheFireCTA
+              accent={fireTotal >= 30 ? collectivePalette(fireTotal).glow : undefined}
+              tribeName={tribe?.name}
+              className="mb-3"
+            />
+          )}
+
+          {challenge && (() => {
+            const done = challenge.status === "completed";
+            const failed = challenge.status === "failed";
+            const pct = Math.min(100, Math.round((challenge.progress / Math.max(1, challenge.target)) * 100));
+            const end = new Date(challenge.week_start); end.setDate(end.getDate() + 7);
+            const daysLeft = Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86400000));
+            return (
+              <div className={cn(done && "rounded-xl border border-gold/50 bg-gold/[0.06] p-3 -m-1")}>
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <span className="text-[13px] font-bold">
+                    {challenge.progress}/{challenge.target} check-ins together
+                  </span>
+                  <span className="text-[11px] tabular-nums text-muted-foreground">
+                    {done ? "Crushed 🏆 +25 XP each" : failed ? "last week missed" : `${daysLeft}d left · ${pct}%`}
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all duration-700",
+                      failed ? "bg-muted-foreground/40" : "bg-gradient-to-r from-gold/70 to-gold",
+                    )}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })()}
+        </div>
       )}
 
       {/* Who's feeding the fire — sorted by personal streak */}
@@ -758,33 +811,6 @@ const TribeDetail = () => {
           }))}
         />
       )}
-
-      {/* Cinematic Apex header */}
-      <TribeHeader
-        tribe={tribe}
-        parallax={parallax}
-        members={members}
-        isMember={isMember}
-        isOwner={isOwner}
-        pendingCount={pendingCount}
-        reportedCount={reportedCount}
-        onNavigateUser={(uid) => navigate(`/user/${uid}`)}
-        onNavigateBattles={() => navigate(`/tribes/${id}/battles`)}
-        onOpenPending={() => setPendingOpen(true)}
-        onOpenReports={() => setReportsOpen(true)}
-        onJoin={handleJoin}
-        onManage={() => setManageOpen(true)}
-        onInvite={() => setInviteOpen(true)}
-        onDelete={handleDelete}
-        onLeave={handleLeave}
-        onShare={handleShare}
-        ownerPulse={ownerPulse ?? null}
-      />
-
-
-
-      {/* Members live in MemberContributionStrip above — the second full
-          member list this page used to carry duplicated the same people. */}
 
       {/* Meetups & events — the show-up-together loop */}
       {id && (

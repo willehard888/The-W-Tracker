@@ -38,7 +38,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
   return (
     <div className={cn("mb-4", className)}>
       <div className="flex items-center justify-between mb-2 px-1">
-        <h2 className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">
+        <h2 className="eyebrow">
           Who's feeding the fire
         </h2>
         <span className="text-[10px] font-bold tabular-nums text-muted-foreground/70">

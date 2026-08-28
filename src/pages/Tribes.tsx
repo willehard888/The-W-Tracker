@@ -451,11 +451,26 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         onClick={() => navigate(`/tribes/${t.id}`)}
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/tribes/${t.id}`); } }}
         className={cn(
-          "w-full text-left cursor-pointer surface-card p-4 apex-tribe-card-hover relative",
-          opts.featured && "border-gold/35",
+          "w-full text-left cursor-pointer surface-card p-4 apex-tribe-card-hover relative overflow-hidden",
         )}
-        style={opts.idx != null ? { animationDelay: `${opts.idx * 60}ms` } : undefined}
+        style={{
+          ...(opts.idx != null ? { animationDelay: `${opts.idx * 60}ms` } : null),
+          // Featured rows carry the tribe's own tier color on the edge —
+          // the fire's identity, not generic gold.
+          ...(opts.featured
+            ? { borderColor: withAlpha(cTier >= 0 ? cAccent : "hsl(var(--gold))", 0.4) }
+            : null),
+        }}
       >
+        {opts.featured && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute top-0 left-[10%] right-[10%] h-px"
+            style={{
+              background: `linear-gradient(90deg, transparent, ${withAlpha(cTier >= 0 ? cAccent : "hsl(var(--gold))", 0.35)}, transparent)`,
+            }}
+          />
+        )}
         {opts.featured && (
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
@@ -471,7 +486,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         )}
         <div className="flex items-start gap-3">
           <div
-            className="relative h-10 w-10 rounded-lg bg-secondary/50 flex items-center justify-center shrink-0 overflow-hidden"
+            className="relative h-12 w-12 rounded-lg bg-secondary/50 flex items-center justify-center shrink-0 overflow-hidden"
             style={{
               border: `1px solid ${cTier >= 0 ? withAlpha(cAccent, 0.45) : "hsl(var(--border))"}`,
             }}
@@ -479,7 +494,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             {t.cover_url && (
               <AppImage
                 src={t.cover_url}
-                width={40}
+                width={48}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover opacity-75"
               />
@@ -498,11 +513,11 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                     : undefined
                 }
               >
-                <TribeFireLite aria-hidden tier={cTier} palette={collectivePalette(cStreak)} size={30} variant="mini" />
+                <TribeFireLite aria-hidden tier={cTier} palette={collectivePalette(cStreak)} size={36} variant="mini" />
               </div>
             ) : !t.cover_url ? (
               // Cold ≠ dead: the ember seed is the premium waiting state.
-              <TribeEmberSeed aria-hidden size={30} />
+              <TribeEmberSeed aria-hidden size={36} />
             ) : null}
           </div>
           <div className="flex-1 min-w-0">
@@ -619,7 +634,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         <div className="mb-5">
           <div className="flex items-center gap-2 mb-2">
             <Mail aria-hidden size={12} className="text-[hsl(var(--ember))]" />
-            <h2 className="text-[11px] font-black tracking-widest uppercase text-[hsl(var(--ember))]">
+            <h2 className="eyebrow text-[hsl(var(--ember))]">
               Tribe Invites · {invites.length}
             </h2>
           </div>

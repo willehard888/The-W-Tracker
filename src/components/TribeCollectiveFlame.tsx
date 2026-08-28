@@ -73,14 +73,16 @@ const TribeCollectiveFlame = ({
 
   // Deliberately small — the flame is a status mark, not the page's centerpiece
   // (founder: "tulianimaatio huomattavasti pienemmäksi").
+  // Hero: the fire is the tribe's dramatic centerpiece (founder-approved v2
+  // redesign 2026-08-27) — noticeably larger than the earlier "status mark".
   const size = isHero
-    ? (tier >= 6 ? 120 :
-       tier >= 5 ? 112 :
-       tier >= 4 ? 104 :
-       tier >= 3 ? 96 :
-       tier >= 2 ? 88 :
-       tier >= 1 ? 80 :
-       tier >= 0 ? 76 : 72)
+    ? (tier >= 6 ? 176 :
+       tier >= 5 ? 168 :
+       tier >= 4 ? 156 :
+       tier >= 3 ? 144 :
+       tier >= 2 ? 132 :
+       tier >= 1 ? 122 :
+       tier >= 0 ? 116 : 112)
     : (tier >= 6 ? 96 :
        tier === 5 ? 86 :
        tier === 4 ? 76 :
@@ -104,18 +106,34 @@ const TribeCollectiveFlame = ({
         "relative rounded-3xl overflow-hidden border",
         isHero ? "p-6" : "p-5",
         isCold
-          ? "border-[hsl(18_60%_35%)]/30 bg-card/50"
+          ? isHero
+            ? "border-[hsl(22_60%_34%)]/40"
+            : "border-[hsl(18_60%_35%)]/30 bg-card/50"
           : "border-[hsl(var(--ember))]/40 surface-ember shadow-[0_0_40px_hsl(var(--ember)/0.20)]",
         className,
       )}
       style={
-        !isCold
-          ? ({
-              ["--ember-accent" as string]: accent,
-            } as React.CSSProperties)
+        isCold && isHero
+          ? {
+              // Warm the cold hero so the fire has an atmosphere to live in
+              // (v2): ember glow rising from the base, deep body.
+              background:
+                "radial-gradient(135% 74% at 50% 118%, hsl(24 92% 42% / 0.42), hsl(18 80% 30% / 0.12) 44%, transparent 64%), linear-gradient(180deg, hsl(258 20% 8%), hsl(258 22% 5%))",
+            }
+          : !isCold
+          ? ({ ["--ember-accent" as string]: accent } as React.CSSProperties)
           : undefined
       }
     >
+      {/* Polished top hairline — warm gold, both states (v2 craft detail) */}
+      {isHero && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute top-0 left-[10%] right-[10%] h-px"
+          style={{ background: "linear-gradient(90deg, transparent, hsl(42 95% 74% / 0.55), transparent)" }}
+        />
+      )}
+
       {/* Aurora rim — slow pulsing border highlight (hot tribes only) */}
       {!isCold && (
         <div
@@ -203,6 +221,20 @@ const TribeCollectiveFlame = ({
             className="relative flex items-end justify-center mb-2"
             style={{ width: size, height: size * 1.2 }}
           >
+            {/* Glowing ember plate the fire rises from (v2) */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+              style={{
+                bottom: size * 0.02,
+                width: size * 0.92,
+                height: size * 0.12,
+                borderRadius: "50%",
+                background: `radial-gradient(60% 120% at 50% 0%, ${(isCold ? "hsl(28 100% 60%)" : accent).replace(")", " / 0.95)")}, ${(isCold ? "hsl(14 90% 42%)" : accent).replace(")", " / 0.45)")} 55%, transparent 78%)`,
+                boxShadow: `0 0 ${size * 0.28}px ${size * 0.06}px ${(isCold ? "hsl(20 100% 50%)" : accent).replace(")", " / 0.4)")}`,
+                filter: "blur(1px)",
+              }}
+            />
             {isCold ? (
               <TribeEmberSeed size={size * 1.1} />
             ) : (

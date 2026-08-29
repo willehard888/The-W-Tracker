@@ -55,14 +55,14 @@ const DayStatsSticker = ({ stats, className }: { stats: DayStats; className?: st
             +{stats.xp_earned} XP
           </span>
           {stats.habits_done > 0 && (
-            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-white/85 leading-none tabular-nums">
+            <span className="inline-flex items-center gap-0.5 text-[12px] font-bold text-white/85 leading-none tabular-nums">
               <CheckCheck aria-hidden size={11} strokeWidth={2.8} className="text-white/60" />
               {stats.habits_done}
             </span>
           )}
           {stats.verified && (
-            <span className="inline-flex items-center gap-0.5 rounded-md bg-teal/20 border border-teal/40 px-1 py-0.5 text-[8px] font-black uppercase tracking-wider text-teal leading-none">
-              <ShieldCheck aria-hidden size={9} strokeWidth={2.8} />
+            <span className="inline-flex items-center gap-0.5 rounded-md bg-teal/20 border border-teal/40 px-1 py-0.5 text-[10px] font-black uppercase tracking-wider text-teal leading-none">
+              <ShieldCheck aria-hidden size={11} strokeWidth={2.8} />
               Verified
             </span>
           )}

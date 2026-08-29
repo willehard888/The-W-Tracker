@@ -115,7 +115,7 @@ export const RedeemLegendInviteDialog = ({ trigger }: Props) => {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Crown className="h-4 w-4" fill="currentColor" />}
               Redeem & ascend to Legend
             </Button>
-            <p className="text-[11px] text-center text-muted-foreground">
+            <p className="text-[12px] text-center text-muted-foreground">
               Codes are single-use. Once redeemed, your status is locked at Legend permanently.
             </p>
           </div>

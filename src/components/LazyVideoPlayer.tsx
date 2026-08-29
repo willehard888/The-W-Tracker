@@ -74,7 +74,7 @@ const LazyVideoPlayer = ({ src, className }: LazyVideoPlayerProps) => {
       </div>
 
       {muted && showHint && (
-        <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-black/55 backdrop-blur-sm text-[10px] font-bold text-white pointer-events-none">
+        <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-black/55 backdrop-blur-sm text-[11px] font-bold text-white pointer-events-none">
           Tap for sound
         </div>
       )}

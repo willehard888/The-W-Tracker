@@ -482,7 +482,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
           <div className="flex flex-col items-center justify-center h-full px-6 text-center">
             <p className="font-bold tracking-[0.22em] text-gold/80 mb-1 text-lg">WHEALTH FACTORY</p>
             <p className={cn(
-              "font-black uppercase tracking-wider mb-4 text-[10px]",
+              "font-black uppercase tracking-wider mb-4 text-[11px]",
               tier === 'legend' ? "text-[hsl(280_70%_60%)]" :
               tier === 'apex' ? "text-[hsl(18_95%_58%)]" :
               tier === 'elite' ? "text-gold" : "text-muted-foreground/40"
@@ -505,7 +505,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                   ].map((s) => (
                     <div key={s.label} className="flex flex-col items-center">
                       <p className="font-black text-foreground text-lg">{s.emoji} {s.value}</p>
-                      <p className="font-bold tracking-widest text-muted-foreground/30 text-[8px]">{s.label}</p>
+                      <p className="font-bold tracking-widest text-muted-foreground/30 text-[10px]">{s.label}</p>
                     </div>
                   ))}
                 </div>
@@ -518,7 +518,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                 <p className="font-black text-gold text-6xl drop-shadow-[0_0_20px_hsl(42_78%_54%/0.5)] tabular-nums">
                   {whealthData.overall}
                 </p>
-                <p className="font-black tracking-widest text-gold/60 mb-5 text-[11px]">WHEALTH INDEX / 100</p>
+                <p className="font-black tracking-widest text-gold/60 mb-5 text-[12px]">WHEALTH INDEX / 100</p>
                 <div className="flex items-end justify-center gap-2 h-12 mb-1">
                   {([["SLP","sleep"],["RCV","recovery"],["MOV","movement"],["NUT","nutrition"],["MND","mind"],["INR","inner"]] as const).map(([label, key]) => {
                     const v = whealthData.pillars[key];
@@ -532,12 +532,12 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                             />
                           )}
                         </div>
-                        <p className="text-[7px] font-extrabold tracking-wider text-white/35">{label}</p>
+                        <p className="text-[9px] font-extrabold tracking-wider text-white/35">{label}</p>
                       </div>
                     );
                   })}
                 </div>
-                <p className="text-muted-foreground/30 font-semibold mt-3 text-[9px] tracking-wider">
+                <p className="text-muted-foreground/30 font-semibold mt-3 text-[10px] tracking-wider">
                   COMPUTED FROM ALL MY DATA
                 </p>
               </>
@@ -578,7 +578,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                   {badgeData.rarity.toUpperCase()}
                 </p>
                 {badgeData.rarity === 'legendary' && (
-                  <p className="text-gold/40 font-semibold mt-2 text-[10px]">ONLY TOP 1% EARN THIS</p>
+                  <p className="text-gold/40 font-semibold mt-2 text-[11px]">ONLY TOP 1% EARN THIS</p>
                 )}
               </>
             )}
@@ -596,7 +596,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                   <p className="font-extrabold text-foreground text-2xl">Train with me.</p>
                   <p className="text-muted-foreground/60 text-xs mb-5">@{profile.username} on Whealth Factory</p>
                   <div className="w-full rounded-xl border border-gold/50 bg-gradient-to-br from-gold/[0.14] to-gold/[0.05] px-4 py-3 mb-4 shadow-[0_0_24px_-8px_hsl(var(--gold)/0.4)]">
-                    <p className="text-[10px] font-bold tracking-[0.22em] text-gold/60 mb-1">YOUR INVITE CODE</p>
+                    <p className="text-[11px] font-bold tracking-[0.22em] text-gold/60 mb-1">YOUR INVITE CODE</p>
                     <p
                       className="font-display font-black text-gold tracking-wide leading-none whitespace-nowrap drop-shadow-[0_0_10px_hsl(var(--gold)/0.35)]"
                       style={{ fontSize: `${codeSize}px` }}
@@ -604,13 +604,13 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                       {code}
                     </p>
                   </div>
-                  <p className="text-muted-foreground/50 text-[11px]">AI coach · daily check-ins · the full system</p>
+                  <p className="text-muted-foreground/50 text-[12px]">AI coach · daily check-ins · the full system</p>
                 </>
               );
             })()}
 
             {variant === "referral" ? (
-              <p className="absolute bottom-4 text-gold/40 font-bold tracking-[0.22em] text-[10px]">
+              <p className="absolute bottom-4 text-gold/40 font-bold tracking-[0.22em] text-[11px]">
                 USE MY CODE AT SIGN-UP
               </p>
             ) : (

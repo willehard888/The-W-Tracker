@@ -96,7 +96,7 @@ const TribeComposer = ({
         >
           <VideoIcon size={16} />
         </button>
-        <span className="text-[10px] text-muted-foreground ml-1">{value.length}/500</span>
+        <span className="text-[11px] text-muted-foreground ml-1">{value.length}/500</span>
       </div>
       <Button
         onClick={onPost}

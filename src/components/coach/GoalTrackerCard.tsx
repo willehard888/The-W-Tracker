@@ -69,7 +69,7 @@ const GoalTrackerCard = () => {
         </div>
         <div className="text-left">
           <p className="text-sm font-bold">Set your North Star goal</p>
-          <p className="text-[11px] text-muted-foreground">e.g. Bench 100 kg by August.</p>
+          <p className="text-[12px] text-muted-foreground">e.g. Bench 100 kg by August.</p>
         </div>
       </button>
     );
@@ -78,7 +78,7 @@ const GoalTrackerCard = () => {
   if (adding) {
     return (
       <div className="rounded-2xl border border-border/40 bg-card/50 p-4 space-y-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">New goal</p>
+        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">New goal</p>
         <Input placeholder="Title (e.g. Bench 100 kg)" value={draft.title}
           onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} />
         <div className="grid grid-cols-2 gap-2">
@@ -112,17 +112,17 @@ const GoalTrackerCard = () => {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold flex items-center gap-1">
-            <Target size={10} /> North Star
+          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold flex items-center gap-1">
+            <Target size={12} /> North Star
           </p>
           <h3 className="font-display text-base font-black mt-0.5 truncate">{activeGoal.title}</h3>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-[12px] text-muted-foreground mt-0.5">
             {activeGoal.current_value ?? activeGoal.baseline_value ?? 0}{activeGoal.unit} → {activeGoal.target_value}{activeGoal.unit}
             {etaText && <span className="ml-2">· {etaText}</span>}
           </p>
         </div>
         <span className={cn(
-          "text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full",
+          "text-[11px] font-black uppercase tracking-wider px-2 py-1 rounded-full",
           onPace ? "bg-xp-green/15 text-xp-green" : "bg-rose-500/15 text-rose-300"
         )}>
           {onPace ? "On pace" : "Off pace"}
@@ -131,7 +131,7 @@ const GoalTrackerCard = () => {
 
       <div className="mt-3">
         <Progress value={pct} />
-        <p className="text-[10px] text-muted-foreground mt-1">{pct}% of the way</p>
+        <p className="text-[11px] text-muted-foreground mt-1">{pct}% of the way</p>
       </div>
 
       <div className="mt-3 flex gap-2">
@@ -159,7 +159,7 @@ const GoalTrackerCard = () => {
       {goals.filter(g => g.id !== activeGoal.id && g.status === "active").length === 0 && (
         <button type="button"
           onClick={() => setAdding(true)}
-          className="mt-3 w-full text-[11px] text-muted-foreground/80 inline-flex items-center justify-center gap-1 hover:text-gold">
+          className="mt-3 w-full text-[12px] text-muted-foreground/80 inline-flex items-center justify-center gap-1 hover:text-gold">
           <Plus size={12} /> Add another goal
         </button>
       )}

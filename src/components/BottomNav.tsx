@@ -186,7 +186,7 @@ const BottomNav = () => {
 
               <span
                 className={cn(
-                  "relative text-[10px] font-bold tracking-wide leading-none",
+                  "relative text-[11px] font-bold tracking-wide leading-none",
                 )}
               >
                 {label}

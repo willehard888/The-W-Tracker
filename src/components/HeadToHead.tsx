@@ -53,7 +53,7 @@ const DeltaPill = ({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-0.5 px-1.5 py-[3px] rounded-full text-[9px] font-black tabular-nums border leading-none",
+        "inline-flex items-center gap-0.5 px-1.5 py-[3px] rounded-full text-[10px] font-black tabular-nums border leading-none",
         tied && "text-muted-foreground border-border bg-secondary/30",
         !tied && meWins && "text-xp-green border-xp-green/40 bg-xp-green/10 shadow-[0_0_8px_-2px_hsl(152_68%_45%/0.4)]",
         !tied && !meWins && "text-rose-300 border-rose-500/40 bg-rose-500/10",
@@ -93,14 +93,14 @@ const Row = ({
         {/* Label column */}
         <div className="flex items-center gap-1.5 w-[70px] shrink-0">
           <Icon size={11} className={color} />
-          <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+          <span className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">
             {label}
           </span>
         </div>
 
         {/* My value */}
         <div className="flex-1 flex items-center justify-end gap-1.5">
-          {meWins && <Crown size={10} className="text-gold drop-shadow-[0_0_4px_hsl(42_100%_55%/0.6)]" />}
+          {meWins && <Crown size={12} className="text-gold drop-shadow-[0_0_4px_hsl(42_100%_55%/0.6)]" />}
           <span
             className={cn(
               "font-display font-black text-[15px] tabular-nums tracking-tight",
@@ -130,7 +130,7 @@ const Row = ({
           >
             {format(theirs)}{suffix}
           </span>
-          {themWins && <Crown size={10} className="text-gold drop-shadow-[0_0_4px_hsl(42_100%_55%/0.6)]" />}
+          {themWins && <Crown size={12} className="text-gold drop-shadow-[0_0_4px_hsl(42_100%_55%/0.6)]" />}
         </div>
       </div>
 
@@ -177,11 +177,11 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
       <div className="flex items-center justify-between mb-3 relative">
         <div className="flex items-center gap-1.5">
           <Swords size={11} className="text-gold/80" />
-          <p className="text-[10px] uppercase tracking-[0.22em] font-black text-gold/80">
+          <p className="text-[11px] uppercase tracking-[0.22em] font-black text-gold/80">
             Head to Head
           </p>
         </div>
-        <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider flex items-center gap-1">
+        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider flex items-center gap-1">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full rounded-full bg-xp-green/70 opacity-75 animate-ping" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-xp-green" />
@@ -193,7 +193,7 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
       {/* Players */}
       <div className="flex items-center justify-between gap-2 mb-4 relative">
         <div className="flex-1 text-right min-w-0">
-          <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold mb-0.5">
+          <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold mb-0.5">
             You
           </p>
           <p
@@ -211,14 +211,14 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
         <div className="relative shrink-0">
           <div className="absolute inset-0 rounded-full bg-gold/30 blur-md animate-pulse" />
           <div className="relative h-9 w-9 rounded-full bg-gradient-to-br from-gold via-gold/90 to-amber-700 flex items-center justify-center shadow-[0_2px_8px_-2px_hsl(42_100%_55%/0.6),inset_0_1px_0_hsl(48_100%_70%/0.6)] ring-1 ring-gold/60">
-            <span className="font-display font-black text-[10px] text-background tracking-wider">
+            <span className="font-display font-black text-[11px] text-background tracking-wider">
               VS
             </span>
           </div>
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold mb-0.5">
+          <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold mb-0.5">
             Them
           </p>
           <p
@@ -236,7 +236,7 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
       {/* Score summary banner */}
       {overallLead !== "tie" && (
         <div className="mb-2 -mx-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-transparent via-gold/[0.06] to-transparent border-y border-gold/10">
-          <p className="text-[9px] uppercase tracking-[0.22em] font-black text-center text-gold/80">
+          <p className="text-[10px] uppercase tracking-[0.22em] font-black text-center text-gold/80">
             {overallLead === "me" ? "You lead" : "They lead"} {Math.max(wins, losses)}–{Math.min(wins, losses)}
           </p>
         </div>

@@ -118,23 +118,23 @@ const TribeNew = () => {
           </p>
           <div className="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
             {activity && (
-              <span className="text-[9px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5">
+              <span className="text-[10px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5">
                 {activity}
               </span>
             )}
-            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-muted-foreground bg-secondary/40 border border-border/50 rounded-full px-2 py-0.5">
-              {visibility === "public" ? <><Globe size={9} /> Open</> : <><Lock size={9} /> Approval</>}
+            <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-muted-foreground bg-secondary/40 border border-border/50 rounded-full px-2 py-0.5">
+              {visibility === "public" ? <><Globe size={11} /> Open</> : <><Lock size={11} /> Approval</>}
             </span>
           </div>
           {description.trim() && (
-            <p className="text-[11px] text-muted-foreground leading-snug mt-2 max-w-[260px] line-clamp-2">{description.trim()}</p>
+            <p className="text-[12px] text-muted-foreground leading-snug mt-2 max-w-[260px] line-clamp-2">{description.trim()}</p>
           )}
         </div>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="text-[11px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
+          <label className="text-[12px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
             Name
           </label>
           <div className="relative">
@@ -162,27 +162,27 @@ const TribeNew = () => {
             </div>
           </div>
           <div className="flex items-center justify-between mt-1">
-            <p className="text-[10px] text-muted-foreground">{name.length}/40</p>
+            <p className="text-[11px] text-muted-foreground">{name.length}/40</p>
             {nameStatus === "available" && (
-              <p className="text-[10px] font-bold text-xp-green">Available</p>
+              <p className="text-[11px] font-bold text-xp-green">Available</p>
             )}
             {nameStatus === "taken" && (
-              <p className="text-[10px] font-bold text-destructive">Already taken</p>
+              <p className="text-[11px] font-bold text-destructive">Already taken</p>
             )}
             {nameStatus === "invalid" && name.trim().length > 0 && (
-              <p className="text-[10px] font-bold text-muted-foreground">3–40 chars</p>
+              <p className="text-[11px] font-bold text-muted-foreground">3–40 chars</p>
             )}
           </div>
         </div>
 
         <div>
-          <label className="text-[11px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
+          <label className="text-[12px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
             What's it about
           </label>
           <div className="space-y-3">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="text-[9px] font-black tracking-widest uppercase text-muted-foreground/60 mb-1.5">
+                <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground/60 mb-1.5">
                   {group.label}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -192,7 +192,7 @@ const TribeNew = () => {
                       type="button"
                       onClick={() => setActivity(name === activity ? "" : name)}
                       className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border transition-all active:scale-95",
+                        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold border transition-all active:scale-95",
                         activity === name
                           ? "bg-gold text-primary-foreground border-transparent"
                           : "bg-secondary/40 border-border/50 text-muted-foreground",
@@ -206,11 +206,11 @@ const TribeNew = () => {
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-muted-foreground mt-2">From training to meditation, workshops to book clubs — helps people discover your tribe.</p>
+          <p className="text-[11px] text-muted-foreground mt-2">From training to meditation, workshops to book clubs — helps people discover your tribe.</p>
           {TRIBE_ACTIVITY_GROUPS.find((g) => g.label === "Learn & Grow")?.items.some((i) => i.name === activity) && (
             <div className="mt-2 rounded-lg border border-gold/35 bg-gold/[0.06] px-3 py-2">
-              <p className="text-[10px] font-bold text-gold">Built for creators</p>
-              <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+              <p className="text-[11px] font-bold text-gold">Built for creators</p>
+              <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
                 Host workshops and courses with event series — up to 24 sessions with
                 meeting links, RSVPs and reminders, right inside your tribe.
               </p>
@@ -219,7 +219,7 @@ const TribeNew = () => {
         </div>
 
         <div>
-          <label className="text-[11px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
+          <label className="text-[12px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
             Description
           </label>
           <Textarea
@@ -229,13 +229,13 @@ const TribeNew = () => {
             rows={3}
             placeholder="What does your tribe stand for?"
           />
-          <p className="text-[10px] text-muted-foreground mt-1">
+          <p className="text-[11px] text-muted-foreground mt-1">
             {description.length}/200
           </p>
         </div>
 
         <div>
-          <label className="text-[11px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
+          <label className="text-[12px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
             Who can join
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -254,7 +254,7 @@ const TribeNew = () => {
               >
                 <o.icon size={15} className={visibility === o.v ? "text-gold" : "text-muted-foreground"} />
                 <p className={cn("text-[12px] font-black mt-1.5", visibility === o.v ? "text-gold" : "text-foreground")}>{o.t}</p>
-                <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">{o.d}</p>
+                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{o.d}</p>
               </button>
             ))}
           </div>

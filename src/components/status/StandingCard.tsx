@@ -32,9 +32,9 @@ const StandingCard = ({ tier, rankData, consistency, onHowItWorks, variant = "he
   if (variant === "compact") {
     return (
       <button type="button" onClick={onHowItWorks} className={cn("surface-card p-3.5 text-left w-full active:scale-[0.99] transition-transform", className)}>
-        <p className="eyebrow flex items-center gap-1">Standing <Info size={10} className="text-muted-foreground/60" /></p>
+        <p className="eyebrow flex items-center gap-1">Standing <Info size={12} className="text-muted-foreground/60" /></p>
         <p className={cn("font-display font-black text-[17px] leading-tight mt-1", cfg.textClass)}>{cfg.label}</p>
-        <p className="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
+        <p className="text-[12px] text-muted-foreground mt-0.5 tabular-nums">
           {ranked ? `#${rankData!.rank!.toLocaleString()} of ${(rankData!.totalUsers ?? 0).toLocaleString()} · ${top}` : "Unranked · check in to enter"}
         </p>
       </button>
@@ -45,7 +45,7 @@ const StandingCard = ({ tier, rankData, consistency, onHowItWorks, variant = "he
     <div className={cn("surface-card p-4", className)}>
       <div className="flex items-center justify-between mb-3">
         <p className="eyebrow">Standing</p>
-        <button type="button" onClick={onHowItWorks} className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors">
+        <button type="button" onClick={onHowItWorks} className="inline-flex items-center gap-1 text-[12px] font-bold text-muted-foreground hover:text-foreground transition-colors">
           <Info size={12} /> How it works
         </button>
       </div>
@@ -56,12 +56,12 @@ const StandingCard = ({ tier, rankData, consistency, onHowItWorks, variant = "he
         <div className="flex items-end gap-4 mb-4">
           <div>
             <p className="font-display font-black text-[34px] leading-none tabular-nums">#{rankData!.rank!.toLocaleString()}</p>
-            <p className="text-[11px] text-muted-foreground mt-1">of {(rankData!.totalUsers ?? 0).toLocaleString()} · {top}</p>
+            <p className="text-[12px] text-muted-foreground mt-1">of {(rankData!.totalUsers ?? 0).toLocaleString()} · {top}</p>
           </div>
           <div className="ml-auto text-right">
             <p className={cn("font-display font-black text-[17px] leading-none", cfg.textClass)}>{cfg.label}</p>
             {consistency != null && (
-              <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">Consistency <span className="font-bold text-foreground/85">{Math.round(consistency)}</span>/100</p>
+              <p className="text-[12px] text-muted-foreground mt-1 tabular-nums">Consistency <span className="font-bold text-foreground/85">{Math.round(consistency)}</span>/100</p>
             )}
           </div>
         </div>

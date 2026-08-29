@@ -57,6 +57,9 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
       setHits([]);
       return;
     }
+    // active-guard: clearTimeout can't recall an in-flight request, and a
+    // slow stale response must not overwrite a newer query's results.
+    let active = true;
     const t = setTimeout(async () => {
       setSearching(true);
       const { data } = await supabase
@@ -65,10 +68,11 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
         .ilike("username", `%${q}%`)
         .neq("user_id", profile?.user_id ?? "")
         .limit(20);
+      if (!active) return;
       setHits((data as any) ?? []);
       setSearching(false);
     }, 300);
-    return () => clearTimeout(t);
+    return () => { active = false; clearTimeout(t); };
   }, [query, open, profile?.user_id]);
 
   const handleInvite = async (u: Hit) => {
@@ -139,7 +143,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
                   {u.avatar_url ? (
                     <img loading="lazy" decoding="async" src={avatarUrl(u.avatar_url, 48)} alt={u.username} className="h-full w-full object-cover" />
                   ) : (
-                    <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
+                    <div className="h-full w-full flex items-center justify-center text-[11px] font-black text-muted-foreground">
                       {u.username.slice(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -147,18 +151,18 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold truncate">@{u.username}</p>
                   {u.status_tier && (
-                    <p className="text-[10px] text-muted-foreground capitalize">
+                    <p className="text-[11px] text-muted-foreground capitalize">
                       {u.status_tier.replace("_", " ")}
                     </p>
                   )}
                 </div>
                 {isMember ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-muted-foreground px-2 py-1 rounded-md bg-secondary/60">
-                    <Users size={10} /> Member
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground px-2 py-1 rounded-md bg-secondary/60">
+                    <Users size={12} /> Member
                   </span>
                 ) : isInvited ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[hsl(var(--ember))] px-2 py-1 rounded-md bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
-                    <Check size={10} /> Invited
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[hsl(var(--ember))] px-2 py-1 rounded-md bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
+                    <Check size={12} /> Invited
                   </span>
                 ) : (
                   <Button
@@ -166,12 +170,12 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
                     disabled={isSending}
                     size="sm"
                     variant="ember"
-                    className="h-8 px-2.5 text-[10px]"
+                    className="h-8 px-2.5 text-[11px]"
                   >
                     {isSending ? (
-                      <Loader2 size={10} className="animate-spin" />
+                      <Loader2 size={12} className="animate-spin" />
                     ) : (
-                      <UserPlus size={10} />
+                      <UserPlus size={12} />
                     )}
                     Invite
                   </Button>

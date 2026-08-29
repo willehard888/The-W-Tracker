@@ -168,18 +168,18 @@ export default function AdminModeration() {
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                     {item.content_type}
                   </span>
                   {item.severity && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-destructive">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-destructive">
                       {item.severity}
                     </span>
                   )}
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[11px] text-muted-foreground">
                     conf {Math.round((item.ai_confidence ?? 0) * 100)}%
                   </span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[11px] text-muted-foreground">
                     {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                   </span>
                 </div>

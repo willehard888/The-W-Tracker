@@ -41,13 +41,13 @@ const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () =>
     <h1 className="font-display text-xl font-black tracking-tight leading-tight">{ex.title}</h1>
     <div className="flex flex-wrap gap-1.5 mt-2">
       {[...ex.equipment, ex.type].filter(Boolean).map((t) => (
-        <span key={t as string} className="text-[10px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5 capitalize">
+        <span key={t as string} className="text-[11px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5 capitalize">
           {t}
         </span>
       ))}
     </div>
     {(ex.primary.length > 0 || ex.secondary.length > 0) && (
-      <p className="text-[11px] text-muted-foreground mt-2 capitalize">
+      <p className="text-[12px] text-muted-foreground mt-2 capitalize">
         <span className="font-bold text-foreground/80 normal-case">Muscles:</span>{" "}
         {[...ex.primary, ...ex.secondary].join(", ")}
       </p>
@@ -57,7 +57,7 @@ const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () =>
     <ol className="space-y-2.5">
       {ex.steps.map((step, i) => (
         <li key={i} className="flex gap-2.5 text-[13px] text-foreground/85 leading-snug">
-          <span className="shrink-0 h-5 w-5 rounded-full bg-gold/15 text-gold text-[10px] font-black flex items-center justify-center mt-px">{i + 1}</span>
+          <span className="shrink-0 h-5 w-5 rounded-full bg-gold/15 text-gold text-[11px] font-black flex items-center justify-center mt-px">{i + 1}</span>
           <span>{step}</span>
         </li>
       ))}
@@ -127,7 +127,7 @@ const Exercises = () => {
                   key={g ?? "all"}
                   onClick={() => { hapticImpact("light"); setGroup(g); }}
                   className={cn(
-                    "shrink-0 rounded-full px-3 py-1.5 text-[11px] font-black border transition-all active:scale-95",
+                    "shrink-0 rounded-full px-3 py-1.5 text-[12px] font-black border transition-all active:scale-95",
                     active ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
                   )}
                 >
@@ -150,7 +150,7 @@ const Exercises = () => {
                 <IllustrationThumb ex={ex} size={56} eager={i < 10} />
                 <div className="flex-1 min-w-0">
                   <p className="font-display text-[14px] font-black leading-tight truncate">{ex.title}</p>
-                  <p className="text-[11px] text-muted-foreground capitalize mt-0.5 truncate">
+                  <p className="text-[12px] text-muted-foreground capitalize mt-0.5 truncate">
                     {ex.primary.join(", ")}{ex.equipment.length ? ` · ${ex.equipment.join(", ")}` : ""}
                   </p>
                 </div>
@@ -164,7 +164,7 @@ const Exercises = () => {
         </div>
 
         {/* CC BY-SA attribution — required by the illustration license. */}
-        <p className="mt-8 text-center text-[10px] text-muted-foreground/50">
+        <p className="mt-8 text-center text-[11px] text-muted-foreground/50">
           Illustrations © Everkinetic · CC BY-SA 4.0
         </p>
       </div>

@@ -122,7 +122,7 @@ const TodaysPlanCard = () => {
           <Sparkles size={14} className="text-gold animate-pulse" />
           <p className="text-[13px] font-bold">Building today's plan…</p>
         </div>
-        <p className="text-[11px] text-muted-foreground/70 mt-1">
+        <p className="text-[12px] text-muted-foreground/70 mt-1">
           Reading your recent recovery, training and streak.
         </p>
       </div>
@@ -141,7 +141,7 @@ const TodaysPlanCard = () => {
           <Sparkles size={14} className="text-gold" />
           <p className="text-[13px] font-bold">Your daily plan is a member feature</p>
         </div>
-        <p className="text-[11px] text-muted-foreground leading-snug">
+        <p className="text-[12px] text-muted-foreground leading-snug">
           A readiness score + 3–5 missions fitted to how you're actually recovering —
           rebuilt for you every morning. Unlock full access.
         </p>
@@ -161,7 +161,7 @@ const TodaysPlanCard = () => {
           <Sparkles size={14} className="text-gold" />
           <p className="text-[13px] font-bold">Build today's plan</p>
         </div>
-        <p className="text-[11px] text-muted-foreground leading-snug">
+        <p className="text-[12px] text-muted-foreground leading-snug">
           Get a readiness read and 3–5 missions fitted to how you're actually recovering.
         </p>
       </button>
@@ -182,7 +182,7 @@ const TodaysPlanCard = () => {
               type="button"
               onClick={regenerate}
               disabled={generating}
-              className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 active:scale-95 transition disabled:opacity-40"
+              className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 active:scale-95 transition disabled:opacity-40"
               aria-label="Regenerate plan"
             >
               <RotateCw size={11} className={cn(generating && "animate-spin")} /> Refresh
@@ -196,7 +196,7 @@ const TodaysPlanCard = () => {
       </div>
 
       {/* Data-driven "why" — the coach's read of the signals behind the call */}
-      <p className="mt-2.5 text-[11px] text-muted-foreground/80 leading-snug border-l-2 border-gold/30 pl-2.5">
+      <p className="mt-2.5 text-[12px] text-muted-foreground/80 leading-snug border-l-2 border-gold/30 pl-2.5">
         {whyLine(plan)}
       </p>
 
@@ -209,7 +209,7 @@ const TodaysPlanCard = () => {
               style={{ width: `${Math.round((done / total) * 100)}%` }}
             />
           </div>
-          <span className="text-[11px] font-black tabular-nums text-gold">{done}/{total}</span>
+          <span className="text-[12px] font-black tabular-nums text-gold">{done}/{total}</span>
         </div>
       )}
 
@@ -245,11 +245,11 @@ const TodaysPlanCard = () => {
                   {m.title}
                 </p>
                 {m.detail && (
-                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{m.detail}</p>
+                  <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">{m.detail}</p>
                 )}
               </div>
               {isDone && (
-                <span className="shrink-0 text-[11px] font-black text-xp-green mt-0.5">Done</span>
+                <span className="shrink-0 text-[12px] font-black text-xp-green mt-0.5">Done</span>
               )}
             </button>
           );
@@ -257,7 +257,7 @@ const TodaysPlanCard = () => {
       </div>
 
       {done > 0 && done >= total && total > 0 && (
-        <p className="mt-3 text-center text-[11px] font-black uppercase tracking-widest text-xp-green">
+        <p className="mt-3 text-center text-[12px] font-black uppercase tracking-widest text-xp-green">
           Plan complete · you showed up
         </p>
       )}

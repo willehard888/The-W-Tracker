@@ -184,7 +184,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
           aria-hidden
           className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-[hsl(var(--ember))] to-gold border border-background flex items-center justify-center shadow-[0_0_6px_hsl(var(--ember)/0.8)] status-amber-ring-breathe"
         >
-          <Zap size={9} className="text-background status-flame-flicker" strokeWidth={3} fill="currentColor" />
+          <Zap size={11} className="text-background status-flame-flicker" strokeWidth={3} fill="currentColor" />
         </div>
       )}
     </div>

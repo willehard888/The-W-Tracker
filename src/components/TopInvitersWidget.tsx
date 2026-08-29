@@ -39,7 +39,7 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
           <Trophy size={16} className="text-gold shrink-0" />
           <h2 className="font-display font-bold text-sm tracking-tight truncate">Top Inviters This Month</h2>
         </div>
-        <span className="shrink-0 whitespace-nowrap text-[10px] text-muted-foreground uppercase tracking-wider">
+        <span className="shrink-0 whitespace-nowrap text-[11px] text-muted-foreground uppercase tracking-wider">
           Resets 1st
         </span>
       </header>
@@ -115,12 +115,12 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
                         tier={inv.status_tier || "recruit"}
                       />
                       {isMe && (
-                        <span className="ml-1 text-[10px] text-gold/70 font-medium">
+                        <span className="ml-1 text-[11px] text-gold/70 font-medium">
                           (you)
                         </span>
                       )}
                     </p>
-                    <p className="text-[11px] text-muted-foreground tabular-nums">
+                    <p className="text-[12px] text-muted-foreground tabular-nums">
                       <span className="text-gold font-bold">
                         {Number(inv.converted_count)} paid
                       </span>
@@ -142,7 +142,7 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
               You: {myStats?.signupCount ?? 0} signups ·{" "}
               <span className="text-gold">{myStats?.convertedCount ?? 0} paid</span>
             </p>
-            <p className="text-[11px] text-muted-foreground">Keep pushing to crack the top {limit}.</p>
+            <p className="text-[12px] text-muted-foreground">Keep pushing to crack the top {limit}.</p>
           </div>
           {!hideEmptyCta && (
             <Button size="sm" variant="gold-outline" onClick={() => navigate("/referrals")}>

@@ -177,7 +177,7 @@ const Journey = () => {
           <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp size={12} className="text-gold" />
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">
+              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">
                 How far you've come
               </p>
             </div>
@@ -205,7 +205,7 @@ const Journey = () => {
                 />
               )}
             </div>
-            <p className="mt-3 text-[11px] text-muted-foreground leading-snug">
+            <p className="mt-3 text-[12px] text-muted-foreground leading-snug">
               {daysTracked > 0
                 ? `${daysTracked} days tracked · every check-in is a vote for who you're becoming.`
                 : "Keep showing up — the proof compounds."}
@@ -241,11 +241,11 @@ const Journey = () => {
         <div className="surface-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <BookHeart size={13} className="text-gold" />
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">
               Your reflections
             </p>
             {reflections.length > 0 && (
-              <span className="ml-auto text-[11px] font-bold text-gold/80 tabular-nums">
+              <span className="ml-auto text-[12px] font-bold text-gold/80 tabular-nums">
                 {reflections.length > 30 ? "last 30" : reflections.length}
               </span>
             )}
@@ -291,8 +291,8 @@ const DeltaTile = ({
       )}
     />
     <p className="font-display text-lg font-black tabular-nums leading-none">{value}</p>
-    {unit && <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">{unit}</p>}
-    <p className="text-[9px] font-bold text-muted-foreground/70 uppercase tracking-wider mt-1">{label}</p>
+    {unit && <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{unit}</p>}
+    <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider mt-1">{label}</p>
   </div>
 );
 
@@ -317,11 +317,11 @@ const TrendCard = ({
         <Icon size={13} className="text-gold" />
         <div>
           <p className="text-[13px] font-black leading-tight">{title}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{sub}</p>
+          <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{sub}</p>
         </div>
       </div>
       {delta && (
-        <span className={cn("inline-flex items-center gap-0.5 text-[11px] font-black tabular-nums", good ? "text-xp-green" : "text-[hsl(var(--ember))]")}>
+        <span className={cn("inline-flex items-center gap-0.5 text-[12px] font-black tabular-nums", good ? "text-xp-green" : "text-[hsl(var(--ember))]")}>
           {good ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
           {delta}
         </span>
@@ -348,12 +348,12 @@ const ReflectionRow = ({ r }: { r: JourneyReflection }) => {
     <div className="surface-panel rounded-xl px-3 py-2.5">
       <div className="flex items-center gap-2 mb-1">
         {mood && <span className="text-sm leading-none">{mood}</span>}
-        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+        <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60">
           {relDate(r.reflection_date)}
         </span>
       </div>
       {!hasBody ? (
-        <p className="text-[11px] text-muted-foreground/70 italic">Checked in.</p>
+        <p className="text-[12px] text-muted-foreground/70 italic">Checked in.</p>
       ) : (
         <div className="space-y-1">
           {r.win?.trim() && (

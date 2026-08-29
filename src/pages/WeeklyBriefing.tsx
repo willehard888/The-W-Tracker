@@ -187,7 +187,7 @@ const WeeklyBriefing = () => {
           transition={{ duration: 0.5 }}
           className="mb-6"
         >
-          <p className="text-[10px] uppercase tracking-[0.22em] text-gold/80 font-bold mb-2">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80 font-bold mb-2">
             Weekly Briefing · {formatDateRange(briefing.week_start, briefing.week_end)}
           </p>
           <h1 className="font-display font-black text-2xl leading-tight tracking-tight text-gradient-gold">

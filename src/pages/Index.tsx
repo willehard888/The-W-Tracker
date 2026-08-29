@@ -138,7 +138,7 @@ const Index = () => {
         .eq("user_id", profile.user_id)
         .order("checked_in_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
       return data;
     },
     enabled: !!profile,
@@ -291,7 +291,7 @@ const Index = () => {
                       <span className="text-muted-foreground font-semibold"> · #<AnimatedNumber value={rankData!.rank} duration={700} /></span>
                     )}
                   </p>
-                  <p className="text-[11px] text-muted-foreground leading-tight">
+                  <p className="text-[12px] text-muted-foreground leading-tight">
                     {sane
                       ? `of ${(rankData?.totalUsers ?? 0).toLocaleString()} · Lv ${profile.level} · ${Math.max(0, xpToNext - profile.xp)} XP to Lv ${profile.level + 1}`
                       : "Your climb starts today"}
@@ -307,13 +307,13 @@ const Index = () => {
               type="button"
               aria-label="Open your Whealth Index"
               onClick={() => navigate("/journey")}
-              className="relative shrink-0 inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/30 px-2 h-6 text-[10px] font-black text-gold tabular-nums active:scale-95 transition before:absolute before:-inset-2.5 before:content-['']"
+              className="relative shrink-0 inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/30 px-2 h-6 text-[11px] font-black text-gold tabular-nums active:scale-95 transition before:absolute before:-inset-2.5 before:content-['']"
             >
-              <Crown size={10} strokeWidth={2.8} aria-hidden /> {liveWhealth.overall}
+              <Crown size={12} strokeWidth={2.8} aria-hidden /> {liveWhealth.overall}
             </button>
           )}
           {pulse.hasSnapshot && pulse.rankDelta > 0 ? (
-            <span className="relative pointer-events-none shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 text-[10px] font-black text-teal">
+            <span className="relative pointer-events-none shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 text-[11px] font-black text-teal">
               <ArrowUp aria-hidden size={11} strokeWidth={3} /> {pulse.rankDelta} today
             </span>
           ) : (
@@ -409,7 +409,7 @@ const Index = () => {
       <Reveal className="mb-2" delay={320}>
         <div className="flex items-end justify-between mb-3 px-0.5">
           <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/80 mb-1">
+            <span className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/80 mb-1">
               Achievements
             </span>
             <h2 className="font-display font-bold text-base tracking-tight leading-none">
@@ -456,7 +456,7 @@ const Index = () => {
 
       {/* Tier message footer — boosted contrast (was muted-foreground/40 → barely visible) */}
       <div className="mt-6 mb-2 text-center">
-        <p className="text-[10px] text-muted-foreground/75 font-semibold tracking-[0.22em] uppercase">
+        <p className="text-[11px] text-muted-foreground/75 font-semibold tracking-[0.22em] uppercase">
           {tierConfig.message}
         </p>
       </div>

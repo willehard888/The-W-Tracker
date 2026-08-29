@@ -164,7 +164,7 @@ const ChooseUsername = () => {
           >
             {saving ? "Claiming…" : "Claim it"}
           </Button>
-          <p className="text-center text-[11px] text-muted-foreground">
+          <p className="text-center text-[12px] text-muted-foreground">
             Locked permanently once set — choose one that feels like you.
           </p>
         </form>

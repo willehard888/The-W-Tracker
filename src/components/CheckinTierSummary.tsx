@@ -108,15 +108,15 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
         >
           <span
             className={cn(
-              "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] uppercase tracking-[0.22em] font-black ring-1",
+              "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.22em] font-black ring-1",
               accent.ring,
               cfg.rank >= 5
                 ? "bg-background/60 text-foreground"
                 : "bg-background/60 text-foreground/80",
             )}
           >
-            {cfg.rank >= 5 && <Flame aria-hidden size={10} strokeWidth={3} fill="currentColor" className="text-[hsl(var(--ember))]" />}
-            {cfg.rank === 6 && <Sparkles aria-hidden size={10} strokeWidth={3} className="text-gold" />}
+            {cfg.rank >= 5 && <Flame aria-hidden size={12} strokeWidth={3} fill="currentColor" className="text-[hsl(var(--ember))]" />}
+            {cfg.rank === 6 && <Sparkles aria-hidden size={12} strokeWidth={3} className="text-gold" />}
             {cfg.label} Tier
           </span>
         </motion.div>
@@ -177,14 +177,14 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
           {cfg.rank >= 4 && (
             <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(115deg,transparent_30%,hsl(var(--gold)/0.18)_50%,transparent_70%)] [background-size:200%_100%] [animation:shimmer-slide_3.5s_linear_infinite]" />
           )}
-          <p className="relative text-[10px] uppercase tracking-[0.22em] text-gold/80 font-black mb-1">
+          <p className="relative text-[11px] uppercase tracking-[0.22em] text-gold/80 font-black mb-1">
             Experience earned
           </p>
           <div className="relative flex items-baseline justify-center gap-1">
             <span className="text-gold font-display text-5xl font-black glow-gold-text">+</span>
             <XpCounter value={summary.xpEarned} className="text-gold font-display text-5xl font-black glow-gold-text" />
           </div>
-          <p className="relative text-[11px] text-muted-foreground mt-2">
+          <p className="relative text-[12px] text-muted-foreground mt-2">
             <span className="font-bold text-foreground/80 tabular-nums">{summary.completedCount}/{summary.maxCount}</span> tasks · <span className={cn("font-bold tabular-nums", isPerfect ? "text-gold" : "text-foreground/70")}>{perfPct}%</span> output
           </p>
         </motion.div>
@@ -207,14 +207,14 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
           >
             <div className="flex items-center gap-1.5 mb-1">
               <Trophy aria-hidden size={12} className={leveledUp ? "text-gold" : "text-muted-foreground"} />
-              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-black">Level</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-black">Level</p>
               {leveledUp && (
                 <motion.span
                   animate={{ y: [0, -2, 0] }}
                   transition={{ duration: 1.4, repeat: Infinity }}
-                  className="ml-auto flex items-center gap-0.5 text-[9px] font-black text-gold"
+                  className="ml-auto flex items-center gap-0.5 text-[10px] font-black text-gold"
                 >
-                  <ArrowUp aria-hidden size={10} strokeWidth={3} />UP
+                  <ArrowUp aria-hidden size={12} strokeWidth={3} />UP
                 </motion.span>
               )}
             </div>
@@ -231,7 +231,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
                 className={cn("h-full rounded-full", leveledUp ? "bg-gradient-to-r from-gold to-gold-light" : "bg-foreground/40")}
               />
             </div>
-            <p className="text-[9px] text-muted-foreground mt-1 tabular-nums font-bold">
+            <p className="text-[10px] text-muted-foreground mt-1 tabular-nums font-bold">
               {summary.xpToNextLevel} XP to next
             </p>
           </div>
@@ -263,7 +263,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
                     : "text-streak-orange"
                 }
               />
-              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-black">Streak</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-black">Streak</p>
             </div>
             <p
               className={cn(
@@ -280,7 +280,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
               <AnimatedNumber value={summary.newStreak} duration={800} />
               <span className="text-base font-bold opacity-60">d</span>
             </p>
-            <p className="text-[9px] text-muted-foreground mt-2 font-bold uppercase tracking-wider">
+            <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-wider">
               {summary.streakBroken
                 ? "Reset · Day 1"
                 : summary.newStreak >= 30
@@ -302,7 +302,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
             cfg.rank >= 5 ? "border-gold/30" : "border-border",
           )}
         >
-          <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-black">
+          <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground font-black">
             <Target aria-hidden size={11} strokeWidth={3} />
             Total XP
           </span>
@@ -347,7 +347,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9 }}
-            className="mt-4 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.22em] font-black text-gold"
+            className="mt-4 flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-[0.22em] font-black text-gold"
           >
             <Crown aria-hidden size={11} strokeWidth={3} />
             {cfg.rank === 6 ? "Founders Circle is watching" : "Apex doesn't skip days"}
@@ -413,7 +413,7 @@ const PostCheckinCoachLine = ({
         />
       </motion.div>
       {canContinue && (
-        <p className="text-[10px] font-bold text-xp-green/80 pl-3.5 flex items-center gap-1">
+        <p className="text-[11px] font-bold text-xp-green/80 pl-3.5 flex items-center gap-1">
           Tap to ask the Coach how to improve →
         </p>
       )}

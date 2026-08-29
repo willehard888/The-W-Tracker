@@ -10,6 +10,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTrialAccess } from "@/hooks/use-trial-access";
 
 export interface CoachBriefPrescription {
   label: string;
@@ -33,11 +34,14 @@ const todayISO = () => {
 
 export const useCoachBrief = () => {
   const { user } = useAuth();
+  const { hasAccess, loading: accessLoading } = useTrialAccess();
   const date = todayISO();
 
   const query = useQuery<CoachBrief | null>({
     queryKey: ["coach-brief", user?.id, date],
-    enabled: !!user?.id,
+    // Mirror the server's has_active_access gate — calling anyway meant every
+    // expired-trial user fired two 403s at the edge function on each visit.
+    enabled: !!user?.id && !accessLoading && hasAccess,
     staleTime: 23 * 60 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     retry: 1,

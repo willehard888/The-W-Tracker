@@ -86,10 +86,10 @@ const LibraryHub = () => {
             <Crown aria-hidden size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85">
               The Library
             </p>
-            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">
+            <p className="text-[12px] text-muted-foreground leading-tight mt-0.5">
               Everything your membership unlocks
             </p>
           </div>
@@ -106,11 +106,11 @@ const LibraryHub = () => {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <p className="text-[13px] font-bold leading-tight truncate">{row.title}</p>
-                <span className="text-[9px] font-black text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-0.5 tabular-nums shrink-0">
+                <span className="text-[10px] font-black text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-0.5 tabular-nums shrink-0">
                   {row.chip}
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground leading-snug truncate mt-0.5">{row.sub}</p>
+              <p className="text-[11px] text-muted-foreground leading-snug truncate mt-0.5">{row.sub}</p>
             </div>
             <ChevronRight aria-hidden size={16} className="text-gold/60 shrink-0" />
           </button>

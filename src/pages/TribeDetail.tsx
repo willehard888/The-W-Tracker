@@ -109,6 +109,13 @@ const TribeDetail = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  // Revoke the previous video blob URL whenever the preview changes or the
+  // page unmounts — WKWebView otherwise holds every tried clip in memory.
+  useEffect(() => {
+    const url = videoPreview;
+    return () => { if (url?.startsWith("blob:")) URL.revokeObjectURL(url); };
+  }, [videoPreview]);
+
   const [posting, setPosting] = useState(false);
   const [uploadPhase, setUploadPhase] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -664,7 +671,7 @@ const TribeDetail = () => {
             }}
           >
             <p
-              className="text-[10px] uppercase tracking-[0.22em] font-black text-center mb-1"
+              className="text-[11px] uppercase tracking-[0.22em] font-black text-center mb-1"
               style={{ color: tierUp.accent }}
             >
               Tribe Fire promoted
@@ -714,8 +721,8 @@ const TribeDetail = () => {
             <UserCheck size={14} className="text-gold" strokeWidth={2.6} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] uppercase tracking-widest font-black text-gold">Pending requests</p>
-            <p className="text-[10px] text-muted-foreground truncate">
+            <p className="text-[11px] uppercase tracking-widest font-black text-gold">Pending requests</p>
+            <p className="text-[11px] text-muted-foreground truncate">
               {pendingCount} {pendingCount === 1 ? "person wants" : "people want"} to join
             </p>
           </div>
@@ -731,8 +738,8 @@ const TribeDetail = () => {
             <ShieldAlert size={14} className="text-destructive" strokeWidth={2.6} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] uppercase tracking-widest font-black text-destructive">Reported posts</p>
-            <p className="text-[10px] text-muted-foreground truncate">
+            <p className="text-[11px] uppercase tracking-widest font-black text-destructive">Reported posts</p>
+            <p className="text-[11px] text-muted-foreground truncate">
               {reportedCount} {reportedCount === 1 ? "post needs" : "posts need"} your review
             </p>
           </div>
@@ -747,14 +754,14 @@ const TribeDetail = () => {
             <span className="eyebrow">Today</span>
             <span className="flex items-center gap-3">
               {todayPulse && todayPulse.total > 0 && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-[hsl(var(--ember))]">
+                <span className="inline-flex items-center gap-1 text-[12px] font-bold tabular-nums text-[hsl(var(--ember))]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--ember))]" />
                   {todayPulse.checked}/{todayPulse.total} lit today
                 </span>
               )}
               {isOwner && (tribe.weekly_xp ?? 0) > 0 && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-gold">
-                  <Zap size={10} fill="currentColor" /> +{(tribe.weekly_xp ?? 0).toLocaleString()} XP
+                <span className="inline-flex items-center gap-1 text-[12px] font-bold tabular-nums text-gold">
+                  <Zap size={12} fill="currentColor" /> +{(tribe.weekly_xp ?? 0).toLocaleString()} XP
                 </span>
               )}
             </span>
@@ -780,7 +787,7 @@ const TribeDetail = () => {
                   <span className="text-[13px] font-bold">
                     {challenge.progress}/{challenge.target} check-ins together
                   </span>
-                  <span className="text-[11px] tabular-nums text-muted-foreground">
+                  <span className="text-[12px] tabular-nums text-muted-foreground">
                     {done ? "Crushed 🏆 +25 XP each" : failed ? "last week missed" : `${daysLeft}d left · ${pct}%`}
                   </span>
                 </div>
@@ -871,7 +878,7 @@ const TribeDetail = () => {
                   <p className="text-[12px] font-semibold text-foreground/80 flex-1 min-w-0 truncate">
                     {milestoneLine(item.ms!).text}
                   </p>
-                  <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+                  <span className="text-[11px] text-muted-foreground tabular-nums shrink-0">
                     {format(new Date(item.ms!.created_at), "MMM d")}
                   </span>
                 </div>
@@ -898,7 +905,7 @@ const TribeDetail = () => {
             <div className="max-w-md mx-auto pointer-events-auto rounded-2xl border border-[hsl(var(--ember))]/45 bg-background/90 backdrop-blur-md shadow-[0_8px_32px_hsl(0_0%_0%/0.5)] p-3 flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-black truncate">{tribe.name}</p>
-                <p className="text-[10px] text-muted-foreground truncate">
+                <p className="text-[11px] text-muted-foreground truncate">
                   {tribe.member_count} member{tribe.member_count === 1 ? "" : "s"}
                   {collectiveStreak > 0 ? ` · ${collectiveStreak}d collective fire` : ""}
                 </p>

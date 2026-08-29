@@ -7,10 +7,12 @@ interface Props {
   opp: { username?: string; xp?: number; streak?: number };
   typeInfo: BattleTypeInfo;
   onRespond: (battleId: string, accept: boolean) => void;
+  /** True while this battle's respond RPC is in flight — disables both buttons. */
+  responding?: boolean;
 }
 
 /** An incoming challenge awaiting the user's accept/decline. */
-const BattleIncomingCard = ({ battle, opp, typeInfo, onRespond }: Props) => (
+const BattleIncomingCard = ({ battle, opp, typeInfo, onRespond, responding = false }: Props) => (
   <div className="rounded-xl border border-gold/20 p-4 glass-3d depth-realistic">
     <div className="flex items-center gap-3 mb-3">
       <div className="h-10 w-10 rounded-full gradient-gold flex items-center justify-center text-sm font-black text-primary-foreground">
@@ -29,10 +31,10 @@ const BattleIncomingCard = ({ battle, opp, typeInfo, onRespond }: Props) => (
       </div>
     </div>
     <div className="flex gap-2">
-      <Button variant="ember" size="sm" className="flex-1" onClick={() => onRespond(battle.id, true)}>
+      <Button variant="ember" size="sm" className="flex-1" disabled={responding} loading={responding} onClick={() => onRespond(battle.id, true)}>
         <CheckCircle size={14} /> Accept
       </Button>
-      <Button variant="secondary" size="sm" className="flex-1" onClick={() => onRespond(battle.id, false)}>
+      <Button variant="secondary" size="sm" className="flex-1" disabled={responding} onClick={() => onRespond(battle.id, false)}>
         <XCircle size={14} /> Decline
       </Button>
     </div>

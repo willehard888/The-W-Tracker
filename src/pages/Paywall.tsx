@@ -264,7 +264,7 @@ const Paywall = () => {
           <p className="text-xs font-bold text-gold tracking-wide">
             🎁 Free membership until {creditsUntilLabel}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-[12px] text-muted-foreground mt-1">
             Earned from referrals — the app stays fully unlocked until then.
           </p>
         </div>
@@ -296,7 +296,7 @@ const Paywall = () => {
 
           {/* Earned-Apex disclaimer */}
           <div className="mt-3 rounded-xl border border-gold/15 bg-gold/[0.03] p-3.5 text-center">
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <p className="text-[12px] text-muted-foreground leading-relaxed">
               <span className="text-gold font-semibold">Apex status</span> (top
               10% by rank, activity & streak) can't be bought — only earned.{" "}
               Premium unlocks <span className="text-foreground font-semibold">the full app</span>.
@@ -316,7 +316,7 @@ const Paywall = () => {
       </div>
 
       <div className="text-center mt-4">
-        <p className="text-[10px] text-muted-foreground tracking-wider uppercase">
+        <p className="text-[11px] text-muted-foreground tracking-wider uppercase">
           {isNative ? "Secure in-app purchase • Cancel anytime" : "Secure payment via Stripe • Cancel anytime"}
         </p>
       </div>
@@ -324,14 +324,14 @@ const Paywall = () => {
       <div className="flex items-center justify-center gap-4 mt-4 mb-6">
         <button
           onClick={() => navigate("/privacy")}
-          className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+          className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
         >
           Privacy Policy
         </button>
-        <span className="text-[10px] text-muted-foreground">•</span>
+        <span className="text-[11px] text-muted-foreground">•</span>
         <button
           onClick={() => navigate("/terms")}
-          className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+          className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
         >
           Terms of Use
         </button>

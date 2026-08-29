@@ -53,7 +53,7 @@ const RequirementRow = ({
         </span>
         <span
           className={cn(
-            "ml-auto text-[11px] tabular-nums font-bold",
+            "ml-auto text-[12px] tabular-nums font-bold",
             met ? "text-gold" : "text-muted-foreground",
           )}
         >
@@ -99,10 +99,10 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[11px] font-black text-gold tracking-widest uppercase">
+            <p className="text-[12px] font-black text-gold tracking-widest uppercase">
               Road to Elite
             </p>
-            <span className="text-[11px] font-bold text-gold tabular-nums">
+            <span className="text-[12px] font-bold text-gold tabular-nums">
               {r.overallPercent}%
             </span>
           </div>
@@ -114,7 +114,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
               className="h-full rounded-full gradient-gold"
             />
           </div>
-          <p className="text-[10px] text-muted-foreground mt-1">
+          <p className="text-[11px] text-muted-foreground mt-1">
             {r.metCount}/2 paths met • Elite is earned, not bought
           </p>
         </div>
@@ -149,7 +149,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
               <h3 className="font-display font-black text-base tracking-tight leading-none">
                 Road to Elite
               </h3>
-                <p className="text-[10px] text-muted-foreground mt-1 tracking-wider uppercase font-semibold">
+                <p className="text-[11px] text-muted-foreground mt-1 tracking-wider uppercase font-semibold">
                   Top 20% or 20 days + 21 streak
               </p>
             </div>
@@ -159,7 +159,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
               {r.overallPercent}
               <span className="text-sm text-muted-foreground">%</span>
             </p>
-            <p className="text-[9px] text-muted-foreground mt-1 tracking-wider uppercase">
+            <p className="text-[10px] text-muted-foreground mt-1 tracking-wider uppercase">
               {r.metCount}/2 paths met
             </p>
           </div>
@@ -195,7 +195,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
 
         {/* Footer message */}
         <div className="mt-4 pt-3 border-t border-gold/15">
-          <p className="text-[11px] text-center text-muted-foreground italic font-medium">
+          <p className="text-[12px] text-center text-muted-foreground italic font-medium">
             Reach <span className="text-gold/90 font-semibold">top 20%</span> or prove consistency with <span className="text-gold/90 font-semibold">20 active days + 21 streak</span>.
           </p>
         </div>

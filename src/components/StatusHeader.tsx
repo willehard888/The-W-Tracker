@@ -245,7 +245,7 @@ const StatusHeader = () => {
           >
             <BellIcon aria-hidden size={18} />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[hsl(var(--ember))] text-white text-[10px] font-black flex items-center justify-center tabular-nums border-2 border-[hsl(var(--background))]">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[hsl(var(--ember))] text-white text-[11px] font-black flex items-center justify-center tabular-nums border-2 border-[hsl(var(--background))]">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
@@ -295,7 +295,7 @@ const StatusHeader = () => {
                 <span
                   role="img"
                   aria-label={`${(profile as any).streak_shields} streak shield${(profile as any).streak_shields === 1 ? "" : "s"} — a missed day costs a shield, not your streak`}
-                  className="shrink-0 inline-flex items-center gap-0.5 text-[10px] font-bold text-teal leading-none"
+                  className="shrink-0 inline-flex items-center gap-0.5 text-[11px] font-bold text-teal leading-none"
                 >
                   <ShieldIcon size={11} strokeWidth={2.8} aria-hidden />{(profile as any).streak_shields}
                 </span>
@@ -309,13 +309,13 @@ const StatusHeader = () => {
               <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
                 <span
                   className={cn(
-                    "truncate min-w-0 text-[10px] uppercase tracking-[0.22em] font-black leading-none",
+                    "truncate min-w-0 text-[11px] uppercase tracking-[0.22em] font-black leading-none",
                     config.textClass,
                   )}
                 >
                   {formatTier(tier, division)}
                 </span>
-                <span className="hidden min-[400px]:inline truncate shrink-[2] text-[10px] text-muted-foreground/70 leading-none">
+                <span className="hidden min-[400px]:inline truncate shrink-[2] text-[11px] text-muted-foreground/70 leading-none">
                   · {topShareLabel(tier, rankData)}
                 </span>
               </div>
@@ -332,7 +332,7 @@ const StatusHeader = () => {
                     type="button"
                     onClick={() => navigate(target)}
                     className={cn(
-                      "pointer-events-auto relative shrink-0 inline-flex items-center gap-0.5 text-[10px] uppercase tracking-wider font-black leading-none whitespace-nowrap px-2 h-[22px] rounded-full border transition-all active:scale-95 cursor-pointer before:absolute before:-inset-3 before:content-['']",
+                      "pointer-events-auto relative shrink-0 inline-flex items-center gap-0.5 text-[11px] uppercase tracking-wider font-black leading-none whitespace-nowrap px-2 h-[22px] rounded-full border transition-all active:scale-95 cursor-pointer before:absolute before:-inset-3 before:content-['']",
                       isLegendTarget
                         ? "text-gold border-gold/55 bg-gradient-to-r from-[hsl(280_70%_55%)]/15 via-gold/12 to-[hsl(350_80%_55%)]/15 hover:border-gold shadow-[0_0_8px_hsl(var(--gold)/0.30)]"
                         : "text-[hsl(18_95%_62%)] border-[hsl(var(--ember))]/50 bg-[hsl(var(--ember))]/10 hover:border-[hsl(var(--ember))] shadow-[0_0_6px_hsl(var(--ember)/0.20)]",
@@ -340,7 +340,7 @@ const StatusHeader = () => {
                     aria-label={`How to reach ${label}`}
                   >
                     → {label}
-                    <ChevronRight size={9} aria-hidden />
+                    <ChevronRight size={11} aria-hidden />
                   </button>
                 );
               })()}
@@ -368,7 +368,7 @@ const StatusHeader = () => {
                 strokeWidth={3}
                 fill="currentColor"
               />
-              <span className="relative z-10 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
+              <span className="relative z-10 text-[11px] font-bold uppercase tracking-wider text-primary-foreground">
                 Apex
               </span>
             </div>
@@ -378,7 +378,7 @@ const StatusHeader = () => {
               {/* Membership indicator — NOT the earned "Elite" rank tier (that's
                   shown in the tier row above). Buying a subscription must never
                   read as having earned the Elite status. */}
-              <span className="relative z-10 text-[10px] font-bold text-primary-foreground uppercase tracking-wider">
+              <span className="relative z-10 text-[11px] font-bold text-primary-foreground uppercase tracking-wider">
                 Premium
               </span>
             </div>
@@ -396,10 +396,10 @@ const StatusHeader = () => {
               {trialUrgent ? <Clock aria-hidden size={11} /> : <Crown aria-hidden size={11} />}
               {/* Narrow screens keep just crown + days — the long label was
                   squeezing the tier row into "RE…" next to the next-tier chip. */}
-              <span className="hidden min-[400px]:inline text-[10px] font-bold uppercase tracking-wider">
+              <span className="hidden min-[400px]:inline text-[11px] font-bold uppercase tracking-wider">
                 {trialUrgent ? `Ends in ${trialLabel}` : `Full access · ${trialLabel}`}
               </span>
-              <span className="min-[400px]:hidden text-[10px] font-bold uppercase tracking-wider">
+              <span className="min-[400px]:hidden text-[11px] font-bold uppercase tracking-wider">
                 {trialLabel}
               </span>
             </button>

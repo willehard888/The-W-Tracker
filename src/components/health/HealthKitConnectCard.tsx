@@ -65,7 +65,7 @@ const HealthKitConnectCard = () => {
         <p className="text-[13px] font-bold leading-tight mb-1">
           Verify your check-ins automatically
         </p>
-        <p className="text-[11px] text-muted-foreground leading-snug mb-3">
+        <p className="text-[12px] text-muted-foreground leading-snug mb-3">
           Connect HealthKit — we'll cross-check your workouts and steps against
           actual Apple Health data. Verified check-ins earn the
           "Verified Performer" badge.
@@ -88,7 +88,7 @@ const HealthKitConnectCard = () => {
     <div className="rounded-2xl border border-xp-green/30 bg-gradient-to-b from-xp-green/[0.06] to-card p-4">
       <div className="flex items-center gap-2 mb-2">
         <ShieldCheck size={14} className="text-xp-green" />
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-xp-green">
+        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-xp-green">
           {stats?.is_verified_performer ? "Verified Performer ✓" : "Apple Health · Connected"}
         </p>
       </div>
@@ -109,7 +109,7 @@ const HealthKitConnectCard = () => {
         size="sm"
         loading={syncing}
         onClick={() => { void syncToday(); }}
-        className="w-full mt-3 text-[11px]"
+        className="w-full mt-3 text-[12px]"
       >
         <Check size={11} /> Sync now
       </Button>
@@ -119,13 +119,13 @@ const HealthKitConnectCard = () => {
 
 const Tile = ({ label, value, sub }: { label: string; value: string; sub: string }) => (
   <div className="surface-card surface-card-quiet px-3 py-2.5">
-    <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground mb-0.5">
+    <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-0.5">
       {label}
     </p>
     <p className="text-base font-display font-black text-foreground tabular-nums leading-none mb-1">
       {value}
     </p>
-    <p className="text-[10px] text-muted-foreground leading-snug">{sub}</p>
+    <p className="text-[11px] text-muted-foreground leading-snug">{sub}</p>
   </div>
 );
 

@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { friendlyError } from "@/lib/error-copy";
 
 const Sparkline = ({ values }: { values: number[] }) => {
-  if (values.length < 2) return <div className="h-12 flex items-center text-[10px] text-muted-foreground">Not enough data yet.</div>;
+  if (values.length < 2) return <div className="h-12 flex items-center text-[11px] text-muted-foreground">Not enough data yet.</div>;
   const w = 280;
   const h = 48;
   const max = Math.max(...values, 100);
@@ -92,19 +92,19 @@ const PerformanceOSDashboard = () => {
       >
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80">Performance Score</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/80">Performance Score</p>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="font-display text-4xl font-black tabular-nums leading-none">
                 {latest ?? "—"}
               </span>
               <span className="text-xs text-muted-foreground">/ 100</span>
               {delta !== 0 && latest != null && (
-                <span className={cn("inline-flex items-center gap-0.5 text-[11px] font-bold", trendColor)}>
+                <span className={cn("inline-flex items-center gap-0.5 text-[12px] font-bold", trendColor)}>
                   <TrendIcon size={11} /> {Math.abs(delta)}
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1">28-day trend</p>
+            <p className="text-[11px] text-muted-foreground mt-1">28-day trend</p>
           </div>
           <Sparkles size={16} className="text-gold/60" />
         </div>
@@ -119,8 +119,8 @@ const PerformanceOSDashboard = () => {
           { label: "Consistency", val: consistencyAvg, max: 20 },
         ].map((c) => (
           <div key={c.label} className="surface-card p-3">
-            <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">{c.label}</p>
-            <p className="text-lg font-black tabular-nums mt-0.5">{c.val}<span className="text-[10px] text-muted-foreground/60">/{c.max}</span></p>
+            <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{c.label}</p>
+            <p className="text-lg font-black tabular-nums mt-0.5">{c.val}<span className="text-[11px] text-muted-foreground/60">/{c.max}</span></p>
             <div className="h-1 rounded-full bg-card mt-1 overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] transition-all"
@@ -140,26 +140,26 @@ const PerformanceOSDashboard = () => {
         >
           <div className="flex items-center gap-2 mb-2">
             <Calendar size={12} className="text-gold" />
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/80">
               Week of {new Date(review.week_starts_on).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
             </p>
           </div>
           {review.driver_of_week && (
             <div className="mb-2.5">
-              <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Driver of the week</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Driver of the week</p>
               <p className="text-sm font-bold mt-0.5">{review.driver_of_week}</p>
             </div>
           )}
           {review.next_week_focus && (
             <div className="mb-2.5">
-              <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Next week focus</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Next week focus</p>
               <p className="text-[12px] mt-0.5 leading-relaxed">{review.next_week_focus}</p>
             </div>
           )}
           {review.program_tweak && (
             <div className="rounded-lg border border-gold/20 bg-gold/5 px-2.5 py-1.5 mt-2">
-              <p className="text-[9px] font-bold uppercase tracking-wider text-gold/80">Program tweak</p>
-              <p className="text-[11px] mt-0.5">{review.program_tweak}</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-gold/80">Program tweak</p>
+              <p className="text-[12px] mt-0.5">{review.program_tweak}</p>
             </div>
           )}
         </motion.div>

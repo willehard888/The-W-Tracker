@@ -130,17 +130,17 @@ const CheckinTierHeader = ({
           <div className="flex items-center gap-1.5 mb-0.5">
             <span
               className={cn(
-                "inline-flex items-center gap-1 px-1.5 py-[2px] rounded text-[8px] uppercase tracking-[0.22em] font-black ring-1",
+                "inline-flex items-center gap-1 px-1.5 py-[2px] rounded text-[10px] uppercase tracking-[0.22em] font-black ring-1",
                 accent.chipBg,
                 accent.chipText,
                 accent.ring,
               )}
             >
-              {cfg.rank >= 5 && <Flame aria-hidden size={9} strokeWidth={3} fill="currentColor" />}
+              {cfg.rank >= 5 && <Flame aria-hidden size={11} strokeWidth={3} fill="currentColor" />}
               {formatTierShort(tier, division)}
             </span>
             {username && (
-              <span className="text-[11px] font-bold text-foreground/80 truncate">
+              <span className="text-[12px] font-bold text-foreground/80 truncate">
                 @{username}
               </span>
             )}
@@ -174,7 +174,7 @@ const CheckinTierHeader = ({
           <span className="text-base font-display font-black text-gold tabular-nums leading-none">
             {totalXp}
           </span>
-          <span className="text-[9px] text-gold/70 font-bold">XP</span>
+          <span className="text-[10px] text-gold/70 font-bold">XP</span>
         </motion.div>
       </div>
 
@@ -207,7 +207,7 @@ const CheckinTierHeader = ({
           >
             {streak}
           </span>
-          <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">
+          <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
             day{streak === 1 ? "" : "s"}
           </span>
         </div>
@@ -215,13 +215,13 @@ const CheckinTierHeader = ({
         {/* Progress bar with aggressive label */}
         <div className="min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[9px] uppercase tracking-[0.22em] font-black text-muted-foreground flex items-center gap-1">
-              <Target aria-hidden size={9} strokeWidth={3} />
+            <span className="text-[10px] uppercase tracking-[0.22em] font-black text-muted-foreground flex items-center gap-1">
+              <Target aria-hidden size={11} strokeWidth={3} />
               Today
             </span>
             <span
               className={cn(
-                "text-[11px] font-display font-black tabular-nums",
+                "text-[12px] font-display font-black tabular-nums",
                 perfPercent >= 80
                   ? "text-gold"
                   : perfPercent >= 50
@@ -262,9 +262,9 @@ const CheckinTierHeader = ({
         <motion.p
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-2 flex items-center gap-1 text-[10px] uppercase tracking-wider font-black text-destructive/90"
+          className="mt-2 flex items-center gap-1 text-[11px] uppercase tracking-wider font-black text-destructive/90"
         >
-          <AlertTriangle aria-hidden size={10} strokeWidth={3} />
+          <AlertTriangle aria-hidden size={12} strokeWidth={3} />
           {cfg.pressureMessage}
         </motion.p>
       )}
@@ -272,9 +272,9 @@ const CheckinTierHeader = ({
         <motion.p
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-2 flex items-center gap-1 text-[10px] uppercase tracking-wider font-black text-gold"
+          className="mt-2 flex items-center gap-1 text-[11px] uppercase tracking-wider font-black text-gold"
         >
-          <TrendingUp aria-hidden size={10} strokeWidth={3} />
+          <TrendingUp aria-hidden size={12} strokeWidth={3} />
           You're crushing it — submit & lock the day in.
         </motion.p>
       )}

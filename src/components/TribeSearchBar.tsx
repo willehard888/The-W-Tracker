@@ -37,15 +37,20 @@ const TribeSearchBar = ({ onChanged }: Props) => {
       return;
     }
     setLoading(true);
+    // clearTimeout can't recall a request already in flight — the active flag
+    // stops a slow stale response from overwriting a newer query's results.
+    let active = true;
     debounceRef.current = setTimeout(async () => {
       const { data, error } = await supabase.rpc("search_tribes" as any, {
         p_query: query.trim(),
         p_limit: 20,
       });
+      if (!active) return;
       if (!error && data) setResults(data as any);
       setLoading(false);
     }, 300);
     return () => {
+      active = false;
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [query]);
@@ -83,21 +88,21 @@ const TribeSearchBar = ({ onChanged }: Props) => {
   const renderActionButton = (r: SearchResult) => {
     if (r.viewer_status === "member") {
       return (
-        <Button size="sm" variant="outline" className="h-8 text-[11px]" onClick={() => handleAction(r)}>
+        <Button size="sm" variant="outline" className="h-8 text-[12px]" onClick={() => handleAction(r)}>
           Open
         </Button>
       );
     }
     if (r.viewer_status === "pending_join") {
       return (
-        <Button size="sm" variant="outline" disabled className="h-8 text-[11px]">
+        <Button size="sm" variant="outline" disabled className="h-8 text-[12px]">
           <Check aria-hidden size={11} /> Sent
         </Button>
       );
     }
     if (r.viewer_status === "pending_invite") {
       return (
-        <Button size="sm" variant="outline" className="h-8 text-[11px]" onClick={() => navigate("/squad?tab=tribes")}>
+        <Button size="sm" variant="outline" className="h-8 text-[12px]" onClick={() => navigate("/squad?tab=tribes")}>
           Accept invite
         </Button>
       );
@@ -108,7 +113,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
           size="sm"
           onClick={() => handleAction(r)}
           disabled={actingId === r.id}
-          className="h-8 text-[11px] bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
+          className="h-8 text-[12px] bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
         >
           {actingId === r.id ? <Loader2 aria-hidden size={11} className="animate-spin" /> : <Lock aria-hidden size={11} />}
           Request
@@ -120,7 +125,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
         size="sm"
         onClick={() => handleAction(r)}
         disabled={actingId === r.id}
-        className="h-8 text-[11px] bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
+        className="h-8 text-[12px] bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
       >
         {actingId === r.id ? <Loader2 aria-hidden size={11} className="animate-spin" /> : "Join"}
       </Button>
@@ -188,16 +193,16 @@ const TribeSearchBar = ({ onChanged }: Props) => {
                     <div className="flex items-center gap-1.5">
                       <p className="text-sm font-black truncate">{r.name}</p>
                       {r.visibility === "private" && (
-                        <span className="text-[8px] px-1 rounded bg-secondary text-muted-foreground font-black uppercase tracking-widest shrink-0">
+                        <span className="text-[10px] px-1 rounded bg-secondary text-muted-foreground font-black uppercase tracking-widest shrink-0">
                           Private
                         </span>
                       )}
                     </div>
                     {r.description && (
-                      <p className="text-[10px] text-muted-foreground truncate">{r.description}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{r.description}</p>
                     )}
-                    <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                      <Users aria-hidden size={9} /> {r.member_count}
+                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
+                      <Users aria-hidden size={11} /> {r.member_count}
                     </span>
                   </div>
                   {renderActionButton(r)}

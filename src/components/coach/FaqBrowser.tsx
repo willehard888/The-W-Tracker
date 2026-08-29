@@ -32,7 +32,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
           <button
             key={c}
             onClick={() => setActive(c)}
-            className={`shrink-0 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border transition ${
+            className={`shrink-0 text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border transition ${
               active === c
                 ? "border-gold/60 bg-gold/15 text-gold"
                 : "border-border/40 text-muted-foreground hover:border-border"
@@ -50,7 +50,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
             onClick={() => { hapticImpact("light"); onSelect(f); }}
             className="w-full text-left rounded-2xl border border-border/40 bg-card/60 p-3.5 hover:border-gold/40 hover:bg-card/80 transition"
           >
-            <p className="text-[10px] font-black uppercase tracking-widest text-gold/80 mb-1">
+            <p className="text-[11px] font-black uppercase tracking-widest text-gold/80 mb-1">
               {f.category}
             </p>
             <p className="text-sm text-foreground">{f.question}</p>

@@ -192,7 +192,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
           )}
         >
           <p className={cn(
-            "text-[10px] font-black uppercase tracking-[0.22em] mb-3",
+            "text-[11px] font-black uppercase tracking-[0.22em] mb-3",
             isLegendary ? "text-gold" : "text-muted-foreground"
           )}>
             {isLegendary ? "⚡ Legendary Badge Unlocked ⚡" : "Badge Unlocked"}
@@ -203,7 +203,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
             style.ring,
             isLegendary ? "bg-gold/[0.08]" : "bg-card"
           )}>
-            <span className={cn("text-[10px] font-black uppercase tracking-[0.22em]", style.text)}>
+            <span className={cn("text-[11px] font-black uppercase tracking-[0.22em]", style.text)}>
               {badge.rarity}
             </span>
           </div>

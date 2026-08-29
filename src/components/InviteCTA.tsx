@@ -53,11 +53,11 @@ const InviteCTA = ({ referralCount }: InviteCTAProps) => {
           <Gift aria-hidden size={18} className="text-primary-foreground" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] uppercase tracking-widest text-gold/80 font-bold mb-0.5">
+          <p className="text-[11px] uppercase tracking-widest text-gold/80 font-bold mb-0.5">
             Earn free membership
           </p>
           <p className="font-bold text-sm leading-tight">{message.title}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
+          <p className="text-[12px] text-muted-foreground mt-0.5 leading-tight">
             {message.sub}
           </p>
         </div>

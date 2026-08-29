@@ -66,14 +66,14 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
       />
       <div className="relative">
         {/* Header band */}
-        <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold/90 mb-1">
+        <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold/90 mb-1">
           Today · W{currentWeek} · {day.day}
         </p>
         <h2 className="font-display text-[26px] leading-[1.05] font-black tracking-tight">
           {day.focus}
         </h2>
         {!isRest && (
-          <p className="text-[11px] text-muted-foreground mt-1 mb-4">
+          <p className="text-[12px] text-muted-foreground mt-1 mb-4">
             {day.duration_min} min · {day.blocks.length} block{day.blocks.length !== 1 && "s"}
           </p>
         )}
@@ -101,7 +101,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
               ))}
               {day.conditioning && (
                 <li className="pt-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gold mb-0.5">Conditioning</p>
+                  <p className="text-[11px] font-black uppercase tracking-widest text-gold mb-0.5">Conditioning</p>
                   <p className="text-[12px] text-foreground/85">{day.conditioning}</p>
                 </li>
               )}
@@ -121,7 +121,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
           <div className="rounded-xl bg-background/40 border border-border/40 p-4 mb-5">
             <div className="flex items-center gap-2 mb-1.5">
               <Wind size={14} className="text-gold" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-gold">Recovery</p>
+              <p className="text-[11px] font-black uppercase tracking-widest text-gold">Recovery</p>
             </div>
             <p className="text-[12px] text-foreground/85 leading-snug">
               {week!.recovery.mobility_min} min mobility · {week!.recovery.breathwork} · sleep {week!.recovery.sleep_target_h}h.
@@ -156,11 +156,11 @@ const CollapseRow = ({
     )}
   >
     <span className={cn(
-      "text-[10px] font-black uppercase tracking-widest mt-0.5 shrink-0",
+      "text-[11px] font-black uppercase tracking-widest mt-0.5 shrink-0",
       muted ? "text-muted-foreground" : "text-gold",
     )}>{label}</span>
     <span className={cn(
-      "text-[11px] leading-snug flex-1",
+      "text-[12px] leading-snug flex-1",
       open ? "text-foreground/90" : "text-foreground/70 truncate",
     )}>
       {preview}

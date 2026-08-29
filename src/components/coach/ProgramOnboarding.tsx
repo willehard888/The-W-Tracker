@@ -130,7 +130,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
     <div className="px-1 pt-2 pb-8">
       <div className="flex items-center gap-2 mb-1">
         <Sparkles size={14} className="text-gold" />
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">Coach briefing</p>
+        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">Coach briefing</p>
       </div>
       <h2 className="font-display text-2xl font-black tracking-tight leading-tight">Design my next block</h2>
       <p className="text-sm text-muted-foreground mt-1 mb-5">
@@ -139,9 +139,9 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 
       <div className="rounded-2xl border border-[hsl(var(--gold)/0.3)] bg-gradient-to-b from-[hsl(var(--gold)/0.06)] to-card/40 p-4 mb-5">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold">From your athlete profile</p>
+          <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold">From your athlete profile</p>
           <button type="button" onClick={() => navigate("/coach/profile")}
-            className="text-[10px] font-bold text-muted-foreground inline-flex items-center gap-1 hover:text-foreground transition">
+            className="text-[11px] font-bold text-muted-foreground inline-flex items-center gap-1 hover:text-foreground transition">
             <Settings2 size={11} /> Edit
           </button>
         </div>
@@ -172,13 +172,13 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
             rows={3}
             className="w-full resize-none rounded-2xl border border-border/50 bg-card/60 px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
           />
-          <p className="text-[10px] text-muted-foreground/70 mt-1 text-right">{(draft.notes ?? "").length}/200</p>
+          <p className="text-[11px] text-muted-foreground/70 mt-1 text-right">{(draft.notes ?? "").length}/200</p>
         </Field>
       </div>
 
       {lastError && (
         <div className="mt-5 rounded-2xl border border-destructive/50 bg-destructive/10 p-3.5">
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-destructive mb-1">
+          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-destructive mb-1">
             Generation failed — exact reason
           </p>
           <p className="text-[12px] text-foreground/90 leading-snug break-words font-mono">
@@ -190,7 +190,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
       <Button variant="ember" size="lg" className="w-full mt-6" onClick={generate}>
         <Zap size={16} /> Design my block
       </Button>
-      <p className="text-[10px] text-muted-foreground/70 text-center mt-3">
+      <p className="text-[11px] text-muted-foreground/70 text-center mt-3">
         Coach will use your profile, last 30 days of check-ins, and recent reflections to personalize every session.
       </p>
     </div>
@@ -199,7 +199,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 
 const Row = ({ k, v, wide, extra }: { k: string; v: string; wide?: boolean; extra?: React.ReactNode }) => (
   <div className={cn("flex flex-col gap-0.5", wide && "col-span-2")}>
-    <dt className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/70">{k}</dt>
+    <dt className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">{k}</dt>
     <dd className="text-foreground/90 font-medium flex items-center gap-2">{v}{extra}</dd>
   </div>
 );
@@ -208,7 +208,7 @@ const DayDots = ({ active }: { active: number[] }) => (
   <span className="inline-flex gap-0.5 ml-1">
     {DAY_LETTERS.map((l, i) => (
       <span key={i} className={cn(
-        "w-3.5 h-3.5 rounded-[5px] text-[8px] font-black flex items-center justify-center",
+        "w-3.5 h-3.5 rounded-[5px] text-[10px] font-black flex items-center justify-center",
         active.includes(i) ? "bg-[hsl(var(--gold)/0.8)] text-background" : "bg-card/60 text-muted-foreground/50",
       )}>{l}</span>
     ))}
@@ -218,7 +218,7 @@ const DayDots = ({ active }: { active: number[] }) => (
 const Field = forwardRef<HTMLDivElement, { label: string; children: React.ReactNode }>(
   ({ label, children }, ref) => (
     <div ref={ref}>
-      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
+      <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
       {children}
     </div>
   ),

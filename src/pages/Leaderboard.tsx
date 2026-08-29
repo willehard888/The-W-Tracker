@@ -341,7 +341,7 @@ const Leaderboard = () => {
           <Swords aria-hidden size={18} className="text-white" strokeWidth={2.4} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[hsl(18_95%_62%)] mb-0.5">1v1 Battles</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[hsl(18_95%_62%)] mb-0.5">1v1 Battles</p>
           <p className="text-[12px] font-bold leading-tight">Challenge a friend — winner takes the score</p>
         </div>
         <ChevronRight aria-hidden size={16} className="text-muted-foreground shrink-0" />
@@ -359,17 +359,17 @@ const Leaderboard = () => {
         />
         <div className="flex items-center justify-between gap-2 relative">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.22em] text-gold/80 font-bold">Current Season</p>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80 font-bold">Current Season</p>
             <p className="font-display font-bold text-lg tracking-tight mt-0.5">{activeSeason?.name || "Season"}</p>
           </div>
           <div className="text-right">
-            <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-bold">Ends in</p>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground font-bold">Ends in</p>
             <p className="font-display font-black text-sm text-gold flex items-center justify-end gap-1 tabular-nums mt-0.5">
               <Clock3 aria-hidden size={14} /> <CountdownTimer endsAt={activeSeason?.ends_at} />
             </p>
           </div>
         </div>
-        <p className="text-[11px] text-muted-foreground mt-3 relative flex items-center gap-1.5">
+        <p className="text-[12px] text-muted-foreground mt-3 relative flex items-center gap-1.5">
           <Crown aria-hidden size={12} className="text-gold shrink-0" />
           #1 earns <span className="text-gold font-semibold">Season Champion</span> reward + permanent profile badge.
         </p>
@@ -395,7 +395,7 @@ const Leaderboard = () => {
                     <>Make your first check-in · {mode === "season" ? "Season" : "All Time"}</>
                   )}
                 </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
+                <p className="text-[11px] text-muted-foreground mt-0.5">
                   Season wins: <span className="text-gold font-bold">{mySeasonWins}</span>
                 </p>
               </div>
@@ -406,10 +406,10 @@ const Leaderboard = () => {
             </div>
           </div>
           {hasRank && percentile < 50 && (
-            <p className="text-[10px] text-destructive font-bold mt-3 text-center uppercase tracking-wider inline-flex items-center gap-1 w-full justify-center"><AlertTriangle size={11} aria-hidden /> Falling behind — others are gaining</p>
+            <p className="text-[11px] text-destructive font-bold mt-3 text-center uppercase tracking-wider inline-flex items-center gap-1 w-full justify-center"><AlertTriangle size={11} aria-hidden /> Falling behind — others are gaining</p>
           )}
           {hasRank && percentile >= 90 && (
-            <p className="text-[10px] text-gold font-bold mt-3 text-center uppercase tracking-wider inline-flex items-center gap-1 w-full justify-center"><Flame size={11} aria-hidden /> Top {Math.max(1, Math.round(100 - percentile))}% — defend your spot</p>
+            <p className="text-[11px] text-gold font-bold mt-3 text-center uppercase tracking-wider inline-flex items-center gap-1 w-full justify-center"><Flame size={11} aria-hidden /> Top {Math.max(1, Math.round(100 - percentile))}% — defend your spot</p>
           )}
         </div>
       )}
@@ -481,7 +481,7 @@ const Leaderboard = () => {
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
         <div className="flex items-center gap-2 mb-3 px-1">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
-          <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-bold">The Chase</p>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground font-bold">The Chase</p>
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
         </div>
         <div className="space-y-1.5">
@@ -528,22 +528,22 @@ const Leaderboard = () => {
                         aria-label="HealthKit-verified — unfakeable discipline"
                         title="Verified by Apple Health"
                       >
-                        <ShieldCheck aria-hidden size={10} strokeWidth={2.6} />
+                        <ShieldCheck aria-hidden size={12} strokeWidth={2.6} />
                       </span>
                     )}
-                    {isMe && <span className="text-[9px] text-gold/70 font-medium">(you)</span>}
+                    {isMe && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[11px] text-muted-foreground">Lv {user.level}</p>
+                    <p className="text-[12px] text-muted-foreground">Lv {user.level}</p>
                     {user.streak > 0 && (
                       <>
                         <span className="text-muted-foreground/75">•</span>
-                        <StreakFlameInline streak={user.streak} suffix="d" className="text-[10px]" />
+                        <StreakFlameInline streak={user.streak} suffix="d" className="text-[11px]" />
                       </>
                     )}
                     {wins > 0 && (
-                      <p className="text-[10px] text-gold/80 flex items-center gap-0.5">
-                        <Medal aria-hidden size={9} /> {wins}×
+                      <p className="text-[11px] text-gold/80 flex items-center gap-0.5">
+                        <Medal aria-hidden size={11} /> {wins}×
                       </p>
                     )}
                   </div>
@@ -552,7 +552,7 @@ const Leaderboard = () => {
                   <p className={cn("font-display font-black text-sm tabular-nums", isMe && "text-gold")}>
                     {points.toLocaleString()}
                   </p>
-                  <p className="text-[9px] text-muted-foreground/75 uppercase tracking-wider font-bold">
+                  <p className="text-[10px] text-muted-foreground/75 uppercase tracking-wider font-bold">
                     {mode === "season" ? "Season XP" : "XP"}
                   </p>
                 </div>
@@ -659,7 +659,7 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
         />
       )}
 
-      <div className={cn("absolute top-2 right-2 font-display font-black text-[10px] tabular-nums uppercase tracking-wider",
+      <div className={cn("absolute top-2 right-2 font-display font-black text-[11px] tabular-nums uppercase tracking-wider",
         isFirst ? "text-gold" : isSecond ? "text-foreground/60" : "text-amber-600"
       )}>
         {rankLabel}
@@ -689,23 +689,23 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
         tier={user.status_tier || "recruit"}
         className="font-display font-bold text-xs mt-2 truncate max-w-full px-1"
       />
-      {isMe && <span className="text-[9px] text-gold/70 font-medium -mt-0.5">(you)</span>}
+      {isMe && <span className="text-[10px] text-gold/70 font-medium -mt-0.5">(you)</span>}
       <p className={cn(
         "font-display font-black tabular-nums mt-1",
         isFirst ? "text-gold text-xl" : "text-foreground text-sm",
       )}>
         {points.toLocaleString()}
       </p>
-      <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
         {mode === "season" ? "Season XP" : "XP"}
       </p>
       <div className="flex items-center gap-2 mt-1.5 flex-wrap justify-center">
         {user.streak > 0 && (
-          <StreakFlameInline streak={user.streak} suffix="d" className={cn(isFirst ? "text-[11px]" : "text-[10px]")} />
+          <StreakFlameInline streak={user.streak} suffix="d" className={cn(isFirst ? "text-[12px]" : "text-[11px]")} />
         )}
         {wins > 0 && (
-          <p className="text-[9px] text-gold/80 flex items-center gap-0.5">
-            <Medal aria-hidden size={9} /> {wins}×
+          <p className="text-[10px] text-gold/80 flex items-center gap-0.5">
+            <Medal aria-hidden size={11} /> {wins}×
           </p>
         )}
       </div>
@@ -767,10 +767,10 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
         </button>
       </div>
       {/* Swipe hint */}
-      <div className="mt-2 flex items-center justify-center gap-1.5 text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold">
-        <ChevronLeft aria-hidden size={10} className={cn("transition-opacity", isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
+      <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold">
+        <ChevronLeft aria-hidden size={12} className={cn("transition-opacity", isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
         <span>Swipe to switch</span>
-        <ChevronRight aria-hidden size={10} className={cn("transition-opacity", !isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
+        <ChevronRight aria-hidden size={12} className={cn("transition-opacity", !isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
       </div>
     </div>
   );

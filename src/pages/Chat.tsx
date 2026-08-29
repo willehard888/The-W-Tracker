@@ -189,12 +189,12 @@ const Chat = () => {
               <p className="text-sm font-semibold leading-tight truncate flex items-center gap-1.5">
                 @{partner?.username || "..."}
                 {partnerIsElite && (
-                  <span className="text-[9px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-[1px] leading-none">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-[1px] leading-none">
                     Elite
                   </span>
                 )}
               </p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
+              <p className="text-[11px] text-muted-foreground mt-0.5">
                 Level {partner?.level || "?"} · {partnerTier.replace("_", " ")}
               </p>
             </div>
@@ -282,7 +282,7 @@ const Chat = () => {
                 {showTime && (
                   <p
                     className={cn(
-                      "text-[9px] mt-1 px-1",
+                      "text-[10px] mt-1 px-1",
                       isOwn ? "text-gold/50" : "text-muted-foreground/50"
                     )}
                   >

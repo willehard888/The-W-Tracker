@@ -54,7 +54,7 @@ const BattleChallengeModal = ({
                 <span className="text-lg">{bt.emoji}</span>
                 <div>
                   <p className={cn("text-xs font-semibold", selected && "text-gold")}>{bt.label}</p>
-                  <p className="text-[11px] text-muted-foreground">{bt.description}</p>
+                  <p className="text-[12px] text-muted-foreground">{bt.description}</p>
                 </div>
               </button>
             );

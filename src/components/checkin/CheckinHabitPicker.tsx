@@ -143,7 +143,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                 if (!habits?.length) return null;
                 return (
                   <div key={pillar}>
-                    <p className="mb-2 text-[11px] font-black tracking-[0.22em] uppercase text-gold/70">
+                    <p className="mb-2 text-[12px] font-black tracking-[0.22em] uppercase text-gold/70">
                       {PILLAR_LABEL[pillar]}
                     </p>
                     <div className="space-y-2">
@@ -166,10 +166,10 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                                 <p className={cn("font-bold text-[15px] truncate", on && "text-gold")}>{h.label}</p>
                                 {h.verify && <ShieldCheck aria-hidden size={13} className="text-teal shrink-0" />}
                               </div>
-                              {h.note && <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">{h.note}</p>}
+                              {h.note && <p className="text-[12px] text-muted-foreground leading-snug line-clamp-2">{h.note}</p>}
                             </div>
                             {h.core ? (
-                              <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-bold text-muted-foreground/75 uppercase tracking-wide">
+                              <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold text-muted-foreground/75 uppercase tracking-wide">
                                 <Lock aria-hidden size={11} /> Core
                               </span>
                             ) : (
@@ -187,7 +187,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                   </div>
                 );
               })}
-              <p className="text-[11px] text-muted-foreground text-center pt-1 pb-2">
+              <p className="text-[12px] text-muted-foreground text-center pt-1 pb-2">
                 <ShieldCheck aria-hidden size={12} className="inline text-teal mr-1" />
                 marked habits can be auto-verified by Apple Health.
               </p>

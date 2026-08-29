@@ -172,7 +172,7 @@ const Vault = () => {
         </button>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 border border-gold/40 shadow-[0_0_18px_hsl(var(--gold)/0.25)]">
           <Crown size={11} className="text-gold" strokeWidth={2.6} />
-          <span className="text-[10px] font-black tracking-[0.22em] uppercase text-gold">
+          <span className="text-[11px] font-black tracking-[0.22em] uppercase text-gold">
             Premium
           </span>
         </div>
@@ -185,7 +185,7 @@ const Vault = () => {
         </div>
 
         {firstName && (
-          <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold/80 mb-1.5">
+          <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold/80 mb-1.5">
             Welcome in, {firstName}
           </p>
         )}
@@ -203,7 +203,7 @@ const Vault = () => {
               <p className="font-display text-base font-black text-gold leading-none tabular-nums">
                 {s.value}
               </p>
-              <p className="text-[9px] tracking-widest uppercase text-muted-foreground mt-1">
+              <p className="text-[10px] tracking-widest uppercase text-muted-foreground mt-1">
                 {s.label}
               </p>
             </div>
@@ -217,7 +217,7 @@ const Vault = () => {
           <Flame size={15} className="text-gold" strokeWidth={2.4} />
         </div>
         <div className="min-w-0">
-          <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold/85 mb-0.5">
+          <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold/85 mb-0.5">
             Founding-member library
           </p>
           <p className="text-[12px] text-muted-foreground leading-snug">
@@ -244,7 +244,7 @@ const Vault = () => {
       <div className="mt-8 text-center">
         {/* No hardcoded price — a US/UK member paid a different number than
             "4,99 €" and the store price is the only truth. */}
-        <p className="text-[10px] tracking-widest uppercase text-muted-foreground/70">
+        <p className="text-[11px] tracking-widest uppercase text-muted-foreground/70">
           Premium member
         </p>
       </div>
@@ -296,7 +296,7 @@ const VaultCategoryBlock = ({
           <div className="absolute inset-x-0 bottom-0 z-10 p-4">
             <div className="flex items-center gap-1.5 mb-1">
               <Icon size={13} style={{ color: category.accent }} strokeWidth={2.6} />
-              <p className="text-[10px] font-black tracking-[0.22em] uppercase" style={{ color: category.accent }}>
+              <p className="text-[11px] font-black tracking-[0.22em] uppercase" style={{ color: category.accent }}>
                 {category.tagline}
               </p>
             </div>
@@ -308,7 +308,7 @@ const VaultCategoryBlock = ({
 
         {/* Description + expand caret */}
         <div className="flex items-center gap-2 px-4 py-3">
-          <p className="text-[11px] text-muted-foreground leading-snug flex-1">
+          <p className="text-[12px] text-muted-foreground leading-snug flex-1">
             {category.description}
           </p>
           <ChevronRight
@@ -333,7 +333,7 @@ const VaultCategoryBlock = ({
                   <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.5} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">Meal-prep recipes</p>
+                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">Meal-prep recipes</p>
                   <p className="text-[12px] font-bold leading-tight">15 high-protein recipes · scale 1×–5× · storage & reheat</p>
                 </div>
                 <ChevronRight size={16} className="text-gold shrink-0" />
@@ -353,11 +353,11 @@ const VaultCategoryBlock = ({
             <div className="py-3 text-center">
               {/* Real retry — this page has no pull-to-refresh, so the old
                   "Pull to refresh" copy asked for something impossible. */}
-              <p className="text-[11px] text-rose-400/90 mb-2">Couldn't load articles.</p>
+              <p className="text-[12px] text-rose-400/90 mb-2">Couldn't load articles.</p>
               <button
                 type="button"
                 onClick={() => refetch()}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-gold/30 bg-gold/[0.06] px-3 py-1.5 text-[11px] font-bold text-gold active:scale-95 transition"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gold/30 bg-gold/[0.06] px-3 py-1.5 text-[12px] font-bold text-gold active:scale-95 transition"
               >
                 Try again
               </button>
@@ -394,7 +394,7 @@ const VaultCategoryBlock = ({
                       <div className="flex items-center gap-1.5">
                         {a.lesson_number && (
                           <span
-                            className="text-[9px] font-black tabular-nums tracking-wider uppercase shrink-0"
+                            className="text-[10px] font-black tabular-nums tracking-wider uppercase shrink-0"
                             style={{ color: category.accent }}
                           >
                             L{a.lesson_number}
@@ -405,19 +405,19 @@ const VaultCategoryBlock = ({
                         </p>
                       </div>
                       {a.subtitle && (
-                        <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                        <p className="text-[12px] text-muted-foreground mt-0.5 leading-snug">
                           {a.subtitle}
                         </p>
                       )}
                       <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
                         <EvidenceChip tier={a.evidence_tier} />
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[9px] font-black tracking-[0.22em] uppercase text-muted-foreground">
-                          <Clock size={8} strokeWidth={3} />
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[10px] font-black tracking-[0.22em] uppercase text-muted-foreground">
+                          <Clock size={10} strokeWidth={3} />
                           {a.read_time_min} min
                         </span>
                         {done && (
                           <span
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-[0.22em] uppercase"
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-[0.22em] uppercase"
                             style={{
                               background: `${category.accent}22`,
                               color: category.accent,

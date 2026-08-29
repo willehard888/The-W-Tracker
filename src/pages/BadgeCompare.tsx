@@ -123,7 +123,7 @@ const BadgeCompare = () => {
             <div className="text-center flex-1">
               <p className="text-xs text-muted-foreground mb-1">You</p>
               <p className="font-display text-2xl font-black text-gold">{myCount}</p>
-              <p className="text-[10px] text-muted-foreground">badges</p>
+              <p className="text-[11px] text-muted-foreground">badges</p>
             </div>
             <div className="flex items-center justify-center">
               <Shield size={24} className="text-muted-foreground" />
@@ -131,7 +131,7 @@ const BadgeCompare = () => {
             <div className="text-center flex-1">
               <p className="text-xs text-muted-foreground mb-1">@{selectedUser.username}</p>
               <p className="font-display text-2xl font-black text-foreground">{theirCount}</p>
-              <p className="text-[10px] text-muted-foreground">badges</p>
+              <p className="text-[11px] text-muted-foreground">badges</p>
             </div>
           </div>
 
@@ -156,7 +156,7 @@ const BadgeCompare = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold truncate">{badge.name}</p>
                     <p className={cn(
-                      "text-[9px] font-black uppercase tracking-[0.22em]",
+                      "text-[10px] font-black uppercase tracking-[0.22em]",
                       badge.rarity === "legendary" ? "text-gold" :
                       badge.rarity === "epic" ? "text-[hsl(var(--badge-epic))]" :
                       badge.rarity === "rare" ? "text-[hsl(var(--badge-rare))]" :

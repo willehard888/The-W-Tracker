@@ -420,7 +420,7 @@ const UserProfile = () => {
             <div className="flex items-center justify-center border-t border-border">
               <div className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-t-2 border-foreground -mt-px">
                 <Camera size={12} className="text-foreground" />
-                <span className="text-[10px] font-black tracking-[0.22em] uppercase text-foreground">
+                <span className="text-[11px] font-black tracking-[0.22em] uppercase text-foreground">
                   Posts · {mediaPosts.length}
                 </span>
               </div>

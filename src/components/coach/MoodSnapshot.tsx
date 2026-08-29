@@ -55,22 +55,22 @@ const MoodSnapshot = ({ onCaptured, onSkip }: Props) => {
   return (
     <div className="px-4 pt-4 pb-3 mx-3 mb-3 rounded-2xl border border-gold/30 bg-card/60 backdrop-blur-sm">
       <div className="flex items-baseline justify-between mb-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">
+        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">
           10-second check-in
         </p>
         <button
           onClick={() => { hapticImpact("light"); onSkip(); }}
-          className="text-[10px] font-medium text-muted-foreground/70 active:opacity-60"
+          className="text-[11px] font-medium text-muted-foreground/70 active:opacity-60"
           aria-label="Skip mood snapshot"
         >
           Skip
         </button>
       </div>
 
-      <p className="text-[11px] text-muted-foreground mb-1.5">How's your energy?</p>
+      <p className="text-[12px] text-muted-foreground mb-1.5">How's your energy?</p>
       <EmojiRow value={energy} onChange={setEnergy} emojis={ENERGY_EMOJI} />
 
-      <p className="text-[11px] text-muted-foreground mb-1.5 mt-3">And your mood?</p>
+      <p className="text-[12px] text-muted-foreground mb-1.5 mt-3">And your mood?</p>
       <EmojiRow value={mood} onChange={setMood} emojis={MOOD_EMOJI} />
 
       <Button

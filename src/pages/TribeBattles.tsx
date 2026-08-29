@@ -171,7 +171,7 @@ const TribeBattles = () => {
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-1">
                 <Swords size={18} className="text-[hsl(var(--ember))]" />
-                <p className="text-[10px] uppercase tracking-widest font-black bg-gradient-to-r from-[hsl(var(--ember))] to-gold bg-clip-text text-transparent">
+                <p className="text-[11px] uppercase tracking-widest font-black bg-gradient-to-r from-[hsl(var(--ember))] to-gold bg-clip-text text-transparent">
                   Tribe Battles
                 </p>
               </div>

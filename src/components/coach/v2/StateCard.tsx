@@ -77,7 +77,7 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
           Your read
         </p>
         {profile?.streak && profile.streak > 0 ? (
-          <span className="ml-auto text-[10px] font-bold text-gold tabular-nums">
+          <span className="ml-auto text-[11px] font-bold text-gold tabular-nums">
             {profile.streak}d streak
           </span>
         ) : null}
@@ -87,7 +87,7 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
         {signal.headline}
       </p>
       {signal.detail && (
-        <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+        <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
           {signal.detail}
         </p>
       )}
@@ -131,18 +131,18 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <span className="text-xl shrink-0">{pillarMeta.emoji}</span>
           <div className="text-left min-w-0 flex-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/85 mb-0.5">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/85 mb-0.5">
               Weakest pillar
             </p>
             <p className={cn("text-[13px] font-bold leading-tight", pillarMeta.tint.text)}>
               {pillarMeta.name}
             </p>
-            <p className="text-[10px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">
+            <p className="text-[11px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">
               {pillarMeta.blurb}
             </p>
           </div>
         </div>
-        <span className="text-[11px] font-bold text-gold/85 shrink-0">Fill →</span>
+        <span className="text-[12px] font-bold text-gold/85 shrink-0">Fill →</span>
       </button>
     </div>
   );
@@ -163,8 +163,8 @@ const SignalTile = ({
       : "border-border/40 bg-card/40",
   )}>
     <div className="flex items-center gap-1 mb-0.5">
-      <Icon size={10} className={good ? "text-gold" : "text-muted-foreground"} />
-      <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+      <Icon size={12} className={good ? "text-gold" : "text-muted-foreground"} />
+      <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
         {label}
       </span>
     </div>

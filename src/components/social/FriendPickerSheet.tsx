@@ -45,7 +45,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
         <div className="flex items-start gap-3 p-4 pb-3 border-b border-border/40">
           <div className="flex-1 min-w-0">
             <h2 className="font-display text-base font-black tracking-tight">{title}</h2>
-            {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{subtitle}</p>}
+            {subtitle && <p className="text-[12px] text-muted-foreground mt-0.5 leading-snug">{subtitle}</p>}
           </div>
           <button
             aria-label="Close"
@@ -76,7 +76,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
               <p className="text-[13px] font-bold text-foreground">
                 {(friends ?? []).length === 0 ? "No friends yet" : "No one to pick"}
               </p>
-              <p className="text-[11px] text-muted-foreground mt-1 mb-4 leading-snug">
+              <p className="text-[12px] text-muted-foreground mt-1 mb-4 leading-snug">
                 {(friends ?? []).length === 0
                   ? "Add friends to invite them and challenge them."
                   : "Everyone's already here."}
@@ -107,17 +107,17 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-bold truncate">@{f.username}</p>
-                  <p className="text-[10px] text-muted-foreground flex items-center gap-2">
+                  <p className="text-[11px] text-muted-foreground flex items-center gap-2">
                     <span>Lv {f.level ?? 1}</span>
                     {(f.streak ?? 0) > 0 && (
                       <span className="inline-flex items-center gap-0.5 text-[hsl(var(--streak-orange))]">
-                        <Flame size={9} /> {f.streak}
+                        <Flame size={11} /> {f.streak}
                       </span>
                     )}
                   </p>
                 </div>
                 {busyId === f.user_id ? (
-                  <span className="text-[11px] text-muted-foreground">…</span>
+                  <span className="text-[12px] text-muted-foreground">…</span>
                 ) : (
                   <ChevronRight size={16} className={cn("text-gold/60 shrink-0")} />
                 )}

@@ -35,7 +35,7 @@ export function transformImage(url: string | null | undefined, opts: ImgOpts): s
   const params = new URLSearchParams();
   params.set("width", String(Math.round(opts.width * scale)));
   if (opts.height) params.set("height", String(Math.round(opts.height * scale)));
-  params.set("quality", String(opts.quality ?? 70));
+  params.set("quality", String(opts.quality ?? 80));
   params.set("resize", opts.resize ?? "cover");
 
   return url.replace(OBJECT_SEG, RENDER_SEG) + "?" + params.toString();
@@ -43,5 +43,5 @@ export function transformImage(url: string | null | undefined, opts: ImgOpts): s
 
 /** Square, retina-aware avatar URL sized to the rendered px. */
 export function avatarUrl(url: string | null | undefined, px: number): string {
-  return transformImage(url, { width: px, height: px, quality: 70, resize: "cover" });
+  return transformImage(url, { width: px, height: px, quality: 80, resize: "cover" });
 }

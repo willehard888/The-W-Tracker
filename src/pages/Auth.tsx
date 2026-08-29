@@ -244,29 +244,29 @@ const Auth = () => {
                 />
               </div>
               {nameStatus === "taken" ? (
-                <p className="text-[10px] text-destructive mt-1 font-bold">@{username} is taken — pick another.</p>
+                <p className="text-[11px] text-destructive mt-1 font-bold">@{username} is taken — pick another.</p>
               ) : nameStatus === "available" ? (
-                <p className="text-[10px] text-xp-green mt-1 font-bold">@{username} is yours ✓</p>
+                <p className="text-[11px] text-xp-green mt-1 font-bold">@{username} is yours ✓</p>
               ) : nameStatus === "checking" ? (
-                <p className="text-[10px] text-muted-foreground mt-1">Checking availability…</p>
+                <p className="text-[11px] text-muted-foreground mt-1">Checking availability…</p>
               ) : (
-                <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                  <Flame size={10} className="text-gold" /> Locked permanently once set
+                <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
+                  <Flame size={12} className="text-gold" /> Locked permanently once set
                 </p>
               )}
               {refCode ? (
                 <div className="mt-2 rounded-lg border border-gold/30 bg-gold/5 px-3 py-2">
-                  <p className="text-[11px] text-gold font-bold">
+                  <p className="text-[12px] text-gold font-bold">
                     {invitedBy ? `@${invitedBy} invited you` : "You were invited"} → 14-day free trial
                   </p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
                     Full access, cancel anytime. Your referrer earns +50 XP when you verify.
                   </p>
                 </div>
               ) : (
                 <div className="mt-2 rounded-lg border border-gold/25 bg-gold/[0.04] px-3 py-2 flex items-center gap-2">
                   <Crown size={13} className="text-gold shrink-0" />
-                  <p className="text-[10px] text-foreground/85 leading-snug">
+                  <p className="text-[11px] text-foreground/85 leading-snug">
                     <span className="text-gold font-bold">14-day free trial</span> — full access to
                     coach, training, recipes &amp; recovery. Cancel anytime.
                   </p>

@@ -44,7 +44,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85">
               {PILLAR_LABEL[pillar]} pillar
             </p>
             <p className="font-display text-2xl font-black tabular-nums leading-tight">
@@ -61,15 +61,15 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
         </div>
 
         {/* Sub-signals */}
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/60 mb-2">
+        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/60 mb-2">
           What drives it
         </p>
         <div className="space-y-2.5 mb-5">
           {parts.map((p) => (
             <div key={p.key} className="flex items-center gap-2.5">
-              <p className="w-[128px] shrink-0 text-[11px] font-bold text-foreground/85 leading-tight">
+              <p className="w-[128px] shrink-0 text-[12px] font-bold text-foreground/85 leading-tight">
                 {p.label}
-                <span className="block text-[9px] font-medium text-muted-foreground/60">
+                <span className="block text-[10px] font-medium text-muted-foreground/60">
                   weight {p.weight}%
                 </span>
               </p>
@@ -78,9 +78,9 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
                   <div className={cn("h-full rounded-full", partColor(p.score))} style={{ width: `${p.score}%` }} />
                 )}
               </div>
-              <p className="w-14 shrink-0 text-right text-[11px] font-black tabular-nums">
+              <p className="w-14 shrink-0 text-right text-[12px] font-black tabular-nums">
                 {p.score == null
-                  ? <span className="text-[9px] font-bold text-muted-foreground/50 normal-case">no data yet</span>
+                  ? <span className="text-[10px] font-bold text-muted-foreground/50 normal-case">no data yet</span>
                   : p.score}
               </p>
             </div>
@@ -88,7 +88,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
         </div>
 
         {/* Levers */}
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/60 mb-2">
+        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/60 mb-2">
           Your biggest levers
         </p>
         <div className="space-y-2.5">
@@ -98,13 +98,13 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
                 <Target size={13} className="text-gold shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <p className="text-[12px] font-bold leading-tight">{l.title}</p>
-                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{l.detail}</p>
+                  <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">{l.detail}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => { hapticImpact("light"); onClose(); navigate(l.action.path); }}
-                className="mt-2 inline-flex items-center gap-1 rounded-lg bg-gold/10 border border-gold/30 px-2.5 py-1.5 text-[11px] font-bold text-gold active:scale-95 transition"
+                className="mt-2 inline-flex items-center gap-1 rounded-lg bg-gold/10 border border-gold/30 px-2.5 py-1.5 text-[12px] font-bold text-gold active:scale-95 transition"
               >
                 {l.action.label} <ChevronRight size={12} />
               </button>

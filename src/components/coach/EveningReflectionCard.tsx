@@ -21,8 +21,8 @@ const Scale = ({
 }) => (
   <div className="space-y-1.5">
     <div className="flex items-center justify-between">
-      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
-      {value != null && <span className="text-[11px] font-black text-gold">{value}/{max}</span>}
+      <span className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
+      {value != null && <span className="text-[12px] font-black text-gold">{value}/{max}</span>}
     </div>
     <div className="flex gap-1">
       {Array.from({ length: max }, (_, i) => i + 1).map((n) => {
@@ -45,7 +45,7 @@ const Scale = ({
       })}
     </div>
     {hints && (
-      <div className="flex justify-between text-[9px] text-muted-foreground/60">
+      <div className="flex justify-between text-[10px] text-muted-foreground/60">
         <span>{hints[0]}</span><span>{hints[1]}</span>
       </div>
     )}
@@ -114,7 +114,7 @@ const EveningReflectionCard = () => {
             <p className="text-[13px] font-black tracking-tight">
               {done ? "Tonight's reflection logged" : "Evening reflection"}
             </p>
-            <p className="text-[10px] text-muted-foreground truncate">
+            <p className="text-[11px] text-muted-foreground truncate">
               {done ? "Tomorrow's plan will adapt to it." : "30 seconds — feeds tomorrow's plan."}
             </p>
           </div>
@@ -138,7 +138,7 @@ const EveningReflectionCard = () => {
               <Scale label="Session RPE" value={rpe} onChange={setRpe} max={10} hints={["easy", "max"]} />
 
               <div className="space-y-1.5">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">One win</span>
+                <span className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground">One win</span>
                 <input
                   value={win}
                   onChange={(e) => setWin(e.target.value.slice(0, 200))}
@@ -147,7 +147,7 @@ const EveningReflectionCard = () => {
                 />
               </div>
               <div className="space-y-1.5">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">One friction</span>
+                <span className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground">One friction</span>
                 <input
                   value={friction}
                   onChange={(e) => setFriction(e.target.value.slice(0, 200))}

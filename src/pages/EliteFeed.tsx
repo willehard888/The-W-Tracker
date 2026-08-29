@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useBlockActions } from "@/hooks/use-blocking";
-import { useState, useRef, useMemo, useCallback } from "react";
+import { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
@@ -68,6 +68,13 @@ const EliteFeed = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  // Revoke the previous video blob URL whenever the preview changes or the
+  // page unmounts — WKWebView otherwise holds every tried clip in memory.
+  useEffect(() => {
+    const url = videoPreview;
+    return () => { if (url?.startsWith("blob:")) URL.revokeObjectURL(url); };
+  }, [videoPreview]);
+
   const [uploadPhase, setUploadPhase] = useState<string | null>(null);
   const [showReported, setShowReported] = useState(false);
   const [showReportsPanel, setShowReportsPanel] = useState(false);
@@ -747,8 +754,8 @@ const EliteFeed = () => {
               {/* Kudos quota was invisible on touch (title attr only) — the
                   scarce mechanic is only fun if you can SEE the budget. */}
               {user && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/25 px-2 py-0.5 text-[10px] font-black text-gold tabular-nums">
-                  <Award aria-hidden size={10} /> {kudosRemaining}/{KUDOS_PER_MONTH} kudos left this month
+                <span className="inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/25 px-2 py-0.5 text-[11px] font-black text-gold tabular-nums">
+                  <Award aria-hidden size={12} /> {kudosRemaining}/{KUDOS_PER_MONTH} kudos left this month
                 </span>
               )}
             </p>
@@ -760,7 +767,7 @@ const EliteFeed = () => {
               <button
                 onClick={() => setShowReported(!showReported)}
                 className={cn(
-                  "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
+                  "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all",
                   showReported
                     ? "bg-destructive/15 text-destructive border border-destructive/30"
                     : "bg-secondary text-muted-foreground hover:text-foreground border border-border"
@@ -772,7 +779,7 @@ const EliteFeed = () => {
               <button
                 onClick={() => setShowReportsPanel(!showReportsPanel)}
                 className={cn(
-                  "relative flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
+                  "relative flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all",
                   showReportsPanel
                     ? "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))] border border-[hsl(var(--purple))]/30"
                     : "bg-secondary text-muted-foreground hover:text-foreground border border-border"
@@ -781,7 +788,7 @@ const EliteFeed = () => {
                 <ShieldCheck aria-hidden size={12} />
                 Reports
                 {unresolvedReportsCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-black flex items-center justify-center">
+                  <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-black flex items-center justify-center">
                     {unresolvedReportsCount}
                   </span>
                 )}
@@ -797,7 +804,7 @@ const EliteFeed = () => {
           <div className="flex items-center gap-2 mb-3">
             <ShieldCheck aria-hidden size={16} className="text-[hsl(var(--purple))]" />
             <h2 className="font-display text-sm font-bold">Pending Reports</h2>
-            <span className="text-[10px] text-muted-foreground">({unresolvedReportsCount})</span>
+            <span className="text-[11px] text-muted-foreground">({unresolvedReportsCount})</span>
           </div>
           {unresolvedReportsCount === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-4">No pending reports 🎉</p>
@@ -807,7 +814,7 @@ const EliteFeed = () => {
                 <div key={report.id} className="rounded-xl border border-border bg-secondary/30 p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-[11px] text-muted-foreground">
                         Reported by <span className="font-semibold text-foreground">@{report.reporter?.username || "unknown"}</span>
                         {" · "}
                         {formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}
@@ -829,7 +836,7 @@ const EliteFeed = () => {
                           if (report.post_id) await unreportPost.mutateAsync(report.post_id);
                           resolveReport.mutate({ reportId: report.id, action: "approve" });
                         }}
-                        className="h-7 px-2.5 rounded-lg bg-[hsl(var(--xp-green))]/15 text-[hsl(var(--xp-green))] text-[10px] font-bold hover:bg-[hsl(var(--xp-green))]/25 transition-colors flex items-center gap-1"
+                        className="h-7 px-2.5 rounded-lg bg-[hsl(var(--xp-green))]/15 text-[hsl(var(--xp-green))] text-[11px] font-bold hover:bg-[hsl(var(--xp-green))]/25 transition-colors flex items-center gap-1"
                       >
                         <CheckCircle aria-hidden size={12} />
                         Keep
@@ -840,7 +847,7 @@ const EliteFeed = () => {
                           if (report.post_id) await adminDeletePost.mutateAsync(report.post_id);
                           resolveReport.mutate({ reportId: report.id, action: "delete" });
                         }}
-                        className="h-7 px-2.5 rounded-lg bg-destructive/15 text-destructive text-[10px] font-bold hover:bg-destructive/25 transition-colors flex items-center gap-1"
+                        className="h-7 px-2.5 rounded-lg bg-destructive/15 text-destructive text-[11px] font-bold hover:bg-destructive/25 transition-colors flex items-center gap-1"
                       >
                         <Trash2 aria-hidden size={12} />
                         Remove

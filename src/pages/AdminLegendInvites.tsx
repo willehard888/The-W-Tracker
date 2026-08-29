@@ -191,17 +191,17 @@ export default function AdminLegendInvites() {
                       {inv.code}
                     </code>
                     {isUsed && (
-                      <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground inline-flex items-center gap-1">
-                        <CheckCircle2 size={10} /> Redeemed
+                      <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground inline-flex items-center gap-1">
+                        <CheckCircle2 size={12} /> Redeemed
                       </span>
                     )}
                     {!isUsed && isExpired && (
-                      <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-destructive/20 text-destructive">
+                      <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 rounded bg-destructive/20 text-destructive">
                         Expired
                       </span>
                     )}
                     {!isUsed && !isExpired && (
-                      <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-gold/20 text-gold">
+                      <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 rounded bg-gold/20 text-gold">
                         Active
                       </span>
                     )}
@@ -209,8 +209,8 @@ export default function AdminLegendInvites() {
                   {inv.note && (
                     <p className="text-xs text-muted-foreground mt-1 truncate">{inv.note}</p>
                   )}
-                  <p className="text-[10px] text-muted-foreground mt-1 inline-flex items-center gap-1">
-                    <Clock size={10} />
+                  <p className="text-[11px] text-muted-foreground mt-1 inline-flex items-center gap-1">
+                    <Clock size={12} />
                     Created {formatDistanceToNow(new Date(inv.created_at), { addSuffix: true })}
                     {inv.expires_at && ` · expires ${formatDistanceToNow(new Date(inv.expires_at), { addSuffix: true })}`}
                     {inv.used_at && ` · redeemed ${formatDistanceToNow(new Date(inv.used_at), { addSuffix: true })}`}

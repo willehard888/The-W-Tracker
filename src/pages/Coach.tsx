@@ -596,7 +596,7 @@ const ChatSheet = ({
           <span className="h-1 w-9 rounded-full bg-foreground/20" aria-hidden />
         </div>
 
-      <div className="shrink-0 px-3 pt-1 pb-2 flex items-center justify-between border-b border-border/30 bg-background/85 backdrop-blur-xl">
+      <div className="shrink-0 px-3 pt-1 pb-2 flex items-center justify-between border-b border-border/30 bg-background/97">
         <Button variant="ghost" size="icon-sm" onClick={newChat} aria-label="New chat" title="New chat">
           <Plus size={18} />
         </Button>
@@ -731,7 +731,7 @@ const ChatSheet = ({
       </div>
 
       <div
-        className="shrink-0 border-t border-border/30 bg-background/85 backdrop-blur-xl px-3 pt-3 pb-3"
+        className="shrink-0 border-t border-border/30 bg-background/97 px-3 pt-3 pb-3"
         style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 12px)" }}
       >
         <div className="flex items-end gap-2">

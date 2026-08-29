@@ -75,9 +75,26 @@ const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 
 import RouteFallback from "@/components/RouteFallback";
 
+// Mirrors the inline HTML splash in index.html EXACTLY, so the
+// splash → React-auth-loading handoff is invisible (no spinner flash).
 const LazyFallback = () => (
-  <div className="min-h-full flex items-center justify-center">
-    <div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+  <div className="fixed inset-0 flex flex-col items-center justify-center gap-[18px]">
+    <div
+      className="font-display font-black text-[34px] tracking-[-0.02em] bg-clip-text text-transparent"
+      style={{ backgroundImage: "linear-gradient(135deg, hsl(var(--gold-light)), hsl(var(--gold)) 45%, hsl(var(--gold-dark)))" }}
+    >
+      W
+    </div>
+    <div className="w-[88px] h-[3px] rounded-full bg-secondary overflow-hidden">
+      <div
+        className="w-2/5 h-full rounded-full"
+        style={{
+          background: "linear-gradient(90deg, hsl(var(--gold)), hsl(var(--ember)))",
+          animation: "wf-load 1.1s ease-in-out infinite",
+        }}
+      />
+    </div>
+    <style>{`@keyframes wf-load{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}`}</style>
   </div>
 );
 

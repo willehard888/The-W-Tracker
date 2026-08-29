@@ -24,6 +24,7 @@ import AppImage from "@/components/ui/app-image";
 import FeedPostCard from "@/components/feed/FeedPostCard";
 import { buildCommentTree } from "@/lib/comment-tree";
 import { downscaleImage } from "@/lib/downscale-image";
+import { fetchFeedPosts } from "@/lib/feed-query";
 import { hapticImpact, hapticSelection, hapticNotification } from "@/lib/haptics";
 import MediaPreview from "@/components/media/MediaPreview";
 import { formatDistanceToNow } from "date-fns";
@@ -90,28 +91,9 @@ const EliteFeed = () => {
   const { data: posts, isLoading } = useQuery({
     queryKey: ["feed-posts", showReported],
     placeholderData: keepPreviousData,
-    queryFn: async () => {
-      let query = supabase
-        .from("feed_posts")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      // Non-admins or admins not viewing reported: hide reported posts
-      if (!showReported) {
-        query = query.eq("reported", false);
-      }
-
-      const { data } = await query;
-      if (!data) return [];
-      const userIds = [...new Set(data.map((p) => p.user_id))];
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, username, avatar_url, status_tier, streak, level, is_elite")
-        .in("user_id", userIds);
-      const profileMap = Object.fromEntries((profiles || []).map((p) => [p.user_id, p]));
-      return data.map((post) => ({ ...post, profile: profileMap[post.user_id] }));
-    },
+    // Shared with the app-shell prefetcher (FeedPrefetcher in App.tsx) —
+    // by the time the user taps Squad this is usually already in cache.
+    queryFn: () => fetchFeedPosts(showReported),
   });
 
   // Fetch reports for admin panel

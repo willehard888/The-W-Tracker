@@ -3,6 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { MotionConfig } from "framer-motion";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
+import { supabase } from "@/integrations/supabase/client";
 import { usePushNotifications, PushControlsContext } from "@/hooks/use-push-notifications";
 import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
 import { useActivityHeartbeat } from "@/hooks/use-activity-heartbeat";
@@ -74,6 +75,8 @@ const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 // clear it on logout (shared-device data leakage).
 
 import RouteFallback from "@/components/RouteFallback";
+import { fetchFeedPosts } from "@/lib/feed-query";
+import { parseStorageUrl, isPrivateStorageUrl, signMediaUrl, signedMediaKey, SIGNED_MEDIA_STALE_MS } from "@/lib/signed-url";
 
 // Mirrors the inline HTML splash in index.html EXACTLY, so the
 // splash → React-auth-loading handoff is invisible (no spinner flash).
@@ -322,6 +325,54 @@ const AppRoutes = () => {
   );
 };
 
+/**
+ * Warms the Elite Feed while the user is still on Home. On a high-RTT
+ * connection the feed's serial round trips (posts → profiles) plus the first
+ * media signatures cost 1.5–3s — paid here in the background so tapping
+ * Squad renders instantly from cache (staleTime 2min). Fires once per
+ * session, 1.2s after auth resolves so it never competes with the visible
+ * page's own requests.
+ */
+const FeedPrefetcher = () => {
+  useEffect(() => {
+    // One timer per app boot, deliberately NOT keyed on the auth context —
+    // its user object identity churns (token refresh, profile updates) and a
+    // [user]-dep effect kept clearing the timeout before it ever fired.
+    const t = setTimeout(async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) return;
+        await queryClient.prefetchQuery({
+          queryKey: ["feed-posts", false],
+          queryFn: () => fetchFeedPosts(false),
+        });
+        // Warm the first screenful of media signatures (images use the
+        // feed's 760px transform; videos sign plain — keys must match
+        // PostMedia/AppImage exactly or the warm entry is wasted).
+        const posts: any[] = queryClient.getQueryData(["feed-posts", false]) ?? [];
+        const withMedia = posts.filter((p) => p.image_url || p.video_url).slice(0, 8);
+        await Promise.all(
+          withMedia.map((p) => {
+            const url: string = p.image_url || p.video_url;
+            const parsed = parseStorageUrl(url);
+            if (!parsed || !isPrivateStorageUrl(url)) return null;
+            const transform = p.image_url ? { width: 760, quality: 82 } : undefined;
+            return queryClient.prefetchQuery({
+              queryKey: signedMediaKey(url, transform),
+              queryFn: () => signMediaUrl(parsed, transform),
+              staleTime: SIGNED_MEDIA_STALE_MS,
+            });
+          }),
+        );
+      } catch {
+        /* prefetch is best-effort — the feed loads normally without it */
+      }
+    }, 1500);
+    return () => clearTimeout(t);
+  }, []);
+  return null;
+};
+
 const App = () => {
   // SplashScreen previously rendered for ~1.5s on every cold start before
   // the React tree appeared. The user asked to remove the app-open animation
@@ -345,6 +396,7 @@ const App = () => {
             <AuthProvider>
               <RevenueCatProvider>
                 <AmbientParticles />
+                <FeedPrefetcher />
                 <ErrorBoundary>
                   <AppRoutes />
                 </ErrorBoundary>

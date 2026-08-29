@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { CSSProperties, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 // Inline base64 WebP — 0 network requests, displays instantly with no layout shift.
@@ -9,10 +9,11 @@ interface BrandLogoProps {
   className?: string;
   priority?: boolean;
   alt?: string;
+  style?: CSSProperties;
 }
 
 export const BrandLogo = forwardRef<HTMLImageElement, BrandLogoProps>(
-  ({ size = 56, className, priority = false, alt = "Whealth Factory" }, ref) => (
+  ({ size = 56, className, priority = false, alt = "Whealth Factory", style }, ref) => (
     <img
       ref={ref}
       src={LOGO_DATA_URI}
@@ -22,7 +23,7 @@ export const BrandLogo = forwardRef<HTMLImageElement, BrandLogoProps>(
       decoding={priority ? "sync" : "async"}
       draggable={false}
       className={cn("select-none", className)}
-      style={{ width: size, height: size }}
+      style={{ width: size, height: size, ...style }}
     />
   ),
 );

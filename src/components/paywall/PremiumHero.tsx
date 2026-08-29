@@ -174,7 +174,7 @@ const PremiumHero = ({
         <div className="flex justify-center mb-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/70 backdrop-blur border border-gold/40 shadow-[0_0_16px_hsl(var(--gold)/0.4)]">
             <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
-            <span className="text-[10px] font-black tracking-[0.22em] uppercase text-gold">
+            <span className="text-[11px] font-black tracking-[0.22em] uppercase text-gold">
               Whealth Factory · Premium Subscription
             </span>
           </div>
@@ -205,7 +205,7 @@ const PremiumHero = ({
               disabled={busy}
               onClick={() => setPlan("monthly")}
               className={cn(
-                "relative px-4 py-1.5 rounded-full text-[11px] font-black tracking-wider uppercase transition-all duration-200",
+                "relative px-4 py-1.5 rounded-full text-[12px] font-black tracking-wider uppercase transition-all duration-200",
                 !isYearly
                   ? "bg-gold text-background shadow-[0_0_12px_hsl(var(--gold)/0.5)]"
                   : "text-muted-foreground hover:text-foreground",
@@ -220,7 +220,7 @@ const PremiumHero = ({
               disabled={busy}
               onClick={() => setPlan("yearly")}
               className={cn(
-                "relative px-4 py-1.5 rounded-full text-[11px] font-black tracking-wider uppercase transition-all duration-200 flex items-center gap-1.5",
+                "relative px-4 py-1.5 rounded-full text-[12px] font-black tracking-wider uppercase transition-all duration-200 flex items-center gap-1.5",
                 isYearly
                   ? "bg-gold text-background shadow-[0_0_12px_hsl(var(--gold)/0.5)]"
                   : "text-muted-foreground hover:text-foreground",
@@ -229,7 +229,7 @@ const PremiumHero = ({
               Yearly
               <span
                 className={cn(
-                  "px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-wider",
+                  "px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wider",
                   isYearly
                     ? "bg-background/25 text-background"
                     : "bg-gold/15 text-gold border border-gold/30",
@@ -251,18 +251,18 @@ const PremiumHero = ({
             </span>
           </p>
           {isYearly ? (
-            <p className="text-[10px] text-muted-foreground/90 mt-2 tracking-wide">
+            <p className="text-[11px] text-muted-foreground/90 mt-2 tracking-wide">
               <span className="line-through opacity-60">
                 {monthlyPriceLabel}/mo × 12
               </span>{" "}
               · <span className="text-gold font-bold">Save {yearlyDiscountPct}%</span> · ~2 months free
             </p>
           ) : yearlyAvailable ? (
-            <p className="text-[10px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
+            <p className="text-[11px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
               Switch to yearly anytime · Save {yearlyDiscountPct}%
             </p>
           ) : (
-            <p className="text-[10px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
+            <p className="text-[11px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
               Full access · Cancel anytime
             </p>
           )}
@@ -288,11 +288,11 @@ const PremiumHero = ({
                   <span className="h-5 w-5 rounded-md flex items-center justify-center bg-gradient-to-br from-gold/35 to-gold/10 border border-gold/55 shadow-[0_0_8px_hsl(var(--gold)/0.35)]">
                     <Icon size={11} className="text-gold" strokeWidth={2.8} />
                   </span>
-                  <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold">
+                  <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold">
                     {title}
                   </p>
                 </div>
-                <p className="text-[11px] leading-snug text-foreground/85 font-medium">
+                <p className="text-[12px] leading-snug text-foreground/85 font-medium">
                   {text}
                 </p>
               </div>
@@ -306,7 +306,7 @@ const PremiumHero = ({
             role="alert"
             className="mb-3 rounded-xl border border-destructive/50 bg-destructive/10 px-3.5 py-2.5 animate-reveal"
           >
-            <p className="text-[11px] font-black tracking-wider uppercase text-destructive mb-0.5">
+            <p className="text-[12px] font-black tracking-wider uppercase text-destructive mb-0.5">
               Purchase failed
             </p>
             <p className="text-[12px] text-foreground/90 leading-snug mb-2">
@@ -316,7 +316,7 @@ const PremiumHero = ({
               <button
                 type="button"
                 onClick={onDismissError}
-                className="text-[11px] font-bold text-destructive underline underline-offset-2"
+                className="text-[12px] font-bold text-destructive underline underline-offset-2"
               >
                 Dismiss
               </button>
@@ -343,7 +343,7 @@ const PremiumHero = ({
           {ctaLabel}
         </Button>
 
-        <p className="text-[10px] text-muted-foreground/85 text-center mt-2.5 tracking-wide">
+        <p className="text-[11px] text-muted-foreground/85 text-center mt-2.5 tracking-wide">
           {footnote}
         </p>
 
@@ -352,9 +352,9 @@ const PremiumHero = ({
           {TRUST_POINTS.map((t) => (
             <div
               key={t}
-              className="inline-flex items-center gap-1 text-[10px] text-muted-foreground/90"
+              className="inline-flex items-center gap-1 text-[11px] text-muted-foreground/90"
             >
-              <Check size={10} className="text-gold" strokeWidth={3} />
+              <Check size={12} className="text-gold" strokeWidth={3} />
               <span>{t}</span>
             </div>
           ))}
@@ -362,26 +362,26 @@ const PremiumHero = ({
 
         {/* Value anchor — what one membership replaces (honest market prices) */}
         <div className="mt-4 rounded-xl border border-gold/20 bg-background/40 p-3 backdrop-blur-sm">
-          <p className="text-[10px] font-black tracking-[0.22em] uppercase text-gold mb-2">
+          <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold mb-2">
             Replaces a stack of apps
           </p>
           <div className="space-y-1">
             {VALUE_STACK.map(({ label, price }) => (
-              <div key={label} className="flex items-center justify-between text-[11px]">
+              <div key={label} className="flex items-center justify-between text-[12px]">
                 <span className="text-foreground/80">{label}</span>
                 <span className="text-muted-foreground/80 line-through">{price}</span>
               </div>
             ))}
           </div>
           <div className="mt-2 pt-2 border-t border-gold/15 flex items-center justify-between">
-            <span className="text-[11px] font-bold text-foreground">All-in-one, one price</span>
+            <span className="text-[12px] font-bold text-foreground">All-in-one, one price</span>
             <span className="text-[12px] font-black text-gold">{activePrice}{cadence}</span>
           </div>
         </div>
 
         {/* Lock-in micro-row */}
-        <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground/80">
-          <Lock size={10} className="text-gold/80" strokeWidth={2.6} />
+        <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground/80">
+          <Lock size={12} className="text-gold/80" strokeWidth={2.6} />
           <span>Locked at {isYearly ? yearlyPriceLabel + "/yr" : monthlyPriceLabel + "/mo"} as long as you stay subscribed.</span>
         </div>
       </div>

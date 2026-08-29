@@ -26,8 +26,8 @@ const TierLadderRows = ({ currentTier, className }: { currentTier: string; class
           >
             <span className="text-base leading-none w-6 text-center">{cfg.emoji}</span>
             <span className={cn("text-sm font-black", cfg.textClass)}>{cfg.label}</span>
-            {isCurrent && <span className="text-[10px] font-black uppercase tracking-wider text-gold">You</span>}
-            <span className="ml-auto text-[10px] font-black uppercase tracking-wider text-muted-foreground/70">{tierBandLabel(key)}</span>
+            {isCurrent && <span className="text-[11px] font-black uppercase tracking-wider text-gold">You</span>}
+            <span className="ml-auto text-[11px] font-black uppercase tracking-wider text-muted-foreground/70">{tierBandLabel(key)}</span>
             {unlocked ? <Check size={12} className="text-gold/70" /> : <Lock size={12} className="text-muted-foreground/40" />}
           </div>
         );

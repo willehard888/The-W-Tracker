@@ -85,7 +85,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-black text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest font-black text-muted-foreground">
           <Swords size={11} className="text-[hsl(var(--ember))]" />
           {battle.status === "pending" && (myIsChallenger ? "Awaiting Response" : "Incoming Challenge")}
           {battle.status === "active" && "Battle Live"}
@@ -94,8 +94,8 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
           {battle.status === "expired" && "Expired"}
         </div>
         {battle.status === "active" && (
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-foreground/80">
-            <Clock size={10} />
+          <div className="inline-flex items-center gap-1 text-[11px] font-bold text-foreground/80">
+            <Clock size={12} />
             {daysLeft === 0 ? "Ending" : `${daysLeft}d left`}
           </div>
         )}
@@ -142,20 +142,20 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                   {isMine ? "Your tribe" : "Opponent"}
                 </p>
                 <p className={cn("font-display font-black text-sm truncate", isMine && "text-gold")}>
                   {name}
                 </p>
-                <p className="text-[10px] text-muted-foreground tabular-nums">
+                <p className="text-[11px] text-muted-foreground tabular-nums">
                   {members} · <span className="font-black" style={{ color: tier >= 0 ? accent : undefined }}>{streak}d</span>
                 </p>
               </div>
             </div>
             {hasBigger && (
               <span
-                className="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-black tracking-widest uppercase border"
+                className="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-widest uppercase border"
                 style={{
                   color: accent,
                   borderColor: accent.replace(")", " / 0.5)"),
@@ -167,7 +167,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
               </span>
             )}
             {streak > 0 && (
-              <span className="ml-1.5 mt-1.5 inline-block text-[8px] uppercase tracking-wider text-muted-foreground/70">
+              <span className="ml-1.5 mt-1.5 inline-block text-[10px] uppercase tracking-wider text-muted-foreground/70">
                 {collectiveTierName(streak)}
               </span>
             )}
@@ -185,7 +185,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
               accent={myAccent}
               hasBigger={myHasBigger}
             />
-            <div className="self-center font-display font-black text-[10px] text-muted-foreground px-1">VS</div>
+            <div className="self-center font-display font-black text-[11px] text-muted-foreground px-1">VS</div>
             <FlameSide
               isMine={false}
               name={them?.name ?? "—"}
@@ -218,7 +218,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
           </div>
           {battle.status === "active" && myScore !== theirScore && (
             <p className={cn(
-              "text-[10px] font-bold mt-1.5 tabular-nums",
+              "text-[11px] font-bold mt-1.5 tabular-nums",
               myScore > theirScore ? "text-xp-green" : "text-[hsl(var(--ember))]",
             )}>
               {myScore > theirScore
@@ -230,7 +230,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
       )}
 
       {/* Meta */}
-      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
         <span>{battle.duration_days}-day battle</span>
         <span>
           {battle.status === "pending"

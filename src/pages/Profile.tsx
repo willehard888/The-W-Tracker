@@ -524,7 +524,7 @@ const Profile = () => {
           >
             <div className="shrink-0">
               <p className="font-display font-black text-3xl leading-none text-gold tabular-nums">{latest.overall}</p>
-              <p className="eyebrow mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={9} /> Whealth Index</p>
+              <p className="eyebrow mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={11} /> Whealth Index</p>
             </div>
             <svg viewBox="0 0 100 36" className="flex-1 h-9" preserveAspectRatio="none" aria-hidden>
               <polyline
@@ -626,10 +626,10 @@ const Profile = () => {
                 {post.image_url && (
                   <AppImage src={post.image_url} width={600} alt={post.content || "Post image"} className="w-full rounded-lg object-cover max-h-48 mb-2" />
                 )}
-                <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><Heart aria-hidden size={10} /> {post.likes_count}</span>
-                  <span className="flex items-center gap-1"><Trophy aria-hidden size={10} className="text-gold" /> {post.kudos_count}</span>
-                  <span className="flex items-center gap-1"><MessageSquare aria-hidden size={10} /> {post.comments_count}</span>
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                  <span className="flex items-center gap-1"><Heart aria-hidden size={12} /> {post.likes_count}</span>
+                  <span className="flex items-center gap-1"><Trophy aria-hidden size={12} className="text-gold" /> {post.kudos_count}</span>
+                  <span className="flex items-center gap-1"><MessageSquare aria-hidden size={12} /> {post.comments_count}</span>
                   <span className="ml-auto">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
                 </div>
               </div>
@@ -668,10 +668,10 @@ const Profile = () => {
                 <CreditCard aria-hidden size={14} className="text-xp-green" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-bold tracking-wider uppercase text-xp-green/90">
+                <p className="text-[12px] font-bold tracking-wider uppercase text-xp-green/90">
                   Membership active
                 </p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-[12px] text-muted-foreground">
                   Member since {profile.created_at ? format(new Date(profile.created_at), "MMM yyyy") : "—"}
                 </p>
               </div>
@@ -840,10 +840,10 @@ const SettingsRow = ({
     <Icon aria-hidden size={14} className="text-muted-foreground shrink-0" />
     <span className="flex-1 min-w-0">
       <span className="block text-[13px] font-semibold truncate">{label}</span>
-      {sub && <span className="block text-[10px] text-muted-foreground truncate mt-0.5">{sub}</span>}
+      {sub && <span className="block text-[11px] text-muted-foreground truncate mt-0.5">{sub}</span>}
     </span>
     {badge != null && badge > 0 && (
-      <span className="shrink-0 px-1.5 py-0.5 rounded-full bg-gold/10 border border-gold/30 text-gold text-[10px] font-black tabular-nums">
+      <span className="shrink-0 px-1.5 py-0.5 rounded-full bg-gold/10 border border-gold/30 text-gold text-[11px] font-black tabular-nums">
         {badge}
       </span>
     )}

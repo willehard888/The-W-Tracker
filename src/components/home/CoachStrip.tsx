@@ -68,15 +68,15 @@ const CoachStrip = (_props: CoachStripProps) => {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <p className="text-[10px] uppercase tracking-widest text-gold/80 font-bold">
+            <p className="text-[11px] uppercase tracking-widest text-gold/80 font-bold">
               AI Coach
             </p>
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold font-bold border border-gold/30">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold font-bold border border-gold/30">
               GPT-5
             </span>
           </div>
           <p className="font-bold text-sm leading-tight">Ask your coach anything</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-2 italic">
+          <p className="text-[12px] text-muted-foreground mt-0.5 leading-snug line-clamp-2 italic">
             {line}
           </p>
         </div>

@@ -224,8 +224,8 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
 
           {/* Days at tier */}
           {hasRank && daysAtTier !== undefined && daysAtTier > 0 && tier !== "recruit" && tier !== "normal" && (
-            <div className="flex items-center justify-center gap-1.5 mb-2 text-[10px]">
-              <Trophy size={10} className={cn("shrink-0", config.textClass)} />
+            <div className="flex items-center justify-center gap-1.5 mb-2 text-[11px]">
+              <Trophy size={12} className={cn("shrink-0", config.textClass)} />
               <span className="text-muted-foreground">
                 <span className={cn("font-black tabular-nums", config.textClass)}>
                   {daysAtTier}{daysAtTier === 1 ? " day" : " days"}
@@ -240,21 +240,21 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
             <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/30">
               <div className="flex items-center gap-1.5 min-w-0">
                 <ChevronRight size={12} className="text-muted-foreground/60 shrink-0" />
-                <p className="text-[10px] text-muted-foreground truncate">
+                <p className="text-[11px] text-muted-foreground truncate">
                   Next:{" "}
                   <span className="font-black text-foreground">{nextTier.label}</span>
                   <span className="text-muted-foreground/60"> · {nextTier.percentile}</span>
                 </p>
               </div>
               {rankScore !== undefined && (
-                <p className="text-[9px] text-muted-foreground/50 tabular-nums shrink-0">
+                <p className="text-[10px] text-muted-foreground/50 tabular-nums shrink-0">
                   Score: <span className="text-muted-foreground">{rankScore.toFixed(1)}</span>
                 </p>
               )}
             </div>
           ) : (
             rankScore !== undefined && (
-              <p className="text-[9px] text-muted-foreground/50 mt-2 text-right tabular-nums">
+              <p className="text-[10px] text-muted-foreground/50 mt-2 text-right tabular-nums">
                 Score: <span className="text-muted-foreground">{rankScore.toFixed(1)}</span>
               </p>
             )

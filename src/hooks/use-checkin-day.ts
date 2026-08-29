@@ -47,7 +47,12 @@ export function useCheckinDay(lastCheckinAt: string | null | undefined): Checkin
     import("@capacitor/app")
       .then(({ App: CapApp }) => {
         if (cancelled) return;
-        CapApp.addListener("resume", sync).then((h) => { removeResume = () => h.remove(); });
+        CapApp.addListener("resume", sync).then((h) => {
+          // The handle resolves async — a fast unmount can beat it here, and
+          // the listener would then be registered forever on a dead tree.
+          if (cancelled) { void h.remove(); return; }
+          removeResume = () => h.remove();
+        });
       })
       .catch(() => {});
     return () => {

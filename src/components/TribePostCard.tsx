@@ -79,7 +79,7 @@ const CommentThread = ({
         {isReply && (
           <span aria-hidden="true" className="absolute -left-3 top-0 bottom-0 w-px bg-gradient-to-b from-[hsl(var(--ember))]/30 via-[hsl(var(--ember))]/15 to-transparent" />
         )}
-        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[hsl(var(--ember))] to-gold flex items-center justify-center text-[10px] font-black text-background shrink-0 mt-0.5">
+        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[hsl(var(--ember))] to-gold flex items-center justify-center text-[11px] font-black text-background shrink-0 mt-0.5">
           {username.charAt(0)?.toUpperCase() || "?"}
         </div>
         <div className="flex-1 min-w-0">
@@ -90,9 +90,9 @@ const CommentThread = ({
             isEditing && "border-[hsl(var(--ember))]/60",
           )}>
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold text-[hsl(var(--ember))]">@{username}</span>
+              <span className="text-[12px] font-bold text-[hsl(var(--ember))]">@{username}</span>
               {isEdited(node) && !isEditing && (
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-[hsl(var(--ember))]/70 italic">· edited</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--ember))]/70 italic">· edited</span>
               )}
             </div>
             {isEditing ? (
@@ -107,12 +107,12 @@ const CommentThread = ({
                 />
                 <div className="flex items-center justify-end gap-1.5">
                   <button type="button" onClick={cancelEdit} disabled={saving}
-                    className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground px-2 py-1 rounded-md transition-colors">
+                    className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground px-2 py-1 rounded-md transition-colors">
                     Cancel
                   </button>
                   <button type="button" onClick={() => { hapticImpact("light"); saveEdit(); }}
                     disabled={saving || !draft.trim()}
-                    className="text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background px-3 py-1 rounded-md disabled:opacity-50">
+                    className="text-[11px] font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background px-3 py-1 rounded-md disabled:opacity-50">
                     {saving ? "Saving…" : "Save"}
                   </button>
                 </div>
@@ -125,19 +125,19 @@ const CommentThread = ({
           </div>
           {!isEditing && (
             <div className="flex items-center gap-2 mt-0.5 ml-3 flex-wrap">
-              <p className="text-[9px] text-muted-foreground/75">
+              <p className="text-[10px] text-muted-foreground/75">
                 {formatDistanceToNow(new Date(node.created_at), { addSuffix: true })}
               </p>
               {currentUserId && (
                 <button type="button" onClick={() => { hapticSelection(); onReply(node.id, username, node.content || ""); }}
-                  className="flex items-center gap-1 px-2 -mx-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-[hsl(var(--ember))] transition-colors">
-                  <Reply aria-hidden size={10} /> Reply
+                  className="flex items-center gap-1 px-2 -mx-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-[hsl(var(--ember))] transition-colors">
+                  <Reply aria-hidden size={12} /> Reply
                 </button>
               )}
               {isOwn && (
                 <>
                   <button type="button" onClick={() => { hapticSelection(); setDraft(node.content || ""); setEditingId(node.id); }}
-                    className="flex items-center gap-1 px-2 -mx-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-[hsl(var(--ember))] transition-colors">
+                    className="flex items-center gap-1 px-2 -mx-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-[hsl(var(--ember))] transition-colors">
                     Edit
                   </button>
                 </>
@@ -149,12 +149,12 @@ const CommentThread = ({
                     onDelete(node.id);
                   }
                 }}
-                  className="flex items-center gap-1 px-2 -mx-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-destructive transition-colors">
+                  className="flex items-center gap-1 px-2 -mx-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-destructive transition-colors">
                   Delete
                 </button>
               )}
               {node.children.length > 0 && (
-                <span className="text-[9px] text-muted-foreground/75 tabular-nums">
+                <span className="text-[10px] text-muted-foreground/75 tabular-nums">
                   · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
                 </span>
               )}
@@ -381,11 +381,11 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
         {/* Reported banner (admin/owner) */}
         {post.reported && (isAdmin || isOwner) && (
           <div className="px-4 py-2 bg-destructive/10 border-b border-destructive/30 flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1">
               <AlertTriangle aria-hidden size={11} /> Reported
             </span>
             <button onClick={() => deletePost.mutate()}
-              className="px-2 py-1 rounded text-[10px] font-bold bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors">
+              className="px-2 py-1 rounded text-[11px] font-bold bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors">
               Remove
             </button>
           </div>
@@ -409,27 +409,27 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                   tier={(post.author?.status_tier as any) || "recruit"}
                   fallback="user"
                 />
-                {isOwn && <span className="ml-1 text-[10px] text-[hsl(var(--ember))]/70 font-medium">(you)</span>}
+                {isOwn && <span className="ml-1 text-[11px] text-[hsl(var(--ember))]/70 font-medium">(you)</span>}
               </button>
               {isApexAuthor && (
                 <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-[hsl(var(--ember))]/15 border border-[hsl(var(--ember))]/40">
                   <Zap aria-hidden size={7} className="text-[hsl(var(--ember))]" fill="currentColor" />
-                  <span className="text-[8px] font-black tracking-wider uppercase text-[hsl(var(--ember))]">Apex</span>
+                  <span className="text-[10px] font-black tracking-wider uppercase text-[hsl(var(--ember))]">Apex</span>
                 </span>
               )}
               {post.author?.status_tier === "elite" && (
                 <Crown role="img" aria-label="Elite tier" size={11} className="text-gold shrink-0" />
               )}
             </div>
-            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
               <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
               {post.moderation_status === "pending" && (
                 <span className="inline-flex items-center px-1.5 py-px rounded-full border border-amber-400/40 bg-amber-400/10 text-amber-400 font-bold uppercase tracking-wider">
                   Reviewing…
                 </span>
               )}
-              {post.author?.streak && post.author.streak > 0 && (
-                <><span>•</span><StreakFlameInline streak={post.author.streak} suffix="d" className="text-[10px]" /></>
+              {(post.author?.streak ?? 0) > 0 && (
+                <><span>•</span><StreakFlameInline streak={post.author?.streak ?? 0} suffix="d" className="text-[11px]" /></>
               )}
             </div>
           </div>
@@ -548,8 +548,8 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
         {showComments && (
           <div className="border-t border-border/50 px-4 py-3 bg-secondary/20">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Discussion</p>
-              <p className="text-[10px] text-muted-foreground/75 tabular-nums">
+              <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Discussion</p>
+              <p className="text-[11px] text-muted-foreground/75 tabular-nums">
                 {post.comments_count} {post.comments_count === 1 ? "reply" : "replies"}
               </p>
             </div>
@@ -584,10 +584,10 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                   <div className="mb-2 flex items-stretch gap-2 rounded-xl border border-[hsl(var(--ember))]/30 bg-[hsl(var(--ember))]/[0.06] p-2 animate-fade-in">
                     <div className="w-0.5 rounded-full bg-[hsl(var(--ember))] shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-[hsl(var(--ember))] uppercase tracking-wider">
-                        <Reply aria-hidden size={10} /> Replying to @{replyTo.username}
+                      <div className="flex items-center gap-1 text-[11px] font-bold text-[hsl(var(--ember))] uppercase tracking-wider">
+                        <Reply aria-hidden size={12} /> Replying to @{replyTo.username}
                       </div>
-                      <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 break-words">
+                      <p className="text-[12px] text-muted-foreground line-clamp-2 mt-0.5 break-words">
                         {replyTo.snippet || "(no text)"}
                       </p>
                     </div>
@@ -599,7 +599,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                 )}
 
                 <div className="flex items-end gap-2">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[hsl(var(--ember))] to-gold flex items-center justify-center text-[10px] font-black text-background shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[hsl(var(--ember))] to-gold flex items-center justify-center text-[11px] font-black text-background shrink-0">
                     {profile?.username?.charAt(0)?.toUpperCase() || "?"}
                   </div>
                   <div className="flex-1 min-w-0 relative">
@@ -623,7 +623,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                     />
                     {commentText.length > 0 && (
                       <span className={cn(
-                        "absolute right-12 top-1/2 -translate-y-1/2 text-[9px] font-semibold tabular-nums",
+                        "absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-semibold tabular-nums",
                         commentText.length > 270 ? "text-destructive" : "text-muted-foreground/75"
                       )}>
                         {300 - commentText.length}
@@ -644,7 +644,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                 </div>
               </div>
             ) : (
-              <p className="text-[11px] text-muted-foreground text-center py-2">
+              <p className="text-[12px] text-muted-foreground text-center py-2">
                 Join this tribe to comment.
               </p>
             )}

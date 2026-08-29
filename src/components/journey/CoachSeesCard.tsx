@@ -13,10 +13,10 @@ const CoachSeesCard = ({ snapshot }: { snapshot: WhealthSnapshot }) => {
     <div className="surface-card p-4">
       <div className="flex items-center gap-2 mb-3">
         <Sparkles size={13} className="text-gold" />
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70">
+        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/70">
           What your coach sees
         </p>
-        <span className="ml-auto text-[9px] font-bold text-muted-foreground/60 tabular-nums">
+        <span className="ml-auto text-[10px] font-bold text-muted-foreground/60 tabular-nums">
           {snapshot.snapshotDate}
         </span>
       </div>
@@ -35,7 +35,7 @@ const CoachSeesCard = ({ snapshot }: { snapshot: WhealthSnapshot }) => {
       {snapshot.patterns.length > 0 && (
         <div className="mb-3 space-y-1.5">
           {snapshot.patterns.slice(0, 2).map((p) => (
-            <p key={p.key} className="text-[11px] text-muted-foreground leading-snug">
+            <p key={p.key} className="text-[12px] text-muted-foreground leading-snug">
               <span className="text-foreground/85 font-semibold">Your pattern:</span>{" "}
               {p.metric} {p.avgA}{p.unit} {p.aLabel} vs {p.avgB}{p.unit} {p.bLabel}
               <span className="text-muted-foreground/60"> (n={p.nA}/{p.nB})</span>

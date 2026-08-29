@@ -27,7 +27,7 @@ const StatusBadge = ({ tier, division = 0, size = "md", showAura = true, classNa
   const Icon = tierIcons[tier] || Shield;
   
   const sizeClasses = {
-    sm: "px-2.5 py-0.5 text-[10px] gap-1",
+    sm: "px-2.5 py-0.5 text-[11px] gap-1",
     md: "px-3.5 py-1 text-xs gap-1.5",
     lg: "px-4 py-1.5 text-sm gap-2",
   };

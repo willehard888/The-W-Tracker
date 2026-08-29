@@ -52,7 +52,7 @@ const MediaPreview = ({ imageSrc, videoSrc, sizeBytes, onClear, progressLabel, c
 
       {/* "ready" hint */}
       {!uploading && (
-        <div className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/55 backdrop-blur-sm text-[10px] font-semibold text-white/90 tracking-wide">
+        <div className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/55 backdrop-blur-sm text-[11px] font-semibold text-white/90 tracking-wide">
           <span className="h-1.5 w-1.5 rounded-full bg-[hsl(152_55%_55%)]" />
           Ready{sizeBytes ? ` · ${fmtSize(sizeBytes)}` : ""}
         </div>

@@ -45,8 +45,8 @@ const BattleActiveCard = ({
         </div>
         <div className="flex items-center gap-1.5">
           <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[hsl(var(--streak-orange))]/10 border border-[hsl(var(--streak-orange))]/20">
-            <Clock size={10} className="text-[hsl(var(--streak-orange))]" />
-            <span className="text-[10px] font-bold text-[hsl(var(--streak-orange))]">{daysLeft}d left</span>
+            <Clock size={12} className="text-[hsl(var(--streak-orange))]" />
+            <span className="text-[11px] font-bold text-[hsl(var(--streak-orange))]">{daysLeft}d left</span>
           </div>
           {isAdmin && (
             <DropdownMenu>
@@ -76,11 +76,11 @@ const BattleActiveCard = ({
           <div className="h-12 w-12 rounded-full gradient-gold flex items-center justify-center text-lg font-black text-primary-foreground mx-auto mb-1">
             {profileUsername?.charAt(0)?.toUpperCase()}
           </div>
-          <p className="text-xs font-bold truncate text-gold">@{profileUsername} <span className="text-[10px] text-gold/70 font-medium">(you)</span></p>
+          <p className="text-xs font-bold truncate text-gold">@{profileUsername} <span className="text-[11px] text-gold/70 font-medium">(you)</span></p>
           <p className={cn("text-lg font-black font-display tabular-nums", amWinning ? "text-gold" : "text-muted-foreground")}>
             {myScore}
           </p>
-          <p className="text-[10px] text-muted-foreground">{typeInfo.label}</p>
+          <p className="text-[11px] text-muted-foreground">{typeInfo.label}</p>
         </div>
 
         <div className="flex flex-col items-center gap-1">
@@ -95,7 +95,7 @@ const BattleActiveCard = ({
           <p className={cn("text-lg font-black font-display tabular-nums", !amWinning ? "text-gold" : "text-muted-foreground")}>
             {oppScore}
           </p>
-          <p className="text-[10px] text-muted-foreground">{typeInfo.label}</p>
+          <p className="text-[11px] text-muted-foreground">{typeInfo.label}</p>
         </div>
       </div>
 
@@ -108,14 +108,14 @@ const BattleActiveCard = ({
 
       {/* Proof Section — REQUIRED */}
       <div className="p-4 pt-3 border-t border-border mt-3">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
-          <Camera size={10} /> Proof Photos <span className="text-destructive ml-1">(required)</span>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
+          <Camera size={12} /> Proof Photos <span className="text-destructive ml-1">(required)</span>
         </p>
 
         {!myProof && (
           <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-2.5 mb-3 flex items-center gap-2">
             <Camera size={14} className="text-destructive shrink-0" />
-            <p className="text-[11px] text-destructive font-semibold">
+            <p className="text-[12px] text-destructive font-semibold">
               Upload your proof to validate this battle. No proof = automatic forfeit.
             </p>
           </div>
@@ -128,7 +128,7 @@ const BattleActiveCard = ({
               <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
                 {myProofSrc && <img loading="lazy" decoding="async" src={myProofSrc} alt="My proof" className="w-full h-full object-cover" />}
                 <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
-                  <span className="text-[9px] font-bold text-white">You ✅</span>
+                  <span className="text-[10px] font-bold text-white">You ✅</span>
                 </div>
               </div>
             ) : (
@@ -138,11 +138,11 @@ const BattleActiveCard = ({
                 className="w-full aspect-square rounded-lg border-2 border-dashed border-destructive/40 bg-destructive/5 flex flex-col items-center justify-center gap-1 transition-all hover:bg-destructive/10 active:scale-95 animate-pulse"
               >
                 {isUploading ? (
-                  <span className="text-[10px] text-muted-foreground animate-pulse">Uploading...</span>
+                  <span className="text-[11px] text-muted-foreground animate-pulse">Uploading...</span>
                 ) : (
                   <>
                     <Camera size={20} className="text-destructive" />
-                    <span className="text-[9px] font-bold text-destructive">UPLOAD NOW</span>
+                    <span className="text-[10px] font-bold text-destructive">UPLOAD NOW</span>
                   </>
                 )}
               </button>
@@ -155,13 +155,13 @@ const BattleActiveCard = ({
               <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
                 {oppProofSrc && <img loading="lazy" decoding="async" src={oppProofSrc} alt="Opponent proof" className="w-full h-full object-cover" />}
                 <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
-                  <span className="text-[9px] font-bold text-white">@{opp.username} ✅</span>
+                  <span className="text-[10px] font-bold text-white">@{opp.username} ✅</span>
                 </div>
               </div>
             ) : (
               <div className="w-full aspect-square rounded-lg border border-border bg-secondary/50 flex flex-col items-center justify-center gap-1">
                 <Image size={16} className="text-muted-foreground/40" />
-                <span className="text-[9px] text-muted-foreground">No proof yet</span>
+                <span className="text-[10px] text-muted-foreground">No proof yet</span>
               </div>
             )}
           </div>

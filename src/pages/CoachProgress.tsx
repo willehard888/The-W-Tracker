@@ -56,7 +56,7 @@ const CoachProgress = () => {
         <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles size={12} className="text-gold" />
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">
               Last 7 days at a glance
             </p>
           </div>
@@ -67,7 +67,7 @@ const CoachProgress = () => {
             <SummaryTile icon={Trophy} label="Workouts" value={`${workoutsThisWeek}/7`} />
           </div>
           <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between">
-            <span className="text-[11px] text-muted-foreground">Core 4 hit rate · 7 days</span>
+            <span className="text-[12px] text-muted-foreground">Core 4 hit rate · 7 days</span>
             <span className="text-[12px] font-bold text-gold tabular-nums">{coreHitRate == null ? "—" : `${coreHitRate}%`}</span>
           </div>
         </div>
@@ -90,7 +90,7 @@ const CoachProgress = () => {
                 className="w-full rounded-2xl border border-dashed border-gold/30 bg-card/30 p-4 text-left hover:bg-gold/[0.04] transition-colors active:scale-[0.99]"
               >
                 <p className="text-[12px] font-bold mb-0.5">Add a training program</p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[11px] text-muted-foreground">
                   Once you have one, week-by-week compliance lands here too.
                 </p>
               </button>
@@ -102,11 +102,11 @@ const CoachProgress = () => {
             onClick={() => navigate("/paywall")}
             className="w-full text-left rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/[0.06] to-card p-4 active:scale-[0.99] transition-transform"
           >
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold mb-1">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold mb-1">
               W Coach · Premium
             </p>
             <p className="text-[13px] font-bold mb-1">Unlock AI weekly review</p>
-            <p className="text-[11px] text-muted-foreground leading-snug">
+            <p className="text-[12px] text-muted-foreground leading-snug">
               Score, trend, components (sleep / recovery / consistency),
               week-driver call-out, and a Coach signature. Premium perk.
             </p>
@@ -122,8 +122,8 @@ const SummaryTile = ({
 }: { icon: React.ElementType; label: string; value: string }) => (
   <div className="surface-card surface-card-quiet px-3 py-2.5">
     <div className="flex items-center gap-1 mb-0.5">
-      <Icon size={10} className="text-muted-foreground" />
-      <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">
+      <Icon size={12} className="text-muted-foreground" />
+      <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
         {label}
       </span>
     </div>

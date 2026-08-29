@@ -47,6 +47,9 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
 
   useEffect(() => {
     if (!open) return;
+    // active-guard: clearTimeout can't recall an in-flight request, and a
+    // slow stale response must not overwrite a newer query's results.
+    let active = true;
     const t = setTimeout(async () => {
       const q = query.trim();
       if (q.length < 2) {
@@ -61,10 +64,11 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
         .neq("id", challengerTribeId)
         .order("member_count", { ascending: false })
         .limit(10);
+      if (!active) return;
       setResults(((data as any) ?? []) as TribeRow[]);
       setSearching(false);
     }, 300);
-    return () => clearTimeout(t);
+    return () => { active = false; clearTimeout(t); };
   }, [query, open, challengerTribeId]);
 
   const handleSubmit = async () => {
@@ -132,8 +136,8 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
             >
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold truncate">{r.name}</p>
-                <p className="text-[10px] text-muted-foreground inline-flex items-center gap-1">
-                  <Users size={9} /> {r.member_count} members · {r.visibility}
+                <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
+                  <Users size={11} /> {r.member_count} members · {r.visibility}
                 </p>
               </div>
             </button>
@@ -143,7 +147,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
         {/* Duration */}
         {selected && (
           <div>
-            <p className="text-[10px] uppercase tracking-widest font-black text-muted-foreground mb-2">
+            <p className="text-[11px] uppercase tracking-widest font-black text-muted-foreground mb-2">
               Duration
             </p>
             <div className="grid grid-cols-3 gap-1.5">
@@ -159,7 +163,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
                   )}
                 >
                   <p className="text-xs font-black">{d.label}</p>
-                  <p className="text-[9px] text-muted-foreground">{d.sub}</p>
+                  <p className="text-[10px] text-muted-foreground">{d.sub}</p>
                 </button>
               ))}
             </div>

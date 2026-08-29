@@ -70,8 +70,8 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
             <p className="text-[12px] text-muted-foreground leading-snug">{recipe.blurb}</p>
           </div>
           <RecipeImage id={recipe.id} className="absolute inset-0 h-full w-full object-cover" />
-          <span className="absolute bottom-2.5 right-2.5 inline-flex items-center gap-1 rounded-md bg-black/45 backdrop-blur-sm px-2 py-1 text-[10px] font-semibold tracking-wide text-white/85">
-            <Maximize2 size={10} /> Enlarge
+          <span className="absolute bottom-2.5 right-2.5 inline-flex items-center gap-1 rounded-md bg-black/45 backdrop-blur-sm px-2 py-1 text-[11px] font-semibold tracking-wide text-white/85">
+            <Maximize2 size={12} /> Enlarge
           </span>
         </button>
 
@@ -79,7 +79,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
         <div className="surface-card p-4">
           <div className="flex items-center gap-2 mb-2.5">
             <Layers size={12} className="text-gold" />
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70">Meal prep — cook in batch</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/70">Meal prep — cook in batch</p>
           </div>
           <div className="flex gap-1.5">
             {BATCH_OPTIONS.map((b) => (
@@ -97,7 +97,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-muted-foreground mt-2.5 leading-snug">
+          <p className="text-[12px] text-muted-foreground mt-2.5 leading-snug">
             {batch === 1
               ? "Single serving — full quantities are on the poster. Tap 2×–5× for a batch shopping list."
               : `Shopping list scaled for ${batch} meals — cook once, eat all week.`}
@@ -109,13 +109,13 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
           <div className="surface-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <Leaf size={13} className="text-gold" />
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70">Shopping list</p>
-              <span className="ml-auto text-[11px] font-black text-gold tabular-nums">{batch}×</span>
+              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/70">Shopping list</p>
+              <span className="ml-auto text-[12px] font-black text-gold tabular-nums">{batch}×</span>
             </div>
             <div className="space-y-3">
               {recipe.groups.map((g) => (
                 <div key={g.title}>
-                  <p className="text-[10px] font-black uppercase tracking-wider text-foreground/60 mb-1.5">{g.title}</p>
+                  <p className="text-[11px] font-black uppercase tracking-wider text-foreground/60 mb-1.5">{g.title}</p>
                   <ul className="space-y-1">
                     {g.items.map((it, i) => (
                       <li key={i} className="flex items-baseline gap-2 text-[12px]">
@@ -138,13 +138,13 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
 
         {/* Storage / reheat — same calm palette (no competing accent colour) */}
         <div className="surface-card p-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-foreground/70 mb-3">Storage & reheat</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/70 mb-3">Storage & reheat</p>
           <div className="flex gap-2 mb-3">
             <div className="flex-1 rounded-lg bg-secondary/30 border border-border/50 p-2.5 flex items-center gap-2">
               <Refrigerator size={15} className="text-gold/80 shrink-0" />
               <div>
                 <p className="text-[14px] font-black tabular-nums leading-none">{recipe.mealPrep.fridgeDays}d</p>
-                <p className="text-[9px] uppercase tracking-wider text-muted-foreground mt-0.5">Fridge</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Fridge</p>
               </div>
             </div>
             {recipe.mealPrep.freezerWeeks != null && (
@@ -152,7 +152,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
                 <Snowflake size={15} className="text-gold/80 shrink-0" />
                 <div>
                   <p className="text-[14px] font-black tabular-nums leading-none">{recipe.mealPrep.freezerWeeks}wk</p>
-                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground mt-0.5">Freezer</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Freezer</p>
                 </div>
               </div>
             )}
@@ -162,7 +162,7 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
           </p>
           <ul className="space-y-1">
             {recipe.mealPrep.tips.map((t, i) => (
-              <li key={i} className="text-[11px] text-muted-foreground leading-snug flex gap-1.5">
+              <li key={i} className="text-[12px] text-muted-foreground leading-snug flex gap-1.5">
                 <span className="text-gold/50 shrink-0">•</span> {t}
               </li>
             ))}
@@ -210,8 +210,8 @@ const Recipes = () => {
           return (
             <div key={sec.key}>
               <div className="flex items-baseline gap-2 mb-2.5 px-1">
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80">{sec.label}</p>
-                <span className="text-[10px] font-bold text-muted-foreground/50 tabular-nums">{items.length}</span>
+                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/80">{sec.label}</p>
+                <span className="text-[11px] font-bold text-muted-foreground/50 tabular-nums">{items.length}</span>
               </div>
               <div className="space-y-3">
                 {items.map((r) => (
@@ -238,7 +238,7 @@ const Recipes = () => {
                       <div className="flex-1 min-w-0">
                         <p className="font-display text-[15px] font-black leading-tight">{r.title}</p>
                         <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">{r.subtitle}</p>
-                        <div className="flex items-center gap-3 mt-2 text-[11px] font-bold text-muted-foreground">
+                        <div className="flex items-center gap-3 mt-2 text-[12px] font-bold text-muted-foreground">
                           <span className="text-gold tabular-nums">{r.nutrition.calories} kcal</span>
                           <span className="tabular-nums">{r.nutrition.protein}g protein</span>
                           <span className="inline-flex items-center gap-0.5"><Clock size={11} /> {r.prepMin + r.cookMin}m</span>

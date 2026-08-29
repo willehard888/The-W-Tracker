@@ -21,45 +21,41 @@ const PublicProfile = () => {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [lightboxPost, setLightboxPost] = useState<any>(null);
 
+  // One SECURITY DEFINER RPC serves the whole public identity — profiles
+  // SELECT is authenticated-only (anti-scraping, 20260414092928), so a plain
+  // table read here returned nothing for logged-out share-link visitors and
+  // the page claimed the user didn't exist.
+  interface PublicProfileBundle {
+    user_id: string;
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    status_tier: string | null;
+    tier_division: string | null;
+    level: number | null;
+    xp: number | null;
+    streak: number | null;
+    longest_streak: number | null;
+    is_elite: boolean | null;
+    is_apex_subscriber: boolean | null;
+    legend_pinned: boolean | null;
+    champion_wins: number;
+    badges: { badge_id: string; earned_at: string; badges: { name: string; icon: string; rarity: string } }[];
+  }
   const { data: profile, isLoading } = useQuery({
     queryKey: ["public-profile", username],
     queryFn: async () => {
       if (!username) return null;
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, username, display_name, avatar_url, status_tier, tier_division, level, xp, streak, longest_streak, is_elite, is_apex_subscriber, legend_pinned")
-        .ilike("username", username)
-        .maybeSingle();
-      return data;
+      const { data } = await supabase.rpc("get_public_profile" as never, {
+        p_username: username,
+      } as never);
+      return (data ?? null) as unknown as PublicProfileBundle | null;
     },
     enabled: !!username,
   });
 
-  const { data: championHistory } = useQuery({
-    queryKey: ["public-champion-history", profile?.user_id],
-    enabled: !!profile?.user_id,
-    queryFn: async () => {
-      const { count } = await supabase
-        .from("leaderboard_champions")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", profile!.user_id);
-      return { wins: count || 0 };
-    },
-  });
-
-  const { data: badges } = useQuery({
-    queryKey: ["public-badges", profile?.user_id],
-    enabled: !!profile?.user_id,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("user_badges")
-        .select("badge_id, earned_at, badges(name, icon, rarity)")
-        .eq("user_id", profile!.user_id)
-        .order("earned_at", { ascending: false })
-        .limit(8);
-      return data || [];
-    },
-  });
+  const championHistory = profile ? { wins: profile.champion_wins ?? 0 } : undefined;
+  const badges = profile?.badges ?? [];
 
   // Elite Feed posts with media — the loudest social proof on a public profile.
   const { data: mediaPosts } = useQuery({
@@ -121,7 +117,7 @@ const PublicProfile = () => {
     <div className="min-h-[100dvh] relative pb-10">
       {/* Back button */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/"))}
         className="absolute top-4 left-4 z-20 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft size={14} /> Back
@@ -164,7 +160,7 @@ const PublicProfile = () => {
                 <p className={cn("font-display font-black text-xl leading-none tabular-nums", s.color)}>
                   {s.value}
                 </p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mt-1">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold mt-1">
                   {s.label}
                 </p>
               </motion.div>
@@ -190,7 +186,7 @@ const PublicProfile = () => {
             </h1>
             {(profile.streak ?? 0) > 0 && (
               <StreakFlameInline
-                streak={profile.streak}
+                streak={profile.streak ?? 0}
                 suffix="d"
                 className="align-middle"
                 countClassName="font-black text-foreground/90"
@@ -217,8 +213,8 @@ const PublicProfile = () => {
             size="md"
           />
           {isApexSubscriber && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-[0.22em] bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold">
-              <Crown size={9} strokeWidth={3} />
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-[0.22em] bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold">
+              <Crown size={11} strokeWidth={3} />
               Day-One
             </span>
           )}
@@ -228,21 +224,21 @@ const PublicProfile = () => {
             <ApexBadge tier="legend" size="sm" />
           ) : profile.status_tier === 'elite' ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gold/45 bg-gold/5">
-              <Crown size={10} className="text-gold" />
-              <span className="text-[10px] font-black text-gold tracking-wider uppercase">{formatTier('elite', (profile as any).tier_division ?? 0)}</span>
+              <Crown size={12} className="text-gold" />
+              <span className="text-[11px] font-black text-gold tracking-wider uppercase">{formatTier('elite', (profile as any).tier_division ?? 0)}</span>
             </span>
           ) : null}
           {championHistory && championHistory.wins > 0 && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gold/45 bg-gold/5">
-              <Trophy size={10} className="text-gold" />
-              <span className="text-[10px] font-black text-gold tracking-wider uppercase">
+              <Trophy size={12} className="text-gold" />
+              <span className="text-[11px] font-black text-gold tracking-wider uppercase">
                 {championHistory.wins > 1 ? `${championHistory.wins}× ` : ""}Season Champion
               </span>
             </span>
           )}
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border bg-card">
-            <Trophy size={10} className="text-muted-foreground" />
-            <span className="text-[10px] font-black text-muted-foreground tracking-wider uppercase">
+            <Trophy size={12} className="text-muted-foreground" />
+            <span className="text-[11px] font-black text-muted-foreground tracking-wider uppercase">
               Best {profile.longest_streak}d
             </span>
           </span>
@@ -263,7 +259,7 @@ const PublicProfile = () => {
             <div className="flex items-center justify-center border-t border-border">
               <div className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-t-2 border-foreground -mt-px">
                 <Camera size={12} className="text-foreground" />
-                <span className="text-[10px] font-black tracking-[0.22em] uppercase text-foreground">
+                <span className="text-[11px] font-black tracking-[0.22em] uppercase text-foreground">
                   Posts · {mediaPosts.length}
                 </span>
               </div>
@@ -312,7 +308,7 @@ const PublicProfile = () => {
             <div className="flex items-center justify-center border-t border-border">
               <div className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-t-2 border-foreground -mt-px">
                 <Camera size={12} className="text-foreground" />
-                <span className="text-[10px] font-black tracking-[0.22em] uppercase text-foreground">
+                <span className="text-[11px] font-black tracking-[0.22em] uppercase text-foreground">
                   Posts
                 </span>
               </div>
@@ -330,7 +326,7 @@ const PublicProfile = () => {
         {/* Badges — moved below the feed */}
         {badges && badges.length > 0 && (
           <div className="px-0 mb-4">
-            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-2">
+            <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-2">
               Recent Badges
             </p>
             <div className="grid grid-cols-4 gap-2">
@@ -348,7 +344,7 @@ const PublicProfile = () => {
                   )}
                 >
                   <span className="text-2xl">{b.badges?.icon}</span>
-                  <span className="text-[8px] font-bold mt-0.5 line-clamp-1 px-1 text-center text-muted-foreground">
+                  <span className="text-[10px] font-bold mt-0.5 line-clamp-1 px-1 text-center text-muted-foreground">
                     {b.badges?.name}
                   </span>
                 </motion.div>
@@ -357,7 +353,7 @@ const PublicProfile = () => {
           </div>
         )}
 
-        <p className="text-[10px] text-center text-muted-foreground/60 font-semibold mt-3 tracking-wider">
+        <p className="text-[11px] text-center text-muted-foreground/60 font-semibold mt-3 tracking-wider">
           DISCIPLINE IS THE NEW FLEX
         </p>
       </div>
@@ -369,8 +365,8 @@ const PublicProfile = () => {
         username={profile.username}
         avatarUrl={profile.avatar_url}
         tier={(profile.status_tier || "recruit") as any}
-        level={profile.level}
-        streak={profile.streak}
+        level={profile.level ?? undefined}
+        streak={profile.streak ?? undefined}
         likes={lightboxPost?.likes_count}
         comments={lightboxPost?.comments_count}
         kudos={lightboxPost?.kudos_count}

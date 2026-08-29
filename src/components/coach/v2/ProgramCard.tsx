@@ -41,7 +41,7 @@ const ProgramCard = () => {
         <p className="text-[14px] font-bold leading-snug mb-1">
           Generate your 4-week training program
         </p>
-        <p className="text-[11px] text-muted-foreground leading-snug mb-4">
+        <p className="text-[12px] text-muted-foreground leading-snug mb-4">
           Two-minute setup. The plan adapts each week from your logs.
         </p>
         <Button
@@ -75,7 +75,7 @@ const ProgramCard = () => {
           <p className="text-[15px] font-bold leading-tight text-foreground mb-1">
             {todaySession.isRest ? "Rest day" : `Day ${todayDayIndex + 1} · ${todaySession.focus}`}
           </p>
-          <p className="text-[11px] text-muted-foreground leading-snug">
+          <p className="text-[12px] text-muted-foreground leading-snug">
             {todaySession.isRest
               ? "Active recovery, mobility, walk. Earn tomorrow."
               : `${todaySession.duration ? `${todaySession.duration} min` : ""}${
@@ -89,8 +89,8 @@ const ProgramCard = () => {
         </p>
       )}
 
-      <div className="mt-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-gold">
-        Open program <ArrowRight size={10} />
+      <div className="mt-3 inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-gold">
+        Open program <ArrowRight size={12} />
       </div>
     </button>
   );

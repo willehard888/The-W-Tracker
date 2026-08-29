@@ -78,7 +78,7 @@ export const EmptyState = ({
         <p
           className={cn(
             "text-muted-foreground/70 leading-relaxed max-w-[260px]",
-            isCompact ? "text-[11px]" : "text-xs",
+            isCompact ? "text-[12px]" : "text-xs",
           )}
         >
           {description}

@@ -127,7 +127,7 @@ const MyTribeBattles = () => {
         </p>
         <button
           onClick={() => navigate("/squad?tab=tribes")}
-          className="text-[11px] font-black uppercase tracking-widest text-gold inline-flex items-center gap-1"
+          className="text-[12px] font-black uppercase tracking-widest text-gold inline-flex items-center gap-1"
         >
           Find a tribe <ChevronRight size={12} />
         </button>
@@ -178,8 +178,8 @@ const MyTribeBattles = () => {
         )}
       >
         <div className="flex items-center justify-between mb-1.5">
-          <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-black text-muted-foreground">
-            <Swords size={10} className="text-[hsl(var(--ember))]" />
+          <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest font-black text-muted-foreground">
+            <Swords size={12} className="text-[hsl(var(--ember))]" />
             {b.status === "pending" && (myIsChallenger ? "Awaiting" : "Incoming")}
             {b.status === "active" && <span className="text-[hsl(var(--ember))]">Live</span>}
             {b.status === "completed" && (iWon ? <span className="text-gold">Victory</span> : isDraw ? "Draw" : "Defeat")}
@@ -187,8 +187,8 @@ const MyTribeBattles = () => {
             {b.status === "expired" && "Expired"}
           </div>
           {b.status === "active" && daysLeft !== null && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-foreground/80">
-              <Clock size={9} /> {daysLeft === 0 ? "Ending" : `${daysLeft}d left`}
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-foreground/80">
+              <Clock size={11} /> {daysLeft === 0 ? "Ending" : `${daysLeft}d left`}
             </span>
           )}
           {b.status === "completed" && iWon && <Trophy size={12} className="text-gold" />}
@@ -198,7 +198,7 @@ const MyTribeBattles = () => {
           <span className="font-display font-black text-xs truncate text-gold flex-1 min-w-0">
             {meName ?? "Your tribe"}
           </span>
-          <span className="text-[10px] font-black text-muted-foreground">VS</span>
+          <span className="text-[11px] font-black text-muted-foreground">VS</span>
           <span className="font-display font-black text-xs truncate text-foreground flex-1 min-w-0 text-right">
             {themName ?? "—"}
           </span>
@@ -207,8 +207,8 @@ const MyTribeBattles = () => {
         {(b.status === "active" || b.status === "completed") && (
           <>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[11px] font-black tabular-nums text-gold">{myScore.toLocaleString()} XP</span>
-              <span className="text-[11px] font-black tabular-nums text-foreground/80">{theirScore.toLocaleString()} XP</span>
+              <span className="text-[12px] font-black tabular-nums text-gold">{myScore.toLocaleString()} XP</span>
+              <span className="text-[12px] font-black tabular-nums text-foreground/80">{theirScore.toLocaleString()} XP</span>
             </div>
             <div className="h-1.5 rounded-full bg-secondary overflow-hidden flex">
               <div
@@ -233,24 +233,24 @@ const MyTribeBattles = () => {
           <Swords size={13} className="text-[hsl(var(--ember))]" />
           <h2 className="font-display font-bold text-sm tracking-tight">Tribe Battles</h2>
           {active.length > 0 && (
-            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-[hsl(var(--ember))] px-1.5 py-0.5 rounded-full bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
-              <Flame size={8} /> {active.length} live
+            <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-[hsl(var(--ember))] px-1.5 py-0.5 rounded-full bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
+              <Flame size={10} /> {active.length} live
             </span>
           )}
         </div>
         {tribes.length === 1 ? (
           <button
             onClick={() => navigate(`/tribes/${tribes[0].id}/battles`)}
-            className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-gold inline-flex items-center gap-0.5"
+            className="text-[11px] font-black uppercase tracking-widest text-muted-foreground hover:text-gold inline-flex items-center gap-0.5"
           >
-            View all <ChevronRight size={10} />
+            View all <ChevronRight size={12} />
           </button>
         ) : (
           <button
             onClick={() => navigate("/squad?tab=tribes")}
-            className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-gold inline-flex items-center gap-0.5"
+            className="text-[11px] font-black uppercase tracking-widest text-muted-foreground hover:text-gold inline-flex items-center gap-0.5"
           >
-            My tribes <ChevronRight size={10} />
+            My tribes <ChevronRight size={12} />
           </button>
         )}
       </div>
@@ -263,7 +263,7 @@ const MyTribeBattles = () => {
           {tribes.length === 1 ? (
             <button
               onClick={() => navigate(`/tribes/${tribes[0].id}/battles`)}
-              className="text-[11px] font-black uppercase tracking-widest text-[hsl(var(--ember))] inline-flex items-center gap-1"
+              className="text-[12px] font-black uppercase tracking-widest text-[hsl(var(--ember))] inline-flex items-center gap-1"
             >
               Open arena <ChevronRight size={12} />
             </button>

@@ -127,7 +127,7 @@ const CommandDeck = ({
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className={cn("text-[10px] font-black uppercase tracking-[0.22em] mb-0.5", canCheckin ? "text-gold" : "text-muted-foreground")}>
+              <p className={cn("text-[11px] font-black uppercase tracking-[0.22em] mb-0.5", canCheckin ? "text-gold" : "text-muted-foreground")}>
                 {canCheckin ? "Lock your day" : "Day locked"}
               </p>
               <p className="font-display font-black text-[19px] leading-none tracking-tight">
@@ -306,7 +306,7 @@ const CommandDeck = ({
             </div>
           ) : (
             <div className="mt-3.5 flex items-center justify-between rounded-xl px-4 py-2.5 border border-border/40">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Locked</p>
+              <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Locked</p>
               <p className="text-xs font-black text-gold/80 tabular-nums">Day banked ✓</p>
             </div>
           )}

@@ -54,19 +54,19 @@ export class ErrorBoundary extends Component<Props, State> {
           </p>
           {showDetails && (
           <details
-            className="w-full rounded-lg border border-white/15 bg-black/40 p-3 text-[11px] text-white/70 leading-relaxed"
+            className="w-full rounded-lg border border-white/15 bg-black/40 p-3 text-[12px] text-white/70 leading-relaxed"
             open
           >
             <summary className="cursor-pointer text-white/80 font-bold text-xs mb-1">
               {name}: {message}
             </summary>
             {stackHead && (
-              <pre className="mt-2 whitespace-pre-wrap break-words text-[10px] opacity-80">
+              <pre className="mt-2 whitespace-pre-wrap break-words text-[11px] opacity-80">
                 {stackHead}
               </pre>
             )}
             {componentHead && (
-              <pre className="mt-2 whitespace-pre-wrap break-words text-[10px] opacity-60">
+              <pre className="mt-2 whitespace-pre-wrap break-words text-[11px] opacity-60">
                 {componentHead}
               </pre>
             )}

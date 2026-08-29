@@ -221,7 +221,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
               placeholder="e.g. New baby, working remote, training around 6am only."
               className="w-full resize-none surface-inset rounded-2xl px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
             />
-            <p className="text-[10px] text-muted-foreground/70 mt-1">{(draft.life_context ?? "").length}/160</p>
+            <p className="text-[11px] text-muted-foreground/70 mt-1">{(draft.life_context ?? "").length}/160</p>
           </Field>
 
           <Field label="Stress lately">
@@ -247,7 +247,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
                 );
               })}
             </div>
-            <p className="text-[10px] text-muted-foreground/70 mt-1">Calm → overwhelmed</p>
+            <p className="text-[11px] text-muted-foreground/70 mt-1">Calm → overwhelmed</p>
           </Field>
 
           <Field label="Mood lately">
@@ -273,7 +273,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
                 );
               })}
             </div>
-            <p className="text-[10px] text-muted-foreground/70 mt-1">Down → energised</p>
+            <p className="text-[11px] text-muted-foreground/70 mt-1">Down → energised</p>
           </Field>
 
           <Field label="Anything to focus on? Optional, private.">
@@ -315,11 +315,11 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
                 >
                   <div className="text-lg mb-0.5">{p.emoji}</div>
                   <div className="text-[12px] font-bold leading-tight">{p.label}</div>
-                  <div className="text-[10px] text-muted-foreground leading-snug mt-0.5">{p.sub}</div>
+                  <div className="text-[11px] text-muted-foreground leading-snug mt-0.5">{p.sub}</div>
                 </button>
               ))}
             </div>
-            <p className="text-[10px] text-muted-foreground mt-2">
+            <p className="text-[11px] text-muted-foreground mt-2">
               Pick any that apply — the program adapts to what you actually have.
             </p>
           </Field>
@@ -367,7 +367,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
               placeholder="e.g. The dad my kids see show up strong every day. Someone who keeps promises to himself."
               className="w-full resize-none surface-inset rounded-2xl px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
             />
-            <p className="text-[10px] text-muted-foreground/70 mt-1">
+            <p className="text-[11px] text-muted-foreground/70 mt-1">
               {draft.i_am.length}/160 · This is what every check-in is really for.
             </p>
           </Field>
@@ -414,7 +414,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
 
       <div className="flex items-center gap-2 mb-1">
         <Sparkles size={14} className="text-gold" />
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">Step {step + 1} of {STEPS.length}</p>
+        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">Step {step + 1} of {STEPS.length}</p>
       </div>
       <h2 className="font-display text-2xl font-black tracking-tight leading-tight">{cur.title}</h2>
       <p className="text-sm text-muted-foreground mt-1 mb-5">{cur.sub}</p>
@@ -448,7 +448,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
 const Field = forwardRef<HTMLDivElement, { label: string; children: React.ReactNode }>(
   ({ label, children }, ref) => (
     <div ref={ref}>
-      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
+      <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
       {children}
     </div>
   ),
@@ -481,7 +481,7 @@ const Stepper = ({
   const inc = () => { hapticImpact("light"); onChange(Math.min(max, value + step)); };
   return (
     <div>
-      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
+      <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
       <div className="flex items-center gap-2 surface-card surface-card-quiet px-2 py-2">
         <button type="button" onClick={dec}
           className="h-10 w-10 surface-card surface-card-quiet rounded-xl flex items-center justify-center active:scale-95 transition">

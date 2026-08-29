@@ -26,13 +26,13 @@ const JourneyCard = ({ className }: { className?: string }) => {
           <Compass size={17} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80">
+          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/80">
             Your journey
           </p>
           <p className="text-sm font-bold text-foreground leading-tight">
             See how far you've come
           </p>
-          <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+          <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
             Trends, momentum & your reflection diary
           </p>
         </div>

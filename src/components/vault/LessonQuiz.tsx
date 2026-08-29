@@ -33,7 +33,7 @@ const LessonQuiz = ({
       <div className="flex items-center gap-2 mb-3">
         <HelpCircle size={13} style={{ color: accent }} strokeWidth={2.6} />
         <p
-          className="text-[10px] font-black tracking-[0.22em] uppercase"
+          className="text-[11px] font-black tracking-[0.22em] uppercase"
           style={{ color: accent }}
         >
           Comprehension check
@@ -97,7 +97,7 @@ const LessonQuiz = ({
                 })}
               </div>
               {submitted && (
-                <p className="mt-2 text-[11px] text-muted-foreground leading-snug pl-1">
+                <p className="mt-2 text-[12px] text-muted-foreground leading-snug pl-1">
                   <span className="font-black text-foreground/85">Why:</span> {q.explain}
                 </p>
               )}

@@ -87,7 +87,7 @@ const TierPromotionCelebration = () => {
                 initial={{ y: -10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className="text-[11px] font-black tracking-[0.4em] text-gold/80 uppercase mb-3"
+                className="text-[12px] font-black tracking-[0.4em] text-gold/80 uppercase mb-3"
               >
                 Status Promotion
               </motion.p>
@@ -171,7 +171,7 @@ const TierPromotionCelebration = () => {
                 </Button>
                 <button
                   onClick={() => setShowCelebration(false)}
-                  className="text-[11px] text-muted-foreground/60 font-semibold tracking-wider uppercase hover:text-foreground transition-colors py-2 w-full"
+                  className="text-[12px] text-muted-foreground/60 font-semibold tracking-wider uppercase hover:text-foreground transition-colors py-2 w-full"
                 >
                   Continue
                 </button>

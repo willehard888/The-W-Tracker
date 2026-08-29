@@ -119,10 +119,10 @@ const TribeLeaderboard = () => {
     const accent = collectiveAccent(streak);
     return (
       <span
-        className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums"
+        className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums"
         style={{ color: accent }}
       >
-        <Flame size={10} fill="currentColor" strokeWidth={0} />
+        <Flame size={12} fill="currentColor" strokeWidth={0} />
         {streak.toLocaleString()}d · {collectiveTierName(streak)}
       </span>
     );
@@ -180,17 +180,17 @@ const TribeLeaderboard = () => {
                   <div className="flex items-center gap-1.5">
                     <p className="font-bold text-[15px] truncate leading-tight">{r.name}</p>
                     {r.visibility === "private" && (
-                      <Lock size={10} className="text-muted-foreground shrink-0" />
+                      <Lock size={12} className="text-muted-foreground shrink-0" />
                     )}
                     {mine && (
-                      <span className="text-[8px] px-1 py-0.5 rounded bg-gold/20 text-gold font-black uppercase tracking-widest shrink-0">
+                      <span className="text-[10px] px-1 py-0.5 rounded bg-gold/20 text-gold font-black uppercase tracking-widest shrink-0">
                         Mine
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2.5 mt-1 flex-wrap">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums text-muted-foreground">
-                      <Users size={9} /> {r.member_count}
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-muted-foreground">
+                      <Users size={11} /> {r.member_count}
                     </span>
                     {fireChip(r.tribe_id)}
                   </div>

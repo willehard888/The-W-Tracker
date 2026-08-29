@@ -90,7 +90,7 @@ const Friends = () => {
         </Button>
         <h1 className="font-display text-base font-black tracking-tight">Friends</h1>
         {(friends?.length ?? 0) > 0 && (
-          <span className="ml-auto text-[11px] font-bold text-muted-foreground tabular-nums">{friends!.length}</span>
+          <span className="ml-auto text-[12px] font-bold text-muted-foreground tabular-nums">{friends!.length}</span>
         )}
       </div>
 
@@ -125,17 +125,17 @@ const Friends = () => {
                       </button>
                       <button onClick={() => navigate(`/user/${r.user_id}`)} className="flex-1 min-w-0 text-left">
                         <p className="text-[13px] font-bold truncate">@{r.username}</p>
-                        <p className="text-[10px] text-muted-foreground">Lv {r.level ?? 1}</p>
+                        <p className="text-[11px] text-muted-foreground">Lv {r.level ?? 1}</p>
                       </button>
                       {isFriend ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-gold px-2"><UserCheck size={13} /> Friends</span>
+                        <span className="inline-flex items-center gap-1 text-[12px] font-bold text-gold px-2"><UserCheck size={13} /> Friends</span>
                       ) : incomingFid ? (
                         <Button size="sm" variant="ember" disabled={busy === r.user_id}
                           onClick={() => guard(r.user_id, () => acceptRequest(incomingFid), "Friend added! 🎉")}>
                           <Check size={13} /> Accept
                         </Button>
                       ) : isSent ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground px-2"><Clock size={12} /> Pending</span>
+                        <span className="inline-flex items-center gap-1 text-[12px] font-bold text-muted-foreground px-2"><Clock size={12} /> Pending</span>
                       ) : (
                         <Button size="sm" variant="ember" disabled={busy === r.user_id}
                           onClick={() => guard(r.user_id, () => sendRequest(r.user_id), "Friend request sent 🤝")}>
@@ -153,7 +153,7 @@ const Friends = () => {
         {/* People you may know — members of your tribes you're not connected to */}
         {!searching2 && (suggestions?.length ?? 0) > 0 && (
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-2 px-1">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85 mb-2 px-1">
               People you may know
             </p>
             <div className="space-y-1.5">
@@ -167,7 +167,7 @@ const Friends = () => {
                     </button>
                     <button onClick={() => navigate(`/user/${s.user_id}`)} className="flex-1 min-w-0 text-left">
                       <p className="text-[13px] font-bold truncate">@{s.username}</p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-[11px] text-muted-foreground">
                         {s.mutual_tribes} shared tribe{s.mutual_tribes === 1 ? "" : "s"} · Lv {s.level ?? 1}
                       </p>
                     </button>
@@ -177,7 +177,7 @@ const Friends = () => {
                         <Check size={13} /> Accept
                       </Button>
                     ) : isSent ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground px-2"><Clock size={12} /> Pending</span>
+                      <span className="inline-flex items-center gap-1 text-[12px] font-bold text-muted-foreground px-2"><Clock size={12} /> Pending</span>
                     ) : (
                       <Button size="sm" variant="ember" disabled={busy === s.user_id}
                         onClick={() => guard(s.user_id, () => sendRequest(s.user_id), "Friend request sent 🤝")}>
@@ -194,7 +194,7 @@ const Friends = () => {
         {/* Incoming requests */}
         {(requests?.length ?? 0) > 0 && (
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/85 mb-2 px-1">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85 mb-2 px-1">
               Friend requests · {requests!.length}
             </p>
             <div className="space-y-1.5">
@@ -205,7 +205,7 @@ const Friends = () => {
                   </button>
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-bold truncate">@{r.username}</p>
-                    <p className="text-[10px] text-muted-foreground">wants to be friends</p>
+                    <p className="text-[11px] text-muted-foreground">wants to be friends</p>
                   </div>
                   <Button size="sm" variant="ember" disabled={busy === r.friendship_id}
                     onClick={() => guard(r.friendship_id, () => acceptRequest(r.friendship_id), "Friend added! 🎉")}>
@@ -227,7 +227,7 @@ const Friends = () => {
 
         {/* Your friends */}
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/70 mb-2 px-1">
+          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/70 mb-2 px-1">
             Your friends
           </p>
           {friendsLoading ? (
@@ -238,7 +238,7 @@ const Friends = () => {
             <div className="surface-card p-6 text-center">
               <Users size={26} className="text-gold/60 mx-auto mb-2" />
               <p className="text-[13px] font-bold text-foreground">No friends yet</p>
-              <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+              <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
                 Search a username above to send your first request. Friends power your battles and feed.
               </p>
             </div>
@@ -251,11 +251,11 @@ const Friends = () => {
                   </button>
                   <button onClick={() => navigate(`/user/${f.user_id}`)} className="flex-1 min-w-0 text-left">
                     <p className="text-[13px] font-bold truncate">@{f.username}</p>
-                    <p className="text-[10px] text-muted-foreground flex items-center gap-2">
+                    <p className="text-[11px] text-muted-foreground flex items-center gap-2">
                       <span>Lv {f.level ?? 1}</span>
                       {(f.streak ?? 0) > 0 && (
                         <span className="inline-flex items-center gap-0.5 text-[hsl(var(--streak-orange))]">
-                          <Flame size={9} /> {f.streak}
+                          <Flame size={11} /> {f.streak}
                         </span>
                       )}
                     </p>

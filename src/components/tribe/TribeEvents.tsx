@@ -91,7 +91,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
         {isMember && (
           <button
             onClick={() => { hapticImpact("light"); setShowCreate(true); }}
-            className="inline-flex items-center gap-1 rounded-full bg-gold/15 border border-gold/35 px-3 py-1.5 text-[11px] font-black text-gold active:scale-95 transition-transform"
+            className="inline-flex items-center gap-1 rounded-full bg-gold/15 border border-gold/35 px-3 py-1.5 text-[12px] font-black text-gold active:scale-95 transition-transform"
           >
             <Plus size={13} /> Host
           </button>
@@ -104,7 +104,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
         <div className="surface-card p-5 text-center">
           <Calendar size={24} className="text-gold/60 mx-auto mb-2" />
           <p className="text-[13px] font-bold text-foreground">No meetups yet</p>
-          <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+          <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
             {isMember ? "Host the first one — a run, a lift, a session. Your tribe shows up." : "Join the tribe to host and join meetups."}
           </p>
         </div>
@@ -186,32 +186,32 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
       <div className="p-3.5 pl-4">
         {isNext && (
           <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 rounded-full bg-[hsl(var(--ember))]/15 border border-[hsl(var(--ember))]/35">
-            <Flame size={9} className="text-[hsl(var(--ember))]" fill="currentColor" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-[hsl(var(--ember))]">Next up</span>
+            <Flame size={11} className="text-[hsl(var(--ember))]" fill="currentColor" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--ember))]">Next up</span>
           </div>
         )}
         <div className="flex items-start gap-3">
           <div className="shrink-0 w-14 rounded-xl bg-gradient-to-b from-gold/20 to-gold/[0.04] border border-gold/30 flex flex-col items-center justify-center py-2 shadow-[0_4px_14px_-8px_hsl(var(--gold)/0.6)]">
-            <span className="text-[9px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "EEE")}</span>
+            <span className="text-[10px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "EEE")}</span>
             <span className="font-display font-black text-2xl leading-none text-gold tabular-nums my-0.5">{format(start, "d")}</span>
-            <span className="text-[9px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "MMM")}</span>
+            <span className="text-[10px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "MMM")}</span>
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               {ev.activity && (() => {
                 const ActIcon = activityIcon(ev.activity);
                 return (
-                  <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded px-1.5 py-0.5">
-                    <ActIcon size={9} strokeWidth={2.6} /> {ev.activity}
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded px-1.5 py-0.5">
+                    <ActIcon size={11} strokeWidth={2.6} /> {ev.activity}
                   </span>
                 );
               })()}
               {rel && (
-                <span className="text-[9px] font-black uppercase tracking-wider text-[hsl(var(--ember))] bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/25 rounded px-1.5 py-0.5">{rel}</span>
+                <span className="text-[10px] font-black uppercase tracking-wider text-[hsl(var(--ember))] bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/25 rounded px-1.5 py-0.5">{rel}</span>
               )}
             </div>
             <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{ev.title}</p>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground">
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] text-muted-foreground">
               <span className="inline-flex items-center gap-1"><Clock size={11} /> {format(start, "EEE HH:mm")} · {ev.duration_min}m</span>
               {ev.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={11} /> {ev.place}</span>}
               {ev.meeting_url && <span className="inline-flex items-center gap-1 text-[hsl(var(--ember))] font-bold"><Video size={11} /> Online</span>}
@@ -222,22 +222,22 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
                 <div className="h-full rounded-full bg-gradient-to-r from-[hsl(var(--ember))] to-gold transition-all duration-500" style={{ width: `${pct}%` }} />
               </div>
             )}
-            {ev.description && <p className="text-[11px] text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
+            {ev.description && <p className="text-[12px] text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
             {isMember && (
               <div className="mt-2.5 flex items-center gap-1.5">
                 {safeHttpUrl(ev.meeting_url) && (
                   <a href={safeHttpUrl(ev.meeting_url)} target="_blank" rel="noopener noreferrer" onClick={() => hapticImpact("light")}
-                    className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[11px] font-black bg-[hsl(var(--ember))] text-background active:scale-95 transition-transform">
+                    className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[12px] font-black bg-[hsl(var(--ember))] text-background active:scale-95 transition-transform">
                     <Video size={12} /> Join
                   </a>
                 )}
                 <button disabled={busy === ev.id || full} onClick={() => onRsvp(ev, "going")}
-                  className={cn("inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[11px] font-black transition-all active:scale-95 disabled:opacity-50",
+                  className={cn("inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[12px] font-black transition-all active:scale-95 disabled:opacity-50",
                     ev.my_status === "going" ? "bg-gold text-primary-foreground" : "bg-secondary/50 border border-border/50 text-foreground/70")}>
                   <Check size={12} /> {full ? "Full" : "Going"}
                 </button>
                 <button disabled={busy === ev.id} onClick={() => onRsvp(ev, "maybe")}
-                  className={cn("rounded-lg px-3 py-1.5 text-[11px] font-black transition-all active:scale-95 disabled:opacity-50",
+                  className={cn("rounded-lg px-3 py-1.5 text-[12px] font-black transition-all active:scale-95 disabled:opacity-50",
                     ev.my_status === "maybe" ? "bg-gold/20 border border-gold/40 text-gold" : "bg-secondary/50 border border-border/50 text-foreground/70")}>
                   Maybe
                 </button>
@@ -286,15 +286,15 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-gold bg-gold/12 border border-gold/30 rounded px-1.5 py-0.5">
-                <ActIcon size={9} strokeWidth={2.6} /> {series.sessions.length}-part series
+              <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-gold bg-gold/12 border border-gold/30 rounded px-1.5 py-0.5">
+                <ActIcon size={11} strokeWidth={2.6} /> {series.sessions.length}-part series
               </span>
               {series.activity && (
-                <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground">{series.activity}</span>
+                <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{series.activity}</span>
               )}
             </div>
             <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{series.title}</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
+            <p className="text-[12px] text-muted-foreground mt-0.5">
               {series.sessions.length} sessions{isMember ? ` · you're in for ${goingCount}` : ""}
             </p>
           </div>
@@ -313,14 +313,14 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
             return (
               <div key={s.id} className="flex items-center gap-2.5 surface-panel rounded-xl px-2.5 py-2">
                 <div className="shrink-0 h-7 w-7 rounded-lg bg-gold/15 border border-gold/25 flex items-center justify-center">
-                  <span className="text-[10px] font-black text-gold tabular-nums">{s.session_index ?? idx + 1}</span>
+                  <span className="text-[11px] font-black text-gold tabular-nums">{s.session_index ?? idx + 1}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[12px] font-bold truncate">{format(start, "EEE d MMM · HH:mm")}</p>
-                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                    <span className="inline-flex items-center gap-1"><Clock size={9} /> {s.duration_min}m</span>
-                    {s.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={9} /> {s.place}</span>}
-                    {s.meeting_url && <span className="inline-flex items-center gap-1 text-[hsl(var(--ember))] font-bold"><Video size={9} /> Online</span>}
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <span className="inline-flex items-center gap-1"><Clock size={11} /> {s.duration_min}m</span>
+                    {s.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={11} /> {s.place}</span>}
+                    {s.meeting_url && <span className="inline-flex items-center gap-1 text-[hsl(var(--ember))] font-bold"><Video size={11} /> Online</span>}
                     {rel && <span className="font-black uppercase tracking-wider text-[hsl(var(--ember))]">{rel}</span>}
                   </div>
                 </div>
@@ -333,7 +333,7 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
                       </a>
                     )}
                     <button disabled={busy === s.id} onClick={() => onRsvp(s, "going")}
-                      className={cn("h-7 px-2.5 rounded-lg text-[10px] font-black transition-all active:scale-95 disabled:opacity-50",
+                      className={cn("h-7 px-2.5 rounded-lg text-[11px] font-black transition-all active:scale-95 disabled:opacity-50",
                         s.my_status === "going" ? "bg-gold text-primary-foreground" : "bg-secondary/60 border border-border/50 text-foreground/70")}>
                       {s.my_status === "going" ? <Check size={12} /> : "Going"}
                     </button>
@@ -344,7 +344,7 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
           })}
           {hidden > 0 && (
             <button onClick={() => setExpanded(true)}
-              className="w-full inline-flex items-center justify-center gap-1 rounded-xl bg-secondary/20 border border-border/40 py-1.5 text-[11px] font-bold text-muted-foreground active:scale-[0.99]">
+              className="w-full inline-flex items-center justify-center gap-1 rounded-xl bg-secondary/20 border border-border/40 py-1.5 text-[12px] font-bold text-muted-foreground active:scale-[0.99]">
               <ChevronDown size={13} /> Show {hidden} more session{hidden === 1 ? "" : "s"}
             </button>
           )}
@@ -448,7 +448,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
           ))}
         </div>
         {kind === "series" && (
-          <p className="text-[10px] text-muted-foreground -mt-1 mb-2.5 leading-snug">
+          <p className="text-[11px] text-muted-foreground -mt-1 mb-2.5 leading-snug">
             A multi-part run — a course, a workshop series, a program. Add every session date; place &amp; link below apply to them all.
           </p>
         )}
@@ -458,11 +458,11 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
           <div className="space-y-2">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="text-[9px] font-black tracking-widest uppercase text-muted-foreground/55 mb-1">{group.label}</p>
+                <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground/55 mb-1">{group.label}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {group.items.map(({ name, icon: Icon }) => (
                     <button key={name} onClick={() => pickActivity(name)}
-                      className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border transition-all active:scale-95",
+                      className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold border transition-all active:scale-95",
                         activity === name ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground")}>
                       <Icon size={12} strokeWidth={2.4} /> {name}
                     </button>
@@ -476,10 +476,10 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
             <input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} className={field} />
           ) : (
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Sessions</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">Sessions</label>
               {sessions.map((s, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="shrink-0 h-7 w-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-[10px] font-black text-muted-foreground tabular-nums">{i + 1}</span>
+                  <span className="shrink-0 h-7 w-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-[11px] font-black text-muted-foreground tabular-nums">{i + 1}</span>
                   <input type="datetime-local" value={s}
                     onChange={(e) => setSessions((prev) => prev.map((x, idx) => idx === i ? e.target.value : x))}
                     className={cn(field, "flex-1")} />
@@ -493,7 +493,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
               ))}
               {sessions.length < 24 && (
                 <button type="button" onClick={() => setSessions((prev) => [...prev, ""])}
-                  className="w-full inline-flex items-center justify-center gap-1 rounded-xl bg-secondary/30 border border-border/40 py-2 text-[11px] font-bold text-gold active:scale-[0.99]">
+                  className="w-full inline-flex items-center justify-center gap-1 rounded-xl bg-secondary/30 border border-border/40 py-2 text-[12px] font-bold text-gold active:scale-[0.99]">
                   <Plus size={13} /> Add session
                 </button>
               )}
@@ -523,12 +523,12 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
           )}
           <div className="flex gap-2">
             <div className="flex-1">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Duration (min)</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Duration (min)</label>
               <input type="number" value={duration} min={10} step={5} onChange={(e) => { setDuration(parseInt(e.target.value || "60", 10)); setDurationTouched(true); }} className={field} />
             </div>
             {kind === "single" && (
               <div className="flex-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Capacity (opt.)</label>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Capacity (opt.)</label>
                 <input type="number" value={capacity} min={1} placeholder="∞" onChange={(e) => setCapacity(e.target.value)} className={field} />
               </div>
             )}

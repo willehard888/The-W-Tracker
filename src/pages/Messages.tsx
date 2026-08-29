@@ -167,8 +167,8 @@ const Messages = () => {
       {/* Search Results */}
       {searchQuery.trim().length >= 2 && searchResults && searchResults.length > 0 && (
         <div className="animate-reveal mb-4">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
-            <Search size={10} /> Results
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
+            <Search size={12} /> Results
           </p>
           <div className="space-y-2">
             {searchResults.map((u) => (
@@ -208,8 +208,8 @@ const Messages = () => {
       {/* Pending Friend Requests */}
       {pendingRequests && pendingRequests.length > 0 && (
         <div className="animate-reveal animate-reveal-delay-1 mb-4">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
-            <UserPlus size={10} /> Friend Requests
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
+            <UserPlus size={12} /> Friend Requests
           </p>
           <div className="space-y-2">
             {pendingRequests.map((req: any) => (
@@ -222,7 +222,7 @@ const Messages = () => {
                     tier={req.profile?.status_tier || "recruit"}
                     className="text-sm font-semibold truncate"
                   />
-                  <p className="text-[10px] text-muted-foreground">Wants to be friends</p>
+                  <p className="text-[11px] text-muted-foreground">Wants to be friends</p>
                 </div>
                 <button
                   onClick={async () => {
@@ -233,7 +233,7 @@ const Messages = () => {
                     queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
                     queryClient.invalidateQueries({ queryKey: ["conversations"] });
                   }}
-                  className="h-7 px-3 rounded-full bg-[hsl(var(--teal))]/15 text-[hsl(var(--teal))] text-[10px] font-bold border border-[hsl(var(--teal))]/30 active:scale-95 transition-transform"
+                  className="h-7 px-3 rounded-full bg-[hsl(var(--teal))]/15 text-[hsl(var(--teal))] text-[11px] font-bold border border-[hsl(var(--teal))]/30 active:scale-95 transition-transform"
                 >
                   Accept
                 </button>
@@ -244,7 +244,7 @@ const Messages = () => {
                     queryClient.invalidateQueries({ queryKey: ["pending-friend-requests"] });
                     queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
                   }}
-                  className="h-7 px-2 rounded-full bg-secondary text-muted-foreground text-[10px] font-bold border border-border active:scale-95 transition-transform"
+                  className="h-7 px-2 rounded-full bg-secondary text-muted-foreground text-[11px] font-bold border border-border active:scale-95 transition-transform"
                 >
                   ✕
                 </button>
@@ -257,8 +257,8 @@ const Messages = () => {
       {/* Friends Section */}
       {(friends && friends.length > 0) && (
         <div className="animate-reveal animate-reveal-delay-1 mb-4">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
-            <UserCheck size={10} /> Friends
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
+            <UserCheck size={12} /> Friends
           </p>
 
           {/* Friends with conversations */}
@@ -308,7 +308,7 @@ const Messages = () => {
       {otherConvos.length > 0 && (
         <div className="animate-reveal animate-reveal-delay-2">
           {friends && friends.length > 0 && (
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2">Others</p>
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2">Others</p>
           )}
           <div className="space-y-2">
             {otherConvos.map((conv) => (
@@ -352,7 +352,7 @@ const ConversationRow = ({ conv, userId, navigate, isFriend }: { conv: any; user
           tier={conv.profile?.status_tier || "recruit"}
           className={cn("text-sm font-semibold truncate", conv.unread > 0 && "text-foreground")}
         />
-        <span className="text-[10px] text-muted-foreground shrink-0">
+        <span className="text-[11px] text-muted-foreground shrink-0">
           {formatDistanceToNow(new Date(conv.lastMessage.created_at), { addSuffix: true })}
         </span>
       </div>
@@ -366,7 +366,7 @@ const ConversationRow = ({ conv, userId, navigate, isFriend }: { conv: any; user
     </div>
     {conv.unread > 0 && (
       <div className="h-5 min-w-5 px-1.5 rounded-full bg-ember flex items-center justify-center">
-        <span className="text-[10px] font-bold text-white">{conv.unread}</span>
+        <span className="text-[11px] font-bold text-white">{conv.unread}</span>
       </div>
     )}
   </button>

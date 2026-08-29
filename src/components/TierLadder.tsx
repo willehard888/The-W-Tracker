@@ -60,8 +60,8 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
           <p className="font-display font-black text-base uppercase tracking-widest bg-gradient-to-r from-gold-light via-gold to-gold-light bg-clip-text text-transparent drop-shadow-[0_0_12px_hsl(var(--gold)/0.35)]">
             Your Ascension
           </p>
-          <p className="text-[10px] text-gold/85 mt-0.5 font-bold tracking-[0.22em] uppercase flex items-center gap-1">
-            <Sparkles size={9} className="text-gold" strokeWidth={3} />
+          <p className="text-[11px] text-gold/85 mt-0.5 font-bold tracking-[0.22em] uppercase flex items-center gap-1">
+            <Sparkles size={11} className="text-gold" strokeWidth={3} />
             7 levels of dominance
           </p>
         </div>
@@ -146,7 +146,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                 {/* Legend — extra corner sparkle + 1 amber cinder */}
                 {cfg.rank === 6 && (
                   <>
-                    <Sparkles size={10} className="absolute top-1.5 right-1.5 text-gold-light drop-shadow-[0_0_4px_hsl(var(--gold)/0.8)]" strokeWidth={2.6} />
+                    <Sparkles size={12} className="absolute top-1.5 right-1.5 text-gold-light drop-shadow-[0_0_4px_hsl(var(--gold)/0.8)]" strokeWidth={2.6} />
                     <span
                       aria-hidden
                       className="pointer-events-none absolute bottom-0 right-6 w-[2.5px] h-[2.5px] rounded-full status-ember-rise"
@@ -197,7 +197,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       {cfg.label}
                     </p>
                     {isCurrent && (
-                      <span className="relative text-[9px] uppercase tracking-[0.22em] font-black text-background bg-gradient-to-r from-gold to-gold-light px-1.5 py-[2px] rounded-sm shadow-[0_0_8px_hsl(var(--gold)/0.5)]">
+                      <span className="relative text-[10px] uppercase tracking-[0.22em] font-black text-background bg-gradient-to-r from-gold to-gold-light px-1.5 py-[2px] rounded-sm shadow-[0_0_8px_hsl(var(--gold)/0.5)]">
                         Current
                         <span
                           aria-hidden
@@ -209,12 +209,12 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       <Crown size={11} className="text-gold drop-shadow-[0_0_4px_hsl(var(--gold)/0.7)]" strokeWidth={2.8} />
                     )}
                     {!isCurrent && isLocked && cfg.rank === 6 && (
-                      <span className="inline-flex items-center gap-0.5 text-[8px] uppercase tracking-[0.22em] font-black px-1.5 py-[2px] rounded-sm bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background shadow-[0_0_8px_hsl(280_70%_60%/0.55)]">
-                        <Crown size={9} strokeWidth={3} /> Founder
+                      <span className="inline-flex items-center gap-0.5 text-[10px] uppercase tracking-[0.22em] font-black px-1.5 py-[2px] rounded-sm bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] text-background shadow-[0_0_8px_hsl(280_70%_60%/0.55)]">
+                        <Crown size={11} strokeWidth={3} /> Founder
                       </span>
                     )}
                   </div>
-                  <p className={cn("text-[11px] font-semibold tracking-wide truncate mt-0.5", isLocked ? "text-muted-foreground/85" : "text-muted-foreground")}>
+                  <p className={cn("text-[12px] font-semibold tracking-wide truncate mt-0.5", isLocked ? "text-muted-foreground/85" : "text-muted-foreground")}>
                     {cfg.requirements.percentile > 0
                       ? `Top ${(100 - cfg.requirements.percentile).toFixed(cfg.requirements.percentile >= 99 ? 1 : 0)}%`
                       : cfg.percentile}
@@ -225,21 +225,21 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                 {isLocked ? (
                   <div className="flex items-center gap-1.5 shrink-0 relative z-10">
                     {cfg.rank === 6 ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2.5 py-1 rounded-md text-background bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] border border-gold/60 shadow-[0_0_14px_hsl(280_70%_60%/0.55),inset_0_1px_0_hsl(var(--gold-light)/0.4)]">
+                      <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider font-black px-2.5 py-1 rounded-md text-background bg-gradient-to-r from-[hsl(280_70%_55%)] via-gold to-[hsl(350_80%_55%)] border border-gold/60 shadow-[0_0_14px_hsl(280_70%_60%/0.55),inset_0_1px_0_hsl(var(--gold-light)/0.4)]">
                         <Crown size={11} strokeWidth={3.2} fill="currentColor" /> Invite
                       </span>
                     ) : cfg.rank === 5 ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2.5 py-1 rounded-md text-background bg-gradient-to-r from-[hsl(var(--ember))] via-gold to-[hsl(var(--ember))] border border-gold shadow-[0_0_14px_hsl(var(--ember)/0.55),inset_0_1px_0_hsl(var(--gold-light)/0.5)]">
+                      <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider font-black px-2.5 py-1 rounded-md text-background bg-gradient-to-r from-[hsl(var(--ember))] via-gold to-[hsl(var(--ember))] border border-gold shadow-[0_0_14px_hsl(var(--ember)/0.55),inset_0_1px_0_hsl(var(--gold-light)/0.5)]">
                         <Zap size={11} strokeWidth={3.2} fill="currentColor" /> Earn
                       </span>
                     ) : (
                       <span className={cn(
-                        "inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded-md",
+                        "inline-flex items-center gap-1 text-[11px] uppercase tracking-wider font-black px-2 py-1 rounded-md",
                         cfg.rank >= 4
                           ? "text-gold border border-gold/55 bg-gradient-to-r from-gold/15 to-gold/5 shadow-[0_0_8px_hsl(var(--gold)/0.35)]"
                           : "text-foreground/80 border border-border/60 bg-background/30",
                       )}>
-                        <TrendingUp size={10} strokeWidth={3} />
+                        <TrendingUp size={12} strokeWidth={3} />
                         {stepsAway === 1 ? "Next" : `+${stepsAway}`}
                       </span>
                     )}
@@ -320,17 +320,17 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       <h2 className={cn("font-display font-black text-2xl leading-none", cfg.textClass)}>
                         {cfg.label}
                       </h2>
-                      <p className="text-[11px] uppercase tracking-[0.22em] font-bold mt-1.5 text-muted-foreground">
+                      <p className="text-[12px] uppercase tracking-[0.22em] font-bold mt-1.5 text-muted-foreground">
                         {cfg.percentile} · Rank {cfg.rank}
                       </p>
                     </div>
                     {unlocked ? (
-                      <span className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-xp-green/15 border border-xp-green/40 text-xp-green text-[9px] font-black uppercase tracking-wider">
-                        <Check size={10} strokeWidth={3.5} /> Held
+                      <span className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-xp-green/15 border border-xp-green/40 text-xp-green text-[10px] font-black uppercase tracking-wider">
+                        <Check size={12} strokeWidth={3.5} /> Held
                       </span>
                     ) : (
-                      <span className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-background/40 border border-border text-muted-foreground text-[9px] font-black uppercase tracking-wider">
-                        <Lock size={9} strokeWidth={3} /> Locked
+                      <span className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-background/40 border border-border text-muted-foreground text-[10px] font-black uppercase tracking-wider">
+                        <Lock size={11} strokeWidth={3} /> Locked
                       </span>
                     )}
                   </div>
@@ -347,7 +347,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                         only the Founders Circle banner below. */}
                     {!isLegend && (
                       <>
-                    <p className="text-[10px] uppercase tracking-[0.22em] font-black text-muted-foreground mb-2 flex items-center gap-1.5">
+                    <p className="text-[11px] uppercase tracking-[0.22em] font-black text-muted-foreground mb-2 flex items-center gap-1.5">
                       <TrendingUp size={11} /> Requirements
                     </p>
                     <div className="space-y-1.5">
@@ -365,7 +365,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       {cfg.requirements.orPath && cfg.requirements.percentile > 0 && (cfg.requirements.activeDays > 0 || cfg.requirements.streak > 0) && (
                         <div className="flex items-center gap-2 py-0.5">
                           <span className="h-px flex-1 bg-border/50" />
-                          <span className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground">or</span>
+                          <span className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground">or</span>
                           <span className="h-px flex-1 bg-border/50" />
                         </div>
                       )}
@@ -397,14 +397,14 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                     {isLegend && (
                       <div className="mt-2.5 flex items-center gap-2 px-3 py-2 rounded-lg border border-gold/45 bg-gradient-to-r from-[hsl(280_70%_55%)]/15 via-gold/10 to-[hsl(350_80%_55%)]/15 shadow-[0_0_18px_hsl(var(--gold)/0.20)]">
                         <Crown size={13} className="text-gold shrink-0" strokeWidth={2.6} />
-                        <span className="font-black text-gold uppercase tracking-[0.22em] text-[10px]">Founders Circle</span>
-                        <span className="text-foreground/60 text-[10px] font-semibold ml-auto">— invite only</span>
+                        <span className="font-black text-gold uppercase tracking-[0.22em] text-[11px]">Founders Circle</span>
+                        <span className="text-foreground/60 text-[11px] font-semibold ml-auto">— invite only</span>
                       </div>
                     )}
                   </div>
 
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.22em] font-black text-gold mb-2 flex items-center gap-1.5">
+                    <p className="text-[11px] uppercase tracking-[0.22em] font-black text-gold mb-2 flex items-center gap-1.5">
                       <Sparkles size={11} className="text-gold" /> Unlocks
                     </p>
                     <div className="grid grid-cols-1 gap-1.5">
@@ -440,7 +440,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                       />
                     </div>
                   ) : (
-                    <div className="rounded-lg p-3 text-center text-[11px] font-bold bg-muted/20 text-muted-foreground border border-border/50 uppercase tracking-wider flex items-center justify-center gap-2">
+                    <div className="rounded-lg p-3 text-center text-[12px] font-bold bg-muted/20 text-muted-foreground border border-border/50 uppercase tracking-wider flex items-center justify-center gap-2">
                       <Lock size={11} strokeWidth={3} /> Not yet earned
                     </div>
                   )}

@@ -40,10 +40,10 @@ const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => 
   return (
     <div className="rounded-xl border border-gold/20 overflow-hidden glass-3d depth-realistic">
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-gold flex items-center gap-1">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-gold flex items-center gap-1">
           {typeInfo.emoji} {typeInfo.label} Battle — TIE
         </span>
-        <span className="text-[10px] text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>
+        <span className="text-[11px] text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>
       </div>
 
       <div className="flex gap-2 px-4 py-3">

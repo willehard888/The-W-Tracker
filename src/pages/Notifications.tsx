@@ -161,7 +161,7 @@ const Notifications = () => {
           {unread > 0 && (
             <button
               onClick={markAllRead}
-              className="inline-flex items-center gap-1 text-[11px] font-bold text-gold active:opacity-70"
+              className="inline-flex items-center gap-1 text-[12px] font-bold text-gold active:opacity-70"
             >
               <CheckCheck size={13} /> Mark all read
             </button>
@@ -190,7 +190,7 @@ const Notifications = () => {
                 </button>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-bold truncate">@{r.username}</p>
-                  <p className="text-[10px] text-muted-foreground">wants to be friends</p>
+                  <p className="text-[11px] text-muted-foreground">wants to be friends</p>
                 </div>
                 <Button size="sm" variant="ember" disabled={busy === r.friendship_id}
                   onClick={() => guard(r.friendship_id, () => acceptRequest(r.friendship_id), "Friend added")}>
@@ -214,7 +214,7 @@ const Notifications = () => {
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-bold truncate">{inv.tribeName}</p>
-                  <p className="text-[10px] text-muted-foreground">Tribe invite from @{inv.inviter}</p>
+                  <p className="text-[11px] text-muted-foreground">Tribe invite from @{inv.inviter}</p>
                 </div>
                 <Button size="sm" variant="ember" disabled={busy === inv.id}
                   onClick={() => respondTribeInvite(inv.id, true, inv.tribe_id, inv.tribeName)}>
@@ -238,7 +238,7 @@ const Notifications = () => {
                 </button>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-bold truncate">⚔️ @{b.challenger?.username ?? "someone"}</p>
-                  <p className="text-[10px] text-muted-foreground">{b.battle_type} battle · {b.duration_days} days</p>
+                  <p className="text-[11px] text-muted-foreground">{b.battle_type} battle · {b.duration_days} days</p>
                 </div>
                 <Button size="sm" variant="ember" disabled={busy === b.id} onClick={() => respondBattle(b.id, true)}>
                   <Check size={13} /> Accept
@@ -293,8 +293,8 @@ const Notifications = () => {
                   <p className={cn("text-[13px] leading-snug", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/85")}>
                     {n.title}
                   </p>
-                  {n.body && <p className="text-[11px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">{n.body}</p>}
-                  <p className="text-[10px] text-muted-foreground/60 mt-1">
+                  {n.body && <p className="text-[12px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">{n.body}</p>}
+                  <p className="text-[11px] text-muted-foreground/60 mt-1">
                     {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
                   </p>
                 </div>

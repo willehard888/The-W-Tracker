@@ -55,7 +55,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
         <div className="animate-reveal max-w-md mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border-gold/30 mb-10">
             <Flame size={14} className="text-gold" />
-            <span className="text-[11px] font-bold text-gold tracking-widest uppercase">
+            <span className="text-[12px] font-bold text-gold tracking-widest uppercase">
               Discipline is the new flex
             </span>
           </div>
@@ -95,7 +95,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
 
         {/* What you actually get — one app replaces the whole stack */}
         <div className="w-full max-w-md mx-auto mt-14 animate-reveal animate-reveal-delay-3">
-          <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-gold/70 mb-3">
+          <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-gold/70 mb-3">
             One app · replaces five
           </p>
           <div className="grid grid-cols-2 gap-2.5 text-left">
@@ -109,7 +109,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
                 </div>
                 <div className="min-w-0">
                   <p className="text-[12px] font-bold leading-tight">{title}</p>
-                  <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">{text}</p>
+                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{text}</p>
                 </div>
               </div>
             ))}
@@ -120,11 +120,11 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
       {/* Bottom tagline */}
       <footer className="relative pb-8 pt-4 text-center animate-reveal animate-reveal-delay-4">
         <div className="flex items-center justify-center gap-2">
-          <Sparkles size={10} className="text-gold/30" />
-          <p className="text-[10px] text-muted-foreground/60 tracking-[0.22em] uppercase font-medium">
+          <Sparkles size={12} className="text-gold/30" />
+          <p className="text-[11px] text-muted-foreground/60 tracking-[0.22em] uppercase font-medium">
             Built for those who refuse to be average
           </p>
-          <Sparkles size={10} className="text-gold/30" />
+          <Sparkles size={12} className="text-gold/30" />
         </div>
       </footer>
     </div>

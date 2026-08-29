@@ -251,14 +251,14 @@ const TribeHero = ({
             }}
           >
             <span
-              className="text-[10px] font-black tracking-widest uppercase"
+              className="text-[11px] font-black tracking-widest uppercase"
               style={{ color: isCold ? "hsl(var(--muted-foreground))" : accent }}
             >
               Tribe Fire
             </span>
             {checkedToday !== null && checkedToday > 0 && !isCold && (
               <span
-                className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase border"
+                className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase border"
                 style={{
                   color: accent,
                   borderColor: withAlpha(accent, 0.5),
@@ -280,7 +280,7 @@ const TribeHero = ({
                   reactor.connected ? "bg-xp-green animate-pulse" : "bg-muted-foreground/50",
                 )}
               />
-              <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/70">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">
                 {reactor.connected ? "Live" : "…"}
               </span>
             </span>
@@ -379,7 +379,7 @@ const TribeHero = ({
           )}
           <h1 className="font-display font-black text-xl leading-tight">{tribe.name}</h1>
         </div>
-        <p className="text-[11px] text-muted-foreground/85 mt-1 tabular-nums">
+        <p className="text-[12px] text-muted-foreground/85 mt-1 tabular-nums">
           {memberCount} member{memberCount === 1 ? "" : "s"}
           {avg !== null && !isCold && (
             <> · avg <span className="font-black text-foreground/85">{avg}</span></>
@@ -390,7 +390,7 @@ const TribeHero = ({
         </p>
 
         {isCold && (
-          <p className="text-[11px] text-muted-foreground/80 mt-2 leading-snug max-w-[260px]">
+          <p className="text-[12px] text-muted-foreground/80 mt-2 leading-snug max-w-[260px]">
             The embers are waiting. <span className="font-black text-[hsl(24_80%_62%)]">{Math.max(0, 30 - total)} combined day{Math.max(0, 30 - total) === 1 ? "" : "s"}</span> of streaks to ignition.
           </p>
         )}
@@ -403,12 +403,12 @@ const TribeHero = ({
                 onClick={() => onNavigateUser(founder.user_id)}
                 className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-gold/20 to-[hsl(var(--ember))]/15 border border-gold/45 hover:from-gold/25 transition-colors"
               >
-                <Crown size={9} className="text-gold" strokeWidth={2.8} fill="currentColor" />
-                <span className="text-[9px] font-black tracking-widest uppercase text-gold">Founder</span>
+                <Crown size={11} className="text-gold" strokeWidth={2.8} fill="currentColor" />
+                <span className="text-[10px] font-black tracking-widest uppercase text-gold">Founder</span>
                 <TierUsername
                   username={founder.username}
                   tier={founder.status_tier || "recruit"}
-                  className="text-[10px] font-bold truncate max-w-[120px]"
+                  className="text-[11px] font-bold truncate max-w-[120px]"
                 />
               </button>
             )}
@@ -437,7 +437,7 @@ const TribeHero = ({
           <div className="mt-3 w-full rounded-xl border border-muted-foreground/30 bg-gradient-to-br from-secondary/30 via-card/70 to-secondary/20 p-3 text-left">
             <div className="flex items-center gap-2">
               <Crown size={12} className="text-muted-foreground shrink-0" aria-hidden />
-              <p className="text-[11px] font-black tracking-widest uppercase text-muted-foreground">
+              <p className="text-[12px] font-black tracking-widest uppercase text-muted-foreground">
                 Tribe paused
               </p>
             </div>
@@ -449,10 +449,10 @@ const TribeHero = ({
       {isCold && (
         <div className="relative mt-4">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[9px] uppercase tracking-widest font-black text-[hsl(20_60%_55%)]">
+            <span className="text-[10px] uppercase tracking-widest font-black text-[hsl(20_60%_55%)]">
               Ignition
             </span>
-            <span className="text-[10px] font-bold tabular-nums text-foreground/70">
+            <span className="text-[11px] font-bold tabular-nums text-foreground/70">
               {total} / 30 days
             </span>
           </div>
@@ -464,10 +464,10 @@ const TribeHero = ({
       {!isCold && !atMax && (
         <div className="relative mt-4">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[9px] uppercase tracking-widest font-black text-muted-foreground/80">
+            <span className="text-[10px] uppercase tracking-widest font-black text-muted-foreground/80">
               Next: {collectiveTierName(next)}
             </span>
-            <span className="text-[10px] font-bold tabular-nums text-foreground/70">
+            <span className="text-[11px] font-bold tabular-nums text-foreground/70">
               {Math.max(0, next - total).toLocaleString()} to go
             </span>
           </div>
@@ -476,7 +476,7 @@ const TribeHero = ({
       )}
       {!isCold && atMax && (
         <p
-          className="mt-3 text-center text-[10px] uppercase tracking-widest font-black"
+          className="mt-3 text-center text-[11px] uppercase tracking-widest font-black"
           style={{ color: accent, textShadow: `0 0 10px ${withAlpha(accent, 0.5)}` }}
         >
           Max tier reached — Legendary fire

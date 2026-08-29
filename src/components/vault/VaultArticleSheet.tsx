@@ -150,7 +150,7 @@ const VaultArticleSheet = ({
               <div className="flex items-center gap-1.5 flex-wrap mb-2 pr-10">
                 {article.lesson_number && (
                   <span
-                    className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black tracking-[0.22em] uppercase"
+                    className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black tracking-[0.22em] uppercase"
                     style={{
                       background: `${accent}22`,
                       color: accent,
@@ -163,8 +163,8 @@ const VaultArticleSheet = ({
                   </span>
                 )}
                 <EvidenceChip tier={article.evidence_tier} />
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[9px] font-black tracking-[0.22em] uppercase text-muted-foreground">
-                  <Clock size={8} strokeWidth={3} />
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[10px] font-black tracking-[0.22em] uppercase text-muted-foreground">
+                  <Clock size={10} strokeWidth={3} />
                   {article.read_time_min} min
                 </span>
               </div>
@@ -219,7 +219,7 @@ const VaultArticleSheet = ({
                   <div className="flex items-center gap-2 mb-3">
                     <Target size={13} style={{ color: accent }} strokeWidth={2.6} />
                     <p
-                      className="text-[10px] font-black tracking-[0.22em] uppercase"
+                      className="text-[11px] font-black tracking-[0.22em] uppercase"
                       style={{ color: accent }}
                     >
                       Protocol
@@ -280,7 +280,7 @@ const VaultArticleSheet = ({
 
               <section>
                 <SectionHeader Icon={BookMarked} label="The science" color={accent} />
-                <article className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:tracking-tight prose-h2:text-[16px] prose-h2:mt-5 prose-h2:mb-2 prose-h3:text-[14px] prose-p:my-2 prose-p:leading-relaxed prose-li:my-0.5 prose-strong:text-foreground prose-table:text-[11px] prose-th:font-black prose-th:text-foreground prose-th:bg-card/60 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-td:border-border/40">
+                <article className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:tracking-tight prose-h2:text-[16px] prose-h2:mt-5 prose-h2:mb-2 prose-h3:text-[14px] prose-p:my-2 prose-p:leading-relaxed prose-li:my-0.5 prose-strong:text-foreground prose-table:text-[12px] prose-th:font-black prose-th:text-foreground prose-th:bg-card/60 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-td:border-border/40">
                   <ReactMarkdown>{article.body_md}</ReactMarkdown>
                 </article>
               </section>
@@ -298,7 +298,7 @@ const VaultArticleSheet = ({
                     {article.try_today.map((step, i) => (
                       <li key={i} className="flex items-start gap-2.5 text-[12px]">
                         <span
-                          className="mt-[1px] h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-black"
+                          className="mt-[1px] h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-[11px] font-black"
                           style={{
                             background: `${accent}25`,
                             color: accent,
@@ -337,10 +337,10 @@ const VaultArticleSheet = ({
 
               {article.references_json?.length > 0 && (
                 <section className="pt-2 border-t border-border/30">
-                  <p className="text-[10px] font-black tracking-[0.22em] uppercase text-muted-foreground mb-2">
+                  <p className="text-[11px] font-black tracking-[0.22em] uppercase text-muted-foreground mb-2">
                     References
                   </p>
-                  <ol className="space-y-1.5 text-[11px] text-muted-foreground/90 list-decimal list-inside">
+                  <ol className="space-y-1.5 text-[12px] text-muted-foreground/90 list-decimal list-inside">
                     {article.references_json.map((r, i) => (
                       <li key={i} className="leading-snug">
                         <span className="text-foreground/85 font-semibold">{r.author}</span>
@@ -382,7 +382,7 @@ const VaultArticleSheet = ({
                     : "Mark lesson complete"}
               </button>
 
-              <p className="text-[10px] text-muted-foreground/70 text-center pt-1">
+              <p className="text-[11px] text-muted-foreground/70 text-center pt-1">
                 Educational content — not a substitute for medical advice.
               </p>
             </div>
@@ -396,7 +396,7 @@ const VaultArticleSheet = ({
 
 const ProtocolRow = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col">
-    <dt className="text-[10px] font-black tracking-[0.22em] uppercase text-muted-foreground/80">
+    <dt className="text-[11px] font-black tracking-[0.22em] uppercase text-muted-foreground/80">
       {label}
     </dt>
     <dd className="text-foreground/95 leading-snug">{value}</dd>
@@ -414,7 +414,7 @@ const SectionHeader = ({
 }) => (
   <div className="flex items-center gap-2 mb-2">
     <Icon size={13} style={{ color }} strokeWidth={2.6} />
-    <p className="text-[10px] font-black tracking-[0.22em] uppercase" style={{ color }}>
+    <p className="text-[11px] font-black tracking-[0.22em] uppercase" style={{ color }}>
       {label}
     </p>
   </div>

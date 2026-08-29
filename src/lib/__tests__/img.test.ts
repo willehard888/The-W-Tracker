@@ -37,7 +37,7 @@ describe("transformImage rewrite", () => {
     const out = transformImage(SUPA, { width: 100 });
     expect(out).toContain("/storage/v1/render/image/public/");
     expect(out).toContain("width=100");
-    expect(out).toContain("quality=70");
+    expect(out).toContain("quality=80");
     expect(out).toContain("resize=cover");
   });
 

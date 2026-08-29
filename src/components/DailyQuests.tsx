@@ -99,12 +99,12 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
           </div>
           <div>
             <p className="font-display font-bold text-sm tracking-tight">Daily Quests</p>
-            <p className="text-[10px] text-muted-foreground">Bonus objectives — refreshes daily</p>
+            <p className="text-[11px] text-muted-foreground">Bonus objectives — refreshes daily</p>
           </div>
         </div>
         <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-gold/10 border border-gold/20">
           <Flame size={12} className="text-gold" />
-          <span className="text-[10px] font-bold text-gold">{completedCount}/3</span>
+          <span className="text-[11px] font-bold text-gold">{completedCount}/3</span>
         </div>
       </div>
 
@@ -127,16 +127,16 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
               )}>
                 {quest.title}
               </p>
-              <p className="text-[10px] text-muted-foreground">{quest.description}</p>
+              <p className="text-[11px] text-muted-foreground">{quest.description}</p>
             </div>
             {quest.completed ? (
               <div className="flex items-center gap-1">
-                <span className="text-[10px] font-bold text-gold">+{quest.xpReward}</span>
+                <span className="text-[11px] font-bold text-gold">+{quest.xpReward}</span>
                 <CheckCircle2 size={14} className="text-gold" />
               </div>
             ) : (
               <div className="flex items-center gap-1">
-                <span className="text-[10px] font-bold text-muted-foreground">+{quest.xpReward}</span>
+                <span className="text-[11px] font-bold text-muted-foreground">+{quest.xpReward}</span>
                 <Clock size={14} className="text-muted-foreground/40" />
               </div>
             )}

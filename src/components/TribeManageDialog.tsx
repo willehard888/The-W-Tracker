@@ -240,7 +240,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                     type="button"
                     onClick={() => fileRef.current?.click()}
                     disabled={busy}
-                    className="h-8 px-2.5 rounded-md bg-background/85 backdrop-blur border border-border text-[11px] font-bold inline-flex items-center gap-1 hover:bg-background transition-colors disabled:opacity-40"
+                    className="h-8 px-2.5 rounded-md bg-background/85 backdrop-blur border border-border text-[12px] font-bold inline-flex items-center gap-1 hover:bg-background transition-colors disabled:opacity-40"
                   >
                     <Upload size={11} /> Change
                   </button>
@@ -263,8 +263,8 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                 className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-gold hover:bg-gold/5 transition-colors disabled:opacity-40"
               >
                 <ImageIcon size={22} />
-                <span className="text-[11px] font-bold uppercase tracking-wider">Add cover photo</span>
-                <span className="text-[10px] text-muted-foreground/70">JPG, PNG, WEBP · max {MAX_COVER_SIZE_MB}MB</span>
+                <span className="text-[12px] font-bold uppercase tracking-wider">Add cover photo</span>
+                <span className="text-[11px] text-muted-foreground/70">JPG, PNG, WEBP · max {MAX_COVER_SIZE_MB}MB</span>
               </button>
             )}
             <input
@@ -309,7 +309,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                 </optgroup>
               ))}
             </select>
-            <p className="text-[10px] text-muted-foreground mt-1">
+            <p className="text-[11px] text-muted-foreground mt-1">
               Shown on the browse list — how new members find you.
             </p>
           </div>
@@ -338,7 +338,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                       <OIcon size={12} className={active ? "text-gold" : "text-muted-foreground"} />
                       <p className={cn("text-xs font-bold", active ? "text-gold" : "text-foreground/80")}>{opt.title}</p>
                     </div>
-                    <p className="text-[10px] text-muted-foreground leading-snug">{opt.sub}</p>
+                    <p className="text-[11px] text-muted-foreground leading-snug">{opt.sub}</p>
                   </button>
                 );
               })}
@@ -356,7 +356,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
         <div>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Members & roles</h3>
-            <span className="text-[10px] text-muted-foreground tabular-nums">{adminCount}/2 admins</span>
+            <span className="text-[11px] text-muted-foreground tabular-nums">{adminCount}/2 admins</span>
           </div>
 
           {otherMembers.length === 0 ? (
@@ -372,7 +372,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                       {m.avatar_url ? (
                         <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 48)} alt={m.username} className="h-full w-full object-cover" />
                       ) : (
-                        <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-muted-foreground">
+                        <div className="h-full w-full flex items-center justify-center text-[11px] font-black text-muted-foreground">
                           {m.username.slice(0, 2).toUpperCase()}
                         </div>
                       )}
@@ -380,8 +380,8 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold truncate">{m.username}</p>
                       {isAdmin && (
-                        <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-gold">
-                          <Crown size={8} /> ADMIN
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-gold">
+                          <Crown size={10} /> ADMIN
                         </span>
                       )}
                     </div>
@@ -389,11 +389,11 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                       <Loader2 size={14} className="animate-spin text-muted-foreground" />
                     ) : isAdmin ? (
                       <>
-                        <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px]"
+                        <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px]"
                           onClick={() => handleRoleChange(m.user_id, "member")}>
                           <ShieldOff size={12} /> Demote
                         </Button>
-                        <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px] text-destructive hover:text-destructive"
+                        <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-destructive hover:text-destructive"
                           onClick={() => handleRemove(m.user_id, m.username)}>
                           <UserMinus size={12} />
                         </Button>
@@ -403,14 +403,14 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 px-2 text-[10px] text-gold hover:text-gold disabled:opacity-40"
+                          className="h-7 px-2 text-[11px] text-gold hover:text-gold disabled:opacity-40"
                           disabled={promoteDisabled}
                           onClick={() => handleRoleChange(m.user_id, "admin")}
                           title={promoteDisabled ? "Max 2 admins reached" : "Promote to admin"}
                         >
                           <Shield size={12} /> Promote
                         </Button>
-                        <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px] text-destructive hover:text-destructive"
+                        <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-destructive hover:text-destructive"
                           onClick={() => handleRemove(m.user_id, m.username)}>
                           <UserMinus size={12} />
                         </Button>

@@ -34,7 +34,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
         <button
           type="button"
           onClick={() => navigate("/leaderboard")}
-          className="text-[10px] text-gold/70 font-bold hover:text-gold transition-colors"
+          className="text-[11px] text-gold/70 font-bold hover:text-gold transition-colors"
         >
           Leaderboard →
         </button>
@@ -61,7 +61,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
                 tier={data.above.status_tier}
                 className="font-bold text-sm truncate"
               />
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Ahead of you</p>
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Ahead of you</p>
             </div>
             <div className="flex items-center gap-1 text-xs font-black tabular-nums text-muted-foreground">
               <ArrowUp size={12} className="text-xp-green" />
@@ -97,13 +97,13 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
               />
               <p
                 className={cn(
-                  "text-[10px] uppercase tracking-wider flex items-center gap-1",
+                  "text-[11px] uppercase tracking-wider flex items-center gap-1",
                   heatBelow ? "text-destructive font-black" : "text-muted-foreground",
                 )}
               >
                 {heatBelow ? (
                   <>
-                    <Flame size={10} /> Catching up
+                    <Flame size={12} /> Catching up
                   </>
                 ) : (
                   "Behind you"

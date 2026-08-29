@@ -135,12 +135,12 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
         <div className="flex-1 min-w-0">
           <span className="font-bold text-sm text-foreground block truncate">{block.name}</span>
           {logged && (
-            <span className="text-[10px] font-bold text-xp-green inline-flex items-center gap-1">
-              <Check size={10} /> {existing!.weight != null ? `${existing!.weight}kg` : ""}{existing!.weight != null && existing!.reps != null ? " × " : ""}{existing!.reps != null ? `${existing!.reps}` : ""} logged
+            <span className="text-[11px] font-bold text-xp-green inline-flex items-center gap-1">
+              <Check size={12} /> {existing!.weight != null ? `${existing!.weight}kg` : ""}{existing!.weight != null && existing!.reps != null ? " × " : ""}{existing!.reps != null ? `${existing!.reps}` : ""} logged
             </span>
           )}
         </div>
-        <span className="text-[11px] font-black tracking-wider text-gold whitespace-nowrap inline-flex items-center gap-1">
+        <span className="text-[12px] font-black tracking-wider text-gold whitespace-nowrap inline-flex items-center gap-1">
           {block.sets}×{block.reps}{block.rpe ? ` · RPE ${block.rpe}` : ""}
           {hasMore && (
             <ChevronDown size={11} className={cn("text-muted-foreground/70 transition-transform", open && "rotate-180")} />
@@ -157,7 +157,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           ) : null}
 
           {ex && (ex.primary.length > 0 || ex.equipment) && (
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">
+            <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/70">
               {[ex.primary.join(", "), ex.equipment].filter(Boolean).join(" · ")}
             </p>
           )}
@@ -165,8 +165,8 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           {ex?.instructions?.length ? (
             <ol className="space-y-1 list-none">
               {ex.instructions.map((step, i) => (
-                <li key={i} className="flex gap-2 text-[11px] text-foreground/80 leading-snug">
-                  <span className="shrink-0 h-4 w-4 rounded-full bg-gold/15 text-gold text-[9px] font-black flex items-center justify-center mt-px">{i + 1}</span>
+                <li key={i} className="flex gap-2 text-[12px] text-foreground/80 leading-snug">
+                  <span className="shrink-0 h-4 w-4 rounded-full bg-gold/15 text-gold text-[10px] font-black flex items-center justify-center mt-px">{i + 1}</span>
                   <span>{step}</span>
                 </li>
               ))}
@@ -174,14 +174,14 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           ) : null}
 
           {(block.rest_sec || block.tempo) && (
-            <p className="text-[10px] text-muted-foreground/80">
+            <p className="text-[11px] text-muted-foreground/80">
               {block.rest_sec ? `Rest ${block.rest_sec}s` : ""}{block.rest_sec && block.tempo ? " · " : ""}{block.tempo ? `Tempo ${block.tempo}` : ""}
             </p>
           )}
-          {block.notes && <p className="text-[11px] text-muted-foreground leading-snug">{block.notes}</p>}
+          {block.notes && <p className="text-[12px] text-muted-foreground leading-snug">{block.notes}</p>}
           {block.alt && (
-            <p className="text-[11px] text-muted-foreground/85">
-              <span className="text-gold/85 font-black uppercase tracking-widest text-[9px] mr-1">Swap</span>{block.alt}
+            <p className="text-[12px] text-muted-foreground/85">
+              <span className="text-gold/85 font-black uppercase tracking-widest text-[10px] mr-1">Swap</span>{block.alt}
             </p>
           )}
 
@@ -189,9 +189,9 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           {weightSeries.length >= 2 && (
             <div className="rounded-xl bg-background/40 border border-border/40 p-2.5">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">Progression</p>
+                <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/70">Progression</p>
                 <p className={cn(
-                  "text-[10px] font-black tabular-nums",
+                  "text-[11px] font-black tabular-nums",
                   trend > 0 ? "text-xp-green" : trend < 0 ? "text-destructive" : "text-muted-foreground",
                 )}>
                   {trend > 0 ? "+" : ""}{trend !== 0 ? `${Math.round(trend * 10) / 10}kg` : "flat"} · {weightSeries.length} logs
@@ -205,9 +205,9 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           {loggable && (
             <div className="rounded-xl bg-background/50 border border-border/50 p-2.5">
               <div className="flex items-center justify-between mb-1.5">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gold">Log your result</p>
+                <p className="text-[11px] font-black uppercase tracking-widest text-gold">Log your result</p>
                 {last && (
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[11px] text-muted-foreground">
                     Last: {last.weight != null ? `${last.weight}kg` : ""}{last.weight != null && last.reps != null ? " × " : ""}{last.reps != null ? `${last.reps}` : ""} · {daysAgo(last.logged_on)}
                   </p>
                 )}
@@ -224,7 +224,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
                       key={c.label}
                       type="button"
                       onClick={() => fill(c.w, last.reps ?? null)}
-                      className="rounded-full bg-gold/12 border border-gold/30 px-2.5 py-1 text-[10px] font-bold text-gold active:scale-95 transition-transform"
+                      className="rounded-full bg-gold/12 border border-gold/30 px-2.5 py-1 text-[11px] font-bold text-gold active:scale-95 transition-transform"
                     >
                       {c.label}
                     </button>

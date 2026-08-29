@@ -296,7 +296,7 @@ const ThinkingIndicator = () => (
           />
         ))}
       </span>
-      <span className="text-[11px] font-bold text-muted-foreground">Coach is thinking…</span>
+      <span className="text-[12px] font-bold text-muted-foreground">Coach is thinking…</span>
     </div>
   </div>
 );
@@ -622,7 +622,7 @@ const ChatSheet = ({
             <p className="text-xs text-muted-foreground max-w-[280px] mx-auto mb-4">
               Ask anything. Coach knows your program, last 7 days, and the playbook below.
             </p>
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/80 mb-2">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/80 mb-2">
               Quick answers
             </p>
             <div className="flex flex-col gap-2 max-w-sm mx-auto">
@@ -646,7 +646,7 @@ const ChatSheet = ({
               ))}
               <button
                 onClick={() => { hapticImpact("light"); setShowBrowser(true); }}
-                className="mt-1 inline-flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-gold transition"
+                className="mt-1 inline-flex items-center justify-center gap-1.5 text-[12px] font-bold uppercase tracking-wider text-muted-foreground hover:text-gold transition"
               >
                 <BookOpen size={12} /> Browse playbook
               </button>
@@ -687,13 +687,13 @@ const ChatSheet = ({
                   )
                 ) : m.content}
                 {m.failed && (
-                  <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-destructive font-bold">
+                  <div className="mt-1.5 inline-flex items-center gap-1 text-[12px] text-destructive font-bold">
                     <RotateCw size={11} /> Tap to retry
                   </div>
                 )}
               </div>
               {m.isFaq && m.role === "assistant" && (
-                <p className="mt-1 ml-1 text-[10px] text-muted-foreground/70">
+                <p className="mt-1 ml-1 text-[11px] text-muted-foreground/70">
                   From Coach Playbook · Ask a follow-up for more
                 </p>
               )}
@@ -701,9 +701,9 @@ const ChatSheet = ({
                 <button
                   type="button"
                   onClick={goDeeper}
-                  className="mt-1.5 ml-1 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-gold/85 hover:text-gold transition"
+                  className="mt-1.5 ml-1 inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-gold/85 hover:text-gold transition"
                 >
-                  <Sparkles size={10} /> Go deeper
+                  <Sparkles size={12} /> Go deeper
                 </button>
               )}
             </motion.div>
@@ -714,7 +714,7 @@ const ChatSheet = ({
         {/* Seeded from today's feedback — one-tap follow-ups on improving. */}
         {seedChipsShown && !streaming && (
           <div className="flex flex-col gap-2 max-w-sm pt-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-xp-green/80">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-xp-green/80">
               Ask a follow-up
             </p>
             {PERFORMANCE_FOLLOWUPS.map((q) => (

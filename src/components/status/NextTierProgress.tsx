@@ -16,7 +16,7 @@ const Row = ({ r }: { r: RequirementProgress }) => {
           {r.met ? <Check size={12} /> : <Icon size={12} />}
         </span>
         <span className={cn("text-xs font-semibold", r.met ? "text-gold" : "text-foreground/85")}>{r.label}</span>
-        <span className={cn("ml-auto text-[11px] tabular-nums font-bold", r.met ? "text-gold" : "text-muted-foreground")}>
+        <span className={cn("ml-auto text-[12px] tabular-nums font-bold", r.met ? "text-gold" : "text-muted-foreground")}>
           {Math.min(r.current, r.target)}<span className="text-muted-foreground/70"> / {r.target}</span>
         </span>
       </div>
@@ -43,7 +43,7 @@ const NextTierProgress = ({ data, className }: { data: NextTierProgressData; cla
       </div>
       {data.either && data.grindPath.length > 0 && (
         <>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/60 text-center">— or —</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/60 text-center">— or —</p>
           <div className="space-y-2">
             {data.grindPath.map((r) => <Row key={r.key} r={r} />)}
           </div>

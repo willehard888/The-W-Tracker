@@ -288,7 +288,7 @@
      z-scale     — named stacking tiers matching current de facto values
      shadow-scale — 4 elevation steps for new code                       */
   .eyebrow {
-    @apply text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground;
+    @apply text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground;
   }
   /* The app's default floating card (depth pass 2026-08). Deliberate interop
      choices: top brightening lives in inset shadows (NOT border-top-color —

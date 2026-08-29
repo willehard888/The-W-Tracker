@@ -142,7 +142,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
           >
             <span className="text-lg leading-none">{cfg.emoji}</span>
             <span className={cn("text-sm font-black", cfg.textClass)}>{cfg.label}</span>
-            <span className="ml-auto text-[10px] font-black uppercase tracking-wider text-muted-foreground/70">
+            <span className="ml-auto text-[11px] font-black uppercase tracking-wider text-muted-foreground/70">
               {cfg.percentile}
             </span>
           </div>
@@ -152,7 +152,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
 
     <div className="w-full flex items-center justify-center gap-4 text-muted-foreground mb-8">
       {[{ icon: Bot, label: "AI Coach" }, { icon: BookOpen, label: "Library" }, { icon: Users, label: "Tribes" }].map((f) => (
-        <span key={f.label} className="flex items-center gap-1.5 text-[11px] font-bold">
+        <span key={f.label} className="flex items-center gap-1.5 text-[12px] font-bold">
           <f.icon size={13} className="text-gold/80" />
           {f.label}
         </span>

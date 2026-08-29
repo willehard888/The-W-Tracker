@@ -50,6 +50,9 @@ const Battles = () => {
   const [duration, setDuration] = useState(7);
   const [battleType, setBattleType] = useState("xp");
   const [creating, setCreating] = useState(false);
+  // Guards Accept/Decline against double-taps — the second RPC would hit an
+  // already-responded battle and flash a spurious error toast.
+  const [respondingId, setRespondingId] = useState<string | null>(null);
   const [uploadingProof, setUploadingProof] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeProofBattleId, setActiveProofBattleId] = useState<string | null>(null);
@@ -276,6 +279,8 @@ const Battles = () => {
   };
 
   const handleRespond = async (battleId: string, accept: boolean) => {
+    if (respondingId) return;
+    setRespondingId(battleId);
     try {
       const { error } = await supabase.rpc("respond_to_battle", {
         battle_id: battleId,
@@ -287,6 +292,8 @@ const Battles = () => {
     } catch (err) {
       console.error(err);
       toast.error("Failed to respond to battle");
+    } finally {
+      setRespondingId(null);
     }
   };
 
@@ -442,6 +449,7 @@ const Battles = () => {
                 opp={getOpponent(battle)}
                 typeInfo={getBattleTypeInfo(battle.battle_type)}
                 onRespond={handleRespond}
+                responding={respondingId === battle.id}
               />
             ))}
           </div>
@@ -526,7 +534,7 @@ const Battles = () => {
             <Vote size={14} className="text-gold" />
             Tie — Community Is Voting
           </h2>
-          <p className="text-[10px] text-muted-foreground mb-3">Your battle ended in a tie. Other athletes are casting the deciding votes.</p>
+          <p className="text-[11px] text-muted-foreground mb-3">Your battle ended in a tie. Other athletes are casting the deciding votes.</p>
           <div className="space-y-2">
             {myVotingBattles.map((battle: any) => {
               const counts = voteCounts?.[battle.id] || {};
@@ -537,7 +545,7 @@ const Battles = () => {
                 <div key={battle.id} className="surface-card p-3.5 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-bold truncate">vs @{getOpponent(battle).username}</p>
-                    <p className="text-[10px] text-muted-foreground">{getBattleTypeInfo(battle.battle_type).label}</p>
+                    <p className="text-[11px] text-muted-foreground">{getBattleTypeInfo(battle.battle_type).label}</p>
                   </div>
                   <p className="text-sm font-black tabular-nums shrink-0">{mine} – {theirs}</p>
                 </div>
@@ -554,7 +562,7 @@ const Battles = () => {
             <Vote size={14} className="text-gold" />
             Community Vote — Tied Battles
           </h2>
-          <p className="text-[10px] text-muted-foreground mb-3">These battles ended in a tie. Cast your vote to decide the winner!</p>
+          <p className="text-[11px] text-muted-foreground mb-3">These battles ended in a tie. Cast your vote to decide the winner!</p>
           <div className="space-y-3">
             {communityVotingBattles.map((battle: any) => (
               <BattleVoteCard

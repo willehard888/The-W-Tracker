@@ -49,13 +49,13 @@ const CourseProgressRing = ({
       <div className="absolute inset-0 flex items-center justify-center">
         {complete ? (
           <span
-            className="text-[10px] font-black tracking-tight"
+            className="text-[11px] font-black tracking-tight"
             style={{ color }}
           >
             ✓
           </span>
         ) : (
-          <span className="text-[9px] font-black tabular-nums text-foreground/85">
+          <span className="text-[10px] font-black tabular-nums text-foreground/85">
             {done}/{total}
           </span>
         )}

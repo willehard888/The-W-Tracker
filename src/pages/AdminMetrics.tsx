@@ -116,7 +116,7 @@ const StatTile = ({
       format={fmt}
       className={cn("font-display text-xl font-black tracking-tight", accent && "text-gold")}
     />
-    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
+    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
       {label}
     </p>
   </div>
@@ -128,7 +128,7 @@ const SectionHeader = ({ icon: Icon, title, sub }: { icon: typeof Users; title: 
       <Icon size={13} className="text-gold" />
     </div>
     <h2 className="font-display font-bold text-base tracking-tight">{title}</h2>
-    {sub && <span className="ml-auto text-[10px] text-muted-foreground uppercase tracking-wider">{sub}</span>}
+    {sub && <span className="ml-auto text-[11px] text-muted-foreground uppercase tracking-wider">{sub}</span>}
   </div>
 );
 
@@ -144,8 +144,8 @@ const FunnelBars = ({ steps, byStep }: { steps: ReadonlyArray<readonly [string, 
         return (
           <div key={key}>
             <div className="flex items-baseline justify-between mb-1">
-              <span className="text-[11px] font-semibold text-foreground/85">{label}</span>
-              <span className="text-[11px] tabular-nums text-muted-foreground">
+              <span className="text-[12px] font-semibold text-foreground/85">{label}</span>
+              <span className="text-[12px] tabular-nums text-muted-foreground">
                 {v.toLocaleString()}
                 {stepPct != null && (
                   <span className={cn("ml-1.5 font-bold", stepPct >= 50 ? "text-xp-green" : stepPct >= 20 ? "text-gold" : "text-destructive/80")}>
@@ -313,9 +313,9 @@ export default function AdminMetrics() {
         <p className="text-xs text-muted-foreground py-4 text-center">No cohorts yet.</p>
       ) : (
         <div className="surface-card overflow-hidden">
-          <table className="w-full text-[11px]">
+          <table className="w-full text-[12px]">
             <thead>
-              <tr className="border-b border-border/60 text-muted-foreground uppercase tracking-wider text-[9px]">
+              <tr className="border-b border-border/60 text-muted-foreground uppercase tracking-wider text-[10px]">
                 <th className="text-left font-semibold px-3 py-2">Week</th>
                 <th className="text-right font-semibold px-2 py-2">Users</th>
                 <th className="text-right font-semibold px-2 py-2">D1</th>
@@ -351,11 +351,11 @@ export default function AdminMetrics() {
       ) : (
         <div className="space-y-5">
           <div className="surface-card p-4">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Activation</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Activation</p>
             <FunnelBars steps={ACTIVATION_STEPS} byStep={steps} />
           </div>
           <div className="surface-card p-4">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Monetization</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Monetization</p>
             <FunnelBars steps={MONETIZATION_STEPS} byStep={steps} />
           </div>
         </div>
@@ -397,7 +397,7 @@ export default function AdminMetrics() {
 
           {Object.keys(waitlist.goal_counts ?? {}).length > 0 && (
             <div className="surface-card p-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Goals people chase</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Goals people chase</p>
               <div className="space-y-2">
                 {Object.entries(waitlist.goal_counts)
                   .sort(([, a], [, b]) => num(b) - num(a))
@@ -406,8 +406,8 @@ export default function AdminMetrics() {
                     return (
                       <div key={goal}>
                         <div className="flex items-baseline justify-between mb-1">
-                          <span className="text-[11px] font-semibold text-foreground/85">{GOAL_LABELS[goal] ?? goal}</span>
-                          <span className="text-[11px] tabular-nums text-muted-foreground">{num(n)}</span>
+                          <span className="text-[12px] font-semibold text-foreground/85">{GOAL_LABELS[goal] ?? goal}</span>
+                          <span className="text-[12px] tabular-nums text-muted-foreground">{num(n)}</span>
                         </div>
                         <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
                           <div
@@ -425,7 +425,7 @@ export default function AdminMetrics() {
           {/* Struggles — the "what's holding you back" answer, aggregated. */}
           {Object.keys(waitlist.struggle_counts ?? {}).length > 0 && (
             <div className="surface-card p-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">What holds them back</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">What holds them back</p>
               <div className="space-y-2">
                 {Object.entries(waitlist.struggle_counts)
                   .sort(([, a], [, b]) => num(b) - num(a))
@@ -434,8 +434,8 @@ export default function AdminMetrics() {
                     return (
                       <div key={s}>
                         <div className="flex items-baseline justify-between mb-1">
-                          <span className="text-[11px] font-semibold text-foreground/85">{STRUGGLE_LABELS[s] ?? s}</span>
-                          <span className="text-[11px] tabular-nums text-muted-foreground">{num(n)}</span>
+                          <span className="text-[12px] font-semibold text-foreground/85">{STRUGGLE_LABELS[s] ?? s}</span>
+                          <span className="text-[12px] tabular-nums text-muted-foreground">{num(n)}</span>
                         </div>
                         <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
                           <div
@@ -469,7 +469,7 @@ export default function AdminMetrics() {
                         {r.welcomed && <span className="text-xp-green mr-1" title="Welcome email sent">✓</span>}
                         {r.email}
                       </p>
-                      <span className="text-[10px] tabular-nums text-muted-foreground shrink-0">
+                      <span className="text-[11px] tabular-nums text-muted-foreground shrink-0">
                         {format(new Date(r.created_at), "MMM d")}
                       </span>
                     </div>
@@ -478,14 +478,14 @@ export default function AdminMetrics() {
                         {chips.map((c, i) => (
                           <span
                             key={i}
-                            className="text-[10px] font-semibold rounded-md px-1.5 py-0.5 bg-secondary/50 border border-border/50 text-muted-foreground"
+                            className="text-[11px] font-semibold rounded-md px-1.5 py-0.5 bg-secondary/50 border border-border/50 text-muted-foreground"
                           >
                             {c}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-[10px] text-muted-foreground/60 mt-1.5">No quiz answers (email only)</p>
+                      <p className="text-[11px] text-muted-foreground/60 mt-1.5">No quiz answers (email only)</p>
                     )}
                   </div>
                 );

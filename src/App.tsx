@@ -76,6 +76,8 @@ const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 
 import RouteFallback from "@/components/RouteFallback";
 import { fetchFeedPosts } from "@/lib/feed-query";
+import { fetchActiveSeason, fetchAllTimeLeaders, fetchSeasonBoard } from "@/lib/leaderboard-query";
+import { fetchTribesPage } from "@/lib/tribes-query";
 import { parseStorageUrl, isPrivateStorageUrl, signMediaUrl, signedMediaKey, SIGNED_MEDIA_STALE_MS } from "@/lib/signed-url";
 
 // Mirrors the inline HTML splash in index.html EXACTLY, so the
@@ -326,14 +328,13 @@ const AppRoutes = () => {
 };
 
 /**
- * Warms the Elite Feed while the user is still on Home. On a high-RTT
- * connection the feed's serial round trips (posts → profiles) plus the first
- * media signatures cost 1.5–3s — paid here in the background so tapping
- * Squad renders instantly from cache (staleTime 2min). Fires once per
- * session, 1.2s after auth resolves so it never competes with the visible
- * page's own requests.
+ * Warms every main tab while the user is still on Home, so each first tap
+ * renders instantly instead of paying its route chunk + data round trips at
+ * the moment of the tap (on a high-RTT connection: 1.5–3s of spinner per
+ * surface). Two waves: the feed (the most-opened tab) at +1.5s, everything
+ * else at +3.5s. All best-effort; every page still loads itself normally.
  */
-const FeedPrefetcher = () => {
+const TabPrefetcher = () => {
   useEffect(() => {
     // One timer per app boot, deliberately NOT keyed on the auth context —
     // its user object identity churns (token refresh, profile updates) and a
@@ -342,6 +343,7 @@ const FeedPrefetcher = () => {
       try {
         const { data } = await supabase.auth.getSession();
         if (!data.session) return;
+        const userId = data.session.user.id;
         await queryClient.prefetchQuery({
           queryKey: ["feed-posts", false],
           queryFn: () => fetchFeedPosts(false),
@@ -364,6 +366,72 @@ const FeedPrefetcher = () => {
             });
           }),
         );
+        // ── Wave 2: the other main tabs (chunks + data) ─────────────────
+        setTimeout(async () => {
+          try {
+            // Route chunks — kills the Suspense skeleton flash on first tap.
+            void import("./pages/Squad");
+            void import("./pages/Leaderboard");
+            void import("./pages/Profile");
+            void import("./pages/DailyCheckin");
+            void import("./pages/TribeDetail");
+
+            // Ranks: season chain + all-time board (keys match Leaderboard.tsx).
+            await queryClient.prefetchQuery({
+              queryKey: ["active-season"],
+              queryFn: fetchActiveSeason,
+              staleTime: 10 * 60_000,
+            });
+            const season: any = queryClient.getQueryData(["active-season"]);
+            const seasonJobs: Promise<unknown>[] = [
+              queryClient.prefetchQuery({
+                queryKey: ["leaderboard-all-time"],
+                queryFn: fetchAllTimeLeaders,
+                staleTime: 5 * 60_000,
+              }),
+            ];
+            if (season?.id) {
+              seasonJobs.push(
+                queryClient.prefetchQuery({
+                  queryKey: ["leaderboard-season", season.id, userId],
+                  queryFn: () => fetchSeasonBoard(season.id, userId),
+                  staleTime: 5 * 60_000,
+                }),
+              );
+            }
+
+            // Tribes tab: the page mounts on "browse" and flips to "mine"
+            // for members after its own probe — warm BOTH variants so the
+            // flip renders from cache and neither state ever spinners.
+            const tribesJob = (async () => {
+              const { data: mem } = await supabase
+                .from("tribe_members")
+                .select("tribe_id")
+                .eq("user_id", userId)
+                .eq("status", "active")
+                .limit(1);
+              const jobs = [
+                queryClient.prefetchQuery({
+                  queryKey: ["tribes-page", "browse", null, userId],
+                  queryFn: () => fetchTribesPage("browse", null, userId),
+                }),
+              ];
+              if ((mem?.length ?? 0) > 0) {
+                jobs.push(
+                  queryClient.prefetchQuery({
+                    queryKey: ["tribes-page", "mine", null, userId],
+                    queryFn: () => fetchTribesPage("mine", null, userId),
+                  }),
+                );
+              }
+              await Promise.all(jobs);
+            })();
+
+            await Promise.all([...seasonJobs, tribesJob]);
+          } catch {
+            /* best-effort */
+          }
+        }, 2000);
       } catch {
         /* prefetch is best-effort — the feed loads normally without it */
       }
@@ -396,7 +464,7 @@ const App = () => {
             <AuthProvider>
               <RevenueCatProvider>
                 <AmbientParticles />
-                <FeedPrefetcher />
+                <TabPrefetcher />
                 <ErrorBoundary>
                   <AppRoutes />
                 </ErrorBoundary>

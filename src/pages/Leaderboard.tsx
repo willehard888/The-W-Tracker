@@ -5,6 +5,7 @@ import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
 
 import { useQuery } from "@tanstack/react-query";
+import { fetchAllTimeLeaders, fetchActiveSeason, fetchSeasonBoard, BOARD_LIMIT } from "@/lib/leaderboard-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -35,7 +36,7 @@ type LeaderRow = {
   season_points?: number;
 };
 
-const BOARD_LIMIT = 50;
+
 
 const formatCountdown = (endsAt?: string) => {
   if (!endsAt) return "--";
@@ -118,15 +119,7 @@ const Leaderboard = () => {
     queryKey: ["leaderboard-all-time"],
     staleTime: 5 * 60_000,   // leaderboard refreshes every 5 min is more than enough
     gcTime:    15 * 60_000,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("username, xp, level, streak, user_id, avatar_url, status_tier")
-        .gt("xp", 0)
-        .order("xp", { ascending: false })
-        .limit(BOARD_LIMIT);
-      return (data || []) as LeaderRow[];
-    },
+    queryFn: fetchAllTimeLeaders,
   });
 
   const { data: totalCount } = useQuery({
@@ -148,27 +141,7 @@ const Leaderboard = () => {
     queryKey: ["active-season"],
     staleTime: 10 * 60_000,
     gcTime:    30 * 60_000,
-    queryFn: async () => {
-      const db = supabase as any;
-
-      await db.rpc("finalize_expired_leaderboard_seasons");
-
-      const nowIso = new Date().toISOString();
-      const { data: existing } = await db
-        .from("leaderboard_seasons")
-        .select("*")
-        .eq("status", "active")
-        .lte("starts_at", nowIso)
-        .gt("ends_at", nowIso)
-        .order("starts_at", { ascending: false })
-        .limit(1);
-
-      if (existing?.length) return existing[0];
-
-      const { data: ensured } = await db.rpc("ensure_active_leaderboard_season");
-      if (Array.isArray(ensured)) return ensured[0];
-      return ensured;
-    },
+    queryFn: fetchActiveSeason,
   });
 
   const { data: seasonData, isLoading: seasonLoading } = useQuery({
@@ -176,41 +149,7 @@ const Leaderboard = () => {
     enabled: !!activeSeason?.id,
     staleTime: 5 * 60_000,
     gcTime:    15 * 60_000,
-    queryFn: async () => {
-      const db = supabase as any;
-      const [{ data: baselines }, { data: profiles }] = await Promise.all([
-        db
-          .from("leaderboard_season_baselines")
-          .select("user_id, baseline_xp")
-          .eq("season_id", activeSeason.id),
-        supabase
-          .from("profiles")
-          .select("username, xp, level, streak, user_id, avatar_url, status_tier")
-          .gt("xp", 0)
-          // PostgREST silently truncates at 1000 rows with an ARBITRARY subset
-          // when unordered. Order by xp so the truncation keeps the top players
-          // (season points derive from xp deltas, so high-xp covers the board).
-          .order("xp", { ascending: false })
-          .limit(2000),
-      ]);
-
-      const baselineMap = new Map<string, number>((baselines || []).map((b: any) => [b.user_id, b.baseline_xp]));
-
-      const full = ((profiles || []) as LeaderRow[])
-        .map((p) => ({
-          ...p,
-          season_points: Math.max(p.xp - (baselineMap.get(p.user_id) ?? p.xp), 0),
-        }))
-        .sort((a, b) => (b.season_points || 0) - (a.season_points || 0) || b.xp - a.xp);
-
-      const myRank = profile?.user_id ? full.findIndex((u) => u.user_id === profile.user_id) + 1 : null;
-
-      return {
-        full,
-        top: full.slice(0, BOARD_LIMIT),
-        myRank: myRank && myRank > 0 ? myRank : null,
-      };
-    },
+    queryFn: () => fetchSeasonBoard(activeSeason.id, profile?.user_id),
   });
 
   const { data: championData } = useQuery({

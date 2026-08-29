@@ -10,67 +10,10 @@ interface BadgeCheckResult {
  * Server-side `award_badge_if_earned` re-validates these against the DB,
  * so the client only needs to identify *candidates*.
  */
-const fetchExtendedStats = async (
-  userId: string,
-  profile: any,
-): Promise<Record<string, number>> => {
-  const [tribeBattlesWonRes, userTribesRes, ownedTribesRes] = await Promise.all([
-    // Tribe battles won — count battles where user is active member of winning tribe
-    supabase
-      .from("tribe_battles")
-      .select("id, winner_tribe_id, status")
-      .eq("status", "completed")
-      .not("winner_tribe_id", "is", null),
-    // User's active tribe memberships (for collective streak)
-    supabase
-      .from("tribe_members")
-      .select("tribe_id")
-      .eq("user_id", userId)
-      .eq("status", "active"),
-    // Tribes the user owns (for founder streak)
-    supabase.from("tribes").select("id").eq("owner_id", userId),
-  ]);
-
-  // Compute tribe_battles_won — only battles user's tribes won where they're an active member
-  let tribeBattlesWon = 0;
-  if (tribeBattlesWonRes.data && userTribesRes.data) {
-    const userTribeIds = new Set(userTribesRes.data.map((t) => t.tribe_id));
-    tribeBattlesWon = tribeBattlesWonRes.data.filter(
-      (b) => b.winner_tribe_id && userTribeIds.has(b.winner_tribe_id),
-    ).length;
-  }
-
-  // Compute collective streaks: for each user-tribe, get min streak of active members
-  const computeCollective = async (tribeIds: string[]): Promise<number> => {
-    if (tribeIds.length === 0) return 0;
-    let best = 0;
-    for (const tribeId of tribeIds) {
-      const { data: members } = await supabase
-        .from("tribe_members")
-        .select("user_id")
-        .eq("tribe_id", tribeId)
-        .eq("status", "active");
-      if (!members || members.length === 0) continue;
-      const ids = members.map((m) => m.user_id);
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("streak")
-        .in("user_id", ids);
-      if (!profs || profs.length === 0) continue;
-      const minStreak = Math.min(...profs.map((p) => p.streak ?? 0));
-      if (minStreak > best) best = minStreak;
-    }
-    return best;
-  };
-
-  const tribeCollectiveStreak = await computeCollective(
-    (userTribesRes.data || []).map((t) => t.tribe_id),
-  );
-  const tribeFounderStreak = await computeCollective(
-    (ownedTribesRes.data || []).map((t) => t.id),
-  );
-
-  // Apex / Legend held days — based on apex_subscription_started_at
+/**
+ * Profile-derived badge stats — pure computation, no queries.
+ */
+const profileDerivedStats = (profile: any): Record<string, number> => {
   const apexStart = profile.apex_subscription_started_at
     ? new Date(profile.apex_subscription_started_at).getTime()
     : null;
@@ -98,10 +41,18 @@ const fetchExtendedStats = async (
       profile.is_apex_subscriber && profile.apex_subscription_started_at ? 1 : 0,
     apex_held_days: isApexOrAbove ? heldDays : 0,
     legend_held_days: isLegend ? heldDays : 0,
-    tribe_battles_won: tribeBattlesWon,
-    tribe_collective_streak: tribeCollectiveStreak,
-    tribe_founder_streak: tribeFounderStreak,
   };
+};
+
+/**
+ * All query-derived badge stats in ONE round trip via the user_badge_stats()
+ * RPC (SECURITY INVOKER — same RLS visibility the old per-criterion count
+ * queries had). Replaces ~45 REST requests per Profile open.
+ */
+const fetchQueryStats = async (): Promise<Record<string, number>> => {
+  const { data, error } = await supabase.rpc("user_badge_stats" as never);
+  if (error || !data) return {};
+  return data as unknown as Record<string, number>;
 };
 
 /**
@@ -125,65 +76,11 @@ export const checkAndAwardBadges = async (userId: string): Promise<BadgeCheckRes
 
   const earnedIds = new Set((earnedBadges || []).map((b) => b.badge_id));
 
-  // Fetch all stats in parallel
-  const [
-    checkinStats, workoutStats, coldShowerStats, healthyFoodStats,
-    proteinStats, hydrationStats, noPhoneMorningStats, noPhoneEveningStats,
-    readingStats, battleStats, referralStats, doubleWorkoutStats,
-    meditationMorningStats, meditationEveningStats, proofStats,
-  ] = await Promise.all([
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("workout", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("cold_shower", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("healthy_food", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("protein_intake", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("hydration_liters", 3),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("no_phone_morning", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("no_phone_evening", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("reading", true),
-    supabase.from("battles").select("id", { count: "exact", head: true }).eq("winner_id", userId),
-    supabase.from("referrals").select("id", { count: "exact", head: true }).eq("referrer_id", userId),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("extra_workout", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("meditation_morning", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("meditation_evening", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).not("proof_photo_url", "is", "null"),
-  ]);
-
-  // Count "perfect days" (all main habits done)
-  const perfectDayResult = await supabase
-    .from("daily_checkins")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("workout", true)
-    .eq("cold_shower", true)
-    .eq("healthy_food", true)
-    .eq("protein_intake", true)
-    .gte("hydration_liters", 3)
-    .eq("reading", true)
-    .eq("no_phone_morning", true)
-    .eq("no_phone_evening", true);
-
-  const meditationTotal = (meditationMorningStats.count || 0) + (meditationEveningStats.count || 0);
-
-  // Extended stats for the new badge families
-  const extended = await fetchExtendedStats(userId, profile);
+  const q = await fetchQueryStats();
+  const extended = profileDerivedStats(profile);
 
   const stats: Record<string, number> = {
-    checkins: checkinStats.count || 0,
-    workouts: workoutStats.count || 0,
-    cold_shower: coldShowerStats.count || 0,
-    healthy_food: healthyFoodStats.count || 0,
-    protein: proteinStats.count || 0,
-    hydration: hydrationStats.count || 0,
-    no_phone_morning: noPhoneMorningStats.count || 0,
-    no_phone_evening: noPhoneEveningStats.count || 0,
-    reading: readingStats.count || 0,
-    battles_won: battleStats.count || 0,
-    referrals: referralStats.count || 0,
-    double_workout: doubleWorkoutStats.count || 0,
-    meditation: meditationTotal,
-    proofs: proofStats.count || 0,
-    perfect_day: perfectDayResult.count || 0,
+    ...q,
     xp: profile.xp,
     level: profile.level,
     streak: profile.streak,
@@ -268,11 +165,7 @@ export const checkAndAwardBadges = async (userId: string): Promise<BadgeCheckRes
  * Get progress data for all badges for a user
  */
 export const getBadgeProgress = async (userId: string): Promise<Record<string, { current: number; target: number; percent: number }>> => {
-  const [
-    { data: profile }, checkins, workouts, coldShowers, healthyFood,
-    protein, hydration, noPhoneMorning, noPhoneEvening, reading,
-    battlesWon, referrals, doubleWorkouts, medMorning, medEvening, proofs,
-  ] = await Promise.all([
+  const [{ data: profile }, q] = await Promise.all([
     supabase
       .from("profiles")
       .select(
@@ -280,40 +173,11 @@ export const getBadgeProgress = async (userId: string): Promise<Record<string, {
       )
       .eq("user_id", userId)
       .single(),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("workout", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("cold_shower", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("healthy_food", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("protein_intake", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("hydration_liters", 3),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("no_phone_morning", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("no_phone_evening", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("reading", true),
-    supabase.from("battles").select("id", { count: "exact", head: true }).eq("winner_id", userId),
-    supabase.from("referrals").select("id", { count: "exact", head: true }).eq("referrer_id", userId),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("extra_workout", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("meditation_morning", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("meditation_evening", true),
-    supabase.from("daily_checkins").select("id", { count: "exact", head: true }).eq("user_id", userId).not("proof_photo_url", "is", "null"),
+    fetchQueryStats(),
   ]);
 
-  const { count: perfectDayCount } = await supabase
-    .from("daily_checkins")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("workout", true)
-    .eq("cold_shower", true)
-    .eq("healthy_food", true)
-    .eq("protein_intake", true)
-    .gte("hydration_liters", 3)
-    .eq("reading", true)
-    .eq("no_phone_morning", true)
-    .eq("no_phone_evening", true);
-
-  const meditationTotal = (medMorning.count || 0) + (medEvening.count || 0);
-
   const extended = profile
-    ? await fetchExtendedStats(userId, profile)
+    ? profileDerivedStats(profile)
     : {
         personal_streak: 0,
         phoenix_recovery: 0,
@@ -322,27 +186,10 @@ export const getBadgeProgress = async (userId: string): Promise<Record<string, {
         apex_founding: 0,
         apex_held_days: 0,
         legend_held_days: 0,
-        tribe_battles_won: 0,
-        tribe_collective_streak: 0,
-        tribe_founder_streak: 0,
       };
 
   const stats: Record<string, number> = {
-    checkins: checkins.count || 0,
-    workouts: workouts.count || 0,
-    cold_shower: coldShowers.count || 0,
-    healthy_food: healthyFood.count || 0,
-    protein: protein.count || 0,
-    hydration: hydration.count || 0,
-    no_phone_morning: noPhoneMorning.count || 0,
-    no_phone_evening: noPhoneEvening.count || 0,
-    reading: reading.count || 0,
-    battles_won: battlesWon.count || 0,
-    referrals: referrals.count || 0,
-    double_workout: doubleWorkouts.count || 0,
-    meditation: meditationTotal,
-    proofs: proofs.count || 0,
-    perfect_day: perfectDayCount || 0,
+    ...q,
     xp: profile?.xp || 0,
     level: profile?.level || 1,
     streak: profile?.longest_streak || 0,

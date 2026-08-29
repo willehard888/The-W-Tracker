@@ -9,6 +9,12 @@ interface AppImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "src">
   width?: number;
   /** Reserve space to avoid layout shift, e.g. "1 / 1", "4 / 3", "16 / 9". */
   aspectRatio?: string;
+  /**
+   * Reserve space ONLY while loading (releases to the natural aspect once the
+   * image arrives). Kills the collapse→expand layout jump in feeds without
+   * permanently cropping to a fixed ratio.
+   */
+  placeholderAspect?: string;
   quality?: number;
 }
 
@@ -26,6 +32,7 @@ export const AppImage = ({
   src,
   width = 600,
   aspectRatio,
+  placeholderAspect,
   quality = 82,
   className,
   alt = "",
@@ -69,8 +76,13 @@ export const AppImage = ({
       decoding="async"
       onLoad={() => setLoaded(true)}
       onError={handleError}
-      className={cn("transition-opacity duration-300", loaded ? "opacity-100" : "opacity-0", className)}
-      style={{ aspectRatio, ...style }}
+      className={cn(
+        "transition-opacity duration-300",
+        loaded ? "opacity-100" : "opacity-0",
+        !loaded && placeholderAspect && "bg-secondary/40",
+        className,
+      )}
+      style={{ aspectRatio: aspectRatio ?? (!loaded ? placeholderAspect : undefined), ...style }}
       {...rest}
     />
   );

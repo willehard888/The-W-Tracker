@@ -73,6 +73,7 @@ const PostMedia = ({ imageUrl, videoUrl, alt = "", tier, dayStats, onOpenImage, 
         src={imageUrl}
         width={760}
         alt={alt}
+        placeholderAspect="4 / 5"
         className="w-full h-auto max-h-[68vh] object-cover"
       />
       {ribbon && (

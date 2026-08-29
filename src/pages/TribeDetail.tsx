@@ -84,6 +84,25 @@ const SUPPORTED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
 const MAX_IMAGE_SIZE_MB = 8;
 const MAX_VIDEO_SIZE_MB = 50;
 
+// Session-scoped snapshot of the last successful load per tribe — hydrates
+// the page INSTANTLY on re-entry (no skeleton, no refetch flash) while
+// load() refreshes silently in the background. Cleared with the page/app
+// lifecycle; never persisted.
+interface TribeSnapshot {
+  tribe: any;
+  posts: TribePostCardPost[];
+  milestones: Milestone[];
+  challenge: { week_start: string; target: number; progress: number; status: string } | null;
+  members: Member[];
+  isMember: boolean;
+  isOwner: boolean;
+  pendingCount: number;
+  reportedCount: number;
+  collectiveStreak: number;
+  canLoadMore: boolean;
+}
+const tribeSnapshots = new Map<string, TribeSnapshot>();
+
 const TribeDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
@@ -93,17 +112,18 @@ const TribeDetail = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const [parallax, setParallax] = useState(0);
-  const [tribe, setTribe] = useState<any>(null);
-  const [posts, setPosts] = useState<TribePostCardPost[]>([]);
-  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const snap = id ? tribeSnapshots.get(id) : undefined;
+  const [tribe, setTribe] = useState<any>(snap?.tribe ?? null);
+  const [posts, setPosts] = useState<TribePostCardPost[]>(snap?.posts ?? []);
+  const [milestones, setMilestones] = useState<Milestone[]>(snap?.milestones ?? []);
   const [challenge, setChallenge] = useState<{
     week_start: string; target: number; progress: number; status: string;
-  } | null>(null);
+  } | null>(snap?.challenge ?? null);
   // Feed pagination: load() always fetches up to this many posts; "Load more"
   // raises it and reloads (a ref so the realtime-refetch closure sees it too).
   const postLimitRef = useRef(50);
-  const [canLoadMore, setCanLoadMore] = useState(false);
-  const [members, setMembers] = useState<Member[]>([]);
+  const [canLoadMore, setCanLoadMore] = useState(snap?.canLoadMore ?? false);
+  const [members, setMembers] = useState<Member[]>(snap?.members ?? []);
   const [composer, setComposer] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -118,16 +138,16 @@ const TribeDetail = () => {
 
   const [posting, setPosting] = useState(false);
   const [uploadPhase, setUploadPhase] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isMember, setIsMember] = useState(false);
-  const [isOwner, setIsOwner] = useState(false);
+  const [loading, setLoading] = useState(!snap);
+  const [isMember, setIsMember] = useState(snap?.isMember ?? false);
+  const [isOwner, setIsOwner] = useState(snap?.isOwner ?? false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [pendingOpen, setPendingOpen] = useState(false);
-  const [pendingCount, setPendingCount] = useState(0);
+  const [pendingCount, setPendingCount] = useState(snap?.pendingCount ?? 0);
   const [reportsOpen, setReportsOpen] = useState(false);
-  const [reportedCount, setReportedCount] = useState(0);
+  const [reportedCount, setReportedCount] = useState(snap?.reportedCount ?? 0);
   const [manageOpen, setManageOpen] = useState(false);
-  const [collectiveStreak, setCollectiveStreak] = useState(0);
+  const [collectiveStreak, setCollectiveStreak] = useState(snap?.collectiveStreak ?? 0);
 
   // Set of post IDs currently rendered in this tribe. Child realtime tables
   // (comments / reactions / kudos) key on post_id, NOT tribe_id, so a
@@ -299,6 +319,17 @@ const TribeDetail = () => {
 
     setLoading(false);
   };
+
+  // Persist the freshest loaded state as this tribe's snapshot so the next
+  // visit hydrates instantly. Skipped while loading (would cache blanks).
+  useEffect(() => {
+    if (!id || loading || !tribe) return;
+    tribeSnapshots.set(id, {
+      tribe, posts, milestones, challenge, members,
+      isMember, isOwner, pendingCount, reportedCount,
+      collectiveStreak, canLoadMore,
+    });
+  }, [id, loading, tribe, posts, milestones, challenge, members, isMember, isOwner, pendingCount, reportedCount, collectiveStreak, canLoadMore]);
 
   // Keep a live ref to the latest `load` so the realtime effect (which only
   // depends on `id`) always calls the current closure without resubscribing.

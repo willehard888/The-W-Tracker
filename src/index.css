@@ -112,20 +112,30 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     letter-spacing: -0.006em;
-    /* PRECISION & RESTRAINT — a calm, near-black canvas so content edges,
-       hairlines and type read razor-sharp. One soft gold key light at the top,
-       a faint ember floor, and a gentle vignette. (Was 8 stacked glows that
-       hazed the whole frame; cleaner now reads markedly more expensive.) */
+    /* The canvas gradients live on body::before below — NOT here with
+       background-attachment: fixed, which forces WKWebView to repaint the
+       whole gradient stack on every scroll frame (the single worst iOS
+       scroll-jank source this app had). */
+  }
+
+  /* PRECISION & RESTRAINT — a calm, near-black canvas so content edges,
+     hairlines and type read razor-sharp. One soft gold key light at the top,
+     a faint ember floor, and a gentle vignette. Painted on a position:fixed
+     pseudo-element: composited once on the GPU, zero repaint on scroll
+     (replaces body background-attachment: fixed). The old film grain lived
+     here and was removed — noise is the enemy of "sharp". */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
     background-image:
       radial-gradient(ellipse 105% 70% at 50% -12%, hsl(42 85% 56% / 0.07) 0%, transparent 58%),
       radial-gradient(ellipse 90% 55% at 50% 110%, hsl(18 95% 50% / 0.055) 0%, transparent 58%),
       radial-gradient(ellipse 120% 100% at 50% 50%, transparent 58%, hsl(258 28% 1% / 0.55) 100%);
-    background-attachment: fixed;
+    transform: translateZ(0);
   }
-
-  /* Film grain REMOVED for the precision look — noise is the enemy of "sharp".
-     A clean canvas reads crisper and more expensive (and saves a repaint). */
-  body::before { content: none; }
 
   /* Cinematic vignette — single, gentle. Just enough to frame, not to haze. */
   body::after {

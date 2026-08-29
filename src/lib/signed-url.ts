@@ -81,6 +81,37 @@ export const isPrivateStorageUrl = (url: string | null | undefined): boolean => 
  * - public buckets (avatars) / external URLs → passed through untouched
  * Returns null while a needed signature is still resolving.
  */
+/**
+ * Imperative form of the media signing below — shared by the hook and the
+ * app-shell prefetcher so warmed cache entries hit the exact same logic.
+ */
+export const signMediaUrl = async (
+  parsed: { bucket: string; key: string },
+  transform?: { width?: number; quality?: number },
+): Promise<string | null> => {
+  const { data: signed, error } = await supabase.storage
+    .from(parsed.bucket)
+    .createSignedUrl(
+      parsed.key,
+      TTL_SECONDS,
+      transform?.width
+        ? { transform: { width: Math.round(transform.width * 2), quality: transform.quality ?? 82, resize: "cover" as const } }
+        : undefined,
+    );
+  if (error || !signed?.signedUrl) {
+    // Transform can fail on odd formats — retry plain.
+    const { data: plain } = await supabase.storage.from(parsed.bucket).createSignedUrl(parsed.key, TTL_SECONDS);
+    return plain?.signedUrl ?? null;
+  }
+  return signed.signedUrl;
+};
+
+/** Query key for a signed media URL — MUST stay in sync with useSignedMediaUrl. */
+export const signedMediaKey = (url: string, transform?: { width?: number; quality?: number }) =>
+  ["signed-media", url, transform?.width ?? 0, transform?.quality ?? 0] as const;
+
+export const SIGNED_MEDIA_STALE_MS = (TTL_SECONDS - 300) * 1000;
+
 export const useSignedMediaUrl = (
   url: string | null | undefined,
   transform?: { width?: number; quality?: number },
@@ -88,27 +119,11 @@ export const useSignedMediaUrl = (
   const parsed = url ? parseStorageUrl(url) : null;
   const needsSign = !!parsed && PRIVATE_BUCKETS.has(parsed.bucket);
   const { data } = useQuery({
-    queryKey: ["signed-media", url ?? "", transform?.width ?? 0, transform?.quality ?? 0],
+    queryKey: signedMediaKey(url ?? "", transform),
     enabled: needsSign,
-    staleTime: (TTL_SECONDS - 300) * 1000,
+    staleTime: SIGNED_MEDIA_STALE_MS,
     gcTime: TTL_SECONDS * 1000,
-    queryFn: async () => {
-      const { data: signed, error } = await supabase.storage
-        .from(parsed!.bucket)
-        .createSignedUrl(
-          parsed!.key,
-          TTL_SECONDS,
-          transform?.width
-            ? { transform: { width: Math.round(transform.width * 2), quality: transform.quality ?? 82, resize: "cover" as const } }
-            : undefined,
-        );
-      if (error || !signed?.signedUrl) {
-        // Transform can fail on odd formats — retry plain.
-        const { data: plain } = await supabase.storage.from(parsed!.bucket).createSignedUrl(parsed!.key, TTL_SECONDS);
-        return plain?.signedUrl ?? null;
-      }
-      return signed.signedUrl;
-    },
+    queryFn: () => signMediaUrl(parsed!, transform),
   });
   if (!url) return null;
   return needsSign ? (data ?? null) : url;

@@ -3,6 +3,24 @@
 # of silently continuing past a broken pod install.
 set -euo pipefail
 
+# ─────────────────────────────────────────────────────────────────────────────
+# ⛔ SINGLE-PIPELINE GUARD (2026-08-30). Codemagic is THE release pipeline —
+# running Xcode Cloud in parallel double-uploads every push, burns the ASC
+# daily upload quota (error 90382) and spams "bundle version" rejection
+# emails; its uploads also never reach the "the w group" tester group, so
+# testers get no invites. This guard fails the XC build in seconds, before
+# any quota or minutes are spent. PROPER FIX: deactivate this workflow in
+# App Store Connect → Xcode Cloud. To deliberately run XC anyway, set
+# ALLOW_XCODE_CLOUD=1 in the workflow's environment variables.
+# ─────────────────────────────────────────────────────────────────────────────
+if [[ "${CI_XCODE_CLOUD:-}" == "TRUE" && "${ALLOW_XCODE_CLOUD:-}" != "1" ]]; then
+  echo "⛔ Xcode Cloud build stopped by the single-pipeline guard."
+  echo "   Codemagic ships this push to TestFlight. Deactivate this workflow"
+  echo "   in App Store Connect, or set ALLOW_XCODE_CLOUD=1 to override."
+  exit 1
+fi
+
+
 echo "🔧 Running post-clone setup for iOS build..."
 echo "ℹ️  PWD=$(pwd)"
 echo "ℹ️  USER=$(whoami)"

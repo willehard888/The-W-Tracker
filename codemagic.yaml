@@ -68,16 +68,24 @@ workflows:
           - "src/**/__tests__/**"
           - "scripts/obsidian/**"
 
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: main
-          include: true
-          source: true
-      # Rapid push cadence used to queue a build per commit — only the
-      # newest commit matters for TestFlight, so cancel stale ones.
-      cancel_previous_builds: true
+    # ⚠️ Push triggering DISABLED 2026-08-30: the account's webhook returns
+    # HTTP 402 (build minutes exhausted / payment required), so push builds
+    # cannot start anyway — and Xcode Cloud is now the active release
+    # pipeline. If Codemagic is paid up and should take over again:
+    #   1. set DISABLE_XCODE_CLOUD=1 in the Xcode Cloud workflow env (or
+    #      deactivate that workflow in App Store Connect) FIRST,
+    #   2. then restore the push trigger below.
+    # Running BOTH pipelines burns the ASC daily upload quota (90382) and
+    # spams duplicate-build rejection emails.
+    #
+    # triggering:
+    #   events:
+    #     - push
+    #   branch_patterns:
+    #     - pattern: main
+    #       include: true
+    #       source: true
+    #   cancel_previous_builds: true
 
     integrations:
       app_store_connect: codemagic

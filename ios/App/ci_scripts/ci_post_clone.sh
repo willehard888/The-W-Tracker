@@ -4,19 +4,17 @@
 set -euo pipefail
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ⛔ SINGLE-PIPELINE GUARD (2026-08-30). Codemagic is THE release pipeline —
-# running Xcode Cloud in parallel double-uploads every push, burns the ASC
-# daily upload quota (error 90382) and spams "bundle version" rejection
-# emails; its uploads also never reach the "the w group" tester group, so
-# testers get no invites. This guard fails the XC build in seconds, before
-# any quota or minutes are spent. PROPER FIX: deactivate this workflow in
-# App Store Connect → Xcode Cloud. To deliberately run XC anyway, set
-# ALLOW_XCODE_CLOUD=1 in the workflow's environment variables.
+# SINGLE-PIPELINE GUARD (2026-08-30, flipped 2026-08-30). Exactly ONE pipeline
+# may upload per push. Current state: Xcode Cloud IS the release pipeline —
+# Codemagic's webhook returns HTTP 402 (build minutes exhausted / payment
+# required), so it cannot build at all, and its codemagic.yaml triggering is
+# set to manual-only. If Codemagic is ever paid up and its push trigger
+# restored, set DISABLE_XCODE_CLOUD=1 in the XC workflow env (or deactivate
+# the workflow in ASC) BEFORE doing so — both pipelines uploading burned the
+# ASC daily quota (90382) and spammed duplicate-build rejection emails.
 # ─────────────────────────────────────────────────────────────────────────────
-if [[ "${CI_XCODE_CLOUD:-}" == "TRUE" && "${ALLOW_XCODE_CLOUD:-}" != "1" ]]; then
-  echo "⛔ Xcode Cloud build stopped by the single-pipeline guard."
-  echo "   Codemagic ships this push to TestFlight. Deactivate this workflow"
-  echo "   in App Store Connect, or set ALLOW_XCODE_CLOUD=1 to override."
+if [[ "${CI_XCODE_CLOUD:-}" == "TRUE" && "${DISABLE_XCODE_CLOUD:-}" == "1" ]]; then
+  echo "⛔ Xcode Cloud build stopped: DISABLE_XCODE_CLOUD=1 is set (Codemagic is the active pipeline)."
   exit 1
 fi
 

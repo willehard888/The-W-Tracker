@@ -75,63 +75,14 @@ const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 // clear it on logout (shared-device data leakage).
 
 import RouteFallback from "@/components/RouteFallback";
-import BrandLogo from "@/components/BrandLogo";
 import { fetchFeedPosts } from "@/lib/feed-query";
 import { fetchActiveSeason, fetchAllTimeLeaders, fetchSeasonBoard } from "@/lib/leaderboard-query";
 import { fetchTribesPage } from "@/lib/tribes-query";
 import { parseStorageUrl, isPrivateStorageUrl, signMediaUrl, signedMediaKey, SIGNED_MEDIA_STALE_MS } from "@/lib/signed-url";
 
-// Mirrors the inline HTML splash in index.html EXACTLY, so the
-// splash → React-auth-loading handoff is invisible (no flash, no jump).
 const LazyFallback = () => (
-  <div
-    className="fixed inset-0 flex flex-col items-center justify-center"
-    style={{
-      background:
-        "radial-gradient(ellipse 105% 70% at 50% -12%, hsl(42 85% 56% / .08) 0%, transparent 58%), radial-gradient(ellipse 90% 55% at 50% 112%, hsl(18 95% 50% / .06) 0%, transparent 58%), hsl(var(--background))",
-    }}
-  >
-    <div className="relative flex items-center justify-center">
-      <div
-        aria-hidden
-        className="absolute w-[190px] h-[190px] rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, hsl(42 85% 56% / .22) 0%, hsl(24 90% 50% / .08) 45%, transparent 70%)",
-          animation: "wf-aura 2.6s ease-in-out infinite",
-        }}
-      />
-      <BrandLogo
-        size={76}
-        priority
-        className="relative rounded-[17px]"
-        style={{
-          boxShadow:
-            "0 1px 0 hsl(48 100% 88% / .25) inset, 0 10px 34px -8px hsl(var(--gold) / .45), 0 2px 10px hsl(0 0% 0% / .6)",
-          animation: "wf-breathe 2.6s ease-in-out infinite",
-        }}
-      />
-    </div>
-    <div
-      className="mt-[22px] font-black text-[12px] text-gold"
-      style={{ letterSpacing: ".34em", textIndent: ".34em", textShadow: "0 0 18px hsl(var(--gold) / .35)" }}
-    >
-      WHEALTH FACTORY
-    </div>
-    <div
-      className="mt-5 w-24 h-[3px] rounded-full bg-secondary overflow-hidden"
-      style={{ boxShadow: "0 0 12px hsl(var(--gold) / .18)" }}
-    >
-      <div
-        className="w-2/5 h-full rounded-full"
-        style={{
-          background: "linear-gradient(90deg, hsl(var(--gold)), hsl(var(--ember)))",
-          boxShadow: "0 0 8px hsl(24 95% 55% / .8)",
-          animation: "wf-load 1.1s ease-in-out infinite",
-        }}
-      />
-    </div>
-    <style>{`@keyframes wf-load{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}@keyframes wf-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}@keyframes wf-aura{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}@media (prefers-reduced-motion: reduce){[style*="wf-"]{animation:none !important}}`}</style>
+  <div className="min-h-full flex items-center justify-center">
+    <div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" />
   </div>
 );
 

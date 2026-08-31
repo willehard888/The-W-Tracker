@@ -243,14 +243,32 @@ workflows:
           # Apply the fetched provisioning profiles to the Xcode project.
           # Rewrites App.xcodeproj's signing settings so each target uses
           # the right profile name (without it, xcodebuild errors with
-          # "App requires a provisioning profile").
-          xcode-project use-profiles
+          # "App requires a provisioning profile"). Scope to App.xcodeproj
+          # so Pods.xcodeproj isn't also touched.
+          xcode-project use-profiles \
+            --project ios/App/App.xcodeproj \
+            --verbose
 
           # Diagnostic: confirm the project now has a profile reference.
           echo "──── Final project signing settings ────"
           xcodebuild -project ios/App/App.xcodeproj \
             -showBuildSettings -target App -configuration Release 2>/dev/null \
             | grep -E 'CODE_SIGN|PROVISIONING|DEVELOPMENT_TEAM' || true
+
+          # Fail fast if use-profiles didn't apply a specifier to the App
+          # target — otherwise the archive step fails 5 minutes later with
+          # a generic "App requires a provisioning profile" error.
+          specifier=$(xcodebuild -project ios/App/App.xcodeproj \
+            -showBuildSettings -target App -configuration Release 2>/dev/null \
+            | awk -F' = ' '/PROVISIONING_PROFILE_SPECIFIER/ {print $2; exit}')
+          if [ -z "$specifier" ] || [ "$specifier" = '""' ]; then
+            echo "❌ use-profiles did not apply a profile to the App target."
+            echo "   Check the fetch-signing-files output above — bundle id"
+            echo "   $BUNDLE_ID may not have an IOS_APP_STORE profile in ASC,"
+            echo "   or --create didn't register it."
+            exit 1
+          fi
+          echo "✅ App target will sign with: $specifier"
 
       - name: Bump CFBundleVersion above App Store Connect's latest
         script: |

@@ -47,7 +47,10 @@ const api = async (path, init = {}) => {
 const startedAt = Date.now();
 // A build counts as "this push's" if uploaded after (job start - 10 min):
 // the XC upload finishes minutes after the push that started this job.
-const cutoff = startedAt - 10 * 60 * 1000;
+// Manual dispatch means "distribute the newest build, whenever it was
+// uploaded" — no freshness cutoff, or the run would poll into a timeout.
+const cutoff =
+  process.env.GITHUB_EVENT_NAME === "workflow_dispatch" ? 0 : startedAt - 10 * 60 * 1000;
 
 for (let attempt = 1; ; attempt++) {
   const res = await api(

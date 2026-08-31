@@ -1,4 +1,4 @@
-import { Sparkles, ChevronRight, Target } from "lucide-react";
+import { Sparkles, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useCoachObservation } from "@/hooks/use-coach-observation";
@@ -16,22 +16,40 @@ interface CoachStripProps {
  * There were briefly two cards here — this one and a separate plan strip —
  * both navigating to /coach. Two adjacent cards with the same destination is
  * just a second button, and /coach has no deep-linking (only `?seed=` to open
- * the chat), so they could never have led anywhere different. Merged: when a
- * plan exists this card leads with what's actually open — readiness and
- * mission progress — and otherwise keeps the conversational invitation.
+ * the chat), so they could never have led anywhere different.
+ *
+ * The merge is deliberately additive rather than a redesign: the gold icon
+ * tile, the eyebrow, the headline and the coach's own line in italics are what
+ * make this card read like the rest of Home. A first attempt swapped the gold
+ * tile for a readiness readout and added a mission chip — which cost the card
+ * its anchor (every sibling card leads with a filled gold tile) and stole
+ * enough width to truncate the headline mid-word. Plan progress now rides in
+ * the eyebrow row, where it costs no vertical space and competes with nothing.
+ * Readiness stays on /coach, where there's room for it.
  *
  * All plan data comes from useCoachObservation, which already calls
  * useDailyPlan internally. Calling useDailyPlan here as well would mount it
  * twice and open a second realtime channel for the same rows.
  */
-const readinessTone = (score: number) =>
-  score >= 70 ? "text-gold" : score >= 40 ? "text-foreground" : "text-[hsl(var(--ember))]";
+/**
+ * Plan headlines read "Name: what it's for" ("Deload & Recharge: Build
+ * consistency, not fatigue"). One line on Home fits the name but not the
+ * clause, so a raw clamp cuts mid-thought ("Deload & Recharge: Build…").
+ * Prefer the name alone when the whole thing is too long — it's a complete
+ * phrase, and the rest is one tap away. Headlines without a colon are left
+ * exactly as written.
+ */
+const HEADLINE_FITS = 34;
+const shortHeadline = (h: string): string => {
+  if (h.length <= HEADLINE_FITS) return h;
+  const name = h.split(":")[0]?.trim();
+  return name && name.length >= 4 && name.length < h.length ? name : h;
+};
 
 const CoachStrip = (_props: CoachStripProps) => {
   const navigate = useNavigate();
   const {
     text: coachLine,
-    readiness,
     headline,
     missionsDone,
     missionsTotal,
@@ -49,15 +67,6 @@ const CoachStrip = (_props: CoachStripProps) => {
     snapshots?.[0]?.focus ||
     coachLine?.trim() ||
     "Training, sleep, mind — anything on your mind.";
-
-  const title = hasPlan
-    ? headline ?? "Your session is ready"
-    : "Ask your AI Coach anything";
-  const subtitle = hasPlan
-    ? planDone
-      ? "All missions done. That's the day."
-      : `${missionsDone} of ${missionsTotal} missions done`
-    : line;
 
   return (
     <button
@@ -78,22 +87,9 @@ const CoachStrip = (_props: CoachStripProps) => {
         }}
       />
       <div className="relative flex items-center gap-3">
-        {/* Readiness replaces the sparkle once there's a plan — the number is
-            the most useful thing this card can show at a glance. */}
-        {readiness != null && hasPlan ? (
-          <div className="h-10 w-10 rounded-xl border border-gold/35 bg-gold/10 flex flex-col items-center justify-center shrink-0">
-            <span className={cn("font-display font-black text-[15px] leading-none tabular-nums", readinessTone(readiness))}>
-              {readiness}
-            </span>
-            <span className="text-[7px] font-black uppercase tracking-[0.12em] text-muted-foreground mt-0.5">
-              Ready
-            </span>
-          </div>
-        ) : (
-          <div className="h-10 w-10 rounded-xl gradient-gold flex items-center justify-center shrink-0 glow-gold">
-            <Sparkles aria-hidden size={18} className="text-primary-foreground" />
-          </div>
-        )}
+        <div className="h-10 w-10 rounded-xl gradient-gold flex items-center justify-center shrink-0 glow-gold">
+          <Sparkles aria-hidden size={18} className="text-primary-foreground" />
+        </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
@@ -103,27 +99,33 @@ const CoachStrip = (_props: CoachStripProps) => {
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold font-bold border border-gold/30">
               GPT-5
             </span>
-          </div>
-          <p className="font-bold text-sm leading-tight line-clamp-1">{title}</p>
-          <p
-            className={cn(
-              "text-[12px] text-muted-foreground mt-0.5 leading-snug line-clamp-2",
-              !hasPlan && "italic",
+            {/* Mission progress lives here rather than as its own chip beside
+                the chevron: same information, no extra row, and the headline
+                keeps the full width it needs. */}
+            {hasPlan && (
+              <span
+                className={cn(
+                  "ml-auto text-[11px] font-black tabular-nums leading-none shrink-0",
+                  planDone ? "text-gold" : "text-muted-foreground",
+                )}
+              >
+                {missionsDone}/{missionsTotal}
+              </span>
             )}
-          >
-            {subtitle}
+          </div>
+
+          <p className="font-bold text-sm leading-tight line-clamp-1">
+            {hasPlan
+              ? headline
+                ? shortHeadline(headline)
+                : "Your session is ready"
+              : "Ask your AI Coach anything"}
+          </p>
+          <p className="text-[12px] text-muted-foreground mt-0.5 leading-snug line-clamp-2 italic">
+            {line}
           </p>
         </div>
 
-        {/* Progress is stated in the subtitle too — never shape or colour alone. */}
-        {hasPlan && (
-          <span className="shrink-0 inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5">
-            <Target aria-hidden size={11} className={planDone ? "text-gold" : "text-muted-foreground"} strokeWidth={2.6} />
-            <span className="font-display font-black text-[12px] tabular-nums leading-none">
-              {missionsDone}/{missionsTotal}
-            </span>
-          </span>
-        )}
         <ChevronRight aria-hidden size={18} className="text-gold/60 shrink-0" />
       </div>
     </button>

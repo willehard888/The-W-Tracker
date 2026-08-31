@@ -134,7 +134,7 @@ Return a sharp meta-review. driver_of_week = the SINGLE biggest factor that move
           body: JSON.stringify({
             model: "google/gemini-2.5-flash",
             messages: [
-              { role: "system", content: "You are W Coach — distill the week into actionable signal. Use the emit_weekly_review tool." },
+              { role: "system", content: "You are AI Coach — distill the week into actionable signal. Use the emit_weekly_review tool." },
               { role: "user", content: prompt },
             ],
             tools: [TOOL],

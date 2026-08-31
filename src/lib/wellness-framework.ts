@@ -1,7 +1,7 @@
 /**
  * Wellness Framework v1
  * Evidence-graded protocol catalog driving daily missions, the Protocol Library,
- * and long-term Habits in W Coach.
+ * and long-term Habits in AI Coach.
  *
  * Pillars are weighted by 80/20 impact-per-minute against current research.
  * Evidence tiers are a deliberate, conservative readout — not medical advice.

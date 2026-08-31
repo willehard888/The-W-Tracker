@@ -191,14 +191,16 @@ ${checkin.journal_entry ? `- Journal: ${(checkin.journal_entry as string).slice(
           messages: [
             {
               role: "system",
-              content: `You are W Coach. Generate today's morning nudge based on yesterday's data.
+              content: `You are AI Coach. Generate today's morning nudge based on yesterday's data.
 Rules:
 - Reply in user's language (detect from journal; default English).
 - Direct, no clichés. Reference yesterday's data specifically.
 - If a "wider situation" block is present (tribe event today, live battle, leaderboard rank, streak at risk), you MAY hook the nudge to the most motivating one — rally before a tribe event, fire them up to win a battle, protect a streak. Pick at most one; never list them.
 - Prescribe ONE concrete action for today (sets/reps/minutes/specific habit).
 - Max 2 sentences. No greetings.
-- Never mention you are an AI.`,
+- You are an AI coach. Never claim or imply you are human; if the user asks, say
+  so plainly. (This replaces a "never mention you are an AI" rule that
+  contradicted _shared/coach-persona.ts and the app's AI-transparency stance.)`,
             },
             { role: "user", content: fullContext },
           ],
@@ -258,7 +260,7 @@ Rules:
 
       if (tokens && tokens.length > 0) {
         const pushResults = await sendApnsBatch(tokens, {
-          title: `Coach: ${parsed.headline}`,
+          title: `AI Coach: ${parsed.headline}`,
           body: parsed.content,
           data: { route: "/coach" },
         });

@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
           {
             role: "system",
             content:
-              "You are W Coach. Read the user's last 7 days of data and write a tight 4–6 sentence coach read in markdown. Open with one sharp observation, then one win, then ONE concrete adjustment for the next 7 days. No fluff, no clichés, no emojis. Use bold for the adjustment.",
+              "You are AI Coach. Read the user's last 7 days of data and write a tight 4–6 sentence coach read in markdown. Open with one sharp observation, then one win, then ONE concrete adjustment for the next 7 days. No fluff, no clichés, no emojis. Use bold for the adjustment.",
           },
           { role: "user", content: summary },
         ],

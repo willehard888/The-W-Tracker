@@ -62,19 +62,36 @@ describe("fetchSeasonBoard", () => {
     const profiles = [
       { user_id: "a", xp: 150, username: "a" },  // 50 season points
       { user_id: "b", xp: 900, username: "b" },  // 400 season points
-      { user_id: "c", xp: 999, username: "c" },  // no baseline → 0 points
     ];
     (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table: string) =>
       table === "leaderboard_season_baselines" ? chain({ data: baselines }) : chain({ data: profiles }),
     );
 
     const out = await fetchSeasonBoard("s1", "a");
-    expect(out.full.map((r) => r.user_id)).toEqual(["b", "a", "c"]);
+    expect(out.full.map((r) => r.user_id)).toEqual(["b", "a"]);
     expect(out.full[0].season_points).toBe(400);
     expect(out.full[1].season_points).toBe(50);
-    expect(out.full[2].season_points).toBe(0);
     expect(out.myRank).toBe(2);
     expect(out.top.length).toBeLessThanOrEqual(BOARD_LIMIT);
+  });
+
+  // A season board lists people who competed in THIS season. Dormant accounts
+  // with lifetime XP but no season activity used to pad it with "0 SEASON XP"
+  // rows — including old test accounts — so a new member's first look at the
+  // competition was a list of people who aren't playing.
+  it("omits accounts with no season points", async () => {
+    const baselines = [{ user_id: "a", baseline_xp: 100 }];
+    const profiles = [
+      { user_id: "a", xp: 150, username: "a" },   // 50 season points → listed
+      { user_id: "idle", xp: 900, username: "idle" }, // no baseline → 0 → hidden
+    ];
+    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table: string) =>
+      table === "leaderboard_season_baselines" ? chain({ data: baselines }) : chain({ data: profiles }),
+    );
+
+    const out = await fetchSeasonBoard("s1", "a");
+    expect(out.full.map((r) => r.user_id)).toEqual(["a"]);
+    expect(out.myRank).toBe(1);
   });
 
   it("returns null rank when the viewer is not on the board", async () => {

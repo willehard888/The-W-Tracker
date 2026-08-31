@@ -152,7 +152,10 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
       <Button variant="ghost" size="icon-sm" onClick={onBack} aria-label="Back">
         <ArrowLeft size={18} />
       </Button>
-      <h1 className="font-display text-base font-black tracking-tight">W Coach</h1>
+      <div className="text-center">
+        <h1 className="font-display text-base font-black tracking-tight">W Coach</h1>
+        <p className="text-[10px] leading-tight text-muted-foreground">AI coach · not a medical professional</p>
+      </div>
       <Button
         variant="ghost"
         size="icon-sm"
@@ -600,9 +603,12 @@ const ChatSheet = ({
         <Button variant="ghost" size="icon-sm" onClick={newChat} aria-label="New chat" title="New chat">
           <Plus size={18} />
         </Button>
-        <div className="inline-flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_8px_hsl(var(--gold))]" />
-          <p className="font-display text-sm font-black tracking-tight">W Coach</p>
+        <div className="text-center">
+          <div className="inline-flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_8px_hsl(var(--gold))]" />
+            <p className="font-display text-sm font-black tracking-tight">W Coach</p>
+          </div>
+          <p className="text-[10px] leading-tight text-muted-foreground">AI coach · not a medical professional</p>
         </div>
         <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close">
           <X size={18} />

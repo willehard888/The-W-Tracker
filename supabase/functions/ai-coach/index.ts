@@ -9,7 +9,10 @@ import {
   buildHolisticContext,
   isVentingMessage,
   REGISTER_PROTOCOL,
-  HEALTH_BOUNDARY,
+  SAFETY_TRIAGE,
+  detectRedFlags,
+  CRISIS_DIRECTIVE,
+  PRIOR_CRISIS_DIRECTIVE,
   VENT_DIRECTIVE,
   type TodayMood,
 } from "../_shared/coach-persona.ts";
@@ -103,6 +106,7 @@ const buildSystemPrompt = (
   memoryBlock: string,
   knowledgeBlocks: string,
   light: boolean,
+  redFlagDirective: string,
 ) => {
   const tier = profile?.status_tier ?? "recruit";
   const streak = profile?.streak ?? 0;
@@ -181,23 +185,23 @@ const buildSystemPrompt = (
 
     return `${personaBlock}
 
-${REGISTER_PROTOCOL}
+${SAFETY_TRIAGE}
 
-${HEALTH_BOUNDARY}
+${REGISTER_PROTOCOL}
 
 ${holisticBlock}
 
 Today is ${dayName}, ${today.toISOString().slice(0, 10)}.
 ${glance}${memoryBlock}
 
-How to reply: apply the CONVERSATION REGISTER above. Mirror their language and energy — "Moi" gets "Moi" energy back, not a briefing. At most one question, and only if it genuinely matters. No markdown in small talk. If they signal crisis (suicidal language, "I can't function"), name what you see in one sentence, give one regulation tool, and point them — by name — to a human professional today.${ventDirective}`;
+How to reply: apply the CONVERSATION REGISTER above. Mirror their language and energy — "Moi" gets "Moi" energy back, not a briefing. At most one question, and only if it genuinely matters. No markdown in small talk. If they signal crisis, SAFETY TRIAGE Level 3 replaces everything else.${ventDirective}${redFlagDirective}`;
   }
 
   return `${personaBlock}
 
-${REGISTER_PROTOCOL}
+${SAFETY_TRIAGE}
 
-${HEALTH_BOUNDARY}
+${REGISTER_PROTOCOL}
 
 ${holisticBlock}
 
@@ -235,7 +239,7 @@ Apply the CONVERSATION REGISTER above — registers 1–3 exempt you from every 
 - Mirror their language and energy: terse athlete gets terse coach; "Moi" gets "Moi" energy back, not a briefing; someone struggling gets warmth first, prescription second.
 - Markdown sparingly: bold for key numbers, short list only when prescribing 2–3 steps. No headings in chat, no sign-off.
 - If the conversation is about today's training, stay consistent with the prescribed session (or explicitly justify deviating). Never volunteer the session unprompted.
-- Refuse medical / legal / financial advice that requires a licensed pro — give a framework and tell them to see one. Same for clinical mental-health (suicidal ideation, panic disorder, etc.) — name what you see, give one regulation tool, point at a professional.${ventDirective}`;
+- Health, medication, and safety boundaries: SAFETY TRIAGE above defines exactly what you may and may not do — Level 1 wellness gets full-strength concrete coaching, never reflexive "ask a doctor". Legal/financial advice needing a licensed pro: give a framework and point to one.${ventDirective}${redFlagDirective}`;
 };
 
 Deno.serve(async (req) => {
@@ -471,6 +475,13 @@ Deno.serve(async (req) => {
     // Pull the latest user message for vent-detection heuristic.
     const latestUserMessage = [...trimmed].reverse().find((m) => m.role === "user")?.content ?? "";
 
+    // Level-3 red-flag scan over the WHOLE window — safety can't be judged
+    // from the last message alone, and a crisis message must never land in
+    // the light (small-talk) prompt.
+    const redFlag = detectRedFlags(trimmed.filter((m) => m.role === "user").map((m) => m.content));
+    const redFlagDirective =
+      redFlag === "latest" ? CRISIS_DIRECTIVE : redFlag === "earlier" ? PRIOR_CRISIS_DIRECTIVE : "";
+
     const progressionBlock = buildProgressionBlock(progression);
     const causalBlock = buildCausalBlock(nightSignals as any);
     const workoutLogBlock = [progressionBlock, causalBlock].filter(Boolean).map((b) => `\n\n${b}`).join("");
@@ -541,7 +552,7 @@ Deno.serve(async (req) => {
     // ── Assemble. Data blocks live under ONE preamble that subordinates
     // their per-block directives to the conversation register — six blocks
     // each demanding output was exactly what made every reply a briefing.
-    const light = isLightMessage(latestUserMessage, goDeep);
+    const light = isLightMessage(latestUserMessage, goDeep) && redFlag === "none";
     const faqBlock = faqContext
       ? `\n\nThe user just read the Playbook answer to: "${faqContext.question}". Do NOT repeat that answer. Go deeper, address their follow-up directly, or apply it to their specific context.`
       : "";
@@ -569,6 +580,7 @@ Everything below is what you KNOW — it is not your outline. Per reply, pull at
       memoryBlock,
       knowledgeBlocks,
       light,
+      redFlagDirective,
     );
     console.log("ai-coach", light ? "light" : "full", "sys≈", Math.round(systemPrompt.length / 4), "tok");
 

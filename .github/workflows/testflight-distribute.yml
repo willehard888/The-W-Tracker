@@ -1,0 +1,31 @@
+name: TestFlight external distribution
+
+# Xcode Cloud uploads every push's build to TestFlight but only the INTERNAL
+# group receives it automatically. This job closes the gap: it waits for the
+# push's build to finish processing, then assigns it to the external
+# "The W Group" via the App Store Connect API — Apple then notifies the
+# external testers. Repo-side automation because XC post-actions live only
+# in the ASC UI and kept silently unconfigured.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One distribution at a time; a newer push supersedes a waiting one.
+concurrency:
+  group: testflight-distribute
+  cancel-in-progress: true
+
+jobs:
+  distribute:
+    name: Wait for build · assign to external group
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - name: Distribute newest build
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: node scripts/testflight-distribute.mjs

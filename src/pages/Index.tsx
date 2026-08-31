@@ -7,6 +7,7 @@ import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
 import CoachStrip from "@/components/home/CoachStrip";
+import TodayPlanStrip from "@/components/home/TodayPlanStrip";
 import DailyInsightCard from "@/components/home/DailyInsightCard";
 import LibraryHub from "@/components/home/LibraryHub";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -28,6 +29,9 @@ import { useMyRank } from "@/hooks/use-my-rank";
 import { useDailyPulse } from "@/hooks/use-daily-pulse";
 import { useBackgroundHealthSync } from "@/hooks/use-background-health-sync";
 import { useLiveWhealthIndex } from "@/hooks/use-live-whealth-index";
+import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
+import { hasHealthConsent } from "@/lib/health/health-consent";
+import { isNativePlatform } from "@/lib/platform";
 // Pull-to-refresh removed temporarily — was intercepting inner taps.
 
 const Index = () => {
@@ -54,6 +58,20 @@ const Index = () => {
   // the check-in/Profile screens happen to open (data holes starved trends).
   useBackgroundHealthSync();
   const { data: liveWhealth } = useLiveWhealthIndex();
+
+  // The Apple Health card shows until Health is connected. Re-read on focus so
+  // it disappears the moment the user returns from the iOS permission sheet,
+  // instead of lingering until they navigate away and back.
+  const [healthConnected, setHealthConnected] = useState(() => hasHealthConsent());
+  useEffect(() => {
+    const sync = () => setHealthConnected(hasHealthConsent());
+    window.addEventListener("focus", sync);
+    document.addEventListener("visibilitychange", sync);
+    return () => {
+      window.removeEventListener("focus", sync);
+      document.removeEventListener("visibilitychange", sync);
+    };
+  }, []);
 
   // trial_started — fired once per user when their trial window is fresh
   // (<48h old). Without this event, trial→paid conversion was unmeasurable.
@@ -367,10 +385,32 @@ const Index = () => {
         />
       </div>
 
+      {/* TODAY'S PLAN — what to actually do now. Sits directly under the
+          check-in because once the day is banked that card goes inert, and
+          this is what's still open. Renders nothing until a plan exists. */}
+      <Reveal className="mb-4 relative z-10" delay={20}>
+        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
+          <TodayPlanStrip />
+        </ErrorBoundary>
+      </Reveal>
+
       {/* TIER RISK */}
       {tierRisk.level !== "safe" && (
         <Reveal className="mb-4 relative z-10" delay={0}>
           <TierRiskBanner risk={tierRisk} />
+        </Reveal>
+      )}
+
+      {/* APPLE HEALTH — the ask that makes check-ins verifiable and the coach
+          specific, primed and in the open. It used to happen as a bare iOS
+          permission sheet 3s after this screen mounted, with nothing on screen
+          explaining it. Shown only until connected; the card renders nothing on
+          web/Android, and the full connected state lives on Coach and Profile. */}
+      {isNativePlatform() && !healthConnected && (
+        <Reveal className="mb-4 relative z-10" delay={40}>
+          <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
+            <HealthKitConnectCard />
+          </ErrorBoundary>
         </Reveal>
       )}
 

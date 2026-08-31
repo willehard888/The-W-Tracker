@@ -30,7 +30,7 @@ const DailyInsightCard = () => {
           <Sparkles aria-hidden size={16} className="text-gold" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="eyebrow mb-1">Daily insight</p>
+          <p className="eyebrow text-gold/85 mb-1">Daily insight</p>
           <p className="text-[13px] font-semibold text-foreground/90 leading-snug">
             {insight.text}
           </p>

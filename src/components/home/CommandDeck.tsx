@@ -156,7 +156,7 @@ const CommandDeck = ({
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="eyebrow text-gold mb-0.5">Lock your day</p>
+              <p className="eyebrow !text-gold mb-0.5">Lock your day</p>
               <p className="font-display font-black text-[19px] leading-none tracking-tight">
                 Daily Check-In
               </p>

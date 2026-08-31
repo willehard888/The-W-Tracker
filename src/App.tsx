@@ -15,6 +15,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { useTrialAccess } from "@/hooks/use-trial-access";
 import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
 import AmbientParticles from "@/components/AmbientParticles";
 import BottomNav from "@/components/BottomNav";
@@ -98,12 +99,25 @@ const ACCESS_EXEMPT = new Set([
   "/reset-password",
 ]);
 
-// Master switch for the hard paywall gate in ProtectedRoute. Currently OFF —
-// every signed-in user gets full access. Set to true to re-enable the paywall.
-const PAYWALL_ENABLED = false;
+// Master switch for the hard paywall gate in ProtectedRoute.
+// ON for the pilot: testers get free access through a pilot code (which grants
+// membership credits), NOT by the gate being open. Keeping it on means the
+// trial countdown, the expiry sheet and the real purchase flow are all
+// exercised by the pilot instead of being first tried in front of paying
+// customers. Set to false only to deliberately give everyone the whole app.
+const PAYWALL_ENABLED = true;
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, profile, loading, isPremium } = useAuth();
+  // MUST sit above every early return below. A hook called after a conditional
+  // return throws "Rendered fewer hooks than expected" the moment `loading`
+  // flips — the same trap Paywall.tsx documents hitting with pollVerification.
+  //
+  // isPremium alone is NOT the access gate: it covers purchases, membership
+  // credits, apex and pinned legends, but never the free trial. Gating on it
+  // by itself sends every brand-new user to /paywall on day 1 of a trial the
+  // app just promised them. hasAccess = membership OR an unexpired trial.
+  const { hasAccess } = useTrialAccess();
   if (loading) return <LazyFallback />;
   if (!user) return <Navigate to="/landing" replace />;
 
@@ -128,11 +142,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // ⚠️ Hard paywall TEMPORARILY DISABLED — flip PAYWALL_ENABLED back to true to
-  // re-enable it. When on, non-entitled users are sent to /paywall (isPremium =
-  // paid / Apple trial / referral credits / Founders; ACCESS_EXEMPT lets them
-  // still reach the paywall, onboarding and legal pages).
-  if (PAYWALL_ENABLED && !isPremium && !ACCESS_EXEMPT.has(path)) {
+  // Hard paywall. Anyone without access is sent to /paywall, where they can
+  // subscribe or redeem a pilot code. ACCESS_EXEMPT keeps the paywall itself,
+  // onboarding, the username picker and the legal pages reachable — without
+  // that, a gated user would be bounced in a loop with no way to pay or read
+  // the terms.
+  if (PAYWALL_ENABLED && !isPremium && !hasAccess && !ACCESS_EXEMPT.has(path)) {
     return <Navigate to="/paywall" replace />;
   }
 

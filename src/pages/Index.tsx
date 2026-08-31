@@ -250,7 +250,10 @@ const Index = () => {
         {/* Overlay-button pattern: the strip-wide tap target is a real button
             UNDER the content (never nested interactives); the W-Index chip is
             a sibling button that floats above it. */}
-        <div className="relative w-full flex items-center gap-3 rounded-2xl border border-border/60 bg-card/50 px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform">
+        {/* On the system's quiet surface rather than a hand-rolled one: it was
+            the only container on Home with no elevation at all, which read as
+            unfinished next to the cards below it. */}
+        <div className="surface-card surface-card-quiet w-full flex items-center gap-3 px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform">
           <button
             onClick={() => navigate("/leaderboard")}
             aria-label="Open Ranks"
@@ -383,14 +386,14 @@ const Index = () => {
 
       {/* DAILY INSIGHT — one Inner Work idea per day, deep-links to the Vault
           lesson. Between coach and content so the mind gets fed daily too. */}
-      <Reveal className="mb-4 relative z-10" delay={90}>
+      <Reveal className="mb-4 relative z-10" delay={120}>
         <DailyInsightCard />
       </Reveal>
 
       {/* THE LIBRARY — one premium hub for everything the membership unlocks
           (recipes, exercises, Vault). Replaces three stacked same-weight
           cards; founder feedback: too many buttons, combine with value. */}
-      <Reveal className="mb-4 relative z-10" delay={100}>
+      <Reveal className="mb-4 relative z-10" delay={160}>
         <LibraryHub />
       </Reveal>
       {/* SECONDARY — Today stays focused: check in, the AI move, daily
@@ -399,16 +402,14 @@ const Index = () => {
           one group concept.) */}
       <MoreSection label="More" className="relative z-10 mt-1 mb-2">
       {/* EARN FREE MEMBERSHIP — referral CTA */}
-      <Reveal className="mb-4 relative z-10" delay={80}>
+      <Reveal className="mb-4 relative z-10" delay={0}>
         <InviteCTA referralCount={profile.referral_count || 0} />
       </Reveal>
       {/* Recent Badges */}
-      <Reveal className="mb-2" delay={320}>
+      <Reveal className="mb-2" delay={80}>
         <div className="flex items-end justify-between mb-3 px-0.5">
           <div className="flex flex-col">
-            <span className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/80 mb-1">
-              Achievements
-            </span>
+            <span className="eyebrow mb-1">Achievements</span>
             <h2 className="font-display font-bold text-base tracking-tight leading-none">
               Recent Badges
             </h2>

@@ -93,10 +93,10 @@ const CoachStrip = (_props: CoachStripProps) => {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <p className="text-[11px] uppercase tracking-widest text-gold/80 font-bold">
-              AI Coach
-            </p>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold font-bold border border-gold/30">
+            {/* Gold stays here: the coach is one of the two elements Home
+                accents, alongside the day's check-in. */}
+            <p className="eyebrow text-gold/85">AI Coach</p>
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold font-bold border border-gold/30 leading-none">
               GPT-5
             </span>
             {/* Mission progress lives here rather than as its own chip beside

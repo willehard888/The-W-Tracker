@@ -25,12 +25,14 @@ export const MoreSection = ({ label = "More", defaultOpen = false, children, cla
         type="button"
         onClick={() => { hapticImpact("light"); setOpen((o) => !o); }}
         aria-expanded={open}
-        className="w-full flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/70 active:text-foreground transition-colors"
+        className="w-full flex items-center justify-center gap-1.5 py-2.5 eyebrow text-muted-foreground/70 active:text-foreground transition-colors"
       >
         {label}
         <ChevronDown aria-hidden size={13} className={cn("transition-transform duration-200", open && "rotate-180")} />
       </button>
-      {open && <div className="space-y-5 pt-1 animate-reveal">{children}</div>}
+      {/* No space-y here: children carry their own bottom margins, and the two
+          compounded into ~36px gaps inside a page laid out on a 16px rhythm. */}
+      {open && <div className="pt-1 animate-reveal">{children}</div>}
     </div>
   );
 };

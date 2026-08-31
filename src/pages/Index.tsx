@@ -7,7 +7,6 @@ import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
 import CoachStrip from "@/components/home/CoachStrip";
-import TodayPlanStrip from "@/components/home/TodayPlanStrip";
 import DailyInsightCard from "@/components/home/DailyInsightCard";
 import LibraryHub from "@/components/home/LibraryHub";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -88,44 +87,11 @@ const Index = () => {
     void track(FUNNEL.trialStarted);
   }, [profile?.user_id, profile?.trial_started_at]);
 
-  const { data: latestNudge } = useQuery({
-    queryKey: ["latest-coach-nudge", profile?.user_id],
-    staleTime: 5 * 60_000,   // nudges don't change every second
-    gcTime:    10 * 60_000,
-    queryFn: async () => {
-      if (!profile || !isElite) return null;
-      const { data } = await supabase
-        .from("coach_nudges")
-        .select("id, headline, content, seen_at, created_at")
-        .eq("user_id", profile.user_id)
-        .is("seen_at", null)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!profile && isElite,
-  });
-
-  const { data: latestBriefing } = useQuery({
-    queryKey: ["latest-briefing", profile?.user_id],
-    staleTime: 60 * 60_000,  // weekly briefings are stable for an hour
-    gcTime:    2  * 60 * 60_000,
-    queryFn: async () => {
-      if (!profile || !isElite) return null;
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { data } = await supabase
-        .from("weekly_briefings")
-        .select("id, headline, viewed_at, generated_at")
-        .eq("user_id", profile.user_id)
-        .gte("generated_at", sevenDaysAgo)
-        .order("generated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!profile && isElite,
-  });
+  // The `coach_nudges` and `weekly_briefings` queries that used to live here
+  // were removed: they ran on every Home mount for an Elite user and fed
+  // CoachStrip's `latestNudge`/`latestBriefing` props, which the component
+  // stopped reading long ago (nudges and briefings live inside /coach now).
+  // Two Supabase round trips per Home load, consumed by nothing.
 
   const { data: userBadges } = useQuery({
     queryKey: ["user-badges", profile?.user_id],
@@ -385,15 +351,6 @@ const Index = () => {
         />
       </div>
 
-      {/* TODAY'S PLAN — what to actually do now. Sits directly under the
-          check-in because once the day is banked that card goes inert, and
-          this is what's still open. Renders nothing until a plan exists. */}
-      <Reveal className="mb-4 relative z-10" delay={20}>
-        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
-          <TodayPlanStrip />
-        </ErrorBoundary>
-      </Reveal>
-
       {/* TIER RISK */}
       {tierRisk.level !== "safe" && (
         <Reveal className="mb-4 relative z-10" delay={0}>
@@ -420,7 +377,7 @@ const Index = () => {
           and inside Coach, keeping Today focused on the one job. */}
       <Reveal className="mb-4 relative z-10" delay={80}>
         <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
-          <CoachStrip latestNudge={latestNudge ?? null} latestBriefing={latestBriefing ?? null} />
+          <CoachStrip />
         </ErrorBoundary>
       </Reveal>
 

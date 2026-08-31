@@ -1,5 +1,5 @@
 /**
- * useCoachBrief — the proactive, AI-written daily brief from W Coach.
+ * useCoachBrief — the proactive, AI-written daily brief from AI Coach.
  *
  * Calls the `coach-daily-brief` edge function, which is cached server-side
  * one-per-user-per-day: the first call of the day generates (Gemini Flash),

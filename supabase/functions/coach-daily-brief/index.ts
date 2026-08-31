@@ -1,5 +1,5 @@
 // Daily AI Trainer Brief — generates a short, signed, context-aware brief
-// from the W Coach. Cached per user per day in coach_daily_briefs.
+// from the AI Coach. Cached per user per day in coach_daily_briefs.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sportBreakdown } from "../_shared/sports.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
       }
     } catch { /* optional */ }
 
-    const systemPrompt = `You are W Coach — the user's personal performance trainer inside the W app. You speak DIRECTLY to them, like a world-class private coach who knows their week, their body, and their goal.
+    const systemPrompt = `You are AI Coach — the user's personal performance trainer inside the W app. You speak DIRECTLY to them, like a world-class private coach who knows their week, their body, and their goal.
 
 ${tone}
 Reply language: ${lang}.
@@ -149,7 +149,9 @@ ${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progre
 ${INNER_WORK_BLOCK}
 ${LONGEVITY_BLOCK}
 
-Write the daily brief — 2-3 sentences, second person, signed off as "— W Coach".
+Write the daily brief — 2-3 sentences, second person. No sign-off: the surface
+rendering this already labels itself "AI Coach", and ai-coach is instructed the
+same way, so a signature only repeats the name and eats space in previews.
 Reference ONE concrete recent stat and ONE adjustment to today's session if warranted.
 End with a single clear action for the next 24h.
 
@@ -210,7 +212,7 @@ Also produce:
     if (!payload) {
       payload = {
         ribbon: `Week ${weekIdx} · ${athlete?.primary_goal ?? "Performance"}`,
-        brief_md: aiData?.choices?.[0]?.message?.content ?? "Today: show up. Lock the basics. — W Coach",
+        brief_md: aiData?.choices?.[0]?.message?.content ?? "Today: show up. Lock the basics.",
         prescriptions: [],
         suggested_questions: [],
       };

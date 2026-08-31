@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Mirrors the server gate has_active_access(): referred users get 14 days,
-// organic signups 7. The client showing 14 to everyone meant an organic user's
-// Vault and AI coach went silently dark on day 8 while the header still said
-// "Full access · 6d".
+// Mirrors the server gate has_active_access(): 14 days for everyone.
+// Organic signups used to get 7 days while every piece of copy — Auth,
+// PremiumHero, TrialExpirySheet — promised 14. That was first patched by
+// shortening the client pill, which made the countdown honest but left the
+// promise broken. For the pilot the server was raised to 14 instead, so the
+// promise and the behaviour finally agree. Both sides must move together:
+// see supabase/migrations/20260831120000_pilot_trial_14_days.sql.
 export const TRIAL_DURATION_DAYS = 14;
-const trialDurationMs = (referred: boolean) => (referred ? 14 : 7) * 24 * 60 * 60 * 1000;
+const trialDurationMs = () => TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000;
 
 interface TrialAccess {
   /** True if user is subscribed OR is within the 14-day free trial */
@@ -71,7 +74,7 @@ export const useTrialAccess = (): TrialAccess => {
     const startedAt = Number.isFinite(startedAtRaw) ? startedAtRaw : now;
 
     const elapsed = now - startedAt;
-    const msRemaining = Math.max(0, trialDurationMs(!!profile.referred_by) - elapsed);
+    const msRemaining = Math.max(0, trialDurationMs() - elapsed);
     const isExpired = msRemaining <= 0;
     const daysRemaining = Math.ceil(msRemaining / (24 * 60 * 60 * 1000));
     const hoursRemaining = Math.ceil(msRemaining / (60 * 60 * 1000));

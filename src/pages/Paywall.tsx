@@ -12,11 +12,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import BrandLogo from "@/components/BrandLogo";
 import PremiumHero from "@/components/paywall/PremiumHero";
+import PilotCodeRedeem from "@/components/paywall/PilotCodeRedeem";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { track, FUNNEL } from "@/lib/analytics";
 
-const PREMIUM_YEARLY_FALLBACK = "49,99 €"; // must match the Stripe yearly price — 47,99 shown vs 49,99 charged eroded trust
-const PREMIUM_MONTHLY_FALLBACK = "4,99 €";
+// One pricing model: 8,99 €/mo. No annual plan — a second cadence to compare
+// against buys nothing while the product is still finding its shape, and every
+// place that rendered a yearly saving had to be kept truthful for free.
+// The live store label wins on native; this is the web fallback and must match
+// App Store Connect / Stripe exactly (showing one number and charging another
+// is what eroded trust the last time these drifted apart).
+const PREMIUM_MONTHLY_FALLBACK = "8,99 €";
 
 type PurchaseStatus = "idle" | "purchasing" | "verifying" | "error";
 
@@ -25,7 +31,7 @@ const Paywall = () => {
   const {
     purchasePremiumPlan, restorePurchases,
     rcLoading, rcReady,
-    monthlyPriceLabel, yearlyPriceLabel, yearlyAvailable,
+    monthlyPriceLabel,
   } = useRevenueCat();
   const navigate = useNavigate();
   const isNative = isNativePlatform();
@@ -36,12 +42,8 @@ const Paywall = () => {
 
   const wasMemberRef = useRef(isElite);
 
-  // Live prices from the store (native); web uses the configured fallbacks.
+  // Live price from the store (native); web uses the configured fallback.
   const monthlyLabel = (isNative && monthlyPriceLabel) || PREMIUM_MONTHLY_FALLBACK;
-  const yearlyLabel = (isNative && yearlyPriceLabel) || PREMIUM_YEARLY_FALLBACK;
-  // On native, only offer the yearly toggle if the store actually has an
-  // annual package — otherwise we'd advertise a plan we can't fulfill.
-  const showYearly = !isNative || yearlyAvailable;
 
   // Top of the monetization funnel — record paywall exposure once per mount.
   useEffect(() => {
@@ -283,8 +285,6 @@ const Paywall = () => {
         <div className="animate-reveal animate-reveal-delay-1">
           <PremiumHero
             monthlyPriceLabel={monthlyLabel}
-            yearlyPriceLabel={yearlyLabel}
-            yearlyAvailable={showYearly}
             status={status}
             errorMessage={errorMessage}
             onDismissError={() => {
@@ -313,6 +313,12 @@ const Paywall = () => {
         >
           Restore purchases
         </button>
+      </div>
+
+      {/* Pilot testers redeem free access here instead of purchasing, so the
+          paywall and the real store flow stay live during the pilot. */}
+      <div className="animate-reveal animate-reveal-delay-3">
+        <PilotCodeRedeem />
       </div>
 
       <div className="text-center mt-4">

@@ -9,6 +9,7 @@ import {
   buildHolisticContext,
   isVentingMessage,
   REGISTER_PROTOCOL,
+  HEALTH_BOUNDARY,
   VENT_DIRECTIVE,
   type TodayMood,
 } from "../_shared/coach-persona.ts";
@@ -182,6 +183,8 @@ const buildSystemPrompt = (
 
 ${REGISTER_PROTOCOL}
 
+${HEALTH_BOUNDARY}
+
 ${holisticBlock}
 
 Today is ${dayName}, ${today.toISOString().slice(0, 10)}.
@@ -193,6 +196,8 @@ How to reply: apply the CONVERSATION REGISTER above. Mirror their language and e
   return `${personaBlock}
 
 ${REGISTER_PROTOCOL}
+
+${HEALTH_BOUNDARY}
 
 ${holisticBlock}
 

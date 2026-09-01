@@ -8,6 +8,7 @@ import CoachLine from "@/components/coach/CoachLine";
 import { useCoachObservation } from "@/hooks/use-coach-observation";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 import { checkinReactionKey, fetchCheckinReaction } from "@/lib/checkin-reaction";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import AnimatedNumber from "@/components/AnimatedNumber";
@@ -30,13 +31,20 @@ interface CheckinTierSummaryProps {
   onDashboard: () => void;
   /** Open W Coach primed with the day's feedback so the user can go deeper. */
   onAskCoach?: (seedText: string) => void;
+  /** A celebration overlay (badge unlock) is up — hold onboarding cards. */
+  celebrating?: boolean;
 }
 
 /**
  * Bold, tier-specific post-submit recap.
  * Replaces the generic gold card with a full premium hero per tier.
  */
-const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach }: CheckinTierSummaryProps) => {
+const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach, celebrating }: CheckinTierSummaryProps) => {
+  // Contextual onboarding: first check-in with XP earned → explain XP here,
+  // spotlighting the counter itself — but only once the badge celebration
+  // overlay is gone, so the coach never talks over the fireworks.
+  const xpTargetRef = useSpotlightTarget("XP_INTRO");
+  useOnboardingTrigger("XP_INTRO", summary.xpEarned > 0 && !celebrating);
   const cfg = getTierConfig(tier);
   const leveledUp = summary.newLevel > summary.oldLevel;
   const perfPct = Math.round((summary.completedCount / summary.maxCount) * 100);
@@ -180,7 +188,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach 
           <p className="relative text-[11px] uppercase tracking-[0.22em] text-gold/80 font-black mb-1">
             Experience earned
           </p>
-          <div className="relative flex items-baseline justify-center gap-1">
+          <div ref={xpTargetRef} className="relative flex items-baseline justify-center gap-1">
             <span className="text-gold font-display text-5xl font-black glow-gold-text">+</span>
             <XpCounter value={summary.xpEarned} className="text-gold font-display text-5xl font-black glow-gold-text" />
           </div>

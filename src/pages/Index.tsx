@@ -28,6 +28,7 @@ import { useMyRank } from "@/hooks/use-my-rank";
 import { useDailyPulse } from "@/hooks/use-daily-pulse";
 import { useBackgroundHealthSync } from "@/hooks/use-background-health-sync";
 import { useLiveWhealthIndex } from "@/hooks/use-live-whealth-index";
+import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 // Pull-to-refresh removed temporarily — was intercepting inner taps.
 
 const Index = () => {
@@ -50,6 +51,13 @@ const Index = () => {
     return () => clearTimeout(t);
   }, []);
   const { profile, isElite } = useAuth();
+  // Contextual onboarding (Blueprint triggers): Today intro on first visit;
+  // streak card once a streak exists; progression once XP exists (also
+  // chained from STREAK_INTRO). Eligibility/dedup is the provider's job.
+  useOnboardingTrigger("TODAY_INTRO", !!profile);
+  useOnboardingTrigger("STREAK_INTRO", (profile?.streak ?? 0) > 0);
+  useOnboardingTrigger("PROGRESSION_INTRO", (profile?.xp ?? 0) > 0);
+  const progressionTargetRef = useSpotlightTarget("PROGRESSION_INTRO");
   // Fill health_sync_snapshots + health_night_metrics daily, not only when
   // the check-in/Profile screens happen to open (data holes starved trends).
   useBackgroundHealthSync();
@@ -266,7 +274,7 @@ const Index = () => {
         {/* Overlay-button pattern: the strip-wide tap target is a real button
             UNDER the content (never nested interactives); the W-Index chip is
             a sibling button that floats above it. */}
-        <div className="relative w-full flex items-center gap-3 rounded-2xl border border-border/60 bg-card/50 px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform">
+        <div ref={progressionTargetRef} className="relative w-full flex items-center gap-3 rounded-2xl border border-border/60 bg-card/50 px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform">
           <button
             onClick={() => navigate("/leaderboard")}
             aria-label="Open Ranks"

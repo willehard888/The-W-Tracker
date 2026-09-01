@@ -6,6 +6,7 @@ import { hapticImpact } from "@/lib/haptics";
 import { useCheckinConfig } from "@/hooks/use-checkin-config";
 import { resolveCheckinHabits } from "@/lib/checkin-habits";
 import { maxDailyXp } from "@/lib/checkin-xp";
+import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
 interface CommandDeckProps {
   streak: number;
@@ -40,6 +41,12 @@ const CommandDeck = ({
   className,
 }: CommandDeckProps) => {
   const navigate = useNavigate();
+  // Contextual onboarding: the whole card is the check-in button — spotlight
+  // it the first time checking in is possible; the streak chip is the
+  // STREAK_INTRO target once a streak exists.
+  const checkinTargetRef = useSpotlightTarget("CHECKIN_INTRO");
+  const streakTargetRef = useSpotlightTarget("STREAK_INTRO");
+  useOnboardingTrigger("CHECKIN_INTRO", canCheckin);
   // Committed melt: a tap keeps the lava rising for the full choreography
   // before navigating, so the melt is seen on every press — not only on a
   // long hold. Reduced-motion users navigate immediately.
@@ -74,6 +81,10 @@ const CommandDeck = ({
     >
       <button
         type="button"
+        // Spotlight target only while checking in is actually possible —
+        // the locked "come back tomorrow" deck must never get the intro
+        // (the chain checks target presence, not the trigger condition).
+        ref={canCheckin ? checkinTargetRef : undefined}
         onClick={() => {
           if (!canCheckin || locking) return;
           hapticImpact("medium");
@@ -142,7 +153,7 @@ const CommandDeck = ({
 
             {/* Streak chip — header-style flame flicker */}
             {streak > 0 && (
-              <div className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[hsl(var(--ember)/0.12)] border border-[hsl(var(--ember))]/30 px-2.5 py-1">
+              <div ref={streakTargetRef} className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[hsl(var(--ember)/0.12)] border border-[hsl(var(--ember))]/30 px-2.5 py-1">
                 <Flame aria-hidden size={13} className="text-[hsl(var(--ember))] status-flame-flicker" strokeWidth={2.8} />
                 <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(22_95%_66%)]">{streak}</span>
               </div>

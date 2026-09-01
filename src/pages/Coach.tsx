@@ -23,11 +23,15 @@ import ProgramCard from "@/components/coach/v2/ProgramCard";
 import CoachBriefHero from "@/components/coach/v2/CoachBriefHero";
 import CoachFooterLinks from "@/components/coach/v2/CoachFooterLinks";
 import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
+import { useOnboardingTrigger } from "@/components/onboarding/onboarding-context";
 
 type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";
 
 const Coach = () => {
+  // Contextual onboarding: first /coach mount → the AI-transparency intro
+  // sheet (AI-powered, never a medical substitute) BEFORE anything else.
+  useOnboardingTrigger("AI_COACH_INTRO", true);
   // FIX (migration 20260511 commit): the page previously read `isPremium`
   // and `subscriptionLoading` from useAuth(), but AuthContext exports
   // `isElite` and `loading`. Reading missing fields meant `!isPremium` was

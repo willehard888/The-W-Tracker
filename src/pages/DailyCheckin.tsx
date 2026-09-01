@@ -677,6 +677,7 @@ const DailyCheckin = () => {
             onProfile={() => navigate("/profile")}
             onDashboard={() => navigate("/")}
             onAskCoach={(seed) => navigate(`/coach?seed=${encodeURIComponent(seed)}`)}
+            celebrating={!!unlockedBadge}
           />
         )}
       </ErrorBoundary>

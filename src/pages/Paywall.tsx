@@ -12,10 +12,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import BrandLogo from "@/components/BrandLogo";
 import PremiumHero from "@/components/paywall/PremiumHero";
+import PilotCodeRedeem from "@/components/paywall/PilotCodeRedeem";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { track, FUNNEL } from "@/lib/analytics";
 
-const PREMIUM_YEARLY_FALLBACK = "89,99 €"; // must match the store price — a mismatched label vs charge eroded trust
+// ONE subscription covering all content, billed monthly or yearly — not two
+// tiers. The live store label wins on native; these are the web fallbacks and
+// must match App Store Connect / Stripe exactly, because showing one number
+// and charging another is what eroded trust the last time they drifted apart.
+const PREMIUM_YEARLY_FALLBACK = "89,99 €";
 const PREMIUM_MONTHLY_FALLBACK = "8,99 €";
 
 type PurchaseStatus = "idle" | "purchasing" | "verifying" | "error";
@@ -313,6 +318,12 @@ const Paywall = () => {
         >
           Restore purchases
         </button>
+      </div>
+
+      {/* Pilot testers redeem free access here instead of purchasing, so the
+          paywall and the real store flow stay live during the pilot. */}
+      <div className="animate-reveal animate-reveal-delay-3">
+        <PilotCodeRedeem />
       </div>
 
       <div className="text-center mt-4">

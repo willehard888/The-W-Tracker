@@ -1,10 +1,11 @@
 import ReactMarkdown from "react-markdown";
 import { Sparkles, Send, MessageCircle } from "lucide-react";
 import { useCoachBrief } from "@/hooks/use-coach-brief";
+import { stripCoachSignoff } from "@/lib/coach-signoff";
 
 /**
  * CoachBriefHero — the proactive AI voice at the very top of the Coach page.
- * W Coach speaks first: greets, references the user's real data, gives today's
+ * AI Coach speaks first: greets, references the user's real data, gives today's
  * direction, then offers tailored questions that open the live chat. This is
  * what makes the app feel like an AI coach instead of a set of static cards.
  */
@@ -29,7 +30,7 @@ const CoachBriefHero = ({
           <div className="h-3.5 w-[85%] rounded bg-card/80 animate-pulse" />
           <div className="h-3.5 w-[60%] rounded bg-card/80 animate-pulse" />
         </div>
-        <p className="text-[12px] text-gold/50 mt-3 italic">W Coach is reading your week…</p>
+        <p className="text-[12px] text-gold/50 mt-3 italic">AI Coach is reading your week…</p>
       </div>
     );
   }
@@ -43,7 +44,7 @@ const CoachBriefHero = ({
       >
         <div className="flex items-center gap-2 mb-1.5">
           <Sparkles size={14} className="text-gold" />
-          <p className="eyebrow">W Coach</p>
+          <p className="eyebrow">AI Coach</p>
         </div>
         <p className="text-[14px] font-bold text-foreground leading-snug">
           I'm your coach. Tell me how today's going and I'll build the next move around your data.
@@ -63,7 +64,7 @@ const CoachBriefHero = ({
           <span className="absolute inline-flex h-full w-full rounded-full bg-gold opacity-60 animate-ping" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-gold" />
         </span>
-        <p className="eyebrow">W Coach</p>
+        <p className="eyebrow">AI Coach</p>
         {brief.ribbon && (
           <span className="ml-auto text-[10px] font-black uppercase tracking-wider text-gold/70 bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5 truncate max-w-[55%]">
             {brief.ribbon}
@@ -71,9 +72,12 @@ const CoachBriefHero = ({
         )}
       </div>
 
-      {/* The AI's words — the centrepiece */}
+      {/* The AI's words — the centrepiece. Sign-off stripped: briefs written
+          before the prompt change end with "— W Coach", and there's no
+          backfill, so old rows would still show the retired name right under
+          an "AI Coach" eyebrow. */}
       <div className="text-[14px] leading-relaxed text-foreground/90 [&_p]:mb-2 [&_strong]:text-gold [&_strong]:font-black">
-        <ReactMarkdown>{brief.brief_md}</ReactMarkdown>
+        <ReactMarkdown>{stripCoachSignoff(brief.brief_md)}</ReactMarkdown>
       </div>
 
       {/* Prescriptions — today's targets, fitted to the user */}

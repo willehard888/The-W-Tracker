@@ -301,7 +301,7 @@ Deno.serve(async (req) => {
     const trainDayNames: string[] = (profile.training_days_pref ?? [1, 2, 4, 5]).map((n: number) => DAY_NAMES[n]);
 
     // ── Prompts ──────────────────────────────────────────────────────────────
-    const systemPrompt = `You are W Coach — a senior strength & conditioning coach with 20 years of experience, expert in hypertrophy, strength, and sport-specific programming. Every prescription is specific and evidence-based — something a pro coach would sign off on.
+    const systemPrompt = `You are AI Coach — a senior strength & conditioning coach with 20 years of experience, expert in hypertrophy, strength, and sport-specific programming. Every prescription is specific and evidence-based — something a pro coach would sign off on.
 
 VOICE: ${toneRule}
 

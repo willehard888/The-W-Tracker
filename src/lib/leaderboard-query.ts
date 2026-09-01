@@ -76,6 +76,12 @@ export const fetchSeasonBoard = async (seasonId: string, userId: string | undefi
       ...p,
       season_points: Math.max(p.xp - (baselineMap.get(p.user_id) ?? p.xp), 0),
     }))
+    // A season board should list people who competed in THIS season. Without
+    // this filter every dormant account with historic XP — including old test
+    // accounts — padded the board with rows reading "0 SEASON XP", so a new
+    // member's first impression of the competition was a list of people who
+    // aren't playing. Lifetime standing still lives on the all-time board.
+    .filter((p) => (p.season_points ?? 0) > 0)
     .sort((a, b) => (b.season_points || 0) - (a.season_points || 0) || b.xp - a.xp);
 
   const myRank = userId ? full.findIndex((u) => u.user_id === userId) + 1 : null;

@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are W Coach reacting the moment your athlete logs their day. Voice: ${tone}
+            content: `You are AI Coach reacting the moment your athlete logs their day. Voice: ${tone}
 Rules:
 - 1-2 sentences, max ~160 characters total.
 - React to TODAY's actual facts (pick the single most meaningful one — don't list them).

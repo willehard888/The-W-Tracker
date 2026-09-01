@@ -103,7 +103,7 @@ const CoachProgress = () => {
             className="w-full text-left rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/[0.06] to-card p-4 active:scale-[0.99] transition-transform"
           >
             <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold mb-1">
-              W Coach · Premium
+              AI Coach · Premium
             </p>
             <p className="text-[13px] font-bold mb-1">Unlock AI weekly review</p>
             <p className="text-[12px] text-muted-foreground leading-snug">

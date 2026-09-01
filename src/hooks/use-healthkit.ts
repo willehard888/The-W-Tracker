@@ -8,6 +8,7 @@ import {
   type DaySnapshot,
 } from "@/lib/health/healthkit";
 import { readLastNightSleepHours } from "@/lib/health/night-metrics";
+import { markHealthConnected } from "@/lib/health/health-consent";
 
 /**
  * useHealthKit — single React entry point for HealthKit syncing.
@@ -95,6 +96,10 @@ export const useHealthKit = () => {
       setError(perm.error ?? "denied");
       return false;
     }
+    // This is the ONLY place permission is asked for, and it always follows an
+    // on-screen explanation. Recording it here is what unlocks the background
+    // sync — see lib/health/health-consent.ts.
+    markHealthConnected();
     await syncToday();
     return true;
   }, [syncToday]);

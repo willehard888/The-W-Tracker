@@ -21,24 +21,24 @@ const DailyInsightCard = () => {
         hapticImpact("light");
         navigate(`/vault?lesson=${insight.lessonSlug}`);
       }}
-      className="w-full text-left surface-card p-4 active:scale-[0.99] transition-transform"
+      // Quiet tier: a thought to read, not the day's work. It sits below the
+      // check-in and the coach and should read that way.
+      className="w-full text-left surface-card surface-card-quiet p-4 active:scale-[0.99] transition-transform"
     >
-      <div className="flex items-start gap-3">
+      <div className="relative flex items-start gap-3">
         <div className="h-9 w-9 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0">
           <Sparkles aria-hidden size={16} className="text-gold" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85 mb-1">
-            Daily insight
-          </p>
+          <p className="eyebrow !text-gold/85 mb-1">Daily insight</p>
           <p className="text-[13px] font-semibold text-foreground/90 leading-snug">
             {insight.text}
           </p>
-          <p className="text-[11px] font-bold text-muted-foreground mt-1.5">
+          <p className="text-[12px] font-bold text-muted-foreground mt-1.5">
             The Vault — tap to open the lesson
           </p>
         </div>
-        <ChevronRight aria-hidden size={16} className="text-gold/60 shrink-0 mt-1" />
+        <ChevronRight aria-hidden size={16} className="text-muted-foreground shrink-0 mt-1" />
       </div>
     </button>
   );

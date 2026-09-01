@@ -4,13 +4,18 @@ import { recipeSquare, recipeThumb } from "@/lib/recipe-images";
 import { illustrationThumb } from "@/data/exercises-illustrated";
 import { GOLD_LINES } from "@/components/coach/ExerciseIllustration";
 import { hapticImpact } from "@/lib/haptics";
+import { cn } from "@/lib/utils";
 
 /**
- * LibraryHub — ONE premium card for everything the membership unlocks.
+ * LibraryHub — ONE card for everything the membership unlocks.
  * Replaces three stacked full-width buttons (Recipes, Exercise Library,
  * The Vault) that gave the home screen five same-weight cards in a row —
  * founder feedback: "liian paljon nappeja, yhdistä selkeästi ja arvokkaasti".
- * Gradient gold hairline frame = the app's flagship-surface language.
+ *
+ * Sits on the QUIET surface tier. It's the tallest block on Home and it's a
+ * content menu, not the day's work — it should recede behind the check-in and
+ * the coach rather than compete with them. Gold here is reserved for the one
+ * chip that carries meaning (what's gated), not for every count.
  */
 
 const ROWS = [
@@ -20,6 +25,8 @@ const ROWS = [
     title: "Meal-prep recipes",
     sub: "High-protein bowls & plates",
     chip: "15",
+    /** Gold marks what's gated, not what's counted. */
+    chipGold: false,
   },
   {
     key: "exercises",
@@ -27,6 +34,7 @@ const ROWS = [
     title: "Exercise library",
     sub: "Illustrated technique guides, step by step",
     chip: "260+",
+    chipGold: false,
   },
   {
     key: "vault",
@@ -34,6 +42,7 @@ const ROWS = [
     title: "The Vault",
     sub: "Courses: training, longevity, recovery, mind & inner work",
     chip: "Premium",
+    chipGold: true,
   },
 ] as const;
 
@@ -67,9 +76,11 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
       </div>
     );
   }
+  // Outline rather than gold-filled: this card is on the quiet tier, and a
+  // filled tile here was one of five competing for the same accent on Home.
   return (
-    <div className={base}>
-      <Crown aria-hidden size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
+    <div className="h-10 w-10 rounded-lg shrink-0 bg-gold/10 border border-gold/30 flex items-center justify-center">
+      <Crown aria-hidden size={16} className="text-gold" strokeWidth={2.6} />
     </div>
   );
 };
@@ -78,17 +89,17 @@ const LibraryHub = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="rounded-2xl p-px bg-border/70 shadow-[var(--shadow-2)]">
-      <div className="rounded-[15px] bg-card/80 overflow-hidden">
+    // surface-card-quiet must follow surface-card in the class list — its own
+    // CSS comment notes it only wins the shadow in that order.
+    <div className="surface-card surface-card-quiet overflow-hidden">
+      <div className="relative">
         {/* Header — quiet, no chevron: the value statement, not a button */}
         <div className="flex items-center gap-3 px-4 pt-3.5 pb-3">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_16px_-4px_hsl(var(--gold)/0.5)]">
-            <Crown aria-hidden size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
+          <div className="h-9 w-9 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0">
+            <Crown aria-hidden size={16} className="text-gold" strokeWidth={2.6} />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85">
-              The Library
-            </p>
+            <p className="eyebrow !text-gold/85">The Library</p>
             <p className="text-[12px] text-muted-foreground leading-tight mt-0.5">
               Everything your membership unlocks
             </p>
@@ -106,13 +117,20 @@ const LibraryHub = () => {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <p className="text-[13px] font-bold leading-tight truncate">{row.title}</p>
-                <span className="text-[10px] font-black text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-0.5 tabular-nums shrink-0">
+                <span
+                  className={cn(
+                    "text-[11px] font-black rounded-full px-1.5 py-0.5 tabular-nums shrink-0 border",
+                    row.chipGold
+                      ? "text-gold bg-gold/10 border-gold/30"
+                      : "text-muted-foreground bg-secondary/60 border-border",
+                  )}
+                >
                   {row.chip}
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground leading-snug truncate mt-0.5">{row.sub}</p>
+              <p className="text-[12px] text-muted-foreground leading-snug truncate mt-0.5">{row.sub}</p>
             </div>
-            <ChevronRight aria-hidden size={16} className="text-gold/60 shrink-0" />
+            <ChevronRight aria-hidden size={16} className="text-muted-foreground shrink-0" />
           </button>
         ))}
       </div>

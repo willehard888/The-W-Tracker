@@ -297,6 +297,10 @@
      .surface-card — THE card surface (was 71 distinct signatures)
      z-scale     — named stacking tiers matching current de facto values
      shadow-scale — 4 elevation steps for new code                       */
+  /* NOTE: .eyebrow lives in @layer utilities and sets a color, so a plain
+     `class="eyebrow text-gold"` does NOT come out gold — same layer, and this
+     rule is emitted after the generated color utilities, so it wins. Override
+     with the important modifier: `class="eyebrow !text-gold"`. */
   .eyebrow {
     @apply text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground;
   }
@@ -2620,6 +2624,21 @@
 .reveal-on-scroll.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Reduce Motion for .animate-reveal — the OTHER entrance system.
+   .reveal-on-scroll is already handled further down, inside
+   `@media (pointer: coarse), (prefers-reduced-motion: reduce)`; note that OR
+   means it is switched off on every touch device, so its entrance only ever
+   plays on desktop.
+
+   .animate-reveal had no guard at all, and it is what animates the top of
+   Home — the status strip, the First-W card and the check-in deck — plus the
+   expanded "More" body. Those animated for reduced-motion users. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-reveal {
+    animation: none;
+  }
 }
 
 /* === Streak Next-Level Animations === */

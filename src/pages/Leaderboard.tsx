@@ -444,10 +444,17 @@ const Leaderboard = () => {
                 style={
                   // Skip paint/layout for off-screen rows beyond the first
                   // screenful — cheap virtualization, no container rewrite.
-                  i < 8 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 68px" }
+                  i < 8
+                    ? { animationDelay: `${i * 40}ms` }
+                    : { contentVisibility: "auto", containIntrinsicSize: "auto 68px" }
                 }
                 className={cn(
                   "w-full flex items-center gap-3 rounded-xl border p-3.5 text-left transition-all active:scale-[0.99]",
+                  // The board landed as one solid block, while its own loading
+                  // skeleton staggered — the real content arrived flatter than
+                  // the placeholder it replaced. Only the first screenful
+                  // animates; the rest are content-visibility:auto anyway.
+                  i < 8 && "animate-fade-in-up",
                   isMe
                     ? "border-gold/50 bg-gradient-to-r from-gold/10 via-gold/5 to-transparent ring-1 ring-gold/40 shadow-[0_0_20px_hsl(var(--gold)/0.15)]"
                     : isTop10

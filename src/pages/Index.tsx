@@ -292,10 +292,19 @@ const Index = () => {
                       <span className="text-muted-foreground font-semibold"> · #<AnimatedNumber value={rankData!.rank} duration={700} /></span>
                     )}
                   </p>
+                  {/* XP-to-next counts rather than snapping. It's the number
+                      that moves every time the user does the thing the app is
+                      for, and it was the only one on this strip still landing
+                      instantly while the rank beside it animated. */}
                   <p className="text-[12px] text-muted-foreground leading-tight">
-                    {sane
-                      ? `of ${(rankData?.totalUsers ?? 0).toLocaleString()} · Lv ${profile.level} · ${Math.max(0, xpToNext - profile.xp)} XP to Lv ${profile.level + 1}`
-                      : "Your climb starts today"}
+                    {sane ? (
+                      <>
+                        of {(rankData?.totalUsers ?? 0).toLocaleString()} · Lv {profile.level} ·{" "}
+                        <AnimatedNumber value={Math.max(0, xpToNext - profile.xp)} duration={900} /> XP to Lv {profile.level + 1}
+                      </>
+                    ) : (
+                      "Your climb starts today"
+                    )}
                   </p>
                 </>
               );

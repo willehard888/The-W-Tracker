@@ -78,24 +78,28 @@ const TribeComposer = ({
           hidden
           onChange={onVideoSelect}
         />
-        <button
+        <Button
           type="button"
-          onClick={() => fileRef.current?.click()}
+          variant="ghost"
+          size="icon-sm"
+          className="relative text-muted-foreground before:absolute before:-inset-2 before:content-['']"
           disabled={posting || hasVideo}
-          className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-[hsl(var(--ember))] hover:bg-[hsl(var(--ember))]/10 transition-colors disabled:opacity-40"
+          onClick={() => fileRef.current?.click()}
           aria-label="Add image"
         >
           <ImageIcon size={16} />
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          onClick={() => videoInputRef.current?.click()}
+          variant="ghost"
+          size="icon-sm"
+          className="relative text-muted-foreground before:absolute before:-inset-2 before:content-['']"
           disabled={posting || hasImage}
-          className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-[hsl(var(--ember))] hover:bg-[hsl(var(--ember))]/10 transition-colors disabled:opacity-40"
+          onClick={() => videoInputRef.current?.click()}
           aria-label="Add video"
         >
           <VideoIcon size={16} />
-        </button>
+        </Button>
         <span className="text-[11px] text-muted-foreground ml-1">{value.length}/500</span>
       </div>
       {/* This className used to repaint the button with a flat left-to-right

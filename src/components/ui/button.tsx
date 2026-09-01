@@ -204,6 +204,17 @@ const buttonVariants = cva(
       size: {
         default: "h-10 min-h-10 px-4 py-2 rounded-md",
         sm: "h-9 min-h-9 px-3 rounded-md text-xs",
+        /**
+         * Inline micro-action inside a dense text row — a comment's
+         * Reply/Edit/Delete beside its timestamp, a banner's Remove. Added
+         * because nothing existed under `sm` (36px), so every one of these was
+         * hand-rolled: four near-identical class strings in TribePostCard alone.
+         *
+         * 28px is BELOW the 44pt tap floor by necessity — it has to be, to sit
+         * on a comment meta line. ALWAYS pair it with a hit-area expansion:
+         *   className="relative before:absolute before:-inset-2 before:content-['']"
+         */
+        xs: "h-7 min-h-7 px-2 rounded-md text-[11px] [&_svg]:size-3",
         lg: "h-12 min-h-12 px-8 rounded-lg text-base",
         xl: "h-14 min-h-14 px-10 rounded-lg text-lg tracking-[-0.01em] font-display",
         icon: "h-10 w-10 min-h-10 rounded-md",

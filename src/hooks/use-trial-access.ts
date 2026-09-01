@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Mirrors the server gate has_active_access(): 14 days for everyone.
-// Organic signups used to get 7 days while every piece of copy — Auth,
-// PremiumHero, TrialExpirySheet — promised 14. That was first patched by
-// shortening the client pill, which made the countdown honest but left the
-// promise broken. For the pilot the server was raised to 14 instead, so the
-// promise and the behaviour finally agree. Both sides must move together:
-// see supabase/migrations/20260831120000_pilot_trial_14_days.sql.
+// Mirrors the server gate has_active_access(): a flat 14 days for everyone
+// (migration 20260901120000 — the old 7-organic/14-referred split collapsed
+// when the app-wide paywall launched). Drift between this constant and the
+// SQL interval is exactly the "silently dark on day 8" bug class.
 export const TRIAL_DURATION_DAYS = 14;
-const trialDurationMs = () => TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000;
+const TRIAL_DURATION_MS = TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000;
 
 interface TrialAccess {
   /** True if user is subscribed OR is within the 14-day free trial */
@@ -74,7 +71,7 @@ export const useTrialAccess = (): TrialAccess => {
     const startedAt = Number.isFinite(startedAtRaw) ? startedAtRaw : now;
 
     const elapsed = now - startedAt;
-    const msRemaining = Math.max(0, trialDurationMs() - elapsed);
+    const msRemaining = Math.max(0, TRIAL_DURATION_MS - elapsed);
     const isExpired = msRemaining <= 0;
     const daysRemaining = Math.ceil(msRemaining / (24 * 60 * 60 * 1000));
     const hoursRemaining = Math.ceil(msRemaining / (60 * 60 * 1000));

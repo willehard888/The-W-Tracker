@@ -6,8 +6,10 @@ import { queryClient } from "@/lib/query-client";
 import { supabase } from "@/integrations/supabase/client";
 import { usePushNotifications, PushControlsContext } from "@/hooks/use-push-notifications";
 import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
+import { useTrialAccess } from "@/hooks/use-trial-access";
 import { useActivityHeartbeat } from "@/hooks/use-activity-heartbeat";
 import PushPrimingSheet from "@/components/notifications/PushPrimingSheet";
+import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
 import { scheduleLapsedReengagement } from "@/lib/streak-notifications";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
@@ -99,25 +101,28 @@ const ACCESS_EXEMPT = new Set([
   "/reset-password",
 ]);
 
-// Master switch for the hard paywall gate in ProtectedRoute.
-// ON for the pilot: testers get free access through a pilot code (which grants
-// membership credits), NOT by the gate being open. Keeping it on means the
-// trial countdown, the expiry sheet and the real purchase flow are all
-// exercised by the pilot instead of being first tried in front of paying
-// customers. Set to false only to deliberately give everyone the whole app.
+// Master switch for the hard paywall gate in ProtectedRoute. ON since the
+// 8,99 €/mo launch (2026-09-01): members and 14-day trialists pass, everyone
+// else lands on /paywall. Pilot testers get through by redeeming a pilot code,
+// which grants membership credits — not by the gate being open.
 const PAYWALL_ENABLED = true;
 
+// Dev harness (?paywallDev=1): force the gate closed to exercise the paywall
+// without waiting 14 days. Sticky via sessionStorage (SPA navigation drops
+// the query string). Dead code in production builds.
+const devForcedPaywall = (): boolean => {
+  if (!import.meta.env.DEV) return false;
+  if (new URLSearchParams(window.location.search).has("paywallDev")) {
+    sessionStorage.setItem("w_paywall_dev", "1");
+  }
+  return sessionStorage.getItem("w_paywall_dev") === "1";
+};
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, profile, loading, isPremium } = useAuth();
-  // MUST sit above every early return below. A hook called after a conditional
-  // return throws "Rendered fewer hooks than expected" the moment `loading`
-  // flips — the same trap Paywall.tsx documents hitting with pollVerification.
-  //
-  // isPremium alone is NOT the access gate: it covers purchases, membership
-  // credits, apex and pinned legends, but never the free trial. Gating on it
-  // by itself sends every brand-new user to /paywall on day 1 of a trial the
-  // app just promised them. hasAccess = membership OR an unexpired trial.
-  const { hasAccess } = useTrialAccess();
+  const { user, profile, loading } = useAuth();
+  // Membership OR live 14-day trial (hook is isElite-aware) — called before
+  // any early return so the hook order stays stable.
+  const trial = useTrialAccess();
   if (loading) return <LazyFallback />;
   if (!user) return <Navigate to="/landing" replace />;
 
@@ -142,12 +147,17 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // Hard paywall. Anyone without access is sent to /paywall, where they can
-  // subscribe or redeem a pilot code. ACCESS_EXEMPT keeps the paywall itself,
-  // onboarding, the username picker and the legal pages reachable — without
-  // that, a gated user would be bounced in a loop with no way to pay or read
-  // the terms.
-  if (PAYWALL_ENABLED && !isPremium && !hasAccess && !ACCESS_EXEMPT.has(path)) {
+  // Hard paywall: trial.hasAccess = paid membership OR inside the 14-day
+  // trial (credits/apex/legend ride the membership flag). Never gate while
+  // the trial clock is still loading — a flash-redirect to /paywall on every
+  // cold start taught users to distrust the app.
+  //
+  // ACCESS_EXEMPT keeps the paywall itself, onboarding, the username picker
+  // and the legal pages reachable — without it a gated user is bounced in a
+  // loop with no way to pay, redeem a pilot code, or read the terms.
+  const gated =
+    (PAYWALL_ENABLED && !trial.loading && !trial.hasAccess) || devForcedPaywall();
+  if (gated && !ACCESS_EXEMPT.has(path)) {
     return <Navigate to="/paywall" replace />;
   }
 
@@ -226,6 +236,7 @@ const AppRoutes = () => {
   return (
     <PushControlsContext.Provider value={{ enablePush, dismissPriming }}>
     <StatusExplainerProvider>
+    <OnboardingProvider>
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden momentum-scroll">
@@ -320,6 +331,7 @@ const AppRoutes = () => {
       {user && <TierPromotionCelebration />}
       <PushPrimingSheet open={needsPriming} onEnable={enablePush} onDismiss={dismissPriming} />
     </div>
+    </OnboardingProvider>
     </StatusExplainerProvider>
     </PushControlsContext.Provider>
   );

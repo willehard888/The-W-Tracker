@@ -80,6 +80,12 @@ export const FUNNEL = {
   onboardingStep: "onboarding_step",
   onboardingDone: "onboarding_done",
   onboardingSkipped: "onboarding_skipped",
+  // Contextual spotlight onboarding (post-signup coach-marks) — the event
+  // id rides in properties.event so one funnel covers all cards.
+  spotlightSeen: "onboarding_spotlight_seen",
+  spotlightCompleted: "onboarding_spotlight_completed",
+  spotlightSkipped: "onboarding_spotlight_skipped",
+  spotlightFailed: "onboarding_spotlight_failed",
   appOpened: "app_opened",
   pushPermission: "push_permission",
   healthkitPromptShown: "healthkit_prompt_shown",

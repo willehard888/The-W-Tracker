@@ -269,8 +269,25 @@ Deno.serve(async (req) => {
 
       const contentType = table === "feed_posts" ? "feed_post" : "tribe_post";
       if (finalA === "block") {
-        if (ref) await admin.storage.from(ref.bucket).remove([ref.key]);
-        await admin.from(table).delete().eq("id", contentId);
+        // Soft-hide: never auto-delete user content. RLS + reported=false
+        // filter hide the row from everyone but the author; the founder
+        // reviews from the moderation queue and can approve back or
+        // hard-delete manually if truly abusive.
+        await admin.from(table)
+          .update({ moderation_status: "blocked", reported: true })
+          .eq("id", contentId);
+        await admin.from("moderation_queue").insert({
+          content_type: contentType,
+          content_id: contentId,
+          user_id: row.user_id,
+          image_url: row.image_url ?? null,
+          text_content: postText,
+          ai_action: "block",
+          ai_confidence: verdict.confidence,
+          ai_categories: verdict.categories,
+          ai_reason: verdict.reason,
+          severity: verdict.severity,
+        });
       } else {
         await admin.from(table).update({ moderation_status: "approved" }).eq("id", contentId);
         if (finalA === "flag") {
@@ -455,7 +472,9 @@ Deno.serve(async (req) => {
     } catch (e: any) {
       clearTimeout(timeoutHandle);
       console.error("moderation failed:", e?.message);
-      // Fail-CLOSED for images on proofs/feed posts.
+      // Fail-HIDE for images (was fail-DELETE). Hide the post, queue for
+      // human review with the retry reason — don't nuke user content when
+      // OpenRouter has an outage or rate-limits us.
       if (hasImage) {
         const latency = Date.now() - startedAt;
         await adminClient.from("content_moderations").insert({
@@ -467,15 +486,34 @@ Deno.serve(async (req) => {
           categories: [],
           confidence: 0,
           reason: "moderation_unavailable_retry",
-          action: "block",
+          action: "flag",
           severity: "medium",
           model: MODEL,
           cache_hit: false,
           latency_ms: latency,
         });
+        if (content_id && kind === "feed_post") {
+          await adminClient.from("feed_posts")
+            .update({ moderation_status: "blocked", reported: true })
+            .eq("id", content_id)
+            .eq("user_id", user.id);
+          await adminClient.from("moderation_queue").insert({
+            content_type: kind,
+            content_id,
+            user_id: user.id,
+            image_url: image_url ?? null,
+            text_content: text ?? null,
+            ai_action: "block",
+            ai_confidence: 0,
+            ai_categories: [],
+            ai_reason: "moderation_unavailable_retry",
+            severity: "medium",
+            status: "pending",
+          });
+        }
         return new Response(
           JSON.stringify({
-            action: "block",
+            action: "flag",
             is_safe: false,
             severity: "medium",
             reason: "moderation_unavailable_retry",
@@ -549,9 +587,27 @@ Deno.serve(async (req) => {
       latency_ms: latency,
     });
 
-    // 6. Enforcement
+    // 6. Enforcement — soft-hide, never auto-delete. RLS + reported=false
+    // filter hide the row from the public feed; founder reviews from the
+    // moderation queue and can hard-delete if truly abusive.
     if (finalAction === "block" && content_id && kind === "feed_post") {
-      await adminClient.from("feed_posts").delete().eq("id", content_id).eq("user_id", user.id);
+      await adminClient.from("feed_posts")
+        .update({ moderation_status: "blocked", reported: true })
+        .eq("id", content_id)
+        .eq("user_id", user.id);
+      await adminClient.from("moderation_queue").insert({
+        content_type: kind,
+        content_id,
+        user_id: user.id,
+        image_url: image_url ?? null,
+        text_content: text ?? null,
+        ai_action: "block",
+        ai_confidence: result.confidence,
+        ai_categories: result.categories,
+        ai_reason: result.reason,
+        severity: result.severity,
+        status: "pending",
+      });
     }
 
     return new Response(

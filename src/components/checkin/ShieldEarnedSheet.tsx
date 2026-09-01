@@ -1,6 +1,8 @@
 import { X, Shield, Flame, CalendarCheck } from "lucide-react";
+import { useEffect } from "react";
 import { Portal } from "@/components/ui/Portal";
 import { Button } from "@/components/ui/button";
+import { useOnboarding } from "@/components/onboarding/onboarding-context";
 
 interface ShieldEarnedSheetProps {
   /** Shields banked after this grant (server truth, 1..3). */
@@ -14,7 +16,15 @@ interface ShieldEarnedSheetProps {
  * shield is rare and meaningful, so it gets a real explanation: where it came
  * from and exactly what it does.
  */
-const ShieldEarnedSheet = ({ shieldsBanked, onClose }: ShieldEarnedSheetProps) => (
+const ShieldEarnedSheet = ({ shieldsBanked, onClose }: ShieldEarnedSheetProps) => {
+  // Contextual onboarding bookkeeping only — this sheet already teaches the
+  // shield concept; the registry just records that the moment happened.
+  const onboarding = useOnboarding();
+  useEffect(() => {
+    onboarding?.requestShow("STREAK_SHIELD_INTRO");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return (
   <Portal>
     <div className="fixed inset-0 z-[var(--z-modal)] flex items-end justify-center">
       <button aria-label="Close" onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-in fade-in" />
@@ -58,6 +68,7 @@ const ShieldEarnedSheet = ({ shieldsBanked, onClose }: ShieldEarnedSheetProps) =
       </div>
     </div>
   </Portal>
-);
+  );
+};
 
 export default ShieldEarnedSheet;

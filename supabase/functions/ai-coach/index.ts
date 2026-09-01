@@ -390,7 +390,7 @@ Deno.serve(async (req) => {
 
     const profile = profileRes.data;
 
-    // Membership gate (active subscription OR within 7-day trial).
+    // Membership gate (active subscription OR within the 14-day trial).
     // The Coach is part of the paid app, not an Elite-only perk.
     if (accessRes.error || !accessRes.data) {
       return new Response(JSON.stringify({ error: "Active membership required" }), {

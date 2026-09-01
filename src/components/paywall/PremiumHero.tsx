@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Loader2,
   Sparkles,
@@ -15,19 +16,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-// Kept as a union even though only one member ships today: the purchase
-// plumbing (purchasePremiumPlan, the funnel events) is written in these terms,
-// and narrowing it to a literal would spread a rename through the store layer
-// for no gain.
 export type BillingPlan = "monthly" | "yearly";
 
 interface PremiumHeroProps {
   monthlyPriceLabel: string;
+  yearlyPriceLabel: string;
   loading?: boolean;
   status?: "idle" | "purchasing" | "verifying" | "error";
   errorMessage?: string | null;
   onCta: (plan: BillingPlan) => void;
   onDismissError?: () => void;
+  yearlyDiscountPct?: number;
+  /** When false, the yearly toggle is hidden and only monthly is offered. */
+  yearlyAvailable?: boolean;
 }
 
 const PILLARS = [
@@ -80,21 +81,38 @@ const VALUE_STACK = [
 
 const PremiumHero = ({
   monthlyPriceLabel,
+  yearlyPriceLabel,
   loading,
   status = "idle",
   errorMessage,
   onCta,
   onDismissError,
+  // Real discount: 89,99/yr vs 12×8,99 = 107,88 → ~17% (was a hardcoded, inflated 20).
+  yearlyDiscountPct = 17,
+  yearlyAvailable = true,
 }: PremiumHeroProps) => {
-  // One plan, one price, 14-day free trial for everyone. The yearly toggle and
-  // its savings badge were removed with the move to a single pricing model.
+  // Monthly-first: the product is 8,99 €/mo (14-day in-app trial happens
+  // BEFORE this screen). Yearly is an optional savings toggle, not the default.
+  const [plan, setPlan] = useState<BillingPlan>("monthly");
+  // If the store can't fulfill a yearly plan, never let the toggle sit on it.
+  const isYearly = yearlyAvailable && plan === "yearly";
+  const activePrice = isYearly ? yearlyPriceLabel : monthlyPriceLabel;
+  const cadence = isYearly ? "/yr" : "/mo";
+
   const busy = loading || status === "purchasing" || status === "verifying";
   const ctaLabel =
     status === "purchasing"
       ? "Opening Apple…"
       : status === "verifying"
       ? "Confirming access…"
-      : "Start your free trial";
+      : "Unlock full access";
+
+  // No "free trial" language here: the 14-day trial is in-app and already
+  // running (or spent) by the time this screen shows, and the store product
+  // has no introductory offer — claiming a store trial risks App Review.
+  const footnote = isYearly
+    ? `${yearlyPriceLabel}/yr · Cancel anytime`
+    : `${monthlyPriceLabel}/mo · Cancel anytime`;
 
   return (
     <div
@@ -176,17 +194,81 @@ const PremiumHero = ({
           <span className="text-foreground font-semibold">recover deep</span> — without 5 different apps.
         </p>
 
+        {/* Billing toggle — only when an annual plan can actually be sold */}
+        {yearlyAvailable && (
+        <div className="flex justify-center mb-5">
+          <div
+            role="tablist"
+            className="relative inline-flex items-center rounded-full p-1 bg-background/60 border border-gold/30 backdrop-blur shadow-[inset_0_1px_0_hsl(var(--gold)/0.15)]"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={!isYearly}
+              disabled={busy}
+              onClick={() => setPlan("monthly")}
+              className={cn(
+                "relative px-4 py-1.5 rounded-full text-[12px] font-black tracking-wider uppercase transition-all duration-200",
+                !isYearly
+                  ? "bg-gold text-background shadow-[0_0_12px_hsl(var(--gold)/0.5)]"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={isYearly}
+              disabled={busy}
+              onClick={() => setPlan("yearly")}
+              className={cn(
+                "relative px-4 py-1.5 rounded-full text-[12px] font-black tracking-wider uppercase transition-all duration-200 flex items-center gap-1.5",
+                isYearly
+                  ? "bg-gold text-background shadow-[0_0_12px_hsl(var(--gold)/0.5)]"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              Yearly
+              <span
+                className={cn(
+                  "px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wider",
+                  isYearly
+                    ? "bg-background/25 text-background"
+                    : "bg-gold/15 text-gold border border-gold/30",
+                )}
+              >
+                BEST · −{yearlyDiscountPct}%
+              </span>
+            </button>
+          </div>
+        </div>
+        )}
+
         {/* Price */}
         <div className="text-center mb-5">
           <p className="font-display font-black leading-none text-[56px] text-gold drop-shadow-[0_2px_14px_hsl(var(--gold)/0.55)]">
-            {monthlyPriceLabel}
+            {activePrice}
             <span className="text-lg font-bold text-muted-foreground/80">
-              /mo
+              {cadence}
             </span>
           </p>
-          <p className="text-[11px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
-            14 days free · Cancel anytime
-          </p>
+          {isYearly ? (
+            <p className="text-[11px] text-muted-foreground/90 mt-2 tracking-wide">
+              <span className="line-through opacity-60">
+                {monthlyPriceLabel}/mo × 12
+              </span>{" "}
+              · <span className="text-gold font-bold">Save {yearlyDiscountPct}%</span> · ~2 months free
+            </p>
+          ) : yearlyAvailable ? (
+            <p className="text-[11px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
+              Switch to yearly anytime · Save {yearlyDiscountPct}%
+            </p>
+          ) : (
+            <p className="text-[11px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
+              Full access · Cancel anytime
+            </p>
+          )}
         </div>
 
         {/* Pillars grid (2 columns on small screens, premium look) */}
@@ -254,7 +336,7 @@ const PremiumHero = ({
             !busy && "breathing-glow",
           )}
           disabled={busy}
-          onClick={() => onCta("monthly")}
+          onClick={() => onCta(plan)}
         >
           {busy ? (
             <Loader2 size={20} className="animate-spin" />
@@ -265,7 +347,7 @@ const PremiumHero = ({
         </Button>
 
         <p className="text-[11px] text-muted-foreground/85 text-center mt-2.5 tracking-wide">
-          {`14 days free, then ${monthlyPriceLabel}/mo · Cancel anytime`}
+          {footnote}
         </p>
 
         {/* Trust strip */}
@@ -296,14 +378,14 @@ const PremiumHero = ({
           </div>
           <div className="mt-2 pt-2 border-t border-gold/15 flex items-center justify-between">
             <span className="text-[12px] font-bold text-foreground">All-in-one, one price</span>
-            <span className="text-[12px] font-black text-gold">{monthlyPriceLabel}/mo</span>
+            <span className="text-[12px] font-black text-gold">{activePrice}{cadence}</span>
           </div>
         </div>
 
         {/* Lock-in micro-row */}
         <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground/80">
           <Lock size={12} className="text-gold/80" strokeWidth={2.6} />
-          <span>Locked at {monthlyPriceLabel}/mo as long as you stay subscribed.</span>
+          <span>Locked at {isYearly ? yearlyPriceLabel + "/yr" : monthlyPriceLabel + "/mo"} as long as you stay subscribed.</span>
         </div>
       </div>
     </div>

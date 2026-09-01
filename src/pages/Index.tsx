@@ -31,6 +31,7 @@ import { useLiveWhealthIndex } from "@/hooks/use-live-whealth-index";
 import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
 import { hasHealthConsent } from "@/lib/health/health-consent";
 import { isNativePlatform } from "@/lib/platform";
+import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 // Pull-to-refresh removed temporarily — was intercepting inner taps.
 
 const Index = () => {
@@ -53,6 +54,13 @@ const Index = () => {
     return () => clearTimeout(t);
   }, []);
   const { profile, isElite } = useAuth();
+  // Contextual onboarding (Blueprint triggers): Today intro on first visit;
+  // streak card once a streak exists; progression once XP exists (also
+  // chained from STREAK_INTRO). Eligibility/dedup is the provider's job.
+  useOnboardingTrigger("TODAY_INTRO", !!profile);
+  useOnboardingTrigger("STREAK_INTRO", (profile?.streak ?? 0) > 0);
+  useOnboardingTrigger("PROGRESSION_INTRO", (profile?.xp ?? 0) > 0);
+  const progressionTargetRef = useSpotlightTarget("PROGRESSION_INTRO");
   // Fill health_sync_snapshots + health_night_metrics daily, not only when
   // the check-in/Profile screens happen to open (data holes starved trends).
   useBackgroundHealthSync();
@@ -252,8 +260,14 @@ const Index = () => {
             a sibling button that floats above it. */}
         {/* On the system's quiet surface rather than a hand-rolled one: it was
             the only container on Home with no elevation at all, which read as
-            unfinished next to the cards below it. */}
-        <div className="surface-card surface-card-quiet w-full flex items-center gap-3 px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform">
+            unfinished next to the cards below it. `relative` is explicit even
+            though surface-card sets it — the overlay button below is
+            absolutely positioned against this box.
+            The ref is PROGRESSION_INTRO's spotlight target. */}
+        <div
+          ref={progressionTargetRef}
+          className="surface-card surface-card-quiet relative w-full flex items-center gap-3 px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform"
+        >
           <button
             onClick={() => navigate("/leaderboard")}
             aria-label="Open Ranks"

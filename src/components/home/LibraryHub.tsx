@@ -99,7 +99,7 @@ const LibraryHub = () => {
             <Crown aria-hidden size={16} className="text-gold" strokeWidth={2.6} />
           </div>
           <div className="min-w-0">
-            <p className="eyebrow !text-gold/85">The Library</p>
+            <p className="eyebrow text-gold/85">The Library</p>
             <p className="text-[12px] text-muted-foreground leading-tight mt-0.5">
               Everything your membership unlocks
             </p>

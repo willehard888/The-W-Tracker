@@ -71,7 +71,10 @@ export const useTrialAccess = (): TrialAccess => {
     const startedAt = Number.isFinite(startedAtRaw) ? startedAtRaw : now;
 
     const elapsed = now - startedAt;
-    const msRemaining = Math.max(0, TRIAL_DURATION_MS - elapsed);
+    // Clamp to the trial length: a fresh signup's trial_started_at can sit
+    // milliseconds in the FUTURE (server clock skew), and an unclamped
+    // remainder of 14.000x days ceils to a "15D" chip.
+    const msRemaining = Math.min(TRIAL_DURATION_MS, Math.max(0, TRIAL_DURATION_MS - elapsed));
     const isExpired = msRemaining <= 0;
     const daysRemaining = Math.ceil(msRemaining / (24 * 60 * 60 * 1000));
     const hoursRemaining = Math.ceil(msRemaining / (60 * 60 * 1000));

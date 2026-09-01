@@ -28,7 +28,7 @@ const REASON_COPY: Record<string, string> = {
   code_exhausted: "That code has reached its limit. Ask for a new one.",
   empty_code: "Enter your code first.",
   not_authenticated: "Sign in first, then redeem your code.",
-  forbidden: "That code can't be redeemed from this account.",
+  too_many_attempts: "Too many tries for today — check the code and try again tomorrow.",
 };
 
 const PilotCodeRedeem = () => {
@@ -108,6 +108,7 @@ const PilotCodeRedeem = () => {
           value={code}
           onChange={(e) => setCode(e.target.value)}
           placeholder="Enter your code"
+          autoFocus
           autoCapitalize="characters"
           autoComplete="off"
           spellCheck={false}

@@ -2641,7 +2641,8 @@
    Home — the status strip, the First-W card and the check-in deck — plus the
    expanded "More" body. Those animated for reduced-motion users. */
 @media (prefers-reduced-motion: reduce) {
-  .animate-reveal {
+  .animate-reveal,
+  .animate-fade-in-up {
     animation: none;
   }
 }

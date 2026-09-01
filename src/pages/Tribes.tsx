@@ -247,9 +247,16 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/tribes/${t.id}`); } }}
         className={cn(
           "w-full text-left cursor-pointer surface-card p-4 apex-tribe-card-hover relative overflow-hidden",
+          // The animationDelay below was already wired but no animation was
+          // ever attached, so every card appeared at once and the delay did
+          // nothing. Cards now materialise in sequence.
+          opts.idx != null && "animate-fade-in-up",
         )}
         style={{
-          ...(opts.idx != null ? { animationDelay: `${opts.idx * 60}ms` } : null),
+          // Capped: 20 tribes at 60ms put the last one 1.2s out, which reads
+          // as sluggish rather than choreographed. 40ms with a 10-item cap
+          // keeps the whole list inside 400ms.
+          ...(opts.idx != null ? { animationDelay: `${Math.min(opts.idx, 10) * 40}ms` } : null),
           // Featured rows carry the tribe's own tier color on the edge —
           // the fire's identity, not generic gold.
           ...(opts.featured

@@ -10,6 +10,14 @@ import { cn } from "@/lib/utils";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { Button } from "@/components/ui/button";
 import StatusAvatar from "@/components/StatusAvatar";
+
+/**
+ * Shared look for the Reply / Edit / Delete actions on a comment: uppercase
+ * micro-label, muted until hover, and a hit area two steps wider than the
+ * 28px box so the `xs` size stays tappable on a phone.
+ */
+const COMMENT_ACTION =
+  "relative uppercase tracking-wider font-bold text-muted-foreground/75 hover:text-[hsl(var(--ember))] before:absolute before:-inset-2 before:content-['']";
 import TierUsername from "@/components/TierUsername";
 import PostMedia from "@/components/feed/PostMedia";
 import ImageLightbox from "@/components/ImageLightbox";
@@ -135,30 +143,46 @@ const CommentThread = ({
               <p className="text-[10px] text-muted-foreground/75">
                 {formatDistanceToNow(new Date(node.created_at), { addSuffix: true })}
               </p>
+              {/* Three copies of one class string became three uses of the new
+                  `xs` size — small enough to sit on a comment's meta line, with
+                  the hit area expanded past its visual box to stay tappable. */}
               {currentUserId && (
-                <button type="button" onClick={() => { hapticSelection(); onReply(node.id, username, node.content || ""); }}
-                  className="flex items-center gap-1 px-2 -mx-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-[hsl(var(--ember))] transition-colors">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  className={COMMENT_ACTION}
+                  onClick={() => { hapticSelection(); onReply(node.id, username, node.content || ""); }}
+                >
                   <Reply aria-hidden size={12} /> Reply
-                </button>
+                </Button>
               )}
               {isOwn && (
-                <>
-                  <button type="button" onClick={() => { hapticSelection(); setDraft(node.content || ""); setEditingId(node.id); }}
-                    className="flex items-center gap-1 px-2 -mx-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-[hsl(var(--ember))] transition-colors">
-                    Edit
-                  </button>
-                </>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  className={COMMENT_ACTION}
+                  onClick={() => { hapticSelection(); setDraft(node.content || ""); setEditingId(node.id); }}
+                >
+                  Edit
+                </Button>
               )}
               {(isOwn || canDeleteAny) && (
-                <button type="button" onClick={() => {
-                  if (confirm("Delete this comment? Replies will also be removed.")) {
-                    hapticImpact("medium");
-                    onDelete(node.id);
-                  }
-                }}
-                  className="flex items-center gap-1 px-2 -mx-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/75 hover:text-destructive transition-colors">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  className={cn(COMMENT_ACTION, "hover:text-destructive")}
+                  onClick={() => {
+                    if (confirm("Delete this comment? Replies will also be removed.")) {
+                      hapticImpact("medium");
+                      onDelete(node.id);
+                    }
+                  }}
+                >
                   Delete
-                </button>
+                </Button>
               )}
               {node.children.length > 0 && (
                 <span className="text-[10px] text-muted-foreground/75 tabular-nums">
@@ -391,10 +415,14 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             <span className="text-[11px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1">
               <AlertTriangle aria-hidden size={11} /> Reported
             </span>
-            <button onClick={() => deletePost.mutate()}
-              className="px-2 py-1 rounded text-[11px] font-bold bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors">
+            <Button
+              variant="danger-outline"
+              size="xs"
+              className="relative before:absolute before:-inset-2 before:content-['']"
+              onClick={() => deletePost.mutate()}
+            >
               Remove
-            </button>
+            </Button>
           </div>
         )}
 
@@ -443,9 +471,9 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button aria-label="Post options" className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground/75 hover:text-muted-foreground">
+                <Button variant="ghost" size="icon" aria-label="Post options" className="text-muted-foreground/75">
                   <MoreHorizontal aria-hidden size={16} />
-                </button>
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[160px]">
                 {isOwn && (
@@ -598,10 +626,16 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                         {replyTo.snippet || "(no text)"}
                       </p>
                     </div>
-                    <button type="button" onClick={() => { hapticSelection(); setReplyTo(null); }} aria-label="Cancel reply"
-                      className="self-start h-6 w-6 rounded-full bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors shrink-0">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="icon-sm"
+                      aria-label="Cancel reply"
+                      className="self-start h-6 w-6 rounded-full shrink-0 relative text-muted-foreground before:absolute before:-inset-2 before:content-['']"
+                      onClick={() => { hapticSelection(); setReplyTo(null); }}
+                    >
                       <X aria-hidden size={12} />
-                    </button>
+                    </Button>
                   </div>
                 )}
 

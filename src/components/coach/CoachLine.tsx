@@ -85,7 +85,7 @@ const CoachLine = ({
         onClick && "active:scale-[0.99] transition-transform",
         className,
       )}
-      aria-label={onClick ? "Open W Coach" : undefined}
+      aria-label={onClick ? "Open AI Coach" : undefined}
     >
       <span className={cn("shrink-0 mt-0.5", styles.iconColor)}>{resolvedIcon}</span>
       <p className="text-[12px] italic leading-snug text-foreground/90">

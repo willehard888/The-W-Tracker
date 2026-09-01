@@ -13,7 +13,11 @@ const WHAT_YOU_GET = [
   { icon: Dumbbell, title: "Train", text: "260+ illustrated exercises + programs with exact sets & progression." },
   { icon: Utensils, title: "Fuel", text: "High-protein recipes, macros & meal-prep templates." },
   { icon: Moon, title: "Recover", text: "Sleep, HRV & recovery protocols to bounce back faster." },
-  { icon: ShieldCheck, title: "Verified", text: "Apple Health proves your discipline — unfakeable." },
+  // "Unfakeable" was an overclaim: verification is iOS-only, covers workouts,
+  // sleep, mindfulness and steps — not the self-reported half of a check-in —
+  // and photo proof accepts camera-roll images. The accurate version is still
+  // the differentiator against every self-report habit tracker.
+  { icon: ShieldCheck, title: "Verified", text: "Workouts and sleep checked against your real Apple Health data." },
   { icon: Trophy, title: "Compete", text: "Streaks, ranks, 1v1 battles & the leaderboard." },
 ] as const;
 

@@ -218,7 +218,7 @@ Deno.serve(async (req) => {
                   {
                     role: "system",
                     content:
-                      "You are W Coach writing 2-3 observations + 1 focus from a member's computed wellbeing stats. RULES: use ONLY the numbers given — never invent data; each observation is one sentence, second person, specific and warm-but-direct; the focus is ONE concrete lever for the next 7 days (start with a verb). No markdown, no emoji.",
+                      "You are AI Coach writing 2-3 observations + 1 focus from a member's computed wellbeing stats. RULES: use ONLY the numbers given — never invent data; each observation is one sentence, second person, specific and warm-but-direct; the focus is ONE concrete lever for the next 7 days (start with a verb). No markdown, no emoji.",
                   },
                   { role: "user", content: factLines },
                 ],

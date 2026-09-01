@@ -242,8 +242,8 @@ const Vault = () => {
       </div>
 
       <div className="mt-8 text-center">
-        {/* No hardcoded price — a US/UK member paid a different number than
-            "4,99 €" and the store price is the only truth. */}
+        {/* No hardcoded price — a US/UK member paid a different number than the
+            euro list price, and the store price is the only truth. */}
         <p className="text-[11px] tracking-widest uppercase text-muted-foreground/70">
           Premium member
         </p>

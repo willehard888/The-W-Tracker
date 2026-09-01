@@ -353,6 +353,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         "w_coach_messages_v1", "w_coach_messages_v1_ts",
         "w_coach_onboarding_draft_v2", "w_coach_onboarding_step_v2",
         "pending_checkin_v1",
+        // Health consent is device-scoped like the iOS permission itself, but
+        // it must not survive a sign-out: otherwise the next account on a
+        // shared device silently background-syncs the previous owner's health
+        // data under their own name.
+        "w_health_connected",
       ].forEach(
         (k) => localStorage.removeItem(k),
       );

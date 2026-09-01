@@ -18,9 +18,14 @@ import { toast } from "sonner";
 const RC_API_KEY_APPLE = "appl_qgpDFJEtyXTeNTJZxBoHzxzgiTr";
 const ENTITLEMENT = "The W Tracker Pro";
 // Must match the App Store Connect product + the revenuecat-webhook
-// PREMIUM_PRODUCT_IDS. WhealthFactory499 — the 8,99 €/mo full-access subscription);
-// the elite* ids are kept as fallbacks so older store configs still resolve.
+// PREMIUM_PRODUCT_IDS. WhealthFactory499 — the 8,99 €/mo full-access
+// subscription; the elite* ids are kept as fallbacks so older store configs
+// still resolve. The trailing "499" is a misnomer since the reprice: the
+// product id stayed put so existing subscribers didn't have to migrate.
+// The 899 ids are accepted too, purely so a future renamed product resolves
+// instead of silently failing to grant Premium after a successful purchase.
 const PRODUCT_IDS = [
+  "WhealthFactory899", "com.app.WhealthFactory899",
   "WhealthFactory499", "com.app.WhealthFactory499",
   "elitemonthly499", "com.app.elitemonthly499",
 ] as const;

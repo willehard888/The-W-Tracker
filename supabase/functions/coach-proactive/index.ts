@@ -170,7 +170,7 @@ Deno.serve(async (req) => {
         .from("push_tokens").select("token, platform").eq("user_id", p.user_id);
       if (tokens && tokens.length > 0) {
         const push = await sendApnsBatch(tokens as any, {
-          title: `Coach: ${headline}`,
+          title: `AI Coach: ${headline}`,
           body: content,
           data: { route: trigger.route },
         });
@@ -318,7 +318,7 @@ async function generate(
       messages: [
         {
           role: "system",
-          content: `You are W Coach sending a proactive push notification. ${intent}
+          content: `You are AI Coach sending a proactive push notification. ${intent}
 Rules: reference the specific signal, prescribe ONE concrete action, max 2 sentences, no greetings, no clichés, never mention being an AI. Reply in the user's language (default English).`,
         },
         {

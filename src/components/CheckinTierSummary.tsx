@@ -29,7 +29,7 @@ interface CheckinTierSummaryProps {
   };
   onProfile: () => void;
   onDashboard: () => void;
-  /** Open W Coach primed with the day's feedback so the user can go deeper. */
+  /** Open AI Coach primed with the day's feedback so the user can go deeper. */
   onAskCoach?: (seedText: string) => void;
   /** A celebration overlay (badge unlock) is up — hold onboarding cards. */
   celebrating?: boolean;

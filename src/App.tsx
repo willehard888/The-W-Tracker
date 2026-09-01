@@ -102,7 +102,8 @@ const ACCESS_EXEMPT = new Set([
 
 // Master switch for the hard paywall gate in ProtectedRoute. ON since the
 // 8,99 €/mo launch (2026-09-01): members and 14-day trialists pass, everyone
-// else lands on /paywall.
+// else lands on /paywall. Pilot testers get through by redeeming a pilot code,
+// which grants membership credits — not by the gate being open.
 const PAYWALL_ENABLED = true;
 
 // Dev harness (?paywallDev=1): force the gate closed to exercise the paywall
@@ -149,6 +150,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // trial (credits/apex/legend ride the membership flag). Never gate while
   // the trial clock is still loading — a flash-redirect to /paywall on every
   // cold start taught users to distrust the app.
+  //
+  // ACCESS_EXEMPT keeps the paywall itself, onboarding, the username picker
+  // and the legal pages reachable — without it a gated user is bounced in a
+  // loop with no way to pay, redeem a pilot code, or read the terms.
   const gated =
     (PAYWALL_ENABLED && !trial.loading && !trial.hasAccess) || devForcedPaywall();
   if (gated && !ACCESS_EXEMPT.has(path)) {

@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from "react";
-import { Flame, ChevronRight } from "lucide-react";
+import { Flame, ChevronRight, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
@@ -62,21 +62,64 @@ const CommandDeck = ({
   const { keys: habitKeys } = useCheckinConfig();
   const maxXp = useMemo(() => maxDailyXp(resolveCheckinHabits(habitKeys)), [habitKeys]);
 
-  const border = canCheckin
-    ? isLegend
-      ? "linear-gradient(135deg, hsl(280 70% 60%), hsl(var(--gold)), hsl(350 80% 60%), hsl(280 70% 60%))"
-      : isApex
-      ? "linear-gradient(135deg, hsl(var(--ember)), hsl(var(--gold)), hsl(42 85% 70%), hsl(var(--ember)))"
-      : "linear-gradient(135deg, hsl(var(--gold)), hsl(var(--ember)), hsl(42 85% 70%), hsl(var(--gold)))"
-    : "linear-gradient(135deg, hsl(var(--border)), hsl(var(--border)))";
+  // ── Day already banked ───────────────────────────────────────────────
+  // Once the day is logged there is nothing to do here until midnight, so the
+  // card collapses to a single confirmation row. It used to keep the full
+  // ~140px hero — the largest and heaviest block on Home — rendered grey and
+  // inert, which meant the first thing the eye landed on was a dead element
+  // telling the user to come back tomorrow. Now it states the win, the streak
+  // it protected and when the next one opens, in ~55px.
+  //
+  // Deliberately not a button: with the check-in closed there is nowhere
+  // useful to send a tap, and a disabled control that looks pressable is worse
+  // than a plain status line. Every hook above runs unconditionally, so this
+  // early return is safe.
+  if (!canCheckin) {
+    return (
+      <div
+        className={cn(
+          "surface-card surface-card-quiet flex items-center gap-3 px-4 py-3",
+          className,
+        )}
+      >
+        <span className="h-8 w-8 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0">
+          <Check aria-hidden size={15} className="text-gold" strokeWidth={3} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[13px] font-black leading-tight">Day banked</p>
+          {timeUntilCheckin && (
+            <p className="text-[12px] text-muted-foreground leading-tight mt-0.5">
+              Next check-in in {timeUntilCheckin}
+            </p>
+          )}
+        </div>
+        {streak > 0 && (
+          <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[hsl(var(--ember)/0.12)] border border-[hsl(var(--ember))]/30 px-2.5 py-1">
+            <Flame aria-hidden size={13} className="text-[hsl(var(--ember))] status-flame-flicker" strokeWidth={2.8} />
+            <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(22_95%_66%)]">
+              {streak}
+            </span>
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  // Past the early return, the day is always open — the inert variants of
+  // every style below were removed with it rather than left as dead branches.
+  const border = isLegend
+    ? "linear-gradient(135deg, hsl(280 70% 60%), hsl(var(--gold)), hsl(350 80% 60%), hsl(280 70% 60%))"
+    : isApex
+    ? "linear-gradient(135deg, hsl(var(--ember)), hsl(var(--gold)), hsl(42 85% 70%), hsl(var(--ember)))"
+    : "linear-gradient(135deg, hsl(var(--gold)), hsl(var(--ember)), hsl(42 85% 70%), hsl(var(--gold)))";
 
   return (
     <div
-      className={cn("rounded-3xl p-[1.5px] overflow-hidden relative", canCheckin && "breathing-glow", className)}
+      className={cn("rounded-3xl p-[1.5px] overflow-hidden relative breathing-glow", className)}
       style={{
         backgroundImage: border,
         backgroundSize: "200% 200%",
-        animation: canCheckin ? "shimmer-slide 5s ease-in-out infinite" : undefined,
+        animation: "shimmer-slide 5s ease-in-out infinite",
       }}
     >
       <button
@@ -86,7 +129,7 @@ const CommandDeck = ({
         // (the chain checks target presence, not the trigger condition).
         ref={canCheckin ? checkinTargetRef : undefined}
         onClick={() => {
-          if (!canCheckin || locking) return;
+          if (locking) return;
           hapticImpact("medium");
           if (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches) {
             navigate("/checkin");
@@ -95,59 +138,41 @@ const CommandDeck = ({
           setLocking(true);
           lockTimer.current = setTimeout(() => navigate("/checkin"), 150);
         }}
-        disabled={!canCheckin}
         className={cn(
           "group relative w-full text-left rounded-3xl p-4 overflow-hidden transition-all duration-200 active:scale-[0.99]",
-          !canCheckin && "opacity-80",
           locking && "cta-locking",
         )}
         style={{
-          background: canCheckin
-            ? "radial-gradient(130% 90% at 0% 0%, hsl(var(--gold) / 0.16), transparent 60%), linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 5%))"
-            : "linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 6%))",
+          background:
+            "radial-gradient(130% 90% at 0% 0%, hsl(var(--gold) / 0.16), transparent 60%), linear-gradient(135deg, hsl(255 14% 8%), hsl(255 14% 5%))",
         }}
       >
         {/* Ambient corner glow */}
-        {canCheckin && (
-          <div
-            aria-hidden
-            className="absolute -top-16 -right-12 w-44 h-44 rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, hsl(var(--gold) / 0.30) 0%, transparent 65%)" }}
-          />
-        )}
+        <div
+          aria-hidden
+          className="absolute -top-16 -right-12 w-44 h-44 rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, hsl(var(--gold) / 0.30) 0%, transparent 65%)" }}
+        />
 
         <div className="relative">
           {/* Top row — flame icon + streak chip */}
           <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 relative",
-                canCheckin
-                  ? "gradient-gold text-primary-foreground shadow-[0_0_24px_hsl(var(--gold)/0.55)]"
-                  : "bg-secondary text-muted-foreground",
-              )}
-            >
-              {canCheckin && (
-                <span
-                  aria-hidden
-                  className="absolute inset-0 rounded-2xl bg-gold/40 animate-ping opacity-40"
-                  style={{ animationDuration: "2.4s" }}
-                />
-              )}
-              <Flame aria-hidden size={24} strokeWidth={2.6} className={cn("relative", canCheckin && "status-flame-flicker")} />
+            <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 relative gradient-gold text-primary-foreground shadow-[0_0_24px_hsl(var(--gold)/0.55)]">
+              <span
+                aria-hidden
+                className="absolute inset-0 rounded-2xl bg-gold/40 animate-ping opacity-40"
+                style={{ animationDuration: "2.4s" }}
+              />
+              <Flame aria-hidden size={24} strokeWidth={2.6} className="relative status-flame-flicker" />
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className={cn("text-[11px] font-black uppercase tracking-[0.22em] mb-0.5", canCheckin ? "text-gold" : "text-muted-foreground")}>
-                {canCheckin ? "Lock your day" : "Day locked"}
-              </p>
+              <p className="eyebrow !text-gold mb-0.5">Lock your day</p>
               <p className="font-display font-black text-[19px] leading-none tracking-tight">
-                {canCheckin ? "Daily Check-In" : "Come back tomorrow"}
+                Daily Check-In
               </p>
               <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
-                {canCheckin
-                  ? streak > 0 ? `Defend your ${streak}-day streak.` : "Start your streak. Earn XP. Climb."
-                  : `Next in ${timeUntilCheckin}`}
+                {streak > 0 ? `Defend your ${streak}-day streak.` : "Start your streak. Earn XP. Climb."}
               </p>
             </div>
 
@@ -160,14 +185,12 @@ const CommandDeck = ({
             )}
           </div>
 
-          {/* Primary action bar */}
-          {canCheckin ? (
-            // LOCK IN — a physical 3D game button. Dark base below, glossy
-            // molten-gold face above; the whole card is the <button>, so
-            // group-active presses the face 6px down into the base while the
-            // lava slab below floods up and melts the face (press-and-hold
-            // shows the melt; releasing navigates).
-            <div className="relative mt-3.5">
+          {/* Primary action bar — LOCK IN. A physical 3D game button: dark
+              base below, glossy molten-gold face above; the whole card is the
+              <button>, so group-active presses the face 6px down into the base
+              while the lava slab below floods up and melts the face
+              (press-and-hold shows the melt; releasing navigates). */}
+          <div className="relative mt-3.5">
               <div
                 aria-hidden
                 className="cta-press-base absolute inset-x-0 top-1.5 -bottom-1.5 rounded-2xl"
@@ -315,12 +338,6 @@ const CommandDeck = ({
                 </span>
               </div>
             </div>
-          ) : (
-            <div className="mt-3.5 flex items-center justify-between rounded-xl px-4 py-2.5 border border-border/40">
-              <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Locked</p>
-              <p className="text-xs font-black text-gold/80 tabular-nums">Day banked ✓</p>
-            </div>
-          )}
         </div>
       </button>
     </div>

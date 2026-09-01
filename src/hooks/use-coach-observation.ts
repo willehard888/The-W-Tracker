@@ -33,6 +33,20 @@ interface CoachObservation {
   text: string;
   /** True until the underlying hooks have hydrated; UI can hide until then. */
   isLoading: boolean;
+  /**
+   * Today's plan progress, passed straight through from the useDailyPlan call
+   * this hook already makes.
+   *
+   * Exposed rather than left for callers to fetch themselves: useDailyPlan
+   * opens a realtime channel per mount by design (uniqueChannelName appends a
+   * UUID), so a consumer calling it *alongside* this hook doubles the live
+   * subscriptions and invalidations on the same screen. Reading them from here
+   * keeps Home to one.
+   */
+  readiness: number | null;
+  headline: string | null;
+  missionsDone: number;
+  missionsTotal: number;
 }
 
 const isMeaningful = (s: string | null | undefined): s is string =>
@@ -147,7 +161,7 @@ const pickIndex = (seedDate: string, bucket: number): number => {
 
 export const useCoachObservation = ({ context }: UseCoachObservationOptions): CoachObservation => {
   const { profile, isLoading: profileLoading } = useAthleteProfile();
-  const { plan, isLoading: planLoading } = useDailyPlan();
+  const { plan, done, total, isLoading: planLoading } = useDailyPlan();
 
   const isLoading = profileLoading || planLoading;
 
@@ -169,5 +183,12 @@ export const useCoachObservation = ({ context }: UseCoachObservationOptions): Co
     return tmpl.replace("{focus}", focus).replace("{adjust}", plan?.adjustment ?? "hold");
   }, [profile?.tone_pref, plan?.headline, plan?.adjustment, context]);
 
-  return { text, isLoading };
+  return {
+    text,
+    isLoading,
+    readiness: plan?.readiness_score ?? null,
+    headline: plan?.headline ?? null,
+    missionsDone: done,
+    missionsTotal: total,
+  };
 };

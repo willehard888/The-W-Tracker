@@ -18,7 +18,12 @@ function timingSafeEqual(a: string, b: string): boolean {
 
 // Premium replaces Apex purchase. Apex IDs kept as legacy fallback.
 const PREMIUM_PRODUCT_IDS = [
-  // Current product (4.99 €/mo, App Store Connect / RevenueCat)
+  // Current product, list price 8,99 €/mo. Both ids are accepted: the store
+  // may either keep WhealthFactory499 at the new price or ship a renamed
+  // WhealthFactory899 product. Keep this list in sync with
+  // RevenueCatContext.PRODUCT_IDS — a webhook that doesn't recognise the id
+  // silently fails to grant Premium after a successful purchase.
+  "WhealthFactory899", "com.app.WhealthFactory899",
   "WhealthFactory499", "com.app.WhealthFactory499",
   // Legacy
   "premiummonthly1799", "com.app.premiummonthly1799",

@@ -86,7 +86,7 @@ const Coach = () => {
     const err = (athleteError ?? programError)!;
     // Keep the technical cause for debugging, but never show DB/migration
     // internals to a paying user — surface a calm, recoverable message.
-    if (typeof console !== "undefined") console.error("W Coach failed to load:", err);
+    if (typeof console !== "undefined") console.error("AI Coach failed to load:", err);
     return (
       <div className="flex flex-col h-full">
         <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
@@ -157,7 +157,7 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
         <ArrowLeft size={18} />
       </Button>
       <div className="text-center">
-        <h1 className="font-display text-base font-black tracking-tight">W Coach</h1>
+        <h1 className="font-display text-base font-black tracking-tight">AI Coach</h1>
         <p className="text-[10px] leading-tight text-muted-foreground">AI coach · not a medical professional</p>
       </div>
       <Button
@@ -217,7 +217,7 @@ const CoachShell = ({ session, program, navigate }: any) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // AI-first landing. W Coach SPEAKS FIRST (CoachBriefHero) — a proactive,
+  // AI-first landing. AI Coach SPEAKS FIRST (CoachBriefHero) — a proactive,
   // data-aware brief — then offers the live chat and the supporting cards.
   // Access control lives in the app-wide paywall gate (ProtectedRoute) plus
   // the edge function's own has_active_access check (403 → /paywall below).
@@ -617,7 +617,7 @@ const ChatSheet = ({
         <div className="text-center">
           <div className="inline-flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_8px_hsl(var(--gold))]" />
-            <p className="font-display text-sm font-black tracking-tight">W Coach</p>
+            <p className="font-display text-sm font-black tracking-tight">AI Coach</p>
           </div>
           <p className="text-[10px] leading-tight text-muted-foreground">AI coach · not a medical professional</p>
         </div>

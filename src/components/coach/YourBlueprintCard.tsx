@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 
 /**
- * YourBlueprintCard — a compact, read-only summary of the user's W Coach
+ * YourBlueprintCard — a compact, read-only summary of the user's AI Coach
  * profile, surfaced on the Profile page.
  *
  * Renders the highest-signal fields the user has set during onboarding:
@@ -71,7 +71,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
         "p-5 active:scale-[0.99] transition-transform shadow-[0_18px_48px_-24px_hsl(var(--gold)/0.4)]",
         className,
       )}
-      aria-label="Edit your W Coach blueprint"
+      aria-label="Edit your AI Coach blueprint"
     >
       <div className="flex items-start gap-3">
         <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_14px_hsl(var(--gold)/0.4)]">

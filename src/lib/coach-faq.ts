@@ -1,4 +1,4 @@
-// Curated W Coach FAQ playbook — instant, premium answers (no network call).
+// Curated AI Coach FAQ playbook — instant, premium answers (no network call).
 // Voice: calm mentor, surgical, bold key numbers, end with one specific action.
 
 export type FaqCategory = "Training" | "Recovery" | "Nutrition" | "Mindset" | "Program";

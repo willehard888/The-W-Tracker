@@ -508,37 +508,36 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         <>
           <div className="mb-2 -mx-4 px-4 overflow-x-auto no-scrollbar">
             <div className="flex gap-1.5 w-max">
-              <button
+              {/* Filter chips share ONE selected language across the tribe
+                  surface — gold-outline selected, plain outline otherwise.
+                  The group row used a filled gold chip and the activity row a
+                  filled ember one, so the same act of "picking" looked like two
+                  different things one row apart. */}
+              <Button
+                variant={!openGroup && !activityFilter ? "gold-outline" : "outline"}
+                size="pill"
+                className="shrink-0"
                 onClick={() => { void hapticSelection(); setOpenGroup(null); setActivityFilter(null); }}
-                className={cn(
-                  "shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold border transition-all active:scale-95",
-                  !openGroup && !activityFilter
-                    ? "bg-gold text-primary-foreground border-transparent"
-                    : "bg-secondary/30 border-border/40 text-muted-foreground",
-                )}
               >
                 All
-              </button>
+              </Button>
               {TRIBE_ACTIVITY_GROUPS.map((g) => {
                 const GIcon = GROUP_ICONS[g.label] ?? Sparkles;
                 const active = openGroup === g.label;
                 return (
-                  <button
+                  <Button
                     key={g.label}
+                    variant={active ? "gold-outline" : "outline"}
+                    size="pill"
+                    className="shrink-0"
                     onClick={() => {
                       void hapticSelection();
                       if (active) { setOpenGroup(null); setActivityFilter(null); }
                       else { setOpenGroup(g.label); setActivityFilter(null); }
                     }}
-                    className={cn(
-                      "shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold border transition-all active:scale-95",
-                      active
-                        ? "bg-gold text-primary-foreground border-transparent"
-                        : "bg-secondary/30 border-border/40 text-muted-foreground",
-                    )}
                   >
                     <GIcon aria-hidden size={12} strokeWidth={2.4} /> {g.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -550,18 +549,15 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                   const active = activityFilter === a.name;
                   const AIcon = a.icon;
                   return (
-                    <button
+                    <Button
                       key={a.name}
+                      variant={active ? "gold-outline" : "outline"}
+                      size="pill"
+                      className="shrink-0"
                       onClick={() => { void hapticSelection(); setActivityFilter(active ? null : a.name); }}
-                      className={cn(
-                        "shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold border transition-all active:scale-95",
-                        active
-                          ? "bg-[hsl(var(--ember))] text-primary-foreground border-transparent"
-                          : "bg-secondary/20 border-border/40 text-muted-foreground",
-                      )}
                     >
                       <AIcon aria-hidden size={11} strokeWidth={2.4} /> {a.name}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -629,13 +625,17 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
           {featured && renderTribeCard(featured, { featured: true })}
           {restList.map((t, idx) => renderTribeCard(t, { idx }))}
 
-          {/* Creation is rare — a quiet ghost row at the end, not a toolbar CTA */}
-          <button
+          {/* Creation is rare — a quiet row at the end, not a toolbar CTA. The
+              border was dashed, which reads as a placeholder or a drop zone
+              rather than a finished control. Solid outline keeps it quiet
+              without looking unfinished. */}
+          <Button
+            variant="outline"
+            className="w-full h-auto py-3.5 rounded-2xl text-[12px] text-muted-foreground hover:text-gold"
             onClick={() => navigate("/tribes/new")}
-            className="w-full rounded-2xl border border-dashed border-border/60 p-3.5 flex items-center justify-center gap-2 text-[12px] font-bold text-muted-foreground hover:text-gold hover:border-gold/40 transition-colors active:scale-[0.99]"
           >
             <Plus aria-hidden size={14} /> Start your own tribe
-          </button>
+          </Button>
         </div>
       )}
     </div>

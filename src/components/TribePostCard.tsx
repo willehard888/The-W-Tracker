@@ -8,6 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
+import { Button } from "@/components/ui/button";
 import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
 import PostMedia from "@/components/feed/PostMedia";
@@ -106,15 +107,21 @@ const CommentThread = ({
                   onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); cancelEdit(); } }}
                 />
                 <div className="flex items-center justify-end gap-1.5">
-                  <button type="button" onClick={cancelEdit} disabled={saving}
-                    className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground px-2 py-1 rounded-md transition-colors">
+                  {/* Save was a left-to-right ember→gold gradient — a third
+                      orange language beside the system's vertical machined one. */}
+                  <Button type="button" variant="ghost" size="sm" disabled={saving} onClick={cancelEdit}>
                     Cancel
-                  </button>
-                  <button type="button" onClick={() => { hapticImpact("light"); saveEdit(); }}
-                    disabled={saving || !draft.trim()}
-                    className="text-[11px] font-black uppercase tracking-wider bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background px-3 py-1 rounded-md disabled:opacity-50">
-                    {saving ? "Saving…" : "Save"}
-                  </button>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ember"
+                    size="sm"
+                    loading={saving}
+                    disabled={!draft.trim()}
+                    onClick={() => { hapticImpact("light"); saveEdit(); }}
+                  >
+                    Save
+                  </Button>
                 </div>
               </div>
             ) : (
@@ -630,17 +637,18 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                       </span>
                     )}
                   </div>
-                  <button onClick={() => { hapticImpact("light"); addComment.mutate(); }}
+                  {/* Same gradient fix as Save above: the system's ember when
+                      there's something to send, quiet secondary when there isn't. */}
+                  <Button
+                    variant={commentText.trim() ? "ember" : "secondary"}
+                    size="icon"
+                    className="rounded-full shrink-0"
                     disabled={!commentText.trim() || addComment.isPending}
                     aria-label={replyTo ? "Send reply" : "Send comment"}
-                    className={cn(
-                      "h-10 w-10 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0",
-                      commentText.trim()
-                        ? "bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background"
-                        : "bg-secondary text-muted-foreground"
-                    )}>
+                    onClick={() => { hapticImpact("light"); addComment.mutate(); }}
+                  >
                     <Send aria-hidden size={14} />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (

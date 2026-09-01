@@ -15,7 +15,7 @@ import { track, FUNNEL } from "@/lib/analytics";
  *   2. Not yet connected → CTA button
  *   3. Connected → "Verified Performer" stat card
  */
-const HealthKitConnectCard = () => {
+const HealthKitConnectCard = ({ onConnected }: { onConnected?: () => void } = {}) => {
   const { available, connect, syncToday, syncing, error } = useHealthKit();
   const { user } = useAuth();
   const [stats, setStats] = useState<{
@@ -48,6 +48,10 @@ const HealthKitConnectCard = () => {
       toast.success("Apple Health connected", {
         description: "Future check-ins will be automatically verified.",
       });
+      // Deterministic notify: the iOS permission sheet is an in-app UIKit
+      // modal, so window focus/visibility events are NOT guaranteed to fire —
+      // callers polling localStorage on focus would keep showing the CTA.
+      onConnected?.();
     } else if (error) {
       toast.error("Couldn't connect", { description: error });
     }

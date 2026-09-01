@@ -290,20 +290,23 @@
   }
 }
 
-@layer utilities {
-  /* ── Shared design-system utilities ─────────────────────────────────
-     .eyebrow    — THE uppercase micro-label (was 12 tracking × 11 size
-                   combos across 476 uses; this is the de facto standard)
-     .surface-card — THE card surface (was 71 distinct signatures)
-     z-scale     — named stacking tiers matching current de facto values
-     shadow-scale — 4 elevation steps for new code                       */
-  /* NOTE: .eyebrow lives in @layer utilities and sets a color, so a plain
-     `class="eyebrow text-gold"` does NOT come out gold — same layer, and this
-     rule is emitted after the generated color utilities, so it wins. Override
-     with the important modifier: `class="eyebrow !text-gold"`. */
+/* .eyebrow — THE uppercase micro-label (was 12 tracking × 11 size combos
+   across 476 uses; this is the de facto standard). Lives in @layer
+   components ON PURPOSE: Tailwind's utilities layer outranks components, so
+   `class="eyebrow text-gold"` just works — the muted color here is only the
+   default. (It used to sit in @layer utilities, where it silently beat every
+   color utility and forced `!text-gold` at call sites.) */
+@layer components {
   .eyebrow {
     @apply text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground;
   }
+}
+
+@layer utilities {
+  /* ── Shared design-system utilities ─────────────────────────────────
+     .surface-card — THE card surface (was 71 distinct signatures)
+     z-scale     — named stacking tiers matching current de facto values
+     shadow-scale — 4 elevation steps for new code                       */
   /* The app's default floating card (depth pass 2026-08). Deliberate interop
      choices: top brightening lives in inset shadows (NOT border-top-color —
      call sites override border-color with utilities and the longhand would

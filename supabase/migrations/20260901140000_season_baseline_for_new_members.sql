@@ -39,10 +39,18 @@ BEGIN
 EXCEPTION WHEN OTHERS THEN
   -- Leaderboard bookkeeping must NEVER abort account creation. This trigger
   -- runs inside handle_new_user's transaction; an unhandled error here would
-  -- fail the signup itself.
+  -- fail the signup itself. WARN so a permanently broken baseline path shows
+  -- up in logs instead of silently costing new members a season.
+  RAISE WARNING 'seed_season_baseline_for_new_profile failed for %: %', NEW.user_id, SQLERRM;
   RETURN NEW;
 END;
 $$;
+
+-- Replaces trg_new_profile_leaderboard_baseline (20260329083111), which did
+-- the same insert but with no exception guard — a leaderboard hiccup there
+-- could abort the whole signup. One trigger, guarded, wins.
+DROP TRIGGER IF EXISTS trg_new_profile_leaderboard_baseline ON public.profiles;
+DROP FUNCTION IF EXISTS public.handle_new_profile_leaderboard_baseline();
 
 DROP TRIGGER IF EXISTS tg_seed_season_baseline ON public.profiles;
 CREATE TRIGGER tg_seed_season_baseline

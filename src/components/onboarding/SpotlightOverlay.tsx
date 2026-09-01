@@ -191,7 +191,7 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
             <div className="min-w-0">
               <p className="mb-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-gold">
                 <span aria-hidden className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-gold align-middle" />
-                W Coach
+                AI Coach
               </p>
               <h3 className="font-display text-[15px] font-black tracking-tight leading-tight">{def.title}</h3>
               <p className="mt-1 text-[13px] leading-snug text-muted-foreground">{def.body}</p>

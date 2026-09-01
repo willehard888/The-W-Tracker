@@ -43,7 +43,6 @@ interface CoachObservation {
    * subscriptions and invalidations on the same screen. Reading them from here
    * keeps Home to one.
    */
-  readiness: number | null;
   headline: string | null;
   missionsDone: number;
   missionsTotal: number;
@@ -186,7 +185,6 @@ export const useCoachObservation = ({ context }: UseCoachObservationOptions): Co
   return {
     text,
     isLoading,
-    readiness: plan?.readiness_score ?? null,
     headline: plan?.headline ?? null,
     missionsDone: done,
     missionsTotal: total,

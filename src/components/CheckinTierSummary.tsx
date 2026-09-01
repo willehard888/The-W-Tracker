@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Zap, Flame, Trophy, ArrowUp, Crown, Target, TrendingUp, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -42,9 +43,17 @@ interface CheckinTierSummaryProps {
 const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach, celebrating }: CheckinTierSummaryProps) => {
   // Contextual onboarding: first check-in with XP earned → explain XP here,
   // spotlighting the counter itself — but only once the badge celebration
-  // overlay is gone, so the coach never talks over the fireworks.
+  // overlay is gone, so the coach never talks over the fireworks. The badge
+  // is awarded ASYNC after this mounts, so `celebrating` alone loses the
+  // race (the card fires in the gap before the modal state lands) — hold
+  // the trigger for a settle window first.
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setSettled(true), 2500);
+    return () => clearTimeout(t);
+  }, []);
   const xpTargetRef = useSpotlightTarget("XP_INTRO");
-  useOnboardingTrigger("XP_INTRO", summary.xpEarned > 0 && !celebrating);
+  useOnboardingTrigger("XP_INTRO", settled && summary.xpEarned > 0 && !celebrating);
   const cfg = getTierConfig(tier);
   const leveledUp = summary.newLevel > summary.oldLevel;
   const perfPct = Math.round((summary.completedCount / summary.maxCount) * 100);

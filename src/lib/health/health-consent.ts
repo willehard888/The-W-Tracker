@@ -19,7 +19,9 @@
  * per-user local state so a shared device doesn't sync one account's health
  * data under the next account's name.
  */
-const KEY = "w_health_connected";
+/** Exported for AuthContext.signOut's bulk key sweep — one source of truth. */
+export const HEALTH_CONSENT_KEY = "w_health_connected";
+const KEY = HEALTH_CONSENT_KEY;
 
 export const markHealthConnected = (): void => {
   try {

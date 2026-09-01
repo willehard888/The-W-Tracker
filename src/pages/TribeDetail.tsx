@@ -635,7 +635,7 @@ const TribeDetail = () => {
           <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
             Its fire, feed and events open up once you're in.
           </p>
-          <Button variant="ember" size="sm" className="mt-4" onClick={handleJoin}>
+          <Button variant="ember" size="lg" className="mt-4" onClick={handleJoin}>
             Request to join
           </Button>
         </div>

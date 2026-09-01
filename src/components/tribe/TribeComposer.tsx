@@ -98,14 +98,17 @@ const TribeComposer = ({
         </button>
         <span className="text-[11px] text-muted-foreground ml-1">{value.length}/500</span>
       </div>
+      {/* This className used to repaint the button with a flat left-to-right
+          gradient, overriding PRIMARY_EMBER's machined bezel on the one shared
+          Button in this file. Dropping the override is the whole fix. */}
       <Button
-        onClick={onPost}
+        variant="ember"
         size="sm"
-        disabled={posting || (!value.trim() && !hasImage && !hasVideo)}
-        className="bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-bold"
+        loading={posting}
+        disabled={!value.trim() && !hasImage && !hasVideo}
+        onClick={onPost}
       >
-        {posting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-        Post
+        <Send size={14} /> Post
       </Button>
     </div>
   </div>

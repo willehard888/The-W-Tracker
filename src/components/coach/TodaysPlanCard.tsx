@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
+import { useCommitPop } from "@/hooks/use-commit-pop";
 
 /**
  * TodaysPlanCard — surfaces the adaptive daily plan the coach already computes
@@ -35,6 +36,60 @@ const KIND_ICON: Record<MissionKind, React.ElementType> = {
   focus: Brain,
   habit: Repeat,
   edge: Flame,
+};
+
+/**
+ * One mission row. Extracted from the .map() it used to live inside purely so
+ * it can own a hook — useCommitPop can't be called from a map callback.
+ */
+const MissionRow = ({
+  mission, isDone, isBusy, onComplete, spotlightRef,
+}: {
+  mission: Mission;
+  isDone: boolean;
+  isBusy: boolean;
+  onComplete: (m: Mission) => void;
+  spotlightRef?: React.Ref<HTMLButtonElement>;
+}) => {
+  const Icon = KIND_ICON[mission.kind] ?? Repeat;
+  const popping = useCommitPop(isDone);
+
+  return (
+    <button
+      type="button"
+      ref={spotlightRef}
+      onClick={() => onComplete(mission)}
+      disabled={isDone || isBusy}
+      className={cn(
+        "w-full text-left rounded-xl border p-3 flex items-start gap-3 transition-all active:scale-[0.99]",
+        isDone
+          ? "border-xp-green/30 bg-xp-green/[0.06]"
+          : "border-border/50 bg-card/50 hover:border-gold/30",
+      )}
+    >
+      {/* Completing a mission used to only cross-fade this tile's colour. */}
+      <span
+        className={cn(
+          "shrink-0 h-7 w-7 rounded-lg flex items-center justify-center border transition-colors",
+          isDone ? "bg-xp-green/15 border-xp-green/40 text-xp-green" : "bg-secondary/50 border-border/50 text-muted-foreground",
+          popping && "commit-pop",
+        )}
+      >
+        {isDone ? <Check size={15} strokeWidth={3} /> : <Icon size={14} />}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className={cn("text-[13px] font-bold leading-tight", isDone && "text-muted-foreground line-through")}>
+          {mission.title}
+        </p>
+        {mission.detail && (
+          <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">{mission.detail}</p>
+        )}
+      </div>
+      {isDone && (
+        <span className="shrink-0 text-[12px] font-black text-xp-green mt-0.5">Done</span>
+      )}
+    </button>
+  );
 };
 
 // Data-driven "why" — cites the real readiness components (self-reported sleep,
@@ -219,46 +274,16 @@ const TodaysPlanCard = () => {
 
       {/* Missions */}
       <div className="mt-3 space-y-2">
-        {plan.missions.map((m, mi) => {
-          const Icon = KIND_ICON[m.kind] ?? Repeat;
-          const isDone = completedIds.has(m.id);
-          const isBusy = busy.has(m.id);
-          return (
-            <button
-              key={m.id}
-              type="button"
-              ref={mi === 0 ? missionTargetRef : undefined}
-              onClick={() => onComplete(m)}
-              disabled={isDone || isBusy}
-              className={cn(
-                "w-full text-left rounded-xl border p-3 flex items-start gap-3 transition-all active:scale-[0.99]",
-                isDone
-                  ? "border-xp-green/30 bg-xp-green/[0.06]"
-                  : "border-border/50 bg-card/50 hover:border-gold/30",
-              )}
-            >
-              <span
-                className={cn(
-                  "shrink-0 h-7 w-7 rounded-lg flex items-center justify-center border transition-colors",
-                  isDone ? "bg-xp-green/15 border-xp-green/40 text-xp-green" : "bg-secondary/50 border-border/50 text-muted-foreground",
-                )}
-              >
-                {isDone ? <Check size={15} strokeWidth={3} /> : <Icon size={14} />}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className={cn("text-[13px] font-bold leading-tight", isDone && "text-muted-foreground line-through")}>
-                  {m.title}
-                </p>
-                {m.detail && (
-                  <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">{m.detail}</p>
-                )}
-              </div>
-              {isDone && (
-                <span className="shrink-0 text-[12px] font-black text-xp-green mt-0.5">Done</span>
-              )}
-            </button>
-          );
-        })}
+        {plan.missions.map((m, mi) => (
+          <MissionRow
+            key={m.id}
+            mission={m}
+            isDone={completedIds.has(m.id)}
+            isBusy={busy.has(m.id)}
+            onComplete={onComplete}
+            spotlightRef={mi === 0 ? missionTargetRef : undefined}
+          />
+        ))}
       </div>
 
       {done > 0 && done >= total && total > 0 && (

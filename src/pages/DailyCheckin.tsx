@@ -25,6 +25,7 @@ import { syncStreakWarningNotification } from "@/lib/streak-notifications";
 import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
 import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
+import { useCommitPop } from "@/hooks/use-commit-pop";
 import { triggerGust } from "@/lib/wind";
 import CheckinTierHeader from "@/components/CheckinTierHeader";
 import CheckinTierSummary from "@/components/CheckinTierSummary";
@@ -57,7 +58,10 @@ const PILLAR_ORDER: CheckinPillar[] = [
 // "Detected ✓" badge when Apple Health confirms it.
 const HabitToggle = ({
   habit, active, onToggle, detected,
-}: { habit: CheckinHabit; active: boolean; onToggle: () => void; detected?: boolean }) => (
+}: { habit: CheckinHabit; active: boolean; onToggle: () => void; detected?: boolean }) => {
+  const popping = useCommitPop(active);
+
+  return (
   <button
     onClick={() => { hapticSelection(); onToggle(); }}
     aria-pressed={active}
@@ -88,15 +92,18 @@ const HabitToggle = ({
         {active ? `+${habit.xp} XP` : (habit.note || `+${habit.xp} XP`)}
       </p>
     </div>
-    {/* Check pill */}
+    {/* Check pill — the moment the tick lands is the one that matters, so it
+        springs. Ticking used to only cross-fade a colour over 200ms. */}
     <div className={cn(
       "h-6 w-6 rounded-full border-2 transition-all duration-200 shrink-0 flex items-center justify-center",
       active ? "border-gold bg-gold shadow-[0_0_10px_-1px_hsl(var(--gold)/0.6)]" : "border-muted-foreground/30 group-active:border-muted-foreground/50",
+      popping && "commit-pop",
     )}>
       {active && <Check aria-hidden size={14} className="text-primary-foreground" strokeWidth={3} />}
     </div>
   </button>
-);
+  );
+};
 
 const DailyCheckin = () => {
   const navigate = useNavigate();

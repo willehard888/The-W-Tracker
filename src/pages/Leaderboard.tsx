@@ -490,7 +490,14 @@ const Leaderboard = () => {
                     {user.streak > 0 && (
                       <>
                         <span className="text-muted-foreground/75">•</span>
-                        <StreakFlameInline streak={user.streak} suffix="d" className="text-[11px]" />
+                        {/* `still` in rows, animated on the podium below. This
+                            list renders one flame per row with no virtualization
+                            behind a .limit(100), and each animated instance is
+                            3–7 looping layers, several with blur() and
+                            mix-blend-mode — the app's heaviest surface. Colour
+                            and size still track the streak, so the row reads the
+                            same; motion now belongs to the top three alone. */}
+                        <StreakFlameInline streak={user.streak} suffix="d" className="text-[11px]" still />
                       </>
                     )}
                     {wins > 0 && (

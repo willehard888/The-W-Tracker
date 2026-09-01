@@ -248,7 +248,6 @@ const Index = () => {
         style={{
           background:
             "linear-gradient(90deg, transparent 10%, hsl(var(--gold) / 0.6) 50%, transparent 90%)",
-          animation: "shimmer-slide 6s ease-in-out infinite",
         }}
       />
 

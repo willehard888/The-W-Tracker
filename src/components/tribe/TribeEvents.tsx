@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useTribeEvents, useTribeEventActions, type TribeEvent, type RsvpStatus } from "@/hooks/use-tribe-events";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { useCommitPop } from "@/hooks/use-commit-pop";
 import { safeHttpUrl } from "@/lib/safe-url";
 import { TRIBE_ACTIVITY_GROUPS, activityIcon, activityDefaults } from "@/lib/tribe-activities";
 
@@ -179,6 +180,10 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
   const full = ev.capacity != null && ev.going_count >= ev.capacity && ev.my_status !== "going";
   const rel = isToday(start) ? "Today" : isTomorrow(start) ? "Tomorrow" : null;
   const pct = ev.capacity ? Math.min(100, (ev.going_count / ev.capacity) * 100) : 0;
+  // RSVP used to change variant and nothing else — the choice landed with no
+  // movement at all. These pop the button the user actually chose.
+  const goingPop = useCommitPop(ev.my_status === "going");
+  const maybePop = useCommitPop(ev.my_status === "maybe");
   return (
     <div className={cn(
       "surface-card overflow-hidden bg-gradient-to-br from-[hsl(var(--ember))]/[0.05] via-card/70 to-card",
@@ -243,6 +248,7 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
                 <Button
                   variant={ev.my_status === "going" ? "gold-outline" : "outline"}
                   size="sm"
+                  className={cn(goingPop && "commit-pop")}
                   disabled={busy === ev.id || full}
                   onClick={() => onRsvp(ev, "going")}
                 >
@@ -251,6 +257,7 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
                 <Button
                   variant={ev.my_status === "maybe" ? "gold-outline" : "outline"}
                   size="sm"
+                  className={cn(maybePop && "commit-pop")}
                   disabled={busy === ev.id}
                   onClick={() => onRsvp(ev, "maybe")}
                 >

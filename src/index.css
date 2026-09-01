@@ -354,6 +354,7 @@
     --z-sheet: 50;
     --z-modal: 100;
     --z-celebration: 120;
+    --z-onboarding: 160; /* above modal+celebration (a card and a celebration can co-occur), below toasts */
     --z-toast: 200;
     --z-top: 9999;
     /* Elevation ladder — derived from .depth-realistic's proven stops.
@@ -368,6 +369,26 @@
     --shadow-4: 0 1px 0 hsl(0 0% 0% / 0.65), 0 2px 3px hsl(0 0% 0% / 0.36),
                 0 8px 16px -2px hsl(0 0% 0% / 0.42), 0 24px 48px -12px hsl(0 0% 0% / 0.55),
                 0 48px 96px -32px hsl(0 0% 0% / 0.6);
+  }
+
+  /* Onboarding spotlight ring: first LOCKS onto the target (scale-in from
+     slightly oversized), then breathes forever. Transform+opacity only so
+     the compositor handles both; the dim layer never repaints. */
+  @keyframes onboarding-ring-lock {
+    from { transform: scale(1.12); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  @keyframes onboarding-ring-breathe {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+  .onboarding-ring {
+    animation:
+      onboarding-ring-lock 0.38s cubic-bezier(0.2, 0.9, 0.3, 1),
+      onboarding-ring-breathe 2.6s ease-in-out 0.38s infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .onboarding-ring { animation: none; }
   }
 
   .text-gold {

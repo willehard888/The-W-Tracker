@@ -8,6 +8,7 @@ import { usePushNotifications, PushControlsContext } from "@/hooks/use-push-noti
 import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
 import { useActivityHeartbeat } from "@/hooks/use-activity-heartbeat";
 import PushPrimingSheet from "@/components/notifications/PushPrimingSheet";
+import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
 import { scheduleLapsedReengagement } from "@/lib/streak-notifications";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
@@ -211,6 +212,7 @@ const AppRoutes = () => {
   return (
     <PushControlsContext.Provider value={{ enablePush, dismissPriming }}>
     <StatusExplainerProvider>
+    <OnboardingProvider>
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden momentum-scroll">
@@ -305,6 +307,7 @@ const AppRoutes = () => {
       {user && <TierPromotionCelebration />}
       <PushPrimingSheet open={needsPriming} onEnable={enablePush} onDismiss={dismissPriming} />
     </div>
+    </OnboardingProvider>
     </StatusExplainerProvider>
     </PushControlsContext.Provider>
   );

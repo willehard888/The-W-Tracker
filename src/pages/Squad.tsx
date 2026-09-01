@@ -5,6 +5,7 @@ import Tribes from "./Tribes";
 import { cn } from "@/lib/utils";
 import { SEGMENT_ACTIVE } from "@/components/ui/segment";
 import { hapticSelection } from "@/lib/haptics";
+import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
 /**
  * Squad — the single social home. Feed and Tribes stay SEPARATE top-level
@@ -31,11 +32,14 @@ const Squad = () => {
   const initialSub = raw === "mine" || raw === "browse" ? raw : undefined;
   const setTab = (next: "feed" | "tribes") =>
     setSearchParams(next === "feed" ? {} : { tab: next }, { replace: true });
+  // Contextual onboarding: first /squad visit → explain the Feed/Tribes split.
+  const squadTargetRef = useSpotlightTarget("SQUAD_INTRO");
+  useOnboardingTrigger("SQUAD_INTRO", true);
 
   return (
     <div className="flex flex-col">
       <div className="page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <div className="flex-1 flex gap-1 surface-inset rounded-xl p-1">
+        <div ref={squadTargetRef} className="flex-1 flex gap-1 surface-inset rounded-xl p-1">
           {SUB.map((s) => (
             <button
               key={s.key}

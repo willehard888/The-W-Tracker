@@ -24,6 +24,7 @@ import { hapticSelection } from "@/lib/haptics";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import EmptyState from "@/components/ui/empty-state";
+import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
 type LeaderRow = {
   username: string;
@@ -68,6 +69,9 @@ const CountdownTimer = ({ endsAt }: { endsAt?: string }) => {
 };
 
 const Leaderboard = () => {
+  // Contextual onboarding: first /leaderboard visit → Season vs All-Time.
+  const ranksTargetRef = useSpotlightTarget("RANKS_INTRO");
+  useOnboardingTrigger("RANKS_INTRO", true);
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"season" | "all_time">("season");
@@ -315,7 +319,9 @@ const Leaderboard = () => {
       </div>
 
       {/* Mode switcher — paged tabs with swipe hint */}
-      <ModeTabs mode={mode} onChange={setMode} />
+      <div ref={ranksTargetRef}>
+        <ModeTabs mode={mode} onChange={setMode} />
+      </div>
 
 
       {profile && (

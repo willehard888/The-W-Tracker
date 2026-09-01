@@ -11,6 +11,7 @@ import { hapticNotification, hapticImpact } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
+import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
 /**
  * TodaysPlanCard — surfaces the adaptive daily plan the coach already computes
@@ -52,6 +53,9 @@ const whyLine = (plan: { readiness_score: number; readiness_breakdown: Record<st
 const TodaysPlanCard = () => {
   const { plan, isLoading, completedIds, done, total, generate, completeMission } = useDailyPlan();
   const navigate = useNavigate();
+  // Contextual onboarding: the first time a mission row exists, spotlight it.
+  const missionTargetRef = useSpotlightTarget("COACH_MISSION_INTRO");
+  useOnboardingTrigger("COACH_MISSION_INTRO", (plan?.missions?.length ?? 0) > 0);
   const [generating, setGenerating] = useState(false);
   const [needsMembership, setNeedsMembership] = useState(false);
   const [busy, setBusy] = useState<Set<string>>(new Set());
@@ -215,7 +219,7 @@ const TodaysPlanCard = () => {
 
       {/* Missions */}
       <div className="mt-3 space-y-2">
-        {plan.missions.map((m) => {
+        {plan.missions.map((m, mi) => {
           const Icon = KIND_ICON[m.kind] ?? Repeat;
           const isDone = completedIds.has(m.id);
           const isBusy = busy.has(m.id);
@@ -223,6 +227,7 @@ const TodaysPlanCard = () => {
             <button
               key={m.id}
               type="button"
+              ref={mi === 0 ? missionTargetRef : undefined}
               onClick={() => onComplete(m)}
               disabled={isDone || isBusy}
               className={cn(

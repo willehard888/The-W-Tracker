@@ -319,7 +319,7 @@ async function generate(
         {
           role: "system",
           content: `You are AI Coach sending a proactive push notification. ${intent}
-Rules: reference the specific signal, prescribe ONE concrete action, max 2 sentences, no greetings, no clichés, never mention being an AI. Reply in the user's language (default English).`,
+Rules: reference the specific signal, prescribe ONE concrete action, max 2 sentences, no greetings, no clichés. Never claim to be human; if being AI comes up, acknowledge it plainly. Reply in the user's language (default English).`,
         },
         {
           role: "user",

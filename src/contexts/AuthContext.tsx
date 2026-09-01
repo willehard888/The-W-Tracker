@@ -364,26 +364,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSubscriptionEnd(null);
   }, []);
 
-  // PAYWALL REMOVED — every logged-in user with a loaded profile is treated
-  // as Premium / Elite / Apex regardless of the underlying RevenueCat or DB
-  // subscription state. The real `isElite` state is still tracked internally
-  // for billing UI (e.g. "Manage subscription" on Paywall.tsx) and is
-  // readable via the raw `profile` object, but every consumer of the
-  // membership flags from this context sees true once profile is loaded.
-  //
-  // CRITICAL: we gate on `profile !== null` (not just `user !== null`)
-  // because components that read `isElite` often pair it with profile data
-  // reads (profile.xp, profile.username, etc.). If we said isElite=true
-  // while profile was still null they would crash trying to render premium
-  // content without the data backing it.
-  //
-  // To re-introduce the paywall later, change `effectiveMembership` back
-  // to the underlying `isElite` state — every consumer reads through this
-  // one source of truth so the toggle is a single line.
   // Real membership = an active paid entitlement (isElite, set from RevenueCat /
   // profile.is_elite by checkSubscription + the realtime sub), OR referral free
   // credits, OR an apex subscriber, OR a pinned Legend (Founders Circle).
-  // This is what gates the whole app behind the 4.99 €/mo subscription.
+  // This is what gates the whole app behind the 8,99 €/mo subscription
+  // (ProtectedRoute in App.tsx: membership OR live 14-day trial passes).
+  //
+  // CRITICAL: gate on `profile !== null` (not just `user !== null`) —
+  // consumers that read `isElite` pair it with profile data reads, and
+  // isElite=true with a null profile crashes premium renders.
   const _p = profile as
     | { membership_credits_until?: string | null; is_apex_subscriber?: boolean; legend_pinned?: boolean }
     | null;

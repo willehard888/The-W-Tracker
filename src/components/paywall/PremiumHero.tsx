@@ -87,12 +87,12 @@ const PremiumHero = ({
   errorMessage,
   onCta,
   onDismissError,
-  // Real discount: 49,99/yr vs 12×4,99 = 59,88 → ~17% (was a hardcoded, inflated 20).
+  // Real discount: 89,99/yr vs 12×8,99 = 107,88 → ~17% (was a hardcoded, inflated 20).
   yearlyDiscountPct = 17,
   yearlyAvailable = true,
 }: PremiumHeroProps) => {
-  // Monthly-first: the product is 4.99 €/mo with a 14-day free trial. Yearly
-  // (if a yearly product exists) is an optional savings toggle, not the default.
+  // Monthly-first: the product is 8,99 €/mo (14-day in-app trial happens
+  // BEFORE this screen). Yearly is an optional savings toggle, not the default.
   const [plan, setPlan] = useState<BillingPlan>("monthly");
   // If the store can't fulfill a yearly plan, never let the toggle sit on it.
   const isYearly = yearlyAvailable && plan === "yearly";
@@ -105,11 +105,14 @@ const PremiumHero = ({
       ? "Opening Apple…"
       : status === "verifying"
       ? "Confirming access…"
-      : "Start your free trial";
+      : "Unlock full access";
 
+  // No "free trial" language here: the 14-day trial is in-app and already
+  // running (or spent) by the time this screen shows, and the store product
+  // has no introductory offer — claiming a store trial risks App Review.
   const footnote = isYearly
-    ? `Free trial, then ${yearlyPriceLabel}/yr · Cancel anytime`
-    : `Free trial, then ${monthlyPriceLabel}/mo · Cancel anytime`;
+    ? `${yearlyPriceLabel}/yr · Cancel anytime`
+    : `${monthlyPriceLabel}/mo · Cancel anytime`;
 
   return (
     <div

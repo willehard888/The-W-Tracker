@@ -6,6 +6,7 @@ import { queryClient } from "@/lib/query-client";
 import { supabase } from "@/integrations/supabase/client";
 import { usePushNotifications, PushControlsContext } from "@/hooks/use-push-notifications";
 import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
+import { useTrialAccess } from "@/hooks/use-trial-access";
 import { useActivityHeartbeat } from "@/hooks/use-activity-heartbeat";
 import PushPrimingSheet from "@/components/notifications/PushPrimingSheet";
 import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
@@ -99,12 +100,27 @@ const ACCESS_EXEMPT = new Set([
   "/reset-password",
 ]);
 
-// Master switch for the hard paywall gate in ProtectedRoute. Currently OFF —
-// every signed-in user gets full access. Set to true to re-enable the paywall.
-const PAYWALL_ENABLED = false;
+// Master switch for the hard paywall gate in ProtectedRoute. ON since the
+// 8,99 €/mo launch (2026-09-01): members and 14-day trialists pass, everyone
+// else lands on /paywall.
+const PAYWALL_ENABLED = true;
+
+// Dev harness (?paywallDev=1): force the gate closed to exercise the paywall
+// without waiting 14 days. Sticky via sessionStorage (SPA navigation drops
+// the query string). Dead code in production builds.
+const devForcedPaywall = (): boolean => {
+  if (!import.meta.env.DEV) return false;
+  if (new URLSearchParams(window.location.search).has("paywallDev")) {
+    sessionStorage.setItem("w_paywall_dev", "1");
+  }
+  return sessionStorage.getItem("w_paywall_dev") === "1";
+};
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, profile, loading, isPremium } = useAuth();
+  const { user, profile, loading } = useAuth();
+  // Membership OR live 14-day trial (hook is isElite-aware) — called before
+  // any early return so the hook order stays stable.
+  const trial = useTrialAccess();
   if (loading) return <LazyFallback />;
   if (!user) return <Navigate to="/landing" replace />;
 
@@ -129,11 +145,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // ⚠️ Hard paywall TEMPORARILY DISABLED — flip PAYWALL_ENABLED back to true to
-  // re-enable it. When on, non-entitled users are sent to /paywall (isPremium =
-  // paid / Apple trial / referral credits / Founders; ACCESS_EXEMPT lets them
-  // still reach the paywall, onboarding and legal pages).
-  if (PAYWALL_ENABLED && !isPremium && !ACCESS_EXEMPT.has(path)) {
+  // Hard paywall: trial.hasAccess = paid membership OR inside the 14-day
+  // trial (credits/apex/legend ride the membership flag). Never gate while
+  // the trial clock is still loading — a flash-redirect to /paywall on every
+  // cold start taught users to distrust the app.
+  const gated =
+    (PAYWALL_ENABLED && !trial.loading && !trial.hasAccess) || devForcedPaywall();
+  if (gated && !ACCESS_EXEMPT.has(path)) {
     return <Navigate to="/paywall" replace />;
   }
 

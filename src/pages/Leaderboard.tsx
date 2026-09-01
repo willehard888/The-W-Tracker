@@ -226,7 +226,7 @@ const Leaderboard = () => {
 
   // countdownText replaced by <CountdownTimer> component — see render below.
 
-  // Access is gated globally by AccessGate (€4.99/mo membership or 7-day trial).
+  // Access is gated globally by AccessGate (8,99 €/mo membership or 14-day trial).
   // Leaderboard is open to every member with active access.
 
   return (

@@ -309,7 +309,7 @@ Deno.serve(async (req) => {
     ] = await Promise.all([
       supabase
         .from("profiles")
-        .select("username, xp, level, streak, longest_streak, status_tier, is_elite")
+        .select("username, xp, level, streak, longest_streak, status_tier, is_elite, membership_credits_until")
         .eq("user_id", userId)
         .maybeSingle(),
       supabase.rpc("has_active_access", { _user_id: userId }),
@@ -399,10 +399,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Per-user daily cap before the (expensive) GPT-5 call. Paid members get a
-    // generous limit; trial users get much less (abuse is almost always fresh
-    // trial accounts). Atomic Postgres counter — survives isolate churn.
-    const isPaid = profile?.is_elite === true;
+    // Per-user daily cap before the (expensive) GPT-5 call. Paid members and
+    // credit holders (referral rewards, pilot codes) get the generous limit;
+    // trial users get much less (abuse is almost always fresh trial
+    // accounts). Atomic Postgres counter — survives isolate churn.
+    const credits = profile?.membership_credits_until;
+    const isPaid =
+      profile?.is_elite === true ||
+      (typeof credits === "string" && new Date(credits).getTime() > Date.now());
     const dailyLimit = isPaid ? 200 : 40;
     const { data: allowed } = await supabase.rpc("bump_ai_usage", { p_limit: dailyLimit, p_kind: "coach" });
     if (allowed === false) {

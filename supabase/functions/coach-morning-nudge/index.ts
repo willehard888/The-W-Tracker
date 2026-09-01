@@ -107,7 +107,9 @@ Deno.serve(async (req) => {
   const { data: eliteUsers, error: usersErr } = await supabase
     .from("profiles")
     .select("user_id, username, status_tier, level, streak, timezone")
-    .eq("is_elite", true);
+    // Paid members OR live membership credits (referral rewards + pilot
+    // codes) — pilot testers should wake up to the same nudge.
+    .or(`is_elite.eq.true,membership_credits_until.gt.${new Date().toISOString()}`);
 
   if (usersErr) {
     return new Response(JSON.stringify({ error: usersErr.message }), {

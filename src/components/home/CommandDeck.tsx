@@ -94,7 +94,15 @@ const CommandDeck = ({
           )}
         </div>
         {streak > 0 && (
-          <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[hsl(var(--ember)/0.12)] border border-[hsl(var(--ember))]/30 px-2.5 py-1">
+          <span
+            // STREAK_INTRO spotlight target must exist in BOTH deck states —
+            // the card fires right after the first check-in, i.e. exactly
+            // when this collapsed row is what's on screen. Without the ref
+            // the intro fails 3× and locks itself out forever.
+            ref={streakTargetRef}
+            aria-label={`${streak} day streak`}
+            className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[hsl(var(--ember)/0.12)] border border-[hsl(var(--ember))]/30 px-2.5 py-1"
+          >
             <Flame aria-hidden size={13} className="text-[hsl(var(--ember))] status-flame-flicker" strokeWidth={2.8} />
             <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(22_95%_66%)]">
               {streak}
@@ -167,7 +175,7 @@ const CommandDeck = ({
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="eyebrow !text-gold mb-0.5">Lock your day</p>
+              <p className="eyebrow text-gold mb-0.5">Lock your day</p>
               <p className="font-display font-black text-[19px] leading-none tracking-tight">
                 Daily Check-In
               </p>

@@ -69,6 +69,10 @@ export const useHealthKit = () => {
     try {
       const snap = await readTodaySnapshot();
       if (snap) {
+        // Self-heal for accounts that granted HealthKit BEFORE the consent
+        // flag existed: a successful read proves permission, so record it —
+        // otherwise their background sync stays off until they re-tap Connect.
+        markHealthConnected();
         // capacitor-health can't read sleep, so fold in last night's sleep from
         // the HealthNight plugin — otherwise sleep_hours is always null and the
         // check-in's sleep can never be HealthKit-verified.

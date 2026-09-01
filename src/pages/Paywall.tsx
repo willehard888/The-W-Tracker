@@ -270,7 +270,7 @@ const Paywall = () => {
             🎁 Free membership until {creditsUntilLabel}
           </p>
           <p className="text-[12px] text-muted-foreground mt-1">
-            Earned from referrals — the app stays fully unlocked until then.
+            The app stays fully unlocked until then.
           </p>
         </div>
       )}

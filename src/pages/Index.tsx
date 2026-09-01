@@ -53,7 +53,7 @@ const Index = () => {
     const t = setTimeout(prefetch, 1500);
     return () => clearTimeout(t);
   }, []);
-  const { profile, isElite } = useAuth();
+  const { profile } = useAuth();
   // Contextual onboarding (Blueprint triggers): Today intro on first visit;
   // streak card once a streak exists; progression once XP exists (also
   // chained from STREAK_INTRO). Eligibility/dedup is the provider's job.
@@ -383,7 +383,7 @@ const Index = () => {
       {isNativePlatform() && !healthConnected && (
         <Reveal className="mb-4 relative z-10" delay={40}>
           <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
-            <HealthKitConnectCard />
+            <HealthKitConnectCard onConnected={() => setHealthConnected(true)} />
           </ErrorBoundary>
         </Reveal>
       )}

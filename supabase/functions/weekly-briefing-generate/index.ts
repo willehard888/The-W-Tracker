@@ -184,7 +184,9 @@ Deno.serve(async (req) => {
   const { data: eliteUsers, error: usersErr } = await supabase
     .from("profiles")
     .select("user_id, username, status_tier, level, xp, streak, longest_streak")
-    .eq("is_premium", true);
+    // Paid members OR live membership credits (referral rewards + pilot
+    // codes) — a pilot tester paying with a code gets the same briefing.
+    .or(`is_premium.eq.true,membership_credits_until.gt.${new Date().toISOString()}`);
 
   if (usersErr) {
     console.error("Failed to fetch elite users:", usersErr);

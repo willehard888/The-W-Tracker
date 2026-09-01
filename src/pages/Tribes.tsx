@@ -19,7 +19,7 @@ import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
 import { avatarUrl } from "@/lib/img";
 import AppImage from "@/components/ui/app-image";
-import { hapticSelection } from "@/lib/haptics";
+import { hapticNotification, hapticSelection } from "@/lib/haptics";
 import TribeSearchBar from "@/components/TribeSearchBar";
 import TribeFireLite from "@/components/TribeFireLite";
 import TribeEmberSeed from "@/components/TribeEmberSeed";
@@ -194,9 +194,19 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
       toast.error(friendlyError(error));
       return;
     }
-    if (data === "pending") toast.success("Request sent — awaiting approval");
-    else if (data === "already_member") toast.info("Already a member");
-    else toast.success("Joined the tribe!");
+    // Joining is the biggest commitment on the social surface and it used to
+    // land with nothing but a toast at the edge of the screen. The success
+    // haptic is exempt from the tap-coalescing window in haptics.ts on
+    // purpose — tap, then commit, felt as two separate things.
+    if (data === "pending") {
+      hapticNotification("success");
+      toast.success("Request sent — awaiting approval");
+    } else if (data === "already_member") {
+      toast.info("Already a member");
+    } else {
+      hapticNotification("success");
+      toast.success("Joined the tribe!");
+    }
     reloadTribes();
   };
 
@@ -211,6 +221,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
       toast.error(friendlyError(error));
       return;
     }
+    if (accept) hapticNotification("success");
     toast.success(accept ? `Joined ${invite.tribe?.name ?? "tribe"}!` : "Invite declined");
     reloadInvites();
     reloadTribes();

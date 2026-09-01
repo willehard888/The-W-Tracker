@@ -931,6 +931,27 @@
     animation: reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
+  /* COMMIT POP — the one shared "your choice landed" motion.
+
+     The app had press feedback almost everywhere (active:scale on nearly
+     every control) and commit feedback almost nowhere: ticking a habit or a
+     mission only cross-faded a colour over 200ms, so the moment that
+     actually mattered was the quietest thing on screen. This is the
+     counterpart — a short spring on the element the user just touched,
+     fired by toggling the class on (see the `commit-pop` usages).
+
+     Deliberately NOT in the (pointer: coarse) guard at the bottom of this
+     file: that block is for idle decoration. This is functional feedback,
+     the same category as loaders and toasts, which that block's own comment
+     excludes on purpose. Reduced-motion still turns it off — the colour and
+     icon change carry the state on their own, so nothing is lost. */
+  .commit-pop {
+    animation: commit-pop var(--motion-slide, 260ms) var(--ease-spring, cubic-bezier(0.16, 1.2, 0.32, 1)) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .commit-pop { animation: none; }
+  }
+
   .animate-reveal-delay-1 { animation-delay: 80ms; }
   .animate-reveal-delay-2 { animation-delay: 160ms; }
   .animate-reveal-delay-3 { animation-delay: 240ms; }
@@ -1516,6 +1537,14 @@
 @keyframes shine {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
+}
+
+/* Overshoot lives in the keyframe, not the easing, so the pop reads the same
+   wherever it is used and never fights a caller's own transform transition. */
+@keyframes commit-pop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
 }
 
 @keyframes reveal {

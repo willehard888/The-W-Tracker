@@ -219,8 +219,8 @@ const CoachShell = ({ session, program, navigate }: any) => {
 
   // AI-first landing. W Coach SPEAKS FIRST (CoachBriefHero) — a proactive,
   // data-aware brief — then offers the live chat and the supporting cards.
-  // The whole app is paywalled, so the AI coach is available to every member;
-  // there's no secondary Elite gate on the conversation any more.
+  // Access control lives in the app-wide paywall gate (ProtectedRoute) plus
+  // the edge function's own has_active_access check (403 → /paywall below).
   const openChat = (prompt?: string) => {
     hapticImpact("light");
     setChatPrompt(prompt ?? null);
@@ -311,6 +311,7 @@ const ThinkingIndicator = () => (
 const ChatSheet = ({
   session, program, initialPrompt, seedAssistant, onClose,
 }: { session: any; program: any; initialPrompt: string | null; seedAssistant?: string | null; onClose: () => void }) => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMsg[]>(() => {
     // Load the saved thread first; a check-in seed APPENDS as the latest
     // coach bubble. (It used to replace the whole thread — and the persist
@@ -458,6 +459,12 @@ const ChatSheet = ({
         // for debugging; the user only ever sees calm, recoverable copy.
         if (typeof console !== "undefined") console.error("Coach request failed:", summary);
 
+        if (resp.status === 403) {
+          // Membership gate (has_active_access) — retrying can never succeed;
+          // send them to the paywall like TodaysPlanCard does.
+          navigate("/paywall");
+          return;
+        }
         if (resp.status === 429) toast.error("Coach is busy right now. Try again in a moment.");
         else if (resp.status === 402 || resp.status === 401) toast.error("Coach is briefly unavailable. Please try again shortly.");
         else toast.error("Coach couldn't respond.", { action: { label: "Retry", onClick: () => retryLast() } });

@@ -15,8 +15,8 @@ import PremiumHero from "@/components/paywall/PremiumHero";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { track, FUNNEL } from "@/lib/analytics";
 
-const PREMIUM_YEARLY_FALLBACK = "49,99 €"; // must match the Stripe yearly price — 47,99 shown vs 49,99 charged eroded trust
-const PREMIUM_MONTHLY_FALLBACK = "4,99 €";
+const PREMIUM_YEARLY_FALLBACK = "89,99 €"; // must match the store price — a mismatched label vs charge eroded trust
+const PREMIUM_MONTHLY_FALLBACK = "8,99 €";
 
 type PurchaseStatus = "idle" | "purchasing" | "verifying" | "error";
 

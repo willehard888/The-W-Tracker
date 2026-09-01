@@ -19,7 +19,7 @@ export interface ReferralStats {
   membershipCreditsUntil: string | null;
 }
 
-const PRICE_PER_CONVERSION = 4.99;
+const PRICE_PER_CONVERSION = 8.99;
 
 export function useReferralStats(userId?: string) {
   return useQuery<ReferralStats>({

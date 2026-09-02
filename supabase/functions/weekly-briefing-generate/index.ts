@@ -2,6 +2,7 @@
 // Generates AI-powered weekly summary for each Elite user with ≥3 checkins this week
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendApnsBatch } from "../_shared/apns.ts";
+import { prefAllows } from "../_shared/push-targets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -183,7 +184,7 @@ Deno.serve(async (req) => {
   // gated on is_premium, NOT the earned "elite" status tier).
   const { data: eliteUsers, error: usersErr } = await supabase
     .from("profiles")
-    .select("user_id, username, status_tier, level, xp, streak, longest_streak")
+    .select("user_id, username, status_tier, level, xp, streak, longest_streak, notification_prefs")
     // Paid members OR live membership credits (referral rewards + pilot
     // codes) — a pilot tester paying with a code gets the same briefing.
     .or(`is_premium.eq.true,membership_credits_until.gt.${new Date().toISOString()}`);
@@ -342,17 +343,20 @@ Rules:
 
       results.generated++;
 
-      // Push notification (logged for now — same pattern as notify-message)
-      const { data: tokens } = await supabase
-        .from("push_tokens")
-        .select("token, platform")
-        .eq("user_id", profile.user_id);
+      // Briefing pref off = the briefing still generates and waits in-app.
+      const { data: tokens } = prefAllows((profile as any).notification_prefs, "briefing")
+        ? await supabase
+            .from("push_tokens")
+            .select("token, platform")
+            .eq("user_id", profile.user_id)
+        : { data: [] };
 
       if (tokens && tokens.length > 0) {
         const pushResults = await sendApnsBatch(tokens, {
           title: "📊 Your weekly briefing is ready",
           body: parsed.headline ?? "Tap to see your week.",
           data: { route: `/briefing/${inserted.id}` },
+          threadId: "coach",
         });
         const sent = pushResults.filter((r) => r.status === 200).length;
         const dead = pushResults

@@ -17,21 +17,13 @@
 -- with the same job name updates the schedule instead of duplicating.
 -- ───────────────────────────────────────────────────────────────────────
 
--- Daily reminder (push) — runs HOURLY; the function sends only to users for
--- whom it's 20:00 in THEIR local timezone and who haven't checked in yet.
-SELECT cron.schedule(
-  'daily-reminder',
-  '0 * * * *',
-  $$
-    SELECT net.http_post(
-      url     := 'https://NEW_REF.supabase.co/functions/v1/daily-reminder',
-      headers := jsonb_build_object(
-        'Authorization', 'Bearer SERVICE_ROLE_KEY',
-        'Content-Type', 'application/json'
-      )
-    );
-  $$
-);
+-- daily-reminder was RETIRED 2026-09-02: the client-side local notification
+-- owns the 20:00 streak warning (exact streak count, works offline), so the
+-- server push would have doubled every banner. Unschedule if present.
+DO $do$ BEGIN
+  PERFORM cron.unschedule('daily-reminder');
+EXCEPTION WHEN OTHERS THEN NULL;
+END $do$;
 
 -- Lapsed win-back (push) — daily 16:00 UTC. Tiered messages fire once each at
 -- 3 / 7 / 14 days of inactivity (exact-day match, no dedup table needed).

@@ -14,6 +14,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { gatherSituation } from "../_shared/situation.ts";
 import { sendApnsBatch } from "../_shared/apns.ts";
+import { prefAllows } from "../_shared/push-targets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -110,7 +111,7 @@ Deno.serve(async (req) => {
   // targets people the nudge can actually help.
   const { data: users, error: usersErr } = await supabase
     .from("profiles")
-    .select("user_id, username, status_tier, level, streak, timezone, last_active_at")
+    .select("user_id, username, status_tier, level, streak, timezone, last_active_at, notification_prefs")
     .or(`streak.gt.0,last_active_at.gte.${threeDaysAgoISO}`);
 
   if (usersErr) {
@@ -166,13 +167,21 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const { data: tokens } = await supabase
-        .from("push_tokens").select("token, platform").eq("user_id", p.user_id);
+      // The 20:00 local notification owns the evening streak warning (exact
+      // count, works offline) — pushing streak_risk here too would double the
+      // banner the minute remote push works. The in-app nudge row above still
+      // lands for it. Coach pref off = no push either, in-app only.
+      const wantsPush = trigger.kind !== "streak_risk" &&
+        prefAllows((p as any).notification_prefs, "coach");
+      const { data: tokens } = wantsPush
+        ? await supabase.from("push_tokens").select("token, platform").eq("user_id", p.user_id)
+        : { data: [] };
       if (tokens && tokens.length > 0) {
         const push = await sendApnsBatch(tokens as any, {
           title: `AI Coach: ${headline}`,
           body: content,
           data: { route: trigger.route },
+          threadId: "coach",
         });
         const ok = push.filter((r) => r.status === 200).length;
         const dead = push.filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered").map((r) => r.token);

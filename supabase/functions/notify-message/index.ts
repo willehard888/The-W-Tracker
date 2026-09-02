@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendApnsBatch } from "../_shared/apns.ts";
+import { getPushTargets } from "../_shared/push-targets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -98,13 +99,11 @@ Deno.serve(async (req) => {
       actor_id: user.id,
     });
 
-    // Get receiver's push tokens
-    const { data: tokens } = await serviceClient
-      .from("push_tokens")
-      .select("token, platform")
-      .eq("user_id", receiver_id);
+    // Get receiver's push tokens (skipped entirely if they muted Social —
+    // the inbox row above still lands, so nothing is lost).
+    const tokens = await getPushTargets(serviceClient, [receiver_id], "social");
 
-    if (!tokens || tokens.length === 0) {
+    if (tokens.length === 0) {
       return new Response(JSON.stringify({ message: "No tokens for receiver" }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -115,6 +114,9 @@ Deno.serve(async (req) => {
       title: `💬 ${senderUsername} sent you a message`,
       body: previewText,
       data: { route: "/messages" },
+      threadId: "social",
+      // Rapid-fire messages from the same sender replace, not stack.
+      collapseId: `chat-${user.id}`,
     };
 
     const results = await sendApnsBatch(tokens, payload);

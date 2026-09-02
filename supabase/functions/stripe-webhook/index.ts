@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendApnsBatch } from "../_shared/apns.ts";
+import { getPushTargets } from "../_shared/push-targets.ts";
 
 // Webhooks are server-to-server — no CORS headers needed.
 const jsonHeaders = { "Content-Type": "application/json" };
@@ -184,12 +185,11 @@ Deno.serve(async (req) => {
               const paid = Number((refData as any)?.paid_count ?? 0);
               const gotMonth = Array.isArray((refData as any)?.rewards) && (refData as any).rewards.includes("free_month");
               const toNext = 3 - (paid % 3);
-              const { data: tokens } = await supabase
-                .from("push_tokens").select("token, platform").eq("user_id", referrerId);
-              if (tokens && tokens.length > 0) {
-                const results = await sendApnsBatch(tokens as any, gotMonth
-                  ? { title: "+1 free month unlocked! 🎁", body: "Your recruit went Premium — 30 days of free membership added.", data: { route: "/referrals" } }
-                  : { title: "Your recruit went Premium 💎", body: `+500 XP. ${toNext} more paid friend${toNext === 1 ? "" : "s"} until your next free month.`, data: { route: "/referrals" } });
+              const tokens = await getPushTargets(supabase, [referrerId], "social");
+              if (tokens.length > 0) {
+                const results = await sendApnsBatch(tokens, gotMonth
+                  ? { title: "+1 free month unlocked! 🎁", body: "Your recruit went Premium — 30 days of free membership added.", data: { route: "/referrals" }, threadId: "social" }
+                  : { title: "Your recruit went Premium 💎", body: `+500 XP. ${toNext} more paid friend${toNext === 1 ? "" : "s"} until your next free month.`, data: { route: "/referrals" }, threadId: "social" });
                 const dead = results.filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered").map((r) => r.token);
                 if (dead.length) await supabase.from("push_tokens").delete().in("token", dead);
               }

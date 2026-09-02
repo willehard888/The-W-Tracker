@@ -1,16 +1,45 @@
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { pushIosDebugLog } from "@/lib/ios-debug";
+import { clampReminderHour } from "@/lib/notification-prefs";
+import type { ToneId } from "@/hooks/use-athlete-profile";
 
 const STREAK_WARNING_NOTIFICATION_ID = 48003;
-// Local wall-clock hour to nudge on a day the streak is at risk. Evening so the
-// user still has time to act before the local calendar day ends.
-const REMINDER_HOUR = 20; // 8pm device-local
 const FALLBACK_TRIGGER_DELAY_MS = 60 * 1000;
+
+// The one notification most users ever see from us — it speaks in their
+// chosen coach voice (same four tones as the persona block server-side).
+// Title carries the streak number: the loss being risked IS the hook.
+const days = (s: number) => `${s} ${s === 1 ? "day" : "days"}`;
+
+export const STREAK_COPY: Record<ToneId, { title: (streak: number) => string; body: string }> = {
+  calm_mentor: {
+    title: (s) => `${days(s)} — keep it whole`,
+    body: "One check-in before midnight protects everything you've built.",
+  },
+  drill_sergeant: {
+    title: (s) => `${s}-day streak on the line`,
+    body: "Log it before midnight. You don't break here.",
+  },
+  scientist: {
+    title: (s) => `${s}-day trend at risk`,
+    body: "One 5-minute log keeps the slope positive. Missing it costs the most expensive data point.",
+  },
+  hype: {
+    title: (s) => `🔥 ${days(s)} — don't let it die`,
+    body: "One quick check-in keeps the fire alive. Still time. Go.",
+  },
+};
 
 interface SyncStreakWarningArgs {
   lastCheckinAt?: string | null;
   streak?: number | null;
+  /** Coach voice for the copy; defaults to calm_mentor. */
+  tone?: ToneId | null;
+  /** Local hour to warn at (17–22); defaults to 20. */
+  hour?: number | null;
+  /** streak_guard pref — false clears any pending warning. */
+  enabled?: boolean;
 }
 
 /** Local Y-M-D string for a given instant (device timezone). */
@@ -48,13 +77,21 @@ export async function clearStreakWarningNotification() {
   });
 }
 
-export async function syncStreakWarningNotification({ lastCheckinAt, streak }: SyncStreakWarningArgs) {
+export async function syncStreakWarningNotification({
+  lastCheckinAt,
+  streak,
+  tone,
+  hour,
+  enabled = true,
+}: SyncStreakWarningArgs) {
   if (!Capacitor.isNativePlatform()) return;
 
-  if (!lastCheckinAt || !streak || streak <= 0) {
+  if (!enabled || !lastCheckinAt || !streak || streak <= 0) {
     await clearStreakWarningNotification();
     return;
   }
+
+  const REMINDER_HOUR = clampReminderHour(hour);
 
   const lastCheckin = new Date(lastCheckinAt);
   if (Number.isNaN(lastCheckin.getTime())) return;
@@ -89,12 +126,14 @@ export async function syncStreakWarningNotification({ lastCheckinAt, streak }: S
     notifications: [{ id: STREAK_WARNING_NOTIFICATION_ID }],
   });
 
+  const copy = STREAK_COPY[tone ?? "calm_mentor"] ?? STREAK_COPY.calm_mentor;
+
   await LocalNotifications.schedule({
     notifications: [
       {
         id: STREAK_WARNING_NOTIFICATION_ID,
-        title: `Keep your ${streak}-day streak`,
-        body: "Check in before the day ends to keep your streak alive.",
+        title: copy.title(streak),
+        body: copy.body,
         schedule: {
           at: triggerAt,
           allowWhileIdle: true,
@@ -115,42 +154,20 @@ export async function syncStreakWarningNotification({ lastCheckinAt, streak }: S
   });
 }
 
-// ── Lapsed re-engagement ────────────────────────────────────────────────────
-// Win back users who drift off. We schedule device-local "we miss you" nudges a
-// few days out and RESCHEDULE them on every app open — so they only ever fire if
-// the user hasn't returned. No backend, no push token, works offline.
+// ── Lapsed re-engagement (retired 2026-09-02) ───────────────────────────────
+// The local +3d/+7d "we miss you" timers are gone: server-side winback-lapsed
+// owns win-backs now (it knows check-ins, tiers to 3/7/14 days, and respects
+// the winback pref). This cancel stays so devices that scheduled the old
+// timers before this build don't double up with the server push.
 const LAPSED_3D_ID = 48010;
 const LAPSED_7D_ID = 48011;
-const LAPSED_HOUR = 18; // 6pm device-local
 
-/**
- * Push the win-back nudges out to +3d / +7d. Call on every app foreground; if
- * the user keeps opening the app, the timers keep sliding and never fire.
- */
-export async function scheduleLapsedReengagement() {
+export async function cancelLapsedReengagement() {
   if (!Capacitor.isNativePlatform()) return;
   try {
     await LocalNotifications.cancel({ notifications: [{ id: LAPSED_3D_ID }, { id: LAPSED_7D_ID }] });
-    await LocalNotifications.schedule({
-      notifications: [
-        {
-          id: LAPSED_3D_ID,
-          title: "Your discipline misses you 💪",
-          body: "Your streak and rank are waiting. One check-in restarts the momentum.",
-          schedule: { at: localTimeOnDay(3, LAPSED_HOUR), allowWhileIdle: true },
-          extra: { route: "/", type: "lapsed-3d" },
-        },
-        {
-          id: LAPSED_7D_ID,
-          title: "A week off — let's go again",
-          body: "The best time to restart is now. Check in and rebuild the streak.",
-          schedule: { at: localTimeOnDay(7, LAPSED_HOUR), allowWhileIdle: true },
-          extra: { route: "/", type: "lapsed-7d" },
-        },
-      ],
-    });
   } catch (error) {
-    pushIosDebugLog("LapsedReengagement", "Failed to schedule", {
+    pushIosDebugLog("LapsedReengagement", "Failed to cancel legacy timers", {
       message: error instanceof Error ? error.message : String(error),
     });
   }

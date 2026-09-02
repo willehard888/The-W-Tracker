@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendApnsBatch } from "../_shared/apns.ts";
+import { getPushTargets } from "../_shared/push-targets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -63,12 +64,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: tokens } = await supabase
-      .from("push_tokens").select("token, platform").eq("user_id", user_id);
+    const tokens = await getPushTargets(supabase, [user_id], "social");
 
     let sent = 0;
-    if (tokens && tokens.length > 0) {
-      const results = await sendApnsBatch(tokens as { token: string; platform: string }[], payload);
+    if (tokens.length > 0) {
+      const results = await sendApnsBatch(tokens, { ...payload, threadId: "social" });
       sent = results.filter((r) => r.status === 200).length;
       const dead = results
         .filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered")

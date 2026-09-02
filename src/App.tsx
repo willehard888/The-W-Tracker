@@ -10,7 +10,7 @@ import { useTrialAccess } from "@/hooks/use-trial-access";
 import { useActivityHeartbeat } from "@/hooks/use-activity-heartbeat";
 import PushPrimingSheet from "@/components/notifications/PushPrimingSheet";
 import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
-import { scheduleLapsedReengagement } from "@/lib/streak-notifications";
+import { cancelLapsedReengagement } from "@/lib/streak-notifications";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -45,6 +45,7 @@ const Chat = lazy(() => import("./pages/Chat"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const BlockedUsers = lazy(() => import("./pages/BlockedUsers"));
+const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const IosDebug = lazy(() => import("./pages/IosDebug"));
@@ -196,19 +197,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
  */
 const AppRoutes = () => {
   const { user } = useAuth();
-  const { needsPriming, enablePush, dismissPriming } = usePushNotifications();
+  const { needsPriming, enablePush, dismissPriming, resyncStreakWarning } = usePushNotifications();
   useOfflineCheckinSync();
   useActivityHeartbeat();
 
-  // Lapsed re-engagement: (re)schedule device-local win-back nudges on every
-  // foreground while signed in. They keep sliding out as long as the user keeps
-  // returning, so they only fire if someone actually drifts away.
+  // Win-backs moved server-side (winback-lapsed) — cancel the legacy local
+  // +3d/+7d timers once per session so pre-update devices don't get doubles.
   useEffect(() => {
     if (!user) return;
-    scheduleLapsedReengagement();
-    const onVis = () => { if (document.visibilityState === "visible") scheduleLapsedReengagement(); };
-    document.addEventListener("visibilitychange", onVis);
-    return () => document.removeEventListener("visibilitychange", onVis);
+    cancelLapsedReengagement();
   }, [user]);
 
   // Every page lands at the top. The main scroll container persists across
@@ -233,7 +230,7 @@ const AppRoutes = () => {
   // re-mount tax.
 
   return (
-    <PushControlsContext.Provider value={{ enablePush, dismissPriming }}>
+    <PushControlsContext.Provider value={{ enablePush, dismissPriming, resyncStreakWarning }}>
     <StatusExplainerProvider>
     <OnboardingProvider>
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
@@ -305,6 +302,7 @@ const AppRoutes = () => {
           <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/settings/blocked" element={<ProtectedRoute><BlockedUsers /></ProtectedRoute>} />
+          <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/terms" element={<TermsOfUse />} />
           {/* Debug panel persists token-presence + auth flow state — never

@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendApnsBatch } from "../_shared/apns.ts";
+import { getPushTargets } from "../_shared/push-targets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -58,17 +59,18 @@ Deno.serve(async (req) => {
       const userIds = (lapsed || []).map((u: any) => u.user_id);
       if (userIds.length === 0) { results[`d${tier.daysAgo}`] = 0; continue; }
 
-      const { data: tokens } = await supabase
-        .from("push_tokens")
-        .select("user_id, token, platform")
-        .in("user_id", userIds);
+      const tokens = await getPushTargets(supabase, userIds, "winback");
 
-      if (!tokens || tokens.length === 0) { results[`d${tier.daysAgo}`] = 0; continue; }
+      if (tokens.length === 0) { results[`d${tier.daysAgo}`] = 0; continue; }
 
-      const pushResults = await sendApnsBatch(tokens as any, {
+      const pushResults = await sendApnsBatch(tokens, {
         title: tier.title,
         body: tier.body,
         data: { route: "/" },
+        threadId: "winback",
+        // Escalating tiers supersede each other — an unopened d3 banner should
+        // be replaced by d7, not stack under it.
+        collapseId: "winback",
       });
       const sent = pushResults.filter((r) => r.status === 200).length;
       const dead = pushResults

@@ -19,7 +19,7 @@ import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
 import { avatarUrl } from "@/lib/img";
 import AppImage from "@/components/ui/app-image";
-import { hapticSelection } from "@/lib/haptics";
+import { hapticNotification, hapticSelection } from "@/lib/haptics";
 import TribeSearchBar from "@/components/TribeSearchBar";
 import TribeFireLite from "@/components/TribeFireLite";
 import TribeEmberSeed from "@/components/TribeEmberSeed";
@@ -194,9 +194,19 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
       toast.error(friendlyError(error));
       return;
     }
-    if (data === "pending") toast.success("Request sent — awaiting approval");
-    else if (data === "already_member") toast.info("Already a member");
-    else toast.success("Joined the tribe!");
+    // Joining is the biggest commitment on the social surface and it used to
+    // land with nothing but a toast at the edge of the screen. The success
+    // haptic is exempt from the tap-coalescing window in haptics.ts on
+    // purpose — tap, then commit, felt as two separate things.
+    if (data === "pending") {
+      hapticNotification("success");
+      toast.success("Request sent — awaiting approval");
+    } else if (data === "already_member") {
+      toast.info("Already a member");
+    } else {
+      hapticNotification("success");
+      toast.success("Joined the tribe!");
+    }
     reloadTribes();
   };
 
@@ -211,6 +221,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
       toast.error(friendlyError(error));
       return;
     }
+    if (accept) hapticNotification("success");
     toast.success(accept ? `Joined ${invite.tribe?.name ?? "tribe"}!` : "Invite declined");
     reloadInvites();
     reloadTribes();
@@ -247,9 +258,16 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/tribes/${t.id}`); } }}
         className={cn(
           "w-full text-left cursor-pointer surface-card p-4 apex-tribe-card-hover relative overflow-hidden",
+          // The animationDelay below was already wired but no animation was
+          // ever attached, so every card appeared at once and the delay did
+          // nothing. Cards now materialise in sequence.
+          opts.idx != null && "animate-fade-in-up",
         )}
         style={{
-          ...(opts.idx != null ? { animationDelay: `${opts.idx * 60}ms` } : null),
+          // Capped: 20 tribes at 60ms put the last one 1.2s out, which reads
+          // as sluggish rather than choreographed. 40ms with a 10-item cap
+          // keeps the whole list inside 400ms.
+          ...(opts.idx != null ? { animationDelay: `${Math.min(opts.idx, 10) * 40}ms` } : null),
           // Featured rows carry the tribe's own tier color on the edge —
           // the fire's identity, not generic gold.
           ...(opts.featured
@@ -508,37 +526,36 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         <>
           <div className="mb-2 -mx-4 px-4 overflow-x-auto no-scrollbar">
             <div className="flex gap-1.5 w-max">
-              <button
+              {/* Filter chips share ONE selected language across the tribe
+                  surface — gold-outline selected, plain outline otherwise.
+                  The group row used a filled gold chip and the activity row a
+                  filled ember one, so the same act of "picking" looked like two
+                  different things one row apart. */}
+              <Button
+                variant={!openGroup && !activityFilter ? "gold-outline" : "outline"}
+                size="pill"
+                className="shrink-0"
                 onClick={() => { void hapticSelection(); setOpenGroup(null); setActivityFilter(null); }}
-                className={cn(
-                  "shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold border transition-all active:scale-95",
-                  !openGroup && !activityFilter
-                    ? "bg-gold text-primary-foreground border-transparent"
-                    : "bg-secondary/30 border-border/40 text-muted-foreground",
-                )}
               >
                 All
-              </button>
+              </Button>
               {TRIBE_ACTIVITY_GROUPS.map((g) => {
                 const GIcon = GROUP_ICONS[g.label] ?? Sparkles;
                 const active = openGroup === g.label;
                 return (
-                  <button
+                  <Button
                     key={g.label}
+                    variant={active ? "gold-outline" : "outline"}
+                    size="pill"
+                    className="shrink-0"
                     onClick={() => {
                       void hapticSelection();
                       if (active) { setOpenGroup(null); setActivityFilter(null); }
                       else { setOpenGroup(g.label); setActivityFilter(null); }
                     }}
-                    className={cn(
-                      "shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold border transition-all active:scale-95",
-                      active
-                        ? "bg-gold text-primary-foreground border-transparent"
-                        : "bg-secondary/30 border-border/40 text-muted-foreground",
-                    )}
                   >
                     <GIcon aria-hidden size={12} strokeWidth={2.4} /> {g.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -550,18 +567,15 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                   const active = activityFilter === a.name;
                   const AIcon = a.icon;
                   return (
-                    <button
+                    <Button
                       key={a.name}
+                      variant={active ? "gold-outline" : "outline"}
+                      size="pill"
+                      className="shrink-0"
                       onClick={() => { void hapticSelection(); setActivityFilter(active ? null : a.name); }}
-                      className={cn(
-                        "shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold border transition-all active:scale-95",
-                        active
-                          ? "bg-[hsl(var(--ember))] text-primary-foreground border-transparent"
-                          : "bg-secondary/20 border-border/40 text-muted-foreground",
-                      )}
                     >
                       <AIcon aria-hidden size={11} strokeWidth={2.4} /> {a.name}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -629,13 +643,17 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
           {featured && renderTribeCard(featured, { featured: true })}
           {restList.map((t, idx) => renderTribeCard(t, { idx }))}
 
-          {/* Creation is rare — a quiet ghost row at the end, not a toolbar CTA */}
-          <button
+          {/* Creation is rare — a quiet row at the end, not a toolbar CTA. The
+              border was dashed, which reads as a placeholder or a drop zone
+              rather than a finished control. Solid outline keeps it quiet
+              without looking unfinished. */}
+          <Button
+            variant="outline"
+            className="w-full h-auto py-3.5 rounded-2xl text-[12px] text-muted-foreground hover:text-gold"
             onClick={() => navigate("/tribes/new")}
-            className="w-full rounded-2xl border border-dashed border-border/60 p-3.5 flex items-center justify-center gap-2 text-[12px] font-bold text-muted-foreground hover:text-gold hover:border-gold/40 transition-colors active:scale-[0.99]"
           >
             <Plus aria-hidden size={14} /> Start your own tribe
-          </button>
+          </Button>
         </div>
       )}
     </div>

@@ -1,6 +1,5 @@
-import { useEffect, useState, useRef } from "react";
-import { useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import AnimatedNumber from "@/components/AnimatedNumber";
 
 interface XpCounterProps {
   value: number;
@@ -8,38 +7,24 @@ interface XpCounterProps {
   duration?: number;
 }
 
-const XpCounter = ({ value, className, duration = 1200 }: XpCounterProps) => {
-  const reduce = useReducedMotion();
-  const [display, setDisplay] = useState(0);
-  const startRef = useRef<number>(0);
-  const rafRef = useRef<number>(0);
-
-  useEffect(() => {
-    if (reduce) { setDisplay(value); return; }
-    if (value === 0) {setDisplay(0);return;}
-    const start = performance.now();
-    startRef.current = display;
-    const from = startRef.current;
-    const diff = value - from;
-
-    const tick = (now: number) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      // ease-out cubic
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(Math.round(from + diff * eased));
-      if (progress < 1) rafRef.current = requestAnimationFrame(tick);
-    };
-
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [value, duration]);
-
-  return (
-    <span className={cn("tabular-nums text-3xl", className)}>
-      {display.toLocaleString()} XP
-    </span>);
-
-};
+/**
+ * The big "+N XP" count-up on the check-in summary.
+ *
+ * Now a thin wrapper over AnimatedNumber rather than a second RAF loop. The
+ * duplicate had two stale-closure bugs that the shared one already solves:
+ * its effect read `reduce` and `display` but listed neither in its deps, so
+ * (a) toggling Reduce Motion mid-session never took effect, and (b) a value
+ * change during an in-flight count resumed from the last *rendered* number
+ * instead of the live one, making the total visibly jump backwards.
+ * AnimatedNumber tracks the live value in a ref precisely for this.
+ */
+const XpCounter = ({ value, className, duration = 1200 }: XpCounterProps) => (
+  <AnimatedNumber
+    value={value}
+    duration={duration}
+    className={cn("text-3xl", className)}
+    format={(n) => `${n.toLocaleString()} XP`}
+  />
+);
 
 export default XpCounter;

@@ -14,6 +14,17 @@ interface StreakFlameInlineProps {
   className?: string;
   /** Override count text class — for color/weight. Defaults to tier-based. */
   countClassName?: string;
+  /**
+   * Render the flame without any looping animation.
+   *
+   * Size, colour and layer count still track the streak, so the flame reads
+   * exactly the same at a glance — only the perpetual motion is dropped. Use
+   * this anywhere the component repeats down a list: the leaderboard renders
+   * one per row with no virtualization, and each animated instance costs 3–7
+   * looping layers, several with blur() and mix-blend-mode. The docstring
+   * below already warned about this surface; `still` is the lever for it.
+   */
+  still?: boolean;
 }
 
 /**
@@ -35,7 +46,12 @@ const StreakFlameInline = ({
   suffix = "",
   className,
   countClassName,
+  still = false,
 }: StreakFlameInlineProps) => {
+  // One gate for every looping animation in this component. Returning
+  // undefined leaves the CSS `animation` property unset rather than setting
+  // it to "none", so a still flame costs the compositor nothing at all.
+  const loop = (value: string | undefined) => (still ? undefined : value);
   // Tier (mirrors StreakDisplay)
   const tierIndex =
     streak >= 200 ? 6 :
@@ -177,7 +193,7 @@ const StreakFlameInline = ({
         style={{
           width: flameSize,
           height: flameSize * 1.15,
-          animation: hueAnim ? `${hueAnim}${breathAnim}` : breathAnim ? breathAnim.slice(2) : undefined,
+          animation: loop(hueAnim ? `${hueAnim}${breathAnim}` : breathAnim ? breathAnim.slice(2) : undefined),
           transform: windTilt,
           transformOrigin: "center bottom",
           transition: windTilt ? "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)" : undefined,
@@ -196,7 +212,7 @@ const StreakFlameInline = ({
               height: flameSize * 1.9,
               background: `radial-gradient(ellipse at 50% 70%, ${palette.glow.replace(")", " / 0.5)")} 0%, ${palette.glow.replace(")", " / 0.18)")} 40%, transparent 72%)`,
               mixBlendMode: "screen",
-              animation: `flame-halo-bloom ${(speed * 3.8).toFixed(2)}s ease-in-out infinite`,
+              animation: loop(`flame-halo-bloom ${(speed * 3.8).toFixed(2)}s ease-in-out infinite`),
               zIndex: -2,
             }}
           />
@@ -215,7 +231,7 @@ const StreakFlameInline = ({
               filter: `blur(${Math.max(3, flameSize * 0.1)}px)`,
               transform: "translateX(-50%)",
               transformOrigin: "50% 50%",
-              animation: `flame-chiaroscuro ${(speed * 4.2).toFixed(2)}s ease-in-out infinite`,
+              animation: loop(`flame-chiaroscuro ${(speed * 4.2).toFixed(2)}s ease-in-out infinite`),
               zIndex: -1,
             }}
           />
@@ -233,7 +249,7 @@ const StreakFlameInline = ({
               filter: "blur(5px)",
               mixBlendMode: "screen",
               transformOrigin: "50% 50%",
-              animation: `flame-ground-cast ${(speed * 4).toFixed(2)}s ease-in-out infinite`,
+              animation: loop(`flame-ground-cast ${(speed * 4).toFixed(2)}s ease-in-out infinite`),
               zIndex: 0,
             }}
           />
@@ -265,7 +281,7 @@ const StreakFlameInline = ({
               top: -2,
               background: palette.core,
               boxShadow: `0 0 ${flameSize * 0.35}px ${palette.glow}`,
-              animation: `flame-inline-ember-rise ${speed * 1.6}s ease-out infinite`,
+              animation: loop(`flame-inline-ember-rise ${speed * 1.6}s ease-out infinite`),
               ["--ember-rise" as string]: `${flameSize * 0.9}px`,
             }}
           />
@@ -360,7 +376,7 @@ const StreakFlameInline = ({
               filter: `blur(${Math.max(1.5, flameSize * 0.05)}px)`,
               transform: "translateX(-50%)",
               mixBlendMode: "screen",
-              animation: `flame-heart-bloom ${(speed * 1.4).toFixed(2)}s ease-in-out infinite`,
+              animation: loop(`flame-heart-bloom ${(speed * 1.4).toFixed(2)}s ease-in-out infinite`),
             }}
           />
         )}
@@ -379,7 +395,7 @@ const StreakFlameInline = ({
               transform: "translateX(-50%)",
               opacity: 0,
               ["--ember-rise" as string]: `${-flameSize * 1.3}px`,
-              animation: `flame-ember-float ${(speed * 2.4).toFixed(2)}s ease-out infinite`,
+              animation: loop(`flame-ember-float ${(speed * 2.4).toFixed(2)}s ease-out infinite`),
             }}
           />
         )}
@@ -398,7 +414,7 @@ const StreakFlameInline = ({
               transform: "translateX(-50%)",
               opacity: 0,
               ["--ember-rise" as string]: `${-flameSize * 1.6}px`,
-              animation: `flame-ember-float ${(speed * 2.8).toFixed(2)}s ease-out infinite`,
+              animation: loop(`flame-ember-float ${(speed * 2.8).toFixed(2)}s ease-out infinite`),
               animationDelay: `${(speed * 1.1).toFixed(2)}s`,
             }}
           />

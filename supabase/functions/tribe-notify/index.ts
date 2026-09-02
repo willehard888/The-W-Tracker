@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendApnsBatch } from "../_shared/apns.ts";
+import { getPushTargets } from "../_shared/push-targets.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -151,15 +152,15 @@ Deno.serve(async (req) => {
       })));
     }
 
-    const { data: tokens } = await supabase
-      .from("push_tokens").select("token, platform").in("user_id", uniq);
+    const tokens = await getPushTargets(supabase, uniq, "tribe");
 
     let sent = 0;
-    if (tokens && tokens.length > 0) {
-      const results = await sendApnsBatch(tokens as any, {
+    if (tokens.length > 0) {
+      const results = await sendApnsBatch(tokens, {
         title: push.title,
         body: push.body,
         data: { route: push.route },
+        threadId: "tribe",
       });
       sent = results.filter((r) => r.status === 200).length;
       const dead = results

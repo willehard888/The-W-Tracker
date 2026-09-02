@@ -22,6 +22,7 @@ import ConfettiBurst from "@/components/ConfettiBurst";
 import DailyQuests from "@/components/DailyQuests";
 import LevelUpCelebration from "@/components/LevelUpCelebration";
 import { syncStreakWarningNotification } from "@/lib/streak-notifications";
+import { getNotificationPrefs } from "@/lib/notification-prefs";
 import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
 import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
@@ -568,7 +569,16 @@ const DailyCheckin = () => {
       }
 
       void (async () => {
-        try { await syncStreakWarningNotification({ lastCheckinAt: checkinTimestamp, streak: r.new_streak }); } catch (e) { console.warn("streak notif", e); captureException(e, { where: "checkin.streakNotif" }); }
+        try {
+          const prefs = getNotificationPrefs((profile as { notification_prefs?: unknown } | null)?.notification_prefs);
+          await syncStreakWarningNotification({
+            lastCheckinAt: checkinTimestamp,
+            streak: r.new_streak,
+            tone: athlete?.tone_pref ?? null,
+            hour: prefs.reminder_hour,
+            enabled: prefs.streak_guard,
+          });
+        } catch (e) { console.warn("streak notif", e); captureException(e, { where: "checkin.streakNotif" }); }
         try { await supabase.rpc("update_status_tier", { target_user_id: user.id }); } catch (e) { console.warn("tier update", e); captureException(e, { where: "checkin.tierUpdate" }); }
         try {
           const newBadge = await checkAndAwardBadges(user.id);

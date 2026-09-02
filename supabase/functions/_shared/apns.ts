@@ -78,6 +78,18 @@ export interface ApnsPayload {
   data?: Record<string, unknown>;
   badge?: number;
   sound?: string;
+  /**
+   * Notification Center grouping (aps thread-id). Pass the sender's category
+   * ("coach", "tribe", "social", …) so a busy morning stacks into tidy groups
+   * instead of a wall of loose banners.
+   */
+  threadId?: string;
+  /**
+   * apns-collapse-id header: a newer push with the same id replaces the older
+   * one on the device. Use for notifications where only the latest state
+   * matters (e.g. tribe fire count), not for independent events.
+   */
+  collapseId?: string;
 }
 
 export interface ApnsResult {
@@ -104,6 +116,7 @@ export async function sendApnsPush(
       alert: { title: payload.title, body: payload.body },
       sound: payload.sound ?? "default",
       ...(payload.badge !== undefined ? { badge: payload.badge } : {}),
+      ...(payload.threadId ? { "thread-id": payload.threadId } : {}),
     },
     ...(payload.data ?? {}),
   };
@@ -118,6 +131,7 @@ export async function sendApnsPush(
       "apns-push-type": "alert",
       "apns-priority": "10",
       "content-type": "application/json",
+      ...(payload.collapseId ? { "apns-collapse-id": payload.collapseId } : {}),
     },
     body: JSON.stringify(apsBody),
   });

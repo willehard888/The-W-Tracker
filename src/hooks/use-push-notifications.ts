@@ -9,6 +9,8 @@ import {
   requestStreakNotificationPermission,
   syncStreakWarningNotification,
 } from "@/lib/streak-notifications";
+import { getNotificationPrefs } from "@/lib/notification-prefs";
+import type { ToneId } from "@/hooks/use-athlete-profile";
 import { LocalNotifications } from "@capacitor/local-notifications";
 
 // Whitelisted in-app routes that notifications may navigate to. Anything
@@ -51,6 +53,8 @@ export interface PushNotificationState {
   enablePush: () => Promise<void>;
   /** Call from the priming sheet's "Not now" — snoozes for a week. */
   dismissPriming: () => void;
+  /** Re-read prefs/tone and reschedule the local streak warning (settings screen). */
+  resyncStreakWarning: () => Promise<void>;
 }
 
 /**
@@ -61,7 +65,7 @@ export interface PushNotificationState {
  */
 export const PushControlsContext = createContext<Pick<
   PushNotificationState,
-  "enablePush" | "dismissPriming"
+  "enablePush" | "dismissPriming" | "resyncStreakWarning"
 > | null>(null);
 
 export const usePushControls = () => useContext(PushControlsContext);
@@ -77,14 +81,22 @@ export const usePushNotifications = (): PushNotificationState => {
 
   const syncStreakWarning = useCallback(async () => {
     if (!user) return;
-    const [{ data: lastCheckin }, { data: profile }] = await Promise.all([
+    const [{ data: lastCheckin }, { data: profile }, { data: athlete }] = await Promise.all([
       supabase.from("daily_checkins").select("checked_in_at")
         .eq("user_id", user.id).order("checked_in_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.from("profiles").select("streak").eq("user_id", user.id).maybeSingle(),
+      supabase.from("profiles").select("streak, notification_prefs" as never)
+        .eq("user_id", user.id).maybeSingle(),
+      supabase.from("coach_athlete_profile").select("tone_pref")
+        .eq("user_id", user.id).maybeSingle(),
     ]);
+    const row = profile as { streak?: number; notification_prefs?: unknown } | null;
+    const prefs = getNotificationPrefs(row?.notification_prefs);
     await syncStreakWarningNotification({
       lastCheckinAt: lastCheckin?.checked_in_at ?? null,
-      streak: profile?.streak ?? 0,
+      streak: row?.streak ?? 0,
+      tone: ((athlete as { tone_pref?: ToneId } | null)?.tone_pref) ?? null,
+      hour: prefs.reminder_hour,
+      enabled: prefs.streak_guard,
     });
   }, [user?.id]);
 
@@ -192,5 +204,5 @@ export const usePushNotifications = (): PushNotificationState => {
     // every hour, dropping a notification tap that landed mid-teardown.
   }, [user?.id, activate]);
 
-  return { needsPriming, enablePush, dismissPriming };
+  return { needsPriming, enablePush, dismissPriming, resyncStreakWarning: syncStreakWarning };
 };

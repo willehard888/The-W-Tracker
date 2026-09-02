@@ -10,14 +10,6 @@ import { cn } from "@/lib/utils";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { Button } from "@/components/ui/button";
 import StatusAvatar from "@/components/StatusAvatar";
-
-/**
- * Shared look for the Reply / Edit / Delete actions on a comment: uppercase
- * micro-label, muted until hover, and a hit area two steps wider than the
- * 28px box so the `xs` size stays tappable on a phone.
- */
-const COMMENT_ACTION =
-  "relative uppercase tracking-wider font-bold text-muted-foreground/75 hover:text-[hsl(var(--ember))] before:absolute before:-inset-2 before:content-['']";
 import TierUsername from "@/components/TierUsername";
 import PostMedia from "@/components/feed/PostMedia";
 import ImageLightbox from "@/components/ImageLightbox";
@@ -35,6 +27,14 @@ const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
 // Comment-tree helpers are shared with EliteFeed — see src/lib/comment-tree.ts.
 import { buildCommentTree, MAX_VISUAL_DEPTH, type CommentNode } from "@/lib/comment-tree";
 import { friendlyError } from "@/lib/error-copy";
+
+/**
+ * Shared look for the Reply / Edit / Delete actions on a comment: uppercase
+ * micro-label, muted until hover, and a hit area two steps wider than the
+ * 28px box so the `xs` size stays tappable on a phone.
+ */
+const COMMENT_ACTION =
+  "relative uppercase tracking-wider font-bold text-muted-foreground/75 hover:text-[hsl(var(--ember))] before:absolute before:-inset-2 before:content-['']";
 
 const isEdited = (node: CommentNode) => {
   if (!node.updated_at || !node.created_at) return false;

@@ -213,14 +213,23 @@ const buttonVariants = cva(
          * 28px is BELOW the 44pt tap floor by necessity — it has to be, to sit
          * on a comment meta line. ALWAYS pair it with a hit-area expansion:
          *   className="relative before:absolute before:-inset-2 before:content-['']"
+         * …EXCEPT on variants that own ::before for their surface (ember/
+         * default, ember-outline): there the expansion is clipped by their
+         * overflow-hidden and skews the sheen geometry — use min-h-11
+         * min-w-11 on those instead.
+         *
+         * gap-1 (both hops: root for asChild, inner span otherwise) keeps a
+         * Reply · Edit · Delete meta row at its hand-rolled 4px density.
          */
-        xs: "h-7 min-h-7 px-2 rounded-md text-[11px] [&_svg]:size-3",
+        xs: "h-7 min-h-7 px-2 rounded-md text-[11px] [&_svg]:size-3 gap-1 [&>span]:gap-1",
         lg: "h-12 min-h-12 px-8 rounded-lg text-base",
         xl: "h-14 min-h-14 px-10 rounded-lg text-lg tracking-[-0.01em] font-display",
         icon: "h-10 w-10 min-h-10 rounded-md",
         "icon-sm": "h-8 w-8 min-h-8 rounded-md [&_svg]:size-3.5",
         "icon-lg": "h-12 w-12 min-h-12 rounded-md [&_svg]:size-5",
-        pill: "h-9 min-h-9 px-5 rounded-full text-xs",
+        // Filter chips ran gap-1.5 when hand-rolled; keep that density here
+        // rather than the base gap-2.5 (root hop for asChild, span otherwise).
+        pill: "h-9 min-h-9 px-5 rounded-full text-xs gap-1.5 [&>span]:gap-1.5",
       },
     },
     defaultVariants: {

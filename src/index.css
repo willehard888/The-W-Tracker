@@ -2671,10 +2671,11 @@
 
    .animate-reveal had no guard at all, and it is what animates the top of
    Home — the status strip, the First-W card and the check-in deck — plus the
-   expanded "More" body. Those animated for reduced-motion users. */
+   expanded "More" body. It animated for reduced-motion users.
+   (.animate-fade-in-up already has its own !important guard further down,
+   next to the stagger helpers — don't re-add it here.) */
 @media (prefers-reduced-motion: reduce) {
-  .animate-reveal,
-  .animate-fade-in-up {
+  .animate-reveal {
     animation: none;
   }
 }

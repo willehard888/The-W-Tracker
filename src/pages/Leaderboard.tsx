@@ -444,10 +444,17 @@ const Leaderboard = () => {
                 style={
                   // Skip paint/layout for off-screen rows beyond the first
                   // screenful — cheap virtualization, no container rewrite.
-                  i < 8 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 68px" }
+                  i < 8
+                    ? { animationDelay: `${i * 40}ms` }
+                    : { contentVisibility: "auto", containIntrinsicSize: "auto 68px" }
                 }
                 className={cn(
                   "w-full flex items-center gap-3 rounded-xl border p-3.5 text-left transition-all active:scale-[0.99]",
+                  // The board landed as one solid block, while its own loading
+                  // skeleton staggered — the real content arrived flatter than
+                  // the placeholder it replaced. Only the first screenful
+                  // animates; the rest are content-visibility:auto anyway.
+                  i < 8 && "animate-fade-in-up",
                   isMe
                     ? "border-gold/50 bg-gradient-to-r from-gold/10 via-gold/5 to-transparent ring-1 ring-gold/40 shadow-[0_0_20px_hsl(var(--gold)/0.15)]"
                     : isTop10
@@ -483,7 +490,14 @@ const Leaderboard = () => {
                     {user.streak > 0 && (
                       <>
                         <span className="text-muted-foreground/75">•</span>
-                        <StreakFlameInline streak={user.streak} suffix="d" className="text-[11px]" />
+                        {/* `still` in rows, animated on the podium below. This
+                            list renders one flame per row with no virtualization
+                            behind a .limit(100), and each animated instance is
+                            3–7 looping layers, several with blur() and
+                            mix-blend-mode — the app's heaviest surface. Colour
+                            and size still track the streak, so the row reads the
+                            same; motion now belongs to the top three alone. */}
+                        <StreakFlameInline streak={user.streak} suffix="d" className="text-[11px]" still />
                       </>
                     )}
                     {wins > 0 && (

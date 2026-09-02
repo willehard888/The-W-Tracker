@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { Flame, ChevronRight, Check } from "lucide-react";
+import AnimatedNumber from "@/components/AnimatedNumber";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
@@ -104,8 +105,10 @@ const CommandDeck = ({
             className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[hsl(var(--ember)/0.12)] border border-[hsl(var(--ember))]/30 px-2.5 py-1"
           >
             <Flame aria-hidden size={13} className="text-[hsl(var(--ember))] status-flame-flicker" strokeWidth={2.8} />
+            {/* The streak is the number the whole product is about; it landed
+                instantly while the rank next to it counted. */}
             <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(22_95%_66%)]">
-              {streak}
+              <AnimatedNumber value={streak} duration={800} />
             </span>
           </span>
         )}
@@ -121,14 +124,17 @@ const CommandDeck = ({
     ? "linear-gradient(135deg, hsl(var(--ember)), hsl(var(--gold)), hsl(42 85% 70%), hsl(var(--ember)))"
     : "linear-gradient(135deg, hsl(var(--gold)), hsl(var(--ember)), hsl(42 85% 70%), hsl(var(--gold)))";
 
+  // This gradient used to be sized 200% and slid forever by shimmer-slide.
+  // At rest that sweep carried no information, so it's gone — and with it the
+  // 200% background-size, which existed ONLY to give the slide room to travel.
+  // Leaving the size behind would have pinned the border at background-position
+  // 0% 0%, showing a quarter of the gradient. The stops read corner-to-corner
+  // at natural size, which is what the static border wants.
+
   return (
     <div
       className={cn("rounded-3xl p-[1.5px] overflow-hidden relative breathing-glow", className)}
-      style={{
-        backgroundImage: border,
-        backgroundSize: "200% 200%",
-        animation: "shimmer-slide 5s ease-in-out infinite",
-      }}
+      style={{ backgroundImage: border }}
     >
       <button
         type="button"
@@ -166,11 +172,6 @@ const CommandDeck = ({
           {/* Top row — flame icon + streak chip */}
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 relative gradient-gold text-primary-foreground shadow-[0_0_24px_hsl(var(--gold)/0.55)]">
-              <span
-                aria-hidden
-                className="absolute inset-0 rounded-2xl bg-gold/40 animate-ping opacity-40"
-                style={{ animationDuration: "2.4s" }}
-              />
               <Flame aria-hidden size={24} strokeWidth={2.6} className="relative status-flame-flicker" />
             </div>
 
@@ -188,7 +189,7 @@ const CommandDeck = ({
             {streak > 0 && (
               <div ref={streakTargetRef} className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[hsl(var(--ember)/0.12)] border border-[hsl(var(--ember))]/30 px-2.5 py-1">
                 <Flame aria-hidden size={13} className="text-[hsl(var(--ember))] status-flame-flicker" strokeWidth={2.8} />
-                <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(22_95%_66%)]">{streak}</span>
+                <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(22_95%_66%)]"><AnimatedNumber value={streak} duration={800} /></span>
               </div>
             )}
           </div>

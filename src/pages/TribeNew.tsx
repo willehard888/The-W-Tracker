@@ -91,13 +91,15 @@ const TribeNew = () => {
   return (
     <div className="min-h-full pb-10 px-4 pt-3">
       <div className="flex items-center gap-2 mb-4">
-        <button
+        <Button
+          variant="outline"
+          size="icon-sm"
+          className="h-9 w-9 rounded-full text-muted-foreground"
           onClick={() => navigate(-1)}
-          className="h-9 w-9 rounded-full bg-card/70 border border-border/60 flex items-center justify-center text-muted-foreground active:scale-95 transition-transform"
           aria-label="Back"
         >
           <ArrowLeft size={16} />
-        </button>
+        </Button>
         <h1 className="font-display text-base font-black tracking-tight">Create a Tribe</h1>
       </div>
 
@@ -186,21 +188,20 @@ const TribeNew = () => {
                   {group.label}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
+                  {/* These chips were a fourth copy of the same hand-rolled
+                      class string, with yet another background opacity. They
+                      now share the tribe surface's one selected language. */}
                   {group.items.map(({ name, icon: Icon }) => (
-                    <button
+                    <Button
                       key={name}
                       type="button"
+                      variant={activity === name ? "gold-outline" : "outline"}
+                      size="pill"
                       onClick={() => setActivity(name === activity ? "" : name)}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold border transition-all active:scale-95",
-                        activity === name
-                          ? "bg-gold text-primary-foreground border-transparent"
-                          : "bg-secondary/40 border-border/50 text-muted-foreground",
-                      )}
                     >
                       <Icon size={12} strokeWidth={2.4} />
                       {name}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>

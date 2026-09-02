@@ -624,9 +624,11 @@ const TribeDetail = () => {
     // (join_tribe is SECURITY DEFINER; it works even when the row is hidden).
     return (
       <div className="px-4 pt-4 pb-8">
-        <button onClick={() => navigate("/squad?tab=tribes")} className="flex items-center gap-1 text-xs text-muted-foreground mb-8 active:scale-95 transition-transform">
+        {/* One back-button treatment across the tribe screens. There were
+            three, and one of them had no press feedback at all. */}
+        <Button variant="ghost" size="sm" className="-ml-3 mb-8 text-muted-foreground" onClick={() => navigate("/squad?tab=tribes")}>
           <ArrowLeft size={14} /> Tribes
-        </button>
+        </Button>
         <div className="surface-card p-6 text-center">
           <div className="mx-auto h-12 w-12 rounded-2xl bg-secondary/50 border border-border/60 flex items-center justify-center mb-3">
             <Lock size={20} className="text-muted-foreground" />
@@ -635,7 +637,7 @@ const TribeDetail = () => {
           <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
             Its fire, feed and events open up once you're in.
           </p>
-          <Button variant="ember" size="sm" className="mt-4" onClick={handleJoin}>
+          <Button variant="ember" size="lg" className="mt-4" onClick={handleJoin}>
             Request to join
           </Button>
         </div>
@@ -718,9 +720,14 @@ const TribeDetail = () => {
         </Portal>
       )}
 
-      <button onClick={() => { hapticSelection(); navigate("/squad?tab=tribes"); }} className="flex items-center gap-1 text-xs text-muted-foreground mb-4 relative active:scale-95 transition-transform">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-3 mb-4 relative text-muted-foreground"
+        onClick={() => { hapticSelection(); navigate("/squad?tab=tribes"); }}
+      >
         <ArrowLeft size={14} /> Tribes
-      </button>
+      </Button>
 
       {/* HERO — the tribe's one cinematic card: fire, identity, actions */}
       <TribeHero

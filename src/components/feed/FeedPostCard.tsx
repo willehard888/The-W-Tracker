@@ -122,10 +122,16 @@ const FeedPostCard = memo(function FeedPostCard({
       className={cn(
         "rounded-2xl border bg-card overflow-hidden transition-all card-depth",
         "hover:shadow-[0_8px_32px_hsl(0_0%_0%/0.35),0_4px_12px_hsl(var(--gold)/0.06)]",
-        post.reported ? "border-destructive/30 bg-destructive/[0.02]" : liked ? "border-gold/20" : "border-border"
+        post.reported ? "border-destructive/30 bg-destructive/[0.02]" : liked ? "border-gold/20" : "border-border",
+        // Same dead-delay fix as the tribe cards: the stagger timing was
+        // already here, the keyframe never was. Only the first screenful
+        // staggers — posts below the fold are `content-visibility: auto`
+        // anyway, and delaying content the user deliberately scrolled to
+        // would make the feed feel slower, not richer.
+        index < 6 && "animate-fade-in-up",
       )}
       style={{
-        animationDelay: `${index * 60}ms`,
+        animationDelay: `${Math.min(index, 6) * 40}ms`,
         // Skip layout/paint for off-screen posts (cheap virtualization
         // without restructuring the scroll container). First few stay
         // eager so the initial paint isn't blank.

@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { Calendar, MapPin, Users, Plus, X, Trash2, Check, Clock, Flame, Video, Layers, ChevronDown } from "lucide-react";
 import { Portal } from "@/components/ui/Portal";
+import { Button } from "@/components/ui/button";
 import { format, isToday, isTomorrow } from "date-fns";
 import { toast } from "sonner";
 import { useTribeEvents, useTribeEventActions, type TribeEvent, type RsvpStatus } from "@/hooks/use-tribe-events";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { useCommitPop } from "@/hooks/use-commit-pop";
 import { safeHttpUrl } from "@/lib/safe-url";
 import { TRIBE_ACTIVITY_GROUPS, activityIcon, activityDefaults } from "@/lib/tribe-activities";
 
@@ -89,12 +91,13 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
           <h2 className="font-display font-black text-sm tracking-tight">Meetups & events</h2>
         </div>
         {isMember && (
-          <button
+          <Button
+            variant="gold-outline"
+            size="pill"
             onClick={() => { hapticImpact("light"); setShowCreate(true); }}
-            className="inline-flex items-center gap-1 rounded-full bg-gold/15 border border-gold/35 px-3 py-1.5 text-[12px] font-black text-gold active:scale-95 transition-transform"
           >
             <Plus size={13} /> Host
-          </button>
+          </Button>
         )}
       </div>
 
@@ -177,6 +180,10 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
   const full = ev.capacity != null && ev.going_count >= ev.capacity && ev.my_status !== "going";
   const rel = isToday(start) ? "Today" : isTomorrow(start) ? "Tomorrow" : null;
   const pct = ev.capacity ? Math.min(100, (ev.going_count / ev.capacity) * 100) : 0;
+  // RSVP used to change variant and nothing else — the choice landed with no
+  // movement at all. These pop the button the user actually chose.
+  const goingPop = useCommitPop(ev.my_status === "going");
+  const maybePop = useCommitPop(ev.my_status === "maybe");
   return (
     <div className={cn(
       "surface-card overflow-hidden bg-gradient-to-br from-[hsl(var(--ember))]/[0.05] via-card/70 to-card",
@@ -225,27 +232,48 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
             {ev.description && <p className="text-[12px] text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
             {isMember && (
               <div className="mt-2.5 flex items-center gap-1.5">
+                {/* One action, one selected-state, one quiet default. Ember is
+                    reserved for the single thing you'd actually tap next
+                    (opening the meeting); the RSVP pair shares one selected
+                    look, so which one is lit is the only signal that matters.
+                    This row previously carried three different languages —
+                    flat ember, flat gold, tinted gold outline — side by side. */}
                 {safeHttpUrl(ev.meeting_url) && (
-                  <a href={safeHttpUrl(ev.meeting_url)} target="_blank" rel="noopener noreferrer" onClick={() => hapticImpact("light")}
-                    className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[12px] font-black bg-[hsl(var(--ember))] text-background active:scale-95 transition-transform">
-                    <Video size={12} /> Join
-                  </a>
+                  <Button asChild variant="ember" size="sm" onClick={() => hapticImpact("light")}>
+                    <a href={safeHttpUrl(ev.meeting_url)} target="_blank" rel="noopener noreferrer">
+                      <Video size={12} /> Join
+                    </a>
+                  </Button>
                 )}
-                <button disabled={busy === ev.id || full} onClick={() => onRsvp(ev, "going")}
-                  className={cn("inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[12px] font-black transition-all active:scale-95 disabled:opacity-50",
-                    ev.my_status === "going" ? "bg-gold text-primary-foreground" : "bg-secondary/50 border border-border/50 text-foreground/70")}>
+                <Button
+                  variant={ev.my_status === "going" ? "gold-outline" : "outline"}
+                  size="sm"
+                  className={cn(goingPop && "commit-pop")}
+                  disabled={busy === ev.id || full}
+                  onClick={() => onRsvp(ev, "going")}
+                >
                   <Check size={12} /> {full ? "Full" : "Going"}
-                </button>
-                <button disabled={busy === ev.id} onClick={() => onRsvp(ev, "maybe")}
-                  className={cn("rounded-lg px-3 py-1.5 text-[12px] font-black transition-all active:scale-95 disabled:opacity-50",
-                    ev.my_status === "maybe" ? "bg-gold/20 border border-gold/40 text-gold" : "bg-secondary/50 border border-border/50 text-foreground/70")}>
+                </Button>
+                <Button
+                  variant={ev.my_status === "maybe" ? "gold-outline" : "outline"}
+                  size="sm"
+                  className={cn(maybePop && "commit-pop")}
+                  disabled={busy === ev.id}
+                  onClick={() => onRsvp(ev, "maybe")}
+                >
                   Maybe
-                </button>
+                </Button>
                 {ev.host_id === currentUserId && (
-                  <button disabled={busy === ev.id} onClick={() => onDelete(ev)}
-                    className="ml-auto h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground/60 active:scale-95" aria-label="Delete event">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="ml-auto text-muted-foreground/60"
+                    disabled={busy === ev.id}
+                    onClick={() => onDelete(ev)}
+                    aria-label="Delete event"
+                  >
                     <Trash2 size={14} />
-                  </button>
+                  </Button>
                 )}
               </div>
             )}
@@ -299,10 +327,16 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
             </p>
           </div>
           {isHost && (
-            <button disabled={busy === series.id} onClick={onDeleteSeries}
-              className="shrink-0 h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground/60 active:scale-95" aria-label="Delete series">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="shrink-0 text-muted-foreground/60 relative before:absolute before:-inset-2 before:content-['']"
+              disabled={busy === series.id}
+              onClick={onDeleteSeries}
+              aria-label="Delete series"
+            >
               <Trash2 size={14} />
-            </button>
+            </Button>
           )}
         </div>
 
@@ -326,27 +360,41 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
                 </div>
                 {isMember && (
                   <div className="flex items-center gap-1 shrink-0">
+                    {/* Same language as the single-event row above: ember for
+                        the one action, gold-outline for the selected state.
+                        The pseudo-element widens the tap target past the
+                        compact visual size to clear the 44pt floor. */}
                     {s.meeting_url && (
-                      <a href={safeHttpUrl(s.meeting_url)} target="_blank" rel="noopener noreferrer" onClick={() => hapticImpact("light")}
-                        className="h-7 w-7 rounded-lg flex items-center justify-center bg-[hsl(var(--ember))] text-background active:scale-95" aria-label="Join">
-                        <Video size={12} />
-                      </a>
+                      <Button
+                        asChild
+                        variant="ember"
+                        size="icon-sm"
+                        className="relative before:absolute before:-inset-2 before:content-['']"
+                        onClick={() => hapticImpact("light")}
+                      >
+                        <a href={safeHttpUrl(s.meeting_url)} target="_blank" rel="noopener noreferrer" aria-label="Join">
+                          <Video size={12} />
+                        </a>
+                      </Button>
                     )}
-                    <button disabled={busy === s.id} onClick={() => onRsvp(s, "going")}
-                      className={cn("h-7 px-2.5 rounded-lg text-[11px] font-black transition-all active:scale-95 disabled:opacity-50",
-                        s.my_status === "going" ? "bg-gold text-primary-foreground" : "bg-secondary/60 border border-border/50 text-foreground/70")}>
+                    <Button
+                      variant={s.my_status === "going" ? "gold-outline" : "outline"}
+                      size="sm"
+                      className="relative px-2.5 before:absolute before:-inset-2 before:content-['']"
+                      disabled={busy === s.id}
+                      onClick={() => onRsvp(s, "going")}
+                    >
                       {s.my_status === "going" ? <Check size={12} /> : "Going"}
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
             );
           })}
           {hidden > 0 && (
-            <button onClick={() => setExpanded(true)}
-              className="w-full inline-flex items-center justify-center gap-1 rounded-xl bg-secondary/20 border border-border/40 py-1.5 text-[12px] font-bold text-muted-foreground active:scale-[0.99]">
+            <Button variant="outline" size="sm" className="w-full" onClick={() => setExpanded(true)}>
               <ChevronDown size={13} /> Show {hidden} more session{hidden === 1 ? "" : "s"}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -434,17 +482,31 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
       <div className="relative z-10 mx-auto w-full max-w-md rounded-t-3xl border-t border-gold/25 bg-card max-h-[88vh] overflow-y-auto p-4 pb-8 animate-in slide-in-from-bottom duration-200">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-display text-base font-black tracking-tight">Host a meetup</h2>
-          <button aria-label="Close" onClick={onClose} className="h-8 w-8 min-h-11 min-w-11 rounded-full bg-secondary flex items-center justify-center text-muted-foreground"><X size={16} /></button>
+          <Button
+            variant="secondary"
+            size="icon-sm"
+            className="min-h-11 min-w-11 rounded-full text-muted-foreground"
+            aria-label="Close"
+            onClick={onClose}
+          >
+            <X size={16} />
+          </Button>
         </div>
 
-        {/* Single event vs multi-session series */}
+        {/* Single event vs multi-session series. Selected state is gold-outline
+            everywhere on this surface — same language as the RSVP row and the
+            activity chips below, so "which one is picked" reads the same way
+            wherever you are. */}
         <div className="grid grid-cols-2 gap-2 mb-3">
           {([["single", "Single", Calendar], ["series", "Series", Layers]] as const).map(([k, label, Icon]) => (
-            <button key={k} type="button" onClick={() => setKind(k)}
-              className={cn("flex items-center justify-center gap-1.5 rounded-xl border py-2.5 text-[12px] font-bold transition-all active:scale-[0.98]",
-                kind === k ? "border-gold/50 bg-gold/10 text-gold" : "border-border/50 bg-background/40 text-muted-foreground")}>
+            <Button
+              key={k}
+              type="button"
+              variant={kind === k ? "gold-outline" : "outline"}
+              onClick={() => setKind(k)}
+            >
               <Icon size={14} /> {label}
-            </button>
+            </Button>
           ))}
         </div>
         {kind === "series" && (
@@ -461,11 +523,14 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
                 <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground/55 mb-1">{group.label}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {group.items.map(({ name, icon: Icon }) => (
-                    <button key={name} onClick={() => pickActivity(name)}
-                      className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold border transition-all active:scale-95",
-                        activity === name ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground")}>
+                    <Button
+                      key={name}
+                      variant={activity === name ? "gold-outline" : "outline"}
+                      size="pill"
+                      onClick={() => pickActivity(name)}
+                    >
                       <Icon size={12} strokeWidth={2.4} /> {name}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -484,18 +549,29 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
                     onChange={(e) => setSessions((prev) => prev.map((x, idx) => idx === i ? e.target.value : x))}
                     className={cn(field, "flex-1")} />
                   {sessions.length > 1 && (
-                    <button type="button" onClick={() => setSessions((prev) => prev.filter((_, idx) => idx !== i))}
-                      className="shrink-0 h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground/60 active:scale-95" aria-label="Remove session">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="shrink-0 text-muted-foreground/60 relative before:absolute before:-inset-2 before:content-['']"
+                      onClick={() => setSessions((prev) => prev.filter((_, idx) => idx !== i))}
+                      aria-label="Remove session"
+                    >
                       <X size={15} />
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}
               {sessions.length < 24 && (
-                <button type="button" onClick={() => setSessions((prev) => [...prev, ""])}
-                  className="w-full inline-flex items-center justify-center gap-1 rounded-xl bg-secondary/30 border border-border/40 py-2 text-[12px] font-bold text-gold active:scale-[0.99]">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setSessions((prev) => [...prev, ""])}
+                >
                   <Plus size={13} /> Add session
-                </button>
+                </Button>
               )}
             </div>
           )}
@@ -503,17 +579,14 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
           {/* In person / Online */}
           <div className="grid grid-cols-2 gap-2">
             {([["in_person", "In person", MapPin], ["online", "Online", Video]] as const).map(([m, label, Icon]) => (
-              <button
+              <Button
                 key={m}
                 type="button"
+                variant={mode === m ? "gold-outline" : "outline"}
                 onClick={() => { setMode(m); setModeTouched(true); }}
-                className={cn(
-                  "flex items-center justify-center gap-1.5 rounded-xl border py-2.5 text-[12px] font-bold transition-all active:scale-[0.98]",
-                  mode === m ? "border-gold/50 bg-gold/10 text-gold" : "border-border/50 bg-background/40 text-muted-foreground",
-                )}
               >
                 <Icon size={14} /> {label}
-              </button>
+              </Button>
             ))}
           </div>
           {mode === "in_person" ? (
@@ -534,10 +607,13 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
             )}
           </div>
           <textarea value={desc} onChange={(e) => setDesc(e.target.value)} maxLength={280} placeholder="Details (optional)" rows={2} className={cn(field, "resize-none")} />
-          <button disabled={busy} onClick={submit}
-            className="w-full rounded-xl bg-gold py-3 text-[13px] font-black text-primary-foreground disabled:opacity-60 active:scale-[0.99] transition-transform">
-            {busy ? "Posting…" : kind === "series" ? `Post series${sessionCount ? ` · ${sessionCount} session${sessionCount === 1 ? "" : "s"}` : ""}` : "Post meetup"}
-          </button>
+          {/* The sheet's one primary action, at the size the ember treatment was
+              drawn for. It was a flat full-width bg-gold slab — the largest
+              untreated surface in the tribe screens, and the loudest thing
+              reading as unfinished next to the system's machined buttons. */}
+          <Button variant="ember" size="lg" className="w-full" loading={busy} onClick={submit}>
+            {kind === "series" ? `Post series${sessionCount ? ` · ${sessionCount} session${sessionCount === 1 ? "" : "s"}` : ""}` : "Post meetup"}
+          </Button>
         </div>
       </div>
     </div>

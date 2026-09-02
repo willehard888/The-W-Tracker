@@ -139,12 +139,16 @@ const TribeBattles = () => {
 
   return (
     <div className="min-h-full pb-8 px-4 pt-4">
-      <button
+      {/* This one had no press feedback at all — the third of three different
+          back buttons across the tribe screens. */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-3 mb-4 text-muted-foreground"
         onClick={() => navigate(`/tribes/${id}`)}
-        className="flex items-center gap-1 text-xs text-muted-foreground mb-4"
       >
         <ArrowLeft size={14} /> {tribe.name}
-      </button>
+      </Button>
 
       {/* Hero — anchored by the tribe's collective war-flame.
           The bigger the combined member streak, the hotter & taller the

@@ -239,7 +239,7 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
                     This row previously carried three different languages —
                     flat ember, flat gold, tinted gold outline — side by side. */}
                 {safeHttpUrl(ev.meeting_url) && (
-                  <Button asChild variant="ember" size="sm" onClick={() => hapticImpact("light")}>
+                  <Button asChild variant="ember" size="sm">
                     <a href={safeHttpUrl(ev.meeting_url)} target="_blank" rel="noopener noreferrer">
                       <Video size={12} /> Join
                     </a>
@@ -267,7 +267,7 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="ml-auto text-muted-foreground/60"
+                    className="ml-auto text-muted-foreground/60 relative before:absolute before:-inset-2 before:content-['']"
                     disabled={busy === ev.id}
                     onClick={() => onDelete(ev)}
                     aria-label="Delete event"
@@ -362,15 +362,17 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
                   <div className="flex items-center gap-1 shrink-0">
                     {/* Same language as the single-event row above: ember for
                         the one action, gold-outline for the selected state.
-                        The pseudo-element widens the tap target past the
-                        compact visual size to clear the 44pt floor. */}
+                        min-h/min-w (not the before:-inset trick) clears the
+                        44pt floor here: PRIMARY_EMBER owns ::before for its
+                        crown sheen and clips with overflow-hidden, so an
+                        expanded pseudo-element would catch nothing and skew
+                        the sheen geometry instead. */}
                     {s.meeting_url && (
                       <Button
                         asChild
                         variant="ember"
                         size="icon-sm"
-                        className="relative before:absolute before:-inset-2 before:content-['']"
-                        onClick={() => hapticImpact("light")}
+                        className="min-h-11 min-w-11"
                       >
                         <a href={safeHttpUrl(s.meeting_url)} target="_blank" rel="noopener noreferrer" aria-label="Join">
                           <Video size={12} />

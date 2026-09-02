@@ -260,8 +260,10 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
           "w-full text-left cursor-pointer surface-card p-4 apex-tribe-card-hover relative overflow-hidden",
           // The animationDelay below was already wired but no animation was
           // ever attached, so every card appeared at once and the delay did
-          // nothing. Cards now materialise in sequence.
-          opts.idx != null && "animate-fade-in-up",
+          // nothing. Cards now materialise in sequence — capped at the first
+          // 8 like Leaderboard/Feed: below the fold there's nobody watching,
+          // and a 20-card list animating at once costs paint for nothing.
+          opts.idx != null && opts.idx < 8 && "animate-fade-in-up",
         )}
         style={{
           // Capped: 20 tribes at 60ms put the last one 1.2s out, which reads

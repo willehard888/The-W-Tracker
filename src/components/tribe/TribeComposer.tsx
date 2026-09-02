@@ -1,4 +1,4 @@
-import { Image as ImageIcon, Video as VideoIcon, Send, Loader2 } from "lucide-react";
+import { Image as ImageIcon, Video as VideoIcon, Send } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import MediaPreview from "@/components/media/MediaPreview";

@@ -66,6 +66,14 @@ const TribeBattles = lazy(() => import("./pages/TribeBattles"));
 const TribeLeaderboard = lazy(() => import("./pages/TribeLeaderboard"));
 const Vault = lazy(() => import("./pages/Vault"));
 const Recipes = lazy(() => import("./pages/Recipes"));
+// The DEV check wraps the lazy() call, not just the <Route>. Guarding only the
+// route still leaves a top-level dynamic import, which Rollup honours by
+// emitting a RecipePoster chunk into the production build — dead weight nobody
+// ever fetches. With the branch here, `import.meta.env.DEV` folds to false and
+// the whole import is eliminated.
+const RecipePoster = import.meta.env.DEV
+  ? lazy(() => import("./pages/dev/RecipePoster"))
+  : null;
 const Exercises = lazy(() => import("./pages/Exercises"));
 const WeeklyBriefing = lazy(() => import("./pages/WeeklyBriefing"));
 const AdminModeration = lazy(() => import("./pages/AdminModeration"));
@@ -287,6 +295,13 @@ const AppRoutes = () => {
           <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />
           <Route path="/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
           <Route path="/recipes" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
+          {/* Poster export surface — dev only, so the branch is dead code in a
+              production build and the chunk is never emitted. Unauthenticated
+              on purpose: it renders bundled data and a bundled image, nothing
+              user-specific, and the export tooling shouldn't need a session. */}
+          {RecipePoster && (
+            <Route path="/dev/recipe-poster/:id" element={<RecipePoster />} />
+          )}
           <Route path="/exercises" element={<ProtectedRoute><Exercises /></ProtectedRoute>} />
           <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
           <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />

@@ -187,10 +187,14 @@ const Index = () => {
     };
     if (!(s in MESSAGES)) return;
     const key = `streak_milestone_seen_${profile?.user_id}_${s}`;
-    if (localStorage.getItem(key)) return;
-    localStorage.setItem(key, "1");
+    // Guarded like every other storage access in this file — a storage-denied
+    // throw here would take down Home on the user's milestone day.
+    try {
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, "1");
+    } catch { return; }
     setMilestoneConfetti(true);
-    toast.success(`🔥 ${s}-day streak`, { description: MESSAGES[s], duration: 5500 });
+    toast.success(`${s}-day streak`, { description: MESSAGES[s], duration: 5500 });
     const t = setTimeout(() => setMilestoneConfetti(false), 2600);
     return () => clearTimeout(t);
   }, [profile?.streak]);
@@ -238,7 +242,7 @@ const Index = () => {
                 ? "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(var(--ember) / 0.22) 0%, hsl(var(--gold) / 0.10) 40%, transparent 75%)"
                 : isLegend
                 ? "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(280 70% 60% / 0.20) 0%, hsl(var(--gold) / 0.10) 40%, transparent 75%)"
-                : "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(18 92% 56% / 0.18) 0%, hsl(var(--gold) / 0.08) 45%, transparent 80%)",
+                : "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(var(--ember) / 0.18) 0%, hsl(var(--gold) / 0.08) 45%, transparent 80%)",
           }}
         />
       )}
@@ -272,7 +276,13 @@ const Index = () => {
             aria-label="Open Ranks"
             className="absolute inset-0 rounded-2xl"
           />
-          <span aria-hidden className="relative pointer-events-none text-xl leading-none shrink-0">{tierConfig.emoji}</span>
+          {/* Token-colored tier dot, not the config emoji: ⬛ as the first
+              glyph of every new user's Home read as a missing-glyph bug, and
+              colored-square emoji are the cheapest possible tier iconography.
+              bg-current inherits the tier's own text color. */}
+          <span aria-hidden className={`relative pointer-events-none shrink-0 flex items-center justify-center ${tierConfig.textClass}`}>
+            <span className="h-2.5 w-2.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" />
+          </span>
           <div className="relative pointer-events-none min-w-0 flex-1">
             {/* Rank shows only when EARNED and sane (hasRank, rank ≤ total) —
                 an unranked recruit once read "#3 of 2" here. Same guard rule
@@ -334,7 +344,10 @@ const Index = () => {
       {/* FIRST W — one-shot bridge for a new user who hasn't checked in yet */}
       {showFirstW && (
         <div className="animate-reveal mb-3 relative z-10">
-          <div className="relative rounded-2xl border border-gold/35 bg-gradient-to-r from-gold/10 via-card/60 to-card/60 p-3.5 flex items-center gap-3">
+          {/* shadow-1: this was the only flat container on Home — zero
+              elevation between the elevated strip and deck read unfinished,
+              on the card every brand-new user sees first. */}
+          <div className="relative rounded-2xl border border-gold/35 bg-gradient-to-r from-gold/10 via-card/60 to-card/60 p-3.5 flex items-center gap-3 shadow-[var(--shadow-1)]">
             <button
               type="button"
               onClick={() => navigate("/checkin")}
@@ -476,7 +489,7 @@ const Index = () => {
 
       {/* Tier message footer — boosted contrast (was muted-foreground/40 → barely visible) */}
       <div className="mt-6 mb-2 text-center">
-        <p className="text-[11px] text-muted-foreground/75 font-semibold tracking-[0.22em] uppercase">
+        <p className="text-[11px] text-muted-foreground font-semibold tracking-[0.22em] uppercase">
           {tierConfig.message}
         </p>
       </div>

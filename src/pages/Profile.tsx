@@ -123,7 +123,7 @@ const Profile = () => {
         const { error: rpcErr } = await supabase.rpc("update_own_profile", { new_avatar_url: urlData.publicUrl });
         if (rpcErr) throw new Error(rpcErr.message);
       });
-      toast.success("Profile photo updated! 📸");
+      toast.success("Photo updated");
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
     } catch (err: any) {
       console.error(err);
@@ -380,7 +380,7 @@ const Profile = () => {
     } else {
       await supabase.rpc("update_own_profile", { clear_featured_badge: true });
     }
-    toast.success(newId ? "Title badge set! 🏅" : "Title badge removed");
+    toast.success(newId ? "Title badge set" : "Title badge removed");
     await queryClient.invalidateQueries({ queryKey: ["profile"] });
   };
 
@@ -417,7 +417,7 @@ const Profile = () => {
               <button
                 type="button"
                 onClick={() => { hapticSelection(); setQuickMenuOpen(false); setProfileTab("settings"); }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 active:scale-[0.98] transition"
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-secondary/60 active:bg-secondary/40 active:scale-[0.98] transition"
               >
                 <SettingsIcon aria-hidden size={14} className="text-gold" />
                 <span>Open Settings</span>
@@ -425,7 +425,7 @@ const Profile = () => {
               <button
                 type="button"
                 onClick={() => { hapticSelection(); setQuickMenuOpen(false); signOut(); }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 active:scale-[0.98] transition border-t border-border/40"
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-secondary/60 active:bg-secondary/40 active:scale-[0.98] transition border-t border-border/40"
               >
                 <LogOut aria-hidden size={14} className="text-gold" />
                 <span>Sign Out</span>
@@ -496,7 +496,7 @@ const Profile = () => {
         {[
           { icon: CalendarCheck, label: "Check-ins", value: checkinTotal ?? 0, accent: "text-gold" },
           { icon: Flame, label: "Best streak", value: `${profile.longest_streak ?? 0}d`, accent: "text-[hsl(var(--ember))]" },
-          { icon: Award, label: "Battles won", value: battleStats?.won || 0, accent: "text-rose-400" },
+          { icon: Award, label: "Battles won", value: battleStats?.won || 0, accent: "text-[hsl(var(--rose))]" },
           { icon: Trophy, label: "Kudos received", value: kudosReceived || 0, accent: "text-gold" },
         ].map((s) => (
           <div key={s.label} className="surface-card p-3.5 flex items-center gap-3">

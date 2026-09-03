@@ -34,8 +34,10 @@ const DailyInsightCard = () => {
           <p className="text-[13px] font-semibold text-foreground/90 leading-snug">
             {insight.text}
           </p>
+          {/* The card is a button with a chevron — "tap to open" is
+              instruction slop on a touch app. */}
           <p className="text-[12px] font-bold text-muted-foreground mt-1.5">
-            The Vault — tap to open the lesson
+            From the Vault
           </p>
         </div>
         <ChevronRight aria-hidden size={16} className="text-muted-foreground shrink-0 mt-1" />

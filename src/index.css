@@ -208,12 +208,21 @@
      large part of why they looked cheap. The press transform is a 110ms
      one-shot the browser handles fine without the hint; a permanent layer per
      button was never worth it. */
-  button:not(.no-tap-scale):not([data-state]):not([role="tab"]):not([role="menuitem"]) {
+  /* THE press system. The two other global press blocks that used to compete
+     with this one (an 80ms transform in the native-feel layer with no :not()
+     chain, and a desktop-only 200ms overshoot spring on every property) were
+     removed 2026-09-03 — press feel was cascade luck, and the opt-outs below
+     were silently dead because the unfiltered blocks re-applied the scale. */
+  button:not(.no-tap-scale):not([data-state]):not([role="tab"]):not([role="menuitem"]),
+  [role="button"]:not(.no-tap-scale),
+  .press {
     transition:
       transform 110ms cubic-bezier(0.32, 0.72, 0, 1),
       opacity   140ms cubic-bezier(0.32, 0.72, 0, 1);
   }
-  button:not(.no-tap-scale):not([data-state]):not([role="tab"]):not([role="menuitem"]):active:not(:disabled) {
+  button:not(.no-tap-scale):not([data-state]):not([role="tab"]):not([role="menuitem"]):active:not(:disabled),
+  [role="button"]:not(.no-tap-scale):active,
+  .press:active {
     transform: scale(0.97);
   }
 
@@ -703,13 +712,16 @@
       inset 0 1px 0 hsl(0 0% 100% / 0.06);
   }
 
-  .card-hover:hover {
-    transform: translateY(-3px) rotateX(2deg);
-    box-shadow:
-      0 16px 48px hsl(0 0% 0% / 0.4),
-      0 6px 16px hsl(var(--gold) / 0.08),
-      0 0 1px hsl(var(--purple) / 0.12),
-      inset 0 1px 0 hsl(0 0% 100% / 0.1);
+  /* hover:hover gate: iOS taps stick :hover onto the card until the next tap. */
+  @media (hover: hover) and (pointer: fine) {
+    .card-hover:hover {
+      transform: translateY(-3px) rotateX(2deg);
+      box-shadow:
+        0 16px 48px hsl(0 0% 0% / 0.4),
+        0 6px 16px hsl(var(--gold) / 0.08),
+        0 0 1px hsl(var(--purple) / 0.12),
+        inset 0 1px 0 hsl(0 0% 100% / 0.1);
+    }
   }
 
   .card-hover:active {
@@ -949,7 +961,11 @@
      excludes on purpose. Reduced-motion still turns it off — the colour and
      icon change carry the state on their own, so nothing is lost. */
   .commit-pop {
-    animation: commit-pop var(--motion-slide, 260ms) var(--ease-spring, cubic-bezier(0.16, 1.2, 0.32, 1)) both;
+    /* One overshoot per gesture: the keyframe already springs (1 → 1.18 → 1),
+       so the curve must NOT overshoot too — --ease-spring made the pop wobble
+       twice (its own dip below 1 on the return leg). Soft ease, keyframe
+       physics. */
+    animation: commit-pop var(--motion-slide, 260ms) var(--ease-soft, cubic-bezier(0.22, 0.61, 0.36, 1)) both;
   }
   @media (prefers-reduced-motion: reduce) {
     .commit-pop { animation: none; }
@@ -1537,6 +1553,34 @@
   }
 }
 
+/* Reduced motion — the decorative infinite loops that accreted AFTER the
+   block above was written (badge chrome, streak text effects, glass caustics,
+   pulse dots). All pure decoration: exactly what reduced motion must remove.
+   Kept as one grouped block so the next loop gets added HERE, not forgotten. */
+@media (prefers-reduced-motion: reduce) {
+  .badge-shine,
+  .badge-holo-sweep::after,
+  .badge-conic-rim-legendary::before,
+  .badge-conic-rim-epic::before,
+  .animate-badge-float,
+  .animate-badge-pulse,
+  .animate-float,
+  .animate-spin-slow,
+  .glass-card::before,
+  .gradient-border-animated::before,
+  .pulse-dot::after,
+  .shimmer-overlay::after,
+  .streak-gold-text,
+  .streak-diamond-text,
+  .streak-legendary-text,
+  .streak-conic-ring,
+  .streak-conic-ring-legendary,
+  .apex-portal-glow::after,
+  [class*="streak-rainbow"] {
+    animation: none !important;
+  }
+}
+
 @keyframes shine {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -1548,6 +1592,19 @@
   0%   { transform: scale(1); }
   45%  { transform: scale(1.18); }
   100% { transform: scale(1); }
+}
+
+/* Value-swap bridge (paywall price on plan toggle): the 4px blur masks the
+   two-objects-overlapping artifact a plain crossfade shows. One-shot,
+   opacity+filter only. */
+@keyframes price-in {
+  from { opacity: 0; filter: blur(4px); }
+}
+.price-swap {
+  animation: price-in 200ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .price-swap { animation: none; }
 }
 
 @keyframes reveal {
@@ -2596,10 +2653,14 @@
 .apex-tribe-card-hover {
   transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
 }
-.apex-tribe-card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px hsl(18 95% 58% / 0.18), 0 0 28px hsl(42 78% 54% / 0.18);
-  border-color: hsl(18 95% 58% / 0.55);
+/* hover:hover gate: on iOS a tap "sticks" the hover state onto the card until
+   the next tap elsewhere — a lifted, glowing card the user already left. */
+@media (hover: hover) and (pointer: fine) {
+  .apex-tribe-card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px hsl(18 95% 58% / 0.18), 0 0 28px hsl(42 78% 54% / 0.18);
+    border-color: hsl(18 95% 58% / 0.55);
+  }
 }
 .apex-tribe-card-hover:active {
   transform: translateY(0) scale(0.99);
@@ -2656,7 +2717,8 @@
   opacity: 0;
   transform: translateY(14px);
   transition: opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1), transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
-  will-change: opacity, transform;
+  /* No will-change: a one-shot entrance doesn't earn a permanent GPU layer
+     (same reasoning as the global button will-change removal). */
 }
 .reveal-on-scroll.is-visible {
   opacity: 1;
@@ -4474,15 +4536,9 @@ button:active > .aurum-lava-glow {
   to   { opacity: 1; transform: scale(1); }
 }
 
-/* Smooth global tactile press-down on every interactive element when not
-   already handled — applied additively, harmless to elements with their own. */
-@media (hover: hover) {
-  a, button, [role="button"] {
-    transition-property: transform, box-shadow, filter, background-color, border-color, color, opacity;
-    transition-duration: 200ms;
-    transition-timing-function: cubic-bezier(0.16, 1.2, 0.32, 1);
-  }
-}
+/* (The old desktop-only 200ms overshoot transition on a/button/[role=button]
+   was removed — it was a third competing press system layered over the 110ms
+   one that owns press feedback near the top of this file.) */
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
@@ -4532,6 +4588,11 @@ html, body, #root {
    - Removes blue tap highlight
    - Prevents text selection on UI chrome (taps shouldn't select)
    ──────────────────────────────────────────────────────────────────── */
+/* Press-scale itself lives in ONE place (the 110ms system near the top of
+   this file) — this block only carries the native-feel touch properties.
+   The unfiltered transform/`:active` rules that used to sit here re-applied
+   press-scale to everything the press system deliberately excludes (Radix
+   [data-state] widgets, tabs, .no-tap-scale) at a different 80ms timing. */
 button,
 [role="button"],
 a,
@@ -4540,13 +4601,6 @@ a,
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
-  transition: transform var(--motion-tap, 80ms) var(--ease-ios, cubic-bezier(0.32, 0.72, 0, 1));
-}
-
-button:active,
-[role="button"]:active,
-.press:active {
-  transform: scale(0.97);
 }
 
 /* Tab panes: kill any reflow flash when tab becomes visible. */

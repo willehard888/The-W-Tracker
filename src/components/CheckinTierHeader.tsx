@@ -234,25 +234,28 @@ const CheckinTierHeader = ({
               {completedCount}/{maxCount} · {perfPercent}%
             </span>
           </div>
+          {/* Full-width bar revealed by translateX, not width: width is a
+              layout property and this re-animates on EVERY habit tick — the
+              transform version composites on the GPU. The track clips it. */}
           <div className="relative w-full h-2 rounded-full bg-secondary/80 overflow-hidden">
             <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${Math.max(perfPercent, 2)}%` }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className={cn("h-full rounded-full relative overflow-hidden", accent.bar)}
-            >
-              {/* Animated shimmer for high tiers when filling up — faster on Apex/Legend */}
-              {cfg.rank >= 4 && perfPercent > 30 && (
-                <div
-                  className={cn(
-                    "absolute inset-0 bg-[linear-gradient(110deg,transparent_30%,hsl(0_0%_100%/0.35)_50%,transparent_70%)] [background-size:200%_100%]",
-                    cfg.rank >= 5
-                      ? "[animation:shimmer-slide_1.4s_linear_infinite]"
-                      : "[animation:shimmer-slide_2.2s_linear_infinite]",
-                  )}
-                />
-              )}
-            </motion.div>
+              initial={{ transform: "translateX(-100%)" }}
+              animate={{ transform: `translateX(-${100 - Math.max(perfPercent, 2)}%)` }}
+              transition={{ duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
+              className={cn("absolute inset-0 rounded-full", accent.bar)}
+            />
+            {/* Shimmer sits on the TRACK (clipped by it), so it doesn't ride
+                the moving bar — high tiers only, while filling up. */}
+            {cfg.rank >= 4 && perfPercent > 30 && (
+              <div
+                className={cn(
+                  "absolute inset-0 pointer-events-none bg-[linear-gradient(110deg,transparent_30%,hsl(0_0%_100%/0.35)_50%,transparent_70%)] [background-size:200%_100%]",
+                  cfg.rank >= 5
+                    ? "[animation:shimmer-slide_1.4s_linear_infinite]"
+                    : "[animation:shimmer-slide_2.2s_linear_infinite]",
+                )}
+              />
+            )}
           </div>
         </div>
       </div>

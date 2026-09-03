@@ -27,6 +27,7 @@ const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
 // Comment-tree helpers are shared with EliteFeed — see src/lib/comment-tree.ts.
 import { buildCommentTree, MAX_VISUAL_DEPTH, type CommentNode } from "@/lib/comment-tree";
 import { friendlyError } from "@/lib/error-copy";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 
 /**
  * Shared look for the Reply / Edit / Delete actions on a comment: uppercase
@@ -61,6 +62,7 @@ const CommentThread = ({
   const isEditing = editingId === node.id;
   const [draft, setDraft] = useState(node.content || "");
   const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const cancelEdit = () => {
     setDraft(node.content || "");
@@ -140,7 +142,7 @@ const CommentThread = ({
           </div>
           {!isEditing && (
             <div className="flex items-center gap-2 mt-0.5 ml-3 flex-wrap">
-              <p className="text-[10px] text-muted-foreground/75">
+              <p className="text-[10px] text-muted-foreground">
                 {formatDistanceToNow(new Date(node.created_at), { addSuffix: true })}
               </p>
               {/* Three copies of one class string became three uses of the new
@@ -174,18 +176,24 @@ const CommentThread = ({
                   variant="ghost"
                   size="xs"
                   className={cn(COMMENT_ACTION, "hover:text-destructive")}
-                  onClick={() => {
-                    if (confirm("Delete this comment? Replies will also be removed.")) {
-                      hapticImpact("medium");
-                      onDelete(node.id);
-                    }
-                  }}
+                  onClick={() => setConfirmDelete(true)}
                 >
                   Delete
                 </Button>
               )}
+              <ConfirmDialog
+                open={confirmDelete}
+                onOpenChange={setConfirmDelete}
+                title="Delete this comment?"
+                description="Replies under it will also be removed."
+                onConfirm={() => {
+                  setConfirmDelete(false);
+                  hapticImpact("medium");
+                  onDelete(node.id);
+                }}
+              />
               {node.children.length > 0 && (
-                <span className="text-[10px] text-muted-foreground/75 tabular-nums">
+                <span className="text-[10px] text-muted-foreground tabular-nums">
                   · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
                 </span>
               )}
@@ -384,6 +392,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
     onError: () => toast.error("Failed to report"),
   });
 
+  const [confirmDeletePost, setConfirmDeletePost] = useState(false);
   const deletePost = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("tribe_posts").delete().eq("id", post.id);
@@ -459,7 +468,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
               <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
               {post.moderation_status === "pending" && (
-                <span className="inline-flex items-center px-1.5 py-px rounded-full border border-amber-400/40 bg-amber-400/10 text-amber-400 font-bold uppercase tracking-wider">
+                <span className="inline-flex items-center px-1.5 py-px rounded-full border border-[hsl(var(--amber))]/40 bg-[hsl(var(--amber))]/10 text-[hsl(var(--amber))] font-bold uppercase tracking-wider">
                   Reviewing…
                 </span>
               )}
@@ -477,7 +486,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[160px]">
                 {isOwn && (
-                  <DropdownMenuItem onClick={() => { if (confirm("Delete this post?")) deletePost.mutate(); }}
+                  <DropdownMenuItem onClick={() => setConfirmDeletePost(true)}
                     className="text-destructive focus:text-destructive">
                     <Trash2 aria-hidden size={14} className="mr-2" /> Delete post
                   </DropdownMenuItem>
@@ -498,6 +507,13 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+          <ConfirmDialog
+            open={confirmDeletePost}
+            onOpenChange={setConfirmDeletePost}
+            title="Delete this post?"
+            description="It disappears from the tribe feed for everyone."
+            onConfirm={() => { setConfirmDeletePost(false); deletePost.mutate(); }}
+          />
         </div>
 
         {/* Content */}

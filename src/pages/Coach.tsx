@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Send, ArrowLeft, X, BookOpen, RotateCw, Plus, Sparkles, MoreVertical, User, Brain } from "lucide-react";
+import { Send, ArrowLeft, X, BookOpen, RotateCw, Plus, Sparkles, MoreVertical, User, Brain, AlertTriangle } from "lucide-react";
 import { matchFaq, COACH_FAQ, FaqEntry } from "@/lib/coach-faq";
 import FaqBrowser from "@/components/coach/FaqBrowser";
 import ReactMarkdown from "react-markdown";
@@ -92,7 +92,7 @@ const Coach = () => {
         <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
         <div className="flex-1 flex items-center justify-center px-6 text-center">
           <div className="max-w-sm space-y-4">
-            <div className="text-3xl" aria-hidden>⚠️</div>
+            <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto" aria-hidden><AlertTriangle size={32} className="text-muted-foreground" /></div>
             <h2 className="text-lg font-display font-bold">Coach is taking a breather</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               We couldn't load your Coach just now. Check your connection and try
@@ -153,7 +153,7 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <div className="shrink-0 px-4 pt-3 pb-2 flex items-center justify-between border-b border-border/30 relative">
-      <Button variant="ghost" size="icon-sm" onClick={onBack} aria-label="Back">
+      <Button variant="ghost" size="icon-sm" className="h-11 w-11" onClick={onBack} aria-label="Back">
         <ArrowLeft size={18} />
       </Button>
       <div className="text-center">
@@ -163,6 +163,7 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
       <Button
         variant="ghost"
         size="icon-sm"
+        className="h-11 w-11"
         onClick={() => setMenuOpen((v) => !v)}
         aria-label="Coach settings"
       >
@@ -179,7 +180,7 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
             <button
               type="button"
               onClick={() => { setMenuOpen(false); navigate("/coach/profile"); }}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 active:scale-[0.98] transition"
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-secondary/60 active:bg-secondary/40 active:scale-[0.98] transition"
             >
               <User size={14} className="text-gold" />
               <span>Trainer profile</span>
@@ -187,7 +188,7 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
             <button
               type="button"
               onClick={() => { setMenuOpen(false); navigate("/coach/memory"); }}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-card/60 active:bg-card/40 active:scale-[0.98] transition border-t border-border/40"
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-secondary/60 active:bg-secondary/40 active:scale-[0.98] transition border-t border-border/40"
             >
               <Brain size={14} className="text-gold" />
               <span>Coach memory</span>
@@ -577,7 +578,7 @@ const ChatSheet = ({
   const quickAnswers = COACH_FAQ.slice(0, 4);
   // Conversational starters — real model round-trips (no faqId) so the empty
   // state teaches "you can TALK to this coach", not just request briefings.
-  const conversationStarters = ["Mitä kuuluu?", "Miten tänään kannattaa treenata?"];
+  const conversationStarters = ["How am I doing?", "How should I train today?"];
 
   return (
     <>
@@ -611,7 +612,7 @@ const ChatSheet = ({
         </div>
 
       <div className="shrink-0 px-3 pt-1 pb-2 flex items-center justify-between border-b border-border/30 bg-background/97">
-        <Button variant="ghost" size="icon-sm" onClick={newChat} aria-label="New chat" title="New chat">
+        <Button variant="ghost" size="icon-sm" className="h-11 w-11" onClick={newChat} aria-label="New chat" title="New chat">
           <Plus size={18} />
         </Button>
         <div className="text-center">
@@ -621,7 +622,7 @@ const ChatSheet = ({
           </div>
           <p className="text-[10px] leading-tight text-muted-foreground">AI coach · not a medical professional</p>
         </div>
-        <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close">
+        <Button variant="ghost" size="icon-sm" className="h-11 w-11" onClick={onClose} aria-label="Close">
           <X size={18} />
         </Button>
       </div>
@@ -639,7 +640,7 @@ const ChatSheet = ({
             <p className="text-xs text-muted-foreground max-w-[280px] mx-auto mb-4">
               Ask anything. Coach knows your program, last 7 days, and the playbook below.
             </p>
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/80 mb-2">
+            <p className="eyebrow text-gold/80 mb-2">
               Quick answers
             </p>
             <div className="flex flex-col gap-2 max-w-sm mx-auto">
@@ -710,7 +711,7 @@ const ChatSheet = ({
                 )}
               </div>
               {m.isFaq && m.role === "assistant" && (
-                <p className="mt-1 ml-1 text-[11px] text-muted-foreground/70">
+                <p className="mt-1 ml-1 text-[11px] text-muted-foreground">
                   From Coach Playbook · Ask a follow-up for more
                 </p>
               )}
@@ -731,7 +732,7 @@ const ChatSheet = ({
         {/* Seeded from today's feedback — one-tap follow-ups on improving. */}
         {seedChipsShown && !streaming && (
           <div className="flex flex-col gap-2 max-w-sm pt-1">
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-xp-green/80">
+            <p className="eyebrow text-xp-green/80">
               Ask a follow-up
             </p>
             {PERFORMANCE_FOLLOWUPS.map((q) => (

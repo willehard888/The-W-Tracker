@@ -19,6 +19,7 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import { checkAndAwardBadges } from "@/lib/badge-awards";
 import ConfettiBurst from "@/components/ConfettiBurst";
+import AnimatedNumber from "@/components/AnimatedNumber";
 import DailyQuests from "@/components/DailyQuests";
 import LevelUpCelebration from "@/components/LevelUpCelebration";
 import { syncStreakWarningNotification } from "@/lib/streak-notifications";
@@ -67,7 +68,7 @@ const HabitToggle = ({
     onClick={() => { hapticSelection(); onToggle(); }}
     aria-pressed={active}
     className={cn(
-      "group relative flex items-center gap-3 w-full rounded-2xl border p-3 text-left transition-all duration-200 active:scale-[0.985]",
+      "group relative flex items-center gap-3 w-full rounded-2xl border p-3 text-left transition-[transform,background-color,border-color,box-shadow,color] duration-200 active:scale-[0.985]",
       active
         ? "border-gold/45 bg-gradient-to-r from-gold/[0.12] to-gold/[0.04] shadow-[0_0_0_1px_hsl(var(--gold)/0.15),0_4px_14px_-6px_hsl(var(--gold)/0.35)]"
         : "surface-card hover:bg-secondary/50",
@@ -96,7 +97,7 @@ const HabitToggle = ({
     {/* Check pill — the moment the tick lands is the one that matters, so it
         springs. Ticking used to only cross-fade a colour over 200ms. */}
     <div className={cn(
-      "h-6 w-6 rounded-full border-2 transition-all duration-200 shrink-0 flex items-center justify-center",
+      "h-6 w-6 rounded-full border-2 transition-[transform,background-color,border-color,box-shadow,color] duration-200 shrink-0 flex items-center justify-center",
       active ? "border-gold bg-gold shadow-[0_0_10px_-1px_hsl(var(--gold)/0.6)]" : "border-muted-foreground/30 group-active:border-muted-foreground/50",
       popping && "commit-pop",
     )}>
@@ -226,6 +227,9 @@ const DailyCheckin = () => {
 
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
   const [honest, setHonest] = useState<boolean | null>(null);
+  // "Yes" is the commit that unlocks submission — same pop vocabulary as a
+  // habit tick (it used to only cross-fade a colour).
+  const honestPop = useCommitPop(honest === true);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [questBonusXp, setQuestBonusXp] = useState(0);
@@ -726,7 +730,7 @@ const DailyCheckin = () => {
           user has authored their identity statement. */}
       {why && (
         <div className="mt-2 mb-1 surface-card surface-card-quiet px-4 py-2.5">
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/75">
+          <p className="eyebrow text-[10px]">
             Today's discipline is for
           </p>
           <p className="text-[13px] font-bold leading-snug text-foreground/90 mt-0.5">
@@ -740,7 +744,7 @@ const DailyCheckin = () => {
         type="button"
         onClick={() => { hapticSelection(); setSickToday((v) => !v); }}
         className={cn(
-          "mt-2 mb-1 w-full flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all active:scale-[0.99]",
+          "mt-2 mb-1 w-full flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.99]",
           sickToday ? "border-teal/45 bg-teal/[0.08]" : "border-border/50 bg-card/40",
         )}
         aria-pressed={sickToday}
@@ -761,10 +765,14 @@ const DailyCheckin = () => {
           )}
           aria-hidden
         >
+          {/* Anchor stays left; the knob TRAVELS via transform. The old
+              left-0.5 ↔ right-0.5 swap can't interpolate, so the thumb
+              teleported and the transition never ran. Track w-11 (44px)
+              − thumb 18px − 2×2px inset = 22px of travel. */}
           <span
             className={cn(
-              "absolute top-0.5 h-[18px] w-[18px] rounded-full bg-foreground/90 transition-all",
-              sickToday ? "right-0.5" : "left-0.5",
+              "absolute top-0.5 left-0.5 h-[18px] w-[18px] rounded-full bg-foreground/90 transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
+              sickToday && "translate-x-[22px]",
             )}
           />
         </span>
@@ -796,17 +804,16 @@ const DailyCheckin = () => {
         </div>
       )}
 
-      {/* Habits header + prominent Customize button */}
+      {/* Habits header + Customize. The chip rides the app-wide gold-outline
+          pill language (a bespoke filled-gradient chip here was a third gold
+          chip dialect, and louder than the habits it configures). */}
       <div className="mt-3 mb-3 flex items-center justify-between gap-3">
-        <p className="text-[12px] font-black tracking-[0.22em] uppercase text-gold/80">
+        <p className="eyebrow text-gold/80">
           Your habits · tap what you did
         </p>
-        <button
-          onClick={() => { hapticSelection(); setPickerOpen(true); }}
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-gradient-to-r from-gold/15 to-gold/[0.06] px-3.5 py-2 text-xs font-black uppercase tracking-wide text-gold transition-all active:scale-[0.96] hover:from-gold/20 shadow-[0_2px_10px_-3px_hsl(var(--gold)/0.4)]"
-        >
+        <Button variant="gold-outline" size="pill" className="shrink-0" onClick={() => setPickerOpen(true)}>
           <SlidersHorizontal aria-hidden size={14} /> Customize
-        </button>
+        </Button>
       </div>
 
       {healthKit.available && (detected.workout || detected.steps || detected.mindfulness || detected.sleep) && (
@@ -826,7 +833,7 @@ const DailyCheckin = () => {
 
       {/* ── Sleep (core) ── */}
       <div className={cn(
-        "rounded-2xl border p-4 mb-3 transition-all duration-200",
+        "rounded-2xl border p-4 mb-3 transition-[transform,background-color,border-color,box-shadow,color] duration-200",
         isOptimalSleep
           ? "border-gold/45 bg-gradient-to-r from-gold/[0.10] to-gold/[0.03] shadow-[0_0_0_1px_hsl(var(--gold)/0.12),0_4px_14px_-6px_hsl(var(--gold)/0.3)]"
           : "surface-card",
@@ -861,7 +868,7 @@ const DailyCheckin = () => {
       <div className="mb-3">
         <div
           className={cn(
-            "rounded-2xl border p-3.5 transition-all duration-200",
+            "rounded-2xl border p-3.5 transition-[transform,background-color,border-color,box-shadow,color] duration-200",
             workout
               ? "border-gold/45 bg-gradient-to-r from-gold/[0.12] to-gold/[0.04] shadow-[0_0_0_1px_hsl(var(--gold)/0.15),0_4px_14px_-6px_hsl(var(--gold)/0.35)]"
               : "surface-card",
@@ -895,7 +902,7 @@ const DailyCheckin = () => {
               aria-pressed={Boolean(workout) && !isRestDay}
               onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(false); setSportOpen(!sportOpen); }}
               className={cn(
-                "rounded-xl border px-3 py-2.5 text-sm font-bold transition-all active:scale-[0.97] inline-flex items-center justify-center gap-1.5",
+                "rounded-xl border px-3 py-2.5 text-sm font-bold transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.97] inline-flex items-center justify-center gap-1.5",
                 workout ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
               )}
             >
@@ -906,7 +913,7 @@ const DailyCheckin = () => {
               aria-pressed={isRestDay}
               onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(true); setSportCategory("none"); setSportOpen(false); }}
               className={cn(
-                "rounded-xl border px-3 py-2.5 text-sm font-bold transition-all active:scale-[0.97]",
+                "rounded-xl border px-3 py-2.5 text-sm font-bold transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.97]",
                 isRestDay ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
               )}
             >
@@ -1044,7 +1051,7 @@ const DailyCheckin = () => {
       {/* ── Hydration (optional core metric) ── */}
       {hasHydration && (
         <div className={cn(
-          "rounded-2xl border p-4 mb-3 transition-all duration-200",
+          "rounded-2xl border p-4 mb-3 transition-[transform,background-color,border-color,box-shadow,color] duration-200",
           hydration >= 3
             ? "border-gold/45 bg-gradient-to-r from-gold/[0.10] to-gold/[0.03] shadow-[0_0_0_1px_hsl(var(--gold)/0.12),0_4px_14px_-6px_hsl(var(--gold)/0.3)]"
             : "surface-card",
@@ -1067,7 +1074,7 @@ const DailyCheckin = () => {
         if (!habits?.length) return null;
         return (
           <div key={pillar} className="mb-4">
-            <p className="mb-2 text-[12px] font-black tracking-[0.22em] uppercase text-muted-foreground/70">{PILLAR_LABEL[pillar]}</p>
+            <p className="eyebrow mb-2">{PILLAR_LABEL[pillar]}</p>
             <div className="space-y-2">
               {habits.map((h) => (
                 <HabitToggle key={h.key} habit={h} active={done(h.key)} onToggle={() => toggle(h.key)} detected={isDetected(h)} />
@@ -1145,7 +1152,7 @@ const DailyCheckin = () => {
 
       {/* Honesty — the discipline wedge. "You can't grind with lies." */}
       <div className={cn(
-        "mb-4 rounded-2xl border p-4 transition-all duration-200",
+        "mb-4 rounded-2xl border p-4 transition-[transform,background-color,border-color,box-shadow,color] duration-200",
         honest === true
           ? "border-gold/45 bg-gradient-to-b from-gold/[0.08] to-transparent"
           : honest === false
@@ -1162,10 +1169,11 @@ const DailyCheckin = () => {
             aria-checked={honest === true}
             onClick={() => { hapticSelection(); setHonest(true); }}
             className={cn(
-              "flex-1 rounded-xl border p-3 text-sm font-black transition-all active:scale-[0.97]",
+              "flex-1 rounded-xl border p-3 text-sm font-black transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.97]",
               honest === true
                 ? "border-gold/50 bg-gold/12 text-gold shadow-[0_0_14px_-4px_hsl(var(--gold)/0.5)]"
                 : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80",
+              honestPop && "commit-pop",
             )}
           >Yes <span aria-hidden>✅</span></button>
           <button
@@ -1173,7 +1181,7 @@ const DailyCheckin = () => {
             aria-checked={honest === false}
             onClick={() => { hapticSelection(); setHonest(false); }}
             className={cn(
-              "flex-1 rounded-xl border p-3 text-sm font-black transition-all active:scale-[0.97]",
+              "flex-1 rounded-xl border p-3 text-sm font-black transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.97]",
               honest === false
                 ? "border-destructive/50 bg-destructive/12 text-destructive"
                 : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80",
@@ -1189,7 +1197,13 @@ const DailyCheckin = () => {
       <div className="mt-6">
         <Button variant="ember" size="xl" className="w-full" onClick={handleSubmit} loading={submitting} aria-busy={submitting} disabled={submitting || honest !== true}>
           <Zap aria-hidden size={20} />
-          {submitting ? "Submitting..." : `Submit Day — Earn ${totalXp} XP`}
+          {submitting ? "Submitting..." : (
+            // The number every tick feeds — it counts instead of teleporting,
+            // closing the tick → total chain at its endpoint.
+            <span className="tabular-nums">
+              Submit Day — Earn <AnimatedNumber value={totalXp} duration={350} className="inline" /> XP
+            </span>
+          )}
         </Button>
         {honest === null && !submitting ? (
           // Close the loop on the greyed button so it doesn't read as broken.

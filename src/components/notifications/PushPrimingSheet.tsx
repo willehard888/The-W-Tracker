@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { Bell, Flame, Trophy, X } from "lucide-react";
+import { useReducedMotion } from "framer-motion";
 import { Portal } from "@/components/ui/Portal";
 import { Button } from "@/components/ui/button";
 import { hapticSelection } from "@/lib/haptics";
@@ -14,9 +16,23 @@ interface PushPrimingSheetProps {
  * that a user reflexively denies is permanent and kills the entire retention
  * push engine — so we explain the value first and only fire the real prompt
  * when they tap "Turn on reminders".
+ *
+ * Motion matches OnboardingBottomSheet (the sheet reference): iOS curve in,
+ * faster plain ease out, everything off under reduced motion. Dismiss plays a
+ * 200ms exit instead of teleporting the sheet away.
  */
 export default function PushPrimingSheet({ open, onEnable, onDismiss }: PushPrimingSheetProps) {
+  const reduced = useReducedMotion();
+  const [closing, setClosing] = useState(false);
+  useEffect(() => { if (open) setClosing(false); }, [open]);
+
   if (!open) return null;
+
+  const dismiss = () => {
+    hapticSelection();
+    if (reduced) { onDismiss(); return; }
+    setClosing(true);
+  };
 
   return (
     <Portal>
@@ -24,19 +40,37 @@ export default function PushPrimingSheet({ open, onEnable, onDismiss }: PushPrim
       {/* Scrim */}
       <button
         aria-label="Dismiss"
-        onClick={() => { hapticSelection(); onDismiss(); }}
-        className="absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-in fade-in"
+        onClick={dismiss}
+        className={
+          reduced
+            ? "absolute inset-0 bg-black/60 backdrop-blur-[2px]"
+            : closing
+            ? "absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-out fade-out duration-200"
+            : "absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-in fade-in"
+        }
       />
       {/* Sheet */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Turn on reminders"
-        className="relative w-full max-w-md rounded-t-3xl border-t border-gold/25 bg-card px-6 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-[0_-8px_40px_-12px_rgba(0,0,0,0.6)] animate-in slide-in-from-bottom duration-300"
+        onAnimationEnd={() => { if (closing) onDismiss(); }}
+        className={
+          "relative w-full max-w-md rounded-t-3xl border-t border-gold/25 bg-card px-6 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-[0_-8px_40px_-12px_rgba(0,0,0,0.6)] " +
+          (reduced
+            ? ""
+            : closing
+            ? "animate-out slide-out-to-bottom fade-out duration-200 ease-out"
+            : "animate-in slide-in-from-bottom duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]")
+        }
       >
+        {/* Drag handle — sheet-anatomy spec shared with OnboardingBottomSheet */}
+        <div className="flex justify-center pb-2">
+          <span className="h-1 w-10 rounded-full bg-foreground/15" aria-hidden />
+        </div>
         <button
-          onClick={() => { hapticSelection(); onDismiss(); }}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/60 hover:text-foreground transition-colors"
+          onClick={dismiss}
+          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/60 hover:text-foreground transition-colors before:absolute before:-inset-2 before:content-['']"
           aria-label="Close"
         >
           <X size={18} />
@@ -77,7 +111,7 @@ export default function PushPrimingSheet({ open, onEnable, onDismiss }: PushPrim
           <Bell size={18} /> Turn on reminders
         </Button>
         <button
-          onClick={() => { hapticSelection(); onDismiss(); }}
+          onClick={dismiss}
           className="mt-2 w-full py-2 text-center text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60 hover:text-foreground transition-colors"
         >
           Maybe later

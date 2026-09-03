@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, Eye, EyeOff, Flame, Crown } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Flame, Crown, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { trackAnon } from "@/lib/analytics";
 import { toast } from "sonner";
@@ -169,7 +169,7 @@ const Auth = () => {
       <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm animate-reveal text-center">
           <div className="h-14 w-14 mx-auto rounded-xl gradient-gold flex items-center justify-center glow-gold mb-6">
-            <span className="text-xl font-black text-primary-foreground">✉️</span>
+            <Mail size={24} className="text-primary-foreground" strokeWidth={2.4} />
           </div>
           <h1 className="font-display text-2xl font-bold tracking-tight mb-2">Check your email</h1>
           <p className="text-sm text-muted-foreground mb-6">
@@ -193,10 +193,10 @@ const Auth = () => {
         <div className="flex flex-col items-center mb-10">
           <BrandLogo size={56} priority className="rounded-xl glow-gold mb-4" />
           <h1 className="font-display text-2xl font-bold tracking-tight">
-            {mode === "login" ? "Welcome Back" : "Join the Movement"}
+            {mode === "login" ? "Welcome back" : "Claim your username"}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {mode === "login" ? "Log in to continue your grind" : "Create your account. Lock in your username."}
+            {mode === "login" ? "Your streak is waiting." : "Free to start. Yours forever."}
           </p>
         </div>
 

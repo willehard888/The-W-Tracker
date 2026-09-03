@@ -107,7 +107,7 @@ const CommandDeck = ({
             <Flame aria-hidden size={13} className="text-[hsl(var(--ember))] status-flame-flicker" strokeWidth={2.8} />
             {/* The streak is the number the whole product is about; it landed
                 instantly while the rank next to it counted. */}
-            <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(22_95%_66%)]">
+            <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(var(--ember-light))]">
               <AnimatedNumber value={streak} duration={800} />
             </span>
           </span>
@@ -189,7 +189,7 @@ const CommandDeck = ({
             {streak > 0 && (
               <div ref={streakTargetRef} className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[hsl(var(--ember)/0.12)] border border-[hsl(var(--ember))]/30 px-2.5 py-1">
                 <Flame aria-hidden size={13} className="text-[hsl(var(--ember))] status-flame-flicker" strokeWidth={2.8} />
-                <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(22_95%_66%)]"><AnimatedNumber value={streak} duration={800} /></span>
+                <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(var(--ember-light))]"><AnimatedNumber value={streak} duration={800} /></span>
               </div>
             )}
           </div>

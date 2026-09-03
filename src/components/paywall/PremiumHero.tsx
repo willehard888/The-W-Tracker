@@ -10,7 +10,6 @@ import {
   Moon,
   Check,
   ShieldCheck,
-  Lock,
   Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -64,8 +63,10 @@ const PILLARS = [
   },
 ] as const;
 
+// "Cancel anytime" lives ONLY in the CTA footnote — it used to appear four
+// times on this screen, which reads anxious rather than confident.
 const TRUST_POINTS = [
-  "Cancel anytime in one tap",
+  "Keep your streak & data forever",
   "Secure Apple in-app purchase",
   "New content drops weekly",
 ] as const;
@@ -111,8 +112,8 @@ const PremiumHero = ({
   // running (or spent) by the time this screen shows, and the store product
   // has no introductory offer — claiming a store trial risks App Review.
   const footnote = isYearly
-    ? `${yearlyPriceLabel}/yr · Cancel anytime`
-    : `${monthlyPriceLabel}/mo · Cancel anytime`;
+    ? `${yearlyPriceLabel}/yr · price locked while subscribed · Cancel anytime`
+    : `${monthlyPriceLabel}/mo · price locked while subscribed · Cancel anytime`;
 
   return (
     <div
@@ -132,14 +133,19 @@ const PremiumHero = ({
             "radial-gradient(ellipse 65% 85% at 50% 100%, hsl(var(--gold) / 0.55) 0%, hsl(var(--gold) / 0.18) 40%, transparent 75%)",
         }}
       />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-28 left-1/2 -translate-x-1/2 w-[130%] h-64 rounded-full blur-3xl opacity-70"
-        style={{
-          background:
-            "radial-gradient(ellipse, hsl(var(--gold) / 0.55) 0%, transparent 70%)",
-        }}
-      />
+      {/* Card-sized clipping wrapper: the wide glow must not create
+          scrollABLE overflow (Chrome counts even transformed bounds) — a
+          focus scroll-into-view (tap/tab/VoiceOver) was dragging the whole
+          card content 49px left inside the card's own overflow-hidden. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
+        <div
+          className="absolute -top-28 inset-x-0 scale-x-[1.3] h-64 rounded-full blur-3xl opacity-70"
+          style={{
+            background:
+              "radial-gradient(ellipse, hsl(var(--gold) / 0.55) 0%, transparent 70%)",
+          }}
+        />
+      </div>
       <div
         aria-hidden
         className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-px h-full bg-gradient-to-b from-gold/70 via-gold/10 to-transparent"
@@ -175,11 +181,10 @@ const PremiumHero = ({
 
         {/* Tag */}
         <div className="flex justify-center mb-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/70 backdrop-blur border border-gold/40 shadow-[0_0_16px_hsl(var(--gold)/0.4)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
-            <span className="text-[11px] font-black tracking-[0.22em] uppercase text-gold">
-              Whealth Factory · Premium Subscription
-            </span>
+          {/* No pulsing dot (state-less decoration), no restating the brand
+              the crest above already carries. One word, said once. */}
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-background/70 backdrop-blur border border-gold/40 shadow-[0_0_16px_hsl(var(--gold)/0.4)]">
+            <span className="eyebrow text-gold">Premium</span>
           </div>
         </div>
 
@@ -191,20 +196,24 @@ const PremiumHero = ({
           One membership. Everything you need to{" "}
           <span className="text-foreground font-semibold">train hard</span>,{" "}
           <span className="text-foreground font-semibold">eat clean</span> and{" "}
-          <span className="text-foreground font-semibold">recover deep</span> — without 5 different apps.
+          <span className="text-foreground font-semibold">recover deep</span>.
         </p>
 
         {/* Billing toggle — only when an annual plan can actually be sold */}
         {yearlyAvailable && (
         <div className="flex justify-center mb-5">
+          {/* radiogroup, not tablist: there are no tabpanels here, and a SR
+              announcing "tab 1 of 2" over a billing choice is wrong. Same
+              pattern as the check-in honesty control. */}
           <div
-            role="tablist"
+            role="radiogroup"
+            aria-label="Billing period"
             className="relative inline-flex items-center rounded-full p-1 bg-background/60 border border-gold/30 backdrop-blur shadow-[inset_0_1px_0_hsl(var(--gold)/0.15)]"
           >
             <button
               type="button"
-              role="tab"
-              aria-selected={!isYearly}
+              role="radio"
+              aria-checked={!isYearly}
               disabled={busy}
               onClick={() => setPlan("monthly")}
               className={cn(
@@ -218,8 +227,8 @@ const PremiumHero = ({
             </button>
             <button
               type="button"
-              role="tab"
-              aria-selected={isYearly}
+              role="radio"
+              aria-checked={isYearly}
               disabled={busy}
               onClick={() => setPlan("yearly")}
               className={cn(
@@ -248,9 +257,13 @@ const PremiumHero = ({
         {/* Price */}
         <div className="text-center mb-5">
           <p className="font-display font-black leading-none text-[56px] text-gold drop-shadow-[0_2px_14px_hsl(var(--gold)/0.55)]">
-            {activePrice}
-            <span className="text-lg font-bold text-muted-foreground/80">
-              {cadence}
+            {/* keyed on plan: the blur-bridge crossfade masks the hard swap of
+                a 56px number at the exact decision moment */}
+            <span key={plan} className="price-swap inline-block">
+              {activePrice}
+              <span className="text-lg font-bold text-muted-foreground/80">
+                {cadence}
+              </span>
             </span>
           </p>
           {isYearly ? (
@@ -274,31 +287,24 @@ const PremiumHero = ({
         {/* Pillars grid (2 columns on small screens, premium look) */}
         <div className="grid grid-cols-2 gap-2 mb-5">
           {PILLARS.map(({ icon: Icon, title, text }) => (
+            // Quiet tiles: the per-tile corner glow + glowing icon chips made
+            // six simultaneous mini-spectacles under the crest and headline.
+            // The crest IS the spectacle; the tiles just inform.
             <div
               key={title}
-              className="relative rounded-xl p-3 bg-background/40 border border-gold/15 backdrop-blur-sm overflow-hidden"
+              className="relative rounded-xl p-3 bg-background/40 border border-gold/15 overflow-hidden"
             >
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -top-6 -right-6 w-16 h-16 rounded-full blur-xl opacity-60"
-                style={{
-                  background:
-                    "radial-gradient(circle, hsl(var(--gold)/0.25) 0%, transparent 70%)",
-                }}
-              />
-              <div className="relative">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="h-5 w-5 rounded-md flex items-center justify-center bg-gradient-to-br from-gold/35 to-gold/10 border border-gold/55 shadow-[0_0_8px_hsl(var(--gold)/0.35)]">
-                    <Icon size={11} className="text-gold" strokeWidth={2.8} />
-                  </span>
-                  <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold">
-                    {title}
-                  </p>
-                </div>
-                <p className="text-[12px] leading-snug text-foreground/85 font-medium">
-                  {text}
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="h-5 w-5 rounded-md flex items-center justify-center bg-gradient-to-br from-gold/35 to-gold/10 border border-gold/55">
+                  <Icon size={11} className="text-gold" strokeWidth={2.8} />
+                </span>
+                <p className="eyebrow text-gold">
+                  {title}
                 </p>
               </div>
+              <p className="text-[12px] leading-snug text-foreground/85 font-medium">
+                {text}
+              </p>
             </div>
           ))}
         </div>
@@ -365,7 +371,7 @@ const PremiumHero = ({
 
         {/* Value anchor — what one membership replaces (honest market prices) */}
         <div className="mt-4 rounded-xl border border-gold/20 bg-background/40 p-3 backdrop-blur-sm">
-          <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold mb-2">
+          <p className="eyebrow text-gold mb-2">
             Replaces a stack of apps
           </p>
           <div className="space-y-1">
@@ -382,11 +388,8 @@ const PremiumHero = ({
           </div>
         </div>
 
-        {/* Lock-in micro-row */}
-        <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground/80">
-          <Lock size={12} className="text-gold/80" strokeWidth={2.6} />
-          <span>Locked at {isYearly ? yearlyPriceLabel + "/yr" : monthlyPriceLabel + "/mo"} as long as you stay subscribed.</span>
-        </div>
+        {/* (Lock-in micro-row removed — its one unique claim now lives in the
+            CTA footnote, cutting the third stacked reassurance block.) */}
       </div>
     </div>
   );

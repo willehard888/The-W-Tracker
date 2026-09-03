@@ -52,7 +52,7 @@ export default function OnboardingBottomSheet({ def, onComplete, onSkip }: Onboa
           <button
             onClick={skip}
             aria-label="Close"
-            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/60 hover:text-foreground transition-colors"
+            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/60 hover:text-foreground transition-colors before:absolute before:-inset-2 before:content-['']"
           >
             <X size={18} />
           </button>

@@ -61,14 +61,13 @@ export const WelcomeSlide = ({ onNext }: { onNext: () => void }) => (
       <div className="absolute inset-0 -m-6 rounded-full bg-gold/15 blur-3xl" aria-hidden />
       <BrandLogo size={88} className="relative rounded-2xl shadow-[0_8px_32px_hsl(var(--gold)/0.45)]" priority />
     </div>
-    <p className="eyebrow mb-3">Whealth Factory</p>
     <h1 className="font-display text-4xl font-black tracking-tight mb-3">Welcome to The W.</h1>
     <p className="text-muted-foreground text-base leading-relaxed mb-10 max-w-[280px]">
       The game where showing up wins. 60 seconds to build your setup.
     </p>
     <Button variant="ember" size="xl" className="w-full max-w-xs group" onClick={onNext}>
       Build my setup
-      <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+      <ArrowRight size={18} className="transition-transform group-hover:translate-x-1 group-active:translate-x-1" />
     </Button>
   </div>
 );
@@ -140,7 +139,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
             )}
             style={{ animation: `fadeSlideUp 0.5s ease-out ${0.1 + i * 0.1}s both` }}
           >
-            <span className="text-lg leading-none">{cfg.emoji}</span>
+            <span className={cn("flex h-5 w-5 items-center justify-center", cfg.textClass)} aria-hidden><span className="h-2.5 w-2.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" /></span>
             <span className={cn("text-sm font-black", cfg.textClass)}>{cfg.label}</span>
             <span className="ml-auto text-[11px] font-black uppercase tracking-wider text-muted-foreground/70">
               {cfg.percentile}
@@ -249,7 +248,7 @@ export const FinaleSlide = ({ goal, onNext }: { goal?: string; onNext: () => voi
       </p>
       <Button variant="ember" size="xl" className="w-full max-w-xs group" onClick={onNext}>
         Log my first W
-        <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+        <ArrowRight size={18} className="transition-transform group-hover:translate-x-1 group-active:translate-x-1" />
       </Button>
     </div>
   );

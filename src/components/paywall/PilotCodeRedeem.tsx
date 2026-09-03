@@ -98,7 +98,7 @@ const PilotCodeRedeem = () => {
     <form onSubmit={submit} className="mt-4 mx-auto max-w-[320px]">
       <label
         htmlFor="pilot-code"
-        className="block text-[11px] font-black tracking-[0.22em] uppercase text-gold mb-2 text-center"
+        className="eyebrow block text-gold mb-2 text-center"
       >
         Pilot code
       </label>
@@ -122,7 +122,7 @@ const PilotCodeRedeem = () => {
       <button
         type="button"
         onClick={() => { setOpen(false); setCode(""); }}
-        className="relative block mx-auto mt-2.5 text-[11px] text-muted-foreground/80 hover:text-foreground transition-colors before:absolute before:-inset-2 before:content-['']"
+        className="relative block mx-auto mt-2.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors before:absolute before:-inset-2 before:content-['']"
       >
         Cancel
       </button>

@@ -88,7 +88,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
     : isPerfect
     ? "PERFECT DAY LOGGED"
     : summary.streakBroken
-    ? "STREAK RESET — REBUILD"
+    ? "STREAK RESET. REBUILD."
     : "DAY LOCKED IN";
 
   const subline = leveledUp
@@ -120,7 +120,9 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          // Stagger ladder: 60ms steps in strict DOM order (the coach line
+          // used to appear BEFORE the grid above it — reads as a glitch).
+          transition={{ delay: 0 }}
           className="inline-flex items-center gap-1.5 mb-3"
         >
           <span
@@ -142,7 +144,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
         <motion.div
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 280, damping: 18, delay: 0.15 }}
+          transition={{ type: "spring", stiffness: 280, damping: 18, delay: 0.06 }}
           className={cn(
             "h-[72px] w-[72px] rounded-full flex items-center justify-center mx-auto mb-3 relative",
             accent.iconBg,
@@ -162,7 +164,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
         <motion.h1
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
+          transition={{ delay: 0.12 }}
           className="font-display text-[26px] font-black tracking-tight uppercase leading-none mb-1"
         >
           {headline}
@@ -170,7 +172,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
+          transition={{ delay: 0.18 }}
           className="text-xs text-muted-foreground font-bold mb-4"
         >
           {subline}
@@ -180,7 +182,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.24 }}
           className={cn(
             "rounded-2xl border-2 p-4 mb-3 inner-light relative overflow-hidden",
             cfg.rank >= 5
@@ -190,11 +192,10 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
               : "border-gold/30 bg-gold/5",
           )}
         >
-          {/* Shimmer for premium tiers */}
-          {cfg.rank >= 4 && (
-            <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(115deg,transparent_30%,hsl(var(--gold)/0.18)_50%,transparent_70%)] [background-size:200%_100%] [animation:shimmer-slide_3.5s_linear_infinite]" />
-          )}
-          <p className="relative text-[11px] uppercase tracking-[0.22em] text-gold/80 font-black mb-1">
+          {/* No idle shimmer here: the XP count-up IS this screen's spectacle,
+              and an infinite background-position loop kept painting minutes
+              after the celebration ended. */}
+          <p className="relative eyebrow text-gold/80 mb-1">
             Experience earned
           </p>
           <div ref={xpTargetRef} className="relative flex items-baseline justify-center gap-1">
@@ -210,7 +211,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.3 }}
           className="grid grid-cols-2 gap-2 mb-3"
         >
           {/* Level */}
@@ -228,7 +229,9 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
               {leveledUp && (
                 <motion.span
                   animate={{ y: [0, -2, 0] }}
-                  transition={{ duration: 1.4, repeat: Infinity }}
+                  // Three bounces, then rest — an infinite main-thread loop
+                  // kept running long after the moment passed.
+                  transition={{ duration: 1.4, repeat: 2 }}
                   className="ml-auto flex items-center gap-0.5 text-[10px] font-black text-gold"
                 >
                   <ArrowUp aria-hidden size={12} strokeWidth={3} />UP
@@ -240,12 +243,14 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
               duration={700}
               className={cn("font-display text-3xl font-black leading-none block", leveledUp ? "text-gold" : "text-foreground")}
             />
-            <div className="mt-2 h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+            <div className="relative mt-2 h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+              {/* translateX reveal instead of width — transform composites on
+                  the GPU while width relayouts every frame. */}
               <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${summary.levelProgressPct}%` }}
-                transition={{ delay: 0.7, duration: 0.8 }}
-                className={cn("h-full rounded-full", leveledUp ? "bg-gradient-to-r from-gold to-gold-light" : "bg-foreground/40")}
+                initial={{ transform: "translateX(-100%)" }}
+                animate={{ transform: `translateX(-${100 - summary.levelProgressPct}%)` }}
+                transition={{ delay: 0.5, duration: 0.8, ease: [0.22, 0.61, 0.36, 1] }}
+                className={cn("absolute inset-0 rounded-full", leveledUp ? "bg-gradient-to-r from-gold to-gold-light" : "bg-foreground/40")}
               />
             </div>
             <p className="text-[10px] text-muted-foreground mt-1 tabular-nums font-bold">
@@ -297,13 +302,16 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
               <AnimatedNumber value={summary.newStreak} duration={800} />
               <span className="text-base font-bold opacity-60">d</span>
             </p>
-            <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-wider">
+            {/* Demoted from a tracked-uppercase eyebrow: seven of those on one
+                screen made the reward read as a dashboard of labels. Matches
+                the sibling card's "XP to next" line. */}
+            <p className="text-[10px] text-muted-foreground mt-2 font-semibold">
               {summary.streakBroken
                 ? "Reset · Day 1"
                 : summary.newStreak >= 30
                 ? "Legendary chain"
                 : summary.newStreak >= 14
-                ? "On fire 🔥"
+                ? "On fire"
                 : "Hold the chain"}
             </p>
           </div>
@@ -313,7 +321,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.36 }}
           className={cn(
             "rounded-xl border bg-card/60 p-3 mb-4 flex items-center justify-between",
             cfg.rank >= 5 ? "border-gold/30" : "border-border",
@@ -335,7 +343,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.42 }}
           className="mb-3"
         >
           <ErrorBoundary fallback={<></>}>
@@ -347,7 +355,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
+          transition={{ delay: 0.48 }}
           className="grid grid-cols-2 gap-2"
         >
           <Button variant="gold-outline" size="lg" onClick={onProfile}>
@@ -363,12 +371,11 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.9 }}
+            transition={{ delay: 0.54 }}
             className="mt-4 flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-[0.22em] font-black text-gold"
           >
             <Crown aria-hidden size={11} strokeWidth={3} />
-            {cfg.rank === 6 ? "Founders Circle is watching" : "Apex doesn't skip days"}
-            <Crown aria-hidden size={11} strokeWidth={3} />
+            {cfg.rank === 6 ? "Founders Circle standard" : "Apex doesn't skip days"}
           </motion.p>
         )}
       </div>

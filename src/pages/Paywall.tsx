@@ -267,7 +267,7 @@ const Paywall = () => {
       {creditsActive && (
         <div className="animate-reveal mb-4 rounded-xl border border-gold/40 bg-gold/10 p-4 text-center">
           <p className="text-xs font-bold text-gold tracking-wide">
-            🎁 Free membership until {creditsUntilLabel}
+            Free membership until {creditsUntilLabel}
           </p>
           <p className="text-[12px] text-muted-foreground mt-1">
             The app stays fully unlocked until then.
@@ -328,7 +328,8 @@ const Paywall = () => {
 
       <div className="text-center mt-4">
         <p className="text-[11px] text-muted-foreground tracking-wider uppercase">
-          {isNative ? "Secure in-app purchase • Cancel anytime" : "Secure payment via Stripe • Cancel anytime"}
+          {/* "Cancel anytime" said once, in the CTA footnote — not four times. */}
+          {isNative ? "Secure Apple in-app purchase" : "Secure payment via Stripe"}
         </p>
       </div>
 

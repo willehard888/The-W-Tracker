@@ -93,10 +93,10 @@ const CoachStrip = (_props: CoachStripProps) => {
           <div className="flex items-center gap-1.5 mb-0.5">
             {/* Gold stays here: the coach is one of the two elements Home
                 accents, alongside the day's check-in. */}
+            {/* No vendor pill: "GPT-5" leaks implementation detail, dates
+                itself the day the model changes, and dilutes the brand —
+                the product is YOUR coach, not a model name. */}
             <p className="eyebrow text-gold/85">AI Coach</p>
-            <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold font-bold border border-gold/30 leading-none">
-              GPT-5
-            </span>
             {/* Mission progress lives here rather than as its own chip beside
                 the chevron: same information, no extra row, and the headline
                 keeps the full width it needs. */}

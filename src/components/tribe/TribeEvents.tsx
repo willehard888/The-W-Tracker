@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Calendar, MapPin, Users, Plus, X, Trash2, Check, Clock, Flame, Video, Layers, ChevronDown } from "lucide-react";
 import { Portal } from "@/components/ui/Portal";
 import { Button } from "@/components/ui/button";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { format, isToday, isTomorrow } from "date-fns";
 import { toast } from "sonner";
 import { useTribeEvents, useTribeEventActions, type TribeEvent, type RsvpStatus } from "@/hooks/use-tribe-events";
@@ -37,6 +38,12 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
   const { createEvent, createSeries, deleteSeries, rsvp, deleteEvent } = useTribeEventActions(tribeId);
   const [showCreate, setShowCreate] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  // Styled confirm instead of window.confirm's grey system alert.
+  const [confirmTarget, setConfirmTarget] = useState<
+    | { kind: "event"; ev: TribeEvent }
+    | { kind: "series"; series: SeriesItem }
+    | null
+  >(null);
 
   // Group a series' sessions under one card; one-off events stand alone. Events
   // arrive sorted by starts_at, so each series' sessions are already in order.
@@ -60,8 +67,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
     return all.sort((a, b) => firstStart(a).localeCompare(firstStart(b)));
   }, [events]);
 
-  const onDeleteSeries = async (s: SeriesItem) => {
-    if (!window.confirm(`Delete the whole "${s.title}" series and all its sessions?`)) return;
+  const doDeleteSeries = async (s: SeriesItem) => {
     setBusy(s.id);
     try { await deleteSeries(s.id); toast.success("Series deleted"); }
     catch (e) { toast.error(errMsg(e)); } finally { setBusy(null); }
@@ -76,8 +82,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
     } catch (e) { toast.error(errMsg(e)); } finally { setBusy(null); }
   };
 
-  const onDelete = async (ev: TribeEvent) => {
-    if (!window.confirm("Delete this event?")) return;
+  const doDelete = async (ev: TribeEvent) => {
     setBusy(ev.id);
     try { await deleteEvent(ev.id); toast.success("Event deleted"); }
     catch (e) { toast.error(errMsg(e)); } finally { setBusy(null); }
@@ -102,7 +107,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
       </div>
 
       {isLoading ? (
-        <div className="h-20 surface-card animate-pulse" />
+        <div className="h-20 surface-card skeleton-block" />
       ) : (events?.length ?? 0) === 0 ? (
         <div className="surface-card p-5 text-center">
           <Calendar size={24} className="text-gold/60 mx-auto mb-2" />
@@ -123,7 +128,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
                 currentUserId={currentUserId}
                 busy={busy}
                 onRsvp={onRsvp}
-                onDelete={onDelete}
+                onDelete={(ev) => setConfirmTarget({ kind: "event", ev })}
               />
             ) : (
               <SeriesCard
@@ -134,12 +139,28 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
                 currentUserId={currentUserId}
                 busy={busy}
                 onRsvp={onRsvp}
-                onDeleteSeries={() => onDeleteSeries(it)}
+                onDeleteSeries={() => setConfirmTarget({ kind: "series", series: it })}
               />
             ),
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmTarget != null}
+        onOpenChange={(open) => { if (!open) setConfirmTarget(null); }}
+        title={confirmTarget?.kind === "series" ? "Delete this series?" : "Delete this event?"}
+        description={
+          confirmTarget?.kind === "series"
+            ? `"${confirmTarget.series.title}" and all its sessions will be removed for the whole tribe.`
+            : "The meetup and its RSVPs will be removed for the whole tribe."
+        }
+        onConfirm={() => {
+          if (confirmTarget?.kind === "series") void doDeleteSeries(confirmTarget.series);
+          else if (confirmTarget) void doDelete(confirmTarget.ev);
+          setConfirmTarget(null);
+        }}
+      />
 
       {showCreate && (
         <CreateEventSheet
@@ -189,8 +210,7 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
       "surface-card overflow-hidden bg-gradient-to-br from-[hsl(var(--ember))]/[0.05] via-card/70 to-card",
       isNext ? "border-[hsl(var(--ember))]/40 shadow-[0_10px_34px_-18px_hsl(var(--ember)/0.6)]" : "border-border/60",
     )}>
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[hsl(var(--ember))] to-gold" />
-      <div className="p-3.5 pl-4">
+      <div className="p-3.5">
         {isNext && (
           <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 rounded-full bg-[hsl(var(--ember))]/15 border border-[hsl(var(--ember))]/35">
             <Flame size={11} className="text-[hsl(var(--ember))]" fill="currentColor" />
@@ -306,8 +326,7 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
       "surface-card overflow-hidden bg-gradient-to-br from-gold/[0.06] via-card/70 to-card",
       isNext ? "border-gold/45 shadow-[0_10px_34px_-18px_hsl(var(--gold)/0.6)]" : "border-border/60",
     )}>
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-gold to-[hsl(var(--ember))]" />
-      <div className="p-3.5 pl-4">
+      <div className="p-3.5">
         <div className="flex items-start gap-2.5">
           <div className="shrink-0 h-10 w-10 rounded-xl bg-gradient-to-br from-gold/25 to-[hsl(var(--ember))]/15 border border-gold/35 flex items-center justify-center">
             <Layers size={17} className="text-gold" strokeWidth={2.4} />

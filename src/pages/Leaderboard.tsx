@@ -50,7 +50,11 @@ const formatCountdown = (endsAt?: string) => {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  // Seconds only inside the final hour — a 23-day countdown ticking every
+  // second at the top of the page is motion with no information in it.
+  if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m ${seconds}s`;
 };
 
 /**
@@ -62,7 +66,9 @@ const CountdownTimer = ({ endsAt }: { endsAt?: string }) => {
   const [text, setText] = useState(() => formatCountdown(endsAt));
   useEffect(() => {
     setText(formatCountdown(endsAt));
-    const id = setInterval(() => setText(formatCountdown(endsAt)), 1000);
+    // Tick per minute until the last hour; per second only when seconds show.
+    const finalHour = endsAt ? new Date(endsAt).getTime() - Date.now() < 3_600_000 : false;
+    const id = setInterval(() => setText(formatCountdown(endsAt)), finalHour ? 1000 : 60_000);
     return () => clearInterval(id);
   }, [endsAt]);
   return <span>{text}</span>;
@@ -186,12 +192,6 @@ const Leaderboard = () => {
     },
   });
 
-  const rankColors: Record<number, string> = {
-    0: "text-gold glow-gold-text",
-    1: "text-foreground/70",
-    2: "text-amber-700",
-  };
-
   const currentLeaders = mode === "season" ? seasonData?.top || [] : allTimeLeaders || [];
   const totalUsersForMode = mode === "season" ? seasonData?.full.length || 1 : totalCount || 1;
   // All-Time "Your Position" derives from the SAME XP-ordered list the board
@@ -275,21 +275,6 @@ const Leaderboard = () => {
         </p>
       </div>
 
-      {/* 1v1 Battles — friend challenges live under Ranks (no orphan route) */}
-      <button
-        onClick={() => navigate("/battles")}
-        className="animate-reveal mb-5 w-full text-left surface-card p-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform"
-      >
-        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[hsl(22_90%_52%)] to-[hsl(12_88%_46%)] flex items-center justify-center shrink-0">
-          <Swords aria-hidden size={18} className="text-white" strokeWidth={2.4} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[hsl(18_95%_62%)] mb-0.5">1v1 Battles</p>
-          <p className="text-[12px] font-bold leading-tight">Challenge a friend — winner takes the score</p>
-        </div>
-        <ChevronRight aria-hidden size={16} className="text-muted-foreground shrink-0" />
-      </button>
-
       {/* Season banner */}
       <div className="animate-reveal animate-reveal-delay-1 relative overflow-hidden rounded-2xl border border-gold/40 glass-3d p-4 mb-4 glow-gold-sm">
         <div
@@ -302,11 +287,11 @@ const Leaderboard = () => {
         />
         <div className="flex items-center justify-between gap-2 relative">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80 font-bold">Current Season</p>
+            <p className="eyebrow text-gold/80">Current Season</p>
             <p className="font-display font-bold text-lg tracking-tight mt-0.5">{activeSeason?.name || "Season"}</p>
           </div>
           <div className="text-right">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground font-bold">Ends in</p>
+            <p className="eyebrow">Ends in</p>
             <p className="font-display font-black text-sm text-gold flex items-center justify-end gap-1 tabular-nums mt-0.5">
               <Clock3 aria-hidden size={14} /> <CountdownTimer endsAt={activeSeason?.ends_at} />
             </p>
@@ -426,7 +411,7 @@ const Leaderboard = () => {
       <div className="mt-4 animate-reveal animate-reveal-delay-3">
         <div className="flex items-center gap-2 mb-3 px-1">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
-          <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground font-bold">The Chase</p>
+          <p className="eyebrow">The Chase</p>
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
         </div>
         <div className="space-y-1.5">
@@ -511,7 +496,7 @@ const Leaderboard = () => {
                   <p className={cn("font-display font-black text-sm tabular-nums", isMe && "text-gold")}>
                     {points.toLocaleString()}
                   </p>
-                  <p className="text-[10px] text-muted-foreground/75 uppercase tracking-wider font-bold">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
                     {mode === "season" ? "Season XP" : "XP"}
                   </p>
                 </div>
@@ -535,6 +520,23 @@ const Leaderboard = () => {
           />
         </div>
       )}
+
+      {/* 1v1 Battles — friend challenges live under Ranks (no orphan route).
+          Below the board, not above it: on a page named Ranks the rankings
+          come first — this used to push the podium a full card down. */}
+      <button
+        onClick={() => navigate("/battles")}
+        className="animate-reveal mt-4 w-full text-left surface-card p-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform"
+      >
+        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[hsl(var(--ember))] to-[hsl(var(--ember-dark))] flex items-center justify-center shrink-0">
+          <Swords aria-hidden size={18} className="text-white" strokeWidth={2.4} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="eyebrow text-[hsl(var(--ember-light))] mb-0.5">1v1 Battles</p>
+          <p className="text-[12px] font-bold leading-tight">Challenge a friend — winner takes the score</p>
+        </div>
+        <ChevronRight aria-hidden size={16} className="text-muted-foreground shrink-0" />
+      </button>
 
       {/* Secondary boards — different purposes (tribes, invites) collapsed so
           Ranks stays focused on the one question: where do I rank? */}
@@ -726,7 +728,7 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
         </button>
       </div>
       {/* Swipe hint */}
-      <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold">
+      <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-bold">
         <ChevronLeft aria-hidden size={12} className={cn("transition-opacity", isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
         <span>Swipe to switch</span>
         <ChevronRight aria-hidden size={12} className={cn("transition-opacity", !isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />

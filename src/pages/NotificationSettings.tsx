@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Flame, Brain, Users, Swords, BarChart3, RotateCcw,
@@ -125,16 +125,16 @@ const NotificationSettings = () => {
   const previewStreak = Math.max(Number(profile?.streak) || 0, 1);
   const copy = STREAK_COPY[tone] ?? STREAK_COPY.calm_mentor;
   const previewTime = `${String(prefs.reminder_hour).padStart(2, "0")}:00`;
-  // Key remounts the card so the entrance animation replays on any change.
-  const previewKey = useMemo(
-    () => `${tone}-${prefs.reminder_hour}-${prefs.streak_guard}`,
-    [tone, prefs.reminder_hour, prefs.streak_guard],
-  );
+  // Key on the VOICE only: a re-entrance says "this changed identity". The
+  // hour steppers used to remount the card per tap, restarting the 300ms
+  // zoom from zero on a rapid-fire control — the time text updating is the
+  // right signal for that change.
+  const previewKey = tone;
 
   return (
     <div className="flex flex-col h-full">
       <div className="shrink-0 px-4 pt-3 pb-2 flex items-center gap-2 border-b border-border/30">
-        <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="icon-sm" className="h-11 w-11" aria-label="Go back" onClick={() => navigate(-1)}>
           <ArrowLeft size={18} />
         </Button>
         <h1 className="font-display text-base font-black">Notifications</h1>
@@ -146,7 +146,7 @@ const NotificationSettings = () => {
         {perm === "granted" && (
           <div className="animate-reveal surface-card surface-card-quiet px-4 py-3 flex items-center gap-3">
             <span className="relative flex h-2 w-2 shrink-0">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-xp-green opacity-60 animate-ping" />
+              <span className="absolute inline-flex h-full w-full rounded-full bg-xp-green opacity-60 animate-ping motion-reduce:animate-none" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-xp-green" />
             </span>
             <p className="text-[12px] font-bold tracking-wider uppercase text-xp-green/90">
@@ -196,7 +196,9 @@ const NotificationSettings = () => {
           <p className="eyebrow px-1 mb-1.5">Preview</p>
           <div
             key={previewKey}
-            className={`mx-auto w-full max-w-[340px] rounded-[22px] border px-3.5 py-3 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-300 ${
+            // No backdrop-blur: the exact WKWebView perf risk surface-glass was
+            // rewritten to avoid — an opaque tint reads the same on this bg.
+            className={`mx-auto w-full max-w-[340px] rounded-[22px] border px-3.5 py-3 animate-in fade-in zoom-in-95 duration-300 motion-reduce:animate-none transition-opacity ${
               prefs.streak_guard
                 ? "border-white/10 bg-white/10 shadow-[0_10px_44px_-12px_hsl(var(--gold)/0.28)]"
                 : "border-white/5 bg-white/5 opacity-45 grayscale"
@@ -245,7 +247,7 @@ const NotificationSettings = () => {
                   aria-label="Earlier"
                   disabled={prefs.reminder_hour <= REMINDER_HOUR_MIN}
                   onClick={() => bumpHour(-1)}
-                  className="h-9 w-9 rounded-xl border border-border/60 bg-background/60 flex items-center justify-center active:scale-95 transition-transform disabled:opacity-30"
+                  className="relative h-9 w-9 rounded-xl border border-border/60 bg-background/60 flex items-center justify-center active:scale-95 transition-transform disabled:opacity-30 before:absolute before:-inset-1.5 before:content-['']"
                 >
                   <Minus aria-hidden size={14} />
                 </button>
@@ -257,7 +259,7 @@ const NotificationSettings = () => {
                   aria-label="Later"
                   disabled={prefs.reminder_hour >= REMINDER_HOUR_MAX}
                   onClick={() => bumpHour(1)}
-                  className="h-9 w-9 rounded-xl border border-border/60 bg-background/60 flex items-center justify-center active:scale-95 transition-transform disabled:opacity-30"
+                  className="relative h-9 w-9 rounded-xl border border-border/60 bg-background/60 flex items-center justify-center active:scale-95 transition-transform disabled:opacity-30 before:absolute before:-inset-1.5 before:content-['']"
                 >
                   <Plus aria-hidden size={14} />
                 </button>

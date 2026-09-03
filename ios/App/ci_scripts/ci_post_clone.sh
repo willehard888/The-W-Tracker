@@ -383,7 +383,7 @@ cd "$ROOT_DIR"
 # ---------------------------------------------------------------------------
 # App icon (non-fatal)
 # ---------------------------------------------------------------------------
-ICON_SRC="$ROOT_DIR/public/app-icon.png"
+ICON_SRC="$ROOT_DIR/assets/app-icon-1024.png"
 ICON_DIR="$ROOT_DIR/ios/App/App/Assets.xcassets/AppIcon.appiconset"
 mkdir -p "$ICON_DIR"
 if [[ -f "$ICON_SRC" ]]; then

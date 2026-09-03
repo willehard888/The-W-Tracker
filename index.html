@@ -24,6 +24,11 @@
     <link rel="preconnect" href="https://gcwuvijcuzhunkcauzom.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://gcwuvijcuzhunkcauzom.supabase.co" />
 
+    <!-- Self-hosted brand fonts: preload the latin subsets both families use
+         above the fold so text never flashes system-ui on first paint. -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-var-latin.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/space-grotesk-var-latin.woff2" crossorigin />
+
     <!-- NOTE: removed the eager <link rel="preload" as="image" href="/app-icon.png">
          because the file is 1.17MB and was blocking First Contentful Paint by
          ~1.6s on slow networks. The splash component lazy-loads it itself. -->

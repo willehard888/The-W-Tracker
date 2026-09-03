@@ -11,13 +11,13 @@
 // Vite resolves each id → a hashed, cache-busted asset URL at build time.
 // import.meta.glob patterns must be relative (aliases aren't supported here).
 
-const thumbMods = import.meta.glob("../assets/recipes/thumb/*.jpg", {
+const thumbMods = import.meta.glob("../assets/recipes/thumb/*.webp", {
   eager: true,
   import: "default",
   query: "?url",
 }) as Record<string, string>;
 
-const posterMods = import.meta.glob("../assets/recipes/poster/*.jpg", {
+const posterMods = import.meta.glob("../assets/recipes/poster/*.webp", {
   eager: true,
   import: "default",
   query: "?url",
@@ -26,7 +26,7 @@ const posterMods = import.meta.glob("../assets/recipes/poster/*.jpg", {
 // Square food-only crops (the appetizing dish, cut from the branded card's
 // photo region) — used by the recipe LIST thumbnails so the tiny box shows
 // centered food instead of an awkward slice of the full 2:3 card.
-const squareMods = import.meta.glob("../assets/recipes/square/*.jpg", {
+const squareMods = import.meta.glob("../assets/recipes/square/*.webp", {
   eager: true,
   import: "default",
   query: "?url",
@@ -35,7 +35,7 @@ const squareMods = import.meta.glob("../assets/recipes/square/*.jpg", {
 const byId = (mods: Record<string, string>): Record<string, string> =>
   Object.fromEntries(
     Object.entries(mods).map(([path, url]) => [
-      path.split("/").pop()!.replace(/\.jpg$/, ""),
+      path.split("/").pop()!.replace(/\.webp$/, ""),
       url,
     ]),
   );

@@ -123,5 +123,39 @@ SELECT cron.schedule(
   $$
 );
 
+-- Nightly coach insights — 03:15 UTC. NOTE: on the live project this job was
+-- originally scheduled inside migration 20260813082928 with the project ref
+-- hardcoded; it is repeated here so a project migration doesn't silently
+-- lose it (this file is the complete cron inventory).
+SELECT cron.schedule(
+  'coach-insights-nightly',
+  '15 3 * * *',
+  $$
+    SELECT net.http_post(
+      url     := 'https://NEW_REF.supabase.co/functions/v1/coach-insights',
+      headers := jsonb_build_object(
+        'Authorization', 'Bearer SERVICE_ROLE_KEY',
+        'Content-Type', 'application/json'
+      )
+    );
+  $$
+);
+
+-- Founder digest — Mondays 06:00 UTC (admins only). Same note as above:
+-- originally scheduled in a migration with a hardcoded ref.
+SELECT cron.schedule(
+  'founder-digest-weekly',
+  '0 6 * * 1',
+  $$
+    SELECT net.http_post(
+      url     := 'https://NEW_REF.supabase.co/functions/v1/founder-digest',
+      headers := jsonb_build_object(
+        'Authorization', 'Bearer SERVICE_ROLE_KEY',
+        'Content-Type', 'application/json'
+      )
+    );
+  $$
+);
+
 -- Sanity check — list every job that's now scheduled.
 SELECT jobname, schedule FROM cron.job ORDER BY jobname;

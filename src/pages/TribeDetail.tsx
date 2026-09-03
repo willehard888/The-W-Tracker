@@ -7,7 +7,7 @@ import { Portal } from "@/components/ui/Portal";
 import { supabase } from "@/integrations/supabase/client";
 import { uniqueChannelName } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -85,25 +85,6 @@ const SUPPORTED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
 const MAX_IMAGE_SIZE_MB = 8;
 const MAX_VIDEO_SIZE_MB = 50;
 
-// Session-scoped snapshot of the last successful load per tribe — hydrates
-// the page INSTANTLY on re-entry (no skeleton, no refetch flash) while
-// load() refreshes silently in the background. Cleared with the page/app
-// lifecycle; never persisted.
-interface TribeSnapshot {
-  tribe: any;
-  posts: TribePostCardPost[];
-  milestones: Milestone[];
-  challenge: { week_start: string; target: number; progress: number; status: string } | null;
-  members: Member[];
-  isMember: boolean;
-  isOwner: boolean;
-  pendingCount: number;
-  reportedCount: number;
-  collectiveStreak: number;
-  canLoadMore: boolean;
-}
-const tribeSnapshots = new Map<string, TribeSnapshot>();
-
 const TribeDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user, profile } = useAuth();
@@ -113,18 +94,10 @@ const TribeDetail = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const [parallax, setParallax] = useState(0);
-  const snap = id ? tribeSnapshots.get(id) : undefined;
-  const [tribe, setTribe] = useState<any>(snap?.tribe ?? null);
-  const [posts, setPosts] = useState<TribePostCardPost[]>(snap?.posts ?? []);
-  const [milestones, setMilestones] = useState<Milestone[]>(snap?.milestones ?? []);
-  const [challenge, setChallenge] = useState<{
-    week_start: string; target: number; progress: number; status: string;
-  } | null>(snap?.challenge ?? null);
-  // Feed pagination: load() always fetches up to this many posts; "Load more"
-  // raises it and reloads (a ref so the realtime-refetch closure sees it too).
+  // Feed pagination: the tribe query always fetches up to this many posts;
+  // "Load more" raises it and invalidates (a ref so the queryFn always reads
+  // the latest value without keying the cache on it).
   const postLimitRef = useRef(50);
-  const [canLoadMore, setCanLoadMore] = useState(snap?.canLoadMore ?? false);
-  const [members, setMembers] = useState<Member[]>(snap?.members ?? []);
   const [composer, setComposer] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -139,16 +112,10 @@ const TribeDetail = () => {
 
   const [posting, setPosting] = useState(false);
   const [uploadPhase, setUploadPhase] = useState<string | null>(null);
-  const [loading, setLoading] = useState(!snap);
-  const [isMember, setIsMember] = useState(snap?.isMember ?? false);
-  const [isOwner, setIsOwner] = useState(snap?.isOwner ?? false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [pendingOpen, setPendingOpen] = useState(false);
-  const [pendingCount, setPendingCount] = useState(snap?.pendingCount ?? 0);
   const [reportsOpen, setReportsOpen] = useState(false);
-  const [reportedCount, setReportedCount] = useState(snap?.reportedCount ?? 0);
   const [manageOpen, setManageOpen] = useState(false);
-  const [collectiveStreak, setCollectiveStreak] = useState(snap?.collectiveStreak ?? 0);
 
   // Set of post IDs currently rendered in this tribe. Child realtime tables
   // (comments / reactions / kudos) key on post_id, NOT tribe_id, so a
@@ -192,155 +159,169 @@ const TribeDetail = () => {
   // Founder decision: kudos is open to every member (2/month, enforced by RLS).
   const canKudos = !!profile;
 
-  const load = async () => {
-    if (!id || !profile?.user_id) return;
-    // Skeleton only on FIRST load. Refreshes (a comment, a kudos, another
-    // member's realtime event) update in place — replacing the tree with a
-    // skeleton destroyed open comment threads and typed drafts.
-    if (!tribe) setLoading(true);
+  const queryClient = useQueryClient();
+  const userId = profile?.user_id;
 
-    const [tRes, mRes, pRes, allMRes] = await Promise.all([
-      supabase.from("tribes").select("*").eq("id", id).maybeSingle(),
-      supabase.from("tribe_members").select("role, status").eq("tribe_id", id).eq("user_id", profile.user_id).maybeSingle(),
-      supabase.from("tribe_posts").select("*").eq("tribe_id", id).order("created_at", { ascending: false }).limit(postLimitRef.current),
-      supabase.from("tribe_members").select("user_id, role").eq("tribe_id", id).eq("status", "active").limit(40),
-    ]);
+  // Main payload — one query. The query cache replaces the old per-tribe
+  // snapshot map (re-entry hydrates instantly from cache while a background
+  // refetch runs), and keepPreviousData replaces the manual "skeleton only on
+  // FIRST load" flag: refreshes (a comment, a kudos, another member's realtime
+  // event) update in place — replacing the tree with a skeleton destroyed open
+  // comment threads and typed drafts.
+  const { data: tribeData } = useQuery({
+    queryKey: ["tribe-detail", id, userId],
+    enabled: !!id && !!userId,
+    placeholderData: keepPreviousData,
+    queryFn: async () => {
+      const [tRes, mRes, pRes, allMRes] = await Promise.all([
+        supabase.from("tribes").select("*").eq("id", id!).maybeSingle(),
+        supabase.from("tribe_members").select("role, status").eq("tribe_id", id!).eq("user_id", userId!).maybeSingle(),
+        supabase.from("tribe_posts").select("*").eq("tribe_id", id!).order("created_at", { ascending: false }).limit(postLimitRef.current),
+        supabase.from("tribe_members").select("user_id, role").eq("tribe_id", id!).eq("status", "active").limit(40),
+      ]);
 
-    setTribe(tRes.data);
-    const m = mRes.data;
-    const member = m?.status === "active";
-    setIsMember(member);
-    setIsOwner(m?.role === "owner");
+      const m = mRes.data;
 
-    const rawMembers = allMRes.data ?? [];
-    const memberIds = rawMembers.map((r) => r.user_id);
-    // streak included — MemberContributionStrip ranks by it (it silently
-    // rendered every member as 0d while this select omitted the column).
-    const { data: memberProfiles } = memberIds.length
-      ? await supabase.from("profiles").select("user_id, username, avatar_url, status_tier, streak").in("user_id", memberIds)
-      : { data: [] };
-    const profMap = new Map((memberProfiles ?? []).map((p) => [p.user_id, p]));
-    setMembers(
-      rawMembers.map((r) => {
+      const rawMembers = allMRes.data ?? [];
+      const memberIds = rawMembers.map((r) => r.user_id);
+      // streak included — MemberContributionStrip ranks by it (it silently
+      // rendered every member as 0d while this select omitted the column).
+      const { data: memberProfiles } = memberIds.length
+        ? await supabase.from("profiles").select("user_id, username, avatar_url, status_tier, streak").in("user_id", memberIds)
+        : { data: [] };
+      const profMap = new Map((memberProfiles ?? []).map((p) => [p.user_id, p]));
+      const members = rawMembers.map((r) => {
         const p = profMap.get(r.user_id);
         return p ? { ...p, role: r.role } : null;
       }).filter(Boolean).sort((a: any, b: any) => {
         const order: Record<string, number> = { owner: 0, admin: 1, member: 2 };
         return (order[a.role] ?? 3) - (order[b.role] ?? 3);
-      }) as Member[],
-    );
+      }) as Member[];
 
-    const rawPosts = pRes.data ?? [];
-    const postIds = rawPosts.map((p) => p.id);
-    const authorIds: string[] = Array.from(new Set(rawPosts.map((p) => p.user_id)));
-    const [authorRes, reactionsRes, kudosRes] = await Promise.all([
-      authorIds.length
-        ? supabase.from("profiles").select("user_id, username, avatar_url, status_tier, level, streak").in("user_id", authorIds)
-        : Promise.resolve({ data: [] as any[] } as any),
-      postIds.length && profile?.user_id
-        ? supabase.from("tribe_post_reactions").select("post_id").eq("user_id", profile.user_id).in("post_id", postIds)
-        : Promise.resolve({ data: [] as any[] } as any),
-      postIds.length && profile?.user_id
-        ? supabase.from("tribe_post_kudos").select("post_id").eq("giver_id", profile.user_id).in("post_id", postIds)
-        : Promise.resolve({ data: [] as any[] } as any),
-    ]);
-    const aMap = new Map(((authorRes as any).data ?? []).map((a: any) => [a.user_id, a]));
-    const likedSet = new Set(((reactionsRes as any).data ?? []).map((r: any) => r.post_id));
-    const kudosedSet = new Set(((kudosRes as any).data ?? []).map((r: any) => r.post_id));
-    setPosts(
-      rawPosts.map((p: any) => ({
+      const rawPosts = pRes.data ?? [];
+      const postIds = rawPosts.map((p) => p.id);
+      const authorIds: string[] = Array.from(new Set(rawPosts.map((p) => p.user_id)));
+      const [authorRes, reactionsRes, kudosRes] = await Promise.all([
+        authorIds.length
+          ? supabase.from("profiles").select("user_id, username, avatar_url, status_tier, level, streak").in("user_id", authorIds)
+          : Promise.resolve({ data: [] as any[] } as any),
+        postIds.length && userId
+          ? supabase.from("tribe_post_reactions").select("post_id").eq("user_id", userId).in("post_id", postIds)
+          : Promise.resolve({ data: [] as any[] } as any),
+        postIds.length && userId
+          ? supabase.from("tribe_post_kudos").select("post_id").eq("giver_id", userId).in("post_id", postIds)
+          : Promise.resolve({ data: [] as any[] } as any),
+      ]);
+      const aMap = new Map(((authorRes as any).data ?? []).map((a: any) => [a.user_id, a]));
+      const likedSet = new Set(((reactionsRes as any).data ?? []).map((r: any) => r.post_id));
+      const kudosedSet = new Set(((kudosRes as any).data ?? []).map((r: any) => r.post_id));
+      const posts = rawPosts.map((p: any) => ({
         ...p,
         author: aMap.get(p.user_id) ?? undefined,
         liked: likedSet.has(p.id),
         kudosed: kudosedSet.has(p.id),
-      })) as TribePostCardPost[],
-    );
-    setCanLoadMore(rawPosts.length >= postLimitRef.current);
+      })) as TribePostCardPost[];
 
-    if (m?.role === "owner") {
-      const { count } = await supabase
-        .from("tribe_members")
-        .select("user_id", { count: "exact", head: true })
-        .eq("tribe_id", id)
-        .eq("status", "pending");
-      setPendingCount(count ?? 0);
+      let pendingCount = 0;
+      let reportedCount = 0;
+      if (m?.role === "owner") {
+        const { count } = await supabase
+          .from("tribe_members")
+          .select("user_id", { count: "exact", head: true })
+          .eq("tribe_id", id!)
+          .eq("status", "pending");
+        pendingCount = count ?? 0;
 
-      const { count: rCount } = await supabase
-        .from("tribe_posts")
-        .select("id", { count: "exact", head: true })
-        .eq("tribe_id", id)
-        .eq("reported", true);
-      setReportedCount(rCount ?? 0);
-    } else {
-      setPendingCount(0);
-      setReportedCount(0);
-    }
+        const { count: rCount } = await supabase
+          .from("tribe_posts")
+          .select("id", { count: "exact", head: true })
+          .eq("tribe_id", id!)
+          .eq("reported", true);
+        reportedCount = rCount ?? 0;
+      }
 
-    // Tribe collective streak — sum of every active member's LIVE streak, from
-    // the same member profiles the "Who's feeding the fire" strip renders.
-    // The server column tribes.collective_streak is only recomputed nightly
-    // (refresh_tribe_fire cron), so reading it made the flame lag the strip
-    // (strip 3+3=6, flame stuck at last night's 4). Computing it live here
-    // keeps the headline number and the member strip in lockstep. The server
-    // column still feeds leaderboard/tier/history where a nightly snapshot is
-    // acceptable.
-    const liveCollective = (memberProfiles ?? []).reduce(
-      (sum, p) => sum + (p?.streak ?? 0),
-      0,
-    );
-    setCollectiveStreak(liveCollective);
+      // Tribe collective streak — sum of every active member's LIVE streak, from
+      // the same member profiles the "Who's feeding the fire" strip renders.
+      // The server column tribes.collective_streak is only recomputed nightly
+      // (refresh_tribe_fire cron), so reading it made the flame lag the strip
+      // (strip 3+3=6, flame stuck at last night's 4). Computing it live here
+      // keeps the headline number and the member strip in lockstep. The server
+      // column still feeds leaderboard/tier/history where a nightly snapshot is
+      // acceptable.
+      const liveCollective = (memberProfiles ?? []).reduce(
+        (sum, p) => sum + (p?.streak ?? 0),
+        0,
+      );
 
-    // Milestone ledger — tier-ups, joins, battle wins woven into the feed.
-    try {
-      const { data: ms } = await supabase
-        .from("tribe_milestones")
-        .select("id, kind, payload, created_at")
-        .eq("tribe_id", id)
-        .order("created_at", { ascending: false })
-        .limit(15);
-      setMilestones((ms ?? []) as unknown as Milestone[]);
-    } catch {
-      setMilestones([]);
-    }
+      // Milestone ledger — tier-ups, joins, battle wins woven into the feed.
+      let milestones: Milestone[] = [];
+      try {
+        const { data: ms } = await supabase
+          .from("tribe_milestones")
+          .select("id, kind, payload, created_at")
+          .eq("tribe_id", id!)
+          .order("created_at", { ascending: false })
+          .limit(15);
+        milestones = (ms ?? []) as unknown as Milestone[];
+      } catch {
+        milestones = [];
+      }
 
-    // Weekly challenge — ensure this week's exists (idempotent), then read it.
-    try {
-      await supabase.rpc("ensure_tribe_challenge", { p_tribe_id: id });
-      const { data: ch } = await supabase
-        .from("tribe_challenges")
-        .select("week_start, target, progress, status")
-        .eq("tribe_id", id)
-        .order("week_start", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      setChallenge(ch ?? null);
-    } catch {
-      setChallenge(null);
-    }
+      // Weekly challenge — ensure this week's exists (idempotent), then read it.
+      let challenge: { week_start: string; target: number; progress: number; status: string } | null = null;
+      try {
+        await supabase.rpc("ensure_tribe_challenge", { p_tribe_id: id! });
+        const { data: ch } = await supabase
+          .from("tribe_challenges")
+          .select("week_start, target, progress, status")
+          .eq("tribe_id", id!)
+          .order("week_start", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        challenge = ch ?? null;
+      } catch {
+        challenge = null;
+      }
 
-    setLoading(false);
-  };
+      return {
+        tribe: tRes.data,
+        posts,
+        milestones,
+        challenge,
+        members,
+        isMember: m?.status === "active",
+        isOwner: m?.role === "owner",
+        pendingCount,
+        reportedCount,
+        collectiveStreak: liveCollective,
+        canLoadMore: rawPosts.length >= postLimitRef.current,
+      };
+    },
+  });
 
-  // Persist the freshest loaded state as this tribe's snapshot so the next
-  // visit hydrates instantly. Skipped while loading (would cache blanks).
+  const tribe = tribeData?.tribe ?? null;
+  const posts = tribeData?.posts ?? [];
+  const milestones = tribeData?.milestones ?? [];
+  const challenge = tribeData?.challenge ?? null;
+  const members = tribeData?.members ?? [];
+  const isMember = tribeData?.isMember ?? false;
+  const isOwner = tribeData?.isOwner ?? false;
+  const pendingCount = tribeData?.pendingCount ?? 0;
+  const reportedCount = tribeData?.reportedCount ?? 0;
+  const canLoadMore = tribeData?.canLoadMore ?? false;
+
+  const invalidateTribe = () =>
+    queryClient.invalidateQueries({ queryKey: ["tribe-detail", id] });
+
+  // Collective streak lives in local state (seeded from the query) because the
+  // fire reactor bumps it optimistically the instant a member checks in; each
+  // refetch snaps it back to the server-derived sum, same as load() did.
+  const [collectiveStreak, setCollectiveStreak] = useState(
+    () => tribeData?.collectiveStreak ?? 0,
+  );
   useEffect(() => {
-    if (!id || loading || !tribe) return;
-    tribeSnapshots.set(id, {
-      tribe, posts, milestones, challenge, members,
-      isMember, isOwner, pendingCount, reportedCount,
-      collectiveStreak, canLoadMore,
-    });
-  }, [id, loading, tribe, posts, milestones, challenge, members, isMember, isOwner, pendingCount, reportedCount, collectiveStreak, canLoadMore]);
-
-  // Keep a live ref to the latest `load` so the realtime effect (which only
-  // depends on `id`) always calls the current closure without resubscribing.
-  const loadRef = useRef(load);
-  loadRef.current = load;
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, profile?.user_id]);
+    if (tribeData) setCollectiveStreak(tribeData.collectiveStreak);
+  }, [tribeData]);
 
   // Keep postIdsRef in sync with the rendered posts so realtime child-table
   // events can be scoped to this tribe.
@@ -403,7 +384,7 @@ const TribeDetail = () => {
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
         timer = null;
-        loadRef.current();
+        queryClient.invalidateQueries({ queryKey: ["tribe-detail", id] });
       }, 600);
     };
 
@@ -442,7 +423,7 @@ const TribeDetail = () => {
       if (timer) clearTimeout(timer);
       supabase.removeChannel(channel);
     };
-  }, [id]);
+  }, [id, queryClient]);
 
   // Parallax follows the *parent* scroller (App.tsx provides the single
   // overflow-y container). Listening on window or the nearest scrollable
@@ -550,7 +531,7 @@ const TribeDetail = () => {
       setVideoFile(null); setVideoPreview(null);
       hapticNotification("success");
       toast.success("Posted! 🔥");
-      load();
+      invalidateTribe();
     } catch (e: any) {
       toast.error(friendlyError(e, "Could not post. Try again."));
     } finally {
@@ -564,14 +545,14 @@ const TribeDetail = () => {
     if (error) { toast.error(friendlyError(error)); return; }
     if (data === "pending") toast.success("Request sent");
     else toast.success("Joined!");
-    load();
+    invalidateTribe();
   };
 
   const handleLeave = async () => {
     const { error } = await supabase.rpc("leave_tribe", { p_tribe_id: id! });
     if (error) { toast.error(friendlyError(error)); return; }
     toast.success("Left the tribe");
-    load();
+    invalidateTribe();
   };
 
   const handleDelete = async () => {
@@ -584,7 +565,7 @@ const TribeDetail = () => {
 
   const handleChanged = () => {
     refetchKudos();
-    load();
+    invalidateTribe();
   };
 
   // Share the tribe out of the app — native share sheet where available,
@@ -612,7 +593,7 @@ const TribeDetail = () => {
     }
   };
 
-  if (loading) {
+  if (!tribeData) {
     return (
       <DetailSkeleton />
     );
@@ -928,7 +909,7 @@ const TribeDetail = () => {
             variant="secondary"
             size="sm"
             className="w-full"
-            onClick={() => { postLimitRef.current += 50; void load(); }}
+            onClick={() => { postLimitRef.current += 50; void invalidateTribe(); }}
           >
             Load older posts
           </Button>
@@ -959,8 +940,8 @@ const TribeDetail = () => {
       {id && (
         <>
           <TribeInviteModal tribeId={id} open={inviteOpen} onClose={() => setInviteOpen(false)} />
-          <TribePendingRequestsDialog tribeId={id} open={pendingOpen} onOpenChange={setPendingOpen} onChanged={load} />
-          <TribeReportsDialog tribeId={id} open={reportsOpen} onOpenChange={setReportsOpen} onChanged={load} />
+          <TribePendingRequestsDialog tribeId={id} open={pendingOpen} onOpenChange={setPendingOpen} onChanged={invalidateTribe} />
+          <TribeReportsDialog tribeId={id} open={reportsOpen} onOpenChange={setReportsOpen} onChanged={invalidateTribe} />
           {isOwner && tribe && profile?.user_id && (
             <TribeManageDialog
               tribeId={id}
@@ -975,7 +956,7 @@ const TribeDetail = () => {
               }}
               members={members}
               currentUserId={profile.user_id}
-              onChanged={load}
+              onChanged={invalidateTribe}
             />
           )}
         </>

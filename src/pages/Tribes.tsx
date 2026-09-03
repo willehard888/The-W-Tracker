@@ -37,16 +37,21 @@ interface Invite {
   inviter: { username: string } | null;
 }
 
-const TribeSkeleton = forwardRef<HTMLDivElement>((_, ref) => (
+/** Mirrors the list: one hero-height block, then quiet rows. */
+const TribeSkeleton = forwardRef<HTMLDivElement, { hero?: boolean }>(({ hero }, ref) => (
   <div
     ref={ref}
-    className="rounded-2xl p-4 border border-border bg-card/40 overflow-hidden relative"
+    className={cn(
+      "rounded-2xl border border-border bg-card/40 overflow-hidden relative",
+      hero ? "p-5" : "p-4",
+    )}
   >
-    <div className="flex items-start gap-3">
-      <div className="h-14 w-14 rounded-xl bg-secondary/60 shrink-0 shimmer-bg" />
+    <div className="flex items-center gap-3">
+      <div className={cn("rounded-xl bg-secondary/60 shrink-0 shimmer-bg", hero ? "h-20 w-20" : "h-12 w-12")} />
       <div className="flex-1 space-y-2 py-1">
-        <div className="h-3.5 w-2/3 rounded bg-secondary/60 shimmer-bg" />
+        <div className={cn("rounded bg-secondary/60 shimmer-bg", hero ? "h-5 w-3/5" : "h-3.5 w-2/3")} />
         <div className="h-2.5 w-1/2 rounded bg-secondary/40 shimmer-bg" />
+        {hero && <div className="h-2.5 w-2/5 rounded bg-secondary/40 shimmer-bg" />}
       </div>
     </div>
   </div>
@@ -61,11 +66,26 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
   Community: Users,
 };
 
+/** Realtime intake surge on a tribe's flame (replayed via `key`). */
+const intakeStyle = (pulses: number): React.CSSProperties | undefined =>
+  pulses > 0
+    ? {
+        animation: "flame-intake 1100ms cubic-bezier(.2,.8,.2,1)",
+        willChange: "transform, filter",
+        transformOrigin: "50% 92%",
+      }
+    : undefined;
+
 /**
- * The tribes area under /squad's Tribes tab. The My Tribes/Browse split
- * renders as quiet UNDERLINE tabs — deliberately a subordinate visual
- * language to Squad's gold segment above, never a second pill row (two
- * stacked gold pill rows was the "looks cheap" complaint, twice).
+ * The tribes area under /squad's Tribes tab.
+ *
+ * Thesis: "your fire". Your tribe is the second spectacle of the app (the
+ * lava CTA is the first), so on My Tribes it is a hero — a real flame, the
+ * name in display type, tonight's pulse — not a 76px row above a void. On
+ * Browse the week's hottest tribe takes the same hero slot; everything else
+ * is a quiet row. The My Tribes/Browse split stays as underline tabs, one
+ * row with the Leaderboard link, subordinate to Squad's gold segment above
+ * (two stacked gold pill rows was the "looks cheap" complaint, twice).
  */
 const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
   const { profile } = useAuth();
@@ -163,8 +183,8 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
   const reloadInvites = () => queryClient.invalidateQueries({ queryKey: ["tribe-invites"] });
 
   // Realtime fire reactor — every check-in by a fellow member bumps that
-  // tribe's row mini-flame and increments its collective streak. My Tribes
-  // only (userToTribes is empty on browse by design).
+  // tribe's flame and increments its collective streak. My Tribes only
+  // (userToTribes is empty on browse by design).
   const allMemberIds = useMemo(() => Array.from(userToTribes.keys()), [userToTribes]);
   const listReactor = useTribeFireReactor(allMemberIds);
   const lastListEventRef = useRef<string | null>(null);
@@ -228,176 +248,158 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
     if (accept && invite.tribe_id) navigate(`/tribes/${invite.tribe_id}`);
   };
 
-  const featured = tab === "browse" && !activityFilter
-    ? tribes.find((t) => t.id === data.featuredId) ?? null
-    : null;
-  const restList = featured ? tribes.filter((t) => t.id !== featured.id) : tribes;
+  // The hero slot: your first tribe on My Tribes, the week's hottest on an
+  // unfiltered Browse. Everything else is a row.
+  const heroTribe: Tribe | null =
+    tab === "mine"
+      ? tribes[0] ?? null
+      : activityFilter
+      ? null
+      : tribes.find((t) => t.id === data.featuredId) ?? null;
+  const heroIsFeatured = tab === "browse" && heroTribe !== null;
+  const restList = heroTribe ? tribes.filter((t) => t.id !== heroTribe.id) : tribes;
 
-  // ── One unified card anatomy — the featured card is a row with an eyebrow,
-  //    not a different species. ─────────────────────────────────────────────
-  const renderTribeCard = (t: Tribe, opts: { featured?: boolean; idx?: number } = {}) => {
+  const openTribe = (id: string) => navigate(`/tribes/${id}`);
+  const keyOpen = (id: string) => (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openTribe(id); }
+  };
+
+  /** Browse-only join affordance shared by hero and rows. */
+  const renderJoin = (t: Tribe, wide: boolean) => {
+    if (tab !== "browse" || joinedIds.has(t.id)) return null;
+    const cls = wide ? "flex-1" : "shrink-0";
+    if (pendingIds.has(t.id)) {
+      return (
+        <Button size="sm" variant="outline" disabled className={cls}>
+          <Check aria-hidden size={12} /> Requested
+        </Button>
+      );
+    }
+    if (t.visibility === "private") {
+      return (
+        <Button size="sm" variant="ember-glass" className={cls} onClick={(e) => { e.stopPropagation(); handleJoin(t.id); }}>
+          <Lock aria-hidden size={11} /> {wide ? "Request to join" : "Request"}
+        </Button>
+      );
+    }
+    return (
+      <Button size="sm" variant="ember" className={cls} onClick={(e) => { e.stopPropagation(); handleJoin(t.id); }}>
+        Join
+      </Button>
+    );
+  };
+
+  // ── Hero — the fire with a name, not a row with an eyebrow ───────────────
+  const renderTribeHero = (t: Tribe) => {
     const cStreak = collectiveStreaks.get(t.id) ?? 0;
     const cTier = collectiveStreakTier(cStreak);
     const cAccent = collectiveAccent(cStreak);
-    const isPrivate = t.visibility === "private";
-    const isJoined = joinedIds.has(t.id);
-    const isPending = pendingIds.has(t.id);
+    const edge = cTier >= 0 ? cAccent : "hsl(var(--ember))";
     const p = pulse.get(t.id);
     const spotsLeft = t.member_cap != null ? Math.max(0, t.member_cap - t.member_count) : null;
-    const isNew = Date.now() - new Date(t.created_at).getTime() < 14 * 24 * 60 * 60 * 1000;
-    const ActIcon = t.primary_activity ? activityIcon(t.primary_activity) : null;
+    const ev = data.nextEvents.get(t.id);
+    const pulses = rowPulse.get(t.id) ?? 0;
 
     return (
-      /* div+role, not <button>: the row contains real Join/Request <Button>s
-         and nested buttons are invalid DOM (breaks hit-testing and SRs). */
+      /* div+role, not <button>: the hero contains real Join <Button>s and
+         nested buttons are invalid DOM (breaks hit-testing and SRs). */
       <div
-        key={t.id}
         role="button"
         tabIndex={0}
-        onClick={() => navigate(`/tribes/${t.id}`)}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/tribes/${t.id}`); } }}
-        className={cn(
-          "w-full text-left cursor-pointer surface-card p-4 apex-tribe-card-hover relative overflow-hidden",
-          // The animationDelay below was already wired but no animation was
-          // ever attached, so every card appeared at once and the delay did
-          // nothing. Cards now materialise in sequence — capped at the first
-          // 8 like Leaderboard/Feed: below the fold there's nobody watching,
-          // and a 20-card list animating at once costs paint for nothing.
-          opts.idx != null && opts.idx < 8 && "animate-fade-in-up",
-        )}
-        style={{
-          // Capped: 20 tribes at 60ms put the last one 1.2s out, which reads
-          // as sluggish rather than choreographed. 40ms with a 10-item cap
-          // keeps the whole list inside 400ms.
-          ...(opts.idx != null ? { animationDelay: `${Math.min(opts.idx, 10) * 40}ms` } : null),
-          // Featured rows carry the tribe's own tier color on the edge —
-          // the fire's identity, not generic gold.
-          ...(opts.featured
-            ? { borderColor: withAlpha(cTier >= 0 ? cAccent : "hsl(var(--gold))", 0.4) }
-            : null),
-        }}
+        onClick={() => openTribe(t.id)}
+        onKeyDown={keyOpen(t.id)}
+        className="w-full text-left cursor-pointer surface-card relative overflow-hidden p-5 apex-tribe-card-hover"
+        style={{ borderColor: withAlpha(edge, 0.38) }}
       >
-        {opts.featured && (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute top-0 left-[10%] right-[10%] h-px"
-            style={{
-              background: `linear-gradient(90deg, transparent, ${withAlpha(cTier >= 0 ? cAccent : "hsl(var(--gold))", 0.35)}, transparent)`,
-            }}
-          />
-        )}
-        {opts.featured && (
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1.5">
-              <Flame aria-hidden size={12} className="text-[hsl(var(--ember))]" fill="currentColor" />
-              <span className="eyebrow text-gold/85">On fire this week</span>
-            </div>
-            {(t.weekly_xp ?? 0) > 0 && (
-              <span className="text-[11px] font-black tabular-nums text-gold">
-                +{(t.weekly_xp ?? 0).toLocaleString()} XP
-              </span>
-            )}
+        {/* Cover as deep ground under a scrim — identity, not decoration */}
+        {t.cover_url && (
+          <div aria-hidden className="absolute inset-0 pointer-events-none">
+            <AppImage
+              src={t.cover_url}
+              width={640}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover opacity-[0.22]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/60 to-background/90" />
           </div>
         )}
-        <div className="flex items-start gap-3">
+        {/* The fire's own color on the edge, and a warm bloom behind it */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute top-0 left-[10%] right-[10%] h-px"
+          style={{ background: `linear-gradient(90deg, transparent, ${withAlpha(edge, 0.45)}, transparent)` }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-8 -bottom-12 h-48 w-48 rounded-full blur-2xl"
+          style={{ background: `radial-gradient(circle, ${withAlpha(edge, 0.2)}, transparent 70%)` }}
+        />
+
+        <div className="relative flex items-center gap-4">
           <div
-            className="relative h-12 w-12 rounded-lg bg-secondary/50 flex items-center justify-center shrink-0 overflow-hidden"
-            style={{
-              border: `1px solid ${cTier >= 0 ? withAlpha(cAccent, 0.45) : "hsl(var(--border))"}`,
-            }}
+            key={pulses}
+            className="relative shrink-0 w-[84px] h-[88px] flex items-end justify-center"
+            style={intakeStyle(pulses)}
           >
-            {t.cover_url && (
-              <AppImage
-                src={t.cover_url}
-                width={48}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover opacity-75"
-              />
-            )}
             {cTier >= 0 ? (
-              <div
-                key={rowPulse.get(t.id) ?? 0}
-                className="relative w-full h-full flex items-center justify-center"
-                style={
-                  (rowPulse.get(t.id) ?? 0) > 0
-                    ? {
-                        animation: "flame-intake 1100ms cubic-bezier(.2,.8,.2,1)",
-                        willChange: "transform, filter",
-                        transformOrigin: "50% 92%",
-                      }
-                    : undefined
-                }
-              >
-                <TribeFireLite aria-hidden tier={cTier} palette={collectivePalette(cStreak)} size={36} variant="mini" />
-              </div>
-            ) : !t.cover_url ? (
+              <TribeFireLite aria-hidden tier={cTier} palette={collectivePalette(cStreak)} size={66} variant="standard" />
+            ) : (
               // Cold ≠ dead: the ember seed is the premium waiting state.
-              <TribeEmberSeed aria-hidden size={36} />
-            ) : null}
+              <TribeEmberSeed aria-hidden size={76} />
+            )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <p className="font-bold text-[15px] truncate leading-tight">{t.name}</p>
-              {isPrivate && <Lock size={12} className="text-muted-foreground/70 shrink-0" aria-label="Private" />}
-              {ownedIds.has(t.id) && <Crown size={11} className="text-gold shrink-0" aria-label="Owner" />}
-              {isNew && !opts.featured && (
-                <span className="shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold text-[10px] font-black tracking-widest uppercase">
-                  New
-                </span>
-              )}
+            <div className="flex items-center gap-1.5 min-w-0">
+              <h2 className="font-display font-black text-[22px] leading-[1.05] tracking-tight truncate">{t.name}</h2>
+              {t.visibility === "private" && <Lock size={13} className="text-muted-foreground/70 shrink-0" aria-label="Private" />}
+              {ownedIds.has(t.id) && <Crown size={12} className="text-gold shrink-0" aria-label="Owner" />}
             </div>
             {t.description && (
-              <p className="text-[12px] text-muted-foreground line-clamp-1 mt-0.5 leading-snug">
-                {t.description}
-              </p>
+              <p className="text-[13px] text-muted-foreground line-clamp-1 mt-1 leading-snug">{t.description}</p>
             )}
-            {/* One meta row: activity · members (+spots) · fire · lit today */}
-            <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
-              {ActIcon && t.primary_activity && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  <ActIcon aria-hidden size={11} strokeWidth={2.4} /> {t.primary_activity}
+            <div className="mt-2.5 flex items-center gap-x-3 gap-y-1 flex-wrap">
+              {cTier >= 0 ? (
+                <span className="inline-flex items-center gap-1 text-[12px] font-black tabular-nums" style={{ color: cAccent }}>
+                  <Flame aria-hidden size={13} fill="currentColor" /> {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[12px] font-bold text-[hsl(var(--ember))]/85">
+                  <Flame aria-hidden size={13} /> Embers waiting
                 </span>
               )}
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-muted-foreground">
-                <Users aria-hidden size={11} /> {t.member_count}
+              <span className="inline-flex items-center gap-1 text-[12px] font-bold tabular-nums text-muted-foreground">
+                <Users aria-hidden size={12} /> {t.member_count}
                 {spotsLeft != null && spotsLeft > 0 && spotsLeft <= 5 && (
                   <span className="text-[hsl(var(--ember))]">· {spotsLeft} spot{spotsLeft === 1 ? "" : "s"} left</span>
                 )}
               </span>
-              {cTier >= 0 && (
-                <span
-                  className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums"
-                  style={{ color: cAccent }}
-                >
-                  <Flame aria-hidden size={12} fill="currentColor" /> {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
-                </span>
-              )}
               {p && p.checked > 0 && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-[hsl(var(--ember))]">
+                <span className="inline-flex items-center gap-1 text-[12px] font-bold tabular-nums text-[hsl(var(--ember))]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--ember))] animate-pulse" />
                   {p.checked}/{p.total} lit today
                 </span>
               )}
+              {heroIsFeatured && (t.weekly_xp ?? 0) > 0 && (
+                <span className="inline-flex items-center gap-1 text-[12px] font-black tabular-nums text-gold">
+                  On fire this week · +{(t.weekly_xp ?? 0).toLocaleString()} XP
+                </span>
+              )}
             </div>
-            {(() => {
-              const ev = data.nextEvents.get(t.id);
-              if (!ev) return null;
-              return (
-                <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-bold text-[hsl(var(--ember))]">
-                  <Calendar aria-hidden size={12} strokeWidth={2.6} className="shrink-0" />
-                  <span className="truncate">
-                    {ev.title} · {format(new Date(ev.starts_at), "EEE HH:mm")}
-                    {ev.going > 0 ? ` · ${ev.going} going` : ""}
-                  </span>
-                </div>
-              );
-            })()}
-            {opts.featured && data.featuredPreviews.length > 0 && (
-              <div className="flex -space-x-2 mt-2">
+            {ev && (
+              <div className="flex items-center gap-1.5 mt-2 text-[12px] font-bold text-[hsl(var(--ember))]">
+                <Calendar aria-hidden size={12} strokeWidth={2.6} className="shrink-0" />
+                <span className="truncate">
+                  {ev.title} · {format(new Date(ev.starts_at), "EEE HH:mm")}
+                  {ev.going > 0 ? ` · ${ev.going} going` : ""}
+                </span>
+              </div>
+            )}
+            {heroIsFeatured && data.featuredPreviews.length > 0 && (
+              <div className="flex -space-x-2 mt-2.5">
                 {data.featuredPreviews.map((m) => (
                   <div
                     key={m.user_id}
-                    className="h-5 w-5 rounded-full bg-secondary border-2 border-background overflow-hidden"
+                    className="h-6 w-6 rounded-full bg-secondary border-2 border-background overflow-hidden"
                   >
                     {m.avatar_url ? (
                       <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 40)} alt={m.username} className="h-full w-full object-cover" />
@@ -411,31 +413,115 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               </div>
             )}
           </div>
-          {tab === "browse" && !isJoined && (
-            isPending ? (
-              <Button size="sm" variant="outline" disabled className="shrink-0">
-                <Check aria-hidden size={12} /> Requested
-              </Button>
-            ) : isPrivate ? (
-              <Button
-                size="sm"
-                variant="ember-glass"
-                onClick={(e) => { e.stopPropagation(); handleJoin(t.id); }}
-                className="shrink-0"
-              >
-                <Lock aria-hidden size={11} /> Request
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                variant="ember"
-                onClick={(e) => { e.stopPropagation(); handleJoin(t.id); }}
-                className="shrink-0"
-              >
-                Join
-              </Button>
-            )
-          )}
+        </div>
+        {tab === "browse" && !joinedIds.has(t.id) && (
+          <div className="relative mt-4 flex gap-2">{renderJoin(t, true)}</div>
+        )}
+      </div>
+    );
+  };
+
+  // ── Row — quiet, scannable, one meta line ────────────────────────────────
+  const renderTribeRow = (t: Tribe, idx: number) => {
+    const cStreak = collectiveStreaks.get(t.id) ?? 0;
+    const cTier = collectiveStreakTier(cStreak);
+    const cAccent = collectiveAccent(cStreak);
+    const p = pulse.get(t.id);
+    const spotsLeft = t.member_cap != null ? Math.max(0, t.member_cap - t.member_count) : null;
+    const isNew = Date.now() - new Date(t.created_at).getTime() < 14 * 24 * 60 * 60 * 1000;
+    const ActIcon = t.primary_activity ? activityIcon(t.primary_activity) : null;
+    const ev = data.nextEvents.get(t.id);
+    const pulses = rowPulse.get(t.id) ?? 0;
+
+    return (
+      // Entrance on a wrapper: the keyframe's fill-mode pins transform, which
+      // used to kill the row's own press scale on the first eight rows.
+      <div
+        key={t.id}
+        className={cn(idx < 8 && "animate-fade-in-up")}
+        style={idx < 8 ? { animationDelay: `${220 + Math.min(idx, 10) * 40}ms` } : undefined}
+      >
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => openTribe(t.id)}
+          onKeyDown={keyOpen(t.id)}
+          className="w-full text-left cursor-pointer surface-card surface-card-quiet p-4 apex-tribe-card-hover relative overflow-hidden"
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className="relative h-12 w-12 rounded-lg bg-secondary/50 flex items-center justify-center shrink-0 overflow-hidden"
+              style={{ border: `1px solid ${cTier >= 0 ? withAlpha(cAccent, 0.45) : "hsl(var(--border))"}` }}
+            >
+              {t.cover_url && (
+                <AppImage
+                  src={t.cover_url}
+                  width={48}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover opacity-75"
+                />
+              )}
+              {cTier >= 0 ? (
+                <div key={pulses} className="relative w-full h-full flex items-center justify-center" style={intakeStyle(pulses)}>
+                  <TribeFireLite aria-hidden tier={cTier} palette={collectivePalette(cStreak)} size={36} variant="mini" />
+                </div>
+              ) : !t.cover_url ? (
+                <TribeEmberSeed aria-hidden size={36} />
+              ) : null}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <p className="font-bold text-[15px] truncate leading-tight">{t.name}</p>
+                {t.visibility === "private" && <Lock size={12} className="text-muted-foreground/70 shrink-0" aria-label="Private" />}
+                {ownedIds.has(t.id) && <Crown size={11} className="text-gold shrink-0" aria-label="Owner" />}
+                {isNew && (
+                  <span className="shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold text-[10px] font-black tracking-widest uppercase">
+                    New
+                  </span>
+                )}
+              </div>
+              {t.description && (
+                <p className="text-[12px] text-muted-foreground line-clamp-1 mt-0.5 leading-snug">
+                  {t.description}
+                </p>
+              )}
+              {/* One meta row: activity · members (+spots) · fire · lit today */}
+              <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
+                {ActIcon && t.primary_activity && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <ActIcon aria-hidden size={11} strokeWidth={2.4} /> {t.primary_activity}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-muted-foreground">
+                  <Users aria-hidden size={11} /> {t.member_count}
+                  {spotsLeft != null && spotsLeft > 0 && spotsLeft <= 5 && (
+                    <span className="text-[hsl(var(--ember))]">· {spotsLeft} spot{spotsLeft === 1 ? "" : "s"} left</span>
+                  )}
+                </span>
+                {cTier >= 0 && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums" style={{ color: cAccent }}>
+                    <Flame aria-hidden size={12} fill="currentColor" /> {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
+                  </span>
+                )}
+                {p && p.checked > 0 && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-[hsl(var(--ember))]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--ember))] animate-pulse" />
+                    {p.checked}/{p.total} lit today
+                  </span>
+                )}
+              </div>
+              {ev && (
+                <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-bold text-[hsl(var(--ember))]">
+                  <Calendar aria-hidden size={12} strokeWidth={2.6} className="shrink-0" />
+                  <span className="truncate">
+                    {ev.title} · {format(new Date(ev.starts_at), "EEE HH:mm")}
+                    {ev.going > 0 ? ` · ${ev.going} going` : ""}
+                  </span>
+                </div>
+              )}
+            </div>
+            {renderJoin(t, false)}
+          </div>
         </div>
       </div>
     );
@@ -444,9 +530,9 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
   return (
     <div className="min-h-full pb-8 px-4 pt-4 relative">
 
-      {/* Pending invites */}
+      {/* Pending invites — rare and urgent, so they keep their ember cards */}
       {invites.length > 0 && (
-        <div className="mb-5">
+        <div className="home-rise mb-5">
           <div className="flex items-center gap-2 mb-2">
             <Mail aria-hidden size={12} className="text-[hsl(var(--ember))]" />
             <h2 className="eyebrow text-[hsl(var(--ember))]">
@@ -497,42 +583,48 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         </div>
       )}
 
-      {/* Sub-tabs — quiet underline style, subordinate to Squad's gold
-          segment above. No second pill row. */}
-      <div className="flex gap-6 mb-3 border-b border-border/40">
-        {(["mine", "browse"] as const).map((t) => {
-          const active = tab === t;
-          return (
-            <button
-              key={t}
-              onClick={() => { tabTouched.current = true; void hapticSelection(); setTab(t); }}
-              className={cn(
-                "relative pb-2 text-[12px] font-black uppercase tracking-wider transition-colors",
-                active ? "text-foreground" : "text-muted-foreground hover:text-foreground/80",
-              )}
-            >
-              {t === "mine" ? "My Tribes" : "Browse"}
-              {active && (
-                <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-gradient-to-r from-gold to-[hsl(var(--ember))]" />
-              )}
-            </button>
-          );
-        })}
+      {/* One row: underline sub-tabs left, Leaderboard right. The old extra
+          "MY TRIBES" eyebrow under the "MY TRIBES" tab said the same thing
+          twice within 140px. */}
+      <div className="home-rise flex items-end justify-between mb-3 border-b border-border/40">
+        <div className="flex gap-6">
+          {(["mine", "browse"] as const).map((t) => {
+            const active = tab === t;
+            return (
+              <button
+                key={t}
+                onClick={() => { tabTouched.current = true; void hapticSelection(); setTab(t); }}
+                aria-pressed={active}
+                className={cn(
+                  "relative pb-2 text-[12px] font-black uppercase tracking-wider transition-colors",
+                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground/80",
+                )}
+              >
+                {t === "mine" ? "My Tribes" : "Browse"}
+                {active && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-gradient-to-r from-gold to-[hsl(var(--ember))]" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <button
+          onClick={() => navigate("/tribes/leaderboard")}
+          className="pb-2 inline-flex items-center gap-1 text-[12px] font-bold text-gold/85 active:scale-95 transition-transform"
+        >
+          <Trophy aria-hidden size={11} /> Leaderboard <ChevronRight aria-hidden size={11} className="-ml-0.5" />
+        </button>
       </div>
 
-      {tab === "browse" && <TribeSearchBar onChanged={reloadTribes} />}
-
-      {/* Browse by activity — 4 group chips, tap to reveal the group's
-          activities. Replaces the old flat 26-chip strip. */}
+      {/* Browse tools — search, then 4 group chips that open their activities
+          (replaced the old flat 26-chip strip). Filter chips share ONE
+          selected language across the surface: gold-outline selected, plain
+          outline otherwise. */}
       {tab === "browse" && (
-        <>
+        <div className="home-rise home-rise-1">
+          <TribeSearchBar onChanged={reloadTribes} />
           <div className="mb-2 -mx-4 px-4 overflow-x-auto no-scrollbar">
             <div className="flex gap-1.5 w-max">
-              {/* Filter chips share ONE selected language across the tribe
-                  surface — gold-outline selected, plain outline otherwise.
-                  The group row used a filled gold chip and the activity row a
-                  filled ember one, so the same act of "picking" looked like two
-                  different things one row apart. */}
               <Button
                 variant={!openGroup && !activityFilter ? "gold-outline" : "outline"}
                 size="pill"
@@ -583,26 +675,13 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
-
-      {/* Section header — eyebrow + quiet Leaderboard link (navigation, not a CTA) */}
-      <div className="flex items-center justify-between mb-2 mt-1">
-        <span className="eyebrow">
-          {tab === "mine" ? "My tribes" : activityFilter ? `${activityFilter} tribes` : "Discover"}
-        </span>
-        <button
-          onClick={() => navigate("/tribes/leaderboard")}
-          className="inline-flex items-center gap-1 text-[12px] font-bold text-gold/85 active:scale-95 transition-transform"
-        >
-          <Trophy aria-hidden size={11} /> Leaderboard <ChevronRight aria-hidden size={11} className="-ml-0.5" />
-        </button>
-      </div>
 
       {/* List */}
       {loading ? (
-        <div className="space-y-3">
-          <TribeSkeleton />
+        <div className="space-y-3 mt-1">
+          <TribeSkeleton hero />
           <TribeSkeleton />
           <TribeSkeleton />
         </div>
@@ -641,21 +720,21 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
           />
         )
       ) : (
-        <div className="space-y-3">
-          {featured && renderTribeCard(featured, { featured: true })}
-          {restList.map((t, idx) => renderTribeCard(t, { idx }))}
+        <div className="space-y-3 mt-1">
+          {heroTribe && (
+            // Wrapper carries the entrance so the hero keeps its press scale.
+            <div className="home-rise home-rise-2">{renderTribeHero(heroTribe)}</div>
+          )}
+          {restList.map((t, idx) => renderTribeRow(t, idx))}
 
-          {/* Creation is rare — a quiet row at the end, not a toolbar CTA. The
-              border was dashed, which reads as a placeholder or a drop zone
-              rather than a finished control. Solid outline keeps it quiet
-              without looking unfinished. */}
-          <Button
-            variant="outline"
-            className="w-full h-auto py-3.5 rounded-2xl text-[12px] text-muted-foreground hover:text-gold"
+          {/* Creation is rare — a quiet text row at the end, not a box. */}
+          <button
+            type="button"
             onClick={() => navigate("/tribes/new")}
+            className="w-full py-3.5 inline-flex items-center justify-center gap-1.5 text-[13px] font-bold text-muted-foreground hover:text-gold active:scale-[0.98] transition-[color,transform]"
           >
             <Plus aria-hidden size={14} /> Start your own tribe
-          </Button>
+          </button>
         </div>
       )}
     </div>

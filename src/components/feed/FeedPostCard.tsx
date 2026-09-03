@@ -21,8 +21,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
-
 type ReplyTarget = { id: string; username: string; snippet: string } | null;
 
 export interface FeedPostCardProps {
@@ -71,10 +69,15 @@ export interface FeedPostCardProps {
 }
 
 /**
- * A single feed post: header, content, media, action bar, and (when open) its
- * comment thread + composer. Extracted from EliteFeed.tsx and memoized so a
- * keystroke in one post's composer (or a sibling post mutating) no longer
- * re-renders every post in the feed.
+ * A single feed entry: author, caption, media, action bar, and (when open)
+ * its comment thread + composer. Memoized so a keystroke in one post's
+ * composer (or a sibling post mutating) never re-renders the rest.
+ *
+ * Deliberately NOT a boxed card. The feed is proof, and the proof is the
+ * photo — so the entry sits on the ground with a hairline between neighbours
+ * (the list's divide-y) and lets the media frame itself. The boxed version
+ * stacked one more identical silhouette under the composer and made every
+ * post read as a widget instead of a moment.
  */
 const FeedPostCard = memo(function FeedPostCard({
   post,
@@ -118,20 +121,17 @@ const FeedPostCard = memo(function FeedPostCard({
   const isOwn = post.user_id === currentUserId;
 
   return (
-    <div
+    <article
       className={cn(
-        "rounded-2xl border bg-card overflow-hidden transition-all card-depth",
-        "hover:shadow-[0_8px_32px_hsl(0_0%_0%/0.35),0_4px_12px_hsl(var(--gold)/0.06)]",
-        post.reported ? "border-destructive/30 bg-destructive/[0.02]" : liked ? "border-gold/20" : "border-border",
-        // Same dead-delay fix as the tribe cards: the stagger timing was
-        // already here, the keyframe never was. Only the first screenful
-        // staggers — posts below the fold are `content-visibility: auto`
-        // anyway, and delaying content the user deliberately scrolled to
-        // would make the feed feel slower, not richer.
+        "relative py-5 first:pt-1",
+        post.reported && "rounded-2xl bg-destructive/[0.03] -mx-2 px-2",
+        // The cascade continues from the header/composer rise above — only
+        // the first screenful staggers; below the fold nobody is watching,
+        // and delaying content the user scrolled to would feel slower.
         index < 6 && "animate-fade-in-up",
       )}
       style={{
-        animationDelay: `${Math.min(index, 6) * 40}ms`,
+        animationDelay: `${160 + Math.min(index, 6) * 45}ms`,
         // Skip layout/paint for off-screen posts (cheap virtualization
         // without restructuring the scroll container). First few stay
         // eager so the initial paint isn't blank.
@@ -139,9 +139,9 @@ const FeedPostCard = memo(function FeedPostCard({
         containIntrinsicSize: index < 4 ? undefined : "auto 480px",
       }}
     >
-      {/* Reported banner */}
+      {/* Reported — admin triage row */}
       {post.reported && isAdmin && (
-        <div className="flex items-center justify-between px-4 py-2 bg-destructive/10 border-b border-destructive/20">
+        <div className="flex items-center justify-between mb-3 px-3 py-1.5 rounded-xl bg-destructive/10 border border-destructive/20">
           <div className="flex items-center gap-1.5">
             <AlertTriangle aria-hidden size={12} className="text-destructive" />
             <span className="text-[11px] font-bold text-destructive uppercase tracking-wider">Reported</span>
@@ -163,14 +163,14 @@ const FeedPostCard = memo(function FeedPostCard({
         </div>
       )}
 
-      {/* Post Header */}
-      <div className="flex items-center gap-3 p-4 pb-0">
+      {/* Author */}
+      <div className="flex items-center gap-3">
         <StatusAvatar src={post.profile?.avatar_url} name={post.profile?.username} tier={post.profile?.status_tier || 'recruit'} size="sm" animated={false} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => onNavigateUser(post.user_id)}
-              className="text-sm font-bold truncate hover:underline"
+              className="text-[14px] font-bold truncate hover:underline"
             >
               <TierUsername
                 username={post.profile?.username}
@@ -208,7 +208,7 @@ const FeedPostCard = memo(function FeedPostCard({
         {/* Post menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button aria-label="Post options" className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors text-muted-foreground/75 hover:text-muted-foreground">
+            <button aria-label="Post options" className="h-10 w-10 -mr-2 flex items-center justify-center rounded-full hover:bg-secondary transition-colors text-muted-foreground/75 hover:text-muted-foreground">
               <MoreHorizontal aria-hidden size={16} />
             </button>
           </DropdownMenuTrigger>
@@ -248,12 +248,12 @@ const FeedPostCard = memo(function FeedPostCard({
         </DropdownMenu>
       </div>
 
-      {/* Content */}
+      {/* Caption — reading size; a proof caption is copy, not metadata */}
       {post.content && (
-        <p className="px-4 pt-3 text-sm leading-relaxed overflow-wrap-break-word">{post.content}</p>
+        <p className="mt-2.5 text-[15px] leading-relaxed overflow-wrap-break-word">{post.content}</p>
       )}
 
-      {/* Image — tap to open premium lightbox */}
+      {/* Media — the shared frame, full column width (no card gutter left) */}
       {post.image_url && (
         <PostMedia
           imageUrl={post.image_url}
@@ -261,25 +261,26 @@ const FeedPostCard = memo(function FeedPostCard({
           tier={post.profile?.status_tier}
           dayStats={dayStats}
           onOpenImage={() => onOpenLightbox(post)}
+          className="mx-0 mt-3 rounded-[20px]"
         />
       )}
+      {post.video_url && <PostMedia videoUrl={post.video_url} className="mx-0 mt-3 rounded-[20px]" />}
 
-      {/* Video */}
-      {post.video_url && <PostMedia videoUrl={post.video_url} />}
-
-      {/* Actions — themed for ranking system */}
-      <div className="flex items-center gap-1 px-3 py-2.5 mt-1 border-t border-border/40">
+      {/* Actions — pills hang off the text edge; a landed reaction gets the
+          app's shared commit-pop, the same "your choice landed" spring as a
+          habit tick, so recognition here feels like the rest of the app. */}
+      <div className="flex items-center gap-0.5 mt-1.5 -ml-3">
         <button
           onClick={() => onToggleReaction(post.id)}
           aria-label={liked ? "Remove fire" : "Give fire"}
           className={cn(
             "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all active:scale-95",
             liked
-              ? "bg-streak-orange/15 text-streak-orange"
+              ? "bg-streak-orange/15 text-streak-orange commit-pop"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
           )}
         >
-          <Flame aria-hidden size={15} fill={liked ? "currentColor" : "none"} className={cn(liked && "animate-scale-in")} />
+          <Flame aria-hidden size={15} fill={liked ? "currentColor" : "none"} />
           <span className="tabular-nums">{post.likes_count > 0 ? post.likes_count : ""}</span>
         </button>
         <button
@@ -296,7 +297,7 @@ const FeedPostCard = memo(function FeedPostCard({
           <span className="tabular-nums">{post.comments_count > 0 ? post.comments_count : ""}</span>
         </button>
 
-        {/* Kudos button — only for non-own posts, members with earned Elite status */}
+        {/* Kudos — the scarce recognition, non-own posts only */}
         {!isOwn && canPost && (
           <button
             onClick={() => {
@@ -312,35 +313,30 @@ const FeedPostCard = memo(function FeedPostCard({
             className={cn(
               "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all active:scale-95",
               hasGivenKudos
-                ? "bg-purple/15 text-purple ring-1 ring-purple/30"
+                ? "bg-purple/15 text-purple ring-1 ring-purple/30 commit-pop"
                 : kudosRemaining > 0
                   ? "text-muted-foreground hover:bg-purple/10 hover:text-purple"
                   : "text-muted-foreground/75 cursor-not-allowed"
             )}
             title={`${kudosRemaining}/${kudosPerMonth} kudos remaining this month`}
           >
-            <Award aria-hidden
-              size={15}
-              fill={hasGivenKudos ? "currentColor" : "none"}
-              className={cn(hasGivenKudos && "animate-scale-in")}
-            />
+            <Award aria-hidden size={15} fill={hasGivenKudos ? "currentColor" : "none"} />
             <span className="tabular-nums">{(post.kudos_count || 0) > 0 ? post.kudos_count : ""}</span>
           </button>
         )}
 
-        {/* Show kudos count for own posts */}
+        {/* Kudos count on own posts */}
         {isOwn && (post.kudos_count || 0) > 0 && (
           <div className="flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold text-purple bg-purple/10">
             <Award aria-hidden size={15} fill="currentColor" />
             <span className="tabular-nums">{post.kudos_count}</span>
           </div>
         )}
-
       </div>
 
-      {/* Comments Section */}
+      {/* Discussion — a soft well under the entry, the one real container */}
       {isCommentsOpen && (
-        <div className="border-t border-border/50 px-4 py-3 bg-secondary/20">
+        <div className="mt-2 rounded-2xl bg-secondary/25 px-4 py-3">
           <div className="flex items-center justify-between mb-2">
             <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">
               Discussion
@@ -453,7 +449,7 @@ const FeedPostCard = memo(function FeedPostCard({
           )}
         </div>
       )}
-    </div>
+    </article>
   );
 });
 

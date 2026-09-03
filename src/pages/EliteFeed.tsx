@@ -77,6 +77,9 @@ const EliteFeed = () => {
   }, [videoPreview]);
 
   const [uploadPhase, setUploadPhase] = useState<string | null>(null);
+  // The composer starts as a one-line prompt and opens on tap; it stays open
+  // while a draft or media exists so nothing is ever lost behind a collapse.
+  const [composerOpen, setComposerOpen] = useState(false);
   const [showReported, setShowReported] = useState(false);
   const [showReportsPanel, setShowReportsPanel] = useState(false);
   const [lightboxPost, setLightboxPost] = useState<any | null>(null);
@@ -241,6 +244,7 @@ const EliteFeed = () => {
       setImagePreview(null);
       setVideoFile(null);
       setVideoPreview(null);
+      setComposerOpen(false);
       hapticNotification("success");
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
       toast.success("Posted! 🔥");
@@ -716,6 +720,8 @@ const EliteFeed = () => {
   const onSubmitComment = useCallback(() => { hapticImpact("light"); addComment.mutate(); }, [addComment.mutate]);
   const composerInitial = profile?.username?.charAt(0)?.toUpperCase() || "?";
   const giveKudosPending = giveKudos.isPending;
+  const hasDraft = newPost.length > 0 || !!imageFile || !!videoFile;
+  const composerExpanded = composerOpen || hasDraft;
 
   return (
     <div
@@ -727,50 +733,52 @@ const EliteFeed = () => {
     >
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
       
-      <div className="animate-reveal mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight leading-none my-[10px] py-[10px]">Elite Feed</h1>
-            <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
-              Discipline proof from top performers
-              {/* Kudos quota was invisible on touch (title attr only) — the
-                  scarce mechanic is only fun if you can SEE the budget. */}
-              {user && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/25 px-2 py-0.5 text-[11px] font-black text-gold tabular-nums">
-                  <Award aria-hidden size={12} /> {kudosRemaining}/{KUDOS_PER_MONTH} kudos left this month
-                </span>
-              )}
-            </p>
-          </div>
-
-          {/* Admin controls */}
+      {/* OPENING BEAT — the feed's one type moment. The Squad segment above
+          already says "Feed", so a second title was chrome; the live proof
+          count (which used to sit in a banner three blocks down) is the real
+          headline. Kudos budget stays visible as quiet inline text — the
+          scarce mechanic only works if you can see it — and admin tools
+          demote to two icon buttons that no longer out-shout the page. */}
+      <header className="home-rise relative z-10 pt-0.5 mb-5">
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+            {(todayWins ?? 0) > 0 ? (
+              <>
+                <span className="text-gold glow-gold-text tabular-nums">{todayWins}</span> locked in.
+              </>
+            ) : (
+              "Proof over promises."
+            )}
+          </h1>
           {isAdmin && (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-0.5 shrink-0 -mr-2">
               <button
                 onClick={() => setShowReported(!showReported)}
+                aria-label={showReported ? "Hide flagged posts" : "Show flagged posts"}
+                aria-pressed={showReported}
                 className={cn(
-                  "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all",
+                  "h-9 w-9 rounded-full flex items-center justify-center transition-colors active:scale-95",
                   showReported
-                    ? "bg-destructive/15 text-destructive border border-destructive/30"
-                    : "bg-secondary text-muted-foreground hover:text-foreground border border-border"
+                    ? "bg-destructive/15 text-destructive"
+                    : "text-muted-foreground/80 hover:text-foreground hover:bg-secondary",
                 )}
               >
-                {showReported ? <EyeOff aria-hidden size={12} /> : <Eye aria-hidden size={12} />}
-                {showReported ? "Hide flagged" : "Flagged"}
+                {showReported ? <EyeOff aria-hidden size={15} /> : <Eye aria-hidden size={15} />}
               </button>
               <button
                 onClick={() => setShowReportsPanel(!showReportsPanel)}
+                aria-label="Pending reports"
+                aria-pressed={showReportsPanel}
                 className={cn(
-                  "relative flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all",
+                  "relative h-9 w-9 rounded-full flex items-center justify-center transition-colors active:scale-95",
                   showReportsPanel
-                    ? "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))] border border-[hsl(var(--purple))]/30"
-                    : "bg-secondary text-muted-foreground hover:text-foreground border border-border"
+                    ? "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))]"
+                    : "text-muted-foreground/80 hover:text-foreground hover:bg-secondary",
                 )}
               >
-                <ShieldCheck aria-hidden size={12} />
-                Reports
+                <ShieldCheck aria-hidden size={15} />
                 {unresolvedReportsCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-black flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-black flex items-center justify-center">
                     {unresolvedReportsCount}
                   </span>
                 )}
@@ -778,7 +786,17 @@ const EliteFeed = () => {
             </div>
           )}
         </div>
-      </div>
+        <p className="mt-2 text-[13px] text-muted-foreground leading-snug">
+          {(todayWins ?? 0) > 0
+            ? "In the last 24 hours. Add your proof."
+            : "Discipline proof from the top. Be the first today."}
+          {user && (
+            <span className="ml-2 inline-flex items-center gap-1 font-bold tabular-nums text-gold/85">
+              <Award aria-hidden size={12} /> {kudosRemaining}/{KUDOS_PER_MONTH} kudos left
+            </span>
+          )}
+        </p>
+      </header>
 
       {/* Admin Reports Panel */}
       {isAdmin && showReportsPanel && (
@@ -843,110 +861,126 @@ const EliteFeed = () => {
         </div>
       )}
 
-      {/* A) Today's wins — social proof banner */}
-      {(todayWins ?? 0) > 0 && (
-        <div className="animate-reveal mb-4 rounded-2xl border border-[hsl(var(--streak-orange))]/30 bg-gradient-to-r from-[hsl(var(--streak-orange))]/[0.08] to-transparent px-4 py-3 flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-[hsl(var(--streak-orange))]/15 flex items-center justify-center shrink-0">
-            <Flame aria-hidden size={16} className="text-[hsl(var(--streak-orange))]" fill="currentColor" />
-          </div>
-          <p className="text-[13px] font-bold leading-snug text-foreground/90">
-            <span className="text-[hsl(var(--streak-orange))] font-black tabular-nums">{todayWins}</span>{" "}
-            {todayWins === 1 ? "operator" : "operators"} showed up in the last 24h.
-            <span className="text-muted-foreground font-medium"> Add yours.</span>
-          </p>
-        </div>
-      )}
-
-      {/* Create Post */}
+      {/* COMPOSER — a quiet prompt row until you mean it. The always-open box
+          used to be the first thing on screen before any proof; collapsed,
+          the feed opens with content and the prompt stays one tap away.
+          Entrance lives on the wrapper: home-rise's fill-mode pins transform,
+          which would kill the row's own press scale. */}
       {canPost && (
-        <div className="animate-reveal animate-reveal-delay-1 surface-card border-gold/20 p-4 mb-6">
-          <div className="flex gap-3">
-            <div className="h-9 w-9 rounded-full gradient-gold flex items-center justify-center text-xs font-black text-primary-foreground shrink-0">
-              {profile?.username?.charAt(0)?.toUpperCase() || "?"}
+        <div className="home-rise home-rise-1 mb-6">
+          {composerExpanded ? (
+            <div className="surface-card p-4">
+              <div className="flex gap-3">
+                <div className="h-9 w-9 rounded-full gradient-gold flex items-center justify-center text-xs font-black text-primary-foreground shrink-0">
+                  {composerInitial}
+                </div>
+                <textarea
+                  autoFocus
+                  value={newPost}
+                  onChange={(e) => setNewPost(e.target.value)}
+                  placeholder="Share your W today…"
+                  aria-label="Share your W today"
+                  rows={3}
+                  maxLength={500}
+                  className="w-full bg-transparent text-[15px] text-foreground placeholder:text-muted-foreground/75 resize-none focus:outline-none leading-relaxed"
+                />
+                {/* Close only offers itself while there is nothing to lose. */}
+                {!hasDraft && (
+                  <button
+                    type="button"
+                    onClick={() => { hapticSelection(); setComposerOpen(false); }}
+                    aria-label="Close composer"
+                    className="self-start -mr-1.5 -mt-1.5 h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-secondary transition-colors shrink-0"
+                  >
+                    <X aria-hidden size={14} />
+                  </button>
+                )}
+              </div>
+
+              {imagePreview && (
+                <MediaPreview
+                  imageSrc={imagePreview}
+                  sizeBytes={imageFile?.size}
+                  progressLabel={uploadPhase}
+                  onClear={() => { setImageFile(null); setImagePreview(null); }}
+                />
+              )}
+
+              {videoPreview && (
+                <MediaPreview
+                  videoSrc={videoPreview}
+                  sizeBytes={videoFile?.size}
+                  progressLabel={uploadPhase}
+                  onClear={() => { setVideoFile(null); setVideoPreview(null); }}
+                />
+              )}
+
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
+                <div className="flex items-center gap-1 -ml-2">
+                  <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+                  <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
+                  <button
+                    onClick={() => fileRef.current?.click()}
+                    className="flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold active:scale-95"
+                  >
+                    <Image aria-hidden size={14} />
+                    Photo
+                  </button>
+                  <button
+                    onClick={() => videoRef.current?.click()}
+                    className="flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold active:scale-95"
+                  >
+                    <Video aria-hidden size={14} />
+                    Video
+                  </button>
+                </div>
+                <Button
+                  variant="ember"
+                  size="sm"
+                  onClick={() => createPost.mutate()}
+                  disabled={createPost.isPending || (!newPost.trim() && !imageFile && !videoFile)}
+                  className="rounded-full px-5"
+                >
+                  <Send aria-hidden size={12} />
+                  {createPost.isPending ? "Posting…" : "Post"}
+                </Button>
+              </div>
             </div>
-            <textarea
-              value={newPost}
-              onChange={(e) => setNewPost(e.target.value)}
-              placeholder="Share your W today..."
-              aria-label="Share your W today"
-              rows={2}
-              maxLength={500}
-              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground/75 resize-none focus:outline-none leading-relaxed"
-            />
-          </div>
-
-          {imagePreview && (
-            <MediaPreview
-              imageSrc={imagePreview}
-              sizeBytes={imageFile?.size}
-              progressLabel={uploadPhase}
-              onClear={() => { setImageFile(null); setImagePreview(null); }}
-            />
-          )}
-
-          {videoPreview && (
-            <MediaPreview
-              videoSrc={videoPreview}
-              sizeBytes={videoFile?.size}
-              progressLabel={uploadPhase}
-              onClear={() => { setVideoFile(null); setVideoPreview(null); }}
-            />
-          )}
-
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-            <div className="flex items-center gap-1">
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
-              <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-medium"
-              >
-                <Image aria-hidden size={14} />
-                Photo
-              </button>
-              <button
-                onClick={() => videoRef.current?.click()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-medium"
-              >
-                <Video aria-hidden size={14} />
-                Video
-              </button>
-            </div>
-            <Button
-              variant="ember"
-              size="sm"
-              onClick={() => createPost.mutate()}
-              disabled={createPost.isPending || (!newPost.trim() && !imageFile && !videoFile)}
-              className="rounded-full px-5"
+          ) : (
+            <button
+              type="button"
+              onClick={() => { hapticSelection(); setComposerOpen(true); }}
+              className="w-full flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left transition-transform active:scale-[0.99]"
             >
-              <Send aria-hidden size={12} />
-              {createPost.isPending ? "Posting..." : "Post"}
-            </Button>
-          </div>
+              <span className="h-8 w-8 rounded-full gradient-gold flex items-center justify-center text-[11px] font-black text-primary-foreground shrink-0">
+                {composerInitial}
+              </span>
+              <span className="flex-1 text-[14px] text-muted-foreground/80">Share your W today…</span>
+              <span className="flex items-center gap-2.5 text-muted-foreground/55 shrink-0">
+                <Image aria-hidden size={15} />
+                <Video aria-hidden size={15} />
+              </span>
+            </button>
+          )}
         </div>
       )}
 
-      {/* (The old "Posting is for the Elite tier" gate card was removed —
-          canPost is !!user now, so the block was unreachable dead copy that
-          contradicted the current model.) */}
-
-      {/* Posts */}
-      <div className="space-y-4 animate-reveal animate-reveal-delay-2">
+      {/* PROOF — the content leads. Entries sit on the ground, hairline-
+          separated, no card boxes: the photo frames itself. */}
+      <div className="divide-y divide-border/35">
         {isLoading && (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="surface-card p-4 skeleton-block">
+          <div className="pt-1">
+            {[0, 1].map((i) => (
+              <div key={i} className="py-5 skeleton-block" style={{ animationDelay: `${i * 90}ms` }}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="h-10 w-10 rounded-full bg-secondary" />
+                  <div className="h-9 w-9 rounded-full bg-secondary" />
                   <div className="space-y-1.5">
                     <div className="h-3 w-24 bg-secondary rounded" />
                     <div className="h-2 w-16 bg-secondary rounded" />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <div className="h-3 w-full bg-secondary rounded" />
-                  <div className="h-3 w-3/4 bg-secondary rounded" />
-                </div>
+                <div className="h-3 w-3/4 bg-secondary rounded mb-3" />
+                <div className="h-[280px] w-full rounded-[20px] bg-secondary/60" />
               </div>
             ))}
           </div>

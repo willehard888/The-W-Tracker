@@ -107,7 +107,6 @@ export const stopWind = () => {
   started = false;
   cancelAnimationFrame(rafId);
   document.removeEventListener("visibilitychange", onVisibility);
-  detachPointerWind();
 };
 
 /** Inject a gust — flames across the app will visibly bend & recover. */
@@ -116,103 +115,8 @@ export const triggerGust = (strength = 0.8) => {
   manualGustAt = performance.now();
 };
 
-/* ── Pointer wind ──────────────────────────────────────────────────────
- * A second, much more local wind component driven by the user's cursor /
- * touch. Updates a global CSS var `--pointer-wind-x` (-1..1). Flames that
- * opt-in (via `data-flame-interactive` or by reading the var) lean toward
- * the pointer, giving fire a tactile, "I notice you" quality.
- *
- * Throttled to ~30fps. Decays to 0 when the pointer leaves the viewport.
- */
-let pointerStarted = false;
-let pointerLastWrite = 0;
-let pointerLastVal = "";
-let pointerTargetX = 0;
-let pointerCurrentX = 0;
-let pointerDecayRaf = 0;
-
-const POINTER_FRAME_MS = 1000 / 24;
-
-const writePointerVar = (val: number) => {
-  const s = val.toFixed(2);
-  if (s === pointerLastVal) return;
-  pointerLastVal = s;
-  document.documentElement.style.setProperty("--pointer-wind-x", s);
-};
-
-const pointerDecayTick = () => {
-  // Smoothly chase target (so quick flicks don't snap)
-  pointerCurrentX += (pointerTargetX - pointerCurrentX) * 0.18;
-  writePointerVar(pointerCurrentX);
-  if (Math.abs(pointerCurrentX - pointerTargetX) > 0.005 || pointerTargetX !== 0) {
-    pointerDecayRaf = requestAnimationFrame(pointerDecayTick);
-  } else {
-    pointerDecayRaf = 0;
-  }
-};
-
-const onPointerMove = (e: PointerEvent) => {
-  const now = performance.now();
-  if (now - pointerLastWrite < POINTER_FRAME_MS) return;
-  pointerLastWrite = now;
-  // Map pointer X to -1..1 based on viewport width
-  const w = window.innerWidth || 1;
-  const nx = (e.clientX / w) * 2 - 1;
-  pointerTargetX = Math.max(-1, Math.min(1, nx));
-  if (!pointerDecayRaf) pointerDecayRaf = requestAnimationFrame(pointerDecayTick);
-};
-
-const onPointerLeave = () => {
-  pointerTargetX = 0;
-  if (!pointerDecayRaf) pointerDecayRaf = requestAnimationFrame(pointerDecayTick);
-};
-
-export const attachPointerWind = () => {
-  if (pointerStarted || typeof window === "undefined") return;
-  pointerStarted = true;
-  writePointerVar(0);
-  window.addEventListener("pointermove", onPointerMove, { passive: true });
-  window.addEventListener("pointerleave", onPointerLeave, { passive: true });
-  document.addEventListener("pointercancel", onPointerLeave, { passive: true });
-};
-
-export const detachPointerWind = () => {
-  if (!pointerStarted) return;
-  pointerStarted = false;
-  window.removeEventListener("pointermove", onPointerMove);
-  window.removeEventListener("pointerleave", onPointerLeave);
-  document.removeEventListener("pointercancel", onPointerLeave);
-  if (pointerDecayRaf) cancelAnimationFrame(pointerDecayRaf);
-  pointerDecayRaf = 0;
-  pointerTargetX = 0;
-  pointerCurrentX = 0;
-  writePointerVar(0);
-};
-
-/** Trigger a one-shot shockwave ring on the given element (tier-up celebration). */
-export const triggerFlameShockwave = (
-  el: HTMLElement | null,
-  color: string = "hsl(42 100% 70%)",
-) => {
-  if (!el || typeof window === "undefined") return;
-  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-  const ring = document.createElement("span");
-  ring.style.cssText = [
-    "position:absolute",
-    "left:50%",
-    "top:50%",
-    "width:40px",
-    "height:40px",
-    "border-radius:9999px",
-    `border:2px solid ${color}`,
-    `box-shadow:0 0 24px ${color}`,
-    "pointer-events:none",
-    "transform:translate(-50%,-50%) scale(0.2)",
-    "opacity:0.7",
-    "mix-blend-mode:screen",
-    "animation:flame-shockwave 800ms cubic-bezier(0.22,1,0.36,1) forwards",
-    "z-index:5",
-  ].join(";");
-  el.appendChild(ring);
-  window.setTimeout(() => ring.remove(), 850);
-};
+/* (The pointer-wind add-on and triggerFlameShockwave were removed — neither
+   ever had a caller. The ambient wind above IS wired: every flame keyframe
+   in index.css reads --wind-x / --wind-gust, and startWind() runs from App
+   mount. The flames read `var(--wind-x, 0)`, so a stopped loop degrades to
+   perfectly still fire, never to broken styles.) */

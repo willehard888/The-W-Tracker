@@ -11,18 +11,16 @@ import { useActivityHeartbeat } from "@/hooks/use-activity-heartbeat";
 import PushPrimingSheet from "@/components/notifications/PushPrimingSheet";
 import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
 import { cancelLapsedReengagement } from "@/lib/streak-notifications";
+import { startWind } from "@/lib/wind";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
 import AmbientParticles from "@/components/AmbientParticles";
 import BottomNav from "@/components/BottomNav";
 import StatusHeader from "@/components/StatusHeader";
 import TierPromotionCelebration from "@/components/TierPromotionCelebration";
-import { StatusExplainerProvider } from "@/components/status/StatusExplainerProvider";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -208,6 +206,15 @@ const AppRoutes = () => {
     cancelLapsedReengagement();
   }, [user]);
 
+  // Ambient wind for every flame in the app. The CSS plumbing (--wind-x /
+  // --wind-gust in the flame keyframes) shipped long ago but nothing ever
+  // started the loop — the fire has been standing still since day one.
+  // Reduced-motion users keep still flames: their flame animations are off,
+  // so the vars are never read.
+  useEffect(() => {
+    startWind();
+  }, []);
+
   // Every page lands at the top. The main scroll container persists across
   // route changes (it lives outside <Routes>), so without this its scroll
   // position would carry over when navigating between tabs — making a new
@@ -231,7 +238,6 @@ const AppRoutes = () => {
 
   return (
     <PushControlsContext.Provider value={{ enablePush, dismissPriming, resyncStreakWarning }}>
-    <StatusExplainerProvider>
     <OnboardingProvider>
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
@@ -329,7 +335,6 @@ const AppRoutes = () => {
       <PushPrimingSheet open={needsPriming} onEnable={enablePush} onDismiss={dismissPriming} />
     </div>
     </OnboardingProvider>
-    </StatusExplainerProvider>
     </PushControlsContext.Provider>
   );
 };
@@ -464,9 +469,7 @@ const App = () => {
           transition still override. */}
       <MotionConfig reducedMotion="user" transition={{ type: "spring", stiffness: 320, damping: 30 }}>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
+        <Sonner />
           <BrowserRouter>
             <AuthProvider>
               <RevenueCatProvider>
@@ -478,7 +481,6 @@ const App = () => {
               </RevenueCatProvider>
             </AuthProvider>
           </BrowserRouter>
-        </TooltipProvider>
       </QueryClientProvider>
       </MotionConfig>
     </ErrorBoundary>

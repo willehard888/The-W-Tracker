@@ -52,10 +52,6 @@ export interface ExerciseEntry extends LibraryExercise {
   slug: string;
 }
 
-/** All library exercises as an array (empty until the module is loaded). */
-export const getAllExercises = (): ExerciseEntry[] =>
-  cache ? Object.entries(cache.EXERCISES).map(([slug, ex]) => ({ slug, ...ex })) : [];
-
 /**
  * Fast, resized WebP for an exercise image. The source images are full-size
  * JPGs on a public CDN — loading 4–6 of them per session is the main reason the

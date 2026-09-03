@@ -13,6 +13,3 @@ verify_jwt = true
 # NOT a Supabase JWT — the gateway must not require a JWT or it rejects them.
 [functions.revenuecat-webhook]
 verify_jwt = false
-
-[functions.stripe-webhook]
-verify_jwt = false

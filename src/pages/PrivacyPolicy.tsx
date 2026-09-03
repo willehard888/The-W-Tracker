@@ -31,7 +31,7 @@ const PrivacyPolicy = () => {
 
         <section>
           <h2 className="font-semibold text-foreground mb-2">4. Third-Party Services</h2>
-          <p>We use third-party services for authentication, payment processing (Stripe and Apple In-App Purchases via RevenueCat), and push notifications. These services have their own privacy policies.</p>
+          <p>We use third-party services for authentication, payment processing (Apple In-App Purchases via RevenueCat), and push notifications. These services have their own privacy policies.</p>
         </section>
 
         <section>
@@ -41,7 +41,7 @@ const PrivacyPolicy = () => {
 
         <section>
           <h2 className="font-semibold text-foreground mb-2">6. Subscriptions & Payments</h2>
-          <p>Premium subscriptions are processed through Apple's App Store (for iOS) or Stripe (for web). We do not store your payment card information directly. Subscription management is handled through the respective platform.</p>
+          <p>Premium subscriptions are processed through Apple's App Store. We do not store your payment card information directly. Subscription management is handled through the App Store.</p>
         </section>
 
         <section>

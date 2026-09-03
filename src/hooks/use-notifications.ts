@@ -74,15 +74,6 @@ export const useUnreadNotificationCount = () => {
   });
 };
 
-/** Mark everything (created up to now) read — optimistic. */
-export const markAllNotificationsRead = async (
-  queryClient: ReturnType<typeof useQueryClient> extends infer T ? T : never,
-) => {
-  const { error } = await supabase.rpc("mark_notifications_read", {});
-  if (!error) queryClient.invalidateQueries({ queryKey: ["notifications"] });
-  return !error;
-};
-
 /** Mark one row read (fire-and-forget; RLS + guard allow only read_at). */
 export const markNotificationRead = async (id: string) => {
   await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", id);

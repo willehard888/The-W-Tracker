@@ -15,25 +15,6 @@ import { hapticNotification } from "@/lib/haptics";
 export type ReportContentType =
   | "feed_post" | "tribe_post" | "comment" | "tribe_comment" | "direct_message" | "profile";
 
-/** Set of user_ids the current user has blocked (for lightweight UI state). */
-export function useBlockedIds() {
-  const { user } = useAuth();
-  const query = useQuery({
-    queryKey: ["blocked-users", user?.id],
-    enabled: !!user?.id,
-    staleTime: 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("blocked_users" as never)
-        .select("blocked_id")
-        .eq("blocker_id", user!.id);
-      if (error) throw error;
-      return new Set((data ?? []).map((r: { blocked_id: string }) => r.blocked_id));
-    },
-  });
-  return { blockedIds: query.data ?? new Set<string>(), ...query };
-}
-
 export function useBlockActions() {
   const qc = useQueryClient();
   const { user } = useAuth();

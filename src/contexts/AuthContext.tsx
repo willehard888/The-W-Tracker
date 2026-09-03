@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { isNativePlatform } from "@/lib/platform";
 import { track, FUNNEL } from "@/lib/analytics";
 import { identifyUser, resetIdentity, captureException } from "@/lib/observability";
 import { uniqueChannelName } from "@/lib/realtime";
@@ -148,33 +147,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const checkSubscription = useCallback(async () => {
-    if (isNativePlatform()) {
-      // On native, subscription state lives in RevenueCat; fetchProfile syncs it.
-      if (user) await fetchProfile(user);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
-      if (error) {
-        console.error("check-subscription error:", error);
-        return;
-      }
-      // Update subscription state directly from the edge-function response —
-      // no need to re-fetch the full profile here (fetchProfile was already
-      // called on login and is called by the 5-minute refresh interval).
-      if (data?.subscribed) {
-        setIsElite(true);
-        setSubscriptionEnd(data.subscription_end);
-      }
-      // No else-revoke: check-subscription only knows about Stripe. For every
-      // RevenueCat/iOS subscriber "no Stripe customer" is the NORMAL state, and
-      // revoking here stripped their Elite on web ~1s after login. Revocation
-      // belongs to the webhooks that own profiles.is_elite; fetchProfile picks
-      // it up.
-    } catch (e) {
-      console.error("Failed to check subscription:", e);
-    }
+    // Subscription state lives in RevenueCat and lands on the profile row via
+    // revenuecat-webhook — a profile refetch IS the subscription check, on
+    // every platform. (The old web branch called the Stripe-only
+    // check-subscription edge function; it was removed with the dormant
+    // Stripe path, which also ended its eternal 5-minute error loop in web
+    // sessions.)
+    if (user) await fetchProfile(user);
   }, [user]);
 
   useEffect(() => {

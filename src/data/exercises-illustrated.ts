@@ -36,4 +36,3 @@ export const findIllustrated = (name?: string | null): IllustratedExercise | nul
   }
   return byNorm.get(norm(name)) ?? null;
 };
-export const normIllustratedName = norm;

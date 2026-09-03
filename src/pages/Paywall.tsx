@@ -71,18 +71,8 @@ const Paywall = () => {
     navigate("/", { replace: true });
   }, [isPremium, navigate]);
 
-  // Web: re-check on focus / visibility
-  useEffect(() => {
-    if (isNative) return;
-    const sync = () => { void checkSubscription(); };
-    const onVis = () => { if (document.visibilityState === "visible") sync(); };
-    window.addEventListener("focus", sync);
-    document.addEventListener("visibilitychange", onVis);
-    return () => {
-      window.removeEventListener("focus", sync);
-      document.removeEventListener("visibilitychange", onVis);
-    };
-  }, [checkSubscription, isNative]);
+  // (The old web focus/visibility re-check existed to catch a returning
+  // Stripe-checkout tab; purchases are App Store-only now, so it's gone.)
 
   // ─── Verify membership by polling checkSubscription ──────────
   // NOTE: this useCallback MUST sit above the `if (isElite) return ...`
@@ -130,17 +120,10 @@ const Paywall = () => {
           </Button>
           <Button
             variant="secondary"
-            onClick={async () => {
-              if (isNativePlatform()) {
-                window.open("https://apps.apple.com/account/subscriptions", "_blank");
-                return;
-              }
-              const { data, error } = await supabase.functions.invoke("customer-portal");
-              if (error || !data?.url) {
-                toast.error("Could not open subscription management.");
-                return;
-              }
-              window.open(data.url, "_blank");
+            onClick={() => {
+              // Subscriptions are App Store-only — same management page on
+              // every platform.
+              window.open("https://apps.apple.com/account/subscriptions", "_blank");
             }}
           >
             <ShieldCheck size={14} /> Manage subscription
@@ -202,30 +185,12 @@ const Paywall = () => {
     }
   };
 
-  // ─── Web (Stripe) purchase handler ───────────────────────────
-  const handleWebPurchase = async (plan: "monthly" | "yearly") => {
-    setErrorMessage(null);
-    setStatus("purchasing");
-    track(FUNNEL.purchaseStarted, { plan, platform: "web" });
-    try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { tier: "elite", plan }, // server treats elite as Premium
-      });
-      if (error) throw error;
-      if (!data?.url) throw new Error("No checkout URL received");
-      window.open(data.url, "_blank");
-      setStatus("verifying");
-      const ok = await pollVerification(180_000);
-      if (ok) {
-        track(FUNNEL.purchaseCompleted, { plan, platform: "web" });
-      } else {
-        setStatus("idle");
-      }
-    } catch (e: any) {
-      track(FUNNEL.purchaseFailed, { plan, platform: "web", reason: e?.message?.toString().slice(0, 120) });
-      setStatus("error");
-      setErrorMessage(friendlyError(e, "Could not start checkout. Please try again."));
-    }
+  // ─── Web: purchases are App Store-only ───────────────────────
+  // The dormant Stripe checkout was removed with its edge functions — web
+  // visitors get sent to the app, where the real purchase flow lives.
+  const handleWebPurchase = async (_plan: "monthly" | "yearly") => {
+    track(FUNNEL.purchaseStarted, { plan: _plan, platform: "web_to_appstore" });
+    window.open("https://apps.apple.com/app/id6761115803", "_blank");
   };
 
   const handleRestore = async () => {
@@ -329,7 +294,7 @@ const Paywall = () => {
       <div className="text-center mt-4">
         <p className="text-[11px] text-muted-foreground tracking-wider uppercase">
           {/* "Cancel anytime" said once, in the CTA footnote — not four times. */}
-          {isNative ? "Secure Apple in-app purchase" : "Secure payment via Stripe"}
+          {isNative ? "Secure Apple in-app purchase" : "Subscribe in the iOS app"}
         </p>
       </div>
 

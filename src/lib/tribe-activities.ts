@@ -75,11 +75,6 @@ export const TRIBE_ACTIVITY_GROUPS: TribeActivityGroup[] = [
   },
 ];
 
-/** Flat list of every activity name — for simple selectors and filters. */
-export const TRIBE_ACTIVITIES: string[] = TRIBE_ACTIVITY_GROUPS.flatMap((g) =>
-  g.items.map((i) => i.name),
-);
-
 const ICON_BY_NAME: Record<string, LucideIcon> = Object.fromEntries(
   TRIBE_ACTIVITY_GROUPS.flatMap((g) => g.items.map((i) => [i.name, i.icon])),
 );

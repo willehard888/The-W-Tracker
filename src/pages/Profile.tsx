@@ -702,19 +702,9 @@ const Profile = () => {
               <SettingsRow
                 icon={CreditCard}
                 label="Manage subscription"
-                onClick={() => {
-                  if (isNativePlatform()) {
-                    window.open("https://apps.apple.com/account/subscriptions", "_blank");
-                  } else {
-                    supabase.functions
-                      .invoke("customer-portal")
-                      .then(({ data, error }) => {
-                        if (!error && data?.url) window.open(data.url, "_blank");
-                        else toast.error("Could not open subscription management");
-                      })
-                      .catch(() => toast.error("Could not open subscription management"));
-                  }
-                }}
+                // Subscriptions are App Store-only (the Stripe web path was
+                // removed) — one management page on every platform.
+                onClick={() => window.open("https://apps.apple.com/account/subscriptions", "_blank")}
               />
             </SettingsGroup>
           )}

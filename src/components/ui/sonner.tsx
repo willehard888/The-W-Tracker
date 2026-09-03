@@ -1,14 +1,13 @@
-import { useTheme } from "next-themes";
 import { Toaster as Sonner, toast } from "sonner";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
-
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      // The app is single-theme dark by design; the old next-themes useTheme()
+      // always returned the default anyway (no ThemeProvider was ever mounted).
+      theme="dark"
       position="top-center"
       // Push toasts below the iOS status bar / notch / Dynamic Island — without
       // this, top-center toasts render under the safe area and get clipped.

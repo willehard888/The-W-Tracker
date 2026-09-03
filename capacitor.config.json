@@ -37,15 +37,15 @@
     "androidScheme": "https"
   },
   "packageClassList": [
-    "AppPlugin",
     "AppLauncherPlugin",
-    "CAPBrowserPlugin",
+    "AppPlugin",
+    "FilesystemPlugin",
     "HapticsPlugin",
-    "KeyboardPlugin",
+    "HealthPlugin",
     "LocalNotificationsPlugin",
-    "PushNotificationsPlugin",
-    "StatusBarPlugin",
     "PurchasesPlugin",
-    "SignInWithApple"
+    "PushNotificationsPlugin",
+    "SharePlugin",
+    "StatusBarPlugin"
   ]
 }

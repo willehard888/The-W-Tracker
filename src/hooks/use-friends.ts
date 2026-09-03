@@ -64,7 +64,6 @@ export const useSentFriendRequests = () => {
   });
 };
 
-/** Lightweight count of incoming requests for the nav badge. */
 export const usePendingFriendCount = () => {
   const { user } = useAuth();
   return useQuery<number>({

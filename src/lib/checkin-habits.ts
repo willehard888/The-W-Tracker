@@ -90,10 +90,6 @@ export const CHECKIN_HABITS: CheckinHabit[] = [
   { key: "connection", label: "Real connection", emoji: "🤝", pillar: "connection", xp: 15, note: "A meaningful in-person interaction." },
 ];
 
-export const CHECKIN_HABIT_BY_KEY: Record<string, CheckinHabit> = Object.fromEntries(
-  CHECKIN_HABITS.map((h) => [h.key, h]),
-);
-
 /**
  * Default OPTIONAL habits for users who haven't customized (core is always added
  * on top). Mirrors the classic check-in minus the four core habits.

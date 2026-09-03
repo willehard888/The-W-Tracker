@@ -42,17 +42,6 @@ export const getSignedUrl = async (bucket: string, keyOrUrl: string): Promise<st
  * Hook form — resolves once per (bucket, key) with a shared react-query
  * cache; re-signs automatically before the TTL runs out.
  */
-export const useSignedUrl = (bucket: string, keyOrUrl: string | null | undefined) => {
-  const { data } = useQuery({
-    queryKey: ["signed-url", bucket, keyOrUrl ?? ""],
-    enabled: !!keyOrUrl,
-    staleTime: (TTL_SECONDS - 300) * 1000,
-    gcTime: TTL_SECONDS * 1000,
-    queryFn: () => getSignedUrl(bucket, keyOrUrl!),
-  });
-  return data ?? null;
-};
-
 // ── Media-URL resolution for mixed-bucket columns ────────────────────────
 // feed_posts.image_url can point at feed-images OR proof-photos (check-in
 // posts reuse the proof URL), and rows predate the private flip with full

@@ -1005,6 +1005,39 @@
   .animate-reveal-delay-3 { animation-delay: 240ms; }
   .animate-reveal-delay-4 { animation-delay: 320ms; }
 
+  /* HOME ENTRANCE — the screen settling into place on open. One authored
+     grammar for the first-viewport cascade: a short blur-rise, spring-eased,
+     staggered ~70ms. Fast enough (620ms) to read as a premium settle every
+     open rather than a slow reveal — opening Home many times a day, a heavy
+     entrance would wear (Emil's frequency rule), so this stays quick and
+     light (blur 5px, GPU transform+opacity). Deliberately OUTSIDE the
+     pointer:coarse idle-decoration guard — like commit-pop, this is the
+     screen's authored moment and plays on touch. Reduced motion drops to a
+     plain fade with no movement or blur. */
+  .home-rise {
+    animation: home-rise 0.62s var(--ease-spring, cubic-bezier(0.16, 1.2, 0.32, 1)) both;
+  }
+  .home-rise-1 { animation-delay: 70ms; }
+  .home-rise-2 { animation-delay: 140ms; }
+  .home-rise-3 { animation-delay: 210ms; }
+  .home-rise-4 { animation-delay: 280ms; }
+  .home-rise-5 { animation-delay: 350ms; }
+  @media (prefers-reduced-motion: reduce) {
+    .home-rise,
+    .home-rise-1, .home-rise-2, .home-rise-3, .home-rise-4, .home-rise-5 {
+      animation: home-fade 0.3s ease both;
+      animation-delay: 0ms;
+    }
+  }
+
+  /* Slow-breathing page aura (see @keyframes page-aura-breathe). */
+  .page-aura-live {
+    animation: page-aura-breathe 11s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .page-aura-live { animation: none; }
+  }
+
   .animate-badge-pulse {
     animation: badge-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
@@ -1645,6 +1678,36 @@
     opacity: 1;
     transform: translate3d(0, 0, 0);
   }
+}
+
+/* Home first-viewport entrance — blur-rise settle. Emil's blur-to-mask on
+   entry: the element resolves from a soft, slightly-shrunk, lifted state, so
+   it reads as focusing into place rather than sliding up. Never from scale(0)
+   or blur past ~5px (Safari cost + "nothing appears from nothing"). */
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0) scale(0.985);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+@keyframes home-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Living page aura — a slow breath so the dark ground feels alive and
+   expensive rather than a flat backdrop. Very slow (11s), subtle scale +
+   opacity only; it sits behind all content and never competes with the one
+   spectacle (the lava CTA). Off under reduced motion. */
+@keyframes page-aura-breathe {
+  0%, 100% { opacity: 0.82; transform: translateX(-50%) scale(1); }
+  50%      { opacity: 1;    transform: translateX(-50%) scale(1.05); }
 }
 
 @keyframes pulse-gold {

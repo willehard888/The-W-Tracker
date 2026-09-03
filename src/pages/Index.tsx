@@ -234,9 +234,11 @@ const Index = () => {
           </div>
         </Portal>
       )}
-      {/* Tier-reactive top aura */}
+      {/* Tier-reactive top aura — slowly breathing so the dark ground reads
+          alive and expensive, never a flat backdrop. */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[760px] h-[460px] pointer-events-none z-0"
+        aria-hidden
+        className="page-aura-live absolute top-0 left-1/2 -translate-x-1/2 w-[760px] h-[460px] pointer-events-none z-0"
         style={{ background: pageAura }}
       />
 
@@ -267,7 +269,7 @@ const Index = () => {
       {/* ── OPENING BEAT — the day, stated once. Type on the page, not a card:
              the first thing the eye meets is a voice, and the hero below gets
              air instead of a stat strip crowding it. ── */}
-      <header className="animate-reveal relative z-10 pt-0.5">
+      <header className="home-rise relative z-10 pt-0.5">
         <p className="eyebrow text-muted-foreground/75">{weekday} · {monthDay}</p>
         <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight mt-1.5">
           {ritualLine}
@@ -276,7 +278,7 @@ const Index = () => {
 
       {/* ── HERO — the one daily act, framed as the hero with real room above
              and below. The lava CTA is the screen's single spectacle. ── */}
-      <div className="animate-reveal animate-reveal-delay-1 mt-4 mb-6 relative z-10">
+      <div className="home-rise home-rise-1 mt-4 mb-6 relative z-10">
         <CommandDeck
           streak={profile.streak}
           longestStreak={profile.longest_streak}
@@ -289,7 +291,7 @@ const Index = () => {
 
       {/* TIER RISK — urgent, sits directly under the act it protects. */}
       {tierRisk.level !== "safe" && (
-        <div className="animate-reveal animate-reveal-delay-2 mb-6 relative z-10">
+        <div className="home-rise home-rise-2 mb-6 relative z-10">
           <TierRiskBanner risk={tierRisk} />
         </div>
       )}
@@ -301,7 +303,7 @@ const Index = () => {
       {(rankSane || liveWhealth?.overall != null || profile.level > 1) && (
         <div
           ref={progressionTargetRef}
-          className="animate-reveal animate-reveal-delay-2 relative z-10 mb-6 surface-card surface-card-quiet flex items-center"
+          className="home-rise home-rise-2 relative z-10 mb-6 surface-card surface-card-quiet flex items-center"
         >
           <button
             type="button"
@@ -337,7 +339,7 @@ const Index = () => {
               className="shrink-0 flex flex-col items-end pr-4 pl-3 py-3 border-l border-border/40 active:opacity-70 transition-opacity"
             >
               <span className="eyebrow text-gold/85 leading-none">W-Index</span>
-              <span className="font-display font-black text-[17px] tabular-nums leading-none text-gold mt-1 inline-flex items-center gap-1">
+              <span className="font-display font-black text-[17px] tabular-nums leading-none text-gold glow-gold-text mt-1 inline-flex items-center gap-1">
                 <Crown size={13} strokeWidth={2.8} aria-hidden /> {liveWhealth.overall}
               </span>
             </button>
@@ -348,7 +350,7 @@ const Index = () => {
       {/* APPLE HEALTH — the ask that makes check-ins verifiable. Native only,
           until connected; renders nothing on web/Android. */}
       {isNativePlatform() && !healthConnected && (
-        <div className="animate-reveal animate-reveal-delay-3 mb-6 relative z-10">
+        <div className="home-rise home-rise-3 mb-6 relative z-10">
           <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
             <HealthKitConnectCard onConnected={() => setHealthConnected(true)} />
           </ErrorBoundary>
@@ -358,7 +360,7 @@ const Index = () => {
       {/* ── COACH — a whisper, not a card. The coach's one line in its own
              voice; a low quiet band so it reads as a presence, never a second
              button competing with the hero. ── */}
-      <div className="animate-reveal animate-reveal-delay-3 mb-6 relative z-10">
+      <div className="home-rise home-rise-3 mb-6 relative z-10">
         <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
           <CoachStrip />
         </ErrorBoundary>
@@ -367,7 +369,7 @@ const Index = () => {
       {/* ── THE LIBRARY — one zone: the day's thought to read (a pull-quote
              from the Vault) leading a clean shelf of what the membership
              unlocks. Two shapes, one grammar — the card-soup is gone. ── */}
-      <div className="animate-reveal animate-reveal-delay-4 mb-6 relative z-10">
+      <div className="home-rise home-rise-4 mb-6 relative z-10">
         <DailyInsightCard />
         <div className="mt-3">
           <LibraryHub />

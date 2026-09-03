@@ -25,11 +25,19 @@ const DailyInsightCard = () => {
         hapticImpact("light");
         navigate(`/vault?lesson=${insight.lessonSlug}`);
       }}
-      className="group w-full text-left px-1.5 active:opacity-80 transition-opacity"
+      className="group relative w-full text-left px-1.5 active:opacity-80 transition-opacity"
     >
+      {/* Oversized quote watermark — an editorial premium device, faint gold,
+          behind the text. Purely typographic; hidden from screen readers. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -top-3 left-0 font-display font-black text-[64px] leading-none text-gold/[0.10] select-none"
+      >
+        &ldquo;
+      </span>
       {/* Thin gold rule as the quote's anchor — a hairline, not a slab. */}
       <span aria-hidden className="block h-px w-8 bg-gradient-to-r from-gold/70 to-transparent mb-3" />
-      <p className="font-display text-[18px] leading-[1.35] tracking-tight text-foreground/90">
+      <p className="relative font-display text-[18px] leading-[1.35] tracking-tight text-foreground/90">
         {insight.text}
       </p>
       <p className="flex items-center gap-1 eyebrow text-muted-foreground/80 mt-3">

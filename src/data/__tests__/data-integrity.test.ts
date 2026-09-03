@@ -5,7 +5,7 @@
 import { describe, it, expect } from "vitest";
 import { RECIPES } from "@/data/recipes";
 import { DAILY_INSIGHTS } from "@/data/daily-insights";
-import { recipeThumb, recipePoster, recipeSquare } from "@/lib/recipe-images";
+import { recipeThumb, recipeSquare } from "@/lib/recipe-images";
 import { fmtQty } from "@/lib/recipe-scaling";
 
 describe("recipes catalog", () => {
@@ -13,11 +13,24 @@ describe("recipes catalog", () => {
     expect(new Set(RECIPES.map((r) => r.id)).size).toBe(RECIPES.length);
   });
 
-  it("every recipe has all three bundled images (thumb, poster, square)", () => {
+  // Two sizes now, not three: the `poster` set was a cream-background recipe
+  // CARD with every quantity baked in as pixels. The screen renders that as
+  // text, so the photograph is all that's left to bundle.
+  it("every recipe has both bundled photos (thumb, square)", () => {
     for (const r of RECIPES) {
       expect(recipeThumb(r.id), `${r.id} thumb`).toBeTruthy();
-      expect(recipePoster(r.id), `${r.id} poster`).toBeTruthy();
       expect(recipeSquare(r.id), `${r.id} square`).toBeTruthy();
+    }
+  });
+
+  it("every recipe carries method steps and at least one tag", () => {
+    for (const r of RECIPES) {
+      expect(r.method.length, `${r.id} method`).toBeGreaterThan(0);
+      for (const phase of r.method) {
+        expect(phase.steps.length, `${r.id}: ${phase.title}`).toBeGreaterThan(0);
+      }
+      // The list filters by tag, so an untagged recipe is unreachable there.
+      expect(r.tags.length, `${r.id} tags`).toBeGreaterThan(0);
     }
   });
 

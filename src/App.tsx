@@ -295,6 +295,9 @@ const AppRoutes = () => {
           <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />
           <Route path="/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
           <Route path="/recipes" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
+          {/* A recipe is now a real route, not local state — so the coach and
+              the Vault can link to a specific dish, and back actually goes back. */}
+          <Route path="/recipes/:id" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
           {/* Poster export surface — dev only, so the branch is dead code in a
               production build and the chunk is never emitted. Unauthenticated
               on purpose: it renders bundled data and a bundled image, nothing

@@ -9,6 +9,11 @@ import { toast } from "sonner";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import ExerciseRow from "@/components/coach/ExerciseRow";
 
+// Full 1–10 RPE. The readiness formula in coach-daily-plan clamps anything
+// below 6 to the same score, but the number is the athlete's own record of the
+// session — truncating the easy end would store a harder session than happened.
+const RPE_SCALE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
+
 interface Props {
   program: CoachProgram;
   currentWeek: number;
@@ -20,16 +25,20 @@ interface Props {
 const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged }: Props) => {
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [rpeSaving, setRpeSaving] = useState<number | null>(null);
   const [openWarmup, setOpenWarmup] = useState(false);
   const [openCooldown, setOpenCooldown] = useState(false);
 
   const week = program.plan_json.weeks.find((w) => w.week === currentWeek);
   const day = week?.days[todayDayIndex];
 
-  const alreadyLogged = useMemo(
-    () => logs.some((l) => l.week === currentWeek && l.day_index === todayDayIndex && l.completed),
+  // Keep the row, not just a boolean — the RPE prompt below needs its id and
+  // needs to know whether an RPE has already been given.
+  const todayLog = useMemo(
+    () => logs.find((l) => l.week === currentWeek && l.day_index === todayDayIndex && l.completed),
     [logs, currentWeek, todayDayIndex],
   );
+  const alreadyLogged = !!todayLog;
 
   if (!day) return null;
   const isRest = day.focus.toLowerCase() === "rest";
@@ -48,6 +57,29 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
     if (error) { toast.error("Couldn't log session."); return; }
     hapticNotification("success");
     toast.success(isRest ? "Rest logged." : "Session done.");
+    onLogged();
+  };
+
+  // How hard was it, actually.
+  //
+  // `perceived_rpe` has a column, RLS and three edge functions reading it, and
+  // until now nothing ever wrote it — markDone inserted { completed: true } and
+  // stopped. coach-daily-plan reads it for 25 of the 100 readiness points, so
+  // every athlete scored the same default forever.
+  //
+  // Asked AFTER the session is already logged, never before: completion stays a
+  // single tap, and skipping this costs nothing because coach-daily-plan now
+  // falls back to the evening reflection's RPE.
+  const saveRpe = async (value: number) => {
+    if (!user || !todayLog) return;
+    setRpeSaving(value);
+    const { error } = await supabase
+      .from("coach_program_logs")
+      .update({ perceived_rpe: value })
+      .eq("id", todayLog.id);
+    setRpeSaving(null);
+    if (error) { toast.error("Couldn't save that."); return; }
+    hapticNotification("success");
     onLogged();
   };
 
@@ -140,6 +172,40 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
             : alreadyLogged ? <><Check size={16} /> Done · today</>
             : <><Check size={16} /> {isRest ? "Mark rest" : "Done"}</>}
         </Button>
+
+        {/* Effort — only after a real session is logged, and only until it's
+            answered. A rest day has no effort worth rating. */}
+        {alreadyLogged && !isRest && todayLog?.perceived_rpe == null && (
+          <div className="mt-4">
+            <p className="text-[11px] font-black tracking-[0.22em] uppercase text-muted-foreground mb-2">
+              How hard was it?
+            </p>
+            {/* 5 across, so each target clears the 44pt floor — ten in one row
+                would be ~35px wide on a phone. */}
+            <div className="grid grid-cols-5 gap-1.5">
+              {RPE_SCALE.map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  disabled={rpeSaving != null}
+                  onClick={() => { hapticImpact("light"); saveRpe(value); }}
+                  aria-label={`Rate effort ${value} out of 10`}
+                  className={cn(
+                    "h-11 rounded-lg border text-[13px] font-black tabular-nums",
+                    "transition-colors active:scale-[0.96] disabled:opacity-50",
+                    "border-border/60 bg-secondary/40 text-muted-foreground",
+                    "hover:border-gold/40 hover:text-gold",
+                  )}
+                >
+                  {rpeSaving === value ? <Loader2 size={13} className="animate-spin mx-auto" /> : value}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground/75 mt-1.5 leading-snug">
+              1 = easy · 10 = everything you had. This is what tomorrow's plan reads.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -56,10 +56,16 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
 
   const [weight, setWeight] = useState("");
   const [reps, setReps] = useState("");
+  const [rpe, setRpe] = useState("");
   useEffect(() => {
     if (existing) {
       setWeight(existing.weight != null ? String(existing.weight) : "");
       setReps(existing.reps != null ? String(existing.reps) : "");
+      // Only show a stored RPE the athlete could have given. Rows logged before
+      // this field existed hold the prescribed value, so echoing it back would
+      // present the program's number as the athlete's own.
+      const stored = (existing as { rpe?: number | null }).rpe;
+      setRpe(stored != null && stored !== block.rpe ? String(stored) : "");
     }
   }, [existing?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -95,11 +101,20 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
     const w = weight.trim() === "" ? null : Number(weight);
     const r = reps.trim() === "" ? null : parseInt(reps, 10);
     if (w == null && r == null) { toast.error("Add a weight or reps first."); return; }
+    // Felt RPE beats prescribed RPE. This used to store `block.rpe` — the
+    // number the PROGRAM asked for — so workout_set_logs.rpe recorded what the
+    // session was supposed to feel like, never what it did. Progression reads
+    // this column, so the honest number is the one worth keeping; the
+    // prescription stays as the fallback when the athlete doesn't fill it in.
+    const feltRpe = rpe.trim() === "" ? null : parseInt(rpe, 10);
+    const rpeToLog = feltRpe != null && feltRpe >= 1 && feltRpe <= 10
+      ? feltRpe
+      : block.rpe ?? null;
     hapticImpact("light");
     try {
       await logSet.mutateAsync({
         programId, week, day: dayIndex, slug: block.slug ?? null,
-        name: block.name, weight: w, reps: r, rpe: block.rpe ?? null,
+        name: block.name, weight: w, reps: r, rpe: rpeToLog,
       });
       hapticNotification("success");
       toast.success(`${block.name}: logged`);
@@ -244,6 +259,17 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
                   <input
                     type="number" inputMode="numeric" value={reps} placeholder="reps"
                     onChange={(e) => setReps(e.target.value)}
+                    className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-[13px] text-center outline-none focus:border-gold/50"
+                  />
+                </div>
+                {/* Felt RPE. Optional — leaving it blank falls back to the
+                    prescribed value, which is what every row stored before. */}
+                <div className="flex-1">
+                  <input
+                    type="number" inputMode="numeric" min={1} max={10} value={rpe}
+                    placeholder={block.rpe ? `RPE ${block.rpe}` : "RPE"}
+                    aria-label="Felt RPE, 1 to 10"
+                    onChange={(e) => setRpe(e.target.value)}
                     className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-[13px] text-center outline-none focus:border-gold/50"
                   />
                 </div>

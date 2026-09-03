@@ -10,7 +10,7 @@ import { fmtQty } from "@/lib/recipe-scaling";
 import { Button } from "@/components/ui/button";
 import { RECIPES, type Recipe } from "@/data/recipes";
 import { cn } from "@/lib/utils";
-import { SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 
 const BATCH_OPTIONS = [1, 2, 3, 4, 5] as const;
@@ -81,16 +81,17 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
             <Layers size={12} className="text-gold" />
             <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/70">Meal prep — cook in batch</p>
           </div>
-          <div className="flex gap-1.5">
+          {/* SEGMENT_TRACK, not a bare flex row: this control used to float on
+              the card with no recessed track, which is exactly the "third flat
+              style" segment.ts's own header comment calls out. */}
+          <div className={SEGMENT_TRACK}>
             {BATCH_OPTIONS.map((b) => (
               <button
                 key={b}
                 onClick={() => { hapticSelection(); setBatch(b); }}
                 className={cn(
-                  "flex-1 rounded-lg py-2.5 text-[13px] font-black tabular-nums transition-all active:scale-[0.97] border",
-                  batch === b
-                    ? cn(SEGMENT_ACTIVE, "border-transparent")
-                    : cn("bg-secondary/40 border-border/50", SEGMENT_IDLE),
+                  "flex-1 rounded-lg py-2.5 text-[13px] font-black tabular-nums transition-all active:scale-[0.97]",
+                  batch === b ? SEGMENT_ACTIVE : SEGMENT_IDLE,
                 )}
               >
                 {b}×
@@ -99,19 +100,22 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
           </div>
           <p className="text-[12px] text-muted-foreground mt-2.5 leading-snug">
             {batch === 1
-              ? "Single serving — full quantities are on the poster. Tap 2×–5× for a batch shopping list."
-              : `Shopping list scaled for ${batch} meals — cook once, eat all week.`}
+              ? "Quantities below are for one serving. Tap 2×–5× to scale the whole list."
+              : `Scaled for ${batch} meals — cook once, eat all week.`}
           </p>
         </div>
 
-        {/* Scaled shopping list — only when batching (poster covers the 1× case) */}
-        {batch > 1 && (
-          <div className="surface-card p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Leaf size={13} className="text-gold" />
-              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/70">Shopping list</p>
+        {/* Always rendered, not gated on batch > 1. Hiding it at 1× meant a
+            user who never touched the scaler never learned the list existed —
+            and left them pinch-zooming the poster for the ingredients. */}
+        <div className="surface-card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Leaf size={13} className="text-gold" />
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/70">Shopping list</p>
+            {batch > 1 && (
               <span className="ml-auto text-[12px] font-black text-gold tabular-nums">{batch}×</span>
-            </div>
+            )}
+          </div>
             <div className="space-y-3">
               {recipe.groups.map((g) => (
                 <div key={g.title}>
@@ -131,10 +135,32 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
                     ))}
                   </ul>
                 </div>
-              ))}
-            </div>
+            ))}
           </div>
-        )}
+        </div>
+
+        {/* METHOD — every recipe already carries full step-by-step instructions
+            in `method`, and nothing rendered them. The only way to read how to
+            cook was to pinch-zoom the poster JPEG. As text it is selectable,
+            screen-readable, and legible without zooming. */}
+        <div className="surface-card p-4">
+          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/70 mb-3">Method</p>
+          <div className="space-y-4">
+            {recipe.method.map((phase) => (
+              <div key={phase.title}>
+                <p className="text-[11px] font-black uppercase tracking-wider text-gold/80 mb-1.5">{phase.title}</p>
+                <ol className="space-y-1.5">
+                  {phase.steps.map((step, i) => (
+                    <li key={i} className="flex gap-2.5 text-[12px] leading-snug">
+                      <span className="shrink-0 tabular-nums font-black text-gold/50 w-4">{i + 1}.</span>
+                      <span className="text-foreground/85">{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Storage / reheat — same calm palette (no competing accent colour) */}
         <div className="surface-card p-4">
@@ -228,12 +254,21 @@ const Recipes = () => {
                           fallback. */}
                       <div className="h-16 w-16 rounded-xl overflow-hidden bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 relative border border-border/40">
                         <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />
-                        <div
-                          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                          style={{
-                            backgroundImage: `url(${recipeSquare(r.id) ?? recipeThumb(r.id)})`,
-                          }}
-                        />
+                        {/* Only paint a background when one of the two sources
+                            actually resolved. The unguarded version emitted
+                            `url(undefined)` for a missing crop, which paints
+                            nothing over the fallback but still asks the browser
+                            to fetch a bogus URL. */}
+                        {(() => {
+                          const thumb = recipeSquare(r.id) ?? recipeThumb(r.id);
+                          if (!thumb) return null;
+                          return (
+                            <div
+                              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                              style={{ backgroundImage: `url(${thumb})` }}
+                            />
+                          );
+                        })()}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-display text-[15px] font-black leading-tight">{r.title}</p>
@@ -243,6 +278,21 @@ const Recipes = () => {
                           <span className="tabular-nums">{r.nutrition.protein}g protein</span>
                           <span className="inline-flex items-center gap-0.5"><Clock size={11} /> {r.prepMin + r.cookMin}m</span>
                         </div>
+                        {/* `tags` was populated on every recipe and rendered
+                            nowhere — the dietary information the data already
+                            held was invisible to the person choosing a meal. */}
+                        {r.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {r.tags.map((t) => (
+                              <span
+                                key={t}
+                                className="rounded-full border border-border/50 bg-secondary/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <ChevronRight size={16} className="text-gold/60 shrink-0 mt-1" />
                     </div>

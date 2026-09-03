@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Crown, ChevronRight, Utensils } from "lucide-react";
 import { recipeSquare, recipeThumb } from "@/lib/recipe-images";
+import { RECIPES } from "@/data/recipes";
 import { illustrationThumb } from "@/data/exercises-illustrated";
 import { GOLD_LINES } from "@/components/coach/ExerciseIllustration";
 import { hapticImpact } from "@/lib/haptics";
@@ -24,7 +25,9 @@ const ROWS = [
     path: "/recipes",
     title: "Meal-prep recipes",
     sub: "High-protein bowls & plates",
-    chip: "15",
+    // Counted, not typed. The literal "15" here and a second one in Vault.tsx
+    // both went stale the moment a recipe was added or removed.
+    chip: String(RECIPES.length),
     /** Gold marks what's gated, not what's counted. */
     chipGold: false,
   },

@@ -22,6 +22,7 @@ import { useVaultArticles, type VaultArticle } from "@/hooks/use-vault-articles"
 import { useVaultProgress } from "@/hooks/use-vault-progress";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import EvidenceChip from "@/components/vault/EvidenceChip";
+import { RECIPES } from "@/data/recipes";
 import VaultArticleSheet from "@/components/vault/VaultArticleSheet";
 import CourseProgressRing from "@/components/vault/CourseProgressRing";
 import VaultCover from "@/components/vault/VaultCover";
@@ -334,7 +335,7 @@ const VaultCategoryBlock = ({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">Meal-prep recipes</p>
-                  <p className="text-[12px] font-bold leading-tight">15 high-protein recipes · scale 1×–5× · storage & reheat</p>
+                  <p className="text-[12px] font-bold leading-tight">{RECIPES.length} high-protein recipes · scale 1×–5× · storage &amp; reheat</p>
                 </div>
                 <ChevronRight size={16} className="text-gold shrink-0" />
               </div>

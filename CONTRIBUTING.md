@@ -20,7 +20,7 @@ This document is for developers picking up the W Tracker codebase. Read [`README
 
 6. **One Supabase client.** Always `import { supabase } from "@/integrations/supabase/client"`.
 
-7. **Never log or echo secrets.** `LOVABLE_API_KEY`, `STRIPE_*`, `APNS_*`, service-role keys.
+7. **Never log or echo secrets.** `OPENROUTER_API_KEY`, `STRIPE_*`, `APNS_*`, service-role keys.
 
 ## Coding conventions
 
@@ -29,7 +29,7 @@ This document is for developers picking up the W Tracker codebase. Read [`README
 - Components are presentational; push business logic into hooks or `src/lib/`.
 - Group feature files into a folder once you have 3+ related components (`src/components/coach/`, `src/components/vault/`, etc.).
 - Use `framer-motion` for transitions; use `@capacitor/haptics` for tactile feedback.
-- Lazy-load page-level routes via `React.lazy` (see `TabHost.tsx` and `ModalStack.tsx`).
+- Lazy-load page-level routes via `React.lazy` (see the route table in `src/App.tsx`).
 
 ## Adding a feature checklist
 
@@ -39,17 +39,26 @@ This document is for developers picking up the W Tracker codebase. Read [`README
 - [ ] Edge function (if any) is idempotent and rate-limited
 - [ ] Memory file in `.lovable/memory/` updated if a core rule changes
 - [ ] Loading + empty + error states handled in the UI
-- [ ] Page added to `TabHost.tsx` or `ModalStack.tsx` (don't bypass the shell)
+- [ ] Route registered lazily in `src/App.tsx` (don't bypass the shell)
 - [ ] Tracked in analytics / status counters if it affects XP
+- [ ] Gate chain green before pushing:
+      `npx tsc --noEmit && node scripts/type-debt.mjs && node scripts/style-guard.mjs && npx vitest run && npm run build`
 
 ## Releasing
 
-- **Frontend**: hit *Publish → Update* in Lovable. Native iOS shells fetch the new bundle on next cold start (see live-update config).
-- **Backend (edge functions + migrations)**: deploys automatically on save. There is no separate release step.
-- **iOS binary**: bump version in `ios/App/App/Info.plist`, then trigger Xcode Cloud (`ios/App/ci_scripts/`).
+- **Web**: push to `main` → Vercel deploys automatically (`vercel.json`).
+- **Backend**: migrations via `npx supabase db push`; edge functions via
+  `npx supabase functions deploy <name>`. Neither happens automatically —
+  deploy what you changed.
+- **iOS binary**: every push to `main` triggers Xcode Cloud
+  (`ios/App/ci_scripts/`); `.github/workflows/testflight-distribute.yml`
+  then assigns the build to the external TestFlight group automatically.
+  The web bundle ships inside the binary — web changes reach iOS users only
+  through a new build.
 
 ## Support escalation
 
-- Backend / Supabase outage → Lovable Cloud status (Connectors → Lovable Cloud).
+- Backend / Supabase outage → https://status.supabase.com + project dashboard
+  (`gcwuvijcuzhunkcauzom`).
 - Push delivery issues → check `_shared/apns.ts` logs + APNs key expiry.
 - RevenueCat sync drift → re-run `check-subscription` for the user; verify webhook in RevenueCat dashboard.

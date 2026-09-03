@@ -8,7 +8,11 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 // function (verify_jwt=false). Reads only non-sensitive card fields.
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
-const APP_ORIGIN = Deno.env.get("APP_ORIGIN") ?? "https://status-level-up.lovable.app";
+// APP_ORIGIN is a required function secret in prod (set 2026-08-20). The
+// fallback is the App Store page — for an iOS-first product a share link in
+// a misconfigured environment should still land somewhere that converts,
+// never on a dead preview domain.
+const APP_ORIGIN = Deno.env.get("APP_ORIGIN") ?? "https://apps.apple.com/app/id6761115803";
 const FN_BASE = `${SUPABASE_URL}/functions/v1`;
 
 const TIER_LABEL: Record<string, { label: string; emoji: string; pct: string }> = {

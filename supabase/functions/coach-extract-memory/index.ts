@@ -1,4 +1,4 @@
-// Extract durable user facts from a recent chat exchange via Lovable AI Gateway.
+// Extract durable user facts from a recent chat exchange via OpenRouter.
 // Persists distilled facts to coach_chat_memory via append_chat_memory_batch RPC.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 

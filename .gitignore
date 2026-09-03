@@ -39,3 +39,6 @@ supabase/.temp/
 .env.local
 .env.*.local
 coverage/
+
+# Lovable-era data exports (archived locally; purged from git history 2026-09-03)
+migration/

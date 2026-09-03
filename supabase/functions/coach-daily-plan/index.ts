@@ -1,6 +1,6 @@
 // Adaptive AI Coach v2 — generates today's mission plan for the authenticated user.
 // Reads last 7 days of daily check-ins, latest active program, recent program logs,
-// computes a Readiness Score, then asks Lovable AI Gateway (Gemini 2.5 Flash) to emit
+// computes a Readiness Score, then asks OpenRouter (google/gemini-2.5-flash) to emit
 // 3–5 high-impact missions via tool-calling. Persists to coach_daily_plans via SECURITY
 // DEFINER RPC `upsert_daily_plan`.
 

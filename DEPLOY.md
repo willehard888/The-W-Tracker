@@ -58,9 +58,11 @@ If the project is currently behind a Lovable-managed Supabase project
 project itself — Lovable doesn't expose that action. Instead, clone the
 schema + data + auth users into a project you own and cut over.
 
-A one-shot migration script lives at `scripts/migrate-from-lovable.sh`.
-It dumps the source via `pg_dump`, restores into your destination
-project, sets `OPENROUTER_API_KEY`, and deploys every edge function.
+A one-shot migration script (`scripts/migrate-from-lovable.sh`, removed
+after the migration completed in August 2026) dumped the source via
+`pg_dump`, restored into the destination project, set
+`OPENROUTER_API_KEY`, and deployed every edge function. The commands
+below are kept as a historical record of the cutover.
 
 ```bash
 export SUPABASE_ACCESS_TOKEN='<your token from supabase.com/dashboard/account/tokens>'
@@ -165,12 +167,12 @@ curl -X POST "$VITE_SUPABASE_URL/functions/v1/ai-coach" \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"role":"user","content":"ping"}]}'
 
-# 2. Confirm there are no Lovable references left in the codebase
+# 2. Confirm there are no Lovable AI references left in the codebase
 grep -rln "ai.gateway.lovable\|LOVABLE_API_KEY" supabase/functions/ src/
-# → should print only `supabase/functions/_shared/ai-gateway.ts` (the
-#   shared helper that mentions LOVABLE_API_KEY as a transitional
-#   fallback in a comment).
+# → prints NOTHING. The migration is complete: every AI endpoint reads
+#   OPENROUTER_API_KEY and calls openrouter.ai directly (the transitional
+#   _shared/ai-gateway.ts helper was removed once the cutover finished).
 ```
 
-If `grep` returns anything else, that file still depends on Lovable
-and needs updating.
+If `grep` prints anything, that file has regressed to a Lovable
+dependency and needs fixing.

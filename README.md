@@ -1,8 +1,15 @@
 # W Tracker / Whealth Factory
 
-A competitive wellness tracker built with React 18, Vite, Capacitor 8, and a Supabase backend (provisioned via Lovable Cloud). The app runs as a PWA-style web app and a native iOS shell, gamifying daily wellness habits via XP, status tiers, streaks, badges, tribes, battles, an AI coach, and an Elite subscription.
+A competitive wellness tracker built with React 18, Vite, Capacitor 8, and a self-hosted Supabase backend (project `gcwuvijcuzhunkcauzom`). The app runs as a PWA-style web app and a native iOS shell, gamifying daily wellness habits via XP, status tiers, streaks, badges, tribes, battles, an AI coach, and a Premium subscription.
 
-For a full product spec see [`/mnt/documents/W-Tracker-Blueprint.md`](./.lovable/plan.md) (blueprint) and the design notes under `.lovable/memory/`.
+For the product spec see [`.lovable/plan.md`](./.lovable/plan.md) and the design notes under `.lovable/memory/` (index: `.lovable/memory/index.md`).
+
+> History note: the project was originally scaffolded on Lovable and fully
+> migrated to its own Supabase project in August 2026 — see
+> `MIGRATION_PLAYBOOK.md` and `DEPLOY.md` for the cutover record. The App
+> Store bundle id `app.lovable.wtracker` predates the migration and is
+> permanent product identity (App Store record, RevenueCat entitlements,
+> Sign in with Apple all key on it) — never change it.
 
 ---
 
@@ -12,12 +19,12 @@ For a full product spec see [`/mnt/documents/W-Tracker-Blueprint.md`](./.lovable
 | ------------ | -------------------------------------------------------------------- |
 | Frontend     | React 18 + Vite 5 + TypeScript 5 + Tailwind v3 + shadcn/ui           |
 | State / data | TanStack Query v5, React Context                                     |
-| Animation    | framer-motion, three.js (`@react-three/fiber`)                       |
+| Animation    | framer-motion + CSS keyframes (tokens in `src/index.css`)            |
 | Native shell | Capacitor 8 (iOS), `@capacitor/*` plugins, custom Apple Sign-In bridge |
 | Backend      | Supabase (Postgres + Auth + Storage + Edge Functions)                |
-| AI           | Lovable AI Gateway (`google/gemini-2.5-flash`, `openai/gpt-5`)       |
-| Payments     | RevenueCat (iOS) + Stripe (web), unified in `check-subscription`    |
-| Push         | APNs via custom edge function (`supabase/functions/_shared/apns.ts`) |
+| AI           | OpenRouter (`openai/gpt-5`, `google/gemini-2.5-flash`)               |
+| Payments     | RevenueCat (iOS); Stripe web path exists but is dormant (no `STRIPE_SECRET_KEY` in prod) |
+| Push         | APNs via custom edge helper (`supabase/functions/_shared/apns.ts`)   |
 
 ---
 
@@ -26,16 +33,17 @@ For a full product spec see [`/mnt/documents/W-Tracker-Blueprint.md`](./.lovable
 ```
 .
 ├── src/
-│   ├── App.tsx                # Root provider tree + AppShell layout
+│   ├── App.tsx                # Root provider tree, routes, paywall gate
 │   ├── main.tsx               # Bootstrap, deep-link handling, native init
-│   ├── pages/                 # Route-level screens (lazy-loaded via TabHost / ModalStack)
+│   ├── pages/                 # Route-level screens (lazy-loaded)
 │   ├── components/            # Reusable UI building blocks
 │   │   ├── ui/                # shadcn primitives — do not edit by hand
 │   │   ├── coach/             # AI Coach feature (FAQ, dashboard, program UI)
 │   │   ├── home/              # Home/Index screen widgets
+│   │   ├── onboarding/        # Contextual onboarding (spotlight system)
 │   │   ├── paywall/           # Paywall hero / upsell components
-│   │   ├── skeletons/         # Route-level loading skeletons
-│   │   └── vault/             # The Vault (premium content) widgets
+│   │   ├── settings/          # Shared settings-list vocabulary
+│   │   └── skeletons/         # Route-level loading skeletons
 │   ├── contexts/              # AuthContext, RevenueCatContext, WindProvider
 │   ├── hooks/                 # Reusable React hooks (one per concern)
 │   ├── lib/                   # Pure TS utilities, no React (see §4)
@@ -46,13 +54,14 @@ For a full product spec see [`/mnt/documents/W-Tracker-Blueprint.md`](./.lovable
 │   └── test/                  # Vitest setup
 ├── supabase/
 │   ├── config.toml            # Project + per-function settings
+│   ├── migrations/            # Schema history (UUID-named files are Lovable-era)
 │   └── functions/             # Deno edge functions (one folder per function)
-│       └── _shared/           # Cross-function helpers (APNs, etc.)
+│       └── _shared/           # Cross-function helpers (APNs, push targets, …)
 ├── ios/                       # Capacitor iOS shell + Xcode project
 ├── public/                    # Static assets served as-is
-├── scripts/                   # Local dev / iOS rebuild helpers
-├── .lovable/                  # Plan + project memory (design / feature rules)
-└── playwright.config.ts       # E2E config (smoke tests)
+├── scripts/                   # Gate scripts, distribution, obsidian tooling
+├── .claude/skills/            # Team design/QA skills (impeccable, taste, …)
+└── .lovable/                  # Plan + project memory (design / feature rules)
 ```
 
 ---
@@ -61,36 +70,36 @@ For a full product spec see [`/mnt/documents/W-Tracker-Blueprint.md`](./.lovable
 
 There are **two** kinds of secrets:
 
-### 3.1 Frontend (`.env` — auto-managed by Lovable Cloud, do NOT edit)
+### 3.1 Frontend (`.env` — deliberately committed, publishable keys only)
 | Var                            | Purpose                                |
 | ------------------------------ | -------------------------------------- |
 | `VITE_SUPABASE_URL`            | Supabase project URL                   |
 | `VITE_SUPABASE_PUBLISHABLE_KEY`| Supabase anon/publishable key (safe in client) |
 | `VITE_SUPABASE_PROJECT_ID`     | Project ref                            |
+| `VITE_SENTRY_DSN`              | Client error reporting                 |
 
-These are **publishable** keys — safe to ship in the bundle. Row-Level Security on every table is what protects user data.
+These are **publishable** keys — safe to ship in the bundle (see the note in
+`.gitignore`). Row-Level Security on every table is what protects user data.
 
-### 3.2 Edge Functions (managed via Lovable Cloud → Secrets)
+### 3.2 Edge Functions (managed via `npx supabase secrets set`)
 | Secret                       | Used by                                       |
 | ---------------------------- | --------------------------------------------- |
-| `LOVABLE_API_KEY`            | All AI endpoints (`ai-coach`, `coach-*`)      |
-| `STRIPE_SECRET_KEY`          | `create-checkout`, `customer-portal`, `stripe-webhook` |
-| `STRIPE_WEBHOOK_SECRET`      | `stripe-webhook`                              |
+| `OPENROUTER_API_KEY`         | All AI endpoints (`ai-coach`, `coach-*`, `weekly-briefing-generate`) |
 | `REVENUECAT_WEBHOOK_SECRET`  | `revenuecat-webhook`                          |
 | `APNS_*` (key, key id, team id, bundle id) | `_shared/apns.ts` push delivery |
-| `SUPABASE_SERVICE_ROLE_KEY`  | Privileged server-side writes                 |
-| `SUPABASE_URL`               | Edge function bootstrapping                   |
+| `APP_ORIGIN`                 | `og-profile` share-card redirect target       |
+| `SUPABASE_SERVICE_ROLE_KEY`  | Privileged server-side writes (auto-injected) |
+| `SUPABASE_URL`               | Edge function bootstrapping (auto-injected)   |
 
 > Never paste a service role key or any `*_SECRET` into the frontend bundle.
-
-### 3.3 Build-time secrets
-Currently none. If you add a private npm registry, configure it in **Workspace Settings → Build Secrets**, never in the repo.
+> The Stripe web path is dormant: `STRIPE_SECRET_KEY` is intentionally NOT set
+> in prod — revive per `DEPLOY.md` only if web sales are wanted.
 
 ---
 
 ## 4. Module conventions
 
-- **`src/lib/`** — pure TypeScript helpers. No React, no JSX. Examples: `status-tiers.ts` (tier ladder), `xp-constants.ts`, `streak.ts`, `coach-faq.ts`.
+- **`src/lib/`** — pure TypeScript helpers. No React, no JSX. Examples: `status-tiers.ts` (tier ladder), `checkin-xp.ts`, `streak-notifications.ts`, `notification-prefs.ts`.
 - **`src/hooks/`** — one hook per file, file named `use-*.ts`. Hooks own data fetching + caching keys.
 - **`src/contexts/`** — global cross-cutting state only (auth, subscription, ambient wind). Avoid adding more contexts; prefer hooks.
 - **`src/components/`** — presentation. Group by feature folder when 3+ related files exist.
@@ -98,34 +107,38 @@ Currently none. If you add a private npm registry, configure it in **Workspace S
 - **`supabase/functions/`** — one folder per edge function, `index.ts` is the entrypoint. Shared logic goes in `_shared/`.
 
 ### Design tokens
-All colors live as HSL semantic tokens in `src/index.css` and `tailwind.config.ts`. **Never** hardcode `text-white`, `bg-black`, or hex values in components — extend the token system instead.
+All colors live as HSL semantic tokens in `src/index.css` and `tailwind.config.ts`. **Never** hardcode `text-white`, `bg-black`, or hex values in components — `scripts/style-guard.mjs` (part of the gate chain) fails the build on banned literals.
 
 ### Supabase access
 - Always import `supabase` from `@/integrations/supabase/client`. Never instantiate a second client.
 - Never edit `src/integrations/supabase/{client,types}.ts` — they are regenerated.
-- All sensitive writes go through SECURITY DEFINER RPCs (see `.lovable/memory/technical/backend-architecture-security.md`).
+- All sensitive writes go through SECURITY DEFINER RPCs.
+
+### Gate chain (run before every push)
+```bash
+npx tsc --noEmit && node scripts/type-debt.mjs && node scripts/style-guard.mjs && npx vitest run && npm run build
+```
 
 ---
 
 ## 5. Local development
 
 ```bash
-bun install            # or npm install
-bun run dev            # vite dev server on http://localhost:8080
-bun run test           # vitest unit tests
-bun run lint           # eslint
-bunx playwright test   # e2e smoke (optional)
+npm install            # npm is the only supported installer (CI, Codemagic and Vercel all use it)
+npm run dev            # vite dev server on http://localhost:8080
+npm run test           # vitest unit tests
+npm run lint           # eslint
 ```
 
 ### iOS
 
 ```bash
-bun run build
+npm run build
 npx cap sync ios
 bash scripts/ios-rebuild.sh   # opens Xcode workspace
 ```
 
-CI builds run on Xcode Cloud — see `ios/App/ci_scripts/`. The lockfile must stay in sync with `package.json` or `ci_post_clone.sh` will fail.
+CI builds run on Xcode Cloud — see `ios/App/ci_scripts/`. `package-lock.json` must stay in sync with `package.json` or `ci_post_clone.sh` will fail. Every push to `main` auto-builds and `.github/workflows/testflight-distribute.yml` assigns the build to the external TestFlight group.
 
 ---
 
@@ -133,28 +146,29 @@ CI builds run on Xcode Cloud — see `ios/App/ci_scripts/`. The lockfile must st
 
 | Function                       | Trigger                | Purpose                                    |
 | ------------------------------ | ---------------------- | ------------------------------------------ |
-| `ai-coach`                     | client (stream)        | Streaming chat coach with FAQ + context    |
+| `ai-coach`                     | client (stream)        | Streaming chat coach with safety triage    |
 | `coach-generate-program`       | client                 | Generates 4-week training block            |
-| `coach-daily-brief`            | cron (morning)         | Daily training brief                       |
 | `coach-daily-plan`             | client                 | Today's mission + reflection prompts       |
 | `coach-extract-memory`         | post-reflection        | Pulls long-term memories from chat history |
-| `coach-weekly-review`          | cron (Sunday)          | Weekly performance score + delta           |
-| `coach-morning-nudge`          | cron                   | Push notification to start the day         |
-| `coach-progress-read`          | client                 | Aggregates dashboard metrics               |
-| `weekly-briefing-generate`     | cron (Sunday)          | Sunday Briefing AI summary                 |
-| `daily-reminder`               | cron                   | Daily check-in reminder push               |
+| `coach-morning-nudge`          | cron (07:30 local)     | AI morning cue push                        |
+| `coach-proactive`              | cron (hourly)          | Trigger-ladder outreach (in-app + push)    |
+| `weekly-briefing-generate`     | cron (Sunday)          | Sunday Briefing AI summary + push          |
+| `winback-lapsed`               | cron (daily)           | 3/7/14-day win-back pushes                 |
 | `sync-streaks`                 | cron                   | Recomputes streak state for all users      |
 | `resolve-battles`              | cron                   | Closes expired battles, awards XP          |
-| `notify-message`               | DB trigger             | APNs push for new chat message             |
+| `tribe-nudges` / `tribe-notify`| cron / DB trigger      | Tribe events, fire-at-risk, battle pushes  |
+| `notify-message` / `notify-social` / `notify-referral` | trigger/client | Social APNs pushes |
 | `moderate-content`             | client                 | AI moderation gate (JWT verified)          |
 | `check-subscription`           | client                 | Unifies RevenueCat + Stripe state          |
 | `revenuecat-webhook`           | RevenueCat             | Subscription lifecycle sync                |
-| `stripe-webhook`               | Stripe                 | Web payment lifecycle sync                 |
-| `create-checkout` / `customer-portal` | client          | Stripe checkout / portal redirects         |
+| `stripe-webhook`               | Stripe                 | Web payment lifecycle (dormant)            |
 | `claim-referral`               | client                 | Validates + awards referral rewards        |
 | `delete-account`               | client                 | GDPR-style account deletion                |
-| `og-image` / `og-profile`      | public (no JWT)        | Open Graph share image rendering           |
+| `og-image` / `og-profile`      | public (no JWT)        | Open Graph share image / profile redirect  |
 
+The local 20:00 streak warning is a **client-side** local notification
+(`src/lib/streak-notifications.ts`) — there is deliberately no server twin.
+Push senders honor `profiles.notification_prefs` via `_shared/push-targets.ts`.
 Per-function settings (e.g. `verify_jwt = false`) live in `supabase/config.toml`.
 
 ---
@@ -163,25 +177,29 @@ Per-function settings (e.g. `verify_jwt = false`) live in `supabase/config.toml`
 
 | You want to...                              | Start in                                              |
 | ------------------------------------------- | ----------------------------------------------------- |
-| Tweak XP / tier thresholds                  | `src/lib/xp-constants.ts`, `src/lib/status-tiers.ts`  |
-| Change AI coach behaviour                   | `supabase/functions/ai-coach/index.ts` + `src/lib/coach-faq.ts` |
+| Tweak XP / tier thresholds                  | `src/lib/checkin-xp.ts`, `src/lib/status-tiers.ts`    |
+| Change AI coach behaviour                   | `supabase/functions/_shared/coach-persona.ts` + `ai-coach/index.ts` |
 | Adjust the training program generator       | `supabase/functions/coach-generate-program/{index,movements}.ts` |
-| Add a new screen                            | `src/pages/`, register lazily in `src/components/TabHost.tsx` or `ModalStack.tsx` |
-| Add a new edge function                     | `supabase/functions/<name>/index.ts` (auto-deploys)   |
-| Ship a new shadcn component                 | `bunx shadcn@latest add <component>`                  |
-| Add an Apple/Stripe/RevenueCat secret       | Workspace → Connectors → Secrets (never commit)       |
+| Add a new screen                            | `src/pages/`, register lazily in `src/App.tsx`        |
+| Add a new edge function                     | `supabase/functions/<name>/index.ts` + `npx supabase functions deploy <name>` |
+| Ship a new shadcn component                 | `npx shadcn@latest add <component>`                   |
+| Add a server secret                         | `npx supabase secrets set NAME=value` (never commit)  |
 
 ---
 
 ## 8. Project memory
 
-`.lovable/memory/` contains the canonical design + feature rules used by the AI agent. Treat it as living documentation; update it when you change a core rule (status tiers, paywall pricing, proof validation, etc.). The index is `.lovable/memory/index.md`.
+`.lovable/memory/` contains the canonical design + feature rules (the
+directory name is historical — the content is current). Treat it as living
+documentation; update it when you change a core rule (status tiers, paywall
+pricing, proof validation, etc.). The index is `.lovable/memory/index.md`.
 
 ---
 
 ## 9. Known constraints (do not regress)
 
-- Daily check-in and Battle proofs require **real-time camera capture** — no gallery uploads. See `.lovable/memory/constraints/proof-validation.md`.
+- Daily check-in and Battle proofs require **real-time camera capture** — no gallery uploads.
 - Roles are stored in the `user_roles` table (never on `profiles`). All admin checks go through the `has_role` SECURITY DEFINER RPC.
-- The native iOS shell intentionally **does not** use `@capacitor-community/apple-sign-in` — Apple Sign-In is handled by the custom Swift plugin in `ios/App/App/NativeAppleAuth*`.
-- The web app is loaded into the native shell from production at runtime (see `.lovable/memory/technical/live-update-config.md`); do not hardcode environment-specific URLs in the iOS bundle.
+- The native iOS shell intentionally **does not** use `@capacitor-community/apple-sign-in` — Apple Sign-In is handled by the custom Swift plugin in `ios/App/App/NativeAppleAuth*` (see `src/lib/native-auth.ts` for why).
+- The web bundle ships **inside** the iOS app (no remote loading, no `server.url` in `capacitor.config.json`) — shipping web changes to iOS users requires a new TestFlight/App Store build.
+- The bundle id `app.lovable.wtracker` is permanent (see the history note at the top).

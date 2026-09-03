@@ -1,4 +1,4 @@
-// AI Coach edge function — streaming chat using Lovable AI Gateway (GPT-5)
+// AI Coach edge function — streaming chat via OpenRouter (openai/gpt-5)
 // Persona: trainer + sport psychologist + somatic therapist + brutally-honest
 // friend. The user's holistic profile (hobbies, life context, stress / mood,
 // mental-health focus) is injected into every prompt so replies speak to

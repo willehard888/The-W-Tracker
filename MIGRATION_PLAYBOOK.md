@@ -1,5 +1,11 @@
 # Migration Playbook — Lovable → own Supabase
 
+> **Historical record.** The migration COMPLETED in August 2026; the app now
+> runs entirely on the destination project below. The one-shot
+> `scripts/migrate-from-lovable.sh` referenced in this document was removed
+> once the cutover finished. Kept because it documents where every piece of
+> prod state came from.
+
 Verified values from Lovable's one-shot inventory reply (May 19, 2026):
 
 | Field | Source (Lovable) | Destination (own) |

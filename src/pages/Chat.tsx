@@ -84,7 +84,7 @@ const Chat = () => {
         // covers messages TO me; my own sends invalidate in handleSend.
         { event: "INSERT", schema: "public", table: "direct_messages", filter: `receiver_id=eq.${user.id}` },
         (payload) => {
-          const msg = payload.new as any;
+          const msg = payload.new as { sender_id: string; receiver_id: string };
           if (
             (msg.sender_id === user.id && msg.receiver_id === partnerId) ||
             (msg.sender_id === partnerId && msg.receiver_id === user.id)
@@ -149,7 +149,7 @@ const Chat = () => {
     }
   };
 
-  const partnerTier = (partner as any)?.status_tier || "recruit";
+  const partnerTier = partner?.status_tier || "recruit";
   // EARNED elite crown, not the paid flag.
   const partnerIsElite = ["elite", "apex", "legend"].includes(partnerTier);
 

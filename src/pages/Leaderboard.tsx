@@ -167,23 +167,22 @@ const Leaderboard = () => {
     staleTime: 30 * 60_000,  // champion history doesn't change mid-session
     gcTime:    60 * 60_000,
     queryFn: async () => {
-      const db = supabase as any;
       const [{ data: champions }, { data: seasons }] = await Promise.all([
-        db
+        supabase
           .from("leaderboard_champions")
           .select("user_id, username_snapshot, season_points, season_id, created_at")
           .order("created_at", { ascending: false })
           .limit(100),
-        db.from("leaderboard_seasons").select("id, name"),
+        supabase.from("leaderboard_seasons").select("id, name"),
       ]);
 
-      const seasonNames = new Map<string, string>((seasons || []).map((s: any) => [s.id, s.name]));
+      const seasonNames = new Map<string, string>((seasons || []).map((s) => [s.id, s.name]));
       const counts: Record<string, number> = {};
       for (const row of champions || []) {
         counts[row.user_id] = (counts[row.user_id] || 0) + 1;
       }
 
-      const recent = (champions || []).slice(0, 6).map((c: any) => ({
+      const recent = (champions || []).slice(0, 6).map((c) => ({
         ...c,
         season_name: seasonNames.get(c.season_id) || "Season",
       }));
@@ -331,7 +330,7 @@ const Leaderboard = () => {
               </div>
             </div>
             <div className="flex flex-col items-end gap-1">
-              <StatusBadge tier={profile.status_tier || 'recruit'} division={(profile as any).tier_division ?? 0} size="sm" showAura={false} />
+              <StatusBadge tier={profile.status_tier || 'recruit'} division={profile.tier_division ?? 0} size="sm" showAura={false} />
               <TrendingUp aria-hidden size={16} className="text-gold" />
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
 export interface WorkoutSetLog {
   id: string;
@@ -25,7 +26,7 @@ export const useExerciseHistory = (slug?: string | null) =>
     queryFn: async () => {
       const { data, error } = await tbl()
         .select("*")
-        .eq("exercise_slug", slug)
+        .eq("exercise_slug", slug!)
         .order("logged_on", { ascending: false })
         .limit(8);
       if (error) throw error;
@@ -42,9 +43,9 @@ export const useDayLogs = (programId?: string | null, week?: number, day?: numbe
     queryFn: async () => {
       const { data, error } = await tbl()
         .select("*")
-        .eq("program_id", programId)
-        .eq("week", week)
-        .eq("day_index", day);
+        .eq("program_id", programId!)
+        .eq("week", week!)
+        .eq("day_index", day!);
       if (error) throw error;
       const map: Record<string, WorkoutSetLog> = {};
       for (const r of (data ?? []) as WorkoutSetLog[]) {
@@ -69,7 +70,10 @@ export const useLogSet = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (p: LogSetInput) => {
-      const { error } = await supabase.rpc("log_workout_set", {
+      // The SQL function accepts NULL for the optional slots; the generated
+      // Args type marks them required — keep the exact runtime payload and
+      // bridge the type once here.
+      const args = {
         p_program: p.programId ?? null,
         p_week: p.week ?? null,
         p_day: p.day ?? null,
@@ -78,7 +82,8 @@ export const useLogSet = () => {
         p_weight: p.weight,
         p_reps: p.reps,
         p_rpe: p.rpe ?? null,
-      });
+      } as unknown as Database["public"]["Functions"]["log_workout_set"]["Args"];
+      const { error } = await supabase.rpc("log_workout_set", args);
       if (error) throw error;
     },
     onSuccess: (_d, p) => {

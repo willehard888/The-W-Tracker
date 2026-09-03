@@ -31,10 +31,10 @@ const Messages = () => {
         .from("friendships")
         .select("*")
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
-        .eq("status", "accepted" as any);
+        .eq("status", "accepted");
       if (!data || data.length === 0) return [];
 
-      const friendIds = data.map((f: any) => f.requester_id === user.id ? f.addressee_id : f.requester_id);
+      const friendIds = data.map((f) => f.requester_id === user.id ? f.addressee_id : f.requester_id);
       const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, username, avatar_url, status_tier")
@@ -55,10 +55,10 @@ const Messages = () => {
         .from("friendships")
         .select("*")
         .eq("addressee_id", user.id)
-        .eq("status", "pending" as any);
+        .eq("status", "pending");
       if (!data || data.length === 0) return [];
 
-      const requesterIds = data.map((f: any) => f.requester_id);
+      const requesterIds = data.map((f) => f.requester_id);
       const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, username, avatar_url, status_tier")
@@ -177,12 +177,12 @@ const Messages = () => {
                 onClick={() => { setSearchQuery(""); navigate(`/chat/${u.user_id}`); }}
                 className="w-full flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-all active:scale-[0.98] card-depth"
               >
-                <StatusAvatar src={u.avatar_url} name={u.username} tier={(u as any).status_tier || 'recruit'} size="sm" animated={false} />
+                <StatusAvatar src={u.avatar_url} name={u.username} tier={u.status_tier || 'recruit'} size="sm" animated={false} />
                 <div className="flex-1 min-w-0">
                   <TierUsername
                     as="p"
                     username={u.username}
-                    tier={(u as any).status_tier || "recruit"}
+                    tier={u.status_tier || "recruit"}
                     className="text-sm font-semibold truncate"
                   />
                   <p className="text-xs text-muted-foreground/50">Lv {u.level || 1}</p>
@@ -226,7 +226,7 @@ const Messages = () => {
                 </div>
                 <button
                   onClick={async () => {
-                    const { error } = await supabase.from("friendships").update({ status: "accepted" as any }).eq("id", req.id);
+                    const { error } = await supabase.from("friendships").update({ status: "accepted" }).eq("id", req.id);
                     if (error) { toast.error("Could not accept — try again."); return; }
                     queryClient.invalidateQueries({ queryKey: ["pending-friend-requests"] });
                     queryClient.invalidateQueries({ queryKey: ["friends"] });
@@ -239,7 +239,7 @@ const Messages = () => {
                 </button>
                 <button
                   onClick={async () => {
-                    const { error } = await supabase.from("friendships").update({ status: "declined" as any }).eq("id", req.id);
+                    const { error } = await supabase.from("friendships").update({ status: "declined" }).eq("id", req.id);
                     if (error) { toast.error("Could not decline — try again."); return; }
                     queryClient.invalidateQueries({ queryKey: ["pending-friend-requests"] });
                     queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
@@ -273,12 +273,12 @@ const Messages = () => {
                 onClick={() => navigate(`/chat/${friend.user_id}`)}
                 className="w-full flex items-center gap-3 rounded-xl border border-[hsl(var(--teal))]/15 bg-card p-4 text-left transition-all active:scale-[0.98] card-depth"
               >
-                <StatusAvatar src={friend.avatar_url} name={friend.username} tier={(friend as any).status_tier || 'recruit'} size="sm" animated={false} />
+                <StatusAvatar src={friend.avatar_url} name={friend.username} tier={friend.status_tier || 'recruit'} size="sm" animated={false} />
                 <div className="flex-1 min-w-0">
                   <TierUsername
                     as="p"
                     username={friend.username}
-                    tier={(friend as any).status_tier || "recruit"}
+                    tier={friend.status_tier || "recruit"}
                     className="text-sm font-semibold truncate"
                   />
                   <p className="text-xs text-muted-foreground/50">Start a conversation</p>

@@ -138,17 +138,17 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         .eq("invitee_id", profile!.user_id)
         .eq("status", "pending")
         .order("created_at", { ascending: false });
-      const rows = (data as any) ?? [];
+      const rows = data ?? [];
       if (rows.length === 0) return [];
-      const tribeIds = rows.map((r: any) => r.tribe_id);
-      const inviterIds = rows.map((r: any) => r.inviter_id);
+      const tribeIds = rows.map((r) => r.tribe_id);
+      const inviterIds = rows.map((r) => r.inviter_id);
       const [tRes, uRes] = await Promise.all([
         supabase.from("tribes").select("id, name, description, member_count, visibility").in("id", tribeIds),
         supabase.from("profiles").select("user_id, username").in("user_id", inviterIds),
       ]);
-      const tMap = new Map(((tRes as any).data ?? []).map((t: any) => [t.id, t]));
-      const uMap = new Map(((uRes as any).data ?? []).map((u: any) => [u.user_id, u]));
-      return rows.map((r: any) => ({
+      const tMap = new Map((tRes.data ?? []).map((t) => [t.id, t]));
+      const uMap = new Map((uRes.data ?? []).map((u) => [u.user_id, u]));
+      return rows.map((r) => ({
         ...r,
         tribe: tMap.get(r.tribe_id) ?? null,
         inviter: uMap.get(r.inviter_id) ?? null,
@@ -187,7 +187,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
   }, [listReactor.events, userToTribes]);
 
   const handleJoin = async (id: string) => {
-    const { data, error } = await supabase.rpc("join_tribe" as any, {
+    const { data, error } = await supabase.rpc("join_tribe", {
       p_tribe_id: id,
     });
     if (error) {
@@ -212,7 +212,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
 
   const handleInviteResponse = async (invite: Invite, accept: boolean) => {
     setRespondingId(invite.id);
-    const { error } = await supabase.rpc("respond_to_tribe_invite" as any, {
+    const { error } = await supabase.rpc("respond_to_tribe_invite", {
       p_invite_id: invite.id,
       p_accept: accept,
     });

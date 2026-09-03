@@ -144,7 +144,7 @@ const Journey = () => {
             open={shareOpen}
             onClose={() => setShareOpen(false)}
             variant="whealth"
-            whealthData={{ overall: heroOverall, pillars: heroPillars }}
+            whealthData={{ overall: heroOverall, pillars: { ...heroPillars } }}
           />
         )}
 

@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { track, FUNNEL } from "@/lib/analytics";
 import { hapticNotification } from "@/lib/haptics";
 import { usePushControls } from "@/hooks/use-push-notifications";
@@ -85,11 +86,11 @@ const Onboarding = () => {
     mergeIntoCoachDraft(answers);
     const patch = athletePatchFromAnswers(answers);
     if (Object.keys(patch).length > 0) {
-      void supabase.rpc("upsert_athlete_profile" as never, { _patch: patch as never }).then(
+      void supabase.rpc("upsert_athlete_profile", { _patch: patch as Json }).then(
         ({ error }) => { if (error) console.warn("onboarding athlete patch failed", error.message); },
       );
     }
-    void supabase.rpc("mark_onboarded" as never).then(
+    void supabase.rpc("mark_onboarded").then(
       ({ error }) => { if (error) console.warn("mark_onboarded failed", error.message); },
     );
     try { localStorage.setItem("w_onboarding_done", "true"); } catch { /* noop */ }

@@ -426,8 +426,8 @@ const DailyCheckin = () => {
         p_no_phone_evening: done("no_phone_pm"),
         p_reading: done("reading"),
         p_xp_earned: totalXp,
-        p_proof_photo_url: proof_photo_url,
-        p_journal_entry: done("journaling") ? "logged" : null,
+        p_proof_photo_url: proof_photo_url ?? undefined,
+        p_journal_entry: done("journaling") ? "logged" : undefined,
         p_tz_offset_minutes: tzOffsetMinutes,
         p_habits: habitsJson,
         // The sport finally survives submit — the coach's sport history.
@@ -460,12 +460,12 @@ const DailyCheckin = () => {
               .order("checked_in_at", { ascending: false }).limit(1).maybeSingle(),
             supabase.from("profiles").select("xp, level, streak").eq("user_id", user.id).maybeSingle(),
           ]);
-          const xp = (prof as any)?.xp ?? 0; const lvl = (prof as any)?.level ?? 1;
+          const xp = prof?.xp ?? 0; const lvl = prof?.level ?? 1;
           const xpIntoLevel = xp - (lvl - 1) * 500;
           setSummary({
-            xpEarned: (lastCk as any)?.xp_earned ?? 0, newTotalXp: xp, oldLevel: lvl, newLevel: lvl,
+            xpEarned: lastCk?.xp_earned ?? 0, newTotalXp: xp, oldLevel: lvl, newLevel: lvl,
             xpToNextLevel: 500 - xpIntoLevel, levelProgressPct: Math.round((xpIntoLevel / 500) * 100),
-            newStreak: (prof as any)?.streak ?? 0, streakBroken: false, completedCount, maxCount,
+            newStreak: prof?.streak ?? 0, streakBroken: false, completedCount, maxCount,
           });
         } catch { /* summary is best-effort */ }
         setSubmitted(true);
@@ -490,14 +490,14 @@ const DailyCheckin = () => {
           return;
         }
         if (isNetworkError(rpcError)) {
-          queueCheckin(rpcArgs as any, user?.id);
+          queueCheckin(rpcArgs, user?.id);
           toast.success("Saved offline 📶", {
             description: "No connection right now — we'll log this check-in automatically when you're back online.",
             duration: 6000,
           });
           // Lock the form so it reads as done (optimistic summary; the real values
           // land on reconnect via the offline replay).
-          const xp = (profile as any)?.xp ?? 0; const lvl = (profile as any)?.level ?? 1;
+          const xp = profile?.xp ?? 0; const lvl = profile?.level ?? 1;
           const xpIntoLevel = xp - (lvl - 1) * 500;
           setSummary({
             xpEarned: totalXp, newTotalXp: xp + totalXp, oldLevel: lvl, newLevel: lvl,
@@ -569,7 +569,7 @@ const DailyCheckin = () => {
             const vr = await healthKit.verifyCheckin(newCheckinId, snap?.date);
             if (vr.verified) {
               void track(FUNNEL.checkinVerified);
-              const n = Object.keys(vr.signals ?? {}).filter((k) => (vr.signals as any)[k]?.matched).length;
+              const n = Object.keys(vr.signals ?? {}).filter((k) => vr.signals?.[k]?.matched).length;
               toast.success("Verified ✓", {
                 description: `Apple Health confirmed ${n} habit${n === 1 ? "" : "s"} — bonus XP added.`,
                 duration: 4500,
@@ -601,7 +601,7 @@ const DailyCheckin = () => {
             .from("tribe_members")
             .select("tribe_id")
             .eq("user_id", user.id).eq("status", "active");
-          const tribeIds = ((mems as any) ?? []).map((m: any) => m.tribe_id as string);
+          const tribeIds = (mems ?? []).map((m) => m.tribe_id);
           if (tribeIds.length > 0) {
             const { data: myTribes } = await supabase
               .from("tribes")
@@ -609,11 +609,11 @@ const DailyCheckin = () => {
               .in("id", tribeIds)
               .order("collective_streak", { ascending: false })
               .limit(1);
-            const top = ((myTribes as any) ?? [])[0];
+            const top = (myTribes ?? [])[0];
             if (top) {
               const others = tribeIds.length - 1;
               toast.success(
-                `${top.name} +1 → ${((top.collective_streak as number) ?? 0) + 1}d 🔥`,
+                `${top.name} +1 → ${(top.collective_streak ?? 0) + 1}d 🔥`,
                 {
                   description: others > 0
                     ? `You fed ${tribeIds.length} fires today. Tap to see the tribe.`
@@ -716,7 +716,7 @@ const DailyCheckin = () => {
       />
       <CheckinTierHeader
         tier={profile?.status_tier ?? "recruit"}
-        division={(profile as any)?.tier_division ?? 0}
+        division={profile?.tier_division ?? 0}
         username={profile?.username}
         streak={profile?.streak ?? 0}
         totalXp={totalXp}

@@ -7,6 +7,7 @@
  *   • strictErrors — errors under the shadow tsconfig.strict.json (strict +
  *     strictNullChecks + noImplicitAny). The real Vite build is unaffected.
  *   • asAny        — count of `as any` escape hatches in src/.
+ *   • asNever      — count of `as never` escape hatches in src/.
  *
  * This lets the team turn strictness on for NEW code immediately while paying
  * down existing debt file-by-file — no big-bang `strict: true` flip.
@@ -30,9 +31,9 @@ const countStrictErrors = () => {
   }
 };
 
-const countAsAny = () => {
+const countPattern = (pattern) => {
   try {
-    const out = execSync('grep -rn "as any" src --include="*.ts" --include="*.tsx"', {
+    const out = execSync(`grep -rn "${pattern}" src --include="*.ts" --include="*.tsx"`, {
       stdio: "pipe",
     }).toString();
     return out.split("\n").filter(Boolean).length;
@@ -42,7 +43,11 @@ const countAsAny = () => {
   }
 };
 
-const current = { strictErrors: countStrictErrors(), asAny: countAsAny() };
+const current = {
+  strictErrors: countStrictErrors(),
+  asAny: countPattern("as any"),
+  asNever: countPattern("as never"),
+};
 
 if (process.argv.includes("--update")) {
   writeFileSync(BASELINE_FILE, `${JSON.stringify(current, null, 2)}\n`);
@@ -52,10 +57,10 @@ if (process.argv.includes("--update")) {
 
 const baseline = existsSync(BASELINE_FILE)
   ? JSON.parse(readFileSync(BASELINE_FILE, "utf8"))
-  : { strictErrors: Infinity, asAny: Infinity };
+  : { strictErrors: Infinity, asAny: Infinity, asNever: Infinity };
 
 let failed = false;
-for (const key of ["strictErrors", "asAny"]) {
+for (const key of ["strictErrors", "asAny", "asNever"]) {
   const cur = current[key];
   const base = baseline[key] ?? Infinity;
   const symbol = cur > base ? "✗" : cur < base ? "↓" : "✓";

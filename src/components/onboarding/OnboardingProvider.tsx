@@ -111,12 +111,11 @@ export default function OnboardingProvider({ children }: { children: ReactNode }
     stateRef.current = next;
     setState(next);
     // Fire-and-forget, never awaited into the UI path; server guard makes
-    // duplicates harmless. `as never`: generated DB types lag the migration.
+    // duplicates harmless.
     void supabase
-      .rpc(RPC_BY_KIND[kind] as never, { _event_id: id } as never)
+      .rpc(RPC_BY_KIND[kind], { _event_id: id })
       .then(undefined, () => {});
     void track(TRACK_BY_KIND[kind], { event: id });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const requestShow = useCallback(
@@ -147,7 +146,6 @@ export default function OnboardingProvider({ children }: { children: ReactNode }
       queueRef.current = next;
       setQueue(next);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [mark],
   );
 
@@ -155,7 +153,6 @@ export default function OnboardingProvider({ children }: { children: ReactNode }
   const active = queue.activeEventId;
   useEffect(() => {
     if (active && !(active in stateRef.current.seen)) mark("seen", active);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, mark]);
 
   // Cross-device: if another device completed/skipped the active card, drop it.
@@ -187,7 +184,6 @@ export default function OnboardingProvider({ children }: { children: ReactNode }
       queueRef.current = next;
       setQueue(next);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [mark],
   );
 
@@ -233,7 +229,6 @@ export default function OnboardingProvider({ children }: { children: ReactNode }
     return () => {
       delete w.__obShow;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [devForced]);
 
   readyRef.current = systemReady;

@@ -41,12 +41,12 @@ const TribeSearchBar = ({ onChanged }: Props) => {
     // stops a slow stale response from overwriting a newer query's results.
     let active = true;
     debounceRef.current = setTimeout(async () => {
-      const { data, error } = await supabase.rpc("search_tribes" as any, {
+      const { data, error } = await supabase.rpc("search_tribes", {
         p_query: query.trim(),
         p_limit: 20,
       });
       if (!active) return;
-      if (!error && data) setResults(data as any);
+      if (!error && data) setResults(data as SearchResult[]);
       setLoading(false);
     }, 300);
     return () => {
@@ -66,7 +66,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
     }
     if (r.viewer_status === "pending_join") return;
     setActingId(r.id);
-    const { data, error } = await supabase.rpc("join_tribe" as any, { p_tribe_id: r.id });
+    const { data, error } = await supabase.rpc("join_tribe", { p_tribe_id: r.id });
     setActingId(null);
     if (error) {
       toast.error(friendlyError(error));

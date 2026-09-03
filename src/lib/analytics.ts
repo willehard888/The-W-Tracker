@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { captureEvent } from "@/lib/observability";
 
 /**
@@ -31,7 +32,8 @@ export async function track(
     await supabase.from("analytics_events").insert({
       user_id: uid,
       event,
-      props: props ?? null,
+      // Event props are plain JSON-serializable literals at every call site.
+      props: (props ?? null) as unknown as Json,
     });
   } catch {
     /* swallow — analytics is best-effort */
@@ -106,7 +108,7 @@ export async function trackAnon(
 ): Promise<void> {
   captureEvent(event);
   try {
-    await supabase.rpc("log_anon_event" as never, { _event: event } as never);
+    await supabase.rpc("log_anon_event", { _event: event });
   } catch {
     /* best-effort */
   }

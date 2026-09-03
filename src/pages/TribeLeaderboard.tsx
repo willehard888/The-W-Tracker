@@ -45,12 +45,12 @@ const TribeLeaderboard = () => {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      const { data, error } = await supabase.rpc("get_tribe_leaderboard" as any, {
+      const { data, error } = await supabase.rpc("get_tribe_leaderboard", {
         p_period: period,
         p_limit: 50,
       });
       if (!error && data) {
-        const normalized = (data as any[]).map((r) => ({
+        const normalized = data.map((r) => ({
           ...r,
           score: Number(r.score) || 0,
           rank: Number(r.rank) || 0,
@@ -68,7 +68,7 @@ const TribeLeaderboard = () => {
           .select("tribe_id")
           .eq("user_id", profile.user_id)
           .eq("status", "active");
-        setMyTribeIds(new Set(((mems as any) ?? []).map((m: any) => m.tribe_id)));
+        setMyTribeIds(new Set((mems ?? []).map((m) => m.tribe_id)));
       }
       setLoading(false);
     };

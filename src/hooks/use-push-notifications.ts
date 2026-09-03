@@ -84,12 +84,12 @@ export const usePushNotifications = (): PushNotificationState => {
     const [{ data: lastCheckin }, { data: profile }, { data: athlete }] = await Promise.all([
       supabase.from("daily_checkins").select("checked_in_at")
         .eq("user_id", user.id).order("checked_in_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.from("profiles").select("streak, notification_prefs" as never)
+      supabase.from("profiles").select("streak, notification_prefs")
         .eq("user_id", user.id).maybeSingle(),
       supabase.from("coach_athlete_profile").select("tone_pref")
         .eq("user_id", user.id).maybeSingle(),
     ]);
-    const row = profile as { streak?: number; notification_prefs?: unknown } | null;
+    const row = profile;
     const prefs = getNotificationPrefs(row?.notification_prefs);
     await syncStreakWarningNotification({
       lastCheckinAt: lastCheckin?.checked_in_at ?? null,

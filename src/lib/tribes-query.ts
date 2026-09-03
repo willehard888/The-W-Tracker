@@ -7,8 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
  */
 
 // tribes `.select("*")` — typed to what the discovery UI actually renders.
-// (supabase/types.ts predates the fire-server columns; local shape keeps us
-// honest without `as any` casts.)
+// (local shape keeps us
+// honest with a narrow local shape.)
 export interface Tribe {
   id: string;
   name: string;
@@ -75,14 +75,14 @@ export const fetchTribesPage = async (
         // when they'd never crack the top-50 by member count.
         if (activityFilter) q = q.eq("primary_activity", activityFilter);
         const { data } = await q;
-        list = (((data as any) ?? []) as Tribe[]).filter((t) => !t.is_paused);
+        list = ((data ?? []) as Tribe[]).filter((t) => !t.is_paused);
       } else {
         const { data: memberships } = await supabase
           .from("tribe_members")
           .select("tribe_id")
           .eq("user_id", userId)
           .eq("status", "active");
-        const ids = ((memberships as any) ?? []).map((m: any) => m.tribe_id);
+        const ids = (memberships ?? []).map((m) => m.tribe_id);
         if (ids.length === 0) {
           list = [];
         } else {
@@ -90,7 +90,7 @@ export const fetchTribesPage = async (
             .from("tribes")
             .select("*")
             .in("id", ids);
-          list = ((data as any) ?? []) as Tribe[];
+          list = (data ?? []) as Tribe[];
         }
       }
 
@@ -116,7 +116,7 @@ export const fetchTribesPage = async (
             .eq("user_id", userId)
             .in("tribe_id", ids)
             .in("status", ["active", "pending"]),
-          supabase.rpc("tribe_today_pulse" as any, { p_tribe_ids: ids }),
+          supabase.rpc("tribe_today_pulse", { p_tribe_ids: ids }),
           supabase
             .from("tribe_events")
             .select("id, tribe_id, title, activity, starts_at")
@@ -129,13 +129,13 @@ export const fetchTribesPage = async (
         // empty joinedIds — that shows "Join" to existing members (reads as
         // "the app threw me out"). Throw so react-query retries while
         // keepPreviousData holds the last good page on screen.
-        if ((memsRes as any).error) throw (memsRes as any).error;
-        (((memsRes as any).data ?? []) as any[]).forEach((m: any) => {
+        if (memsRes.error) throw memsRes.error;
+        (memsRes.data ?? []).forEach((m) => {
           if (m.status === "active") joinedIds.add(m.tribe_id);
           if (m.status === "pending") pendingIds.add(m.tribe_id);
           if (m.role === "owner") ownedIds.add(m.tribe_id);
         });
-        (((pulseRes as any).data ?? []) as any[]).forEach((r: any) => {
+        (pulseRes.data ?? []).forEach((r) => {
           pulse.set(r.tribe_id, { checked: r.checked, total: r.total });
         });
 
@@ -143,7 +143,7 @@ export const fetchTribesPage = async (
         // is the strongest join signal a row can carry. RLS scopes this to
         // public tribes + my own, which is exactly right for discovery.
         const firstEvents = new Map<string, { id: string; title: string; activity: string | null; starts_at: string }>();
-        (((eventsRes as any).data ?? []) as any[]).forEach((e: any) => {
+        (eventsRes.data ?? []).forEach((e) => {
           if (!firstEvents.has(e.tribe_id)) firstEvents.set(e.tribe_id, e);
         });
         if (firstEvents.size > 0) {
@@ -154,7 +154,7 @@ export const fetchTribesPage = async (
             .in("event_id", evIds)
             .eq("status", "going");
           const goingByEvent = new Map<string, number>();
-          ((rsvps as any) ?? []).forEach((r: any) => {
+          (rsvps ?? []).forEach((r) => {
             goingByEvent.set(r.event_id, (goingByEvent.get(r.event_id) ?? 0) + 1);
           });
           firstEvents.forEach((e, tribeId) => {
@@ -187,13 +187,13 @@ export const fetchTribesPage = async (
               .eq("tribe_id", featured.id)
               .eq("status", "active")
               .limit(4);
-            const uids = ((previews as any) ?? []).map((p: any) => p.user_id);
+            const uids = (previews ?? []).map((p) => p.user_id);
             if (uids.length) {
               const { data: profs } = await supabase
                 .from("profiles")
                 .select("user_id, username, avatar_url")
                 .in("user_id", uids);
-              featuredPreviews = ((profs as any) ?? []) as TribesPageData["featuredPreviews"];
+              featuredPreviews = profs ?? [];
             }
           }
         } else {
@@ -206,7 +206,7 @@ export const fetchTribesPage = async (
             .eq("status", "active")
             .limit(ids.length * 40);
           const u2t = new Map<string, string[]>();
-          ((members as any) ?? []).forEach((row: any) => {
+          (members ?? []).forEach((row) => {
             const arr = u2t.get(row.user_id) ?? [];
             arr.push(row.tribe_id);
             u2t.set(row.user_id, arr);

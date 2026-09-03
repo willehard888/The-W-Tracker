@@ -296,19 +296,18 @@ const Profile = () => {
     gcTime:    60 * 60_000,
     queryFn: async () => {
       if (!profile) return { wins: 0, seasons: [] };
-      const db = supabase as any;
       const [{ data: champions }, { data: seasons }] = await Promise.all([
-        db
+        supabase
           .from("leaderboard_champions")
           .select("season_id, season_points, created_at")
           .eq("user_id", profile.user_id)
           .order("created_at", { ascending: false }),
-        db.from("leaderboard_seasons").select("id, name"),
+        supabase.from("leaderboard_seasons").select("id, name"),
       ]);
-      const seasonNames = new Map<string, string>((seasons || []).map((s: any) => [s.id, s.name]));
+      const seasonNames = new Map<string, string>((seasons || []).map((s) => [s.id, s.name]));
       return {
         wins: (champions || []).length,
-        seasons: (champions || []).map((c: any) => ({
+        seasons: (champions || []).map((c) => ({
           name: seasonNames.get(c.season_id) || "Season",
           points: c.season_points,
         })),
@@ -362,7 +361,7 @@ const Profile = () => {
     enabled: !!profile?.user_id,
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      const { data } = await supabase.rpc("user_verified_performer_stats" as any, { _user_id: profile!.user_id });
+      const { data } = await supabase.rpc("user_verified_performer_stats", { _user_id: profile!.user_id });
       return data as { is_verified_performer?: boolean } | null;
     },
   });
@@ -553,14 +552,14 @@ const Profile = () => {
             totalUsers={rankData.totalUsers}
             percentile={rankData.percentile}
             hasRank={rankData.hasRank}
-            rankScore={(profile as any).rank_score}
+            rankScore={profile.rank_score}
           />
         </div>
       )}
 
       {/* Live Rivals — who's ahead, who's behind */}
       <div className="animate-reveal animate-reveal-delay-1">
-        <LiveRivals userId={profile.user_id} myScore={Number((profile as any).rank_score) || 0} />
+        <LiveRivals userId={profile.user_id} myScore={Number(profile.rank_score) || 0} />
       </div>
 
       {/* Your Journey — the growth mirror: trends + reflection diary */}

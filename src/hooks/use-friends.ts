@@ -17,8 +17,6 @@ export interface FriendRequest extends Friend {
   created_at: string;
 }
 
-const rpc = supabase.rpc.bind(supabase) as any;
-
 /** Caller's accepted friends. */
 export const useFriends = () => {
   const { user } = useAuth();
@@ -27,9 +25,9 @@ export const useFriends = () => {
     enabled: !!user,
     staleTime: 30_000,
     queryFn: async () => {
-      const { data, error } = await rpc("list_friends");
+      const { data, error } = await supabase.rpc("list_friends");
       if (error) throw error;
-      return (data as Friend[]) ?? [];
+      return (data as unknown as Friend[]) ?? [];
     },
   });
 };
@@ -42,9 +40,9 @@ export const useFriendRequests = () => {
     enabled: !!user,
     staleTime: 15_000,
     queryFn: async () => {
-      const { data, error } = await rpc("list_friend_requests");
+      const { data, error } = await supabase.rpc("list_friend_requests");
       if (error) throw error;
-      return (data as FriendRequest[]) ?? [];
+      return (data as unknown as FriendRequest[]) ?? [];
     },
   });
 };
@@ -57,9 +55,9 @@ export const useSentFriendRequests = () => {
     enabled: !!user,
     staleTime: 15_000,
     queryFn: async () => {
-      const { data, error } = await rpc("list_sent_friend_requests");
+      const { data, error } = await supabase.rpc("list_sent_friend_requests");
       if (error) throw error;
-      return (data as FriendRequest[]) ?? [];
+      return (data as unknown as FriendRequest[]) ?? [];
     },
   });
 };
@@ -72,7 +70,7 @@ export const usePendingFriendCount = () => {
     staleTime: 15_000,
     refetchInterval: 60_000,
     queryFn: async () => {
-      const { data, error } = await rpc("pending_friend_request_count");
+      const { data, error } = await supabase.rpc("pending_friend_request_count");
       if (error) throw error;
       return (data as number) ?? 0;
     },
@@ -101,7 +99,7 @@ export const useFriendActions = () => {
   const acceptRequest = useCallback(async (friendshipId: string) => {
     const { error } = await supabase
       .from("friendships")
-      .update({ status: "accepted" as any, updated_at: new Date().toISOString() })
+      .update({ status: "accepted", updated_at: new Date().toISOString() })
       .eq("id", friendshipId);
     if (error) throw error;
     invalidate();

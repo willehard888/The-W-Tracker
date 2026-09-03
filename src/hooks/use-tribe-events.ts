@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
 export type RsvpStatus = "going" | "maybe" | "declined";
 
@@ -57,7 +58,9 @@ export const useTribeEventActions = (tribeId?: string) => {
     meeting_url?: string | null;
     starts_at: string; duration_min?: number; capacity?: number | null;
   }) => {
-    const { error } = await supabase.rpc("create_tribe_event", {
+    // The SQL function accepts NULL for the optional fields; the generated
+    // Args type marks them required — keep the exact payload, bridge once.
+    const args = {
       p_tribe: tribeId!,
       p_title: e.title,
       p_activity: e.activity ?? null,
@@ -67,7 +70,8 @@ export const useTribeEventActions = (tribeId?: string) => {
       p_duration_min: e.duration_min ?? 60,
       p_capacity: e.capacity ?? null,
       p_meeting_url: e.meeting_url ?? null,
-    });
+    } as unknown as Database["public"]["Functions"]["create_tribe_event"]["Args"];
+    const { error } = await supabase.rpc("create_tribe_event", args);
     if (error) throw error;
     invalidate();
   }, [tribeId, invalidate]);
@@ -76,7 +80,7 @@ export const useTribeEventActions = (tribeId?: string) => {
     title: string; activity?: string; description?: string;
     sessions: SeriesSessionInput[];
   }) => {
-    const { error } = await supabase.rpc("create_tribe_event_series", {
+    const args = {
       p_tribe: tribeId!,
       p_title: s.title,
       p_activity: s.activity ?? null,
@@ -88,7 +92,8 @@ export const useTribeEventActions = (tribeId?: string) => {
         meeting_url: x.meeting_url ?? null,
         title: x.title ?? null,
       })),
-    });
+    } as unknown as Database["public"]["Functions"]["create_tribe_event_series"]["Args"];
+    const { error } = await supabase.rpc("create_tribe_event_series", args);
     if (error) throw error;
     invalidate();
   }, [tribeId, invalidate]);

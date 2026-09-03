@@ -55,9 +55,9 @@ const IdentityCore = ({
   afterPills,
 }: IdentityCoreProps) => {
   const tier = profile.status_tier || "recruit";
-  const division = (profile as any).tier_division ?? 0;
-  const isApexSubscriber = Boolean((profile as any).is_apex_subscriber);
-  const isLegendPinned = Boolean((profile as any).legend_pinned);
+  const division = profile.tier_division ?? 0;
+  const isApexSubscriber = Boolean(profile.is_apex_subscriber);
+  const isLegendPinned = Boolean(profile.legend_pinned);
   const shields = Number(profile.streak_shields ?? 0);
 
   return (
@@ -198,7 +198,7 @@ const IdentityCore = ({
           <FeaturedBadgeHero
             name={featuredBadge.name}
             icon={featuredBadge.icon}
-            rarity={featuredBadge.rarity as any}
+            rarity={featuredBadge.rarity as "common" | "rare" | "epic" | "legendary"}
           />
         </div>
       )}

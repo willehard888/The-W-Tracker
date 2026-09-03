@@ -232,7 +232,7 @@ const EliteFeed = () => {
         content: newPost || null,
         image_url,
         video_url,
-      } as any);
+      });
       if (insertErr) throw insertErr;
     },
     onSuccess: () => {
@@ -319,7 +319,7 @@ const EliteFeed = () => {
             giver_id: user.id,
             post_id: postId,
             receiver_id: receiverId,
-          } as any);
+          });
       if (error) throw error;
     },
     onMutate: async ({ postId }: { postId: string; receiverId: string }) => {
@@ -637,7 +637,7 @@ const EliteFeed = () => {
     enabled: proofImageUrls.length > 0,
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("feed_post_day_stats" as any, {
+      const { data, error } = await supabase.rpc("feed_post_day_stats", {
         p_image_urls: proofImageUrls.slice(0, 60),
       });
       if (error)

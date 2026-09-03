@@ -110,7 +110,7 @@ const Notifications = () => {
 
   const respondTribeInvite = (inviteId: string, accept: boolean, tribeId: string, tribeName: string) =>
     guard(inviteId, async () => {
-      const { error } = await supabase.rpc("respond_to_tribe_invite" as never, { p_invite_id: inviteId, p_accept: accept } as never);
+      const { error } = await supabase.rpc("respond_to_tribe_invite", { p_invite_id: inviteId, p_accept: accept });
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["tribe-invites"] });
       queryClient.invalidateQueries({ queryKey: ["tribes-page"] });

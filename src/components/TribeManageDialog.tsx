@@ -149,21 +149,23 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
         setUploading(false);
       }
 
-      const { error } = await supabase.rpc("update_tribe" as any, {
+      const { error } = await supabase.rpc("update_tribe", {
         p_tribe_id: tribeId,
         p_name: trimmed,
         p_description: description,
         p_visibility: visibility,
-        p_cover_url: nextCoverUrl,
+        p_cover_url: nextCoverUrl ?? undefined,
         p_clear_cover: willClear,
       });
       if (error) throw error;
       // Activity is a separate RPC (free-text column, own validation) —
       // best-effort so a hiccup here never rolls back the main save.
       if ((activity || null) !== (tribe.primary_activity ?? null)) {
-        const { error: actErr } = await supabase.rpc("set_tribe_activity" as any, {
+        const { error: actErr } = await supabase.rpc("set_tribe_activity", {
           p_tribe: tribeId,
-          p_activity: activity || null,
+          // The server clears the activity on NULL; the generated arg type
+          // (plain `string`) is stricter than the SQL signature actually is.
+          p_activity: (activity || null) as string,
         });
         if (actErr) console.warn("[tribe] set_tribe_activity failed", actErr);
       }
@@ -182,7 +184,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
   const handleRoleChange = async (userId: string, role: "admin" | "member") => {
     setBusyId(userId);
     try {
-      const { error } = await supabase.rpc("set_tribe_member_role" as any, {
+      const { error } = await supabase.rpc("set_tribe_member_role", {
         p_tribe_id: tribeId,
         p_user_id: userId,
         p_role: role,
@@ -201,7 +203,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
     if (!confirm(`Remove ${username} from this tribe?`)) return;
     setBusyId(userId);
     try {
-      const { error } = await supabase.rpc("remove_tribe_member" as any, {
+      const { error } = await supabase.rpc("remove_tribe_member", {
         p_tribe_id: tribeId,
         p_user_id: userId,
       });

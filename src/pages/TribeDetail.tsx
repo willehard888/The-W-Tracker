@@ -59,6 +59,7 @@ interface Member {
   avatar_url: string | null;
   status_tier: string | null;
   role: string;
+  streak?: number;
 }
 
 interface Milestone {
@@ -183,9 +184,9 @@ const TribeDetail = () => {
     enabled: !!id,
     staleTime: 60_000,
     queryFn: async () => {
-      const { data } = await supabase.rpc("tribe_today_pulse" as any, { p_tribe_ids: [id] });
-      const row = ((data as any) ?? [])[0];
-      return row ? { checked: row.checked as number, total: row.total as number } : null;
+      const { data } = await supabase.rpc("tribe_today_pulse", { p_tribe_ids: [id!] });
+      const row = (data ?? [])[0];
+      return row ? { checked: row.checked, total: row.total } : null;
     },
   });
   // Founder decision: kudos is open to every member (2/month, enforced by RLS).
@@ -205,33 +206,33 @@ const TribeDetail = () => {
       supabase.from("tribe_members").select("user_id, role").eq("tribe_id", id).eq("status", "active").limit(40),
     ]);
 
-    setTribe((tRes as any).data);
-    const m = (mRes as any).data;
+    setTribe(tRes.data);
+    const m = mRes.data;
     const member = m?.status === "active";
     setIsMember(member);
     setIsOwner(m?.role === "owner");
 
-    const rawMembers = ((allMRes as any).data) ?? [];
-    const memberIds = rawMembers.map((r: any) => r.user_id);
+    const rawMembers = allMRes.data ?? [];
+    const memberIds = rawMembers.map((r) => r.user_id);
     // streak included — MemberContributionStrip ranks by it (it silently
     // rendered every member as 0d while this select omitted the column).
     const { data: memberProfiles } = memberIds.length
       ? await supabase.from("profiles").select("user_id, username, avatar_url, status_tier, streak").in("user_id", memberIds)
-      : { data: [] as any[] };
-    const profMap = new Map(((memberProfiles as any) ?? []).map((p: any) => [p.user_id, p]));
+      : { data: [] };
+    const profMap = new Map((memberProfiles ?? []).map((p) => [p.user_id, p]));
     setMembers(
-      rawMembers.map((r: any) => {
+      rawMembers.map((r) => {
         const p = profMap.get(r.user_id);
-        return p ? { ...(p as any), role: r.role } : null;
+        return p ? { ...p, role: r.role } : null;
       }).filter(Boolean).sort((a: any, b: any) => {
         const order: Record<string, number> = { owner: 0, admin: 1, member: 2 };
         return (order[a.role] ?? 3) - (order[b.role] ?? 3);
       }) as Member[],
     );
 
-    const rawPosts = ((pRes as any).data) ?? [];
-    const postIds = rawPosts.map((p: any) => p.id);
-    const authorIds: string[] = Array.from(new Set(rawPosts.map((p: any) => p.user_id as string)));
+    const rawPosts = pRes.data ?? [];
+    const postIds = rawPosts.map((p) => p.id);
+    const authorIds: string[] = Array.from(new Set(rawPosts.map((p) => p.user_id)));
     const [authorRes, reactionsRes, kudosRes] = await Promise.all([
       authorIds.length
         ? supabase.from("profiles").select("user_id, username, avatar_url, status_tier, level, streak").in("user_id", authorIds)
@@ -283,8 +284,8 @@ const TribeDetail = () => {
     // keeps the headline number and the member strip in lockstep. The server
     // column still feeds leaderboard/tier/history where a nightly snapshot is
     // acceptable.
-    const liveCollective = ((memberProfiles as any) ?? []).reduce(
-      (sum: number, p: any) => sum + (p?.streak ?? 0),
+    const liveCollective = (memberProfiles ?? []).reduce(
+      (sum, p) => sum + (p?.streak ?? 0),
       0,
     );
     setCollectiveStreak(liveCollective);
@@ -292,27 +293,27 @@ const TribeDetail = () => {
     // Milestone ledger — tier-ups, joins, battle wins woven into the feed.
     try {
       const { data: ms } = await supabase
-        .from("tribe_milestones" as any)
+        .from("tribe_milestones")
         .select("id, kind, payload, created_at")
         .eq("tribe_id", id)
         .order("created_at", { ascending: false })
         .limit(15);
-      setMilestones(((ms as any) ?? []) as Milestone[]);
+      setMilestones((ms ?? []) as unknown as Milestone[]);
     } catch {
       setMilestones([]);
     }
 
     // Weekly challenge — ensure this week's exists (idempotent), then read it.
     try {
-      await supabase.rpc("ensure_tribe_challenge" as never, { p_tribe_id: id } as never);
+      await supabase.rpc("ensure_tribe_challenge", { p_tribe_id: id });
       const { data: ch } = await supabase
-        .from("tribe_challenges" as any)
+        .from("tribe_challenges")
         .select("week_start, target, progress, status")
         .eq("tribe_id", id)
         .order("week_start", { ascending: false })
         .limit(1)
         .maybeSingle();
-      setChallenge((ch as any) ?? null);
+      setChallenge(ch ?? null);
     } catch {
       setChallenge(null);
     }
@@ -441,7 +442,6 @@ const TribeDetail = () => {
       if (timer) clearTimeout(timer);
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   // Parallax follows the *parent* scroller (App.tsx provides the single
@@ -560,7 +560,7 @@ const TribeDetail = () => {
   };
 
   const handleJoin = async () => {
-    const { data, error } = await supabase.rpc("join_tribe" as any, { p_tribe_id: id });
+    const { data, error } = await supabase.rpc("join_tribe", { p_tribe_id: id! });
     if (error) { toast.error(friendlyError(error)); return; }
     if (data === "pending") toast.success("Request sent");
     else toast.success("Joined!");
@@ -568,7 +568,7 @@ const TribeDetail = () => {
   };
 
   const handleLeave = async () => {
-    const { error } = await supabase.rpc("leave_tribe" as any, { p_tribe_id: id });
+    const { error } = await supabase.rpc("leave_tribe", { p_tribe_id: id! });
     if (error) { toast.error(friendlyError(error)); return; }
     toast.success("Left the tribe");
     load();
@@ -576,7 +576,7 @@ const TribeDetail = () => {
 
   const handleDelete = async () => {
     if (!confirm("Delete this tribe? This cannot be undone.")) return;
-    const { error } = await supabase.rpc("delete_tribe" as any, { p_tribe_id: id });
+    const { error } = await supabase.rpc("delete_tribe", { p_tribe_id: id! });
     if (error) { toast.error(friendlyError(error)); return; }
     toast.success("Tribe deleted");
     navigate("/squad?tab=tribes");
@@ -851,7 +851,7 @@ const TribeDetail = () => {
             user_id: m.user_id,
             username: m.username,
             avatar_url: m.avatar_url,
-            streak: (m as any).streak ?? 0,
+            streak: m.streak ?? 0,
             role: m.role,
           }))}
         />
@@ -971,7 +971,7 @@ const TribeDetail = () => {
                 description: tribe.description,
                 visibility: tribe.visibility,
                 cover_url: tribe.cover_url,
-                primary_activity: (tribe as any).primary_activity ?? null,
+                primary_activity: tribe.primary_activity ?? null,
               }}
               members={members}
               currentUserId={profile.user_id}

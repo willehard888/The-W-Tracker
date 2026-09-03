@@ -65,7 +65,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
         .order("member_count", { ascending: false })
         .limit(10);
       if (!active) return;
-      setResults(((data as any) ?? []) as TribeRow[]);
+      setResults(data ?? []);
       setSearching(false);
     }, 300);
     return () => { active = false; clearTimeout(t); };
@@ -74,7 +74,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
   const handleSubmit = async () => {
     if (!selected) return;
     setSubmitting(true);
-    const { error } = await supabase.rpc("create_tribe_battle" as any, {
+    const { error } = await supabase.rpc("create_tribe_battle", {
       p_challenger_tribe_id: challengerTribeId,
       p_opponent_tribe_id: selected.id,
       p_duration_days: duration,

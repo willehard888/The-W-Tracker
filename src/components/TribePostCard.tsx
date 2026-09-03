@@ -13,6 +13,7 @@ import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
 import PostMedia from "@/components/feed/PostMedia";
 import ImageLightbox from "@/components/ImageLightbox";
+import type { StatusTier } from "@/lib/status-tiers";
 import {
   Flame, MessageCircle, Award, MoreHorizontal,
   AlertTriangle, Trash2, ShieldCheck, Crown, Reply, X, Send, Zap,
@@ -276,13 +277,13 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
         .eq("post_id", post.id)
         .order("created_at", { ascending: true });
       if (!data) return [];
-      const userIds = [...new Set((data as any[]).map((c) => c.user_id))];
+      const userIds = [...new Set(data.map((c) => c.user_id))];
       const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, username")
         .in("user_id", userIds);
-      const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.user_id, p]));
-      return (data as any[]).map((c) => ({ ...c, profile: profileMap[c.user_id] }));
+      const profileMap = Object.fromEntries((profiles || []).map((p) => [p.user_id, p]));
+      return data.map((c) => ({ ...c, profile: profileMap[c.user_id] }));
     },
     enabled: showComments,
   });
@@ -440,7 +441,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
           <StatusAvatar
             src={post.author?.avatar_url}
             name={post.author?.username}
-            tier={(post.author?.status_tier as any) || "recruit"}
+            tier={post.author?.status_tier || "recruit"}
             size="sm"
             animated={false}
           />
@@ -450,7 +451,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                 className="text-sm font-bold truncate hover:underline">
                 <TierUsername
                   username={post.author?.username}
-                  tier={(post.author?.status_tier as any) || "recruit"}
+                  tier={post.author?.status_tier || "recruit"}
                   fallback="user"
                 />
                 {isOwn && <span className="ml-1 text-[11px] text-[hsl(var(--ember))]/70 font-medium">(you)</span>}
@@ -526,7 +527,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
           <PostMedia
             imageUrl={post.image_url}
             alt={post.content || "Tribe post"}
-            tier={(post.author?.status_tier as any) || undefined}
+            tier={post.author?.status_tier || undefined}
             onOpenImage={() => { hapticSelection(); setLightboxOpen(true); }}
           />
         )}
@@ -715,7 +716,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
         imageUrl={post.image_url}
         username={post.author?.username}
         avatarUrl={post.author?.avatar_url}
-        tier={(post.author?.status_tier as any) || "recruit"}
+        tier={(post.author?.status_tier || "recruit") as StatusTier}
         level={post.author?.level}
         streak={post.author?.streak}
         likes={post.likes_count}

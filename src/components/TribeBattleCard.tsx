@@ -47,7 +47,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
     staleTime: 60_000,
     refetchInterval: 120_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("tribe_battle_standings" as never, { p_battle_id: battle.id } as never);
+      const { data, error } = await supabase.rpc("tribe_battle_standings", { p_battle_id: battle.id });
       if (error) throw error;
       return data as unknown as { challenger_score: number; opponent_score: number };
     },

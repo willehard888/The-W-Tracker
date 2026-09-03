@@ -10,9 +10,6 @@ export interface MyReferral {
   converted_at: string | null;
 }
 
-// RPC lands in generated types after the migration is applied; cast until then.
-const rpc = supabase.rpc.bind(supabase) as any;
-
 /** Recent recruits (people who joined with my code) — newest first. */
 export const useMyReferrals = (enabled = true) =>
   useQuery<MyReferral[]>({
@@ -20,8 +17,8 @@ export const useMyReferrals = (enabled = true) =>
     enabled,
     staleTime: 60_000,
     queryFn: async () => {
-      const { data, error } = await rpc("list_my_referrals", { p_limit: 20 });
+      const { data, error } = await supabase.rpc("list_my_referrals", { p_limit: 20 });
       if (error) throw error;
-      return (data as MyReferral[]) ?? [];
+      return data ?? [];
     },
   });

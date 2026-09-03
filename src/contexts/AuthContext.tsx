@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { track, FUNNEL } from "@/lib/analytics";
 import { identifyUser, resetIdentity, captureException } from "@/lib/observability";
 import { uniqueChannelName } from "@/lib/realtime";
@@ -11,7 +12,7 @@ import { queryClient } from "@/lib/query-client";
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  profile: any | null;
+  profile: Tables<"profiles"> | null;
   loading: boolean;
   isElite: boolean;
   /** Alias of isElite — some legacy call sites read `isPremium`. */
@@ -39,7 +40,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<any | null>(null);
+  const [profile, setProfile] = useState<Tables<"profiles"> | null>(null);
   const [loading, setLoading] = useState(true);
   const [isElite, setIsElite] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
@@ -63,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         username,
         username_is_auto: true,
         referral_code: `${username}_${authUser.id.slice(0, 6)}`.slice(0, 20),
-      } as never,
+      },
       { onConflict: "user_id" },
     );
     // A silent failure here leaves profile null forever — the user is signed
@@ -240,8 +241,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "profiles", filter: `user_id=eq.${uid}` },
         (payload) => {
-          const next = payload.new as Record<string, unknown>;
-          setProfile((prev: any) => (prev ? { ...prev, ...next } : next));
+          // An UPDATE payload on `profiles` carries the full row.
+          const next = payload.new as Tables<"profiles">;
+          setProfile((prev) => (prev ? { ...prev, ...next } : next));
           if ("is_elite" in next) setIsElite(Boolean(next.is_elite));
         },
       )
@@ -358,14 +360,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // CRITICAL: gate on `profile !== null` (not just `user !== null`) —
   // consumers that read `isElite` pair it with profile data reads, and
   // isElite=true with a null profile crashes premium renders.
-  const _p = profile as
-    | { membership_credits_until?: string | null; is_apex_subscriber?: boolean; legend_pinned?: boolean }
-    | null;
   const creditsActive =
-    !!_p?.membership_credits_until && new Date(_p.membership_credits_until).getTime() > Date.now();
+    !!profile?.membership_credits_until &&
+    new Date(profile.membership_credits_until).getTime() > Date.now();
   const effectiveMembership =
     profile !== null &&
-    (isElite || creditsActive || _p?.is_apex_subscriber === true || _p?.legend_pinned === true);
+    (isElite || creditsActive || profile.is_apex_subscriber === true || profile.legend_pinned === true);
 
   const value = useMemo<AuthContextType>(
     () => ({
@@ -375,7 +375,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       loading,
       isElite: effectiveMembership,
       isPremium: effectiveMembership,
-      isApexSubscriber: _p?.is_apex_subscriber === true,
+      isApexSubscriber: profile?.is_apex_subscriber === true,
       subscriptionLoading: loading,
       subscriptionEnd,
       checkSubscription,

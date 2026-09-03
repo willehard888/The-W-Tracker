@@ -16,7 +16,7 @@ import HeadToHead from "@/components/HeadToHead";
 import ProfileActivityPulse from "@/components/ProfileActivityPulse";
 import IdentityCore from "@/components/profile/IdentityCore";
 import { useMyRank } from "@/hooks/use-my-rank";
-import { getTierConfig, getTierHeroSurface } from "@/lib/status-tiers";
+import { getTierConfig, getTierHeroSurface, type StatusTier } from "@/lib/status-tiers";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -102,15 +102,14 @@ const UserProfile = () => {
   const { data: championHistory } = useQuery({
     queryKey: ["champion-history", userId],
     queryFn: async () => {
-      const db = supabase as any;
       const [{ data: champions }, { data: seasons }] = await Promise.all([
-        db.from("leaderboard_champions").select("season_id, season_points, created_at").eq("user_id", userId!).order("created_at", { ascending: false }),
-        db.from("leaderboard_seasons").select("id, name"),
+        supabase.from("leaderboard_champions").select("season_id, season_points, created_at").eq("user_id", userId!).order("created_at", { ascending: false }),
+        supabase.from("leaderboard_seasons").select("id, name"),
       ]);
-      const seasonNames = new Map<string, string>((seasons || []).map((s: any) => [s.id, s.name]));
+      const seasonNames = new Map<string, string>((seasons || []).map((s) => [s.id, s.name]));
       return {
         wins: (champions || []).length,
-        seasons: (champions || []).map((c: any) => ({
+        seasons: (champions || []).map((c) => ({
           name: seasonNames.get(c.season_id) || "Season",
           points: c.season_points,
         })),
@@ -162,11 +161,11 @@ const UserProfile = () => {
         if (error) throw error;
         toast.success("Friend request sent! 🤝");
       } else if (action === "accept" && friendship) {
-        const { error } = await supabase.from("friendships").update({ status: "accepted" as any, updated_at: new Date().toISOString() }).eq("id", friendship.id);
+        const { error } = await supabase.from("friendships").update({ status: "accepted", updated_at: new Date().toISOString() }).eq("id", friendship.id);
         if (error) throw error;
         toast.success("Friend request accepted! 🎉");
       } else if (action === "decline" && friendship) {
-        const { error } = await supabase.from("friendships").update({ status: "declined" as any, updated_at: new Date().toISOString() }).eq("id", friendship.id);
+        const { error } = await supabase.from("friendships").update({ status: "declined", updated_at: new Date().toISOString() }).eq("id", friendship.id);
         if (error) throw error;
         toast("Request declined");
       } else if ((action === "cancel" || action === "remove") && friendship) {
@@ -391,7 +390,7 @@ const UserProfile = () => {
               if (!myProfile) return;
               setCreating(true);
               try {
-                const { error } = await (supabase.rpc as any)("create_battle", {
+                const { error } = await supabase.rpc("create_battle", {
                   p_opponent: userId!,
                   p_battle_type: battleType,
                   p_duration_days: duration,
@@ -532,7 +531,7 @@ const UserProfile = () => {
         isVideo={!!lightboxPost?.video_url}
         username={profile.username}
         avatarUrl={profile.avatar_url}
-        tier={(profile.status_tier || "recruit") as any}
+        tier={(profile.status_tier || "recruit") as StatusTier}
         level={profile.level}
         streak={profile.streak}
         likes={lightboxPost?.likes_count}

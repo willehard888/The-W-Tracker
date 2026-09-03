@@ -25,10 +25,10 @@ const BlockedUsers = () => {
     enabled: !!user?.id,
     queryFn: async (): Promise<BlockedRow[]> => {
       const { data: blocks } = await supabase
-        .from("blocked_users" as never)
+        .from("blocked_users")
         .select("blocked_id")
         .eq("blocker_id", user!.id);
-      const ids = (blocks ?? []).map((b: { blocked_id: string }) => b.blocked_id);
+      const ids = (blocks ?? []).map((b) => b.blocked_id);
       if (!ids.length) return [];
       const { data: profs } = await supabase
         .from("profiles")

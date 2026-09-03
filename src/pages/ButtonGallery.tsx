@@ -45,7 +45,8 @@ const VARIANTS: VariantSpec[] = [
 
   // Premium gold
   { id: "default", label: "Default (Gold)", group: "Premium", description: "Clean polished gold bar — primary identity.", icon: <Sparkles /> },
-  { id: "gold", label: "Gold", group: "Premium", description: "Alias of default — bright metallic gold.", icon: <Crown /> },
+  // "gold" was listed as an alias of default, but the Button cva has no such
+  // variant — the row rendered unstyled. Dropped rather than added to Button.
   { id: "tier", label: "Tier", group: "Premium", description: "Uses --tier-color CSS vars (defaults to gold).", icon: <Sparkles /> },
 
   // Identity / system

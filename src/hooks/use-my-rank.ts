@@ -22,7 +22,7 @@ export const useMyRank = (userId: string | undefined) => {
     queryKey: ["my-rank", userId],
     queryFn: async () => {
       if (!userId) return null;
-      const { data, error } = await supabase.rpc("get_user_rank" as any, {
+      const { data, error } = await supabase.rpc("get_user_rank", {
         p_user_id: userId,
       });
       if (error) {
@@ -32,10 +32,10 @@ export const useMyRank = (userId: string | undefined) => {
       const row = Array.isArray(data) ? data[0] : data;
       if (!row) return null;
       return {
-        rank: Number((row as any).rank) || 0,
-        totalUsers: Number((row as any).total_users) || 0,
-        percentile: Number((row as any).percentile) || 0,
-        hasRank: Boolean((row as any).has_rank),
+        rank: Number(row.rank) || 0,
+        totalUsers: Number(row.total_users) || 0,
+        percentile: Number(row.percentile) || 0,
+        hasRank: Boolean(row.has_rank),
       };
     },
     enabled: !!userId,

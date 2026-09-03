@@ -26,7 +26,6 @@ const habitDone = (row: Record<string, unknown>, legacyKeys: string[], habitKeys
 async function gatherLiveInputs(userId: string): Promise<WhealthInputs> {
   const since = new Date(Date.now() - 28 * 86400_000).toISOString();
   const sinceDay = since.slice(0, 10);
-  const db = supabase as never as { rpc: (fn: string, args?: Record<string, unknown>) => PromiseLike<{ data: unknown }> };
 
   const [checkinsR, nightsR, daysR, reflR, lessonsR, lessonsTotalR, liftsR, tribesR, friendsR, athleteR] =
     await Promise.all([
@@ -34,7 +33,7 @@ async function gatherLiveInputs(userId: string): Promise<WhealthInputs> {
         .from("daily_checkins")
         .select("checked_in_at, sleep_hours, hydration_liters, workout, meditation_morning, meditation_evening, protein_intake, healthy_food, no_phone_morning, no_phone_evening, journal_entry, habits, verified_at")
         .eq("user_id", userId).gte("checked_in_at", since).order("checked_in_at", { ascending: true }),
-      db.rpc("recent_night_metrics", { p_days: 28 }),
+      supabase.rpc("recent_night_metrics", { p_days: 28 }),
       supabase
         .from("health_sync_snapshots")
         .select("snapshot_date, steps, active_kcal, workout_minutes, mindful_minutes")
@@ -45,7 +44,7 @@ async function gatherLiveInputs(userId: string): Promise<WhealthInputs> {
         .eq("user_id", userId).gte("reflection_date", sinceDay),
       supabase.from("vault_lesson_progress").select("quiz_score").eq("user_id", userId),
       supabase.from("vault_articles").select("id", { count: "exact", head: true }),
-      db.rpc("recent_workout_logs", { p_limit: 120 }),
+      supabase.rpc("recent_workout_logs", { p_limit: 120 }),
       supabase.from("tribe_members").select("id", { count: "exact", head: true }).eq("user_id", userId),
       supabase.from("friendships").select("id", { count: "exact", head: true })
         .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`).eq("status", "accepted"),

@@ -54,7 +54,7 @@ const TribeBattles = () => {
 
     // Auto-resolve any expired battles first (best-effort)
     try {
-      await supabase.rpc("auto_resolve_expired_tribe_battles" as any);
+      await supabase.rpc("auto_resolve_expired_tribe_battles");
     } catch {
       // ignore — best-effort auto-resolve
     }
@@ -69,8 +69,8 @@ const TribeBattles = () => {
         .limit(50),
     ]);
 
-    setTribe((tRes as any).data ?? null);
-    const rawBattles: TribeBattle[] = ((bRes as any).data ?? []) as any[];
+    setTribe(tRes.data ?? null);
+    const rawBattles: TribeBattle[] = (bRes.data ?? []) as TribeBattle[];
 
     // Hydrate tribe info for both sides
     const tribeIds = Array.from(
@@ -85,10 +85,10 @@ const TribeBattles = () => {
           .in("id", tribeIds),
         fetchTribeCollectiveStreaks(tribeIds),
       ]);
-      const tMap = new Map(((tribesData as any) ?? []).map((t: any) => [t.id, t]));
+      const tMap = new Map((tribesData ?? []).map((t) => [t.id, t]));
       rawBattles.forEach((b) => {
-        const c = tMap.get(b.challenger_tribe_id) as any;
-        const o = tMap.get(b.opponent_tribe_id) as any;
+        const c = tMap.get(b.challenger_tribe_id);
+        const o = tMap.get(b.opponent_tribe_id);
         b.challenger = c ? { ...c, collective_streak: streaksMap.get(b.challenger_tribe_id) ?? 0 } : undefined;
         b.opponent = o ? { ...o, collective_streak: streaksMap.get(b.opponent_tribe_id) ?? 0 } : undefined;
       });
@@ -110,7 +110,7 @@ const TribeBattles = () => {
 
   const respond = async (battleId: string, accept: boolean) => {
     setRespondingId(battleId);
-    const { error } = await supabase.rpc("respond_to_tribe_battle" as any, {
+    const { error } = await supabase.rpc("respond_to_tribe_battle", {
       p_battle_id: battleId,
       p_accept: accept,
     });
@@ -199,7 +199,7 @@ const TribeBattles = () => {
         );
       })()}
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+      <Tabs value={tab} onValueChange={(v) => setTab(v as "active" | "pending" | "history")}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="active">Active {active.length > 0 && `(${active.length})`}</TabsTrigger>
           <TabsTrigger value="pending">Pending {pending.length > 0 && `(${pending.length})`}</TabsTrigger>

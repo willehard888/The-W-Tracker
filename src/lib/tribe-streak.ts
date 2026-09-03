@@ -174,7 +174,7 @@ export const fetchTribeCollectiveStreak = async (tribeId: string): Promise<numbe
     .eq("id", tribeId)
     .maybeSingle();
   if (error) console.warn("tribe-streak:", error.message);
-  return ((data as any)?.collective_streak as number | undefined) ?? 0;
+  return data?.collective_streak ?? 0;
 };
 
 /**
@@ -192,8 +192,8 @@ export const fetchTribeCollectiveStreaks = async (
     .select("id, collective_streak")
     .in("id", tribeIds);
   if (error) console.warn("tribe-streak batch:", error.message);
-  ((data as any) ?? []).forEach((t: any) => {
-    out.set(t.id as string, (t.collective_streak as number) ?? 0);
+  (data ?? []).forEach((t) => {
+    out.set(t.id, t.collective_streak ?? 0);
   });
   return out;
 };

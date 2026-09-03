@@ -31,7 +31,9 @@ interface HealthNightPlugin {
 const HealthNight = registerPlugin<HealthNightPlugin>("HealthNight");
 
 const isIos = () => Capacitor.getPlatform() === "ios";
-const round1 = (v: number | null | undefined) => (v == null ? null : Math.round(v * 10) / 10);
+// undefined (not null) for missing values: the RPC arg is omitted and the
+// SQL default (NULL) applies — same stored row, strict-clean payload type.
+const round1 = (v: number | null | undefined) => (v == null ? undefined : Math.round(v * 10) / 10);
 const localDate = (d = new Date()) => d.toLocaleDateString("en-CA"); // YYYY-MM-DD
 
 /** Request HealthKit read authorization for the night/recovery types. */
@@ -81,13 +83,13 @@ export async function syncNightMetrics(): Promise<boolean> {
       p_hrv_sdnn: round1(r.hrv_sdnn), // overnight SDNN avg (ms) — plugin queries it as of Whealth OS
       p_respiratory_rate: round1(r.respiratory_rate),
       p_spo2: round1(r.spo2),
-      p_sleep_total_min: r.sleep_total_min ?? null,
-      p_sleep_deep_min: r.sleep_deep_min ?? null,
-      p_sleep_rem_min: r.sleep_rem_min ?? null,
-      p_sleep_core_min: r.sleep_core_min ?? null,
-      p_awake_min: r.awake_min ?? null,
-      p_sleep_start: r.sleep_start ?? null,
-      p_sleep_end: r.sleep_end ?? null,
+      p_sleep_total_min: r.sleep_total_min ?? undefined,
+      p_sleep_deep_min: r.sleep_deep_min ?? undefined,
+      p_sleep_rem_min: r.sleep_rem_min ?? undefined,
+      p_sleep_core_min: r.sleep_core_min ?? undefined,
+      p_awake_min: r.awake_min ?? undefined,
+      p_sleep_start: r.sleep_start ?? undefined,
+      p_sleep_end: r.sleep_end ?? undefined,
     };
 
     const hasData = payload.p_resting_hr != null || payload.p_sleep_total_min != null ||

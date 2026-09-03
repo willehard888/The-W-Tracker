@@ -10,7 +10,12 @@ import {
   flushPendingCheckin,
   isNetworkError,
   localDateStr,
+  type PendingCheckin,
 } from "@/lib/offline-checkin";
+
+// Tests only exercise the queue plumbing — a single field stands in for the
+// full record_checkin arg set.
+const ARGS = { p_workout: true } as unknown as PendingCheckin["args"];
 
 const fakeClient = (error: { message: string } | null) =>
   ({ rpc: vi.fn().mockResolvedValue({ error }) }) as never;
@@ -20,8 +25,8 @@ afterEach(() => vi.useRealTimers());
 
 describe("queue basics", () => {
   it("round-trips args through localStorage", () => {
-    queueCheckin({ p_workout: true });
-    expect(getPendingCheckin()?.args).toEqual({ p_workout: true });
+    queueCheckin(ARGS);
+    expect(getPendingCheckin()?.args).toEqual(ARGS);
     clearPendingCheckin();
     expect(getPendingCheckin()).toBeNull();
   });
@@ -50,7 +55,7 @@ describe("flushPendingCheckin", () => {
   it("REGRESSION LOCK: a 23:58 queue still replays at 00:02 (midnight crossing)", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2026, 7, 11, 23, 58));
-    queueCheckin({ p_workout: true });
+    queueCheckin(ARGS);
     vi.setSystemTime(new Date(2026, 7, 12, 0, 2)); // next local date, 4 min later
     await expect(flushPendingCheckin(fakeClient(null))).resolves.toBe("synced");
     expect(getPendingCheckin()).toBeNull();
@@ -59,7 +64,7 @@ describe("flushPendingCheckin", () => {
   it("drops a genuinely abandoned queue (>36h) without calling the server", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2026, 7, 10, 12, 0));
-    queueCheckin({ p_workout: true });
+    queueCheckin(ARGS);
     vi.setSystemTime(new Date(2026, 7, 12, 1, 0)); // 37h later
     const client = fakeClient(null);
     await expect(flushPendingCheckin(client)).resolves.toBe("none");
@@ -73,7 +78,7 @@ describe("flushPendingCheckin", () => {
     // for the gap and blocking the real check-in). Must NOT reach the server.
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2026, 7, 11, 7, 0));
-    queueCheckin({ p_workout: true });
+    queueCheckin(ARGS);
     vi.setSystemTime(new Date(2026, 7, 12, 9, 0)); // 26h later, different day
     const client = fakeClient(null);
     await expect(flushPendingCheckin(client)).resolves.toBe("stale");
@@ -82,13 +87,13 @@ describe("flushPendingCheckin", () => {
   });
 
   it("ALREADY_CHECKED_IN_TODAY clears the queue (idempotent replay)", async () => {
-    queueCheckin({ p_workout: true });
+    queueCheckin(ARGS);
     await expect(flushPendingCheckin(fakeClient({ message: "ALREADY_CHECKED_IN_TODAY" }))).resolves.toBe("already");
     expect(getPendingCheckin()).toBeNull();
   });
 
   it("other failures KEEP the queue for the next retry tick", async () => {
-    queueCheckin({ p_workout: true });
+    queueCheckin(ARGS);
     await expect(flushPendingCheckin(fakeClient({ message: "Load failed" }))).resolves.toBe("failed");
     expect(getPendingCheckin()).not.toBeNull();
   });

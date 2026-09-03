@@ -55,7 +55,6 @@ export const useUnreadNotificationCount = () => {
     return () => { supabase.removeChannel(channel); };
     // Keyed on the stable id, never the user OBJECT (token refresh mints a
     // new identity hourly and would re-subscribe).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid, queryClient]);
 
   return useQuery<number>({

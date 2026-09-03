@@ -28,9 +28,9 @@ const HealthKitConnectCard = ({ onConnected }: { onConnected?: () => void } = {}
   // Read verification stats (server-computed over last 14 days).
   useEffect(() => {
     if (!user?.id) return;
-    void supabase.rpc("user_verified_performer_stats" as any, { _user_id: user.id })
+    void supabase.rpc("user_verified_performer_stats", { _user_id: user.id })
       .then(
-        ({ data }) => { if (data) setStats(data as any); },
+        ({ data }) => { if (data) setStats(data as unknown as NonNullable<typeof stats>); },
         () => { /* table may not exist yet on pre-migration DBs */ },
       );
   }, [user?.id, syncing]);

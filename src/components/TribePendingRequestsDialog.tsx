@@ -36,7 +36,7 @@ const TribePendingRequestsDialog = ({ tribeId, open, onOpenChange, onChanged }: 
       .eq("tribe_id", tribeId)
       .eq("status", "pending")
       .order("joined_at", { ascending: false });
-    const userIds = ((rows as any) ?? []).map((r: any) => r.user_id);
+    const userIds = (rows ?? []).map((r) => r.user_id);
     if (userIds.length === 0) {
       setPending([]);
       setLoading(false);
@@ -46,12 +46,12 @@ const TribePendingRequestsDialog = ({ tribeId, open, onOpenChange, onChanged }: 
       .from("profiles")
       .select("user_id, username, avatar_url, status_tier")
       .in("user_id", userIds);
-    const profMap = new Map(((profs as any) ?? []).map((p: any) => [p.user_id, p]));
+    const profMap = new Map((profs ?? []).map((p) => [p.user_id, p]));
     setPending(
-      ((rows as any) ?? [])
-        .map((r: any) => {
+      (rows ?? [])
+        .map((r) => {
           const p = profMap.get(r.user_id);
-          return p ? { ...(p as any), joined_at: r.joined_at } : null;
+          return p ? { ...p, joined_at: r.joined_at } : null;
         })
         .filter(Boolean) as PendingMember[],
     );
@@ -65,7 +65,7 @@ const TribePendingRequestsDialog = ({ tribeId, open, onOpenChange, onChanged }: 
 
   const handleRespond = async (userId: string, accept: boolean) => {
     setActingId(userId);
-    const { error } = await supabase.rpc("approve_tribe_member" as any, {
+    const { error } = await supabase.rpc("approve_tribe_member", {
       p_tribe_id: tribeId,
       p_user_id: userId,
       p_accept: accept,

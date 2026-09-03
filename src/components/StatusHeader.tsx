@@ -109,15 +109,15 @@ const StatusHeader = () => {
   // Canonical id — legacy 'normal' rows must behave exactly like recruit in
   // every ladder computation below (indexOf on the raw value returned -1).
   const tier = canonicalTier(profile.status_tier);
-  const division = (profile as any).tier_division ?? 0;
+  const division = profile.tier_division ?? 0;
   const config = getTierConfig(tier);
   const next = getNextTier(tier);
   const streak = getEffectiveStreak(profile.streak || 0, lastCheckin?.checked_in_at, profile.streak_shields ?? 0);
   const isApex = tier === "apex";
-  const isApexSubscriber = (profile as any).is_apex_subscriber === true;
+  const isApexSubscriber = profile.is_apex_subscriber === true;
 
   // Tier progress: position within full hierarchy (0..1)
-  const tierProgress = (TIER_ORDER.indexOf(tier as any) + 1) / TIER_ORDER.length;
+  const tierProgress = (TIER_ORDER.indexOf(tier) + 1) / TIER_ORDER.length;
 
   // The trial is a GIFT (full access), not a countdown to doom — and since the
   // hard paywall is off, "expiry" isn't a hard cliff. Only flag the very last
@@ -291,13 +291,13 @@ const StatusHeader = () => {
               {streak > 0 && (
                 <StreakFlameInline streak={streak} suffix="" className="leading-none text-xs" />
               )}
-              {((profile as any).streak_shields ?? 0) > 0 && (
+              {(profile.streak_shields ?? 0) > 0 && (
                 <span
                   role="img"
-                  aria-label={`${(profile as any).streak_shields} streak shield${(profile as any).streak_shields === 1 ? "" : "s"} — a missed day costs a shield, not your streak`}
+                  aria-label={`${profile.streak_shields} streak shield${profile.streak_shields === 1 ? "" : "s"} — a missed day costs a shield, not your streak`}
                   className="shrink-0 inline-flex items-center gap-0.5 text-[11px] font-bold text-teal leading-none"
                 >
-                  <ShieldIcon size={11} strokeWidth={2.8} aria-hidden />{(profile as any).streak_shields}
+                  <ShieldIcon size={11} strokeWidth={2.8} aria-hidden />{profile.streak_shields}
                 </span>
               )}
             </div>
@@ -322,7 +322,7 @@ const StatusHeader = () => {
               {tier !== "legend" && (() => {
                 // Status is EARNED — never bought. This chip shows HOW TO EARN the
                 // next tier (its requirements), it must not route to the paywall.
-                const nextIdx = TIER_ORDER.indexOf(tier as any) + 1;
+                const nextIdx = TIER_ORDER.indexOf(tier) + 1;
                 const nextKey = nextIdx > 0 && nextIdx < TIER_ORDER.length ? TIER_ORDER[nextIdx] : "legend";
                 const target = `/profile?tier=${nextKey}`;
                 const label = next ? next.label : "Legend";

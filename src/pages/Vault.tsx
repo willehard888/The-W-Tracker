@@ -146,7 +146,7 @@ const Vault = () => {
   if (!hasVaultAccess) return null;
 
   const firstName =
-    (profile as any)?.username || (profile as any)?.display_name || null;
+    profile?.username || profile?.display_name || null;
 
   // Real counts; fall back to a dash until the cached list resolves (avoids a
   // "0" flash) rather than to hardcoded numbers that would drift.

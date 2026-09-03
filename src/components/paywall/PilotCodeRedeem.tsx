@@ -48,9 +48,9 @@ const PilotCodeRedeem = () => {
 
     setBusy(true);
     try {
-      const { data, error } = await supabase.rpc("redeem_pilot_code" as never, {
+      const { data, error } = await supabase.rpc("redeem_pilot_code", {
         p_code: trimmed,
-      } as never);
+      });
       if (error) throw error;
 
       const result = data as { success?: boolean; reason?: string; granted_days?: number } | null;

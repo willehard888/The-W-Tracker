@@ -50,13 +50,15 @@ export const useHealthKit = () => {
     if (!user?.id) return;
     const { error: rpcErr } = await supabase.rpc("upsert_health_snapshot", {
       _date: snap.date,
-      _steps: snap.steps,
-      _workout_minutes: snap.workout_minutes,
-      _workout_count: snap.workout_count,
-      _sleep_hours: snap.sleep_hours,
-      _active_kcal: snap.active_kcal,
+      // null → undefined: the arg is omitted from the payload and the SQL
+      // default (NULL) applies — same stored value, strict-clean.
+      _steps: snap.steps ?? undefined,
+      _workout_minutes: snap.workout_minutes ?? undefined,
+      _workout_count: snap.workout_count ?? undefined,
+      _sleep_hours: snap.sleep_hours ?? undefined,
+      _active_kcal: snap.active_kcal ?? undefined,
       _source: "healthkit",
-      _mindful_minutes: snap.mindful_minutes,
+      _mindful_minutes: snap.mindful_minutes ?? undefined,
     });
     if (rpcErr) throw new Error(rpcErr.message);
   }, [user?.id]);
@@ -117,7 +119,7 @@ export const useHealthKit = () => {
   const verifyCheckin = useCallback(async (checkinId: string, snapshotDate?: string | null) => {
     const { data, error: rpcErr } = await supabase.rpc("verify_checkin", {
       _checkin_id: checkinId,
-      _snapshot_date: snapshotDate ?? null,
+      _snapshot_date: snapshotDate ?? undefined,
     });
     if (rpcErr) throw new Error(rpcErr.message);
     return data as {

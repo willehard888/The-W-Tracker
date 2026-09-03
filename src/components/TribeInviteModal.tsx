@@ -45,8 +45,8 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
           .eq("tribe_id", tribeId)
           .eq("status", "pending"),
       ]);
-      setMemberIds(new Set(((m as any).data ?? []).map((r: any) => r.user_id)));
-      setInvitedIds(new Set(((i as any).data ?? []).map((r: any) => r.invitee_id)));
+      setMemberIds(new Set((m.data ?? []).map((r) => r.user_id)));
+      setInvitedIds(new Set((i.data ?? []).map((r) => r.invitee_id)));
     })();
   }, [open, tribeId]);
 
@@ -69,7 +69,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
         .neq("user_id", profile?.user_id ?? "")
         .limit(20);
       if (!active) return;
-      setHits((data as any) ?? []);
+      setHits(data ?? []);
       setSearching(false);
     }, 300);
     return () => { active = false; clearTimeout(t); };
@@ -77,7 +77,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
 
   const handleInvite = async (u: Hit) => {
     setSendingId(u.user_id);
-    const { error } = await supabase.rpc("invite_to_tribe" as any, {
+    const { error } = await supabase.rpc("invite_to_tribe", {
       p_tribe_id: tribeId,
       p_invitee_id: u.user_id,
     });

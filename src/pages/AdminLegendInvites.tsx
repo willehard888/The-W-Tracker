@@ -78,12 +78,12 @@ export default function AdminLegendInvites() {
         ? new Date(Date.now() + Number(expiresInDays) * 86400000).toISOString()
         : null;
       const { data, error } = await supabase.rpc("create_legend_invite", {
-        p_code: code.trim() || null,
-        p_expires_at: expires_at,
-        p_note: note.trim() || null,
+        p_code: code.trim() || undefined,
+        p_expires_at: expires_at ?? undefined,
+        p_note: note.trim() || undefined,
       });
       if (error) throw error;
-      const result = data as any;
+      const result = data as { success?: boolean; reason?: string; code?: string } | null;
       if (!result?.success) {
         toast.error(`Failed: ${result?.reason ?? "unknown"}`);
         return;

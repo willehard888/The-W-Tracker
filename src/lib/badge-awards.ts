@@ -50,7 +50,7 @@ const profileDerivedStats = (profile: any): Record<string, number> => {
  * queries had). Replaces ~45 REST requests per Profile open.
  */
 const fetchQueryStats = async (): Promise<Record<string, number>> => {
-  const { data, error } = await supabase.rpc("user_badge_stats" as never);
+  const { data, error } = await supabase.rpc("user_badge_stats");
   if (error || !data) return {};
   return data as unknown as Record<string, number>;
 };

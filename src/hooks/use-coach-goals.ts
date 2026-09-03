@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface CoachGoal {
@@ -41,20 +42,20 @@ export const useCoachGoals = () => {
 
   const upsert = useMutation({
     mutationFn: async (patch: Partial<CoachGoal>) => {
-      const { data, error } = await supabase.rpc("upsert_goal" as any, { _patch: patch as any });
+      const { data, error } = await supabase.rpc("upsert_goal", { _patch: patch as unknown as Json });
       if (error) throw error;
-      return data as CoachGoal;
+      return data as unknown as CoachGoal;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["coach-goals", user?.id] }),
   });
 
   const updateProgress = useMutation({
     mutationFn: async ({ id, value }: { id: string; value: number }) => {
-      const { data, error } = await supabase.rpc("update_goal_progress" as any, {
+      const { data, error } = await supabase.rpc("update_goal_progress", {
         _goal_id: id, _new_value: value,
       });
       if (error) throw error;
-      return data as CoachGoal;
+      return data as unknown as CoachGoal;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["coach-goals", user?.id] }),
   });

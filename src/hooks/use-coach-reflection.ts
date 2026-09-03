@@ -43,11 +43,12 @@ export const useTodayReflection = () => {
       const { data, error } = await supabase.rpc("upsert_reflection", {
         _reflection_date: date,
         _energy_1to5: input.energy_1to5,
-        _rpe_1to10: input.rpe_1to10 ?? null,
-        _sleep_quality_1to5: input.sleep_quality_1to5 ?? null,
-        _mood_1to5: input.mood_1to5 ?? null,
-        _win: input.win ?? null,
-        _friction: input.friction ?? null,
+        // null → undefined: omitted args fall back to the SQL default (NULL).
+        _rpe_1to10: input.rpe_1to10 ?? undefined,
+        _sleep_quality_1to5: input.sleep_quality_1to5 ?? undefined,
+        _mood_1to5: input.mood_1to5 ?? undefined,
+        _win: input.win ?? undefined,
+        _friction: input.friction ?? undefined,
       });
       if (error) throw error;
       return data;

@@ -47,7 +47,7 @@ const GoalTrackerCard = () => {
         current_value: draft.baseline_value ? Number(draft.baseline_value) : null,
         target_value: Number(draft.target_value),
         deadline: draft.deadline || null,
-      } as any);
+      });
       setDraft({ title: "", metric: "custom", unit: "", baseline_value: "", target_value: "", deadline: "" });
       setAdding(false);
       hapticImpact("light");

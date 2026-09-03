@@ -36,7 +36,7 @@ export function useActivityHeartbeat() {
       try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || null; } catch { /* keep null */ }
       const offset = -new Date().getTimezoneOffset(); // minutes east of UTC
       supabase
-        .rpc("touch_activity", { p_timezone: tz, p_utc_offset_minutes: offset })
+        .rpc("touch_activity", { p_timezone: tz ?? undefined, p_utc_offset_minutes: offset })
         .then(({ error }) => {
           if (error) console.warn("touch_activity failed:", error.message);
         });

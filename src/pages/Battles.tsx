@@ -252,7 +252,7 @@ const Battles = () => {
     if (!profile || !opponent) return;
     setCreating(true);
     try {
-      const { error } = await (supabase.rpc as any)("create_battle", {
+      const { error } = await supabase.rpc("create_battle", {
         p_opponent: opponent.user_id,
         p_battle_type: battleType,
         p_duration_days: duration,

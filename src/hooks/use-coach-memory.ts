@@ -33,7 +33,7 @@ export const useCoachMemory = () => {
 
   const add = useMutation({
     mutationFn: async (fact: string) => {
-      const { data, error } = await supabase.rpc("add_chat_memory" as any, {
+      const { data, error } = await supabase.rpc("add_chat_memory", {
         _fact: fact, _source: "manual", _confidence: 1.0,
       });
       if (error) throw error;
@@ -44,7 +44,7 @@ export const useCoachMemory = () => {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.rpc("delete_chat_memory" as any, { _id: id });
+      const { error } = await supabase.rpc("delete_chat_memory", { _id: id });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["coach-memory", user?.id] }),

@@ -29,13 +29,11 @@ export const fetchAllTimeLeaders = async (): Promise<LeaderRow[]> => {
   return (data || []) as LeaderRow[];
 };
 
-export const fetchActiveSeason = async (): Promise<any> => {
-  const db = supabase as any;
-
-  await db.rpc("finalize_expired_leaderboard_seasons");
+export const fetchActiveSeason = async () => {
+  await supabase.rpc("finalize_expired_leaderboard_seasons");
 
   const nowIso = new Date().toISOString();
-  const { data: existing } = await db
+  const { data: existing } = await supabase
     .from("leaderboard_seasons")
     .select("*")
     .eq("status", "active")
@@ -46,15 +44,14 @@ export const fetchActiveSeason = async (): Promise<any> => {
 
   if (existing?.length) return existing[0];
 
-  const { data: ensured } = await db.rpc("ensure_active_leaderboard_season");
+  const { data: ensured } = await supabase.rpc("ensure_active_leaderboard_season");
   if (Array.isArray(ensured)) return ensured[0];
   return ensured;
 };
 
 export const fetchSeasonBoard = async (seasonId: string, userId: string | undefined) => {
-  const db = supabase as any;
   const [{ data: baselines }, { data: profiles }] = await Promise.all([
-    db
+    supabase
       .from("leaderboard_season_baselines")
       .select("user_id, baseline_xp")
       .eq("season_id", seasonId),
@@ -69,7 +66,7 @@ export const fetchSeasonBoard = async (seasonId: string, userId: string | undefi
       .limit(2000),
   ]);
 
-  const baselineMap = new Map<string, number>((baselines || []).map((b: any) => [b.user_id, b.baseline_xp]));
+  const baselineMap = new Map<string, number>((baselines || []).map((b) => [b.user_id, b.baseline_xp]));
 
   const full = ((profiles || []) as LeaderRow[])
     .map((p) => ({

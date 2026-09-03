@@ -25,9 +25,6 @@ export interface NightMetrics {
 /** The set of factors a user can attribute to a night. */
 export const NIGHT_FACTORS = ["alcohol", "late meal", "stress", "travel", "sick", "caffeine", "late screen"] as const;
 
-// RPC lands in generated types after the migration is applied; cast until then.
-const rpc = supabase.rpc.bind(supabase) as any;
-
 /** Recent nightly recovery metrics (newest first) — powers the Recovery card. */
 export const useRecentNights = (days = 30) => {
   const { user } = useAuth();
@@ -37,9 +34,9 @@ export const useRecentNights = (days = 30) => {
     queryKey: ["night-metrics", user?.id, days],
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      const { data, error } = await rpc("recent_night_metrics", { p_days: days });
+      const { data, error } = await supabase.rpc("recent_night_metrics", { p_days: days });
       if (error) throw error;
-      return (data as NightMetrics[]) ?? [];
+      return data ?? [];
     },
   });
 };
@@ -49,7 +46,7 @@ export const useSetNightFactors = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (p: { nightDate: string; factors: string[] }) => {
-      const { error } = await rpc("set_night_factors", { p_night_date: p.nightDate, p_factors: p.factors });
+      const { error } = await supabase.rpc("set_night_factors", { p_night_date: p.nightDate, p_factors: p.factors });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["night-metrics"] }),

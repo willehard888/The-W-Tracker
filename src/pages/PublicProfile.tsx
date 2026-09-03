@@ -6,7 +6,7 @@ import ApexBadge from "@/components/ApexBadge";
 import StatusNameplate from "@/components/StatusNameplate";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import ImageLightbox from "@/components/ImageLightbox";
-import { getTierConfig, getTierUsernameClass, formatTier } from "@/lib/status-tiers";
+import { getTierConfig, getTierUsernameClass, formatTier, type StatusTier } from "@/lib/status-tiers";
 import { Crown, Trophy, ChevronLeft, ExternalLink, Lock, Heart, MessageCircle, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
@@ -31,7 +31,7 @@ const PublicProfile = () => {
     display_name: string | null;
     avatar_url: string | null;
     status_tier: string | null;
-    tier_division: string | null;
+    tier_division: number | null;
     level: number | null;
     xp: number | null;
     streak: number | null;
@@ -46,9 +46,9 @@ const PublicProfile = () => {
     queryKey: ["public-profile", username],
     queryFn: async () => {
       if (!username) return null;
-      const { data } = await supabase.rpc("get_public_profile" as never, {
+      const { data } = await supabase.rpc("get_public_profile", {
         p_username: username,
-      } as never);
+      });
       return (data ?? null) as unknown as PublicProfileBundle | null;
     },
     enabled: !!username,
@@ -111,7 +111,7 @@ const PublicProfile = () => {
   }
 
   const tier = getTierConfig(profile.status_tier || 'recruit');
-  const isApexSubscriber = Boolean((profile as any).is_apex_subscriber);
+  const isApexSubscriber = Boolean(profile.is_apex_subscriber);
 
   return (
     <div className="min-h-[100dvh] relative pb-10">
@@ -225,7 +225,7 @@ const PublicProfile = () => {
           ) : profile.status_tier === 'elite' ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gold/45 bg-gold/5">
               <Crown size={12} className="text-gold" />
-              <span className="text-[11px] font-black text-gold tracking-wider uppercase">{formatTier('elite', (profile as any).tier_division ?? 0)}</span>
+              <span className="text-[11px] font-black text-gold tracking-wider uppercase">{formatTier('elite', profile.tier_division ?? 0)}</span>
             </span>
           ) : null}
           {championHistory && championHistory.wins > 0 && (
@@ -364,7 +364,7 @@ const PublicProfile = () => {
         isVideo={!!lightboxPost?.video_url}
         username={profile.username}
         avatarUrl={profile.avatar_url}
-        tier={(profile.status_tier || "recruit") as any}
+        tier={(profile.status_tier || "recruit") as StatusTier}
         level={profile.level ?? undefined}
         streak={profile.streak ?? undefined}
         likes={lightboxPost?.likes_count}

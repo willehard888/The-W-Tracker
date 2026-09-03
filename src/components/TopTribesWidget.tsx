@@ -26,12 +26,12 @@ const TopTribesWidget = () => {
 
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase.rpc("get_tribe_leaderboard" as any, {
+      const { data, error } = await supabase.rpc("get_tribe_leaderboard", {
         p_period: "weekly",
         p_limit: 5,
       });
       if (!error && data) {
-        const normalized = (data as any[]).map((r) => ({
+        const normalized = data.map((r) => ({
           ...r,
           score: Number(r.score) || 0,
           rank: Number(r.rank) || 0,

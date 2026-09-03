@@ -50,7 +50,7 @@ export const useDailyPulse = (
         .eq("user_id", userId)
         .maybeSingle();
 
-      const snap = (profileRow as any)?.last_rank_snapshot as SnapshotShape | null;
+      const snap = profileRow?.last_rank_snapshot as SnapshotShape | null;
       const now = new Date();
       const todayKey = now.toISOString().slice(0, 10);
       const snapKey = snap?.timestamp ? snap.timestamp.slice(0, 10) : null;
@@ -86,7 +86,7 @@ export const useDailyPulse = (
               rank: currentRank,
               score: currentScore,
               timestamp: now.toISOString(),
-            } as any,
+            },
           })
           .eq("user_id", userId);
       }

@@ -17,8 +17,11 @@ const ProgramCard = () => {
 
   const todaySession = (() => {
     if (!program) return null;
-    const week = (program.plan_json as any)?.weeks?.[currentWeek - 1];
-    const day = week?.days?.[todayDayIndex];
+    const week = program.plan_json?.weeks?.[currentWeek - 1];
+    // Older generated plans used `session_name` where the type says `focus`.
+    const day = week?.days?.[todayDayIndex] as
+      | (typeof week.days[number] & { session_name?: string; rest?: boolean })
+      | undefined;
     if (!day) return null;
     return {
       focus: day.focus ?? day.session_name ?? "Today's session",

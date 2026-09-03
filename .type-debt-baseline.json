@@ -1,4 +1,5 @@
 {
-  "strictErrors": 41,
-  "asAny": 208
+  "strictErrors": 0,
+  "asAny": 33,
+  "asNever": 3
 }

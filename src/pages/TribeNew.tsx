@@ -42,7 +42,7 @@ const TribeNew = () => {
         .select("id")
         .ilike("name", trimmed)
         .limit(1);
-      const taken = ((data as any) ?? []).length > 0;
+      const taken = (data ?? []).length > 0;
       setNameStatus(taken ? "taken" : "available");
     }, 400);
     return () => clearTimeout(t);
@@ -60,11 +60,12 @@ const TribeNew = () => {
     }
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.rpc("create_tribe" as any, {
+      // p_description/p_cover_url are optional with SQL default null — omitting
+      // them (undefined) is equivalent to the explicit nulls sent before.
+      const { data, error } = await supabase.rpc("create_tribe", {
         p_name: trimmed,
-        p_description: description.trim() || null,
+        p_description: description.trim() || undefined,
         p_visibility: visibility,
-        p_cover_url: null,
       });
       if (error) {
         toast.error(friendlyError(error));
@@ -73,7 +74,7 @@ const TribeNew = () => {
       // Best-effort activity tag — never block navigation on it.
       // (supabase.rpc returns errors, it doesn't throw — check explicitly.)
       if (activity && data) {
-        const { error: actErr } = await supabase.rpc("set_tribe_activity" as any, {
+        const { error: actErr } = await supabase.rpc("set_tribe_activity", {
           p_tribe: data,
           p_activity: activity,
         });

@@ -108,7 +108,7 @@ export function useTribeFireReactor(memberIds: string[]): ReactorState {
       .select("user_id, username, streak")
       .in("user_id", memberIds)
       .then(({ data }) => {
-        ((data as any) ?? []).forEach((p: any) => {
+        (data ?? []).forEach((p) => {
           if (!p?.user_id) return;
           if (p.username) usernameCache.current.set(p.user_id, p.username);
           knownStreaks.current.set(p.user_id, Number(p.streak ?? 0));

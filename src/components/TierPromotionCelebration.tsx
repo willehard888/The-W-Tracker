@@ -23,7 +23,7 @@ const TierPromotionCelebration = () => {
 
   useEffect(() => {
     if (!profile?.status_tier || !user?.id) return;
-    const division = (profile as any).tier_division ?? 0;
+    const division = profile.tier_division ?? 0;
     const current = ladderRankValue(profile.status_tier, division);
     const key = `${STORAGE_KEY}_${user.id}`;
     const storedRaw = localStorage.getItem(key);
@@ -43,11 +43,11 @@ const TierPromotionCelebration = () => {
       localStorage.setItem(key, String(current));
     }
     // On a dip we keep the max (no punish, no re-celebrate) — do nothing.
-  }, [profile?.status_tier, (profile as any)?.tier_division, user?.id]);
+  }, [profile?.status_tier, profile?.tier_division, user?.id]);
 
   if (!profile) return null;
   const tier = profile.status_tier || 'recruit';
-  const division = (profile as any).tier_division ?? 0;
+  const division = profile.tier_division ?? 0;
   const config = getTierConfig(tier);
   const isLegend = tier === 'legend';
   const isApex = tier === 'apex';

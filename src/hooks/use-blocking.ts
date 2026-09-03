@@ -30,7 +30,7 @@ export function useBlockActions() {
 
   const block = useCallback(async (targetId: string, username?: string) => {
     if (!user || targetId === user.id) return;
-    const { error } = await supabase.rpc("block_user" as never, { p_target: targetId } as never);
+    const { error } = await supabase.rpc("block_user", { p_target: targetId });
     if (error) { toast.error("Couldn't block — try again."); return; }
     hapticNotification("success");
     toast.success(username ? `@${username} blocked` : "User blocked", {
@@ -40,7 +40,7 @@ export function useBlockActions() {
   }, [user, refreshAfterBlockChange]);
 
   const unblock = useCallback(async (targetId: string, username?: string) => {
-    const { error } = await supabase.rpc("unblock_user" as never, { p_target: targetId } as never);
+    const { error } = await supabase.rpc("unblock_user", { p_target: targetId });
     if (error) { toast.error("Couldn't unblock — try again."); return; }
     toast.success(username ? `@${username} unblocked` : "User unblocked");
     refreshAfterBlockChange();
@@ -52,12 +52,12 @@ export function useBlockActions() {
     reportedUserId: string,
     reason = "Reported by user",
   ) => {
-    const { error } = await supabase.rpc("report_content" as never, {
+    const { error } = await supabase.rpc("report_content", {
       p_content_type: contentType,
       p_content_id: contentId,
       p_reported_user: reportedUserId,
       p_reason: reason,
-    } as never);
+    });
     if (error) { toast.error("Couldn't send report — try again."); return; }
     hapticNotification("success");
     toast.success("Report sent", { description: "Our team reviews reports — usually within 24 hours." });

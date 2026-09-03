@@ -136,7 +136,7 @@ const Paywall = () => {
     );
   }
 
-  const creditsUntilRaw: string | null = (profile as any)?.membership_credits_until ?? null;
+  const creditsUntilRaw: string | null = profile?.membership_credits_until ?? null;
   const creditsActive = creditsUntilRaw && new Date(creditsUntilRaw).getTime() > Date.now();
   const creditsUntilLabel = creditsActive
     ? new Date(creditsUntilRaw as string).toLocaleDateString(undefined, {

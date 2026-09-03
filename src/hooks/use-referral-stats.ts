@@ -60,20 +60,20 @@ export function useReferralStats(userId?: string) {
 
       const rows = refs ?? [];
       const signupCount = rows.length;
-      const converted = rows.filter((r: any) => r.converted);
+      const converted = rows.filter((r) => r.converted);
       const convertedCount = converted.length;
       const convertedThisMonth = converted.filter(
-        (r: any) => r.converted_at && new Date(r.converted_at) >= monthStart,
+        (r) => r.converted_at && new Date(r.converted_at) >= monthStart,
       ).length;
 
       const milestonesHit: string[] = Array.isArray(
-        (profile as any)?.referral_milestones_hit,
+        profile?.referral_milestones_hit,
       )
-        ? ((profile as any).referral_milestones_hit as any[]).map(String)
+        ? profile.referral_milestones_hit.map(String)
         : [];
 
-      const apexCreditsUntil = (profile as any)?.apex_credits_until ?? null;
-      const legendPinned = !!(profile as any)?.legend_pinned;
+      const apexCreditsUntil = profile?.apex_credits_until ?? null;
+      const legendPinned = !!profile?.legend_pinned;
       const daysAsApex = apexCreditsUntil
         ? Math.max(0, Math.ceil((new Date(apexCreditsUntil).getTime() - Date.now()) / 86_400_000))
         : 0;

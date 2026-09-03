@@ -49,10 +49,10 @@ export const useLiveRivals = (userId?: string, myScore?: number) => {
       ]);
 
       const above = aboveRes.data
-        ? { ...(aboveRes.data as any), delta: Math.abs((aboveRes.data as any).rank_score - myScore) }
+        ? { ...aboveRes.data, delta: Math.abs(aboveRes.data.rank_score - myScore) }
         : null;
       const below = belowRes.data
-        ? { ...(belowRes.data as any), delta: Math.abs(myScore - (belowRes.data as any).rank_score) }
+        ? { ...belowRes.data, delta: Math.abs(myScore - belowRes.data.rank_score) }
         : null;
 
       return { above, below };

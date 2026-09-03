@@ -139,7 +139,7 @@ const Index = () => {
   const { data: rankData } = useMyRank(profile?.user_id);
   const tierRisk = useTierRisk({
     tier: profile?.status_tier || "recruit",
-    rankScore: Number((profile as any)?.rank_score) || 0,
+    rankScore: Number(profile?.rank_score) || 0,
     streak: profile?.streak || 0,
     lastCheckinAt: lastCheckin?.checked_in_at,
   });
@@ -148,7 +148,7 @@ const Index = () => {
   const pulse = useDailyPulse(
     profile?.user_id || "",
     rankData?.rank,            // undefined until loaded — do NOT coerce to 0 (poisons the snapshot)
-    Number((profile as any)?.rank_score) || 0,
+    Number(profile?.rank_score) || 0,
     rankData?.totalUsers,
   );
 

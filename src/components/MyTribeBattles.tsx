@@ -38,7 +38,7 @@ const MyTribeBattles = () => {
 
     // Best-effort auto-resolve expired battles
     try {
-      await supabase.rpc("auto_resolve_expired_tribe_battles" as any);
+      await supabase.rpc("auto_resolve_expired_tribe_battles");
     } catch {
       // ignore
     }
@@ -50,7 +50,7 @@ const MyTribeBattles = () => {
       .eq("user_id", profile.user_id)
       .eq("status", "active");
 
-    const tribeIds: string[] = ((mems as any) ?? []).map((m: any) => m.tribe_id);
+    const tribeIds: string[] = (mems ?? []).map((m) => m.tribe_id);
     if (tribeIds.length === 0) {
       setTribes([]);
       setBattles([]);
@@ -62,7 +62,7 @@ const MyTribeBattles = () => {
       .from("tribes")
       .select("id, name")
       .in("id", tribeIds);
-    setTribes(((tribesData as any) ?? []) as MyTribe[]);
+    setTribes(tribesData ?? []);
 
     // Fetch battles where any of my tribes participate
     const orFilter = tribeIds
@@ -78,7 +78,7 @@ const MyTribeBattles = () => {
       .order("created_at", { ascending: false })
       .limit(20);
 
-    const raw: TribeBattleRow[] = ((battleData as any) ?? []) as any[];
+    const raw: TribeBattleRow[] = (battleData ?? []) as TribeBattleRow[];
     const allTribeIds = Array.from(
       new Set(raw.flatMap((b) => [b.challenger_tribe_id, b.opponent_tribe_id])),
     );
@@ -88,7 +88,7 @@ const MyTribeBattles = () => {
         .select("id, name")
         .in("id", allTribeIds);
       const nameMap = new Map<string, string>(
-        ((nameRows as any) ?? []).map((t: any) => [t.id as string, t.name as string]),
+        (nameRows ?? []).map((t) => [t.id, t.name]),
       );
       raw.forEach((b) => {
         b.challenger_name = nameMap.get(b.challenger_tribe_id);

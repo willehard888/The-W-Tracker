@@ -190,7 +190,7 @@ export default function AdminMetrics() {
     queryKey: ["admin-metrics-overview"],
     enabled: !!isAdmin,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_metrics_overview" as never);
+      const { data, error } = await supabase.rpc("admin_metrics_overview");
       if (error) throw error;
       return (data ?? {}) as unknown as Overview;
     },
@@ -200,7 +200,7 @@ export default function AdminMetrics() {
     queryKey: ["admin-retention-cohorts"],
     enabled: !!isAdmin,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_retention_cohorts" as never, { p_weeks: 8 } as never);
+      const { data, error } = await supabase.rpc("admin_retention_cohorts", { p_weeks: 8 });
       if (error) throw error;
       return (data ?? []) as unknown as CohortRow[];
     },
@@ -210,7 +210,7 @@ export default function AdminMetrics() {
     queryKey: ["admin-funnel"],
     enabled: !!isAdmin,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_funnel" as never, { p_days: 30 } as never);
+      const { data, error } = await supabase.rpc("admin_funnel", { p_days: 30 });
       if (error) throw error;
       return data as unknown as Funnel;
     },
@@ -220,7 +220,7 @@ export default function AdminMetrics() {
     queryKey: ["admin-virality"],
     enabled: !!isAdmin,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_virality" as never, { p_days: 30 } as never);
+      const { data, error } = await supabase.rpc("admin_virality", { p_days: 30 });
       if (error) throw error;
       return data as unknown as Virality;
     },
@@ -230,7 +230,7 @@ export default function AdminMetrics() {
     queryKey: ["admin-waitlist"],
     enabled: !!isAdmin,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_waitlist" as never);
+      const { data, error } = await supabase.rpc("admin_waitlist");
       if (error) throw error;
       return data as unknown as WaitlistData;
     },

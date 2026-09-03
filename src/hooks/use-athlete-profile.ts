@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { withNetworkRetry, isTransientNetworkError } from "@/lib/retry";
 
@@ -84,7 +85,7 @@ export const useAthleteProfile = () => {
       // hobbies / mental_health_focus etc. that may not exist on Lovable-
       // imported rows, so we backfill empty arrays here rather than crashing
       // at every .length / .map / .join callsite.
-      const raw = data as any;
+      const raw = data as unknown as AthleteProfile;
       const normalized: AthleteProfile = {
         ...raw,
         training_days_pref: Array.isArray(raw.training_days_pref) ? raw.training_days_pref : [],
@@ -110,14 +111,14 @@ export const useAthleteProfile = () => {
       // "TypeError: Load failed" on flaky cellular — retry those (the draft is
       // preserved either way); real errors (RLS/validation) rethrow at once.
       return await withNetworkRetry(async () => {
-        const { data, error } = await supabase.rpc("upsert_athlete_profile" as any, {
-          _patch: enriched as any,
+        const { data, error } = await supabase.rpc("upsert_athlete_profile", {
+          _patch: enriched as unknown as Json,
         });
         if (error) {
           if (isTransientNetworkError(error.message)) throw new Error(error.message);
           throw error;
         }
-        return data as AthleteProfile;
+        return data as unknown as AthleteProfile;
       });
     },
     onSuccess: () => {

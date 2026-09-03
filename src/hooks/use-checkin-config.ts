@@ -10,8 +10,8 @@ import { DEFAULT_CHECKIN_KEYS } from "@/lib/checkin-habits";
  * The user's personalized check-in habit selection.
  *
  * Reads profiles.checkin_habits (NULL/empty → the classic default set).
- * Writes via the set_checkin_habits SECURITY DEFINER RPC. Cast as any until
- * the Supabase types are regenerated after the migration runs.
+ * Writes via the set_checkin_habits SECURITY DEFINER RPC.
+ *
  */
 export const useCheckinConfig = () => {
   const { user } = useAuth();
@@ -29,7 +29,7 @@ export const useCheckinConfig = () => {
         .select("checkin_habits")
         .eq("user_id", user.id)
         .maybeSingle();
-      const saved = (data as any)?.checkin_habits as string[] | null | undefined;
+      const saved = data?.checkin_habits;
       const customized = !!(saved && saved.length);
       return { keys: customized ? saved! : DEFAULT_CHECKIN_KEYS, customized };
     },

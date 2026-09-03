@@ -290,6 +290,9 @@ const AppRoutes = () => {
           <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />
           <Route path="/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
           <Route path="/recipes" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
+          {/* A recipe is a route, not local state — so the coach and the Vault
+              can link to a specific dish, and Back actually goes back. */}
+          <Route path="/recipes/:id" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
           <Route path="/exercises" element={<ProtectedRoute><Exercises /></ProtectedRoute>} />
           <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
           <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />

@@ -1,34 +1,38 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
-  ArrowLeft, Clock, Snowflake, Refrigerator,
-  ChevronRight, Utensils, Layers, Leaf, Maximize2,
+  ArrowLeft, Clock, Snowflake, Refrigerator, Search, X, Utensils, Layers,
 } from "lucide-react";
-import PosterZoom from "@/components/recipes/PosterZoom";
-import { recipeThumb, recipePoster, recipeSquare } from "@/lib/recipe-images";
+import { recipeThumb, recipeSquare } from "@/lib/recipe-images";
 import { fmtQty } from "@/lib/recipe-scaling";
 import { Button } from "@/components/ui/button";
 import { RECIPES, type Recipe } from "@/data/recipes";
 import { cn } from "@/lib/utils";
-import { SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 
 const BATCH_OPTIONS = [1, 2, 3, 4, 5] as const;
 
-// Recipe list sections — savoury mains first, then breakfast & sweet.
-const SECTIONS = [
-  { key: "main", label: "Mains" },
-  { key: "sweet", label: "Breakfast & sweet" },
-] as const;
+/**
+ * The photo IS the card now.
+ *
+ * The old design led with a cream-background recipe POSTER that carried every
+ * ingredient and step as pixels — unreadable at phone size, which is why the
+ * detail view offered a pinch-to-zoom. All of that content is real text on this
+ * screen now, so the image only has to do what an image is good at: make you
+ * want to cook the thing.
+ */
 
-// Recipe images are bundled + pre-optimized locally — see src/lib/recipe-images.ts.
-// (Supabase image transforms aren't enabled on this plan, so the storage
-// originals were ~2MB PNGs; the bundled JPEGs load ~30× faster from the CDN.)
-
-const RecipeImage = ({ id, className }: { id: string; className?: string }) => {
-  const src = recipePoster(id);
+const RecipePhoto = ({ id, className }: { id: string; className?: string }) => {
   const [failed, setFailed] = useState(false);
-  if (!src || failed) return null;
+  const src = recipeSquare(id) ?? recipeThumb(id);
+  if (!src || failed) {
+    return (
+      <div className={cn("flex items-center justify-center bg-secondary/50", className)}>
+        <Utensils size={22} className="text-gold/50" />
+      </div>
+    );
+  }
   return (
     <img
       src={src}
@@ -36,61 +40,94 @@ const RecipeImage = ({ id, className }: { id: string; className?: string }) => {
       loading="lazy"
       decoding="async"
       onError={() => setFailed(true)}
-      className={className}
+      className={cn("object-cover", className)}
     />
   );
 };
 
+/** Protein leads, the rest recede — the whole library is built on that promise. */
+const MacroRow = ({ recipe }: { recipe: Recipe }) => (
+  <div className="flex items-stretch gap-3">
+    <div className="rounded-2xl border border-gold/30 bg-gold/[0.07] px-4 py-3 shrink-0">
+      <p className="font-display text-[30px] font-black leading-none text-gold tabular-nums">
+        {recipe.nutrition.protein}<span className="text-[17px]">g</span>
+      </p>
+      <p className="eyebrow text-muted-foreground mt-1.5">Protein</p>
+    </div>
+    <div className="flex-1 grid grid-cols-3 gap-x-3 gap-y-2 content-center">
+      {[
+        { v: `${recipe.nutrition.calories}`, l: "kcal" },
+        { v: `${recipe.nutrition.carbs}g`, l: "carbs" },
+        { v: `${recipe.nutrition.fat}g`, l: "fat" },
+      ].map((m) => (
+        <div key={m.l}>
+          <p className="text-[15px] font-black leading-none tabular-nums">{m.v}</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-1">{m.l}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
-const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }) => {
+const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
+  const navigate = useNavigate();
   const [batch, setBatch] = useState(1);
-  const [zoomed, setZoomed] = useState(false);
-  const posterUrl = recipePoster(recipe.id) ?? "";
+  const totalMin = recipe.prepMin + recipe.cookMin;
 
   return (
     <div className="flex flex-col">
-      <div className="page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" onClick={onBack} aria-label="Back">
+      {/* Photo runs edge to edge behind a floating back button — no header bar
+          competing with it for the top of a phone screen. */}
+      <div className="relative">
+        <RecipePhoto id={recipe.id} className="w-full aspect-[4/3]" />
+        <div
+          aria-hidden
+          className="absolute inset-x-0 bottom-0 h-32 pointer-events-none"
+          style={{ background: "linear-gradient(to top, hsl(var(--background)), transparent)" }}
+        />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/recipes")}
+          aria-label="Back to recipes"
+          className="absolute left-3 top-3 rounded-full bg-background/70 backdrop-blur-sm"
+        >
           <ArrowLeft size={18} />
         </Button>
-        <h1 className="font-display text-base font-black tracking-tight truncate">{recipe.title}</h1>
       </div>
 
-      <div className="px-4 pt-4 pb-28 space-y-3">
-        {/* The poster IS the recipe. Clean, flat frame; tap to read it large. */}
-        <button
-          type="button"
-          onClick={() => setZoomed(true)}
-          className="block w-full rounded-2xl overflow-hidden border border-border/60 relative aspect-[2/3] bg-card active:scale-[0.99] transition-transform"
-        >
-          {/* Fallback (shown only if the poster image is missing) */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
-            <Utensils size={32} className="text-gold" />
-            <h2 className="font-display text-2xl font-black tracking-tight leading-tight text-foreground">{recipe.title}</h2>
-            <p className="text-[12px] text-muted-foreground leading-snug">{recipe.blurb}</p>
+      <div className="px-4 pb-28 -mt-6 relative space-y-5">
+        <div>
+          <h1 className="font-display text-[26px] font-black tracking-tight leading-tight">{recipe.title}</h1>
+          <p className="text-[13px] text-muted-foreground leading-snug mt-1.5">{recipe.blurb}</p>
+          <div className="flex flex-wrap items-center gap-1.5 mt-3">
+            {recipe.tags.map((t) => (
+              <span key={t} className="rounded-full border border-border/60 bg-secondary/40 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                {t}
+              </span>
+            ))}
+            <span className="inline-flex items-center gap-1 text-[12px] font-bold text-muted-foreground ml-auto">
+              <Clock size={12} /> {totalMin} min
+            </span>
           </div>
-          <RecipeImage id={recipe.id} className="absolute inset-0 h-full w-full object-cover" />
-          <span className="absolute bottom-2.5 right-2.5 inline-flex items-center gap-1 rounded-md bg-black/45 backdrop-blur-sm px-2 py-1 text-[11px] font-semibold tracking-wide text-white/85">
-            <Maximize2 size={12} /> Enlarge
-          </span>
-        </button>
+        </div>
 
-        {/* MEAL PREP — batch scaler (the one thing the poster can't do) */}
+        <MacroRow recipe={recipe} />
+
         <div className="surface-card p-4">
           <div className="flex items-center gap-2 mb-2.5">
             <Layers size={12} className="text-gold" />
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/70">Meal prep — cook in batch</p>
+            <p className="eyebrow text-foreground/70">Cook in batch</p>
           </div>
-          <div className="flex gap-1.5">
+          <div className={SEGMENT_TRACK}>
             {BATCH_OPTIONS.map((b) => (
               <button
                 key={b}
                 onClick={() => { hapticSelection(); setBatch(b); }}
+                aria-pressed={batch === b}
                 className={cn(
-                  "flex-1 rounded-lg py-2.5 text-[13px] font-black tabular-nums transition-all active:scale-[0.97] border",
-                  batch === b
-                    ? cn(SEGMENT_ACTIVE, "border-transparent")
-                    : cn("bg-secondary/40 border-border/50", SEGMENT_IDLE),
+                  "flex-1 h-11 rounded-lg text-[13px] font-black tabular-nums transition-all active:scale-[0.97]",
+                  batch === b ? SEGMENT_ACTIVE : SEGMENT_IDLE,
                 )}
               >
                 {b}×
@@ -99,46 +136,59 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
           </div>
           <p className="text-[12px] text-muted-foreground mt-2.5 leading-snug">
             {batch === 1
-              ? "Single serving — full quantities are on the poster. Tap 2×–5× for a batch shopping list."
-              : `Shopping list scaled for ${batch} meals — cook once, eat all week.`}
+              ? "Quantities below are for one serving."
+              : `Scaled for ${batch} meals — cook once, eat all week.`}
           </p>
         </div>
 
-        {/* Scaled shopping list — only when batching (poster covers the 1× case) */}
-        {batch > 1 && (
-          <div className="surface-card p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Leaf size={13} className="text-gold" />
-              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/70">Shopping list</p>
-              <span className="ml-auto text-[12px] font-black text-gold tabular-nums">{batch}×</span>
-            </div>
-            <div className="space-y-3">
-              {recipe.groups.map((g) => (
-                <div key={g.title}>
-                  <p className="text-[11px] font-black uppercase tracking-wider text-foreground/60 mb-1.5">{g.title}</p>
-                  <ul className="space-y-1">
-                    {g.items.map((it, i) => (
-                      <li key={i} className="flex items-baseline gap-2 text-[12px]">
-                        <span className="h-1 w-1 rounded-full bg-gold/50 shrink-0 mt-1.5" />
-                        <span className="text-foreground/85">
-                          {it.qty != null && (
-                            <b className="text-gold tabular-nums">{fmtQty(it.qty, batch)}{it.unit ? ` ${it.unit}` : ""} </b>
-                          )}
-                          {it.item}
-                          {it.note && <span className="text-muted-foreground/60"> ({it.note})</span>}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+        <section>
+          <p className="eyebrow text-gold/85 mb-3">Ingredients</p>
+          <div className="space-y-4">
+            {recipe.groups.map((g) => (
+              <div key={g.title}>
+                <p className="text-[11px] font-black uppercase tracking-wider text-muted-foreground mb-2">{g.title}</p>
+                <ul className="space-y-1.5">
+                  {g.items.map((it, i) => (
+                    <li key={i} className="flex items-baseline gap-2 text-[14px] leading-snug">
+                      <span className="h-1 w-1 rounded-full bg-gold/50 shrink-0 mt-2" />
+                      <span className="text-foreground/90">
+                        {it.qty != null && (
+                          <b className="text-gold tabular-nums">{fmtQty(it.qty, batch)}{it.unit ? ` ${it.unit}` : ""} </b>
+                        )}
+                        {it.item}
+                        {it.note && <span className="text-muted-foreground/70"> ({it.note})</span>}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-        )}
+        </section>
 
-        {/* Storage / reheat — same calm palette (no competing accent colour) */}
-        <div className="surface-card p-4">
-          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/70 mb-3">Storage & reheat</p>
+        <section>
+          <p className="eyebrow text-gold/85 mb-3">Method</p>
+          <div className="space-y-5">
+            {recipe.method.map((phase, pi) => (
+              <div key={phase.title} className="flex gap-3">
+                <span className="shrink-0 h-7 w-7 rounded-full bg-gold text-[13px] font-black text-primary-foreground flex items-center justify-center tabular-nums">
+                  {pi + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-black uppercase tracking-wider mb-1.5">{phase.title}</p>
+                  <ol className="space-y-1.5">
+                    {phase.steps.map((s, i) => (
+                      <li key={i} className="text-[14px] leading-relaxed text-muted-foreground">{s}</li>
+                    ))}
+                  </ol>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="surface-card surface-card-quiet p-4">
+          <p className="eyebrow text-foreground/70 mb-3">Storage &amp; reheat</p>
           <div className="flex gap-2 mb-3">
             <div className="flex-1 rounded-lg bg-secondary/30 border border-border/50 p-2.5 flex items-center gap-2">
               <Refrigerator size={15} className="text-gold/80 shrink-0" />
@@ -157,35 +207,42 @@ const RecipeDetail = ({ recipe, onBack }: { recipe: Recipe; onBack: () => void }
               </div>
             )}
           </div>
-          <p className="text-[12px] text-foreground/85 leading-snug mb-2">
+          <p className="text-[13px] text-foreground/85 leading-snug mb-2">
             <span className="font-bold text-gold">Reheat:</span> {recipe.mealPrep.reheat}
           </p>
           <ul className="space-y-1">
             {recipe.mealPrep.tips.map((t, i) => (
-              <li key={i} className="text-[12px] text-muted-foreground leading-snug flex gap-1.5">
+              <li key={i} className="text-[13px] text-muted-foreground leading-snug flex gap-1.5">
                 <span className="text-gold/50 shrink-0">•</span> {t}
               </li>
             ))}
           </ul>
-        </div>
+        </section>
       </div>
-
-      {/* Full-screen poster zoom — pinch / double-tap / +- buttons to read the
-          small poster text; close is always reachable. */}
-      {zoomed && (
-        <PosterZoom url={posterUrl} alt={recipe.title} onClose={() => setZoomed(false)} />
-      )}
     </div>
   );
 };
 
-const Recipes = () => {
-  const navigate = useNavigate();
-  const [selected, setSelected] = useState<Recipe | null>(null);
+/** Every tag actually present in the data — never a hand-kept list. */
+const ALL_TAGS = [...new Set(RECIPES.flatMap((r) => r.tags))].sort();
 
-  if (selected) {
-    return <RecipeDetail recipe={selected} onBack={() => setSelected(null)} />;
-  }
+const RecipeList = () => {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+  const [tag, setTag] = useState<string | null>(null);
+
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return RECIPES.filter((r) => {
+      if (tag && !r.tags.includes(tag)) return false;
+      if (!q) return true;
+      return (
+        r.title.toLowerCase().includes(q) ||
+        r.subtitle.toLowerCase().includes(q) ||
+        r.groups.some((g) => g.items.some((it) => it.item.toLowerCase().includes(q)))
+      );
+    });
+  }, [query, tag]);
 
   return (
     <div className="flex flex-col">
@@ -196,65 +253,84 @@ const Recipes = () => {
         <h1 className="font-display text-base font-black tracking-tight">Meal-prep recipes</h1>
       </div>
 
-      <div className="px-4 pt-4 pb-28 space-y-6">
-        <p className="text-[12px] text-muted-foreground leading-snug px-1">
-          Real-food, high-protein recipes built to batch. Tap any recipe, pick how many meals,
-          and the ingredients scale automatically.
+      <div className="px-4 pt-3 pb-28">
+        {/* Search covers ingredients too — "what can I make with salmon" is the
+            question people actually arrive with. */}
+        <div className="relative">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search recipes or ingredients"
+            aria-label="Search recipes or ingredients"
+            className="w-full surface-inset rounded-xl h-11 pl-9 pr-9 text-[14px] outline-none focus:border-gold/50 transition-colors"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery("")}
+              aria-label="Clear search"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-9 flex items-center justify-center text-muted-foreground"
+            >
+              <X size={15} />
+            </button>
+          )}
+        </div>
+
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-2.5 -mx-4 px-4 pb-0.5">
+          {ALL_TAGS.map((t) => (
+            <Button
+              key={t}
+              size="pill"
+              variant={tag === t ? "gold-outline" : "outline"}
+              onClick={() => { hapticSelection(); setTag(tag === t ? null : t); }}
+              aria-pressed={tag === t}
+              className="shrink-0"
+            >
+              {t}
+            </Button>
+          ))}
+        </div>
+
+        <p className="text-[12px] text-muted-foreground mt-3 mb-2.5 px-0.5 tabular-nums">
+          {results.length} {results.length === 1 ? "recipe" : "recipes"}
         </p>
 
-        {SECTIONS.map((sec) => {
-          const items = RECIPES.filter((r) =>
-            sec.key === "sweet" ? r.category === "sweet" : r.category !== "sweet",
-          );
-          if (items.length === 0) return null;
-          return (
-            <div key={sec.key}>
-              <div className="flex items-baseline gap-2 mb-2.5 px-1">
-                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/80">{sec.label}</p>
-                <span className="text-[11px] font-bold text-muted-foreground/50 tabular-nums">{items.length}</span>
-              </div>
-              <div className="space-y-3">
-                {items.map((r) => (
-                  <button
-                    key={r.id}
-                    onClick={() => { hapticImpact("light"); setSelected(r); }}
-                    className="w-full text-left rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.05] via-card/95 to-card p-4 active:scale-[0.99] transition-transform"
-                  >
-                    <div className="flex items-start gap-3">
-                      {/* Thumbnail: a DEDICATED square food crop (cut from the
-                          branded card's photo region at build time) — the old
-                          CSS pan/zoom over the full 2:3 card showed an awkward
-                          off-center slice. Gold gradient + icon = missing-image
-                          fallback. */}
-                      <div className="h-16 w-16 rounded-xl overflow-hidden bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 relative border border-border/40">
-                        <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} />
-                        <div
-                          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                          style={{
-                            backgroundImage: `url(${recipeSquare(r.id) ?? recipeThumb(r.id)})`,
-                          }}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-display text-[15px] font-black leading-tight">{r.title}</p>
-                        <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">{r.subtitle}</p>
-                        <div className="flex items-center gap-3 mt-2 text-[12px] font-bold text-muted-foreground">
-                          <span className="text-gold tabular-nums">{r.nutrition.calories} kcal</span>
-                          <span className="tabular-nums">{r.nutrition.protein}g protein</span>
-                          <span className="inline-flex items-center gap-0.5"><Clock size={11} /> {r.prepMin + r.cookMin}m</span>
-                        </div>
-                      </div>
-                      <ChevronRight size={16} className="text-gold/60 shrink-0 mt-1" />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          );
-        })}
+        {results.length === 0 ? (
+          <div className="text-center py-14">
+            <Utensils size={26} className="text-gold/40 mx-auto mb-3" />
+            <p className="text-[14px] font-bold">Nothing matches that</p>
+            <p className="text-[12px] text-muted-foreground mt-1">Try a different ingredient, or clear the filter.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {results.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => { hapticImpact("light"); navigate(`/recipes/${r.id}`); }}
+                className="text-left rounded-2xl overflow-hidden border border-border/60 bg-card active:scale-[0.98] transition-transform"
+              >
+                <RecipePhoto id={r.id} className="w-full aspect-square" />
+                <div className="p-2.5">
+                  <p className="font-display text-[13px] font-black leading-tight line-clamp-2">{r.title}</p>
+                  <div className="flex items-center gap-2 mt-1.5 text-[11px] font-bold">
+                    <span className="text-gold tabular-nums">{r.nutrition.protein}g protein</span>
+                    <span className="text-muted-foreground tabular-nums ml-auto">{r.prepMin + r.cookMin}m</span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
+};
+
+const Recipes = () => {
+  const { id } = useParams<{ id: string }>();
+  const recipe = id ? RECIPES.find((r) => r.id === id) : undefined;
+  if (id && !recipe) return <RecipeList />;
+  return recipe ? <RecipeDetail recipe={recipe} /> : <RecipeList />;
 };
 
 export default Recipes;

@@ -157,21 +157,10 @@ const Index = () => {
   // card unlocks at midnight (not 24h after the last check-in).
   const { canCheckin, timeUntilCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
 
-  // First-W guidance — one-shot card for a brand-new user who landed on Home
-  // without checking in (e.g. skipped onboarding). Auto-hides forever once a
-  // check-in exists; dismissable via the same per-user localStorage pattern
-  // as the check-in first-run card.
-  const [firstWDismissed, setFirstWDismissed] = useState(true);
-  useEffect(() => {
-    if (!profile?.user_id) return;
-    try { setFirstWDismissed(!!localStorage.getItem(`w_home_firstw_${profile.user_id}`)); }
-    catch { setFirstWDismissed(false); }
-  }, [profile?.user_id]);
-  const dismissFirstW = () => {
-    setFirstWDismissed(true);
-    try { localStorage.setItem(`w_home_firstw_${profile!.user_id}`, "1"); } catch { /* noop */ }
-  };
-  const showFirstW = !firstWDismissed && !lastCheckin && (profile?.streak ?? 0) === 0;
+  // (First-W card removed — for a brand-new user the Command Deck IS the
+  // first-W experience: "Start your streak. Earn XP. Climb." under the lava
+  // CTA, and the opening line reads "Your first W is one tap away." A separate
+  // dismissable card above it was a third thing competing to be first.)
 
   // Streak-milestone moment — 7/30/100/365 days should FEEL like a win on the
   // screen you open most, not pass silently. Fires once per milestone (guarded
@@ -206,6 +195,26 @@ const Index = () => {
   const tierConfig = getTierConfig(tier);
   const isLegend = tier === "legend";
   const isApex = tier === "apex";
+
+  // Opening beat — the day, stated once. Ritual thesis: Home leads with the
+  // act, framed by today. The line reacts to the day's state so the greeting
+  // is never generic filler.
+  const now = new Date();
+  const weekday = now.toLocaleDateString("en-US", { weekday: "long" });
+  const monthDay = now.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const ritualLine = !canCheckin
+    ? "Today is locked in."
+    : profile.streak > 0
+    ? "Keep the chain alive."
+    : "Your first W is one tap away.";
+
+  // Standing readout — rank is shown only when EARNED and sane (an unranked
+  // recruit once read "#3 of 2"). Same guard as StatusNameplate.
+  const rankSane =
+    rankData?.hasRank === true &&
+    (rankData.rank ?? 0) > 0 &&
+    (rankData.totalUsers ?? 0) > 0 &&
+    (rankData.rank ?? 0) <= (rankData.totalUsers ?? 0);
 
   // Tier-reactive page-level aura — softer, wider falloff
   const pageAura = isLegend
@@ -255,130 +264,19 @@ const Index = () => {
         }}
       />
 
-      {/* STATUS STRIP — earned tier + rank + today's climb. The daily "worth it"
-          flex, and it renders the rank delta (pulse) that was computed-but-dropped. */}
-      <div className="animate-reveal mb-3 relative z-10">
-        {/* Overlay-button pattern: the strip-wide tap target is a real button
-            UNDER the content (never nested interactives); the W-Index chip is
-            a sibling button that floats above it. */}
-        {/* On the system's quiet surface rather than a hand-rolled one: it was
-            the only container on Home with no elevation at all, which read as
-            unfinished next to the cards below it. `relative` is explicit even
-            though surface-card sets it — the overlay button below is
-            absolutely positioned against this box.
-            The ref is PROGRESSION_INTRO's spotlight target. */}
-        <div
-          ref={progressionTargetRef}
-          className="surface-card surface-card-quiet relative w-full flex items-center gap-3 px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform"
-        >
-          <button
-            onClick={() => navigate("/leaderboard")}
-            aria-label="Open Ranks"
-            className="absolute inset-0 rounded-2xl"
-          />
-          {/* Token-colored tier dot, not the config emoji: ⬛ as the first
-              glyph of every new user's Home read as a missing-glyph bug, and
-              colored-square emoji are the cheapest possible tier iconography.
-              bg-current inherits the tier's own text color. */}
-          <span aria-hidden className={`relative pointer-events-none shrink-0 flex items-center justify-center ${tierConfig.textClass}`}>
-            <span className="h-2.5 w-2.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" />
-          </span>
-          <div className="relative pointer-events-none min-w-0 flex-1">
-            {/* Rank shows only when EARNED and sane (hasRank, rank ≤ total) —
-                an unranked recruit once read "#3 of 2" here. Same guard rule
-                as StatusNameplate. */}
-            {(() => {
-              const sane =
-                rankData?.hasRank === true &&
-                (rankData.rank ?? 0) > 0 &&
-                (rankData.totalUsers ?? 0) > 0 &&
-                rankData.rank! <= rankData.totalUsers!;
-              return (
-                <>
-                  <p className="text-[13px] font-black leading-tight truncate">
-                    {tierConfig.label}
-                    {sane && (
-                      <span className="text-muted-foreground font-semibold"> · #<AnimatedNumber value={rankData!.rank} duration={700} /></span>
-                    )}
-                  </p>
-                  {/* XP-to-next counts rather than snapping. It's the number
-                      that moves every time the user does the thing the app is
-                      for, and it was the only one on this strip still landing
-                      instantly while the rank beside it animated. */}
-                  <p className="text-[12px] text-muted-foreground leading-tight">
-                    {sane ? (
-                      <>
-                        of {(rankData?.totalUsers ?? 0).toLocaleString()} · Lv {profile.level} ·{" "}
-                        <AnimatedNumber value={Math.max(0, xpToNext - profile.xp)} duration={900} /> XP to Lv {profile.level + 1}
-                      </>
-                    ) : (
-                      "Your climb starts today"
-                    )}
-                  </p>
-                </>
-              );
-            })()}
-          </div>
-          {/* W-Index chip — the flagship number, felt daily. span+role (not a
-              nested <button>) because the whole strip is already a button. */}
-          {liveWhealth?.overall != null && (
-            <button
-              type="button"
-              aria-label="Open your Whealth Index"
-              onClick={() => navigate("/journey")}
-              className="relative shrink-0 inline-flex items-center gap-1 rounded-full bg-gold/10 border border-gold/30 px-2 h-6 text-[11px] font-black text-gold tabular-nums active:scale-95 transition before:absolute before:-inset-2.5 before:content-['']"
-            >
-              <Crown size={12} strokeWidth={2.8} aria-hidden /> {liveWhealth.overall}
-            </button>
-          )}
-          {pulse.hasSnapshot && pulse.rankDelta > 0 ? (
-            <span className="relative pointer-events-none shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 text-[11px] font-black text-teal">
-              <ArrowUp aria-hidden size={11} strokeWidth={3} /> {pulse.rankDelta} today
-            </span>
-          ) : (
-            <ChevronRight size={16} aria-hidden className="relative pointer-events-none text-muted-foreground shrink-0" />
-          )}
-        </div>
-      </div>
+      {/* ── OPENING BEAT — the day, stated once. Type on the page, not a card:
+             the first thing the eye meets is a voice, and the hero below gets
+             air instead of a stat strip crowding it. ── */}
+      <header className="animate-reveal relative z-10 pt-0.5">
+        <p className="eyebrow text-muted-foreground/75">{weekday} · {monthDay}</p>
+        <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight mt-1.5">
+          {ritualLine}
+        </h1>
+      </header>
 
-      {/* FIRST W — one-shot bridge for a new user who hasn't checked in yet */}
-      {showFirstW && (
-        <div className="animate-reveal mb-3 relative z-10">
-          {/* shadow-1: this was the only flat container on Home — zero
-              elevation between the elevated strip and deck read unfinished,
-              on the card every brand-new user sees first. */}
-          <div className="relative rounded-2xl border border-gold/35 bg-gradient-to-r from-gold/10 via-card/60 to-card/60 p-3.5 flex items-center gap-3 shadow-[var(--shadow-1)]">
-            <button
-              type="button"
-              onClick={() => navigate("/checkin")}
-              className="flex items-center gap-3 flex-1 min-w-0 text-left active:scale-[0.99] transition-transform"
-            >
-              <span className="h-9 w-9 rounded-xl gradient-gold flex items-center justify-center shrink-0">
-                <ArrowUp aria-hidden size={16} className="text-primary-foreground rotate-45" />
-              </span>
-              <span className="min-w-0">
-                <span className="block text-sm font-black text-foreground leading-tight">
-                  Your first W is one tap away
-                </span>
-                <span className="block text-xs text-muted-foreground leading-tight mt-0.5">
-                  One 60-second check-in starts the streak.
-                </span>
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={dismissFirstW}
-              aria-label="Dismiss"
-              className="relative h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground/75 hover:text-foreground transition-colors shrink-0 before:absolute before:-inset-2 before:content-['']"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* COMMAND DECK — Streak + Lock Your Day */}
-      <div className="animate-reveal mb-4 relative z-10">
+      {/* ── HERO — the one daily act, framed as the hero with real room above
+             and below. The lava CTA is the screen's single spectacle. ── */}
+      <div className="animate-reveal animate-reveal-delay-1 mt-4 mb-6 relative z-10">
         <CommandDeck
           streak={profile.streak}
           longestStreak={profile.longest_streak}
@@ -389,52 +287,94 @@ const Index = () => {
         />
       </div>
 
-      {/* TIER RISK */}
+      {/* TIER RISK — urgent, sits directly under the act it protects. */}
       {tierRisk.level !== "safe" && (
-        <Reveal className="mb-4 relative z-10" delay={0}>
+        <div className="animate-reveal animate-reveal-delay-2 mb-6 relative z-10">
           <TierRiskBanner risk={tierRisk} />
-        </Reveal>
+        </div>
       )}
 
-      {/* APPLE HEALTH — the ask that makes check-ins verifiable and the coach
-          specific, primed and in the open. It used to happen as a bare iOS
-          permission sheet 3s after this screen mounted, with nothing on screen
-          explaining it. Shown only until connected; the card renders nothing on
-          web/Android, and the full connected state lives on Coach and Profile. */}
+      {/* ── STANDING — where you stand today. A quiet status line, not a metric
+             wall: one row, values inline, W-Index the single gold note. Demoted
+             below the act (ritual leads, standing follows) and hidden entirely
+             until there's something earned to show. Carries PROGRESSION_INTRO. ── */}
+      {(rankSane || liveWhealth?.overall != null || profile.level > 1) && (
+        <div
+          ref={progressionTargetRef}
+          className="animate-reveal animate-reveal-delay-2 relative z-10 mb-6 surface-card surface-card-quiet flex items-center"
+        >
+          <button
+            type="button"
+            onClick={() => navigate("/leaderboard")}
+            aria-label="Open Ranks"
+            className="flex-1 flex items-baseline gap-x-3 gap-y-0.5 flex-wrap px-4 py-3 text-left active:opacity-70 transition-opacity"
+          >
+            {rankSane && (
+              <span className="inline-flex items-baseline gap-1">
+                <span className="font-display font-black text-[17px] tabular-nums leading-none">
+                  #<AnimatedNumber value={rankData!.rank} duration={700} />
+                </span>
+                <span className="text-[11px] text-muted-foreground">of {(rankData?.totalUsers ?? 0).toLocaleString()}</span>
+              </span>
+            )}
+            <span className="inline-flex items-baseline gap-1">
+              <span className="font-display font-black text-[17px] tabular-nums leading-none">Lv {profile.level}</span>
+              <span className="text-[11px] text-muted-foreground">
+                <AnimatedNumber value={Math.max(0, xpToNext - profile.xp)} duration={900} /> XP to go
+              </span>
+            </span>
+          </button>
+          {pulse.hasSnapshot && pulse.rankDelta > 0 && (
+            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 mr-2 text-[11px] font-black text-teal">
+              <ArrowUp aria-hidden size={11} strokeWidth={3} /> {pulse.rankDelta}
+            </span>
+          )}
+          {liveWhealth?.overall != null && (
+            <button
+              type="button"
+              aria-label="Open your Whealth Index"
+              onClick={() => navigate("/journey")}
+              className="shrink-0 flex flex-col items-end pr-4 pl-3 py-3 border-l border-border/40 active:opacity-70 transition-opacity"
+            >
+              <span className="eyebrow text-gold/85 leading-none">W-Index</span>
+              <span className="font-display font-black text-[17px] tabular-nums leading-none text-gold mt-1 inline-flex items-center gap-1">
+                <Crown size={13} strokeWidth={2.8} aria-hidden /> {liveWhealth.overall}
+              </span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* APPLE HEALTH — the ask that makes check-ins verifiable. Native only,
+          until connected; renders nothing on web/Android. */}
       {isNativePlatform() && !healthConnected && (
-        <Reveal className="mb-4 relative z-10" delay={40}>
+        <div className="animate-reveal animate-reveal-delay-3 mb-6 relative z-10">
           <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
             <HealthKitConnectCard onConnected={() => setHealthConnected(true)} />
           </ErrorBoundary>
-        </Reveal>
+        </div>
       )}
 
-      {/* AI COACH — the brain of the app. Elevated right under the daily loop
-          so the coach is present every day (it frames today + answers
-          anything). Content (Vault, recipes) now lives one tap away under More
-          and inside Coach, keeping Today focused on the one job. */}
-      <Reveal className="mb-4 relative z-10" delay={80}>
+      {/* ── COACH — a whisper, not a card. The coach's one line in its own
+             voice; a low quiet band so it reads as a presence, never a second
+             button competing with the hero. ── */}
+      <div className="animate-reveal animate-reveal-delay-3 mb-6 relative z-10">
         <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
           <CoachStrip />
         </ErrorBoundary>
-      </Reveal>
+      </div>
 
-      {/* DAILY INSIGHT — one Inner Work idea per day, deep-links to the Vault
-          lesson. Between coach and content so the mind gets fed daily too. */}
-      <Reveal className="mb-4 relative z-10" delay={120}>
+      {/* ── THE LIBRARY — one zone: the day's thought to read (a pull-quote
+             from the Vault) leading a clean shelf of what the membership
+             unlocks. Two shapes, one grammar — the card-soup is gone. ── */}
+      <div className="animate-reveal animate-reveal-delay-4 mb-6 relative z-10">
         <DailyInsightCard />
-      </Reveal>
+        <div className="mt-3">
+          <LibraryHub />
+        </div>
+      </div>
 
-      {/* THE LIBRARY — one premium hub for everything the membership unlocks
-          (recipes, exercises, Vault). Replaces three stacked same-weight
-          cards; founder feedback: too many buttons, combine with value. */}
-      <Reveal className="mb-4 relative z-10" delay={160}>
-        <LibraryHub />
-      </Reveal>
-      {/* SECONDARY — Today stays focused: check in, the AI move, daily
-          insight and ONE library card. Invite + badges are one tap away
-          under "More". (The accountability pod card is gone — Tribe is the
-          one group concept.) */}
+      {/* SECONDARY — Today stays focused. Invite + badges one tap under "More". */}
       <MoreSection label="More" className="relative z-10 mt-1 mb-2">
       {/* EARN FREE MEMBERSHIP — referral CTA */}
       <Reveal className="mb-4 relative z-10" delay={0}>

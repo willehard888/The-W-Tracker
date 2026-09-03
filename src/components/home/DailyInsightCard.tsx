@@ -1,14 +1,18 @@
 import { useNavigate } from "react-router-dom";
-import { Sparkles, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { pickDaily } from "@/lib/daily-rotation";
 import { DAILY_INSIGHTS } from "@/data/daily-insights";
 import { hapticImpact } from "@/lib/haptics";
 
 /**
- * One Inner Work insight per day on Home — deterministic rotation (salted so
- * it doesn't move in lockstep with the header quote), deep-linking into the
- * matching Vault lesson. Shown to everyone: non-premium taps land on Vault's
- * paywall redirect, so the card doubles as a conversion teaser.
+ * One Inner Work insight per day — rendered as an editorial pull-quote, not a
+ * card: the day's thought to read, in the display face at reading size, leading
+ * the Library zone below it. Deterministic rotation (salted off the header
+ * quote), deep-links into the matching Vault lesson; shown to everyone, so a
+ * non-premium tap lands on the paywall and the quote doubles as a teaser.
+ *
+ * Type-only (no surface, no gold tile) is deliberate: it breaks the stacked-
+ * card silhouette and gives the "vault" its own voice above the shelf.
  */
 const DailyInsightCard = () => {
   const navigate = useNavigate();
@@ -21,27 +25,17 @@ const DailyInsightCard = () => {
         hapticImpact("light");
         navigate(`/vault?lesson=${insight.lessonSlug}`);
       }}
-      // Quiet tier: a thought to read, not the day's work. It sits below the
-      // check-in and the coach and should read that way.
-      className="w-full text-left surface-card surface-card-quiet p-4 active:scale-[0.99] transition-transform"
+      className="group w-full text-left px-1.5 active:opacity-80 transition-opacity"
     >
-      <div className="relative flex items-start gap-3">
-        <div className="h-9 w-9 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0">
-          <Sparkles aria-hidden size={16} className="text-gold" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="eyebrow text-gold/85 mb-1">Daily insight</p>
-          <p className="text-[13px] font-semibold text-foreground/90 leading-snug">
-            {insight.text}
-          </p>
-          {/* The card is a button with a chevron — "tap to open" is
-              instruction slop on a touch app. */}
-          <p className="text-[12px] font-bold text-muted-foreground mt-1.5">
-            From the Vault
-          </p>
-        </div>
-        <ChevronRight aria-hidden size={16} className="text-muted-foreground shrink-0 mt-1" />
-      </div>
+      {/* Thin gold rule as the quote's anchor — a hairline, not a slab. */}
+      <span aria-hidden className="block h-px w-8 bg-gradient-to-r from-gold/70 to-transparent mb-3" />
+      <p className="font-display text-[18px] leading-[1.35] tracking-tight text-foreground/90">
+        {insight.text}
+      </p>
+      <p className="flex items-center gap-1 eyebrow text-muted-foreground/80 mt-3">
+        From the Vault
+        <ChevronRight aria-hidden size={12} className="text-gold/70 transition-transform group-active:translate-x-0.5" />
+      </p>
     </button>
   );
 };

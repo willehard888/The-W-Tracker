@@ -33,17 +33,22 @@ export const Block = ({
   </div>
 );
 
+// Mirrors the redesigned Home: opening beat (eyebrow + display line), the
+// hero deck, a standing row, the coach whisper, then the library zone.
 export const HomeSkeleton = () => (
-  <div className="px-4 pt-4 pb-8 space-y-3 animate-fade-in">
-    <Block height={172} />
-    <div className="grid grid-cols-3 gap-2">
-      <Block height={84} delay={60} />
-      <Block height={84} delay={100} />
-      <Block height={84} delay={140} />
-    </div>
-    <Block height={120} delay={180} />
-    <Block height={96} delay={220} />
-    <Block height={96} delay={260} />
+  <div className="px-4 pt-3 pb-8 animate-fade-in">
+    {/* Opening beat */}
+    <Block height={12} className="w-24 !rounded-md" />
+    <Block height={28} delay={40} className="w-3/4 mt-2 !rounded-lg" />
+    {/* Hero deck */}
+    <Block height={168} delay={80} className="mt-4 !rounded-3xl" />
+    {/* Standing row */}
+    <Block height={56} delay={140} className="mt-6" />
+    {/* Coach whisper */}
+    <Block height={82} delay={180} className="mt-6" />
+    {/* Library zone: pull-quote + shelf */}
+    <Block height={64} delay={220} className="mt-6 w-11/12" />
+    <Block height={168} delay={260} className="mt-3" />
   </div>
 );
 

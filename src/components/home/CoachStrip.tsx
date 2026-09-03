@@ -69,62 +69,48 @@ const CoachStrip = (_props: CoachStripProps) => {
     "Training, sleep, mind — anything on your mind.";
 
   return (
+    // A whisper, not a card. The coach's own line is the point and leads at
+    // reading size; the big gold glow-tile is gone (accent discipline — gold
+    // belongs to the hero, not to a second stacked card). A quiet ground and a
+    // small gold mark keep the identity without shouting.
+    // No aria-label: it would REPLACE the inner text for screen readers,
+    // hiding the coach's actual line. The content reads itself in order.
     <button
       onClick={() => navigate("/coach")}
-      // No aria-label: it would REPLACE the inner text for screen readers,
-      // hiding the headline and the coach's actual line. The content reads
-      // itself in order (AI Coach · plan progress · headline · line).
-      className="w-full surface-card p-4 text-left active:scale-[0.99] transition-transform overflow-hidden"
+      className="w-full surface-card surface-card-quiet px-4 py-3.5 text-left active:scale-[0.99] transition-transform overflow-hidden group"
     >
-      <div
-        aria-hidden
-        className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle, hsl(var(--gold) / 0.18) 0%, transparent 70%)",
-        }}
-      />
-      <div className="relative flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl gradient-gold flex items-center justify-center shrink-0 glow-gold">
-          <Sparkles aria-hidden size={18} className="text-primary-foreground" />
+      <div className="relative">
+        <div className="flex items-center gap-1.5 mb-1.5">
+          <Sparkles aria-hidden size={13} className="text-gold shrink-0" strokeWidth={2.4} />
+          <p className="eyebrow text-gold/85">AI Coach</p>
+          {/* Mission progress rides the eyebrow row — no extra height. */}
+          {hasPlan && (
+            <span
+              className={cn(
+                "ml-auto text-[11px] font-black tabular-nums leading-none shrink-0",
+                planDone ? "text-gold" : "text-muted-foreground",
+              )}
+            >
+              {missionsDone}/{missionsTotal}
+            </span>
+          )}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-0.5">
-            {/* Gold stays here: the coach is one of the two elements Home
-                accents, alongside the day's check-in. */}
-            {/* No vendor pill: "GPT-5" leaks implementation detail, dates
-                itself the day the model changes, and dilutes the brand —
-                the product is YOUR coach, not a model name. */}
-            <p className="eyebrow text-gold/85">AI Coach</p>
-            {/* Mission progress lives here rather than as its own chip beside
-                the chevron: same information, no extra row, and the headline
-                keeps the full width it needs. */}
-            {hasPlan && (
-              <span
-                className={cn(
-                  "ml-auto text-[11px] font-black tabular-nums leading-none shrink-0",
-                  planDone ? "text-gold" : "text-muted-foreground",
-                )}
-              >
-                {missionsDone}/{missionsTotal}
-              </span>
-            )}
-          </div>
+        {/* The voice — the coach speaking, at reading size. */}
+        <p className="text-[15px] italic text-foreground/90 leading-snug line-clamp-2">
+          {line}
+        </p>
 
-          <p className="font-bold text-sm leading-tight line-clamp-1">
-            {hasPlan
-              ? headline
-                ? shortHeadline(headline)
-                : "Your session is ready"
-              : "Ask your AI Coach anything"}
-          </p>
-          <p className="text-[12px] text-muted-foreground mt-0.5 leading-snug line-clamp-2 italic">
-            {line}
-          </p>
-        </div>
-
-        <ChevronRight aria-hidden size={18} className="text-gold/60 shrink-0" />
+        {/* Context + the tap, quiet: the plan name (or the open invitation)
+            with an inline chevron, so nothing looks like a second CTA. */}
+        <p className="flex items-center gap-1 text-[12px] text-muted-foreground mt-1.5">
+          {hasPlan
+            ? headline
+              ? shortHeadline(headline)
+              : "Your session is ready"
+            : "Ask your AI Coach anything"}
+          <ChevronRight aria-hidden size={13} className="text-gold/60 shrink-0 transition-transform group-active:translate-x-0.5" />
+        </p>
       </div>
     </button>
   );

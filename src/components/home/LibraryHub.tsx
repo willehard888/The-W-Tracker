@@ -93,17 +93,13 @@ const LibraryHub = () => {
     // CSS comment notes it only wins the shadow in that order.
     <div className="surface-card surface-card-quiet overflow-hidden">
       <div className="relative">
-        {/* Header — quiet, no chevron: the value statement, not a button */}
-        <div className="flex items-center gap-3 px-4 pt-3.5 pb-3">
-          <div className="h-9 w-9 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0">
-            <Crown aria-hidden size={16} className="text-gold" strokeWidth={2.6} />
-          </div>
-          <div className="min-w-0">
-            <p className="eyebrow text-gold/85">The Library</p>
-            <p className="text-[12px] text-muted-foreground leading-tight mt-0.5">
-              Everything your membership unlocks
-            </p>
-          </div>
+        {/* Header — text only (the gold tile is gone; gold is the hero's now),
+            a quiet value statement above the shelf, not a button. */}
+        <div className="px-4 pt-3.5 pb-3">
+          <p className="eyebrow text-muted-foreground/80">The Library</p>
+          <p className="text-[12px] text-muted-foreground leading-tight mt-0.5">
+            Everything your membership unlocks
+          </p>
         </div>
 
         {ROWS.map((row) => (

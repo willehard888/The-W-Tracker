@@ -1,92 +1,104 @@
 /**
- * Recipe photography — fetch and install.
+ * Recipe photography — provenance and re-export.
  *
- * The original recipe images were AI-generated and read as such: unnaturally
- * uniform tomato halves, plastic-looking cheese, the hyper-detailed sheen that
- * makes a wellness app look synthetic. These are real photographs from
- * Unsplash, whose licence permits commercial use without attribution
- * (https://unsplash.com/license).
+ * The images in src/assets/recipes are generated food photographs, made in
+ * Canva from a prompt written against each recipe's own ingredient list. Two
+ * earlier attempts are worth recording so nobody repeats them:
  *
- * Every photo below was viewed before being committed. That is not optional:
- * a text search for "loaded sweet potato" first returned a diner baked potato
- * under processed cheese, and "burger bowl" returned an Indonesian meatball
- * soup. Roughly a third of the first picks were wrong for their dish — plausible
- * from the alt text, obviously wrong on sight. If you swap an id here, look at
- * the result before committing it.
+ *  1. The original set was AI-generated and looked it — unnaturally uniform
+ *     tomato halves, plastic cheese, the hyper-detailed sheen that makes a
+ *     wellness app read as synthetic.
+ *  2. Real stock photography (Unsplash/Pexels) fixed the realism but not the
+ *     match: a text search for "loaded sweet potato" returns a diner baked
+ *     potato under processed cheese, and "burger bowl" returns an Indonesian
+ *     meatball soup. Roughly a third of the picks were plausible from the alt
+ *     text and obviously wrong on sight — a stock photo is always somebody
+ *     else's dish.
  *
- * Usage: npx vite-node scripts/recipe-photos.mts
- *   --check   list what would change, write nothing
+ * Generating against the ingredient list solves the match, at the cost of the
+ * images being generated rather than photographed. That trade was made
+ * deliberately by the founder after seeing both side by side.
+ *
+ * HOW THESE WERE MADE (repeat this if a dish changes):
+ *  - Canva `generate-design`, design_type `phone_wallpaper` — a type with no
+ *    headline template, so the output is a bare image. Every other type
+ *    returns a marketing poster with invented copy baked in.
+ *  - One constant STYLE block (below) plus that recipe's real ingredients.
+ *  - Export as jpg → 1080×1920 → centre-crop to 1000×1000, biased ABOVE centre
+ *    (×0.62) because the bowl sits high in a 9:16 frame.
+ *  - LOOK AT THE RESULT before committing it. Every one of these 15 was.
+ *
+ * STYLE BLOCK used for all 15, verbatim:
+ *   "A single photorealistic overhead food photograph. NO text, NO titles, NO
+ *   logos, NO graphics, NO borders, NO watermark — the entire frame is one
+ *   photograph of food. […THE DISH: this recipe's ingredients…] STYLING: shot
+ *   from directly above on a dark charcoal stone surface. Moody
+ *   restaurant-cookbook lighting — one soft window light from the left, deep
+ *   shadows to the right, warm highlights. Shallow depth of field. Muted dark
+ *   palette, no bright white background, no coloured props, no cutlery, no
+ *   drinks, no hands, no napkins. It must read as an actual photograph taken
+ *   with a camera: real food texture, real irregular edges, real reflections.
+ *   No illustration, no 3D render, no plastic sheen, no oversaturated colour."
+ *
+ * The Canva designs live in the founder's account and can be re-exported at
+ * any time from the ids below — the generation does not have to be repeated.
+ *
+ * Usage: npx vite-node scripts/recipe-photos.mts -- --check
  */
-import { writeFileSync, mkdirSync, readdirSync, unlinkSync, existsSync } from "node:fs";
+import { readdirSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { RECIPES } from "@/data/recipes";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const CHECK = process.argv.includes("--check");
 
-/** recipe id → Unsplash photo id. One line per dish, so a swap is one edit. */
-const PHOTOS: Record<string, string> = {
-  "greek-chicken-bowl": "1787087090329-63d501db683c",
-  "lemon-garlic-salmon-quinoa": "1539136788836-5699e78bfc75",
-  "loaded-sweet-potato": "1585036746932-2680059332cc",
-  "steak-taco-bowl": "1762631383846-6bead15b9796",
-  "teriyaki-beef-stir-fry": "1757190991704-3e612bbe0911",
-  "chicken-shawarma-plate": "1781334266250-a7e72fdf539f",
-  "beef-bolognese": "1785396347369-b5e70e3f3af3",
-  "banana-protein-pancakes": "1528207776546-365bb710ee93",
-  "apple-pie-protein-bowl": "1603199477811-71c45c02f10d",
-  "sweet-potato-black-bean-taco-bowl": "1705177114594-261331bcb0b6",
-  "sirloin-steak-chimichurri": "1785695691259-3f09db710535",
-  "halloumi-power-plate": "1723476647983-cc0e6311104a",
-  "burger-bowl": "1785961259169-62fb51f5f6e6",
-  "berry-cheesecake-bowl": "1610441009633-b6ca9c6d4be2",
-  "grilled-chicken-caesar-salad": "1782839577893-da9383e55c96",
+/** recipe id → Canva design id. Re-export from canva.com/design/<id>. */
+export const CANVA_DESIGNS: Record<string, string> = {
+  "greek-chicken-bowl": "DAHUI6xZFCA",
+  "beef-bolognese": "DAHUJkw7i5o",
+  "lemon-garlic-salmon-quinoa": "DAHUJn0MFVo",
+  "loaded-sweet-potato": "DAHUJnozCy4",
+  "steak-taco-bowl": "DAHUKCZ8NNk",
+  "teriyaki-beef-stir-fry": "DAHUKGlFfq0",
+  "chicken-shawarma-plate": "DAHUKFzLlb0",
+  "banana-protein-pancakes": "DAHUKHS5AFI",
+  "apple-pie-protein-bowl": "DAHUKPi8VkQ",
+  "sweet-potato-black-bean-taco-bowl": "DAHUKNXIEpA",
+  "sirloin-steak-chimichurri": "DAHUKIkri2o",
+  "halloumi-power-plate": "DAHUKAPbHuQ",
+  "burger-bowl": "DAHUKGT3rXo",
+  "berry-cheesecake-bowl": "DAHUKMAuWUw",
+  "grilled-chicken-caesar-salad": "DAHUKNrugts",
 };
 
-// Square everywhere: the list shows a small tile and the detail view shows the
-// same photo as its hero, so one crop serves both. `thumb` stays smaller
-// because it renders at ~64px and shipping a 1000px file for that is waste.
-const SIZES = [
-  { dir: "square", w: 1000 },
-  { dir: "thumb", w: 560 },
-] as const;
+/** square = list tile + detail hero (1000px); thumb = small tile (560px). */
+const SIZES = ["square", "thumb"] as const;
 
-const url = (id: string, w: number) =>
-  `https://images.unsplash.com/photo-${id}?w=${w}&h=${w}&fit=crop&q=80&fm=jpg`;
+const problems: string[] = [];
 
-const missing = RECIPES.filter((r) => !PHOTOS[r.id]).map((r) => r.id);
-if (missing.length) {
-  console.error(`No photo mapped for: ${missing.join(", ")}`);
-  process.exit(1);
-}
-const orphans = Object.keys(PHOTOS).filter((id) => !RECIPES.some((r) => r.id === id));
-if (orphans.length) console.warn(`Mapped but no such recipe: ${orphans.join(", ")}`);
-
-if (CHECK) {
-  console.log(`${RECIPES.length} recipes, all mapped. Sizes: ${SIZES.map((s) => s.dir).join(", ")}`);
-  process.exit(0);
-}
-
-for (const { dir, w } of SIZES) {
-  const out = resolve(ROOT, "src/assets/recipes", dir);
-  mkdirSync(out, { recursive: true });
-  for (const [id, photo] of Object.entries(PHOTOS)) {
-    const res = await fetch(url(photo, w));
-    if (!res.ok) throw new Error(`${dir}/${id}: HTTP ${res.status}`);
-    writeFileSync(resolve(out, `${id}.jpg`), Buffer.from(await res.arrayBuffer()));
-    console.log(`${dir}/${id}.jpg`);
+for (const r of RECIPES) {
+  if (!CANVA_DESIGNS[r.id]) problems.push(`${r.id}: no Canva design recorded`);
+  for (const dir of SIZES) {
+    if (!existsSync(resolve(ROOT, "src/assets/recipes", dir, `${r.id}.jpg`))) {
+      problems.push(`${r.id}: missing ${dir}/${r.id}.jpg`);
+    }
   }
 }
 
-// The old `poster` set were cream-background recipe CARDS, not photographs —
-// every quantity and step baked in as pixels, in a palette from a different
-// product. The detail view now renders that content as text and uses the
-// square photo as its hero, so the whole directory is dead weight.
-const posters = resolve(ROOT, "src/assets/recipes/poster");
-if (existsSync(posters)) {
-  for (const f of readdirSync(posters)) unlinkSync(resolve(posters, f));
-  console.log(`Removed ${posters}`);
+for (const id of Object.keys(CANVA_DESIGNS)) {
+  if (!RECIPES.some((r) => r.id === id)) problems.push(`${id}: design recorded but no such recipe`);
 }
 
-console.log("Done.");
+for (const dir of SIZES) {
+  const files = readdirSync(resolve(ROOT, "src/assets/recipes", dir));
+  for (const f of files) {
+    const id = f.replace(/\.jpg$/, "");
+    if (!RECIPES.some((r) => r.id === id)) problems.push(`${dir}/${f}: orphaned, no such recipe`);
+  }
+}
+
+if (problems.length) {
+  console.error(problems.join("\n"));
+  process.exit(1);
+}
+console.log(`${RECIPES.length} recipes — every photo present in ${SIZES.join(" + ")}, every design id recorded.`);

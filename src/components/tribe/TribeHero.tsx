@@ -486,14 +486,12 @@ const TribeHero = ({
       {/* Action row — quiet, the fire above is the spectacle */}
       <div className="relative flex gap-2 mt-4">
         {!isMember ? (
-          <>
-            <Button onClick={onJoin} size="sm" variant="ember" className="flex-1">
-              Join Tribe
-            </Button>
-            <Button onClick={onShare} size="sm" variant="ember-outline" className="px-3" aria-label="Share tribe">
-              <Share2 size={14} />
-            </Button>
-          </>
+          // No Join button here: the sticky bar at the bottom of TribeDetail
+          // owns joining (incl. private-tribe "Request to join") — two join
+          // CTAs on one screen read as a mistake, not emphasis.
+          <Button onClick={onShare} size="sm" variant="ember-outline" className="px-3 ml-auto" aria-label="Share tribe">
+            <Share2 size={14} />
+          </Button>
         ) : isOwner ? (
           <>
             <Button onClick={onManage} size="sm" variant="gold-outline" className="flex-1">

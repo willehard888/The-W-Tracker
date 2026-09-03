@@ -1,0 +1,6 @@
+// Base configuration for local Debug builds. The Xcode project's Debug
+// configurations reference this file (Release uses Pods-App.release.xcconfig
+// directly); it was never committed, which broke every local simulator build
+// with "Unable to open base configuration reference file". It only needs to
+// pull in the CocoaPods debug settings.
+#include "App/Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"

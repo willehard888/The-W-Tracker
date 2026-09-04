@@ -34,6 +34,7 @@ const PARENT_TAB: Array<{ prefix: string; tab: string }> = [
   { prefix: "/checkin", tab: "/" },
   { prefix: "/coach", tab: "/" },
   { prefix: "/recipes", tab: "/" },
+  { prefix: "/nutrition", tab: "/" },
   { prefix: "/exercises", tab: "/" },
   { prefix: "/vault", tab: "/" },
   { prefix: "/feed", tab: "/squad" },

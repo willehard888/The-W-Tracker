@@ -44,11 +44,26 @@ export const HomeSkeleton = () => (
     <Block height={168} delay={80} className="mt-4 !rounded-3xl" />
     {/* Standing row */}
     <Block height={56} delay={140} className="mt-6" />
+    {/* Fuel row */}
+    <Block height={56} delay={170} className="mt-6" />
     {/* Coach whisper */}
-    <Block height={82} delay={180} className="mt-6" />
+    <Block height={82} delay={210} className="mt-6" />
     {/* Library zone: pull-quote + shelf */}
-    <Block height={64} delay={220} className="mt-6 w-11/12" />
-    <Block height={168} delay={260} className="mt-3" />
+    <Block height={64} delay={250} className="mt-6 w-11/12" />
+    <Block height={168} delay={290} className="mt-3" />
+  </div>
+);
+
+// Mirrors the nutrition diary: sub-page header, the opening line, the macro
+// block, then the four meal-slot sections.
+export const NutritionSkeleton = () => (
+  <div className="px-4 pt-3 pb-8 animate-fade-in">
+    <Block height={44} className="!rounded-xl" />
+    <Block height={28} delay={40} className="w-3/4 mt-4 !rounded-lg" />
+    <Block height={96} delay={80} className="mt-4" />
+    {Array.from({ length: 4 }).map((_, i) => (
+      <Block key={i} height={72} delay={140 + i * 40} className="mt-4" />
+    ))}
   </div>
 );
 

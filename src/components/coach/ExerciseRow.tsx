@@ -8,6 +8,7 @@ import { resolveGroup } from "@/lib/exercise-group";
 import ExerciseTile from "@/components/coach/ExerciseTile";
 import { IllustrationThumb, IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
 import { findIllustrated } from "@/data/exercises-illustrated";
+import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
 import { candidatesForName } from "@/lib/exercise-match";
 import BrandedExercisePhoto from "@/components/coach/BrandedExercisePhoto";
 import { useExerciseHistory, useDayLogs, useLogSet } from "@/hooks/use-workout-log";
@@ -95,7 +96,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
     return ex ? findIllustrated(ex.name) : null;
   })();
   const group = resolveGroup(block.name, ex?.primary);
-  const hasMore = !!(ex || block.notes || block.alt || block.rest_sec || block.tempo);
+  const hasMore = !!(ex || illustrated || block.notes || block.alt || block.rest_sec || block.tempo);
 
   const save = async () => {
     const w = weight.trim() === "" ? null : Number(weight);
@@ -176,6 +177,11 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
               {[ex.primary.join(", "), ex.equipment].filter(Boolean).join(" · ")}
             </p>
           )}
+
+          {/* Rhythm, the top cue and the worst mistake — the parts of the
+              coaching that are worth reading with a loaded bar nearby. The
+              full block lives in the library detail. */}
+          <ExerciseCoachingCompact slug={illustrated?.slug} />
 
           {/* Instructions come from the 542-photo set, the illustration from the
               269-illustrated set — and only 40 titles match exactly across the

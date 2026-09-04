@@ -9,6 +9,8 @@ import {
   type IllustratedExercise,
 } from "@/data/exercises-illustrated";
 import { IllustrationThumb, IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
+import { ExerciseCoachingBlock } from "@/components/coach/ExerciseCoachingBlock";
+import { coachingFor } from "@/data/exercise-coaching";
 
 /**
  * /exercises — the curated illustrated library. Every entry ships two
@@ -26,6 +28,34 @@ const GROUPS: Array<{ label: string; match: (m: string) => boolean }> = [
   { label: "Legs", match: (m) => /quadriceps|hamstring|calves|glut/.test(m) },
   { label: "Core", match: (m) => /abdominal|oblique|core/.test(m) },
 ];
+
+/**
+ * Coaching prose, folded into the search index and memoised per slug.
+ * "knees caving" and "hip hinge" are how people describe the problem they came
+ * to fix, and neither phrase appears in any title, muscle name or step.
+ */
+const coachingTextCache = new Map<string, string>();
+const coachingText = (slug: string) => {
+  const cached = coachingTextCache.get(slug);
+  if (cached !== undefined) return cached;
+  const c = coachingFor(slug);
+  const text = c
+    ? [
+        ...c.cues,
+        ...c.setup,
+        c.tempo,
+        c.breathing,
+        c.feelIt,
+        c.easier,
+        c.harder,
+        ...c.mistakes.flatMap((m) => [m.error, m.fix]),
+      ]
+        .join(" ")
+        .toLowerCase()
+    : "";
+  coachingTextCache.set(slug, text);
+  return text;
+};
 
 const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () => void }) => (
   <div className="px-4 pt-3 pb-28">
@@ -64,6 +94,24 @@ const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () =>
         </li>
       ))}
     </ol>
+
+    {coachingFor(ex.slug) && (
+      <>
+        <div className="mt-6 h-px bg-gradient-to-r from-transparent via-gold/25 to-transparent" />
+        <p className="eyebrow text-gold mt-5 mb-1">Coaching</p>
+        <p className="text-[12px] text-muted-foreground mb-4 leading-snug">
+          What a still picture can&rsquo;t show: the rhythm, the breathing, and the mistakes that actually happen.
+        </p>
+        <ExerciseCoachingBlock slug={ex.slug} />
+      </>
+    )}
+
+    {/* The library now carries beginner technique guidance, so it carries the
+        same line the rest of the app uses for it. */}
+    <p className="mt-7 rounded-xl border border-border/40 bg-background/30 px-3 py-2.5 text-[11.5px] text-muted-foreground/80 leading-snug">
+      Educational guidance &mdash; not medical advice. Start lighter than you think you need to,
+      and stop if a movement causes pain.
+    </p>
   </div>
 );
 
@@ -88,7 +136,8 @@ const Exercises = () => {
           e.primary.some((m) => m.toLowerCase().includes(q)) ||
           e.secondary.some((m) => m.toLowerCase().includes(q)) ||
           e.equipment.some((it) => it.toLowerCase().includes(q)) ||
-          e.steps.some((s) => s.toLowerCase().includes(q)),
+          e.steps.some((s) => s.toLowerCase().includes(q)) ||
+          coachingText(e.slug).includes(q),
       );
     }
     return list;

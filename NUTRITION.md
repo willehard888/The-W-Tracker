@@ -91,6 +91,30 @@ credit UI is not built. The attribution sheet in the app is generated from `food
 - HealthKit does not report per-type write denials; a denied write fails silently by design
   and never blocks the diary.
 
+## Local dry run of the SQL (no Docker needed)
+
+Every migration and RPC was executed on a local PostgreSQL 17 before it ever reached prod,
+with the client engine's contract fixture asserted against `nutrition_for_grams` and the
+calc/RLS check scripts. Homebrew's `postgresql@17` is keg-only and collides with the
+force-linked `libpq`, so run its binaries from their own bin dir:
+
+```bash
+export PATH=/opt/homebrew/opt/postgresql@17/bin:$PATH LANG=C LC_ALL=C
+PGDATA=/tmp/wf-pgdata; initdb -D $PGDATA -U postgres --auth=trust --locale=C -E UTF8
+pg_ctl -D $PGDATA -o "-p 5499 -k /tmp" -l $PGDATA/pg.log start
+psql -h /tmp -p 5499 -U postgres -c 'CREATE DATABASE wf'
+psql -h /tmp -p 5499 -U postgres -d wf -v ON_ERROR_STOP=1 -q -f scripts/nutrition/local-stubs.sql
+for f in supabase/migrations/20260905*.sql; do psql -h /tmp -p 5499 -U postgres -d wf -v ON_ERROR_STOP=1 -q -f $f || break; done
+for c in contract-check calc-check rls-check; do psql -h /tmp -p 5499 -U postgres -d wf -v ON_ERROR_STOP=1 -q -f scripts/nutrition/$c.sql || break; done
+node scripts/nutrition/gen-local-types.mjs > /tmp/local-types.ts && node scripts/nutrition/splice-types.mjs /tmp/local-types.ts
+pg_ctl -D $PGDATA stop
+```
+
+`local-stubs.sql` fakes only what Supabase provides (roles, `auth.uid()`, storage tables,
+`has_active_access`, `bump_ai_usage`); the migrations themselves are the real files. The
+last line regenerates the nutrition entries of `src/integrations/supabase/types.ts` from the
+local schema — `npm run types:gen` against prod supersedes it.
+
 ## Verification before shipping
 
 The gate chain (`npx tsc --noEmit && node scripts/type-debt.mjs && node scripts/style-guard.mjs &&

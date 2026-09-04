@@ -42,3 +42,6 @@ coverage/
 
 # Lovable-era data exports (archived locally; purged from git history 2026-09-03)
 migration/
+
+# skill-creator eval workspaces (local review artifacts, never shipped)
+.claude/skills/*-workspace/

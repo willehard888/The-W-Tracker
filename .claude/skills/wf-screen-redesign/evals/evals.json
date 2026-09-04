@@ -1,0 +1,50 @@
+{
+  "skill_name": "wf-screen-redesign",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Tee sama asia Profile-sivulle. Käytä emilkowalskia, impecablea ja taste skilliä — koko profiili huipputasolle täysin vapailla käsillä, mutta pidä brändi.",
+      "expected_output": "src/pages/Profile.tsx (and any profile components) recomposed around one thesis with an opening beat, a single framed hero, quiet support silhouettes (no card-soup), gold reserved for the hero + one number, home-rise entrance on wrappers, skeleton updated, all data wires and spotlight refs intact, gates green.",
+      "files": [],
+      "assertions": [
+        "gates pass after applying changes.diff to main (tsc 0, type-debt held, style-guard clean, vitest green, vite build ok)",
+        "brand locked: no added line introduces a literal hsl() color or a stock Tailwind palette color",
+        "entrance never on a pressable element: no added JSX tag carries both an entrance class (home-rise / animate-fade-in-up / animate-reveal) and active:scale",
+        "house entrance grammar used: the screen's first viewport uses home-rise",
+        "spotlight refs preserved: useSpotlightTarget count in changed files does not drop",
+        "gold accent discipline: gold accent class occurrences in the page file do not increase",
+        "skeleton follows layout: the screen's loading skeleton changed alongside the layout"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "ranks välilehti (leaderboard) näyttää edelleen ai slobilta, nosta se samalle tasolle kuin etusivu. ei uusia värejä.",
+      "expected_output": "src/pages/Leaderboard.tsx recomposed: the podium/your-standing becomes the hero, rows go quiet (surface-card-quiet or hairline list), redundant titles under the tab chrome removed, list stagger on wrappers, brand tokens only, gates green.",
+      "files": [],
+      "assertions": [
+        "gates pass after applying changes.diff to main (tsc 0, type-debt held, style-guard clean, vitest green, vite build ok)",
+        "brand locked: no added line introduces a literal hsl() color or a stock Tailwind palette color",
+        "entrance never on a pressable element: no added JSX tag carries both an entrance class (home-rise / animate-fade-in-up / animate-reveal) and active:scale",
+        "house entrance grammar used: the screen's first viewport uses home-rise",
+        "spotlight refs preserved: useSpotlightTarget count in changed files does not drop",
+        "gold accent discipline: gold accent class occurrences in the page file do not increase",
+        "skeleton follows layout: the screen's loading skeleton changed alongside the layout"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "viimeistele coach-sivu premiumiksi. voi olla animaatiota mutta ei mitään mikä kilpailee lava-napin kanssa.",
+      "expected_output": "src/pages/Coach.tsx recomposed with the coach's voice as the opening beat and today's plan as the hero; one authored entrance using the house motion grammar, reduced-motion fallback, nothing that competes with the check-in CTA; gates green.",
+      "files": [],
+      "assertions": [
+        "gates pass after applying changes.diff to main (tsc 0, type-debt held, style-guard clean, vitest green, vite build ok)",
+        "brand locked: no added line introduces a literal hsl() color or a stock Tailwind palette color",
+        "entrance never on a pressable element: no added JSX tag carries both an entrance class (home-rise / animate-fade-in-up / animate-reveal) and active:scale",
+        "house entrance grammar used: the screen's first viewport uses home-rise",
+        "spotlight refs preserved: useSpotlightTarget count in changed files does not drop",
+        "gold accent discipline: gold accent class occurrences in the page file do not increase",
+        "skeleton follows layout: the screen's loading skeleton changed alongside the layout"
+      ]
+    }
+  ]
+}

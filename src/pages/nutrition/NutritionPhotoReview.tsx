@@ -232,7 +232,8 @@ const NutritionPhotoReview = () => {
   const fileInput = (label: string, variant: "default" | "outline" = "default") => (
     <label className="block">
       <span className="sr-only">{label}</span>
-      <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => pickFile(e.target.files?.[0] ?? null)} />
+      {/* No capture attribute here: this picker is the library path (Take Photo / Photo Library on iOS); Home's camera button is the quick-snap path. */}
+      <input type="file" accept="image/*" className="sr-only" onChange={(e) => pickFile(e.target.files?.[0] ?? null)} />
       <Button asChild variant={variant} size="lg" className="w-full">
         <span>
           <Camera aria-hidden /> {label}

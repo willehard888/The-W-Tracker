@@ -650,6 +650,10 @@ const NutritionDiary = () => {
               barcodeSupported={barcodeSupported}
               onScanBarcode={() => void scanBarcode(sheet.slot)}
               onEnterBarcode={() => setSheet({ view: "barcode", slot: sheet.slot })}
+              onScanPhoto={() => {
+                setSheet(null);
+                navigate(`/nutrition/photo?date=${date}&slot=${sheet.slot}`);
+              }}
               onCreateFood={() => createFood(sheet.slot, { name: query.trim() })}
               onSearchOnline={() => void runOnlineSearch()}
             />

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Globe, Loader2, ScanBarcode, Search, X } from "lucide-react";
+import { Camera, Globe, Loader2, ScanBarcode, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import FoodResultRow, { type FoodResultView } from "@/components/nutrition/FoodResultRow";
@@ -31,6 +31,7 @@ const FoodSearchPanel = ({
   onEnterBarcode,
   onCreateFood,
   onSearchOnline,
+  onScanPhoto,
   autoFocus = true,
 }: {
   query: string;
@@ -48,6 +49,8 @@ const FoodSearchPanel = ({
   onEnterBarcode?: () => void;
   onCreateFood: () => void;
   onSearchOnline?: () => void;
+  /** Opens the photo-scan review (its picker offers camera or library). */
+  onScanPhoto?: () => void;
   autoFocus?: boolean;
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -105,6 +108,11 @@ const FoodSearchPanel = ({
         {!barcodeSupported && onEnterBarcode && (
           <Button size="pill" variant="outline" className="shrink-0" onClick={onEnterBarcode}>
             <ScanBarcode aria-hidden /> Barcode
+          </Button>
+        )}
+        {onScanPhoto && (
+          <Button size="pill" variant="outline" className="shrink-0" onClick={onScanPhoto}>
+            <Camera aria-hidden /> Photo
           </Button>
         )}
       </div>

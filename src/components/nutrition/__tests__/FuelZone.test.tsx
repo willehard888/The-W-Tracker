@@ -32,6 +32,8 @@ describe("FuelZone", () => {
     expect(screen.getByText("—")).toBeInTheDocument();
     rerender(<FuelZone {...base} state="no_targets" targets={null} totals={{ calories: 300, protein: 20, carbs: 30, fat: 10 }} />);
     expect(screen.getByText("Set targets")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Set your nutrition targets" }));
+    expect(base.onOpenTargets).toHaveBeenCalled();
     rerender(<FuelZone {...base} state="empty" totals={{ calories: 0, protein: 0, carbs: 0, fat: 0 }} />);
     expect(screen.getByText(/Nothing logged yet/)).toBeInTheDocument();
     rerender(<FuelZone {...base} state="complete" totals={{ calories: 2410, protein: 165, carbs: 250, fat: 80 }} />);

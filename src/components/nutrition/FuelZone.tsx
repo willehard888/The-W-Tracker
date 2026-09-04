@@ -47,9 +47,7 @@ const FuelZone = ({ loading, totals, targets, state, unavailable, onOpenDiary, o
     line = (
       <span className="text-[13px] text-muted-foreground">
         <span className="font-black text-foreground tabular-nums">{kcal}</span> kcal logged ·{" "}
-        <button type="button" onClick={onOpenTargets} className="font-bold text-foreground underline-offset-2 underline">
-          Set targets
-        </button>
+        <span className="font-bold text-foreground underline-offset-2 underline">Set targets</span>
       </span>
     );
   } else if (state === "empty") {
@@ -87,10 +85,11 @@ const FuelZone = ({ loading, totals, targets, state, unavailable, onOpenDiary, o
 
   return (
     <div className="surface-card surface-card-quiet flex items-center">
+      {/* No nested buttons: without targets the whole row is the "set targets" act. */}
       <button
         type="button"
-        onClick={onOpenDiary}
-        aria-label="Open your food diary"
+        onClick={state === "no_targets" ? onOpenTargets : onOpenDiary}
+        aria-label={state === "no_targets" ? "Set your nutrition targets" : "Open your food diary"}
         className="flex-1 min-w-0 min-h-14 px-4 py-3 text-left active:opacity-70 transition-opacity"
       >
         <p className="eyebrow text-muted-foreground/75 mb-0.5">Fuel</p>

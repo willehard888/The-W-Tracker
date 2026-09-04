@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Crown, ChevronRight, Utensils } from "lucide-react";
+import { Crown, ChevronRight, Flame, Utensils } from "lucide-react";
 import { recipeSquare, recipeThumb } from "@/lib/recipe-images";
 import { RECIPES } from "@/data/recipes";
 import { illustrationThumb } from "@/data/exercises-illustrated";
@@ -20,6 +20,15 @@ import { cn } from "@/lib/utils";
  */
 
 const ROWS = [
+  {
+    key: "nutrition",
+    path: "/nutrition",
+    title: "Fuel diary",
+    sub: "Log meals, scan barcodes, hit your macros",
+    /** "New" is a signpost, not a gate — it stays neutral like the counts. */
+    chip: "New",
+    chipGold: false,
+  },
   {
     key: "recipes",
     path: "/recipes",
@@ -60,6 +69,15 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${recipeSquare("greek-chicken-bowl") ?? recipeThumb("greek-chicken-bowl")})` }}
         />
+      </div>
+    );
+  }
+  if (id === "nutrition") {
+    // Same outline tile as the exercises thumb: black ground, gold hairline,
+    // a drawn icon — never the gold-filled tile, which belongs to the hero.
+    return (
+      <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 bg-black border border-gold/25 flex items-center justify-center">
+        <Flame aria-hidden size={17} className="text-gold" strokeWidth={2.2} />
       </div>
     );
   }

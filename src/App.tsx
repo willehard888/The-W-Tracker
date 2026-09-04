@@ -67,6 +67,13 @@ const TribeLeaderboard = lazy(() => import("./pages/TribeLeaderboard"));
 const Vault = lazy(() => import("./pages/Vault"));
 const Recipes = lazy(() => import("./pages/Recipes"));
 const Exercises = lazy(() => import("./pages/Exercises"));
+// Nutrition engine — the diary and its satellites light the Today tab (BottomNav PARENT_TAB).
+const NutritionDiary = lazy(() => import("./pages/nutrition/NutritionDiary"));
+const NutritionPhotoReview = lazy(() => import("./pages/nutrition/NutritionPhotoReview"));
+const NutritionTargets = lazy(() => import("./pages/nutrition/NutritionTargets"));
+const UserFoodEditor = lazy(() => import("./pages/nutrition/UserFoodEditor"));
+const NutritionRecipes = lazy(() => import("./pages/nutrition/NutritionRecipes"));
+const NutritionRecipeEditor = lazy(() => import("./pages/nutrition/NutritionRecipeEditor"));
 const WeeklyBriefing = lazy(() => import("./pages/WeeklyBriefing"));
 const AdminModeration = lazy(() => import("./pages/AdminModeration"));
 const AdminLegendInvites = lazy(() => import("./pages/AdminLegendInvites"));
@@ -295,6 +302,14 @@ const AppRoutes = () => {
           {/* A recipe is a route, not local state — so the coach and the Vault
               can link to a specific dish, and Back actually goes back. */}
           <Route path="/recipes/:id" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
+          <Route path="/nutrition" element={<ProtectedRoute><NutritionDiary /></ProtectedRoute>} />
+          <Route path="/nutrition/photo" element={<ProtectedRoute><NutritionPhotoReview /></ProtectedRoute>} />
+          <Route path="/nutrition/targets" element={<ProtectedRoute><NutritionTargets /></ProtectedRoute>} />
+          <Route path="/nutrition/foods/new" element={<ProtectedRoute><UserFoodEditor /></ProtectedRoute>} />
+          <Route path="/nutrition/foods/:id/edit" element={<ProtectedRoute><UserFoodEditor /></ProtectedRoute>} />
+          <Route path="/nutrition/recipes" element={<ProtectedRoute><NutritionRecipes /></ProtectedRoute>} />
+          <Route path="/nutrition/recipes/new" element={<ProtectedRoute><NutritionRecipeEditor /></ProtectedRoute>} />
+          <Route path="/nutrition/recipes/:id" element={<ProtectedRoute><NutritionRecipeEditor /></ProtectedRoute>} />
           <Route path="/exercises" element={<ProtectedRoute><Exercises /></ProtectedRoute>} />
           <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
           <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />

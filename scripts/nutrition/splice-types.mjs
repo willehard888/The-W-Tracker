@@ -23,7 +23,8 @@ const ALLOW = /^(food_|foods$|nutrition_|nutrient_|meal_|recipe_|ingest_foods$|s
 
 /** Locate `<section>: {` inside `public: {` and return [start of inner, end index of the matching close brace]. */
 function sectionRange(src, section) {
-  const pub = src.indexOf("public: {");
+  // Anchor on the exact top-level schema line — a bare indexOf("public: {") matches graphql_public first.
+  const pub = src.indexOf("\n  public: {");
   if (pub < 0) throw new Error("no public schema in " + section);
   const key = `${section}: {`;
   const start = src.indexOf(key, pub);

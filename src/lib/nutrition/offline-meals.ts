@@ -13,7 +13,7 @@ export const PENDING_MEAL_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export type MealSource = "manual" | "barcode" | "scan" | "recipe" | "quick" | "duplicate";
 
 /** One `log_meal` item — grams are always resolved client-side (see resolve-grams). */
-export interface LogMealItem {
+export type LogMealItem = {
   id: string;
   kind: "food" | "recipe" | "quick";
   food_id?: string | null;
@@ -34,6 +34,7 @@ export interface LogMealArgs {
   p_items: LogMealItem[];
   p_note?: string | null;
   p_source?: MealSource | null;
+  p_photo_path?: string | null;
 }
 
 export interface PendingMeal {

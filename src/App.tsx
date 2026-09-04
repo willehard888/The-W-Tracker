@@ -6,6 +6,7 @@ import { queryClient } from "@/lib/query-client";
 import { supabase } from "@/integrations/supabase/client";
 import { usePushNotifications, PushControlsContext } from "@/hooks/use-push-notifications";
 import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
+import { useOfflineNutritionSync } from "@/hooks/use-offline-nutrition-sync";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import { useActivityHeartbeat } from "@/hooks/use-activity-heartbeat";
 import PushPrimingSheet from "@/components/notifications/PushPrimingSheet";
@@ -197,6 +198,7 @@ const AppRoutes = () => {
   const { user } = useAuth();
   const { needsPriming, enablePush, dismissPriming, resyncStreakWarning } = usePushNotifications();
   useOfflineCheckinSync();
+  useOfflineNutritionSync();
   useActivityHeartbeat();
 
   // Win-backs moved server-side (winback-lapsed) — cancel the legacy local

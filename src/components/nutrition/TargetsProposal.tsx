@@ -52,7 +52,7 @@ const TargetsProposal = ({
 
   const notes: string[] = [
     `${result.method === "katch" ? "Katch-McArdle (body-fat based)" : "Mifflin-St Jeor"} · BMR ${result.bmr} kcal · maintenance ${result.tdee} kcal with ${ACTIVITY_COPY[result.activity_level] ?? result.activity_level}.`,
-    GOAL_COPY[result.goal_mode] ?? "",
+    GOAL_COPY[result.goal] ?? "",
   ];
   if (sexAssumed) notes.push("Sex not set — using the average of the male and female formulas.");
   if (result.floor_applied) notes.push("Raised to the minimum we'll ever suggest — going lower needs a professional, not an app.");

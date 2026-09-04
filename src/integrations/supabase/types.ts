@@ -15,6 +15,30 @@ export type Database = {
   graphql_public: {
     Tables: {
       [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  public: {
+    Tables: {
       food_barcode_misses: {
         Row: {
           attempts: number
@@ -678,135 +702,6 @@ export type Database = {
           },
         ]
       }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-      daily_nutrition_totals: {
-        Args: { p_from: string; p_to?: string }
-        Returns: Json
-      }
-
-      duplicate_meal: {
-        Args: { p_source_meal_id: string; p_new_meal_id: string; p_log_date: string; p_tz_offset_minutes: number; p_meal_slot: string }
-        Returns: Json
-      }
-
-      f_unaccent: {
-        Args: { p_text: string }
-        Returns: string
-      }
-
-      ingest_foods: {
-        Args: { p_foods: Json }
-        Returns: {
-          action: string
-          food_id: string
-          source_id: string
-        }[]
-      }
-
-      log_meal: {
-        Args: { p_meal_id: string; p_log_date: string; p_tz_offset_minutes: number; p_meal_slot: string; p_items: Json; p_note?: string; p_source?: string; p_photo_path?: string }
-        Returns: Json
-      }
-
-      meal_payload: {
-        Args: { p_meal_id: string }
-        Returns: Json
-      }
-
-      normalize_barcode: {
-        Args: { p_raw: string }
-        Returns: string
-      }
-
-      nutrition_for_grams: {
-        Args: { p_food_id: string; p_grams: number }
-        Returns: Json
-      }
-
-      recipe_nutrition_per_serving: {
-        Args: { p_recipe_id: string }
-        Returns: Json
-      }
-
-      recipe_totals: {
-        Args: { p_recipe_id: string }
-        Returns: Json
-      }
-
-      scale_nutrition: {
-        Args: { p_vec: Json; p_num: number; p_den: number }
-        Returns: Json
-      }
-
-      search_foods: {
-        Args: { p_query: string; p_limit?: number; p_country?: string; p_barcode?: string }
-        Returns: {
-          brand: string
-          carbs_g: number
-          country: string
-          data_quality: number
-          default_serving_grams: number
-          default_serving_label: string
-          fat_g: number
-          id: string
-          is_favorite: boolean
-          kcal: number
-          kind: string
-          name: string
-          protein_g: number
-          rank: number
-          source: string
-          use_count: number
-        }[]
-      }
-
-      sum_nutrition: {
-        Args: { p_items: Json[] }
-        Returns: Json
-      }
-
-      update_meal_item: {
-        Args: { p_item_id: string; p_grams?: number; p_serving_id?: string; p_serving_qty?: number }
-        Returns: Json
-      }
-
-      upsert_nutrition_targets: {
-        Args: { p_patch: Json }
-        Returns: Json
-      }
-
-      upsert_recipe: {
-        Args: { p_recipe: Json }
-        Returns: Json
-      }
-
-      upsert_user_food: {
-        Args: { p_food: Json }
-        Returns: string
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  public: {
-    Tables: {
       ai_usage: {
         Row: {
           count: number
@@ -3676,6 +3571,111 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      daily_nutrition_totals: {
+        Args: { p_from: string; p_to?: string }
+        Returns: Json
+      }
+
+      duplicate_meal: {
+        Args: { p_source_meal_id: string; p_new_meal_id: string; p_log_date: string; p_tz_offset_minutes: number; p_meal_slot: string }
+        Returns: Json
+      }
+
+      f_unaccent: {
+        Args: { p_text: string }
+        Returns: string
+      }
+
+      ingest_foods: {
+        Args: { p_foods: Json }
+        Returns: {
+          action: string
+          food_id: string
+          source_id: string
+        }[]
+      }
+
+      log_meal: {
+        Args: { p_meal_id: string; p_log_date: string; p_tz_offset_minutes: number; p_meal_slot: string; p_items: Json; p_note?: string; p_source?: string; p_photo_path?: string }
+        Returns: Json
+      }
+
+      meal_payload: {
+        Args: { p_meal_id: string }
+        Returns: Json
+      }
+
+      normalize_barcode: {
+        Args: { p_raw: string }
+        Returns: string
+      }
+
+      nutrition_for_grams: {
+        Args: { p_food_id: string; p_grams: number }
+        Returns: Json
+      }
+
+      recipe_nutrition_per_serving: {
+        Args: { p_recipe_id: string }
+        Returns: Json
+      }
+
+      recipe_totals: {
+        Args: { p_recipe_id: string }
+        Returns: Json
+      }
+
+      scale_nutrition: {
+        Args: { p_vec: Json; p_num: number; p_den: number }
+        Returns: Json
+      }
+
+      search_foods: {
+        Args: { p_query: string; p_limit?: number; p_country?: string; p_barcode?: string }
+        Returns: {
+          brand: string
+          carbs_g: number
+          country: string
+          data_quality: number
+          default_serving_grams: number
+          default_serving_label: string
+          fat_g: number
+          id: string
+          is_favorite: boolean
+          kcal: number
+          kind: string
+          name: string
+          protein_g: number
+          rank: number
+          source: string
+          use_count: number
+        }[]
+      }
+
+      sum_nutrition: {
+        Args: { p_items: Json[] }
+        Returns: Json
+      }
+
+      update_meal_item: {
+        Args: { p_item_id: string; p_grams?: number; p_serving_id?: string; p_serving_qty?: number }
+        Returns: Json
+      }
+
+      upsert_nutrition_targets: {
+        Args: { p_patch: Json }
+        Returns: Json
+      }
+
+      upsert_recipe: {
+        Args: { p_recipe: Json }
+        Returns: Json
+      }
+
+      upsert_user_food: {
+        Args: { p_food: Json }
+        Returns: string
+      }
       accept_pod_invite: { Args: { p_pod: string }; Returns: Json }
       add_chat_memory: {
         Args: { _confidence?: number; _fact: string; _source?: string }

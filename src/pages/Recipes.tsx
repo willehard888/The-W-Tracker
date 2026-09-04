@@ -23,9 +23,10 @@ const BATCH_OPTIONS = [1, 2, 3, 4, 5] as const;
  * want to cook the thing.
  */
 
-const RecipePhoto = ({ id, className }: { id: string; className?: string }) => {
+/** `tile` takes the 560px thumb (fifteen sit in one grid), `hero` the 1000px square. */
+const RecipePhoto = ({ id, className, variant = "hero" }: { id: string; className?: string; variant?: "tile" | "hero" }) => {
   const [failed, setFailed] = useState(false);
-  const src = recipeSquare(id) ?? recipeThumb(id);
+  const src = variant === "tile" ? recipeThumb(id) ?? recipeSquare(id) : recipeSquare(id) ?? recipeThumb(id);
   if (!src || failed) {
     return (
       <div className={cn("flex items-center justify-center bg-secondary/50", className)}>
@@ -96,7 +97,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
         </Button>
       </div>
 
-      <div className="px-4 pb-28 -mt-6 relative space-y-5">
+      <div className="home-rise px-4 pb-28 -mt-6 relative space-y-5">
         <div>
           <h1 className="font-display text-[26px] font-black tracking-tight leading-tight">{recipe.title}</h1>
           <p className="text-[13px] text-muted-foreground leading-snug mt-1.5">{recipe.blurb}</p>
@@ -302,14 +303,14 @@ const RecipeList = () => {
             <p className="text-[12px] text-muted-foreground mt-1">Try a different ingredient, or clear the filter.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="home-rise home-rise-1 grid grid-cols-2 gap-3">
             {results.map((r) => (
               <button
                 key={r.id}
                 onClick={() => { hapticImpact("light"); navigate(`/recipes/${r.id}`); }}
                 className="text-left rounded-2xl overflow-hidden border border-border/60 bg-card active:scale-[0.98] transition-transform"
               >
-                <RecipePhoto id={r.id} className="w-full aspect-square" />
+                <RecipePhoto id={r.id} variant="tile" className="w-full aspect-square" />
                 <div className="p-2.5">
                   <p className="font-display text-[13px] font-black leading-tight line-clamp-2">{r.title}</p>
                   <div className="flex items-center gap-2 mt-1.5 text-[11px] font-bold">
@@ -329,7 +330,7 @@ const RecipeList = () => {
 const Recipes = () => {
   const { id } = useParams<{ id: string }>();
   const recipe = id ? RECIPES.find((r) => r.id === id) : undefined;
-  if (id && !recipe) return <RecipeList />;
+  // An unknown id falls back to the list rather than a dead end.
   return recipe ? <RecipeDetail recipe={recipe} /> : <RecipeList />;
 };
 

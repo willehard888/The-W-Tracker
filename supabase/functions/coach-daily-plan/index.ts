@@ -609,6 +609,33 @@ Deno.serve(async (req) => {
       missedSessions7d = Math.max(0, 4 - checkins.filter((c) => c.workout).length);
     }
 
+    // Fall back to the evening reflection's RPE.
+    //
+    // `coach_program_logs.perceived_rpe` above is the intended source, but no
+    // client has ever written it — TodaySessionCard marks a session done with
+    // { completed: true } and nothing else. So lastRpe was null for every user
+    // on every day, and computeReadiness silently fell back to its
+    // `rpeScore = 18` default: 18 of the 100 readiness points were a constant
+    // pretending to be personal.
+    //
+    // The RPE the athlete actually gives sits one table over, in
+    // coach_reflections.rpe_1to10 (written by EveningReflectionCard).
+    // coach-generate-program already reads it; the daily readiness calc never
+    // did. Deliberately outside the `if (program)` block above: someone
+    // reflecting without an active program still deserves a real number.
+    if (lastRpe == null) {
+      const { data: reflection } = await supabase
+        .from("coach_reflections")
+        .select("rpe_1to10")
+        .eq("user_id", userId)
+        .gte("reflection_date", sevenDaysAgo.slice(0, 10))
+        .not("rpe_1to10", "is", null)
+        .order("reflection_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      lastRpe = (reflection as any)?.rpe_1to10 ?? null;
+    }
+
     const readiness = computeReadiness(checkins, lastRpe, profile?.streak ?? 0, missedSessions7d);
     const adjustment = adjustmentFor(readiness.score);
 

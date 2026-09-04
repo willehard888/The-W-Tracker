@@ -45,3 +45,6 @@ migration/
 
 # skill-creator eval workspaces (local review artifacts, never shipped)
 .claude/skills/*-workspace/
+
+# Nutrition ingestion resume state (scripts/nutrition) — local only
+.nutrition-ingest-state.json

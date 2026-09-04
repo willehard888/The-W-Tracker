@@ -48,7 +48,7 @@ export const getSignedUrl = async (bucket: string, keyOrUrl: string): Promise<st
 // object/public URLs. The DB value stays as-is — a canonical pointer that
 // encodes bucket+key — and rendering resolves it here.
 
-const PRIVATE_BUCKETS = new Set(["proof-photos", "feed-images"]);
+const PRIVATE_BUCKETS = new Set(["proof-photos", "feed-images", "meal-photos"]);
 
 export const parseStorageUrl = (url: string): { bucket: string; key: string } | null => {
   const m = url.match(/\/storage\/v1\/(?:object|render\/image)\/(?:public|sign|authenticated)\/([^/]+)\/([^?]+)/);

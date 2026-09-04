@@ -22,7 +22,10 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
     public let jsName = "HealthNight"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "requestAuthorization", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "queryNight", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "queryNight", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "requestMealWriteAuthorization", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "writeMeal", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "deleteMeal", returnType: CAPPluginReturnPromise)
     ]
 
     private let store = HKHealthStore()
@@ -122,6 +125,149 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
 
         group.notify(queue: .main) {
             call.resolve(result)
+        }
+    }
+
+    // MARK: - Meal write (Nutrition diary → Apple Health)
+    //
+    // Opt-in, separate from the read-only `requestAuthorization` above (which
+    // night-metrics.ts calls on every sync and must stay share-free). One
+    // HKQuantitySample per present nutrient, wrapped in a `.food` correlation
+    // tagged with the meal id so an edit or delete can find it again.
+
+    /// JS key → HealthKit dietary type + unit. Order = sample order, nothing more.
+    private static let mealNutrients: [(key: String, id: HKQuantityTypeIdentifier, unit: HKUnit)] = [
+        ("kcal", .dietaryEnergyConsumed, .kilocalorie()),
+        ("protein_g", .dietaryProtein, .gram()),
+        ("carbs_g", .dietaryCarbohydrates, .gram()),
+        ("fat_g", .dietaryFatTotal, .gram()),
+        ("water_ml", .dietaryWater, .literUnit(with: .milli)),
+        ("caffeine_mg", .dietaryCaffeine, .gramUnit(with: .milli))
+    ]
+
+    private static let foodType = HKObjectType.correlationType(forIdentifier: .food)!
+    private static let hkQueue = DispatchQueue(label: "app.wtracker.healthkit.meals", qos: .utility)
+
+    private func mealShareTypes() -> Set<HKSampleType> {
+        var types = Set<HKSampleType>()
+        for n in Self.mealNutrients {
+            if let t = HKObjectType.quantityType(forIdentifier: n.id) { types.insert(t) }
+        }
+        return types
+    }
+
+    /// ISO-8601 with or without fractional seconds (JS `toISOString()` has them).
+    private static func parseDate(_ s: String?) -> Date? {
+        guard let s = s, !s.isEmpty else { return nil }
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let d = f.date(from: s) { return d }
+        f.formatOptions = [.withInternetDateTime]
+        return f.date(from: s)
+    }
+
+    /// Every correlation (plus its samples) this app saved under `mealId`.
+    private func mealObjects(_ mealId: String, _ completion: @escaping ([HKObject], Error?) -> Void) {
+        let predicate = HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeyExternalUUID, allowedValues: [mealId])
+        let q = HKSampleQuery(sampleType: Self.foodType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, error in
+            var objects: [HKObject] = []
+            for case let c as HKCorrelation in (samples ?? []) {
+                objects.append(contentsOf: c.objects)
+                objects.append(c)
+            }
+            completion(objects, error)
+        }
+        store.execute(q)
+    }
+
+    /// Deletes all objects for `mealId`; completes with the number removed.
+    private func purgeMeal(_ mealId: String, _ completion: @escaping (Int, Error?) -> Void) {
+        mealObjects(mealId) { [store] objects, error in
+            if let error = error { completion(0, error); return }
+            guard !objects.isEmpty else { completion(0, nil); return }
+            store.delete(objects) { ok, error in completion(ok ? objects.count : 0, error) }
+        }
+    }
+
+    @objc func requestMealWriteAuthorization(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            call.reject("HealthKit is not available on this device")
+            return
+        }
+        Self.hkQueue.async { [store, types = mealShareTypes()] in
+            store.requestAuthorization(toShare: types, read: []) { success, error in
+                if let error = error { call.reject(error.localizedDescription); return }
+                call.resolve(["granted": success])
+            }
+        }
+    }
+
+    @objc func writeMeal(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            call.reject("HealthKit is not available on this device")
+            return
+        }
+        guard let mealId = call.getString("meal_id"), !mealId.isEmpty else {
+            call.reject("meal_id is required")
+            return
+        }
+        let name = call.getString("name") ?? "Meal"
+        let start = Self.parseDate(call.getString("start")) ?? Date()
+        // HealthKit throws (not errors) on end < start — clamp, never crash.
+        let end = max(Self.parseDate(call.getString("end")) ?? start, start)
+        let version = call.getInt("version") ?? 1
+
+        var samples = Set<HKSample>()
+        for n in Self.mealNutrients {
+            // Negative/NaN values also throw inside HealthKit — skip them.
+            guard let value = call.getDouble(n.key), value.isFinite, value >= 0,
+                  let type = HKObjectType.quantityType(forIdentifier: n.id) else { continue }
+            samples.insert(HKQuantitySample(
+                type: type,
+                quantity: HKQuantity(unit: n.unit, doubleValue: value),
+                start: start,
+                end: end,
+                metadata: [HKMetadataKeySyncIdentifier: "wf-meal-\(mealId)-\(n.key)", HKMetadataKeySyncVersion: version]
+            ))
+        }
+        guard !samples.isEmpty else {
+            call.resolve(["written": false])
+            return
+        }
+        let correlation = HKCorrelation(
+            type: Self.foodType,
+            start: start,
+            end: end,
+            objects: samples,
+            metadata: [HKMetadataKeyFoodType: name, HKMetadataKeyExternalUUID: mealId]
+        )
+        let count = samples.count
+        Self.hkQueue.async { [store] in
+            // Sync identifiers replace the nutrient samples on edit, but the
+            // previous correlation shell would linger — drop it first (best effort).
+            self.purgeMeal(mealId) { _, _ in
+                store.save(correlation) { ok, error in
+                    if let error = error { call.reject(error.localizedDescription); return }
+                    call.resolve(["written": ok, "samples": count])
+                }
+            }
+        }
+    }
+
+    @objc func deleteMeal(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            call.reject("HealthKit is not available on this device")
+            return
+        }
+        guard let mealId = call.getString("meal_id"), !mealId.isEmpty else {
+            call.reject("meal_id is required")
+            return
+        }
+        Self.hkQueue.async {
+            self.purgeMeal(mealId) { deleted, error in
+                if let error = error { call.reject(error.localizedDescription); return }
+                call.resolve(["deleted": deleted])
+            }
         }
     }
 }

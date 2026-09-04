@@ -11,6 +11,7 @@ import {
   scoreRecovery,
   scoreMovement,
   scoreNutrition,
+  nutritionParts,
   scoreMind,
   scoreInner,
   detectPatterns,
@@ -18,6 +19,7 @@ import {
   type CheckinDay,
   type NightRow,
   type ReflectionRow,
+  type DiaryDay,
 } from "@/lib/whealth-index";
 
 const day = (i: number) => `2026-07-${String(i + 1).padStart(2, "0")}`;
@@ -168,6 +170,47 @@ describe("scoreNutrition", () => {
     const bad = Array.from({ length: 14 }, (_, i) => checkin(i, { protein: false, healthyFood: false, hydration: 0.5 }));
     expect(scoreNutrition(good)!).toBeGreaterThanOrEqual(90);
     expect(scoreNutrition(bad)!).toBeLessThanOrEqual(15);
+  });
+});
+
+describe("nutritionParts — logged food diary (4th part)", () => {
+  const good = Array.from({ length: 14 }, (_, i) => checkin(i, { protein: true, healthyFood: true, hydration: 3 }));
+  const dd = (i: number, proteinG: number, targetProteinG: number | null = 160): DiaryDay =>
+    ({ day: day(i), proteinG, kcal: 2200, targetProteinG });
+  const logged = (parts: ReturnType<typeof nutritionParts>) => parts.find((p) => p.key === "logged")!;
+
+  it("no diary → four parts, logged null, composite from the other three (weights renormalised)", () => {
+    const parts = nutritionParts(good);
+    expect(parts.map((p) => p.key)).toEqual(["protein", "food", "hydration", "logged"]);
+    expect(parts.map((p) => p.weight)).toEqual([30, 25, 25, 20]);
+    expect(logged(parts).score).toBeNull();
+    expect(scoreNutrition(good)).toBe(scoreNutrition(good, []));
+    expect(scoreNutrition(good)!).toBeGreaterThanOrEqual(90);
+  });
+
+  it("5 logged days with 4 hits → ramp(0.8, 0.1, 0.85) = 93; a hit is ≥90% of target", () => {
+    // 144 g is exactly 0.9 × 160 → counts as a hit; 100 g misses.
+    const diary = [dd(0, 150), dd(1, 144), dd(2, 200), dd(3, 100), dd(4, 160)];
+    expect(logged(nutritionParts(good, diary)).score).toBe(93);
+  });
+
+  it("needs ≥5 diary days WITH a target — days without one are ignored, never diluting", () => {
+    const four = [dd(0, 150), dd(1, 150), dd(2, 150), dd(3, 150)];
+    expect(logged(nutritionParts(good, four)).score).toBeNull();
+    expect(logged(nutritionParts(good, [...four, dd(4, 150, null)])).score).toBeNull();
+    expect(logged(nutritionParts(good, [...four, dd(4, 150, null), dd(5, 150)])).score).toBe(100);
+  });
+
+  it("fewer than 5 check-ins → all four parts null, even with a full diary", () => {
+    const diary = Array.from({ length: 7 }, (_, i) => dd(i, 170));
+    expect(nutritionParts([checkin(0)], diary).every((p) => p.score == null)).toBe(true);
+  });
+
+  it("inputs.diary flows through computeWhealthIndexDetailed", () => {
+    const diary = Array.from({ length: 7 }, (_, i) => dd(i, 170));
+    const d = computeWhealthIndexDetailed({ ...EMPTY, checkins: good, diary });
+    expect(logged(d.breakdown.nutrition).score).toBe(100);
+    expect(d.pillars.nutrition).toBe(scoreNutrition(good, diary));
   });
 });
 

@@ -6,6 +6,7 @@ import {
   FeedSkeleton,
   CheckinSkeleton,
   ListSkeleton,
+  NutritionSkeleton,
 } from "@/components/skeletons/PageSkeleton";
 
 /**
@@ -20,6 +21,7 @@ const RouteFallback = () => {
 
   if (pathname === "/") return <HomeSkeleton />;
   if (pathname.startsWith("/checkin")) return <CheckinSkeleton />;
+  if (pathname.startsWith("/nutrition")) return <NutritionSkeleton />;
   if (pathname.startsWith("/leaderboard")) return <LeaderboardSkeleton />;
   if (pathname.startsWith("/profile") || pathname.startsWith("/user/"))
     return <ProfileSkeleton />;

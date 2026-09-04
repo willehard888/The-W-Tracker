@@ -1,0 +1,92 @@
+[
+  {
+    "label": "0 g → every present key is 0 (still present)",
+    "per100g": { "kcal": 165, "protein_g": 31, "fat_g": 3.6, "carbs_g": 0 },
+    "grams": 0,
+    "expected": { "kcal": 0, "protein_g": 0, "fat_g": 0, "carbs_g": 0, "carbs_total_g": 0, "net_carbs_g": 0, "kj": 0 }
+  },
+  {
+    "label": "33 g of a 0.5 g nutrient → 0.165",
+    "per100g": { "fiber_g": 0.5 },
+    "grams": 33,
+    "expected": { "fiber_g": 0.165 }
+  },
+  {
+    "label": "12.5 g fractional grams; 0.0625 rounds half-up to 0.063",
+    "per100g": { "protein_g": 20, "fat_g": 0.5 },
+    "grams": 12.5,
+    "expected": { "protein_g": 2.5, "fat_g": 0.063 }
+  },
+  {
+    "label": "1250 g large portion with derived keys",
+    "per100g": { "kcal": 52, "carbs_g": 11.4, "fiber_g": 2.4 },
+    "grams": 1250,
+    "expected": { "kcal": 650, "carbs_g": 142.5, "fiber_g": 30, "carbs_total_g": 172.5, "net_carbs_g": 142.5, "kj": 2719.6 }
+  },
+  {
+    "label": "absent nutrients stay absent (never 0)",
+    "per100g": { "kcal": 100 },
+    "grams": 100,
+    "expected": { "kcal": 100, "kj": 418.4 }
+  },
+  {
+    "label": "µg values: vit_b12_ug 2.4 at 150 g → 3.6",
+    "per100g": { "vit_b12_ug": 2.4 },
+    "grams": 150,
+    "expected": { "vit_b12_ug": 3.6 }
+  },
+  {
+    "label": "kcal produces kj = kcal × 4.184 rounded to 3",
+    "per100g": { "kcal": 165 },
+    "grams": 100,
+    "expected": { "kcal": 165, "kj": 690.36 }
+  },
+  {
+    "label": "carbs + fiber + sugar alcohols → carbs_total_g and net_carbs_g",
+    "per100g": { "carbs_g": 30, "fiber_g": 5, "sugar_alcohol_g": 10 },
+    "grams": 100,
+    "expected": { "carbs_g": 30, "fiber_g": 5, "sugar_alcohol_g": 10, "carbs_total_g": 35, "net_carbs_g": 20 }
+  },
+  {
+    "label": "carbs without fiber: fiber treated as 0 for carbs_total_g",
+    "per100g": { "carbs_g": 12.3 },
+    "grams": 200,
+    "expected": { "carbs_g": 24.6, "carbs_total_g": 24.6, "net_carbs_g": 24.6 }
+  },
+  {
+    "label": "fiber without carbs → no derived carb keys",
+    "per100g": { "fiber_g": 3 },
+    "grams": 100,
+    "expected": { "fiber_g": 3 }
+  },
+  {
+    "label": "empty vector → empty vector",
+    "per100g": {},
+    "grams": 100,
+    "expected": {}
+  },
+  {
+    "label": "sub-milligram value rounds to 0 but stays present",
+    "per100g": { "selenium_ug": 0.0004 },
+    "grams": 100,
+    "expected": { "selenium_ug": 0 }
+  },
+  {
+    "label": "1 g of an 87.5 g/100 g nutrient → 0.875",
+    "per100g": { "water_g": 87.5 },
+    "grams": 1,
+    "expected": { "water_g": 0.875 }
+  },
+  {
+    "label": "150 g chicken breast: full macro row + sodium",
+    "per100g": { "kcal": 165, "protein_g": 31, "fat_g": 3.6, "carbs_g": 0, "sodium_mg": 74 },
+    "grams": 150,
+    "expected": { "kcal": 247.5, "protein_g": 46.5, "fat_g": 5.4, "carbs_g": 0, "sodium_mg": 111, "carbs_total_g": 0, "net_carbs_g": 0, "kj": 1035.54 }
+  },
+  {
+    "label": "1e9 g: scale computes; the too_large guard lives in resolveGrams",
+    "per100g": { "kcal": 1 },
+    "grams": 1000000000,
+    "expected": { "kcal": 10000000, "kj": 41840000 }
+  }
+]

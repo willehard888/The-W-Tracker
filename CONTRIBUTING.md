@@ -42,7 +42,7 @@ This document is for developers picking up the W Tracker codebase. Read [`README
 - [ ] Route registered lazily in `src/App.tsx` (don't bypass the shell)
 - [ ] Tracked in analytics / status counters if it affects XP
 - [ ] Gate chain green before pushing:
-      `npx tsc --noEmit && node scripts/type-debt.mjs && node scripts/style-guard.mjs && npx vitest run && npm run build`
+      `npx tsc -p tsconfig.app.json --noEmit && node scripts/type-debt.mjs && node scripts/style-guard.mjs && npx vitest run && npm run build`
 
 ## Releasing
 

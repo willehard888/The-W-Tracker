@@ -10,6 +10,7 @@ import { RECIPES, type Recipe } from "@/data/recipes";
 import { cn } from "@/lib/utils";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
+import MacroRow from "@/components/nutrition/MacroRow";
 
 const BATCH_OPTIONS = [1, 2, 3, 4, 5] as const;
 
@@ -45,30 +46,6 @@ const RecipePhoto = ({ id, className, variant = "hero" }: { id: string; classNam
     />
   );
 };
-
-/** Protein leads, the rest recede — the whole library is built on that promise. */
-const MacroRow = ({ recipe }: { recipe: Recipe }) => (
-  <div className="flex items-stretch gap-3">
-    <div className="rounded-2xl border border-gold/30 bg-gold/[0.07] px-4 py-3 shrink-0">
-      <p className="font-display text-[30px] font-black leading-none text-gold tabular-nums">
-        {recipe.nutrition.protein}<span className="text-[17px]">g</span>
-      </p>
-      <p className="eyebrow text-muted-foreground mt-1.5">Protein</p>
-    </div>
-    <div className="flex-1 grid grid-cols-3 gap-x-3 gap-y-2 content-center">
-      {[
-        { v: `${recipe.nutrition.calories}`, l: "kcal" },
-        { v: `${recipe.nutrition.carbs}g`, l: "carbs" },
-        { v: `${recipe.nutrition.fat}g`, l: "fat" },
-      ].map((m) => (
-        <div key={m.l}>
-          <p className="text-[15px] font-black leading-none tabular-nums">{m.v}</p>
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-1">{m.l}</p>
-        </div>
-      ))}
-    </div>
-  </div>
-);
 
 const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
   const navigate = useNavigate();
@@ -113,7 +90,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
           </div>
         </div>
 
-        <MacroRow recipe={recipe} />
+        <MacroRow nutrition={recipe.nutrition} />
 
         <div className="surface-card p-4">
           <div className="flex items-center gap-2 mb-2.5">

@@ -6,7 +6,7 @@ import { track, FUNNEL } from "@/lib/analytics";
 import { identifyUser, resetIdentity, captureException } from "@/lib/observability";
 import { uniqueChannelName } from "@/lib/realtime";
 import { clearIosDebug } from "@/lib/ios-debug";
-import { HEALTH_CONSENT_KEY } from "@/lib/health/health-consent";
+import { HEALTH_CONSENT_KEY, MEAL_WRITE_CONSENT_KEY } from "@/lib/health/health-consent";
 import { queryClient } from "@/lib/query-client";
 
 interface AuthContextType {
@@ -340,6 +340,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // shared device silently background-syncs the previous owner's health
         // data under their own name.
         HEALTH_CONSENT_KEY,
+        MEAL_WRITE_CONSENT_KEY,
       ].forEach(
         (k) => localStorage.removeItem(k),
       );

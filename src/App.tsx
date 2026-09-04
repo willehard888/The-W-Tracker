@@ -6,6 +6,7 @@ import { queryClient } from "@/lib/query-client";
 import { supabase } from "@/integrations/supabase/client";
 import { usePushNotifications, PushControlsContext } from "@/hooks/use-push-notifications";
 import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
+import { useOfflineNutritionSync } from "@/hooks/use-offline-nutrition-sync";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import { useActivityHeartbeat } from "@/hooks/use-activity-heartbeat";
 import PushPrimingSheet from "@/components/notifications/PushPrimingSheet";
@@ -66,6 +67,13 @@ const TribeLeaderboard = lazy(() => import("./pages/TribeLeaderboard"));
 const Vault = lazy(() => import("./pages/Vault"));
 const Recipes = lazy(() => import("./pages/Recipes"));
 const Exercises = lazy(() => import("./pages/Exercises"));
+// Nutrition engine — the diary and its satellites light the Today tab (BottomNav PARENT_TAB).
+const NutritionDiary = lazy(() => import("./pages/nutrition/NutritionDiary"));
+const NutritionPhotoReview = lazy(() => import("./pages/nutrition/NutritionPhotoReview"));
+const NutritionTargets = lazy(() => import("./pages/nutrition/NutritionTargets"));
+const UserFoodEditor = lazy(() => import("./pages/nutrition/UserFoodEditor"));
+const NutritionRecipes = lazy(() => import("./pages/nutrition/NutritionRecipes"));
+const NutritionRecipeEditor = lazy(() => import("./pages/nutrition/NutritionRecipeEditor"));
 const WeeklyBriefing = lazy(() => import("./pages/WeeklyBriefing"));
 const AdminModeration = lazy(() => import("./pages/AdminModeration"));
 const AdminLegendInvites = lazy(() => import("./pages/AdminLegendInvites"));
@@ -197,6 +205,7 @@ const AppRoutes = () => {
   const { user } = useAuth();
   const { needsPriming, enablePush, dismissPriming, resyncStreakWarning } = usePushNotifications();
   useOfflineCheckinSync();
+  useOfflineNutritionSync();
   useActivityHeartbeat();
 
   // Win-backs moved server-side (winback-lapsed) — cancel the legacy local
@@ -293,6 +302,14 @@ const AppRoutes = () => {
           {/* A recipe is a route, not local state — so the coach and the Vault
               can link to a specific dish, and Back actually goes back. */}
           <Route path="/recipes/:id" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
+          <Route path="/nutrition" element={<ProtectedRoute><NutritionDiary /></ProtectedRoute>} />
+          <Route path="/nutrition/photo" element={<ProtectedRoute><NutritionPhotoReview /></ProtectedRoute>} />
+          <Route path="/nutrition/targets" element={<ProtectedRoute><NutritionTargets /></ProtectedRoute>} />
+          <Route path="/nutrition/foods/new" element={<ProtectedRoute><UserFoodEditor /></ProtectedRoute>} />
+          <Route path="/nutrition/foods/:id/edit" element={<ProtectedRoute><UserFoodEditor /></ProtectedRoute>} />
+          <Route path="/nutrition/recipes" element={<ProtectedRoute><NutritionRecipes /></ProtectedRoute>} />
+          <Route path="/nutrition/recipes/new" element={<ProtectedRoute><NutritionRecipeEditor /></ProtectedRoute>} />
+          <Route path="/nutrition/recipes/:id" element={<ProtectedRoute><NutritionRecipeEditor /></ProtectedRoute>} />
           <Route path="/exercises" element={<ProtectedRoute><Exercises /></ProtectedRoute>} />
           {/* Same reason as /recipes/:id — a movement the coach prescribes
               should be linkable, and Back should close the detail. */}

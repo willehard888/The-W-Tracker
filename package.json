@@ -17,7 +17,11 @@
     "deploy:functions": "bash scripts/deploy-backend.sh",
     "deploy:backend": "bash scripts/deploy-backend.sh --db",
     "obsidian:sync": "vite-node scripts/obsidian/sync.mts",
-    "obsidian:check": "vite-node scripts/obsidian/sync.mts -- --dry-run"
+    "obsidian:check": "vite-node scripts/obsidian/sync.mts -- --dry-run",
+    "types:gen": "supabase gen types typescript --project-id gcwuvijcuzhunkcauzom --schema public > src/integrations/supabase/types.ts",
+    "nutrition:fineli": "vite-node scripts/nutrition/fineli.mts --",
+    "nutrition:usda": "vite-node scripts/nutrition/usda.mts --",
+    "nutrition:report": "vite-node scripts/nutrition/report.mts"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",

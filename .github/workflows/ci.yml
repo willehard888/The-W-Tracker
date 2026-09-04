@@ -31,7 +31,7 @@ jobs:
         run: npm ci
 
       - name: Type-check
-        run: npx tsc --noEmit
+        run: npx tsc -p tsconfig.app.json --noEmit
 
       - name: Type-debt ratchet (strict errors + `as any` must not grow)
         run: node scripts/type-debt.mjs

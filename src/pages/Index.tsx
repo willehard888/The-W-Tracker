@@ -32,6 +32,12 @@ import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
 import { hasHealthConsent } from "@/lib/health/health-consent";
 import { isNativePlatform } from "@/lib/platform";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
+import FuelZone from "@/components/nutrition/FuelZone";
+import { localDateKey } from "@/components/nutrition/DateBar";
+import { useNutritionTotals } from "@/hooks/use-nutrition-totals";
+import { useNutritionTargets } from "@/hooks/use-nutrition-targets";
+import { setPendingPhoto } from "@/lib/nutrition/pending-photo";
+import { dayState, macroSummary } from "@/lib/nutrition/totals";
 // Pull-to-refresh removed temporarily — was intercepting inner taps.
 
 const Index = () => {
@@ -156,6 +162,21 @@ const Index = () => {
   // Shared with DailyCheckin — the window is the LOCAL CALENDAR DAY, so the
   // card unlocks at midnight (not 24h after the last check-in).
   const { canCheckin, timeUntilCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
+
+  // Fuel — today's kcal and protein against target. Both queries are cheap
+  // and cached (30 s / 5 min); a failed read with nothing cached hides the
+  // row rather than showing a wrong number.
+  const fuelDate = localDateKey();
+  const { day: fuelDay, isLoading: fuelLoading, error: fuelError } = useNutritionTotals(fuelDate);
+  const { targets: fuelTargets, isLoading: fuelTargetsLoading } = useNutritionTargets();
+  const fuelTotals = macroSummary(fuelDay?.totals ?? {});
+  const fuelTargetMacros = fuelTargets
+    ? { calories: fuelTargets.kcal, protein: fuelTargets.protein_g, carbs: fuelTargets.carbs_g, fat: fuelTargets.fat_g }
+    : null;
+  const fuelState = dayState(
+    fuelDay?.totals ?? {},
+    fuelTargets ? { kcal: fuelTargets.kcal, protein_g: fuelTargets.protein_g, carbs_g: fuelTargets.carbs_g, fat_g: fuelTargets.fat_g } : null,
+  );
 
   // (First-W card removed — for a brand-new user the Command Deck IS the
   // first-W experience: "Start your streak. Earn XP. Climb." under the lava
@@ -347,10 +368,32 @@ const Index = () => {
         </div>
       )}
 
+      {/* ── FUEL — today's kcal and protein against target, and the two ways
+             in (log, or a photo of the plate). A quiet row with no gold of its
+             own: the hero and the W-Index keep Home's whole gold budget. ── */}
+      <div className="home-rise home-rise-3 mb-6 relative z-10">
+        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
+          <FuelZone
+            loading={fuelLoading || fuelTargetsLoading}
+            totals={fuelTotals}
+            targets={fuelTargetMacros}
+            state={fuelState}
+            unavailable={!!fuelError && !fuelDay}
+            onOpenDiary={() => navigate("/nutrition")}
+            onOpenTargets={() => navigate("/nutrition/targets")}
+            onLog={() => navigate("/nutrition?add=1")}
+            onPhoto={(file) => {
+              setPendingPhoto(file);
+              navigate("/nutrition/photo");
+            }}
+          />
+        </ErrorBoundary>
+      </div>
+
       {/* APPLE HEALTH — the ask that makes check-ins verifiable. Native only,
           until connected; renders nothing on web/Android. */}
       {isNativePlatform() && !healthConnected && (
-        <div className="home-rise home-rise-3 mb-6 relative z-10">
+        <div className="home-rise home-rise-4 mb-6 relative z-10">
           <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
             <HealthKitConnectCard onConnected={() => setHealthConnected(true)} />
           </ErrorBoundary>
@@ -360,7 +403,7 @@ const Index = () => {
       {/* ── COACH — a whisper, not a card. The coach's one line in its own
              voice; a low quiet band so it reads as a presence, never a second
              button competing with the hero. ── */}
-      <div className="home-rise home-rise-3 mb-6 relative z-10">
+      <div className="home-rise home-rise-4 mb-6 relative z-10">
         <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
           <CoachStrip />
         </ErrorBoundary>
@@ -369,7 +412,7 @@ const Index = () => {
       {/* ── THE LIBRARY — one zone: the day's thought to read (a pull-quote
              from the Vault) leading a clean shelf of what the membership
              unlocks. Two shapes, one grammar — the card-soup is gone. ── */}
-      <div className="home-rise home-rise-4 mb-6 relative z-10">
+      <div className="home-rise home-rise-5 mb-6 relative z-10">
         <DailyInsightCard />
         <div className="mt-3">
           <LibraryHub />

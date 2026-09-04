@@ -28,6 +28,12 @@ interface Checkin {
   journal_entry: string | null;
 }
 
+interface MealRow {
+  log_date: string;
+  kcal: number | null;
+  protein_g: number | null;
+}
+
 const briefingTool = {
   type: "function",
   function: {
@@ -94,7 +100,7 @@ function getWeekRange() {
   };
 }
 
-function computeStats(checkins: Checkin[]) {
+function computeStats(checkins: Checkin[], meals: MealRow[] = [], proteinTargetG: number | null = null) {
   const totalXp = checkins.reduce((s, c) => s + (c.xp_earned ?? 0), 0);
   const days = checkins.length;
   const avgSleep =
@@ -124,6 +130,18 @@ function computeStats(checkins: Checkin[]) {
     if (!worstDay || xp < worstDay.xp) worstDay = { date, xp };
   }
 
+  // Food diary — per-day sums; averages over LOGGED days only, null when unused.
+  const byDay = new Map<string, { kcal: number; protein: number }>();
+  for (const m of meals) {
+    const d = byDay.get(m.log_date) ?? { kcal: 0, protein: 0 };
+    d.kcal += Number(m.kcal ?? 0);
+    d.protein += Number(m.protein_g ?? 0);
+    byDay.set(m.log_date, d);
+  }
+  const loggedDays = [...byDay.values()];
+  const avgOver = (pick: (d: { kcal: number; protein: number }) => number) =>
+    loggedDays.length ? Math.round(loggedDays.reduce((s, d) => s + pick(d), 0) / loggedDays.length) : null;
+
   return {
     total_xp: totalXp,
     days_checked_in: days,
@@ -135,6 +153,14 @@ function computeStats(checkins: Checkin[]) {
     best_day: bestDay,
     worst_day: worstDay,
     completion_pct: Math.round((days / 7) * 100),
+    meals_logged: meals.length,
+    days_logged: loggedDays.length,
+    avg_kcal: avgOver((d) => d.kcal),
+    avg_protein_g: avgOver((d) => d.protein),
+    protein_target_g: proteinTargetG,
+    protein_days_hit: proteinTargetG != null && proteinTargetG > 0
+      ? loggedDays.filter((d) => d.protein >= 0.9 * proteinTargetG).length
+      : null,
   };
 }
 
@@ -235,7 +261,25 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const stats = computeStats(checkins as Checkin[]);
+      // The week's food diary + the protein target in force at week end. Both
+      // swallow their own failure (table not migrated yet) → "diary unused".
+      const [mealsRes, targetRes] = await Promise.all([
+        Promise.resolve(
+          supabase.from("meal_logs").select("log_date, kcal, protein_g")
+            .eq("user_id", profile.user_id).gte("log_date", weekStartISO).lte("log_date", weekEndISO),
+        ).catch(() => ({ data: null })),
+        Promise.resolve(
+          supabase.from("nutrition_targets").select("protein_g").eq("user_id", profile.user_id)
+            .lte("effective_from", weekEndISO).order("effective_from", { ascending: false }).limit(1).maybeSingle(),
+        ).catch(() => ({ data: null })),
+      ]);
+      const meals = (mealsRes.data ?? []) as MealRow[];
+      const targetRow = targetRes.data as { protein_g: number | null } | null;
+      const stats = computeStats(
+        checkins as Checkin[],
+        meals,
+        targetRow?.protein_g != null ? Number(targetRow.protein_g) : null,
+      );
 
       // Build prompt
       const journalSnippets = (checkins as Checkin[])
@@ -260,6 +304,9 @@ Stats:
 - Perfect days: ${stats.perfect_days}
 - Avg sleep: ${stats.avg_sleep}h
 - Avg hydration: ${stats.avg_hydration}L
+- Food diary: ${stats.days_logged > 0
+    ? `${stats.days_logged}/7 days logged (${stats.meals_logged} meals) · avg ${stats.avg_kcal} kcal · avg protein ${stats.avg_protein_g} g${stats.protein_target_g != null ? ` vs ${stats.protein_target_g} g target (${stats.protein_days_hit} days hit)` : " (no target set)"} — self-logged estimates`
+    : "diary unused"}
 
 Daily breakdown:
 ${(checkins as Checkin[]).map((c) => `${c.checked_in_at.slice(0, 10)}: ${c.xp_earned}XP, sleep ${c.sleep_hours}h, ${c.workout ? "workout✓" : "no workout"}, ${c.cold_shower ? "cold✓" : "no cold"}, hydr ${c.hydration_liters}L`).join("\n")}
@@ -283,6 +330,7 @@ Rules:
 - Direct, sharp, no clichés. Use concrete numbers from the data.
 - Insights must reference real patterns (e.g., "Sleep dropped Wed–Fri → workout XP -30%").
 - Protocol items must be specific actions (sets/reps/minutes), not vague advice.
+- Diary figures are estimates; say 'about' and never compute deficits to the calorie.
 - You are an AI coach. Never claim or imply you are human; if the user asks, say
   so plainly. Don't volunteer which underlying model you are. (This replaces a
   "never mention you are an AI" rule that contradicted

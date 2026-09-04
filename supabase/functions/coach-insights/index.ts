@@ -17,6 +17,7 @@ import {
   type NightRow,
   type DayRow,
   type ReflectionRow,
+  type DiaryDay,
 } from "../_shared/whealth-index.ts";
 
 const corsHeaders = {
@@ -93,7 +94,7 @@ Deno.serve(async (req) => {
 
     for (const uid of userIds) {
       try {
-        const [checkinsR, nightsR, daysR, reflR, habitsR, lessonsR, liftsR, tribesR, friendsR, athleteR] =
+        const [checkinsR, nightsR, daysR, reflR, habitsR, lessonsR, liftsR, tribesR, friendsR, athleteR, mealsR, targetsR] =
           await Promise.all([
             sb.from("daily_checkins")
               .select("checked_in_at, sleep_hours, hydration_liters, workout, meditation_morning, meditation_evening, protein_intake, healthy_food, no_phone_morning, no_phone_evening, journal_entry, habits, verified_at")
@@ -119,6 +120,15 @@ Deno.serve(async (req) => {
             sb.from("friendships").select("id", { count: "exact", head: true })
               .or(`requester_id.eq.${uid},addressee_id.eq.${uid}`).eq("status", "accepted"),
             sb.from("coach_athlete_profile").select("i_am").eq("user_id", uid).maybeSingle(),
+            // Food diary (28 d) + every targets row up to today. Each read
+            // swallows its own failure so a missing table = no diary, not no index.
+            Promise.resolve(
+              sb.from("meal_logs").select("log_date, kcal, protein_g").eq("user_id", uid).gte("log_date", sinceDay),
+            ).catch(() => ({ data: null })),
+            Promise.resolve(
+              sb.from("nutrition_targets").select("effective_from, protein_g").eq("user_id", uid)
+                .lte("effective_from", today).order("effective_from", { ascending: true }),
+            ).catch(() => ({ data: null })),
           ]);
 
         const checkins: CheckinDay[] = (checkinsR.data ?? []).map((c: Record<string, unknown>) => ({
@@ -179,6 +189,24 @@ Deno.serve(async (req) => {
           else if (latest <= priorBest * 0.97) stalls++;
         }
 
+        // Diary: one row per logged day, protein target = the targets row in
+        // force on that day (targets are ordered ascending; last one ≤ day wins).
+        const targetRows = (targetsR.data ?? []) as Array<{ effective_from: string; protein_g: number | null }>;
+        const targetFor = (day: string): number | null => {
+          let t: number | null = null;
+          for (const r of targetRows) if (String(r.effective_from) <= day) t = r.protein_g != null ? Number(r.protein_g) : null;
+          return t;
+        };
+        const diaryByDay = new Map<string, DiaryDay>();
+        for (const m of (mealsR.data ?? []) as Array<Record<string, unknown>>) {
+          const d = String(m.log_date);
+          const row = diaryByDay.get(d) ?? { day: d, proteinG: 0, kcal: 0, targetProteinG: targetFor(d) };
+          row.proteinG += Number(m.protein_g ?? 0);
+          row.kcal += Number(m.kcal ?? 0);
+          diaryByDay.set(d, row);
+        }
+        const diary = [...diaryByDay.values()];
+
         const quizScores = (lessonsR.data ?? [])
           .map((l: { quiz_score: number | null }) => l.quiz_score)
           .filter((q: number | null): q is number => q != null);
@@ -193,6 +221,7 @@ Deno.serve(async (req) => {
           tribeCount: tribesR.count ?? 0,
           friendCount: friendsR.count ?? 0,
           iAmSet: !!(athleteR.data?.i_am && String(athleteR.data.i_am).trim().length > 0),
+          diary,
         };
 
         const result = computeWhealthIndexDetailed(inputs);

@@ -9,6 +9,7 @@ import {
   type DayRow,
   type ReflectionRow,
   type WhealthResultDetailed,
+  type DiaryDay,
 } from "@/lib/whealth-index";
 
 // LIVE Whealth Index — the same pure core the nightly coach-insights engine
@@ -27,7 +28,7 @@ async function gatherLiveInputs(userId: string): Promise<WhealthInputs> {
   const since = new Date(Date.now() - 28 * 86400_000).toISOString();
   const sinceDay = since.slice(0, 10);
 
-  const [checkinsR, nightsR, daysR, reflR, lessonsR, lessonsTotalR, liftsR, tribesR, friendsR, athleteR] =
+  const [checkinsR, nightsR, daysR, reflR, lessonsR, lessonsTotalR, liftsR, tribesR, friendsR, athleteR, mealsR, targetsR] =
     await Promise.all([
       supabase
         .from("daily_checkins")
@@ -49,6 +50,10 @@ async function gatherLiveInputs(userId: string): Promise<WhealthInputs> {
       supabase.from("friendships").select("id", { count: "exact", head: true })
         .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`).eq("status", "accepted"),
       supabase.from("coach_athlete_profile").select("i_am").eq("user_id", userId).maybeSingle(),
+      // Food diary — the nutrition pillar's fourth part ("logged protein intake").
+      supabase.from("meal_logs").select("log_date, kcal, protein_g").eq("user_id", userId).gte("log_date", sinceDay),
+      supabase.from("nutrition_targets").select("effective_from, protein_g").eq("user_id", userId)
+        .order("effective_from", { ascending: false }),
     ]);
 
   const checkins: CheckinDay[] = ((checkinsR.data ?? []) as Array<Record<string, unknown>>).map((c) => ({
@@ -113,8 +118,26 @@ async function gatherLiveInputs(userId: string): Promise<WhealthInputs> {
     .map((l) => l.quiz_score)
     .filter((q): q is number => q != null);
 
+  // Diary days: meal totals summed per local day, each against the protein
+  // target in force that day (targets are newest-first). Mirrors coach-insights.
+  const targetRows = (targetsR.data ?? []) as Array<{ effective_from: string; protein_g: number | null }>;
+  const targetFor = (day: string): number | null => {
+    const t = targetRows.find((r) => r.effective_from <= day);
+    return t?.protein_g != null && Number(t.protein_g) > 0 ? Number(t.protein_g) : null;
+  };
+  const dayAgg = new Map<string, { kcal: number; proteinG: number }>();
+  for (const m of (mealsR.data ?? []) as Array<{ log_date: string; kcal: number | null; protein_g: number | null }>) {
+    const cur = dayAgg.get(m.log_date) ?? { kcal: 0, proteinG: 0 };
+    cur.kcal += Number(m.kcal ?? 0);
+    cur.proteinG += Number(m.protein_g ?? 0);
+    dayAgg.set(m.log_date, cur);
+  }
+  const diary: DiaryDay[] = [...dayAgg.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([day, v]) => ({ day, kcal: v.kcal, proteinG: v.proteinG, targetProteinG: targetFor(day) }));
+
   return {
-    checkins, nights, days, reflections,
+    checkins, nights, days, reflections, diary,
     // Habits live in the check-in now: streaks = consecutive logged days
     // (ending on the latest check-in) for each Core 4 habit.
     habitStreaks: (["sleep", "workout", "hydration", "meditation"] as const).map((k) => {

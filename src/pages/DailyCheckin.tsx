@@ -47,6 +47,8 @@ import {
 import { assessSleep, isHabitDone, computeCheckinXp } from "@/lib/checkin-xp";
 import { SPORT_CATALOG, SPORTS, sportsByGroup, buildForYou } from "@/lib/sports";
 import { useRecentSports } from "@/hooks/use-recent-sports";
+import { useNutritionTotals } from "@/hooks/use-nutrition-totals";
+import { useNutritionTargets } from "@/hooks/use-nutrition-targets";
 
 // Sport catalog now lives in src/lib/sports.ts — shared with the athlete
 // profile, quests and (via the persisted sport column) the AI coach.
@@ -218,6 +220,7 @@ const DailyCheckin = () => {
   const [detectedWorkoutMin, setDetectedWorkoutMin] = useState<number | null>(null);
   const sleepPrefilled = useRef(false);
   const stepsPrefilled = useRef(false);
+  const proteinPrefilled = useRef(false);
   const sportPrefilled = useRef(false);
   // Smart picker: search + one-open-group accordion + the For-you shortlist.
   const [sportQuery, setSportQuery] = useState("");
@@ -271,7 +274,7 @@ const DailyCheckin = () => {
       const stepsDone = (snap.steps ?? 0) >= 8000;
       const mindDone = (snap.mindful_minutes ?? 0) > 0;
       const sleepKnown = snap.sleep_hours != null && snap.sleep_hours > 0;
-      setDetected({ workout: workoutDone, steps: stepsDone, mindfulness: mindDone, sleep: sleepKnown });
+      setDetected((d) => ({ ...d, workout: workoutDone, steps: stepsDone, mindfulness: mindDone, sleep: sleepKnown }));
       if (snap.workout_minutes) setDetectedWorkoutMin(snap.workout_minutes);
       // Prefill sleep slider from HealthKit once (user can still adjust).
       if (sleepKnown && !sleepPrefilled.current) {
@@ -288,6 +291,22 @@ const DailyCheckin = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [healthKit.available]);
 
+  // ── Food-diary auto-detect (plan 7d) ────────────────────────────────────
+  // Today's logged protein at ≥ 90 % of the target confirms the protein habit
+  // the same way HealthKit confirms a workout. Works without HealthKit.
+  const { day: diaryDay } = useNutritionTotals(localDateStr());
+  const { targets: nutritionTargets } = useNutritionTargets();
+  useEffect(() => {
+    const target = nutritionTargets?.protein_g ?? diaryDay?.targets?.protein_g;
+    const logged = diaryDay?.totals.protein_g ?? 0;
+    if (!target || logged < 0.9 * target) return;
+    setDetected((d) => (d.nutrition ? d : { ...d, nutrition: true }));
+    if (!proteinPrefilled.current) {
+      proteinPrefilled.current = true;
+      setCompleted((c) => ({ ...c, protein: true }));
+    }
+  }, [diaryDay, nutritionTargets]);
+
   // Is a verifiable habit backed by a live Health signal right now?
   const isDetected = (h: CheckinHabit): boolean => {
     if (!h.verify) return false;
@@ -295,6 +314,7 @@ const DailyCheckin = () => {
     if (h.verify === "steps") return !!detected.steps;
     if (h.verify === "sleep") return !!detected.sleep;
     if (h.verify === "mindfulness") return !!detected.mindfulness;
+    if (h.verify === "nutrition") return !!detected.nutrition;
     return false;
   };
 
@@ -816,16 +836,19 @@ const DailyCheckin = () => {
         </Button>
       </div>
 
-      {healthKit.available && (detected.workout || detected.steps || detected.mindfulness || detected.sleep) && (
+      {(detected.workout || detected.steps || detected.mindfulness || detected.sleep || detected.nutrition) && (
         <div className="mb-4 rounded-xl border border-teal/30 bg-teal/5 p-3 flex items-start gap-2.5">
           <ShieldCheck aria-hidden size={18} className="text-teal shrink-0 mt-0.5" />
           <p className="text-xs text-foreground/90 leading-snug">
-            <span className="font-semibold text-teal">Apple Health synced.</span>{" "}
+            <span className="font-semibold text-teal">
+              {detected.workout || detected.steps || detected.mindfulness || detected.sleep ? "Apple Health synced." : "Verified."}
+            </span>{" "}
             {[
               detected.workout && `a ${detectedWorkoutMin ?? ""}${detectedWorkoutMin ? "-min " : ""}workout`,
               detected.steps && "8k+ steps",
               detected.mindfulness && "meditation",
               detected.sleep && "your sleep",
+              detected.nutrition && "your protein (diary)",
             ].filter(Boolean).join(", ")} detected — verified habits earn bonus XP.
           </p>
         </div>

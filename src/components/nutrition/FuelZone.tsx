@@ -2,6 +2,7 @@ import { useRef, type ReactNode } from "react";
 import { Camera, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AnimatedNumber from "@/components/AnimatedNumber";
+import { fmtKcal } from "@/lib/nutrition/format";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import type { MacroSummary } from "@/components/nutrition/MacroRow";
@@ -69,7 +70,7 @@ const FuelZone = ({ loading, totals, targets, state, unavailable, onOpenDiary, o
       <span className="flex items-baseline gap-x-3 flex-wrap text-[11px] text-muted-foreground">
         <span className="tabular-nums">
           <span className="font-display font-black text-[17px] text-foreground">
-            <AnimatedNumber value={kcal} />
+            <AnimatedNumber value={kcal} format={fmtKcal} />
           </span>
           {targetKcal != null && ` / ${targetKcal}`} kcal
         </span>

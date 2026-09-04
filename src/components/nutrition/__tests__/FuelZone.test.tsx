@@ -4,7 +4,7 @@ import FuelZone, { type FuelZoneProps } from "@/components/nutrition/FuelZone";
 import MacroBars from "@/components/nutrition/MacroBars";
 
 vi.mock("@/lib/haptics", () => ({ hapticSelection: vi.fn(), hapticImpact: vi.fn(), hapticNotification: vi.fn() }));
-vi.mock("@/components/AnimatedNumber", () => ({ default: ({ value }: { value: number }) => <span>{value}</span> }));
+vi.mock("@/components/AnimatedNumber", () => ({ default: ({ value, format }: { value: number; format?: (n: number) => string }) => <span>{format ? format(value) : value}</span> }));
 
 const base: FuelZoneProps = {
   loading: false,
@@ -20,7 +20,7 @@ const base: FuelZoneProps = {
 describe("FuelZone", () => {
   it("shows consumed / target for kcal and protein and opens the diary from the row", () => {
     render(<FuelZone {...base} />);
-    expect(screen.getByText("1240")).toBeInTheDocument();
+    expect(screen.getByText(/^1\s240$/)).toBeInTheDocument(); // NBSP-grouped like the diary (the matcher normalises whitespace)
     expect(screen.getByText(/\/ 2400/)).toBeInTheDocument();
     expect(screen.getByText(/\/ 160/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Open your food diary" }));

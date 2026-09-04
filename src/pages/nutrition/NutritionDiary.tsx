@@ -654,6 +654,10 @@ const NutritionDiary = () => {
                 setSheet(null);
                 navigate(`/nutrition/photo?date=${date}&slot=${sheet.slot}`);
               }}
+              onOpenRecipes={() => {
+                setSheet(null);
+                navigate("/nutrition/recipes");
+              }}
               onCreateFood={() => createFood(sheet.slot, { name: query.trim() })}
               onSearchOnline={() => void runOnlineSearch()}
             />

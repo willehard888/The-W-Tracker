@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Camera, Globe, Loader2, ScanBarcode, Search, X } from "lucide-react";
+import { Camera, ChefHat, Globe, Loader2, ScanBarcode, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import FoodResultRow, { type FoodResultView } from "@/components/nutrition/FoodResultRow";
@@ -32,6 +32,7 @@ const FoodSearchPanel = ({
   onCreateFood,
   onSearchOnline,
   onScanPhoto,
+  onOpenRecipes,
   autoFocus = true,
 }: {
   query: string;
@@ -51,6 +52,8 @@ const FoodSearchPanel = ({
   onSearchOnline?: () => void;
   /** Opens the photo-scan review (its picker offers camera or library). */
   onScanPhoto?: () => void;
+  /** Opens the recipe list — the only way in, so it lives where people look for "my recipes". */
+  onOpenRecipes?: () => void;
   autoFocus?: boolean;
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -113,6 +116,11 @@ const FoodSearchPanel = ({
         {onScanPhoto && (
           <Button size="pill" variant="outline" className="shrink-0" onClick={onScanPhoto}>
             <Camera aria-hidden /> Photo
+          </Button>
+        )}
+        {onOpenRecipes && (
+          <Button size="pill" variant="outline" className="shrink-0" onClick={onOpenRecipes}>
+            <ChefHat aria-hidden /> Recipes
           </Button>
         )}
       </div>

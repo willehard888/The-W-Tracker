@@ -61,8 +61,8 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
       // A first-timer gets the written 8-week path instead of a generated
       // block. The AI is told to build 4–6 loaded exercises every training day
       // and not to lean on bodyweight, which is the right instruction for
-      // someone who already lifts and the wrong one for someone who has never
-      // held a barbell. This also returns instantly — no model round trip.
+      // someone who already lifts and the wrong one for someone new to a
+      // barbell. This also returns instantly — no model round trip.
       if (profile?.training_experience === "never_trained") {
         // Read the most recent program rather than holding it in state, so
         // block 2 is offered correctly even if the row changed on another

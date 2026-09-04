@@ -31,22 +31,27 @@ const TRAIN_DAY_INDEXES = [0, 2, 4] as const;
 
 export type BeginnerBlock = 1 | 2;
 
-interface PlanBlock {
+/**
+ * Declared as type aliases rather than interfaces on purpose: `plan_json` is a
+ * `Json` column, and only type aliases get the implicit index signature that
+ * assignment to `Json` requires. As interfaces these fail the strict gate.
+ */
+type PlanBlock = {
   slug: string;
   name: string;
   sets: number;
   reps: string;
   rpe: number;
   rest_sec: number;
-}
+};
 
-interface PlanDay {
+type PlanDay = {
   day: string;
   focus: string;
   duration_min: number;
   blocks: PlanBlock[];
   conditioning: string;
-}
+};
 
 const buildDay = (day: string, session: PathSession | null, week: PathWeek): PlanDay => {
   if (!session) {

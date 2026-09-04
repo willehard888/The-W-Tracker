@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildBeginnerPlan, type BeginnerBlock } from "@/lib/beginner-program";
-import { PATH_MOVEMENTS } from "@/data/beginner-path";
+import { PATH_MOVEMENTS, type PathMovement } from "@/data/beginner-path";
 import { findIllustrated } from "@/data/exercises-illustrated";
 import { coachingFor } from "@/data/exercise-coaching";
 
@@ -16,7 +16,12 @@ import { coachingFor } from "@/data/exercise-coaching";
  */
 
 const blocks: BeginnerBlock[] = [1, 2];
-const byName = new Map(Object.values(PATH_MOVEMENTS).map((m) => [m.name, m]));
+// Widened to string keys deliberately: the lookup is fed a name off the
+// generated plan, which is what a real consumer has — not the literal union
+// `as const` infers from the spine.
+const byName = new Map<string, PathMovement>(
+  Object.values(PATH_MOVEMENTS).map((m) => [m.name, m]),
+);
 
 describe.each(blocks)("beginner plan — block %i", (block) => {
   const plan = buildBeginnerPlan(block);

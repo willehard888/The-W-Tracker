@@ -50,7 +50,7 @@ export interface AthleteProfile {
   sleep_time: string;
   training_days_pref: number[];
   /**
-   * `null` means the athlete was never asked — every profile created before
+   * `null` means the athlete has not been asked — every profile created before
    * this question existed. Treated as experienced, so nobody with a program
    * already running is moved onto the beginner path behind their back.
    */

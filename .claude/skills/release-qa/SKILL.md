@@ -15,7 +15,7 @@ Run from the repo root as ONE command (never `;`-separated — a `;` once let a
 broken build reach CI):
 
 ```bash
-npx tsc --noEmit && node scripts/type-debt.mjs && node scripts/style-guard.mjs && npx vitest run && npm run build
+npx tsc -p tsconfig.app.json --noEmit && node scripts/type-debt.mjs && node scripts/style-guard.mjs && npx vitest run && npm run build
 ```
 
 Only after every gate is green: commit → push → wait for GitHub CI

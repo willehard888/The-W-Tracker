@@ -114,7 +114,7 @@ Rules that were learned the hard way:
 
 ## 6. Verify in bounded passes
 
-1. Gates: `npx tsc --noEmit && node scripts/type-debt.mjs && node scripts/style-guard.mjs && npx vitest run && npm run build`
+1. Gates: `npx tsc -p tsconfig.app.json --noEmit && node scripts/type-debt.mjs && node scripts/style-guard.mjs && npx vitest run && npm run build`
    (baselines strict 0 / asAny 33 / asNever 3 live in `.type-debt-baseline.json`;
    style-guard bans literal gold/ember hsl triples — use `hsl(var(--gold))`).
 2. Detector once, after the UI is written:

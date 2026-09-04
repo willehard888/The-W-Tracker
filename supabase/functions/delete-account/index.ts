@@ -127,15 +127,22 @@ Deno.serve(async (req) => {
       "analytics_events", "tribe_members", "tribe_invites", "tribe_event_rsvps",
       "moderation_queue", "content_moderations", "night_metrics", "workout_logs",
       "health_sync_snapshots",
+      // Nutrition engine: diary, targets, recipes, favourites, scan cache
+      // (auth.users cascades cover these too — explicit is the house rule).
+      "meal_log_items", "meal_logs", "nutrition_targets", "nutrition_recipes",
+      "food_favorites", "meal_scan_cache",
     ];
     for (const t of extraTables) {
       try { await serviceClient.from(t).delete().eq("user_id", user.id); }
       catch (e) { console.warn(`delete-account: ${t} skipped`, e); }
     }
+    // Custom foods key on owner_id, not user_id.
+    try { await serviceClient.from("foods").delete().eq("owner_id", user.id); }
+    catch (e) { console.warn("delete-account: foods skipped", e); }
 
     // Storage: the user's proof photos + avatars survived deletion in the
     // (now enumeration-locked) buckets. Purge both folders.
-    for (const bucket of ["proof-photos", "feed-images"]) {
+    for (const bucket of ["proof-photos", "feed-images", "meal-photos"]) {
       try {
         const { data: files } = await serviceClient.storage.from(bucket).list(user.id);
         if (files && files.length > 0) {

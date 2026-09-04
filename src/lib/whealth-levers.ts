@@ -94,6 +94,12 @@ export const WHEALTH_LEVERS: Record<keyof PillarScores, WhealthLever[]> = {
       detail: "Swap one processed item for a whole-food option — the hit-rate compounds.",
       action: { label: "Meal-prep recipes", path: "/recipes" },
     },
+    {
+      partKey: "logged",
+      title: "Log the protein you eat",
+      detail: "Five logged days is the floor before this counts — a photo per meal is enough.",
+      action: { label: "Open diary", path: "/nutrition" },
+    },
   ],
   mind: [
     {

@@ -59,6 +59,15 @@ export interface ReflectionRow {
   hasFriction: boolean;
 }
 
+/** One food-diary day: trigger-derived meal sums + the protein target in force. */
+export interface DiaryDay {
+  /** YYYY-MM-DD */
+  day: string;
+  proteinG: number;
+  kcal: number;
+  targetProteinG: number | null;
+}
+
 export interface WhealthInputs {
   checkins: CheckinDay[];
   nights: NightRow[];
@@ -74,6 +83,8 @@ export interface WhealthInputs {
   tribeCount: number;
   friendCount: number;
   iAmSet: boolean;
+  /** Food diary days (optional — the "logged" nutrition part stays null without it). */
+  diary?: DiaryDay[];
 }
 
 export interface PillarScores {
@@ -265,13 +276,15 @@ export function scoreMovement(
   return composite(movementParts(checkins, days, lifts));
 }
 
-/** Nutrition sub-signals: protein + whole-food hit-rates, hydration. */
-export function nutritionParts(checkins: CheckinDay[]): PillarPart[] {
+/** Nutrition sub-signals: protein + whole-food hit-rates, hydration, and the
+ *  food-diary protein hit-rate (≥5 logged days with a target, else null). */
+export function nutritionParts(checkins: CheckinDay[], diary: DiaryDay[] = []): PillarPart[] {
   if (checkins.length < 5) {
     return [
-      { key: "protein", label: "Protein hit-rate", score: null, weight: 40 },
-      { key: "food", label: "Whole-food hit-rate", score: null, weight: 30 },
-      { key: "hydration", label: "Hydration", score: null, weight: 30 },
+      { key: "protein", label: "Protein hit-rate", score: null, weight: 30 },
+      { key: "food", label: "Whole-food hit-rate", score: null, weight: 25 },
+      { key: "hydration", label: "Hydration", score: null, weight: 25 },
+      { key: "logged", label: "Logged protein intake", score: null, weight: 20 },
     ];
   }
   const rate = (pick: (c: CheckinDay) => boolean) =>
@@ -281,15 +294,23 @@ export function nutritionParts(checkins: CheckinDay[]): PillarPart[] {
   const hyds = checkins.map((c) => c.hydration).filter((v): v is number => v != null && v > 0);
   const hydScore = hyds.length >= 5 ? round(ramp(avg(hyds)!, 1, 2.8) * 100) : null;
 
+  // Diary days that carry a protein target; a hit is ≥90% of it (diary rows
+  // are self-logged estimates, so the bar sits deliberately under 100%).
+  const targeted = diary.filter((d) => (d.targetProteinG ?? 0) > 0);
+  const loggedScore = targeted.length >= 5
+    ? round(ramp(targeted.filter((d) => d.proteinG >= 0.9 * d.targetProteinG!).length / targeted.length, 0.1, 0.85) * 100)
+    : null;
+
   return [
-    { key: "protein", label: "Protein hit-rate", score: proteinScore, weight: 40 },
-    { key: "food", label: "Whole-food hit-rate", score: foodScore, weight: 30 },
-    { key: "hydration", label: "Hydration", score: hydScore, weight: 30 },
+    { key: "protein", label: "Protein hit-rate", score: proteinScore, weight: 30 },
+    { key: "food", label: "Whole-food hit-rate", score: foodScore, weight: 25 },
+    { key: "hydration", label: "Hydration", score: hydScore, weight: 25 },
+    { key: "logged", label: "Logged protein intake", score: loggedScore, weight: 20 },
   ];
 }
 
-export function scoreNutrition(checkins: CheckinDay[]): number | null {
-  return composite(nutritionParts(checkins));
+export function scoreNutrition(checkins: CheckinDay[], diary: DiaryDay[] = []): number | null {
+  return composite(nutritionParts(checkins, diary));
 }
 
 /** Mind sub-signals: meditation practice, mindful minutes, mood & energy levels. */
@@ -515,7 +536,7 @@ export function computeWhealthIndexDetailed(inputs: WhealthInputs): WhealthResul
     movement: movementParts(inputs.checkins, inputs.days, {
       prs: inputs.liftPrs, stalls: inputs.liftStalls, count: inputs.liftCount,
     }),
-    nutrition: nutritionParts(inputs.checkins),
+    nutrition: nutritionParts(inputs.checkins, inputs.diary ?? []),
     mind: mindParts(inputs.checkins, inputs.days, inputs.reflections),
     inner: innerParts({
       lessonsCompleted: inputs.lessonsCompleted,

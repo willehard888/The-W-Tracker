@@ -4,15 +4,16 @@
 // - `column`  → maps to an existing daily_checkins boolean column (backward
 //               compatible; record_checkin writes it). Habits WITHOUT a column
 //               are stored in daily_checkins.habits (jsonb).
-// - `verify`  → which HealthKit signal can confirm it (badge + bonus, never
-//               required). undefined = self-report only.
+// - `verify`  → which HealthKit signal (or the food diary, "nutrition") can
+//               confirm it (badge + bonus, never required). undefined =
+//               self-report only.
 // - `core`    → always shown, can't be removed (sleep + workout).
 //
 // XP values mirror the previous fixed check-in where habits overlap, so nobody's
 // point economy shifts; new habits use evidence-weighted values.
 
 export type CheckinPillar = "sleep" | "movement" | "nutrition" | "mind" | "recovery" | "connection";
-export type VerifySignal = "workout" | "steps" | "sleep" | "mindfulness";
+export type VerifySignal = "workout" | "steps" | "sleep" | "mindfulness" | "nutrition";
 
 export interface CheckinHabit {
   key: string;
@@ -22,7 +23,7 @@ export interface CheckinHabit {
   xp: number;
   /** Existing daily_checkins boolean column, if this is a legacy habit. */
   column?: string;
-  /** HealthKit signal that can auto-verify it (badge + bonus). */
+  /** HealthKit (or food-diary) signal that can auto-verify it (badge + bonus). */
   verify?: VerifySignal;
   /** Always present, not removable (handled specially in the UI: sleep slider / sport picker). */
   core?: boolean;
@@ -66,7 +67,7 @@ export const CHECKIN_HABITS: CheckinHabit[] = [
 
   // ── Nutrition ─────────────────────────────────────────────────────────────
   { key: "healthy_food", label: "Whole-food meals", emoji: "🥗", pillar: "nutrition", xp: 20, column: "healthy_food" },
-  { key: "protein", label: "Protein target", emoji: "🥩", pillar: "nutrition", xp: 15, column: "protein_intake" },
+  { key: "protein", label: "Protein target", emoji: "🥩", pillar: "nutrition", xp: 15, column: "protein_intake", verify: "nutrition", note: "Auto-confirmed when your food diary hits ≥90 % of your protein target." },
   { key: "no_alcohol", label: "No alcohol", emoji: "🚫🍺", pillar: "nutrition", xp: 20, note: "Wrecks deep sleep + recovery — Health confirms it in your heart rate." },
   { key: "no_sugar", label: "No added sugar", emoji: "🍭", pillar: "nutrition", xp: 15 },
   { key: "caffeine_cutoff", label: "Caffeine before 2pm", emoji: "☕", pillar: "nutrition", xp: 10, note: "Protects tonight's deep sleep." },

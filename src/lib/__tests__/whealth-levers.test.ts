@@ -4,7 +4,7 @@
 import { describe, it, expect } from "vitest";
 import { WHEALTH_LEVERS, pickLevers } from "@/lib/whealth-levers";
 
-const KNOWN_ROUTES = ["/vault", "/recipes", "/exercises", "/checkin", "/coach", "/coach/reflect", "/coach/profile", "/profile", "/squad"];
+const KNOWN_ROUTES = ["/vault", "/recipes", "/exercises", "/checkin", "/coach", "/coach/reflect", "/coach/profile", "/profile", "/squad", "/nutrition"];
 const KNOWN_LESSON_SLUGS = new Set([
   // Inner Work (20260811085218) + recovery course sleep lessons referenced here
   "inner-operating-system", "manifestation-demystified", "woop-mental-contrasting",

@@ -378,6 +378,18 @@ export const PROTOCOLS: Protocol[] = [
     habit_xp_base: 12,
   },
   {
+    id: "log-meals-3x",
+    pillar: "nutrition",
+    title: "Log 3 meals",
+    evidence: "promising",
+    dose: { summary: "Photo or search each meal; protein visible by dinner", frequency_per_week: 7 },
+    benefit: "Self-monitoring is the most consistent predictor of dietary adherence; seeing protein by dinner is what lets you close the gap in time.",
+    risk: "Diary figures are estimates (photo portions ±30 %) — never chase the last calorie.",
+    citations: ["Burke et al., 2011 J Am Diet Assoc (self-monitoring review)"],
+    tags: ["anytime", "low-effort"],
+    habit_xp_base: 8,
+  },
+  {
     id: "fiber-30g",
     pillar: "nutrition",
     title: "Fibre 25–35 g/day",

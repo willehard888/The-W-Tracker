@@ -131,6 +131,7 @@ Deno.serve(async (req) => {
       bonusDone.length ? `BONUS extras done today (optional — worth a nod): ${bonusDone.join(", ")}` : null,
       neglected.length ? `Habitually neglected (last ${gaps!.checkinDays} logged days): ${neglected.join(", ")}` : null,
       gaps?.unchosen?.length ? `Not in their habit set yet: ${gaps.unchosen.slice(0, 3).join(", ")}` : null,
+      gaps?.diary ? `Food diary today: ${gaps.diary.mealsToday} meals logged, protein ${gaps.diary.proteinG} g${gaps.diary.targetProteinG != null ? ` / ${gaps.diary.targetProteinG} g target` : ""} (self-logged estimate — say "about")` : null,
       `Current streak: ${streak} days`,
       sleepH != null ? `Sleep last night: ${sleepH}h` : null,
       `Trained today: ${workout ? "yes" : "no"}`,

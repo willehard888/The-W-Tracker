@@ -53,6 +53,20 @@ export interface HabitGaps {
   consecutiveTrainingDays: number;
   /** Second sessions (extra_workout) in the last 7 days. */
   secondSessions7d: number;
+  /** Food diary (meal_logs) — null when no meal was logged in the last 7 days. */
+  diary: DiaryToday | null;
+}
+
+/** Today's food diary + a 7-day usage pulse. Every number is a self-logged
+ *  ESTIMATE (photo portions ±30%) — the block tells the model so. */
+export interface DiaryToday {
+  mealsToday: number;
+  proteinG: number;
+  kcal: number;
+  targetProteinG: number | null;
+  targetKcal: number | null;
+  mealsLogged7d: number;
+  daysLogged7d: number;
 }
 
 const CHECKIN_COLUMNS =
@@ -70,7 +84,9 @@ export async function gatherHabitGaps(
   const days = opts.days ?? 14;
   try {
     const since = new Date(Date.now() - days * 86_400_000).toISOString();
-    const [checkinsRes, profileRes] = await Promise.all([
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const weekAgoStr = new Date(Date.now() - 7 * 86_400_000).toISOString().slice(0, 10);
+    const [checkinsRes, profileRes, mealsRes, targetRes] = await Promise.all([
       client
         .from("daily_checkins")
         .select(CHECKIN_COLUMNS)
@@ -78,6 +94,16 @@ export async function gatherHabitGaps(
         .gte("checked_in_at", since)
         .order("checked_in_at", { ascending: true }),
       client.from("profiles").select("checkin_habits").eq("user_id", userId).maybeSingle(),
+      // Food diary: 7 days of meals + the targets row in force today. Each
+      // read swallows its own failure (table not migrated yet, network) so
+      // the diary degrades to null instead of taking the whole block down.
+      Promise.resolve(
+        client.from("meal_logs").select("log_date, kcal, protein_g").eq("user_id", userId).gte("log_date", weekAgoStr),
+      ).catch(() => ({ data: null })),
+      Promise.resolve(
+        client.from("nutrition_targets").select("kcal, protein_g, effective_from").eq("user_id", userId)
+          .lte("effective_from", todayStr).order("effective_from", { ascending: false }).limit(1).maybeSingle(),
+      ).catch(() => ({ data: null })),
     ]);
     const rows: Record<string, unknown>[] = checkinsRes.data ?? [];
     const chosen = resolveChosen(profileRes.data?.checkin_habits ?? null);
@@ -87,7 +113,6 @@ export async function gatherHabitGaps(
     // Sick days don't count against habit rates — being ill is not neglect.
     const wellRows = rows.filter((r) => !isSickRow(r));
 
-    const todayStr = new Date().toISOString().slice(0, 10);
     const todayRow =
       rows.find((r) => String(r.checked_in_at ?? "").slice(0, 10) === todayStr) ?? null;
 
@@ -130,6 +155,23 @@ export async function gatherHabitGaps(
     );
     const secondSessions7d = week.filter((r) => habitDoneOnRow(r, "extra_workout")).length;
 
+    // Food diary — meal rows carry trigger-derived kcal/protein_g; never re-derived here.
+    type MealRow = { log_date: string; kcal: number | null; protein_g: number | null };
+    const meals: MealRow[] = mealsRes?.data ?? [];
+    const target = (targetRes?.data ?? null) as { kcal: number | null; protein_g: number | null } | null;
+    const todayMeals = meals.filter((m) => String(m.log_date) === todayStr);
+    const sumToday = (k: "kcal" | "protein_g") =>
+      Math.round(todayMeals.reduce((s, m) => s + Number(m[k] ?? 0), 0));
+    const diary: DiaryToday | null = meals.length === 0 ? null : {
+      mealsToday: todayMeals.length,
+      proteinG: sumToday("protein_g"),
+      kcal: sumToday("kcal"),
+      targetProteinG: target?.protein_g != null ? Number(target.protein_g) : null,
+      targetKcal: target?.kcal != null ? Number(target.kcal) : null,
+      mealsLogged7d: meals.length,
+      daysLogged7d: new Set(meals.map((m) => String(m.log_date))).size,
+    };
+
     return {
       windowDays: days,
       checkinDays: wellRows.length,
@@ -144,6 +186,7 @@ export async function gatherHabitGaps(
       sickDays: rows.filter(isSickRow).length,
       consecutiveTrainingDays,
       secondSessions7d,
+      diary,
     };
   } catch (e) {
     console.error("gatherHabitGaps failed:", e);
@@ -171,6 +214,14 @@ export function buildHabitGapsBlock(g: HabitGaps | null): string {
   if (g.doneToday.length || g.missedToday.length) {
     if (g.doneToday.length) lines.push(`- Done TODAY: ${g.doneToday.join(", ")}.`);
     if (g.missedToday.length) lines.push(`- Missed today: ${g.missedToday.join(", ")}.`);
+  }
+  if (g.diary) {
+    const d = g.diary;
+    const protein = d.targetProteinG != null
+      ? `protein ${d.proteinG} g / ${d.targetProteinG} g target`
+      : `protein ${d.proteinG} g (no target set)`;
+    const kcal = d.targetKcal != null ? `${d.kcal} / ${d.targetKcal} kcal` : `${d.kcal} kcal`;
+    lines.push(`- Food diary TODAY: ${d.mealsToday} meal${d.mealsToday === 1 ? "" : "s"} logged · ${protein} · ${kcal}. (${d.daysLogged7d}/7 days logged this week.) These are self-logged ESTIMATES (photo portions ±30%) — never quote them as exact.`);
   }
 
   if (g.checkinDays > 0) {
@@ -204,5 +255,5 @@ export function buildHabitGapsBlock(g: HabitGaps | null): string {
   return `Their per-habit truth (use this to AIM advice — never recite the list):
 ${lines.join("\n")}
 
-Rules for using it: NEVER tell them to improve a habit that is already done today or already solid — that reads as not paying attention. Anchor improvement advice in the habitually neglected DAILY habits (pick ONE, the most impactful). Bonus habits (e.g. a second training session) are optional extras: celebrate them when done, never call them a gap, "falling behind" or something to fix. If everything daily is solid, inspire ONE new habit from the candidates instead — sell why it compounds with what they already do. SICK DAY RULE: when the user is sick, NEVER push training, cold exposure or intensity, and never frame missed habits as failure — praise them for logging while ill and give recovery-promoting guidance only (rest, fluids, extra sleep, gentle walk at most; see a doctor if it drags on). OVERTRAINING RULE: when the overtraining signal fires, proactively recommend a REST day and explain that adaptation happens in recovery — do not program more volume or intensity, even if they ask for it lightly.`;
+Rules for using it: NEVER tell them to improve a habit that is already done today or already solid — that reads as not paying attention. Anchor improvement advice in the habitually neglected DAILY habits (pick ONE, the most impactful). Bonus habits (e.g. a second training session) are optional extras: celebrate them when done, never call them a gap, "falling behind" or something to fix. If everything daily is solid, inspire ONE new habit from the candidates instead — sell why it compounds with what they already do. SICK DAY RULE: when the user is sick, NEVER push training, cold exposure or intensity, and never frame missed habits as failure — praise them for logging while ill and give recovery-promoting guidance only (rest, fluids, extra sleep, gentle walk at most; see a doctor if it drags on). OVERTRAINING RULE: when the overtraining signal fires, proactively recommend a REST day and explain that adaptation happens in recovery — do not program more volume or intensity, even if they ask for it lightly. DIARY RULE: when the food diary shows protein under target late in the day, that is the ONE nutrition lever — name roughly how many grams are left and one food that closes it. Never nag about logging meals more than once, and never present diary numbers as exact.`;
 }

@@ -1,5 +1,5 @@
 
-import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, CalendarCheck, Gauge, ChevronRight, Brain, UserRound, FileText, Ban, Bell } from "lucide-react";
+import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, CalendarCheck, Gauge, ChevronRight, Brain, UserRound, FileText, Ban, Bell, Utensils } from "lucide-react";
 import { SettingsGroup, SettingsRow } from "@/components/settings/SettingsList";
 import { isNativePlatform } from "@/lib/platform";
 import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
@@ -684,6 +684,7 @@ const Profile = () => {
               list + chevrons), not a wall of identical gold buttons. */}
           <SettingsGroup title="Account">
             <SettingsRow icon={UserRound} label="Athlete profile" sub="Goals, schedule, injuries — what the coach trains" onClick={() => navigate("/coach/profile")} />
+            <SettingsRow icon={Utensils} label="Nutrition targets" sub="Calories and macros your diary measures against" onClick={() => navigate("/nutrition/targets")} />
             <SettingsRow icon={Brain} label="Coach memory" sub="What the coach remembers about you" onClick={() => navigate("/coach/memory")} />
             <SettingsRow icon={Bell} label="Notifications" sub="What reaches your lock screen, and when" onClick={() => navigate("/settings/notifications")} />
           </SettingsGroup>

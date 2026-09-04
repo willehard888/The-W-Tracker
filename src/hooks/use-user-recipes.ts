@@ -21,10 +21,9 @@ export const useUserRecipes = () => {
     staleTime: 5 * 60_000,
     queryFn: () => (uid ? fetchRecipes(supabase, uid) : EMPTY),
   });
-  const refresh = () => {
-    qc.invalidateQueries({ queryKey: key });
-    qc.invalidateQueries({ queryKey: ["food-search"] });
-  };
+  // Returned so mutateAsync resolves only after the list is refetched — the
+  // editor navigates to the new recipe right after save and must find it.
+  const refresh = () => Promise.all([qc.invalidateQueries({ queryKey: key }), qc.invalidateQueries({ queryKey: ["food-search"] })]);
   const save = useMutation({
     mutationFn: (recipe: RecipePayload) => withNetworkRetry(() => upsertRecipe(supabase, recipe)),
     onSuccess: refresh,

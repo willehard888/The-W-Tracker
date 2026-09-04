@@ -231,7 +231,8 @@ export function buildToolSchema() {
                 portion_confidence: num01,
                 identification_confidence: num01,
                 is_liquid: { type: "boolean" },
-                count: { type: ["integer", "null"], minimum: 1, maximum: 50, description: "Number of discrete pieces (eggs, slices, meatballs), null when not countable" },
+                // No type unions here: Gemini rejects `type: [..., "null"]` and the whole call fails with a 400. 0 = not countable (validation maps it to null).
+                count: { type: "integer", minimum: 0, maximum: 50, description: "Number of discrete pieces (eggs, slices, meatballs); 0 when not countable" },
               },
               required: [
                 "name", "canonical_search_terms", "category", "preparation", "estimated_grams", "grams_low", "grams_high",
@@ -255,7 +256,7 @@ IDENTIFY
 - Split composite meals into their visible components UNLESS it is a standard named dish that a database lists as one entry (lasagne, pizza slice, karjalanpiirakka, hamburger, sushi roll, porridge). Then report the dish as one item with category composite_dish.
 - Name the preparation you can see (grilled, fried, boiled, raw, ...). Use "unknown" when it is not visible.
 - canonical_search_terms: 1-4 generic database search terms for this item, English first, then Finnish (e.g. "chicken breast grilled", "broileri rintafilee grillattu"). Include a brand only when it is printed on visible packaging.
-- count: the number of discrete pieces for countable items (eggs, meatballs, slices, berries are NOT countable). null otherwise.
+- count: the number of discrete pieces for countable items (eggs, meatballs, slices; berries are NOT countable). 0 otherwise.
 
 ESTIMATE GRAMS
 - Give estimated_grams plus an honest low-high range. Reason from visible references: dinner plate ≈ 26 cm, fork ≈ 19 cm, a hand ≈ 18 cm, 330 ml can, mug ≈ 300 ml, glass ≈ 200-250 ml.

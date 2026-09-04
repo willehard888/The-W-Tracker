@@ -217,3 +217,30 @@ describe("buildToolSchema", () => {
     expect(schema.function.name).toBe("report_food_items");
   });
 });
+
+describe("buildToolSchema — Gemini compatibility", () => {
+  it("uses no type unions anywhere (Gemini rejects `type: [..., \"null\"]` with a 400)", () => {
+    const unions: string[] = [];
+    const walk = (node: unknown, path: string) => {
+      if (!node || typeof node !== "object") return;
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+        if (k === "type" && Array.isArray(v)) unions.push(path);
+        walk(v, `${path}.${k}`);
+      }
+    };
+    walk(buildToolSchema(), "schema");
+    expect(unions).toEqual([]);
+  });
+
+  it("maps count 0 (the schema's 'not countable') to null", () => {
+    const base = {
+      is_food: true, scene_notes: "", items: [{
+        name: "rice", canonical_search_terms: ["rice"], category: "grain", preparation: "boiled",
+        estimated_grams: 150, grams_low: 120, grams_high: 200, portion_confidence: 0.6,
+        identification_confidence: 0.9, is_liquid: false, count: 0,
+      }],
+    };
+    expect(validateScanArgs(base)?.items[0].count).toBeNull();
+    expect(validateScanArgs({ ...base, items: [{ ...base.items[0], count: 3 }] })?.items[0].count).toBe(3);
+  });
+});

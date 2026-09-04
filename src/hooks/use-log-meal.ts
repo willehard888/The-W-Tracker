@@ -258,17 +258,28 @@ export const useLogMeal = () => {
   });
 
   const del = useMutation({
-    mutationFn: async ({ itemId, mealId }: { itemId: string; date: string; mealId: string | null }) => {
+    mutationFn: async ({ itemId, mealId, date }: { itemId: string; date: string; mealId: string | null }) => {
       if (mealId && queued(uid, mealId)) {
         patchQueued(mealId, (items) => items.filter((i) => i.id !== itemId));
         return;
       }
       await deleteMealItem(supabase, itemId);
+      // Last item gone: an empty meal_logs row would linger and still count as a
+      // meal in daily totals. onMutate already dropped the item from the cache.
+      if (mealId && !day(date)?.items.some((i) => i.meal_log_id === mealId)) {
+        await deleteMealRpc(supabase, mealId);
+        void deleteMealFromHealth(mealId);
+      }
     },
-    onMutate: async ({ itemId, date }) => {
+    onMutate: async ({ itemId, mealId, date }) => {
       await qc.cancelQueries({ queryKey: dayKey(date, uid) });
       const prev = day(date);
-      qc.setQueryData<DayData>(dayKey(date, uid), (d) => d && { ...d, items: d.items.filter((i) => i.id !== itemId) });
+      qc.setQueryData<DayData>(dayKey(date, uid), (d) => {
+        if (!d) return d;
+        const items = d.items.filter((i) => i.id !== itemId);
+        const next = { ...d, items };
+        return mealId && !items.some((i) => i.meal_log_id === mealId) ? dropMeal(next, mealId) : next;
+      });
       return { prev };
     },
     onSuccess: (_r, { date, mealId }) => {

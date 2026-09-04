@@ -252,7 +252,7 @@ const NutritionPhotoReview = () => {
   if (!file) {
     body = (
       <div className="animate-reveal pt-6">
-        <EmptyState icon={Camera} title="Scan a meal" description="Point at the plate. You confirm every item before anything is saved." action={fileInput("Take a photo")} />
+        <EmptyState icon={Camera} title="Scan a meal" description="Point at the plate. You confirm every item before anything is saved." action={fileInput("Take or choose a photo")} />
         <Button variant="ghost" className="w-full mt-3 min-h-11" onClick={manual}>
           Log manually instead
         </Button>

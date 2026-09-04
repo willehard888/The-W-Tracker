@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Dumbbell, ChevronRight, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -8,7 +8,7 @@ import {
   ILLUSTRATED_EXERCISES,
   type IllustratedExercise,
 } from "@/data/exercises-illustrated";
-import { IllustrationThumb, IllustrationHero } from "@/components/coach/ExerciseIllustration";
+import { IllustrationThumb, IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
 
 /**
  * /exercises — the curated illustrated library. Every entry ships two
@@ -36,7 +36,9 @@ const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () =>
       <ArrowLeft size={15} /> All exercises
     </button>
 
-    <IllustrationHero ex={ex} className="mb-4" />
+    {/* The rep, played. Both states were already being fetched for the old
+        side-by-side stills — this shows the movement between them. */}
+    <IllustrationPlayer ex={ex} className="mb-4" />
 
     <h1 className="font-display text-xl font-black tracking-tight leading-tight">{ex.title}</h1>
     <div className="flex flex-wrap gap-1.5 mt-2">
@@ -67,9 +69,9 @@ const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () =>
 
 const Exercises = () => {
   const navigate = useNavigate();
+  const { slug } = useParams<{ slug: string }>();
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<string | null>(null);
-  const [selected, setSelected] = useState<IllustratedExercise | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -77,14 +79,26 @@ const Exercises = () => {
     let list = ILLUSTRATED_EXERCISES;
     if (g) list = list.filter((e) => e.primary.some((m) => g.match(m.toLowerCase())));
     if (q) {
+      // Equipment and the step text are searched too. "what can I do with a
+      // kettlebell" and "hip hinge" were both dead queries when only the title
+      // and the primary muscle were matched.
       list = list.filter(
-        (e) => e.title.toLowerCase().includes(q) || e.primary.some((m) => m.toLowerCase().includes(q)),
+        (e) =>
+          e.title.toLowerCase().includes(q) ||
+          e.primary.some((m) => m.toLowerCase().includes(q)) ||
+          e.secondary.some((m) => m.toLowerCase().includes(q)) ||
+          e.equipment.some((it) => it.toLowerCase().includes(q)) ||
+          e.steps.some((s) => s.toLowerCase().includes(q)),
       );
     }
     return list;
   }, [query, group]);
 
-  if (selected) return <ExerciseDetail ex={selected} onBack={() => setSelected(null)} />;
+  // An exercise is a route, not local state — so the coach can link straight to
+  // a movement, the URL is shareable, and the phone's back gesture closes the
+  // detail instead of leaving the library entirely.
+  const selected = slug ? ILLUSTRATED_EXERCISES.find((e) => e.slug === slug) : undefined;
+  if (selected) return <ExerciseDetail ex={selected} onBack={() => navigate("/exercises")} />;
 
   return (
     <div className="flex flex-col">
@@ -142,7 +156,7 @@ const Exercises = () => {
           {filtered.map((ex, i) => (
             <button
               key={ex.slug}
-              onClick={() => { hapticImpact("light"); setSelected(ex); }}
+              onClick={() => { hapticImpact("light"); navigate(`/exercises/${ex.slug}`); }}
               style={i < 12 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 80px" }}
               className="w-full text-left rounded-2xl border border-gold/20 bg-gradient-to-b from-gold/[0.04] via-card/95 to-card p-3 active:scale-[0.99] transition-transform"
             >

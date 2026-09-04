@@ -1000,6 +1000,28 @@
     .commit-pop { animation: none; }
   }
 
+  /* REP CYCLE — the exercise illustration's two states cross-faded so the
+     movement is demonstrated rather than described.
+
+     Deliberately absent from the (pointer: coarse) kill-switch near the
+     bottom of this file. That block disables DECORATION on touch devices, and
+     its own comment carves out "functional UI feedback… part of the UX, not
+     decoration". This is the demonstration itself — switching it off on
+     phones would remove the content on the only device the app ships to.
+
+     Opacity only, so the compositor handles it with no layout or repaint.
+     The player pauses it out of view and the athlete can stop it; reduced
+     motion never reaches here at all, because the component falls back to the
+     static Start/Finish pair in JS. */
+  .rep-phase-a,
+  .rep-phase-b {
+    animation-duration: 2.4s;
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    animation-iteration-count: infinite;
+  }
+  .rep-phase-a { animation-name: rep-phase-a; }
+  .rep-phase-b { animation-name: rep-phase-b; }
+
   .animate-reveal-delay-1 { animation-delay: 80ms; }
   .animate-reveal-delay-2 { animation-delay: 160ms; }
   .animate-reveal-delay-3 { animation-delay: 240ms; }
@@ -1667,6 +1689,21 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .price-swap { animation: none; }
+}
+
+/* The two ends of a rep, held long enough to read and cross-faded between.
+   Asymmetric on purpose: each position dwells ~38% of the cycle so the eye
+   can settle on it, and the travel between them is the short part — a rep
+   read as two positions with a transition, not a throb. */
+@keyframes rep-phase-a {
+  0%, 38%   { opacity: 1; }
+  50%, 88%  { opacity: 0; }
+  100%      { opacity: 1; }
+}
+@keyframes rep-phase-b {
+  0%, 38%   { opacity: 0; }
+  50%, 88%  { opacity: 1; }
+  100%      { opacity: 0; }
 }
 
 @keyframes reveal {

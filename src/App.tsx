@@ -294,6 +294,9 @@ const AppRoutes = () => {
               can link to a specific dish, and Back actually goes back. */}
           <Route path="/recipes/:id" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
           <Route path="/exercises" element={<ProtectedRoute><Exercises /></ProtectedRoute>} />
+          {/* Same reason as /recipes/:id — a movement the coach prescribes
+              should be linkable, and Back should close the detail. */}
+          <Route path="/exercises/:slug" element={<ProtectedRoute><Exercises /></ProtectedRoute>} />
           <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
           <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
           <Route path="/admin/legend-invites" element={<ProtectedRoute><AdminLegendInvites /></ProtectedRoute>} />

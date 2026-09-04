@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useExerciseLibrary, resolveExercise, exerciseImgBranded } from "@/lib/exercise-library";
 import { resolveGroup } from "@/lib/exercise-group";
 import ExerciseTile from "@/components/coach/ExerciseTile";
-import { IllustrationThumb, IllustrationHero } from "@/components/coach/ExerciseIllustration";
+import { IllustrationThumb, IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
 import { findIllustrated } from "@/data/exercises-illustrated";
 import { candidatesForName } from "@/lib/exercise-match";
 import BrandedExercisePhoto from "@/components/coach/BrandedExercisePhoto";
@@ -166,7 +166,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
       {open && (
         <div className="pl-0 pb-2 space-y-2.5">
           {illustrated ? (
-            <IllustrationHero ex={illustrated} />
+            <IllustrationPlayer ex={illustrated} />
           ) : ex?.images?.[0] ? (
             <BrandedExercisePhoto src={ex.images[ex.images.length - 1]} alt={block.name} width={640} imgClassName="max-h-56" />
           ) : null}
@@ -177,16 +177,24 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
             </p>
           )}
 
-          {ex?.instructions?.length ? (
+          {/* Instructions come from the 542-photo set, the illustration from the
+              269-illustrated set — and only 40 titles match exactly across the
+              two. So for most movements this row drew a beautiful illustration
+              and then rendered NOTHING underneath it, mid-workout, which is
+              precisely when an athlete needs the cue. The illustrated set has
+              its own `steps`; they were already loaded to draw the picture.
+              Whichever list has content wins, photo text first because it is
+              the longer of the two (avg 155 chars vs 76). */}
+          {(ex?.instructions?.length ? ex.instructions : illustrated?.steps ?? []).length > 0 && (
             <ol className="space-y-1 list-none">
-              {ex.instructions.map((step, i) => (
+              {(ex?.instructions?.length ? ex.instructions : illustrated!.steps).map((step, i) => (
                 <li key={i} className="flex gap-2 text-[12px] text-foreground/80 leading-snug">
                   <span className="shrink-0 h-4 w-4 rounded-full bg-gold/15 text-gold text-[10px] font-black flex items-center justify-center mt-px">{i + 1}</span>
                   <span>{step}</span>
                 </li>
               ))}
             </ol>
-          ) : null}
+          )}
 
           {(block.rest_sec || block.tempo) && (
             <p className="text-[11px] text-muted-foreground/80">

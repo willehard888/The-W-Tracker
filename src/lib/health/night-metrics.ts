@@ -22,13 +22,35 @@ interface NightResult {
   sleep_end?: string;
 }
 
+/** Args for `writeMeal` — one HKQuantitySample per present nutrient. */
+export interface MealWriteArgs {
+  meal_id: string;
+  name?: string;
+  /** ISO-8601; default now / start on the native side. */
+  start?: string;
+  end?: string;
+  /** HKMetadataKeySyncVersion — bump on edit so HealthKit replaces, not duplicates. */
+  version?: number;
+  kcal?: number;
+  protein_g?: number;
+  carbs_g?: number;
+  fat_g?: number;
+  water_ml?: number;
+  caffeine_mg?: number;
+}
+
 interface HealthNightPlugin {
+  /** Read-only (night metrics) — share-free, called on every sync. */
   requestAuthorization(): Promise<{ granted: boolean }>;
   queryNight(): Promise<NightResult>;
+  /** Share auth for the six dietary types; rejects when HealthKit is unavailable. */
+  requestMealWriteAuthorization(): Promise<{ granted: boolean }>;
+  writeMeal(args: MealWriteArgs): Promise<{ written: boolean; samples?: number }>;
+  deleteMeal(args: { meal_id: string }): Promise<{ deleted: number }>;
 }
 
 // No web impl → calls reject on web, which we catch (fail-open).
-const HealthNight = registerPlugin<HealthNightPlugin>("HealthNight");
+export const HealthNight = registerPlugin<HealthNightPlugin>("HealthNight");
 
 const isIos = () => Capacitor.getPlatform() === "ios";
 // undefined (not null) for missing values: the RPC arg is omitted and the

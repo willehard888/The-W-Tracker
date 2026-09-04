@@ -84,9 +84,13 @@ post_install do |installer|
       swift_include_paths = Array(config.build_settings['SWIFT_INCLUDE_PATHS'])
       header_search_paths = Array(config.build_settings['HEADER_SEARCH_PATHS'])
 
-      config.build_settings['LIBRARY_SEARCH_PATHS'] = library_search_paths.reject { |p| p == invalid_toolchain_path }
-      config.build_settings['FRAMEWORK_SEARCH_PATHS'] = framework_search_paths.reject { |p| p == invalid_toolchain_path }
-      config.build_settings['SWIFT_INCLUDE_PATHS'] = swift_include_paths.reject { |p| p == invalid_toolchain_path }
+      # Only rewrite a search path the target actually sets: Array(nil) is [], and
+      # writing [] here SHADOWS CocoaPods' xcconfig FRAMEWORK_SEARCH_PATHS. That is
+      # how Capacitor lost "-F .../CapacitorCordova" (no such module Cordova) and
+      # every plugin lost "-F .../Capacitor" on a clean local build.
+      config.build_settings['LIBRARY_SEARCH_PATHS'] = library_search_paths.reject { |p| p == invalid_toolchain_path } unless library_search_paths.empty?
+      config.build_settings['FRAMEWORK_SEARCH_PATHS'] = framework_search_paths.reject { |p| p == invalid_toolchain_path } unless framework_search_paths.empty?
+      config.build_settings['SWIFT_INCLUDE_PATHS'] = swift_include_paths.reject { |p| p == invalid_toolchain_path } unless swift_include_paths.empty?
 
       # Xcode 26: explicit modules + Cordova ObjC headers = SwiftCompile crash.
       config.build_settings['SWIFT_ENABLE_EXPLICIT_MODULES'] = 'NO'

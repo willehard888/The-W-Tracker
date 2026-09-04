@@ -48,3 +48,35 @@ export const clearHealthConsent = (): void => {
     /* noop */
   }
 };
+
+/**
+ * Second, independent consent: "save my logged meals to Apple Health". Off
+ * by default; the toggle lives on the Nutrition targets screen. Same
+ * device-scoped + fail-closed rules as the read consent above, and swept by
+ * AuthContext.signOut for the same shared-device reason.
+ */
+export const MEAL_WRITE_CONSENT_KEY = "w_health_write_meals";
+
+export const markMealWriteEnabled = (): void => {
+  try {
+    localStorage.setItem(MEAL_WRITE_CONSENT_KEY, "1");
+  } catch {
+    /* storage unavailable — the toggle just reads as off */
+  }
+};
+
+export const hasMealWriteConsent = (): boolean => {
+  try {
+    return localStorage.getItem(MEAL_WRITE_CONSENT_KEY) === "1";
+  } catch {
+    return false; // fail CLOSED: never write health data on a guess
+  }
+};
+
+export const clearMealWriteConsent = (): void => {
+  try {
+    localStorage.removeItem(MEAL_WRITE_CONSENT_KEY);
+  } catch {
+    /* noop */
+  }
+};

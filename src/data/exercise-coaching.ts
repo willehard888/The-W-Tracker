@@ -232,6 +232,295 @@ export const EXERCISE_COACHING: Record<string, ExerciseCoaching> = {
     easier: "Raise the bar higher, or bend your knees and put your feet flat.",
     harder: "Lower the bar toward the floor, or put your feet up on a bench.",
   },
+
+  "leg-press": {
+    setup: [
+      "Set the seat so your knees bend to about a right angle at the bottom, no deeper to start.",
+      "Feet flat on the middle of the platform, about shoulder width.",
+      "Sit right back — your lower back and hips stay against the pad the whole set.",
+    ],
+    cues: [
+      "Lower until your knees are bent about 90°, under control.",
+      "Push through your whole foot, not just the toes.",
+      "Stop just short of locking your knees at the top.",
+    ],
+    tempo: "3 seconds down · brief pause · press back up under control",
+    breathing: "Breathe in as the platform comes down. Breathe out as you press.",
+    mistakes: [
+      {
+        error: "Your hips curl up off the seat at the bottom.",
+        fix: "You are going too deep for now. Stop the rep higher — the moment your hips start to lift is past your range.",
+      },
+      {
+        error: "You snap your knees straight at the top.",
+        fix: "Stop just short of locked. The muscles should hold the weight at the top, not the joint.",
+      },
+      {
+        error: "You put your hands on your knees to help.",
+        fix: "Hold the handles at the side instead. If you need to push your knees, the weight is too heavy.",
+      },
+    ],
+    feelIt: "Thighs and glutes. Your lower back should feel supported by the pad and do nothing at all.",
+    easier: "Less weight and a smaller range — a shorter, controlled rep beats a deep, wobbly one.",
+    harder: "Slow the lowering to 4 seconds, or add weight in small steps.",
+  },
+
+  "seated-leg-curl": {
+    setup: [
+      "Line your knees up with the machine's pivot — the point the lever rotates around.",
+      "Pad sits just above your heels, not on your calves.",
+      "Back flat against the seat, thigh pad snug so your legs stay put.",
+    ],
+    cues: [
+      "Curl your heels down and under, toward the back of the seat.",
+      "Squeeze for a beat at the bottom of the curl.",
+      "Let the weight back up slowly until your legs are almost straight.",
+    ],
+    tempo: "1 second to curl · squeeze for a beat · 3 seconds back",
+    breathing: "Breathe out as you curl. Breathe in as it returns.",
+    mistakes: [
+      {
+        error: "Your hips lift off the seat as you curl.",
+        fix: "Tighten the thigh pad and use less weight. If your hips move, your legs are getting help.",
+      },
+      {
+        error: "The weight stack slams down between reps.",
+        fix: "Take three full seconds on the way back. The slow half is where most of the work is.",
+      },
+      {
+        error: "Your range gets shorter as the set goes on.",
+        fix: "Drop the weight. Half a curl trains half the muscle, and the last reps are the ones that count.",
+      },
+    ],
+    feelIt: "The back of your thighs, above the knee. Cramping there is common at first and eases as you get used to it.",
+    easier: "Less weight and a shorter range while you learn where the squeeze is.",
+    harder: "Slow the return to 4 seconds, or work one leg at a time.",
+  },
+
+  "seated-military-press": {
+    setup: [
+      "Bench upright, feet flat on the floor, back against the pad.",
+      "Bar starts at collarbone height, hands just outside your shoulders.",
+      "Wrists stacked straight above your elbows, not bent back.",
+    ],
+    cues: [
+      "Brace your stomach before the first rep — that's what stops you arching.",
+      "Press straight up, moving your head back slightly out of the way.",
+      "Finish with your arms straight and your upper arms beside your ears.",
+    ],
+    tempo: "2 seconds down · brief pause at the collarbone · press up under control",
+    breathing: "Breathe in at the bottom. Breathe out as you press up.",
+    mistakes: [
+      {
+        error: "You lean back until it turns into an incline bench press.",
+        fix: "Squeeze your glutes and brace your stomach. If you still lean back, the weight is too heavy.",
+      },
+      {
+        error: "You press around your face in a curve to avoid hitting it.",
+        fix: "Tuck your chin as the bar passes, then press straight. The bar travels in a line, your head moves.",
+      },
+      {
+        error: "Your wrists bend back under the bar.",
+        fix: "Keep the bar low in your palm, stacked over the forearm bone. A bent wrist is where the ache comes from.",
+      },
+    ],
+    feelIt: "Shoulders and the back of your arms. Your stomach should feel braced and working.",
+    easier: "Dumbbells instead of a bar — your shoulders find their own path and your head is never in the way.",
+    harder: "Pause a second at the collarbone, or add weight once every rep travels the same line.",
+  },
+
+  "seated-cable-rows": {
+    setup: [
+      "Feet flat on the platform, knees slightly bent and kept that way.",
+      "Sit tall — sit on your sit bones, not slumped back behind them.",
+      "Start with your arms straight and let your shoulders reach forward.",
+    ],
+    cues: [
+      "Start the pull with your shoulder blades, before your arms bend.",
+      "Pull the handle to your belly button, elbows sliding past your ribs.",
+      "Let your arms straighten and your shoulders reach forward again at the end.",
+    ],
+    tempo: "1 second to pull · squeeze for a beat · 3 seconds back out",
+    breathing: "Breathe out as you pull. Breathe in as it returns.",
+    mistakes: [
+      {
+        error: "Your body rocks backwards and forwards with every rep.",
+        fix: "Keep your torso still and let only your arms and shoulder blades move. Rocking means the weight is too heavy.",
+      },
+      {
+        error: "Your shoulders shrug up toward your ears.",
+        fix: "Think about pulling your shoulder blades down and together, not up.",
+      },
+      {
+        error: "You stop before your arms are straight.",
+        fix: "Let it stretch all the way out every rep. The reach at the end is part of the movement, not the rest between reps.",
+      },
+    ],
+    feelIt: "Between and around your shoulder blades. Some forearm and bicep work is normal.",
+    easier: "Less weight, and focus on keeping your torso completely still.",
+    harder: "Hold the squeeze for two seconds, or slow the return to four.",
+  },
+
+  "v-bar-pull-down": {
+    setup: [
+      "Set the thigh pad snug so you stay in the seat when the weight gets heavy.",
+      "Take the V handle, sit tall, and lean back just slightly.",
+      "Pick a lean and keep it — the lean should not change during the set.",
+    ],
+    cues: [
+      "Start by pulling your shoulders down, away from your ears.",
+      "Bring the handle to the top of your chest.",
+      "Drive your elbows down toward your pockets, not backwards.",
+      "Control the weight all the way back up until your arms are straight.",
+    ],
+    tempo: "1 second to pull · squeeze for a beat · 3 seconds back up",
+    breathing: "Breathe out as you pull down. Breathe in as it goes up.",
+    mistakes: [
+      {
+        error: "You lean further and further back until it becomes a row.",
+        fix: "Fix the lean at the start and hold it. If you have to lean to move the weight, it is too heavy.",
+      },
+      {
+        error: "You pull the bar behind your neck.",
+        fix: "Always to the front, to the top of the chest. There is nothing to gain behind the neck and a lot of shoulder to lose.",
+      },
+      {
+        error: "The weight yanks your arms straight at the top.",
+        fix: "Take three seconds up. If it pulls you out of the seat, drop the weight.",
+      },
+    ],
+    feelIt: "The sides of your back, under your armpits. Your arms will work too — that is fine, they should not do all of it.",
+    easier: "Less weight. This is also the machine to learn the pulling motion on before you attempt a pull-up.",
+    harder: "Pause at your chest for two seconds, or slow the return further.",
+  },
+
+  "pull-ups": {
+    setup: [
+      "Grip the bar a little wider than your shoulders, palms facing away.",
+      "Hang with your arms completely straight.",
+      "Squeeze your glutes and stomach so you hang still instead of swinging.",
+    ],
+    cues: [
+      "Pull your shoulders down away from your ears before your arms bend.",
+      "Lead with your chest toward the bar.",
+      "Lower all the way back to a straight-arm hang.",
+    ],
+    tempo: "Pull under control · brief pause at the top · 3 seconds down",
+    breathing: "Breathe out as you pull up. Breathe in on the way down.",
+    mistakes: [
+      {
+        error: "You swing and kick your legs to get up.",
+        fix: "Start from a still hang. If you cannot get up without swinging, use the easier version below — that is what it is for.",
+      },
+      {
+        error: "You get your chin over the bar with your shoulders rolled forward.",
+        fix: "Lead with the chest and keep your shoulders down. A slightly lower rep done properly is worth more.",
+      },
+      {
+        error: "You stop halfway down and go again.",
+        fix: "Straighten your arms fully every rep. The bottom of the movement is where most of the strength is built.",
+      },
+    ],
+    feelIt: "The sides of your back and your arms. Your stomach works to keep you from swinging.",
+    easier: "Use the assisted machine or a band, or jump to the top and lower yourself as slowly as you can. Lowering slowly is how nearly everyone earns their first pull-up — it is the normal route, not a lesser one.",
+    harder: "Pause at the top, slow the lowering further, or add weight with a belt.",
+  },
+
+  "dumbbell-lunges": {
+    setup: [
+      "A dumbbell in each hand, arms relaxed at your sides.",
+      "Stand tall with your feet under your hips.",
+      "Step about one long stride — too short is what makes the knee ache.",
+    ],
+    cues: [
+      "Step forward and drop your back knee straight down toward the floor.",
+      "Front shin close to vertical, chest up.",
+      "Push through your front heel to stand back up.",
+    ],
+    tempo: "2 seconds down · light touch at the bottom · drive up under control",
+    breathing: "Breathe in as you step down. Breathe out as you come back up.",
+    mistakes: [
+      {
+        error: "Your front knee drifts inward as you stand up.",
+        fix: "Push the knee out so it tracks over your middle toes. Slow down and use lighter dumbbells until it stays there.",
+      },
+      {
+        error: "You lean forward over your front leg.",
+        fix: "Chest up, eyes ahead. Leaning forward moves the work into your lower back.",
+      },
+      {
+        error: "You wobble and cannot find your balance.",
+        fix: "Do them stationary first — stay in one split stance and just go up and down, holding a rack with one hand if you need to.",
+      },
+    ],
+    feelIt: "The front leg's thigh and glute. The back leg is mostly there for balance.",
+    easier: "No weight at all, and stationary rather than stepping. Hold something for balance — that is a legitimate way to train this.",
+    harder: "Heavier dumbbells, walking lunges, or a pause at the bottom.",
+  },
+
+  "step-ups-with-dumbbells": {
+    setup: [
+      "A box or bench around knee height. Lower is fine — start lower than you think.",
+      "A dumbbell in each hand, arms at your sides.",
+      "Place your whole foot on the box, not just the front half.",
+    ],
+    cues: [
+      "Drive up through the foot that is on the box.",
+      "Stand all the way up before you come back down.",
+      "Lower yourself under control — do not just drop.",
+    ],
+    tempo: "Drive up · stand tall for a beat · 3 seconds down",
+    breathing: "Breathe out as you step up. Breathe in as you lower.",
+    mistakes: [
+      {
+        error: "You bounce off your back foot to get up.",
+        fix: "The leg on the box does the work. Try touching your back toe down lightly between reps instead of pushing off it.",
+      },
+      {
+        error: "Your hips shoot up and you lurch onto the box.",
+        fix: "The box is too high. Drop to a lower one — a step you can control beats a tall one you cannot.",
+      },
+      {
+        error: "You drop back down and land hard.",
+        fix: "Take three seconds to lower. Landing hard is where knees get sore.",
+      },
+    ],
+    feelIt: "The leg on the box — thigh and glute. Both should be working by the end of the set.",
+    easier: "A lower box and no dumbbells at all.",
+    harder: "A higher box, heavier dumbbells, or a pause at the top of each rep.",
+  },
+
+  "crunches": {
+    setup: [
+      "On your back, knees bent, feet flat on the floor.",
+      "Hands crossed over your chest — easier than behind your head, and safer for your neck.",
+      "Look at a point on the ceiling and keep looking there.",
+    ],
+    cues: [
+      "Curl your ribs toward your hips.",
+      "Lift only your shoulder blades off the floor.",
+      "Lower back down slowly instead of dropping.",
+    ],
+    tempo: "2 seconds up · squeeze for a beat · 2 seconds down",
+    breathing: "Breathe out as you curl up. Breathe in as you lower.",
+    mistakes: [
+      {
+        error: "You pull on your neck with your hands.",
+        fix: "Cross your hands over your chest instead. If your neck aches, that is where the problem is.",
+      },
+      {
+        error: "You sit all the way up.",
+        fix: "Only the shoulder blades come off the floor. Sitting further uses your hips, not your stomach.",
+      },
+      {
+        error: "You go fast and bounce off the floor.",
+        fix: "Two seconds up, two seconds down. Twelve slow reps beat forty fast ones.",
+      },
+    ],
+    feelIt: "Your stomach, right through the middle. If you feel it mostly in the front of your hips, you are coming up too far.",
+    easier: "A smaller range — even lifting just your shoulders an inch counts while you find the movement.",
+    harder: "Slow it down further, pause at the top, or hold a light weight on your chest.",
+  },
 };
 
 /** Coaching for an exercise, or undefined where none has been written yet. */

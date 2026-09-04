@@ -130,6 +130,28 @@ const TONE_INSTRUCTIONS: Record<string, string> = {
   hype: "High-energy hype coach. Punchy. Momentum-building. Never cheesy.",
 };
 
+/**
+ * The athlete's gym experience, in words the model can act on.
+ *
+ * Nothing here existed before: the profile had no experience field at all, so
+ * this prompt described an athlete's body-fat percentage but never whether they
+ * had ever done a squat. Complete beginners are now routed to a written 8-week
+ * path instead of reaching this function, so what arrives here is someone with
+ * at least some training behind them — but "some months in" and "trains
+ * independently" still deserve different programs.
+ */
+const EXPERIENCE_BRIEF: Record<string, string> = {
+  under_6_months:
+    "Under six months of training. Keep exercise selection mainstream and stable week to week — they still gain from repeating the same lifts. Favour machines and dumbbells over technically demanding barbell variations, and no advanced techniques.",
+  experienced:
+    "Trains independently and is comfortable with the main lifts. Program normally.",
+  // A `never_trained` athlete only reaches this function after finishing both
+  // written blocks — the client routes them to the path until then. So by the
+  // time this brief is used, it describes a graduate, not a first-timer.
+  never_trained:
+    "Started as a complete beginner and has now finished the written 8-week starter path: three full-body sessions a week on a small set of movements, with real logged numbers behind them. Keep those familiar lifts as the backbone and progress from their logged loads rather than swapping for novelty.",
+};
+
 const GOAL_PERIODIZATION: Record<string, string> = {
   all: "Concurrent block: full-body strength + hypertrophy + 1–2 conditioning slots. Balance over specialization.",
   strength: "Linear strength block. 3–6 reps on main lifts, RPE 7–8.5, longer rests, week 4 = light testing/deload.",
@@ -343,6 +365,7 @@ EMIT VIA THE emit_program TOOL. Output ALL 4 weeks × 7 days fully. Each block n
 - Sex/Age: ${profile.sex ?? "n/a"} / ${profile.age ?? "n/a"} yrs
 - Body: ${profile.height_cm ?? "?"} cm, ${profile.weight_kg ?? "?"} kg${profile.body_fat_pct ? `, ${profile.body_fat_pct}% BF` : ""}
 - Primary goal: ${goal}${secondary_goal ? ` · Secondary: ${secondary_goal}` : ""}
+- Training experience: ${EXPERIENCE_BRIEF[String(profile.training_experience ?? "")] ?? "Not reported — this profile predates the question. Assume they can train independently, but keep exercise selection mainstream."}
 - Horizon: ${horizon} weeks
 - Sleep window: ${profile.sleep_time?.slice(0, 5) ?? "23:00"} → ${profile.wake_time?.slice(0, 5) ?? "07:00"}
 - Preferred training days: ${train_days} (${days_per_week}/week)
@@ -499,7 +522,9 @@ the overload every week and explain it. Address the athlete in their preferred v
       .insert({
         user_id: userId,
         goal,
-        experience: "auto",
+        // Was the literal string "auto" on every row since this table was
+        // created, because nothing ever asked. Onboarding asks now.
+        experience: String(profile.training_experience ?? "unknown"),
         days_per_week,
         equipment,
         body_focus,

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
-import { useAthleteProfile, type ToneId, type GoalId } from "@/hooks/use-athlete-profile";
+import { useAthleteProfile, type ToneId, type GoalId, type TrainingExperience } from "@/hooks/use-athlete-profile";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 
@@ -23,6 +23,20 @@ const GOALS: { id: GoalId; label: string; sub: string; emoji: string }[] = [
   { id: "endurance",  label: "Endurance",      sub: "Run, ride, last longer", emoji: "🏃" },
   { id: "longevity",  label: "Longevity",      sub: "Health-span, energy 20y out", emoji: "🌱" },
   { id: "focus",      label: "Sharpen focus",  sub: "Mind, deep work, sleep", emoji: "🧠" },
+];
+
+/**
+ * The question the coach was missing entirely.
+ *
+ * It knew an athlete's body-fat percentage but not whether they had ever done a
+ * squat, so it handed complete beginners four to six barbell lifts a day. This
+ * answer decides whether someone starts on the written 8-week path or goes
+ * straight to the AI generator.
+ */
+const EXPERIENCE: { id: TrainingExperience; label: string; sub: string; emoji: string }[] = [
+  { id: "never_trained",  label: "New to the gym",       sub: "Never trained, or it has been years — we start from the beginning", emoji: "🌱" },
+  { id: "under_6_months", label: "Some experience",      sub: "A few months in. You know the machines, still finding your footing", emoji: "📈" },
+  { id: "experienced",    label: "I know my way around", sub: "Comfortable with the main lifts and training on your own", emoji: "🏋️" },
 ];
 
 const TONES: { id: ToneId; label: string; sub: string }[] = [
@@ -84,6 +98,9 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
       height_cm: profile?.height_cm ?? 180,
       weight_kg: profile?.weight_kg ?? 80,
       primary_goal: profile?.primary_goal ?? "all",
+      // No default. An unanswered experience question must stay unanswered —
+      // guessing "experienced" here would put a first-timer under a barbell.
+      training_experience: profile?.training_experience ?? null,
       target_horizon_weeks: profile?.target_horizon_weeks ?? 12,
       wake_time: profile?.wake_time?.slice(0,5) ?? "07:00",
       sleep_time: profile?.sleep_time?.slice(0,5) ?? "23:00",
@@ -165,7 +182,40 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
         </div>
       ),
     },
-    // 1 — body (steppers, much faster than sliders)
+    // 1 — experience. Asked early because it decides which kind of program
+    // gets built at all, not just how hard it is.
+    {
+      title: "Have you trained before?",
+      sub: "There is no wrong answer here. It decides where we start you.",
+      content: (
+        <div className="space-y-2">
+          {EXPERIENCE.map(e => (
+            <button key={e.id} type="button"
+              onClick={() => { hapticImpact("light"); set({ training_experience: e.id }); }}
+              className={cn(
+                "w-full text-left rounded-2xl px-4 py-3.5 border transition-all flex items-center gap-3",
+                draft.training_experience === e.id
+                  ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)] shadow-[0_0_24px_-8px_hsl(var(--gold)/0.6)]"
+                  : "surface-card"
+              )}>
+              <span className="text-2xl">{e.emoji}</span>
+              <div className="flex-1">
+                <div className="text-sm font-bold">{e.label}</div>
+                <div className="text-xs text-muted-foreground leading-tight">{e.sub}</div>
+              </div>
+            </button>
+          ))}
+          {draft.training_experience === "never_trained" && (
+            <p className="text-[12px] text-muted-foreground leading-snug pt-1">
+              You will start on a written 8-week plan: three sessions a week, a handful of
+              movements, and proper coaching on every one of them. Your coach takes over once
+              they feel familiar.
+            </p>
+          )}
+        </div>
+      ),
+    },
+    // 2 — body (steppers, much faster than sliders)
     {
       title: "Your body",
       sub: "Used to dose protein, sleep targets, training intensity.",
@@ -192,7 +242,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
         </div>
       ),
     },
-    // 2 — Mind & life (holistic well-being capture)
+    // 3 — Mind & life (holistic well-being capture)
     {
       title: "Mind & life",
       sub: "Helps the Coach see the whole you — physical, mental, emotional.",
@@ -293,10 +343,11 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
         </div>
       ),
     },
-    // 3 — constraints (optional, can skip)
+    // 4 — constraints (optional, can skip)
     {
       title: "Anything to work around?",
       sub: "Optional. Tap what applies — or skip ahead.",
+      optional: true,
       content: (
         <div className="space-y-5">
           <Field label="Where do you train?">
@@ -378,11 +429,15 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
 
   const last = step === STEPS.length - 1;
   const cur = STEPS[step];
-  // Steps: 0=goal, 1=body, 2=mind&life, 3=constraints, 4=tone. The "Your
-  // week" step (exact training days / session length / wake & sleep) was
-  // removed on founder request — too precise to plan honestly, and it made
+  // Steps: 0=goal, 1=experience, 2=body, 3=mind&life, 4=constraints, 5=tone.
+  // The "Your week" step (exact training days / session length / wake & sleep)
+  // was removed on founder request — too precise to plan honestly, and it made
   // the coach prescribe workouts at exact clock times.
-  const optional = step === 3;
+  //
+  // Which step is skippable is a property of the step, not a hardcoded index.
+  // It used to be `step === 3`, which silently pointed at the wrong step the
+  // moment a step was inserted ahead of it.
+  const optional = !!(cur as { optional?: boolean }).optional;
 
   const next = async () => {
     if (last) {

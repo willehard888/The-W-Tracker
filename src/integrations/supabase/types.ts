@@ -262,6 +262,7 @@ export type Database = {
           timezone: string
           tone_pref: string
           training_days_pref: number[]
+          training_experience: string | null
           updated_at: string
           user_id: string
           wake_time: string
@@ -296,6 +297,7 @@ export type Database = {
           tone_pref?: string
           training_days_pref?: number[]
           updated_at?: string
+          training_experience?: string | null
           user_id: string
           wake_time?: string
           weight_kg?: number | null
@@ -329,6 +331,7 @@ export type Database = {
           tone_pref?: string
           training_days_pref?: number[]
           updated_at?: string
+          training_experience?: string | null
           user_id?: string
           wake_time?: string
           weight_kg?: number | null

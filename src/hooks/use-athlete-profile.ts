@@ -25,6 +25,16 @@ export type MentalFocusId =
   | "none"
   | string;
 
+/**
+ * How much time the athlete has actually spent in a gym.
+ *
+ * Until this existed the coach knew an athlete's body-fat percentage but not
+ * whether they had ever done a squat, and handed complete beginners four to six
+ * barbell lifts a day. It decides whether someone starts on the written 8-week
+ * path or goes straight to the AI generator.
+ */
+export type TrainingExperience = "never_trained" | "under_6_months" | "experienced";
+
 export interface AthleteProfile {
   user_id: string;
   age: number | null;
@@ -39,6 +49,12 @@ export interface AthleteProfile {
   wake_time: string;
   sleep_time: string;
   training_days_pref: number[];
+  /**
+   * `null` means the athlete was never asked — every profile created before
+   * this question existed. Treated as experienced, so nobody with a program
+   * already running is moved onto the beginner path behind their back.
+   */
+  training_experience: TrainingExperience | null;
   busy_blocks: any;
   injuries: string[];
   dietary: string[];

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
+import { createBeginnerProgram, nextBeginnerBlock } from "@/lib/beginner-program";
 
 interface Props { onGenerated: () => void }
 
@@ -57,6 +58,40 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
     setLastError(null);
     hapticImpact("medium");
     try {
+      // A first-timer gets the written 8-week path instead of a generated
+      // block. The AI is told to build 4–6 loaded exercises every training day
+      // and not to lean on bodyweight, which is the right instruction for
+      // someone who already lifts and the wrong one for someone who has never
+      // held a barbell. This also returns instantly — no model round trip.
+      if (profile?.training_experience === "never_trained") {
+        // Read the most recent program rather than holding it in state, so
+        // block 2 is offered correctly even if the row changed on another
+        // device since this screen mounted.
+        const { data: lastProgram } = await supabase
+          .from("coach_programs")
+          .select("experience")
+          .eq("user_id", profile.user_id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        const block = nextBeginnerBlock(lastProgram?.experience);
+        if (block) {
+          await createBeginnerProgram({
+            userId: profile.user_id,
+            block,
+            goal: profile.primary_goal,
+            equipment: profile.equipment,
+          });
+          try { localStorage.removeItem(DRAFT_KEY); } catch {}
+          hapticNotification("success");
+          toast.success(block === 1 ? "Your first block is ready." : "Block two is ready.");
+          onGenerated();
+          return;
+        }
+        // Both written blocks are behind them — fall through to the coach,
+        // which now has eight weeks of their own logged sets to work from.
+      }
+
       const { data, error } = await supabase.functions.invoke("coach-generate-program", {
         body: {
           body_focus: draft.bodyFocus,

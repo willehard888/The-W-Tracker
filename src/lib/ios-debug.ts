@@ -1,3 +1,5 @@
+import { onIdle } from "@/lib/idle";
+
 export interface OAuthDebugState {
   // SECURITY: never store raw callback/deep-link URLs here — they carry the
   // access + refresh tokens in the hash, and this state is persisted to
@@ -44,6 +46,14 @@ export interface IosDebugState {
 
 const STORAGE_KEY = "w_ios_debug_v1";
 const MAX_LOGS = 120;
+
+// Log collection is opt-in outside dev: every pushIosDebugLog used to
+// serialize + persist the whole state synchronously on the boot path.
+// Flip it on a device with `localStorage.wf_debug = "1"` (Safari inspector).
+const LOGS_ON = (() => {
+  if (import.meta.env.DEV) return true;
+  try { return localStorage.getItem("wf_debug") === "1"; } catch { return false; }
+})();
 
 const defaultState: IosDebugState = {
   updatedAt: new Date(0).toISOString(),
@@ -107,12 +117,17 @@ function loadInitialState(): IosDebugState {
 
 let state: IosDebugState = loadInitialState();
 
+let pendingPersist: (() => void) | null = null;
+
 function persistAndNotify() {
   state = { ...state, updatedAt: new Date().toISOString() };
-  if (canUseStorage()) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }
   listeners.forEach((listener) => listener(state));
+  // Coalesced: one idle write per burst, always of the latest state.
+  if (!canUseStorage() || pendingPersist) return;
+  pendingPersist = onIdle(() => {
+    pendingPersist = null;
+    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* storage denied */ }
+  }, 1000);
 }
 
 function safePayload(payload: unknown): string | undefined {
@@ -157,6 +172,7 @@ export function updateRevenueCatDebug(patch: Partial<RevenueCatDebugState>) {
 }
 
 export function pushIosDebugLog(source: string, message: string, payload?: unknown) {
+  if (!LOGS_ON) return;
   state = {
     ...state,
     logs: [

@@ -1,0 +1,118 @@
+{
+  "boot": {
+    "js": [
+      {
+        "file": "index-CL-Qdbb2.js",
+        "stem": "index.js",
+        "raw": 561867,
+        "gzip": 156781
+      },
+      {
+        "file": "capacitor-DZQWDhxh.js",
+        "stem": "capacitor.js",
+        "raw": 29320,
+        "gzip": 9958
+      },
+      {
+        "file": "vendor-ww25odCS.js",
+        "stem": "vendor.js",
+        "raw": 209843,
+        "gzip": 69358
+      },
+      {
+        "file": "query-B8XjMU8Y.js",
+        "stem": "query.js",
+        "raw": 43188,
+        "gzip": 12864
+      },
+      {
+        "file": "supabase-DnQPXzQo.js",
+        "stem": "supabase.js",
+        "raw": 191268,
+        "gzip": 50440
+      },
+      {
+        "file": "ui-xtkIrX1H.js",
+        "stem": "ui.js",
+        "raw": 76923,
+        "gzip": 22988
+      },
+      {
+        "file": "icons-BcH9o5aV.js",
+        "stem": "icons.js",
+        "raw": 55796,
+        "gzip": 10802
+      },
+      {
+        "file": "motion-BMHzat7R.js",
+        "stem": "motion.js",
+        "raw": 126170,
+        "gzip": 41418
+      }
+    ],
+    "css": [
+      {
+        "file": "index--LCudFFy.css",
+        "stem": "index.css",
+        "raw": 317830,
+        "gzip": 46192
+      }
+    ]
+  },
+  "totals": {
+    "bootJs": {
+      "raw": 1294375,
+      "gzip": 374609
+    },
+    "css": {
+      "raw": 317830,
+      "gzip": 46192
+    }
+  },
+  "sentry": {
+    "file": "index-B9lUztLd.js",
+    "stem": "index.js",
+    "raw": 476941,
+    "gzip": 157906,
+    "hits": 356,
+    "preloaded": false
+  },
+  "largestNonBoot": [
+    {
+      "file": "exercises-Bl1G2OrA.js",
+      "stem": "exercises.js",
+      "raw": 640611,
+      "gzip": 105983
+    },
+    {
+      "file": "index-B9lUztLd.js",
+      "stem": "index.js",
+      "raw": 476941,
+      "gzip": 157906
+    },
+    {
+      "file": "charts-8JCcmq_9.js",
+      "stem": "charts.js",
+      "raw": 371958,
+      "gzip": 102548
+    },
+    {
+      "file": "WeeklyBriefing-C4f2W0en.js",
+      "stem": "WeeklyBriefing.js",
+      "raw": 210566,
+      "gzip": 51192
+    },
+    {
+      "file": "index-DtGPM8Fn.js",
+      "stem": "index.js",
+      "raw": 117641,
+      "gzip": 36127
+    }
+  ],
+  "indexCss": {
+    "bytes": 198257,
+    "keyframes": 256,
+    "infinite": 61
+  },
+  "raf": 15
+}

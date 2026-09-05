@@ -38,6 +38,8 @@ import { useNutritionTotals } from "@/hooks/use-nutrition-totals";
 import { useNutritionTargets } from "@/hooks/use-nutrition-targets";
 import { setPendingPhoto } from "@/lib/nutrition/pending-photo";
 import { dayState, macroSummary } from "@/lib/nutrition/totals";
+import { onIdle } from "@/lib/idle";
+import { HomeSkeleton } from "@/components/skeletons/PageSkeleton";
 // Pull-to-refresh removed temporarily — was intercepting inner taps.
 
 const Index = () => {
@@ -46,19 +48,10 @@ const Index = () => {
   // Prefetch the most-likely next screens once Home is idle, so the first tap
   // on Feed / Check-in opens instantly (no lazy-chunk wait). Touch devices
   // have no hover, so BottomNav's hover-prefetch never fires — this covers it.
-  useEffect(() => {
-    const prefetch = () => {
-      import("@/pages/EliteFeed");
-      import("@/pages/DailyCheckin");
-    };
-    const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
-    if (ric) {
-      const id = ric(prefetch, { timeout: 2500 });
-      return () => (window as unknown as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(id);
-    }
-    const t = setTimeout(prefetch, 1500);
-    return () => clearTimeout(t);
-  }, []);
+  useEffect(() => onIdle(() => {
+    import("@/pages/EliteFeed");
+    import("@/pages/DailyCheckin");
+  }, 2500), []);
   const { profile } = useAuth();
   // Contextual onboarding (Blueprint triggers): Today intro on first visit;
   // streak card once a streak exists; progression once XP exists (also
@@ -209,7 +202,8 @@ const Index = () => {
     return () => clearTimeout(t);
   }, [profile?.streak]);
 
-  if (!profile) return null;
+  // Same geometry as the auth-loading fallback — no blank frame between them.
+  if (!profile) return <HomeSkeleton />;
 
   const xpToNext = profile.level * 500;
   const tier = profile.status_tier || "recruit";

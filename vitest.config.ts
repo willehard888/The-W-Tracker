@@ -28,6 +28,7 @@ export default defineConfig({
         "src/lib/wind.ts",
         "src/lib/downscale-image.ts",
         "src/lib/observability.ts",
+        "src/lib/sentry-lite.ts",
         "src/lib/analytics.ts",
         "src/lib/badge-awards.ts",
         "src/lib/tribe-streak.ts",

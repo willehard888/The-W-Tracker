@@ -8,11 +8,13 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { initNativeShell } from "@/lib/native-bootstrap";
 import { initObservability, captureException } from "@/lib/observability";
+import { onIdle } from "@/lib/idle";
 
 // Fire-and-forget — runs before React mount, but doesn't block it.
 void initNativeShell();
 // Error monitoring + product analytics (no-op until the env keys are set).
-void initObservability();
+// Deferred past first paint; captureException buffers until Sentry is up.
+onIdle(() => void initObservability(), 3500);
 
 // Async failures outside React's render path (floating promises, event
 // handlers, realtime callbacks) never hit the ErrorBoundary — without these

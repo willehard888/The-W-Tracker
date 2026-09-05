@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Crown, ChevronRight, Flame, Utensils } from "lucide-react";
 import { recipeSquare, recipeThumb } from "@/lib/recipe-images";
-import { RECIPES } from "@/data/recipes";
-import { illustrationThumb } from "@/data/exercises-illustrated";
-import { GOLD_LINES } from "@/components/coach/ExerciseIllustration";
+import { RECIPE_COUNT } from "@/data/library-counts";
+import { GOLD_LINES } from "@/components/coach/gold-lines";
 import { hapticImpact } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
@@ -34,9 +33,9 @@ const ROWS = [
     path: "/recipes",
     title: "Meal-prep recipes",
     sub: "High-protein bowls & plates",
-    // Counted, not typed. The literal "15" here and a second one in Vault.tsx
-    // both went stale the moment a recipe was added or removed.
-    chip: String(RECIPES.length),
+    // One pinned literal (tested against RECIPES.length) instead of importing
+    // the whole catalog onto Home's boot path.
+    chip: String(RECIPE_COUNT),
     /** Gold marks what's gated, not what's counted. */
     chipGold: false,
   },
@@ -83,11 +82,13 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
   }
   if (id === "exercises") {
     // The illustrated set's bench press (0042) in the same gold-line
-    // treatment the library itself uses.
+    // treatment the library itself uses. Literal path (= illustrationThumb
+    // ("0042")): importing that helper dragged the 170 KB catalog into the
+    // entry chunk.
     return (
       <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 bg-black border border-gold/25 flex items-center justify-center">
         <img
-          src={illustrationThumb("0042")}
+          src="/illustrations/0042.webp"
           alt=""
           loading="lazy"
           decoding="async"

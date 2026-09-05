@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "type-debt": "node scripts/type-debt.mjs",
     "type-debt:update": "node scripts/type-debt.mjs --update",
+    "perf:snapshot": "node scripts/perf-snapshot.mjs",
     "ios:clean": "bash scripts/ios-clean.sh",
     "deploy:functions": "bash scripts/deploy-backend.sh",
     "deploy:backend": "bash scripts/deploy-backend.sh --db",

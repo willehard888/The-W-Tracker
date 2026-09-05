@@ -14,6 +14,7 @@ import PageBar from "@/components/ui/page-bar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useBlockActions } from "@/hooks/use-blocking";
 import BlockUserDialog from "@/components/BlockUserDialog";
+import EmptyState from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 
 const Chat = () => {
@@ -24,6 +25,8 @@ const Chat = () => {
   const queryClient = useQueryClient();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  // The bubble that lands with commit-pop — only the one this session just sent.
+  const [justSentId, setJustSentId] = useState<string | null>(null);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -111,11 +114,8 @@ const Chat = () => {
     try {
       // supabase-js returns { error } — it does NOT throw. Without this check
       // an RLS/DB failure cleared the input and the message never existed.
-      const { error } = await supabase.from("direct_messages").insert({
-        sender_id: user.id,
-        receiver_id: partnerId,
-        content: messageContent,
-      });
+      const { data: sent, error } = await supabase.from("direct_messages")
+        .insert({ sender_id: user.id, receiver_id: partnerId, content: messageContent }).select("id").single();
       if (error) {
         toast.error("Message didn't send — try again.");
         return; // keep the text in the input so nothing is lost
@@ -141,6 +141,7 @@ const Chat = () => {
       }
 
       setText("");
+      setJustSentId(sent?.id ?? null);
       queryClient.invalidateQueries({ queryKey: ["chat-messages", partnerId] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     } catch {
@@ -216,14 +217,8 @@ const Chat = () => {
         className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4 space-y-1.5"
       >
         {(!messages || messages.length === 0) && (
-          <div className="flex flex-col items-center justify-center h-full text-center px-6 py-12">
-            <div className="h-14 w-14 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mb-3">
-              <Send size={20} className="text-gold/70" />
-            </div>
-            <p className="text-sm font-semibold text-foreground">Start the conversation</p>
-            <p className="text-xs text-muted-foreground/70 mt-1 max-w-[220px]">
-              Say something to @{partner?.username || "them"} — messages are private.
-            </p>
+          <div className="flex flex-col justify-center h-full">
+            <EmptyState size="compact" icon={Send} title="Start the conversation" description={`Say something to @${partner?.username || "them"}. Messages are private.`} />
           </div>
         )}
         {messages?.map((msg, idx) => {
@@ -248,21 +243,15 @@ const Chat = () => {
                 <div
                   className={cn(
                     "px-3.5 py-2 text-sm leading-relaxed break-words",
+                    msg.id === justSentId && "commit-pop origin-bottom-right",
                     isOwn
                       ? "bg-gradient-to-br from-gold/25 to-gold/10 text-foreground border border-gold/25 shadow-[0_1px_0_hsl(var(--gold)/0.25)_inset]"
                       : "bg-secondary/80 text-foreground border border-border/50",
                     // Smart bubble corners based on grouping
+                    "rounded-2xl",
                     isOwn
-                      ? cn(
-                          "rounded-2xl",
-                          sameAsPrev && "rounded-tr-md",
-                          sameAsNext && "rounded-br-md"
-                        )
-                      : cn(
-                          "rounded-2xl",
-                          sameAsPrev && "rounded-tl-md",
-                          sameAsNext && "rounded-bl-md"
-                        )
+                      ? cn(sameAsPrev && "rounded-tr-md", sameAsNext && "rounded-br-md")
+                      : cn(sameAsPrev && "rounded-tl-md", sameAsNext && "rounded-bl-md")
                   )}
                 >
                   <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -287,12 +276,12 @@ const Chat = () => {
 
       {/* Input */}
       <div className="shrink-0 border-t border-border/60 bg-card/90 backdrop-blur-xl px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <div className="flex gap-2 items-end">
+        <div className="flex gap-2 items-center">
           <div className="flex-1 relative">
             <Input
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Message…"
+              placeholder={partner?.username ? `Message @${partner.username}` : "Message…"}
               maxLength={1000}
               className="h-11 rounded-full px-4 text-sm"
               onKeyDown={(e) => {

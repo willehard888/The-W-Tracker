@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { onIdle } from "@/lib/idle";
+import { afterIdle, onIdle } from "@/lib/idle";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -37,5 +37,35 @@ describe("onIdle", () => {
     onIdle(cb)();
     vi.advanceTimersByTime(2000);
     expect(cb).not.toHaveBeenCalled();
+  });
+});
+
+describe("afterIdle", () => {
+  it("waits the delay, then schedules on idle (fallback timeout)", () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("requestIdleCallback", undefined);
+    const cb = vi.fn();
+    afterIdle(cb, 3000, 500);
+    vi.advanceTimersByTime(3000);
+    expect(cb).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(500);
+    expect(cb).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancel before the delay stops everything; cancel after it unregisters the idle callback", () => {
+    vi.useFakeTimers();
+    const ric = vi.fn(() => 9);
+    const cancel = vi.fn();
+    vi.stubGlobal("requestIdleCallback", ric);
+    vi.stubGlobal("cancelIdleCallback", cancel);
+    const cb = vi.fn();
+    afterIdle(cb, 1000)();
+    vi.advanceTimersByTime(1000);
+    expect(ric).not.toHaveBeenCalled();
+    const off = afterIdle(cb, 1000);
+    vi.advanceTimersByTime(1000);
+    expect(ric).toHaveBeenCalledWith(cb, { timeout: 2000 });
+    off();
+    expect(cancel).toHaveBeenCalledWith(9);
   });
 });

@@ -87,7 +87,7 @@ import RouteFallback from "@/components/RouteFallback";
 import { fetchFeedPosts } from "@/lib/feed-query";
 import { fetchActiveSeason, fetchAllTimeLeaders, fetchSeasonBoard } from "@/lib/leaderboard-query";
 import { fetchTribesPage } from "@/lib/tribes-query";
-import { onIdle } from "@/lib/idle";
+import { afterIdle } from "@/lib/idle";
 
 // Paths reachable WITHOUT an active subscription/trial — the paywall itself,
 // onboarding, the username picker, and legal pages — so a gated user can
@@ -359,7 +359,9 @@ const TabPrefetcher = () => {
     // Scheduled once per app boot, deliberately NOT keyed on the auth context —
     // its user object identity churns (token refresh, profile updates) and a
     // [user]-dep effect kept cancelling the wave before it ever fired.
-    const cancelFeed = onIdle(() => void (async () => {
+    // afterIdle, not onIdle: "idle" comes ~150 ms after paint, so the waves
+    // used to land inside Home's own request burst (37 calls in 1.4 s).
+    const cancelFeed = afterIdle(() => void (async () => {
       try {
         const { data } = await supabase.auth.getSession();
         if (!data.session) return;
@@ -372,7 +374,7 @@ const TabPrefetcher = () => {
       }
     })(), 3000);
     // ── Wave 2: the other main tabs (chunks + data) ─────────────────────
-    const cancelRest = onIdle(() => void (async () => {
+    const cancelRest = afterIdle(() => void (async () => {
       try {
         const { data } = await supabase.auth.getSession();
         if (!data.session) return;
@@ -439,7 +441,7 @@ const TabPrefetcher = () => {
       } catch {
         /* best-effort */
       }
-    })(), 4000);
+    })(), 4500);
     return () => { cancelFeed(); cancelRest(); };
   }, []);
   return null;

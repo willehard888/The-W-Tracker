@@ -208,7 +208,7 @@ const FeedPostCard = memo(function FeedPostCard({
         {/* Post menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button aria-label="Post options" className="h-10 w-10 -mr-2 flex items-center justify-center rounded-full hover:bg-secondary transition-colors text-muted-foreground/75 hover:text-muted-foreground">
+            <button aria-label="Post options" className="h-11 w-11 -mr-2 flex items-center justify-center rounded-full hover:bg-secondary transition-colors text-muted-foreground/75 hover:text-muted-foreground">
               <MoreHorizontal aria-hidden size={16} />
             </button>
           </DropdownMenuTrigger>

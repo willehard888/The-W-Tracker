@@ -352,7 +352,7 @@ const TribeHero = ({
         {/* Tier headline */}
         <p
           className={cn(
-            "font-display font-black text-sm mt-1.5 uppercase tracking-[0.18em]",
+            "font-display font-black text-sm mt-1.5 uppercase tracking-wider",
             isFirestorm && "bg-clip-text text-transparent",
           )}
           style={

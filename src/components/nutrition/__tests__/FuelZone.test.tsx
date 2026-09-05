@@ -55,6 +55,21 @@ describe("FuelZone", () => {
     fireEvent.change(input, { target: { files: [file] } });
     expect(base.onPhoto).toHaveBeenCalledWith(file);
   });
+
+  it("shows the framing tip once before the first scan, then opens the picker straight away", () => {
+    localStorage.removeItem("wf.scan_tip_seen");
+    const click = vi.spyOn(HTMLInputElement.prototype, "click").mockImplementation(() => {});
+    render(<FuelZone {...base} />);
+    fireEvent.click(screen.getByRole("button", { name: "Scan a meal photo" }));
+    expect(screen.getByText(/Put a fork or your hand next to the plate/)).toBeInTheDocument();
+    expect(click).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Got it" }));
+    expect(click).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem("wf.scan_tip_seen")).toBe("1");
+    fireEvent.click(screen.getByRole("button", { name: "Scan a meal photo" }));
+    expect(click).toHaveBeenCalledTimes(2);
+    click.mockRestore();
+  });
 });
 
 describe("MacroBars", () => {

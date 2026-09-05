@@ -69,7 +69,7 @@ export async function sha256Hex(data: ArrayBuffer | Blob): Promise<string> {
     .join("");
 }
 
-function blobToDataUrl(blob: Blob): Promise<string> {
+export function blobToDataUrl(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);

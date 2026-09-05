@@ -18,6 +18,7 @@ import {
   logMeal,
   lookupBarcode,
   recipePerServing,
+  recordScanReview,
   searchFoods,
   searchOnline,
   setFavorite,
@@ -326,5 +327,12 @@ describe("user foods + recipes + definitions", () => {
     expect(await fetchNutrientDefinitions(c.db)).toHaveLength(1);
     expect(defs.order).toHaveBeenCalledWith("sort_order");
     await expect(fetchNutrientDefinitions(client({ tables: { nutrient_definitions: chain({ data: null, error: { message: "down" } }) } }).db)).rejects.toThrow("down");
+  });
+  it("recordScanReview hands the rows to the RPC and rethrows its error", async () => {
+    const rows = [{ item_index: 0, model_name: "egg", model_grams: 55, model_food_id: "f1", final_food_id: "f1", final_grams: 60, action: "grams_edited" as const }];
+    const c = client({ rpc: chain({ data: 1 }) });
+    expect(await recordScanReview(c.db, "s1", rows)).toBe(1);
+    expect(c.rpc).toHaveBeenCalledWith("record_scan_review", { p_scan_id: "s1", p_rows: rows });
+    await expect(recordScanReview(client({ rpc: chain({ data: null, error: { message: "FORBIDDEN" } }) }).db, "s1", rows)).rejects.toThrow("FORBIDDEN");
   });
 });

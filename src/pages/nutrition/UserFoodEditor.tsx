@@ -60,11 +60,23 @@ const UserFoodEditor = () => {
   const { byKey } = useNutrientDefinitions();
   const existing = useFood(id ?? null);
 
+  // A label photo (from=label) or a barcode miss pre-fills the form through the query string; every value stays editable.
+  const fromLabel = params.get("from") === "label";
   const [name, setName] = useState(params.get("name") ?? "");
-  const [brand, setBrand] = useState("");
+  const [brand, setBrand] = useState(params.get("brand") ?? "");
   const [barcode, setBarcode] = useState(params.get("barcode") ?? "");
-  const [nutrients, setNutrients] = useState<Nutrients>({});
-  const [servings, setServings] = useState<ServingRow[]>([]);
+  const [nutrients, setNutrients] = useState<Nutrients>(() => {
+    const next: Nutrients = {};
+    for (const k of BASE_KEYS) {
+      const v = params.get(k);
+      if (v && parseQty(v) !== null) next[k] = v;
+    }
+    return next;
+  });
+  const [servings, setServings] = useState<ServingRow[]>(() => {
+    const g = params.get("serving_g");
+    return g && parseQty(g) ? [{ ...newServing(params.get("serving_label") || "1 serving", g), is_default: true }] : [];
+  });
   const [errors, setErrors] = useState<Errors>({ nutrients: {}, servings: {} });
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -199,6 +211,7 @@ const UserFoodEditor = () => {
         noValidate
       >
         <div className="animate-reveal space-y-3">
+          {fromLabel && <p className="text-[12px] text-muted-foreground leading-snug">Read from a label photo — check every number before saving.</p>}
           <label className="block">
             <span className="sr-only">Food name</span>
             <input

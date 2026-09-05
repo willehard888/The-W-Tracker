@@ -44,6 +44,17 @@ describe("UserFoodEditor", () => {
     expect(screen.queryByRole("status")).toBeNull();
   });
 
+  it("prefills brand, nutrients and the serving from a label photo and says so", () => {
+    renderAt("/nutrition/foods/new?from=label&name=Ruisleip%C3%A4&brand=Fazer&kcal=250&protein_g=8&carbs_g=45&fat_g=3&salt_g=1.1&serving_g=30&serving_label=1%20slice");
+    expect(screen.getByText(/Read from a label photo/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Brand")).toHaveValue("Fazer");
+    expect(screen.getByLabelText(/Calories/)).toHaveValue("250");
+    expect(screen.getByLabelText(/^Protein/)).toHaveValue("8");
+    expect(screen.getByLabelText("Serving label")).toHaveValue("1 slice");
+    expect(screen.getByLabelText(/^Grams/)).toHaveValue("30");
+    expect(screen.getByRole("button", { name: "Default serving" })).toHaveAttribute("aria-pressed", "true");
+  });
+
   it("refuses to save without the required label and says so inline", () => {
     renderAt("/nutrition/foods/new");
     fireEvent.click(screen.getByRole("button", { name: "Save food" }));

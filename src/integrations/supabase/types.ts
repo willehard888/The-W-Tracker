@@ -512,6 +512,66 @@ export type Database = {
         ]
       }
 
+      meal_scan_reviews: {
+        Row: {
+          action: string
+          created_at: string
+          final_food_id: string | null
+          final_grams: number | null
+          id: string
+          image_sha256: string | null
+          item_index: number
+          model: string | null
+          model_food_id: string | null
+          model_grams: number | null
+          model_name: string | null
+          prompt_version: number | null
+          scan_id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          final_food_id?: string | null
+          final_grams?: number | null
+          id?: string
+          image_sha256?: string | null
+          item_index: number
+          model?: string | null
+          model_food_id?: string | null
+          model_grams?: number | null
+          model_name?: string | null
+          prompt_version?: number | null
+          scan_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          final_food_id?: string | null
+          final_grams?: number | null
+          id?: string
+          image_sha256?: string | null
+          item_index?: number
+          model?: string | null
+          model_food_id?: string | null
+          model_grams?: number | null
+          model_name?: string | null
+          prompt_version?: number | null
+          scan_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_scan_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+
       nutrient_definitions: {
         Row: {
           category: string
@@ -2362,6 +2422,7 @@ export type Database = {
           longest_streak: number
           membership_credits_until: string | null
           notification_prefs: Json
+          nutrition_prefs: Json
           onboarded_at: string | null
           onboarding_state: Json
           rank_score: number
@@ -2403,6 +2464,7 @@ export type Database = {
           longest_streak?: number
           membership_credits_until?: string | null
           notification_prefs?: Json
+          nutrition_prefs?: Json
           onboarded_at?: string | null
           onboarding_state?: Json
           rank_score?: number
@@ -2444,6 +2506,7 @@ export type Database = {
           longest_streak?: number
           membership_credits_until?: string | null
           notification_prefs?: Json
+          nutrition_prefs?: Json
           onboarded_at?: string | null
           onboarding_state?: Json
           rank_score?: number
@@ -3610,6 +3673,11 @@ export type Database = {
         Returns: string
       }
 
+      nutrition_catalog_report: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+
       nutrition_for_grams: {
         Args: { p_food_id: string; p_grams: number }
         Returns: Json
@@ -3630,6 +3698,16 @@ export type Database = {
         Returns: Json
       }
 
+      record_scan_review: {
+        Args: { p_scan_id: string; p_rows: Json }
+        Returns: number
+      }
+
+      scan_user_priors: {
+        Args: Record<string, never>
+        Returns: Json
+      }
+
       search_foods: {
         Args: { p_query: string; p_limit?: number; p_country?: string; p_barcode?: string }
         Returns: {
@@ -3644,6 +3722,7 @@ export type Database = {
           is_favorite: boolean
           kcal: number
           kind: string
+          match_score: number
           name: string
           protein_g: number
           rank: number

@@ -35,7 +35,14 @@ export async function downscaleImage(file: File, opts: DownscaleOpts = {}): Prom
     let bitmap: ImageBitmap | null = null;
     let objectUrl: string | null = null;
 
-    bitmap = await createImageBitmap(file).catch(() => null);
+    // "from-image" bakes the EXIF orientation into the pixels — without it an
+    // iPhone portrait shot lands sideways in the canvas (and in the scanner).
+    // Older WebKit rejects the option; fall back to the plain call there.
+    try {
+      bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+    } catch {
+      bitmap = await createImageBitmap(file).catch(() => null);
+    }
     if (bitmap) {
       width = bitmap.width;
       height = bitmap.height;

@@ -25,6 +25,7 @@ import {
 } from "./api-types";
 import { foodFromRows } from "./food-adapter";
 import type { LogMealArgs } from "./offline-meals";
+import type { ReviewRow } from "./scan-review";
 import type { Food, MealSlot, NutrientVector } from "./types";
 
 export type Db = SupabaseClient<Database>;
@@ -387,4 +388,13 @@ export async function recipePerServing(client: Db, id: string): Promise<Nutrient
   const { data, error } = await client.rpc("recipe_nutrition_per_serving", { p_recipe_id: id });
   if (error) raise("recipe_nutrition_per_serving", error);
   return vectorFromJson(data);
+}
+
+// ---------- photo scan ----------
+
+/** What the user changed after a scan (model guess vs saved value) — `record_scan_review`, returns the rows stored. */
+export async function recordScanReview(client: Db, scanId: string, rows: ReviewRow[]): Promise<number> {
+  const { data, error } = await client.rpc("record_scan_review", { p_scan_id: scanId, p_rows: rows });
+  if (error) raise("record_scan_review", error);
+  return toNum(data) ?? 0;
 }

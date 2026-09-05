@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,15 +20,21 @@ const FoodPickerSheet = ({
   onClose,
   onPick,
   title = "Pick a food",
+  initialQuery = "",
 }: {
   open: boolean;
   onClose: () => void;
   onPick: (food: FoodResultView) => void;
   title?: string;
+  /** Seed for the search box each time the sheet opens (e.g. the scanned item's name). */
+  initialQuery?: string;
 }) => {
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
+  useEffect(() => {
+    if (open) setQuery(initialQuery);
+  }, [open, initialQuery]);
   const [filter, setFilter] = useState<SearchFilter>("all");
   const [online, setOnline] = useState<OnlineState>("idle");
   const favorites = useFoodFavorites();

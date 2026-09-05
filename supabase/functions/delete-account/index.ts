@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
       // Nutrition engine: diary, targets, recipes, favourites, scan cache
       // (auth.users cascades cover these too — explicit is the house rule).
       "meal_log_items", "meal_logs", "nutrition_targets", "nutrition_recipes",
-      "food_favorites", "meal_scan_cache",
+      "food_favorites", "meal_scan_cache", "meal_scan_reviews",
     ];
     for (const t of extraTables) {
       try { await serviceClient.from(t).delete().eq("user_id", user.id); }

@@ -1,18 +1,30 @@
 import ReactMarkdown from "react-markdown";
-import { Sparkles, Send, MessageCircle } from "lucide-react";
+import { Send, MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useCoachBrief } from "@/hooks/use-coach-brief";
 import { stripCoachSignoff } from "@/lib/coach-signoff";
 
+/** The screen's one felt number. Hidden until today's plan exists. */
+const Readiness = ({ score }: { score: number | null }) =>
+  score == null ? null : (
+    <p className="flex items-baseline gap-2">
+      <span className="font-display font-black text-[40px] leading-none tabular-nums text-gold glow-gold-text">{score}</span>
+      <span className="text-[12px] text-muted-foreground">readiness</span>
+    </p>
+  );
+
 /**
- * CoachBriefHero — the proactive AI voice at the very top of the Coach page.
- * AI Coach speaks first: greets, references the user's real data, gives today's
- * direction, then offers tailored questions that open the live chat. This is
- * what makes the app feel like an AI coach instead of a set of static cards.
+ * CoachBriefHero: the coach speaks first. Its own words in the screen's one
+ * full-weight card, the gold readiness number, tailored questions as hairline
+ * rows, and the one CTA into the live chat.
  */
 const CoachBriefHero = ({
+  readiness,
   onOpenChat,
   onAsk,
 }: {
+  readiness: number | null;
   onOpenChat: () => void;
   onAsk: (question: string) => void;
 }) => {
@@ -20,101 +32,63 @@ const CoachBriefHero = ({
 
   if (isLoading) {
     return (
-      <div className="rounded-3xl border border-gold/30 bg-gradient-to-b from-gold/[0.08] via-card/95 to-card p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="h-5 w-5 rounded-full bg-gold/30 animate-pulse" />
-          <div className="h-3 w-24 rounded bg-gold/20 animate-pulse" />
+      <div className="surface-card p-5">
+        <div className="h-9 w-24 rounded-lg bg-foreground/[0.06] animate-pulse" />
+        <div className="mt-4 space-y-2">
+          <div className="h-3.5 w-full rounded bg-foreground/[0.06] animate-pulse" />
+          <div className="h-3.5 w-[85%] rounded bg-foreground/[0.06] animate-pulse" />
+          <div className="h-3.5 w-[60%] rounded bg-foreground/[0.06] animate-pulse" />
         </div>
-        <div className="space-y-2">
-          <div className="h-3.5 w-full rounded bg-card/80 animate-pulse" />
-          <div className="h-3.5 w-[85%] rounded bg-card/80 animate-pulse" />
-          <div className="h-3.5 w-[60%] rounded bg-card/80 animate-pulse" />
-        </div>
-        <p className="text-[12px] text-gold/50 mt-3 italic">AI Coach is reading your week…</p>
+        <p className="text-[12px] text-muted-foreground mt-3">Coach is reading your week…</p>
       </div>
-    );
-  }
-
-  // Graceful fallback — still lead with the AI, just invite a conversation.
-  if (!brief) {
-    return (
-      <button
-        onClick={onOpenChat}
-        className="press w-full text-left rounded-3xl border border-gold/35 bg-gradient-to-b from-gold/[0.08] via-card/95 to-card p-5 transition-transform shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.45)]"
-      >
-        <div className="flex items-center gap-2 mb-1.5">
-          <Sparkles size={14} className="text-gold" />
-          <p className="eyebrow">AI Coach</p>
-        </div>
-        <p className="text-[14px] font-bold text-foreground leading-snug">
-          I'm your coach. Tell me how today's going and I'll build the next move around your data.
-        </p>
-        <span className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-black text-gold">
-          <Send size={13} /> Talk to your coach
-        </span>
-      </button>
     );
   }
 
   return (
-    <div className="rounded-3xl border border-gold/35 bg-gradient-to-b from-gold/[0.10] via-card/95 to-card p-5 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.45)]">
-      {/* Header — live AI signal + ribbon */}
-      <div className="flex items-center gap-2 mb-3">
-        <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full rounded-full bg-gold opacity-60 animate-ping" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-gold" />
-        </span>
-        <p className="eyebrow">AI Coach</p>
-        {brief.ribbon && (
-          <span className="eyebrow-sm ml-auto text-gold/70 bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5 truncate max-w-[55%]">
-            {brief.ribbon}
-          </span>
+    <div className="surface-card p-5">
+      <div className="flex items-start justify-between gap-3">
+        <Readiness score={readiness} />
+        {brief?.ribbon && (
+          <span className="eyebrow-sm ml-auto pt-1 truncate max-w-[55%]">{brief.ribbon}</span>
         )}
       </div>
 
-      {/* The AI's words — the centrepiece. Sign-off stripped: briefs written
-          before the prompt change end with "— W Coach", and there's no
-          backfill, so old rows would still show the retired name right under
-          an "AI Coach" eyebrow. */}
-      <div className="text-[14px] leading-relaxed text-foreground/90 [&_p]:mb-2 [&_strong]:text-gold [&_strong]:font-black">
-        <ReactMarkdown>{stripCoachSignoff(brief.brief_md)}</ReactMarkdown>
-      </div>
+      {brief ? (
+        <>
+          {/* The coach's words: the centrepiece. Sign-off stripped: briefs
+              written before the prompt change end with "— W Coach". */}
+          <div className={cn("text-[14px] leading-relaxed text-foreground/90 [&_p]:mb-2 [&_strong]:font-black [&_strong]:text-foreground", readiness != null && "mt-3")}>
+            <ReactMarkdown>{stripCoachSignoff(brief.brief_md)}</ReactMarkdown>
+          </div>
 
-      {/* Prescriptions — today's targets, fitted to the user */}
-      {brief.prescriptions?.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-3">
-          {brief.prescriptions.map((p, i) => (
-            <span key={i} className="inline-flex items-baseline gap-1 rounded-lg bg-card/70 border border-border/50 px-2.5 py-1">
-              <span className="eyebrow-sm text-muted-foreground/70">{p.label}</span>
-              <span className="text-[12px] font-black text-gold tabular-nums">{p.value}</span>
-            </span>
-          ))}
-        </div>
+          {brief.prescriptions?.length > 0 && (
+            <p className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-[12px] text-muted-foreground">
+              {brief.prescriptions.map((p, i) => (
+                <span key={i}>{p.label} <b className="font-black text-foreground tabular-nums">{p.value}</b></span>
+              ))}
+            </p>
+          )}
+
+          {brief.suggested_questions?.length > 0 && (
+            <div className="mt-4 divide-y divide-border/35 border-t border-border/35">
+              {brief.suggested_questions.slice(0, 3).map((q, i) => (
+                <button key={i} type="button" onClick={() => onAsk(q)} className="press w-full min-h-11 flex items-center gap-2.5 py-2.5 text-left">
+                  <MessageCircle size={13} className="text-muted-foreground shrink-0" aria-hidden />
+                  <span className="text-[13px] font-semibold text-foreground/90 leading-snug">{q}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </>
+      ) : (
+        <p className={cn("text-[14px] font-bold leading-snug", readiness != null && "mt-3")}>
+          I'm your coach. Tell me how today's going and I'll build the next move around your data.
+        </p>
       )}
 
-      {/* Suggested questions — tap to open chat pre-loaded */}
-      {brief.suggested_questions?.length > 0 && (
-        <div className="mt-4 space-y-1.5">
-          {brief.suggested_questions.slice(0, 3).map((q, i) => (
-            <button
-              key={i}
-              onClick={() => onAsk(q)}
-              className="press w-full flex items-center gap-2 rounded-xl border border-gold/20 bg-gold/[0.04] px-3 py-2.5 text-left transition-transform"
-            >
-              <MessageCircle size={13} className="text-gold/70 shrink-0" />
-              <span className="text-[12px] font-semibold text-foreground/85 leading-snug">{q}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Primary CTA — open the live coach */}
-      <button
-        onClick={onOpenChat}
-        className="press mt-4 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gold py-3 text-[13px] font-black text-primary-foreground shadow-[0_3px_14px_-2px_hsl(42_78%_50%/0.45)] transition-transform"
-      >
-        <Send size={15} /> Ask your coach anything
-      </button>
+      <Button variant="ember" size="lg" className="w-full mt-4" onClick={onOpenChat}>
+        <Send size={15} /> Ask your coach
+      </Button>
     </div>
   );
 };

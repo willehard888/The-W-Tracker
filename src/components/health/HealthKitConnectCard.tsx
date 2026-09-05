@@ -8,12 +8,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { track, FUNNEL } from "@/lib/analytics";
 
 /**
- * "Connect Apple Health" CTA — for Coach landing or Profile Settings tab.
+ * "Connect Apple Health" — a quiet support row for Home, Coach and Profile.
  *
  * Three states:
  *   1. Not available (web/Android/pre-install) → hidden entirely
- *   2. Not yet connected → CTA button
- *   3. Connected → "Verified Performer" stat card
+ *   2. Not yet connected → the ask + button
+ *   3. Connected → the verification line + sync
  */
 const HealthKitConnectCard = ({ onConnected }: { onConnected?: () => void } = {}) => {
   const { available, connect, syncToday, syncing, error } = useHealthKit();
@@ -59,78 +59,38 @@ const HealthKitConnectCard = ({ onConnected }: { onConnected?: () => void } = {}
 
   if (!isConnected) {
     return (
-      <div className="surface-card p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Heart size={14} className="text-gold" />
-          <p className="eyebrow">
-            Apple Health
-          </p>
-        </div>
-        <p className="text-[13px] font-bold leading-tight mb-1">
-          Verify your check-ins automatically
-        </p>
-        <p className="text-[12px] text-muted-foreground leading-snug mb-3">
+      <div className="surface-card surface-card-quiet p-4">
+        <p className="text-[14px] font-bold leading-tight">Verify your check-ins automatically</p>
+        <p className="text-[12px] text-muted-foreground leading-snug mt-1">
           Connect HealthKit — we'll cross-check your workouts and steps against
           actual Apple Health data. Verified check-ins earn the
           "Verified Performer" badge.
         </p>
-        <Button
-          variant="ember"
-          size="default"
-          loading={syncing}
-          onClick={handleConnect}
-          className="w-full"
-        >
+        <Button variant="secondary" loading={syncing} onClick={handleConnect} className="w-full mt-3">
           <Heart size={14} /> Connect Apple Health
         </Button>
       </div>
     );
   }
 
-  // Connected — show verification stats
+  // Connected — the verification line, one row.
   return (
-    <div className="rounded-2xl border border-xp-green/30 bg-gradient-to-b from-xp-green/[0.06] to-card p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <ShieldCheck size={14} className="text-xp-green" />
-        <p className="eyebrow text-xp-green">
-          {stats?.is_verified_performer ? "Verified Performer ✓" : "Apple Health · Connected"}
+    <div className="surface-card surface-card-quiet px-4 py-3 flex items-center gap-3">
+      <ShieldCheck size={16} className="text-xp-green shrink-0" aria-hidden />
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-bold leading-tight truncate">
+          {stats?.is_verified_performer ? "Verified Performer" : "Apple Health connected"}
+        </p>
+        <p className="text-[11px] text-muted-foreground leading-snug mt-0.5 tabular-nums">
+          {stats?.verified_count ?? 0}/{stats?.total_checkins ?? 0} verified in 14 days · {stats?.verified_pct ?? 0}%
+          {stats?.is_verified_performer ? "" : " · 70% earns the badge"}
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        <Tile
-          label="Verified"
-          value={`${stats?.verified_count ?? 0}/${stats?.total_checkins ?? 0}`}
-          sub="last 14 days"
-        />
-        <Tile
-          label="Verification rate"
-          value={`${stats?.verified_pct ?? 0}%`}
-          sub={stats?.is_verified_performer ? "Badge active" : "≥70% earns badge"}
-        />
-      </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        loading={syncing}
-        onClick={() => { void syncToday(); }}
-        className="w-full mt-3 text-[12px]"
-      >
-        <Check size={11} /> Sync now
+      <Button variant="ghost" size="sm" className="min-h-11 shrink-0 text-[12px]" loading={syncing} onClick={() => { void syncToday(); }}>
+        <Check size={11} /> Sync
       </Button>
     </div>
   );
 };
-
-const Tile = ({ label, value, sub }: { label: string; value: string; sub: string }) => (
-  <div className="surface-card surface-card-quiet px-3 py-2.5">
-    <p className="eyebrow-sm text-muted-foreground mb-0.5">
-      {label}
-    </p>
-    <p className="text-base font-display font-black text-foreground tabular-nums leading-none mb-1">
-      {value}
-    </p>
-    <p className="text-[11px] text-muted-foreground leading-snug">{sub}</p>
-  </div>
-);
 
 export default HealthKitConnectCard;

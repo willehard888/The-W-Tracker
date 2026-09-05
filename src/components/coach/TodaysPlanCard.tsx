@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Dumbbell, HeartPulse, Brain, Repeat, Flame, Check, RotateCw, Sparkles,
+  Dumbbell, HeartPulse, Brain, Repeat, Flame, Check, RotateCw,
 } from "lucide-react";
-import { useDailyPlan, type Mission, type MissionKind } from "@/hooks/use-daily-plan";
-import ReadinessRing from "./ReadinessRing";
+import type { useDailyPlan, Mission, MissionKind } from "@/hooks/use-daily-plan";
+import { Button } from "@/components/ui/button";
 import ConfettiBurst from "@/components/ConfettiBurst";
 import { Portal } from "@/components/ui/Portal";
 import { hapticNotification, hapticImpact } from "@/lib/haptics";
@@ -15,17 +15,15 @@ import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboardin
 import { useCommitPop } from "@/hooks/use-commit-pop";
 
 /**
- * TodaysPlanCard — surfaces the adaptive daily plan the coach already computes
- * (readiness score + push/hold/deload/swap adjustment + evidence-graded
- * missions) which until now was built end-to-end but never rendered. Missions
- * are tappable accountability (no XP — XP comes from check-ins/battles); the
- * realtime sub in useDailyPlan keeps done/total live. Turns the coach from "chat + a
- * one-liner" into "here's your data-driven plan for today — and I'll hold you to it."
+ * TodaysPlanCard: the adaptive daily plan (push/hold/deload/swap + missions).
+ * A quiet card under the hero: the readiness number itself lives up there.
+ * Missions are hairline rows the user ticks; the tick is the commit-pop.
+ * `daily` is the page's single useDailyPlan() (one realtime channel).
  */
 
 const ADJUST: Record<string, { label: string; tone: string }> = {
   push:   { label: "Push today",      tone: "text-xp-green" },
-  hold:   { label: "Hold steady",     tone: "text-gold" },
+  hold:   { label: "Hold steady",     tone: "text-foreground" },
   deload: { label: "Deload · recover", tone: "text-amber-400" },
   swap:   { label: "Recovery swap",   tone: "text-rose-400" },
 };
@@ -38,10 +36,7 @@ const KIND_ICON: Record<MissionKind, React.ElementType> = {
   edge: Flame,
 };
 
-/**
- * One mission row. Extracted from the .map() it used to live inside purely so
- * it can own a hook — useCommitPop can't be called from a map callback.
- */
+/** One mission row: owns a hook, so it lives outside the .map(). */
 const MissionRow = ({
   mission, isDone, isBusy, onComplete, spotlightRef,
 }: {
@@ -60,53 +55,44 @@ const MissionRow = ({
       ref={spotlightRef}
       onClick={() => onComplete(mission)}
       disabled={isDone || isBusy}
-      className={cn(
-        "press w-full text-left rounded-xl border p-3 flex items-start gap-3 transition-all ",
-        isDone
-          ? "border-xp-green/30 bg-xp-green/[0.06]"
-          : "border-border/50 bg-card/50 hover:border-gold/30",
-      )}
+      className="press w-full min-h-11 flex items-start gap-3 py-2.5 text-left"
     >
-      {/* Completing a mission used to only cross-fade this tile's colour. */}
+      <Icon size={14} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
+      <span className="min-w-0 flex-1">
+        <span className={cn("block text-[13px] font-bold leading-tight", isDone && "text-muted-foreground line-through")}>
+          {mission.title}
+        </span>
+        {mission.detail && (
+          <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">{mission.detail}</span>
+        )}
+      </span>
       <span
         className={cn(
-          "shrink-0 h-7 w-7 rounded-lg flex items-center justify-center border transition-colors",
-          isDone ? "bg-xp-green/15 border-xp-green/40 text-xp-green" : "bg-secondary/50 border-border/50 text-muted-foreground",
+          "mt-0.5 shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors",
+          isDone ? "border-xp-green bg-xp-green text-primary-foreground" : "border-muted-foreground/35",
           popping && "commit-pop",
         )}
+        aria-hidden
       >
-        {isDone ? <Check size={15} strokeWidth={3} /> : <Icon size={14} />}
+        {isDone && <Check size={12} strokeWidth={3} />}
       </span>
-      <div className="min-w-0 flex-1">
-        <p className={cn("text-[13px] font-bold leading-tight", isDone && "text-muted-foreground line-through")}>
-          {mission.title}
-        </p>
-        {mission.detail && (
-          <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">{mission.detail}</p>
-        )}
-      </div>
-      {isDone && (
-        <span className="shrink-0 text-[12px] font-black text-xp-green mt-0.5">Done</span>
-      )}
     </button>
   );
 };
 
-// Data-driven "why" — cites the real readiness components (self-reported sleep,
-// last RPE, missed sessions). Honest: this engine reads check-in data, so we
-// don't claim HealthKit verification here (RecoveryCard owns the verified layer).
-const whyLine = (plan: { readiness_score: number; readiness_breakdown: Record<string, number | string> }) => {
+// Data-driven "why": the real readiness components (self-reported sleep,
+// last RPE, missed sessions). The score itself is the hero's number.
+const whyLine = (plan: { readiness_breakdown: Record<string, number | string> }) => {
   const b = plan.readiness_breakdown ?? {};
   const bits: string[] = [];
   if (b.avg_sleep_h != null) bits.push(`sleep ${b.avg_sleep_h}h avg`);
   if (b.last_rpe != null) bits.push(`last RPE ${b.last_rpe}`);
   if (typeof b.missed_7d === "number" && b.missed_7d > 0) bits.push(`${b.missed_7d} missed this week`);
-  const reason = bits.length ? bits.join(" · ") : "your recent check-ins";
-  return `Readiness ${plan.readiness_score} · ${reason}`;
+  return `Read from ${bits.length ? bits.join(" · ") : "your recent check-ins"}.`;
 };
 
-const TodaysPlanCard = () => {
-  const { plan, isLoading, completedIds, done, total, generate, completeMission } = useDailyPlan();
+const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) => {
+  const { plan, isLoading, completedIds, done, total, generate, completeMission } = daily;
   const navigate = useNavigate();
   // Contextual onboarding: the first time a mission row exists, spotlight it.
   const missionTargetRef = useSpotlightTarget("COACH_MISSION_INTRO");
@@ -176,14 +162,9 @@ const TodaysPlanCard = () => {
   // Loading / first-generation state.
   if ((isLoading || generating) && !plan) {
     return (
-      <div className="surface-card p-4">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Sparkles size={14} className="text-gold animate-pulse" />
-          <p className="text-[13px] font-bold">Building today's plan…</p>
-        </div>
-        <p className="text-[12px] text-muted-foreground/70 mt-1">
-          Reading your recent recovery, training and streak.
-        </p>
+      <div className="surface-card surface-card-quiet p-4">
+        <p className="text-[13px] font-bold">Building today's plan…</p>
+        <p className="text-[12px] text-muted-foreground mt-0.5">Reading your recent recovery, training and streak.</p>
       </div>
     );
   }
@@ -191,16 +172,9 @@ const TodaysPlanCard = () => {
   // Membership-gated — show the value + route to the paywall, never a dead CTA.
   if (!plan && needsMembership) {
     return (
-      <button
-        type="button"
-        onClick={() => navigate("/paywall")}
-        className="press w-full text-left surface-card p-4 transition-transform"
-      >
-        <div className="flex items-center gap-2 mb-1">
-          <Sparkles size={14} className="text-gold" />
-          <p className="text-[13px] font-bold">Your daily plan is a member feature</p>
-        </div>
-        <p className="text-[12px] text-muted-foreground leading-snug">
+      <button type="button" onClick={() => navigate("/paywall")} className="press w-full min-h-11 text-left surface-card surface-card-quiet p-4">
+        <p className="text-[13px] font-bold">Your daily plan is a member feature</p>
+        <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
           A readiness score + 3–5 missions fitted to how you're actually recovering —
           rebuilt for you every morning. Unlock full access.
         </p>
@@ -211,16 +185,9 @@ const TodaysPlanCard = () => {
   // No plan and generation failed — offer a manual build.
   if (!plan) {
     return (
-      <button
-        type="button"
-        onClick={regenerate}
-        className="press w-full text-left surface-card p-4 transition-transform"
-      >
-        <div className="flex items-center gap-2 mb-1">
-          <Sparkles size={14} className="text-gold" />
-          <p className="text-[13px] font-bold">Build today's plan</p>
-        </div>
-        <p className="text-[12px] text-muted-foreground leading-snug">
+      <button type="button" onClick={regenerate} className="press w-full min-h-11 text-left surface-card surface-card-quiet p-4">
+        <p className="text-[13px] font-bold">Build today's plan</p>
+        <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
           Get a readiness read and 3–5 missions fitted to how you're actually recovering.
         </p>
       </button>
@@ -228,52 +195,31 @@ const TodaysPlanCard = () => {
   }
 
   const adjust = ADJUST[plan.adjustment] ?? ADJUST.hold;
+  const complete = total > 0 && done >= total;
 
   return (
-    <div className="surface-card p-4">
-      {/* Header — readiness ring + adjustment + why */}
-      <div className="flex items-start gap-3">
-        <ReadinessRing score={plan.readiness_score} size={58} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2">
-            <p className="eyebrow">Today's plan</p>
-            <button
-              type="button"
-              onClick={regenerate}
-              disabled={generating}
-              className="press eyebrow shrink-0 inline-flex items-center gap-1 text-muted-foreground/70 transition disabled:opacity-40"
-              aria-label="Regenerate plan"
-            >
-              <RotateCw size={11} className={cn(generating && "animate-spin")} /> Refresh
-            </button>
-          </div>
-          <p className={cn("text-[15px] font-black leading-tight mt-0.5", adjust.tone)}>{adjust.label}</p>
+    <div className="surface-card surface-card-quiet p-4">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className={cn("text-[15px] font-black leading-tight", adjust.tone)}>{adjust.label}</p>
           {plan.headline && (
             <p className="text-[12px] text-foreground/85 leading-snug mt-0.5">{plan.headline}</p>
           )}
+          <p className="text-[12px] text-muted-foreground leading-snug mt-1">{whyLine(plan)}</p>
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="-mr-2 -mt-2 shrink-0 text-muted-foreground"
+          onClick={regenerate}
+          disabled={generating}
+          aria-label="Regenerate plan"
+        >
+          <RotateCw size={14} className={cn(generating && "animate-spin")} aria-hidden />
+        </Button>
       </div>
 
-      {/* Data-driven "why" — the coach's read of the signals behind the call */}
-      <p className="mt-2.5 text-[12px] text-muted-foreground/80 leading-snug border-l-2 border-gold/30 pl-2.5">
-        {whyLine(plan)}
-      </p>
-
-      {/* Progress */}
-      {total > 0 && (
-        <div className="mt-3 flex items-center gap-2">
-          <div className="h-1.5 flex-1 rounded-full bg-secondary/50 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-gold to-[hsl(42_90%_70%)] transition-[width] duration-500"
-              style={{ width: `${Math.round((done / total) * 100)}%` }}
-            />
-          </div>
-          <span className="text-[12px] font-black tabular-nums text-gold">{done}/{total}</span>
-        </div>
-      )}
-
-      {/* Missions */}
-      <div className="mt-3 space-y-2">
+      <div className="mt-2 divide-y divide-border/35 border-t border-border/35">
         {plan.missions.map((m, mi) => (
           <MissionRow
             key={m.id}
@@ -286,9 +232,9 @@ const TodaysPlanCard = () => {
         ))}
       </div>
 
-      {done > 0 && done >= total && total > 0 && (
-        <p className="eyebrow mt-3 text-center text-xp-green">
-          Plan complete · you showed up
+      {total > 0 && (
+        <p className={cn("mt-2 text-[12px] tabular-nums", complete ? "font-bold text-xp-green" : "text-muted-foreground")}>
+          {complete ? "Plan complete. You showed up." : `${done} of ${total} done`}
         </p>
       )}
 

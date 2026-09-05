@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Activity, Moon, Droplets, Sparkles } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTodayReflection } from "@/hooks/use-coach-reflection";
@@ -9,14 +9,9 @@ import { PILLARS } from "@/lib/wellness-framework";
 import { findWeakestPillarSmart } from "@/lib/coach/pick-free-move";
 
 /**
- * Card 1 — Tila (State).
- *
- * Answers "Where am I right now?" with two layers:
- *   1) A signal row (mood/sleep/hydration trend over last 7d)
- *   2) A "weakest pillar" chip the user can tap to fill the gap
- *
- * Free + Elite both see the same card. Elite gets the same data; the
- * differentiator is downstream (the adaptive plan in TodaysPlanCard).
+ * Your read: where you are right now, from the last 7 days of check-ins.
+ * One headline (the weakest signal), the signals inline, and the weakest
+ * pillar as a hairline row that opens the chat with a concrete ask.
  */
 const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
   const navigate = useNavigate();
@@ -70,111 +65,41 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
   const pillarMeta = PILLARS[weakestPillar];
 
   return (
-    <div className="surface-card p-5">
-      <div className="flex items-center gap-2 mb-3">
-        <Activity size={12} className="text-gold" />
-        <p className="eyebrow">
-          Your read
-        </p>
+    <div className="surface-card surface-card-quiet p-4">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-[14px] font-bold leading-snug text-foreground">{signal.headline}</p>
         {profile?.streak && profile.streak > 0 ? (
-          <span className="ml-auto text-[11px] font-bold text-gold tabular-nums">
-            {profile.streak}d streak
-          </span>
+          <span className="shrink-0 text-[12px] text-muted-foreground tabular-nums">{profile.streak}d streak</span>
         ) : null}
       </div>
-
-      <p className="text-[14px] font-bold leading-snug text-foreground">
-        {signal.headline}
-      </p>
       {signal.detail && (
-        <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
-          {signal.detail}
+        <p className="text-[12px] text-muted-foreground mt-1 leading-snug">{signal.detail}</p>
+      )}
+
+      {/* Signals inline: one quiet line, no tiles. */}
+      {(signal.sleepAvg !== null || signal.hydrationAvg !== null) && (
+        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-[12px] text-muted-foreground tabular-nums">
+          <span>Sleep <b className={cn("font-black", signal.sleepAvg !== null && signal.sleepAvg >= 7.5 ? "text-foreground" : "text-foreground/70")}>{signal.sleepAvg !== null ? `${signal.sleepAvg.toFixed(1)}h` : "—"}</b></span>
+          <span>Water <b className={cn("font-black", signal.hydrationAvg !== null && signal.hydrationAvg >= 2.5 ? "text-foreground" : "text-foreground/70")}>{signal.hydrationAvg !== null ? `${signal.hydrationAvg.toFixed(1)}L` : "—"}</b></span>
+          <span>Reflection <b className={cn("font-black", reflection ? "text-foreground" : "text-foreground/70")}>{reflection ? "logged" : "not yet"}</b></span>
         </p>
       )}
 
-      {/* Signal row — sleep / hydration / reflection presence */}
-      {(signal.sleepAvg !== null || signal.hydrationAvg !== null) && (
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          <SignalTile
-            icon={Moon}
-            label="Sleep"
-            value={signal.sleepAvg !== null ? `${signal.sleepAvg.toFixed(1)}h` : "—"}
-            good={signal.sleepAvg !== null && signal.sleepAvg >= 7.5}
-          />
-          <SignalTile
-            icon={Droplets}
-            label="Water"
-            value={signal.hydrationAvg !== null ? `${signal.hydrationAvg.toFixed(1)}L` : "—"}
-            good={signal.hydrationAvg !== null && signal.hydrationAvg >= 2.5}
-          />
-          <SignalTile
-            icon={Sparkles}
-            label="Today"
-            value={reflection ? "Logged" : "—"}
-            good={!!reflection}
-          />
-        </div>
-      )}
-
-      {/* Weakest pillar chip — tap to fill the gap.
-          Two-line layout: pillar name as the strong line, blurb as the
-          subtle context line below it. Avoids the truncated "Sleep —
-          Strongest single lever for e..." that looked broken. */}
+      {/* Weakest pillar: a hairline row that opens the chat with a concrete ask. */}
       <button
+        type="button"
         onClick={() => onAsk ? onAsk(`Help me improve my ${pillarMeta.name.toLowerCase()} this week — one concrete change.`) : navigate("/coach")}
-        className={cn(
-          "mt-4 w-full flex items-center justify-between gap-3 rounded-2xl border px-3.5 py-3 transition-colors ",
-          pillarMeta.tint.border,
-          "bg-card/40 hover:bg-card/70",
-        )}
+        className="press mt-3 pt-3 w-full min-h-11 border-t border-border/35 flex items-center gap-3 text-left"
       >
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <span className="text-xl shrink-0">{pillarMeta.emoji}</span>
-          <div className="text-left min-w-0 flex-1">
-            <p className="eyebrow text-muted-foreground/85 mb-0.5">
-              Weakest pillar
-            </p>
-            <p className={cn("text-[13px] font-bold leading-tight", pillarMeta.tint.text)}>
-              {pillarMeta.name}
-            </p>
-            <p className="text-[11px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">
-              {pillarMeta.blurb}
-            </p>
-          </div>
-        </div>
-        <span className="text-[12px] font-bold text-gold/85 shrink-0">Fill →</span>
+        <span className="text-lg shrink-0" aria-hidden>{pillarMeta.emoji}</span>
+        <span className="flex-1 min-w-0">
+          <span className={cn("block text-[13px] font-bold leading-tight", pillarMeta.tint.text)}>{pillarMeta.name} is the gap</span>
+          <span className="block text-[11px] text-muted-foreground leading-snug mt-0.5 line-clamp-1">{pillarMeta.blurb}</span>
+        </span>
+        <ChevronRight size={16} className="text-muted-foreground/60 shrink-0" aria-hidden />
       </button>
     </div>
   );
 };
-
-const SignalTile = ({
-  icon: Icon, label, value, good,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-  good: boolean;
-}) => (
-  <div className={cn(
-    "rounded-xl border px-3 py-2 flex flex-col items-start",
-    good
-      ? "border-gold/30 bg-gold/[0.05]"
-      : "border-border/40 bg-card/40",
-  )}>
-    <div className="flex items-center gap-1 mb-0.5">
-      <Icon size={12} className={good ? "text-gold" : "text-muted-foreground"} />
-      <span className="eyebrow-sm text-muted-foreground">
-        {label}
-      </span>
-    </div>
-    <span className={cn(
-      "text-sm font-display font-black tabular-nums",
-      good ? "text-gold" : "text-foreground/85",
-    )}>
-      {value}
-    </span>
-  </div>
-);
 
 export default StateCard;

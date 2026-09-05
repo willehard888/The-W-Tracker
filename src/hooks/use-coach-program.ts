@@ -56,6 +56,20 @@ export interface CoachProgram {
   created_at: string;
 }
 
+/** Today's session in the current week, or null. Older generated plans used
+ *  `session_name` where the type says `focus`. */
+export const todaySessionOf = (program: CoachProgram | null, currentWeek: number, todayDayIndex: number) => {
+  const week = program?.plan_json?.weeks?.[currentWeek - 1];
+  const day = week?.days?.[todayDayIndex] as (ProgramDay & { session_name?: string; rest?: boolean }) | undefined;
+  if (!day) return null;
+  return {
+    focus: day.focus ?? day.session_name ?? "Today's session",
+    duration: day.duration_min ?? null,
+    blocks: Array.isArray(day.blocks) ? day.blocks.length : null,
+    isRest: day.rest === true || (day.focus ?? "").toLowerCase() === "rest",
+  };
+};
+
 export interface ProgramLog {
   id: string;
   program_id: string;
